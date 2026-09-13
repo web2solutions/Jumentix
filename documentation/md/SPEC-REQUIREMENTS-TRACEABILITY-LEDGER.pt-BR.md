@@ -53,9 +53,17 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
   - `spec/asyncapi/1.0.0.grpc.yml`
   - `documentação/md/EVENTS-AND-MESSAGES-MAP.md`
   - `documentação/md/contratos/*`
+  - `apps/frontend/*` (consome só a superfície OAS e SDKs gerados)
+  - `documentation/md/PAGINATED-LIST-CONTRACT.pt-BR.md` (`x-list-capabilities`, envelope de página)
+  - `documentation/md/FRONTEND-SEED-AND-XCRUD.pt-BR.md`
 - Evidência:
   - verificações de resolução de rota/canal
   - integração em tempo real/testes de fumaça
+  - verificações de fronteira de workspace com o workspace frontend presente
+  - suítes unit + component de `apps/frontend` (`bun run frontend:test:unit`), gate de cobertura
+    do frontend (`bun run frontend:coverage:check`) e e2e Cypress com backend em Docker
+    (`bun run frontend:test:e2e`) — JUM-776
+  - `apps/backend-template/test/integration/Express/Users/getAll.test.ts` para o contrato de listagem — JUM-777
 
 ## D. Adaptador de dados e interoperabilidade de persistência
 

@@ -1,7 +1,9 @@
 import type { Router } from 'vue-router';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
+import { appOperations } from '@/contracts/appOperations';
 import { useAuthStore } from '@/stores/auth';
+import { useProfileStore } from '@/stores/profile';
 
 /**
  * Session guard (session expiry auto-redirect): the SDK is the only UI↔server
@@ -11,7 +13,12 @@ import { useAuthStore } from '@/stores/auth';
  * password, not an expired session.
  */
 
-const AUTH_OPERATIONS = new Set(['login', 'register']);
+// Read at event time: the ids are configurable (JUM-780) and a generated app
+// may install them after this module loads.
+const isAuthOperation = (operationId: string): boolean => {
+  const { login, register } = appOperations().auth;
+  return operationId === login || operationId === register;
+};
 
 /** 401 handler wired to the SDK event stream. Returns true when it expired. */
 export const handleSdkEvent = (
@@ -20,7 +27,7 @@ export const handleSdkEvent = (
   redirect: () => void
 ): boolean => {
   if (event.type !== 'request:error' || event.status !== 401) return false;
-  if (AUTH_OPERATIONS.has(event.operationId)) return false;
+  if (isAuthOperation(event.operationId)) return false;
   expire();
   redirect();
   return true;
@@ -40,7 +47,10 @@ export const installSessionGuard = (router: Router): void => {
   const client = getSharedApiClient();
   client.subscribe((event) => {
     const auth = useAuthStore();
-    handleSdkEvent(event, () => auth.expire(), () => {
+    const profile = useProfileStore();
+    // Reset the profile too: roles cached from the dead session would otherwise
+    // survive into the next login in the same tab (JUM-776 e2e finding).
+    handleSdkEvent(event, () => { auth.expire(); profile.reset(); }, () => {
       if (router.currentRoute.value.meta.public !== true) {
         router.push('/login');
       }

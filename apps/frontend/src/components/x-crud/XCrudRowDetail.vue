@@ -15,7 +15,9 @@ import {
 
 import XCrudForm from '@/components/x-crud/XCrudForm.vue';
 import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
-import type { FieldDescriptor } from '@/contracts/formSchema';
+import { arrayItemDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
+import { fieldLabel } from '@/contracts/labels';
+import { localized, t } from '@/i18n';
 
 /**
  * XCrudRowDetail (JUM-772 redesign): card below the clicked row with tabs —
@@ -30,6 +32,7 @@ const props = defineProps<{
   canUpdate: boolean;
   initialTab?: 'preview' | 'edit';
   referenceRestrictions?: Record<string, string[]>;
+  referenceLabels?: Record<string, Record<string, string>>;
 }>();
 
 const emit = defineEmits<{
@@ -46,9 +49,19 @@ const arrayFields = computed(() => Object.entries(props.record)
   .filter(([, value]) => isObjectArray(value))
   .map(([name, value]) => ({
     name,
-    label: props.config.columnLabels?.[name] ?? name,
-    items: value as Array<Record<string, unknown>>
+    label: fieldLabel({ name }, props.config.columnLabels),
+    items: value as Array<Record<string, unknown>>,
+    // Item column labels come from the item schema when the entity declares it.
+    itemLabels: Object.fromEntries((safeItemDescriptors(name)).map((d) => [d.name, fieldLabel(d)]))
   })));
+
+const safeItemDescriptors = (field: string): FieldDescriptor[] => {
+  try {
+    return arrayItemDescriptors(props.config.entity, field) ?? [];
+  } catch {
+    return [];
+  }
+};
 
 /** The main tab carries scalars and scalar arrays only. */
 const scalarRecord = computed(() => Object.fromEntries(
@@ -80,7 +93,7 @@ watch(
             :class="{ active: activeTab === 'preview' }"
             @click.prevent="activeTab = 'preview'"
           >
-            {{ config.title }} Data
+            {{ t('crud.data', { entity: localized(config.title) }) }}
           </a>
         </CNavItem>
         <CNavItem v-for="field in arrayFields" :key="field.name">
@@ -100,16 +113,22 @@ watch(
             :class="{ active: activeTab === 'edit' }"
             @click.prevent="activeTab = 'edit'"
           >
-            Edit {{ config.title }}
+            {{ t('crud.edit', { entity: localized(config.title) }) }}
           </a>
         </CNavItem>
       </CNav>
-      <button type="button" class="btn-close ms-auto" aria-label="Close" @click="emit('close')" />
+      <button type="button" class="btn-close ms-auto" :aria-label="t('crud.close')" @click="emit('close')" />
     </div>
     <div class="card-body">
       <CTabContent>
         <CTabPane :visible="activeTab === 'preview'">
-          <XCrudForm :config="config" mode="preview" :descriptors="[]" :record="scalarRecord" />
+          <XCrudForm
+            :config="config"
+            mode="preview"
+            :descriptors="[]"
+            :record="scalarRecord"
+            :reference-labels="referenceLabels"
+          />
         </CTabPane>
         <CTabPane v-for="field in arrayFields" :key="field.name" :visible="activeTab === field.name">
           <CTable striped hover align="middle" class="mb-0">
@@ -120,7 +139,7 @@ watch(
                   :key="key"
                   class="small text-uppercase text-body-secondary"
                 >
-                  {{ key }}
+                  {{ field.itemLabels[key] ?? fieldLabel({ name: key }) }}
                 </CTableHeaderCell>
               </CTableRow>
             </CTableHead>

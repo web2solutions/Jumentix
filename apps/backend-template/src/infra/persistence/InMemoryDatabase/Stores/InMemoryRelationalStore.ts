@@ -1,6 +1,7 @@
 import type { IStore } from '@src/infra/ports/persistence/IStore';
-import { ConflictError, DataBaseNotFoundError, DatabasePagingError } from '@src/infra/exceptions';
+import { ConflictError, DataBaseNotFoundError } from '@src/infra/exceptions';
 import type { IPagingRequest, IPagingResponse } from '@src/modules/port';
+import { runListQuery } from '@jumentix/persistence-contracts';
 
 type Primitive = string | number | boolean | null | undefined;
 
@@ -11,13 +12,6 @@ interface IStoreOptions<T extends Record<string, any>> {
 }
 
 const stringifyPrimitive = (value: Primitive): string => String(value ?? '');
-
-const matchAllFilters = (
-  record: Record<string, any>,
-  filters: Record<string, Primitive>
-): boolean => {
-  return Object.entries(filters).every(([key, value]) => record[key] === value);
-};
 
 export class InMemoryRelationalStore<T extends Record<string, any>> implements IStore<T> {
   private readonly records = new Map<string, T>();
@@ -135,28 +129,18 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
     return merged;
   }
 
+  /**
+   * Filters, search, sort and paging share one implementation with the
+   * external-store proxy (`runListQuery`, JUM-777), so every driver answers
+   * the REST list contract the same way.
+   */
   public async getAll(
     filters: Record<string, string | number>,
     paging: IPagingRequest
   ): Promise<IPagingResponse<T[]>> {
-    const { page, size } = paging;
-    if (page < 1) {
-      throw new DatabasePagingError('page must be greater than 0');
-    }
-    const filtered = [...this.records.values()].filter((entry) => matchAllFilters(entry, filters));
-    const total = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(total / size));
-    if (page > totalPages && total > 0) {
-      throw new DatabasePagingError('page number must be smaller than the number of total pages');
-    }
-    const startAt = (page * size) - size;
-    const result = filtered.slice(startAt, startAt + size);
-    return {
-      result,
-      total,
-      page,
-      size
-    };
+    // The contracts' response type marks `page`/`size` optional; `paginateList`
+    // always sets them, so the application's stricter shape holds.
+    return runListQuery([...this.records.values()], filters, paging) as IPagingResponse<T[]>;
   }
 
   public async getByRelation(field: keyof T, referenceId: string): Promise<T[]> {

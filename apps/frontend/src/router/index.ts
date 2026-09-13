@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
+import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
+import { usersCrudConfig } from '@/features/users/usersCrudConfig';
 import { requireAuthRedirect, requireScopeRedirect } from '@/router/guards';
 
 /**
@@ -25,28 +27,31 @@ const routes = [
     name: 'Home',
     component: DefaultLayout,
     redirect: '/dashboard',
+    meta: { titleKey: 'nav.home' },
     children: [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        component: () => import('@/features/dashboard/DashboardView.vue')
+        component: () => import('@/features/dashboard/DashboardView.vue'),
+        meta: { titleKey: 'nav.dashboard' }
       },
       {
         path: '/profile',
         name: 'Profile',
-        component: () => import('@/features/profile/ProfileView.vue')
+        component: () => import('@/features/profile/ProfileView.vue'),
+        meta: { titleKey: 'nav.profile' }
       },
       {
         path: '/users',
         name: 'Users',
         component: () => import('@/features/users/UsersView.vue'),
-        meta: { operationId: 'getAll' }
+        meta: { operationId: usersCrudConfig.operations.list, titleKey: 'nav.users' }
       },
       {
         path: '/organizations',
         name: 'Organizations',
         component: () => import('@/features/organizations/OrganizationsView.vue'),
-        meta: { operationId: 'getAllOrganizations' }
+        meta: { operationId: organizationsCrudConfig.operations.list, titleKey: 'nav.organizations' }
       }
     ]
   },

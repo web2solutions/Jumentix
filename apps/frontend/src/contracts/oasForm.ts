@@ -1,4 +1,6 @@
 import type { FieldDescriptor } from './formSchema';
+import { fieldLabel } from './labels';
+import { t } from '@/i18n';
 
 /**
  * Collects the request body from descriptor names (JUM-766): the OAS field
@@ -29,29 +31,30 @@ const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export const validateField = (descriptor: FieldDescriptor, value: unknown): string | null => {
   const text = value === undefined || value === null ? '' : String(value);
+  const field = fieldLabel(descriptor);
   if (descriptor.required && !text.trim()) {
-    return `${descriptor.name} é obrigatório.`;
+    return t('validation.required', { field });
   }
   if (!text) {
     return null; // optional and empty — nullable/optional per OAS
   }
   if (descriptor.minLength !== undefined && text.length < descriptor.minLength) {
-    return `${descriptor.name} precisa de ao menos ${descriptor.minLength} caracteres.`;
+    return t('validation.minLength', { field, min: descriptor.minLength });
   }
   if (descriptor.maxLength !== undefined && text.length > descriptor.maxLength) {
-    return `${descriptor.name} aceita no máximo ${descriptor.maxLength} caracteres.`;
+    return t('validation.maxLength', { field, max: descriptor.maxLength });
   }
   if (descriptor.pattern && !new RegExp(descriptor.pattern).test(text)) {
-    return `${descriptor.name} fora do formato esperado.`;
+    return t('validation.pattern', { field });
   }
   if (descriptor.enum && !descriptor.enum.includes(text)) {
-    return `${descriptor.name} deve ser um de: ${descriptor.enum.join(', ')}.`;
+    return t('validation.enum', { field, values: descriptor.enum.join(', ') });
   }
   if (descriptor.format === 'uuid' && !UUID_PATTERN.test(text)) {
-    return `${descriptor.name} deve ser um uuid válido.`;
+    return t('validation.uuid', { field });
   }
   if (descriptor.format === 'email' && !EMAIL_PATTERN.test(text)) {
-    return `${descriptor.name} deve ser um email válido.`;
+    return t('validation.email', { field });
   }
   return null;
 };

@@ -7,7 +7,7 @@ import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
  */
 export const organizationsCrudConfig: XCrudEntityConfig = {
   entity: 'Organization',
-  title: 'Organization',
+  title: { en: 'Organization', 'pt-BR': 'Organização' },
   schemas: { create: 'RequestCreateOrganization', update: 'RequestUpdateOrganization' },
   operations: {
     list: 'getAllOrganizations',
@@ -18,19 +18,10 @@ export const organizationsCrudConfig: XCrudEntityConfig = {
   searchFields: ['name'],
   pagination: 'pager',
   inlineEdit: true,
-  columnLabels: {
-    id: 'ID',
-    name: 'Name',
-    address: 'Addresses',
-    phone: 'Phones',
-    email: 'Emails',
-    users: 'Members',
-    createdAt: 'Created',
-    updatedAt: 'Updated'
-  },
+  // Column labels come from the OAS `x-label` (JUM-780); no overrides needed here.
   createFields: { exclude: ['users'] },
   aggregates: [
-    { field: 'id', op: 'count', label: 'Total organizations' },
-    { field: 'users', op: 'sum', label: 'Total members' }
+    { field: 'id', op: 'count', label: { en: 'Total organizations', 'pt-BR': 'Total de organizações' } },
+    { field: 'users', op: 'sum', label: { en: 'Total members', 'pt-BR': 'Total de membros' } }
   ]
 };

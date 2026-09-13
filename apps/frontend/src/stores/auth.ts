@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
+import { appOperations } from '@/contracts/appOperations';
 
 const STORAGE_KEY = 'jumentix-frontend-auth';
 
@@ -104,7 +105,7 @@ export const useAuthStore = defineStore('auth', () => {
    * (JUM-766).
    */
   const register = async (body: Record<string, unknown>): Promise<void> => {
-    await getSharedApiClient().request({ operationId: 'register', body });
+    await getSharedApiClient().request({ operationId: appOperations().auth.register, body });
   };
 
   /**
@@ -113,7 +114,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const login = async (body: Record<string, unknown>): Promise<void> => {
     const response = await getSharedApiClient().request<AuthorizationHeader>({
-      operationId: 'login',
+      operationId: appOperations().auth.login,
       body
     });
 
@@ -128,7 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async (): Promise<void> => {
     if (token.value) {
       await getSharedApiClient().request({
-        operationId: 'logout',
+        operationId: appOperations().auth.logout,
         body: { username: username.value },
         headers: { Authorization: token.value }
       });

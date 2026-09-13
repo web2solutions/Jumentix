@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+**/dist
+**/.build
+coverage
+.git
+apps/jumentix-website/*
+!apps/jumentix-website/package.json
+apps/frontend/template
+**/cypress/videos
+**/cypress/screenshots

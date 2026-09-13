@@ -15,10 +15,12 @@ import {
 import OasFormField from '@/components/OasFormField.vue';
 import { fieldDescriptors } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
+import { useI18n } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
 const auth = useAuthStore();
+const { t } = useI18n();
 
 // The form is built from the OAS RequestRegister schema at runtime (JUM-766).
 const descriptors = fieldDescriptors('RequestRegister');
@@ -35,7 +37,7 @@ const submit = async () => {
     return;
   }
   if (values.password !== repeatPassword.value) {
-    errorMessage.value = 'As senhas não conferem.';
+    errorMessage.value = t('auth.register.passwordMismatch');
     return;
   }
   submitting.value = true;
@@ -58,8 +60,8 @@ const submit = async () => {
           <CCard class="mx-4">
             <CCardBody class="p-4">
               <CForm @submit.prevent="submit">
-                <h1>Register</h1>
-                <p class="text-body-secondary">Create your Jumentix account</p>
+                <h1>{{ t('auth.register.title') }}</h1>
+                <p class="text-body-secondary">{{ t('auth.register.subtitle') }}</p>
                 <CAlert v-if="errorMessage" color="danger" role="alert">
                   {{ errorMessage }}
                 </CAlert>
@@ -70,7 +72,7 @@ const submit = async () => {
                   :descriptor="descriptor"
                 />
                 <div class="mb-4">
-                  <label class="form-label" for="register-password-repeat">Repeat password</label>
+                  <label class="form-label" for="register-password-repeat">{{ t('auth.register.repeatPassword') }}</label>
                   <input
                     id="register-password-repeat"
                     v-model="repeatPassword"
@@ -82,11 +84,11 @@ const submit = async () => {
                 </div>
                 <div class="d-grid gap-2">
                   <CButton color="success" type="submit" :disabled="submitting">
-                    {{ submitting ? 'Creating account…' : 'Create account' }}
+                    {{ submitting ? t('auth.register.submitting') : t('auth.register.submit') }}
                   </CButton>
                   <RouterLink to="/login" custom v-slot="{ href, navigate }">
                     <CButton color="link" :href="href" @click="navigate">
-                      Already registered? Login
+                      {{ t('auth.register.haveAccount') }}
                     </CButton>
                   </RouterLink>
                 </div>

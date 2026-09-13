@@ -109,11 +109,20 @@ export class CatalogDataRepository
     if (!options.includeDeleted) {
       scopedFilters.deletedAt = '';
     }
+    // The repository owns the default page size: a bare request pages with
+    // `this.limit`, and the store is told so instead of inventing its own
+    // (JUM-777 moved paging into the shared list-query helpers, which default
+    // to 10 when asked to page without a size).
+    const effectivePaging: IPagingRequest = {
+      ...paging,
+      page: paging?.page ?? 1,
+      size: paging?.size ?? this.limit
+    };
     const {
       result, page, size, total
-    } = await this.store.getAll(scopedFilters, paging);
-    const currentPage = page ?? paging?.page ?? 1;
-    const currentSize = size ?? paging?.size ?? this.limit;
+    } = await this.store.getAll(scopedFilters, effectivePaging);
+    const currentPage = page ?? effectivePaging.page;
+    const currentSize = size ?? effectivePaging.size;
     const rows = result ?? [];
     return {
       page: currentPage,

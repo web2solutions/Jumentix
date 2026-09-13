@@ -466,7 +466,8 @@ const UNSUPPORTED_SOURCE_FACETS = [
   'maxItems',
   'x-validation',
   'x-hide',
-  'x-references'
+  'x-references',
+  'x-label'
 ];
 
 /**
@@ -477,7 +478,9 @@ const UNSUPPORTED_SOURCE_FACETS = [
  * `x-validation` (JUM-765) joins the same class: contract-level validation
  * annotations the designer model does not carry yet. `x-hide` (JUM-769) and
  * `x-references` (JUM-772) are the same class — UI/relationship annotations
- * consumed by OAS-driven clients, not by the designer model.
+ * consumed by OAS-driven clients, not by the designer model. `x-label`
+ * (JUM-780) is the localized caption the frontend renders; the designer keeps
+ * its own field labels, so it does not cross either.
  */
 function projectSourceProperties(properties: Record<string, Record<string, any>>) {
   return Object.fromEntries(Object.entries(properties).map(([fieldName, schema]) => {

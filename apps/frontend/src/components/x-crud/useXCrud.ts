@@ -1,8 +1,10 @@
 import { computed, reactive, ref } from 'vue';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
+import { apiErrorStatus, formatApiError } from '@/contracts/errors';
 import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
-import { formatApiError } from '@/contracts/errors';
+import { listCapabilities, type ListCapabilities, type ListQuery } from '@/contracts/listSchema';
+import { localized, t } from '@/i18n';
 import { createEntityStore } from '@/stores/entityStore';
 import { useAuthStore } from '@/stores/auth';
 
@@ -16,14 +18,26 @@ export interface XCrudFilter {
 }
 
 /**
- * useXCrud — state and behavior of one X-CRUD instance (JUM-772): data via
- * the entity store (OAS operationIds), search, per-field filters, typed
- * column sorting, pager or on-scroll pagination, expanded row, aggregates.
+ * useXCrud — state and behavior of one X-CRUD instance (JUM-772, JUM-778).
+ *
+ * Two data modes, chosen by the contract:
+ * - **server**: the list operation declares `x-list-capabilities`; every
+ *   search/filter/sort/page change becomes one request with the wire query
+ *   and `rows` holds exactly the current page (`total` from the envelope);
+ * - **memory**: no capabilities; the whole list is loaded once and the same
+ *   controls run in memory (operations that predate JUM-777).
+ * Nothing in component config picks the mode; a generated app gets the right
+ * behaviour from its spec.
  */
 export const useXCrud = (config: XCrudEntityConfig) => {
   const store = createEntityStore(config)();
+  const capabilities: ListCapabilities | undefined = listCapabilities(config.operations.list);
+  const serverMode = capabilities !== undefined;
 
   const rowId = config.rowId ?? ((row: Row) => String(row.id));
+
+  /** Entity display name in the active locale. */
+  const title = computed(() => localized(config.title));
 
   // Descriptors drive grid columns, filters and forms (requirement 136).
   const columns: FieldDescriptor[] = fieldDescriptors(config.entity)
@@ -37,6 +51,7 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     .filter((d) => d.name !== 'id');
 
   const rows = ref<Row[]>([]);
+  const serverTotal = ref(0);
   const loading = ref(false);
   const errorMessage = ref('');
   const notice = ref('');
@@ -45,11 +60,16 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   const filters = reactive<Record<string, unknown>>({});
   const sort = ref<{ field: string; direction: 'asc' | 'desc' } | null>(null);
   const page = ref(1);
-  const pageSizeRef = ref(config.pageSize ?? 10);
+  const pageSizeRef = ref(config.pageSize ?? capabilities?.defaultSize ?? 10);
   const expandedId = ref<string | null>(null);
   // The id column is hidden by default (JUM-772): toggle it back in Columns.
   const hiddenColumns = reactive<string[]>(['id']);
   const selected = ref<Set<string>>(new Set());
+
+  /** Affordances the contract allows (server mode) or everything (memory mode). */
+  const canSort = (field: string): boolean => !serverMode || capabilities!.sortable.includes(field);
+  const canFilter = (field: string): boolean => !serverMode || field in capabilities!.filterable;
+  const canSearch = computed(() => !serverMode || capabilities!.searchable.length > 0);
 
   const visibleColumns = computed<FieldDescriptor[]>(() => (
     columns.filter((d) => !hiddenColumns.includes(d.name))
@@ -72,21 +92,113 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     selected.value = next;
   };
 
+  /**
+   * Wire filter for one column value (server mode): text → contains, date
+   * range → between, arrays → in, everything else → equality. Fields the
+   * contract does not declare filterable are dropped, not sent.
+   */
+  const wireFilter = (field: string, value: unknown): unknown => {
+    if (Array.isArray(value)) {
+      const [from, to] = value as [string?, string?];
+      if (!from && !to) return undefined;
+      return { operator: 'between', value: [from || '', to ? `${to}T23:59:59.999Z` : ''] };
+    }
+    if (capabilities?.filterable[field] === 'text') {
+      return { operator: 'contains', value: String(value) };
+    }
+    return value;
+  };
+
+  const wireFilters = (): Record<string, unknown> => {
+    const out: Record<string, unknown> = {};
+    Object.entries(filters).forEach(([field, value]) => {
+      if (value === undefined || value === null || value === '' || !canFilter(field)) return;
+      const wired = wireFilter(field, value);
+      if (wired !== undefined) out[field] = wired;
+    });
+    return out;
+  };
+
+  const serverQuery = (): ListQuery => ({
+    page: page.value,
+    size: pageSizeRef.value,
+    sort: sort.value && canSort(sort.value.field)
+      ? `${sort.value.field}:${sort.value.direction}`
+      : undefined,
+    q: canSearch.value && search.value.trim() ? search.value.trim() : undefined,
+    filter: wireFilters()
+  });
+
+  /** Scroll mode accumulates pages; pager mode replaces them. */
+  const scrollBuffer = ref<Row[]>([]);
+
   const load = async (): Promise<void> => {
     loading.value = true;
     errorMessage.value = '';
     try {
-      rows.value = await store.list();
+      if (!serverMode) {
+        const all = await store.list();
+        rows.value = all.result;
+        serverTotal.value = all.total;
+        return;
+      }
+      const result = await store.list(serverQuery());
+      serverTotal.value = result.total;
+      if (config.pagination === 'scroll') {
+        scrollBuffer.value = page.value === 1
+          ? result.result
+          : [...scrollBuffer.value, ...result.result];
+        rows.value = scrollBuffer.value;
+      } else {
+        rows.value = result.result;
+      }
     } catch (error) {
+      // A stale total after a delete asks for a page past the last one; the
+      // contract answers 400. Step back to the last existing page once.
+      if (serverMode && apiErrorStatus(error) === 400 && page.value > 1) {
+        page.value -= 1;
+        notice.value = t('error.pageOutOfRange');
+        loading.value = false;
+        await load();
+        return;
+      }
       errorMessage.value = formatApiError(error);
     } finally {
       loading.value = false;
     }
   };
 
+  /** Server-mode trigger: reset to page 1 and reload; memory mode just resets the page. */
+  const requery = (): Promise<void> => {
+    page.value = 1;
+    return serverMode ? load() : Promise.resolve();
+  };
+
+  /**
+   * Typed input (search, text filters) waits `debounceMs` before hitting the
+   * server so a word is one request, not one per keystroke (JUM-781). Sort,
+   * paging and select filters requery immediately.
+   */
+  const debounceMs = config.debounceMs ?? 250;
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  const requeryDebounced = (): void => {
+    page.value = 1;
+    if (!serverMode) return;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    if (debounceMs <= 0) {
+      load().catch(() => undefined);
+      return;
+    }
+    debounceTimer = setTimeout(() => {
+      debounceTimer = undefined;
+      load().catch(() => undefined);
+    }, debounceMs);
+  };
+
   /**
    * FK label resolution (x-references, JUM-772): referenced options load once
-   * per field; grid/preview/charts show labels (org names), never raw uuids.
+   * per field; grid/preview/charts show labels (org names, usernames), never
+   * raw uuids. Arrays of ids (organization members) resolve the same way.
    */
   const referenceLabels = reactive<Record<string, Record<string, string>>>({});
   const referenceFields = columns.filter((d) => d.xReferences?.operationId);
@@ -95,13 +207,18 @@ export const useXCrud = (config: XCrudEntityConfig) => {
       const reference = d.xReferences!;
       try {
         const client = getSharedApiClient();
-        const response = await client.request<{ result?: Array<Record<string, unknown>> }>({
+        const targetCapabilities = listCapabilities(reference.operationId!);
+        type Rows = Array<Record<string, unknown>>;
+        type ReferenceRows = { result?: Rows } | Rows;
+        const response = await client.request<ReferenceRows>({
           operationId: reference.operationId!,
+          query: targetCapabilities ? { page: 1, size: targetCapabilities.maxSize } : undefined,
           headers: { Authorization: useAuthStore().token }
         });
+        const list = Array.isArray(response) ? response : (response.result ?? []);
         const labelField = reference.labelField ?? 'name';
         referenceLabels[d.name] = Object.fromEntries(
-          (response.result ?? []).map((row) => [String(row.id), String(row[labelField] ?? row.id)])
+          list.map((row) => [String(row.id), String(row[labelField] ?? row.id)])
         );
       } catch {
         referenceLabels[d.name] = {};
@@ -113,6 +230,8 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   const referenceLabel = (field: string, value: unknown): string => (
     referenceLabels[field]?.[String(value ?? '')] ?? String(value ?? '')
   );
+
+  // ---- memory mode: the same controls over the loaded list ----------------
 
   const matchesSearch = (row: Row, term: string): boolean => {
     if (!term) return true;
@@ -129,10 +248,11 @@ export const useXCrud = (config: XCrudEntityConfig) => {
       const time = new Date(String(cell ?? '')).getTime();
       if (Number.isNaN(time)) return false;
       if (from && time < new Date(from).getTime()) return false;
-      if (to && time > new Date(to).getTime()) return false;
+      if (to && time > new Date(`${to}T23:59:59.999Z`).getTime()) return false;
       return true;
     }
     if (typeof value === 'boolean') return Boolean(cell) === value;
+    if (Array.isArray(cell)) return cell.some((entry) => String(entry) === String(value));
     return String(cell ?? '').toLowerCase().includes(String(value).toLowerCase());
   });
 
@@ -145,7 +265,9 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     return String(a ?? '').localeCompare(String(b ?? ''));
   };
 
+  /** Memory mode: filtered+sorted list. Server mode: the page as delivered. */
   const filteredRows = computed<Row[]>(() => {
+    if (serverMode) return rows.value;
     let result = rows.value
       .filter((row) => matchesSearch(row, search.value) && matchesFilters(row));
     if (sort.value) {
@@ -157,22 +279,30 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     return result;
   });
 
+  /** Records matching the current query across all pages. */
+  const total = computed(() => (serverMode ? serverTotal.value : filteredRows.value.length));
+
   const pageCount = computed(() => (
-    Math.max(1, Math.ceil(filteredRows.value.length / pageSizeRef.value))
+    Math.max(1, Math.ceil(total.value / pageSizeRef.value))
   ));
-  const visibleRows = computed<Row[]>(() => (
-    config.pagination === 'scroll'
+
+  const visibleRows = computed<Row[]>(() => {
+    if (serverMode) return rows.value;
+    return config.pagination === 'scroll'
       ? filteredRows.value.slice(0, page.value * pageSizeRef.value)
       : filteredRows.value.slice(
         (page.value - 1) * pageSizeRef.value,
         page.value * pageSizeRef.value
-      )
-  ));
+      );
+  });
   const hasMore = computed(() => page.value < pageCount.value);
 
   const setPageSize = (size: number): void => {
-    pageSizeRef.value = size;
-    page.value = 1;
+    const bounded = capabilities
+      ? Math.min(Math.max(1, size), capabilities.maxSize)
+      : Math.max(1, size);
+    pageSizeRef.value = bounded;
+    requery().catch(() => undefined);
   };
 
   const allVisibleSelected = computed(() => (
@@ -196,6 +326,7 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     try {
       await action();
       notice.value = success;
+      if (serverMode && config.pagination === 'scroll') page.value = 1;
       await load();
     } catch (error) {
       errorMessage.value = formatApiError(error);
@@ -203,16 +334,19 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   };
 
   /** Bulk delete of the selected rows (JUM-772 redesign: X-SYNTH toolbar). */
-  const submitBulkDelete = () => run(
-    async () => {
-      await Promise.all([...selected.value].map((id) => store.remove(id)));
-    },
-    `${config.title}: ${selected.value.size} registro(s) removido(s).`
-  ).then(() => clearSelection());
+  const submitBulkDelete = () => {
+    const count = selected.value.size;
+    return run(
+      async () => {
+        await Promise.all([...selected.value].map((id) => store.remove(id)));
+      },
+      t('crud.bulkRemoved', { entity: title.value, count })
+    ).then(() => clearSelection());
+  };
 
-  /** Exports the currently filtered rows as a JSON download (client-side). */
+  /** Exports the currently visible rows as a JSON download (client-side). */
   const exportJson = (): void => {
-    const payload = JSON.stringify(filteredRows.value, null, 2);
+    const payload = JSON.stringify(serverMode ? rows.value : filteredRows.value, null, 2);
     const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
     const anchor = document.createElement('a');
     anchor.href = url;
@@ -222,6 +356,7 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   };
 
   const toggleSort = (field: string): void => {
+    if (!canSort(field)) return;
     if (sort.value?.field !== field) {
       sort.value = { field, direction: 'asc' };
     } else if (sort.value.direction === 'asc') {
@@ -229,15 +364,20 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     } else {
       sort.value = null;
     }
+    requery().catch(() => undefined);
   };
 
   const setFilter = (field: string, value: unknown): void => {
-    if (value === undefined || value === null || value === '') {
+    const empty = value === undefined || value === null || value === ''
+      || (Array.isArray(value) && value.every((entry) => !entry));
+    if (empty) {
       delete filters[field];
     } else {
       filters[field] = value;
     }
-    page.value = 1;
+    const typed = typeof value === 'string' && capabilities?.filterable[field] === 'text';
+    if (typed) requeryDebounced();
+    else requery().catch(() => undefined);
   };
 
   const toggleExpanded = (id: string): void => {
@@ -245,35 +385,46 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   };
 
   const nextPage = (): void => {
-    if (page.value < pageCount.value) page.value += 1;
+    if (page.value < pageCount.value) {
+      page.value += 1;
+      if (serverMode) load().catch(() => undefined);
+    }
   };
 
   const prevPage = (): void => {
-    if (page.value > 1) page.value -= 1;
+    if (page.value > 1) {
+      page.value -= 1;
+      if (serverMode) load().catch(() => undefined);
+    }
   };
 
   const goToPage = (target: number): void => {
-    if (Number.isInteger(target) && target >= 1 && target <= pageCount.value) {
+    const inRange = Number.isInteger(target) && target >= 1 && target <= pageCount.value;
+    if (inRange && target !== page.value) {
       page.value = target;
+      if (serverMode) load().catch(() => undefined);
     }
   };
 
   const setSearch = (value: string): void => {
     search.value = value;
-    page.value = 1;
+    requeryDebounced();
   };
 
   const submitCreate = (body: Row) => run(
     () => store.create(config.beforeSubmit ? config.beforeSubmit(body, 'create') : body),
-    `${config.title}: registro criado.`
+    t('crud.created', { entity: title.value })
   );
 
   const submitUpdate = (id: string, body: Row) => run(
     () => store.update(id, config.beforeSubmit ? config.beforeSubmit(body, 'update') : body),
-    `${config.title}: registro atualizado.`
+    t('crud.updated', { entity: title.value })
   );
 
-  const submitDelete = (id: string) => run(() => store.remove(id), `${config.title}: registro removido.`);
+  const submitDelete = (id: string) => run(
+    () => store.remove(id),
+    t('crud.removed', { entity: title.value })
+  );
 
   /** Inline cell commit: merges the edited scalar into the full row. */
   const submitInline = (id: string, field: string, value: unknown) => {
@@ -282,15 +433,23 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     return submitUpdate(id, { ...row, [field]: value });
   };
 
+  /**
+   * Aggregates read the loaded rows. In server mode that is the current page
+   * (the widget says so), except `count` without `groupBy`, which is the
+   * server `total` — the one number the envelope makes exact.
+   */
+  const aggregateScope = computed<'all' | 'page'>(() => (serverMode ? 'page' : 'all'));
+
   const aggregateValue = (aggregate: XCrudAggregate): number => {
+    if (aggregate.op === 'count' && !aggregate.groupBy) {
+      return serverMode ? serverTotal.value : rows.value.length;
+    }
     const values = rows.value
       .map((row) => row[aggregate.field])
       .filter((value) => value !== undefined && value !== null);
     if (aggregate.op === 'count') {
       const { groupBy } = aggregate;
-      return groupBy
-        ? new Set(rows.value.map((row) => String(row[groupBy]))).size
-        : rows.value.length;
+      return new Set(rows.value.map((row) => String(row[groupBy!]))).size;
     }
     const numbers = values
       .map((value) => (Array.isArray(value) ? value.length : Number(value)))
@@ -301,6 +460,13 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     if (aggregate.op === 'min') return Math.min(...numbers);
     return Math.max(...numbers);
   };
+
+  /** True when the widget's number covers only the loaded page. */
+  const aggregateIsPartial = (aggregate: XCrudAggregate): boolean => (
+    serverMode
+    && !(aggregate.op === 'count' && !aggregate.groupBy)
+    && serverTotal.value > rows.value.length
+  );
 
   const aggregateBreakdown = (
     aggregate: XCrudAggregate
@@ -322,6 +488,9 @@ export const useXCrud = (config: XCrudEntityConfig) => {
 
   return {
     config,
+    title,
+    capabilities,
+    serverMode,
     columns,
     visibleColumns,
     hiddenColumns,
@@ -338,6 +507,7 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     page,
     pageCount,
     pageSize: pageSizeRef,
+    total,
     expandedId,
     filteredRows,
     visibleRows,
@@ -345,6 +515,9 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     rowId,
     referenceLabels,
     referenceLabel,
+    canSort,
+    canFilter,
+    canSearch,
     load,
     loadReferences,
     toggleSort,
@@ -366,7 +539,9 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     submitBulkDelete,
     exportJson,
     submitInline,
+    aggregateScope,
     aggregateValue,
+    aggregateIsPartial,
     aggregateBreakdown
   };
 };

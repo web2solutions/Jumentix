@@ -42,6 +42,8 @@ import {
   cilCheckCircle,
   cilXCircle,
   cilFeaturedPlaylist,
+  cilFilter,
+  cilSquare,
   cibFacebook,
   cibTwitter,
   cibLinkedin,
@@ -62,6 +64,10 @@ import {
 import router from './router';
 import { installSessionGuard } from '@/contracts/sessionGuard';
 import App from './App.vue';
+import { configureAppOperations } from './contracts/appOperations';
+
+// Fail loudly at boot when the bundled OAS lacks an operation the shell relies on (JUM-780).
+configureAppOperations();
 
 const app = createApp(App);
 
@@ -109,6 +115,8 @@ app.provide('icons', {
   cilCheckCircle,
   cilXCircle,
   cilFeaturedPlaylist,
+  cilFilter,
+  cilSquare,
   cibFacebook,
   cibTwitter,
   cibLinkedin,

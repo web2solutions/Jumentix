@@ -17,6 +17,14 @@ Defina os modos de fábrica de software suportados para Jumentix para que a enge
 | Back-end híbrido + front-end | Serviços de back-end mais aplicativos SPA/PWA/SSR | Contratos REST + em tempo real consumidos por clientes SDK | Contratos de API (OpenAPI/AsyncAPI) e integração primeiro do evento | Adaptador de backend mais estratégia de armazenamento local/offline de frontend | Entrega de produto ponta a ponta a partir de um monorepo |
 | SPA/PWA off-line somente front-end | Pacote de aplicativos frontend com compatibilidade de contrato API | Aplicativo local + consumo remoto opcional de API | Integração do SDK do cliente com foco no contrato | Armazenamento IndexedDB/local para fluxos offline | Aplicativos de campo e operações com capacidade off-line |
 
+## Seeds de Referência
+
+- Modos backend: `apps/backend-template`.
+- Modos híbrido e somente front-end: `apps/frontend` — ver
+  [Seed de Frontend e o Kit X-CRUD](./FRONTEND-SEED-AND-XCRUD.pt-BR.md) (SPA dirigida pelo contrato
+  sobre o [Contrato de Listagem Paginada](./PAGINATED-LIST-CONTRACT.pt-BR.md); o modo offline/PWA
+  é acompanhado no épico `[EPIC][Frontend] Offline-first frontend seed with Cana and PWA shell`).
+
 ## Garantias Não Funcionais
 
 - DDD + Limites hexagonais são obrigatórios para módulos backend.

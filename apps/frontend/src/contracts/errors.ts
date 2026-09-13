@@ -1,6 +1,9 @@
+import { t } from '@/i18n';
+
 /**
  * Human-readable mapping of the SDK's `REST request failed: <status> <body>`
- * errors (JUM-765). Backend error messages are preserved when present.
+ * errors (JUM-765). Backend error messages are preserved when present;
+ * generic texts come from the i18n table (JUM-780).
  */
 export const formatApiError = (error: unknown): string => {
   const message = error instanceof Error ? error.message : String(error);
@@ -19,23 +22,30 @@ export const formatApiError = (error: unknown): string => {
 
   switch (status) {
     case 400:
-      return backendMessage || 'Dados inválidos — verifique os campos do formulário.';
+      return backendMessage || t('error.badRequest');
     case 401:
-      return 'Sessão expirada — faça login novamente.';
+      return t('error.unauthorized');
     case 403:
-      return 'Você não tem permissão para esta operação.';
+      return t('error.forbidden');
     case 404:
-      return 'Registro não encontrado — a lista foi atualizada.';
+      return t('error.notFound');
     case 409:
-      return backendMessage || 'Conflito com o estado atual do registro.';
+      return backendMessage || t('error.conflict');
     default:
       if (status >= 500) {
-        return 'Erro interno do servidor — tente novamente em instantes.';
+        return t('error.server');
       }
-      return backendMessage || `Falha na requisição (${status}).`;
+      return backendMessage || t('error.generic', { status });
   }
 };
 
 export const isNotFoundError = (error: unknown): boolean => (
   error instanceof Error && /REST request failed: 404(\s|$)/.test(error.message)
 );
+
+/** Status code of an SDK error, or undefined when it is not an HTTP failure. */
+export const apiErrorStatus = (error: unknown): number | undefined => {
+  const message = error instanceof Error ? error.message : String(error);
+  const match = /REST request failed: (\d{3})/.exec(message);
+  return match ? Number(match[1]) : undefined;
+};

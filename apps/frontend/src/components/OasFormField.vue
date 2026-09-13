@@ -4,6 +4,7 @@ import { CFormCheck, CFormInput, CFormLabel } from '@coreui/vue';
 
 import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import type { FieldDescriptor } from '@/contracts/formSchema';
+import { fieldHelp, fieldLabel } from '@/contracts/labels';
 
 /**
  * Renders one OAS field descriptor (JUM-766 + JUM-768): type/format/required/
@@ -54,9 +55,11 @@ const onKeypress = (event: KeyboardEvent) => {
   }
 };
 
-const placeholder = computed(() => (
-  props.descriptor.example ?? props.descriptor.description ?? props.descriptor.name
-));
+// Label from the contract (x-label → title → humanized name); the OAS
+// description is help text under the control (JUM-780/781).
+const label = computed(() => fieldLabel(props.descriptor));
+const help = computed(() => fieldHelp(props.descriptor));
+const placeholder = computed(() => props.descriptor.example ?? label.value);
 </script>
 
 <template>
@@ -65,12 +68,13 @@ const placeholder = computed(() => (
       <CFormCheck
         :id="inputId"
         v-model="checked"
-        :label="descriptor.description ?? descriptor.name"
+        :label="label"
       />
+      <div v-if="help" class="form-text">{{ help }}</div>
     </template>
     <template v-else>
       <CFormLabel :for="inputId">
-        {{ descriptor.description ?? descriptor.name }}
+        {{ label }}
         <span v-if="descriptor.required" class="text-danger">*</span>
       </CFormLabel>
       <template v-if="descriptor.enum">
@@ -98,6 +102,7 @@ const placeholder = computed(() => (
         @keypress="onKeypress"
       />
       <div v-if="invalid" class="text-danger small mt-1" role="alert">{{ invalid }}</div>
+      <div v-else-if="help" class="form-text">{{ help }}</div>
     </template>
   </div>
 </template>

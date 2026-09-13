@@ -3,25 +3,35 @@
  * field" (JUM-772). Shared by the 3 form modes, grid cells and inline edit.
  */
 import type { FieldDescriptor } from '@/contracts/formSchema';
+import { currentLocale, t } from '@/i18n';
 
-/** Readonly display of one value, formatted per OAS type/format. */
+/** `createdAt`/`updatedAt` render as timestamps even when a preview lacks the descriptor format. */
+export const isTimestampField = (descriptor: Pick<FieldDescriptor, 'name' | 'format'>): boolean => (
+  descriptor.format === 'date-time'
+  || descriptor.format === 'date'
+  || ['createdAt', 'updatedAt'].includes(descriptor.name)
+);
+
+/** Readonly display of one value, formatted per OAS type/format and locale (JUM-780). */
 export const formatCellValue = (descriptor: FieldDescriptor, value: unknown): string => {
   if (value === undefined || value === null || value === '') return '—';
   if (descriptor.name === 'password' || descriptor.format === 'password') return '••••••••';
   if (Array.isArray(value)) return `${value.length}`;
   if (typeof value === 'boolean') return value ? '✓' : '✗';
+  const locale = currentLocale();
   if (descriptor.type === 'number' || descriptor.type === 'integer') {
     const numeric = Number(value);
     if (descriptor.format === 'currency' || descriptor.format === 'money') {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(numeric);
+      const currency = locale === 'pt-BR' ? 'BRL' : 'USD';
+      return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(numeric);
     }
     if (descriptor.format === 'percent') return `${numeric}%`;
-    return String(numeric);
+    return new Intl.NumberFormat(locale).format(numeric);
   }
-  if (descriptor.format === 'date-time' || descriptor.format === 'date') {
+  if (descriptor.format === 'date-time' || descriptor.format === 'date' || isTimestampField(descriptor)) {
     const time = Date.parse(String(value));
     if (!Number.isNaN(time)) {
-      return new Date(time).toLocaleString('pt-BR', descriptor.format === 'date'
+      return new Date(time).toLocaleString(locale, descriptor.format === 'date'
         ? { dateStyle: 'short' }
         : { dateStyle: 'short', timeStyle: 'short' });
     }
@@ -57,10 +67,10 @@ export const shortId = (value: unknown): string => {
   return text.length > 10 ? `${text.slice(0, 8)}…` : text;
 };
 
-/** "x–y de N" counter for the pager footer. */
+/** "x–y of N" counter for the pager footer (localized). */
 export const pageWindow = (page: number, pageSize: number, total: number): string => {
-  if (total === 0) return '0 de 0';
+  if (total === 0) return t('crud.pageWindowEmpty');
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
-  return `${from}–${to} de ${total}`;
+  return t('crud.pageWindow', { from, to, total });
 };

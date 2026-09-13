@@ -3,6 +3,12 @@ export interface IPagingRequest {
   perPage?: number;
   page?: number;
   size?: number;
+  /** Ordered sort fields (JUM-777); see `parseListSort` for the wire form. */
+  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  /** Free-text search term applied over `searchFields` (JUM-777). */
+  q?: string;
+  /** Fields `q` is matched against; declared by the operation's `x-list-capabilities`. */
+  searchFields?: string[];
 }
 
 export interface IPagingResponse<T> {

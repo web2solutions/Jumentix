@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from '@/i18n';
 import XCrud from '@/components/x-crud/XCrud.vue';
 
 import { organizationsCrudConfig } from './organizationsCrudConfig';
@@ -8,11 +9,12 @@ import { organizationsCrudConfig } from './organizationsCrudConfig';
  * Only superadmins manage multiple organizations — the x-rbac matrix (read
  * from the OAS) hides create/delete from other roles; the backend enforces.
  */
+const { t } = useI18n();
 </script>
 
 <template>
   <div>
-    <h3 class="mb-3">Organizations</h3>
+    <h3 class="mb-3">{{ t('nav.organizations') }}</h3>
     <XCrud :config="organizationsCrudConfig" />
   </div>
 </template>

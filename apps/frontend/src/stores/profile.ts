@@ -2,8 +2,10 @@ import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
+import { appOperations } from '@/contracts/appOperations';
 import { isNotFoundError } from '@/contracts/errors';
 import { useAuthStore } from '@/stores/auth';
+import { t } from '@/i18n';
 
 export interface UserEmail {
   id: string;
@@ -74,7 +76,7 @@ export const useProfileStore = defineStore('profile', () => {
     inflight = (async () => {
       try {
         record.value = await getSharedApiClient().request<UserRecord>({
-          operationId: 'getOneById',
+          operationId: appOperations().profile.get,
           pathParams: { id: userId },
           headers
         });
@@ -97,7 +99,7 @@ export const useProfileStore = defineStore('profile', () => {
     }
     const { userId, headers } = session();
     await getSharedApiClient().request<UserRecord>({
-      operationId: 'update',
+      operationId: appOperations().profile.update,
       pathParams: { id: userId },
       body: { ...record.value, ...input, id: userId },
       headers
@@ -108,11 +110,11 @@ export const useProfileStore = defineStore('profile', () => {
   /** PUT /users/{id}/updatePassword — OAS RequestUpdatePassword: min 8. */
   const changePassword = async (password: string): Promise<void> => {
     if (password.length < 8) {
-      throw new Error('Password must be at least 8 characters.');
+      throw new Error(t('validation.minLength', { field: 'password', min: 8 }));
     }
     const { userId, headers } = session();
     await getSharedApiClient().request<UserRecord>({
-      operationId: 'updatePassword',
+      operationId: appOperations().profile.updatePassword,
       pathParams: { id: userId },
       body: { password },
       headers
@@ -178,10 +180,22 @@ export const useProfileStore = defineStore('profile', () => {
   ) => reloadAfter('updatePhone', { phoneId }, { id: phoneId, ...input });
   const removePhone = (phoneId: string) => reloadAfter('deletePhone', { phoneId });
 
+  /**
+   * Forgets the loaded record (JUM-781): a login as another account inside the
+   * same SPA session must not keep the previous user's roles in memory, or the
+   * sidebar filters by the wrong scopes until a full reload.
+   */
+  const reset = (): void => {
+    record.value = null;
+    loading.value = false;
+    inflight = null;
+  };
+
   // roles of the signed-in user: `record.value?.roles` after `load()` (JUM-772).
   return {
     record,
     loading,
+    reset,
     load,
     saveScalars,
     changePassword,

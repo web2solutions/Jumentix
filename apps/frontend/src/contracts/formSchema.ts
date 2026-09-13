@@ -24,6 +24,10 @@ export interface FieldDescriptor {
   xValidation?: Record<string, unknown>;
   /** `x-references` (JUM-772): FK to another entity, resolved via its list operation. */
   xReferences?: { entity?: string; operationId?: string; labelField?: string };
+  /** JSON Schema `title`: the label fallback before humanizing the property name (JUM-780). */
+  title?: string;
+  /** `x-label` (JUM-780): localized labels keyed by locale (`en`, `pt-BR`). */
+  xLabel?: Record<string, string>;
 }
 
 interface RawSchema {
@@ -101,7 +105,9 @@ export const fieldDescriptors = (schemaName: string): FieldDescriptor[] => {
         description: property.description as string | undefined,
         example: property.example !== undefined ? String(property.example) : undefined,
         xValidation: property['x-validation'] as Record<string, unknown> | undefined,
-        xReferences: property['x-references'] as FieldDescriptor['xReferences']
+        xReferences: property['x-references'] as FieldDescriptor['xReferences'],
+        title: property.title as string | undefined,
+        xLabel: property['x-label'] as Record<string, string> | undefined
       };
     });
 };

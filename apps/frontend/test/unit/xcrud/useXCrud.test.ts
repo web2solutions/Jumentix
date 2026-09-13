@@ -4,11 +4,13 @@ import {
 import { createPinia, setActivePinia } from 'pinia';
 
 import { useXCrud } from '@/components/x-crud/useXCrud';
+import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
 import { usersCrudConfig } from '@/features/users/usersCrudConfig';
+import { setLocale } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
 
-interface FixtureUser {
+interface FixtureUser extends Record<string, unknown> {
   id: string;
   firstName: string;
   username: string;
@@ -30,16 +32,66 @@ const fixtureRows: FixtureUser[] = [
   }
 ];
 
-let listResponse: unknown = { result: fixtureRows };
 const recorded: Array<{ url: string; method: string; body?: unknown }> = [];
 
-/** JUM-772: useXCrud behaviors — sort, filters, search, pagination, aggregates. */
+/** Lets a triggered `load()` (fetch mock + awaits) settle. */
+const flush = () => new Promise<void>((resolve) => {
+  setTimeout(resolve, 0);
+});
+
+/** Bounded poll on a condition — never a fixed wait (Requirement 134 §2). */
+const pollUntil = async (condition: () => boolean, attempts = 200): Promise<void> => {
+  for (let index = 0; index < attempts; index += 1) {
+    if (condition()) return;
+    // eslint-disable-next-line no-await-in-loop
+    await flush();
+  }
+  throw new Error('pollUntil: condition not met');
+};
+
+/** The wire query of the last list request, decoded (filter is base64 JSON). */
+const lastListQuery = (): Record<string, unknown> => {
+  const call = [...recorded].reverse().find((entry) => entry.method === 'GET' && entry.url.includes('/users'));
+  const url = new URL(call?.url ?? 'http://x/');
+  const query: Record<string, unknown> = Object.fromEntries(url.searchParams.entries());
+  if (typeof query.filter === 'string') query.filter = JSON.parse(atob(query.filter));
+  return query;
+};
+
+/**
+ * A tiny stand-in for the JUM-777 backend: applies `q`, `sort`, `page` and
+ * `size` from the query string and answers the `{ result, page, size, total }`
+ * envelope. Filters are recorded, not applied — the frontend's job is to send
+ * them; the backend's suite proves they work.
+ */
+const serverAnswer = (url: string): unknown => {
+  const params = new URL(url).searchParams;
+  let rows = [...fixtureRows];
+  const q = params.get('q');
+  if (q) {
+    const needle = q.toLowerCase();
+    rows = rows.filter((row) => ['firstName', 'lastName', 'username']
+      .some((field) => String(row[field] ?? '').toLowerCase().includes(needle)));
+  }
+  const sort = params.get('sort');
+  if (sort) {
+    const [field, direction] = sort.split(':');
+    rows.sort((a, b) => String(a[field]).localeCompare(String(b[field])) * (direction === 'desc' ? -1 : 1));
+  }
+  const page = Number(params.get('page') ?? 1);
+  const size = Number(params.get('size') ?? 30);
+  return {
+    result: rows.slice((page - 1) * size, page * size), page, size, total: rows.length
+  };
+};
+
+/** JUM-772/778: useXCrud — server-side query, sort, filters, search, pagination, aggregates. */
 describe('useXCrud over the Users X-CRUD config', () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
     recorded.length = 0;
-    listResponse = { result: fixtureRows };
+    setLocale('en');
     setActivePinia(createPinia());
     const auth = useAuthStore();
     auth.token = 'Bearer session-token';
@@ -60,11 +112,12 @@ describe('useXCrud over the Users X-CRUD config', () => {
         method: init.method,
         body: init.body ? JSON.parse(init.body) : undefined
       });
+      const payload = init.method === 'GET' ? serverAnswer(String(url)) : {};
       return Promise.resolve({
         ok: true,
         status: 200,
         headers: { get: () => 'application/json' },
-        json: () => Promise.resolve(listResponse),
+        json: () => Promise.resolve(payload),
         text: () => Promise.resolve('')
       } as unknown as Response);
     });
@@ -76,7 +129,7 @@ describe('useXCrud over the Users X-CRUD config', () => {
 
   it('derives grid columns from the User schema and drops password', async () => {
     expect.assertions(3);
-    const crud = useXCrud(usersCrudConfig);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
     const names = crud.columns.map((d) => d.name);
     expect(names).toContain('firstName');
     expect(names).toContain('roles');
@@ -84,74 +137,142 @@ describe('useXCrud over the Users X-CRUD config', () => {
     await crud.load();
   });
 
-  it('sorts by column asc/desc/none, typed (string, date)', async () => {
-    expect.assertions(3);
-    const crud = useXCrud(usersCrudConfig);
+  it('runs in server mode because getAll declares x-list-capabilities', async () => {
+    expect.assertions(4);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
+    expect(crud.serverMode).toBe(true);
+    await crud.load();
+    expect(lastListQuery()).toStrictEqual({ page: '1', size: '30' });
+    expect(crud.total.value).toBe(3);
+    expect(crud.canSort('password')).toBe(false);
+  });
+
+  it('sorts by column asc/desc/none through the sort query param', async () => {
+    expect.assertions(4);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
     await crud.load();
     crud.toggleSort('firstName');
+    await flush();
+    expect(lastListQuery().sort).toBe('firstName:asc');
     expect(crud.visibleRows.value.map((r) => r.firstName)).toStrictEqual(['Abraham', 'Mike', 'Zoe']);
     crud.toggleSort('firstName');
-    expect(crud.visibleRows.value.map((r) => r.firstName)).toStrictEqual(['Zoe', 'Mike', 'Abraham']);
-    crud.toggleSort('createdAt'); // third click on another field starts asc
-    expect(crud.visibleRows.value.map((r) => r.id)).toStrictEqual(['u2', 'u1', 'u3']);
+    await flush();
+    expect(lastListQuery().sort).toBe('firstName:desc');
+    crud.toggleSort('firstName');
+    await flush();
+    expect(lastListQuery().sort).toBeUndefined();
   });
 
-  it('searches across the configured searchFields only', async () => {
-    expect.assertions(2);
-    const crud = useXCrud(usersCrudConfig);
+  it('searches with q, and only when the contract declares searchable fields', async () => {
+    expect.assertions(3);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
     await crud.load();
     crud.setSearch('mike@x.dev');
-    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u3']);
-    crud.setSearch('admin'); // roles is not a search field
-    expect(crud.filteredRows.value).toStrictEqual([]);
+    await flush();
+    expect(lastListQuery().q).toBe('mike@x.dev');
+    expect(crud.visibleRows.value.map((r) => r.id)).toStrictEqual(['u3']);
+    expect(crud.canSearch.value).toBe(true);
   });
 
-  it('filters per field with AND semantics and clears individually', async () => {
-    expect.assertions(3);
-    const crud = useXCrud(usersCrudConfig);
+  it('debounces typed search so a word is one request, not one per keystroke (JUM-781)', async () => {
+    expect.assertions(2);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 20 });
+    await crud.load();
+    const before = recorded.filter((c) => c.method === 'GET').length;
+    crud.setSearch('o');
+    crud.setSearch('ob');
+    crud.setSearch('oba');
+    // Poll for the debounced request instead of sleeping past the timer (Req 134 §2).
+    await pollUntil(() => recorded.filter((c) => c.method === 'GET').length > before);
+    expect(recorded.filter((c) => c.method === 'GET').length).toBe(before + 1);
+    expect(lastListQuery().q).toBe('oba');
+  });
+
+  it('sends text filters as contains, date ranges as between, and drops undeclared fields', async () => {
+    expect.assertions(4);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
     await crud.load();
     crud.setFilter('firstName', 'zo');
-    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1']);
-    crud.setFilter('username', 'nobody');
-    expect(crud.filteredRows.value).toStrictEqual([]);
-    crud.setFilter('username', '');
-    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1']);
+    await flush();
+    expect(lastListQuery().filter).toStrictEqual({ firstName: { operator: 'contains', value: 'zo' } });
+    crud.setFilter('createdAt', ['2026-01-01', '2026-01-02']);
+    await flush();
+    expect((lastListQuery().filter as Record<string, unknown>).createdAt).toStrictEqual({
+      operator: 'between', value: ['2026-01-01', '2026-01-02T23:59:59.999Z']
+    });
+    crud.setFilter('emails', 'x'); // not filterable per the OAS → never on the wire
+    await flush();
+    expect((lastListQuery().filter as Record<string, unknown>).emails).toBeUndefined();
+    crud.setFilter('firstName', '');
+    await flush();
+    const remaining = lastListQuery().filter as Record<string, unknown> | undefined;
+    expect(remaining?.firstName).toBeUndefined();
   });
 
-  it('paginates with the pager and resets the page on new filters', async () => {
-    expect.assertions(3);
-    const crud = useXCrud({ ...usersCrudConfig, pageSize: 2 });
+  it('paginates through the server and resets the page on new filters', async () => {
+    expect.assertions(5);
+    const crud = useXCrud({ ...usersCrudConfig, pageSize: 2, debounceMs: 0 });
     await crud.load();
     expect(crud.visibleRows.value.map((r) => r.id)).toStrictEqual(['u1', 'u2']);
+    expect(crud.pageCount.value).toBe(2);
     crud.nextPage();
+    await flush();
+    expect(lastListQuery().page).toBe('2');
     expect(crud.visibleRows.value.map((r) => r.id)).toStrictEqual(['u3']);
-    crud.setFilter('firstName', '');
+    crud.setFilter('firstName', 'a');
     expect(crud.page.value).toBe(1);
   });
 
-  it('scroll mode grows the visible window instead of paging', async () => {
+  it('scroll mode appends pages instead of replacing them', async () => {
     expect.assertions(2);
-    const crud = useXCrud({ ...usersCrudConfig, pagination: 'scroll', pageSize: 2 });
+    const crud = useXCrud({
+      ...usersCrudConfig, pagination: 'scroll', pageSize: 2, debounceMs: 0
+    });
     await crud.load();
     expect(crud.visibleRows.value).toHaveLength(2);
     crud.nextPage();
+    await flush();
     expect(crud.visibleRows.value).toHaveLength(3);
   });
 
-  it('computes aggregates: total count and breakdown per organization', async () => {
+  it('steps back one page when the server answers 400 for a page past the last', async () => {
     expect.assertions(3);
-    const crud = useXCrud(usersCrudConfig);
+    const crud = useXCrud({ ...usersCrudConfig, pageSize: 2, debounceMs: 0 });
+    await crud.load();
+    crud.nextPage();
+    await flush();
+    expect(crud.page.value).toBe(2);
+    globalThis.fetch = mock((url: string, init: { method: string }) => {
+      const params = new URL(String(url)).searchParams;
+      const beyond = params.get('page') === '2';
+      recorded.push({ url: String(url), method: init.method });
+      return Promise.resolve({
+        ok: !beyond,
+        status: beyond ? 400 : 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve(serverAnswer(String(url))),
+        text: () => Promise.resolve('{"message":"page number must be smaller than the number of total pages"}')
+      } as unknown as Response);
+    });
+    await crud.load();
+    expect(crud.page.value).toBe(1);
+    expect(crud.notice.value).toBe('That page no longer exists — showing the last one.');
+  });
+
+  it('computes aggregates: server total for count, page-scoped breakdown otherwise', async () => {
+    expect.assertions(4);
+    const crud = useXCrud({ ...usersCrudConfig, pageSize: 2, debounceMs: 0 });
     await crud.load();
     const [total, perOrg] = usersCrudConfig.aggregates!;
     expect(crud.aggregateValue(total)).toBe(3);
-    // one distinct org bucket (rows without org collapse)
-    expect(crud.aggregateValue(perOrg)).toBe(1);
-    expect(crud.aggregateBreakdown(perOrg).map((b) => b.value)).toStrictEqual([3]);
+    expect(crud.aggregateIsPartial(total)).toBe(false);
+    expect(crud.aggregateIsPartial(perOrg)).toBe(true);
+    expect(crud.aggregateBreakdown(perOrg).map((b) => b.value)).toStrictEqual([2]);
   });
 
   it('create maps primaryEmail into emails[0] via beforeSubmit', async () => {
     expect.assertions(2);
-    const crud = useXCrud(usersCrudConfig);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
     await crud.load();
     await crud.submitCreate({
       firstName: 'New',
@@ -169,7 +290,7 @@ describe('useXCrud over the Users X-CRUD config', () => {
 
   it('inline commit merges the edited scalar into the full row', async () => {
     expect.assertions(2);
-    const crud = useXCrud(usersCrudConfig);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
     await crud.load();
     await crud.submitInline('u2', 'firstName', 'Updated');
     const putCall = recorded.find((call) => call.method === 'PUT');
@@ -183,8 +304,8 @@ describe('useXCrud over the Users X-CRUD config', () => {
   });
 
   it('row selection supports single, all-visible and bulk delete', async () => {
-    expect.assertions(4);
-    const crud = useXCrud(usersCrudConfig);
+    expect.assertions(5);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
     await crud.load();
     crud.toggleSelect('u1');
     expect([...crud.selected.value]).toStrictEqual(['u1']);
@@ -194,11 +315,12 @@ describe('useXCrud over the Users X-CRUD config', () => {
     const deletes = recorded.filter((call) => call.method === 'DELETE');
     expect(deletes).toHaveLength(3);
     expect(crud.selected.value.size).toBe(0);
+    expect(crud.notice.value).toBe('User: 3 record(s) removed.');
   });
 
-  it('column visibility toggles hide/show and pageSize is switchable', async () => {
-    expect.assertions(4);
-    const crud = useXCrud(usersCrudConfig);
+  it('column visibility toggles hide/show and pageSize is bounded by maxSize', async () => {
+    expect.assertions(5);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
     await crud.load();
     const total = crud.visibleColumns.value.length;
     crud.toggleColumn('username');
@@ -208,5 +330,74 @@ describe('useXCrud over the Users X-CRUD config', () => {
     crud.setPageSize(50);
     expect(crud.pageSize.value).toBe(50);
     expect(crud.page.value).toBe(1);
+    crud.setPageSize(500);
+    expect(crud.pageSize.value).toBe(100);
+  });
+
+  it('resolves x-references labels, including arrays of ids, for grid and charts', async () => {
+    expect.assertions(2);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
+    globalThis.fetch = mock((url: string, init: { method: string }) => {
+      recorded.push({ url: String(url), method: init.method });
+      const payload = String(url).includes('/organizations')
+        ? {
+          result: [{ id: 'org-1', name: 'ACME' }], page: 1, size: 100, total: 1
+        }
+        : serverAnswer(String(url));
+      return Promise.resolve({
+        ok: true, status: 200, headers: { get: () => 'application/json' }, json: () => Promise.resolve(payload), text: () => Promise.resolve('')
+      } as unknown as Response);
+    });
+    await crud.loadReferences();
+    expect(crud.referenceLabel('organization', 'org-1')).toBe('ACME');
+    expect(crud.referenceLabel('organization', 'unknown')).toBe('unknown');
+  });
+});
+
+/**
+ * Drift guard (JUM-778): an operation without `x-list-capabilities` keeps the
+ * in-memory path. The config below points the list at an operation the OAS
+ * declares without capabilities; the whole array comes back and search,
+ * sort and paging run locally.
+ */
+describe('useXCrud over an operation without x-list-capabilities', () => {
+  const originalFetch = globalThis.fetch;
+  const memoryConfig: XCrudEntityConfig = {
+    ...usersCrudConfig,
+    operations: { ...usersCrudConfig.operations, list: 'getOneById' }
+  };
+
+  beforeEach(() => {
+    recorded.length = 0;
+    setLocale('en');
+    setActivePinia(createPinia());
+    useAuthStore().token = 'Bearer session-token';
+    globalThis.fetch = mock((url: string, init: { method: string }) => {
+      recorded.push({ url: String(url), method: init.method });
+      return Promise.resolve({
+        ok: true, status: 200, headers: { get: () => 'application/json' }, json: () => Promise.resolve(fixtureRows), text: () => Promise.resolve('')
+      } as unknown as Response);
+    });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('loads everything once and sorts, searches, filters and pages in memory', async () => {
+    expect.assertions(7);
+    const crud = useXCrud({ ...memoryConfig, pageSize: 2 });
+    expect(crud.serverMode).toBe(false);
+    await crud.load();
+    expect(recorded.filter((c) => c.method === 'GET')).toHaveLength(1);
+    expect(recorded[0].url.includes('?')).toBe(false);
+    crud.toggleSort('firstName');
+    expect(crud.visibleRows.value.map((r) => r.firstName)).toStrictEqual(['Abraham', 'Mike']);
+    crud.setSearch('mike@x.dev');
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u3']);
+    crud.setSearch('');
+    crud.setFilter('roles', 'user');
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u2', 'u3']);
+    expect(recorded.filter((c) => c.method === 'GET')).toHaveLength(1);
   });
 });

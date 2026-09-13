@@ -6,6 +6,7 @@ import OasFormField from '@/components/OasFormField.vue';
 import { fieldDescriptors } from '@/contracts/formSchema';
 import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useProfileStore, type UserRecord } from '@/stores/profile';
+import { t } from '@/i18n';
 import { useSectionNotify } from './useSectionNotify';
 
 const props = defineProps<{ record: UserRecord }>();
@@ -38,12 +39,12 @@ const save = () => run(async () => {
     throw new Error(invalid);
   }
   await profile.saveScalars(collectBody(descriptors, form));
-}, 'Perfil atualizado.');
+}, t('profile.saved'));
 </script>
 
 <template>
   <CCard class="mb-4">
-    <CCardHeader><strong>Account details</strong></CCardHeader>
+    <CCardHeader><strong>{{ t('profile.account') }}</strong></CCardHeader>
     <CCardBody>
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
@@ -54,7 +55,7 @@ const save = () => run(async () => {
           v-model="form[descriptor.name]"
           :descriptor="descriptor"
         />
-        <CButton color="primary" type="submit">Save profile</CButton>
+        <CButton color="primary" type="submit">{{ t('profile.save') }}</CButton>
       </CForm>
     </CCardBody>
   </CCard>

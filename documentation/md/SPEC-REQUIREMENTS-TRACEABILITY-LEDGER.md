@@ -50,10 +50,16 @@ For any change, identify impacted requirement IDs and ensure:
   - `documentation/md/EVENTS-AND-MESSAGES-MAP.md`
   - `documentation/md/contracts/*`
   - `apps/frontend/*` (consumes only the OAS surface and generated SDKs)
+  - `documentation/md/PAGINATED-LIST-CONTRACT.md` (`x-list-capabilities`, page envelope)
+  - `documentation/md/FRONTEND-SEED-AND-XCRUD.md`
 - Evidence:
   - route/channel resolution checks
   - realtime integration/smoke tests
   - workspace boundary checks with the frontend workspace present
+  - `apps/frontend` unit + component suites (`bun run frontend:test:unit`), the frontend
+    coverage gate (`bun run frontend:coverage:check`) and the Docker-backed Cypress e2e
+    (`bun run frontend:test:e2e`) — JUM-776
+  - `apps/backend-template/test/integration/Express/Users/getAll.test.ts` for the list contract — JUM-777
 
 ## D. Data Adapter and Persistence Interoperability
 

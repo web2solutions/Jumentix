@@ -169,7 +169,9 @@ module.exports = {
          * these files run in a browser, which the Node parser configuration does
          * not assume.
          */
-        files: ['cypress/**/*.js', 'packages/*/cypress/**/*.ts'],
+        // apps/frontend/cypress: the frontend e2e suite (JUM-776) runs in the same
+        // Mocha/Chai browser runtime as the package suites.
+        files: ['cypress/**/*.js', 'packages/*/cypress/**/*.ts', 'apps/frontend/cypress/**/*.ts'],
         env: { browser: true, mocha: true },
         rules: {
           'jest/expect-expect': 'off',

@@ -7,6 +7,8 @@
     "packages/*/cypress/**/*",
     "**/*.cy.ts",
     "apps/backend-template/test/**/*",
-    "apps/jumentix-website/**/*"
+    "apps/jumentix-website/**/*",
+    "apps/frontend/cypress/**/*",
+    "apps/frontend/test/**/*"
   ]
 }

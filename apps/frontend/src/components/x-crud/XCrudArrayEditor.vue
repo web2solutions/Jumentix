@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { CButton } from '@coreui/vue';
+import { CButton, CFormCheck } from '@coreui/vue';
 
 import OasFormField from '@/components/OasFormField.vue';
 import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import type { FieldDescriptor } from '@/contracts/formSchema';
+import { fieldLabel } from '@/contracts/labels';
+import { t } from '@/i18n';
 
 /**
  * XCrudArrayEditor (JUM-772): editor for array-of-objects fields (documents,
@@ -44,7 +46,7 @@ const setItemField = (index: number, field: string, value: unknown): void => {
 <template>
   <div class="xcrud-array-editor border rounded p-2">
     <div class="small text-uppercase text-body-secondary mb-2">
-      {{ descriptor.description ?? descriptor.name }}
+      {{ fieldLabel(descriptor) }}
       <span v-if="descriptor.required" class="text-danger">*</span>
     </div>
     <div
@@ -53,21 +55,25 @@ const setItemField = (index: number, field: string, value: unknown): void => {
       class="d-flex gap-2 align-items-end mb-2 border-bottom pb-2"
     >
       <template v-for="d in itemDescriptors" :key="d.name">
-        <SearchableEnumInput
-          v-if="d.enum"
-          :id="`${descriptor.name}-${index}-${d.name}`"
-          :model-value="String(item[d.name] ?? '')"
-          :options="d.enum"
-          :maxlength="d.maxLength"
-          :aria-label="`${descriptor.name} ${index} ${d.name}`"
-          :placeholder="d.description ?? d.name"
-          @update:model-value="setItemField(index, d.name, $event)"
-        />
+        <div v-if="d.enum" class="xcrud-array-cell">
+          <label class="form-label small mb-1" :for="`${descriptor.name}-${index}-${d.name}`">
+            {{ fieldLabel(d) }}<span v-if="d.required" class="text-danger">*</span>
+          </label>
+          <SearchableEnumInput
+            :id="`${descriptor.name}-${index}-${d.name}`"
+            :model-value="String(item[d.name] ?? '')"
+            :options="d.enum"
+            :maxlength="d.maxLength"
+            :aria-label="`${descriptor.name} ${index} ${d.name}`"
+            :placeholder="fieldLabel(d)"
+            @update:model-value="setItemField(index, d.name, $event)"
+          />
+        </div>
         <CFormCheck
           v-else-if="d.type === 'boolean'"
           :id="`${descriptor.name}-${index}-${d.name}`"
           :model-value="Boolean(item[d.name])"
-          :label="d.description ?? d.name"
+          :label="fieldLabel(d)"
           @update:model-value="setItemField(index, d.name, $event)"
         />
         <div v-else class="flex-grow-1">
@@ -83,7 +89,7 @@ const setItemField = (index: number, field: string, value: unknown): void => {
         color="danger"
         variant="outline"
         size="sm"
-        :aria-label="`remove ${descriptor.name} ${index}`"
+        :aria-label="t('crud.remove', { field: descriptor.name, index })"
         @click="removeItem(index)"
       >
         <CIcon icon="cil-trash" size="sm" />
@@ -96,7 +102,7 @@ const setItemField = (index: number, field: string, value: unknown): void => {
       :aria-label="`add ${descriptor.name}`"
       @click="addItem"
     >
-      <CIcon icon="cil-plus" size="sm" /> Add
+      <CIcon icon="cil-plus" size="sm" /> {{ t('crud.add') }}
     </CButton>
   </div>
 </template>

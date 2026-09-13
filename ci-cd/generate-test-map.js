@@ -21,7 +21,9 @@ function walk(dir, pred, out = []) {
 }
 
 function classifyUnit(file) {
-  if (file.startsWith('apps/frontend/test/unit/')) {
+  // JUM-776: component suites (test/component) mount the shipped .vue files
+  // through @vue/test-utils under bun:test; same layer and script as unit.
+  if (file.startsWith('apps/frontend/test/unit/') || file.startsWith('apps/frontend/test/component/')) {
     return { layer: 'frontend', kind: 'non-hexagonal' };
   }
   if (file.startsWith('apps/service-management-api/test/unit/')) {
@@ -336,7 +338,9 @@ function buildManifest(root = process.cwd()) {
     path.join(root, 'apps/service-management/test/unit'),
     path.join(root, 'apps/service-management-api/test/unit'),
     // JUM-760: the frontend workspace runs bun:test suites like the backend apps.
-    path.join(root, 'apps/frontend/test/unit')
+    path.join(root, 'apps/frontend/test/unit'),
+    // JUM-776: component suites live beside them.
+    path.join(root, 'apps/frontend/test/component')
   ].flatMap((unitRoot) => walk(
     unitRoot,
     (p) => /\.test\.ts$/.test(p)
@@ -503,10 +507,14 @@ function buildManifest(root = process.cwd()) {
     },
     // JUM-760: the frontend workspace, like the website, is outward-facing
     // (consumes published packages and the OAS document, never backend source
-    // — requirement 136), so nothing in the backend can change what it does.
+    // — requirement 136), so nothing in the backend *code* can change what it
+    // does. Its *contract* can (JUM-776): the bundled OAS is baked from
+    // `spec/1.0.0.yml` and every request goes through the REST SDK, so a change
+    // to either must select the frontend suites — hence the contracts edge and
+    // the two extra source globs.
     frontend: {
-      dependsOn: [],
-      sourceGlobs: ['apps/frontend/**'],
+      dependsOn: ['contracts'],
+      sourceGlobs: ['apps/frontend/**', 'packages/sdk-rest-client/src/**', 'spec/1.0.0.yml'],
       runner: 'bun',
       tier: 'gate',
       kind: 'non-hexagonal'
@@ -574,7 +582,9 @@ function buildManifest(root = process.cwd()) {
       ...(layer === 'frontend'
         ? {
           script: 'frontend:test:unit',
-          reason: 'bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.'
+          reason: file.includes('/test/component/')
+            ? 'bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.'
+            : 'bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.'
         }
         : {}),
       ...(ciRunner ? { ciRunner } : {}),

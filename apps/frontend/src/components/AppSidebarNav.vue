@@ -4,11 +4,13 @@ import { CBadge, CNavGroup, CNavItem, CNavTitle, CSidebarNav } from '@coreui/vue
 
 import nav, { type NavItem } from '@/_nav'
 import { can } from '@/contracts/rbac'
+import { useI18n } from '@/i18n'
 import { useProfileStore } from '@/stores/profile'
 
 // JUM-772: CNavGroup support + RBAC filtering — an item only renders when the
 // session roles satisfy its operationId (groups render when any child does).
 const profile = useProfileStore()
+const { t } = useI18n()
 
 const allowed = (item: NavItem): boolean => (
   !item.operationId || can(profile.record?.roles ?? [], item.operationId)
@@ -29,11 +31,11 @@ const isTitle = (item: NavItem) => item.component === 'CNavTitle'
 <template>
   <CSidebarNav>
     <template v-for="item in visibleItems" :key="item.name">
-      <CNavTitle v-if="isTitle(item)">{{ item.name }}</CNavTitle>
+      <CNavTitle v-if="isTitle(item)">{{ t(item.name) }}</CNavTitle>
       <CNavGroup v-else-if="isGroup(item)">
         <template #togglerContent>
           <CIcon v-if="item.icon" custom-class-name="nav-icon" :icon="item.icon" />
-          {{ item.name }}
+          {{ t(item.name) }}
         </template>
         <CNavItem v-for="child in item.items" :key="child.name">
           <RouterLink custom :to="child.to ?? '#'" v-slot="{ href, isActive, navigate }">
@@ -44,7 +46,7 @@ const isTitle = (item: NavItem) => item.component === 'CNavTitle'
               @click="navigate"
             >
               <span class="nav-icon"><span class="nav-icon-bullet" /></span>
-              {{ child.name }}
+              {{ t(child.name) }}
             </a>
           </RouterLink>
         </CNavItem>
@@ -59,7 +61,7 @@ const isTitle = (item: NavItem) => item.component === 'CNavTitle'
           >
             <CIcon v-if="item.icon" custom-class-name="nav-icon" :icon="item.icon" />
             <span v-else class="nav-icon"><span class="nav-icon-bullet" /></span>
-            {{ item.name }}
+            {{ t(item.name) }}
             <CBadge v-if="item.badge" class="ms-auto" :color="item.badge.color" size="sm">
               {{ item.badge.text }}
             </CBadge>
@@ -68,7 +70,7 @@ const isTitle = (item: NavItem) => item.component === 'CNavTitle'
       </CNavItem>
       <CNavItem v-else-if="item.href" :href="item.href" target="_blank" rel="noopener noreferrer">
         <CIcon v-if="item.icon" custom-class-name="nav-icon" :icon="item.icon" />
-        {{ item.name }}
+        {{ t(item.name) }}
         <CBadge v-if="item.badge" class="ms-auto" :color="item.badge.color" size="sm">
           {{ item.badge.text }}
         </CBadge>

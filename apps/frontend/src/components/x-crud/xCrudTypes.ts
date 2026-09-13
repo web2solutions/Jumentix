@@ -11,13 +11,16 @@ export type XCrudMode = 'create' | 'update' | 'preview';
 
 export type XCrudPagination = 'pager' | 'scroll';
 
+/** A caption: plain text or one text per locale (JUM-780). */
+export type XCrudText = string | Partial<Record<'en' | 'pt-BR', string>>;
+
 export interface XCrudAggregate {
   /** Field of the response schema the metric reads. */
   field: string;
   op: 'count' | 'sum' | 'avg' | 'min' | 'max';
   /** Optional enum facet to break the metric down by (bar chart). */
   groupBy?: string;
-  label?: string;
+  label?: XCrudText;
 }
 
 export interface XCrudOperations {
@@ -30,7 +33,8 @@ export interface XCrudOperations {
 export interface XCrudEntityConfig {
   /** Response schema name in the OAS (drives grid columns/preview/filters). */
   entity: string;
-  title: string;
+  /** Singular display name of the entity; localizable (JUM-780). */
+  title: XCrudText;
   icon?: string;
   schemas: { create: string; update: string };
   operations: XCrudOperations;
@@ -39,6 +43,11 @@ export interface XCrudEntityConfig {
   pageSize?: number;
   /** Per-cell inline editing in the grid (scalars only). Default off. */
   inlineEdit?: boolean;
+  /**
+   * Delay before a typed search/filter reaches the server in server mode
+   * (JUM-781): one request per keystroke is a load, not a query. Default 250.
+   */
+  debounceMs?: number;
   aggregates?: XCrudAggregate[];
   /** array-of-string fields editable as checkbox groups (e.g. roles). */
   arrayOptions?: Record<string, string[]>;
@@ -53,7 +62,7 @@ export interface XCrudEntityConfig {
   /** Short column labels (override the OAS description in the grid header). */
   columnLabels?: Record<string, string>;
   /** Quick context filter in the toolbar (e.g. organization select). */
-  quickFilter?: { field: string; optionsOperationId?: string; allLabel?: string };
+  quickFilter?: { field: string; optionsOperationId?: string; allLabel?: XCrudText };
   /** Export-visible-rows-as-JSON toolbar action (default true). */
   exportable?: boolean;
   /** Bulk delete via row selection (default true). */

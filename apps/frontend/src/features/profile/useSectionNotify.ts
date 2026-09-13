@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 
 import { formatApiError } from '@/contracts/errors';
+import { t } from '@/i18n';
 
 /**
  * Per-section feedback for the profile cards (JUM-765): each card shows its
@@ -21,7 +22,7 @@ export const useSectionNotify = () => {
     try {
       const outcome = await action();
       successMessage.value = outcome === 'already-removed'
-        ? 'Registro já removido — lista atualizada.'
+        ? t('profile.alreadyRemoved')
         : successText;
       if (dismissTimer) clearTimeout(dismissTimer);
       dismissTimer = setTimeout(() => {

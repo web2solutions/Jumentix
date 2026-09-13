@@ -11,6 +11,10 @@ import {
   validatePhone
 } from '@/contracts/validation';
 
+import { setLocale } from '@/i18n';
+
+setLocale('pt-BR');
+
 describe('validation module driven by the OAS x-validation (JUM-765)', () => {
   it('reads the CPF rule from the bundled OAS', () => {
     expect.assertions(3);

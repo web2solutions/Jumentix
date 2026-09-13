@@ -10,6 +10,8 @@ import {
   phoneMaskCap
 } from '@/contracts/validation';
 
+import { setLocale } from '@/i18n';
+
 const emailDescriptors = fieldDescriptors('RequestCreateEmail');
 const emailField = emailDescriptors.find((d) => d.name === 'email')!;
 const phoneDescriptors = fieldDescriptors('RequestCreatePhone');
@@ -20,6 +22,8 @@ const organizationField = updateUserDescriptors.find((d) => d.name === 'organiza
 const avatarField = updateUserDescriptors.find((d) => d.name === 'avatar')!;
 const documentDescriptors = fieldDescriptors('RequestCreateDocument');
 const countryIssueField = documentDescriptors.find((d) => d.name === 'countryIssue')!;
+
+setLocale('pt-BR');
 
 describe('OAS facets closed (JUM-768)', () => {
   it('email fields carry format email + pattern + maxLength from the OAS', () => {
@@ -35,7 +39,7 @@ describe('OAS facets closed (JUM-768)', () => {
     expect(validateField(emailField, 'a@b')).not.toBeNull();
     expect(validateField(emailField, 'a b@c.com')).not.toBeNull();
     expect(validateField(emailField, `${'x'.repeat(250)}@b.co`)).not.toBeNull(); // > 254
-    expect(validateField(emailField, '')).toBe('email é obrigatório.');
+    expect(validateField(emailField, '')).toBe('E-mail é obrigatório.');
   });
 
   it('countryIssue enforces ISO alpha-2 uppercase', () => {

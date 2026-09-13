@@ -46,3 +46,8 @@ describe('service-management processDiskIo', () => {
     expect(source).toContain('darwinProcessDiskIo');
   });
 });
+
+// Module marker: keeps `fs`/`path` out of the global script scope shared
+// with every other script-mode suite in ts-jest's program (TS2451).
+// eslint-disable-next-line jest/no-export
+export {};

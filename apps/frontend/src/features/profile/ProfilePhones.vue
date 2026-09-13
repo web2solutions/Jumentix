@@ -19,9 +19,11 @@ import {
 import OasFormField from '@/components/OasFormField.vue';
 import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
+import { fieldLabel } from '@/contracts/labels';
 import { collectBody, validateAll } from '@/contracts/oasForm';
 import { maskPhone, phoneMaskCap, validatePhone } from '@/contracts/validation';
 import { useProfileStore, type UserPhone } from '@/stores/profile';
+import { t } from '@/i18n';
 import { useSectionNotify } from './useSectionNotify';
 
 const props = defineProps<{ phones: UserPhone[] }>();
@@ -76,7 +78,7 @@ const add = () => {
     newValues.localCode = '';
     newValues.number = '';
     newValues.isPrimary = false;
-  }, 'Telefone adicionado.');
+  }, t('profile.updated'));
 };
 
 const update = (id: string) => {
@@ -87,9 +89,9 @@ const update = (id: string) => {
     errorMessage.value = invalid;
     return;
   }
-  return run(() => profile.updatePhone(id, collectBody(updateDescriptors, state)), 'Telefone atualizado.');
+  return run(() => profile.updatePhone(id, collectBody(updateDescriptors, state)), t('profile.updated'));
 };
-const remove = (id: string) => run(() => profile.removePhone(id), 'Telefone removido.');
+const remove = (id: string) => run(() => profile.removePhone(id), t('profile.updated'));
 
 const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text' => {
   if (descriptor.type === 'boolean') return 'checkbox';
@@ -99,7 +101,7 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text
 
 <template>
   <CCard class="mb-4">
-    <CCardHeader><strong>Phones</strong></CCardHeader>
+    <CCardHeader><strong>{{ t('profile.phones') }}</strong></CCardHeader>
     <CCardBody>
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
@@ -107,9 +109,9 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text
         <CTableHead>
           <CTableRow>
             <CTableHeaderCell v-for="d in updateDescriptors" :key="d.name">
-              {{ d.description ?? d.name }}
+              {{ fieldLabel(d) }}
             </CTableHeaderCell>
-            <CTableHeaderCell class="text-end">Actions</CTableHeaderCell>
+            <CTableHeaderCell class="text-end">{{ t('profile.actions') }}</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
@@ -140,8 +142,8 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text
               />
             </CTableDataCell>
             <CTableDataCell class="text-end">
-              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">Save</CButton>
-              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">Delete</CButton>
+              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">{{ t('profile.save.row') }}</CButton>
+              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">{{ t('profile.delete') }}</CButton>
             </CTableDataCell>
           </CTableRow>
         </CTableBody>
@@ -156,7 +158,7 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text
           :mask-cap="d.name === 'number' ? phoneMaskCap(String(newValues.countryCode ?? '')) : undefined"
           class="mb-0"
         />
-        <CButton color="success" class="mb-3" @click="add">Add</CButton>
+        <CButton color="success" class="mb-3" @click="add">{{ t('profile.add') }}</CButton>
       </div>
     </CCardBody>
   </CCard>
