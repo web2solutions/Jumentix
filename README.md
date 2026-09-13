@@ -3,8 +3,8 @@
 [![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
 [![GitHub Actions main](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
 [![CircleCI dev](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev)
-[![CircleCI main](https://circleci.com/gh/web2solutions/Jumentix/tree/main.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main)
-[![Codecov full gate](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
+[![CircleCI release gate](https://img.shields.io/badge/CircleCI-release%20gate-configured?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main)
+[![Codecov](https://img.shields.io/badge/Codecov-release%20coverage-configured?logo=codecov&logoColor=white)](https://app.codecov.io/gh/web2solutions/Jumentix)
 [![SonarCloud quality](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
 [![SonarCloud reliability](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
 [![SonarCloud coverage](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
@@ -33,8 +33,8 @@
 | Required gate | `main` | `dev` |
 | --- | :---: | :---: |
 | GitHub Actions workflow | [![main GitHub Actions](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![dev GitHub Actions](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
-| CircleCI workflow | [![main CircleCI](https://circleci.com/gh/web2solutions/Jumentix/tree/main.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main) | [![dev CircleCI](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev) |
-| Codecov coverage | [![main Codecov](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main) | [file map; full coverage is release-only](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev) |
+| CircleCI workflow | [![CircleCI release gate](https://img.shields.io/badge/CircleCI-release%20gate-configured?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main) | [![dev CircleCI](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev) |
+| Codecov coverage | [![Codecov release coverage](https://img.shields.io/badge/Codecov-release%20coverage-configured?logo=codecov&logoColor=white)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main) | [file map; full coverage is release-only](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev) |
 | Branch-aware tests | `branch-gate` | `branch-gate` |
 | Project + patch coverage | `coverage` | release-promotion only |
 | Third-party security review | `third-party-review` | PR-only |
@@ -46,10 +46,11 @@ workspace, browser, coverage, website and database jobs are reserved for
 
 Coverage is produced and enforced by the full-suite `coverage` job when the
 release gate runs. GitHub Actions and CircleCI upload LCOV to Codecov when
-`CODECOV_TOKEN` is configured. The README keeps a coverage badge for `main`,
-where the full gate is canonical, and links `dev` as a file map because `dev`
-uses the cheaper health gate between release promotions. Codecov provides the
-file-by-file coverage map for each long-lived branch:
+`CODECOV_TOKEN` is configured. The README uses a stable Codecov integration
+badge until the first post-migration release coverage upload exists for the
+new public owner. `dev` is linked as a file map because it uses the cheaper
+health gate between release promotions. Codecov provides the file-by-file
+coverage map for each long-lived branch:
 
 - [Codecov file map for `dev`](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev)
 - [Codecov file map for `main`](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
