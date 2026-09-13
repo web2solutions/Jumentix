@@ -14,6 +14,7 @@ const routeTo = (path: string, isPublic = false): RouteLocationNormalized => ({
 
 describe('router auth guard (JUM-760)', () => {
   beforeEach(() => {
+    globalThis.localStorage?.clear();
     setActivePinia(createPinia());
   });
 
