@@ -4,7 +4,11 @@
 
 ## All Changes
 
+- 2026-09-13 [JUM-784][CI] Restore ci:gate health (boundaries, build:dev, branch-gate preflight) (#323) - Eduardo A.
+- 2026-09-13 chore(ci): merge origin/dev into JUM-784 restore branch - Eduardo A.
+- 2026-09-13 docs: avoid unavailable provider badges (JUM-568) (#324) - Eduardo A.
 - 2026-09-13 fix(ci): restore ci:gate health on task and dev paths - Eduardo A.
+- 2026-09-13 ci: use public https checkout in circleci (JUM-568) (#322) - Eduardo A.
 - 2026-09-13 docs: fix ci coverage badges (JUM-568) (#321) - Eduardo A.
 - 2026-09-13 test: isolate frontend auth guard storage (JUM-568) (#320) - Eduardo A.
 - 2026-09-13 [JUM-568][CI] Rebind public CI providers (#319) - Eduardo A.

@@ -32,6 +32,7 @@ function fixture(change?: (directory: string) => void): string {
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
   fs.copyFileSync(path.join(repoRoot, '.circleci/config.yml'), path.join(directory, '.circleci/config.yml'));
+  fs.copyFileSync(path.join(repoRoot, 'sonar-project.properties'), path.join(directory, 'sonar-project.properties'));
   fs.copyFileSync(path.join(repoRoot, 'package.json'), path.join(directory, 'package.json'));
   change?.(directory);
   return directory;
@@ -181,6 +182,21 @@ describe('check-ci-provider', () => {
       );
     });
     expect(run(directory).output).toContain('sonar-scanner -Dsonar\\.scm\\.disabled=true');
+  });
+
+  it('fails when Sonar can scan binary assets as source files', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'sonar-project.properties');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8')
+          .replace('sonar.sourceEncoding=UTF-8\n', '')
+          .replace('**/*.png,', '')
+      );
+    });
+    expect(run(directory).output).toContain('encoding-safe source scan marker');
   });
 
   it('fails when retired Codecov contract returns', () => {
