@@ -270,7 +270,8 @@ describe('http validators', () => {
     expect(throwIfOASInputValidationFails(spec, endPointConfig, {
       firstName: 'John',
       createdAt: '2026-07-25T00:00:00.000Z',
-      updatedAt: '2026-07-25T00:00:00.000Z'
+      updatedAt: '2026-07-25T00:00:00.000Z',
+      deletedAt: null
     })).toBe(true);
     expect(() => throwIfOASInputValidationFails(spec, endPointConfig, {
       firstName: 'John',

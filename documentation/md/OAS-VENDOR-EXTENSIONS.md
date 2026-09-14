@@ -90,7 +90,7 @@ On list and metrics operations: `groupable` (enum/boolean/reference), `series` (
 
 ## `deletedAt` tombstones
 
-Every entity schema carries `deletedAt` (`string | null`, `format: date-time`, read-only). `DELETE` sets the timestamp; there is no physical delete in this delivery. Lists exclude tombstones unless `includeDeleted=true`. `GET` of a tombstone is 404 without that flag.
+Every entity schema carries `deletedAt` (`string | null`, `format: date-time`, read-only). `DELETE` sets the timestamp; there is no physical delete in this delivery. Lists exclude tombstones unless `includeDeleted=true`. `GET` of a tombstone is 404 without that flag. Create/update bodies that echo `deletedAt` (same as `createdAt`/`updatedAt`) are ignored.
 
 **Uniqueness:** a tombstone **releases** unique values (`username`, organization `name`). A new live record may reuse them. Login ignores tombstones.
 

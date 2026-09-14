@@ -57,7 +57,7 @@ Lista de serviços no documento; cada `servers[]` leva `x-service-id`. Operaçã
 
 ## Tombstones `deletedAt`
 
-`DELETE` grava `deletedAt`; sem delete físico nesta entrega. Lista omite tombstones salvo `includeDeleted=true`. GET de tombstone → 404 sem a flag.
+`DELETE` grava `deletedAt`; sem delete físico nesta entrega. Lista omite tombstones salvo `includeDeleted=true`. GET de tombstone → 404 sem a flag. Create/update que ecoam `deletedAt` (igual `createdAt`/`updatedAt`) são ignorados.
 
 **Unicidade:** tombstone **libera** o valor (`username`, `name`). Login ignora tombstones. Purge fica fora de escopo.
 
