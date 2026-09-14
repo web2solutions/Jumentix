@@ -165,9 +165,9 @@ describe('check-coverage-thresholds', () => {
     // Pinned so the migration off Jest cannot relax a number in passing.
     // Lowering any of these is a governance decision under Requirements 020/063.
     // JUM-681 raised branches from 90 and settled the four at 98. The measured
-    // gap moved into `ACCEPTED_BELOW_THRESHOLD` as a dated floor, which can only
-    // be held or improved — a threshold ten points below its neighbours was not
-    // a threshold, it was where the failure paths went unmeasured.
+    // gap lived in `ACCEPTED_BELOW_THRESHOLD` as a dated floor (JUM-579) until
+    // branch coverage reached the threshold and the exception was retired —
+    // the register is empty again, and only a new dated entry may hold one.
     expect(coverageGuard.THRESHOLDS).toStrictEqual({
       statements: 98,
       branches: 98,
@@ -221,7 +221,7 @@ describe('check-coverage-thresholds CLI', () => {
     const result = runMain(reportWith({ brf: 100, brh: 50 }));
 
     expect(result.thrown?.message).toBe('exit:1');
-    expect(result.errors).toContain('branches: 50.00% is below the accepted floor of 97.47%');
+    expect(result.errors).toContain('branches: 50.00% is below the required 98%');
   });
 
   it('exits non-zero when the report is absent, rather than treating it as a pass', () => {
@@ -751,5 +751,80 @@ describe('check-coverage-thresholds partial records (JUM-721)', () => {
     });
 
     expect(totals.lines).toStrictEqual({ found: 2, hit: 1 });
+  });
+});
+
+describe('check-coverage-thresholds default parameters (JUM-821)', () => {
+  it('counts lines for a record whose statement counters are absent entirely', () => {
+    expect.hasAssertions();
+
+    // `statementMap` without any `s` map at all: every line is missed, and
+    // the absent map is not a crash.
+    const guard = coverageGuard as unknown as {
+      lineTotals: (report: unknown) => { found: number; hit: number };
+    };
+
+    expect(guard.lineTotals({
+      'apps/backend-template/src/unset.ts': {
+        statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 2 } } }
+      }
+    })).toStrictEqual({ found: 2, hit: 0 });
+  });
+
+  it('validates against the built-in thresholds when none are passed', () => {
+    expect.hasAssertions();
+
+    const totals = {
+      statements: { found: 4, hit: 4 },
+      lines: { found: 4, hit: 4 },
+      functions: { found: 2, hit: 2 },
+      branches: { found: 6, hit: 6 }
+    };
+    const { failures, report } = coverageGuard.validateCoverage(totals, undefined, {});
+
+    expect(failures).toStrictEqual([]);
+    expect(report.statements).toBe(100);
+  });
+
+  it('fails closed through the default report reader when no report exists', () => {
+    expect.hasAssertions();
+
+    // `main()` with no arguments is the CLI shape: it reads the real
+    // coverage/ directory through `defaultReadReport`. The report files are
+    // moved aside for the duration of the call rather than stubbing `fs` —
+    // a global stub leaks into every suite sharing the process — so the
+    // missing-report exit runs against the real defaults, deterministically,
+    // whatever a previous run left on disk.
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const coverageDir = path.resolve(__dirname, '../../../../../coverage');
+    const reportFiles = [
+      path.join(coverageDir, 'coverage-final.json'),
+      path.join(coverageDir, 'jest', 'coverage-final.json')
+    ];
+    const movedAside = reportFiles
+      .filter((file) => fs.existsSync(file))
+      .map((file) => {
+        const aside = `${file}.jum821-aside`;
+        fs.renameSync(file, aside);
+        return { file, aside };
+      });
+
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit');
+    }) as never);
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      expect(() => coverageGuard.main(undefined, {})).toThrow('exit');
+      expect(exit).toHaveBeenCalledWith(1);
+      expect(consoleError.mock.calls.flat().join('\n'))
+        .toContain('coverage-final.json does not exist');
+    } finally {
+      exit.mockRestore();
+      consoleError.mockRestore();
+      for (const { file, aside } of movedAside) {
+        fs.renameSync(aside, file);
+      }
+    }
   });
 });

@@ -176,4 +176,67 @@ describe('deadLetterReplayWorker (JUM-53)', () => {
       queue: {} as never, handlers: { a: async () => undefined }, intervalMs: 0
     })).toThrow('positive intervalMs');
   });
+
+  it('stopping before ever starting is a no-op, not an error', () => {
+    expect.hasAssertions();
+
+    // A shutdown path that stops the worker unconditionally must not trip on
+    // one that was never started — and must not cancel a timer it never set.
+    const timers = fakeTimers();
+    const queue = queueDouble();
+    const clearIntervalSpy = jest.fn(timers.clearIntervalFn);
+    const worker = new DeadLetterReplayWorker({
+      queue: queue as never,
+      handlers: { update: async () => undefined },
+      setIntervalFn: timers.setIntervalFn,
+      clearIntervalFn: clearIntervalSpy as never
+    });
+
+    worker.stop();
+
+    expect(worker.running).toBe(false);
+    expect(clearIntervalSpy).not.toHaveBeenCalled();
+  });
+
+  it('survives an error reporter that throws on the interval path', async () => {
+    expect.hasAssertions();
+
+    // The interval callback has its own `.catch`: when the drain fails AND the
+    // `onError` reporter throws while reporting it, the rejection is swallowed
+    // at the timer boundary instead of becoming an unhandled rejection that
+    // kills the process — and the worker keeps its schedule.
+    const timers = fakeTimers();
+    const queue = queueDouble();
+    queue.replay.mockRejectedValue(new Error('redis unreachable'));
+    let reports = 0;
+    const worker = new DeadLetterReplayWorker({
+      queue: queue as never,
+      handlers: { update: async () => undefined },
+      setIntervalFn: timers.setIntervalFn,
+      clearIntervalFn: timers.clearIntervalFn,
+      onError: () => { reports += 1; throw new Error('reporter down'); }
+    });
+
+    worker.start();
+    timers.fire();
+    // The tick behind the interval callback is a floating promise; two
+    // microtask turns let it settle before the assertions.
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(queue.replay).toHaveBeenCalledTimes(1);
+    expect(reports).toBe(1);
+    expect(worker.running).toBe(true);
+
+    // The failed reporter did not wedge the drain latch: the next tick runs.
+    queue.replay.mockResolvedValue({
+      replayed: ['dlq-9'], retried: [], abandoned: [], skipped: []
+    });
+    timers.fire();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(queue.replay).toHaveBeenCalledTimes(2);
+    worker.stop();
+  });
 });

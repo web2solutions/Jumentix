@@ -167,12 +167,14 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
   // runs because of it. A gate whose floor drifts is a gate that fails at
   // random (Requirement 134). The reader is covered with an injected path in
   // `check-coverage-thresholds.test.ts`, where it is deterministic.
-  it('surfaces stale live coverage exceptions against the real defaults', () => {
+  it('keeps the live exception register empty against the real defaults', () => {
     expect.hasAssertions();
 
-    // No thresholds and no exception register passed: both defaults, which is
-    // how the CLI runs it. A perfect metric must ask the owner to remove a live
-    // exception rather than silently letting the ratchet linger.
+    // Empty is the steady state: the JUM-579 branches exception was retired
+    // once branch coverage reached the 98% threshold. No thresholds and no
+    // exception register passed — both defaults, which is how the CLI runs it —
+    // so a perfect metric must produce no failures at all, and a stale entry
+    // would fail this test by asking for its own removal.
     const perfect = {
       statements: { found: 100, hit: 100 },
       lines: { found: 100, hit: 100 },
@@ -180,13 +182,8 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
       branches: { found: 100, hit: 100 }
     };
 
-    const { failures } = guardDefaultsCoverage.validateCoverage(perfect);
-
-    expect(failures).toStrictEqual([
-      'branches: 100.00% now meets the 98% threshold, but an exception is still recorded '
-        + '(JUM-579, since 2026-08-29). Remove it from ACCEPTED_BELOW_THRESHOLD and close '
-        + 'the issue.'
-    ]);
+    expect(guardDefaultsCoverage.ACCEPTED_BELOW_THRESHOLD).toStrictEqual({});
+    expect(guardDefaultsCoverage.validateCoverage(perfect).failures).toStrictEqual([]);
   });
 
   it('checks the real manifest for override integrity', () => {

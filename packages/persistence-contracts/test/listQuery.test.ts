@@ -144,6 +144,168 @@ describe('paginateList', () => {
   });
 });
 
+describe('the remaining filter operators', () => {
+  it('ne is the exact negation of eq, including the array-membership form', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { id: { operator: 'ne', value: '2' } }).map((r) => r.id))
+      .toStrictEqual(['1', '3', '4']);
+    expect(applyListFilters(rows, { roles: { operator: 'ne', value: 'admin' } }).map((r) => r.id))
+      .toStrictEqual(['2', '4']);
+  });
+
+  it('gt compares strictly and never matches a null actual', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { age: { operator: 'gt', value: 31 } }).map((r) => r.id))
+      .toStrictEqual(['4']);
+    // age is null for row 2: a null is not greater than anything.
+    expect(applyListFilters(rows, { age: { operator: 'gt', value: -1 } }).map((r) => r.id))
+      .toStrictEqual(['1', '3', '4']);
+  });
+
+  it('nin is the exact negation of in, and in accepts a scalar candidate', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { id: { operator: 'nin', value: ['1', '4'] } }).map((r) => r.id))
+      .toStrictEqual(['2', '3']);
+    expect(applyListFilters(rows, { id: { operator: 'in', value: '3' as never } }).map((r) => r.id))
+      .toStrictEqual(['3']);
+  });
+
+  it('like is case-sensitive where ilike and contains are not', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { name: { operator: 'like', value: 'LIMA' } })).toStrictEqual([]);
+    expect(applyListFilters(rows, { name: { operator: 'like', value: 'Lima' } }).map((r) => r.id))
+      .toStrictEqual(['1']);
+    expect(applyListFilters(rows, { name: { operator: 'ilike', value: 'COSTA' } }).map((r) => r.id))
+      .toStrictEqual(['2']);
+    // A nullish needle is the empty string, which everything contains.
+    expect(applyListFilters(rows, { name: { operator: 'like', value: null as never } }))
+      .toHaveLength(4);
+    expect(applyListFilters(rows, { name: { operator: 'ilike', value: null as never } }))
+      .toHaveLength(4);
+  });
+
+  it('regex tests the text form of the value', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { name: { operator: 'regex', value: '^bruno' } }).map((r) => r.id))
+      .toStrictEqual(['2']);
+    expect(applyListFilters(rows, { id: { operator: 'regex', value: '^[24]$' } }).map((r) => r.id))
+      .toStrictEqual(['2', '4']);
+  });
+
+  it('exists compares presence with the boolean of the expectation', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { age: { operator: 'exists', value: false } }).map((r) => r.id))
+      .toStrictEqual(['2']);
+    expect(applyListFilters(rows, { age: { operator: 'exists', value: true } }).map((r) => r.id))
+      .toStrictEqual(['1', '3', '4']);
+    expect(applyListFilters(rows, { missing: { operator: 'exists', value: false } }))
+      .toHaveLength(4);
+  });
+
+  it('overlaps intersects array fields with array or scalar expectations', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { roles: { operator: 'overlaps', value: ['admin', 'auditor'] } })
+      .map((r) => r.id)).toStrictEqual(['1', '3']);
+    expect(applyListFilters(rows, { roles: { operator: 'overlaps', value: 'user' } }).map((r) => r.id))
+      .toStrictEqual(['2', '3']);
+    // A scalar field has no overlap to give.
+    expect(applyListFilters(rows, { name: { operator: 'overlaps', value: ['Ana Lima'] } }))
+      .toStrictEqual([]);
+  });
+
+  it('between accepts a scalar as both bounds and refuses a null actual', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { age: { operator: 'between', value: 31 } }).map((r) => r.id))
+      .toStrictEqual(['1']);
+    expect(applyListFilters(rows, { age: { operator: 'between', value: [null, 100] } })
+      .map((r) => r.id)).toStrictEqual(['1', '3', '4']);
+    expect(applyListFilters(rows, { age: { operator: 'between', value: [1, null] } })
+      .map((r) => r.id)).toStrictEqual(['1', '3', '4']);
+  });
+
+  it('skips filter entries whose value is undefined', () => {
+    expect.hasAssertions();
+    expect(applyListFilters(rows, { id: undefined as never })).toStrictEqual(rows);
+  });
+
+  it('compares nulls against nulls and against values under the order operators', () => {
+    expect.hasAssertions();
+    // compare(null, null) is a tie; compare(31, null) puts the null last —
+    // either way the null actual/expectation never satisfies gt.
+    expect(applyListFilters(rows, { age: { operator: 'gt', value: null } })).toStrictEqual([]);
+    expect(applyListFilters(rows, { age: { operator: 'lte', value: null } }).map((r) => r.id))
+      .toStrictEqual(['1', '3', '4']);
+  });
+
+  it('eq falls back to the empty string for nullish actual and expectation', () => {
+    expect.hasAssertions();
+    // A missing field equals a null expectation (both read as ''), and only that.
+    expect(applyListFilters(rows, { missing: { operator: 'eq', value: null } })).toHaveLength(4);
+    expect(applyListFilters(rows, { id: { operator: 'eq', value: null } })).toStrictEqual([]);
+  });
+});
+
+describe('the comparison primitives', () => {
+  it('compares dates as instants and nulls against either side', () => {
+    expect.hasAssertions();
+    const dated = [
+      { id: 'a', at: new Date('2026-01-02T00:00:00.000Z') },
+      { id: 'b', at: new Date('2026-01-01T00:00:00.000Z') }
+    ];
+    expect(applyListSort(dated, [{ field: 'at', direction: 'asc' }]).map((r) => r.id))
+      .toStrictEqual(['b', 'a']);
+
+    // Null on the left sinks, null on the right floats: nulls last either way.
+    const withNulls = [
+      { id: 'a', at: null }, { id: 'b', at: '2026-01-01' }, { id: 'c', at: null }
+    ];
+    expect(applyListSort(withNulls, [{ field: 'at', direction: 'asc' }]).map((r) => r.id))
+      .toStrictEqual(['b', 'a', 'c']);
+  });
+
+  it('falls through to the next sort key and returns 0 for a full tie', () => {
+    expect.hasAssertions();
+    const tied = [
+      { id: 'a', group: 'x', rank: 2 },
+      { id: 'b', group: 'x', rank: 1 },
+      { id: 'c', group: 'x', rank: 2 }
+    ];
+    expect(applyListSort(tied, [
+      { field: 'group', direction: 'asc' },
+      { field: 'rank', direction: 'asc' }
+    ]).map((r) => r.id)).toStrictEqual(['b', 'a', 'c']);
+    // Stability: a full tie keeps the input order.
+    expect(applyListSort(tied, [{ field: 'group', direction: 'asc' }]).map((r) => r.id))
+      .toStrictEqual(['a', 'b', 'c']);
+  });
+
+  it('searches array and object fields by their text form', () => {
+    expect.hasAssertions();
+    const records = [
+      { id: 'a', tags: ['red', 'blue'], meta: { code: 'x1' } },
+      { id: 'b', tags: [], meta: null }
+    ];
+    expect(applyListSearch(records, 'blue', ['tags']).map((r) => r.id)).toStrictEqual(['a']);
+    expect(applyListSearch(records, '"code":"x1"', ['meta']).map((r) => r.id)).toStrictEqual(['a']);
+    // A null field carries no text; and an undefined term is no search at all.
+    expect(applyListSearch(records, 'x1', ['meta']).map((r) => r.id)).toStrictEqual(['a']);
+    expect(applyListSearch(records, undefined, ['tags'])).toBe(records);
+  });
+});
+
+describe('paginateList aliases', () => {
+  it('reads currentPage/perPage when page/size are absent, and defaults to 1/10', () => {
+    expect.hasAssertions();
+    expect(paginateList(rows, { currentPage: 2, perPage: 2 })).toStrictEqual({
+      result: [rows[2], rows[3]], total: 4, page: 2, size: 2
+    });
+    const eleven = Array.from({ length: 11 }, (_, index) => ({ id: String(index) }));
+    expect(paginateList(eleven, {})).toStrictEqual({
+      result: eleven.slice(0, 10), total: 11, page: 1, size: 10
+    });
+  });
+});
+
 describe('parseListSort and runListQuery', () => {
   it('parses the wire form with asc as the default direction', () => {
     expect.hasAssertions();

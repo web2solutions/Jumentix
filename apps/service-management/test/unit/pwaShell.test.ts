@@ -1014,3 +1014,42 @@ describe('pwa shell ambient dependencies (JUM-681)', () => {
     await expect(resetPwaShell(undefined as never)).resolves.toBeUndefined();
   });
 });
+
+describe('pwa shell cache-first miss path (JUM-821)', () => {
+  it('serves a static shell asset from the network when the precache missed it', async () => {
+    expect.hasAssertions();
+
+    // The cache-first branch's fallback: a static (non-JS/CSS) asset that the
+    // precache does not hold is fetched, not answered with a hole.
+    const cacheStorage = createFakeCacheStorage({ [sw.SHELL_CACHE_NAME]: [] });
+    const fetchImpl = createSpy(async () => 'network-icon');
+    const response = await sw.handleFetchRequest({
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/icons/icon-192.png' },
+      cacheStorage,
+      fetchImpl,
+      scopeOrigin: 'http://127.0.0.1:3200'
+    });
+
+    expect(response).toBe('network-icon');
+    expect(cacheStorage.match.calls).toHaveLength(1);
+    expect(fetchImpl.calls).toHaveLength(1);
+  });
+
+  it('answers 503 for a static asset when both the precache and the network miss', async () => {
+    expect.hasAssertions();
+
+    const cacheStorage = createFakeCacheStorage({ [sw.SHELL_CACHE_NAME]: [] });
+    const fetchImpl = createSpy(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+    const response = await sw.handleFetchRequest({
+      request: { method: 'GET', url: 'http://127.0.0.1:3200/icons/icon-192.png' },
+      cacheStorage,
+      fetchImpl,
+      scopeOrigin: 'http://127.0.0.1:3200'
+    });
+
+    expect(response.status).toBe(503);
+    expect(fetchImpl.calls).toHaveLength(1);
+  });
+});

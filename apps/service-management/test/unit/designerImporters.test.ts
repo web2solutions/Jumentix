@@ -724,3 +724,40 @@ describe('designer importer fallbacks (JUM-721)', () => {
       .toStrictEqual(expect.arrayContaining(['Composed', 'Alternative']));
   });
 });
+
+describe('buildDomainFromPackage id collision retry (JUM-617/JUM-821)', () => {
+  it('recomputes the fallback id when the first candidate is also taken', () => {
+    expect.hasAssertions();
+
+    // fallbackId draws a random suffix; pinning the draw makes the retry
+    // deterministic: the first candidate collides with an installed id, the
+    // second is free. Without the retry the re-import would either collide or
+    // loop for ever.
+    // The seed is the existing-domain count (1 here), per the importer's
+    // `fallbackId(prefix, existingDomains.length)` convention. The incoming
+    // domain id collides outright; the first recomputed candidate (draw 0.5)
+    // collides too — an installed entity already holds it — and only the
+    // second candidate (draw 0.25) is free.
+    const collidingCandidate = `domain-import-1-${(0.5).toString(36).slice(2, 8)}`;
+    const free = `domain-import-1-${(0.25).toString(36).slice(2, 8)}`;
+    const randomSpy = jest.spyOn(Math, 'random')
+      .mockReturnValueOnce(0.5)
+      .mockReturnValue(0.25);
+    try {
+      const result = buildDomainFromPackage({
+        domain: { id: 'installed-domain', name: 'Catalog', entities: [] }
+      }, [{
+        id: 'installed-domain',
+        name: 'Installed',
+        entities: [{ id: collidingCandidate }]
+      }]);
+
+      expect(result.ok).toBe(true);
+      expect(result.domain.id).toBe(free);
+      expect(result.domain.id).not.toBe('installed-domain');
+      expect(result.domain.id).not.toBe(collidingCandidate);
+    } finally {
+      randomSpy.mockRestore();
+    }
+  });
+});

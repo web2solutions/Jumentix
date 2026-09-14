@@ -50,3 +50,27 @@ describe('service-management render guard (JUM-770)', () => {
     expect(guard.shouldRender()).toBe(true);
   });
 });
+
+describe('renderGuard signature edges (JUM-821)', () => {
+  it('drops function and undefined values so they never gate a render', () => {
+    expect.hasAssertions();
+
+    // Callbacks and absent values are not render inputs: two states that
+    // differ only in them must serialize identically, or every render would
+    // look changed.
+    expect(stableSerialize({ a: 1, fn: () => 2, missing: undefined }))
+      .toBe(stableSerialize({ a: 1 }));
+    expect(stableSerialize({ a: 1, fn: () => 999 }))
+      .toBe(stableSerialize({ a: 1, fn: () => 2 }));
+  });
+
+  it('accepts a plain value as the signature source', () => {
+    expect.hasAssertions();
+
+    const guard = createRenderGuard('fixed-signature' as never);
+    expect(guard.shouldRender()).toBe(true);
+    expect(guard.shouldRender()).toBe(false);
+    guard.invalidate();
+    expect(guard.shouldRender()).toBe(true);
+  });
+});
