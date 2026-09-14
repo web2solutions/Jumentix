@@ -25,12 +25,13 @@ Cypress.Commands.add('login', (role) => {
   cy.get('#oas-field-username').clear().type(account.username);
   cy.get('#oas-field-password').clear().type(account.password);
   cy.get('form').submit();
-  cy.location('hash').should('eq', '#/dashboard');
+  cy.location('hash').should('eq', '#/m/users/dashboard');
 });
 
 beforeEach(() => {
   cy.window().then((win) => {
     win.localStorage.clear();
+    win.sessionStorage.clear();
     win.localStorage.setItem('jumentix-frontend-locale', 'en');
   });
 });

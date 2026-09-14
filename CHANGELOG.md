@@ -4,7 +4,9 @@
 
 ## All Changes
 
-- 2026-09-14 feat(persistence): add opt-in tombstone purge - Eduardo A.
+- 2026-09-14 feat(frontend): add multitask module shell - Eduardo A.
+- 2026-09-14 feat(persistence): add opt-in tombstone purge (#331) - Eduardo A.
+- 2026-09-14 test(coverage): raise monorepo coverage above the full-matrix floor (JUM-821) (#330) - Eduardo A.
 - 2026-09-14 [JUM-787][Feature] Contract vocabulary v2 — relations, keys, services, sync (#329) - Eduardo A.
 - 2026-09-14 fix(api): ignore echoed deletedAt on write - Eduardo A.
 - 2026-09-14 feat(contracts): add vocabulary v2 - Eduardo A.

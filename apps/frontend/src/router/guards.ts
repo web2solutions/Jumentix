@@ -2,6 +2,7 @@ import type { RouteLocationNormalized } from 'vue-router';
 
 import { expireIfStaleSession } from '@/contracts/sessionGuard';
 import { can } from '@/contracts/rbac';
+import { findModule } from '@/modules/manifest';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
 
@@ -17,6 +18,15 @@ export const requireAuthRedirect = (to: RouteLocationNormalized): string | null 
   return auth.isAuthenticated() ? null : '/login';
 };
 
+const operationIdFor = (to: RouteLocationNormalized): string | undefined => {
+  const fromMeta = to.meta.operationId as string | undefined;
+  if (fromMeta) return fromMeta;
+  if (to.name !== 'Module') return undefined;
+  const moduleId = typeof to.params.moduleId === 'string' ? to.params.moduleId : '';
+  const tab = typeof to.params.tab === 'string' ? to.params.tab : '';
+  return findModule(moduleId)?.entities.find((item) => item.id === tab)?.config.operations.list;
+};
+
 /**
  * Scope guard (JUM-772): routes declaring `meta.operationId` require the
  * operation's OAS security scopes. Roles come from the profile record (loaded
@@ -25,7 +35,7 @@ export const requireAuthRedirect = (to: RouteLocationNormalized): string | null 
 export const requireScopeRedirect = async (
   to: RouteLocationNormalized
 ): Promise<string | null> => {
-  const operationId = to.meta.operationId as string | undefined;
+  const operationId = operationIdFor(to);
   if (!operationId) return null;
   const profile = useProfileStore();
   // Always go through load(): concurrent callers share the in-flight request,

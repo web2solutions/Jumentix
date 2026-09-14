@@ -28,7 +28,7 @@ file under `src/` imports backend code.
 | `x-relation` (`entity`, `match`, `display`, `kind`) | `XCrudReferenceInput`, `useXCrud.loadReferences` | FK selects that show the label and emit the id; list op is `<Entity>ArrayOf`; arrays of ids (members) resolved the same way |
 | `x-validation` | `contracts/validation.ts` | masks/checksums (CPF, SSN, phones) before any HTTP |
 | `x-list-capabilities` | `contracts/listSchema.ts` | server-side paging/sort/filter/search (see below) |
-| `info.x-rbac` + per-operation `security` | `contracts/rbac.ts`, router guards, `_nav.ts` | which routes, nav items and buttons a role sees |
+| `info.x-rbac` + per-operation `security` | `contracts/rbac.ts`, router guards, `modules/nav.ts` | which routes, nav items and buttons a role sees |
 
 Operation ids the shell needs (login, register, logout, profile) live in
 `contracts/appOperations.ts` and are validated at boot: a generated app with renamed operations
@@ -97,6 +97,39 @@ bun run test && bun run typecheck && bun run lint && bun run build && bun run te
 
 Seeded accounts: `eduardo@xpertminds.dev` / `eduardo@123456` (superadmin),
 `admin@xpertminds.dev` / `admin@123456` (admin), `user@xpertminds.dev` / `user@123456` (user).
+
+## Modules
+
+A generated domain ships one `ModuleManifest` (`src/modules/manifest.ts`): `id`, localizable `title`, `icon`, `entities[]` (each with an `XCrudEntityConfig` and a `load()` chunk) and a mandatory `dashboard.load()`. `src/modules/index.ts` registers the Users module (entities `users` and `organizations` plus the existing `DashboardView`). `validateModules()` runs at boot and throws listing every operationId missing from the bundled OAS.
+
+The navigation menu is generated from the registry (`src/modules/nav.ts`). Routes are `/m/:moduleId/:tab?`. `/users`, `/organizations` and `/dashboard` redirect into the Users module.
+
+## Multitask
+
+The shell is login-gated: `DefaultLayout` never mounts (and module `load()` never runs) before authentication. `src/stores/tasks.ts` keeps **one task instance per module**. `open(moduleId)` activates an already-open task. Closing the active task activates the previous one. The open list and active id persist in `sessionStorage`; X-CRUD form state does not — it survives because every open module stays mounted and is shown with `v-show` (`DefaultLayout.vue`).
+
+`AppTaskbar.vue` is the full-width bottom bar: one button per task (icon, title, close), keyboard arrows / Enter / Delete, overflow menu, compact icons below `md`, bottom-sheet switcher on `xs`. The URL deep-links the active task (`#/m/users/users`).
+
+```
+┌────────────┬──────────────────────────────┐
+│            │         main toolbar         │
+│   menu     ├──────────────────────────────┤
+│ navegação  │      lazy load modules       │
+│            │                              │
+├────────────┴──────────────────────────────┤
+│                  taskbar                  │
+└───────────────────────────────────────────┘
+```
+
+A module is a tabbed layout (`ModuleLayout.vue`): one tab per entity the role may list, **Dashboard always last**. Tab state is part of the task (kept alive with `v-show`). The user role sees `Users | Dashboard` and not Organizations.
+
+## Toolbar widgets
+
+`src/shell/toolbarWidgets.ts` is the contract: `{ id, component, placement: 'left' | 'right', order, requiredScopes?, moduleId? }`. Shell registers account, locale, network activity, plus reserved empty slots `notifications` and `online-offline` for later epics. A module may contribute widgets while its task is active (`manifest.toolbarWidgets` / `moduleId` on the widget). `AppHeader.vue` renders the registry; below `md` non-account widgets collapse into an overflow menu.
+
+## Responsive
+
+Breakpoint tokens live in `src/styles/breakpoints.scss` and `src/shell/breakpoints.ts` (CoreUI/Bootstrap: xs <576, sm ≥576, md ≥768, lg ≥992, xl ≥1200, xxl ≥1400). Menu: CoreUI offcanvas below `lg`. Taskbar compact below `md`, sheet switcher on `xs`. Module tabs scroll horizontally. Touch targets are ≥ 44 px (`.app-taskbar__touch`). Cypress `shell-responsive.cy.ts` asserts `document.documentElement.scrollWidth <= window.innerWidth` at 375×812, 768×1024 and 1280×800.
 
 ## Related
 

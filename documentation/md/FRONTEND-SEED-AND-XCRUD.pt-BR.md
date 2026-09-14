@@ -28,7 +28,7 @@ backend.
 | `x-relation` (`entity`, `match`, `display`, `kind`) | `XCrudReferenceInput`, `useXCrud.loadReferences` | selects de FK que mostram o label e emitem o id; lista via `<Entity>ArrayOf`; arrays de ids (membros) resolvidos igual |
 | `x-validation` | `contracts/validation.ts` | máscaras/checksums (CPF, SSN, telefones) antes de qualquer HTTP |
 | `x-list-capabilities` | `contracts/listSchema.ts` | paginação/ordenação/filtro/busca no servidor (abaixo) |
-| `info.x-rbac` + `security` por operação | `contracts/rbac.ts`, guards, `_nav.ts` | quais rotas, itens de menu e botões cada papel vê |
+| `info.x-rbac` + `security` por operação | `contracts/rbac.ts`, guards, `modules/nav.ts` | quais rotas, itens de menu e botões cada papel vê |
 
 Os ids de operação do shell (login, register, logout, perfil) ficam em
 `contracts/appOperations.ts` e são validados no boot: um app gerado com operações renomeadas falha
@@ -106,3 +106,36 @@ Contas seed: `eduardo@xpertminds.dev` / `eduardo@123456` (superadmin),
 - [Creating SPA/PWA with Jumentix](../../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
 - `apps/frontend/AGENTS.md` — regras para agentes no workspace
 - `.agents/requirements/software/136-frontend-knows-backend-only-through-oas.md`
+
+## Módulos
+
+Um domínio gerado entrega um `ModuleManifest` (`src/modules/manifest.ts`): `id`, `title` localizável, `icon`, `entities[]` (cada uma com `XCrudEntityConfig` e `load()`) e `dashboard.load()` obrigatório. `src/modules/index.ts` registra o módulo Users (entidades `users` e `organizations` mais o `DashboardView` atual). `validateModules()` roda no boot e lista todo operationId ausente da OAS empacotada.
+
+O menu vem do registry (`src/modules/nav.ts`). Rotas: `/m/:moduleId/:tab?`. `/users`, `/organizations` e `/dashboard` redirecionam para o módulo Users.
+
+## Multitarefa
+
+O shell só monta depois do login: `DefaultLayout` não sobe (e `load()` de módulo não corre) antes da autenticação. `src/stores/tasks.ts` guarda **uma tarefa por módulo**. `open(moduleId)` ativa a tarefa já aberta. Fechar a ativa seleciona a anterior. A lista aberta e o id ativo ficam em `sessionStorage`; o estado do X-CRUD não — ele sobrevive porque cada módulo aberto permanece montado e aparece com `v-show` (`DefaultLayout.vue`).
+
+`AppTaskbar.vue` é a barra inferior: um botão por tarefa, teclado, menu overflow, ícones compactos abaixo de `md`, switcher em bottom-sheet no `xs`. A URL aponta a tarefa ativa (`#/m/users/users`).
+
+```
+┌────────────┬──────────────────────────────┐
+│            │         main toolbar         │
+│   menu     ├──────────────────────────────┤
+│ navegação  │      lazy load modules       │
+│            │                              │
+├────────────┴──────────────────────────────┤
+│                  taskbar                  │
+└───────────────────────────────────────────┘
+```
+
+Um módulo é um layout em abas (`ModuleLayout.vue`): uma aba por entidade que o papel pode listar, **Dashboard sempre por último**. O papel `user` vê `Usuários | Painel` e não Organizações.
+
+## Widgets da toolbar
+
+`src/shell/toolbarWidgets.ts` é o contrato: `{ id, component, placement, order, requiredScopes?, moduleId? }`. O shell registra account, locale, network activity e slots reservados `notifications` e `online-offline`. Um módulo pode contribuir widgets enquanto a tarefa está ativa. Abaixo de `md` os widgets que não são a conta caem no menu overflow.
+
+## Responsivo
+
+Tokens em `src/styles/breakpoints.scss` e `src/shell/breakpoints.ts` (CoreUI/Bootstrap). Menu offcanvas abaixo de `lg`. Taskbar compacta abaixo de `md`. Abas do módulo com scroll horizontal. Alvos de toque ≥ 44 px. Cypress `shell-responsive.cy.ts` confere `scrollWidth <= innerWidth` em 375×812, 768×1024 e 1280×800.

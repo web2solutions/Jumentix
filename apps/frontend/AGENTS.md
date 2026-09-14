@@ -41,11 +41,13 @@ src/contracts/     motor OAS: formSchema (descritores), oasForm (collect/validat
                    (x-validation: máscaras/checksums), labels (x-label → title → humanize),
                    listSchema (x-list-capabilities), rbac (info.x-rbac + security), apiClient
                    (singleton SDK), appOperations (operationIds do shell), errors
-src/components/    OasFormField, SearchableEnumInput e o kit X-CRUD (x-crud/*)
+src/modules/       manifest, Users module registry, nav generated from modules
+src/shell/         toolbar widget registry, breakpoints
+src/components/    OasFormField, SearchableEnumInput, X-CRUD, AppTaskbar, ModuleLayout
 src/features/      auth, dashboard, profile, users, organizations
-src/stores/        auth, profile, network, entityStore (factory por entidade), sidebar, theme
+src/stores/        auth, profile, network, entityStore, sidebar, theme, tasks
 src/i18n/          messages (en, pt-BR) + t()/localized()/useI18n()
-src/router/        rotas + guards (auth + escopo por meta.operationId)
+src/router/        rotas + guards (auth + escopo por meta.operationId / aba do módulo)
 ```
 
 A estrutura DDD/hexagonal por domínio (`domains/`, `application/`, `adapters/`) descrita nas
@@ -72,6 +74,9 @@ explícita do usuário.
 4. Ícones `CIcon` por nome exigem registro em `app.provide('icons', …)` em `src/main.ts`.
 5. Sem dados mock em componentes finais (o dashboard mostra totais reais ou "sem acesso").
 6. Não editar `template/`.
+7. Um domínio gerado entra como `ModuleManifest` em `src/modules/` (`registerModule` + `validateModules` no boot). O menu lista **módulos**, não entidades avulsas. Entidades viram abas em `ModuleLayout.vue`.
+8. Widgets da toolbar passam por `src/shell/toolbarWidgets.ts` (`registerToolbarWidget`). Não plugar componentes soltos em `AppHeader.vue`.
+9. Estado de um módulo aberto vive no pane (`v-show` em `DefaultLayout`); o store `tasks` só persiste quais módulos estão abertos e qual está ativo (`sessionStorage`).
 
 ## 6. Kit X-CRUD (`src/components/x-crud/`)
 

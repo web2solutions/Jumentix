@@ -2404,6 +2404,30 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/shell/breakpoints.test.ts",
+      "path": "apps/frontend/test/unit/shell/breakpoints.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/shell/toolbarWidgets.test.ts",
+      "path": "apps/frontend/test/unit/shell/toolbarWidgets.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/errors.test.ts",
       "path": "apps/frontend/test/unit/contracts/errors.test.ts",
       "layer": "frontend",
@@ -2572,6 +2596,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/stores/tasks.test.ts",
+      "path": "apps/frontend/test/unit/stores/tasks.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
       "path": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
       "layer": "frontend",
@@ -2598,6 +2634,18 @@
     {
       "id": "apps/frontend/test/unit/i18n/i18n.test.ts",
       "path": "apps/frontend/test/unit/i18n/i18n.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/modules/manifest.test.ts",
+      "path": "apps/frontend/test/unit/modules/manifest.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2658,6 +2706,30 @@
     {
       "id": "apps/frontend/test/component/OasFormField.test.ts",
       "path": "apps/frontend/test/component/OasFormField.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/ModuleLayout.test.ts",
+      "path": "apps/frontend/test/component/ModuleLayout.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/AppTaskbar.test.ts",
+      "path": "apps/frontend/test/component/AppTaskbar.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -5169,9 +5241,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 291,
+    "unit": 297,
     "integration": 101,
     "smoke": 2,
-    "suites": 443
+    "suites": 449
   }
 }

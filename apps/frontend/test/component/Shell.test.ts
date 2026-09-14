@@ -8,6 +8,7 @@ import AppSidebarNav from '@/components/AppSidebarNav.vue';
 import DashboardView from '@/features/dashboard/DashboardView.vue';
 import LoginView from '@/features/auth/LoginView.vue';
 import { setLocale } from '@/i18n';
+import '@/modules/index';
 import { useAuthStore } from '@/stores/auth';
 
 import { backend } from './fixtures';
@@ -24,6 +25,7 @@ const makeRouter = (): Router => createRouter({
     { path: '/login', component: { template: '<div />' } },
     { path: '/dashboard', component: { template: '<div />' } },
     { path: '/profile', component: { template: '<div />' } },
+    { path: '/m/:moduleId/:tab?', component: { template: '<div />' } },
     { path: '/users', component: { template: '<div />' } },
     { path: '/organizations', component: { template: '<div />' } }
   ]
@@ -150,9 +152,8 @@ describe('AppSidebarNav', () => {
       pinia: admin, global: { plugins: [admin, makeRouter()] }
     });
     const adminLinks = asAdmin.findAll('.nav-link, .nav-group-toggle').map((a) => a.text().trim());
-    expect(adminLinks).toContain('Dashboard');
     expect(adminLinks).toContain('Users');
-    expect(adminLinks).toContain('Organizations');
+    expect(adminLinks).not.toContain('Organizations');
     asAdmin.unmount();
 
     const user = freshSession({ roles: ['user'], locale: 'pt-BR' });
@@ -160,7 +161,6 @@ describe('AppSidebarNav', () => {
       pinia: user, global: { plugins: [user, makeRouter()] }
     });
     const userLinks = asUser.findAll('.nav-link, .nav-group-toggle').map((a) => a.text().trim());
-    expect(userLinks).toContain('Painel');
     expect(userLinks).toContain('Usuários');
     expect(userLinks).not.toContain('Organizações');
     asUser.unmount();
