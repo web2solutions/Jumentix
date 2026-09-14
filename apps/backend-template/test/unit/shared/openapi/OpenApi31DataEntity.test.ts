@@ -411,6 +411,46 @@ describe('openapi 3.1 data-entity helpers', () => {
     }, spec)).toThrow('at most 500 characters');
   });
 
+  /**
+   * The `format: regex` check no longer compiles the value — request data must
+   * never reach the regex compiler (js/regex-injection). This battery mirrors
+   * the one the scanner was calibrated against the real engine with; both
+   * runners (node and bun) must agree on every entry.
+   */
+  it('validates regex format syntax without compiling the value', () => {
+    expect.hasAssertions();
+    const spec = { components: { schemas: {} } } as any;
+    const valid = [
+      '^abc$', '\\d+', '[a-z]', '[]', '[^]', '[]]', ']', '[a-]', '[-a]', '[a-b-c]',
+      '[\\b-\\x41]', '[\\u0041-\\u005A]', '[a-\\d]', '[\\n-\\r]', '[\\cA-\\cZ]', '[\\.-/]',
+      '\\x41', '\\x4', '\\x',
+      '\\u0041', '\\u004', '\\u{41}', '\\u{}', '\\u{110000}', '\\cA', '\\c',
+      '\\k<name>', '\\k<name', '\\1', '\\12', '\\0', '\\q', 'a*', 'a+?', 'a??',
+      '(?=a)*', 'a{2}', 'a{2,}', 'a{2,4}', 'a{', 'a{2', 'a{,2}', 'a{2,x}', 'a{2}?',
+      '(?:a)', '(?=a)', '(?!a)', '(?<=a)', '(?<!a)', '(?<name>a)', '()',
+      '(a)\\2', '|', '', 'a\\b', '\\p{L}', 'x{0}', '\\cz', '[\\0-\\9]',
+      '[\\u{41}-\\u{5A}]'
+    ];
+    const invalid = [
+      '[', '(', ')', '*a', '+a', '?a', 'a|*b', '(*a)', 'a**', 'a*+',
+      '^*', '$+', '\\b*', '\\B+', 'a{2,1}', '{2}', 'a|{2}b', 'x{0}{2}',
+      '(?i)a', '(?x)a', '(?<>a)', '(?<namea)', 'a\\', '\\', '[\\', '[a-\\',
+      '[z-a]', '[\\x41-\\b]', 'a)', '(a', '((a)', '(a))'
+    ];
+    for (const pattern of valid) {
+      expect(() => validateValueAgainstOpenApiSchema(pattern, {
+        type: 'string',
+        format: 'regex'
+      }, spec)).not.toThrow();
+    }
+    for (const pattern of invalid) {
+      expect(() => validateValueAgainstOpenApiSchema(pattern, {
+        type: 'string',
+        format: 'regex'
+      }, spec)).toThrow('expected regex pattern');
+    }
+  });
+
   it('covers composition and object boundary branches', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;

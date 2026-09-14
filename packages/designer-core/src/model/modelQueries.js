@@ -450,24 +450,43 @@ export function fromOasType(schema = {}) {
   return 'string';
 }
 
+/**
+ * Trim leading and trailing runs of one character without a regex — even
+ * anchored `x+`/`x+$` patterns are a polynomial-backtracking surface to
+ * static analysis, and a two-pointer walk is linear by construction.
+ */
+function trimEdgeCharRuns(value, char) {
+  let start = 0;
+  let end = value.length;
+  while (start < end && value.charAt(start) === char) {
+    start += 1;
+  }
+  while (end > start && value.charAt(end - 1) === char) {
+    end -= 1;
+  }
+  return value.slice(start, end);
+}
+
 export function toSchemaName(domainName, entityName) {
-  const normalize = (value) => String(value || '')
-    .trim()
-    .replace(/[^a-zA-Z0-9]+/g, '_')
-    .replace(/^_+/, '')
-    .replace(/_+$/, '');
+  const normalize = (value) => trimEdgeCharRuns(
+    String(value || '')
+      .trim()
+      .replace(/[^a-zA-Z0-9]+/g, '_'),
+    '_'
+  );
   const domainToken = normalize(domainName) || 'Domain';
   const entityToken = normalize(entityName) || 'Entity';
   return `${domainToken}_${entityToken}`;
 }
 
 export function toPathToken(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
+  return trimEdgeCharRuns(
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-'),
+    '-'
+  );
 }
 
 export function buildExampleValueForField(field) {
