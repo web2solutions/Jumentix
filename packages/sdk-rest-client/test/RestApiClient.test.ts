@@ -343,3 +343,86 @@ describe('responses', () => {
     }
   });
 });
+
+describe('service routing', () => {
+  const serviceSpecs = (() => ({
+    openApi: {
+      servers: [
+        { url: 'https://core.test', 'x-service-id': 'core' },
+        { url: 'https://billing.test', 'x-service-id': 'billing' }
+      ],
+      'x-services': [
+        { id: 'core', url: 'https://core.test' }
+      ],
+      paths: {
+        '/invoices': { get: { operationId: 'listInvoices', 'x-service': 'billing' } },
+        '/health': { get: { operationId: 'getHealth' } }
+      }
+    }
+  }) as unknown) as typeof loadSpecs;
+
+  it('routes operations to servers named by x-service-id, not only x-services', async () => {
+    expect.hasAssertions();
+
+    const stub = withFetch(json({ ok: true }));
+    try {
+      const client = new RestApiClient(undefined, serviceSpecs);
+      await client.request({ operationId: 'listInvoices' });
+      expect(stub.calls[0].url).toBe('https://billing.test/invoices');
+    } finally {
+      stub.restore();
+    }
+  });
+
+  it('falls back to the core service when an operation names none', async () => {
+    expect.hasAssertions();
+
+    const stub = withFetch(json({ ok: true }));
+    try {
+      const client = new RestApiClient('http://api.test', serviceSpecs);
+      await client.request({ operationId: 'getHealth' });
+      expect(stub.calls[0].url).toBe('https://core.test/health');
+    } finally {
+      stub.restore();
+    }
+  });
+});
+
+describe('failure shapes', () => {
+  it('returns text when the response carries no content-type header', async () => {
+    expect.hasAssertions();
+
+    const stub = withFetch(new Response(null, { status: 200 }));
+    try {
+      await expect(
+        new RestApiClient('http://api.test').request({ operationId: anOperationId() })
+      ).resolves.toBe('');
+    } finally {
+      stub.restore();
+    }
+  });
+
+  it('stringifies non-Error rejections in the error event and rethrows them', async () => {
+    expect.hasAssertions();
+
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () => {
+      // eslint-disable-next-line no-throw-literal
+      throw 'socket gone';
+    }) as unknown as typeof fetch;
+
+    const events: Array<{ type: string; error?: unknown }> = [];
+    try {
+      const client = new RestApiClient('http://api.test');
+      const unsubscribe = client.subscribe((event) => { events.push(event); });
+      await expect(client.request({ operationId: anOperationId() })).rejects.toBe('socket gone');
+      unsubscribe();
+      expect(events).toContainEqual(expect.objectContaining({
+        type: 'request:error',
+        error: 'socket gone'
+      }));
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+});

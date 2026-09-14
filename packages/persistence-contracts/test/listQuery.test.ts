@@ -351,3 +351,27 @@ describe('parseListSort and runListQuery', () => {
       .toStrictEqual(['a', 'b']);
   });
 });
+
+describe('primary key fallback for id-less records', () => {
+  it('sorts ascending by _id when a record has no id field', () => {
+    expect.hasAssertions();
+    const mixedKeys = [
+      { _id: 'b', name: 'second' },
+      { id: 'a', name: 'first' },
+      { _id: '0', name: 'zero' }
+    ];
+    const sorted = applyListSort(mixedKeys, [{ field: 'id', direction: 'asc' }]);
+    expect(sorted.map((record) => record.name)).toStrictEqual(['zero', 'first', 'second']);
+  });
+
+  it('sorts descending by _id when a record has no id field', () => {
+    expect.hasAssertions();
+    const mixedKeys = [
+      { _id: 'b', name: 'second' },
+      { id: 'a', name: 'first' },
+      { _id: '0', name: 'zero' }
+    ];
+    const sorted = applyListSort(mixedKeys, [{ field: 'id', direction: 'desc' }]);
+    expect(sorted.map((record) => record.name)).toStrictEqual(['second', 'first', 'zero']);
+  });
+});

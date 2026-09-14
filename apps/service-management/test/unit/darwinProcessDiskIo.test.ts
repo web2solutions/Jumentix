@@ -187,8 +187,19 @@ describe('service-management darwinProcessDiskIo', () => {
       symbols: { proc_pid_rusage: () => 0 }
     });
     const second = readDarwinDiskIo(1);
-    expect(second).toStrictEqual(first);
-    expect(second.code).toBe('DARWIN_IO_ERROR');
+    // The cache holds the load ERROR, not the result object: every call still
+    // stamps its own collectedAt from the real clock, so a strict whole-object
+    // comparison crosses a millisecond boundary eventually (CI, req 134). What
+    // proves the cache is that dlopen ran exactly once even after being
+    // reconfigured to succeed, and both calls surface the same cached failure.
+    expect(second).toMatchObject({
+      supported: true,
+      platform: 'darwin',
+      error: 'operation not permitted',
+      code: 'DARWIN_IO_ERROR'
+    });
+    expect(second.error).toBe(first.error);
+    expect(second.code).toBe(first.code);
     expect(mockDlopen).toHaveBeenCalledTimes(1);
   });
 

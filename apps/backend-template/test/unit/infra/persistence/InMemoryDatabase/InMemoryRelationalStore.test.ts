@@ -135,4 +135,62 @@ describe('in memory relational store', () => {
     await expect(store.create('gone', { id: 'gone', username: 'tmp2' }))
       .rejects.toThrow('The field "id" already exists.');
   });
+
+  it('hard-delete reports a miss and skips empty relation refs', async () => {
+    expect.hasAssertions();
+    const store = new InMemoryRelationalStore<IRecord>({
+      relationIndexes: ['organization']
+    });
+
+    await expect(store.hardDelete('missing')).resolves.toBe(false);
+
+    await store.create('1', { id: '1', username: 'john' });
+    await expect(store.hardDelete('1')).resolves.toBe(true);
+  });
+
+  it('hard-delete keeps a shared relation ref and drops an emptied one', async () => {
+    expect.hasAssertions();
+    const store = new InMemoryRelationalStore<IRecord>({
+      relationIndexes: ['organization']
+    });
+
+    await store.create('2', { id: '2', username: 'mary', organization: 'org-1' });
+    await store.create('3', { id: '3', username: 'anna', organization: 'org-1' });
+    await store.create('4', { id: '4', username: 'solo', organization: 'org-2' });
+
+    await expect(store.hardDelete('2')).resolves.toBe(true);
+    await expect(store.getByRelation('organization', 'org-1')).resolves.toHaveLength(1);
+
+    await expect(store.hardDelete('4')).resolves.toBe(true);
+    expect((store as any).relationIndexes.organization.has('org-2')).toBe(false);
+  });
+
+  it('hard-delete tolerates stale relation index entries', async () => {
+    expect.hasAssertions();
+    const store = new InMemoryRelationalStore<IRecord>({
+      relationIndexes: ['organization']
+    });
+
+    await store.create('3', { id: '3', username: 'anna', organization: 'org-1' });
+    (store as any).relationIndexes.organization.delete('org-1');
+
+    await expect(store.hardDelete('3')).resolves.toBe(true);
+    await expect(store.getByRelation('organization', 'org-1')).resolves.toHaveLength(0);
+  });
+
+  it('drops stale and tombstoned entries from relation lookups', async () => {
+    expect.hasAssertions();
+    const store = new InMemoryRelationalStore<IRecord & { deletedAt?: string }>({
+      relationIndexes: ['organization'],
+      softDelete: true
+    });
+
+    await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
+    await store.delete('1');
+
+    const relationIndex = (store as any).relationIndexes.organization as Map<string, Set<string>>;
+    relationIndex.set('org-1', new Set(['1', 'ghost']));
+
+    await expect(store.getByRelation('organization', 'org-1')).resolves.toHaveLength(0);
+  });
 });

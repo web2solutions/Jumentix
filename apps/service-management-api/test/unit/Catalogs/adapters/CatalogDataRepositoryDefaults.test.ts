@@ -184,3 +184,31 @@ describe('catalog repository fallbacks (JUM-681)', () => {
       .rejects.toThrow('Record not found');
   });
 });
+
+describe('catalog repository paging fallbacks with a minimal driver', () => {
+  it('reports the paging it applied when the driver omits page, size and result', async () => {
+    expect.hasAssertions();
+
+    // IPagingResponse marks page/size/result optional: a driver that answers
+    // only `total` still satisfies the contract, and the repository must fall
+    // back to the paging it sent rather than echo undefined to the client.
+    const store = {
+      getAll: async () => ({ total: 0 })
+    };
+    const databaseClient = {
+      stores: { Catalog: store },
+      connect: () => Promise.resolve(),
+      disconnect: () => Promise.resolve()
+    } as unknown as IDatabaseClient;
+    const repository = CatalogDataRepository.compile({ databaseClient, limit: 7 });
+
+    const listed = await repository.getAll({}, {} as never);
+
+    expect(listed).toStrictEqual({
+      page: 1,
+      size: 7,
+      total: 0,
+      result: []
+    });
+  });
+});
