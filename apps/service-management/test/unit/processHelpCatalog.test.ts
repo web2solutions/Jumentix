@@ -12,7 +12,7 @@ describe('processHelpCatalog', () => {
 
   it('describes every catalogued ecosystem name with its catalog entry', () => {
     expect.hasAssertions();
-    expect(Object.keys(EXACT_HELP)).toHaveLength(15);
+    expect(Object.keys(EXACT_HELP)).toHaveLength(16);
     Object.entries(EXACT_HELP).forEach(([name, summary]) => {
       expect(describeProcessHelp({ name })).toStrictEqual({ summary, source: 'catalog' });
     });

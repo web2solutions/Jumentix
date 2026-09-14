@@ -101,7 +101,7 @@ Toda rejeição nomeia os valores aceitos, no estilo que o Requisito `126` usa p
 
 ## Tombstones
 
-`DELETE` grava `deletedAt`. A lista omite tombstones salvo `includeDeleted=true`. GET de tombstone → 404. Unicidade **libera** o valor. Login ignora tombstones.
+`DELETE` grava `deletedAt`. A lista omite tombstones salvo `includeDeleted=true`. GET de tombstone → 404. Unicidade **libera** o valor. Login ignora tombstones. Ids ficam reservados. Purge físico é opt-in (JUM-822); ver [OAS-VENDOR-EXTENSIONS.pt-BR.md](./OAS-VENDOR-EXTENSIONS.pt-BR.md).
 
 ## Delta sync
 

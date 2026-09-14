@@ -3,3 +3,5 @@ export * from './IDatabaseClient';
 export * from './errors';
 export * from './listQuery';
 export * from './metricsQuery';
+export * from './idReservationLedger';
+export * from './purgeTombstones';

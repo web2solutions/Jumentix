@@ -4,7 +4,10 @@
 
 ## All Changes
 
-- 2026-09-14 test(coverage): raise monorepo coverage above the full-matrix floor (JUM-821) - Eduardo Almeida
+- 2026-09-14 feat(persistence): add opt-in tombstone purge - Eduardo A.
+- 2026-09-14 [JUM-787][Feature] Contract vocabulary v2 — relations, keys, services, sync (#329) - Eduardo A.
+- 2026-09-14 fix(api): ignore echoed deletedAt on write - Eduardo A.
+- 2026-09-14 feat(contracts): add vocabulary v2 - Eduardo A.
 - 2026-09-13 [JUM-821][Fix] Clear SonarQube security/reliability findings and reconcile main lineage (#328) - Eduardo A.
 - 2026-09-13 fix(quality): clear SonarQube security/reliability findings blocking JUM-821 promotion - Eduardo Almeida
 - 2026-09-13 chore(merge): reconcile origin/main into dev lineage for JUM-821 promotion - Eduardo Almeida

@@ -1,7 +1,10 @@
 import type { IStore } from '@src/infra/ports/persistence/IStore';
 import { ConflictError, DataBaseNotFoundError } from '@src/infra/exceptions';
 import type { IPagingRequest, IPagingResponse } from '@src/modules/port';
-import { runListQuery } from '@jumentix/persistence-contracts';
+import {
+  runListQuery,
+  type IIdReservationLedger
+} from '@jumentix/persistence-contracts';
 
 type Primitive = string | number | boolean | null | undefined;
 
@@ -11,6 +14,8 @@ interface IStoreOptions<T extends Record<string, any>> {
   relationIndexes?: (keyof T)[];
   /** Soft-delete + hide tombstones. Off for catalog (own tombstone + restore). */
   softDelete?: boolean;
+  entity?: string;
+  ledger?: IIdReservationLedger;
 }
 
 const stringifyPrimitive = (value: Primitive): string => String(value ?? '');
@@ -122,7 +127,30 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
     return existing;
   }
 
+  public async hardDelete(id: string): Promise<boolean> {
+    const existing = this.records.get(id);
+    if (!existing) return false;
+    Object.keys(this.uniqueIndexes).forEach((field) => {
+      const normalized = this.normalizeUniqueValue(field, existing[field]);
+      this.uniqueIndexes[field].delete(normalized);
+    });
+    Object.keys(this.relationIndexes).forEach((field) => {
+      const ref = stringifyPrimitive(existing[field] as Primitive);
+      if (!ref) return;
+      const set = this.relationIndexes[field].get(ref);
+      if (!set) return;
+      set.delete(id);
+      if (set.size === 0) this.relationIndexes[field].delete(ref);
+    });
+    this.records.delete(id);
+    return true;
+  }
+
   public async create(key: string, value: T): Promise<T> {
+    const { entity, ledger } = this.options;
+    if (entity && ledger?.has(entity, key)) {
+      throw new ConflictError('The field "id" already exists.');
+    }
     if (this.records.has(key)) {
       throw new ConflictError('The field "id" already exists.');
     }
