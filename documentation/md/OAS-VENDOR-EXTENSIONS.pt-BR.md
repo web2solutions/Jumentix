@@ -57,9 +57,11 @@ Lista de serviços no documento; cada `servers[]` leva `x-service-id`. Operaçã
 
 ## Tombstones `deletedAt`
 
-`DELETE` grava `deletedAt`; sem delete físico nesta entrega. Lista omite tombstones salvo `includeDeleted=true`. GET de tombstone → 404 sem a flag. Create/update que ecoam `deletedAt` (igual `createdAt`/`updatedAt`) são ignorados.
+`DELETE` grava `deletedAt`. Delete físico **não** é o padrão. Lista omite tombstones salvo `includeDeleted=true`. GET de tombstone → 404 sem a flag. Create/update que ecoam `deletedAt` são ignorados.
 
-**Unicidade:** tombstone **libera** o valor (`username`, `name`). Login ignora tombstones. Purge fica fora de escopo.
+**Unicidade:** tombstone **libera** `username` / `name`. O id **fica reservado**.
+
+**Purge opt-in (JUM-822):** CLI `entities:purge-tombstones --via-loopback`. dev PM2 `jumentix-dev-purge-tombstones` default `--dry-run`. `--commit` após 90 dias apaga PII e grava `{ entity, id, purgedAt }` no ledger. Ids de seed ficam de fora salvo `--no-protect-seed`. Sem rota OAS pública.
 
 ## Verificação
 

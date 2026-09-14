@@ -83,4 +83,6 @@ const organizations: IOrganization[] = [
   }
 ];
 
+export const seedOrganizationIds = organizations.map((organization) => organization.id);
+
 export default organizations;

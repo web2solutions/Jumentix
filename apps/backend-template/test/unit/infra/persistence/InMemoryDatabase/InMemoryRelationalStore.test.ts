@@ -117,4 +117,22 @@ describe('in memory relational store', () => {
     await expect(store.create('1', { id: '1', username: 'other' }))
       .rejects.toThrow('The field "id" already exists.');
   });
+
+  it('hard-deletes a tombstone and reserves the id on the ledger', async () => {
+    expect.hasAssertions();
+    const { InMemoryIdReservationLedger } = require('@jumentix/persistence-contracts');
+    const ledger = new InMemoryIdReservationLedger();
+    const store = new InMemoryRelationalStore<IRecord & { deletedAt?: string }>({
+      uniqueIndexes: ['username'],
+      softDelete: true,
+      entity: 'User',
+      ledger
+    });
+    await store.create('gone', { id: 'gone', username: 'tmp' });
+    await store.delete('gone');
+    await expect(store.hardDelete('gone')).resolves.toBe(true);
+    ledger.reserve({ entity: 'User', id: 'gone', purgedAt: '2026-06-01T00:00:00.000Z' });
+    await expect(store.create('gone', { id: 'gone', username: 'tmp2' }))
+      .rejects.toThrow('The field "id" already exists.');
+  });
 });

@@ -8,7 +8,8 @@ export const ROLE_HELP = {
   websocketapi: 'WebSocket realtime API process — Socket.IO / realtime protocol on JUMENTIX_WEBSOCKET_PORT.',
   grpcapi: 'gRPC realtime API process — gRPC listeners on JUMENTIX_GRPC_PORT.',
   'service-management-api': 'Service Management catalog API — shared domain-catalog HTTP service for designer sync.',
-  'service-management': 'Service Management console (designer + monitoring UI) — static SPA and local ops APIs on JUMENTIX_SERVICE_MANAGEMENT_PORT.'
+  'service-management': 'Service Management console (designer + monitoring UI) — static SPA and local ops APIs on JUMENTIX_SERVICE_MANAGEMENT_PORT.',
+  'purge-tombstones': 'Opt-in tombstone purge worker (JUM-822). dev default is dry-run via loopback; never the REST DELETE path.'
 };
 
 export const EXACT_HELP = {
@@ -25,6 +26,7 @@ export const EXACT_HELP = {
   'jumentix-staging-service-management-api': ROLE_HELP['service-management-api'],
   'jumentix-production-service-management-api': ROLE_HELP['service-management-api'],
   'jumentix-dev-service-management': ROLE_HELP['service-management'],
+  'jumentix-dev-purge-tombstones': ROLE_HELP['purge-tombstones'],
   'jumentix-staging-service-management': ROLE_HELP['service-management'],
   'jumentix-production-service-management': ROLE_HELP['service-management']
 };

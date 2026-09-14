@@ -176,6 +176,8 @@ export interface IStore<T> {
     data: Partial<T>,
     options?: IStoreMutationOptions
   ): Promise<number>;
+  /** Physical row removal. Default `delete` stays a tombstone when soft-delete is on. */
+  hardDelete?(id: string): Promise<boolean>;
   deleteOne?(id: string, options?: IStoreDeleteOptions): Promise<boolean>;
   deleteMany?(query: IStoreQuery<T>, options?: IStoreDeleteOptions): Promise<number>;
   upsertOne?(query: IStoreQuery<T>, data: Partial<T>, options?: IStoreMutationOptions): Promise<T>;

@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-14 [JUM-787][Feature] Contract vocabulary v2 — relations, keys, services, sync (#329) - Eduardo A.
+- 2026-09-14 fix(api): ignore echoed deletedAt on write - Eduardo A.
 - 2026-09-14 feat(contracts): add vocabulary v2 - Eduardo A.
 - 2026-09-13 [JUM-821][Fix] Clear SonarQube security/reliability findings and reconcile main lineage (#328) - Eduardo A.
 - 2026-09-13 fix(quality): clear SonarQube security/reliability findings blocking JUM-821 promotion - Eduardo Almeida

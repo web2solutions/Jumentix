@@ -3017,6 +3017,19 @@
       "timeoutMs": 300000
     },
     {
+      "id": "apps/backend-template/test/integration/Express/purgeTombstones.test.ts",
+      "path": "apps/backend-template/test/integration/Express/purgeTombstones.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
       "id": "apps/backend-template/test/integration/Express/get.async-context-metrics.test.ts",
       "path": "apps/backend-template/test/integration/Express/get.async-context-metrics.test.ts",
       "layer": "adapters/in",
@@ -4256,6 +4269,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/persistence-contracts/test/purgeTombstones.test.ts",
+      "path": "packages/persistence-contracts/test/purgeTombstones.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "path": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "layer": "adapters/out+infra",
@@ -4976,9 +4999,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 273,
-    "integration": 100,
+    "unit": 274,
+    "integration": 101,
     "smoke": 2,
-    "suites": 424
+    "suites": 426
   }
 }

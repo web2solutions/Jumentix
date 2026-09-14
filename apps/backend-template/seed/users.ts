@@ -185,4 +185,7 @@ const users: Array<IUser> = [{
   roles: ['user']
 }
 ];
+
+export const seedUserIds = users.map((user) => user.id);
+
 export default users;
