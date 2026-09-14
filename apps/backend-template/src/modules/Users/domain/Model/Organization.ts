@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import type { HasMany } from '@src/modules/port';
 import { BaseModel, hasMany } from '@src/modules/port';
+import type { EntityConstructor } from '@src/modules/port/relations';
 import { canNotBeEmpty, throwIfReadOnly } from '@src/shared/validators';
 import {
   AddressValueObject,
@@ -8,8 +9,8 @@ import {
   PhoneValueObject
 } from '@src/modules/ddd/valueObjects';
 import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
-import { User } from '@src/modules/Users/domain/Model/User';
 
 interface OrganizationFactory extends RequestCreateOrganization {
   id?: string;
@@ -104,7 +105,7 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
 
   private _users: string[] = [];
 
-  public userEntities: HasMany<typeof User> = [];
+  public userEntities: HasMany<EntityConstructor<IUser>> = [];
 
   private readonly _readOnly: boolean = false;
 
@@ -272,7 +273,7 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
     return false;
   }
 
-  @hasMany(() => User)
+  @hasMany('User')
   public get users(): string[] {
     return [...this._users];
   }

@@ -10,8 +10,8 @@ const MODEL_FILES = {
   Organization: 'apps/backend-template/src/modules/Users/domain/Model/Organization.ts'
 };
 
-const BELONGS_TO = /@belongsTo\(\(\)\s*=>\s*(\w+)\)\s*(?:public\s+)?(?:get\s+)?(\w+)/g;
-const HAS_MANY = /@hasMany\(\(\)\s*=>\s*(\w+)\)\s*(?:public\s+)?(?:get\s+)?(\w+)/g;
+const BELONGS_TO = /@belongsTo\(\s*['"](\w+)['"]\s*\)\s*(?:public\s+)?(?:get\s+)?(\w+)/g;
+const HAS_MANY = /@hasMany\(\s*['"](\w+)['"]\s*\)\s*(?:public\s+)?(?:get\s+)?(\w+)/g;
 
 function readSpec(root, specPath) {
   const fullPath = specPath || path.join(root, 'spec', '1.0.0.yml');

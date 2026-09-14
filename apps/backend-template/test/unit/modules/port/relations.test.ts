@@ -6,10 +6,10 @@ class ParentEntity {}
 class ChildEntity {}
 
 class RelModel {
-  @belongsTo(() => ParentEntity)
+  @belongsTo('ParentEntity')
   public parent!: ParentEntity | null;
 
-  @hasMany(() => ChildEntity)
+  @hasMany('ChildEntity')
   public children!: ChildEntity[];
 }
 

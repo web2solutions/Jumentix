@@ -140,7 +140,7 @@ const resolveSchemaNode = (
 const isDateString = (value: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(value);
 const isDateTimeString = (value: string): boolean => !Number.isNaN(Date.parse(value));
 const isUuidString = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-const isEmailString = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const isEmailString = (value: string): boolean => /^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(value);
 const isUriString = (value: string): boolean => {
   try {
     // eslint-disable-next-line no-new
@@ -156,6 +156,21 @@ const isIpv6String = (value: string): boolean => /^[0-9a-f:]+$/i.test(value) && 
 const throwValidationError = (path: string, message: string): never => {
   const location = path || 'value';
   throw new Error(`OpenAPI validation failed at "${location}": ${message}`);
+};
+
+/**
+ * The longest pattern a `format: regex` value may carry. The pattern is
+ * compiled only to prove it parses — it is never executed against any input —
+ * so the entire risk an untrusted pattern carries is compile-time resource
+ * use, and a length bound caps exactly that.
+ */
+const MAX_REGEX_PATTERN_LENGTH = 500;
+
+const sanitizeRegexPattern = (value: string, path: string): string => {
+  if (value.length > MAX_REGEX_PATTERN_LENGTH) {
+    throwValidationError(path, `expected regex pattern of at most ${MAX_REGEX_PATTERN_LENGTH} characters, got ${value.length}`);
+  }
+  return value;
 };
 
 const validateFormat = (value: string, format: string, path: string): void => {
@@ -182,9 +197,10 @@ const validateFormat = (value: string, format: string, path: string): void => {
     throwValidationError(path, `expected ipv6 format, got "${value}"`);
   }
   if (format === 'regex') {
+    const pattern = sanitizeRegexPattern(value, path);
     try {
       // eslint-disable-next-line no-new
-      new RegExp(value);
+      new RegExp(pattern);
     } catch {
       throwValidationError(path, `expected regex pattern, got "${value}"`);
     }

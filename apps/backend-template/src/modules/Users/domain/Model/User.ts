@@ -4,7 +4,6 @@ import {
   BaseModel,
   belongsTo
 } from '@src/modules/port';
-import { Organization } from '@src/modules/Users/domain/Model/Organization';
 import {
   canNotBeEmpty,
   throwIfReadOnly
@@ -411,7 +410,7 @@ export class User extends BaseModel<IUser> implements IUser {
     this.validateDomainState();
   }
 
-  @belongsTo(() => Organization)
+  @belongsTo('Organization')
   public get organization(): string {
     return this._organization;
   }

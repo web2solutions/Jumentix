@@ -454,7 +454,8 @@ export function toSchemaName(domainName, entityName) {
   const normalize = (value) => String(value || '')
     .trim()
     .replace(/[^a-zA-Z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
+    .replace(/^_+/, '')
+    .replace(/_+$/, '');
   const domainToken = normalize(domainName) || 'Domain';
   const entityToken = normalize(entityName) || 'Entity';
   return `${domainToken}_${entityToken}`;
@@ -465,7 +466,8 @@ export function toPathToken(value) {
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 }
 
 export function buildExampleValueForField(field) {

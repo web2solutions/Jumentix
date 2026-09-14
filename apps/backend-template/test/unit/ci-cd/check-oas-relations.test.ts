@@ -31,8 +31,8 @@ const passingDocument = {
 };
 
 const passingSources = {
-  User: '@belongsTo(() => Organization)\n  public get organization(): string { return ""; }',
-  Organization: '@hasMany(() => User)\n  public get users(): string[] { return []; }'
+  User: '@belongsTo(\'Organization\')\n  public get organization(): string { return ""; }',
+  Organization: '@hasMany(\'User\')\n  public get users(): string[] { return []; }'
 };
 
 describe('check-oas-relations', () => {

@@ -178,7 +178,11 @@ function stringFieldProblem(
  * an id nobody understands is how one bad record becomes two.
  */
 export function canonicalAgentId(rawAgentId: string): string {
-  return String(rawAgentId).trim().replace(/^`+|`+$/g, '').trim();
+  return String(rawAgentId)
+    .trim()
+    .replace(/^`+/, '')
+    .replace(/`+$/, '')
+    .trim();
 }
 
 /**

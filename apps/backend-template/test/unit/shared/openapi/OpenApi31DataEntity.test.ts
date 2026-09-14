@@ -401,6 +401,16 @@ describe('openapi 3.1 data-entity helpers', () => {
     }, spec)).toThrow('expected regex pattern');
   });
 
+  it('rejects a regex format value beyond the compile-safety length bound', () => {
+    expect.hasAssertions();
+    const spec = { components: { schemas: {} } } as any;
+
+    expect(() => validateValueAgainstOpenApiSchema('a'.repeat(501), {
+      type: 'string',
+      format: 'regex'
+    }, spec)).toThrow('at most 500 characters');
+  });
+
   it('covers composition and object boundary branches', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;

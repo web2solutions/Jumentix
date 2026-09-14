@@ -609,7 +609,7 @@ describe('run', () => {
     });
 
     expect(commands.calls[0].args).toStrictEqual([
-      'clone', '--branch', 'main', BOILERPLATE_REPOSITORY, path.join(workspace, 'svc')
+      'clone', '--branch', 'main', '--', BOILERPLATE_REPOSITORY, 'svc'
     ]);
   });
 
@@ -630,8 +630,8 @@ describe('run', () => {
     });
 
     expect(commands.calls[0].args).toStrictEqual([
-      'clone', '--branch', 'develop', BOILERPLATE_REPOSITORY,
-      path.join(workspace, 'from-prompts')
+      'clone', '--branch', 'develop', '--', BOILERPLATE_REPOSITORY,
+      'from-prompts'
     ]);
     expect(JSON.parse(
       fs.readFileSync(path.join(workspace, 'from-prompts', '.jumentix', 'service-profile.json'), 'utf8')
