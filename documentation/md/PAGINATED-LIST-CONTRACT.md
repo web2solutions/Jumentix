@@ -103,7 +103,7 @@ Every rejection names the accepted values, in the style Requirement `126` uses f
 
 ## Tombstones
 
-`DELETE` sets `deletedAt` and `updatedAt`. Lists omit tombstones unless `includeDeleted=true`. `GET` of a tombstone is 404 without the flag. Unique values (`username`, organization `name`) are **released** so a new live row may reuse them. Login ignores tombstones.
+`DELETE` sets `deletedAt` and `updatedAt`. Lists omit tombstones unless `includeDeleted=true`. `GET` of a tombstone is 404 without the flag. Unique values (`username`, organization `name`) are **released** so a new live row may reuse them. Login ignores tombstones. Ids stay reserved. Physical purge is opt-in (JUM-822, 90-day floor, dev dry-run default); see [OAS-VENDOR-EXTENSIONS.md](./OAS-VENDOR-EXTENSIONS.md).
 
 ## Delta sync
 

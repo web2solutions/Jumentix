@@ -90,11 +90,11 @@ On list and metrics operations: `groupable` (enum/boolean/reference), `series` (
 
 ## `deletedAt` tombstones
 
-Every entity schema carries `deletedAt` (`string | null`, `format: date-time`, read-only). `DELETE` sets the timestamp; there is no physical delete in this delivery. Lists exclude tombstones unless `includeDeleted=true`. `GET` of a tombstone is 404 without that flag. Create/update bodies that echo `deletedAt` (same as `createdAt`/`updatedAt`) are ignored.
+Every entity schema carries `deletedAt` (`string | null`, `format: date-time`, read-only). `DELETE` sets the timestamp. Physical delete is **not** the default. Lists exclude tombstones unless `includeDeleted=true`. `GET` of a tombstone is 404 without that flag. Create/update bodies that echo `deletedAt` (same as `createdAt`/`updatedAt`) are ignored.
 
-**Uniqueness:** a tombstone **releases** unique values (`username`, organization `name`). A new live record may reuse them. Login ignores tombstones.
+**Uniqueness:** a tombstone **releases** unique values (`username`, organization `name`). A new live record may reuse them. Login ignores tombstones. The primary key **stays reserved** forever.
 
-Purge of tombstones is out of scope.
+**Opt-in purge (JUM-822):** `rtk proxy bun run entities:purge-tombstones -- --via-loopback`. dev PM2 app `jumentix-dev-purge-tombstones` defaults to `--dry-run` (stdout JSONL). `--commit` drops PII after 90 days and writes `{ entity, id, purgedAt }` to the id ledger. Seed ids are excluded unless `--no-protect-seed`. Seed of a purged id fails closed (restart dev or do not purge seed ids). No public OAS purge route. Staging/prod ecosystems are out of this cut.
 
 ## Verification
 

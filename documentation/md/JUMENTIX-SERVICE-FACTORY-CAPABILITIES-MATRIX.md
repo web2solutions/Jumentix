@@ -18,8 +18,9 @@ Define the supported software factory modes for Jumentix so engineering and prod
 - Backend modes: `apps/backend-template`.
 - Hybrid and Frontend-only modes: `apps/frontend` — see
   [Frontend Seed and the X-CRUD Kit](./FRONTEND-SEED-AND-XCRUD.md) (contract-driven SPA over the
-  [Paginated List Contract](./PAGINATED-LIST-CONTRACT.md); offline/PWA mode tracked separately in
-  the `[EPIC][Frontend] Offline-first frontend seed with Cana and PWA shell` epic).
+  [Paginated List Contract](./PAGINATED-LIST-CONTRACT.md), with a login-gated **multitask shell**:
+  one module per domain, taskbar + keep-alive panes, toolbar widget registry, responsive
+  breakpoints). Offline/PWA mode: [Frontend offline data layer](./FRONTEND-OFFLINE-DATA-LAYER.md).
 
 ## Non-functional Guarantees
 

@@ -155,6 +155,7 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
           <template v-for="row in crud.visibleRows.value" :key="crud.rowId(row)">
             <CTableRow
               :active="crud.expandedId.value === crud.rowId(row)"
+              :class="{ 'xcrud-row-pending': row._sync === 'pending' }"
               @click="emit('expand', crud.rowId(row), 'preview')"
             >
               <CTableDataCell class="xcrud-select-col" @click.stop>
@@ -163,6 +164,14 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
                   :aria-label="t('crud.select', { id: crud.rowId(row) })"
                   @update:model-value="crud.toggleSelect(crud.rowId(row))"
                 />
+                <span
+                  v-if="row._sync === 'pending'"
+                  class="ms-1 text-warning"
+                  :title="t('crud.pending')"
+                >
+                  <CIcon icon="cil-cloud-upload" size="sm" />
+                  <span class="visually-hidden">{{ t('crud.pending') }}</span>
+                </span>
               </CTableDataCell>
               <CTableDataCell
                 v-for="d in crud.visibleColumns.value"
@@ -384,7 +393,7 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
   padding: 0.35rem 0.6rem;
 }
 
-.xcrud-footer {
-  row-gap: 0.25rem;
+.xcrud-row-pending {
+  --cui-table-bg: var(--cui-warning-bg-subtle, #fff3cd);
 }
 </style>

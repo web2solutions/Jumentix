@@ -1,14 +1,18 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
+import { defineComponent } from 'vue';
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
+import { requireAuthRedirect, requireScopeRedirect, requireSyncRedirect } from '@/router/guards';
 import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
 import { usersCrudConfig } from '@/features/users/usersCrudConfig';
-import { requireAuthRedirect, requireScopeRedirect } from '@/router/guards';
+import '@/modules/index';
 
-/**
- * Public routes bypass the shell; everything under DefaultLayout requires an
- * authenticated session (requirement: dashboard only after /auth/login).
- */
+/** Keep-alive panes live in DefaultLayout; this route only binds URL params. */
+const ModuleOutlet = defineComponent({
+  name: 'ModuleOutlet',
+  setup: () => () => null
+});
+
 const routes = [
   {
     path: '/login',
@@ -23,17 +27,22 @@ const routes = [
     meta: { public: true }
   },
   {
+    path: '/sync',
+    name: 'Sync',
+    component: () => import('@/views/SyncProgressView.vue')
+  },
+  {
     path: '/',
     name: 'Home',
     component: DefaultLayout,
-    redirect: '/dashboard',
+    redirect: '/m/users/dashboard',
     meta: { titleKey: 'nav.home' },
     children: [
       {
-        path: '/dashboard',
-        name: 'Dashboard',
-        component: () => import('@/features/dashboard/DashboardView.vue'),
-        meta: { titleKey: 'nav.dashboard' }
+        path: '/m/:moduleId/:tab?',
+        name: 'Module',
+        component: ModuleOutlet,
+        meta: { titleKey: 'nav.home' }
       },
       {
         path: '/profile',
@@ -42,16 +51,20 @@ const routes = [
         meta: { titleKey: 'nav.profile' }
       },
       {
+        path: '/dashboard',
+        redirect: '/m/users/dashboard'
+      },
+      {
         path: '/users',
-        name: 'Users',
-        component: () => import('@/features/users/UsersView.vue'),
-        meta: { operationId: usersCrudConfig.operations.list, titleKey: 'nav.users' }
+        name: 'UsersRedirect',
+        redirect: '/m/users/users',
+        meta: { operationId: usersCrudConfig.operations.list }
       },
       {
         path: '/organizations',
-        name: 'Organizations',
-        component: () => import('@/features/organizations/OrganizationsView.vue'),
-        meta: { operationId: organizationsCrudConfig.operations.list, titleKey: 'nav.organizations' }
+        name: 'OrganizationsRedirect',
+        redirect: '/m/users/organizations',
+        meta: { operationId: organizationsCrudConfig.operations.list }
       }
     ]
   },
@@ -69,7 +82,10 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => (
-  requireAuthRedirect(to) ?? (await requireScopeRedirect(to)) ?? true
+  requireAuthRedirect(to)
+  ?? (await requireSyncRedirect(to))
+  ?? (await requireScopeRedirect(to))
+  ?? true
 ));
 
 export default router;

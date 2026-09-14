@@ -22,8 +22,9 @@ Defina os modos de fábrica de software suportados para Jumentix para que a enge
 - Modos backend: `apps/backend-template`.
 - Modos híbrido e somente front-end: `apps/frontend` — ver
   [Seed de Frontend e o Kit X-CRUD](./FRONTEND-SEED-AND-XCRUD.pt-BR.md) (SPA dirigida pelo contrato
-  sobre o [Contrato de Listagem Paginada](./PAGINATED-LIST-CONTRACT.pt-BR.md); o modo offline/PWA
-  é acompanhado no épico `[EPIC][Frontend] Offline-first frontend seed with Cana and PWA shell`).
+  sobre o [Contrato de Listagem Paginada](./PAGINATED-LIST-CONTRACT.pt-BR.md), com shell
+  **multitarefa** protegido por login: um módulo por domínio, taskbar + panes keep-alive, registry
+  de widgets da toolbar, breakpoints). Camada offline: [Camada de dados offline do frontend](./FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md).
 
 ## Garantias Não Funcionais
 

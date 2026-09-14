@@ -2,6 +2,7 @@
   $enable-deprecation-messages: false
 );
 @use "@coreui/chartjs/scss/coreui-chartjs";
+@use "./breakpoints" as shell;
 
 body {
   background-color: var(--cui-tertiary-bg);
@@ -23,6 +24,62 @@ body {
   margin-left: 3px;
 }
 
-.sidebar-narrow-unfoldable:not(.sidebar-end) ~ * {
-  --cui-sidebar-occupy-start: 4rem;
+.app-taskbar {
+  min-height: shell.$shell-touch;
+  border-top: 1px solid var(--cui-border-color);
+  padding: 0.25rem 0.75rem;
+  background: var(--cui-body-bg);
+}
+
+.app-taskbar__row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+  overflow-x: auto;
+}
+
+.app-taskbar__touch,
+.app-taskbar__btn {
+  min-height: shell.$shell-touch;
+  min-width: shell.$shell-touch;
+}
+
+.app-taskbar__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.app-taskbar__item[data-active='true'] .app-taskbar__btn {
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--cui-primary);
+}
+
+.app-taskbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.app-taskbar__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.module-tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+@media (max-width: 767.98px) {
+  .app-taskbar__label {
+    display: none;
+  }
 }

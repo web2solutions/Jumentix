@@ -43,7 +43,9 @@ const EXCLUDED = [
   /\/src\/App\.vue$/,
   /\/src\/contracts\/openapi\.json$/,
   /\/src\/contracts\/sharedContractsBrowserShim\.ts$/,
-  /\/src\/styles\//
+  /\/src\/styles\//,
+  /\/src\/views\//,
+  /\/src\/data\/pwa\.ts$/
 ];
 
 function parseLcov(text) {

@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-14 fix(security): eliminate remaining CodeQL redos/regex-injection alerts (JUM-821) - Eduardo Almeida
 - 2026-09-14 fix(quality): break model import cycle, fix CodeQL alerts, close branch gap (JUM-821) - Eduardo Almeida
 - 2026-09-14 test(coverage): raise monorepo coverage above the full-matrix floor (JUM-821) (#330) - Eduardo A.
 - 2026-09-14 [JUM-787][Feature] Contract vocabulary v2 — relations, keys, services, sync (#329) - Eduardo A.

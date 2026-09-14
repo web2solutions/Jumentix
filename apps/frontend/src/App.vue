@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { onBeforeMount } from 'vue'
+import { inject, onBeforeMount } from 'vue'
 import { useColorModes } from '@coreui/vue'
 
+import BootErrorView from '@/views/BootErrorView.vue'
 import { useThemeStore } from '@/stores/theme'
+
+const canaBoot = inject<'ok' | 'unavailable'>('canaBoot', 'ok')
 
 const { isColorModeSet, setColorMode } = useColorModes('jumentix-frontend-theme')
 const currentTheme = useThemeStore()
@@ -16,7 +19,8 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <router-view />
+  <BootErrorView v-if="canaBoot !== 'ok'" />
+  <router-view v-else />
 </template>
 
 <style lang="scss">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { CCard, CCardBody, CCardHeader, CNav, CNavItem } from '@coreui/vue';
 
 import XCrudForm from '@/components/x-crud/XCrudForm.vue';
@@ -11,6 +11,7 @@ import { useXCrud } from '@/components/x-crud/useXCrud';
 import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
 import { usePermissions } from '@/contracts/usePermissions';
 import { t } from '@/i18n';
+import { useNotificationStore } from '@/stores/notifications';
 
 /**
  * XCrud (JUM-772 redesign, X-SYNTH pattern): one card; pills "New ${entity} |
@@ -30,6 +31,8 @@ const permissions = usePermissions();
 const view = ref<'listing' | 'new'>('listing');
 const detailTab = ref<'preview' | 'edit'>('preview');
 const filtersOpen = ref(false);
+const reopenRecord = ref<Record<string, unknown> | undefined>(undefined);
+const notifications = useNotificationStore();
 
 const canCreate = permissions.canOp(props.config.operations.create);
 const canUpdateOp = permissions.canOp(props.config.operations.update);
@@ -60,6 +63,13 @@ const submitRowUpdate = async (body: Record<string, unknown>): Promise<void> => 
 onMounted(async () => {
   await permissions.ensure();
   await Promise.all([crud.load(), crud.loadReferences()]);
+});
+
+watch(() => notifications.reopenTarget, (target) => {
+  if (!target?.reopen || target.entity !== props.config.entity) return;
+  reopenRecord.value = target.reopen;
+  view.value = 'new';
+  notifications.clearReopen();
 });
 </script>
 
@@ -131,9 +141,10 @@ onMounted(async () => {
           :config="config"
           mode="create"
           :descriptors="crud.createDescriptors"
+          :record="reopenRecord"
           :reference-restrictions="referenceRestrictions"
           @submit="submitCreate"
-          @cancel="view = 'listing'"
+          @cancel="view = 'listing'; reopenRecord = undefined"
         />
       </template>
     </CCardBody>

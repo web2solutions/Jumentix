@@ -2,21 +2,24 @@
 import { computed } from 'vue';
 import { CBadge, CNavGroup, CNavItem, CNavTitle, CSidebarNav } from '@coreui/vue'
 
-import nav, { type NavItem } from '@/_nav'
 import { can } from '@/contracts/rbac'
 import { useI18n } from '@/i18n'
+import { navFromModules } from '@/modules/nav'
+import type { NavItem } from '@/modules/navTypes'
 import { useProfileStore } from '@/stores/profile'
+import { useTaskStore } from '@/stores/tasks'
+import { useRouter } from 'vue-router'
 
-// JUM-772: CNavGroup support + RBAC filtering — an item only renders when the
-// session roles satisfy its operationId (groups render when any child does).
 const profile = useProfileStore()
 const { t } = useI18n()
+const tasks = useTaskStore()
+const router = useRouter()
 
 const allowed = (item: NavItem): boolean => (
   !item.operationId || can(profile.record?.roles ?? [], item.operationId)
 )
 
-const visibleItems = computed(() => nav
+const visibleItems = computed(() => navFromModules(profile.record?.roles ?? [])
   .map((item) => {
     if (!item.items) return allowed(item) ? item : null;
     const children = item.items.filter(allowed);
@@ -26,6 +29,14 @@ const visibleItems = computed(() => nav
 
 const isGroup = (item: NavItem) => Boolean(item.items)
 const isTitle = (item: NavItem) => item.component === 'CNavTitle'
+
+const openModule = (to: string) => {
+  const match = to.match(/^\/m\/([^/]+)/);
+  if (match) {
+    tasks.openModule(match[1]);
+    router.push(to);
+  }
+}
 </script>
 
 <template>
@@ -43,7 +54,7 @@ const isTitle = (item: NavItem) => item.component === 'CNavTitle'
               class="nav-link"
               :class="{ active: isActive }"
               :href="href"
-              @click="navigate"
+              @click="(event) => { event.preventDefault(); openModule(child.to ?? '#'); navigate(event); }"
             >
               <span class="nav-icon"><span class="nav-icon-bullet" /></span>
               {{ t(child.name) }}
@@ -57,7 +68,7 @@ const isTitle = (item: NavItem) => item.component === 'CNavTitle'
             class="nav-link"
             :class="{ active: isActive }"
             :href="href"
-            @click="navigate"
+            @click="(event) => { event.preventDefault(); openModule(item.to ?? '#'); navigate(event); }"
           >
             <CIcon v-if="item.icon" custom-class-name="nav-icon" :icon="item.icon" />
             <span v-else class="nav-icon"><span class="nav-icon-bullet" /></span>

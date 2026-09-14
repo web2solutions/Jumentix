@@ -10,35 +10,26 @@ describe('users X-CRUD', () => {
     cy.get('tbody tr').should('have.length.at.least', 6);
   });
 
-  it('searches and sorts through the server (q / sort query params)', () => {
-    cy.intercept('GET', '/api/1.0.0/users?*').as('list');
+  it('searches and sorts locally after sync (no q= / sort= on the wire)', () => {
+    cy.intercept('GET', '/api/1.0.0/users?*', { forceNetworkError: true }).as('list');
     cy.get('input[aria-label="search"]').type('obama');
-    // Typed input is debounced (JUM-781): the word is one request, not five.
-    cy.wait('@list').its('request.url').should('include', 'q=obama');
     cy.get('tbody tr').should('have.length', 1);
     cy.get('tbody tr').first().should('contain', 'Barack');
     cy.get('input[aria-label="search"]').clear();
-    cy.wait('@list');
+    cy.get('tbody tr').should('have.length.at.least', 6);
     cy.contains('th', 'First name').click();
-    cy.wait('@list').its('request.url').should('include', 'sort=firstName%3Aasc');
     cy.get('tbody tr').first().should('contain', 'Admin');
     cy.get('.xcrud-footer span').invoke('text').should('match', /1–\d+ of \d+/);
   });
 
   it('opens the column filter row from the toolbar and filters by organization with the quick select', () => {
-    cy.intercept('GET', '/api/1.0.0/users?*').as('list');
     cy.contains('button', 'Filters').click();
     cy.get('.xcrud-filter-row').should('be.visible');
     cy.get('input[aria-label="filter-firstName"]').type('ed');
-    cy.wait('@list').its('request.url').should('include', 'filter=');
-    // Re-query after each assertion: the grid re-renders rows when a page lands.
     cy.get('tbody tr').should('have.length', 1);
     cy.get('tbody tr').first().should('contain', 'eduardo');
     cy.get('input[aria-label="filter-firstName"]').clear();
-    cy.wait('@list');
     cy.get('select[aria-label="organization"]').select('ACME');
-    cy.wait('@list').its('request.url').should('include', 'filter=');
-    // Retry until the filtered page has replaced the unfiltered one.
     cy.get('tbody').should('not.contain', 'XpertMinds');
     cy.get('tbody tr').should('have.length.at.least', 1);
     cy.get('tbody tr').each(($row) => expect($row.text()).to.contain('ACME'));
@@ -77,7 +68,7 @@ describe('users X-CRUD', () => {
 
   it('renders the listing in Portuguese after switching the locale', () => {
     cy.get('.header [aria-label="Account"]').click();
-    cy.contains('.dropdown-item', 'Português (BR)').click();
+    cy.get('.header .dropdown-menu.show').contains('Português (BR)').click();
     cy.contains('.card-header .nav-link', 'Listagem de Usuário').should('be.visible');
     cy.contains('th', 'Nome').should('be.visible');
     cy.contains('button', 'Filtros').should('be.visible');

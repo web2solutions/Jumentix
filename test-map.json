@@ -2404,6 +2404,30 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/shell/breakpoints.test.ts",
+      "path": "apps/frontend/test/unit/shell/breakpoints.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/shell/toolbarWidgets.test.ts",
+      "path": "apps/frontend/test/unit/shell/toolbarWidgets.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/errors.test.ts",
       "path": "apps/frontend/test/unit/contracts/errors.test.ts",
       "layer": "frontend",
@@ -2572,6 +2596,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/stores/tasks.test.ts",
+      "path": "apps/frontend/test/unit/stores/tasks.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
       "path": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
       "layer": "frontend",
@@ -2598,6 +2634,30 @@
     {
       "id": "apps/frontend/test/unit/i18n/i18n.test.ts",
       "path": "apps/frontend/test/unit/i18n/i18n.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/modules/manifest.test.ts",
+      "path": "apps/frontend/test/unit/modules/manifest.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/offlineLayer.test.ts",
+      "path": "apps/frontend/test/unit/data/offlineLayer.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2668,8 +2728,44 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/component/ModuleLayout.test.ts",
+      "path": "apps/frontend/test/component/ModuleLayout.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/AppTaskbar.test.ts",
+      "path": "apps/frontend/test/component/AppTaskbar.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/component/XCrud.test.ts",
       "path": "apps/frontend/test/component/XCrud.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/OfflineWidgets.test.ts",
+      "path": "apps/frontend/test/component/OfflineWidgets.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -3176,6 +3272,19 @@
     {
       "id": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
       "path": "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/purgeTombstones.test.ts",
+      "path": "apps/backend-template/test/integration/Express/purgeTombstones.test.ts",
       "layer": "adapters/in",
       "kind": "hexagonal",
       "type": "integration",
@@ -4426,6 +4535,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/persistence-contracts/test/purgeTombstones.test.ts",
+      "path": "packages/persistence-contracts/test/purgeTombstones.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "path": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "layer": "adapters/out+infra",
@@ -5146,9 +5265,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 290,
-    "integration": 100,
+    "unit": 299,
+    "integration": 101,
     "smoke": 2,
-    "suites": 441
+    "suites": 451
   }
 }

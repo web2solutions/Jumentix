@@ -55,6 +55,18 @@ module.exports = {
         JUMENTIX_SERVICE_MANAGEMENT_PORT: '3200',
         JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL: 'http://127.0.0.1:3003'
       }
+    },
+    {
+      name: 'jumentix-dev-purge-tombstones',
+      script: './ci-cd/purge-tombstones.js',
+      interpreter: 'bun',
+      args: '--via-loopback --older-than 90 --protect-seed --dry-run',
+      cron_restart: '0 4 * * *',
+      autorestart: false,
+      env: {
+        NODE_ENV: 'dev',
+        JUMENTIX_HTTP_PORT: '3000'
+      }
     }
   ]
 };

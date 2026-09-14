@@ -43,7 +43,7 @@ const submit = async () => {
   try {
     await auth.login(collectBody(descriptors, values));
     profile.reset(); // a new session never inherits the previous account's roles (JUM-781)
-    await router.push('/dashboard');
+    await router.push('/sync');
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : String(error);
   } finally {

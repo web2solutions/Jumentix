@@ -4,7 +4,7 @@ import {
 import { createPinia, setActivePinia } from 'pinia';
 import type { RouteLocationNormalized } from 'vue-router';
 
-import { requireAuthRedirect } from '@/router/guards';
+import { requireAuthRedirect, requireSyncRedirect } from '@/router/guards';
 import { useAuthStore } from '@/stores/auth';
 
 const routeTo = (path: string, isPublic = false): RouteLocationNormalized => ({
@@ -35,5 +35,12 @@ describe('router auth guard (JUM-760)', () => {
     auth.token = 'Bearer session-token';
 
     expect(requireAuthRedirect(routeTo('/dashboard'))).toBeNull();
+  });
+
+  it('does not send authenticated users to /sync when Cana is closed', async () => {
+    expect.assertions(1);
+    const auth = useAuthStore();
+    auth.token = 'Bearer session-token';
+    expect(await requireSyncRedirect(routeTo('/dashboard'))).toBeNull();
   });
 });

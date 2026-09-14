@@ -38,7 +38,7 @@ This file consolidates non-functional requirements already requested and stored 
   so component drift and re-homing breaks fail checks instead of serving silent
   defaults.
 - `127` Mandatory `rtk` and Caveman usage in every agent session
-- Soft-delete tombstones (`deletedAt`) are the only delete path for User/Organization; uniqueness is released on tombstone; physical purge is out of scope (JUM-791).
+- Soft-delete tombstones (`deletedAt`) are the default delete path for User/Organization; uniqueness is released on tombstone; ids stay reserved. Physical purge is opt-in (JUM-822): 90-day floor, dev PM2 dry-run by default, `--commit` required to drop PII, id ledger never reused.
 - Entity metrics (`GET /{entities}/metrics`) are bounded by `x-metrics-capabilities` and exclude tombstones (JUM-793).
 - `128` Requirement changes take precedence in the release process (sequence only, no gate exemption)
 - `129` Mandatory Firebase RTDB agent progress bus (`agent-bus:publish|watch|status`)
