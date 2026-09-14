@@ -48,9 +48,14 @@ describe('users application use cases', () => {
     const useCases = new AuthUseCases(authService, mutexService);
 
     const ok = await useCases.updatePassword('Bearer token', { password: '12345678' });
-    expect(ok.result).toBe(true);
     expect(mutexService.lock).toHaveBeenCalledWith('user', 'u1');
     expect(mutexService.unlock).toHaveBeenCalledWith('user', 'u1');
+
+    // A lock answer without a payload means "not previously locked", not a
+    // failure — the update still goes through.
+    mutexService.lock.mockResolvedValueOnce(undefined);
+    const unlocked = await useCases.updatePassword('Bearer token', { password: '12345678' });
+    expect([ok.result, unlocked.result]).toStrictEqual([true, true]);
 
     mutexService.lock.mockResolvedValueOnce({ result: { previouslyLocked: true } });
     const locked = await useCases.updatePassword('Bearer token', { password: '12345678' });
@@ -75,6 +80,31 @@ describe('users application use cases', () => {
 
     const invalid = await useCases.logout('Bearer token', { username: 'mary' });
     expect(invalid.error).toBeDefined();
+  });
+
+  it('surfaces auth service failures from updatePassword and logout', async () => {
+    expect.hasAssertions();
+    const updateFailure = new Error('password update rejected');
+    const authService: any = {
+      decodeToken: jest.fn().mockResolvedValue({ id: 'u1', username: 'john' }),
+      updatePassword: jest.fn().mockResolvedValue({ error: updateFailure }),
+      logout: jest.fn().mockResolvedValue({ error: new Error('logout rejected') })
+    };
+    const mutexService: any = {
+      lock: jest.fn().mockResolvedValue({ result: { previouslyLocked: false } }),
+      unlock: jest.fn().mockResolvedValue({ result: true })
+    };
+    const useCases = new AuthUseCases(authService, mutexService);
+
+    // The service error must reach the caller unchanged, and the user lock
+    // must be released even though the update failed.
+    const updated = await useCases.updatePassword('Bearer token', { password: '12345678' });
+    expect(updated).toMatchObject({ result: false, error: updateFailure });
+    expect(mutexService.unlock).toHaveBeenCalledWith('user', 'u1');
+
+    const loggedOut = await useCases.logout('Bearer token', { username: 'john' });
+    expect(loggedOut).toMatchObject({ result: false });
+    expect(loggedOut.error?.message).toBe('logout rejected');
   });
 
   it('delegates all user use case methods to user service', async () => {

@@ -233,6 +233,54 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     expect(response.error).toStrictEqual({ name: 'RangeError', message: 'handler exploded' });
   });
 
+  it('connects on demand when a request arrives before connect()', async () => {
+    expect.hasAssertions();
+
+    // Same on-demand contract as publish: `request` must not crash on an
+    // adapter nobody called `connect()` on.
+    const broker = fakeBullMq();
+    BullMqMessageMediatorAdapter.importBullMq = async () => broker.lib;
+    const adapter = new BullMqMessageMediatorAdapter({ connection: {} } as never);
+    adapter.registerHandler('orders.create', async (incoming) => ({
+      contract: incoming.contract,
+      result: { echoed: (incoming.payload as any).id }
+    }));
+
+    const response = await adapter.request(message());
+
+    expect(response.result).toStrictEqual({ echoed: 1 });
+    expect(broker.added[0].queue).toBe('app.requests');
+  });
+
+  it('reports a handler that throws a non-Error without losing what it was', async () => {
+    expect.hasAssertions();
+
+    // A thrown string is not an Error: it must still cross the wire as a
+    // readable `{ name, message }`, not as `{}`.
+    const { adapter } = await connected();
+    adapter.registerHandler('orders.create', async () => {
+      // eslint-disable-next-line no-throw-literal
+      throw 'handler exploded' as never;
+    });
+
+    const response = await adapter.request(message());
+
+    expect(response.error).toStrictEqual({ name: 'Error', message: 'handler exploded' });
+  });
+
+  it('loads the real bullmq through the default import seam', async () => {
+    expect.hasAssertions();
+
+    // The doubles replace the seam in every other test; this one proves the
+    // untouched seam still resolves to the library whose constructor surface
+    // (`Queue`, `QueueEvents`, `Worker`) the adapter drives.
+    const bullmq = await originalImport();
+
+    expect(typeof bullmq.Queue).toBe('function');
+    expect(typeof bullmq.QueueEvents).toBe('function');
+    expect(typeof bullmq.Worker).toBe('function');
+  });
+
   it('names the contract when nothing is registered for it', async () => {
     expect.hasAssertions();
 

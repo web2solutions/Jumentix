@@ -1137,6 +1137,63 @@ describe('catalogSyncClient — partition and convergence', () => {
     await host.syncClient.stop();
   });
 
+  it('applies a teammate update whose design carries no context block (JUM-821)', async () => {
+    expect.hasAssertions();
+    // The applied domain rebuilds `context` around the marker; a server design
+    // with no `context` of its own must merge onto an empty object, not spread
+    // `undefined` and lose the sync link.
+    const host = await createHost([makeDomain('domain-1', 'Billing')]);
+    await host.syncClient.start();
+    host.timers.clear();
+    const { record } = await host.syncClient.publishDomain('domain-1');
+    host.timers.clear();
+
+    const contextless = makeDomain('domain-1', 'Billing', [makeEntity('entity-8', 'CreditNote')]) as any;
+    delete contextless.context;
+    await host.transport.updateCatalog(record.id, {
+      version: 1,
+      design: { kind: 'domain-package', version: '2.0.0', domain: contextless }
+    });
+    await host.syncClient.syncNow();
+
+    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain('CreditNote');
+    expect(host.core.state.domains[0].context.catalog.id).toBe(record.id);
+    expect(host.core.state.domains[0].context.catalog.version).toBe(2);
+    await host.syncClient.stop();
+  });
+
+  it('re-arms one poll loop when a cycle is in flight across a stop/start (JUM-821)', async () => {
+    expect.hasAssertions();
+    // A poll cycle mid-sync while the client is stopped and started again
+    // finishes with `started` true and a fresh poll already pending: its
+    // re-arm must REPLACE the pending handle, not stack a second loop.
+    const host = await createHost([]);
+    await host.syncClient.start();
+
+    let releaseRead!: () => void;
+    const gate = new Promise<void>((resolve) => { releaseRead = resolve; });
+    const { listCatalogs } = host.transport;
+    host.transport.listCatalogs = async (args: any) => { await gate; return listCatalogs(args); };
+
+    // Fire the pending poll cycle without awaiting it: it is now inside syncNow.
+    const [pollHandle, pollTimer] = [...host.timers.entries()][0];
+    host.timers.delete(pollHandle);
+    const inFlight = (async () => { await pollTimer.fn(); })();
+
+    host.syncClient.stop();
+    await host.syncClient.start();
+    const restarted = [...host.timers.keys()];
+    expect(restarted).toHaveLength(1);
+
+    releaseRead();
+    await inFlight;
+
+    expect(host.timers.has(restarted[0])).toBe(false);
+    expect(host.timers.size).toBe(1);
+    await host.syncClient.stop();
+    host.timers.clear();
+  });
+
   it('exposes the default tuning constants', () => {
     expect.hasAssertions();
     expect(CATALOG_SYNC_POLL_INTERVAL_MS).toBe(15000);

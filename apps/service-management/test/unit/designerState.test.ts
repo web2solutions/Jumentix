@@ -963,3 +963,40 @@ describe('additive metadata fallback arms (JUM-493)', () => {
     expect(seen[0].reason).toBe('save-rejected: disk-on-fire');
   });
 });
+
+describe('loadState recovery cause reporting (JUM-821)', () => {
+  it('reports recovered with the thrown value itself when the cause is not an Error', async () => {
+    expect.hasAssertions();
+
+    // A port payload whose property access throws a bare value (not an Error)
+    // has no `.message` to read: the outcome must carry the value itself, or
+    // the announcement would say "undefined" about a real corruption.
+    const store = {
+      load: async () => ({
+        status: 'ok',
+        payload: {
+          get domains(): never {
+            // eslint-disable-next-line no-throw-literal
+            throw 'corrupt sector' as never;
+          }
+        }
+      }),
+      save: () => ({ status: 'ok' })
+    };
+    let core: Core;
+    const seed = () => {
+      core.state.domains = [];
+      core.state.relationships = [];
+      core.state.selectedDomainId = null;
+      core.state.selectedEntityId = null;
+      core.state.selectedRelationshipId = null;
+      core.state.idCounter = 1;
+      core.state.view = createDefaultView();
+    };
+    core = createDesignerState({ store: store as never, seed, render: () => undefined });
+
+    const outcome = await core.loadState();
+
+    expect(outcome).toStrictEqual({ status: 'recovered', reason: 'corrupt sector' });
+  });
+});

@@ -430,3 +430,20 @@ describe('override major compatibility, the remaining branches (JUM-681)', () =>
     expect(guard.readInstalledDependentRange('typescript', 'send')).toBeNull();
   });
 });
+
+describe('override major compatibility with no overrides section (JUM-821)', () => {
+  it('says nothing when the manifest declares no overrides at all', () => {
+    expect.hasAssertions();
+
+    // A manifest without an `overrides` key has nothing to cross a major
+    // with; the guard reads it as empty rather than crashing on undefined.
+    const guard = require('../../../../../ci-cd/check-dependency-override-integrity') as {
+      validateOverrideMajors: (
+        pkg: Record<string, unknown>,
+        readDependentRange: (dependent: string, overridden: string) => string | null
+      ) => string[];
+    };
+
+    expect(guard.validateOverrideMajors({}, () => null)).toStrictEqual([]);
+  });
+});

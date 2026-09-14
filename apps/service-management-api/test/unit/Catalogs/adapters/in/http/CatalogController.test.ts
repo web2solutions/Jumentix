@@ -348,3 +348,77 @@ describe('catalogController actor stamping (JUM-721)', () => {
     }))).rejects.toThrow('Record not found');
   });
 });
+
+describe('catalogController scope denial shapes (JUM-821)', () => {
+  it('denies every scope when the token resolves to no principal at all', async () => {
+    expect.hasAssertions();
+
+    // A guard that reads `undefined.roles` would crash; reading the absent
+    // principal as "no roles" is what turns an unattributed request into a
+    // clean 403 rather than a 500.
+    const { controller } = createStack(undefined as never);
+
+    await expect(controller.create(new CatalogCreateRequestEvent({
+      authorization: 'Bearer token',
+      input: { name: 'Billing', design },
+      schemaOAS: operations['/catalogs'].post
+    }))).rejects.toThrow('missing Service Management scope create_catalog');
+  });
+
+  it('denies a principal that carries no roles', async () => {
+    expect.hasAssertions();
+
+    const { controller } = createStack({
+      id: 'user-9', username: 'user@org1.dev', organization: 'org-1'
+    });
+
+    await expect(controller.getAll(new CatalogGetAllRequestEvent({
+      authorization: 'Bearer token',
+      queryString: { page: '1' },
+      schemaOAS: operations['/catalogs'].get
+    }))).rejects.toThrow('missing Service Management scope read_catalog');
+  });
+
+  it('grants nothing for a role the catalog scope matrix does not know', async () => {
+    expect.hasAssertions();
+
+    // A role outside the matrix maps to no scopes at all — a new role must
+    // fail closed, never inherit access by omission.
+    const { controller } = createStack({
+      id: 'audit-1', username: 'auditor@org1.dev', organization: 'org-1', roles: ['auditor']
+    });
+
+    await expect(controller.getAll(new CatalogGetAllRequestEvent({
+      authorization: 'Bearer token',
+      queryString: { page: '1' },
+      schemaOAS: operations['/catalogs'].get
+    }))).rejects.toThrow('missing Service Management scope read_catalog');
+  });
+
+  it('refuses the read when the store answers with neither record nor error', async () => {
+    expect.hasAssertions();
+
+    // `ICatalogUseCases` here is a declared in-memory double of the Jumentix
+    // port (Requirement 135 §5): the real stack always answers a missing
+    // record WITH an error, so the controller's own defensive refusal — a
+    // response that carries neither — is only reachable through the port.
+    // Answering "allowed" against nothing is the failure it prevents.
+    const authService = {
+      authenticate: () => Promise.resolve({}),
+      authorize: () => Promise.resolve(adminOrg1),
+      throwIfUserHasNoAccessToResource: () => true
+    } as any;
+    const controller = new CatalogController({
+      authService,
+      openApiSpecification: spec,
+      databaseClient: { stores: {} } as any,
+      catalogUseCases: { getOneById: () => Promise.resolve({}) } as any
+    } as any);
+
+    await expect(controller.getOneById(new CatalogGetOneRequestEvent({
+      authorization: 'Bearer token',
+      params: { id: '123e4567-e89b-42d3-a456-426614174000' },
+      schemaOAS: operations['/catalogs/{id}'].get
+    }))).rejects.toThrow('target catalog not available');
+  });
+});
