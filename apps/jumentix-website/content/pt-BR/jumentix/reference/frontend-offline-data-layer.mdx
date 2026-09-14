@@ -21,7 +21,7 @@ The English version is at [FRONTEND-OFFLINE-DATA-LAYER.md](/docs/jumentix/refere
 
 ## Modo local do X-CRUD (JUM-804)
 
-Com Cana aberto, `entityStore` lista local e mutações passam pela outbox. Testes de componente que nunca chamam `openCana()` mantêm o caminho de servidor. Depois do sync, listagens não precisam de `GET /api/.../users`. Totais do dashboard usam contagens locais.
+Com Cana aberto, `entityStore` lista local e mutações passam pela outbox. Testes de componente que nunca chamam `openCana()` mantêm o caminho de servidor. Depois do sync, listagens não precisam de `GET /api/.../users`. Totais do dashboard usam contagens locais. Linhas de lista omitem arrays aninhados; o sync completa com GET-by-id (`getOneById` / `getOrganizationById`) quando falta um campo array. O store de perfil lê o usuário autenticado no Cana; saves de escalares passam pela outbox de User. Sub-recursos email/documento/telefone ainda usam REST e gravam a cópia GET de volta no Cana.
 
 ## Sync (JUM-805)
 
@@ -33,14 +33,18 @@ A UI grava no Cana primeiro com `_sync: 'pending'`. Intents na store `outbox` na
 
 ## PWA (JUM-808)
 
-Worker escrito à mão em `public/sw.js` (sem `vite-plugin-pwa`). Registro em build de produção, ou com `VITE_PWA=1`. O processo `vite` (não produção) não registra o worker; o e2e Cypress contra `vite` prova leitura local falhando `/api` depois do sync. `public/manifest.json` usa `info.title` da OAS.
+Worker escrito à mão em `public/sw.js` (sem `vite-plugin-pwa`). Registro em build de produção, ou com `VITE_PWA=1`. O processo `vite` (não produção) não registra o worker; o e2e Cypress contra `vite` prova leitura local falhando `/api` depois do sync. `public/manifest.json` usa `info.title` da OAS, com ícones 192/512 (`purpose` `any` / `any maskable`).
 
-Lighthouse PWA não foi executado neste delivery (binário ausente no ambiente). Comando local:
+Lighthouse PWA (comando que produziu o número):
 
 ```bash
-npx lighthouse http://127.0.0.1:<preview-port>/ --only-categories=pwa --chrome-flags="--headless"
+rtk proxy bun run --filter @jumentix/frontend build
+rtk proxy bun run --filter @jumentix/frontend preview -- --host 127.0.0.1 --port 4173
+npx lighthouse@11.7.1 http://127.0.0.1:4173/ --only-categories=pwa --chrome-flags="--headless --no-sandbox"
 ```
+
+Resultado: **score da categoria PWA 1** (`lighthouse` 11.7.1). `installable-manifest` 1, `splash-screen` 1, `themed-omnibox` 1, `maskable-icon` 1, `content-width` 1, `viewport` 1. `lighthouse` 12.8.2 devolve `categories.pwa` vazio — essa release removeu a categoria PWA.
 
 ## Testes (JUM-809)
 
-`fake-indexeddb` `6.2.5` no preload `test/setup/indexeddb.ts`. Cypress: `cy.goOffline()`, `cy.goOnline()`, `cy.serverCreate()`. Specs: `offline-boot.cy.ts`, `offline-sync.cy.ts`, `offline-writes.cy.ts`, `offline-pwa.cy.ts`.
+`fake-indexeddb` `6.2.5` no preload `test/setup/indexeddb.ts`. Cypress: `cy.goOffline()`, `cy.goOnline()`, `cy.serverCreate()`. Specs: `offline-boot.cy.ts`, `offline-sync.cy.ts`, `offline-writes.cy.ts`, `offline-pwa.cy.ts`. `rtk proxy bun run --filter @jumentix/frontend test:e2e` → **20 passing / 0 failing** em 9 specs.

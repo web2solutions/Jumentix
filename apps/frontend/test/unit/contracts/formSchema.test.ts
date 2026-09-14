@@ -3,6 +3,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   entityPrimaryKey,
   fieldDescriptors,
+  getOperationForEntity,
   listOperationForEntity,
   resolveSchema
 } from '@/contracts/formSchema';
@@ -140,5 +141,7 @@ describe('x-relation and x-primary-key (JUM-787, JUM-788)', () => {
     expect(entityPrimaryKey('MissingEntity')).toBe('id');
     expect(listOperationForEntity('User')).toBe('getAll');
     expect(listOperationForEntity('Organization')).toBe('getAllOrganizations');
+    expect(getOperationForEntity('User')).toBe('getOneById');
+    expect(getOperationForEntity('Organization')).toBe('getOrganizationById');
   });
 });

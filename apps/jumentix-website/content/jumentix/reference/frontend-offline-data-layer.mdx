@@ -21,7 +21,7 @@ The Portuguese version is at [FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md](/docs/pt-BR/
 
 ## X-CRUD local mode (JUM-804)
 
-When Cana is open, `entityStore` lists locally and mutations go through the outbox. Component tests that never call `openCana()` keep the previous server path (`x-list-capabilities`). After sync, listings do not need `GET /api/.../users`. Dashboard totals use local counts.
+When Cana is open, `entityStore` lists locally and mutations go through the outbox. Component tests that never call `openCana()` keep the previous server path (`x-list-capabilities`). After sync, listings do not need `GET /api/.../users`. Dashboard totals use local counts. List rows omit nested arrays, so sync follows each list page with GET-by-id (`getOneById` / `getOrganizationById`) when an array field is missing. The profile store then reads the signed-in user from Cana; scalar saves go through the User outbox. Email/document/phone sub-resources still call REST and write the GET copy back into Cana.
 
 ## Sync (JUM-805)
 
@@ -33,14 +33,18 @@ UI writes Cana first with `_sync: 'pending'`. Intents live in `outbox` in the sa
 
 ## PWA (JUM-808)
 
-Hand-written `public/sw.js` (no `vite-plugin-pwa` — pinning and third-party review cost more than a small worker). Registration runs in production builds, or when `VITE_PWA=1`. The non-production `vite` process does not register the worker, so Cypress e2e against `vite` proves local reads by failing `/api` after sync, not by stopping the origin server. `public/manifest.json` uses the OAS `info.title` (`Jumentix API`).
+Hand-written `public/sw.js` (no `vite-plugin-pwa` — pinning and third-party review cost more than a small worker). Registration runs in production builds, or when `VITE_PWA=1`. The non-production `vite` process does not register the worker, so Cypress e2e against `vite` proves local reads by failing `/api` after sync, not by stopping the origin server. `public/manifest.json` uses the OAS `info.title` (`Jumentix API`), plus 192/512 icons (`purpose` `any` / `any maskable`).
 
-Lighthouse PWA audit was not run in this delivery (no lighthouse binary in the agent environment). Command to run locally:
+Lighthouse PWA (command that produced the number):
 
 ```bash
-npx lighthouse http://127.0.0.1:<preview-port>/ --only-categories=pwa --chrome-flags="--headless"
+rtk proxy bun run --filter @jumentix/frontend build
+rtk proxy bun run --filter @jumentix/frontend preview -- --host 127.0.0.1 --port 4173
+npx lighthouse@11.7.1 http://127.0.0.1:4173/ --only-categories=pwa --chrome-flags="--headless --no-sandbox"
 ```
+
+Result: **PWA category score 1** (`lighthouse` 11.7.1). `installable-manifest` 1, `splash-screen` 1, `themed-omnibox` 1, `maskable-icon` 1, `content-width` 1, `viewport` 1. `lighthouse` 12.8.2 returns `categories.pwa` empty — that release dropped the PWA category, so 11.7.1 is the audit that still grades installability.
 
 ## Tests (JUM-809)
 
-`fake-indexeddb` `6.2.5` is preloaded from `test/setup/indexeddb.ts`. Cypress helpers: `cy.goOffline()`, `cy.goOnline()`, `cy.serverCreate()`. Specs: `offline-boot.cy.ts`, `offline-sync.cy.ts`, `offline-writes.cy.ts`, `offline-pwa.cy.ts`.
+`fake-indexeddb` `6.2.5` is preloaded from `test/setup/indexeddb.ts`. Cypress helpers: `cy.goOffline()`, `cy.goOnline()`, `cy.serverCreate()`. Specs: `offline-boot.cy.ts`, `offline-sync.cy.ts`, `offline-writes.cy.ts`, `offline-pwa.cy.ts`. `rtk proxy bun run --filter @jumentix/frontend test:e2e` → **20 passing / 0 failing** across 9 specs.
