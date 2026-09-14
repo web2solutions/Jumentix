@@ -200,6 +200,38 @@ describe('entity manager flows (JUM-681)', () => {
     expect(updated.entities[0].behaviors).toStrictEqual(['settle']);
   });
 
+  it('keeps the stored domain when the typed custom domain is empty', async () => {
+    expect.hasAssertions();
+
+    // update → entity 0 → kind entity → "Type custom domain" → blank answer →
+    // back. The custom-domain prompt falls back to the entity's own domain.
+    const run = scriptedContext(
+      catalogWithEntity(),
+      [3, 0, 0, 1, BACK],
+      ['', '', '', '']
+    );
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.saved[0].entities[0].domain).toBe('Billing');
+  });
+
+  it('keeps an empty stored domain empty when the typed custom domain is also empty', async () => {
+    expect.hasAssertions();
+
+    const catalog = catalogWithEntity();
+    catalog.entities[0].domain = '';
+    const run = scriptedContext(
+      catalog,
+      [3, 0, 0, 1, BACK],
+      ['', '', '', '']
+    );
+
+    await entityModelManagerSubApplication.run(run.context as never);
+
+    expect(run.saved[0].entities[0].domain).toBe('');
+  });
+
   it('deletes only on the typed confirmation', async () => {
     expect.hasAssertions();
 

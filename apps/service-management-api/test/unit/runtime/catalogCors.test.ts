@@ -129,4 +129,11 @@ describe('service management catalog API CORS defaults', () => {
     expect(env.JUMENTIX_CORS_ALLOWED_ORIGINS)
       .toBe('http://localhost:3200,http://127.0.0.1:3200');
   });
+
+  it('defaults every parameter to the dev designer origins', () => {
+    expect.assertions(1);
+
+    expect(normalizeCatalogCorsAllowedOrigins())
+      .toBe('http://localhost:3200,http://127.0.0.1:3200');
+  });
 });

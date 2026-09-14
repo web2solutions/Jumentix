@@ -12,7 +12,10 @@ import { composeUsersAuthServices } from '@src/modules/Users';
 import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
 
 import seedOrganizations_ from '@seed/organizations';
-import seedUsers_ from '@seed/users';
+import seedUsers_, { seedUserIds } from '@seed/users';
+import { entityIdLedger } from '@src/infra/persistence/InMemoryDatabase/idReservationLedger';
+import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
+import { TOMBSTONE_PURGE_TTL_DAYS } from '@jumentix/persistence-contracts';
 
 /**
  * The REST runtime wired against the real OAS and AsyncAPI specs.
@@ -460,5 +463,118 @@ describe('restAPI seed failure propagation', () => {
       }
     };
     await expect(api.deleteUsers()).rejects.toThrow('User delete failed');
+  });
+});
+
+/**
+ * JUM-804: the loopback-only purge endpoint and the purgeTombstones facade.
+ * Private store instances keep the singleton InMemoryDbClient — and the seed
+ * ledger — untouched by what these tests purge.
+ */
+const purgeDb = () => {
+  const userStore = new InMemoryRelationalStore<any>({ softDelete: true });
+  const organizationStore = new InMemoryRelationalStore<any>({ softDelete: true });
+  const databaseClient: any = {
+    stores: { User: userStore, Organization: organizationStore },
+    connect: jest.fn(),
+    disconnect: jest.fn()
+  };
+  return { databaseClient, userStore, organizationStore };
+};
+
+describe('restAPI tombstone purge endpoint (JUM-804)', () => {
+  const responseFor = () => ({ status: jest.fn().mockReturnThis(), json: jest.fn() });
+
+  it('rejects non-loopback callers and dry-runs for loopback ones', async () => {
+    expect.hasAssertions();
+
+    const { databaseClient, userStore } = purgeDb();
+    await userStore.create('purge-u1', { id: 'purge-u1', username: 'purge-u1' });
+    await userStore.delete('purge-u1');
+    const { registered } = buildApi({ databaseClient });
+    const endpoint = registered.find((e: any) => e.path === '/internal/tombstones/purge');
+
+    const remote = responseFor();
+    await endpoint.handler({ ip: '10.0.0.1', body: { commit: true } }, remote);
+    expect(remote.status).toHaveBeenCalledWith(403);
+    expect(remote.json).toHaveBeenCalledWith({ error: 'Purge is loopback-only.' });
+
+    const noAddress = responseFor();
+    await endpoint.handler({}, noAddress);
+    expect(noAddress.status).toHaveBeenCalledWith(403);
+
+    // A fresh tombstone is younger than the default TTL: reported, not purged.
+    const viaSocket = responseFor();
+    await endpoint.handler({ socket: { remoteAddress: '::1' } }, viaSocket);
+    expect(viaSocket.status).toHaveBeenCalledWith(200);
+    expect(viaSocket.json).toHaveBeenCalledWith(expect.objectContaining({
+      dryRun: true,
+      events: [],
+      skippedTooYoung: 1
+    }));
+
+    const ipv4 = responseFor();
+    await endpoint.handler({ ip: '127.0.0.1', body: {} }, ipv4);
+    expect(ipv4.status).toHaveBeenCalledWith(200);
+    await expect(userStore.getOneById('purge-u1', { includeDeleted: true }))
+      .resolves.toMatchObject({ id: 'purge-u1' });
+  });
+
+  it('commits the purge for a loopback caller and drops the rows', async () => {
+    expect.hasAssertions();
+
+    const { databaseClient, userStore, organizationStore } = purgeDb();
+    await userStore.create('purge-u2', { id: 'purge-u2', username: 'purge-u2' });
+    await organizationStore.create('purge-o2', { id: 'purge-o2', name: 'purge-o2' });
+    await userStore.delete('purge-u2');
+    await organizationStore.delete('purge-o2');
+    const { registered } = buildApi({ databaseClient });
+    const endpoint = registered.find((e: any) => e.path === '/internal/tombstones/purge');
+
+    const res = responseFor();
+    await endpoint.handler(
+      { ip: '::ffff:127.0.0.1', body: { commit: true, olderThanDays: -1, protectSeed: false } },
+      res
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    const report = res.json.mock.calls[0][0];
+    expect(report.dryRun).toBe(false);
+    expect(report.events.map((event: any) => `${event.entity}:${event.id}`).sort())
+      .toStrictEqual(['Organization:purge-o2', 'User:purge-u2']);
+    await expect(userStore.getOneById('purge-u2', { includeDeleted: true }))
+      .rejects.toThrow('Record not found');
+    expect(entityIdLedger.has('User', 'purge-u2')).toBe(true);
+    expect(entityIdLedger.has('Organization', 'purge-o2')).toBe(true);
+  });
+
+  it('defaults options, protects seed ids, and honors protectSeed false', async () => {
+    expect.hasAssertions();
+
+    const { databaseClient, userStore } = purgeDb();
+    const { api } = buildApi({ databaseClient });
+    await userStore.create('purge-u3', { id: 'purge-u3', username: 'purge-u3' });
+    await userStore.delete('purge-u3');
+
+    const dryDefault = await api.purgeTombstones();
+    expect(dryDefault.dryRun).toBe(true);
+    expect(dryDefault.olderThanDays).toBe(TOMBSTONE_PURGE_TTL_DAYS);
+    expect(dryDefault.events).toStrictEqual([]);
+    expect(dryDefault.skippedTooYoung).toBe(1);
+
+    const committed = await api.purgeTombstones({ olderThanDays: 0, commit: true });
+    expect(committed.events.map((event) => event.id)).toStrictEqual(['purge-u3']);
+    expect(entityIdLedger.has('User', 'purge-u3')).toBe(true);
+
+    await userStore.create(seedUserIds[0], { id: seedUserIds[0], username: 'purge-seed-user' });
+    await userStore.delete(seedUserIds[0]);
+
+    const protectedReport = await api.purgeTombstones({ olderThanDays: -1 });
+    expect(protectedReport.skippedProtected).toBe(1);
+    expect(protectedReport.events).toStrictEqual([]);
+
+    const unprotected = await api.purgeTombstones({ olderThanDays: -1, protectSeed: false });
+    expect(unprotected.skippedProtected).toBe(0);
+    expect(unprotected.events.map((event) => event.id)).toStrictEqual([seedUserIds[0]]);
   });
 });
