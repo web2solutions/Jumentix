@@ -392,13 +392,35 @@ export class RestAPI<T> {
       const existing = await organizationUseCases.getOneById(organization.id);
       if (existing.result) {
         seeded.push(existing.result);
-      } else {
-        // eslint-disable-next-line no-await-in-loop
-        const created = await organizationUseCases.create(organization as any);
-        if (created.error) throw new Error((created.error as Error).message);
-        if (!created.result) throw new Error('Organization seed failed');
-        seeded.push(created.result);
+        // eslint-disable-next-line no-continue
+        continue;
       }
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const tombstone = await this.databaseClient.stores.Organization.getOneById(
+          organization.id,
+          { includeDeleted: true }
+        );
+        if (tombstone) {
+          // eslint-disable-next-line no-await-in-loop
+          await this.databaseClient.stores.Organization.update(organization.id, {
+            ...tombstone,
+            deletedAt: null
+          });
+          // eslint-disable-next-line no-await-in-loop
+          const restored = await organizationUseCases.getOneById(organization.id);
+          if (restored.result) seeded.push(restored.result);
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+      } catch {
+        // Record really missing — create below.
+      }
+      // eslint-disable-next-line no-await-in-loop
+      const created = await organizationUseCases.create(organization as any);
+      if (created.error) throw new Error((created.error as Error).message);
+      if (!created.result) throw new Error('Organization seed failed');
+      seeded.push(created.result);
     }
 
     return seeded;
@@ -417,6 +439,28 @@ export class RestAPI<T> {
         seeded.push(existing.result);
         // eslint-disable-next-line no-continue
         continue;
+      }
+      try {
+        // Tombstones hide from getOneById; the seed id must stay reserved.
+        // eslint-disable-next-line no-await-in-loop
+        const tombstone = await this.databaseClient.stores.User.getOneById(
+          user.id,
+          { includeDeleted: true }
+        );
+        if (tombstone) {
+          // eslint-disable-next-line no-await-in-loop
+          await this.databaseClient.stores.User.update(user.id, {
+            ...tombstone,
+            deletedAt: null
+          });
+          // eslint-disable-next-line no-await-in-loop
+          const restored = await userUseCases.getOneById(user.id);
+          if (restored.result) seeded.push(restored.result);
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+      } catch {
+        // Record really missing — create below.
       }
       // eslint-disable-next-line no-await-in-loop
       const newUser = await userUseCases.create(user);

@@ -31,6 +31,14 @@ export class UserUseCases implements IUserUseCases {
     return this.userService.getAll(filters, paging);
   }
 
+  public async metrics(
+    filters: Parameters<UserService['metrics']>[0],
+    query: Parameters<UserService['metrics']>[1],
+    capabilities: Parameters<UserService['metrics']>[2]
+  ) {
+    return this.userService.metrics(filters, query, capabilities);
+  }
+
   public async updatePassword(id: string, data: Parameters<UserService['updatePassword']>[1]) {
     return this.userService.updatePassword(id, data);
   }

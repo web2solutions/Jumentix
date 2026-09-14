@@ -165,4 +165,27 @@ describe('parseListSort and runListQuery', () => {
       result: [rows[2]], total: 2, page: 1, size: 1
     });
   });
+
+  it('excludes tombstones unless includeDeleted is set', () => {
+    expect.hasAssertions();
+    const withTomb = [...rows, {
+      id: '5', name: 'gone', age: 1, roles: [], createdAt: '2026-01-01T00:00:00.000Z', deletedAt: '2026-04-01T00:00:00.000Z'
+    }];
+    expect(runListQuery(withTomb, {}, { page: 1, size: 10 }).total).toBe(4);
+    expect(runListQuery(withTomb, {}, { page: 1, size: 10, includeDeleted: true }).total).toBe(5);
+  });
+
+  it('breaks equal sort keys with the primary key', () => {
+    expect.hasAssertions();
+    const tied = [
+      {
+        id: 'b', name: 'x', age: 1, roles: [], createdAt: '2026-01-01T00:00:00.000Z'
+      },
+      {
+        id: 'a', name: 'x', age: 1, roles: [], createdAt: '2026-01-01T00:00:00.000Z'
+      }
+    ];
+    expect(applyListSort(tied, [{ field: 'createdAt', direction: 'asc' }]).map((r) => r.id))
+      .toStrictEqual(['a', 'b']);
+  });
 });

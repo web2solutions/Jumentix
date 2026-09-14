@@ -8,6 +8,7 @@ export interface IOrganization {
   id: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date | string | null;
   name: string;
   address: AddressValueObject[];
   phone: PhoneValueObject[];

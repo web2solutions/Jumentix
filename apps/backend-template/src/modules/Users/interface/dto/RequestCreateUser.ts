@@ -5,6 +5,7 @@ import {
 } from '@src/modules/ddd/valueObjects';
 
 export interface RequestCreateUser {
+  id?: string;
   firstName: string;
   lastName?: string;
   username: string;

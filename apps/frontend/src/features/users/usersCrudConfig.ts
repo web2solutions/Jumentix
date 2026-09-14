@@ -4,7 +4,7 @@ import { rbacRoleNames } from '@/contracts/rbac';
 
 /**
  * X-CRUD Users (JUM-772): full user management — list/create/update/delete,
- * roles from the OAS x-rbac matrix, organization as an OAS x-references FK.
+ * roles from the OAS x-rbac matrix, organization as an OAS x-relation FK.
  */
 const primaryEmailField: FieldDescriptor = {
   name: 'primaryEmail',

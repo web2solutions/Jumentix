@@ -188,7 +188,7 @@ describe('express -> get Users suite', () => {
     const badSort = await list('?sort=password:asc');
     expect(badSort.statusCode).toBe(400);
     expect(badSort.body.message).toContain(
-      'The sort field "password" is not sortable. Accepted: firstName, lastName, username, organization, createdAt, updatedAt.'
+      'The sort field "password" is not sortable. Accepted: firstName, lastName, username, organization, createdAt, updatedAt, id.'
     );
     const badFilter = await list(`?filter=${b64({ password: 'x' })}`);
     expect(badFilter.statusCode).toBe(400);

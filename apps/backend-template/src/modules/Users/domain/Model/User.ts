@@ -1,8 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 // import * as bcrypt from 'bcrypt';
 import {
-  BaseModel
+  BaseModel,
+  belongsTo
 } from '@src/modules/port';
+import { Organization } from '@src/modules/Users/domain/Model/Organization';
 import {
   canNotBeEmpty,
   throwIfReadOnly
@@ -33,6 +35,7 @@ interface UserFactory extends RequestCreateUser {
   id?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  deletedAt?: Date | string | null;
   readOnly?: boolean;
   active?: boolean;
 }
@@ -128,6 +131,13 @@ export class User extends BaseModel<IUser> implements IUser {
         type: 'array',
         required: false,
         validations: []
+      },
+      {
+        name: 'deletedAt',
+        type: 'string',
+        format: 'date-time',
+        required: false,
+        validations: []
       }
     ]
   } as const;
@@ -166,7 +176,8 @@ export class User extends BaseModel<IUser> implements IUser {
     super({
       id: payload.id,
       createdAt: payload.createdAt,
-      updatedAt: payload.updatedAt
+      updatedAt: payload.updatedAt,
+      deletedAt: payload.deletedAt
     });
     BaseModel.throwIfDataEntitySchemaIsNotOpenApi31Compliant(User.dataEntitySchema as any);
     const {
@@ -400,6 +411,7 @@ export class User extends BaseModel<IUser> implements IUser {
     this.validateDomainState();
   }
 
+  @belongsTo(() => Organization)
   public get organization(): string {
     return this._organization;
   }

@@ -22,8 +22,14 @@ export interface FieldDescriptor {
   description?: string;
   example?: string;
   xValidation?: Record<string, unknown>;
-  /** `x-references` (JUM-772): FK to another entity, resolved via its list operation. */
-  xReferences?: { entity?: string; operationId?: string; labelField?: string };
+  /** `x-relation` (JUM-787): FK to another entity; list op comes from `<Entity>ArrayOf`. */
+  relation?: {
+    field: string;
+    entity: string;
+    match: string;
+    display: string;
+    kind: 'belongsTo' | 'hasMany';
+  };
   /** JSON Schema `title`: the label fallback before humanizing the property name (JUM-780). */
   title?: string;
   /** `x-label` (JUM-780): localized labels keyed by locale (`en`, `pt-BR`). */
@@ -41,7 +47,59 @@ interface RawSchema {
   [facet: string]: unknown;
 }
 
-const document = openApi as { components?: { schemas?: Record<string, RawSchema> } };
+const document = openApi as {
+  components?: { schemas?: Record<string, RawSchema> };
+  paths?: Record<string, Record<string, RawSchema & {
+    operationId?: string;
+    responses?: Record<string, unknown>;
+  }>>;
+};
+
+export interface EntityRelation {
+  field: string;
+  entity: string;
+  match: string;
+  display: string;
+  kind: 'belongsTo' | 'hasMany';
+}
+
+/** Schema-level `x-primary-key`, default `id`. */
+export const entityPrimaryKey = (entity: string): string => {
+  const schema = document.components?.schemas?.[entity];
+  const key = schema?.['x-primary-key'];
+  return typeof key === 'string' && key.length > 0 ? key : 'id';
+};
+
+const asRelation = (property: RawSchema, name: string): EntityRelation | undefined => {
+  const raw = property['x-relation'] as Partial<EntityRelation> | undefined;
+  if (!raw || typeof raw !== 'object' || !raw.entity) return undefined;
+  return {
+    field: raw.field ?? name,
+    entity: raw.entity,
+    match: raw.match ?? entityPrimaryKey(raw.entity),
+    display: raw.display ?? 'name',
+    kind: raw.kind === 'hasMany' ? 'hasMany' : 'belongsTo'
+  };
+};
+
+const responseSchemaName = (operation: RawSchema): string | undefined => {
+  const ok = (operation.responses as Record<string, any> | undefined)?.['200'];
+  const ref = ok?.content?.['application/json']?.schema?.$ref as string | undefined;
+  return ref?.replace('#/components/schemas/', '');
+};
+
+/** List operation whose 200 schema is `<Entity>ArrayOf`. */
+export const listOperationForEntity = (entity: string): string | undefined => {
+  const expected = `${entity}ArrayOf`;
+  for (const pathItem of Object.values(document.paths ?? {})) {
+    for (const operation of Object.values(pathItem)) {
+      if (operation?.operationId && responseSchemaName(operation) === expected) {
+        return operation.operationId;
+      }
+    }
+  }
+  return undefined;
+};
 
 /** Resolves a local $ref (#/components/schemas/X) to its schema. */
 const resolveRef = (schema: RawSchema): RawSchema => {
@@ -105,7 +163,7 @@ export const fieldDescriptors = (schemaName: string): FieldDescriptor[] => {
         description: property.description as string | undefined,
         example: property.example !== undefined ? String(property.example) : undefined,
         xValidation: property['x-validation'] as Record<string, unknown> | undefined,
-        xReferences: property['x-references'] as FieldDescriptor['xReferences'],
+        relation: asRelation(property, name),
         title: property.title as string | undefined,
         xLabel: property['x-label'] as Record<string, string> | undefined
       };

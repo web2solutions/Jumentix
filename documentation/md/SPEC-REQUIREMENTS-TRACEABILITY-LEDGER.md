@@ -50,8 +50,10 @@ For any change, identify impacted requirement IDs and ensure:
   - `documentation/md/EVENTS-AND-MESSAGES-MAP.md`
   - `documentation/md/contracts/*`
   - `apps/frontend/*` (consumes only the OAS surface and generated SDKs)
-  - `documentation/md/PAGINATED-LIST-CONTRACT.md` (`x-list-capabilities`, page envelope)
+  - `documentation/md/PAGINATED-LIST-CONTRACT.md` (`x-list-capabilities`, page envelope, tombstones, delta sync)
   - `documentation/md/FRONTEND-SEED-AND-XCRUD.md`
+  - `documentation/md/OAS-VENDOR-EXTENSIONS.md` (`x-relation`, `x-primary-key`, `x-services`, `x-sync`, `x-metrics-capabilities`)
+  - `documentation/md/ENTITY-METRICS-CONTRACT.md`
 - Evidence:
   - route/channel resolution checks
   - realtime integration/smoke tests

@@ -163,6 +163,8 @@ If any gate fails, spec conformance is considered unproven and the change is not
 Branch-aware execution contract:
 
 1. Task branches execute `ci:gate:task` against the task-owned diff.
+   `oas:check-relations` (JUM-789) is part of `ci:gate` and compares `x-relation` /
+   `x-primary-key` to `@belongsTo` / `@hasMany` and the model key.
 2. `dev` pushes execute `test:unit`; pull requests targeting `dev` execute `ci:gate:task`.
 3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
 4. GitHub Actions is the repository-owned orchestrator, the `jumentix` self-hosted

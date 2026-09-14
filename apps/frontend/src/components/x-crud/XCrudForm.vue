@@ -26,7 +26,7 @@ const props = defineProps<{
   descriptors: FieldDescriptor[];
   record?: Record<string, unknown>;
   referenceRestrictions?: Record<string, string[]>;
-  /** Resolved `x-references` labels (field → id → label) for preview cells (JUM-781). */
+  /** Resolved `x-relation` labels (field → id → label) for preview cells (JUM-787). */
   referenceLabels?: Record<string, Record<string, string>>;
 }>();
 
@@ -117,7 +117,7 @@ const referenceLabelFor = (key: string, value: unknown): string => (
   props.referenceLabels?.[key]?.[String(value ?? '')] ?? String(value ?? '')
 );
 
-const isReference = (key: string): boolean => Boolean(entityDescriptors.value[key]?.xReferences);
+const isReference = (key: string): boolean => Boolean(entityDescriptors.value[key]?.relation);
 
 const label = (d: FieldDescriptor): string => fieldLabel(d, props.config.columnLabels);
 const help = (d: FieldDescriptor): string | undefined => fieldHelp(d);
@@ -227,8 +227,8 @@ const help = (d: FieldDescriptor): string | undefined => fieldHelp(d);
               </label>
             </div>
           </div>
-          <!-- entity reference (x-references) -->
-          <div v-else-if="d.xReferences?.operationId" class="col-12 col-md-6">
+          <!-- entity reference (x-relation) -->
+          <div v-else-if="d.relation?.entity" class="col-12 col-md-6">
             <label class="form-label fw-semibold mb-1" :for="`xref-${d.name}`">
               {{ label(d) }}
               <span v-if="d.required" class="text-danger">*</span>

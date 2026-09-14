@@ -8,6 +8,7 @@ import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/Requ
 import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
 import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { IMetricsCapabilities, IMetricsQuery, IMetricsResult } from '@jumentix/persistence-contracts';
 
 export interface IOrganizationUseCases {
   create(data: RequestCreateOrganization): Promise<IServiceResponse<IOrganization>>;
@@ -18,6 +19,11 @@ export interface IOrganizationUseCases {
     filters: Record<string, string | number>,
     paging: IPagingRequest
   ): Promise<IServiceResponse<IOrganization[]>>;
+  metrics(
+    filters: Record<string, string | number>,
+    query: IMetricsQuery,
+    capabilities: IMetricsCapabilities
+  ): Promise<IServiceResponse<IMetricsResult>>;
   createAddress(id: string, data: RequestCreateAddress): Promise<IServiceResponse<IOrganization>>;
   updateAddress(
     id: string,

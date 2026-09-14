@@ -256,7 +256,7 @@ function isObjectContractSchema(schemaValue) {
 function isPortObjectSchema(schemaKey, schemaValue) {
   if (schemaValue['x-port-object'] === true) return true;
   if (schemaValue['x-entity'] || schemaValue['x-domain']) return false;
-  if (schemaKey === 'ResourceDeleteResponse') return true;
+  if (schemaKey === 'ResourceDeleteResponse' || schemaKey === 'EntityMetricsResponse') return true;
   if (/^Request[A-Z]/.test(schemaKey) || /ArrayOf$/.test(schemaKey)) return true;
   const description = String(schemaValue.description || '');
   if (/^Port (input|output) object/.test(description) && !/^Port output object for .+ resource\./.test(description)) {

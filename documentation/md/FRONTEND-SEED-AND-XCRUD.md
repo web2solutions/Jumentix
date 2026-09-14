@@ -25,7 +25,7 @@ file under `src/` imports backend code.
 | `components.schemas.*.properties` (+ `allOf`, `$ref`) | `contracts/formSchema.ts` | one `FieldDescriptor` per property: forms, grid columns, filters |
 | `x-label` (`{ en, pt-BR }`) → `title` → humanized name | `contracts/labels.ts` | every caption; `description` is help text under the control |
 | `x-hide` | `formSchema.ts` | property stays in the contract, never renders |
-| `x-references` (`entity`, `operationId`, `labelField`) | `XCrudReferenceInput`, `useXCrud.loadReferences` | FK selects that show the label and emit the id; arrays of ids (members) resolved the same way |
+| `x-relation` (`entity`, `match`, `display`, `kind`) | `XCrudReferenceInput`, `useXCrud.loadReferences` | FK selects that show the label and emit the id; list op is `<Entity>ArrayOf`; arrays of ids (members) resolved the same way |
 | `x-validation` | `contracts/validation.ts` | masks/checksums (CPF, SSN, phones) before any HTTP |
 | `x-list-capabilities` | `contracts/listSchema.ts` | server-side paging/sort/filter/search (see below) |
 | `info.x-rbac` + per-operation `security` | `contracts/rbac.ts`, router guards, `_nav.ts` | which routes, nav items and buttons a role sees |

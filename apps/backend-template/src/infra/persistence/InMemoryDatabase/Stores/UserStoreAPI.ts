@@ -5,5 +5,6 @@ import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase
 export const UserStoreAPI: IStore<IUser> = new InMemoryRelationalStore<IUser>({
   uniqueIndexes: ['username'],
   caseInsensitiveUniqueIndexes: ['username'],
-  relationIndexes: ['organization']
+  relationIndexes: ['organization'],
+  softDelete: true
 });
