@@ -17,7 +17,12 @@ export function defaultDatabaseUrl(projectId: string): string {
 
 /** Normalize explicit RTDB URLs so a trailing slash does not fork config. */
 export function normalizeDatabaseUrl(url: string): string {
-  return url.trim().replace(/\/+$/, '');
+  const trimmed = url.trim();
+  let end = trimmed.length;
+  while (end > 0 && trimmed.charAt(end - 1) === '/') {
+    end -= 1;
+  }
+  return trimmed.slice(0, end);
 }
 
 function parseServiceAccountJson(raw: string, source: string): Record<string, unknown> {

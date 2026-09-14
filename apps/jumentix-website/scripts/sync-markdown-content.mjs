@@ -141,10 +141,18 @@ const inferTitle = (markdown, fallback) => {
 };
 
 const sanitizeDocBody = (markdown) => {
-  const normalized = normalizeLineEndings(markdown)
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .trim();
-  return normalized || 'No content available.';
+  // Repeat until stable: removing one comment can expose a marker the first
+  // pass hid (`<!-- <!-- -->` leaves `-->`), and a single pass would re-emit
+  // a live comment opener into the MDX output.
+  const commentPattern = /<!--[\s\S]*?-->/g;
+  let normalized = normalizeLineEndings(markdown);
+  let previous;
+  do {
+    previous = normalized;
+    normalized = previous.replace(commentPattern, '');
+  } while (normalized !== previous);
+  const trimmed = normalized.trim();
+  return trimmed || 'No content available.';
 };
 
 async function readJsonFile(filePath) {

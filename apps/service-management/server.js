@@ -340,7 +340,9 @@ function toEnvFileValue(rawValue) {
   const value = String(rawValue ?? '').trim();
   if (!value) return '';
   if (/[\s#]/.test(value)) {
-    return `"${value.replace(/"/g, '\\"')}"`;
+    // Backslashes first: escaping quotes before them would double-escape the
+    // backslash of a `\"` pair and corrupt the value dotenv reads back.
+    return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   }
   return value;
 }
@@ -745,17 +747,25 @@ function isRuntimeValueError(error) {
   return error instanceof Error && error.code === 'INVALID_RUNTIME_VALUE';
 }
 
+// The detail string that may cross the wire in an error envelope. For an
+// Error this is the message only; a thrown non-Error is interpolated, which
+// is its toString — neither form ever carries stack frames, so a response can
+// never leak trace information (CWE-209).
+function errorDetails(error) {
+  return error instanceof Error ? error.message : `${error}`;
+}
+
 function writeInvalidEnvironment(response, error) {
   writeJson(response, 400, {
     error: 'Invalid environment request.',
-    details: error instanceof Error ? error.message : String(error)
+    details: errorDetails(error)
   });
 }
 
 function writeInvalidPayload(response, error) {
   writeJson(response, 400, {
     error: 'Invalid payload.',
-    details: error instanceof Error ? error.message : String(error)
+    details: errorDetails(error)
   });
 }
 
@@ -768,7 +778,7 @@ function writeEnvironmentFileFailure(response, error) {
     error: 'Environment file operation failed.',
     code,
     path: filePath ? String(filePath) : null,
-    details: error instanceof Error ? error.message : String(error)
+    details: errorDetails(error)
   });
 }
 
@@ -783,7 +793,7 @@ function writeEcosystemFileFailure(response, error) {
     error: 'PM2 ecosystem file operation failed.',
     code,
     path: filePath ? String(filePath) : null,
-    details: error instanceof Error ? error.message : String(error)
+    details: errorDetails(error)
   });
 }
 
@@ -792,7 +802,7 @@ function writePm2MetricsFailure(response, error) {
   writeJson(response, 500, {
     error: 'PM2 metrics collection failed.',
     code,
-    details: error instanceof Error ? error.message : String(error)
+    details: errorDetails(error)
   });
 }
 

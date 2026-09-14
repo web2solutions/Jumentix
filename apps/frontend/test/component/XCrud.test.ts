@@ -155,7 +155,7 @@ describe('XCrud listing (Users)', () => {
     await wrapper.findAll('.card-header .nav-link').find((a) => a.text() === 'New User')!.trigger('click');
     await flush(1);
     await wrapper.find('button[aria-label="add documents"]').trigger('click');
-    const labels = wrapper.findAll('.xcrud-array-editor label').map((l) => l.text().replace('*', '').trim());
+    const labels = wrapper.findAll('.xcrud-array-editor label').map((l) => l.text().replaceAll('*', '').trim());
     expect(labels).toContain('Type');
     expect(labels).toContain('Number');
     await wrapper.find('#oas-field-firstName').setValue('New');

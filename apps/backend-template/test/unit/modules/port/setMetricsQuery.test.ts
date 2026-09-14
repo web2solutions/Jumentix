@@ -25,4 +25,16 @@ describe('setMetricsQuery', () => {
     expect(() => setMetricsQuery(event({ metric: 'series', interval: 'year' })))
       .toThrow('Accepted: day, week, month.');
   });
+
+  it('defaults a missing queryString and metric, and accepts a declared groupBy field', () => {
+    expect.hasAssertions();
+    const noQuery = new TestEvent({
+      schemaOAS: { 'x-metrics-capabilities': { groupable: ['roles'], series: ['createdAt'] } }
+    });
+    (noQuery as any).queryString = undefined;
+    expect(() => setMetricsQuery(noQuery)).toThrow('Accepted: count, groupBy, series.');
+
+    const parsed = setMetricsQuery(event({ metric: 'groupBy', field: 'roles' }));
+    expect(parsed.query).toMatchObject({ metric: 'groupBy', field: 'roles' });
+  });
 });

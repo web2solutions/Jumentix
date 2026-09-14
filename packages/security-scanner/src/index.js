@@ -99,7 +99,7 @@ function severityOf(vuln) {
 
   const cvss = (vuln?.severity || []).find((entry) => String(entry.type || '').startsWith('CVSS'));
   if (cvss && typeof cvss.score === 'string') {
-    const match = /\/AV:.*$/.test(cvss.score) ? null : Number.parseFloat(cvss.score);
+    const match = cvss.score.includes('/AV:') ? null : Number.parseFloat(cvss.score);
     if (Number.isFinite(match)) {
       if (match >= 9) return 'CRITICAL';
       if (match >= 7) return 'HIGH';

@@ -103,7 +103,7 @@ describe('operation routing', () => {
     try {
       await new RestApiClient('http://api.test').request({ operationId: anOperationId() });
 
-      expect(stub.calls[0].url.startsWith('http://api.test')).toBe(true);
+      expect(new URL(stub.calls[0].url).origin).toBe('http://api.test');
     } finally {
       stub.restore();
     }

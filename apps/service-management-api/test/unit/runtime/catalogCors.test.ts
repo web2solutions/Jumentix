@@ -101,4 +101,32 @@ describe('service management catalog API CORS defaults', () => {
 
     expect(env.JUMENTIX_CORS_ALLOWED_ORIGINS).toBe('http://localhost:4300,http://127.0.0.1:4300');
   });
+
+  it('defaults to process.env when no env object is given', () => {
+    expect.assertions(1);
+
+    const previous = process.env.JUMENTIX_CORS_ALLOWED_ORIGINS;
+    delete process.env.JUMENTIX_CORS_ALLOWED_ORIGINS;
+    try {
+      applyCatalogCorsDefaults();
+
+      expect(process.env.JUMENTIX_CORS_ALLOWED_ORIGINS)
+        .toBe('http://localhost:3200,http://127.0.0.1:3200');
+    } finally {
+      // eslint-disable-next-line jest/no-conditional-in-test
+      if (previous === undefined) delete process.env.JUMENTIX_CORS_ALLOWED_ORIGINS;
+      else process.env.JUMENTIX_CORS_ALLOWED_ORIGINS = previous;
+    }
+  });
+
+  it('falls back to the dev designer origins when the env carries no NODE_ENV', () => {
+    expect.assertions(1);
+
+    const env = {} as unknown as NodeJS.ProcessEnv;
+
+    applyCatalogCorsDefaults(env);
+
+    expect(env.JUMENTIX_CORS_ALLOWED_ORIGINS)
+      .toBe('http://localhost:3200,http://127.0.0.1:3200');
+  });
 });

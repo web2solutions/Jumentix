@@ -87,4 +87,31 @@ describe('setListQuery', () => {
     expect(setListQuery(event({ filter: b64({ anything: 1 }) }, {})).filters)
       .toStrictEqual({ anything: 1 });
   });
+
+  it('parses includeDeleted flags and tolerates a missing queryString', () => {
+    expect.hasAssertions();
+    expect(setListQuery(event({ includeDeleted: 'true' })).paging.includeDeleted).toBe(true);
+    expect(setListQuery(event({ includeDeleted: '1' })).paging.includeDeleted).toBe(true);
+    expect(setListQuery(event({ includeDeleted: '0' })).paging.includeDeleted).toBe(false);
+    const noQuery = new TestEvent({ schemaOAS: { 'x-list-capabilities': capabilities } });
+    (noQuery as any).queryString = undefined;
+    expect(setListQuery(noQuery).paging).toStrictEqual({ page: 1, size: 20 });
+  });
+
+  it('treats a non-array sortable declaration as empty and names "(none)" as accepted', () => {
+    expect.hasAssertions();
+    expect(readListCapabilities({ 'x-list-capabilities': { sortable: 'firstName' } }))
+      .toStrictEqual({
+        sortable: [], filterable: {}, searchable: [], defaultSize: 30, maxSize: 100
+      });
+    const unsortable = { 'x-list-capabilities': { ...capabilities, sortable: [] } };
+    expect(() => setListQuery(event({ sort: 'username:asc' }, unsortable)))
+      .toThrow('The sort field "username" is not sortable. Accepted: (none).');
+  });
+
+  it('rejects filter objects that omit the operator', () => {
+    expect.hasAssertions();
+    expect(() => setListQuery(event({ filter: b64({ firstName: { value: 'an' } }) })))
+      .toThrow('The filter operator "" on "firstName" is not accepted.');
+  });
 });
