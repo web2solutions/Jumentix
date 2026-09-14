@@ -31,6 +31,15 @@
       "@jumentix/sdk-rest-client": [
         "../../packages/sdk-rest-client/src/index.ts"
       ],
+      "@jumentix/cana": [
+        "../../packages/cana/src/index.ts"
+      ],
+      "@jumentix/cana-vue": [
+        "../../packages/cana-vue/src/index.ts"
+      ],
+      "@jumentix/persistence-contracts": [
+        "../../packages/persistence-contracts/src/index.ts"
+      ],
       "@jumentix/shared-contracts": [
         "src/contracts/sharedContractsBrowserShim.ts"
       ]

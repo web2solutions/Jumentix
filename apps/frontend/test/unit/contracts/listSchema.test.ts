@@ -40,7 +40,7 @@ describe('toQueryParams / asListPage', () => {
     expect(params.sort).toBe('name:desc');
     expect(params.q).toBeUndefined();
     expect(JSON.parse(atob(String(params.filter)))).toStrictEqual({ name: { operator: 'contains', value: 'ac' } });
-    expect(toQueryParams({ filter: {} }).filter).toBeUndefined();
+    expect(toQueryParams({ includeDeleted: true }).includeDeleted).toBe('true');
   });
 
   it('normalizes envelopes and bare arrays to one page shape', () => {

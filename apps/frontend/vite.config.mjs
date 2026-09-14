@@ -36,6 +36,18 @@ export default defineConfig(() => {
           replacement: path.resolve(import.meta.dirname, '../../packages/sdk-rest-client/src/index.ts'),
         },
         {
+          find: /^@jumentix\/cana$/,
+          replacement: path.resolve(import.meta.dirname, '../../packages/cana/src/index.ts'),
+        },
+        {
+          find: /^@jumentix\/cana-vue$/,
+          replacement: path.resolve(import.meta.dirname, '../../packages/cana-vue/src/index.ts'),
+        },
+        {
+          find: /^@jumentix\/persistence-contracts$/,
+          replacement: path.resolve(import.meta.dirname, '../../packages/persistence-contracts/src/index.ts'),
+        },
+        {
           // The canonical loader reads the spec from disk (node:fs) — the
           // browser always injects the bundled OAS instead (requirement 136).
           find: /^@jumentix\/shared-contracts$/,

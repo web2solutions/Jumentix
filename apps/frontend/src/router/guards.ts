@@ -2,6 +2,7 @@ import type { RouteLocationNormalized } from 'vue-router';
 
 import { expireIfStaleSession } from '@/contracts/sessionGuard';
 import { can } from '@/contracts/rbac';
+import { isCanaOpen } from '@/data/db';
 import { findModule } from '@/modules/manifest';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
@@ -16,6 +17,22 @@ export const requireAuthRedirect = (to: RouteLocationNormalized): string | null 
     return '/login';
   }
   return auth.isAuthenticated() ? null : '/login';
+};
+
+/** Shell stays unreachable until the first full load (or delta) finishes. */
+export const requireSyncRedirect = async (
+  to: RouteLocationNormalized
+): Promise<string | null> => {
+  if (to.meta.public === true) return null;
+  const auth = useAuthStore();
+  if (!auth.isAuthenticated()) return null;
+  if (!isCanaOpen()) return null;
+  const { isSynced } = await import('@/data/sync');
+  const synced = await isSynced();
+  if (to.name === 'Sync') {
+    return synced ? '/dashboard' : null;
+  }
+  return synced ? null : '/sync';
 };
 
 const operationIdFor = (to: RouteLocationNormalized): string | undefined => {

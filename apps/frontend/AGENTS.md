@@ -41,6 +41,7 @@ src/contracts/     motor OAS: formSchema (descritores), oasForm (collect/validat
                    (x-validation: máscaras/checksums), labels (x-label → title → humanize),
                    listSchema (x-list-capabilities), rbac (info.x-rbac + security), apiClient
                    (singleton SDK), appOperations (operationIds do shell), errors
+src/data/          Cana schema/boot, repositório local, sync, outbox, PWA
 src/modules/       manifest, Users module registry, nav generated from modules
 src/shell/         toolbar widget registry, breakpoints
 src/components/    OasFormField, SearchableEnumInput, X-CRUD, AppTaskbar, ModuleLayout
@@ -77,6 +78,7 @@ explícita do usuário.
 7. Um domínio gerado entra como `ModuleManifest` em `src/modules/` (`registerModule` + `validateModules` no boot). O menu lista **módulos**, não entidades avulsas. Entidades viram abas em `ModuleLayout.vue`.
 8. Widgets da toolbar passam por `src/shell/toolbarWidgets.ts` (`registerToolbarWidget`). Não plugar componentes soltos em `AppHeader.vue`.
 9. Estado de um módulo aberto vive no pane (`v-show` em `DefaultLayout`); o store `tasks` só persiste quais módulos estão abertos e qual está ativo (`sessionStorage`).
+10. Offline-first: IndexedDB abre antes do login; listagens após o sync leem Cana. Ver `documentation/md/FRONTEND-OFFLINE-DATA-LAYER.md`.
 
 ## 6. Kit X-CRUD (`src/components/x-crud/`)
 

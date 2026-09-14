@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import { defineComponent } from 'vue';
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
-import { requireAuthRedirect, requireScopeRedirect } from '@/router/guards';
+import { requireAuthRedirect, requireScopeRedirect, requireSyncRedirect } from '@/router/guards';
 import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
 import { usersCrudConfig } from '@/features/users/usersCrudConfig';
 import '@/modules/index';
@@ -25,6 +25,11 @@ const routes = [
     name: 'Register',
     component: () => import('@/features/auth/RegisterView.vue'),
     meta: { public: true }
+  },
+  {
+    path: '/sync',
+    name: 'Sync',
+    component: () => import('@/views/SyncProgressView.vue')
   },
   {
     path: '/',
@@ -77,7 +82,10 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => (
-  requireAuthRedirect(to) ?? (await requireScopeRedirect(to)) ?? true
+  requireAuthRedirect(to)
+  ?? (await requireSyncRedirect(to))
+  ?? (await requireScopeRedirect(to))
+  ?? true
 ));
 
 export default router;

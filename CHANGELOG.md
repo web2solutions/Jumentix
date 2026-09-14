@@ -4,6 +4,10 @@
 
 ## All Changes
 
+- 2026-09-14 fix(ci): resolve yaml in isolated review tests - Eduardo A.
+- 2026-09-14 feat(frontend): add offline Cana PWA seed - Eduardo A.
+- 2026-09-14 [JUM-795][Feature] Multitask app shell with modules, taskbar and widgets (#332) - Eduardo A.
+- 2026-09-14 fix(frontend): use real buttons on taskbar - Eduardo A.
 - 2026-09-14 feat(frontend): add multitask module shell - Eduardo A.
 - 2026-09-14 feat(persistence): add opt-in tombstone purge (#331) - Eduardo A.
 - 2026-09-14 test(coverage): raise monorepo coverage above the full-matrix floor (JUM-821) (#330) - Eduardo A.

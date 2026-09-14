@@ -65,6 +65,9 @@ import router from './router';
 import { installSessionGuard } from '@/contracts/sessionGuard';
 import App from './App.vue';
 import { configureAppOperations } from './contracts/appOperations';
+import { bootCana, exposeCanaTestHooks } from '@/data/db';
+import { registerSW } from '@/data/pwa';
+import { bindOnlineReplay } from '@/data/sync';
 import '@/modules/index';
 import { registerShellToolbarWidgets } from '@/shell/registerShellWidgets';
 
@@ -72,9 +75,10 @@ import { registerShellToolbarWidgets } from '@/shell/registerShellWidgets';
 configureAppOperations();
 registerShellToolbarWidgets();
 
+const pinia = createPinia();
 const app = createApp(App);
 
-app.use(createPinia());
+app.use(pinia);
 app.use(router);
 app.use(CoreuiVue);
 
@@ -143,4 +147,11 @@ app.component('CIcon', CIcon);
 // lands on /login from any page (not only /profile).
 installSessionGuard(router);
 
+const boot = await bootCana();
+exposeCanaTestHooks();
+if (boot === 'ok') {
+  bindOnlineReplay();
+  registerSW();
+}
+app.provide('canaBoot', boot);
 app.mount('#app');

@@ -29,15 +29,11 @@ export const collectBody = (
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-export const validateField = (descriptor: FieldDescriptor, value: unknown): string | null => {
-  const text = value === undefined || value === null ? '' : String(value);
-  const field = fieldLabel(descriptor);
-  if (descriptor.required && !text.trim()) {
-    return t('validation.required', { field });
-  }
-  if (!text) {
-    return null; // optional and empty — nullable/optional per OAS
-  }
+const validateFilledField = (
+  descriptor: FieldDescriptor,
+  text: string,
+  field: string
+): string | null => {
   if (descriptor.minLength !== undefined && text.length < descriptor.minLength) {
     return t('validation.minLength', { field, min: descriptor.minLength });
   }
@@ -57,6 +53,18 @@ export const validateField = (descriptor: FieldDescriptor, value: unknown): stri
     return t('validation.email', { field });
   }
   return null;
+};
+
+export const validateField = (descriptor: FieldDescriptor, value: unknown): string | null => {
+  const text = value === undefined || value === null ? '' : String(value);
+  const field = fieldLabel(descriptor);
+  if (descriptor.required && !text.trim()) {
+    return t('validation.required', { field });
+  }
+  if (descriptor.type === 'array' || !text) {
+    return null;
+  }
+  return validateFilledField(descriptor, text, field);
 };
 
 /** First invalid field wins; returns null when the whole form is valid. */

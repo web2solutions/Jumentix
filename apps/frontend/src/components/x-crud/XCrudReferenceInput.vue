@@ -5,6 +5,8 @@ import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { entityPrimaryKey, listOperationForEntity, type FieldDescriptor } from '@/contracts/formSchema';
 import { listCapabilities } from '@/contracts/listSchema';
+import { isCanaOpen } from '@/data/db';
+import { listLocal } from '@/data/localRepository';
 import { t } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
 
@@ -28,14 +30,22 @@ onMounted(async () => {
   const operationId = relation?.entity ? listOperationForEntity(relation.entity) : undefined;
   if (!operationId) return;
   try {
-    const auth = useAuthStore();
     const capabilities = listCapabilities(operationId);
-    const response = await getSharedApiClient().request<{ result?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>>({
-      operationId,
-      query: capabilities ? { page: 1, size: capabilities.maxSize } : undefined,
-      headers: { Authorization: auth.token }
-    });
-    const rows = Array.isArray(response) ? response : (response.result ?? []);
+    let rows: Array<Record<string, unknown>> = [];
+    if (isCanaOpen() && relation?.entity) {
+      const page = await listLocal(relation.entity, {
+        page: 1,
+        size: capabilities?.maxSize ?? 100
+      });
+      rows = page.result;
+    } else {
+      const response = await getSharedApiClient().request<{ result?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>>({
+        operationId,
+        query: capabilities ? { page: 1, size: capabilities.maxSize } : undefined,
+        headers: { Authorization: useAuthStore().token }
+      });
+      rows = Array.isArray(response) ? response : (response.result ?? []);
+    }
     const labelField = relation?.display ?? 'name';
     const match = relation?.match || entityPrimaryKey(relation?.entity ?? '');
     options.value = rows.map((row) => ({

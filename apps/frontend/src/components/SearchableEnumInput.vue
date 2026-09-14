@@ -45,6 +45,20 @@ const text = ref(labelFor(props.modelValue));
 watch(
   () => [props.modelValue, props.options] as const,
   () => {
+    const selected = props.options.find((option) => optionValue(option) === props.modelValue);
+    if (selected) {
+      text.value = optionLabel(selected);
+      return;
+    }
+    const typed = props.options.find((option) => (
+      optionLabel(option) === props.modelValue || optionLabel(option) === text.value
+    ));
+    if (typed) {
+      text.value = optionLabel(typed);
+      const value = optionValue(typed);
+      if (value !== props.modelValue) emit('update:modelValue', value);
+      return;
+    }
     text.value = labelFor(props.modelValue);
   }
 );

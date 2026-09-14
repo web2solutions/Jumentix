@@ -52,6 +52,7 @@ For any change, identify impacted requirement IDs and ensure:
   - `apps/frontend/*` (consumes only the OAS surface and generated SDKs)
   - `documentation/md/PAGINATED-LIST-CONTRACT.md` (`x-list-capabilities`, page envelope, tombstones, delta sync)
   - `documentation/md/FRONTEND-SEED-AND-XCRUD.md`
+  - `documentation/md/FRONTEND-OFFLINE-DATA-LAYER.md`
   - `documentation/md/OAS-VENDOR-EXTENSIONS.md` (`x-relation`, `x-primary-key`, `x-services`, `x-sync`, `x-metrics-capabilities`)
   - `documentation/md/ENTITY-METRICS-CONTRACT.md`
 - Evidence:

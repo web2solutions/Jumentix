@@ -8,6 +8,8 @@ import { listCapabilities } from '@/contracts/listSchema';
 import { asListPage } from '@/contracts/listSchema';
 import { can, hasSuperadmin } from '@/contracts/rbac';
 import { usePermissions } from '@/contracts/usePermissions';
+import { isCanaOpen } from '@/data/db';
+import { countLocal } from '@/data/localRepository';
 import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
 import { usersCrudConfig } from '@/features/users/usersCrudConfig';
 import { useI18n } from '@/i18n';
@@ -69,6 +71,11 @@ const loadMetric = async (metric: Metric): Promise<void> => {
   metric.allowed = can(profile.record?.roles ?? [], metric.operationId);
   if (!metric.allowed) return;
   try {
+    if (isCanaOpen()) {
+      const entity = metric.key === 'users' ? 'User' : 'Organization';
+      metric.value = await countLocal(entity);
+      return;
+    }
     const capabilities = listCapabilities(metric.operationId);
     const response = await getSharedApiClient().request<unknown>({
       operationId: metric.operationId,

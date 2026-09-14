@@ -73,6 +73,8 @@ The hybrid seed (`apps/frontend`) plugs a generated domain in as a **module**
 (`src/modules/manifest.ts`): navigation lists modules, each open module is a
 taskbar button, entity screens are tabs plus a Dashboard tab. See
 [Frontend Seed and the X-CRUD Kit](/docs/jumentix/FRONTEND-SEED-AND-XCRUD).
+Offline-first Cana boot, sync, outbox and PWA:
+[Frontend offline data layer](/docs/jumentix/reference/frontend-offline-data-layer).
 
 **Success check:** OpenAPI/AsyncAPI files match designer export; operationIds stable.
 

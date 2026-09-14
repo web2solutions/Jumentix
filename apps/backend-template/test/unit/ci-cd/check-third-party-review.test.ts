@@ -16,6 +16,8 @@ function fixture(change?: (root: string) => void): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'third-party-review-'));
   fs.mkdirSync(path.join(root, 'ci-cd'), { recursive: true });
   fs.copyFileSync(checker, path.join(root, 'ci-cd/check-third-party-review.js'));
+  const yamlRoot = path.dirname(require.resolve('yaml/package.json'));
+  fs.cpSync(yamlRoot, path.join(root, 'node_modules/yaml'), { recursive: true });
   for (const file of contracts) {
     const destination = path.join(root, file);
     fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -30,7 +32,13 @@ function run(root: string): { code: number; output: string } {
     const output = execFileSync('bun', ['ci-cd/check-third-party-review.js'], {
       cwd: root,
       encoding: 'utf8',
-      stdio: 'pipe'
+      stdio: 'pipe',
+      env: {
+        ...process.env,
+        NODE_PATH: [path.join(repoRoot, 'node_modules'), process.env.NODE_PATH]
+          .filter(Boolean)
+          .join(path.delimiter)
+      }
     });
 
     return { code: 0, output };
