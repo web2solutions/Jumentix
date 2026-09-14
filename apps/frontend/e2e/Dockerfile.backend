@@ -21,19 +21,20 @@ COPY packages ./packages
 COPY tooling ./tooling
 COPY ci-cd ./ci-cd
 
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --ignore-scripts
 
 COPY spec ./spec
 COPY apps/backend-template ./apps/backend-template
 COPY apps/service-management-api ./apps/service-management-api
 
-ENV NODE_ENV=dev \
-    JUMENTIX_HTTP_FRAMEWORK=express \
+ENV JUMENTIX_HTTP_FRAMEWORK=express \
     JUMENTIX_HTTP_PORT=3000 \
     JUMENTIX_DATABASE_DRIVER=InMemory \
     JUMENTIX_KEYVALUESTORAGE_DRIVER=inmemory \
     JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=inmemory \
     JUMENTIX_REALTIME_API=no
+
+USER bun
 
 EXPOSE 3000
 

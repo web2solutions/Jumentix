@@ -636,7 +636,7 @@ async function readPm2Metrics(runtime) {
   const expectedNames = new Set((ecosystem.apps || []).map((app) => app.name).filter(Boolean));
   const processes = (await readPm2ProcessList()).map(normalizePm2Process);
   const processNames = new Set(processes.map((processEntry) => processEntry.name));
-  const missingExpected = [...expectedNames].filter((name) => !processNames.has(name)).sort();
+  const missingExpected = [...expectedNames].filter((name) => !processNames.has(name)).sort((a, b) => a.localeCompare(b));
   const summary = summarizePm2Processes(processes);
   const { processes: withAsyncContext, asyncContextActiveSum } = await attachAsyncContextMetrics(
     processes,

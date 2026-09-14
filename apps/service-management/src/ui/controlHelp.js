@@ -398,5 +398,5 @@ export function installControlHelp(rootDocument = document) {
 }
 
 export function staticHelpIds() {
-  return Object.keys(SPECIFIC_HELP).sort();
+  return Object.keys(SPECIFIC_HELP).sort((a, b) => a.localeCompare(b));
 }

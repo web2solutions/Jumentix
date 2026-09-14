@@ -78,8 +78,8 @@ describe('users X-CRUD', () => {
   it('renders the listing in Portuguese after switching the locale', () => {
     cy.get('.header [aria-label="Account"]').click();
     cy.contains('.dropdown-item', 'Português (BR)').click();
-    cy.contains('.card-header .nav-link', 'Listagem de Usuário');
-    cy.contains('th', 'Nome');
-    cy.contains('button', 'Filtros');
+    cy.contains('.card-header .nav-link', 'Listagem de Usuário').should('be.visible');
+    cy.contains('th', 'Nome').should('be.visible');
+    cy.contains('button', 'Filtros').should('be.visible');
   });
 });

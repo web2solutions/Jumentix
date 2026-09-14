@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-13 chore(merge): reconcile origin/main into dev lineage for JUM-821 promotion - Eduardo Almeida
+- 2026-09-13 ci: keep sonar scan encoding safe (JUM-784) (#326) - Eduardo A.
 - 2026-09-13 [JUM-784][CI] Restore ci:gate health (boundaries, build:dev, branch-gate preflight) (#323) - Eduardo A.
 - 2026-09-13 chore(ci): merge origin/dev into JUM-784 restore branch - Eduardo A.
 - 2026-09-13 docs: avoid unavailable provider badges (JUM-568) (#324) - Eduardo A.
@@ -56,6 +58,8 @@
 - 2026-08-29 fix(service-management): vendor the browser bundles before starting the designer [JUM-734] - Eduardo A.
 - 2026-08-29 [JUM-728][Fix] Render shell documentation fences as copyable code blocks (#279) - Eduardo A.
 - 2026-08-29 fix(website): render shell fences as copyable code blocks, not editors [JUM-728] - Eduardo A.
+- 2026-08-29 [JUM-721][Release] Promote dev to main with signed squash (#278) - Eduardo A.
+- 2026-08-29 chore(release): promote dev to main - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Ignore website metadata in patch coverage (#276) - Eduardo A.
 - 2026-08-29 fix(coverage): ignore website navigation metadata in patch gate - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Keep UUID generation covered centrally (#275) - Eduardo A.
