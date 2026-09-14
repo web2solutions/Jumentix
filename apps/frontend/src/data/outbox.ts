@@ -34,11 +34,16 @@ const stripLocal = (record: Record<string, unknown>): Record<string, unknown> =>
   return next;
 };
 
-const newOpId = (): string => (
-  typeof crypto !== 'undefined' && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `op-${Date.now()}-${Math.random().toString(16).slice(2)}`
-);
+const newOpId = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(bytes);
+  }
+  return `op-${Date.now()}-${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+};
 
 export const listOutbox = async (): Promise<OutboxIntent[]> => {
   if (!isCanaOpen()) return [];
