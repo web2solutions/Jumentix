@@ -5,6 +5,7 @@ import { reactive } from 'vue';
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { apiErrorStatus } from '@/contracts/errors';
 import { asListPage, listCapabilities, toQueryParams } from '@/contracts/listSchema';
+import { fieldDescriptors } from '@/contracts/formSchema';
 import { useAuthStore } from '@/stores/auth';
 import {
   META_STORE, SESSION_META_ID, deriveEntityTables, entityTable
@@ -104,6 +105,37 @@ const applyPage = async (
   return newest;
 };
 
+const needsDetailRow = (schemaName: string, record: Record<string, unknown>): boolean => (
+  fieldDescriptors(schemaName)
+    .filter((descriptor) => descriptor.type === 'array')
+    .some((descriptor) => !Array.isArray(record[descriptor.name]))
+);
+
+const hydrateDetails = async (schemaName: string): Promise<void> => {
+  const table = entityTable(schemaName);
+  if (!table.getOperationId) return;
+  const api = getSharedApiClient();
+  const headers = authHeaders();
+  const store = getCanaClient().table(table.storeName);
+  const rows = [...await store.query()] as Record<string, unknown>[];
+  for (const row of rows) {
+    if (row.deletedAt || !needsDetailRow(schemaName, row)) continue;
+    const key = String(row[table.keyPath] ?? row.id ?? '');
+    if (!key) continue;
+    try {
+      const detail = await api.request<Record<string, unknown>>({
+        operationId: table.getOperationId,
+        pathParams: { id: key },
+        headers
+      });
+      await store.put({ ...toStorable(detail), _sync: 'synced' });
+    } catch (error) {
+      if (apiErrorStatus(error) === 403) continue;
+      throw error;
+    }
+  }
+};
+
 const loadEntityPages = async (
   schemaName: string,
   options: { deltaFrom?: string; onPage: () => void }
@@ -139,6 +171,7 @@ const loadEntityPages = async (
     if (envelope.result.length === 0) break;
     page += 1;
   }
+  await hydrateDetails(schemaName);
   return newest;
 };
 

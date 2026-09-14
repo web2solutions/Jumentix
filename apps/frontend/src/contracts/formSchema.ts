@@ -101,6 +101,19 @@ export const listOperationForEntity = (entity: string): string | undefined => {
   return undefined;
 };
 
+/** GET-by-id whose 200 schema is the entity itself (not the list envelope). */
+export const getOperationForEntity = (entity: string): string | undefined => {
+  for (const [path, pathItem] of Object.entries(document.paths ?? {})) {
+    if (path.includes('{')) {
+      const operation = pathItem.get;
+      if (operation?.operationId && responseSchemaName(operation) === entity) {
+        return operation.operationId;
+      }
+    }
+  }
+  return undefined;
+};
+
 /** Resolves a local $ref (#/components/schemas/X) to its schema. */
 const resolveRef = (schema: RawSchema): RawSchema => {
   if (!schema.$ref) {

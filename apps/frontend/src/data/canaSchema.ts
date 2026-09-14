@@ -2,7 +2,7 @@ import type { CanaSchema, CanaStoreSchema } from '@jumentix/cana';
 
 import openApi from '@/contracts/openapi.json';
 import {
-  entityPrimaryKey, fieldDescriptors, listOperationForEntity
+  entityPrimaryKey, fieldDescriptors, getOperationForEntity, listOperationForEntity
 } from '@/contracts/formSchema';
 import { listCapabilities } from '@/contracts/listSchema';
 
@@ -18,6 +18,7 @@ export interface EntityTableSpec {
   keyPath: string;
   indexes: string[];
   listOperationId: string;
+  getOperationId?: string;
 }
 
 interface OpenApiPaths {
@@ -77,7 +78,8 @@ export const deriveEntityTables = (): EntityTableSpec[] => {
         storeName: storeNameFromListPath(listOperationId, schemaName),
         keyPath,
         indexes: [...indexSet],
-        listOperationId
+        listOperationId,
+        getOperationId: getOperationForEntity(schemaName)
       });
     }
   }
