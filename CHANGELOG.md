@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-13 [JUM-821][Fix] Clear SonarQube security/reliability findings and reconcile main lineage (#328) - Eduardo A.
+- 2026-09-13 fix(quality): clear SonarQube security/reliability findings blocking JUM-821 promotion - Eduardo Almeida
 - 2026-09-13 chore(merge): reconcile origin/main into dev lineage for JUM-821 promotion - Eduardo Almeida
 - 2026-09-13 ci: keep sonar scan encoding safe (JUM-784) (#326) - Eduardo A.
 - 2026-09-13 [JUM-784][CI] Restore ci:gate health (boundaries, build:dev, branch-gate preflight) (#323) - Eduardo A.

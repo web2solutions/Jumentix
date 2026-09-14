@@ -9,6 +9,8 @@ export interface IPagingRequest {
   q?: string;
   /** Fields `q` is matched against; declared by the operation's `x-list-capabilities`. */
   searchFields?: string[];
+  /** When true, list/get include tombstones (`deletedAt` set). Default false. */
+  includeDeleted?: boolean;
 }
 
 export interface IPagingResponse<T> {
@@ -153,7 +155,7 @@ export type TStoreAggregationStage = Record<string, unknown>;
 
 export interface IStore<T> {
   delete(id: string): Promise<boolean>;
-  getOneById(id: string): Promise<T>;
+  getOneById(id: string, options?: { includeDeleted?: boolean }): Promise<T>;
   getByName?(name: string): Promise<T>;
   getByRelation?(field: keyof T, referenceId: string): Promise<T[]>;
   create(key: string, value: T): Promise<T>;

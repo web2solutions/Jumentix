@@ -12,7 +12,7 @@ import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import type {
   IServiceResponse
 } from '@src/modules/port';
-import { setListQuery } from '@src/modules/port';
+import { setListQuery, setMetricsQuery } from '@src/modules/port';
 import type {
   IUser
 } from '@src/modules/Users/domain/Entity/IUser';
@@ -178,6 +178,26 @@ export class UserController extends BaseController implements IController {
     );
     // console.log(result);
     return result;
+  }
+
+  @Authorize()
+  public async getUsersMetrics(
+    event: BaseDomainEvent
+  ): Promise<IServiceResponse<unknown>> {
+    validateRequestAgainstOAS(
+      this.openApiSpecification,
+      event.schemaOAS,
+      event
+    );
+    const { query, filters, capabilities } = setMetricsQuery(event);
+    const authenticatedUser = this.getAuthenticatedUser(event);
+    const tenantScope = resolveUserCollectionScope(authenticatedUser);
+    this.throwIfTenantAccessDenied(tenantScope.decision);
+    return this.userUseCases.metrics(
+      { ...filters, ...tenantScope.filters },
+      query,
+      capabilities
+    );
   }
 
   @Authorize()

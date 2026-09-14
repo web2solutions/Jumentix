@@ -467,7 +467,16 @@ const UNSUPPORTED_SOURCE_FACETS = [
   'x-validation',
   'x-hide',
   'x-references',
-  'x-label'
+  'x-label',
+  // JUM-787–793: property/document contract vocabulary the designer model
+  // does not store. Lossless carry would need new designer fields.
+  'x-relation',
+  'x-primary-key',
+  'x-services',
+  'x-service',
+  'x-sync',
+  'x-metrics-capabilities',
+  'readOnly'
 ];
 
 /**
@@ -1203,13 +1212,14 @@ describe('designer export/import round-trip (JUM-471)', () => {
   describe('canonical spec/1.0.0.yml round-trip (JUM-478)', () => {
     const specDocument = loadCanonicalSpec();
 
-    it('pins the canonical fixture: openapi 3.1.0 with 33 generated-service operationIds', () => {
+    it('pins the canonical fixture: openapi 3.1.0 with 35 generated-service operationIds', () => {
       expect.hasAssertions();
       // JUM-748 moved the six shared-catalog operations to
       // apps/service-management-api/spec/1.0.0.yml, so the backend template
-      // fixture now carries only generated-service resources.
+      // fixture now carries only generated-service resources. JUM-792 adds
+      // GET /users/metrics and GET /organizations/metrics.
       expect(specDocument.openapi).toBe('3.1.0');
-      expect(countOperationIds(specDocument)).toBe(33);
+      expect(countOperationIds(specDocument)).toBe(35);
     });
 
     it('imports the six contract schemas with full meta normalization and no phantom port objects', () => {
@@ -1239,7 +1249,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
       });
       const userFields = fieldsByName(user);
       expect(userFields.id).toMatchObject({
-        type: 'string', required: true, pk: true, unique: true
+        type: 'uuid', required: true, pk: true, unique: true
       });
       expect(userFields.password).toMatchObject({
         type: 'string', format: 'password', minLength: 8, required: true

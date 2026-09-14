@@ -2,7 +2,12 @@ import { computed, reactive, ref } from 'vue';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { apiErrorStatus, formatApiError } from '@/contracts/errors';
-import { fieldDescriptors, type FieldDescriptor } from '@/contracts/formSchema';
+import {
+  entityPrimaryKey,
+  fieldDescriptors,
+  listOperationForEntity,
+  type FieldDescriptor
+} from '@/contracts/formSchema';
 import { listCapabilities, type ListCapabilities, type ListQuery } from '@/contracts/listSchema';
 import { localized, t } from '@/i18n';
 import { createEntityStore } from '@/stores/entityStore';
@@ -34,7 +39,10 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   const capabilities: ListCapabilities | undefined = listCapabilities(config.operations.list);
   const serverMode = capabilities !== undefined;
 
-  const rowId = config.rowId ?? ((row: Row) => String(row.id));
+  const rowId = config.rowId ?? ((row: Row) => {
+    const key = entityPrimaryKey(config.entity);
+    return String(row[key] ?? row.id ?? row._id ?? '');
+  });
 
   /** Entity display name in the active locale. */
   const title = computed(() => localized(config.title));
@@ -196,29 +204,34 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   };
 
   /**
-   * FK label resolution (x-references, JUM-772): referenced options load once
-   * per field; grid/preview/charts show labels (org names, usernames), never
-   * raw uuids. Arrays of ids (organization members) resolve the same way.
+   * FK label resolution (`x-relation`, JUM-787): list candidates come from the
+   * target entity's `<Entity>ArrayOf` operation, never from a hardcoded op id.
    */
   const referenceLabels = reactive<Record<string, Record<string, string>>>({});
-  const referenceFields = columns.filter((d) => d.xReferences?.operationId);
+  const referenceFields = columns.filter((d) => d.relation?.entity);
   const loadReferences = async (): Promise<void> => {
     await Promise.all(referenceFields.map(async (d) => {
-      const reference = d.xReferences!;
+      const relation = d.relation!;
+      const operationId = listOperationForEntity(relation.entity);
+      if (!operationId) {
+        referenceLabels[d.name] = {};
+        return;
+      }
       try {
         const client = getSharedApiClient();
-        const targetCapabilities = listCapabilities(reference.operationId!);
+        const targetCapabilities = listCapabilities(operationId);
         type Rows = Array<Record<string, unknown>>;
         type ReferenceRows = { result?: Rows } | Rows;
         const response = await client.request<ReferenceRows>({
-          operationId: reference.operationId!,
+          operationId,
           query: targetCapabilities ? { page: 1, size: targetCapabilities.maxSize } : undefined,
           headers: { Authorization: useAuthStore().token }
         });
         const list = Array.isArray(response) ? response : (response.result ?? []);
-        const labelField = reference.labelField ?? 'name';
+        const labelField = relation.display ?? 'name';
+        const match = relation.match || entityPrimaryKey(relation.entity);
         referenceLabels[d.name] = Object.fromEntries(
-          list.map((row) => [String(row.id), String(row[labelField] ?? row.id)])
+          list.map((row) => [String(row[match] ?? row.id), String(row[labelField] ?? row[match] ?? '')])
         );
       } catch {
         referenceLabels[d.name] = {};

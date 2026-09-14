@@ -44,13 +44,12 @@ export class Catalog extends BaseModel<ICatalog> implements ICatalog {
 
   private _updatedBy: string = '';
 
-  private _deletedAt: string = '';
-
   constructor(payload: CatalogFactory) {
     super({
       id: payload.id,
       createdAt: payload.createdAt,
-      updatedAt: payload.updatedAt
+      updatedAt: payload.updatedAt,
+      deletedAt: payload.deletedAt ?? ''
     });
     canNotBeEmpty('name', payload.name);
     canNotBeEmpty('organization', payload.organization);
@@ -62,7 +61,6 @@ export class Catalog extends BaseModel<ICatalog> implements ICatalog {
     this._provenance = payload.provenance;
     this._createdBy = payload.createdBy ?? '';
     this._updatedBy = payload.updatedBy ?? '';
-    this._deletedAt = payload.deletedAt ?? '';
     this._excludeOnSerialize = [
       'deleted',
       'bumpVersion',
@@ -125,11 +123,11 @@ export class Catalog extends BaseModel<ICatalog> implements ICatalog {
   }
 
   public get deletedAt(): string {
-    return this._deletedAt;
+    return this._deletedAt ?? '';
   }
 
   public get deleted(): boolean {
-    return this._deletedAt !== '';
+    return this._deletedAt !== '' && this._deletedAt != null;
   }
 
   /** Bump the concurrency token and stamp the mutation time/actor. */

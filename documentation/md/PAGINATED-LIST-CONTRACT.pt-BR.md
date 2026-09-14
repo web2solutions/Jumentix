@@ -69,7 +69,7 @@ validação, sem `sort`/`q`); os clientes a tratam como "carregar tudo".
 
 Toda rejeição nomeia os valores aceitos, no estilo que o Requisito `126` usa para enums:
 
-- `The sort field "password" is not sortable. Accepted: firstName, lastName, username, organization, createdAt, updatedAt.`
+- `The sort field "password" is not sortable. Accepted: firstName, lastName, username, organization, createdAt, updatedAt, id.`
 - `The filter field "password" is not filterable. Accepted: firstName, roles, createdAt.`
 - `The filter operator "regex" on "firstName" is not accepted. Accepted: …`
 - `The parameter size must be between 1 and 100; received 101.`
@@ -98,3 +98,11 @@ Toda rejeição nomeia os valores aceitos, no estilo que o Requisito `126` usa p
 - `bun test apps/backend-template/test/integration/Express/Users/getAll.test.ts` — servidor Express
   real: paginação + total, ordenação nas duas direções, `roles=admin`, `contains`, `q`, os 400.
 - `bun run oas:check-routes` — o Requisito `036` continua válido para os schemas de envelope.
+
+## Tombstones
+
+`DELETE` grava `deletedAt`. A lista omite tombstones salvo `includeDeleted=true`. GET de tombstone → 404. Unicidade **libera** o valor. Login ignora tombstones.
+
+## Delta sync
+
+`x-sync` nas listagens: `sort=updatedAt:asc,id:asc`, filtro `gt` no cursor, `includeDeleted=true`. Empate em `updatedAt` quebra na chave primária.

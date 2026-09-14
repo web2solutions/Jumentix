@@ -82,6 +82,7 @@ describe('the package entry point', () => {
       'paginateList',
       'parseListSort',
       'runListQuery',
+      'runMetricsQuery',
       'setCorrelationIdResolver'
     ]);
   });

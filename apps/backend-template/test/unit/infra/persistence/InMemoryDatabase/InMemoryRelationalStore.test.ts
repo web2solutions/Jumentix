@@ -52,7 +52,7 @@ describe('in memory relational store', () => {
 
     await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
     await store.create('2', { id: '2', username: 'mary', organization: 'org-2' });
-    await expect(store.create('1', { id: '1', username: 'again' })).rejects.toThrow('Duplicated id');
+    await expect(store.create('1', { id: '1', username: 'again' })).rejects.toThrow('The field "id" already exists.');
 
     await store.update('2', { id: '2', username: 'mary', organization: 'org-3' });
     await expect(store.getByRelation('organization', 'org-2')).resolves.toHaveLength(0);
@@ -81,5 +81,40 @@ describe('in memory relational store', () => {
     (store as any).relationIndexes.organization.delete('org-1');
 
     await expect(store.delete('1')).resolves.toBe(true);
+  });
+
+  it('soft-deletes, hides tombstones, and frees unique indexes', async () => {
+    expect.hasAssertions();
+    const store = new InMemoryRelationalStore<IRecord & { deletedAt?: string }>({
+      uniqueIndexes: ['username'],
+      caseInsensitiveUniqueIndexes: ['username'],
+      relationIndexes: ['organization'],
+      softDelete: true
+    });
+
+    await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
+    await expect(store.delete('1')).resolves.toBe(true);
+    await expect(store.getOneById('1')).rejects.toThrow('Record not found');
+    const tombstone = await store.getOneById('1', { includeDeleted: true });
+    expect(tombstone.deletedAt).toBeTruthy();
+    expect((await store.getAll({}, { page: 1, size: 10 })).total).toBe(0);
+  });
+
+  it('releases unique indexes after a tombstone and keeps the id reserved', async () => {
+    expect.hasAssertions();
+    const store = new InMemoryRelationalStore<IRecord & { deletedAt?: string }>({
+      uniqueIndexes: ['username'],
+      caseInsensitiveUniqueIndexes: ['username'],
+      relationIndexes: ['organization'],
+      softDelete: true
+    });
+
+    await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
+    await store.delete('1');
+    await expect(store.getByRelation('organization', 'org-1')).resolves.toHaveLength(0);
+    await expect(store.create('2', { id: '2', username: 'john', organization: 'org-1' }))
+      .resolves.toMatchObject({ username: 'john' });
+    await expect(store.create('1', { id: '1', username: 'other' }))
+      .rejects.toThrow('The field "id" already exists.');
   });
 });

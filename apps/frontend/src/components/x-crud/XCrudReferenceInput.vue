@@ -3,16 +3,14 @@ import { computed, onMounted, ref } from 'vue';
 
 import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import { getSharedApiClient } from '@/contracts/apiClient';
-import type { FieldDescriptor } from '@/contracts/formSchema';
+import { entityPrimaryKey, listOperationForEntity, type FieldDescriptor } from '@/contracts/formSchema';
 import { listCapabilities } from '@/contracts/listSchema';
 import { t } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
 
 /**
- * XCrudReferenceInput (JUM-772): searchable select for entity references
- * (`x-references` in the OAS). Options come from the referenced entity's list
- * operationId — the frontend learns the FK from the contract, not from code.
- * The control shows the referenced label and emits the id (JUM-781).
+ * XCrudReferenceInput (JUM-787): searchable select for `x-relation` FKs.
+ * Candidates come from the target entity's `<Entity>ArrayOf` list operation.
  */
 const props = defineProps<{
   descriptor: FieldDescriptor;
@@ -26,21 +24,23 @@ const options = ref<Array<{ value: string; label: string }>>([]);
 const loadError = ref('');
 
 onMounted(async () => {
-  const reference = props.descriptor.xReferences;
-  if (!reference?.operationId) return;
+  const relation = props.descriptor.relation;
+  const operationId = relation?.entity ? listOperationForEntity(relation.entity) : undefined;
+  if (!operationId) return;
   try {
     const auth = useAuthStore();
-    const capabilities = listCapabilities(reference.operationId);
+    const capabilities = listCapabilities(operationId);
     const response = await getSharedApiClient().request<{ result?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>>({
-      operationId: reference.operationId,
+      operationId,
       query: capabilities ? { page: 1, size: capabilities.maxSize } : undefined,
       headers: { Authorization: auth.token }
     });
     const rows = Array.isArray(response) ? response : (response.result ?? []);
-    const labelField = reference.labelField ?? 'name';
+    const labelField = relation?.display ?? 'name';
+    const match = relation?.match || entityPrimaryKey(relation?.entity ?? '');
     options.value = rows.map((row) => ({
-      value: String(row.id),
-      label: String(row[labelField] ?? row.id)
+      value: String(row[match] ?? row.id),
+      label: String(row[labelField] ?? row[match] ?? row.id)
     }));
   } catch {
     loadError.value = t('crud.referencesUnavailable');

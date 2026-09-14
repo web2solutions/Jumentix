@@ -62,7 +62,7 @@ explícita do usuário.
 ## 5. Regras de implementação
 
 1. Nenhum campo, coluna, filtro, ordenação, label ou permissão hardcoded: tudo vem da OAS
-   (`properties`, `x-label`, `x-hide`, `x-references`, `x-validation`, `x-list-capabilities`,
+   (`properties`, `x-label`, `x-hide`, `x-relation`, `x-validation`, `x-list-capabilities`,
    `info.x-rbac`, `security`).
 2. Textos de UI passam por `t()` (`src/i18n/messages.ts`, chaves iguais em `en` e `pt-BR`).
    Labels de campo **não** entram nas mensagens: vêm de `x-label` (fallback `title`, depois nome
@@ -88,7 +88,7 @@ decidido pelo **contrato**, não pela config:
   memória (operações anteriores a JUM-777).
 - Grid: seleção, headers com labels do contrato, coluna `id` oculta por padrão, coluna de ações
   **sticky** à direita, filtros por coluna (enum→select, boolean→tri-state, data→intervalo
-  empilhado, texto→contains), badges, referências (`x-references`) resolvidas para labels —
+  empilhado, texto→contains), badges, referências (`x-relation`) resolvidas para labels —
   inclusive arrays de ids (membros de organização).
 - Row detail: tab de dados, uma tab por array de objetos, tab Edit (RBAC). Datas formatadas no
   locale.

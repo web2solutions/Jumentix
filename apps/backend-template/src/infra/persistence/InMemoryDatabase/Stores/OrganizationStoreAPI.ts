@@ -7,6 +7,7 @@ IOrganization
 >(
   {
     uniqueIndexes: ['name'],
-    caseInsensitiveUniqueIndexes: ['name']
+    caseInsensitiveUniqueIndexes: ['name'],
+    softDelete: true
   }
 );

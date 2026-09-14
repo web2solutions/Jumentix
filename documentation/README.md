@@ -74,6 +74,8 @@ For engineers maintaining and evolving Jumentix:
 
 - [OpenAPI Spec](../spec/1.0.0.yml)
 - [Paginated List Contract](./md/PAGINATED-LIST-CONTRACT.md) ([pt-BR](./md/PAGINATED-LIST-CONTRACT.pt-BR.md))
+- [OAS vendor extensions](./md/OAS-VENDOR-EXTENSIONS.md) ([pt-BR](./md/OAS-VENDOR-EXTENSIONS.pt-BR.md))
+- [Entity metrics contract](./md/ENTITY-METRICS-CONTRACT.md) ([pt-BR](./md/ENTITY-METRICS-CONTRACT.pt-BR.md))
 - [Frontend Seed and the X-CRUD Kit](./md/FRONTEND-SEED-AND-XCRUD.md) ([pt-BR](./md/FRONTEND-SEED-AND-XCRUD.pt-BR.md))
 - [Events and Messages Map](./md/EVENTS-AND-MESSAGES-MAP.md)
 - [Error Contracts and Responses](./md/ERROR-CONTRACTS-AND-RESPONSES.md)

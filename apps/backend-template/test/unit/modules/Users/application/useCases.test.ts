@@ -94,7 +94,8 @@ describe('users application use cases', () => {
       deletePhone: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
       createEmail: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
       updateEmail: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
-      deleteEmail: jest.fn().mockResolvedValue({ result: { id: 'u1' } })
+      deleteEmail: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
+      metrics: jest.fn().mockResolvedValue({ result: { metric: 'count', buckets: [] } })
     };
     const useCases = new UserUseCases(userService);
 
@@ -113,6 +114,7 @@ describe('users application use cases', () => {
     await useCases.createEmail('u1', { email: 'john@mail.com' } as any);
     await useCases.updateEmail('u1', 'e1', { email: 'john@mail.com' } as any);
     await useCases.deleteEmail('u1', 'e1');
+    await useCases.metrics({}, { metric: 'count' }, { groupable: [], series: [] });
 
     expect(userService.create).toHaveBeenCalled();
     expect(userService.update).toHaveBeenCalledWith('u1', { firstName: 'John' });

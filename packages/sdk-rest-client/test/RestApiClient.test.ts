@@ -128,6 +128,28 @@ describe('operation routing', () => {
     }
   });
 
+  it('resolves the base URL from x-service when more than one service exists', async () => {
+    expect.hasAssertions();
+    const stub = withFetch(json({ ok: true }));
+    const multi = () => ({
+      openApi: {
+        'x-services': [
+          { id: 'core', url: 'http://core.test/api' },
+          { id: 'billing', url: 'http://billing.test/api' }
+        ],
+        paths: {
+          '/invoices': { get: { operationId: 'listInvoices', 'x-service': 'billing' } }
+        }
+      }
+    });
+    try {
+      await new RestApiClient(undefined, multi as never).request({ operationId: 'listInvoices' });
+      expect(stub.calls[0].url).toBe('http://billing.test/api/invoices');
+    } finally {
+      stub.restore();
+    }
+  });
+
   /**
    * A spec with no `servers` block. The client falls back to a hardcoded
    * localhost, which is what a developer running the SDK against a local API

@@ -40,6 +40,7 @@ export { setFilter } from '@src/modules/port/setFilter';
 export { setPaging } from '@src/modules/port/setPaging';
 export { setListQuery, readListCapabilities } from '@src/modules/port/setListQuery';
 export type { IListCapabilities, TListFilterKind } from '@src/modules/port/setListQuery';
+export { setMetricsQuery, readMetricsCapabilities } from '@src/modules/port/setMetricsQuery';
 export { operators } from '@src/modules/port/operators';
 export type { IFilter } from '@src/modules/port/IFilter';
 export type { ISearch } from '@src/modules/port/ISearch';

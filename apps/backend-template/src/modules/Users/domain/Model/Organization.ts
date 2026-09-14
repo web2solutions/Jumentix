@@ -15,6 +15,7 @@ interface OrganizationFactory extends RequestCreateOrganization {
   id?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  deletedAt?: Date | string | null;
   readOnly?: boolean;
 }
 
@@ -82,6 +83,13 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
         type: 'array',
         required: false,
         validations: []
+      },
+      {
+        name: 'deletedAt',
+        type: 'string',
+        format: 'date-time',
+        required: false,
+        validations: []
       }
     ]
   } as const;
@@ -96,7 +104,6 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
 
   private _users: string[] = [];
 
-  @hasMany(() => User)
   public userEntities: HasMany<typeof User> = [];
 
   private readonly _readOnly: boolean = false;
@@ -107,7 +114,8 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
     super({
       id: payload.id,
       createdAt: payload.createdAt,
-      updatedAt: payload.updatedAt
+      updatedAt: payload.updatedAt,
+      deletedAt: payload.deletedAt
     });
     BaseModel.throwIfDataEntitySchemaIsNotOpenApi31Compliant(Organization.dataEntitySchema as any);
     this.name = payload.name;
@@ -264,6 +272,7 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
     return false;
   }
 
+  @hasMany(() => User)
   public get users(): string[] {
     return [...this._users];
   }

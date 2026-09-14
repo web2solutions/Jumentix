@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 
-import { fieldDescriptors, resolveSchema } from '@/contracts/formSchema';
+import {
+  entityPrimaryKey,
+  fieldDescriptors,
+  listOperationForEntity,
+  resolveSchema
+} from '@/contracts/formSchema';
 import { collectBody, validateAll, validateField } from '@/contracts/oasForm';
 
 import { setLocale } from '@/i18n';
@@ -103,5 +108,37 @@ describe('oasForm collect/validate (JUM-766)', () => {
   it('validateAll reports required fields first', () => {
     expect.assertions(1);
     expect(validateAll(descriptors, {})).toBe('Usuário é obrigatório.');
+  });
+});
+
+describe('x-relation and x-primary-key (JUM-787, JUM-788)', () => {
+  it('parses belongsTo with defaults for field and match', () => {
+    expect.hasAssertions();
+    const organization = fieldDescriptors('User').find((d) => d.name === 'organization');
+    expect(organization?.relation).toMatchObject({
+      field: 'organization',
+      entity: 'Organization',
+      match: 'id',
+      display: 'name',
+      kind: 'belongsTo'
+    });
+  });
+
+  it('parses hasMany on arrays of ids', () => {
+    expect.hasAssertions();
+    const users = fieldDescriptors('Organization').find((d) => d.name === 'users');
+    expect(users?.relation).toMatchObject({
+      entity: 'User',
+      kind: 'hasMany',
+      display: 'username'
+    });
+  });
+
+  it('reads entityPrimaryKey from the schema and resolves the list operation', () => {
+    expect.hasAssertions();
+    expect(entityPrimaryKey('User')).toBe('id');
+    expect(entityPrimaryKey('MissingEntity')).toBe('id');
+    expect(listOperationForEntity('User')).toBe('getAll');
+    expect(listOperationForEntity('Organization')).toBe('getAllOrganizations');
   });
 });

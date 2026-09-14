@@ -51,7 +51,7 @@ const editingValue = ref('');
 
 const columnLabel = (d: FieldDescriptor): string => fieldLabel(d, props.crud.config.columnLabels);
 
-const isId = (d: FieldDescriptor): boolean => d.name === 'id' || (d.format === 'uuid' && !d.xReferences);
+const isId = (d: FieldDescriptor): boolean => d.name === 'id' || (d.format === 'uuid' && !d.relation);
 
 const startInlineEdit = (id: string, d: FieldDescriptor, row: Record<string, unknown>): void => {
   if (!props.crud.config.inlineEdit || !isInlineEditable(d) || !props.canUpdate(row)) return;
@@ -199,7 +199,7 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
                 <template v-else-if="crud.config.avatarField === d.name">
                   <CAvatar :src="String(row[d.name] ?? '')" size="sm" />
                 </template>
-                <template v-else-if="d.xReferences && d.type === 'array'">
+                <template v-else-if="d.relation && d.type === 'array'">
                   <span
                     v-for="label in referenceList(d, row[d.name]).slice(0, 3)"
                     :key="label"
@@ -210,7 +210,7 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
                   </span>
                   <span v-if="referenceList(d, row[d.name]).length === 0">—</span>
                 </template>
-                <template v-else-if="d.xReferences">
+                <template v-else-if="d.relation">
                   {{ crud.referenceLabel(d.name, row[d.name]) }}
                 </template>
                 <template v-else-if="isId(d)">

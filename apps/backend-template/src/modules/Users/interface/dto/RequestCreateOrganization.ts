@@ -3,6 +3,7 @@ import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/Reques
 import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
 
 export interface RequestCreateOrganization {
+  id?: string;
   name: string;
   address?: RequestCreateAddress[];
   phone?: RequestCreatePhone[];

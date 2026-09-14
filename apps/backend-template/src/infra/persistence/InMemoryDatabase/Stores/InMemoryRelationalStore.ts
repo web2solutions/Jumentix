@@ -9,6 +9,8 @@ interface IStoreOptions<T extends Record<string, any>> {
   uniqueIndexes?: (keyof T)[];
   caseInsensitiveUniqueIndexes?: (keyof T)[];
   relationIndexes?: (keyof T)[];
+  /** Soft-delete + hide tombstones. Off for catalog (own tombstone + restore). */
+  softDelete?: boolean;
 }
 
 const stringifyPrimitive = (value: Primitive): string => String(value ?? '');
@@ -96,12 +98,25 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
       set.delete(id);
       if (set.size === 0) this.relationIndexes[field].delete(ref);
     });
-    return this.records.delete(id);
+    if (!this.options.softDelete) {
+      this.records.delete(id);
+      return true;
+    }
+    const tombstone = {
+      ...existing,
+      deletedAt: new Date().toISOString(),
+      updatedAt: new Date()
+    } as T;
+    this.records.set(id, tombstone);
+    return true;
   }
 
-  public async getOneById(id: string): Promise<T> {
+  public async getOneById(id: string, options?: { includeDeleted?: boolean }): Promise<T> {
     const existing = this.records.get(id);
     if (!existing) {
+      throw new DataBaseNotFoundError('Record not found');
+    }
+    if (this.options.softDelete && existing.deletedAt && !options?.includeDeleted) {
       throw new DataBaseNotFoundError('Record not found');
     }
     return existing;
@@ -109,7 +124,7 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
 
   public async create(key: string, value: T): Promise<T> {
     if (this.records.has(key)) {
-      throw new ConflictError('Duplicated id');
+      throw new ConflictError('The field "id" already exists.');
     }
     this.ensureUniqueIndexes(key, value);
     this.syncRelationIndexes(key, value);
@@ -140,7 +155,14 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
   ): Promise<IPagingResponse<T[]>> {
     // The contracts' response type marks `page`/`size` optional; `paginateList`
     // always sets them, so the application's stricter shape holds.
-    return runListQuery([...this.records.values()], filters, paging) as IPagingResponse<T[]>;
+    const effectivePaging = this.options.softDelete
+      ? paging
+      : { ...paging, includeDeleted: true };
+    return runListQuery(
+      [...this.records.values()],
+      filters,
+      effectivePaging
+    ) as IPagingResponse<T[]>;
   }
 
   public async getByRelation(field: keyof T, referenceId: string): Promise<T[]> {
@@ -150,6 +172,10 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
     if (!linked) return [];
     return [...linked]
       .map((id) => this.records.get(id))
-      .filter((entry): entry is T => !!entry);
+      .filter((entry): entry is T => {
+        if (!entry) return false;
+        if (this.options.softDelete && entry.deletedAt) return false;
+        return true;
+      });
   }
 }
