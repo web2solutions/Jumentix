@@ -34,6 +34,13 @@ externalDocs:
   url: http://xpertminds.dev
 servers:
   - url: http://localhost:3000/api/1.0.0
+    x-service-id: core
+x-services:
+  - id: core
+    name: Core
+    kind: core
+    url: http://localhost:3000/api/1.0.0
+    description: Merged Core service that serves every operation in this document (monolith).
 tags:
   - name: user
     description: System users
@@ -156,10 +163,18 @@ paths:
       tags:
         - user
       summary: Get all users
-      description: Returns a collection of all users
+      description: >-
+        Returns a page of users. Delta sync page: sort=`updatedAt:asc,id:asc`,
+        filter `{"updatedAt":{"operator":"gt","value":"<iso>"}}`, page through
+        `page`/`size`, set `includeDeleted=true` so tombstones travel with the
+        cursor (`x-sync`).
       operationId: getAll
+      x-service: core
+      x-sync:
+        cursorField: updatedAt
+        includeDeletedParam: includeDeleted
       x-list-capabilities:
-        sortable: [firstName, lastName, username, organization, createdAt, updatedAt]
+        sortable: [firstName, lastName, username, organization, createdAt, updatedAt, id]
         filterable:
           firstName: text
           lastName: text
@@ -171,6 +186,10 @@ paths:
         searchable: [firstName, lastName, username]
         defaultSize: 30
         maxSize: 100
+        includeDeleted: true
+      x-metrics-capabilities:
+        groupable: [roles, organization]
+        series: [createdAt, updatedAt]
       parameters:
         - name: page
           in: query
@@ -217,6 +236,13 @@ paths:
           schema:
             type: string
             maxLength: 200
+        - name: includeDeleted
+          in: query
+          description: When true, list includes tombstones (`deletedAt` set). Default false.
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: successful operation
@@ -266,6 +292,57 @@ paths:
       security:
         - bearerAuth:
             - create_user
+  /users/metrics:
+    get:
+      tags:
+        - user
+      summary: User metrics
+      description: Generic aggregates for User (count, groupBy, time series).
+      operationId: getUsersMetrics
+      x-service: core
+      x-metrics-capabilities:
+        groupable: [roles, organization]
+        series: [createdAt, updatedAt]
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [count, groupBy, series]
+        - name: field
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month]
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 4096
+      responses:
+        "200":
+          description: Metrics buckets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityMetricsResponse"
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+      security:
+        - bearerAuth:
+            - read_user
   /users/{id}:
     delete:
       tags:
@@ -793,10 +870,18 @@ paths:
       tags:
         - organization
       summary: Get all organizations
-      description: Returns a collection of organizations
+      description: >-
+        Returns a page of organizations. Delta sync page: sort=`updatedAt:asc,id:asc`,
+        filter `{"updatedAt":{"operator":"gt","value":"<iso>"}}`, page through
+        `page`/`size`, set `includeDeleted=true` so tombstones travel with the
+        cursor (`x-sync`).
       operationId: getAllOrganizations
+      x-service: core
+      x-sync:
+        cursorField: updatedAt
+        includeDeletedParam: includeDeleted
       x-list-capabilities:
-        sortable: [name, createdAt, updatedAt]
+        sortable: [name, createdAt, updatedAt, id]
         filterable:
           name: text
           createdAt: date
@@ -804,6 +889,10 @@ paths:
         searchable: [name]
         defaultSize: 30
         maxSize: 100
+        includeDeleted: true
+      x-metrics-capabilities:
+        groupable: []
+        series: [createdAt, updatedAt]
       parameters:
         - name: page
           in: query
@@ -850,6 +939,12 @@ paths:
           schema:
             type: string
             maxLength: 200
+        - name: includeDeleted
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: successful operation
@@ -897,6 +992,57 @@ paths:
       security:
         - bearerAuth:
             - create_organization
+  /organizations/metrics:
+    get:
+      tags:
+        - organization
+      summary: Organization metrics
+      description: Generic aggregates for Organization (count, groupBy, time series).
+      operationId: getOrganizationsMetrics
+      x-service: core
+      x-metrics-capabilities:
+        groupable: []
+        series: [createdAt, updatedAt]
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [count, groupBy, series]
+        - name: field
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month]
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 4096
+      responses:
+        "200":
+          description: Metrics buckets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityMetricsResponse"
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+      security:
+        - bearerAuth:
+            - read_organization
   /organizations/{id}:
     get:
       tags:
@@ -1461,10 +1607,11 @@ components:
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
-          x-references:
+          x-relation:
             entity: Organization
-            operationId: getAllOrganizations
-            labelField: name
+            match: id
+            display: name
+            kind: belongsTo
         password:
           x-label:
             en: Password
@@ -1497,6 +1644,8 @@ components:
             en: ID
             pt-BR: ID
           type: string
+          format: uuid
+          description: Optional client-supplied uuid. Duplicate ids answer 409.
         firstName:
           x-label:
             en: First name
@@ -1537,10 +1686,11 @@ components:
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
-          x-references:
+          x-relation:
             entity: Organization
-            operationId: getAllOrganizations
-            labelField: name
+            match: id
+            display: name
+            kind: belongsTo
         password:
           x-label:
             en: Password
@@ -1633,10 +1783,11 @@ components:
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
-          x-references:
+          x-relation:
             entity: Organization
-            operationId: getAllOrganizations
-            labelField: name
+            match: id
+            display: name
+            kind: belongsTo
         emails:
           x-label:
             en: Emails
@@ -2777,6 +2928,8 @@ components:
           default: false
     User:
       description: Port output object for User resource.
+      x-primary-key: id
+      x-service: core
       required:
         - id
         - createdAt
@@ -2792,6 +2945,7 @@ components:
             en: ID
             pt-BR: ID
           type: string
+          format: uuid
         firstName:
           x-label:
             en: First name
@@ -2823,10 +2977,11 @@ components:
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
-          x-references:
+          x-relation:
             entity: Organization
-            operationId: getAllOrganizations
-            labelField: name
+            match: id
+            display: name
+            kind: belongsTo
         password:
           x-label:
             en: Password
@@ -2880,8 +3035,19 @@ components:
             pt-BR: Atualizado em
           type: string
           format: date-time
+        deletedAt:
+          x-label:
+            en: Deleted at
+            pt-BR: Excluído em
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: Tombstone timestamp. Null while the record is alive.
     Organization:
       description: Port output object for Organization resource.
+      x-primary-key: id
+      x-service: core
       required:
         - id
         - createdAt
@@ -2927,10 +3093,11 @@ components:
             pt-BR: Membros
           type: array
           description: Member user ids.
-          x-references:
+          x-relation:
             entity: User
-            operationId: getAll
-            labelField: username
+            match: id
+            display: username
+            kind: hasMany
           items:
             type: string
         createdAt:
@@ -2945,6 +3112,39 @@ components:
             pt-BR: Atualizado em
           type: string
           format: date-time
+        deletedAt:
+          x-label:
+            en: Deleted at
+            pt-BR: Excluído em
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: Tombstone timestamp. Null while the record is alive.
+    EntityMetricsResponse:
+      description: Generic entity metrics envelope (JUM-793).
+      required: [metric, buckets]
+      type: object
+      properties:
+        metric:
+          type: string
+          enum: [count, groupBy, series]
+        field:
+          type: string
+        interval:
+          type: string
+          enum: [day, week, month]
+        buckets:
+          type: array
+          items:
+            type: object
+            required: [key, count]
+            properties:
+              key:
+                type: string
+              count:
+                type: integer
+                minimum: 0
     BooleanStringResult:
       description: Port output object for legacy text/plain success responses
         (`true`/`false`).

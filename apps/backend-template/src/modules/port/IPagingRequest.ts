@@ -9,4 +9,6 @@ export interface IPagingRequest {
   q?: string;
   /** Fields `q` searches, from the operation's `x-list-capabilities.searchable`. */
   searchFields?: string[];
+  /** When true, list includes tombstones (`deletedAt` set). Default false. */
+  includeDeleted?: boolean;
 }

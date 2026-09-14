@@ -158,20 +158,31 @@ export const applyListSearch = <T extends Record<string, unknown>>(
   ));
 };
 
+const primaryKeyOf = (record: Record<string, unknown>): unknown => (
+  record.id ?? record._id
+);
+
 /** Stable multi-field sort; nulls last regardless of direction. */
 export const applyListSort = <T extends Record<string, unknown>>(
   records: T[],
   sort: IListSort[] | undefined
 ): T[] => {
   if (!sort || sort.length === 0) return records;
+  const keys = [...sort];
+  const alreadyHasPk = keys.some((entry) => entry.field === 'id' || entry.field === '_id');
+  if (!alreadyHasPk) {
+    keys.push({ field: 'id', direction: 'asc' });
+  }
   return [...records].sort((a, b) => {
-    for (const { field, direction } of sort) {
-      const aNull = a[field] === null || a[field] === undefined;
-      const bNull = b[field] === null || b[field] === undefined;
+    for (const { field, direction } of keys) {
+      const left = field === 'id' && a[field] === undefined ? primaryKeyOf(a) : a[field];
+      const right = field === 'id' && b[field] === undefined ? primaryKeyOf(b) : b[field];
+      const aNull = left === null || left === undefined;
+      const bNull = right === null || right === undefined;
       if (!(aNull && bNull)) {
         if (aNull) return 1;
         if (bNull) return -1;
-        const result = compare(a[field], b[field]);
+        const result = compare(left, right);
         if (result !== 0) return direction === 'desc' ? -result : result;
       }
     }
@@ -217,12 +228,17 @@ export const paginateList = <T>(
  * `IPagingRequest.sort`, `q` and `searchFields` are read from the paging
  * request so `IStore.getAll(filters, paging)` keeps its two-argument shape.
  */
+const withoutTombstones = <T extends Record<string, unknown>>(records: T[]): T[] => (
+  records.filter((record) => record.deletedAt == null || record.deletedAt === '')
+);
+
 export const runListQuery = <T extends Record<string, unknown>>(
   records: T[],
   filters: TListFilters | Record<string, string | number> | undefined,
   paging: IPagingRequest
 ): IPagingResponse<T[]> => {
-  const filtered = applyListFilters(records, filters);
+  const live = paging.includeDeleted ? records : withoutTombstones(records);
+  const filtered = applyListFilters(live, filters);
   const searched = applyListSearch(filtered, paging.q, paging.searchFields);
   const sorted = applyListSort(searched, paging.sort);
   return paginateList(sorted, paging);

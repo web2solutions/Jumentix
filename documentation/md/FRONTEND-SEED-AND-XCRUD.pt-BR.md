@@ -25,7 +25,7 @@ backend.
 | `components.schemas.*.properties` (+ `allOf`, `$ref`) | `contracts/formSchema.ts` | um `FieldDescriptor` por propriedade: formulários, colunas, filtros |
 | `x-label` (`{ en, pt-BR }`) → `title` → nome humanizado | `contracts/labels.ts` | todo rótulo; `description` vira texto de ajuda sob o controle |
 | `x-hide` | `formSchema.ts` | propriedade fica no contrato, nunca renderiza |
-| `x-references` (`entity`, `operationId`, `labelField`) | `XCrudReferenceInput`, `useXCrud.loadReferences` | selects de FK que mostram o label e emitem o id; arrays de ids (membros) resolvidos igual |
+| `x-relation` (`entity`, `match`, `display`, `kind`) | `XCrudReferenceInput`, `useXCrud.loadReferences` | selects de FK que mostram o label e emitem o id; lista via `<Entity>ArrayOf`; arrays de ids (membros) resolvidos igual |
 | `x-validation` | `contracts/validation.ts` | máscaras/checksums (CPF, SSN, telefones) antes de qualquer HTTP |
 | `x-list-capabilities` | `contracts/listSchema.ts` | paginação/ordenação/filtro/busca no servidor (abaixo) |
 | `info.x-rbac` + `security` por operação | `contracts/rbac.ts`, guards, `_nav.ts` | quais rotas, itens de menu e botões cada papel vê |

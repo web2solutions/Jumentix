@@ -456,6 +456,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/usersMetrics.handler.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/usersMetrics.handler.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
       "layer": "interface/runtime",
@@ -1156,6 +1166,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/check-oas-relations.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-oas-relations.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/entry-point.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/entry-point.test.ts",
       "layer": "tooling",
@@ -1754,6 +1774,16 @@
     {
       "id": "apps/backend-template/test/unit/modules/port/relations.test.ts",
       "path": "apps/backend-template/test/unit/modules/port/relations.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/port/setMetricsQuery.test.ts",
+      "path": "apps/backend-template/test/unit/modules/port/setMetricsQuery.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -4386,6 +4416,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/persistence-contracts/test/metricsQuery.test.ts",
+      "path": "packages/persistence-contracts/test/metricsQuery.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "path": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "layer": "adapters/out+infra",
@@ -5106,9 +5146,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 286,
+    "unit": 290,
     "integration": 100,
     "smoke": 2,
-    "suites": 437
+    "suites": 441
   }
 }

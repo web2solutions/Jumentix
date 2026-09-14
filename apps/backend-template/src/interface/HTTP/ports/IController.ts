@@ -12,6 +12,8 @@ export interface IController {
   delete?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   getOneById?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   getAll?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
+  getUsersMetrics?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
+  getOrganizationsMetrics?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   login?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   logout?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;
   register?(event: BaseDomainEvent): Promise<IServiceResponse<any>>;

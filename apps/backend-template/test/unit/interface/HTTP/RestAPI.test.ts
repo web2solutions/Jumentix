@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, jest/max-expects */
 
+import { DataBaseNotFoundError } from '@src/infra/exceptions';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
 import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
@@ -9,6 +10,9 @@ import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import { JwtService } from '@src/infra/jwt/JwtService';
 import { composeUsersAuthServices } from '@src/modules/Users';
 import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+
+import seedOrganizations_ from '@seed/organizations';
+import seedUsers_ from '@seed/users';
 
 /**
  * The REST runtime wired against the real OAS and AsyncAPI specs.
@@ -201,11 +205,143 @@ describe('restAPI lifecycle with the real composition', () => {
   });
 });
 
-describe('restAPI seed failure propagation', () => {
-  it('propagates organization create failures from the composition', async () => {
+const missingRecordDb = () => ({
+  stores: {
+    Organization: {
+      getOneById: jest.fn().mockRejectedValue(new DataBaseNotFoundError('Record not found'))
+    },
+    User: {
+      getOneById: jest.fn().mockRejectedValue(new DataBaseNotFoundError('Record not found'))
+    }
+  },
+  connect: jest.fn(),
+  disconnect: jest.fn()
+}) as any;
+
+const noTombstoneDb = () => ({
+  stores: {
+    Organization: { getOneById: jest.fn().mockResolvedValue(undefined) },
+    User: { getOneById: jest.fn().mockResolvedValue(undefined) }
+  },
+  connect: jest.fn(),
+  disconnect: jest.fn()
+}) as any;
+
+/**
+ * A store double with soft-delete semantics, wired to a use-case double that
+ * reads the same record — the tombstone contract without a shared singleton.
+ */
+const softDeleteDb = (
+  storeName: 'Organization' | 'User',
+  records: Array<Record<string, any>>
+) => {
+  const state = { records: new Map(records.map((record) => [record.id, record])) };
+  const store = {
+    getOneById: jest.fn(async (id: string, options?: { includeDeleted?: boolean }) => {
+      const record = state.records.get(id);
+      if (!record || (record.deletedAt && !options?.includeDeleted)) {
+        throw new DataBaseNotFoundError('Record not found');
+      }
+      return record;
+    }),
+    update: jest.fn(async (id: string, value: Record<string, any>) => {
+      const merged = { ...state.records.get(id), ...value };
+      state.records.set(id, merged);
+      return merged;
+    })
+  };
+  const useCases = {
+    getOneById: jest.fn(async (id: string) => {
+      try {
+        return { result: await store.getOneById(id) };
+      } catch {
+        return { error: new DataBaseNotFoundError('Record not found') };
+      }
+    }),
+    create: jest.fn()
+  };
+  const databaseClient: any = {
+    stores: { [storeName]: store },
+    connect: jest.fn(),
+    disconnect: jest.fn()
+  };
+  return {
+    databaseClient, store, useCases, state
+  };
+};
+
+describe('restAPI seed tombstone restore (JUM-787)', () => {
+  it('restores a soft-deleted organization instead of failing on the reserved id', async () => {
     expect.hasAssertions();
 
-    const { api } = buildApi();
+    const tombstoned = seedOrganizations_.map((org: any) => ({
+      ...org,
+      deletedAt: '2026-01-01T00:00:00.000Z'
+    }));
+    const {
+      databaseClient, store, useCases, state
+    } = softDeleteDb('Organization', tombstoned);
+    const { api } = buildApi({ databaseClient });
+    (api as any).usersComposition = { organizationUseCases: useCases };
+
+    // Soft-deleted: the use case cannot see them, but a fresh create would
+    // clash on the reserved ids. The seed restores the tombstones in place.
+    const seeded = await api.seedOrganizations();
+
+    expect(seeded.map((org: any) => org.id).sort())
+      .toStrictEqual(seedOrganizations_.map((org: any) => org.id).sort());
+    for (const record of state.records.values()) {
+      expect(record.deletedAt).toBeNull();
+    }
+    expect(store.update).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ deletedAt: null })
+    );
+    expect(useCases.create).not.toHaveBeenCalled();
+  });
+
+  it('restores a soft-deleted user instead of failing on the reserved id', async () => {
+    expect.hasAssertions();
+
+    const tombstoned = seedUsers_.map((user: any) => ({
+      ...user,
+      deletedAt: '2026-01-01T00:00:00.000Z'
+    }));
+    const {
+      databaseClient, store, useCases, state
+    } = softDeleteDb('User', tombstoned);
+    const { api } = buildApi({ databaseClient });
+    (api as any).usersComposition = {
+      organizationUseCases: {
+        getOneById: async () => ({ result: { id: 'org-1' } }),
+        create: async () => ({ result: { id: 'org-1' } })
+      },
+      userUseCases: useCases
+    };
+
+    const seeded = await api.seedUsers();
+
+    expect(seeded.map((user: any) => user.id).sort())
+      .toStrictEqual(seedUsers_.map((user: any) => user.id).sort());
+    for (const record of state.records.values()) {
+      expect(record.deletedAt).toBeNull();
+    }
+    expect(store.update).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ deletedAt: null })
+    );
+    expect(useCases.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('restAPI seed failure propagation', () => {
+  it('propagates organization create failures when the record is truly missing', async () => {
+    expect.hasAssertions();
+
+    // The seed path asks the store about a tombstone before creating; a store
+    // that answers "not found" (throwing, the InMemory contract) is what lets
+    // the create run at all.
+    const { api } = buildApi({ databaseClient: missingRecordDb() });
     (api as any).usersComposition = {
       organizationUseCases: {
         getOneById: async () => ({ result: null }),
@@ -225,10 +361,47 @@ describe('restAPI seed failure propagation', () => {
     await expect(api.seedOrganizations()).rejects.toThrow('Organization seed failed');
   });
 
-  it('propagates user create failures from the composition', async () => {
+  it('keeps the seed id reserved when the store holds a record the use case cannot see', async () => {
     expect.hasAssertions();
 
-    const { api } = buildApi();
+    // JUM-787: with soft delete, an id the use case cannot see may still sit
+    // in the store as a tombstone. The seed restores it (deletedAt: null)
+    // instead of creating a duplicate — and if it stays invisible it is
+    // skipped, silently, rather than double-created.
+    const organizationStore = {
+      getOneById: jest.fn().mockResolvedValue({ id: 'org-1', deletedAt: '2026-01-01' }),
+      update: jest.fn().mockResolvedValue({ id: 'org-1', deletedAt: null })
+    };
+    const databaseClient: any = {
+      stores: { Organization: organizationStore },
+      connect: jest.fn(),
+      disconnect: jest.fn()
+    };
+    const create = jest.fn().mockResolvedValue({ result: { id: 'org-1' } });
+    const { api } = buildApi({ databaseClient });
+    (api as any).usersComposition = {
+      organizationUseCases: {
+        getOneById: async () => ({ result: null }),
+        create
+      }
+    };
+
+    const seeded = await api.seedOrganizations();
+
+    expect(seeded).toStrictEqual([]);
+    expect(create).not.toHaveBeenCalled();
+    expect(organizationStore.update).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ deletedAt: null })
+    );
+  });
+
+  it('propagates user create failures when the record is truly missing', async () => {
+    expect.hasAssertions();
+
+    // A store that answers "no tombstone" without throwing (other drivers do)
+    // takes the same create path as one that throws not-found.
+    const { api } = buildApi({ databaseClient: noTombstoneDb() });
     (api as any).usersComposition = {
       organizationUseCases: {
         getOneById: async () => ({ result: { id: 'org-1' } }),

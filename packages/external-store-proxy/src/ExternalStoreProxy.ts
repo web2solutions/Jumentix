@@ -139,23 +139,29 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   public async delete(id: string): Promise<boolean> {
-    if (this.driver === 'Mongo') return this.mongoDelete(id);
-    if (SQL_DRIVERS.has(this.driver)) return this.sqlDelete(id);
-    if (this.driver === DYNAMODB_DRIVER) return this.dynamoDelete(id);
-    if (this.driver === CASSANDRA_DRIVER) return this.cassandraDelete(id);
-    if (this.driver === FIREBASE_DRIVER) return this.firebaseDelete(id);
-    if (this.driver === ORACLE_DRIVER) return this.oracleDelete(id);
-    throw unsupportedDriverError(this.driver, this.entity);
+    try {
+      const existing = await this.getOneById(id, { includeDeleted: true });
+      await this.update(id, { ...existing, deletedAt: new Date().toISOString() } as T);
+      return true;
+    } catch (error) {
+      if (error instanceof DataBaseNotFoundError) return false;
+      throw error;
+    }
   }
 
-  public async getOneById(id: string): Promise<T> {
-    if (this.driver === 'Mongo') return this.mongoGetOneById(id);
-    if (SQL_DRIVERS.has(this.driver)) return this.sqlGetOneById(id);
-    if (this.driver === DYNAMODB_DRIVER) return this.dynamoGetOneById(id);
-    if (this.driver === CASSANDRA_DRIVER) return this.cassandraGetOneById(id);
-    if (this.driver === FIREBASE_DRIVER) return this.firebaseGetOneById(id);
-    if (this.driver === ORACLE_DRIVER) return this.oracleGetOneById(id);
-    throw unsupportedDriverError(this.driver, this.entity);
+  public async getOneById(id: string, options?: { includeDeleted?: boolean }): Promise<T> {
+    let record: T;
+    if (this.driver === 'Mongo') record = await this.mongoGetOneById(id);
+    else if (SQL_DRIVERS.has(this.driver)) record = await this.sqlGetOneById(id);
+    else if (this.driver === DYNAMODB_DRIVER) record = await this.dynamoGetOneById(id);
+    else if (this.driver === CASSANDRA_DRIVER) record = await this.cassandraGetOneById(id);
+    else if (this.driver === FIREBASE_DRIVER) record = await this.firebaseGetOneById(id);
+    else if (this.driver === ORACLE_DRIVER) record = await this.oracleGetOneById(id);
+    else throw unsupportedDriverError(this.driver, this.entity);
+    if ((record as { deletedAt?: unknown }).deletedAt && !options?.includeDeleted) {
+      throw new DataBaseNotFoundError('Record not found');
+    }
+    return record;
   }
 
   public async getByName(name: string): Promise<T> {

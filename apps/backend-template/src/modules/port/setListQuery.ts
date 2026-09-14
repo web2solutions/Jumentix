@@ -67,6 +67,12 @@ export const setListQuery = (
   const q = query.q === undefined ? '' : Security.xss(String(query.q)).trim();
   if (q) paging.q = q;
 
+  const includeDeletedRaw = query.includeDeleted;
+  if (includeDeletedRaw !== undefined) {
+    const flag = String(includeDeletedRaw).toLowerCase();
+    paging.includeDeleted = flag === 'true' || flag === '1';
+  }
+
   if (!capabilities) {
     if (q) {
       throw new ValidationError(

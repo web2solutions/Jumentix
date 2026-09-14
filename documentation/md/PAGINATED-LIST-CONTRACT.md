@@ -21,6 +21,7 @@ not scale. JUM-777 makes the list behaviour part of the OpenAPI document.
 | `filter` | query | string | base64 of a JSON object keyed by a **filterable** field |
 | `sort` | query | string | comma-separated `field:asc\|desc` pairs over **sortable** fields |
 | `q` | query | string (≤ 200) | case-insensitive free text over the **searchable** fields |
+| `includeDeleted` | query | boolean, default false | include `deletedAt` tombstones |
 
 `filter` values: a scalar means equality (`{ "roles": "admin" }` matches an array field that
 contains the value); an object applies an operator:
@@ -69,7 +70,7 @@ validation, no `sort`/`q`); clients treat it as "load everything".
 
 Every rejection names the accepted values, in the style Requirement `126` uses for enums:
 
-- `The sort field "password" is not sortable. Accepted: firstName, lastName, username, organization, createdAt, updatedAt.`
+- `The sort field "password" is not sortable. Accepted: firstName, lastName, username, organization, createdAt, updatedAt, id.`
 - `The filter field "password" is not filterable. Accepted: firstName, roles, createdAt.`
 - `The filter operator "regex" on "firstName" is not accepted. Accepted: …`
 - `The parameter size must be between 1 and 100; received 101.`
@@ -99,3 +100,13 @@ Every rejection names the accepted values, in the style Requirement `126` uses f
 - `bun test apps/backend-template/test/integration/Express/Users/getAll.test.ts` — real Express
   server: paging + total, sort both directions, `roles=admin`, `contains`, `q`, the 400s.
 - `bun run oas:check-routes` — Requirement `036` still holds for the envelope schemas.
+
+## Tombstones
+
+`DELETE` sets `deletedAt` and `updatedAt`. Lists omit tombstones unless `includeDeleted=true`. `GET` of a tombstone is 404 without the flag. Unique values (`username`, organization `name`) are **released** so a new live row may reuse them. Login ignores tombstones.
+
+## Delta sync
+
+List operations declare `x-sync: { cursorField: updatedAt, includeDeletedParam: includeDeleted }`. A sync page uses `sort=updatedAt:asc,id:asc`, `filter={"updatedAt":{"operator":"gt","value":"<iso>"}}`, and `includeDeleted=true`. Equal `updatedAt` values break on the primary key.
+
+Relation filters use `x-relation` (not `x-references`). See [OAS-VENDOR-EXTENSIONS.md](./OAS-VENDOR-EXTENSIONS.md).

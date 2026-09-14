@@ -11,6 +11,12 @@ export interface IModelRelationMetadata {
 
 const RELATIONS_KEY = Symbol.for('aaa:model:relations');
 
+interface IStoredRelation {
+  property: string;
+  kind: RelationKind;
+  targetFactory: () => EntityConstructor;
+}
+
 const appendRelation = (
   target: any,
   property: string,
@@ -18,14 +24,8 @@ const appendRelation = (
   targetFactory: () => EntityConstructor
 ): void => {
   const ctor = target.constructor as any;
-  const current: IModelRelationMetadata[] = ctor[RELATIONS_KEY] || [];
-  const targetCtor = targetFactory();
-  const relation: IModelRelationMetadata = {
-    property,
-    kind,
-    target: targetCtor.name
-  };
-  ctor[RELATIONS_KEY] = [...current, relation];
+  const current: IStoredRelation[] = ctor[RELATIONS_KEY] || [];
+  ctor[RELATIONS_KEY] = [...current, { property, kind, targetFactory }];
 };
 
 export const belongsTo = (targetFactory: () => EntityConstructor): PropertyDecorator => {
@@ -42,5 +42,10 @@ export const hasMany = (targetFactory: () => EntityConstructor): PropertyDecorat
 
 export const getModelRelations = (model: EntityConstructor): IModelRelationMetadata[] => {
   const ctor = model as any;
-  return [...(ctor[RELATIONS_KEY] || [])];
+  const stored: IStoredRelation[] = ctor[RELATIONS_KEY] || [];
+  return stored.map((relation) => ({
+    property: relation.property,
+    kind: relation.kind,
+    target: relation.targetFactory().name
+  }));
 };

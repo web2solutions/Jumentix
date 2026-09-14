@@ -70,6 +70,8 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 ## Referências de Contratos e Runtime
 
 - [Contrato de Listagem Paginada](./md/PAGINATED-LIST-CONTRACT.pt-BR.md) ([EN](./md/PAGINATED-LIST-CONTRACT.md))
+- [Extensões OAS](./md/OAS-VENDOR-EXTENSIONS.pt-BR.md) ([EN](./md/OAS-VENDOR-EXTENSIONS.md))
+- [Contrato de métricas de entidade](./md/ENTITY-METRICS-CONTRACT.pt-BR.md) ([EN](./md/ENTITY-METRICS-CONTRACT.md))
 - [Seed de Frontend e o Kit X-CRUD](./md/FRONTEND-SEED-AND-XCRUD.pt-BR.md) ([EN](./md/FRONTEND-SEED-AND-XCRUD.md))
 - [Especificação OpenAPI](../spec/1.0.0.yml)
 - [Mapa de Eventos e Mensagens](./md/EVENTS-AND-MESSAGES-MAP.pt-BR.md)

@@ -52,7 +52,14 @@ export default defineConfig(() => {
         // JUMENTIX_HTTP_PORT=3010 so parallel agent backends never collide.
         // Override both with VITE_DEV_PORT / VITE_API_PROXY_TARGET when
         // another agent already holds those ports on the same host.
+        // Optional VITE_API_PROXY_TARGETS is JSON { "<serviceId>": "<url>" }
+        // and adds `/api-<serviceId>` prefixes for a multi-service OAS.
         '/api': process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:3010',
+        ...Object.fromEntries(
+          Object.entries(JSON.parse(process.env.VITE_API_PROXY_TARGETS || '{}')).map(
+            ([id, target]) => [`/api-${id}`, target]
+          )
+        ),
       },
     },
   }
