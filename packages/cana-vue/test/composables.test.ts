@@ -425,3 +425,107 @@ describe('connectCanaToPinia (JUM-681)', () => {
     expect(errors).toHaveLength(1);
   });
 });
+
+describe('no-op and reporting boundaries (JUM-821)', () => {
+  it('stops cleanly when it never subscribed', () => {
+    expect.hasAssertions();
+
+    // With no client, mount subscribes nothing; `stop` must still be a safe
+    // call — a teardown path runs it unconditionally.
+    const { result } = mounted(() => useCanaSubscription(null, () => undefined));
+
+    expect(() => result.stop()).not.toThrow();
+  });
+
+  it('stays stopped when stop follows unmount', () => {
+    expect.hasAssertions();
+
+    const broker = brokerDouble();
+    const { result, unmount } = mounted(() => useCanaSubscription(broker.client, () => undefined));
+
+    unmount();
+    expect(broker.stops()).toBe(1);
+
+    // The second stop is a no-op against the reset handle, not a second
+    // unsubscribe — a broker that counted it would drop a live listener twice.
+    expect(() => result.stop()).not.toThrow();
+    expect(broker.stops()).toBe(1);
+  });
+
+  it('stops a live query that never started, and after unmount', async () => {
+    expect.hasAssertions();
+
+    const none = mounted(() => useCanaLiveQuery<Row>({ client: null, store: 'rows' }));
+    expect(none.result.status.value).toBe('idle');
+    expect(() => none.result.stop()).not.toThrow();
+
+    const broker = brokerDouble({ rows: [] });
+    const { result, unmount } = mounted(() => useCanaLiveQuery<Row>({
+      client: broker.client,
+      store: 'rows'
+    }));
+    await settle();
+    unmount();
+    expect(broker.stops()).toBe(1);
+    expect(() => result.stop()).not.toThrow();
+    expect(broker.stops()).toBe(1);
+  });
+
+  it('surfaces a failed mount-time load even when the error reporter throws', async () => {
+    expect.hasAssertions();
+
+    // `reload` reports from inside its own catch; when that report throws, the
+    // rejection crosses to the mount hook's `.catch`, which reports the
+    // reporter's failure — the load error is never dropped silently.
+    const broker = brokerDouble({ failQuery: true });
+    const onError = jest.fn()
+      .mockImplementationOnce(() => { throw new Error('reporting failed'); })
+      .mockImplementation(() => undefined);
+
+    const { result } = mounted(() => useCanaLiveQuery<Row>({
+      client: broker.client,
+      store: 'rows',
+      onError
+    }));
+    await settle();
+
+    expect(result.status.value).toBe('error');
+    expect(onError.mock.calls.map(([error]) => (error as Error).message))
+      .toStrictEqual(['query refused', 'reporting failed']);
+  });
+
+  it('surfaces a failed event-triggered reload even when the error reporter throws', async () => {
+    expect.hasAssertions();
+
+    const broker = brokerDouble();
+    const query = jest.fn()
+      .mockResolvedValueOnce([{ id: 'a', name: 'A' }])
+      .mockRejectedValue(new Error('query refused'));
+    const client = {
+      subscribe: (broker.client as unknown as {
+        subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
+      }).subscribe,
+      table: () => ({ query })
+    };
+    const onError = jest.fn()
+      .mockImplementationOnce(() => { throw new Error('reporting failed'); })
+      .mockImplementation(() => undefined);
+
+    const { result } = mounted(() => useCanaLiveQuery<Row>({
+      client: client as never,
+      store: 'rows',
+      query: { limit: 10 },
+      onError
+    }));
+    await settle();
+    expect(result.status.value).toBe('ready');
+    expect(onError).not.toHaveBeenCalled();
+
+    broker.emit({});
+    await settle();
+
+    expect(onError.mock.calls.map(([error]) => (error as Error).message))
+      .toStrictEqual(['query refused', 'reporting failed']);
+    expect(result.status.value).toBe('error');
+  });
+});

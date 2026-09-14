@@ -5,13 +5,16 @@
  * them rather than in a shared helper away from the reason they exist.
  */
 /* eslint-disable max-classes-per-file */
+import net from 'node:net';
+
 import type { IServiceResponse } from '../src';
 import {
   BaseKeyValueStorageClient,
   InMemoryKeyValueStorageClient,
   RedisKeyValueStorageClient,
   ServiceResponse,
-  compileKeyValueStorageClient
+  compileKeyValueStorageClient,
+  resetRedisKeyValueStorageClientForTests
 } from '../src';
 
 /**
@@ -435,6 +438,18 @@ describe('the Redis client', () => {
     expect(typeof socket.reconnectStrategy).toBe('function');
   });
 
+  it('defaults the port to 6379 when the environment names none', async () => {
+    expect.hasAssertions();
+
+    const client = await withEnvironment(
+      'JUMENTIX_REDIS_PORT',
+      undefined,
+      () => RedisKeyValueStorageClient.create()
+    );
+
+    expect((client.client.options.socket as any).port).toBe(6379);
+  });
+
   it('reads the timeout and reconnect budget from the environment', async () => {
     expect.hasAssertions();
 
@@ -546,5 +561,262 @@ describe('the Redis client', () => {
 
     expect(response.error).toBeInstanceOf(Error);
     expect(response.result).toBeUndefined();
+  });
+});
+
+/**
+ * The Redis client's success paths, against a real TCP server speaking enough
+ * RESP (the Redis wire protocol) to answer GET/SET/DEL/QUIT — written here, in
+ * the test, so the suite needs no server process and no wall-clock waits. The
+ * client under test is the real `redis` driver over a real socket: what is
+ * asserted is OUR client's behaviour (prefixing, state tracking, error
+ * reporting), never the server's.
+ *
+ * The live-server versions of these paths belong to
+ * `test/integration/redis.integration.test.ts` under `RUN_REDIS_INTEGRATION`;
+ * this block is what lets the unit run measure the same lines deterministically.
+ */
+
+/** One complete RESP array of bulk strings, or null when more bytes are owed. */
+function readRespCommand(buffer: Buffer): { args: Buffer[]; consumed: number } | null {
+  if (buffer.length === 0 || buffer[0] !== 0x2a) return null; // '*'
+  const headerEnd = buffer.indexOf('\r\n');
+  if (headerEnd === -1) return null;
+  const count = Number(buffer.subarray(1, headerEnd).toString());
+  if (!Number.isInteger(count)) return null;
+  const args: Buffer[] = [];
+  let offset = headerEnd + 2;
+  for (let index = 0; index < count; index += 1) {
+    if (buffer.length <= offset || buffer[offset] !== 0x24) return null; // '$'
+    const lengthEnd = buffer.indexOf('\r\n', offset);
+    if (lengthEnd === -1) return null;
+    const length = Number(buffer.subarray(offset + 1, lengthEnd).toString());
+    const start = lengthEnd + 2;
+    if (buffer.length < start + length + 2) return null;
+    args.push(buffer.subarray(start, start + length));
+    offset = start + length + 2;
+  }
+  return { args, consumed: offset };
+}
+
+function fakeRedisServer(initial: Record<string, string> = {}) {
+  const data = new Map<string, string>(Object.entries(initial));
+  // When set, every data command is refused with a RESP error — a server that
+  // is up but failing, the case the per-operation try/catch exists for.
+  let refusing = false;
+  const sockets = new Set<net.Socket>();
+  const server = net.createServer((socket) => {
+    sockets.add(socket);
+    socket.on('close', () => sockets.delete(socket));
+    let pending = Buffer.alloc(0);
+    socket.on('data', (chunk: Buffer) => {
+      pending = Buffer.concat([pending, chunk]);
+      for (;;) {
+        const parsed = readRespCommand(pending);
+        if (!parsed) break;
+        pending = pending.subarray(parsed.consumed);
+        const [name, ...args] = parsed.args.map((argument) => argument.toString());
+        const key = args[0];
+        if (refusing && ['GET', 'SET', 'DEL'].includes(name.toUpperCase())) {
+          socket.write('-ERR storage failure\r\n');
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+        switch (name.toUpperCase()) {
+          case 'GET': {
+            const value = data.get(key);
+            socket.write(value === undefined
+              ? '$-1\r\n'
+              : `$${Buffer.byteLength(value)}\r\n${value}\r\n`);
+            break;
+          }
+          case 'SET':
+            data.set(key, args[1]);
+            socket.write('+OK\r\n');
+            break;
+          case 'DEL':
+            socket.write(`:${data.delete(key) ? 1 : 0}\r\n`);
+            break;
+          case 'QUIT':
+            // Answer and leave the close to the client: ending the socket
+            // from here can deliver FIN before the driver has processed the
+            // +OK, which it reports as an unexpected close (and logs after
+            // the suite has finished).
+            socket.write('+OK\r\n');
+            break;
+          case 'PING':
+            socket.write('+PONG\r\n');
+            break;
+          default:
+            // AUTH/SELECT/CLIENT SETINFO and anything else: accept and move on.
+            socket.write('+OK\r\n');
+        }
+      }
+    });
+  });
+
+  return {
+    data,
+    refuse: () => { refusing = true; },
+    listen: () => new Promise<number>((resolve) => {
+      server.listen(0, '127.0.0.1', () => {
+        resolve((server.address() as net.AddressInfo).port);
+      });
+    }),
+    close: async () => {
+      sockets.forEach((socket) => socket.destroy());
+      await new Promise<void>((resolve) => { server.close(() => resolve()); });
+    }
+  };
+}
+
+describe('the Redis client against an in-process RESP server', () => {
+  const connectTo = (port: number) => RedisKeyValueStorageClient.create({
+    socket: {
+      host: '127.0.0.1',
+      port,
+      connectTimeout: 1000,
+      reconnectStrategy: () => new Error('no reconnects in this suite')
+    },
+    database: 0
+  });
+
+  it('connects and tracks its state, and reconnecting is a no-op', async () => {
+    expect.hasAssertions();
+
+    const server = fakeRedisServer();
+    const port = await server.listen();
+    const client = connectTo(port);
+    try {
+      expect(client.connected).toBe(false);
+
+      const connection = await client.connect();
+
+      expect(connection).toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+      expect(client.connected).toBe(true);
+
+      // Connecting a live client again must be a no-op, not a second socket.
+      await expect(client.connect()).resolves
+        .toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+    } finally {
+      await client.disconnect();
+      await server.close();
+    }
+  });
+
+  it('round-trips a value under the prefixed key', async () => {
+    expect.hasAssertions();
+
+    const server = fakeRedisServer();
+    const port = await server.listen();
+    const client = connectTo(port);
+    try {
+      const written = await client.set('round-trip', 'stored');
+      expect(written).toStrictEqual(new ServiceResponse({ result: 'OK' }));
+      // The prefix is on the wire, not only on the argument: the server holds
+      // the namespaced key.
+      expect([...server.data.keys()]).toStrictEqual([`${client.prefix}:round-trip`]);
+
+      await expect(client.get('round-trip')).resolves
+        .toStrictEqual(new ServiceResponse({ result: 'stored' }));
+      await expect(client.get('never-written')).resolves
+        .toStrictEqual(new ServiceResponse({ result: null }));
+    } finally {
+      await client.disconnect();
+      await server.close();
+    }
+  });
+
+  it('deletes keys and reports how many it removed', async () => {
+    expect.hasAssertions();
+
+    const server = fakeRedisServer({ 'jumentix__:to-delete': 'value' });
+    const port = await server.listen();
+    const client = connectTo(port);
+    try {
+      await expect(client.del('to-delete')).resolves
+        .toStrictEqual(new ServiceResponse({ result: 1 }));
+      await expect(client.del('to-delete')).resolves
+        .toStrictEqual(new ServiceResponse({ result: 0 }));
+      await expect(client.get('to-delete')).resolves
+        .toStrictEqual(new ServiceResponse({ result: null }));
+    } finally {
+      await client.disconnect();
+      await server.close();
+    }
+  });
+
+  it('disconnects and reports the new state', async () => {
+    expect.hasAssertions();
+
+    const server = fakeRedisServer();
+    const port = await server.listen();
+    const client = connectTo(port);
+    try {
+      await expect(client.connect()).resolves
+        .toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+
+      const disconnection = await client.disconnect();
+      expect(disconnection).toStrictEqual(new ServiceResponse({ result: { connected: false } }));
+      expect(client.connected).toBe(false);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('resets the singleton so a suite can rebuild against another endpoint', async () => {
+    expect.hasAssertions();
+
+    const first = RedisKeyValueStorageClient.compile();
+    resetRedisKeyValueStorageClientForTests();
+    const second = RedisKeyValueStorageClient.compile();
+
+    expect(second).not.toBe(first);
+    expect(RedisKeyValueStorageClient.compile()).toBe(second);
+  });
+});
+
+describe('the Redis client when the server refuses commands', () => {
+  it('reports the refusal from get/set/del instead of throwing it', async () => {
+    expect.hasAssertions();
+
+    // Connected, but every command fails: the per-operation try/catch is what
+    // stands between a caller and a rejected driver promise.
+    const server = fakeRedisServer({ seeded: 'value' });
+    const port = await server.listen();
+    const client = RedisKeyValueStorageClient.create({
+      socket: {
+        host: '127.0.0.1',
+        port,
+        connectTimeout: 1000,
+        reconnectStrategy: () => new Error('no reconnects in this suite')
+      },
+      database: 0
+    });
+    try {
+      await expect(client.connect()).resolves
+        .toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+
+      server.refuse();
+
+      for (const call of [
+        () => client.get('seeded'),
+        () => client.set('k', 'v'),
+        () => client.del('seeded')
+      ]) {
+        // eslint-disable-next-line no-await-in-loop
+        const response = await call();
+        expect(response.result).toBeUndefined();
+        expect(response.error).toBeInstanceOf(Error);
+        expect(String((response.error as Error).message)).toContain('storage failure');
+      }
+      // Nothing was written or removed through the refusal.
+      expect(server.data.get('seeded')).toBe('value');
+    } finally {
+      // Disconnect BEFORE closing the server: destroying the socket under a
+      // live client surfaces as an unexpected-close error after the test ends.
+      await client.disconnect();
+      await server.close();
+    }
   });
 });

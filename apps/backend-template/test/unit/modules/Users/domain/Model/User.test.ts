@@ -72,6 +72,28 @@ describe('user domain model', () => {
     expect(user.deleteEmail('missing')).toBe(false);
   });
 
+  it('returns false when updating a value object id the aggregate does not hold', () => {
+    expect.hasAssertions();
+
+    // The update has to answer "not found" without touching the aggregate —
+    // a false return, and the existing value objects stay exactly as built.
+    const user = new User(basePayload());
+    const { phones, documents, emails } = user;
+
+    expect(user.updatePhone({
+      id: 'missing', countryCode: '1', localCode: '212', number: '1111111'
+    })).toBe(false);
+    expect(user.updateDocument({
+      id: 'missing', type: EDocumentType.RG, countryIssue: 'BR', data: '222'
+    })).toBe(false);
+    expect(user.updateEmail({
+      id: 'missing', email: 'jane@example.com', type: EEmailType.work
+    })).toBe(false);
+    expect(user.phones).toStrictEqual(phones);
+    expect(user.documents).toStrictEqual(documents);
+    expect(user.emails).toStrictEqual(emails);
+  });
+
   it('enforces read only fields', () => {
     expect.hasAssertions();
     const user = new User({ ...basePayload(), readOnly: true });
