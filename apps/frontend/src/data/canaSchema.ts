@@ -31,7 +31,7 @@ const storeNameFromListPath = (operationId: string, schemaName: string): string 
   for (const [path, methods] of Object.entries(document.paths ?? {})) {
     for (const operation of Object.values(methods)) {
       if (operation?.operationId === operationId) {
-        const segment = path.split('/').filter(Boolean).pop();
+        const segment = path.split('/').filter(Boolean).findLast(Boolean);
         if (segment) return segment;
       }
     }
@@ -107,7 +107,7 @@ export const schemaVersionFromStores = (stores: readonly CanaStoreSchema[]): num
   for (let index = 0; index < fingerprint.length; index += 1) {
     // FNV-1a — bitwise on purpose.
     // eslint-disable-next-line no-bitwise
-    hash ^= fingerprint.charCodeAt(index);
+    hash ^= fingerprint.codePointAt(index) ?? 0;
     hash = Math.imul(hash, 16777619);
   }
   // eslint-disable-next-line no-bitwise

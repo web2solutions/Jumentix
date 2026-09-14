@@ -114,14 +114,8 @@ export const enqueueMutation = async (input: {
     : { ...payload, [SYNC_FIELD]: 'pending' as SyncFlag };
 
   const result = await client.transaction('readwrite', [table.storeName, OUTBOX_STORE], async (scope) => {
-    const store = scope.table(table.storeName);
-    const outbox = scope.table(OUTBOX_STORE);
-    if (input.kind === 'delete') {
-      await store.put(localRecord);
-    } else {
-      await store.put(localRecord);
-    }
-    await outbox.put(intent);
+    await scope.table(table.storeName).put(localRecord);
+    await scope.table(OUTBOX_STORE).put(intent);
     return localRecord;
   });
   if (result.outcome !== 'committed' || !result.result) {
@@ -163,6 +157,84 @@ const compensate = async (intent: OutboxIntent, dependents: OutboxIntent[]): Pro
 let draining = false;
 let drainAgain = false;
 
+const replayIntent = async (intent: OutboxIntent): Promise<Record<string, unknown> | undefined> => {
+  const api = getSharedApiClient();
+  const auth = headers();
+  if (intent.kind === 'create') {
+    return api.request<Record<string, unknown>>({
+      operationId: intent.operations.create,
+      body: stripLocal(intent.payload),
+      headers: auth
+    });
+  }
+  if (intent.kind === 'update') {
+    return api.request<Record<string, unknown>>({
+      operationId: intent.operations.update,
+      pathParams: { id: intent.key },
+      body: { ...stripLocal(intent.payload), id: intent.key },
+      headers: auth
+    });
+  }
+  await api.request({
+    operationId: intent.operations.delete,
+    pathParams: { id: intent.key },
+    headers: auth
+  });
+  return undefined;
+};
+
+const confirmIntent = async (
+  intent: OutboxIntent,
+  response: Record<string, unknown> | undefined
+): Promise<void> => {
+  const table = entityTable(intent.entity);
+  await getCanaClient().transaction(
+    'readwrite',
+    [table.storeName, OUTBOX_STORE],
+    async (scope) => {
+      if (intent.kind === 'delete') {
+        await scope.table(table.storeName).delete(intent.key);
+      } else {
+        const confirmed = stripLocal(response ?? intent.payload);
+        await scope.table(table.storeName).put({ ...confirmed, [SYNC_FIELD]: 'synced' });
+      }
+      await scope.table(OUTBOX_STORE).delete(intent.opId);
+    }
+  );
+};
+
+const rejectClientError = async (intent: OutboxIntent, error: unknown): Promise<void> => {
+  const rest = await listOutbox();
+  await compensate(intent, rest);
+  useNotificationStore().reject({
+    entity: intent.entity,
+    key: intent.key,
+    kind: intent.kind,
+    message: error instanceof Error ? error.message : String(error),
+    reopen: intent.kind === 'delete' ? undefined : intent.payload
+  });
+};
+
+const drainOne = async (intent: OutboxIntent, pendingIds: Set<string>): Promise<'stop' | 'next'> => {
+  if (intent.dependsOn && pendingIds.has(intent.dependsOn)) return 'next';
+  try {
+    const response = await replayIntent(intent);
+    await confirmIntent(intent, response);
+    pendingIds.delete(intent.opId);
+  } catch (error) {
+    const status = apiErrorStatus(error);
+    if (status === 401) return 'stop';
+    if (status !== undefined && status >= 400 && status < 500) {
+      await rejectClientError(intent, error);
+      pendingIds.delete(intent.opId);
+      return 'next';
+    }
+    const retried = { ...intent, attempts: intent.attempts + 1 };
+    await getCanaClient().table(OUTBOX_STORE).put(retried);
+  }
+  return 'next';
+};
+
 export const drainOutbox = async (): Promise<void> => {
   if (!isCanaOpen() || !isOnline()) return;
   if (draining) {
@@ -176,67 +248,8 @@ export const drainOutbox = async (): Promise<void> => {
       const intents = await listOutbox();
       const pendingIds = new Set(intents.map((item) => item.opId));
       for (const intent of intents) {
-        if (intent.dependsOn && pendingIds.has(intent.dependsOn)) continue;
-        try {
-          const api = getSharedApiClient();
-          const auth = headers();
-          let response: Record<string, unknown> | undefined;
-          if (intent.kind === 'create') {
-            response = await api.request<Record<string, unknown>>({
-              operationId: intent.operations.create,
-              body: stripLocal(intent.payload),
-              headers: auth
-            });
-          } else if (intent.kind === 'update') {
-            response = await api.request<Record<string, unknown>>({
-              operationId: intent.operations.update,
-              pathParams: { id: intent.key },
-              body: { ...stripLocal(intent.payload), id: intent.key },
-              headers: auth
-            });
-          } else {
-            await api.request({
-              operationId: intent.operations.delete,
-              pathParams: { id: intent.key },
-              headers: auth
-            });
-          }
-          const table = entityTable(intent.entity);
-          await getCanaClient().transaction(
-            'readwrite',
-            [table.storeName, OUTBOX_STORE],
-            async (scope) => {
-              if (intent.kind === 'delete') {
-                await scope.table(table.storeName).delete(intent.key);
-              } else {
-                const confirmed = stripLocal(response ?? intent.payload);
-                await scope.table(table.storeName).put({ ...confirmed, [SYNC_FIELD]: 'synced' });
-              }
-              await scope.table(OUTBOX_STORE).delete(intent.opId);
-            }
-          );
-          pendingIds.delete(intent.opId);
-        } catch (error) {
-          const status = apiErrorStatus(error);
-          if (status === 401) {
-            return;
-          }
-          if (status !== undefined && status >= 400 && status < 500) {
-            const rest = await listOutbox();
-            await compensate(intent, rest);
-            useNotificationStore().reject({
-              entity: intent.entity,
-              key: intent.key,
-              kind: intent.kind,
-              message: error instanceof Error ? error.message : String(error),
-              reopen: intent.kind === 'delete' ? undefined : intent.payload
-            });
-            pendingIds.delete(intent.opId);
-            continue;
-          }
-          intent.attempts += 1;
-          await getCanaClient().table(OUTBOX_STORE).put(intent);
-        }
+        const step = await drainOne(intent, pendingIds);
+        if (step === 'stop') return;
       }
     } while (drainAgain);
   } finally {
