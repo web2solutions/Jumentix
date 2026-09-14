@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-14 [JUM-802][Feature] Offline-first Cana seed and PWA shell (#334) - Eduardo A.
+- 2026-09-14 refactor(frontend): split outbox drain for Sonar - Eduardo A.
 - 2026-09-14 fix(ci): resolve yaml in isolated review tests - Eduardo A.
 - 2026-09-14 feat(frontend): add offline Cana PWA seed - Eduardo A.
 - 2026-09-14 [JUM-795][Feature] Multitask app shell with modules, taskbar and widgets (#332) - Eduardo A.

@@ -12,6 +12,7 @@ import { drainOutbox, enqueueMutation, listOutbox } from '@/data/outbox';
 import { fullLoad, isSynced, runSessionSync } from '@/data/sync';
 import { resetSharedApiClient } from '@/contracts/apiClient';
 import { useAuthStore } from '@/stores/auth';
+import { useProfileStore } from '@/stores/profile';
 
 const DB = 'jumentix-frontend-test-data';
 
@@ -32,6 +33,7 @@ describe('Cana schema from OAS (JUM-802)', () => {
     expect(users?.indexes).toContain('deletedAt');
     expect(users?.indexes).not.toContain('roles');
     expect(orgs?.indexes).not.toContain('members');
+    expect(users?.getOperationId).toBe('getOneById');
     const schema = buildCanaSchema();
     expect(schema.version).toBeGreaterThan(0);
     expect(schema.stores.map((store) => store.name)).toEqual(
@@ -206,5 +208,53 @@ describe('sync (JUM-805)', () => {
     await fullLoad();
     await runSessionSync();
     expect(await isSynced()).toBe(true);
+  });
+
+  it('hydrates list rows with GET-by-id so emails land in Cana', async () => {
+    expect.hasAssertions();
+    const listed = {
+      result: [{
+        id: 'user-1',
+        firstName: 'Abraham',
+        username: 'me@mydomain.com',
+        updatedAt: '2026-01-01T00:00:00.000Z'
+      }],
+      total: 1,
+      page: 1,
+      size: 100
+    };
+    const detail = {
+      ...listed.result[0],
+      emails: [{
+        id: 'email-9', type: 'work', email: 'me@mydomain.com', isPrimary: true
+      }]
+    };
+    const empty = {
+      result: [], total: 0, page: 1, size: 100
+    };
+    const urls: string[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const href = String(input);
+      urls.push(href);
+      let body: unknown = empty;
+      if (href.includes('/users/user-1')) body = detail;
+      else if (href.includes('/users')) body = listed;
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) },
+        json: async () => body,
+        text: async () => JSON.stringify(body)
+      };
+    }) as unknown as typeof fetch;
+    await fullLoad();
+    const local = await getLocal('User', 'user-1');
+    expect(Array.isArray(local?.emails)).toBe(true);
+    expect((local?.emails as { email: string }[])[0].email).toBe('me@mydomain.com');
+    const afterSync = urls.length;
+    const profile = useProfileStore();
+    await profile.load();
+    expect(urls.length).toBe(afterSync);
+    expect(profile.record?.emails[0].email).toBe('me@mydomain.com');
   });
 });

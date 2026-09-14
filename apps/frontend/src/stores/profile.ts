@@ -4,6 +4,11 @@ import { defineStore } from 'pinia';
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { appOperations } from '@/contracts/appOperations';
 import { isNotFoundError } from '@/contracts/errors';
+import { entityTable } from '@/data/canaSchema';
+import { getCanaClient, isCanaOpen } from '@/data/db';
+import { getLocal } from '@/data/localRepository';
+import { drainOutbox, enqueueMutation } from '@/data/outbox';
+import { usersCrudConfig } from '@/features/users/usersCrudConfig';
 import { useAuthStore } from '@/stores/auth';
 import { t } from '@/i18n';
 
@@ -68,6 +73,20 @@ export const useProfileStore = defineStore('profile', () => {
     return { userId: auth.userId, headers: { Authorization: auth.token } };
   };
 
+  const asUserRecord = (row: Record<string, unknown>): UserRecord => {
+    const next = { ...row };
+    delete next._sync;
+    return next as unknown as UserRecord;
+  };
+
+  const persistLocal = async (user: UserRecord): Promise<void> => {
+    if (!isCanaOpen()) return;
+    await getCanaClient().table(entityTable('User').storeName).put({
+      ...JSON.parse(JSON.stringify(user)),
+      _sync: 'synced'
+    });
+  };
+
   /** GET /users/{id} (operationId getOneById). Concurrent callers share one flight. */
   const load = async (): Promise<void> => {
     if (inflight) return inflight;
@@ -75,11 +94,20 @@ export const useProfileStore = defineStore('profile', () => {
     loading.value = true;
     inflight = (async () => {
       try {
-        record.value = await getSharedApiClient().request<UserRecord>({
+        if (isCanaOpen()) {
+          const local = await getLocal<Record<string, unknown>>('User', userId);
+          if (Array.isArray(local?.emails) && local.emails.length > 0) {
+            record.value = asUserRecord(local);
+            return;
+          }
+        }
+        const remote = await getSharedApiClient().request<UserRecord>({
           operationId: appOperations().profile.get,
           pathParams: { id: userId },
           headers
         });
+        record.value = remote;
+        await persistLocal(remote);
       } finally {
         loading.value = false;
         inflight = null;
@@ -98,10 +126,24 @@ export const useProfileStore = defineStore('profile', () => {
       throw new Error('Profile not loaded.');
     }
     const { userId, headers } = session();
+    const body = { ...record.value, ...input, id: userId };
+    if (isCanaOpen()) {
+      await enqueueMutation({
+        entity: 'User',
+        kind: 'update',
+        key: userId,
+        payload: body,
+        operations: usersCrudConfig.operations
+      });
+      drainOutbox().catch(() => undefined);
+      const local = await getLocal<Record<string, unknown>>('User', userId);
+      if (local) record.value = asUserRecord(local);
+      return;
+    }
     await getSharedApiClient().request<UserRecord>({
       operationId: appOperations().profile.update,
       pathParams: { id: userId },
-      body: { ...record.value, ...input, id: userId },
+      body,
       headers
     });
     await load();
@@ -139,7 +181,13 @@ export const useProfileStore = defineStore('profile', () => {
         body,
         headers
       });
-      await load();
+      const remote = await getSharedApiClient().request<UserRecord>({
+        operationId: appOperations().profile.get,
+        pathParams: { id: userId },
+        headers
+      });
+      record.value = remote;
+      await persistLocal(remote);
       return 'updated';
     } catch (error) {
       if (isNotFoundError(error)) {
