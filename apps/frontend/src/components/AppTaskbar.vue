@@ -90,7 +90,7 @@ const onKey = (event: KeyboardEvent, moduleId: string) => {
         {{ t('taskbar.switcher') }}
         <span v-if="tasks.open.length" class="ms-1">({{ tasks.open.length }})</span>
       </CButton>
-      <ul v-if="sheetOpen" class="app-taskbar__sheet-list" role="list">
+      <ul v-if="sheetOpen" class="app-taskbar__sheet-list">
         <li v-for="id in tasks.open" :key="id">
           <button type="button" class="app-taskbar__sheet-item" @click="activate(id)">
             {{ titleFor(id) }}
@@ -103,29 +103,33 @@ const onKey = (event: KeyboardEvent, moduleId: string) => {
       class="app-taskbar__row"
       role="tablist"
     >
-      <button
+      <div
         v-for="id in sliced.shown"
         :key="id"
-        type="button"
-        class="app-taskbar__btn app-taskbar__touch"
-        role="tab"
-        :aria-selected="tasks.active === id"
+        class="app-taskbar__item"
         :data-active="tasks.active === id ? 'true' : 'false'"
-        :title="titleFor(id)"
-        @click="activate(id)"
-        @keydown="onKey($event, id)"
       >
-        <CIcon :icon="iconFor(id)" />
-        <span class="app-taskbar__label">{{ titleFor(id) }}</span>
-        <span
-          class="app-taskbar__close"
-          role="button"
+        <button
+          type="button"
+          class="app-taskbar__btn app-taskbar__touch"
+          role="tab"
+          :aria-selected="tasks.active === id"
+          :title="titleFor(id)"
+          @click="activate(id)"
+          @keydown="onKey($event, id)"
+        >
+          <CIcon :icon="iconFor(id)" />
+          <span class="app-taskbar__label">{{ titleFor(id) }}</span>
+        </button>
+        <button
+          type="button"
+          class="app-taskbar__close app-taskbar__touch"
           :aria-label="t('taskbar.close', { name: titleFor(id) })"
           @click="closeTask(id, $event)"
         >
           <CIcon icon="cil-x" />
-        </span>
-      </button>
+        </button>
+      </div>
       <CDropdown v-if="sliced.overflow.length" variant="nav-item">
         <CDropdownToggle caret class="app-taskbar__touch">
           {{ t('taskbar.more') }}

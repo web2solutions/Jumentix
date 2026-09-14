@@ -32,6 +32,7 @@ describe('AppTaskbar (JUM-796)', () => {
     await flush(2);
     expect(wrapper.find('[data-taskbar]').exists()).toBe(true);
     expect(wrapper.find('[data-taskbar]').text()).toMatch(/Users|Tasks/);
+    expect(wrapper.find('[data-active="true"] .app-taskbar__close').element.tagName).toBe('BUTTON');
     wrapper.unmount();
   });
 });
