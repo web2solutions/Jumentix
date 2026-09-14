@@ -69,6 +69,11 @@ Use **Communication Interface Designer** to choose how the SPA talks to backend:
 Contracts become the source for SDK integration — do not hand-write fetch URLs that
 are not in OpenAPI.
 
+The hybrid seed (`apps/frontend`) plugs a generated domain in as a **module**
+(`src/modules/manifest.ts`): navigation lists modules, each open module is a
+taskbar button, entity screens are tabs plus a Dashboard tab. See
+[Frontend Seed and the X-CRUD Kit](/docs/jumentix/FRONTEND-SEED-AND-XCRUD).
+
 **Success check:** OpenAPI/AsyncAPI files match designer export; operationIds stable.
 
 ### Step 3 — Configure service runtime (< 10 minutes)

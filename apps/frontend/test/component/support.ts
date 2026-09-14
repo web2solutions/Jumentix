@@ -6,7 +6,7 @@ import {
   cilArrowBottom, cilArrowTop, cilCheck, cilCloudDownload, cilCloudUpload,
   cilFeaturedPlaylist, cilFilter, cilInbox, cilLockLocked, cilMenu, cilPencil,
   cilPeople, cilPlus, cilReload, cilSave, cilSearch, cilSpeedometer, cilSquare,
-  cilSwapVertical, cilTrash, cilUser, cilViewColumn, cilX
+  cilSwapVertical, cilTask, cilTrash, cilUser, cilViewColumn, cilX
 } from '@coreui/icons';
 import type { Component } from 'vue';
 
@@ -40,6 +40,7 @@ export const icons = {
   cilSpeedometer,
   cilSquare,
   cilSwapVertical,
+  cilTask,
   cilTrash,
   cilUser,
   cilViewColumn,

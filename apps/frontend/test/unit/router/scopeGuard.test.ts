@@ -4,14 +4,21 @@ import {
 import { createPinia, setActivePinia } from 'pinia';
 import type { RouteLocationNormalized } from 'vue-router';
 
-import nav from '@/_nav';
 import { can } from '@/contracts/rbac';
+import '@/modules/index';
+import { findModule, visibleEntityTabs } from '@/modules/manifest';
+import { navFromModules } from '@/modules/nav';
 import { requireScopeRedirect } from '@/router/guards';
 import { useProfileStore } from '@/stores/profile';
 
-const routeTo = (path: string, operationId?: string): RouteLocationNormalized => ({
+const routeTo = (
+  path: string,
+  operationId?: string,
+  extra: Partial<RouteLocationNormalized> = {}
+): RouteLocationNormalized => ({
   path,
-  meta: operationId ? { operationId } : {}
+  meta: operationId ? { operationId } : {},
+  ...extra
 }) as RouteLocationNormalized;
 
 const setRoles = (roles: string[]): void => {
@@ -27,7 +34,7 @@ const setRoles = (roles: string[]): void => {
   };
 };
 
-/** JUM-772: scope guard + nav filtering driven by the OAS x-rbac matrix. */
+/** JUM-772/797: scope guard + module nav/tabs driven by the OAS x-rbac matrix. */
 describe('router scope guard (JUM-772)', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -38,7 +45,7 @@ describe('router scope guard (JUM-772)', () => {
     await expect(requireScopeRedirect(routeTo('/dashboard'))).resolves.toBeNull();
   });
 
-  it('admin reaches /users but not organization management', async () => {
+  it('admin reaches /users but cannot create organizations', async () => {
     expect.assertions(3);
     setRoles(['admin']);
     await expect(requireScopeRedirect(routeTo('/users', 'getAll'))).resolves.toBeNull();
@@ -52,6 +59,15 @@ describe('router scope guard (JUM-772)', () => {
     await expect(requireScopeRedirect(routeTo('/organizations', 'getAllOrganizations'))).resolves.toBe('/dashboard');
   });
 
+  it('blocks the organizations tab on the module route for the user role', async () => {
+    expect.assertions(1);
+    setRoles(['user']);
+    await expect(requireScopeRedirect(routeTo('/m/users/organizations', undefined, {
+      name: 'Module',
+      params: { moduleId: 'users', tab: 'organizations' }
+    }))).resolves.toBe('/dashboard');
+  });
+
   it('superadmin reaches everything', async () => {
     expect.assertions(2);
     setRoles(['superadmin']);
@@ -59,27 +75,20 @@ describe('router scope guard (JUM-772)', () => {
     await expect(requireScopeRedirect(routeTo('/organizations', 'getAllOrganizations'))).resolves.toBeNull();
   });
 
-  it('nav group renders only items the roles can read', () => {
-    expect.assertions(3);
-    const group = nav.find((item) => item.name === 'nav.usersDomain');
-    expect(group?.items?.length).toBe(2);
-    const visibleFor = (roles: string[]) => (group?.items ?? [])
-      .filter((item) => !item.operationId || can(roles, item.operationId))
-      .map((item) => item.name);
-    expect(visibleFor(['user'])).toStrictEqual(['nav.users']);
-    expect(visibleFor(['admin'])).toStrictEqual(['nav.users', 'nav.organizations']);
+  it('nav lists modules the role may open; entity tabs stay inside the module', () => {
+    expect.assertions(4);
+    const users = findModule('users');
+    expect(navFromModules(['user']).map((item) => item.name)).toStrictEqual(['module.users']);
+    expect(navFromModules(['admin']).map((item) => item.name)).toStrictEqual(['module.users']);
+    expect(visibleEntityTabs(users!, ['user']).map((item) => item.id)).toStrictEqual(['users']);
+    expect(visibleEntityTabs(users!, ['admin']).map((item) => item.id)).toStrictEqual(['users', 'organizations']);
   });
 
-  it('nav filtering is correct once roles load late (shell loads the profile record)', () => {
+  it('hides every module until roles load', () => {
     expect.assertions(2);
-    const group = nav.find((item) => item.name === 'nav.usersDomain');
-    const visibleFor = (roles: string[]) => (group?.items ?? [])
-      .filter((item) => !item.operationId || can(roles, item.operationId))
-      .map((item) => item.name);
-    // Before the profile record lands (dashboard landing), nothing shows…
-    expect(visibleFor([])).toStrictEqual([]);
-    // …after the shell-level load (DefaultLayout onMounted), it does.
+    expect(navFromModules([])).toStrictEqual([]);
     setRoles(['superadmin']);
-    expect(visibleFor(useProfileStore().record?.roles ?? [])).toStrictEqual(['nav.users', 'nav.organizations']);
+    expect(navFromModules(useProfileStore().record?.roles ?? []).map((item) => item.name))
+      .toStrictEqual(['module.users']);
   });
 });

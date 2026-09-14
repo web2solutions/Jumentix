@@ -23,15 +23,18 @@ describe('authentication', () => {
 
   it('signs in each seeded role and the sidebar reflects its scopes', () => {
     cy.login('superadmin');
-    cy.get('.sidebar-nav').should('contain', 'Users').and('contain', 'Organizations');
+    cy.get('.sidebar-nav').should('contain', 'Users');
+    cy.get('[data-module-tabs]').should('contain', 'Organizations');
 
     cy.login('admin');
-    cy.get('.sidebar-nav').should('contain', 'Users').and('contain', 'Organizations');
+    cy.get('.sidebar-nav').should('contain', 'Users');
+    cy.get('[data-module-tabs]').should('contain', 'Organizations');
 
     cy.login('user');
     cy.get('.sidebar-nav').should('contain', 'Users').and('not.contain', 'Organizations');
+    cy.get('[data-module-tabs]').should('contain', 'Users').and('not.contain', 'Organizations');
     cy.visit('/#/organizations');
-    cy.location('hash').should('eq', '#/dashboard');
+    cy.location('hash').should('eq', '#/m/users/dashboard');
   });
 
   it('logs out from the account menu and lands on /login', () => {

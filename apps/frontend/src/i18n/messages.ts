@@ -30,6 +30,15 @@ const en: Messages = {
   'nav.account': 'Account',
   'nav.toggleNavigation': 'Toggle navigation',
 
+  'module.users': 'Users',
+  'module.unknown': 'Unknown module "{id}".',
+  'taskbar.label': 'Open modules',
+  'taskbar.close': 'Close {name}',
+  'taskbar.more': 'More tasks',
+  'taskbar.empty': 'No open modules',
+  'taskbar.switcher': 'Tasks',
+  'toolbar.more': 'More toolbar widgets',
+
   'auth.login.title': 'Login',
   'auth.login.subtitle': 'Sign in to your Jumentix account',
   'auth.login.submit': 'Login',
@@ -170,6 +179,15 @@ const ptBR: Messages = {
   'nav.home': 'Início',
   'nav.account': 'Conta',
   'nav.toggleNavigation': 'Alternar navegação',
+
+  'module.users': 'Usuários',
+  'module.unknown': 'Módulo desconhecido "{id}".',
+  'taskbar.label': 'Módulos abertos',
+  'taskbar.close': 'Fechar {name}',
+  'taskbar.more': 'Mais tarefas',
+  'taskbar.empty': 'Nenhum módulo aberto',
+  'taskbar.switcher': 'Tarefas',
+  'toolbar.more': 'Mais widgets da barra',
 
   'auth.login.title': 'Entrar',
   'auth.login.subtitle': 'Acesse sua conta Jumentix',

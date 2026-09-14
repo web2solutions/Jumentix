@@ -65,9 +65,12 @@ import router from './router';
 import { installSessionGuard } from '@/contracts/sessionGuard';
 import App from './App.vue';
 import { configureAppOperations } from './contracts/appOperations';
+import '@/modules/index';
+import { registerShellToolbarWidgets } from '@/shell/registerShellWidgets';
 
 // Fail loudly at boot when the bundled OAS lacks an operation the shell relies on (JUM-780).
 configureAppOperations();
+registerShellToolbarWidgets();
 
 const app = createApp(App);
 

@@ -19,7 +19,9 @@ describe('organizations, dashboard and profile', () => {
 
   it('updates the profile scalars and lists sub-resources with contract labels', () => {
     cy.login('admin'); // `user` has no update_user scope in the x-rbac matrix
-    cy.visit('/#/profile');
+    cy.get('.header [aria-label="Account"]').click();
+    cy.contains('.dropdown-item', 'Profile').click();
+    cy.location('hash').should('eq', '#/profile');
     cy.get('h2').should('contain', 'My profile');
     cy.get('table').first().find('th').first()
       .should('contain', 'Email');
