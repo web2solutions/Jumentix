@@ -259,11 +259,7 @@ export function createMonitoringController(dom, options = {}) {
   function filteredProcesses() {
     const processes = Array.isArray(state.snapshot?.processes) ? state.snapshot.processes : [];
     const missing = new Set(state.snapshot?.ecosystem?.missingExpected || []);
-    const expected = new Set(
-      (state.snapshot?.ecosystem?.expectedProcessCount
-        ? processes.map((entry) => entry.name)
-        : processes.map((entry) => entry.name))
-    );
+    const expected = new Set(processes.map((entry) => entry.name));
     return processes.filter((processEntry) => {
       if (state.filters.namespace !== 'all' && processEntry.namespace !== state.filters.namespace) {
         return false;
@@ -635,7 +631,7 @@ export function createMonitoringController(dom, options = {}) {
       (state.snapshot?.processes || []).map((entry) => entry.namespace || 'default')
     );
     dom.pm2FilterNamespace.innerHTML = '<option value="all">all namespaces</option>';
-    [...namespaces].sort().forEach((namespace) => {
+    [...namespaces].sort((a, b) => a.localeCompare(b)).forEach((namespace) => {
       const option = document.createElement('option');
       option.value = namespace;
       option.textContent = namespace;

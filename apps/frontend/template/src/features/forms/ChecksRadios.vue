@@ -135,7 +135,7 @@
         <CCardBody>
           <DocsExample href="forms/checks-radios.html#sizes">
             <CFormSwitch
-              id="formSwitchCheckDefault"
+              id="formSwitchCheckDefaultMd"
               label="Default switch checkbox input"
             />
             <CFormSwitch
@@ -219,7 +219,7 @@
           </DocsExample>
           <DocsExample href="forms/checks-radios.html#inline">
             <CFormCheck
-              id="inlineCheckbox1"
+              id="inlineRadio1"
               inline
               type="radio"
               name="inlineRadioOptions"
@@ -227,7 +227,7 @@
               label="1"
             />
             <CFormCheck
-              id="inlineCheckbox2"
+              id="inlineRadio2"
               inline
               type="radio"
               name="inlineRadioOptions"
@@ -235,7 +235,7 @@
               label="2"
             />
             <CFormCheck
-              id="inlineCheckbox3"
+              id="inlineRadio3"
               inline
               type="radio"
               name="inlineRadioOptions"

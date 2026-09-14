@@ -30,7 +30,7 @@ export function stableSerialize(value) {
     seen.add(input);
     if (Array.isArray(input)) return input.map(normalize);
     const output = {};
-    Object.keys(input).sort().forEach((key) => {
+    Object.keys(input).sort((a, b) => a.localeCompare(b)).forEach((key) => {
       const item = input[key];
       if (typeof item === 'function' || item === undefined) return;
       output[key] = normalize(item);

@@ -57,7 +57,7 @@ try {
 
   // `--host 127.0.0.1` so the address Cypress and the health probe use is the
   // one Vite binds (a bare `localhost` may resolve to ::1 on this host).
-  vite = spawn('bun', ['run', 'dev', '--', '--host', '127.0.0.1'], {
+  vite = spawn(process.execPath, ['run', 'dev', '--', '--host', '127.0.0.1'], {
     cwd: appRoot,
     stdio: 'inherit',
     env: { ...env, VITE_DEV_PORT: frontendPort, VITE_API_PROXY_TARGET: `http://127.0.0.1:${backendPort}` }

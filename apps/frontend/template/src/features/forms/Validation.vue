@@ -183,7 +183,7 @@ const handleSubmitTooltip01 = (event: SubmitEvent) => {
               </CCol>
               <CCol :xs="12">
                 <CFormCheck
-                  id="invalidCheck"
+                  id="invalidCheck02"
                   type="checkbox"
                   label="Agree to terms and conditions"
                   required
@@ -261,7 +261,7 @@ const handleSubmitTooltip01 = (event: SubmitEvent) => {
               </CCol>
               <CCol :xs="12">
                 <CFormCheck
-                  id="invalidCheck"
+                  id="invalidCheck03"
                   type="checkbox"
                   label="Agree to terms and conditions"
                   invalid
@@ -335,7 +335,7 @@ const handleSubmitTooltip01 = (event: SubmitEvent) => {
               </div>
               <div class="mb-3">
                 <CFormInput
-                  id="validationTextarea"
+                  id="validationFileInput"
                   type="file"
                   aria-label="file example"
                   required
@@ -380,11 +380,11 @@ const handleSubmitTooltip01 = (event: SubmitEvent) => {
               <CCol :md="4" class="position-relative">
                 <CFormLabel for="validationTooltipUsername">Username</CFormLabel>
                 <CInputGroup class="has-validation">
-                  <CInputGroupText id="inputGroupPrepend">@</CInputGroupText>
+                  <CInputGroupText id="inputGroupPrepend04">@</CInputGroupText>
                   <CFormInput
                     id="validationTooltipUsername"
                     value=""
-                    aria-describedby="inputGroupPrepend"
+                    aria-describedby="inputGroupPrepend04"
                     required
                   />
                   <CFormFeedback tooltip invalid> Please choose a username. </CFormFeedback>

@@ -3,7 +3,12 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { CChart } from '@coreui/vue-chartjs'
 import { getStyle } from '@coreui/utils'
 
-const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min)
+const random = (min: number, max: number) => {
+  const range = max - min + 1
+  const buffer = new Uint32Array(1)
+  crypto.getRandomValues(buffer)
+  return Math.floor((buffer[0] / 0x100000000) * range) + min
+}
 
 interface ChartComponentRef {
   chart: {
