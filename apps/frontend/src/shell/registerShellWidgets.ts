@@ -1,23 +1,22 @@
 import AppHeaderDropdownAccnt from '@/components/AppHeaderDropdownAccnt.vue';
 import NetworkActivity from '@/components/NetworkActivity.vue';
 import LocaleWidget from '@/shell/LocaleWidget.vue';
-import ReservedToolbarSlot from '@/shell/ReservedToolbarSlot.vue';
+import NotificationCenter from '@/shell/NotificationCenter.vue';
+import OnlineOfflineWidget from '@/shell/OnlineOfflineWidget.vue';
 import { registerToolbarWidget } from '@/shell/toolbarWidgets';
 
 export const registerShellToolbarWidgets = (): void => {
   registerToolbarWidget({
     id: 'notifications',
-    component: ReservedToolbarSlot,
+    component: NotificationCenter,
     placement: 'right',
-    order: 10,
-    props: { slotId: 'notifications' }
+    order: 10
   });
   registerToolbarWidget({
     id: 'online-offline',
-    component: ReservedToolbarSlot,
+    component: OnlineOfflineWidget,
     placement: 'right',
-    order: 15,
-    props: { slotId: 'online-offline' }
+    order: 15
   });
   registerToolbarWidget({
     id: 'locale',

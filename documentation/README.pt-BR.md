@@ -73,6 +73,7 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 - [Extensões OAS](./md/OAS-VENDOR-EXTENSIONS.pt-BR.md) ([EN](./md/OAS-VENDOR-EXTENSIONS.md))
 - [Contrato de métricas de entidade](./md/ENTITY-METRICS-CONTRACT.pt-BR.md) ([EN](./md/ENTITY-METRICS-CONTRACT.md))
 - [Seed de Frontend e o Kit X-CRUD](./md/FRONTEND-SEED-AND-XCRUD.pt-BR.md) ([EN](./md/FRONTEND-SEED-AND-XCRUD.md))
+- [Camada de dados offline do frontend](./md/FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md) ([EN](./md/FRONTEND-OFFLINE-DATA-LAYER.md))
 - [Especificação OpenAPI](../spec/1.0.0.yml)
 - [Mapa de Eventos e Mensagens](./md/EVENTS-AND-MESSAGES-MAP.pt-BR.md)
 - [Contratos de Erro e Respostas](./md/ERROR-CONTRACTS-AND-RESPONSES.pt-BR.md)

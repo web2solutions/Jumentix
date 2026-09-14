@@ -157,7 +157,26 @@ const en: Messages = {
   'network.title': 'Network activity',
   'network.inFlight': '{count} in flight',
   'network.idle': 'idle',
-  'network.empty': 'No requests yet.'
+  'network.empty': 'No requests yet.',
+  'network.online': 'Online',
+  'network.offline': 'Offline',
+
+  'sync.title': 'Loading your data',
+  'sync.subtitle': 'The shell opens after the local copy is complete.',
+  'sync.progressLabel': 'Sync progress',
+  'sync.entity': 'Entity: {entity}',
+
+  'boot.unavailableTitle': 'IndexedDB is unavailable',
+  'boot.unavailableBody': 'This app stores data locally and cannot start without IndexedDB.',
+
+  'crud.pending': 'Pending',
+  'notifications.title': 'Notifications',
+  'notifications.empty': 'No notifications.',
+  'notifications.unread': '{count} unread',
+  'notifications.markAll': 'Mark all as read',
+  'notifications.reopen': 'Reopen with my data',
+  'pwa.updateTitle': 'Update available',
+  'pwa.updateBody': 'Reload to apply the new application version.'
 };
 
 const ptBR: Messages = {
@@ -307,7 +326,26 @@ const ptBR: Messages = {
   'network.title': 'Atividade de rede',
   'network.inFlight': '{count} em andamento',
   'network.idle': 'ocioso',
-  'network.empty': 'Nenhuma requisição ainda.'
+  'network.empty': 'Nenhuma requisição ainda.',
+  'network.online': 'Online',
+  'network.offline': 'Offline',
+
+  'sync.title': 'Carregando seus dados',
+  'sync.subtitle': 'O shell abre depois que a cópia local termina.',
+  'sync.progressLabel': 'Progresso da sincronização',
+  'sync.entity': 'Entidade: {entity}',
+
+  'boot.unavailableTitle': 'IndexedDB indisponível',
+  'boot.unavailableBody': 'Este aplicativo guarda dados localmente e não inicia sem IndexedDB.',
+
+  'crud.pending': 'Pendente',
+  'notifications.title': 'Notificações',
+  'notifications.empty': 'Nenhuma notificação.',
+  'notifications.unread': '{count} não lida(s)',
+  'notifications.markAll': 'Marcar todas como lidas',
+  'notifications.reopen': 'Reabrir com meus dados',
+  'pwa.updateTitle': 'Atualização disponível',
+  'pwa.updateBody': 'Recarregue para aplicar a nova versão do aplicativo.'
 };
 
 export const messages: Record<Locale, Messages> = { en, 'pt-BR': ptBR };

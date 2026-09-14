@@ -56,6 +56,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
   - `apps/frontend/*` (consome só a superfície OAS e SDKs gerados)
   - `documentation/md/PAGINATED-LIST-CONTRACT.pt-BR.md` (`x-list-capabilities`, envelope de página)
   - `documentation/md/FRONTEND-SEED-AND-XCRUD.pt-BR.md`
+  - `documentation/md/FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md`
 - Evidência:
   - verificações de resolução de rota/canal
   - integração em tempo real/testes de fumaça

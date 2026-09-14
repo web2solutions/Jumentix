@@ -1,4 +1,6 @@
-import { computed, reactive, ref } from 'vue';
+import {
+  computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref
+} from 'vue';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { apiErrorStatus, formatApiError } from '@/contracts/errors';
@@ -9,6 +11,8 @@ import {
   type FieldDescriptor
 } from '@/contracts/formSchema';
 import { listCapabilities, type ListCapabilities, type ListQuery } from '@/contracts/listSchema';
+import { isCanaOpen } from '@/data/db';
+import { listLocal, subscribeLocal } from '@/data/localRepository';
 import { localized, t } from '@/i18n';
 import { createEntityStore } from '@/stores/entityStore';
 import { useAuthStore } from '@/stores/auth';
@@ -218,16 +222,25 @@ export const useXCrud = (config: XCrudEntityConfig) => {
         return;
       }
       try {
-        const client = getSharedApiClient();
         const targetCapabilities = listCapabilities(operationId);
         type Rows = Array<Record<string, unknown>>;
         type ReferenceRows = { result?: Rows } | Rows;
-        const response = await client.request<ReferenceRows>({
-          operationId,
-          query: targetCapabilities ? { page: 1, size: targetCapabilities.maxSize } : undefined,
-          headers: { Authorization: useAuthStore().token }
-        });
-        const list = Array.isArray(response) ? response : (response.result ?? []);
+        let list: Rows = [];
+        if (isCanaOpen()) {
+          const localPage = await listLocal(relation.entity, {
+            page: 1,
+            size: targetCapabilities?.maxSize ?? 100
+          });
+          list = localPage.result;
+        } else {
+          const client = getSharedApiClient();
+          const response = await client.request<ReferenceRows>({
+            operationId,
+            query: targetCapabilities ? { page: 1, size: targetCapabilities.maxSize } : undefined,
+            headers: { Authorization: useAuthStore().token }
+          });
+          list = Array.isArray(response) ? response : (response.result ?? []);
+        }
         const labelField = relation.display ?? 'name';
         const match = relation.match || entityPrimaryKey(relation.entity);
         referenceLabels[d.name] = Object.fromEntries(
@@ -451,11 +464,13 @@ export const useXCrud = (config: XCrudEntityConfig) => {
    * (the widget says so), except `count` without `groupBy`, which is the
    * server `total` — the one number the envelope makes exact.
    */
-  const aggregateScope = computed<'all' | 'page'>(() => (serverMode ? 'page' : 'all'));
+  const aggregateScope = computed<'all' | 'page'>(() => (
+    serverMode && !isCanaOpen() ? 'page' : 'all'
+  ));
 
   const aggregateValue = (aggregate: XCrudAggregate): number => {
     if (aggregate.op === 'count' && !aggregate.groupBy) {
-      return serverMode ? serverTotal.value : rows.value.length;
+      return serverMode && !isCanaOpen() ? serverTotal.value : rows.value.length;
     }
     const values = rows.value
       .map((row) => row[aggregate.field])
@@ -477,6 +492,7 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   /** True when the widget's number covers only the loaded page. */
   const aggregateIsPartial = (aggregate: XCrudAggregate): boolean => (
     serverMode
+    && !isCanaOpen()
     && !(aggregate.op === 'count' && !aggregate.groupBy)
     && serverTotal.value > rows.value.length
   );
@@ -498,6 +514,17 @@ export const useXCrud = (config: XCrudEntityConfig) => {
       value
     }));
   };
+
+  if (getCurrentInstance()) {
+    onMounted(() => {
+      if (!isCanaOpen()) return undefined;
+      const stop = subscribeLocal(config.entity, () => {
+        load().catch(() => undefined);
+      });
+      onUnmounted(stop);
+      return undefined;
+    });
+  }
 
   return {
     config,

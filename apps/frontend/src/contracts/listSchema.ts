@@ -65,6 +65,7 @@ export interface ListQuery {
   sort?: string;
   q?: string;
   filter?: Record<string, unknown>;
+  includeDeleted?: boolean;
 }
 
 const toBase64 = (value: string): string => {
@@ -83,6 +84,7 @@ export const toQueryParams = (query: ListQuery): Record<string, string | number>
   if (query.filter && Object.keys(query.filter).length > 0) {
     params.filter = toBase64(JSON.stringify(query.filter));
   }
+  if (query.includeDeleted) params.includeDeleted = 'true';
   return params;
 };
 

@@ -110,4 +110,22 @@ describe('SearchableEnumInput', () => {
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toStrictEqual(['XX']);
     wrapper.unmount();
   });
+
+  it('resolves a typed label to the option value when options arrive late', async () => {
+    expect.hasAssertions();
+    const wrapper = mountWithShell(SearchableEnumInput, {
+      props: {
+        id: 'org',
+        modelValue: '',
+        options: [] as Array<{ value: string; label: string }>
+      }
+    });
+    await wrapper.find('input').setValue('ACME');
+    expect(wrapper.emitted('update:modelValue')?.at(-1)).toStrictEqual(['ACME']);
+    await wrapper.setProps({
+      options: [{ value: 'org-1', label: 'ACME' }, { value: 'org-2', label: 'Umbrella' }]
+    });
+    expect(wrapper.emitted('update:modelValue')?.at(-1)).toStrictEqual(['org-1']);
+    wrapper.unmount();
+  });
 });

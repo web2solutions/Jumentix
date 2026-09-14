@@ -35,6 +35,9 @@ export const validateField = (descriptor: FieldDescriptor, value: unknown): stri
   if (descriptor.required && !text.trim()) {
     return t('validation.required', { field });
   }
+  if (descriptor.type === 'array') {
+    return null;
+  }
   if (!text) {
     return null; // optional and empty — nullable/optional per OAS
   }

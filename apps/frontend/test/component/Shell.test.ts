@@ -23,6 +23,7 @@ const makeRouter = (): Router => createRouter({
   routes: [
     { path: '/', component: { template: '<div />' } },
     { path: '/login', component: { template: '<div />' } },
+    { path: '/sync', component: { template: '<div />' } },
     { path: '/dashboard', component: { template: '<div />' } },
     { path: '/profile', component: { template: '<div />' } },
     { path: '/m/:moduleId/:tab?', component: { template: '<div />' } },
@@ -43,7 +44,7 @@ describe('LoginView', () => {
     document.body.innerHTML = '';
   });
 
-  it('builds the form from RequestLogin, submits the collected body and navigates to /dashboard', async () => {
+  it('builds the form from RequestLogin, submits the collected body and navigates to /sync', async () => {
     expect.hasAssertions();
     const pinia = freshSession();
     useAuthStore().token = '';
@@ -59,7 +60,7 @@ describe('LoginView', () => {
     await flush(4);
     const login = recorded.find((c) => c.url.endsWith('/auth/login'));
     expect(login?.body).toStrictEqual({ username: 'zoe@x.dev', password: 'secret123' });
-    expect(router.currentRoute.value.path).toBe('/dashboard');
+    expect(router.currentRoute.value.path).toBe('/sync');
     expect(useAuthStore().userId).toBe('u1');
     wrapper.unmount();
   });

@@ -1,5 +1,7 @@
-import { configureModules, registerModule } from '@/modules/manifest';
+import { configureModules, findModule, registerModule } from '@/modules/manifest';
 import { usersModule } from '@/modules/users';
 
-registerModule(usersModule);
+if (!findModule(usersModule.id)) {
+  registerModule(usersModule);
+}
 configureModules();
