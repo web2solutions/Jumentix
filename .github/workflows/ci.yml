@@ -357,7 +357,9 @@ jobs:
           name: jumentix-${{ github.run_id }}
           fail_ci_if_error: true
       - name: Install Sonar scanner
-        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
+        # SonarCloud Automatic Analysis owns the repository check by default.
+        # Enable this CI scanner only after disabling Automatic Analysis in SonarCloud.
+        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
         run: |
           set -euo pipefail
           case "$(uname -s)-$(uname -m)" in
@@ -374,7 +376,7 @@ jobs:
           unzip -qo /tmp/sonar-scanner.zip -d /tmp
           echo "${sonar_dir}/bin" >> "$GITHUB_PATH"
       - name: SonarQube Cloud Scan
-        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
         run: |
           SONAR_TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF_NAME:-}}"
           if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
@@ -384,7 +386,7 @@ jobs:
           test -n "${SONAR_TOKEN:-}"
           sonar-scanner -Dsonar.scm.disabled=true
       - name: Report Sonar findings
-        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
         run: bun ci-cd/report-sonar-findings.js
       - name: Stop local coverage services
         if: always()

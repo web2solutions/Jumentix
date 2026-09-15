@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-15 test: close JUM-821 release patch coverage gap - Eduardo Almeida
 - 2026-09-14 [JUM-821][Test] Cover remaining branch gap for the full-matrix floor (#336) - Eduardo A.
 - 2026-09-14 [JUM-821][Fix] Break model import cycle, fix all CodeQL alerts, close branch coverage gap (#333) - Eduardo A.
 - 2026-09-14 [JUM-804][Fix] Hydrate Cana user details for local profile (#335) - Eduardo A.
