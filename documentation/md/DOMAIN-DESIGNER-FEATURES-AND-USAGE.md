@@ -71,9 +71,43 @@ How to use:
 
 1. Select a domain.
 2. Fill values in `Bounded Context`.
-3. Click `Save Context`.
+  3. Click `Save Context`.
 
 These fields are persisted in the designer state and exported through JSON/package flows.
+
+## 3.1) Architecture designer (JUM-815, JUM-816)
+
+The **Architecture** tab sits beside Domain Designer. A new model starts as one **Core** service (monolith) that hosts every domain. Core must keep the **Users** domain (identity and authentication). Additional services are boxes on the canvas:
+
+- Create, rename, set kind (`core` | `domain`), URL and optional deploy-target id.
+- Drag a domain chip onto a service, or assign it from the inspector (keyboard path).
+- Draw links with protocol `rest`, `grpc`, `websocket` or `message`.
+- Validation badges: exactly one Core; Users on Core; each domain on one service; `x-relation` across a service boundary is a warning.
+- Mini-map, undo/redo (shared designer history) and **Export image**.
+
+How to use:
+
+1. Open Architecture.
+2. Press **Add Service** to split the monolith.
+3. Drop or **Move here** a domain other than Users onto the new service.
+4. **Add Link** between Core and the domain service.
+
+## 3.2) Per-service OAS export and Swagger (JUM-817, JUM-818)
+
+Export OAS 3.1 now writes:
+
+- `x-services` and `servers[]` with `x-service-id`
+- `x-service` on every operation and entity schema
+- `x-architecture-links` for lossless architecture round-trip
+
+The merged document is the Core view (every operation, every service address). **OpenAPI** tab embeds Swagger UI (vendored `swagger-ui-dist` from `apps/backend-template/OASdoc`). The service selector filters to one service; Try it out uses that service's `servers` URL.
+
+How to use:
+
+1. Model architecture, then open **OpenAPI**.
+2. Choose **Merged Core document** or a named service.
+3. Press **Refresh** after model edits.
+4. Export OAS from Domain Designer Share panel for files; the catalog record may store `design.oasDocuments.merged` and `design.oasDocuments.services`.
 
 ## 4) Entity Editing and Templates
 

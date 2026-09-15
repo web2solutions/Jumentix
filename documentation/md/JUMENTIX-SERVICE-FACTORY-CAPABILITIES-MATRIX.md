@@ -13,6 +13,8 @@ Define the supported software factory modes for Jumentix so engineering and prod
 | Hybrid Backend + Frontend | Backend services plus SPA/PWA/SSR apps | REST + realtime contracts consumed by SDK clients | API contracts (OpenAPI/AsyncAPI) and event-first integration | Backend adapter plus frontend local/offline storage strategy | End-to-end product delivery from one monorepo |
 | Frontend-only SPA/PWA Offline | Frontend application package with API contract compatibility | Local app + optional remote API consumption | Contract-first client SDK integration | IndexedDB/local storage for offline-first flows | Offline-capable field and operations applications |
 
+Architecture designer (Service Management): **Modular Monolith** is one Core service holding every domain. **Multi-service** is Core (Users + auth) plus domain services, each with its own `servers` URL in the OAS. The OpenAPI tab and per-service export follow that split.
+
 ## Reference Seeds
 
 - Backend modes: `apps/backend-template`.
