@@ -74,8 +74,9 @@ export function createSwaggerTab({ dom, state }) {
         layout: 'BaseLayout',
         tryItOutEnabled: true
       });
-    } catch (_error) {
-      dom.swaggerUi.textContent = 'Swagger UI bundle is not vendored. Run service-management:vendor.';
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      dom.swaggerUi.textContent = `Swagger UI did not load: ${reason}`;
     }
   }
 

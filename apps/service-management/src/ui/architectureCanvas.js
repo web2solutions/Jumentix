@@ -13,8 +13,20 @@ import {
 } from '@jumentix/designer-core/model/architecture.js';
 import { collectArchitectureIssues } from '@jumentix/designer-core/validation/architectureValidation.js';
 
+function fillSelect(select, items, selected) {
+  if (!select) return;
+  select.innerHTML = '';
+  items.forEach((item) => {
+    const option = document.createElement('option');
+    option.value = item.id;
+    option.textContent = item.name || item.id;
+    if (item.id === selected) option.selected = true;
+    select.appendChild(option);
+  });
+}
+
 export function createArchitectureCanvas({ dom, state, actions }) {
-  const { withPersist, render, saveState } = actions;
+  const { withPersist, saveState } = actions;
 
   function architecture() {
     state.architecture = normalizeArchitectureInput(state.architecture, state.domains);
@@ -54,16 +66,15 @@ export function createArchitectureCanvas({ dom, state, actions }) {
     });
   }
 
-  function fillSelect(select, items, selected) {
-    if (!select) return;
-    select.innerHTML = '';
-    items.forEach((item) => {
-      const option = document.createElement('option');
-      option.value = item.id;
-      option.textContent = item.name || item.id;
-      if (item.id === selected) option.selected = true;
-      select.appendChild(option);
+  function removeLink(linkId) {
+    withPersist(() => {
+      const current = architecture();
+      state.architecture = {
+        ...current,
+        links: current.links.filter((entry) => entry.id !== linkId)
+      };
     });
+    renderArchitecture();
   }
 
   function renderInspector() {
@@ -103,15 +114,7 @@ export function createArchitectureCanvas({ dom, state, actions }) {
         remove.type = 'button';
         remove.textContent = 'Remove';
         remove.setAttribute('aria-label', `Remove link ${link.id}`);
-        remove.addEventListener('click', () => {
-          withPersist(() => {
-            state.architecture = {
-              ...architecture(),
-              links: architecture().links.filter((entry) => entry.id !== link.id)
-            };
-          });
-          renderArchitecture();
-        });
+        remove.addEventListener('click', () => removeLink(link.id));
         item.appendChild(remove);
         dom.architectureLinkList.appendChild(item);
       });
@@ -212,7 +215,7 @@ export function createArchitectureCanvas({ dom, state, actions }) {
       line.setAttribute('x2', String(to.x + to.width / 2));
       line.setAttribute('y2', String(to.y + 20));
       line.setAttribute('stroke', 'currentColor');
-      line.setAttribute('data-protocol', link.protocol);
+      line.dataset.protocol = link.protocol;
       svg.appendChild(line);
     });
     root.appendChild(svg);

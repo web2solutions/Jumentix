@@ -14,7 +14,7 @@
 import { normalizedName } from './modelQueries.js';
 
 function fallbackId(prefix, seed) {
-  return `${prefix}-import-${seed}-${Math.random().toString(36).slice(2, 8)}`;
+  return `${prefix}-import-${Number(seed) + 1}`;
 }
 
 function parseCommaSeparated(raw) {
@@ -208,7 +208,6 @@ export function buildArchitectureFromOas(parsed, domains) {
     const serviceId = String(server?.['x-service-id'] || '').trim();
     if (serviceId && server.url) urlByService.set(serviceId, String(server.url));
   });
-  const domainByName = new Map(list.map((domain) => [normalizedName(domain.name), domain]));
   const schemaDomainNames = new Map();
   const schemas = parsed?.components?.schemas && typeof parsed.components.schemas === 'object'
     ? parsed.components.schemas

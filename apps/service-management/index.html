@@ -14,7 +14,7 @@
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.53" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.54" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -104,7 +104,7 @@
           </section>
         </aside>
         <main class="canvas-workspace" aria-label="Architecture canvas">
-          <aside class="empty-state" id="architecture-empty-state" hidden>
+          <aside class="empty-state" id="architecture-empty-state" hidden aria-label="Architecture first-run guidance">
             <h3>No architecture yet</h3>
             <p>The designer starts as one Core service (monolith) holding every domain. Split services from the palette, drop a domain onto a service, and draw links.</p>
             <p>First action: press Add Service or load the sample model.</p>
@@ -1127,7 +1127,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js?v=0.9.53"></script>
+  <script type="module" src="./script.js?v=0.9.54"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

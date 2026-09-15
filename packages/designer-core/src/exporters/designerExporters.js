@@ -303,7 +303,7 @@ export function filterOasDocumentForService(oas, serviceId) {
   Object.entries(oas?.paths || {}).forEach(([pathKey, operations]) => {
     const nextOps = {};
     Object.entries(operations || {}).forEach(([method, operation]) => {
-      if (operation && operation['x-service'] === wanted) nextOps[method] = operation;
+      if (operation?.['x-service'] === wanted) nextOps[method] = operation;
     });
     if (Object.keys(nextOps).length) paths[pathKey] = nextOps;
   });
@@ -328,13 +328,13 @@ export function filterOasDocumentForService(oas, serviceId) {
   return {
     ...oas,
     info: {
-      ...(oas.info || {}),
+      ...oas.info,
       title: service?.name ? `${service.name} API` : oas.info?.title
     },
     servers: servers.length ? servers : oas.servers,
     paths,
     components: {
-      ...(oas.components || {}),
+      ...oas.components,
       schemas: filteredSchemas
     },
     'x-services': service ? [service] : []
