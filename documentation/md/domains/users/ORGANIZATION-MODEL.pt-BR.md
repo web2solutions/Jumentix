@@ -29,7 +29,7 @@ O construtor aceita `RequestCreateOrganization` + metadados opcionais.
 
 ## Relacionamentos
 
-- Os metadados `@hasMany(() => User)` são declarados para `userEntities` para suportar o mapeamento de relação em nível de adaptador enquanto preserva o contrato de domínio com `users: string[]`.
+- Os metadados `@hasMany('User')` são declarados para `userEntities` para suportar o mapeamento de relação em nível de adaptador enquanto preserva o contrato de domínio com `users: string[]`. O alvo da relação é referenciado pelo nome da entidade, mantendo `User` e `Organization` desacoplados (sem import circular entre os dois models).
 
 ## Invariantes agregados
 

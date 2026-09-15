@@ -122,6 +122,37 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     expect(connects).toBe(1);
   });
 
+  it('connects on demand when an operation arrives before connect()', async () => {
+    expect.hasAssertions();
+
+    // `ensureConnected` exists so a caller that went straight to `publish` —
+    // without an explicit `connect()` — still lands on a live channel rather
+    // than crashing on `undefined.publish`.
+    const broker = fakeAmqp();
+    let connects = 0;
+    RabbitMqMessageMediatorAdapter.importAmqpLib = async () => ({
+      connect: async () => { connects += 1; return broker.lib.connect(); }
+    });
+    const adapter = new RabbitMqMessageMediatorAdapter({ url: 'amqp://localhost' });
+
+    await adapter.publish({ name: 'orders.created', payload: { id: 1 } } as never);
+
+    expect(connects).toBe(1);
+    expect(broker.published[0]).toMatchObject({ exchange: 'app.events', key: 'orders.created' });
+  });
+
+  it('loads the real amqplib through the default import seam', async () => {
+    expect.hasAssertions();
+
+    // The seam is the whole contract here: the doubles above replace it, so
+    // only this assertion proves the untouched seam still resolves to the
+    // broker library the adapter's `connect` drives — a renamed package or a
+    // broken dependency would otherwise surface only in production.
+    const amqplib = await originalImport();
+
+    expect(typeof amqplib.connect).toBe('function');
+  });
+
   it('acknowledges a reply it cannot match instead of leaving it unacked', async () => {
     expect.hasAssertions();
 

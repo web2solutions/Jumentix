@@ -66,7 +66,7 @@ the port-object discipline enforced on the canonical spec by
   skip them (see Guarantee 4).
 
 **Proven by:**
-[`designerOasCompliance.test.ts`](../../apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts),
+[`designerOasCompliance.test.ts`](../../apps/service-management/test/unit/designerOasCompliance.test.ts),
 which imports `validatePortObjectContracts` and `resolveSchemaByRef` **from
 the real checker** (not a copy) and applies them to a document exported from
 a UI-style model — the export cannot drift from the gate without failing the
@@ -75,7 +75,7 @@ the same schema/route, e.g. `Foo Bar` vs `Foo-Bar`, are export-gate-blocking
 errors rather than silent overwrites) lives in
 [`modelValidation.js`](../../packages/designer-core/src/validation/modelValidation.js)
 and is pinned by
-[`modelValidation.test.ts`](../../apps/backend-template/test/unit/service-management/modelValidation.test.ts).
+[`modelValidation.test.ts`](../../apps/service-management/test/unit/modelValidation.test.ts).
 
 ## Guarantee 2 — AsyncAPI 3.0 per transport and a canonical proto (JUM-475)
 
@@ -108,7 +108,7 @@ Builders:
   [`spec/asyncapi/async-api.proto`](../../spec/asyncapi/async-api.proto).
 
 **Proven by:**
-[`designerAsyncApiExport.test.ts`](../../apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts)
+[`designerAsyncApiExport.test.ts`](../../apps/service-management/test/unit/designerAsyncApiExport.test.ts)
 — including the byte-identity assertion and the test that runs the validator
 over the canonical files themselves, so the canonical documents and the
 export drift together or fail together.
@@ -150,12 +150,12 @@ boundary — layout, contracts, compilation, architecture checks — not the
 application logic.
 
 **Proven by:**
-[`hexagonalCodegen.test.ts`](../../apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts).
+[`hexagonalCodegen.test.ts`](../../apps/service-management/test/unit/hexagonalCodegen.test.ts).
 
 ## Guarantee 4 — round-trip fidelity, with the honest boundaries (JUM-471, JUM-478)
 
 Suite:
-[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts).
+[`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts).
 The property under test is the crossing itself — export → import → compare —
 so an exporter-drops-field + importer-ignores-field cancellation cannot hide
 behind fixed expected outputs.
@@ -163,9 +163,9 @@ behind fixed expected outputs.
 ### Symmetric crossings (lossless, deep-equal asserted)
 
 - **JSON** (`buildJsonExportDocument` → `buildStateFromSuiteExport` over
-  `normalizeStatePayload`): the versioned full-suite document (JUM-547) —
-  `domains`, `relationships`, `view`, `interfaces`, `serviceConfiguration`
-  and `deployments` round-trip deep-equal, and the export is idempotent. The
+  `normalizeStatePayload`): the versioned full-suite document (JUM-547/JUM-736) —
+  `domains`, `relationships`, `view`, `interfaces`, `serviceConfiguration`,
+  `codeWorkspace` and `deployments` round-trip deep-equal, and the export is idempotent. The
   boundary is documented and asserted: selections and `idCounter` are not
   part of the document and are recomputed on import, and `runtimeEnvironment`
   crosses as the environment *selection* only (see the JUM-547 section
@@ -318,7 +318,7 @@ recorded here rather than quietly fixed:
   exporting a policy the runtime would drop.
 
 **Proven by:**
-[`rbacContract.test.ts`](../../apps/backend-template/test/unit/service-management/rbacContract.test.ts),
+[`rbacContract.test.ts`](../../apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts),
 which pins the mirror against `Rbac.ts` itself — if the domain vocabulary
 drifts, the suite fails. This is also why `x-rbac` round-trips losslessly
 (Guarantee 4): the exported policy is the normalized, enforceable one, and
@@ -326,13 +326,13 @@ the importer rebuilds it against the same contract.
 
 ## Full-suite export and the `runtimeEnvironment` decision (JUM-547, landed)
 
-Export and import now carry **all four tabs**, not just the domain model. The
+Export and import now carry **all five tabs**, not just the domain model. The
 JSON export (`domain-designer.json`) is the versioned full-suite document:
 `{ kind: "service-management-suite", version: "2.0.0", domains, relationships,
-interfaces, serviceConfiguration, runtimeEnvironment, deployments, view }` —
+interfaces, serviceConfiguration, runtimeEnvironment, codeWorkspace, deployments, view }` —
 the same sections the pinned `service-management.v1` document persists in
 Cana (Requirement 126, Contract 2), minus the session selections and
-`idCounter`. A model designed across all four tabs exports and re-imports
+`idCounter`. A model designed across all five tabs exports and re-imports
 with every tab intact; a bundle exported before this change (the domain-only
 shape, no `kind`/`version`) imports cleanly with the missing sections
 defaulted, and a bundle with an unknown section or a newer major version
@@ -354,10 +354,10 @@ preferred for, kept without losing the selection. The suite proves it by
 asserting the wire document contains no value string.
 
 **Proven by:**
-[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts)
+[`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts)
 (full-suite deep-equal, values-never-cross, backward/forward compatibility)
 and
-[`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+[`designerExporters.test.ts`](../../apps/service-management/test/unit/designerExporters.test.ts)
 (document shape).
 
 ## References
@@ -367,7 +367,7 @@ and
 - Codegen: [`hexagonalCodegen.js`](../../packages/designer-core/src/codegen/hexagonalCodegen.js)
 - Model validation / export gate: [`modelValidation.js`](../../packages/designer-core/src/validation/modelValidation.js), [`script.js`](../../apps/service-management/script.js)
 - RBAC mirror: [`rbacContract.js`](../../packages/designer-core/src/model/rbacContract.js); contract: [Tenant and RBAC Authorization Contract](./TENANT-RBAC-AUTHORIZATION-CONTRACT.md)
-- Suites: [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/service-management/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/backend-template/test/unit/service-management/modelValidation.test.ts)
+- Suites: [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts), [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts), [`designerOasCompliance.test.ts`](../../apps/service-management/test/unit/designerOasCompliance.test.ts), [`designerAsyncApiExport.test.ts`](../../apps/service-management/test/unit/designerAsyncApiExport.test.ts), [`hexagonalCodegen.test.ts`](../../apps/service-management/test/unit/hexagonalCodegen.test.ts), [`rbacContract.test.ts`](../../apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts), [`modelValidation.test.ts`](../../apps/service-management/test/unit/modelValidation.test.ts)
 - Gates: [`check-oas-route-resolution.js`](../../ci-cd/check-oas-route-resolution.js), [`check-hexagonal-boundaries.js`](../../ci-cd/check-hexagonal-boundaries.js), [`run-unit-tests.js`](../../ci-cd/run-unit-tests.js)
 - Canonical targets: [`spec/1.0.0.yml`](../../spec/1.0.0.yml), [`spec/asyncapi/1.0.0.websocket.yml`](../../spec/asyncapi/1.0.0.websocket.yml), [`spec/asyncapi/1.0.0.grpc.yml`](../../spec/asyncapi/1.0.0.grpc.yml), [`spec/asyncapi/async-api.proto`](../../spec/asyncapi/async-api.proto)
 - Requirements: [036](../../.agents/requirements/software/036-openapi-port-objects-contracts.md) (port objects), [026](../../.agents/requirements/software/026-openapi31-data-entity-model-compliance.md) (OAS 3.1 entity compliance), [126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md) (ownership and public contracts, Contracts 2–3)

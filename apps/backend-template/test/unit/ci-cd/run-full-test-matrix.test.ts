@@ -411,7 +411,8 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/ci.yml').includes('bun run website:storybook:smoke'),
       read('.github/workflows/ci.yml').includes('bun run website:test:cypress'),
       read('.github/workflows/ci.yml').includes('bun run coverage:patch'),
-      read('.github/workflows/ci.yml').includes('codecov --verbose upload-process'),
+      read('.github/workflows/ci.yml').includes('codecov/codecov-action@v5'),
+      read('.github/workflows/ci.yml').includes('codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),
@@ -422,7 +423,7 @@ describe('run-full-test-matrix', () => {
       !FULL_TEST_MATRIX.some(
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
-    ]).toStrictEqual(Array(37).fill(true));
+    ]).toStrictEqual(Array(38).fill(true));
   });
 });
 

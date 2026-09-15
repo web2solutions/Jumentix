@@ -28,6 +28,8 @@ import {
   cleanupTempConfigDir,
   envFileContent,
   startServer,
+  clickInPanels,
+  openDesignerPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -41,7 +43,8 @@ async function bootDeployTab(context: Awaited<ReturnType<Browser['newContext']>>
   await page.goto(baseUrl, { waitUntil: 'load' });
   // JUM-548: first run is intentionally empty — load the sample model so the
   // designer sits in a realistic populated state before switching tabs.
-  await page.click('#load-sample-btn');
+  await clickInPanels(page, '#load-sample-btn');
+  await openDesignerPanels(page, '#domain-list');
   await page.waitForSelector('#domain-list li', { timeout: 20000 });
   await page.click('#tab-deploy-management-btn');
   await page.waitForSelector('#add-deploy-target-btn', { timeout: 20000 });

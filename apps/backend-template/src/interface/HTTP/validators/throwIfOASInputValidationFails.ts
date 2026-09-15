@@ -5,7 +5,7 @@ import getSchema from './getSchema';
 import isPropertiesMatching from './isPropertiesMatching';
 import checkRequiredProperties from './checkRequiredProperties';
 
-const SERVER_MANAGED_INPUT_PROPERTIES = new Set(['createdAt', 'updatedAt']);
+const SERVER_MANAGED_INPUT_PROPERTIES = new Set(['createdAt', 'updatedAt', 'deletedAt']);
 
 const toPublicValidationMessage = (
   message: string,

@@ -2,8 +2,8 @@
 
 Issue tracking:
 
-- Epic: [#124](https://github.com/XpertMinds/Jumentix/issues/124)
-- Task: [#125](https://github.com/XpertMinds/Jumentix/issues/125)
+- Epic: [#124](https://github.com/web2solutions/Jumentix/issues/124)
+- Task: [#125](https://github.com/web2solutions/Jumentix/issues/125)
 
 ## 1. Objective
 

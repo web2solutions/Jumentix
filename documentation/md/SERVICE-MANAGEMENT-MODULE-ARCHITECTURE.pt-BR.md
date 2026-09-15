@@ -17,9 +17,9 @@ Ele documenta duas coisas, exatamente como o código se comporta hoje:
 
 Cada afirmação comportamental abaixo é garantida pelos módulos-fonte e pelas
 suítes de unidade
-[`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts)
+[`designerStore.test.ts`](../../apps/service-management/test/unit/designerStore.test.ts)
 e
-[`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts).
+[`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts).
 
 ## Público
 
@@ -133,20 +133,20 @@ seção de migração abaixo) e depois um único `await loadState()` em
 
 ### O núcleo de estado (`src/state/designerState.js`)
 
-- **Objeto de estado.** Um único objeto contendo as doze seções persistidas do
+- **Objeto de estado.** Um único objeto contendo as quatorze seções persistidas do
   documento `service-management.v1` (esquema fixado pelo
   [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
   — link, não cópia).
 - **`normalizeStatePayload(parsed)`** — normaliza um payload decodificado no
-  recorte do modelo restaurado no load. Apenas `domains`, `relationships`, as
-  três seleções, `idCounter` e `view` retornam; as demais seções fixadas
+  recorte do modelo restaurado no load. `domains`, `relationships`, as três
+  seleções, `idCounter`, `codeWorkspace` e `view` retornam; as demais seções fixadas
   intencionalmente não são restauradas no load. A normalização descarta
   relacionamentos que apontam para entidades desconhecidas e limita a view
   (zoom para 0.5–2, estilo de aresta e severidade para seus enums).
 - **`snapshotState()`/`applySnapshot()`** — copiam profundamente as seções
   persistidas para fora de `state` e as restauram de volta, recomputando
   `idCounter` a partir do maior sufixo numérico de id.
-- **`saveState()`** — monta o payload de doze seções e chama
+- **`saveState()`** — monta o payload de quatorze seções e chama
   `store.save(payload)` sem await (fire-and-forget, preservando o comportamento
   anterior à extração; veja a seção do adaptador para entender por que isso é
   seguro hoje e por que os chamadores não devem depender disso).
@@ -158,14 +158,14 @@ seção de migração abaixo) e depois um único `await loadState()` em
 
 ### O esquema de armazenamento `service-management.v1`
 
-Todo o estado da suíte (as quatro guias) persiste como UM payload JSON sob a
+Todo o estado da suíte (as cinco guias) persiste como UM payload JSON sob a
 chave única fixada `service-management.v1`; o baseline de diff de esquema vive
 sob `service-management.schema-baseline.v1`. Desde a migração entregue do
 JUM-484, ambos os documentos vivem no Cana — um único object store IndexedDB
 (`designerDocuments`, banco `service-management`, esquema versão 1) — como
 cópias de bytes dos mesmos documentos JSON que o adaptador localStorage
-gravava. A era do localStorage é histórica; o formato de transmissão fixado NÃO
-mudou. O esquema — as doze
+gravava. A era do localStorage é histórica; o formato de transmissão fixado agora
+inclui `codeWorkspace`. O esquema — as quatorze
 seções de nível superior, seus enums e o formato do baseline — é fixado pelo
 [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 e **não é duplicado aqui** para que os dois não divirjam. Qualquer mudança
@@ -324,7 +324,7 @@ Fontes:
 (adaptador) e
 [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 (fábrica); suíte de unidade
-[`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts).
+[`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts).
 
 O `CanaDesignerStore` implementa todos os sete métodos da porta sobre o
 cliente Cana, e a troca **não exigiu nenhuma mudança na lógica do designer** —
@@ -484,7 +484,7 @@ silenciosamente.
 - Núcleo de estado: [`packages/designer-core/src/state/designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Motor de sincronização multi-abas: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js)
 - Módulo de entrada: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Suítes de unidade: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)
+- Suítes de unidade: [`designerStore.test.ts`](../../apps/service-management/test/unit/designerStore.test.ts), [`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts)
 - Esquema de armazenamento: [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Visão geral do componente: [Aplicativo de gerenciamento de serviços](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md)
 - Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (a porta), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (o grafo de módulos), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (a migração unidirecional entregue que aposentou o adaptador transicional), [JUM-485](https://linear.app/jumentix/issue/JUM-485/feature-write-event-integration-multi-tab-sync-via-cana-message) (sincronização multi-abas por eventos de escrita), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (publicação do pacote), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (política de cota/despejo)

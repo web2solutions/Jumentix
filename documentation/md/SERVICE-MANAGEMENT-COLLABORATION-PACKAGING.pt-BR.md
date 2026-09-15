@@ -64,18 +64,18 @@ de manter uma segunda explicação divergente.
 ### O que foi entregue
 
 - **Um módulo de backend `Catalogs` contract-first**
-  ([`apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts)),
+  ([`apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts)),
   hexagonal como o módulo de referência Users: agregado de domínio (incremento
   de versão, tombstone, restauração),
-  [`CatalogAuthorizationPolicy`](../../apps/backend-template/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts)
+  [`CatalogAuthorizationPolicy`](../../apps/service-management-api/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts)
   puro, casos de uso
-  ([`CatalogUseCases.ts`](../../apps/backend-template/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts)),
+  ([`CatalogUseCases.ts`](../../apps/service-management-api/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts)),
   o ponto de aplicação da concorrência otimista
-  ([`CatalogDataRepository.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts)),
+  ([`CatalogDataRepository.ts`](../../apps/service-management-api/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts)),
   o
-  [`CatalogController`](../../apps/backend-template/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts)
+  [`CatalogController`](../../apps/service-management-api/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts)
   validado pela OAS e a composição
-  ([`composeCatalogsServices.ts`](../../apps/backend-template/src/modules/Catalogs/composition/composeCatalogsServices.ts)).
+  ([`composeCatalogsServices.ts`](../../apps/service-management-api/src/modules/Catalogs/composition/composeCatalogsServices.ts)).
   Seis operações em `/catalogs` na
   [`spec/1.0.0.yml`](../../spec/1.0.0.yml) canônica — listar, criar, obter,
   atualizar, excluir, restaurar — garantidas por `bun run oas:check-routes`.
@@ -103,7 +103,7 @@ de manter uma segunda explicação divergente.
   `catalogs.catalog.created | updated | deleted | restored` com
   `{ id, organization, version, actor }` — o mesmo token de versão que a API
   aplica — no message mediator
-  ([`CatalogService.ts`](../../apps/backend-template/src/modules/Catalogs/service/CatalogService.ts));
+  ([`CatalogService.ts`](../../apps/service-management-api/src/modules/Catalogs/service/CatalogService.ts));
   a publicação nunca quebra a escrita primária.
 - **Um cliente de sincronização do designer livre de DOM**
   ([`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js)):
@@ -120,7 +120,7 @@ de manter uma segunda explicação divergente.
   `applyRemoteDocument` da sincronização de abas, de modo que o isolamento de
   undo, a reconciliação de seleção e o truncamento de redo são idênticos.
 - **Uma prova real de convergência.**
-  [`catalogSync.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts)
+  [`catalogSync.integration.test.ts`](../../apps/service-management-api/test/integration/catalogSync.integration.test.ts)
   sobe o backend Express real (autenticação JWT real, mediador real) e
   executa dois clientes reais do designer sobre `fetch` real; um é
   particionado atrás de um `ECONNREFUSED` real, ambos continuam editando e,
@@ -265,15 +265,15 @@ entrantes recebem ids livres de colisão através do callback `uniqueId` do
 importador.
 
 **Provado por:**
-[`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts)
+[`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts)
 (parsing/ordenação de versões, satisfação de ranges, parsing de dependências
 e resolução transitiva, detecção de ciclos, toda classe de conflito),
-[`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts)
+[`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts)
 (exportação→importação versionada deep-equal com proveniência, ponto fixo de
 reexportação, reimportação idempotente, recusa de reimportação conflitante,
 merge determinístico com RBAC preservado, pares de dependências
 compatíveis/incompatíveis, JUM-617 preservado no caminho de acréscimo) e
-[`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+[`designerExporters.test.ts`](../../apps/service-management/test/unit/designerExporters.test.ts)
 (o formato do documento de pacote v2, fixado).
 
 ## Empacotamento: o núcleo do designer `@jumentix` (JUM-493)
@@ -359,7 +359,7 @@ armazenado.
 A exportação JSON é o documento full-suite versionado
 (`{ kind: "service-management-suite", version: "2.0.0", domains,
 relationships, interfaces, serviceConfiguration, runtimeEnvironment,
-deployments, view }`) carregando **as quatro abas** em um formato
+codeWorkspace, deployments, view }`) carregando **as cinco abas** em um formato
 reimportável
 ([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)).
 Uma decisão de segurança registrada importa para o empacotamento: o pacote
@@ -464,13 +464,13 @@ quando o portão fecha.
 ## Referências
 
 - Colaboração (JUM-491):
-  [`apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts),
-  [`domain/security/CatalogAuthorizationPolicy.ts`](../../apps/backend-template/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts),
-  [`application/use-cases/CatalogUseCases.ts`](../../apps/backend-template/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts),
-  [`service/CatalogService.ts`](../../apps/backend-template/src/modules/Catalogs/service/CatalogService.ts),
-  [`adapters/out/persistence/CatalogDataRepository.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts),
-  [`adapters/in/http/controllers/CatalogController.ts`](../../apps/backend-template/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts),
-  [`composition/composeCatalogsServices.ts`](../../apps/backend-template/src/modules/Catalogs/composition/composeCatalogsServices.ts),
+  [`apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts`](../../apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts),
+  [`domain/security/CatalogAuthorizationPolicy.ts`](../../apps/service-management-api/src/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.ts),
+  [`application/use-cases/CatalogUseCases.ts`](../../apps/service-management-api/src/modules/Catalogs/application/use-cases/CatalogUseCases.ts),
+  [`service/CatalogService.ts`](../../apps/service-management-api/src/modules/Catalogs/service/CatalogService.ts),
+  [`adapters/out/persistence/CatalogDataRepository.ts`](../../apps/service-management-api/src/modules/Catalogs/adapters/out/persistence/CatalogDataRepository.ts),
+  [`adapters/in/http/controllers/CatalogController.ts`](../../apps/service-management-api/src/modules/Catalogs/adapters/in/http/controllers/CatalogController.ts),
+  [`composition/composeCatalogsServices.ts`](../../apps/service-management-api/src/modules/Catalogs/composition/composeCatalogsServices.ts),
   [`spec/1.0.0.yml`](../../spec/1.0.0.yml),
   [`apps/service-management/src/state/catalogSyncClient.js`](../../apps/service-management/src/state/catalogSyncClient.js),
   [Sincronização de catálogo compartilhado](./SHARED-CATALOG-SYNC.pt-BR.md)
@@ -491,11 +491,11 @@ quando o portão fecha.
   a fonte da verdade permanece a fronteira livre de DOM sob
   [`apps/service-management/src/`](../../apps/service-management/src)
 - Suítes:
-  [`catalogSyncClient.test.ts`](../../apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts),
-  [`catalogSync.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts),
-  [`designerPackageVersioning.test.ts`](../../apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts),
-  [`designerRoundTrip.test.ts`](../../apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts),
-  [`designerExporters.test.ts`](../../apps/backend-template/test/unit/service-management/designerExporters.test.ts)
+  [`catalogSyncClient.test.ts`](../../apps/service-management/test/unit/catalogSyncClient.test.ts),
+  [`catalogSync.integration.test.ts`](../../apps/service-management-api/test/integration/catalogSync.integration.test.ts),
+  [`designerPackageVersioning.test.ts`](../../apps/service-management/test/unit/designerPackageVersioning.test.ts),
+  [`designerRoundTrip.test.ts`](../../apps/service-management/test/unit/designerRoundTrip.test.ts),
+  [`designerExporters.test.ts`](../../apps/service-management/test/unit/designerExporters.test.ts)
 - Requisitos:
   [094](../../.agents/requirements/project/094-epic-documentation-completion-gate.md)
   (portão de conclusão de documentação do épico),

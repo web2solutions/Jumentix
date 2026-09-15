@@ -2,8 +2,8 @@
 
 Rastreamento:
 
-- Épico: [#167](https://github.com/XpertMinds/Jumentix/issues/167)
-- Implementação: [#171](https://github.com/XpertMinds/Jumentix/issues/171)
+- Épico: [#167](https://github.com/web2solutions/Jumentix/issues/167)
+- Implementação: [#171](https://github.com/web2solutions/Jumentix/issues/171)
 
 ## Propósito
 
@@ -22,7 +22,7 @@ open source estabelecidos, preservando a linguagem, os recursos e a identidade d
 | `/product` | Capacidades completas e ciclo de entrega |
 | `/use-cases` e filhas | Blueprints REST, realtime, SaaS modular, microsserviços e PWA offline |
 | `/integrations` | Inventário HTTP, realtime, persistência, mensageria e deploy |
-| `/architecture` | DDD, Hexagonal, Event-Driven, SOLID e limites contratuais |
+| `/architecture` | DDD, Hexagonal, Event-Driven, SOLID e limites contratuais, mais o mapa hexagonal interativo do backend-template (incluindo `interface/GUI`) |
 | `/security-compliance` | RBAC, controles PCI, segredos e evidências |
 | `/pricing-or-engagement` | Caminhos open source, piloto e adoção como plataforma |
 | `/community` | Fluxo de contribuição e governança |

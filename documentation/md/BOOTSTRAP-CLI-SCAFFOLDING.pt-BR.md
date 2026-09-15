@@ -9,7 +9,7 @@ Este modelo agora expõe comandos CLI de bootstrap instaláveis pelo registry:
 - `jumentix-bootstrap`
 - `jumentix-init`
 
-O comando clona `XpertMinds/Jumentix` em uma pasta de destino e grava metadados iniciais do perfil de serviço.
+O comando clona `web2solutions/Jumentix` em uma pasta de destino e grava metadados iniciais do perfil de serviço.
 
 Propriedade do espaço de trabalho:
 

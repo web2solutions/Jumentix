@@ -1,6 +1,5 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 import type { IUser } from '@src/modules/Users';
-import { UUID } from '@src/modules/port';
 import {
   DocumentValueObject,
   EDocumentType,
@@ -14,11 +13,11 @@ const buildSeedCredential = (account: string): string => `seed-${account}-A1!`;
 const now = new Date();
 
 const users: Array<IUser> = [{
-  id: UUID.create().toString(),
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e01',
   createdAt: now,
   updatedAt: now,
-  firstName: 'Abraham',
-  lastName: 'Lincoln',
+  firstName: 'eduardo',
+  lastName: 'Almeida',
   emails: [
     {
       email: 'eduardo@xpertminds.dev',
@@ -38,8 +37,8 @@ const users: Array<IUser> = [{
   ],
   avatar: 'avatar.png',
   username: 'eduardo@xpertminds.dev',
-  password: buildSeedCredential('user1'),
-  organization: organizations[0].id,
+  password: 'eduardo@123456',
+  organization: organizations[2].id, // XpertMinds (JUM-772)
   roles: ['superadmin'],
   documents: [
     {
@@ -80,7 +79,7 @@ const users: Array<IUser> = [{
   ]
 },
 {
-  id: UUID.create().toString(),
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e02',
   createdAt: now,
   updatedAt: now,
   firstName: 'Barack',
@@ -106,7 +105,7 @@ const users: Array<IUser> = [{
   ]
 },
 {
-  id: UUID.create().toString(),
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e03',
   createdAt: now,
   updatedAt: now,
   firstName: 'Jimmy',
@@ -131,7 +130,7 @@ const users: Array<IUser> = [{
   ]
 },
 {
-  id: UUID.create().toString(),
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e04',
   createdAt: now,
   updatedAt: now,
   firstName: 'James',
@@ -149,6 +148,44 @@ const users: Array<IUser> = [{
     'access_allow',
     'create_transaction'
   ]
+},
+// One seed user per RBAC role, all in XpertMinds (JUM-772).
+{
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e05',
+  createdAt: now,
+  updatedAt: now,
+  firstName: 'Admin',
+  lastName: 'XpertMinds',
+  emails: [{
+    email: 'admin@xpertminds.dev',
+    type: EEmailType.work,
+    isPrimary: true
+  } as EmailValueObject],
+  avatar: 'avatar.png',
+  username: 'admin@xpertminds.dev',
+  password: 'admin@123456',
+  organization: organizations[2].id,
+  roles: ['admin']
+},
+{
+  id: 'b1ffc4d2-1a2b-4c3d-9e8f-7a6b5c4d3e06',
+  createdAt: now,
+  updatedAt: now,
+  firstName: 'User',
+  lastName: 'XpertMinds',
+  emails: [{
+    email: 'user@xpertminds.dev',
+    type: EEmailType.work,
+    isPrimary: true
+  } as EmailValueObject],
+  avatar: 'avatar.png',
+  username: 'user@xpertminds.dev',
+  password: 'user@123456',
+  organization: organizations[2].id,
+  roles: ['user']
 }
 ];
+
+export const seedUserIds = users.map((user) => user.id);
+
 export default users;

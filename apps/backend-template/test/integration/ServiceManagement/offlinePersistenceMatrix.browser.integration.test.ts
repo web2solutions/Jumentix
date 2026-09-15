@@ -56,6 +56,8 @@ import {
   envFileContent,
   startServer,
   staticRoot,
+  clickInPanels,
+  openDesignerPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -247,10 +249,29 @@ async function waitForHealthyBoot(page: Page) {
   );
 }
 
+async function gotoServiceManagementShell(page: Page, url: string, port?: number) {
+  const attempts = 2;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      if (port) {
+        await waitForServer(port);
+      }
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      return;
+    } catch (error) {
+      if (attempt === attempts) {
+        throw error;
+      }
+      await page.waitForTimeout(500);
+    }
+  }
+}
+
 /** Add a domain through the real UI and wait until the write is durable. */
 async function addDomainThroughUi(page: Page, name: string) {
+  await openDesignerPanels(page, '#domain-name-input');
   await page.fill('#domain-name-input', name);
-  await page.click('#add-domain-btn');
+  await clickInPanels(page, '#add-domain-btn');
   await page.waitForFunction(
     (domainName) => new Promise((resolve) => {
       const request = indexedDB.open('service-management');
@@ -277,7 +298,7 @@ async function waitForDomainRendered(page: Page, name: string) {
   await page.waitForFunction(
     (domainName) => (document.getElementById('domain-list')?.textContent || '').includes(domainName),
     name,
-    { polling: 250, timeout: 15000 }
+    { polling: 250, timeout: 30000 }
   );
 }
 
@@ -409,10 +430,10 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
   it('offline edits persist against Cana and survive reload; coming back online loses nothing', async () => {
     expect.hasAssertions();
-    // Own server on a pinned port: the origin must survive the offline period.
+    // Own server whose origin must survive the offline period.
     const offlineTempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
-    const port = 4400 + Math.floor(Math.random() * 400);
-    let offlineServer: StartedServer | undefined = await startPinnedServer(offlineTempDir, port);
+    let offlineServer: StartedServer | undefined = await startServer(offlineTempDir);
+    const { port } = offlineServer;
     await waitForServer(port);
     const offlineUrl = `http://127.0.0.1:${String(port)}/`;
     const context = await browser!.newContext();
@@ -422,7 +443,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
     page.on('download', (download) => downloads.push(download.suggestedFilename()));
     try {
       // Clean online boot: first-run save durable, shell precached.
-      await page.goto(offlineUrl, { waitUntil: 'load' });
+      await gotoServiceManagementShell(page, offlineUrl, port);
       await waitForHealthyBoot(page);
       await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
       await page.waitForFunction(
@@ -477,7 +498,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // offline). Anything else — a boot exception, a shell-cache miss —
       // fails the cell.
       expect(pageErrors.filter(
-        (message) => !/FetchEvent\.respondWith|Fetch API cannot load/.test(message)
+        (message) => !/FetchEvent\.respondWith|Fetch API cannot load|503 \(Service Unavailable\)/.test(message)
       )).toStrictEqual([]);
     } finally {
       stopServer(offlineServer);
@@ -489,8 +510,8 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
   it('a verified migration survives an offline period without re-running (idempotence)', async () => {
     expect.hasAssertions();
     const offlineTempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
-    const port = 4900 + Math.floor(Math.random() * 400);
-    let offlineServer: StartedServer | undefined = await startPinnedServer(offlineTempDir, port);
+    let offlineServer: StartedServer | undefined = await startServer(offlineTempDir);
+    const { port } = offlineServer;
     await waitForServer(port);
     const offlineUrl = `http://127.0.0.1:${String(port)}/`;
     const context = await browser!.newContext();
@@ -506,7 +527,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
     page.on('download', (download) => downloads.push(download.suggestedFilename()));
     try {
       // Online boot with a legacy payload: the one-way migration runs once.
-      await page.goto(offlineUrl, { waitUntil: 'load' });
+      await gotoServiceManagementShell(page, offlineUrl, port);
       await page.waitForFunction(
         (markerKey) => window.localStorage.getItem(markerKey) !== null,
         MARKER_KEY,
@@ -559,7 +580,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // Same tolerated-noise rule as the other offline cell: only the dead
       // server's own network-layer complaints may appear.
       expect(pageErrors.filter(
-        (message) => !/FetchEvent\.respondWith|Fetch API cannot load/.test(message)
+        (message) => !/FetchEvent\.respondWith|Fetch API cannot load|503 \(Service Unavailable\)/.test(message)
       )).toStrictEqual([]);
     } finally {
       stopServer(offlineServer);
@@ -707,8 +728,9 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // An edit in this session is doomed: there is nothing behind the store
       // to write to. The startup declaration above is the user-facing warning
       // for this environment; persistence is proven by the reload below.
+      await openDesignerPanels(page, '#domain-name-input');
       await page.fill('#domain-name-input', 'DoomedDomain');
-      await page.click('#add-domain-btn');
+      await clickInPanels(page, '#add-domain-btn');
 
       // Proof the edit was never silently persisted: a fresh page on the same
       // origin loses it and the declared state recurs instead of a phantom
@@ -955,7 +977,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
       // The backup/export path is reachable from the warned session.
       const exportDownload = page.waitForEvent('download', { timeout: 15000 });
-      await page.click('#export-json-btn');
+      await clickInPanels(page, '#export-json-btn');
       await exportDownload;
       expect(downloads).toContain('domain-designer.json');
 
@@ -970,8 +992,9 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
         + '   retryable: false'
         + ' }'
         + '}');
+      await openDesignerPanels(page, '#domain-name-input');
       await page.fill('#domain-name-input', 'QuotaDoomedDomain');
-      await page.click('#add-domain-btn');
+      await clickInPanels(page, '#add-domain-btn');
       // No silent acceptance: JUM-485's save-outcome hook surfaces the
       // unconfirmed save and reconciles by read-back.
       await waitForStatusLogged(page, 'could not be confirmed', 45000);

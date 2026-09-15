@@ -163,10 +163,12 @@ If any gate fails, spec conformance is considered unproven and the change is not
 Branch-aware execution contract:
 
 1. Task branches execute `ci:gate:task` against the task-owned diff.
+   `oas:check-relations` (JUM-789) is part of `ci:gate` and compares `x-relation` /
+   `x-primary-key` to `@belongsTo` / `@hasMany` and the model key.
 2. `dev` pushes execute `test:unit`; pull requests targeting `dev` execute `ci:gate:task`.
 3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
 4. GitHub Actions is the repository-owned orchestrator, the `jumentix` self-hosted
-   runner provides the zero-cost execution path, and CircleCI is disabled by
+   runner provides the zero-cost execution path, and CircleCI is enabled by
    Requirement `113`.
 5. `.github/workflows/ci.yml` owns Storybook checks, database smoke, and full coverage for
    release promotions, `main`, and scheduled full runs; the local full matrix does not
@@ -223,13 +225,13 @@ Before any task execution:
     `web2solutions` (`web2solucoes@gmail.com`) and identities explicitly authorized in Linear may
     write agent records. The legacy GitHub registry repository remains private under `XpertMinds`
     as a frozen audit mirror.
-14. Requirement `103` makes `XpertMinds/Jumentix` canonical; agent-coordination canonicity moved to
+14. Requirement `103` makes `web2solutions/Jumentix` canonical; agent-coordination canonicity moved to
     Firestore Database under Requirement `089`. Both former `web2solutions` origins — and the
     legacy GitHub registry mirror — are deprecated, read-only, accept no new modifications, and
     remain archived.
 15. Requirement `104` requires every applicable application integration from the deprecated
-    origin to be inventoried and rebound to `XpertMinds/Jumentix`, with incomplete provider
-    installs recorded as owner-auth blockers and validated by `integration-migration:check`.
+    origin to be inventoried and rebound to `web2solutions/Jumentix`, with incomplete provider
+    installs recorded as provider blockers and validated by `integration-migration:check`.
 
 ## Audit Evidence Expectations
 

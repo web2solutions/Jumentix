@@ -669,7 +669,7 @@ Headings:
 - Using the Service Manager and the Domain Designer
 - 1. What the Service Manager is
 - 2. Prerequisites
-- 3. Vendored browser bundles — do this before the first run
+- 3. Vendored browser bundles
 - 4. Running the application
 - 4.1 Start it alone
 - 4.2 Start it with the backend
@@ -1674,6 +1674,7 @@ Headings:
 - Service Configuration: validate before state (JUM-544)
 - Multi-environment editing (JUM-480) — by cross-reference
 - The PM2 ecosystem preview (JUM-480) — by source, not by command string
+- The PM2 monitoring dashboard — WebSocket live stream (Contract 1e) + HTTP one-shot (1c)
 - Deploy Management: the Requirement 059 metadata contract (JUM-481)
 - Deploy target lifecycle: edit, duplicate and field validation (JUM-546)
 - Lifecycle rules — what exists today, and what is open
@@ -1725,6 +1726,24 @@ Headings:
 - Known follow-ups
 - What this document deliberately does not cover
 - References
+
+---
+
+# Frontend offline data layer
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/frontend-offline-data-layer
+
+Cana boot, local repository, outbox, delta sync and PWA shell for apps/frontend.
+
+Headings:
+- Frontend offline data layer
+- Boot (JUM-802)
+- Local repository (JUM-803)
+- X-CRUD local mode (JUM-804)
+- Sync (JUM-805)
+- Outbox (JUM-806 / JUM-807)
+- PWA (JUM-808)
+- Tests (JUM-809)
 
 ---
 

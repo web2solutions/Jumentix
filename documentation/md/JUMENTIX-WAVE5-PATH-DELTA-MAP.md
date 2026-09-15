@@ -46,9 +46,9 @@ This map tracks runtime path rewrites for the backend-template and service-manag
 
 ## Rewritten ownership files
 
-1. `pm2/ecosystem.dev.cjs`
-2. `pm2/ecosystem.staging.cjs`
-3. `pm2/ecosystem.production.cjs`
+1. `pm2/ecosystem.dev.config.cjs`
+2. `pm2/ecosystem.staging.config.cjs`
+3. `pm2/ecosystem.production.config.cjs`
 4. root `package.json` scripts containing:
    - runtime starters
    - build/test commands pointing to `apps/backend-template/*`

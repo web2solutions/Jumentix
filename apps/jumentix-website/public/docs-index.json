@@ -634,7 +634,7 @@
       "Using the Service Manager and the Domain Designer",
       "1. What the Service Manager is",
       "2. Prerequisites",
-      "3. Vendored browser bundles — do this before the first run",
+      "3. Vendored browser bundles",
       "4. Running the application",
       "4.1 Start it alone",
       "4.2 Start it with the backend",
@@ -1590,6 +1590,7 @@
       "Service Configuration: validate before state (JUM-544)",
       "Multi-environment editing (JUM-480) — by cross-reference",
       "The PM2 ecosystem preview (JUM-480) — by source, not by command string",
+      "The PM2 monitoring dashboard — WebSocket live stream (Contract 1e) + HTTP one-shot (1c)",
       "Deploy Management: the Requirement 059 metadata contract (JUM-481)",
       "Deploy target lifecycle: edit, duplicate and field validation (JUM-546)",
       "Lifecycle rules — what exists today, and what is open",
@@ -1639,6 +1640,23 @@
       "Known follow-ups",
       "What this document deliberately does not cover",
       "References"
+    ]
+  },
+  {
+    "title": "Frontend offline data layer",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/frontend-offline-data-layer",
+    "description": "Cana boot, local repository, outbox, delta sync and PWA shell for apps/frontend.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Frontend offline data layer",
+      "Boot (JUM-802)",
+      "Local repository (JUM-803)",
+      "X-CRUD local mode (JUM-804)",
+      "Sync (JUM-805)",
+      "Outbox (JUM-806 / JUM-807)",
+      "PWA (JUM-808)",
+      "Tests (JUM-809)"
     ]
   },
   {
@@ -2439,7 +2457,7 @@
       "Usando o Service Manager e o Domain Designer",
       "1. O que é o Service Manager",
       "2. Pré-requisitos",
-      "3. Bundles vendorizados — faça isso antes do primeiro boot",
+      "3. Bundles vendorizados",
       "4. Executando a aplicação",
       "4.1 Subir apenas ela",
       "4.2 Subir junto com o backend",
@@ -3395,6 +3413,7 @@
       "Service Configuration: validar antes do estado (JUM-544)",
       "Edição multi-ambiente (JUM-480) — por referência cruzada",
       "A prévia do ecossistema PM2 (JUM-480) — pela fonte, não pela string de comando",
+      "O dashboard de monitoramento PM2 — stream WebSocket (Contrato 1e) + HTTP one-shot (1c)",
       "Deploy Management: o contrato de metadados do Requisito 059 (JUM-481)",
       "Ciclo de vida dos deploy targets: edição, duplicação e validação de campos (JUM-546)",
       "Regras de ciclo de vida — o que existe hoje e o que está aberto",
@@ -3443,6 +3462,23 @@
       "Pendências conhecidas",
       "O que este documento deliberadamente não cobre",
       "Referências"
+    ]
+  },
+  {
+    "title": "Camada de dados offline do frontend",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/frontend-offline-data-layer",
+    "description": "Boot Cana, repositório local, outbox, delta sync e shell PWA do apps/frontend.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Camada de dados offline do frontend",
+      "Boot (JUM-802)",
+      "Repositório local (JUM-803)",
+      "Modo local do X-CRUD (JUM-804)",
+      "Sync (JUM-805)",
+      "Outbox (JUM-806 / JUM-807)",
+      "PWA (JUM-808)",
+      "Testes (JUM-809)"
     ]
   },
   {

@@ -1,0 +1,2103 @@
+{
+  "schemaVersion": 1,
+  "kind": "layer-aware-task-gate",
+  "gateVersion": "v2",
+  "changedFiles": [
+    "CHANGELOG.md",
+    "apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-coverage-thresholds.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-package-suites.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-workspace-coverage-policy.test.ts",
+    "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
+    "apps/backend-template/test/unit/infra/context/contextInstrumentation.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+    "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.loadFailure.test.ts",
+    "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.moduleResolution.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.composition.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.loadFailure.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/validators/validateRequestParams.edgeCases.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/useCases.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts",
+    "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/derby-js/handlers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/express/handlers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts",
+    "apps/service-management-api/package.json",
+    "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+    "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+    "apps/service-management/test/unit/catalogSyncClient.test.ts",
+    "apps/service-management/test/unit/controlHelp.dom.test.ts",
+    "apps/service-management/test/unit/darwinProcessDiskIo.test.ts",
+    "apps/service-management/test/unit/designerImporters.test.ts",
+    "apps/service-management/test/unit/designerState.test.ts",
+    "apps/service-management/test/unit/hostMetrics.compute.test.ts",
+    "apps/service-management/test/unit/hostMetrics.mockedHost.test.ts",
+    "apps/service-management/test/unit/monitoringChartsDraw.test.ts",
+    "apps/service-management/test/unit/monitoringHistory.normalize.test.ts",
+    "apps/service-management/test/unit/pm2Lifecycle.startPaths.test.ts",
+    "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
+    "apps/service-management/test/unit/processHelpCatalog.test.ts",
+    "apps/service-management/test/unit/pwaShell.test.ts",
+    "apps/service-management/test/unit/renderGuard.test.ts",
+    "ci-cd/check-coverage-thresholds.js",
+    "packages/cana-react/test/hooks.test.ts",
+    "packages/cana-vue/test/composables.test.ts",
+    "packages/dead-letter-queue/test/dead-letter-replay-worker.test.ts",
+    "packages/key-value-storage/test/key-value-storage.test.ts",
+    "packages/message-mediator/test/bullmq-adapter.test.ts",
+    "packages/message-mediator/test/rabbitmq-adapter.test.ts",
+    "packages/persistence-contracts/test/listQuery.test.ts",
+    "test-map.json"
+  ],
+  "selectedLayers": [
+    "tooling",
+    "adapters/out+infra",
+    "interface/runtime",
+    "application",
+    "domain",
+    "adapters/in",
+    "service-management/catalog-api",
+    "service-management/designer"
+  ],
+  "notRunLayers": [
+    {
+      "layer": "contracts",
+      "reason": "not-in-blast-radius"
+    },
+    {
+      "layer": "service-management/server",
+      "reason": "not-in-blast-radius"
+    },
+    {
+      "layer": "website",
+      "reason": "not-in-blast-radius"
+    },
+    {
+      "layer": "frontend",
+      "reason": "not-in-blast-radius"
+    },
+    {
+      "layer": "browser-harness",
+      "reason": "not-in-blast-radius"
+    }
+  ],
+  "reasons": {
+    "tooling": {
+      "direct": [
+        "apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts",
+        "apps/backend-template/test/unit/ci-cd/check-coverage-thresholds.test.ts",
+        "apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts",
+        "apps/backend-template/test/unit/ci-cd/check-package-suites.test.ts",
+        "apps/backend-template/test/unit/ci-cd/check-workspace-coverage-policy.test.ts",
+        "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
+        "ci-cd/check-coverage-thresholds.js",
+        "test-map.json"
+      ],
+      "propagatedFrom": []
+    },
+    "adapters/out+infra": {
+      "direct": [
+        "apps/backend-template/test/unit/infra/context/contextInstrumentation.test.ts",
+        "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+        "packages/cana-react/test/hooks.test.ts",
+        "packages/cana-vue/test/composables.test.ts",
+        "packages/dead-letter-queue/test/dead-letter-replay-worker.test.ts",
+        "packages/key-value-storage/test/key-value-storage.test.ts",
+        "packages/message-mediator/test/bullmq-adapter.test.ts",
+        "packages/message-mediator/test/rabbitmq-adapter.test.ts",
+        "packages/persistence-contracts/test/listQuery.test.ts"
+      ],
+      "propagatedFrom": []
+    },
+    "interface/runtime": {
+      "direct": [
+        "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.loadFailure.test.ts",
+        "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.moduleResolution.test.ts",
+        "apps/backend-template/test/unit/interface/HTTP/RestAPI.composition.test.ts",
+        "apps/backend-template/test/unit/interface/HTTP/RestAPI.loadFailure.test.ts",
+        "apps/backend-template/test/unit/interface/HTTP/RestAPI.test.ts",
+        "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+        "apps/backend-template/test/unit/interface/HTTP/validators/validateRequestParams.edgeCases.test.ts"
+      ],
+      "propagatedFrom": []
+    },
+    "application": {
+      "direct": [
+        "apps/backend-template/test/unit/modules/Users/application/useCases.test.ts"
+      ],
+      "propagatedFrom": []
+    },
+    "domain": {
+      "direct": [
+        "apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts"
+      ],
+      "propagatedFrom": []
+    },
+    "adapters/in": {
+      "direct": [
+        "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/derby-js/handlers.test.ts",
+        "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/express/handlers.test.ts",
+        "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts"
+      ],
+      "propagatedFrom": []
+    },
+    "service-management/catalog-api": {
+      "direct": [
+        "apps/service-management-api/package.json",
+        "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+        "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts"
+      ],
+      "propagatedFrom": []
+    },
+    "service-management/designer": {
+      "direct": [
+        "apps/service-management/test/unit/catalogSyncClient.test.ts",
+        "apps/service-management/test/unit/controlHelp.dom.test.ts",
+        "apps/service-management/test/unit/darwinProcessDiskIo.test.ts",
+        "apps/service-management/test/unit/designerImporters.test.ts",
+        "apps/service-management/test/unit/designerState.test.ts",
+        "apps/service-management/test/unit/hostMetrics.compute.test.ts",
+        "apps/service-management/test/unit/hostMetrics.mockedHost.test.ts",
+        "apps/service-management/test/unit/monitoringChartsDraw.test.ts",
+        "apps/service-management/test/unit/monitoringHistory.normalize.test.ts",
+        "apps/service-management/test/unit/pm2Lifecycle.startPaths.test.ts",
+        "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
+        "apps/service-management/test/unit/processHelpCatalog.test.ts",
+        "apps/service-management/test/unit/pwaShell.test.ts",
+        "apps/service-management/test/unit/renderGuard.test.ts"
+      ],
+      "propagatedFrom": []
+    }
+  },
+  "plannedSuites": [
+    "apps/backend-template/test/unit/interface/WebSocket/redisStreamsAdapter.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/adapters/clusterAdapter.lifecycle.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/adapters/start-websocket-api.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/adapters/socket-io.bootstrap.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/adapters/redisStreamsAdapter.lifecycle.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/WebSocketAPI.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/clusterAdapter.test.ts",
+    "apps/backend-template/test/unit/interface/gRPC/gRPCAPI.test.ts",
+    "apps/backend-template/test/unit/interface/gRPC/resolveGrpcProtoPath.test.ts",
+    "apps/backend-template/test/unit/interface/gRPC/adapters/start-grpc-api.test.ts",
+    "apps/backend-template/test/unit/interface/gRPC/adapters/grpc.bootstrap.test.ts",
+    "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.test.ts",
+    "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.moduleResolution.test.ts",
+    "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.loadFailure.test.ts",
+    "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/index.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/prompt.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/entityModelManager.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/domainManager.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/catalogStorage.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/entityModelManager.refusals.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.composition.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.loadFailure.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.handlerFallback.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/express/infraHandlers.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/validators/validateRequestParams.edgeCases.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/ports/BaseController.test.ts",
+    "apps/backend-template/test/unit/infra/jwt/JwtService.test.ts",
+    "apps/backend-template/test/unit/infra/messages/InMemoryMessageMediator.test.ts",
+    "apps/backend-template/test/unit/infra/messages/MessageMediator.taskCreateFlow.test.ts",
+    "apps/backend-template/test/unit/infra/messages/compileMessageMediator.test.ts",
+    "apps/backend-template/test/unit/infra/messages/QueueRequestResponseRepository.test.ts",
+    "apps/backend-template/test/unit/infra/context/contextInstrumentation.test.ts",
+    "apps/backend-template/test/unit/infra/context/asyncContextMetrics.test.ts",
+    "apps/backend-template/test/unit/infra/cache/CacheService.test.ts",
+    "apps/backend-template/test/unit/infra/security/PasswordCryptoService.test.ts",
+    "apps/backend-template/test/unit/infra/auth/AuthService.test.ts",
+    "apps/backend-template/test/unit/infra/auth/AuthService.environment.test.ts",
+    "apps/backend-template/test/unit/infra/exceptions/index.test.ts",
+    "apps/backend-template/test/unit/infra/audit/InMemorySecurityAuditRepository.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/BaseKeyValueStorageClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/compileKeyValueStorageClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/external/ExternalStoreProxy.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/external/ExternalRepositories.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/compileDatabaseClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryDbClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/UserStoreAPI.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+    "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
+    "apps/backend-template/test/unit/infra/mutex/MutexService.test.ts",
+    "apps/backend-template/test/unit/infra/events/InMemoryEventBus.test.ts",
+    "apps/backend-template/test/unit/ServiceManagement/serverHarnessPorts.test.ts",
+    "apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts",
+    "apps/backend-template/test/unit/domains/validators/index.test.ts",
+    "apps/backend-template/test/unit/config/security.test.ts",
+    "apps/backend-template/test/unit/config/redis.test.ts",
+    "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+    "apps/backend-template/test/unit/shared/decorators/Authorize.test.ts",
+    "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntity.test.ts",
+    "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntityEdges.test.ts",
+    "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
+    "apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
+    "apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts",
+    "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
+    "apps/backend-template/test/unit/ci-cd/agent-registry-cli.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-commit-authorship.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-test-map.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-hexagonal-boundaries.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
+    "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-canonical-integrations.test.ts",
+    "apps/backend-template/test/unit/ci-cd/migrate-agent-registry-to-firestore.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-rtdb-indexes.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-suite-execution.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-unit-tests.test.ts",
+    "apps/backend-template/test/unit/ci-cd/readme-badges.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-integration-migration.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-requirements-registry.test.ts",
+    "apps/backend-template/test/unit/ci-cd/entry-point.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-coverage-thresholds.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-monorepo-ci.test.ts",
+    "apps/backend-template/test/unit/ci-cd/classify-ci-context.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-affected-workspaces.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-integration-tests.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-workspace-coverage-policy.test.ts",
+    "apps/backend-template/test/unit/ci-cd/service-management-vendor-wiring.test.ts",
+    "apps/backend-template/test/unit/ci-cd/report-sonar-findings.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-agent-registry-source.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-workspace-quality.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-frontend-coverage.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-workspace-boundaries.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-test-integrity.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
+    "apps/backend-template/test/unit/ci-cd/generate-test-map.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts",
+    "apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-prevention-gates.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-release-governance.test.ts",
+    "apps/backend-template/test/unit/ci-cd/test-map-completeness.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-package-suites.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-service-management-integration.test.ts",
+    "apps/backend-template/test/unit/modules/ddd/valueObjects/DocumentValueObject.test.ts",
+    "apps/backend-template/test/unit/modules/ddd/valueObjects/AddressValueObject.test.ts",
+    "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/express/handlers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/derby-js/handlers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/factories.test.ts",
+    "apps/backend-template/test/unit/modules/Users/composition/composeUserDeadLetterReplay.test.ts",
+    "apps/backend-template/test/unit/modules/Users/composition/composeUsersAuthServices.test.ts",
+    "apps/backend-template/test/unit/modules/Users/adapters/in/websocketapi/frameworks/socket-io/handlers/createWebSocketOperationHandler.test.ts",
+    "apps/backend-template/test/unit/modules/Users/adapters/in/controller/controllers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/index.exports.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/useCases.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/features/index.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/OrganizationUseCases.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.lockRelease.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserProviderLocal.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.organizationMembership.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/OrganizationService.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.sanitization.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/AuthService.rbac.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/AuthService.branches.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/AuthService.audit.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.deadLetter.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/events/registerUserMessageHandlers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/events/events.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/events/registerUserEventListeners.test.ts",
+    "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/security/TenantAuthorizationPolicy.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/security/Rbac.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/Model/Organization.test.ts",
+    "apps/backend-template/test/unit/modules/port/core.test.ts",
+    "apps/backend-template/test/unit/modules/port/setListQuery.test.ts",
+    "apps/backend-template/test/unit/modules/port/BaseService.test.ts",
+    "apps/backend-template/test/unit/modules/port/relations.test.ts",
+    "apps/backend-template/test/unit/modules/port/index.exports.test.ts",
+    "apps/backend-template/test/unit/sdk-clients/grpc/GrpcApiClient.test.ts",
+    "apps/service-management/test/unit/hostMetrics.test.ts",
+    "apps/service-management/test/unit/deployTargetLifecycle.test.ts",
+    "apps/service-management/test/unit/processHelpCatalog.test.ts",
+    "apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts",
+    "apps/service-management/test/unit/designerState.test.ts",
+    "apps/service-management/test/unit/controlHelp.test.ts",
+    "apps/service-management/test/unit/designerAsyncApiExport.test.ts",
+    "apps/service-management/test/unit/pm2Lifecycle.test.ts",
+    "apps/service-management/test/unit/designerNormalizers.test.ts",
+    "apps/service-management/test/unit/pm2DaemonLock.test.ts",
+    "apps/service-management/test/unit/modelValidation.test.ts",
+    "apps/service-management/test/unit/hostMetrics.compute.test.ts",
+    "apps/service-management/test/unit/monitoringChartsDraw.test.ts",
+    "apps/service-management/test/unit/catalogSyncClientDefaults.test.ts",
+    "apps/service-management/test/unit/pwaShell.test.ts",
+    "apps/service-management/test/unit/mvp.roadmap.features.test.ts",
+    "apps/service-management/test/unit/interfaceAdapterValidation.test.ts",
+    "apps/service-management/test/unit/controlHelp.dom.test.ts",
+    "apps/service-management/test/unit/catalogSyncClient.test.ts",
+    "apps/service-management/test/unit/deployTargetValidation.test.ts",
+    "apps/service-management/test/unit/designerSync.test.ts",
+    "apps/service-management/test/unit/helpPopoverState.test.ts",
+    "apps/service-management/test/unit/runtimeEnvUi.contract.test.ts",
+    "apps/service-management/test/unit/designerRoundTrip.test.ts",
+    "apps/service-management/test/unit/processDiskIo.test.ts",
+    "apps/service-management/test/unit/monitoringCharts.test.ts",
+    "apps/service-management/test/unit/serviceConfigurationValidation.test.ts",
+    "apps/service-management/test/unit/designerOasCompliance.test.ts",
+    "apps/service-management/test/unit/designerImporters.test.ts",
+    "apps/service-management/test/unit/catalogSyncTransport.test.ts",
+    "apps/service-management/test/unit/modelQueries.test.ts",
+    "apps/service-management/test/unit/monitoringHistory.normalize.test.ts",
+    "apps/service-management/test/unit/designerStore.test.ts",
+    "apps/service-management/test/unit/canvasWorkspace.test.ts",
+    "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
+    "apps/service-management/test/unit/monitoringChartFormat.test.ts",
+    "apps/service-management/test/unit/canaMigrationFailures.test.ts",
+    "apps/service-management/test/unit/canaMigration.test.ts",
+    "apps/service-management/test/unit/hexagonalCodegen.test.ts",
+    "apps/service-management/test/unit/pm2Lifecycle.startPaths.test.ts",
+    "apps/service-management/test/unit/canaDesignerStore.test.ts",
+    "apps/service-management/test/unit/hostMetrics.mockedHost.test.ts",
+    "apps/service-management/test/unit/sampleModel.test.ts",
+    "apps/service-management/test/unit/darwinProcessDiskIo.test.ts",
+    "apps/service-management/test/unit/designerPackageVersioning.test.ts",
+    "apps/service-management/test/unit/renderGuard.test.ts",
+    "apps/service-management/test/unit/designerExporters.test.ts",
+    "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
+    "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/CatalogModel.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/composition/composeCatalogsServices.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/index.exports.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/application/catalogBoundaries.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/service/CatalogService.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/domain/Model/Catalog.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/deployTargetLifecycle.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/interfaceAdapters.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/statusOutcome.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/firstRun.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/accessibleNames.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts",
+    "apps/backend-template/test/integration/ServiceManagement/canaMigration.browser.integration.test.ts",
+    "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Express/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Express/Organizations/organization.relationship.e2e.test.ts",
+    "apps/backend-template/test/integration/Express/auth/register.test.ts",
+    "apps/backend-template/test/integration/Express/auth/login.test.ts",
+    "apps/backend-template/test/integration/Express/auth/logout.test.ts",
+    "apps/backend-template/test/integration/Express/auth/updatePassword.test.ts",
+    "apps/backend-template/test/integration/Express/get.apiVersions.test.ts",
+    "apps/backend-template/test/integration/Express/Users/createEmail.test.ts",
+    "apps/backend-template/test/integration/Express/Users/updateEmail.test.ts",
+    "apps/backend-template/test/integration/Express/Users/getAll.test.ts",
+    "apps/backend-template/test/integration/Express/Users/createDocument.test.ts",
+    "apps/backend-template/test/integration/Express/Users/deleteDocument.test.ts",
+    "apps/backend-template/test/integration/Express/Users/updateDocument.test.ts",
+    "apps/backend-template/test/integration/Express/Users/create.test.ts",
+    "apps/backend-template/test/integration/Express/Users/deletePhone.test.ts",
+    "apps/backend-template/test/integration/Express/Users/getOneById.test.ts",
+    "apps/backend-template/test/integration/Express/Users/update.test.ts",
+    "apps/backend-template/test/integration/Express/Users/deleteEmail.test.ts",
+    "apps/backend-template/test/integration/Express/Users/updatePassword.test.ts",
+    "apps/backend-template/test/integration/Express/Users/updatePhone.test.ts",
+    "apps/backend-template/test/integration/Express/Users/deleteOne.test.ts",
+    "apps/backend-template/test/integration/Express/Users/createPhone.test.ts",
+    "apps/backend-template/test/integration/Express/get.async-context-metrics.test.ts",
+    "apps/backend-template/test/integration/Feathers/get.localhost.test.ts",
+    "apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts",
+    "apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts",
+    "apps/backend-template/test/integration/Total-JS/get.localhost.test.ts",
+    "apps/backend-template/test/integration/LoopBack/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Lambda/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Lambda/auth/Basic/create.test.ts",
+    "apps/backend-template/test/integration/Lambda/auth/Bearer/create.test.ts",
+    "apps/backend-template/test/integration/Cloudflare-Workers/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Adonis-JS/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Derby-JS/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Restify/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Restify/auth/register.test.ts",
+    "apps/backend-template/test/integration/Restify/auth/login.test.ts",
+    "apps/backend-template/test/integration/Restify/auth/logout.test.ts",
+    "apps/backend-template/test/integration/Restify/auth/updatePassword.test.ts",
+    "apps/backend-template/test/integration/Restify/get.apiVersions.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/createEmail.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/updateEmail.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/getAll.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/createDocument.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/deleteDocument.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/updateDocument.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/create.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/deletePhone.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/getOneById.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/update.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/deleteEmail.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/updatePassword.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/updatePhone.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/deleteOne.test.ts",
+    "apps/backend-template/test/integration/Restify/Users/createPhone.test.ts",
+    "apps/backend-template/test/integration/Vercel-Functions/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Fastify/get.localhost.test.ts",
+    "apps/backend-template/test/integration/Fastify/auth/register.test.ts",
+    "apps/backend-template/test/integration/Fastify/auth/login.test.ts",
+    "apps/backend-template/test/integration/Fastify/auth/logout.test.ts",
+    "apps/backend-template/test/integration/Fastify/auth/updatePassword.test.ts",
+    "apps/backend-template/test/integration/Fastify/get.apiVersions.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/createEmail.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/updateEmail.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/getAll.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/createDocument.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/deleteDocument.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/updateDocument.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/create.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/deletePhone.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/getOneById.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/update.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/deleteEmail.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/updatePassword.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/updatePhone.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/deleteOne.test.ts",
+    "apps/backend-template/test/integration/Fastify/Users/createPhone.test.ts",
+    "apps/service-management-api/test/integration/catalogSync.integration.test.ts",
+    "apps/service-management-api/test/integration/catalogs.http.integration.test.ts",
+    "packages/adapter-runtime-bootstrap/test/compileAdapterRuntime.test.ts",
+    "packages/agent-registry/test/bus-commands.test.ts",
+    "packages/agent-registry/test/commands.test.ts",
+    "packages/agent-registry/test/firebase-credentials.test.ts",
+    "packages/agent-registry/test/firestore-client.test.ts",
+    "packages/agent-registry/test/repair.test.ts",
+    "packages/agent-registry/test/rtdb-client.test.ts",
+    "packages/agent-registry/test/validation.test.ts",
+    "packages/cana-react/test/collection-edges.test.ts",
+    "packages/cana-react/test/collection.test.ts",
+    "packages/cana-react/test/hooks.test.ts",
+    "packages/cana-vue/test/collection-edges.test.ts",
+    "packages/cana-vue/test/collection.test.ts",
+    "packages/cana-vue/test/composables.test.ts",
+    "packages/cana/test/packaging.test.ts",
+    "packages/cli-init/test/bootstrap.test.ts",
+    "packages/database-client-factory/test/compileDatabaseClient.test.ts",
+    "packages/dead-letter-queue/test/dead-letter-queue.test.ts",
+    "packages/dead-letter-queue/test/dead-letter-replay-worker.test.ts",
+    "packages/designer-core/test/consumer-smoke.test.ts",
+    "packages/designer-core/test/dom-free.test.ts",
+    "packages/designer-core/test/fallback-branches.test.ts",
+    "packages/designer-core/test/packaging.test.ts",
+    "packages/external-db-repositories/test/repositories.test.ts",
+    "packages/external-persistence-core/test/BaseExternalDataRepository.test.ts",
+    "packages/external-store-proxy/test/ExternalStoreProxy.test.ts",
+    "packages/key-value-storage/test/key-value-storage.test.ts",
+    "packages/message-mediator/test/bullmq-adapter.test.ts",
+    "packages/message-mediator/test/message-mediator.test.ts",
+    "packages/message-mediator/test/rabbitmq-adapter.test.ts",
+    "packages/mutex-service/test/MutexService.test.ts",
+    "packages/mutex-service/test/ServiceResponse.test.ts",
+    "packages/persistence-contracts/test/contracts.test.ts",
+    "packages/persistence-contracts/test/listQuery.test.ts",
+    "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
+    "packages/sdk-grpc-client/test/GrpcApiClient.test.ts",
+    "packages/sdk-rest-client/test/RestApiClient.events.test.ts",
+    "packages/sdk-rest-client/test/RestApiClient.test.ts",
+    "packages/sdk-websocket-client/test/WebSocketApiClient.test.ts",
+    "packages/security-scanner/test/scanner.test.ts",
+    "packages/shared-contracts/test/canonicalSpec.test.ts"
+  ],
+  "executedSuites": [
+    "apps/backend-template/test/unit/interface/WebSocket/redisStreamsAdapter.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/adapters/clusterAdapter.lifecycle.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/adapters/start-websocket-api.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/adapters/socket-io.bootstrap.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/adapters/redisStreamsAdapter.lifecycle.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/WebSocketAPI.test.ts",
+    "apps/backend-template/test/unit/interface/WebSocket/clusterAdapter.test.ts",
+    "apps/backend-template/test/unit/interface/gRPC/gRPCAPI.test.ts",
+    "apps/backend-template/test/unit/interface/gRPC/resolveGrpcProtoPath.test.ts",
+    "apps/backend-template/test/unit/interface/gRPC/adapters/start-grpc-api.test.ts",
+    "apps/backend-template/test/unit/interface/gRPC/adapters/grpc.bootstrap.test.ts",
+    "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.test.ts",
+    "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.moduleResolution.test.ts",
+    "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.loadFailure.test.ts",
+    "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/index.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/prompt.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/entityModelManager.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/domainManager.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/catalogStorage.test.ts",
+    "apps/backend-template/test/unit/interface/CLI/entityModelManager.refusals.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.composition.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.loadFailure.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/RestAPI.handlerFallback.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/express/infraHandlers.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/validators/validateRequestParams.edgeCases.test.ts",
+    "apps/backend-template/test/unit/interface/HTTP/ports/BaseController.test.ts",
+    "apps/backend-template/test/unit/infra/jwt/JwtService.test.ts",
+    "apps/backend-template/test/unit/infra/messages/InMemoryMessageMediator.test.ts",
+    "apps/backend-template/test/unit/infra/messages/MessageMediator.taskCreateFlow.test.ts",
+    "apps/backend-template/test/unit/infra/messages/compileMessageMediator.test.ts",
+    "apps/backend-template/test/unit/infra/messages/QueueRequestResponseRepository.test.ts",
+    "apps/backend-template/test/unit/infra/context/contextInstrumentation.test.ts",
+    "apps/backend-template/test/unit/infra/context/asyncContextMetrics.test.ts",
+    "apps/backend-template/test/unit/infra/cache/CacheService.test.ts",
+    "apps/backend-template/test/unit/infra/security/PasswordCryptoService.test.ts",
+    "apps/backend-template/test/unit/infra/auth/AuthService.test.ts",
+    "apps/backend-template/test/unit/infra/auth/AuthService.environment.test.ts",
+    "apps/backend-template/test/unit/infra/exceptions/index.test.ts",
+    "apps/backend-template/test/unit/infra/audit/InMemorySecurityAuditRepository.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/BaseKeyValueStorageClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/compileKeyValueStorageClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/external/ExternalStoreProxy.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/external/ExternalRepositories.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/compileDatabaseClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryDbClient.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/UserStoreAPI.test.ts",
+    "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+    "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
+    "apps/backend-template/test/unit/infra/mutex/MutexService.test.ts",
+    "apps/backend-template/test/unit/infra/events/InMemoryEventBus.test.ts",
+    "apps/backend-template/test/unit/ServiceManagement/serverHarnessPorts.test.ts",
+    "apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts",
+    "apps/backend-template/test/unit/domains/validators/index.test.ts",
+    "apps/backend-template/test/unit/config/security.test.ts",
+    "apps/backend-template/test/unit/config/redis.test.ts",
+    "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+    "apps/backend-template/test/unit/shared/decorators/Authorize.test.ts",
+    "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntity.test.ts",
+    "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntityEdges.test.ts",
+    "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
+    "apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
+    "apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts",
+    "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
+    "apps/backend-template/test/unit/ci-cd/agent-registry-cli.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-commit-authorship.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-test-map.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-hexagonal-boundaries.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
+    "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-canonical-integrations.test.ts",
+    "apps/backend-template/test/unit/ci-cd/migrate-agent-registry-to-firestore.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-rtdb-indexes.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-suite-execution.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-unit-tests.test.ts",
+    "apps/backend-template/test/unit/ci-cd/readme-badges.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-integration-migration.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-requirements-registry.test.ts",
+    "apps/backend-template/test/unit/ci-cd/entry-point.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-coverage-thresholds.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-monorepo-ci.test.ts",
+    "apps/backend-template/test/unit/ci-cd/classify-ci-context.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-affected-workspaces.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-integration-tests.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-workspace-coverage-policy.test.ts",
+    "apps/backend-template/test/unit/ci-cd/service-management-vendor-wiring.test.ts",
+    "apps/backend-template/test/unit/ci-cd/report-sonar-findings.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-agent-registry-source.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-workspace-quality.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-frontend-coverage.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-workspace-boundaries.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-test-integrity.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
+    "apps/backend-template/test/unit/ci-cd/generate-test-map.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts",
+    "apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-prevention-gates.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-release-governance.test.ts",
+    "apps/backend-template/test/unit/ci-cd/test-map-completeness.test.ts",
+    "apps/backend-template/test/unit/ci-cd/check-package-suites.test.ts",
+    "apps/backend-template/test/unit/ci-cd/run-service-management-integration.test.ts",
+    "apps/backend-template/test/unit/modules/ddd/valueObjects/DocumentValueObject.test.ts",
+    "apps/backend-template/test/unit/modules/ddd/valueObjects/AddressValueObject.test.ts",
+    "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/express/handlers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/derby-js/handlers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/factories.test.ts",
+    "apps/backend-template/test/unit/modules/Users/composition/composeUserDeadLetterReplay.test.ts",
+    "apps/backend-template/test/unit/modules/Users/composition/composeUsersAuthServices.test.ts",
+    "apps/backend-template/test/unit/modules/Users/adapters/in/websocketapi/frameworks/socket-io/handlers/createWebSocketOperationHandler.test.ts",
+    "apps/backend-template/test/unit/modules/Users/adapters/in/controller/controllers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/index.exports.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/useCases.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/features/index.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/OrganizationUseCases.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.lockRelease.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserProviderLocal.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.organizationMembership.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/OrganizationService.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.sanitization.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/AuthService.rbac.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/AuthService.branches.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/AuthService.audit.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/service/UserService.deadLetter.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/events/registerUserMessageHandlers.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/events/events.test.ts",
+    "apps/backend-template/test/unit/modules/Users/application/events/registerUserEventListeners.test.ts",
+    "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/security/TenantAuthorizationPolicy.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/security/Rbac.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts",
+    "apps/backend-template/test/unit/modules/Users/domain/Model/Organization.test.ts",
+    "apps/backend-template/test/unit/modules/port/core.test.ts",
+    "apps/backend-template/test/unit/modules/port/setListQuery.test.ts",
+    "apps/backend-template/test/unit/modules/port/BaseService.test.ts",
+    "apps/backend-template/test/unit/modules/port/relations.test.ts",
+    "apps/backend-template/test/unit/modules/port/index.exports.test.ts",
+    "apps/backend-template/test/unit/sdk-clients/grpc/GrpcApiClient.test.ts",
+    "apps/service-management/test/unit/hostMetrics.test.ts",
+    "apps/service-management/test/unit/deployTargetLifecycle.test.ts",
+    "apps/service-management/test/unit/processHelpCatalog.test.ts",
+    "apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts",
+    "apps/service-management/test/unit/designerState.test.ts",
+    "apps/service-management/test/unit/controlHelp.test.ts",
+    "apps/service-management/test/unit/designerAsyncApiExport.test.ts",
+    "apps/service-management/test/unit/pm2Lifecycle.test.ts",
+    "apps/service-management/test/unit/designerNormalizers.test.ts",
+    "apps/service-management/test/unit/pm2DaemonLock.test.ts",
+    "apps/service-management/test/unit/modelValidation.test.ts",
+    "apps/service-management/test/unit/hostMetrics.compute.test.ts",
+    "apps/service-management/test/unit/monitoringChartsDraw.test.ts",
+    "apps/service-management/test/unit/catalogSyncClientDefaults.test.ts",
+    "apps/service-management/test/unit/pwaShell.test.ts",
+    "apps/service-management/test/unit/mvp.roadmap.features.test.ts",
+    "apps/service-management/test/unit/interfaceAdapterValidation.test.ts",
+    "apps/service-management/test/unit/controlHelp.dom.test.ts",
+    "apps/service-management/test/unit/catalogSyncClient.test.ts",
+    "apps/service-management/test/unit/deployTargetValidation.test.ts",
+    "apps/service-management/test/unit/designerSync.test.ts",
+    "apps/service-management/test/unit/helpPopoverState.test.ts",
+    "apps/service-management/test/unit/runtimeEnvUi.contract.test.ts",
+    "apps/service-management/test/unit/designerRoundTrip.test.ts",
+    "apps/service-management/test/unit/processDiskIo.test.ts",
+    "apps/service-management/test/unit/monitoringCharts.test.ts",
+    "apps/service-management/test/unit/serviceConfigurationValidation.test.ts",
+    "apps/service-management/test/unit/designerOasCompliance.test.ts",
+    "apps/service-management/test/unit/designerImporters.test.ts",
+    "apps/service-management/test/unit/catalogSyncTransport.test.ts",
+    "apps/service-management/test/unit/modelQueries.test.ts",
+    "apps/service-management/test/unit/monitoringHistory.normalize.test.ts",
+    "apps/service-management/test/unit/designerStore.test.ts",
+    "apps/service-management/test/unit/canvasWorkspace.test.ts",
+    "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
+    "apps/service-management/test/unit/monitoringChartFormat.test.ts",
+    "apps/service-management/test/unit/canaMigrationFailures.test.ts",
+    "apps/service-management/test/unit/canaMigration.test.ts",
+    "apps/service-management/test/unit/hexagonalCodegen.test.ts",
+    "apps/service-management/test/unit/pm2Lifecycle.startPaths.test.ts",
+    "apps/service-management/test/unit/canaDesignerStore.test.ts",
+    "apps/service-management/test/unit/hostMetrics.mockedHost.test.ts",
+    "apps/service-management/test/unit/sampleModel.test.ts",
+    "apps/service-management/test/unit/darwinProcessDiskIo.test.ts",
+    "apps/service-management/test/unit/designerPackageVersioning.test.ts",
+    "apps/service-management/test/unit/renderGuard.test.ts",
+    "apps/service-management/test/unit/designerExporters.test.ts",
+    "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
+    "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/CatalogModel.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/composition/composeCatalogsServices.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/index.exports.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/application/catalogBoundaries.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/service/CatalogService.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+    "apps/service-management-api/test/unit/Catalogs/domain/Model/Catalog.test.ts",
+    "packages/adapter-runtime-bootstrap/test/compileAdapterRuntime.test.ts",
+    "packages/agent-registry/test/bus-commands.test.ts",
+    "packages/agent-registry/test/commands.test.ts",
+    "packages/agent-registry/test/firebase-credentials.test.ts",
+    "packages/agent-registry/test/firestore-client.test.ts",
+    "packages/agent-registry/test/repair.test.ts",
+    "packages/agent-registry/test/rtdb-client.test.ts",
+    "packages/agent-registry/test/validation.test.ts",
+    "packages/cana-react/test/collection-edges.test.ts",
+    "packages/cana-react/test/collection.test.ts",
+    "packages/cana-react/test/hooks.test.ts",
+    "packages/cana-vue/test/collection-edges.test.ts",
+    "packages/cana-vue/test/collection.test.ts",
+    "packages/cana-vue/test/composables.test.ts",
+    "packages/cana/test/packaging.test.ts",
+    "packages/cli-init/test/bootstrap.test.ts",
+    "packages/database-client-factory/test/compileDatabaseClient.test.ts",
+    "packages/dead-letter-queue/test/dead-letter-queue.test.ts",
+    "packages/dead-letter-queue/test/dead-letter-replay-worker.test.ts",
+    "packages/designer-core/test/consumer-smoke.test.ts",
+    "packages/designer-core/test/dom-free.test.ts",
+    "packages/designer-core/test/fallback-branches.test.ts",
+    "packages/designer-core/test/packaging.test.ts",
+    "packages/external-db-repositories/test/repositories.test.ts",
+    "packages/external-persistence-core/test/BaseExternalDataRepository.test.ts",
+    "packages/external-store-proxy/test/ExternalStoreProxy.test.ts",
+    "packages/key-value-storage/test/key-value-storage.test.ts",
+    "packages/message-mediator/test/bullmq-adapter.test.ts",
+    "packages/message-mediator/test/message-mediator.test.ts",
+    "packages/message-mediator/test/rabbitmq-adapter.test.ts",
+    "packages/mutex-service/test/MutexService.test.ts",
+    "packages/mutex-service/test/ServiceResponse.test.ts",
+    "packages/persistence-contracts/test/contracts.test.ts",
+    "packages/persistence-contracts/test/listQuery.test.ts",
+    "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
+    "packages/sdk-grpc-client/test/GrpcApiClient.test.ts",
+    "packages/sdk-rest-client/test/RestApiClient.events.test.ts",
+    "packages/sdk-rest-client/test/RestApiClient.test.ts",
+    "packages/sdk-websocket-client/test/WebSocketApiClient.test.ts",
+    "packages/security-scanner/test/scanner.test.ts",
+    "packages/shared-contracts/test/canonicalSpec.test.ts"
+  ],
+  "suiteResults": [
+    {
+      "suite": "apps/backend-template/test/unit/interface/WebSocket/redisStreamsAdapter.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/WebSocket/adapters/clusterAdapter.lifecycle.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/WebSocket/adapters/start-websocket-api.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/WebSocket/adapters/socket-io.bootstrap.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/WebSocket/adapters/redisStreamsAdapter.lifecycle.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/WebSocket/WebSocketAPI.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/WebSocket/clusterAdapter.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/gRPC/gRPCAPI.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/gRPC/resolveGrpcProtoPath.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/gRPC/adapters/start-grpc-api.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/gRPC/adapters/grpc.bootstrap.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.moduleResolution.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.loadFailure.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/runtime/RuntimeEnvironment.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/CLI/index.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/CLI/entityModelManager.flows.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/CLI/prompt.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/CLI/entityModelManager.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/CLI/domainManager.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/CLI/catalogStorage.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/CLI/entityModelManager.refusals.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/RestAPI.composition.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/RestAPI.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/RestAPI.loadFailure.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/RestAPI.handlerFallback.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/adapters/express/ExpressServer.start.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/adapters/express/infraHandlers.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/adapters/start-rest-api.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/adapters/errorResponses.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/validators/validateRequestParams.edgeCases.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/interface/HTTP/ports/BaseController.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/jwt/JwtService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/messages/InMemoryMessageMediator.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/messages/MessageMediator.taskCreateFlow.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/messages/compileMessageMediator.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/messages/QueueRequestResponseRepository.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/context/contextInstrumentation.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/context/asyncContextMetrics.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/cache/CacheService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/security/PasswordCryptoService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/auth/AuthService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/auth/AuthService.environment.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/exceptions/index.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/audit/InMemorySecurityAuditRepository.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/BaseKeyValueStorageClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/KeyValueStorage/compileKeyValueStorageClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/external/ExternalStoreProxy.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/external/ExternalRepositories.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/compileDatabaseClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryDbClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/UserStoreAPI.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/persistence/InMemoryDatabase/InMemoryRelationalStore.indexes.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/mutex/MutexService.branches.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/mutex/MutexService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/infra/events/InMemoryEventBus.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ServiceManagement/serverHarnessPorts.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/domains/validators/index.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/config/security.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/config/redis.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/config/aws-service-name.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/shared/decorators/Authorize.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntity.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/shared/openapi/OpenApi31DataEntityEdges.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/shared/utils.errorExposure.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-branch-quality-gate.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/sync-service-management-designer-core.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/merge-browser-coverage.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-ci-provider.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/agent-registry-cli.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-commit-authorship.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-test-map.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-hexagonal-boundaries.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/guard-defaults.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-canonical-integrations.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/migrate-agent-registry-to-firestore.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-rtdb-indexes.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-suite-resolution.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-suite-execution.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-unit-tests.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/readme-badges.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-integration-migration.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-requirements-registry.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/entry-point.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-coverage-thresholds.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-monorepo-ci.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/classify-ci-context.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-affected-workspaces.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-integration-tests.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-workspace-coverage-policy.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/service-management-vendor-wiring.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/report-sonar-findings.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-agent-registry-source.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-workspace-quality.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-frontend-coverage.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-workspace-boundaries.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-test-integrity.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-fail-closed.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/generate-test-map.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/sync-service-management-cana-bundle.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-prevention-gates.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-release-governance.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/test-map-completeness.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/check-package-suites.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/ci-cd/run-service-management-integration.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/ddd/valueObjects/DocumentValueObject.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/ddd/valueObjects/AddressValueObject.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/express/handlers.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/derby-js/handlers.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/factories.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/composition/composeUserDeadLetterReplay.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/composition/composeUsersAuthServices.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/adapters/in/websocketapi/frameworks/socket-io/handlers/createWebSocketOperationHandler.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/adapters/in/controller/controllers.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/index.exports.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/useCases.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/features/index.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/OrganizationUseCases.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/UserService.lockRelease.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/UserService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/UserProviderLocal.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/UserService.organizationMembership.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/OrganizationService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/UserService.sanitization.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/AuthService.rbac.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/AuthService.branches.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/AuthService.audit.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/service/UserService.deadLetter.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/events/registerUserMessageHandlers.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/events/events.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/application/events/registerUserEventListeners.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/lambdaRuntime.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/domain/security/TenantAuthorizationPolicy.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/domain/security/Rbac.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/Users/domain/Model/Organization.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/port/core.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/port/setListQuery.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/port/BaseService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/port/relations.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/modules/port/index.exports.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/backend-template/test/unit/sdk-clients/grpc/GrpcApiClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/hostMetrics.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/deployTargetLifecycle.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/processHelpCatalog.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerState.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/controlHelp.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerAsyncApiExport.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/pm2Lifecycle.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerNormalizers.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/pm2DaemonLock.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/modelValidation.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/hostMetrics.compute.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/monitoringChartsDraw.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/catalogSyncClientDefaults.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/pwaShell.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/mvp.roadmap.features.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/interfaceAdapterValidation.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/controlHelp.dom.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/catalogSyncClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/deployTargetValidation.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerSync.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/helpPopoverState.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/runtimeEnvUi.contract.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerRoundTrip.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/processDiskIo.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/monitoringCharts.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/serviceConfigurationValidation.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerOasCompliance.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerImporters.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/catalogSyncTransport.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/modelQueries.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/monitoringHistory.normalize.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerStore.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/canvasWorkspace.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/monitoringChartFormat.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/canaMigrationFailures.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/canaMigration.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/hexagonalCodegen.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/pm2Lifecycle.startPaths.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/canaDesignerStore.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/hostMetrics.mockedHost.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/sampleModel.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/darwinProcessDiskIo.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerPackageVersioning.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/renderGuard.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management/test/unit/designerExporters.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/CatalogModel.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/composition/composeCatalogsServices.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/index.exports.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/application/catalogBoundaries.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/service/CatalogService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "apps/service-management-api/test/unit/Catalogs/domain/Model/Catalog.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/adapter-runtime-bootstrap/test/compileAdapterRuntime.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/agent-registry/test/bus-commands.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/agent-registry/test/commands.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/agent-registry/test/firebase-credentials.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/agent-registry/test/firestore-client.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/agent-registry/test/repair.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/agent-registry/test/rtdb-client.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/agent-registry/test/validation.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/cana-react/test/collection-edges.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/cana-react/test/collection.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/cana-react/test/hooks.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/cana-vue/test/collection-edges.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/cana-vue/test/collection.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/cana-vue/test/composables.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/cana/test/packaging.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/cli-init/test/bootstrap.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/dead-letter-queue/test/dead-letter-queue.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/dead-letter-queue/test/dead-letter-replay-worker.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/designer-core/test/consumer-smoke.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/designer-core/test/dom-free.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/designer-core/test/fallback-branches.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/designer-core/test/packaging.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/external-db-repositories/test/repositories.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/external-persistence-core/test/BaseExternalDataRepository.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/external-store-proxy/test/ExternalStoreProxy.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/key-value-storage/test/key-value-storage.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/message-mediator/test/bullmq-adapter.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/message-mediator/test/message-mediator.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/message-mediator/test/rabbitmq-adapter.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/mutex-service/test/MutexService.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/mutex-service/test/ServiceResponse.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/persistence-contracts/test/contracts.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/persistence-contracts/test/listQuery.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/sdk-grpc-client/test/GrpcApiClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/sdk-rest-client/test/RestApiClient.events.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/sdk-rest-client/test/RestApiClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/sdk-websocket-client/test/WebSocketApiClient.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/security-scanner/test/scanner.test.ts",
+      "status": "failed",
+      "runner": "node"
+    },
+    {
+      "suite": "packages/shared-contracts/test/canonicalSpec.test.ts",
+      "status": "failed",
+      "runner": "node"
+    }
+  ],
+  "integrationScripts": [
+    "test:integration:service-management",
+    "test:integration:sails-js",
+    "test:integration:express",
+    "test:integration:feathers",
+    "test:integration:realtime",
+    "test:integration:total-js",
+    "test:integration:loopback",
+    "test:integration:lambda",
+    "test:integration:cloudflare-workers",
+    "test:integration:adonis-js",
+    "test:integration:derby-js",
+    "test:integration:restify",
+    "test:integration:vercel-functions",
+    "test:integration:fastify"
+  ],
+  "outcome": "failed",
+  "status": 1,
+  "shadow": null
+}

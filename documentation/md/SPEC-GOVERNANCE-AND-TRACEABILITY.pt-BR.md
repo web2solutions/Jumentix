@@ -176,7 +176,7 @@ Contrato de execução por branch:
 2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:task`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
 4. GitHub Actions é o orquestrador pertencente ao repositório, o runner
-   self-hosted `jumentix` fornece o caminho de execução sem custo, e CircleCI
+   GitHub-hosted `ubuntu-latest` fornece o caminho de execução sem custo, e CircleCI
    está desabilitado pelo Requisito `113`.
 5. `.github/workflows/ci.yml` é responsável por Storybook, database smoke e cobertura
    completa em promoções de release, `main` e execuções completas agendadas;
@@ -236,12 +236,12 @@ Antes de qualquer execução de tarefa:
     conta proprietária `web2solutions` (`web2solucoes@gmail.com`) e identidades explicitamente
     autorizadas no Linear podem escrever registros de agentes. O antigo repositório GitHub do
     registry permanece privado na organização `XpertMinds` como espelho congelado de auditoria.
-14. O Requisito `103` torna `XpertMinds/Jumentix` canônico; a canonicidade da coordenação de agentes
+14. O Requisito `103` torna `web2solutions/Jumentix` canônico; a canonicidade da coordenação de agentes
     migrou para o Firestore Database pelo Requisito `089`. As duas origens anteriores em
     `web2solutions` — e o antigo espelho GitHub do registry — estão obsoletas, são somente leitura,
     não aceitam novas modificações e permanecem arquivadas.
 15. O Requisito `104` exige inventário e rebind de toda integração aplicável da origem
-    depreciada para `XpertMinds/Jumentix`, com instalações incompletas registradas como
+    depreciada para `web2solutions/Jumentix`, com instalações incompletas registradas como
     bloqueios owner-auth e validadas por `integration-migration:check`.
 
 ## Expectativas de evidências de auditoria

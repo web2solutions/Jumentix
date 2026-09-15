@@ -10,6 +10,7 @@ import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/Reques
 import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
 import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
+import type { IMetricsCapabilities, IMetricsQuery, IMetricsResult } from '@jumentix/persistence-contracts';
 
 export interface IUserUseCases {
   create(data: RequestCreateUser): Promise<IServiceResponse<IUser>>;
@@ -20,6 +21,11 @@ export interface IUserUseCases {
     filters: Record<string, string|number>,
     paging: IPagingRequest
   ): Promise<IServiceResponse<IUser[]>>;
+  metrics(
+    filters: Record<string, string | number>,
+    query: IMetricsQuery,
+    capabilities: IMetricsCapabilities
+  ): Promise<IServiceResponse<IMetricsResult>>;
   updatePassword(id: string, data: RequestUpdatePassword): Promise<IServiceResponse<IUser>>;
   createDocument(id: string, data: RequestCreateDocument): Promise<IServiceResponse<IUser>>;
   updateDocument(

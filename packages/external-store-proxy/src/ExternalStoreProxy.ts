@@ -2,7 +2,10 @@
 import {
   ConflictError,
   DataBaseNotFoundError,
-  DatabasePagingError
+  applyListFilters,
+  applyListSearch,
+  applyListSort,
+  paginateList
 } from '@jumentix/persistence-contracts';
 import type { IPagingRequest, IPagingResponse, IStore } from '@jumentix/persistence-contracts';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
@@ -68,37 +71,22 @@ const normalize = (value: TPrimitive): string => String(value ?? '');
 
 const normalizeCI = (value: TPrimitive): string => normalize(value).toLowerCase();
 
+// Filters, search, sort and paging come from `@jumentix/persistence-contracts`
+// (JUM-777) so this proxy and the in-memory store answer the REST list contract
+// identically; `buildPaging` also applies `paging.q` and `paging.sort`.
 const applyFilters = (
   records: Record<string, any>[],
   filters: Record<string, string | number>
-): Record<string, any>[] => {
-  const entries = Object.entries(filters || {});
-  if (entries.length === 0) return records;
-  return records.filter((record) => entries.every(([key, value]) => record[key] === value));
-};
+): Record<string, any>[] => applyListFilters(records, filters);
 
 const buildPaging = <T>(
   records: T[],
   paging: IPagingRequest
 ): IPagingResponse<T[]> => {
-  const page = paging.page ?? paging.currentPage ?? 1;
-  const size = paging.size ?? paging.perPage ?? 10;
-  if (page < 1) {
-    throw new DatabasePagingError('page must be greater than 0');
-  }
-  const total = records.length;
-  const totalPages = Math.max(1, Math.ceil(total / size));
-  if (page > totalPages && total > 0) {
-    throw new DatabasePagingError('page number must be smaller than the number of total pages');
-  }
-  const startAt = (page * size) - size;
-  const result = records.slice(startAt, startAt + size);
-  return {
-    result,
-    total,
-    page,
-    size
-  };
+  const rows = records as unknown as Record<string, unknown>[];
+  const searched = applyListSearch(rows, paging.q, paging.searchFields);
+  const sorted = applyListSort(searched, paging.sort);
+  return paginateList(sorted as unknown as T[], paging);
 };
 
 const unsupportedDriverError = (driver: string, entity: string): Error => new Error(
@@ -151,23 +139,29 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   public async delete(id: string): Promise<boolean> {
-    if (this.driver === 'Mongo') return this.mongoDelete(id);
-    if (SQL_DRIVERS.has(this.driver)) return this.sqlDelete(id);
-    if (this.driver === DYNAMODB_DRIVER) return this.dynamoDelete(id);
-    if (this.driver === CASSANDRA_DRIVER) return this.cassandraDelete(id);
-    if (this.driver === FIREBASE_DRIVER) return this.firebaseDelete(id);
-    if (this.driver === ORACLE_DRIVER) return this.oracleDelete(id);
-    throw unsupportedDriverError(this.driver, this.entity);
+    try {
+      const existing = await this.getOneById(id, { includeDeleted: true });
+      await this.update(id, { ...existing, deletedAt: new Date().toISOString() } as T);
+      return true;
+    } catch (error) {
+      if (error instanceof DataBaseNotFoundError) return false;
+      throw error;
+    }
   }
 
-  public async getOneById(id: string): Promise<T> {
-    if (this.driver === 'Mongo') return this.mongoGetOneById(id);
-    if (SQL_DRIVERS.has(this.driver)) return this.sqlGetOneById(id);
-    if (this.driver === DYNAMODB_DRIVER) return this.dynamoGetOneById(id);
-    if (this.driver === CASSANDRA_DRIVER) return this.cassandraGetOneById(id);
-    if (this.driver === FIREBASE_DRIVER) return this.firebaseGetOneById(id);
-    if (this.driver === ORACLE_DRIVER) return this.oracleGetOneById(id);
-    throw unsupportedDriverError(this.driver, this.entity);
+  public async getOneById(id: string, options?: { includeDeleted?: boolean }): Promise<T> {
+    let record: T;
+    if (this.driver === 'Mongo') record = await this.mongoGetOneById(id);
+    else if (SQL_DRIVERS.has(this.driver)) record = await this.sqlGetOneById(id);
+    else if (this.driver === DYNAMODB_DRIVER) record = await this.dynamoGetOneById(id);
+    else if (this.driver === CASSANDRA_DRIVER) record = await this.cassandraGetOneById(id);
+    else if (this.driver === FIREBASE_DRIVER) record = await this.firebaseGetOneById(id);
+    else if (this.driver === ORACLE_DRIVER) record = await this.oracleGetOneById(id);
+    else throw unsupportedDriverError(this.driver, this.entity);
+    if ((record as { deletedAt?: unknown }).deletedAt && !options?.includeDeleted) {
+      throw new DataBaseNotFoundError('Record not found');
+    }
+    return record;
   }
 
   public async getByName(name: string): Promise<T> {

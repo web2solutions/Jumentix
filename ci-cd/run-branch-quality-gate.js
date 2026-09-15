@@ -35,23 +35,62 @@ const LINT_PREFLIGHT = Object.freeze({ id: 'lint', script: 'lint' });
  */
 const TEST_INTEGRITY_PREFLIGHT = Object.freeze({ id: 'test-integrity', script: 'test:integrity' });
 
+/**
+ * Workspace boundaries + root `build:dev` run before every gate (JUM-786).
+ *
+ * Both steps live in `ci:gate` / the full matrix, but GitHub Actions never
+ * selects `workspace-builds` (or the local `ci:gate` script) for task PRs to
+ * `dev` or cheap `dev` pushes (Req 087/113). The failures therefore sat on
+ * every local checkout while every required PR check stayed green.
+ *
+ * Preflight keeps task delivery cheap (seconds, not the full matrix) and
+ * makes the two previously-skipped `ci:gate` steps fail closed inside the
+ * always-on `branch-gate` job. Heavy jobs (`workspace-builds`, coverage, …)
+ * still run only for release/`main`/scheduled contexts.
+ */
+const WORKSPACE_BOUNDARIES_PREFLIGHT = Object.freeze({
+  id: 'workspace-boundaries',
+  script: 'arch:check-workspace-boundaries'
+});
+const BUILD_DEV_PREFLIGHT = Object.freeze({
+  id: 'build-dev',
+  script: 'build:dev'
+});
+
 const FULL_MATRIX_QUALITY_GATE = Object.freeze({
   id: 'full-matrix',
   script: 'ci:gate:strict',
   // Lint is not repeated here: the strict matrix declares it as its first cell,
   // and running it twice would cost minutes to learn the same thing. Test
-  // integrity is not a cell of that matrix, so it runs here.
-  preflight: Object.freeze([TEST_INTEGRITY_PREFLIGHT])
+  // integrity, workspace boundaries, and build:dev are not cells of that
+  // matrix path that CI always exercises for task/dev, so they run here.
+  // Strict matrix cells already include architecture-workspaces + backend-build;
+  // re-running them as preflight is seconds and fails closed before the rest.
+  preflight: Object.freeze([
+    TEST_INTEGRITY_PREFLIGHT,
+    WORKSPACE_BOUNDARIES_PREFLIGHT,
+    BUILD_DEV_PREFLIGHT
+  ])
 });
 const UNIT_QUALITY_GATE = Object.freeze({
   id: 'unit',
   script: 'test:unit',
-  preflight: Object.freeze([LINT_PREFLIGHT, TEST_INTEGRITY_PREFLIGHT])
+  preflight: Object.freeze([
+    LINT_PREFLIGHT,
+    TEST_INTEGRITY_PREFLIGHT,
+    WORKSPACE_BOUNDARIES_PREFLIGHT,
+    BUILD_DEV_PREFLIGHT
+  ])
 });
 const TASK_QUALITY_GATE = Object.freeze({
   id: 'task-changes',
   script: 'ci:gate:task',
-  preflight: Object.freeze([LINT_PREFLIGHT, TEST_INTEGRITY_PREFLIGHT])
+  preflight: Object.freeze([
+    LINT_PREFLIGHT,
+    TEST_INTEGRITY_PREFLIGHT,
+    WORKSPACE_BOUNDARIES_PREFLIGHT,
+    BUILD_DEV_PREFLIGHT
+  ])
 });
 
 function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {

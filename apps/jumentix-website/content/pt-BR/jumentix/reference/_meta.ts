@@ -11,5 +11,6 @@ export default {
   'service-management-operations-console': 'Console de Operações do Service Management',
   'service-management-cana-adoption': 'Adoção do Cana no Service Management',
   'service-management-design-system-pwa': 'Design System e PWA do Service Management',
-  'service-management-collaboration-packaging': 'Colaboração e Empacotamento do Service Management'
+  'service-management-collaboration-packaging': 'Colaboração e Empacotamento do Service Management',
+  'frontend-offline-data-layer': 'Camada de dados offline do frontend'
 };

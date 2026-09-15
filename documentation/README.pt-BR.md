@@ -1,6 +1,6 @@
 # Hub de Documentação Jumentix
 
-> Repositório privado canônico: `XpertMinds/Jumentix`. Consulte
+> Repositório público canônico: `web2solutions/Jumentix`. Consulte
 > [Migração dos repositórios canônicos](./md/CANONICAL-REPOSITORY-MIGRATION.pt-BR.md) ·
 > [Requisito de migração de integrações](../INTEGRATION-MIGRATION-REQUIREMENT.pt-BR.md) ·
 > [Integrações canônicas e revinculação de provedores](./md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md).
@@ -60,6 +60,7 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 ## Hubs Técnicos de Componentes
 
 - [Documentação do Backend Template](../apps/backend-template/documentation/README.pt-BR.md)
+- [Seed de Frontend (@jumentix/frontend)](../apps/frontend/README.pt-BR.md)
 - [Documentação do Service Management](../apps/service-management/documentation/README.pt-BR.md)
 - [Jumentix Website](../apps/jumentix-website/README.pt-BR.md)
 - [Documentação Técnica do Jumentix Website](../apps/jumentix-website/documentation/README.pt-BR.md)
@@ -68,6 +69,11 @@ Para engenheiros que mantêm e evoluem o Jumentix:
 
 ## Referências de Contratos e Runtime
 
+- [Contrato de Listagem Paginada](./md/PAGINATED-LIST-CONTRACT.pt-BR.md) ([EN](./md/PAGINATED-LIST-CONTRACT.md))
+- [Extensões OAS](./md/OAS-VENDOR-EXTENSIONS.pt-BR.md) ([EN](./md/OAS-VENDOR-EXTENSIONS.md))
+- [Contrato de métricas de entidade](./md/ENTITY-METRICS-CONTRACT.pt-BR.md) ([EN](./md/ENTITY-METRICS-CONTRACT.md))
+- [Seed de Frontend e o Kit X-CRUD](./md/FRONTEND-SEED-AND-XCRUD.pt-BR.md) ([EN](./md/FRONTEND-SEED-AND-XCRUD.md))
+- [Camada de dados offline do frontend](./md/FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md) ([EN](./md/FRONTEND-OFFLINE-DATA-LAYER.md))
 - [Especificação OpenAPI](../spec/1.0.0.yml)
 - [Mapa de Eventos e Mensagens](./md/EVENTS-AND-MESSAGES-MAP.pt-BR.md)
 - [Contratos de Erro e Respostas](./md/ERROR-CONTRACTS-AND-RESPONSES.pt-BR.md)

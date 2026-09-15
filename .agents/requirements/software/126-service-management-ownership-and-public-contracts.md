@@ -6,7 +6,7 @@
   adoption", milestone H1 (Correctness & runtime alignment), 2026-08-05.
 - Strengthens: `038`, `043`. Relates to: `044`, `052`, `123` and Linear `JUM-458`,
   `JUM-558`, `JUM-459`, `JUM-460`, `JUM-461`, `JUM-462`, `JUM-543`, `JUM-466`,
-  `JUM-468`, `JUM-475`, `JUM-484`, `JUM-547`, `JUM-492`.
+  `JUM-468`, `JUM-475`, `JUM-484`, `JUM-547`, `JUM-492`, `JUM-748`.
 
 ## Context
 
@@ -26,6 +26,11 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - `apps/service-management` MUST have a registered owner in the component ownership
      registry `.agents/COMPONENT-OWNERSHIP.md` (established by this requirement).
      The registered owner is agent `kimi-code-primary-001`.
+   - `apps/service-management-api` owns platform Service Management APIs that support
+     the designer itself, including the shared `Catalogs` runtime. Generated-service
+     template code in `apps/backend-template` MUST NOT ship the Service Management
+     `Catalogs` module, `/catalogs` OAS paths, catalog stores, or catalog sync runtime
+     by default.
    - Any change to a public contract pinned here MUST update this requirement (and the
      registry sync set listed in Evidence) in the same PR.
 
@@ -58,7 +63,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `JUMENTIX_RABBITMQ_URL`); MUST NOT appear in the GET response and MUST NOT be
        writable, since the response crosses the same boundary as the write. The tier
        is enforced by omission from both allowlists and proven by test.
-     The full 23-key classification of `.env.dev` (each addition to the editable set
+     The full 24-key classification of `.env.dev` (each addition to the editable set
      is a security decision with a written reason):
      - *Editable (write allowlist, 9 keys):*
        - `JUMENTIX_HTTP_FRAMEWORK` — REST framework selector; the designer's primary
@@ -89,7 +94,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
          in the template env files, and the endpoint rejects values with embedded
          credentials (userinfo) or non-`redis://`/`rediss://` protocols, so the tool
          cannot be used to store secrets through this key.
-     - *Read-only (read allowlist only, 14 keys):*
+     - *Read-only (read allowlist only, 15 keys):*
        - `JUMENTIX_DATABASE_NAME` — logical database name; non-secret config, not a
          topology selector.
        - `JUMENTIX_ENABLE_BASIC_AUTH` — authentication posture toggle;
@@ -105,6 +110,10 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        - `JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS`, `JUMENTIX_AUTH_LOGIN_WINDOW_SECONDS`,
          `JUMENTIX_AUTH_LOCKOUT_SECONDS` — brute-force protection policy
          (Requirement `044`); security-relevant.
+       - `JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL` — explicit endpoint for the
+         platform-owned Service Management catalog API. The designer reads it to
+         avoid same-origin fallback to generated-service template routes; it is
+         non-secret and never writable through the browser.
      - *Never exposed (3 keys):* `JUMENTIX_JWT_TOKEN_SECRET_KEY` (signing key),
        `JUMENTIX_REDIS_PASSWORD` (credential), `JUMENTIX_RABBITMQ_URL`
        (credential-bearing URL embedding `user:password`).
@@ -206,8 +215,8 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - **Contract 1b — `GET /api/runtime/pm2-ecosystem` (landed by `JUM-480`).**
      Read-only; the single source of the designer's PM2 runtime profile preview.
      - **Environments and file mapping.** Accepted `environment` values:
-       `dev`/`development` → `ecosystem.dev.cjs`, `staging` →
-       `ecosystem.staging.cjs`, `production`/`prod` → `ecosystem.production.cjs`,
+       `dev`/`development` → `ecosystem.dev.config.cjs`, `staging` →
+       `ecosystem.staging.config.cjs`, `production`/`prod` → `ecosystem.production.config.cjs`,
        `ci`/`test` → `ecosystem.ci.cjs`. Same resolution discipline as Contract 1:
        case-insensitive after trimming, unknown values explicitly rejected with
        `400` and the accepted list, default `NODE_ENV` or `dev` when omitted.
@@ -228,19 +237,80 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        empty preview. An unreadable or broken ecosystem file is the 500 class
        `{ "error": "PM2 ecosystem file operation failed.", "code", "path",
        "details" }`, parallel to the env-file filesystem class.
+   - **Contract 1c — `GET /api/runtime/pm2-metrics` (amended by `JUM-736`, host/async-context by Monitoring WebSocket delivery).**
+     Read-only one-shot snapshot; remains the HTTP Contract for tests and tools.
+     The Monitoring tab's **primary live UI path** is Contract 1e (WebSocket);
+     this GET MUST stay available and shape-compatible for Contract 1c consumers.
+     - **Metrics source.** The endpoint MUST collect live process data through
+       the PM2 Node API (`pm2.connect`, `pm2.list`, `pm2.disconnect`). It MUST NOT
+       infer process health from the ecosystem file, shell output or command
+       strings. `JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE` may replace the module
+       path only for tests.
+     - **Environment comparison.** Accepted `environment` values and ecosystem
+       file resolution match Contract 1b. The response compares the selected
+       ecosystem's expected app names with PM2's live process list so missing
+       expected processes are visible without reading a terminal.
+     - **Host metrics.** Success payloads MUST include `host` with CPU usage
+       (aggregate + per-core sample), memory (total/used/free/process RSS sum),
+       and disk volumes for the project root, temp dir, and optional
+       `JUMENTIX_SERVICE_MANAGEMENT_DISK_PATHS` entries (`fs.statfs`).
+     - **Async context scrape.** When a process exposes a local HTTP port via
+       ecosystem env (`JUMENTIX_HTTP_PORT` / `PORT`), the collector MAY scrape
+       `GET http://127.0.0.1:<port>/async-context-metrics` with a short timeout
+       and attach `asyncContext` on that process; `summary.asyncContextActiveSum`
+       aggregates successful scrapes. The scrape payload includes counters,
+       `lastCorrelationIds`, and `recentStores` (redacted Map snapshots —
+       keys matching `/password|token|secret|authorization|cookie/i` become
+       `[REDACTED]`). Scrape failures MUST NOT fail the whole metrics response.
+     - **Per-process disk I/O.** Each process SHOULD carry `diskIo` collected from
+       the OS using the process `pid`: Linux `/proc/<pid>/io`; Darwin
+       `proc_pid_rusage` via in-process Bun FFI (`darwinProcessDiskIo.js`); Windows PowerShell
+       `IOReadBytes`/`IOWriteBytes`. Failures and unsupported platforms MUST use
+       honest envelopes (`supported: false` or `error`/`code`) — never invent zeros.
+     - **Response shape.** Success is `{ source: "pm2", collectedAt,
+       environment, ecosystem, summary, host, processes }`. `ecosystem` carries
+       `{ fileName, path, exists, expectedProcessCount, missingExpected }`;
+       `summary` carries process counts, online/stopped/errored counts, total CPU,
+       total memory, status counts and `asyncContextActiveSum`; each process carries
+       `{ name, pmId, pid, namespace, status, cpuPercent, memoryBytes, restartCount,
+       unstableRestarts, uptimeMs, startedAt, script, interpreter, watching,
+       customMetrics, asyncContext?, diskIo? }`.
+     - **Honest failure state.** Unsupported environments reuse Contract 1's
+       `400` invalid-environment envelope. PM2 connection/list/module failures
+       are `500` with `{ "error": "PM2 metrics collection failed.", "code",
+       "details" }`.
+
+   - **Contract 1e — `WS /api/runtime/pm2-ws` (Monitoring live stream + actions).**
+     Primary Monitoring-tab transport. Uses the `ws` package on the Service
+     Management HTTP server upgrade path; MUST NOT replace Contract 1c.
+     - **Subscribe.** Client sends `{ type: "subscribe", environment, intervalMs,
+       filters? }`. `intervalMs` is clamped to `[500, 2000]` (default `1000`).
+       Server pushes `{ type: "metrics", payload }` where `payload` matches
+       Contract 1c success shape.
+     - **Actions.** Client may send `{ type: "action", action, scope, name?,
+       pmId?, namespace? }` with `action` ∈ { `start`, `stop`, `restart` } and
+       `scope` ∈ { `process`, `namespace`, `ecosystem-missing` }. Server replies
+       `{ type: "action-result", ok, action, scope, name?, error? }` and MAY push
+       a fresh metrics frame after success.
+     - **Honesty.** Unauthorized/invalid payloads and PM2 failures return
+       explicit `error` / `action-result` frames; the stream MUST NOT invent
+       healthy process data when PM2 collection fails.
 
 4. **Contract 2 — `service-management.v1` storage schema (historically the
    localStorage storage schema).**
-   - The entire suite state (all four tabs) persists as ONE JSON payload under the
+   - The entire suite state (all persisted authoring tabs) persists as ONE JSON payload under the
      single pinned key `service-management.v1` — historically a localStorage key;
      since `JUM-484`'s landed one-way migration, a key in Cana's
      `designerDocuments` IndexedDB object store. The migration copied the exact
-     documents across without changing the wire format — with exactly these top-level
-     sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
-     `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
-     `serviceConfiguration`, `runtimeEnvironment`, `deployments`, `view`.
+     documents across without changing the persisted domain/interface/deploy wire
+     format. `JUM-736` adds the generated-code workspace as another additive
+     section. The current document has exactly these top-level
+   sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
+   `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
+   `serviceConfiguration`, `runtimeEnvironment`, `codeWorkspace`,
+   `monitoringHistory`, `deployments`, `view`.
    - `activeTab` ∈ { `domain-designer`, `interface-designer`, `service-config`,
-     `deploy-management` } — one per tab.
+     `deploy-management`, `monitoring`, `code-workspace` } — one per visible tab.
    - `serviceConfiguration`: `{ serviceKind, runMode, cloudProvider,
      staticAssetsPath, ports: { rest, websocket, grpc } }` with
      `serviceKind` ∈ { `rest-api`, `websocket-rest-api`, `grpc-rest-api` },
@@ -250,6 +320,21 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - `runtimeEnvironment`: `{ environment, fileName, values }` mirroring Contract 1
      (environment enum and the visible runtime keys — the editable and read-only
      tiers; never-exposed keys never enter this state).
+   - `codeWorkspace`: `{ activePath, files }`, where `files` is keyed by generated
+     path and each value is `{ path, state, baseContent, generatedContent, content,
+     updatedAt }`. `state` ∈ { `generated`, `edited`, `stale` }. Generated files
+     follow the current model automatically; user-edited files become `stale` when
+     the generator output changes underneath them until the user explicitly keeps
+     their edit or takes the regenerated version. This is a backward-compatible
+     additive section; older payloads normalize to `{ files: {}, activePath: "" }`.
+   - `monitoringHistory`: `{ version: 1, updatedAt, environment, samples, processes }`
+     — local Monitoring telemetry cache (not domain-package export). `samples` is a
+     ring (max 60) of aggregate ticks `{ t, hostCpu, hostMemUsedPercent, cpuTotal,
+     memTotal, onlineRatio, asyncActiveSum }`. `processes` maps
+     `${namespace}::${name}` to spark series `{ cpu, mem, restarts, asyncActive,
+     diskReadBytes, diskWriteBytes }` (each series max 60; max 40 process keys,
+     LRU). Older payloads normalize to an empty history. Charts use D3 vendored
+     under `vendor/d3` (no CDN).
    - `deployments`: array of deploy targets aligned to the Requirement 059
      Service Management metadata contract (`JUM-481`), each
      `{ name, region, runtime, serviceType, deployTarget, runtimeProtocol,
@@ -299,10 +384,11 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - **JSON** (`domain-designer.json`): the full-suite document (shape landed
      by `JUM-547`): `{ kind: "service-management-suite", version: "2.0.0",
      domains, relationships, interfaces, serviceConfiguration,
-     runtimeEnvironment, deployments, view }` — all four tabs, re-importable
-     shape. `interfaces` entries are `{ type, framework, entrypoint,
-     controller }`; `serviceConfiguration` and `deployments` carry the
-     Contract 2 shapes. The pre-`JUM-547` shape was `{ domains, relationships,
+     runtimeEnvironment, codeWorkspace, deployments, view }` — all persisted
+     authoring sections, re-importable shape. `interfaces` entries are
+     `{ type, framework, entrypoint, controller }`; `serviceConfiguration` and
+     `deployments` carry the Contract 2 shapes. The pre-`JUM-547` shape was
+     `{ domains, relationships,
      view }` with no `kind`/`version`; import MUST keep accepting it,
      defaulting the missing sections (backward compatibility). Import MUST
      refuse a document whose `version` major is newer than the importer's, a
@@ -502,6 +588,8 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   first entry names `kimi-code-primary-001` as owner of `apps/service-management`.
 - Contract sources of truth: `apps/service-management/server.js`,
   `apps/service-management/script.js`, `apps/service-management/index.html`,
+  `apps/service-management-api/src/ServiceManagementCatalogAPI.ts`,
+  `apps/service-management-api/spec/1.0.0.yml`,
   `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts`,
   `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`,
   `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`.
@@ -530,14 +618,40 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   (designer-side no-hardcoded-command rule).
 - Contract 3 amended by `JUM-547` (branch
   `kimi/feature/JUM-547-full-suite-export-import`): the JSON export became the
-  versioned full-suite document carrying all four tabs, and the
+  versioned full-suite document carrying all persisted authoring sections, and the
   `runtimeEnvironment` decision (selection crosses, values never leave the
   machine) is recorded above, in the JSON export bullet. Pinned by
   `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
   (full-suite deep-equal, backward/forward compatibility) and
   `apps/backend-template/test/unit/service-management/designerExporters.test.ts`
-  (document shape). The Contract 2 storage schema is unchanged — no versioned
-  key bump.
+  (document shape).
+- Contract 2 and 3 amended by `JUM-736`: the Code Workspace tab persists
+  generated-file overlays in `codeWorkspace`, suite JSON export/import carries that
+  section, and boilerplate bundle export applies edited/stale file content. Pinned
+  by `apps/backend-template/test/unit/service-management/designerState.test.ts`,
+  `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
+  and `apps/backend-template/test/unit/service-management/designerExporters.test.ts`.
+  This is additive and normalizes old payloads to an empty workspace, so there is
+  no versioned key bump.
+- Contract 1c amended by `JUM-736` and extended for host + async-context fields:
+  the Monitoring HTTP one-shot `GET /api/runtime/pm2-metrics` still collects via
+  the PM2 Node API, compares live processes with the selected ecosystem file, and
+  now also returns `host` CPU/memory/disk plus optional per-process
+  `asyncContext` scrapes. Pinned by
+  `apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts`
+  and `apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts`.
+- Contract 1e: Monitoring live UI uses `WS /api/runtime/pm2-ws` (500–2000 ms
+  interval, default 1000) with process/namespace/ecosystem-missing start/stop/
+  restart actions. Contract 1c remains the HTTP one-shot. Pinned by the same
+  integration + UI contract suites.
+- Contract 1d amended by `JUM-748`: the shared catalog moved out of
+  `apps/backend-template` into the Service Management platform API
+  `apps/service-management-api`. The designer's `catalogSyncClient` now fails closed
+  without an explicit `JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL`; PM2 starts a
+  dedicated catalog API process next to the designer; and
+  `apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts`
+  prevents catalog runtime, `/catalogs` OAS paths, catalog stores, and catalog role
+  scopes from drifting back into the generated-service template.
 - Contract 3 amended by `JUM-492` (branch
   `kimi/feature/JUM-492-domain-package-versioning`): the domain package became
   a versioned document (`package` block with name/version/dependencies), with

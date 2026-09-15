@@ -12,11 +12,6 @@ on:
   schedule:
     - cron: '17 3 * * *'
 
-permissions:
-  contents: read
-  pull-requests: read
-  security-events: write
-
 env:
   BUN_VERSION: 1.3.13
   JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
@@ -26,7 +21,10 @@ env:
 jobs:
   branch-gate:
     name: ${{ github.event_name == 'push' && github.ref_name != 'dev' && github.ref_name != 'main' && 'task-branch-push' || 'branch-gate' }}
-    runs-on: [self-hosted, jumentix]
+    permissions:
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-latest
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
       JUMENTIX_TASK_TEST_MODE: range
@@ -36,33 +34,15 @@ jobs:
       FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
       FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
     steps:
-      - name: Checkout repository without JavaScript Actions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git init
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            git -c credential.helper= fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          else
-            git -c credential.helper= fetch --no-tags --prune origin "${GITHUB_SHA}"
-          fi
-          git checkout --force FETCH_HEAD
-          git clean -fdx
-      - name: Use local Node.js 22
-        run: |
-          set -euo pipefail
-          export NVM_DIR="$HOME/.nvm"
-          if [ -s "$NVM_DIR/nvm.sh" ]; then
-            . "$NVM_DIR/nvm.sh"
-            nvm use 22
-          fi
-          node --version | grep -E '^v22\.'
-          echo "$(dirname "$(command -v node)")" >> "$GITHUB_PATH"
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
       - name: Fetch branch references
         run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - name: Install Bun
@@ -127,40 +107,24 @@ jobs:
 
   third-party-review:
     name: third-party-review
+    permissions:
+      contents: read
     if: >-
       github.event_name == 'pull_request' ||
       github.ref_name == 'main' ||
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, jumentix]
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository without JavaScript Actions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git init
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            git -c credential.helper= fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          else
-            git -c credential.helper= fetch --no-tags --prune origin "${GITHUB_SHA}"
-          fi
-          git checkout --force FETCH_HEAD
-          git clean -fdx
-      - name: Use local Node.js 22
-        run: |
-          set -euo pipefail
-          export NVM_DIR="$HOME/.nvm"
-          if [ -s "$NVM_DIR/nvm.sh" ]; then
-            . "$NVM_DIR/nvm.sh"
-            nvm use 22
-          fi
-          node --version | grep -E '^v22\.'
-          echo "$(dirname "$(command -v node)")" >> "$GITHUB_PATH"
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
       - name: Fetch branch references
         run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - name: Install pinned review tools
@@ -192,6 +156,11 @@ jobs:
 
   workspace-builds:
     name: workspace-builds
+    permissions:
+      contents: read
+    # Intentional: release/main/scheduled only (Req 087/113). Task PRs to `dev`
+    # and cheap `dev` pushes skip this job; `arch:check-workspace-boundaries`
+    # and `build:dev` still fail closed as branch-gate preflight (JUM-786).
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
@@ -200,35 +169,17 @@ jobs:
         github.head_ref == 'dev' ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       ))
-    runs-on: [self-hosted, jumentix]
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository without JavaScript Actions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git init
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            git -c credential.helper= fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          else
-            git -c credential.helper= fetch --no-tags --prune origin "${GITHUB_SHA}"
-          fi
-          git checkout --force FETCH_HEAD
-          git clean -fdx
-      - name: Use local Node.js 22
-        run: |
-          set -euo pipefail
-          export NVM_DIR="$HOME/.nvm"
-          if [ -s "$NVM_DIR/nvm.sh" ]; then
-            . "$NVM_DIR/nvm.sh"
-            nvm use 22
-          fi
-          node --version | grep -E '^v22\.'
-          echo "$(dirname "$(command -v node)")" >> "$GITHUB_PATH"
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
@@ -241,6 +192,8 @@ jobs:
 
   workspace-tests:
     name: workspace-tests
+    permissions:
+      contents: read
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
@@ -249,35 +202,17 @@ jobs:
         github.head_ref == 'dev' ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       ))
-    runs-on: [self-hosted, jumentix]
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository without JavaScript Actions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git init
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            git -c credential.helper= fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          else
-            git -c credential.helper= fetch --no-tags --prune origin "${GITHUB_SHA}"
-          fi
-          git checkout --force FETCH_HEAD
-          git clean -fdx
-      - name: Use local Node.js 22
-        run: |
-          set -euo pipefail
-          export NVM_DIR="$HOME/.nvm"
-          if [ -s "$NVM_DIR/nvm.sh" ]; then
-            . "$NVM_DIR/nvm.sh"
-            nvm use 22
-          fi
-          node --version | grep -E '^v22\.'
-          echo "$(dirname "$(command -v node)")" >> "$GITHUB_PATH"
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
@@ -293,6 +228,8 @@ jobs:
 
   integration:
     name: integration
+    permissions:
+      contents: read
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
@@ -301,37 +238,19 @@ jobs:
         github.head_ref == 'dev' ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       ))
-    runs-on: [self-hosted, jumentix]
+    runs-on: ubuntu-latest
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
     steps:
-      - name: Checkout repository without JavaScript Actions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git init
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            git -c credential.helper= fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          else
-            git -c credential.helper= fetch --no-tags --prune origin "${GITHUB_SHA}"
-          fi
-          git checkout --force FETCH_HEAD
-          git clean -fdx
-      - name: Use local Node.js 22
-        run: |
-          set -euo pipefail
-          export NVM_DIR="$HOME/.nvm"
-          if [ -s "$NVM_DIR/nvm.sh" ]; then
-            . "$NVM_DIR/nvm.sh"
-            nvm use 22
-          fi
-          node --version | grep -E '^v22\.'
-          echo "$(dirname "$(command -v node)")" >> "$GITHUB_PATH"
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
@@ -353,6 +272,8 @@ jobs:
 
   coverage:
     name: coverage
+    permissions:
+      contents: read
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
@@ -361,7 +282,7 @@ jobs:
         github.head_ref == 'dev' ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       ))
-    runs-on: [self-hosted, jumentix]
+    runs-on: ubuntu-latest
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
       AAA_REDIS_HOST: 127.0.0.1
@@ -372,35 +293,17 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
-      - name: Checkout repository without JavaScript Actions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git init
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            git -c credential.helper= fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          else
-            git -c credential.helper= fetch --no-tags --prune origin "${GITHUB_SHA}"
-          fi
-          git checkout --force FETCH_HEAD
-          git clean -fdx
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Fetch branch references for patch coverage
         run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
-      - name: Use local Node.js 22
-        run: |
-          set -euo pipefail
-          export NVM_DIR="$HOME/.nvm"
-          if [ -s "$NVM_DIR/nvm.sh" ]; then
-            . "$NVM_DIR/nvm.sh"
-            nvm use 22
-          fi
-          node --version | grep -E '^v22\.'
-          echo "$(dirname "$(command -v node)")" >> "$GITHUB_PATH"
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
@@ -434,6 +337,8 @@ jobs:
       - name: Union browser coverage engines
         run: |
           bun ci-cd/merge-browser-coverage.js --from-dir coverage
+      - name: Produce frontend coverage for the patch report
+        run: bun run frontend:test:coverage
       - name: Enforce patch coverage
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
@@ -442,29 +347,19 @@ jobs:
           else
             echo "Patch coverage is PR-only; project coverage already passed."
           fi
-      - name: Install verified Codecov CLI
-        run: |
-          set -euo pipefail
-          case "$(uname -s)" in
-            Darwin) codecov_os="macos" ;;
-            Linux) codecov_os="linux" ;;
-            *) echo "Unsupported Codecov CLI OS: $(uname -s)" >&2; exit 1 ;;
-          esac
-          curl -Os "https://cli.codecov.io/latest/${codecov_os}/codecov"
-          curl -Os "https://cli.codecov.io/latest/${codecov_os}/codecov.SHA256SUM"
-          shasum -a 256 -c codecov.SHA256SUM
-          chmod +x codecov
-      - name: Upload coverage to Codecov
-        run: |
-          test -n "${CODECOV_TOKEN:-}"
-          ./codecov --verbose upload-process --disable-search --fail-on-error \
-            -t "$CODECOV_TOKEN" \
-            -n "jumentix-${GITHUB_RUN_ID}" \
-            -F project \
-            -f coverage/lcov.info \
-            -f coverage/browser/lcov.info
+      - name: Upload coverage reports to Codecov
+        # codecov/codecov-action@v5, pinned to the peeled tag commit for Sonar/GitHub Actions supply-chain policy.
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/lcov.info,coverage/browser/lcov.info
+          flags: project
+          name: jumentix-${{ github.run_id }}
+          fail_ci_if_error: true
       - name: Install Sonar scanner
-        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
+        # SonarCloud Automatic Analysis owns the repository check by default.
+        # Enable this CI scanner only after disabling Automatic Analysis in SonarCloud.
+        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
         run: |
           set -euo pipefail
           case "$(uname -s)-$(uname -m)" in
@@ -481,7 +376,7 @@ jobs:
           unzip -qo /tmp/sonar-scanner.zip -d /tmp
           echo "${sonar_dir}/bin" >> "$GITHUB_PATH"
       - name: SonarQube Cloud Scan
-        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
         run: |
           SONAR_TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF_NAME:-}}"
           if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
@@ -491,7 +386,7 @@ jobs:
           test -n "${SONAR_TOKEN:-}"
           sonar-scanner -Dsonar.scm.disabled=true
       - name: Report Sonar findings
-        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
         run: bun ci-cd/report-sonar-findings.js
       - name: Stop local coverage services
         if: always()
@@ -502,6 +397,8 @@ jobs:
 
   website:
     name: website
+    permissions:
+      contents: read
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
@@ -510,38 +407,20 @@ jobs:
         github.head_ref == 'dev' ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       ))
-    runs-on: [self-hosted, jumentix]
+    runs-on: ubuntu-latest
     env:
       JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: '1'
       JUMENTIX_WEBSITE_CYPRESS_BROWSER: chrome
     steps:
-      - name: Checkout repository without JavaScript Actions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git init
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            git -c credential.helper= fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          else
-            git -c credential.helper= fetch --no-tags --prune origin "${GITHUB_SHA}"
-          fi
-          git checkout --force FETCH_HEAD
-          git clean -fdx
-      - name: Use local Node.js 22
-        run: |
-          set -euo pipefail
-          export NVM_DIR="$HOME/.nvm"
-          if [ -s "$NVM_DIR/nvm.sh" ]; then
-            . "$NVM_DIR/nvm.sh"
-            nvm use 22
-          fi
-          node --version | grep -E '^v22\.'
-          echo "$(dirname "$(command -v node)")" >> "$GITHUB_PATH"
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
@@ -563,6 +442,8 @@ jobs:
 
   database-matrix:
     name: database-matrix
+    permissions:
+      contents: read
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
@@ -571,38 +452,20 @@ jobs:
         github.head_ref == 'dev' ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       ))
-    runs-on: [self-hosted, jumentix]
+    runs-on: ubuntu-latest
     env:
       FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
       FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
     steps:
-      - name: Checkout repository without JavaScript Actions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git init
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            git -c credential.helper= fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          else
-            git -c credential.helper= fetch --no-tags --prune origin "${GITHUB_SHA}"
-          fi
-          git checkout --force FETCH_HEAD
-          git clean -fdx
-      - name: Use local Node.js 22
-        run: |
-          set -euo pipefail
-          export NVM_DIR="$HOME/.nvm"
-          if [ -s "$NVM_DIR/nvm.sh" ]; then
-            . "$NVM_DIR/nvm.sh"
-            nvm use 22
-          fi
-          node --version | grep -E '^v22\.'
-          echo "$(dirname "$(command -v node)")" >> "$GITHUB_PATH"
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
           curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"

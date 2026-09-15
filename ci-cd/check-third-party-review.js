@@ -96,9 +96,17 @@ function reviewJobFailures(configText) {
     problems.push('third-party GitHub Actions job contains a mutable action reference');
   }
 
-  const javascriptActionStep = steps.find((step) => step && typeof step === 'object' && step.uses);
-  if (javascriptActionStep) {
-    problems.push('third-party GitHub Actions job must avoid JavaScript Actions on the self-hosted runner');
+  const allowedBootstrapActions = new Set(['actions/checkout@v5', 'actions/setup-node@v5']);
+  const disallowedActionStep = steps.find((step) => (
+    step
+    && typeof step === 'object'
+    && step.uses
+    && !allowedBootstrapActions.has(String(step.uses))
+  ));
+  if (disallowedActionStep) {
+    problems.push(
+      `third-party GitHub Actions job may only use bootstrap actions: ${String(disallowedActionStep.uses)}`
+    );
   }
 
   const evidenceStep = steps.find((step) => step?.name === 'List review evidence');

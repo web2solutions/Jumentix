@@ -609,7 +609,7 @@ describe('run', () => {
     });
 
     expect(commands.calls[0].args).toStrictEqual([
-      'clone', '--branch', 'main', BOILERPLATE_REPOSITORY, path.join(workspace, 'svc')
+      'clone', '--branch', 'main', '--', BOILERPLATE_REPOSITORY, 'svc'
     ]);
   });
 
@@ -630,8 +630,8 @@ describe('run', () => {
     });
 
     expect(commands.calls[0].args).toStrictEqual([
-      'clone', '--branch', 'develop', BOILERPLATE_REPOSITORY,
-      path.join(workspace, 'from-prompts')
+      'clone', '--branch', 'develop', '--', BOILERPLATE_REPOSITORY,
+      'from-prompts'
     ]);
     expect(JSON.parse(
       fs.readFileSync(path.join(workspace, 'from-prompts', '.jumentix', 'service-profile.json'), 'utf8')
@@ -729,11 +729,11 @@ describe('repository policy', () => {
    * fact, not an implementation detail: change it and every service scaffolded
    * from this template comes from somewhere else.
    */
-  it('clones only from the canonical XpertMinds application repository by default', () => {
+  it('clones only from the canonical web2solutions application repository by default', () => {
     expect.hasAssertions();
 
-    expect(BOILERPLATE_REPOSITORY).toBe('https://github.com/XpertMinds/Jumentix.git');
-    expect(BOILERPLATE_REPOSITORY).not.toContain('web2solutions');
+    expect(BOILERPLATE_REPOSITORY).toBe('https://github.com/web2solutions/Jumentix.git');
+    expect(BOILERPLATE_REPOSITORY).not.toContain('XpertMinds/Jumentix');
   });
 });
 

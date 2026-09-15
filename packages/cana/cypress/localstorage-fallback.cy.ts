@@ -495,4 +495,49 @@ describe('cana localStorage fallback edge coverage', () => {
     backend.deletePersisted();
     expect(storage.getItem(`cana.ls.v1:${name}`)).to.equal(null);
   });
+
+  it('rejects an autoIncrement keyPath that walks the prototype chain', async () => {
+    // `writePath` assigns segment by segment; an unguarded `__proto__.polluted`
+    // keyPath would land the generated key on Object.prototype instead of the
+    // record. The guard fails the write closed.
+    const backend = openLocalStorageBackend({
+      name: uniqueName('ls-proto'),
+      schema: {
+        version: 1,
+        stores: [{ name: 'entries', keyPath: '__proto__.polluted', autoIncrement: true }]
+      },
+      storage: memoryStorage(),
+      originId: 'o',
+      nextCursor: () => 1
+    });
+    const failure = await rejection(backend.transaction(
+      'readwrite',
+      ['entries'],
+      async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
+      'c:proto'
+    ));
+    expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
+    expect((Object.prototype as Record<string, unknown>).polluted).to.equal(undefined);
+  });
+
+  it('refuses a store whose name is a prototype-chain key', async () => {
+    // `bag()` resolves `snapshot.stores[name]`; with `name === '__proto__'`
+    // that read is Object.prototype itself and every record write would land
+    // on the global prototype.
+    const backend = openLocalStorageBackend({
+      name: uniqueName('ls-proto-store'),
+      schema: { version: 1, stores: [{ name: '__proto__' }] },
+      storage: memoryStorage(),
+      originId: 'o',
+      nextCursor: () => 1
+    });
+    const failure = await rejection(backend.transaction(
+      'readwrite',
+      ['__proto__'],
+      async (scope) => scope.table<Record<string, unknown>, string>('__proto__').add({ name: 'x' }, 'k1'),
+      'c:proto-store'
+    ));
+    expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
+    expect((Object.prototype as Record<string, unknown>)['"k1"']).to.equal(undefined);
+  });
 });

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { CodeSample } from '../design-system';
+import { HexagonalArchitectureMap } from '../architecture/HexagonalArchitectureMap';
 import {
   IconApi,
   IconArrowRight,
@@ -66,7 +67,7 @@ const localize = (href: string, locale: CommercialLocale) =>
 
 const t = <T,>(locale: CommercialLocale, en: T, pt: T) => (locale === 'pt-BR' ? pt : en);
 
-const repositoryUrl = 'https://github.com/XpertMinds/Jumentix';
+const repositoryUrl = 'https://github.com/web2solutions/Jumentix';
 const playgroundRuntimeOrder: readonly DocsRuntimeId[] = [
   'jumentix-browser-lab',
   'cana',
@@ -3427,17 +3428,22 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
       <PageHero locale={locale} eyebrow={t(locale, 'Architecture', 'Arquitetura')} title={t(locale, 'Domain ownership at the center, technology at the edges', 'Domínio no centro, tecnologia nas bordas')} description={t(locale, 'DDD, Hexagonal Architecture, Event-Driven Design, SOLID, and feature-driven modules are operational constraints, not presentation labels.', 'DDD, Arquitetura Hexagonal, Event-Driven Design, SOLID e módulos por feature são restrições operacionais, não apenas rótulos.')} />
       <Band>
         <div className={classes.sectionStack}>
+          <HexagonalArchitectureMap locale={locale} />
+        </div>
+      </Band>
+      <Band alternate>
+        <div className={classes.sectionStack}>
           <SectionHeading
             eyebrow={t(locale, 'Request path', 'Caminho do request')}
             title={t(locale, 'The same path works for HTTP, realtime, functions, and workers', 'O mesmo caminho funciona para HTTP, realtime, functions e workers')}
             description={t(
               locale,
-              'Every interface starts outside the domain and moves inward through contracts. Every infrastructure call moves outward through ports.',
-              'Toda interface começa fora do domínio e entra por contratos. Toda chamada de infraestrutura sai por ports.',
+              'Every interface starts outside the domain and moves inward through contracts. Every infrastructure call moves outward through ports. Web and desktop GUIs sit in interface/GUI on the inbound side.',
+              'Toda interface começa fora do domínio e entra por contratos. Toda chamada de infraestrutura sai por ports. GUIs web e desktop ficam em interface/GUI no lado inbound.',
             )}
           />
           <ArchitectureFlow steps={[
-            { title: t(locale, 'External request', 'Request externo'), description: t(locale, 'HTTP, WebSocket, gRPC, message, function.', 'HTTP, WebSocket, gRPC, mensagem, function.') },
+            { title: t(locale, 'External request', 'Request externo'), description: t(locale, 'GUI, HTTP, WebSocket, gRPC, message, function.', 'GUI, HTTP, WebSocket, gRPC, mensagem, function.') },
             { title: t(locale, 'Input adapter', 'Adaptador de entrada'), description: t(locale, 'Validates contract and maps transport.', 'Valida o contrato e mapeia o transporte.') },
             { title: t(locale, 'Application core', 'Núcleo da aplicação'), description: t(locale, 'Controller calls a use case; domain owns rules.', 'Controller chama caso de uso; domínio possui regras.') },
             { title: t(locale, 'Output port', 'Port de saída'), description: t(locale, 'Repository, mediator, cache, or provider.', 'Repository, mediator, cache ou provider.') },
@@ -3465,7 +3471,7 @@ function Architecture({ locale }: { locale: CommercialLocale }) {
           <CommercialMatrix
             headers={t(locale, ['Layer', 'Owns', 'Can depend on', 'Must not contain'], ['Camada', 'É dona de', 'Pode depender de', 'Não deve conter'])}
             rows={[
-              { focus: t(locale, 'Interface adapter', 'Adaptador de interface'), when: t(locale, 'HTTP/WebSocket/gRPC/function transport, request parsing, protocol responses.', 'Transporte HTTP/WebSocket/gRPC/function, parsing de request, responses de protocolo.'), implementation: t(locale, 'OpenAPI/AsyncAPI contracts, controller contracts, runtime utilities.', 'Contratos OpenAPI/AsyncAPI, contratos de controller, utilitários de runtime.'), outcome: t(locale, 'Business rules, database queries, tenant policy decisions.', 'Regras de negócio, queries de banco, decisões de política tenant.') },
+              { focus: t(locale, 'Interface adapter', 'Adaptador de interface'), when: t(locale, 'GUI clients (interface/GUI), HTTP/WebSocket/gRPC/function transport, request parsing, protocol responses.', 'Clientes GUI (interface/GUI), transporte HTTP/WebSocket/gRPC/function, parsing de request, responses de protocolo.'), implementation: t(locale, 'OpenAPI/AsyncAPI contracts, controller contracts, runtime utilities.', 'Contratos OpenAPI/AsyncAPI, contratos de controller, utilitários de runtime.'), outcome: t(locale, 'Business rules, database queries, tenant policy decisions.', 'Regras de negócio, queries de banco, decisões de política tenant.') },
               { focus: t(locale, 'Controller', 'Controller'), when: t(locale, 'Request-to-use-case mapping, input shape, response shape, error exposure.', 'Mapeamento request-para-caso-de-uso, formato de input, formato de output, exposição de erro.'), implementation: t(locale, 'Application use-cases and validation contracts.', 'Casos de uso de aplicação e contratos de validação.'), outcome: t(locale, 'Framework request objects or concrete repository clients.', 'Objetos request de framework ou clientes concretos de repository.') },
               { focus: t(locale, 'Application use-case', 'Caso de uso de aplicação'), when: t(locale, 'Business workflow, authorization calls, orchestration, transaction boundary decisions.', 'Workflow de negócio, chamadas de autorização, orquestração, decisões de fronteira transacional.'), implementation: t(locale, 'Domain objects, domain services, repository ports, mediator ports.', 'Objetos de domínio, serviços de domínio, ports de repository, ports de mediator.'), outcome: t(locale, 'Express/Fastify/Sequelize/Mongo/BullMQ imports.', 'Imports de Express/Fastify/Sequelize/Mongo/BullMQ.') },
               { focus: t(locale, 'Domain', 'Domínio'), when: t(locale, 'Entities, value objects, invariants, tenant/RBAC policies, domain events.', 'Entidades, value objects, invariantes, políticas tenant/RBAC, eventos de domínio.'), implementation: t(locale, 'Pure types, policies, and business rules inside the bounded context.', 'Tipos puros, políticas e regras de negócio dentro do contexto delimitado.'), outcome: t(locale, 'I/O, environment variables, logging, HTTP status codes.', 'I/O, variáveis de ambiente, logging, status code HTTP.') },

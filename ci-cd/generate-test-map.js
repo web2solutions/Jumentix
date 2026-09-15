@@ -21,6 +21,18 @@ function walk(dir, pred, out = []) {
 }
 
 function classifyUnit(file) {
+  // JUM-776: component suites (test/component) mount the shipped .vue files
+  // through @vue/test-utils under bun:test; same layer and script as unit.
+  if (file.startsWith('apps/frontend/test/unit/') || file.startsWith('apps/frontend/test/component/')) {
+    return { layer: 'frontend', kind: 'non-hexagonal' };
+  }
+  if (file.startsWith('apps/service-management-api/test/unit/')) {
+    return { layer: 'service-management/catalog-api', kind: 'non-hexagonal' };
+  }
+  if (file.startsWith('apps/service-management/test/unit/')) {
+    return { layer: 'service-management/designer', kind: 'non-hexagonal' };
+  }
+
   const rel = file.replace(/^apps\/backend-template\/test\/unit\//, '');
   if (rel.startsWith('modules/Users/domain/')) return { layer: 'domain', kind: 'hexagonal' };
   if (
@@ -46,13 +58,6 @@ function classifyUnit(file) {
   }
   if (rel.startsWith('infra/') || rel.startsWith('modules/Users/adapters/out/')) {
     return { layer: 'adapters/out+infra', kind: 'hexagonal' };
-  }
-  // Service Management is a declared non-hexagonal kind (JUM-552), not tooling:
-  // lumping it into `tooling` meant a ci-cd change ran the SM designer suites and
-  // an SM change did not. Its unit suites cover the designer SPA (state, store,
-  // validation, exporters), so they belong to the designer sub-layer (JUM-472).
-  if (rel.startsWith('service-management/')) {
-    return { layer: 'service-management/designer', kind: 'non-hexagonal' };
   }
   if (
     rel.startsWith('ci-cd/')
@@ -87,8 +92,9 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'multiTabSync.browser.integration.test.ts': 'service-management/designer',
   'deployTargetLifecycle.browser.integration.test.ts': 'service-management/designer',
   'offlinePersistenceMatrix.browser.integration.test.ts': 'service-management/designer',
-  'catalogSync.integration.test.ts': 'service-management/designer',
   'interfaceAdapters.browser.integration.test.ts': 'service-management/designer',
+  'statusOutcome.browser.integration.test.ts': 'service-management/designer',
+  'accessibleNames.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',
   'pm2Ecosystem.integration.test.ts': 'service-management/server',
@@ -96,10 +102,31 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'staticServing.integration.test.ts': 'service-management/server'
 };
 
+const SERVICE_MANAGEMENT_API_INTEGRATION_AREA = {
+  'catalogSync.integration.test.ts': 'service-management/catalog-api',
+  'catalogs.http.integration.test.ts': 'service-management/catalog-api'
+};
+
 function classifyIntegration(file) {
   const parts = file.split('/');
   const idx = parts.indexOf('integration');
   const bucket = parts[idx + 1] || 'unknown';
+  if (file.startsWith('apps/service-management-api/test/integration/')) {
+    const area = SERVICE_MANAGEMENT_API_INTEGRATION_AREA[parts[parts.length - 1]];
+    if (!area) {
+      throw new Error(
+        `Service Management API integration suite with no recorded area: ${file}\n`
+          + '  Name it in SERVICE_MANAGEMENT_API_INTEGRATION_AREA (ci-cd/generate-test-map.js)'
+          + '  — service-management/catalog-api — and regenerate.'
+      );
+    }
+    return {
+      layer: area,
+      kind: 'non-hexagonal',
+      adapter: 'service-management-api',
+      script: 'test:integration:service-management'
+    };
+  }
   // Service Management is a declared non-hexagonal kind with its own internal
   // structure (JUM-552/JUM-472): server suites and designer-SPA suites live in
   // separate sub-layers so a `server.js` change and a `script.js` change do not
@@ -306,14 +333,25 @@ function loadPackageSuiteClassification(root, previous = readPreviousManifest(ro
 }
 
 function buildManifest(root = process.cwd()) {
-  const unitTests = walk(
+  const unitTests = [
     path.join(root, 'apps/backend-template/test/unit'),
+    path.join(root, 'apps/service-management/test/unit'),
+    path.join(root, 'apps/service-management-api/test/unit'),
+    // JUM-760: the frontend workspace runs bun:test suites like the backend apps.
+    path.join(root, 'apps/frontend/test/unit'),
+    // JUM-776: component suites live beside them.
+    path.join(root, 'apps/frontend/test/component')
+  ].flatMap((unitRoot) => walk(
+    unitRoot,
     (p) => /\.test\.ts$/.test(p)
-  ).map((p) => path.relative(root, p).replace(/\\/g, '/'));
-  const integrationTests = walk(
+  )).map((p) => path.relative(root, p).replace(/\\/g, '/'));
+  const integrationTests = [
     path.join(root, 'apps/backend-template/test/integration'),
+    path.join(root, 'apps/service-management-api/test/integration')
+  ].flatMap((integrationRoot) => walk(
+    integrationRoot,
     (p) => /\.test\.ts$/.test(p)
-  ).map((p) => path.relative(root, p).replace(/\\/g, '/'));
+  )).map((p) => path.relative(root, p).replace(/\\/g, '/'));
   const smokeTests = walk(
     path.join(root, 'apps/backend-template/test/smoke'),
     (p) => /\.test\.ts$/.test(p)
@@ -411,8 +449,17 @@ function buildManifest(root = process.cwd()) {
       tier: 'gate',
       kind: 'non-hexagonal'
     },
+    'service-management/catalog-api': {
+      dependsOn: ['contracts'],
+      sourceGlobs: [
+        'apps/service-management-api/**'
+      ],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
     'service-management/designer': {
-      dependsOn: ['service-management/server'],
+      dependsOn: ['service-management/server', 'service-management/catalog-api'],
       sourceGlobs: [
         'apps/service-management/script.js',
         'apps/service-management/src/**',
@@ -458,6 +505,20 @@ function buildManifest(root = process.cwd()) {
       tier: 'gate',
       kind: 'non-hexagonal'
     },
+    // JUM-760: the frontend workspace, like the website, is outward-facing
+    // (consumes published packages and the OAS document, never backend source
+    // — requirement 136), so nothing in the backend *code* can change what it
+    // does. Its *contract* can (JUM-776): the bundled OAS is baked from
+    // `spec/1.0.0.yml` and every request goes through the REST SDK, so a change
+    // to either must select the frontend suites — hence the contracts edge and
+    // the two extra source globs.
+    frontend: {
+      dependsOn: ['contracts'],
+      sourceGlobs: ['apps/frontend/**', 'packages/sdk-rest-client/src/**', 'spec/1.0.0.yml'],
+      runner: 'bun',
+      tier: 'gate',
+      kind: 'non-hexagonal'
+    },
     'browser-harness': {
       dependsOn: [],
       //
@@ -481,7 +542,8 @@ function buildManifest(root = process.cwd()) {
     tooling: {
       dependsOn: [],
       // Pipeline definitions and root tooling configuration belong to this layer.
-      // Without them a change touching only `.github/workflows/ci.yml` or
+      // Without them a change touching only `.github/workflows/ci.yml`,
+      // `.circleci/config.yml` or
       // `test-map.json` maps to no layer and no suite, and the task gate refuses
       // it as an `unsupported-change-set` — correct for a file nobody can
       // classify, wrong for the configuration that drives the gates themselves.
@@ -490,6 +552,7 @@ function buildManifest(root = process.cwd()) {
         'tooling/**',
         'apps/jumentix-website/**',
         '.github/**',
+        '.circleci/**',
         'test-map.json',
         'jest.config.js',
         'sonar-project.properties',
@@ -515,6 +578,17 @@ function buildManifest(root = process.cwd()) {
       kind,
       type: 'unit',
       runner: 'bun',
+      // JUM-760: frontend suites import 'bun:test' and resolve '@/' through the
+      // app's own tsconfig — a jest batch cannot run them, exactly the website
+      // situation (JUM-680). A script pin runs them through the app script.
+      ...(layer === 'frontend'
+        ? {
+          script: 'frontend:test:unit',
+          reason: file.includes('/test/component/')
+            ? 'bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.'
+            : 'bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.'
+        }
+        : {}),
       ...(ciRunner ? { ciRunner } : {}),
       ...(previous.bunCompat ? { bunCompat: previous.bunCompat } : {}),
       tier: 'gate',
@@ -688,6 +762,7 @@ function buildManifest(root = process.cwd()) {
       'apps/backend-template/test',
       'apps/service-management',
       'apps/jumentix-website',
+      'apps/frontend',
       'packages',
       'ci-cd',
       'tooling'

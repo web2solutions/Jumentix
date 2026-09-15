@@ -3,6 +3,14 @@ export interface IPagingRequest {
   perPage?: number;
   page?: number;
   size?: number;
+  /** Ordered sort fields (JUM-777); see `parseListSort` for the wire form. */
+  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  /** Free-text search term applied over `searchFields` (JUM-777). */
+  q?: string;
+  /** Fields `q` is matched against; declared by the operation's `x-list-capabilities`. */
+  searchFields?: string[];
+  /** When true, list/get include tombstones (`deletedAt` set). Default false. */
+  includeDeleted?: boolean;
 }
 
 export interface IPagingResponse<T> {
@@ -147,7 +155,7 @@ export type TStoreAggregationStage = Record<string, unknown>;
 
 export interface IStore<T> {
   delete(id: string): Promise<boolean>;
-  getOneById(id: string): Promise<T>;
+  getOneById(id: string, options?: { includeDeleted?: boolean }): Promise<T>;
   getByName?(name: string): Promise<T>;
   getByRelation?(field: keyof T, referenceId: string): Promise<T[]>;
   create(key: string, value: T): Promise<T>;
@@ -168,6 +176,8 @@ export interface IStore<T> {
     data: Partial<T>,
     options?: IStoreMutationOptions
   ): Promise<number>;
+  /** Physical row removal. Default `delete` stays a tombstone when soft-delete is on. */
+  hardDelete?(id: string): Promise<boolean>;
   deleteOne?(id: string, options?: IStoreDeleteOptions): Promise<boolean>;
   deleteMany?(query: IStoreQuery<T>, options?: IStoreDeleteOptions): Promise<number>;
   upsertOne?(query: IStoreQuery<T>, data: Partial<T>, options?: IStoreMutationOptions): Promise<T>;

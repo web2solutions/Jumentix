@@ -311,11 +311,11 @@ no nível do modelo vazia (verificado por `designerRoundTrip.test.ts`).
 Testes de fumaça de gerenciamento de serviços:
 
 - `apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts`
-- `apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts`
+- `apps/service-management/test/unit/mvp.roadmap.features.test.ts`
 
 Correr:
 
 ```bash
 bun run test:integration:service-management
-NODE_ENV=dev bun x jest apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts --runInBand
+NODE_ENV=dev bun x jest apps/service-management/test/unit/mvp.roadmap.features.test.ts --runInBand
 ```

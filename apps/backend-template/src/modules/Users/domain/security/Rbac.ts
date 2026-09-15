@@ -26,6 +26,10 @@ const LEGACY_ROLE_SCOPES = [
 
 export const ROLE_SCOPE_MATRIX: Record<EUserRole, string[]> = {
   [EUserRole.superadmin]: ['*'],
+  // Only superadmins manage multiple organizations (JUM-772): admin has no
+  // create_organization/delete_organization. Keep in sync with the OAS
+  // `x-rbac` extension (spec/1.0.0.yml) — the frontend reads the matrix from
+  // the bundled spec, never from backend code (requirement 136).
   [EUserRole.admin]: [
     'access_allow',
     'read_user',
@@ -33,19 +37,11 @@ export const ROLE_SCOPE_MATRIX: Record<EUserRole, string[]> = {
     'update_user',
     'delete_user',
     'read_organization',
-    'create_organization',
-    'update_organization',
-    'read_catalog',
-    'create_catalog',
-    'update_catalog',
-    'delete_catalog'
+    'update_organization'
   ],
   [EUserRole.user]: [
     'access_allow',
-    'read_user',
-    'read_catalog',
-    'create_catalog',
-    'update_catalog'
+    'read_user'
   ]
 };
 

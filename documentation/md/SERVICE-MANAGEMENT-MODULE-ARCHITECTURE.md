@@ -12,9 +12,9 @@ It documents two things, exactly as the code behaves today:
 
 Every behavioural claim below is pinned by the source modules and by the unit
 suites
-[`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts)
+[`designerStore.test.ts`](../../apps/service-management/test/unit/designerStore.test.ts)
 and
-[`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts).
+[`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts).
 
 ## Audience
 
@@ -122,20 +122,20 @@ below), then a single `await loadState()` in `script.js`.
 
 ### The state core (`src/state/designerState.js`)
 
-- **State object.** One object holding the twelve persisted sections of the
+- **State object.** One object holding the fourteen persisted sections of the
   `service-management.v1` document (schema pinned by
   [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
   — link, not copy).
 - **`normalizeStatePayload(parsed)`** — normalises a decoded payload into the
-  model slice restored on load. Only `domains`, `relationships`, the three
-  selections, `idCounter` and `view` come back; the other pinned sections are
+  model slice restored on load. `domains`, `relationships`, the three
+  selections, `idCounter`, `codeWorkspace` and `view` come back; the other pinned sections are
   intentionally not restored at load time. Normalisation drops relationships
   pointing at unknown entities and clamps the view (zoom to 0.5–2, edge style
   and severity to their enums).
 - **`snapshotState()`/`applySnapshot()`** — deep-copy the persisted sections
   out of `state` and restore them back, recomputing `idCounter` from the
   highest numeric id suffix.
-- **`saveState()`** — builds the twelve-section payload and calls
+- **`saveState()`** — builds the fourteen-section payload and calls
   `store.save(payload)` without awaiting (fire-and-forget, preserving
   pre-extraction behaviour; see the adapter section for why this is safe
   today and why callers must not depend on it).
@@ -147,13 +147,13 @@ below), then a single `await loadState()` in `script.js`.
 
 ### The `service-management.v1` storage schema
 
-The entire suite state (all four tabs) persists as ONE JSON payload under the
+The entire suite state (all five tabs) persists as ONE JSON payload under the
 single pinned key `service-management.v1`; the schema-diff baseline lives under
 `service-management.schema-baseline.v1`. Since JUM-484's landed migration, both
 documents live in Cana — one IndexedDB object store (`designerDocuments`,
 database `service-management`, schema version 1) — as byte copies of the same
 JSON documents the localStorage adapter used to write. The localStorage era is
-historical; the pinned wire format did NOT change. The schema — the twelve
+historical; the pinned wire format now includes `codeWorkspace`. The schema — the fourteen
 top-level sections, their enums, and the baseline shape — is pinned by
 [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 and is **not duplicated here** so the two cannot drift. Any structural change
@@ -303,7 +303,7 @@ Sources:
 (adapter) and
 [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 (factory); unit suite
-[`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts).
+[`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts).
 
 `CanaDesignerStore` implements all seven port methods over the Cana client,
 and the swap required **no designer-logic change** — the port abstraction
@@ -456,7 +456,7 @@ assumed successful.
 - State core: [`packages/designer-core/src/state/designerState.js`](../../packages/designer-core/src/state/designerState.js)
 - Multi-tab sync engine: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js)
 - Entry module: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Unit suites: [`designerStore.test.ts`](../../apps/backend-template/test/unit/service-management/designerStore.test.ts), [`designerState.test.ts`](../../apps/backend-template/test/unit/service-management/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)
+- Unit suites: [`designerStore.test.ts`](../../apps/service-management/test/unit/designerStore.test.ts), [`designerState.test.ts`](../../apps/service-management/test/unit/designerState.test.ts), [`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts)
 - Storage schema: [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md)
 - Component overview: [Service Management Application](./SERVICE-MANAGEMENT-APPLICATION.md)
 - Linear: [JUM-468](https://linear.app/jumentix/issue/JUM-468/refactor-extract-statepersistence-core-as-es-module-behind) (the port), [JUM-469](https://linear.app/jumentix/issue/JUM-469/refactor-modularize-designer-canvas-validation-exporters-importers) (the module graph), [JUM-483](https://linear.app/jumentix/issue/JUM-483/feature-canadesignerstore-idesignerstore-adapter-over-the-cana-client) (CanaDesignerStore), [JUM-484](https://linear.app/jumentix/issue/JUM-484) (the landed one-way migration that retired the transitional adapter), [JUM-485](https://linear.app/jumentix/issue/JUM-485/feature-write-event-integration-multi-tab-sync-via-cana-message) (multi-tab write-event sync), [JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry) (package publish), Cana [JUM-560](https://linear.app/jumentix/issue/JUM-560/feature-storage-quota-persistence-and-eviction-policy) (quota/eviction policy)

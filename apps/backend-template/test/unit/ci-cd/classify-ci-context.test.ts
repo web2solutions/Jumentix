@@ -39,7 +39,7 @@ describe('classify-ci-context', () => {
 
     const evidence = classify({
       CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
-      CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/200',
+      CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/200',
       CIRCLE_PR_BASE_BRANCH: 'dev'
     });
 
@@ -61,7 +61,7 @@ describe('classify-ci-context', () => {
 
     const evidence = classify({
       CIRCLE_BRANCH: 'dev',
-      CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/201',
+      CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/201',
       CIRCLE_PR_BASE_BRANCH: 'main'
     });
 
@@ -131,7 +131,7 @@ describe('classify-ci-context', () => {
 
     expect(() => classify({
       CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
-      CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/202'
+      CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/202'
     })).toThrow('base branch');
   });
 
@@ -140,7 +140,7 @@ describe('classify-ci-context', () => {
 
     expect(() => classify({
       CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
-      CIRCLE_PULL_REQUEST: 'https://github.com/XpertMinds/Jumentix/pull/203',
+      CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/203',
       CIRCLE_PR_BASE_BRANCH: 'main'
     })).toThrow('only dev may open release pull requests to main');
   });

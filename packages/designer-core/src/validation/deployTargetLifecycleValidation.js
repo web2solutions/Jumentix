@@ -46,8 +46,13 @@ import {
  * `node20`, `python3.12`, `bun1.3.13`). Free-text values like `latest` —
  * or a bare version with no runtime name — tell the operator nothing about
  * what the target runs and are rejected.
+ *
+ * The name body excludes `.` on purpose: dots appear only as version-segment
+ * separators, which keeps every dotted position attributable to exactly one
+ * branch of the pattern — overlapping repetitions here are a polynomial
+ * backtracking (ReDoS) surface.
  */
-export const RUNTIME_VERSION_PATTERN = /^[A-Za-z][A-Za-z0-9+._-]*\d(\.[A-Za-z0-9+_-]+)*$/;
+export const RUNTIME_VERSION_PATTERN = /^[A-Za-z][A-Za-z0-9+_-]*\d(\.[A-Za-z0-9+_-]+)*$/;
 
 const RUNTIME_EXAMPLE = 'nodejs22.x';
 

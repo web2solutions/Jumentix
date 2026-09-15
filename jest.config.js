@@ -56,6 +56,7 @@ module.exports = {
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
+    '^@service-management-api/(.*)$': '<rootDir>/apps/service-management-api/src/$1',
     '@src/(.*)$': '<rootDir>/apps/backend-template/src/$1',
     '@seed/(.*)$': '<rootDir>/apps/backend-template/seed/$1',
     '@test/(.*)$': '<rootDir>/apps/backend-template/test/$1',
@@ -92,11 +93,18 @@ module.exports = {
     '<rootDir>/packages/[^/]+/test/',
     // Test fixtures and helpers are instruments, not product coverage subjects.
     '<rootDir>/apps/backend-template/test/',
+    '<rootDir>/apps/service-management/test/',
+    '<rootDir>/apps/service-management-api/test/',
+    // apps/frontend/template/ is the vendored CoreUI demo seed, not a product
+    // coverage subject: apps/frontend/AGENTS.md forbids editing it, and the
+    // frontend's own coverage run (`coverage/frontend`) does not measure it.
+    // The patch-coverage checker reads this same list (JUM-821).
+    '<rootDir>/apps/frontend/template/',
     // ci-cd is excluded from coverage wholesale, with named opt-ins. Sonar reads
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.
     // Keep this list and the suites under test/unit/ci-cd/ in step.
-    '<rootDir>/ci-cd/(?!(lib/mapped-suites|check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|check-package-suites|run-full-test-matrix|run-suite)\\.js$)',
+    '<rootDir>/ci-cd/(?!(lib/mapped-suites|check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|check-package-suites|merge-coverage-reports|run-full-test-matrix|run-suite)\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'
   ],

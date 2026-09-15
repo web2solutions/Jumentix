@@ -43,12 +43,12 @@ describe('check-canonical-integrations', () => {
 
     const sonarPath = integrationPath.join(fixtureRoot, 'sonar-project.properties');
     const sonar = integrationFs.readFileSync(sonarPath, 'utf8')
-      .replace('sonar.projectKey=Jumentix', '');
+      .replace('sonar.projectKey=web2solutions_Jumentix', '');
     integrationFs.writeFileSync(sonarPath, sonar);
 
     expect(validateCanonicalIntegrations(fixtureRoot)).toContain(
       '[integrations] sonar-project.properties is missing marker: '
-      + 'sonar.projectKey=Jumentix'
+      + 'sonar.projectKey=web2solutions_Jumentix'
     );
     expect(run(fixtureRoot)).toBe(1);
   });

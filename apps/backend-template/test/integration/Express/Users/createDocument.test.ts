@@ -143,7 +143,7 @@ describe('express -> User createDocument suite', () => {
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser1);
-    expect(response.body.message).toBe('Bad Request - countryIssue can not be empty');
+    expect(response.body.message).toContain('OpenAPI validation failed at "payload.countryIssue"');
     expect(response.statusCode).toBe(400);
   });
 

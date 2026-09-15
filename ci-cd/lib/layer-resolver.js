@@ -116,10 +116,16 @@ function collectSourceFiles(dir, root, out) {
   }
 }
 
+/** Docs under a source tree must not select that layer (GUI README placeholders). */
+const SOURCE_GLOB_SKIP = /\.(md|mdx|txt)$/i;
+
 function layersForFile(manifest, filePath) {
   const matched = new Set();
   for (const [layer, meta] of Object.entries(manifest.layers || {})) {
     for (const glob of meta.sourceGlobs || []) {
+      // `src/interface/**` must not treat README.md as an interface/runtime change
+      // (Requirements 087/088 — task gates stay change-focused).
+      if (SOURCE_GLOB_SKIP.test(filePath)) continue;
       if (matchGlob(filePath, glob)) matched.add(layer);
     }
   }
@@ -133,7 +139,11 @@ function layersForFile(manifest, filePath) {
   const exactSuite = (manifest.suites || []).find((suite) => suite.path === filePath);
   if (exactSuite) matched.add(exactSuite.layer);
 
-  if (filePath.startsWith('ci-cd/') || filePath.startsWith('tooling/') || filePath.startsWith('apps/jumentix-website/')) {
+  if (filePath.startsWith('ci-cd/')
+    || filePath.startsWith('tooling/')
+    || filePath.startsWith('apps/jumentix-website/')
+    || filePath.startsWith('.github/')
+    || filePath.startsWith('.circleci/')) {
     matched.add('tooling');
   }
   // Root toolchain pins (lockfile, package manifests, version pins) gate the
