@@ -143,6 +143,21 @@ describe('designer exporters (JUM-469)', () => {
       runtimeEnvironment: { environment: 'staging', fileName: '.env.staging' },
       codeWorkspace: state.codeWorkspace,
       deployments: state.deployments,
+      architecture: {
+        services: [{
+          id: 'core',
+          name: 'Core',
+          kind: 'core',
+          url: 'http://localhost:3000/api/1.0.0',
+          domains: ['domain-1'],
+          deployTargetId: '',
+          x: 80,
+          y: 80,
+          width: 280,
+          height: 200
+        }],
+        links: []
+      },
       view: state.view
     });
     expect(Object.keys(document)).toStrictEqual([
@@ -155,6 +170,7 @@ describe('designer exporters (JUM-469)', () => {
       'runtimeEnvironment',
       'codeWorkspace',
       'deployments',
+      'architecture',
       'view'
     ]);
     // No runtime environment value — and therefore no secret — leaves in the
@@ -394,7 +410,10 @@ describe('designer exporters (JUM-469)', () => {
       description: 'REST API designed with the Jumentix Domain Designer',
       version: '1.0.0'
     });
-    expect(document.servers).toStrictEqual([{ url: 'http://localhost:3000/api/1.0.0' }]);
+    expect(document.servers).toStrictEqual([{
+      url: 'http://localhost:3000/api/1.0.0',
+      'x-service-id': 'core'
+    }]);
 
     expect(document.components.schemas.Billing_Invoice).toStrictEqual({
       type: 'object',
@@ -403,6 +422,7 @@ describe('designer exporters (JUM-469)', () => {
       required: ['id', 'total'],
       'x-domain': 'Billing',
       'x-entity': 'Invoice',
+      'x-service': 'core',
       'x-message-contracts': [{
         id: 'contract-1',
         name: 'issued',
@@ -437,20 +457,23 @@ describe('designer exporters (JUM-469)', () => {
       description: 'Port input object for Invoice creation endpoint.',
       properties: EXPECTED_INVOICE_PROPERTIES,
       required: ['total'],
-      'x-port-object': true
+      'x-port-object': true,
+      'x-service': 'core'
     });
     expect(document.components.schemas.RequestUpdateBilling_Invoice).toStrictEqual({
       type: 'object',
       description: 'Port input object for Invoice update endpoint.',
       properties: EXPECTED_INVOICE_PROPERTIES,
       required: ['id'],
-      'x-port-object': true
+      'x-port-object': true,
+      'x-service': 'core'
     });
     expect(document.components.schemas.Billing_InvoiceArrayOf).toStrictEqual({
       type: 'array',
       description: 'Port output array of Invoice records.',
       items: { $ref: '#/components/schemas/Billing_Invoice' },
-      'x-port-object': true
+      'x-port-object': true,
+      'x-service': 'core'
     });
     expect(document.components.schemas.ResourceDeleteResponse).toStrictEqual({
       description: 'Port output object for delete operations.',
@@ -476,6 +499,7 @@ describe('designer exporters (JUM-469)', () => {
     expect(document.paths['/billing/invoice']).toStrictEqual({
       get: {
         operationId: 'getAllBilling_Invoice',
+        'x-service': 'core',
         responses: {
           200: {
             description: 'successful operation',
@@ -488,6 +512,7 @@ describe('designer exporters (JUM-469)', () => {
       },
       post: {
         operationId: 'createBilling_Invoice',
+        'x-service': 'core',
         requestBody: {
           description: 'Create a new Invoice',
           content: { 'application/json': { schema: { $ref: '#/components/schemas/RequestCreateBilling_Invoice' } } },
@@ -505,6 +530,7 @@ describe('designer exporters (JUM-469)', () => {
     expect(document.paths['/billing/invoice/{id}']).toStrictEqual({
       get: {
         operationId: 'getBilling_InvoiceById',
+        'x-service': 'core',
         parameters: idParam,
         responses: {
           200: { description: 'successful operation', content: { 'application/json': { schema: entityRef } } },
@@ -516,6 +542,7 @@ describe('designer exporters (JUM-469)', () => {
       },
       put: {
         operationId: 'updateBilling_Invoice',
+        'x-service': 'core',
         parameters: idParam,
         requestBody: {
           description: 'Update an existing Invoice',
@@ -533,6 +560,7 @@ describe('designer exporters (JUM-469)', () => {
       },
       delete: {
         operationId: 'deleteBilling_Invoice',
+        'x-service': 'core',
         parameters: idParam,
         responses: {
           200: {

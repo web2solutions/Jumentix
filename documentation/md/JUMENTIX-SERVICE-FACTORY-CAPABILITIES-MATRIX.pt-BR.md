@@ -17,6 +17,8 @@ Defina os modos de fábrica de software suportados para Jumentix para que a enge
 | Back-end híbrido + front-end | Serviços de back-end mais aplicativos SPA/PWA/SSR | Contratos REST + em tempo real consumidos por clientes SDK | Contratos de API (OpenAPI/AsyncAPI) e integração primeiro do evento | Adaptador de backend mais estratégia de armazenamento local/offline de frontend | Entrega de produto ponta a ponta a partir de um monorepo |
 | SPA/PWA off-line somente front-end | Pacote de aplicativos frontend com compatibilidade de contrato API | Aplicativo local + consumo remoto opcional de API | Integração do SDK do cliente com foco no contrato | Armazenamento IndexedDB/local para fluxos offline | Aplicativos de campo e operações com capacidade off-line |
 
+Designer de arquitetura (Service Management): **monólito** é um serviço Core com todos os domínios. **Multi-serviço** é Core (Users + auth) mais serviços de domínio, cada um com URL em `servers` no OAS.
+
 ## Seeds de Referência
 
 - Modos backend: `apps/backend-template`.

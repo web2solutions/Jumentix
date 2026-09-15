@@ -4,7 +4,8 @@
 
 ## All Changes
 
-- 2026-09-14 test(coverage): cover remaining branch gap for the full-matrix floor (JUM-821) - Eduardo Almeida
+- 2026-09-15 feat(designer): architecture canvas and OAS split - Eduardo A.
+- 2026-09-14 [JUM-821][Test] Cover remaining branch gap for the full-matrix floor (#336) - Eduardo A.
 - 2026-09-14 [JUM-821][Fix] Break model import cycle, fix all CodeQL alerts, close branch coverage gap (#333) - Eduardo A.
 - 2026-09-14 [JUM-804][Fix] Hydrate Cana user details for local profile (#335) - Eduardo A.
 - 2026-09-14 fix(frontend): hydrate Cana users for profile PUT - Eduardo A.

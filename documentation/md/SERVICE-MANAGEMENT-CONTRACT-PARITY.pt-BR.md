@@ -184,6 +184,8 @@ esperadas.
   documento com seção desconhecida no nível raiz, `version` major mais recente
   ou `kind` diferente de `service-management-suite` falha claramente em vez
   de importar pela metade.
+- **Arquitetura** (`architecture.services` / `architecture.links`): JSON da suíte
+  e OAS `x-services` / `x-service` / `servers` / `x-architecture-links` (JUM-815/JUM-817).
 - **Pacote de domínio** (`buildDomainPackageDocument` → `buildDomainFromPackage`):
   um pacote faz ida e volta com deep-equal em um modelo vazio, carimbado com
   proveniência (JUM-492): o documento v2 carrega um bloco `package`

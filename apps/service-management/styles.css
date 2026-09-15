@@ -3475,3 +3475,67 @@ body {
     max-width: calc(100vw - 120px);
   }
 }
+
+.architecture-shell .architecture-canvas {
+  position: relative;
+  min-height: 640px;
+  background: var(--jtx-surface, #0f172a);
+  overflow: auto;
+}
+
+.architecture-service {
+  position: absolute;
+  border: 1px solid var(--jtx-line, #334155);
+  border-radius: 8px;
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.architecture-service-core {
+  border-color: #38bdf8;
+}
+
+.architecture-domain-chip {
+  margin: 4px 4px 0 0;
+}
+
+.architecture-links {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+.architecture-mini-map {
+  position: relative;
+  height: 80px;
+}
+
+.architecture-mini-mark {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #38bdf8;
+}
+
+.architecture-issue-error {
+  color: #f87171;
+}
+
+.architecture-issue-warn {
+  color: #fbbf24;
+}
+
+.swagger-ui-host {
+  min-height: 480px;
+  background: var(--jtx-surface, #0f172a);
+}
+
+html[data-theme='light'] .swagger-ui-host,
+.service-management-shell[data-theme='light'] .swagger-ui-host {
+  background: #fff;
+}
+
