@@ -32,6 +32,7 @@ describe('auth store (JUM-760)', () => {
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
+    localStorage.removeItem('jumentix-frontend-auth');
   });
 
   it('passes the collected OAS body through to register unchanged', async () => {
@@ -113,5 +114,52 @@ describe('auth store (JUM-760)', () => {
     expect(auth.username).toBe('');
     expect(auth.userId).toBe('');
     expect(calls).toHaveLength(0);
+  });
+
+  it('drops persisted sessions without a username (JUM-761 follow-up)', () => {
+    expect.assertions(2);
+    localStorage.setItem('jumentix-frontend-auth', JSON.stringify({ token: 'Bearer orphan' }));
+    setActivePinia(createPinia());
+    const auth = useAuthStore();
+    expect(auth.token).toBe('');
+    expect(auth.isAuthenticated()).toBe(false);
+  });
+
+  it('drops a corrupt persisted session', () => {
+    expect.assertions(2);
+    localStorage.setItem('jumentix-frontend-auth', '{not json');
+    setActivePinia(createPinia());
+    const auth = useAuthStore();
+    expect(auth.token).toBe('');
+    expect(auth.isAuthenticated()).toBe(false);
+  });
+
+  it('drops a persisted session whose user id cannot be recovered', () => {
+    expect.assertions(2);
+    localStorage.setItem('jumentix-frontend-auth', JSON.stringify({
+      token: 'Bearer deadbeef',
+      username: 'me@mydomain.com'
+    }));
+    setActivePinia(createPinia());
+    const auth = useAuthStore();
+    expect(auth.userId).toBe('');
+    expect(localStorage.getItem('jumentix-frontend-auth')).toBeNull();
+  });
+
+  it('survives an environment without localStorage', () => {
+    expect.assertions(3);
+    const backup = globalThis.localStorage;
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete (globalThis as Record<string, unknown>).localStorage;
+    try {
+      setActivePinia(createPinia());
+      const auth = useAuthStore();
+      expect(auth.token).toBe('');
+      auth.expire();
+      expect(auth.token).toBe('');
+      expect(calls).toHaveLength(0);
+    } finally {
+      globalThis.localStorage = backup;
+    }
   });
 });

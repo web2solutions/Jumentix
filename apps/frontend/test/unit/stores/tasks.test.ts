@@ -47,4 +47,34 @@ describe('task store (JUM-796)', () => {
       overflow: ['c']
     });
   });
+
+  it('activates an open module and ignores unknown ones', () => {
+    expect.hasAssertions();
+    const tasks = useTaskStore();
+    tasks.openModule('users');
+    tasks.openModule('billing');
+    tasks.activate('users');
+    expect(tasks.active).toBe('users');
+    tasks.activate('ghost');
+    expect(tasks.active).toBe('users');
+  });
+
+  it('resets the taskbar and clears the persisted snapshot', () => {
+    expect.hasAssertions();
+    const tasks = useTaskStore();
+    tasks.openModule('users');
+    tasks.reset();
+    expect([...tasks.open]).toStrictEqual([]);
+    expect(tasks.active).toBeNull();
+    expect(sessionStorage.getItem('jumentix-frontend-tasks')).toBeNull();
+  });
+
+  it('recovers from a corrupt snapshot in sessionStorage', () => {
+    expect.hasAssertions();
+    sessionStorage.setItem('jumentix-frontend-tasks', '{not json');
+    const tasks = useTaskStore();
+    tasks.hydrate();
+    expect([...tasks.open]).toStrictEqual([]);
+    expect(tasks.active).toBeNull();
+  });
 });

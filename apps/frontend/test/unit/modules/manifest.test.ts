@@ -7,6 +7,8 @@ import { usersCrudConfig } from '@/features/users/usersCrudConfig';
 import {
   canOpenModule,
   configureModules,
+  firstAllowedTab,
+  moduleRequiredScopes,
   registerModule,
   resetModules,
   validateModules
@@ -49,5 +51,24 @@ describe('module manifest (JUM-795)', () => {
     expect(canOpenModule(usersModule, ['user'])).toBe(true);
     expect(canOpenModule(usersModule, [])).toBe(false);
     expect(validateModules()).toStrictEqual([]);
+  });
+
+  it('rejects a duplicate module registration', () => {
+    expect.hasAssertions();
+    registerModule(usersModule);
+    expect(() => registerModule(usersModule)).toThrow('module "users" is already registered');
+  });
+
+  it('derives the required scopes from the entity list operations', () => {
+    expect.hasAssertions();
+    const scopes = moduleRequiredScopes(usersModule);
+    expect(scopes.length).toBeGreaterThan(0);
+    expect(scopes).toContain('read_user');
+  });
+
+  it('picks the first allowed entity tab and falls back to dashboard', () => {
+    expect.hasAssertions();
+    expect(firstAllowedTab(usersModule, ['admin'])).toBe('users');
+    expect(firstAllowedTab(usersModule, [])).toBe('dashboard');
   });
 });

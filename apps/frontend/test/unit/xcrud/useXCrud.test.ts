@@ -401,3 +401,247 @@ describe('useXCrud over an operation without x-list-capabilities', () => {
     expect(recorded.filter((c) => c.method === 'GET')).toHaveLength(1);
   });
 });
+
+/** JUM-777/781 follow-ups: wire pass-through, paging controls, exports, aggregates. */
+describe('useXCrud wire controls and actions', () => {
+  const originalFetch = globalThis.fetch;
+
+  beforeEach(() => {
+    recorded.length = 0;
+    setLocale('en');
+    setActivePinia(createPinia());
+    const auth = useAuthStore();
+    auth.token = 'Bearer session-token';
+    auth.userId = 'u1';
+    globalThis.fetch = mock((url: string, init: { method: string; body?: string }) => {
+      recorded.push({
+        url: String(url),
+        method: init.method,
+        body: init.body ? JSON.parse(init.body) : undefined
+      });
+      const payload = init.method === 'GET' ? serverAnswer(String(url)) : {};
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve(payload),
+        text: () => Promise.resolve('')
+      } as unknown as Response);
+    });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('passes enum/uuid filters through unchanged on the wire', async () => {
+    expect.assertions(2);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
+    await crud.load();
+    crud.setFilter('organization', 'org-9');
+    await flush();
+    expect(lastListQuery().filter).toStrictEqual({ organization: 'org-9' });
+    crud.setFilter('organization', undefined);
+    await flush();
+    expect(lastListQuery().filter).toBeUndefined();
+  });
+
+  it('walks back and forth with prevPage and jumps with goToPage', async () => {
+    expect.assertions(6);
+    const crud = useXCrud({ ...usersCrudConfig, pageSize: 2, debounceMs: 0 });
+    await crud.load();
+    crud.nextPage();
+    await flush();
+    expect(crud.page.value).toBe(2);
+    crud.prevPage();
+    await flush();
+    expect(crud.page.value).toBe(1);
+    expect(lastListQuery().page).toBe('1');
+    crud.prevPage();
+    expect(crud.page.value).toBe(1);
+    crud.goToPage(2);
+    await flush();
+    expect(crud.page.value).toBe(2);
+    crud.goToPage(99);
+    crud.goToPage(0);
+    expect(crud.page.value).toBe(2);
+  });
+
+  it('deletes one row through submitDelete and reloads', async () => {
+    expect.assertions(3);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
+    await crud.load();
+    await crud.submitDelete('u1');
+    const deletes = recorded.filter((call) => call.method === 'DELETE');
+    expect(deletes).toHaveLength(1);
+    expect(deletes[0].url).toContain('/users/u1');
+    expect(crud.notice.value).toBe('User: record removed.');
+  });
+
+  it('surfaces a failed action as errorMessage instead of a notice', async () => {
+    expect.assertions(2);
+    globalThis.fetch = mock(() => Promise.resolve({
+      ok: false,
+      status: 400,
+      headers: { get: () => 'application/json' },
+      json: () => Promise.resolve({ message: 'username can not be empty' }),
+      text: () => Promise.resolve('{"message":"username can not be empty"}')
+    } as unknown as Response));
+    const crud = useXCrud({ ...usersCrudConfig, pageSize: 2, debounceMs: 0 });
+    await crud.load();
+    await crud.submitCreate({ firstName: 'Bad' });
+    expect(crud.errorMessage.value).toBe('username can not be empty');
+    expect(crud.notice.value).toBe('');
+  });
+
+  it('surfaces a failed load as errorMessage', async () => {
+    expect.assertions(2);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
+    globalThis.fetch = mock(() => Promise.resolve({
+      ok: false,
+      status: 500,
+      headers: { get: () => 'application/json' },
+      json: () => Promise.resolve({ message: '' }),
+      text: () => Promise.resolve('{}')
+    } as unknown as Response));
+    await crud.load();
+    expect(crud.errorMessage.value).toBe('Internal server error — try again shortly.');
+    expect(crud.loading.value).toBe(false);
+  });
+
+  it('exports the current rows as a JSON download', async () => {
+    expect.assertions(4);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
+    await crud.load();
+    const blobs: Blob[] = [];
+    const revoked: string[] = [];
+    const clicked: string[] = [];
+    const originalCreate = URL.createObjectURL;
+    const originalRevoke = URL.revokeObjectURL;
+    const anchorPrototype = Object.getPrototypeOf(document.createElement('a')) as HTMLAnchorElement;
+    const originalClick = anchorPrototype.click;
+    URL.createObjectURL = ((blob: Blob) => {
+      blobs.push(blob);
+      return 'blob:xcrud-export';
+    }) as typeof URL.createObjectURL;
+    URL.revokeObjectURL = ((url: string) => {
+      revoked.push(url);
+    }) as typeof URL.revokeObjectURL;
+    anchorPrototype.click = function click(this: HTMLAnchorElement): void {
+      clicked.push(this.download);
+    };
+    try {
+      crud.exportJson();
+    } finally {
+      URL.createObjectURL = originalCreate;
+      URL.revokeObjectURL = originalRevoke;
+      anchorPrototype.click = originalClick;
+    }
+    expect(blobs).toHaveLength(1);
+    expect(await blobs[0].text()).toContain('zoe@x.dev');
+    expect(clicked).toStrictEqual(['user.json']);
+    expect(revoked).toStrictEqual(['blob:xcrud-export']);
+  });
+
+  it('computes avg/min/max aggregates over the loaded rows', async () => {
+    expect.assertions(4);
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
+    await crud.load();
+    const ages = { field: 'emails', op: 'avg' } as const;
+    expect(crud.aggregateValue({ field: 'emails', op: 'sum' })).toBe(3);
+    expect(crud.aggregateValue(ages)).toBe(1);
+    expect(crud.aggregateValue({ field: 'emails', op: 'min' })).toBe(0);
+    expect(crud.aggregateValue({ field: 'emails', op: 'max' })).toBe(2);
+  });
+
+  it('marks the aggregate scope as page in server mode without Cana', async () => {
+    expect.assertions(2);
+    const crud = useXCrud({ ...usersCrudConfig, pageSize: 2, debounceMs: 0 });
+    await crud.load();
+    expect(crud.aggregateScope.value).toBe('page');
+    expect(crud.aggregateIsPartial({ field: 'emails', op: 'sum' })).toBe(true);
+  });
+
+  it('falls back to empty reference labels when the target list fails', async () => {
+    expect.assertions(2);
+    globalThis.fetch = mock((url: string, init: { method: string }) => {
+      recorded.push({ url: String(url), method: init.method });
+      const organizations = String(url).includes('/organizations');
+      return Promise.resolve({
+        ok: !organizations,
+        status: organizations ? 500 : 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve(organizations ? {} : serverAnswer(String(url))),
+        text: () => Promise.resolve('')
+      } as unknown as Response);
+    });
+    const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
+    await crud.loadReferences();
+    expect({ ...crud.referenceLabels.organization }).toStrictEqual({});
+    expect(crud.referenceLabel('organization', 'org-1')).toBe('org-1');
+  });
+});
+
+/** JUM-772 memory mode: in-memory date ranges, booleans and text contains. */
+describe('useXCrud memory-mode filter operators', () => {
+  const originalFetch = globalThis.fetch;
+  const memoryConfig: XCrudEntityConfig = {
+    ...usersCrudConfig,
+    operations: { ...usersCrudConfig.operations, list: 'getOneById' }
+  };
+
+  beforeEach(() => {
+    recorded.length = 0;
+    setLocale('en');
+    setActivePinia(createPinia());
+    useAuthStore().token = 'Bearer session-token';
+    globalThis.fetch = mock((url: string, init: { method: string }) => {
+      recorded.push({ url: String(url), method: init.method });
+      return Promise.resolve({
+        ok: true, status: 200, headers: { get: () => 'application/json' }, json: () => Promise.resolve(fixtureRows), text: () => Promise.resolve('')
+      } as unknown as Response);
+    });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('filters date ranges inclusively and drops rows with unparsable dates', async () => {
+    expect.assertions(4);
+    const crud = useXCrud({ ...memoryConfig });
+    await crud.load();
+    crud.setFilter('createdAt', ['2026-01-01', '2026-01-02']);
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1', 'u2']);
+    crud.setFilter('createdAt', ['2026-01-02', undefined]);
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1', 'u3']);
+    crud.setFilter('createdAt', [undefined, '2026-01-01']);
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u2']);
+    crud.rows.value = [...crud.rows.value, {
+      id: 'u9', firstName: 'Nodate', username: 'nodate@x.dev', roles: ['user'], emails: [], createdAt: 'not-a-date'
+    }];
+    crud.setFilter('createdAt', ['2020-01-01', '2030-01-01']);
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1', 'u2', 'u3']);
+  });
+
+  it('matches scalar text filters with case-insensitive contains', async () => {
+    expect.assertions(2);
+    const crud = useXCrud({ ...memoryConfig });
+    await crud.load();
+    crud.setFilter('username', 'ZOE@X');
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1']);
+    crud.setFilter('username', 'missing');
+    expect(crud.filteredRows.value).toStrictEqual([]);
+  });
+
+  it('matches boolean filters with tri-state semantics', async () => {
+    expect.assertions(2);
+    const crud = useXCrud({ ...memoryConfig });
+    await crud.load();
+    crud.rows.value = crud.rows.value.map((row, index) => ({ ...row, active: index === 0 }));
+    crud.setFilter('active', true);
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1']);
+    crud.setFilter('active', false);
+    expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u2', 'u3']);
+  });
+});

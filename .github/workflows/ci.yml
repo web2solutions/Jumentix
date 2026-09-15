@@ -337,6 +337,8 @@ jobs:
       - name: Union browser coverage engines
         run: |
           bun ci-cd/merge-browser-coverage.js --from-dir coverage
+      - name: Produce frontend coverage for the patch report
+        run: bun run frontend:test:coverage
       - name: Enforce patch coverage
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then

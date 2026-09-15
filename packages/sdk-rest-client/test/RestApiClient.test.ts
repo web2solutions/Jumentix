@@ -386,6 +386,30 @@ describe('service routing', () => {
       stub.restore();
     }
   });
+
+  it('falls back to the base URL when an operation names a service the spec does not host', async () => {
+    expect.hasAssertions();
+    const unknownServiceSpecs = (() => ({
+      openApi: {
+        servers: [
+          { url: 'https://billing.test', 'x-service-id': 'billing' },
+          { url: 'https://shipping.test', 'x-service-id': 'shipping' }
+        ],
+        paths: {
+          '/legacy': { get: { operationId: 'getLegacy', 'x-service': 'unknown-service' } }
+        }
+      }
+    }) as unknown) as typeof loadSpecs;
+
+    const stub = withFetch(json({ ok: true }));
+    try {
+      const client = new RestApiClient(undefined, unknownServiceSpecs);
+      await client.request({ operationId: 'getLegacy' });
+      expect(stub.calls[0].url).toBe('https://billing.test/legacy');
+    } finally {
+      stub.restore();
+    }
+  });
 });
 
 describe('failure shapes', () => {

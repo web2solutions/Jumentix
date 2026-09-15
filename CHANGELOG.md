@@ -4,7 +4,7 @@
 
 ## All Changes
 
-- 2026-09-14 test(coverage): cover remaining branch gap for the full-matrix floor (JUM-821) - Eduardo Almeida
+- 2026-09-14 [JUM-821][Test] Cover remaining branch gap for the full-matrix floor (#336) - Eduardo A.
 - 2026-09-14 [JUM-821][Fix] Break model import cycle, fix all CodeQL alerts, close branch coverage gap (#333) - Eduardo A.
 - 2026-09-14 [JUM-804][Fix] Hydrate Cana user details for local profile (#335) - Eduardo A.
 - 2026-09-14 fix(frontend): hydrate Cana users for profile PUT - Eduardo A.
@@ -77,7 +77,6 @@
 - 2026-08-29 [JUM-728][Fix] Render shell documentation fences as copyable code blocks (#279) - Eduardo A.
 - 2026-08-29 fix(website): render shell fences as copyable code blocks, not editors [JUM-728] - Eduardo A.
 - 2026-08-29 [JUM-721][Release] Promote dev to main with signed squash (#278) - Eduardo A.
-- 2026-08-29 chore(release): promote dev to main - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Ignore website metadata in patch coverage (#276) - Eduardo A.
 - 2026-08-29 fix(coverage): ignore website navigation metadata in patch gate - Eduardo Almeida
 - 2026-08-29 [JUM-579][Bug] Keep UUID generation covered centrally (#275) - Eduardo A.

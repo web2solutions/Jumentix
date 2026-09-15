@@ -508,6 +508,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/restify/metricsHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/restify/metricsHandlers.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
       "layer": "interface/runtime",
@@ -520,6 +530,16 @@
     {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/metricsHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/metricsHandlers.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -1058,6 +1078,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/merge-coverage-reports.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/merge-coverage-reports.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2294,6 +2324,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management-api/test/unit/startServiceManagementCatalogApi.test.ts",
+      "path": "apps/service-management-api/test/unit/startServiceManagementCatalogApi.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
       "path": "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
       "layer": "service-management/catalog-api",
@@ -2306,6 +2346,16 @@
     {
       "id": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
       "path": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/index.exports.test.ts",
+      "path": "apps/service-management-api/test/unit/index.exports.test.ts",
       "layer": "service-management/catalog-api",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2438,6 +2488,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/shell/viewport.test.ts",
+      "path": "apps/frontend/test/unit/shell/viewport.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/errors.test.ts",
       "path": "apps/frontend/test/unit/contracts/errors.test.ts",
       "layer": "frontend",
@@ -2462,8 +2524,32 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/contracts/apiClientBase.test.ts",
+      "path": "apps/frontend/test/unit/contracts/apiClientBase.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/sessionGuard.test.ts",
       "path": "apps/frontend/test/unit/contracts/sessionGuard.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/browserShim.test.ts",
+      "path": "apps/frontend/test/unit/contracts/browserShim.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2498,6 +2584,30 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/contracts/sessionGuardInstall.test.ts",
+      "path": "apps/frontend/test/unit/contracts/sessionGuardInstall.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/usePermissions.test.ts",
+      "path": "apps/frontend/test/unit/contracts/usePermissions.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/contracts/edgeCases.test.ts",
       "path": "apps/frontend/test/unit/contracts/edgeCases.test.ts",
       "layer": "frontend",
@@ -2512,6 +2622,18 @@
     {
       "id": "apps/frontend/test/unit/contracts/listSchema.test.ts",
       "path": "apps/frontend/test/unit/contracts/listSchema.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/engineGuards.test.ts",
+      "path": "apps/frontend/test/unit/contracts/engineGuards.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2570,6 +2692,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/features/useSectionNotify.test.ts",
+      "path": "apps/frontend/test/unit/features/useSectionNotify.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/stores/profile.test.ts",
       "path": "apps/frontend/test/unit/stores/profile.test.ts",
       "layer": "frontend",
@@ -2594,8 +2728,32 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/stores/notifications.test.ts",
+      "path": "apps/frontend/test/unit/stores/notifications.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/stores/network.test.ts",
       "path": "apps/frontend/test/unit/stores/network.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/profileOffline.test.ts",
+      "path": "apps/frontend/test/unit/stores/profileOffline.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2618,8 +2776,44 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/stores/entityStore.test.ts",
+      "path": "apps/frontend/test/unit/stores/entityStore.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/theme.test.ts",
+      "path": "apps/frontend/test/unit/stores/theme.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
       "path": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/xcrud/useXCrudOffline.test.ts",
+      "path": "apps/frontend/test/unit/xcrud/useXCrudOffline.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2666,8 +2860,104 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/unit/data/pwa.test.ts",
+      "path": "apps/frontend/test/unit/data/pwa.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/unit/data/offlineLayer.test.ts",
       "path": "apps/frontend/test/unit/data/offlineLayer.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/db.test.ts",
+      "path": "apps/frontend/test/unit/data/db.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/localRepository.test.ts",
+      "path": "apps/frontend/test/unit/data/localRepository.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/syncDelta.test.ts",
+      "path": "apps/frontend/test/unit/data/syncDelta.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/outboxExtra.test.ts",
+      "path": "apps/frontend/test/unit/data/outboxExtra.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/main.test.ts",
+      "path": "apps/frontend/test/unit/main.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/router/guardsExtra.test.ts",
+      "path": "apps/frontend/test/unit/router/guardsExtra.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/router/index.test.ts",
+      "path": "apps/frontend/test/unit/router/index.test.ts",
       "layer": "frontend",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -5275,9 +5565,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 300,
+    "unit": 325,
     "integration": 101,
     "smoke": 2,
-    "suites": 452
+    "suites": 477
   }
 }

@@ -89,4 +89,21 @@ describe('validation module driven by the OAS x-validation (JUM-765)', () => {
     expect(validatePhone('+55', '27', '998054033')).toBeNull();
     expect(validatePhone('+1', '212', '555-0100')).toBeNull();
   });
+
+  it('maskPhone returns bare digits when the country has no declared mask', () => {
+    expect.assertions(1);
+    expect(maskPhone('+999', '12345')).toBe('12345');
+  });
+
+  it('validateDocumentData enforces RG and accepts unknown types as free-form', () => {
+    expect.assertions(2);
+    expect(validateDocumentData('RG', 'BR', 'anything goes')).toBe('Formato inválido para RG.');
+    expect(validateDocumentData('NIE', 'ZZ', 'anything goes')).toBeNull();
+  });
+
+  it('validatePhone requires a value and enforces the country format', () => {
+    expect.assertions(2);
+    expect(validatePhone('+55', '27', ' ')).toBe('Número de telefone é obrigatório.');
+    expect(validatePhone('+55', '27', 'abc')).toContain('Telefone inválido para +55');
+  });
 });

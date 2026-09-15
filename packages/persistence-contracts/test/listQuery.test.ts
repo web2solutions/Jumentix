@@ -121,6 +121,18 @@ describe('applyListSort', () => {
     expect(sorted).not.toBe(rows);
     expect(applyListSort(rows, [])).toBe(rows);
   });
+
+  it('returns 0 for records tied on every key including the primary-key fallback', () => {
+    expect.hasAssertions();
+    // Duplicate ids tie on the sort field and on the appended pk key, so the
+    // comparator exhausts every key and the stable sort keeps the input order.
+    const duplicatedIds = [
+      { id: '1', group: 'x', seq: 1 },
+      { id: '1', group: 'x', seq: 2 }
+    ];
+    expect(applyListSort(duplicatedIds, [{ field: 'group', direction: 'asc' }]).map((r) => r.seq))
+      .toStrictEqual([1, 2]);
+  });
 });
 
 describe('paginateList', () => {

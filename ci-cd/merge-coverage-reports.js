@@ -2,6 +2,13 @@
 /* eslint-disable no-console */
 /**
  * Merge Bun + Node LCOV without double-counting files (JUM-437).
+ *
+ * Patch coverage (Req 065) reads the merged report, so every measured
+ * coverage subject has to land here: the root Jest run, the browser union
+ * (cana, Req 112 §4) and the frontend's own bun coverage. The frontend lcov
+ * records `SF:` paths relative to `apps/frontend`, so this merge rebases them
+ * to the repository root; otherwise every changed frontend line reports as
+ * uncovered patch debt even when the frontend suite covers it (JUM-821).
  */
 const fs = require('fs');
 const path = require('path');
@@ -25,6 +32,12 @@ function recordFile(record) {
   return match ? match[1].replace(/\\/g, '/') : null;
 }
 
+function rebaseRecordFile(record, prefix) {
+  const file = recordFile(record);
+  if (!file || path.isAbsolute(file)) return record;
+  return record.replace(/^SF:(.+)$/m, `SF:${prefix}${file}`);
+}
+
 function hasBranchData(record) {
   return /^BRDA:/m.test(record) || /^BRF:/m.test(record);
 }
@@ -35,9 +48,11 @@ function mergeLcovFiles(inputPaths, outputPath) {
   const stats = { inputs: inputPaths.length, records: 0, skippedDuplicates: 0, withBranches: 0 };
 
   for (const input of inputPaths) {
-    if (!fs.existsSync(input)) continue;
-    const text = fs.readFileSync(input, 'utf8');
-    for (const record of splitRecords(text)) {
+    const spec = typeof input === 'string' ? { path: input } : input;
+    if (!fs.existsSync(spec.path)) continue;
+    const text = fs.readFileSync(spec.path, 'utf8');
+    for (const rawRecord of splitRecords(text)) {
+      const record = spec.pathPrefix ? rebaseRecordFile(rawRecord, spec.pathPrefix) : rawRecord;
       const file = recordFile(record);
       if (!file) continue;
       if (seen.has(file)) {
@@ -61,7 +76,12 @@ function main() {
   const inputs = [
     path.join(root, 'coverage', 'bun', 'lcov.info'),
     path.join(root, 'coverage', 'jest', 'lcov.info'),
-    path.join(root, 'coverage', 'lcov.info')
+    path.join(root, 'coverage', 'lcov.info'),
+    { path: path.join(root, 'coverage', 'browser', 'lcov.info') },
+    {
+      path: path.join(root, 'coverage', 'frontend', 'lcov.info'),
+      pathPrefix: 'apps/frontend/'
+    }
   ];
   const output = process.env.JUMENTIX_MERGED_LCOV
     || path.join(root, 'coverage', 'merged', 'lcov.info');
@@ -81,4 +101,4 @@ if (isEntryPoint(module)) {
   }
 }
 
-module.exports = { hasBranchData, mergeLcovFiles, splitRecords };
+module.exports = { hasBranchData, mergeLcovFiles, rebaseRecordFile, splitRecords };

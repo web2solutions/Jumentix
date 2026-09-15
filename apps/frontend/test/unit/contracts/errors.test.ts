@@ -42,4 +42,27 @@ describe('formatApiError (JUM-765)', () => {
     expect(isNotFoundError(apiError(404, {}))).toBe(true);
     expect(isNotFoundError(apiError(403, {}))).toBe(false);
   });
+
+  it('passes through messages that are not SDK failures', () => {
+    expect.assertions(2);
+    expect(formatApiError(new Error('plain boom'))).toBe('plain boom');
+    expect(formatApiError('string failure')).toBe('string failure');
+  });
+
+  it('keeps a non-JSON backend body as the message', () => {
+    expect.assertions(1);
+    expect(formatApiError(apiError(400, 'duplicate username'))).toBe('duplicate username');
+  });
+
+  it('keeps the backend message on 409 conflicts', () => {
+    expect.assertions(2);
+    expect(formatApiError(apiError(409, { message: 'username already exists' }))).toBe('username already exists');
+    expect(formatApiError(apiError(409, {}))).toBe('Conflito com o estado atual do registro.');
+  });
+
+  it('falls back to a generic message for unmapped statuses', () => {
+    expect.assertions(2);
+    expect(formatApiError(apiError(418, { message: 'I am a teapot' }))).toBe('I am a teapot');
+    expect(formatApiError(apiError(302, {}))).toBe('Falha na requisição (302).');
+  });
 });
