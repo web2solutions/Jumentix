@@ -34,9 +34,7 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
       }
     });
     this.application.register(helmet, {
-      contentSecurityPolicy: {
-        useDefaults: false
-      }
+      contentSecurityPolicy: false
     });
     this.application.register(formBody);
     (this.application as any).addHook('preHandler', (req: FastifyRequest, res: FastifyReply, next: any) => {
