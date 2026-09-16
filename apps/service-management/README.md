@@ -1,19 +1,19 @@
 # Service Management Application
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/XpertMinds/Jumentix/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/XpertMinds/Jumentix/tree/dev)
-[![codecov](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg)](https://codecov.io/gh/XpertMinds/Jumentix)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
+[![Codecov dev map](https://img.shields.io/badge/Codecov-dev%20file%20map-f01f7a?logo=codecov&logoColor=white)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev)
+[![SonarCloud quality](https://img.shields.io/badge/SonarCloud-quality%20gate-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Node](https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](../../spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](../../spec)
-[![License](https://img.shields.io/github/license/XpertMinds/Jumentix)](../../LICENSE.md)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![License](https://img.shields.io/github/license/web2solutions/Jumentix)](../../LICENSE.md)
+[![SonarCloud maintainability](https://img.shields.io/badge/SonarCloud-maintainability-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![SonarCloud bugs](https://img.shields.io/badge/SonarCloud-bugs-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![SonarCloud vulnerabilities](https://img.shields.io/badge/SonarCloud-vulnerabilities-F3702A?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=Jumentix)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![Made in Brazil with Love](https://img.shields.io/badge/made%20in-%F0%9F%87%A7%F0%9F%87%B7%20Brazil%20with%E2%9D%A4%EF%B8%8F-blue)
 [![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/XpertMinds/Jumentix)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/web2solutions/Jumentix)
 
 `service-management` is a tabbed local application for engineering setup and design workflows in this boilerplate.
 
@@ -67,11 +67,11 @@ sample is ordinary domain/entity deletion. Content is defined in
    - Exporters: JSON, OpenAPI 3.1, Markdown, JSON Schema, AsyncAPI 3.0 per transport
      (`<version>.websocket.yml` / `<version>.grpc.yml`, canonical `spec/asyncapi/`
      conventions), gRPC proto (`async-api.proto`) and boilerplate bundle.
-   - The JSON export is the versioned full-suite document (JUM-547): it carries all
-     four tabs (`domains`/`relationships`, `interfaces`, `serviceConfiguration`,
-     `deployments`) plus the runtime-environment selection — never its values — and
-     Import JSON restores them, accepting pre-JUM-547 domain-only files and refusing
-     unknown sections or newer major versions clearly.
+   - The JSON export is the versioned full-suite document (JUM-547/JUM-736): it carries all
+     persisted authoring sections (`domains`/`relationships`, `interfaces`, `serviceConfiguration`,
+     `deployments`, `codeWorkspace`) plus the runtime-environment selection — never
+     its values — and Import JSON restores them, accepting pre-JUM-547 domain-only
+     files and refusing unknown sections or newer major versions clearly.
    - OpenAPI composition controls (`oneOf`, `allOf`, `anyOf`, external `$ref`, discriminator) per entity.
    - Domain package export/import for reusable model sharing — versioned
      (JUM-492): packages carry a semantic version and dependency ranges,
@@ -80,6 +80,14 @@ sample is ordinary domain/entity deletion. Content is defined in
      conflict or downgrade, merge preview with user decision for RBAC,
      invariants, removals and narrowings on a newer version).
    - Mini-map navigation and large-canvas performance mode.
+   - Responsive canvas performance pass (JUM-736): entity/domain/note drags
+     update the diagram per animation frame and persist once at drag end;
+     selected relationships expose route and label handles directly on the
+     canvas, so relationship layout is edited visually before the numeric
+     fallback fields are needed.
+   - Every static control carries a keyboard/touch reachable help affordance
+     (JUM-733). Generated rows keep dense in-row labels and inherit group-level
+     guidance, while hidden file inputs remain deliberately exempt.
 2. **Communication Interface Designer**
    - Register inbound interface adapters (`HTTP/REST`, `gRPC`, `WebSocket`, `SSE`).
    - Full adapter lifecycle (JUM-545): every registered adapter edits in place (type,
@@ -134,6 +142,27 @@ sample is ordinary domain/entity deletion. Content is defined in
      name-plus-version runtime pattern (`nodejs22.x`), and region required on
      cloud targets (optional on the self-hosted dedicated server, where the
      field carries host information), with target-type-aware field hints.
+5. **Monitoring**
+   - Runtime PM2 dashboard backed by the real PM2 API (`pm2.list`): process
+     status, CPU, memory, restarts, uptime, watch mode and namespace.
+   - Compares the selected ecosystem (`pm2/ecosystem.*.cjs`) with the live PM2
+     process list so missing expected apps are visible without reading the
+     terminal.
+   - Refreshes manually or every five seconds while the tab is active. Metrics
+     are runtime telemetry only; they are not persisted in `service-management.v1`
+     and are not exported in the suite JSON.
+6. **Code Workspace**
+   - VS Code-style generated worktree: folder explorer, active file titlebar,
+     editable TypeScript/JSON text and Monaco when the editor loader is available.
+   - Regenerate reconciles the latest model output against local edits. Files the
+     user never edited follow the generator automatically; edited files become
+     `stale` when the generator changes underneath them.
+   - Conflict controls make the merge explicit: **Keep Mine** accepts the local
+     edit against the new generated baseline, and **Take Generated** restores the
+     generated file.
+   - Boilerplate bundle export applies edited/stale workspace files, so the
+     downloadable code reflects the reviewed workspace instead of a separate
+     read-only preview.
 
 ## Design System and Accessibility
 
@@ -259,7 +288,7 @@ the `service-management-shell@*` caches and reloads — Cana data is untouched.
 
 ### PWA tests
 
-- Unit: `apps/backend-template/test/unit/service-management/pwaShell.test.ts`
+- Unit: `apps/service-management/test/unit/pwaShell.test.ts`
   (worker handlers, update flow, recovery — with injected fakes).
 - Browser smoke:
   `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`
@@ -279,6 +308,10 @@ Built into `apps/service-management/server.js`:
   commands derived from the ecosystem definition, an explicit
   `exists: false` state when the file is absent, and the honest 500 envelope
   when the file is unreadable or broken)
+- `GET /api/runtime/pm2-metrics?environment=dev|development|staging|production|prod|ci|test`
+  (read-only; live PM2 telemetry collected with the PM2 Node API, including
+  process status, CPU, memory, restarts, uptime, watch mode, namespace, custom
+  metrics and ecosystem-vs-live missing-app comparison)
 
 The full contract (enum sets, write semantics, response hygiene) lives in
 [Runtime Environment Contracts](../../documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md).

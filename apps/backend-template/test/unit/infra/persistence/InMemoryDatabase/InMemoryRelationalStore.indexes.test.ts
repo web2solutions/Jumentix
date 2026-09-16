@@ -54,6 +54,20 @@ describe('in-memory relational store indexes (JUM-681)', () => {
       .rejects.toThrow('username');
   });
 
+  it('holds unique values case-sensitively when the field has no case-insensitive index', async () => {
+    expect.hasAssertions();
+
+    // A plain unique index compares raw values: 'ALICE' and 'alice' are two
+    // keys, while an exact repeat is still a conflict.
+    const store = new InMemoryRelationalStore<Row>({ uniqueIndexes: ['username'] } as never);
+    await store.create('r1', { id: 'r1', username: 'alice', organization: 'org-1' });
+
+    await expect(store.create('r2', { id: 'r2', username: 'ALICE', organization: 'org-1' }))
+      .resolves.toBeDefined();
+    await expect(store.create('r3', { id: 'r3', username: 'alice', organization: 'org-1' }))
+      .rejects.toThrow('username');
+  });
+
   it('lets a record keep its own unique value across an unrelated edit', async () => {
     expect.hasAssertions();
 
@@ -107,6 +121,16 @@ describe('in-memory relational store indexes (JUM-681)', () => {
     // listing on a field nobody indexed are both empty, not a crash.
     await expect(store.getByRelation('organization', 'org-404')).resolves.toStrictEqual([]);
     await expect(store.getByRelation('username' as keyof Row, 'alice')).resolves.toStrictEqual([]);
+  });
+
+  it('treats a missing relation value as no parent, not as the empty key', async () => {
+    expect.hasAssertions();
+
+    const store = makeStore();
+    await store.create('r1', { id: 'r1', username: 'alice', organization: undefined as never });
+
+    await expect(store.getByRelation('organization', '')).resolves.toStrictEqual([]);
+    expect((await store.getAll({}, { page: 1, size: 10 })).result).toHaveLength(1);
   });
 
   it('indexes a record whose relation value is empty without claiming a key', async () => {

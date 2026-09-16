@@ -33,6 +33,8 @@
     "paths": {
       "@src": ["src"],
       "@src/*": ["src/*"],
+      "@service-management-api": ["apps/service-management-api/src"],
+      "@service-management-api/*": ["apps/service-management-api/src/*"],
       "@infra": ["infra"],
       "@infra/*": ["infra/*"],
       "@seed": ["seed"],

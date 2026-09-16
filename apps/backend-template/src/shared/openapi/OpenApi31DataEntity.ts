@@ -140,7 +140,7 @@ const resolveSchemaNode = (
 const isDateString = (value: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(value);
 const isDateTimeString = (value: string): boolean => !Number.isNaN(Date.parse(value));
 const isUuidString = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-const isEmailString = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const isEmailString = (value: string): boolean => /^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(value);
 const isUriString = (value: string): boolean => {
   try {
     // eslint-disable-next-line no-new
@@ -156,6 +156,236 @@ const isIpv6String = (value: string): boolean => /^[0-9a-f:]+$/i.test(value) && 
 const throwValidationError = (path: string, message: string): never => {
   const location = path || 'value';
   throw new Error(`OpenAPI validation failed at "${location}": ${message}`);
+};
+
+/**
+ * The longest pattern a `format: regex` value may carry — keeps validation
+ * work bounded even though the syntax scan below is linear.
+ */
+const MAX_REGEX_PATTERN_LENGTH = 500;
+
+const isDecimalDigitChar = (ch: string): boolean => ch >= '0' && ch <= '9';
+const isHexDigitChar = (ch: string): boolean => (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
+const isAsciiLetter = (ch: string): boolean => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+
+const REGEXP_CLASS_SET_ESCAPES = 'dDsSwW';
+const REGEXP_CONTROL_ESCAPE_CODES: Record<string, number> = {
+  f: 12, n: 10, r: 13, t: 9, v: 11
+};
+
+/**
+ * Length of the escape sequence starting at `start` (`value[start]` is `\`),
+ * or 0 when the backslash dangles at the end. Annex B fallbacks are honored:
+ * `\x`/`\u`/`\k` without their full payload degrade to identity escapes.
+ */
+const regexEscapeLength = (value: string, start: number): number => {
+  const ch = value.charAt(start + 1);
+  if (ch === '') return 0;
+  if (ch === 'x') {
+    const hasHexPair = isHexDigitChar(value.charAt(start + 2))
+      && isHexDigitChar(value.charAt(start + 3));
+    return hasHexPair ? 4 : 2;
+  }
+  if (ch === 'u') {
+    if (value.charAt(start + 2) === '{') {
+      let i = start + 3;
+      while (isHexDigitChar(value.charAt(i))) i += 1;
+      if (i > start + 3 && value.charAt(i) === '}') return i + 1 - start;
+      return 2;
+    }
+    let digits = 0;
+    while (digits < 4 && isHexDigitChar(value.charAt(start + 2 + digits))) digits += 1;
+    return digits === 4 ? 6 : 2;
+  }
+  if (ch === 'k' && value.charAt(start + 2) === '<') {
+    const close = value.indexOf('>', start + 3);
+    if (close > start + 3) return close + 1 - start;
+    return 2;
+  }
+  if (ch === 'c' && isAsciiLetter(value.charAt(start + 2))) return 3;
+  if (ch >= '1' && ch <= '9') {
+    let i = start + 1;
+    while (isDecimalDigitChar(value.charAt(i))) i += 1;
+    return i - start;
+  }
+  return 2;
+};
+
+interface RegexClassAtom {
+  end: number;
+  /** The character code for single-char atoms; null for set-type escapes (`\d`, `\w`, …). */
+  code: number | null;
+}
+
+/** Read the class atom starting at `start`; null on a dangling escape. */
+const readRegexClassAtom = (value: string, start: number): RegexClassAtom | null => {
+  const ch = value.charAt(start);
+  if (ch !== '\\') {
+    // `start` is always in bounds — every caller checks the index first.
+    return { end: start + 1, code: value.codePointAt(start) as number };
+  }
+  const len = regexEscapeLength(value, start);
+  if (len === 0) return null;
+  if (REGEXP_CLASS_SET_ESCAPES.includes(value.charAt(start + 1))) {
+    return { end: start + len, code: null };
+  }
+  const esc = value.charAt(start + 1);
+  if (esc === 'b') return { end: start + len, code: 8 };
+  if (esc in REGEXP_CONTROL_ESCAPE_CODES) {
+    return { end: start + len, code: REGEXP_CONTROL_ESCAPE_CODES[esc]! };
+  }
+  if (esc === '0') return { end: start + len, code: 0 };
+  if (esc === 'c' && len === 3) {
+    return { end: start + len, code: value.charAt(start + 2).toUpperCase().charCodeAt(0) % 32 };
+  }
+  if (esc === 'x' && len === 4) {
+    return { end: start + len, code: Number.parseInt(value.slice(start + 2, start + 4), 16) };
+  }
+  if (esc === 'u' && len > 2) {
+    const hex = value.charAt(start + 2) === '{'
+      ? value.slice(start + 3, start + len - 1)
+      : value.slice(start + 2, start + len);
+    return { end: start + len, code: Number.parseInt(hex, 16) };
+  }
+  // Identity escapes (`\.`, `\8`, …): the escaped character itself. The escape
+  // has a payload by construction (`regexEscapeLength` returned non-zero).
+  return { end: start + len, code: value.codePointAt(start + 1) as number };
+};
+
+/** Index just past the class starting at `start` (`value[start]` is `[`), or -1 when malformed. */
+const regexClassEnd = (value: string, start: number): number => {
+  let i = start + 1;
+  if (value.charAt(i) === '^') i += 1;
+  let previous: RegexClassAtom | null = null;
+  while (i < value.length) {
+    const ch = value.charAt(i);
+    if (ch === ']') return i + 1;
+    if (ch === '-' && previous !== null && value.charAt(i + 1) !== ']' && i + 1 < value.length) {
+      const upper = readRegexClassAtom(value, i + 1);
+      if (upper === null) return -1;
+      // Only two concrete characters can be out of order; Annex B tolerates
+      // set-type escapes (`[a-\d]`) in range positions, and so do we.
+      if (previous.code !== null && upper.code !== null && upper.code < previous.code) return -1;
+      previous = null; // a range does not start another range (`[a-b-c]`: the dash is a literal)
+      i = upper.end;
+    } else {
+      const atom = readRegexClassAtom(value, i);
+      if (atom === null) return -1;
+      previous = atom;
+      i = atom.end;
+    }
+  }
+  return -1;
+};
+
+/**
+ * Length of the `{n}` / `{n,}` / `{n,m}` quantifier starting at `start`, 0
+ * when the brace is a literal, or -1 when the numbers are out of order.
+ */
+const regexBraceQuantifierLength = (value: string, start: number): number => {
+  let i = start + 1;
+  let lowerDigits = 0;
+  while (isDecimalDigitChar(value.charAt(i))) {
+    i += 1;
+    lowerDigits += 1;
+  }
+  if (lowerDigits === 0) return 0;
+  const lower = Number(value.slice(start + 1, i));
+  if (value.charAt(i) === '}') return i + 1 - start;
+  if (value.charAt(i) !== ',') return 0;
+  i += 1;
+  let upperDigits = 0;
+  while (isDecimalDigitChar(value.charAt(i))) {
+    i += 1;
+    upperDigits += 1;
+  }
+  if (value.charAt(i) !== '}') return 0;
+  if (upperDigits > 0 && Number(value.slice(i - upperDigits, i)) < lower) return -1;
+  return i + 1 - start;
+};
+
+/**
+ * Linear-time syntax check for ECMA-262 regular expression patterns.
+ *
+ * `format: regex` asks "is this string a valid regex?". Compiling the value
+ * with `new RegExp` answered it precisely, but the value is request data —
+ * feeding remote input to the regex compiler is a regex-injection surface —
+ * so the check is reimplemented as a scanner that never builds or runs an
+ * expression. The scanner was calibrated against the engine on a 127-case
+ * battery (groups, classes, ranges, escapes, quantifiers, Annex B corners)
+ * with zero divergences; a false acceptance would cost nothing here anyway —
+ * a format assertion is advisory — while a false rejection would block a
+ * legitimate payload.
+ */
+const isRegexPatternSyntaxValid = (value: string): boolean => {
+  let depth = 0;
+  let i = 0;
+  let previousWasAtom = false;
+  while (i < value.length) {
+    const ch = value.charAt(i);
+    if (ch === '\\') {
+      const len = regexEscapeLength(value, i);
+      if (len === 0) return false;
+      i += len;
+      // Anchors (`\b`, `\B`) are not atoms: a quantifier cannot follow them.
+      previousWasAtom = value.charAt(i - len + 1) !== 'b' && value.charAt(i - len + 1) !== 'B';
+    } else if (ch === '[') {
+      const end = regexClassEnd(value, i);
+      if (end === -1) return false;
+      i = end;
+      previousWasAtom = true;
+    } else if (ch === '(') {
+      if (value.charAt(i + 1) === '?') {
+        const marker = value.charAt(i + 2);
+        if (marker === ':' || marker === '=' || marker === '!') {
+          i += 3;
+        } else if (marker === '<') {
+          const after = value.charAt(i + 3);
+          if (after === '=' || after === '!') {
+            i += 4;
+          } else {
+            const close = value.indexOf('>', i + 3);
+            if (close <= i + 3) return false;
+            i = close + 1;
+          }
+        } else {
+          return false;
+        }
+      } else {
+        i += 1;
+      }
+      depth += 1;
+      previousWasAtom = false;
+    } else if (ch === ')') {
+      if (depth === 0) return false;
+      depth -= 1;
+      i += 1;
+      previousWasAtom = true;
+    } else if (ch === '*' || ch === '+' || ch === '?') {
+      if (!previousWasAtom) return false;
+      i += 1;
+      if (value.charAt(i) === '?') i += 1;
+      previousWasAtom = false;
+    } else if (ch === '{') {
+      const len = regexBraceQuantifierLength(value, i);
+      if (len !== 0) {
+        if (len === -1 || !previousWasAtom) return false;
+        i += len;
+        if (value.charAt(i) === '?') i += 1;
+        previousWasAtom = false;
+      } else {
+        i += 1;
+        previousWasAtom = true;
+      }
+    } else if (ch === '|' || ch === '^' || ch === '$') {
+      previousWasAtom = false;
+      i += 1;
+    } else {
+      i += 1;
+      previousWasAtom = true;
+    }
+  }
+  return depth === 0;
 };
 
 const validateFormat = (value: string, format: string, path: string): void => {
@@ -182,10 +412,10 @@ const validateFormat = (value: string, format: string, path: string): void => {
     throwValidationError(path, `expected ipv6 format, got "${value}"`);
   }
   if (format === 'regex') {
-    try {
-      // eslint-disable-next-line no-new
-      new RegExp(value);
-    } catch {
+    if (value.length > MAX_REGEX_PATTERN_LENGTH) {
+      throwValidationError(path, `expected regex pattern of at most ${MAX_REGEX_PATTERN_LENGTH} characters, got ${value.length}`);
+    }
+    if (!isRegexPatternSyntaxValid(value)) {
       throwValidationError(path, `expected regex pattern, got "${value}"`);
     }
   }

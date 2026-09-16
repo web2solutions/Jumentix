@@ -1,28 +1,26 @@
-# Private Repository Free CI Strategy
+# Public Open Source Free CI Strategy
 
 ## Decision
 
-Jumentix remains private under `XpertMinds`. GitHub Actions is the canonical CI
-orchestrator again, CircleCI is disabled, and repository-owned self-hosted
-runners provide the zero-cost execution path while hosted billing blocks runner
-startup. Evidence is generated and retained by the repository wherever a hosted
-service charges for private-repository enforcement. Required checks fail closed
-and no skipped, neutral, missing, timed-out, or pending result is green.
+`web2solutions/Jumentix` is the public canonical repository. GitHub Actions is
+the canonical CI orchestrator, CircleCI is enabled as the secondary public
+provider, and both providers use free open-source execution paths. Codecov and
+SonarQube Cloud remain active because the repository is public; they are
+published by the full coverage gate and must not replace repository-owned
+threshold checks.
 
-## Free replacement map
+Required checks fail closed. A skipped, neutral, missing, timed-out, cancelled,
+or pending result is not green.
 
-| Retired or unreliable service | Repository-owned replacement | Required evidence |
+## Provider map
+
+| Provider | Role | Required evidence |
 | --- | --- | --- |
-| Hosted CI drift | GitHub Actions branch-aware workflow on the `jumentix` self-hosted runner | `branch-gate` plus JSON gate artifact |
-| Codecov private checks | Jest/Bun LCOV, project threshold and changed-lines checkers, then Codecov CLI upload from GitHub Actions | `coverage`, JSON, LCOV, patch evidence, and `codecov` upload |
-| GitGuardian | pinned Gitleaks CLI in GitHub Actions | SARIF artifacts and terminal `third-party-review` result |
-| Snyk private enforcement | `bun audit`, override integrity and pinned Semgrep | dependency/security cells and SARIF artifacts |
-| Hosted PR reviewer dependency | repository-owned Semgrep and Gitleaks scanners | required `third-party-review` check |
-
-SonarQube Cloud stays as defense in depth while its private-project allowance is
-available. It is not the sole owner of coverage or security evidence. If that
-allowance disappears, repository-owned gates remain blocking; branch protection
-changes only in the governed PR that records the provider retirement.
+| GitHub Actions | Canonical branch-aware CI/CD gate on `ubuntu-latest` | `branch-gate`, full-matrix jobs, JSON/LCOV/SARIF evidence |
+| CircleCI | Secondary CI mirror for public open-source runs | Same context classifier, same job names, artifacts retained |
+| Codecov | Public file-by-file coverage map | LCOV upload from the full `coverage` job |
+| SonarQube Cloud | Public quality, reliability, security and coverage dashboard | Scanner run after repository coverage passes |
+| OSV.dev, Gitleaks, Semgrep | Repository-owned security checks | Terminal dependency/security results and SARIF artifacts |
 
 ## Pull-request gate plan
 
@@ -30,74 +28,47 @@ Task PRs target `dev`; only release promotion from `dev` targets `main`.
 
 | Gate | `dev` task PR | `dev` push | `dev -> main` promotion |
 | --- | --- | --- | --- |
-| Branch-aware build/test | required, layer-affected tests | required, unit health gate | required, full strict matrix |
-| Repository-owned coverage | deferred to promotion | deferred to promotion | required |
+| Branch-aware build/test | required, layer-affected tests | required, unit health gate | required, strict matrix |
 | Third-party review | required | not required | required |
-| Sonar quality gate | deferred to promotion | deferred to promotion | required while available |
-| Storybook/site quality | only when selected by the map | deferred to promotion | required |
-| Governance/traceability | required in the cheap gate | required | required |
+| Repository coverage | deferred | deferred | required |
+| Codecov upload | deferred | deferred | required |
+| Sonar scan | deferred | deferred | required |
+| Website quality | only when selected by `test-map.json` | deferred | required |
+| Database matrix | deferred | deferred | required |
 
-Task PRs to `dev` have a ten-minute-or-less operating target. `branch-gate`
-classifies the context, reads `test-map.json`, and runs only affected/related
-suites plus lightweight governance and security checks. The strict matrix
-includes toolchain, dependency audit, secret/security smoke, architecture
-boundaries, workspace policy, requirements/NFR, registry source,
-unit/integration/e2e suites, coverage, OpenAPI/serverless contracts, build and
-smoke cells. Every cell emits terminal evidence; failures are fixed, never
-bypassed.
+Task PRs to `dev` have a ten-minute-or-less operating target. The
+`branch-gate` classifies the context, reads `test-map.json`, and runs only
+affected/related suites plus lightweight governance and security checks. The
+full matrix runs for `dev -> main` release promotions, `main` pushes, and
+scheduled or manual full runs.
 
 ## Coverage contract
 
 - Statements, lines and functions: 99%.
 - Branches: 90%.
 - Changed lines: 99%.
-- GitHub Actions retains JSON and LCOV for independent audit and uploads LCOV to Codecov for visibility.
-- Local gates and PRs up to `dev` stay fast: full coverage production and patch coverage are required in GitHub Actions for `dev -> main` promotions, `main` pushes, and scheduled full runs.
-- README branch badges and the coverage map point only to canonical workflows.
+- GitHub Actions and CircleCI retain JSON and LCOV evidence and upload LCOV to
+  Codecov when the full coverage job runs.
+- SonarQube Cloud reads the same LCOV paths declared in
+  `sonar-project.properties`.
+- Local gates and PRs up to `dev` stay fast by deferring full coverage and
+  patch coverage to release promotion.
 
-## Third-party review contract
+## Branch protection
 
-The GitHub Actions `third-party-review` job runs pinned Gitleaks and Semgrep binaries.
-Downloads are checksum-verified, SARIF is retained, and scanner errors or
-findings return a non-zero terminal result. Mutable tags and silent
-`continue-on-error` paths are rejected by `ci:check-third-party-review`.
+`dev` requires the cheap destination checks: `branch-gate` and
+`third-party-review`, plus verified signatures, pull requests, non-fast-forward
+protection, deletion protection, and resolved review threads.
 
-Automated review supplements the mandatory quality matrix; it does not replace
-tests, coverage, human accountability, or resolution of valid PR comments.
-
-## Operations and failure recovery
-
-1. Keep the exact required checks on protected `dev` and `main`; approval count
-   stays optional, but quality/security evidence remains mandatory.
-2. Pin tool versions and checksums. Review upstream releases monthly and apply
-   upgrades through governed PRs with checksum and contract tests.
-3. Retain gate, coverage, SARIF and scanner artifacts for the workflow retention
-   window; never put secrets in logs or artifacts.
-4. If the `jumentix` runner is unavailable, use an ephemeral XpertMinds self-hosted
-   GitHub Actions runner with the same labels, Bun commands and no persistent credentials. Local
-   execution is diagnostic only; protected remote checks must still finish.
-5. If a provider stops working, fail closed, record the outage in the Linear
-   Project Update, replace it with a pinned repository-owned tool, and change
-   protection only after the replacement is green.
-6. Weekly: inspect check names and failed schedules. Monthly: review tokens,
-   scanner pins and retention. Quarterly: test provider-loss and runner recovery.
-
-## Required-check names
-
-- `branch-gate`
-- `coverage`
-- `third-party-review`
-- `website`
-- `workspace-builds`
-- `workspace-tests`
-- `integration`
-- `database-matrix`
-
-Cursor Bugbot is neutral/skipped and is not evidence. A future hosted reviewer
-may be defense in depth only; it cannot replace the pinned fail-closed workflow.
+`main` requires the full destination checks: `branch-gate`,
+`third-party-review`, `workspace-builds`, `workspace-tests`, `integration`,
+`coverage`, `website`, and `database-matrix`, plus verified signatures, pull
+requests, non-fast-forward protection, deletion protection, and resolved review
+threads.
 
 ## Definition of green
 
-A PR is green only when every required check is terminally successful, valid
-review findings are resolved, PR/Linear traceability is complete, and protected
-merge succeeds without `--no-verify`, admin, force, or equivalent bypass.
+A PR is green only when every destination-required check is terminally
+successful, valid review threads are resolved, traceability evidence is current,
+and the protected merge succeeds without `--no-verify`, admin, force, or
+equivalent bypass.

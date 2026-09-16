@@ -156,7 +156,7 @@ describe('fastify -> User createPhone suite', () => {
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser1);
-    expect(response.body.message).toBe('Bad Request - localCode can not be empty');
+    expect(response.body.message).toContain('OpenAPI validation failed at "payload.localCode"');
     expect(response.statusCode).toBe(400);
   });
 

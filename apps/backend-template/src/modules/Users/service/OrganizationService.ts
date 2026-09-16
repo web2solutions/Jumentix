@@ -6,7 +6,7 @@ import type {
 import {
   BaseService
 } from '@src/modules/port';
-import { BaseError } from '@src/infra/exceptions';
+import { BaseError, ValidationError } from '@src/infra/exceptions';
 import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
@@ -18,6 +18,12 @@ import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto
 import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 import { OrganizationDataRepository } from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
 import type { ICacheService } from '@src/infra/cache';
+import {
+  runMetricsQuery,
+  type IMetricsCapabilities,
+  type IMetricsQuery,
+  type IMetricsResult
+} from '@jumentix/persistence-contracts';
 
 interface IOrganizationServiceConfig extends IServiceConfig {
 }
@@ -160,6 +166,37 @@ RequestUpdateOrganization
       return serializedResult;
     } catch (error) {
       serviceResponse.error = error as BaseError;
+    }
+    return serviceResponse;
+  }
+
+  public async metrics(
+    filters: Record<string, string | number>,
+    query: IMetricsQuery,
+    capabilities: IMetricsCapabilities
+  ): Promise<IServiceResponse<IMetricsResult>> {
+    const serviceResponse: IServiceResponse<IMetricsResult> = {};
+    try {
+      const page = await this.dataRepository.getAll(filters, { page: 1, size: 10000 });
+      const rows = page.result.map((organization) => {
+        const serialized = OrganizationService.serializeOrganization(organization);
+        return {
+          ...serialized,
+          createdAt: serialized.createdAt instanceof Date
+            ? serialized.createdAt.toISOString()
+            : serialized.createdAt,
+          updatedAt: serialized.updatedAt instanceof Date
+            ? serialized.updatedAt.toISOString()
+            : serialized.updatedAt
+        };
+      }) as Array<Record<string, unknown>>;
+      serviceResponse.result = runMetricsQuery(rows, { ...query, filters }, capabilities);
+    } catch (error) {
+      if (error instanceof Error && /Accepted:/.test(error.message)) {
+        serviceResponse.error = new ValidationError(error.message);
+      } else {
+        serviceResponse.error = error as BaseError;
+      }
     }
     return serviceResponse;
   }

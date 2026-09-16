@@ -1,7 +1,7 @@
 # Bun Install Compatibility Audit
 
 Deliverable of Linear task JUM-538, project `[Tooling] Replace Internal Node and pnpm Workflows with Bun`.
-Evidence collected 2026-07-29 against `XpertMinds/Jumentix` `dev` (`6796b06`), Bun `1.3.13`, macOS (APFS), in
+Evidence collected 2026-07-29 against `web2solutions/Jumentix` `dev` (`6796b06`), Bun `1.3.13`, macOS (APFS), in
 an isolated worktree.
 
 This audit pulls three of the epic's recorded risks forward so they are discovered here rather than inside

@@ -166,7 +166,7 @@ abaixo.
 
 ### A barra de abas é uma tablist de verdade
 
-As quatro abas formam uma tablist WAI-ARIA (`role="tablist"`, `role="tab"`,
+As seis abas visíveis formam uma tablist WAI-ARIA (`role="tablist"`, `role="tab"`,
 `aria-selected`, `aria-controls` no
 [`index.html`](../../apps/service-management/index.html); comportamento em
 [`src/ui/tabs.js`](../../apps/service-management/src/ui/tabs.js)):
@@ -237,6 +237,12 @@ um caminho de teclado — a seleção nunca é exclusiva do ponteiro:
 - **Todo controle tem um nome acessível** — rótulo visível ou `aria-label` —
   e o banner de atualização do PWA é `role="alert"`, de modo que o aviso de
   atualização é anunciado, não apenas exibido.
+- **Todo controle estático tem ajuda alcançável** — a JUM-733 troca textos
+  `title` estáticos do navegador por um controle `?` adjacente com
+  `aria-expanded`, `aria-controls` e `aria-describedby`. O texto de ajuda fica
+  disponível para teclado e toque, não só para hover do mouse. Inputs de
+  arquivo ocultos são a única isenção estática porque os botões visíveis de
+  importação carregam a ação do usuário.
 
 ## Instalando o designer como aplicativo (JUM-489)
 
@@ -305,7 +311,7 @@ no servidor. O reset nunca toca nos dados do designer, que vivem em um
 armazenamento diferente (a fronteira abaixo).
 
 **Comprovado por:**
-[`pwaShell.test.ts`](../../apps/backend-template/test/unit/service-management/pwaShell.test.ts)
+[`pwaShell.test.ts`](../../apps/service-management/test/unit/pwaShell.test.ts)
 (handlers do worker, fluxo de atualização, recuperação — com fakes injetados,
 incluindo a verificação em disco de que cada entrada de pré-cache commitada
 existe) e
@@ -385,7 +391,7 @@ explicação, que divergiria.
 - Comportamento de acessibilidade: [`src/ui/tabs.js`](../../apps/service-management/src/ui/tabs.js), [`src/ui/canvas.js`](../../apps/service-management/src/ui/canvas.js), [`src/ui/inspectors.js`](../../apps/service-management/src/ui/inspectors.js), o mapa global de teclado em [`script.js`](../../apps/service-management/script.js); geometria estrutural fixada por [`src/model/modelQueries.js`](../../packages/designer-core/src/model/modelQueries.js)
 - Cobertura Storybook: [`ServiceManagementDesigner.stories.tsx`](../../apps/jumentix-website/components/service-management-designer/ServiceManagementDesigner.stories.tsx), [`storybook-smoke.mjs`](../../apps/jumentix-website/scripts/storybook-smoke.mjs), [`.storybook/preview.tsx`](../../apps/jumentix-website/.storybook/preview.tsx)
 - Shell PWA: [`manifest.webmanifest`](../../apps/service-management/manifest.webmanifest), [`sw.js`](../../apps/service-management/sw.js), [`src/pwa/pwaShell.js`](../../apps/service-management/src/pwa/pwaShell.js), [`icons/`](../../apps/service-management/icons), [`server.js`](../../apps/service-management/server.js)
-- Suítes: [`pwaShell.test.ts`](../../apps/backend-template/test/unit/service-management/pwaShell.test.ts), [`pwaShell.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts), [`spaBoot.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts), [`modelQueries.test.ts`](../../apps/backend-template/test/unit/service-management/modelQueries.test.ts)
+- Suítes: [`pwaShell.test.ts`](../../apps/service-management/test/unit/pwaShell.test.ts), [`pwaShell.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts), [`spaBoot.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/spaBoot.browser.integration.test.ts), [`modelQueries.test.ts`](../../apps/service-management/test/unit/modelQueries.test.ts)
 - Requisitos: [076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md) (paridade EN/PT)
 - Documentos irmãos da cadeia E: [Contratos de ambiente de runtime](./RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md) (E1), [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md) (E3), [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md) (E4), [Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md) (E5), [Guia de uso do Cana](./CANA-USAGE-GUIDE.pt-BR.md), [Design System e Storybook](../../apps/jumentix-website/documentation/DESIGN-SYSTEM-AND-STORYBOOK.pt-BR.md) (website), [Aplicativo Service Management](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md)
 - Linear: [JUM-488](https://linear.app/jumentix/issue/JUM-488/feature-adopt-jumentix-design-system-and-storybook-coverage), [JUM-489](https://linear.app/jumentix/issue/JUM-489/feature-installable-pwa-shell-service-worker-manifest), [JUM-485](https://linear.app/jumentix/issue/JUM-485/feature-write-event-integration-multi-tab-sync-via-cana-message), [JUM-487](https://linear.app/jumentix/issue/JUM-487/docs-e6-documentation-cana-adoption-migration-and-offline-behavior), [JUM-490](https://linear.app/jumentix/issue/JUM-490/docs-e7-documentation-design-system-and-pwa-shell)

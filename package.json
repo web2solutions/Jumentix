@@ -35,6 +35,8 @@
     "changelog:update": "bun ci-cd/update-changelog.js",
     "changelog:check": "bun ci-cd/update-changelog.js --check",
     "oas:check-routes": "bun ci-cd/check-oas-route-resolution.js",
+    "oas:check-relations": "bun ci-cd/check-oas-relations.js",
+    "entities:purge-tombstones": "bun ci-cd/purge-tombstones.js",
     "deps:check-cycles": "bun ci-cd/check-core-import-cycles.js",
     "arch:check-boundaries": "bun ci-cd/check-hexagonal-boundaries.js",
     "arch:check-users-legacy-imports": "bun ci-cd/check-users-legacy-imports.js",
@@ -72,7 +74,7 @@
     "ci:smoke": "JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun ci-cd/run-api-smoke.js",
     "ci:integration": "JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js",
     "ci:security-smoke": "NODE_ENV=ci bun ci-cd/run-security-smoke.js",
-    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run packages:check-suites && bun run packages:check-build-freshness && bun run website:check-content-routes && bun run rtdb:check-indexes && bun run test:integrity && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
+    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run packages:check-suites && bun run packages:check-build-freshness && bun run website:check-content-routes && bun run rtdb:check-indexes && bun run test:integrity && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run frontend:test:coverage && bun run frontend:coverage:check && bun run ci:security-smoke && bun run oas:check-routes && bun run oas:check-relations && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
     "ci:gate:branch": "bun ci-cd/run-branch-quality-gate.js",
     "ci:gate:task": "bun ci-cd/run-task-change-tests.js",
     "ci:gate:strict": "bun ci-cd/run-full-test-matrix.js",
@@ -102,15 +104,15 @@
     "pm2:logs": "pm2 logs",
     "pm2:stop:all": "pm2 stop all",
     "pm2:delete:all": "pm2 delete all",
-    "pm2:start:dev:restapi": "pm2 start ./pm2/ecosystem.dev.cjs --only jumentix-dev-service-management,jumentix-dev-restapi --update-env",
-    "pm2:start:dev:websocket-rest": "pm2 start ./pm2/ecosystem.dev.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-websocketapi --update-env",
-    "pm2:start:dev:grpc-rest": "pm2 start ./pm2/ecosystem.dev.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-grpcapi --update-env",
-    "pm2:start:staging:restapi": "pm2 start ./pm2/ecosystem.staging.cjs --only jumentix-staging-service-management,jumentix-staging-restapi --update-env",
-    "pm2:start:staging:websocket-rest": "pm2 start ./pm2/ecosystem.staging.cjs --only jumentix-staging-service-management,jumentix-staging-restapi,jumentix-staging-websocketapi --update-env",
-    "pm2:start:staging:grpc-rest": "pm2 start ./pm2/ecosystem.staging.cjs --only jumentix-staging-service-management,jumentix-staging-restapi,jumentix-staging-grpcapi --update-env",
-    "pm2:start:prod:restapi": "pm2 start ./pm2/ecosystem.production.cjs --only jumentix-prod-service-management,jumentix-prod-restapi --update-env",
-    "pm2:start:prod:websocket-rest": "pm2 start ./pm2/ecosystem.production.cjs --only jumentix-prod-service-management,jumentix-prod-restapi,jumentix-prod-websocketapi --update-env",
-    "pm2:start:prod:grpc-rest": "pm2 start ./pm2/ecosystem.production.cjs --only jumentix-prod-service-management,jumentix-prod-restapi,jumentix-prod-grpcapi --update-env",
+    "pm2:start:dev:restapi": "bun run service-management:vendor && pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-purge-tombstones --update-env",
+    "pm2:start:dev:websocket-rest": "bun run service-management:vendor && pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-websocketapi,jumentix-dev-purge-tombstones --update-env",
+    "pm2:start:dev:grpc-rest": "bun run service-management:vendor && pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-grpcapi,jumentix-dev-purge-tombstones --update-env",
+    "pm2:start:staging:restapi": "pm2 start ./pm2/ecosystem.staging.config.cjs --only jumentix-staging-service-management,jumentix-staging-restapi --update-env",
+    "pm2:start:staging:websocket-rest": "pm2 start ./pm2/ecosystem.staging.config.cjs --only jumentix-staging-service-management,jumentix-staging-restapi,jumentix-staging-websocketapi --update-env",
+    "pm2:start:staging:grpc-rest": "pm2 start ./pm2/ecosystem.staging.config.cjs --only jumentix-staging-service-management,jumentix-staging-restapi,jumentix-staging-grpcapi --update-env",
+    "pm2:start:prod:restapi": "pm2 start ./pm2/ecosystem.production.config.cjs --only jumentix-prod-service-management,jumentix-prod-restapi --update-env",
+    "pm2:start:prod:websocket-rest": "pm2 start ./pm2/ecosystem.production.config.cjs --only jumentix-prod-service-management,jumentix-prod-restapi,jumentix-prod-websocketapi --update-env",
+    "pm2:start:prod:grpc-rest": "pm2 start ./pm2/ecosystem.production.config.cjs --only jumentix-prod-service-management,jumentix-prod-restapi,jumentix-prod-grpcapi --update-env",
     "commit": "bun run lint && bun run test && bun ci-cd/bumpPackage.ts && git add . && git-cz",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
@@ -202,7 +204,8 @@
     "cli": "bun run dev:cli",
     "cli:bootstrap": "node ./bin/jumentix-bootstrap.js",
     "dev:cli": "bun -r tsconfig-paths/register ./apps/backend-template/src/interface/CLI/index.ts",
-    "dev:service-management": "pm2 start ./apps/service-management/server.js --name jumentix-dev-service-management --interpreter bun --update-env",
+    "service-management:vendor": "bun ci-cd/sync-service-management-cana-bundle.js && bun ci-cd/sync-service-management-designer-core.js && bun ci-cd/sync-service-management-d3.js",
+    "dev:service-management": "bun run service-management:vendor && pm2 start ./apps/service-management/server.js --name jumentix-dev-service-management --interpreter bun --update-env",
     "start:cli": "bun run dev:cli",
     "prod:http": "pm2 start ./.build/apps/backend-template/src/interface/HTTP/adapters/start-rest-api.js --name jumentix-prod-http --interpreter bun --interpreter-args='--env-file=./.build/apps/backend-template/src/config/.env.prod' --update-env",
     "prod:express": "JUMENTIX_HTTP_FRAMEWORK=express pm2 start ./.build/apps/backend-template/src/interface/HTTP/adapters/start-rest-api.js --name jumentix-prod-express --interpreter bun --interpreter-args='--env-file=./.build/apps/backend-template/src/config/.env.prod' --update-env",
@@ -284,7 +287,7 @@
     "coverage:merge": "bun ci-cd/merge-coverage-reports.js",
     "workspace:test": "bun ci-cd/run-workspace-tests.js",
     "quarantine:flake": "bun ci-cd/quarantine-flake.js",
-    "test:coverage": "NODE_ENV=dev bun x jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit",
+    "test:coverage": "NODE_ENV=dev bun x jest apps/backend-template/test/unit apps/service-management/test/unit apps/service-management-api/test/unit 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit",
     "coverage:check": "bun ci-cd/check-coverage-thresholds.js",
     "test:browser": "bun ci-cd/run-browser-tests.js",
     "test:integration:key-value": "bun ci-cd/run-redis-key-value-integration.js",
@@ -299,7 +302,11 @@
     "website:check-content-routes": "bun ci-cd/check-website-content-routes.js",
     "rtdb:check-indexes": "bun ci-cd/check-rtdb-indexes.js",
     "test:integrity": "bun ci-cd/check-test-integrity.js",
-    "rtdb:export-rules": "bun ci-cd/export-database-rules.js"
+    "rtdb:export-rules": "bun ci-cd/export-database-rules.js",
+    "frontend:test:unit": "bun run --filter @jumentix/frontend test",
+    "frontend:test:coverage": "bun run --filter @jumentix/frontend test:coverage",
+    "frontend:coverage:check": "bun ci-cd/check-frontend-coverage.js",
+    "frontend:test:e2e": "bun run --filter @jumentix/frontend test:e2e"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.940.0",
@@ -309,6 +316,7 @@
     "@fastify/static": "^10.1.1",
     "@grpc/grpc-js": "^1.14.1",
     "@grpc/proto-loader": "^0.8.0",
+    "@loopback/repository": "^8.0.14",
     "@socket.io/cluster-adapter": "^0.3.0",
     "@socket.io/redis-streams-adapter": "^0.3.1",
     "amqplib": "^2.0.1",
@@ -407,7 +415,8 @@
   },
   "patchedDependencies": {
     "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch",
-    "@theguild/remark-mermaid@0.3.0": "patches/@theguild%2Fremark-mermaid@0.3.0.patch"
+    "@theguild/remark-mermaid@0.3.0": "patches/@theguild%2Fremark-mermaid@0.3.0.patch",
+    "@coreui/icons-vue@2.2.0": "patches/@coreui%2Ficons-vue@2.2.0.patch"
   },
   "config": {
     "commitizen": {
@@ -416,9 +425,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/XpertMinds/Jumentix/issues"
+    "url": "https://github.com/web2solutions/Jumentix/issues"
   },
-  "homepage": "https://github.com/XpertMinds/Jumentix#readme",
+  "homepage": "https://github.com/web2solutions/Jumentix#readme",
   "author": {
     "name": "Eduardo Almeida",
     "url": "https://github.com/XpertMinds",
@@ -443,6 +452,13 @@
     "protobufjs": "^7.6.5",
     "adm-zip": "^0.6.0",
     "dompurify": "^3.4.13",
-    "undici": "^6.28.0"
+    "undici": "^6.28.0",
+    "vue-eslint-parser": {
+      "eslint-scope": "^9.1.2"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web2solutions/Jumentix.git"
   }
 }

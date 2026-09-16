@@ -33,7 +33,7 @@ Este conjunto de documentação define como a intenção do produto, as restriç
 14. [Práticas de engenharia de especificações e política Git](./SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md)
 15. [Práticas de segurança e conformidade de especificações](./SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md)
 16. [Sistema de componentes Spec Jumentix](./SPEC-JUMENTIX-COMPONENT-SYSTEM.md)
-17. [Estratégia gratuita de CI para repositório privado](./PRIVATE-FREE-CI-STRATEGY.pt-BR.md)
+17. [Estratégia gratuita de CI para repositório público](./PRIVATE-FREE-CI-STRATEGY.pt-BR.md)
 
 ## Princípio Obrigatório
 
@@ -65,8 +65,8 @@ Esta política é aplicada através de:
 
 ## Fontes de ligação
 
-A autoridade dos repositórios segue o Requisito `103`: o repositório privado
-`XpertMinds/Jumentix` é canônico para este conjunto de especificações. A
+A autoridade dos repositórios segue o Requisito `103`: o repositório público
+`web2solutions/Jumentix` é canônico para este conjunto de especificações. A
 coordenação de agentes é canônica no Firestore Database, conforme o Requisito
 `089`. Todas as origens anteriores em `web2solutions` — e o antigo espelho
 GitHub `XpertMinds/jumentix-agent-registry` — estão obsoletas, são somente

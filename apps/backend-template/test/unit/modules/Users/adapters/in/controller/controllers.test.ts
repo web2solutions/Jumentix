@@ -39,7 +39,8 @@ const makeFactory = (overrides: Record<string, any> = {}) => {
       deletePhone: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
       createEmail: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
       updateEmail: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
-      deleteEmail: jest.fn().mockResolvedValue({ result: { id: 'u1' } })
+      deleteEmail: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
+      metrics: jest.fn().mockResolvedValue({ result: { metric: 'count', buckets: [] } })
     },
     organizationUseCases: {
       create: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } }),
@@ -57,7 +58,8 @@ const makeFactory = (overrides: Record<string, any> = {}) => {
       deletePhone: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } }),
       createEmail: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } }),
       updateEmail: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } }),
-      deleteEmail: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } })
+      deleteEmail: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } }),
+      metrics: jest.fn().mockResolvedValue({ result: { metric: 'count', buckets: [] } })
     },
     authUseCases: {
       login: jest.fn().mockResolvedValue({ result: { token: 't' } }),
@@ -125,6 +127,9 @@ describe('users controllers', () => {
     await controller.createEmail(event);
     await controller.updateEmail(event);
     await controller.deleteEmail(event);
+    await controller.getUsersMetrics(makeEvent({
+      queryString: { metric: 'count' }
+    }));
 
     expect(factory.userUseCases.create).toHaveBeenCalled();
     expect(factory.userUseCases.update).toHaveBeenCalledWith('u1', event.input);
@@ -145,6 +150,9 @@ describe('users controllers', () => {
     await controller.delete(event);
     await controller.getOneById(event);
     await controller.getAll(event);
+    await controller.getOrganizationsMetrics(makeEvent({
+      queryString: { metric: 'count' }
+    }));
     await controller.createAddress(event);
     await controller.updateAddress(event);
     await controller.deleteAddress(event);

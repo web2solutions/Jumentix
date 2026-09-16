@@ -8,9 +8,9 @@ import path from 'node:path';
  * authoritative, and it reports the health of something else entirely. Three
  * were live before this suite existed —
  *
- *   - both SonarCloud badges pointed at `web2solutions_aaa-typescript-boilerplate`,
+ *   - SonarCloud badges pointed at the wrong project key,
  *     the pre-migration project key, so they had been showing another project's
- *     quality gate since the move to `XpertMinds/Jumentix` (Requirement 103);
+ *     quality gate since the move to `web2solutions/Jumentix` (Requirement 103);
  *   - a Snyk badge remained after Snyk was retired in JUM-540, advertising a
  *     scanner the repository no longer runs;
  *   - a `node 22.x` badge implied Node is the runtime, which Requirement 096
@@ -46,46 +46,69 @@ describe('rEADME badges', () => {
   it('shows GitHub Actions for both long-lived branches', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=${branch}`);
-      expect(readme).toContain(`https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3A${branch}`);
+      expect(readme).toContain(`https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=${branch}`);
+      expect(readme).toContain(`https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3A${branch}`);
     }
-    expect(badges).not.toContain('CircleCI');
-    expect(badges).not.toContain('dl.circleci.com/status-badge');
   });
 
-  it('points SonarCloud at the project key the scanner actually reports to', () => {
+  it('shows live CircleCI status for dev and stable release-gate status for main', () => {
     expect.hasAssertions();
 
+    expect(readme).toContain('https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield');
+    expect(readme).toContain('https://img.shields.io/badge/CircleCI-release%20gate-configured');
+    expect(readme).not.toContain('https://circleci.com/gh/web2solutions/Jumentix/tree/main.svg?style=shield');
+    expect(readme).toContain('https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev');
+    expect(readme).toContain('https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main');
+  });
+
+  it('links SonarCloud dashboards through the public project badge endpoints', () => {
     expect.hasAssertions();
-    // The failure this catches: a badge that renders green for a project nobody
-    // is scanning.
+
     const key = sonarProperties.match(/sonar\.projectKey=(\S+)/)?.[1];
+    const expectedBadgeSlugs = [
+      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=alert_status`,
+      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=reliability_rating`,
+      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=coverage`
+    ];
 
-    expect(key).toBe('Jumentix');
-    expect(badges).toContain(`project=${key}`);
+    expect(key).toBe('web2solutions_Jumentix');
+    expect(badges).toContain(`sonarcloud.io/summary/new_code?id=${key}`);
+    expect(expectedBadgeSlugs.every((slug) => badges.includes(slug))).toBe(true);
     expect(badges).not.toContain('web2solutions_aaa-typescript-boilerplate');
   });
 
   it('carries no badge for a retired service', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     // Paid/unreliable providers were retired in favour of repository-owned gates.
     expect(badges).not.toContain('snyk.io');
     expect(badges).not.toContain('token=');
     expect(badges).not.toContain('badge/codecov-via%20CircleCI');
+    expect(badges).not.toContain('codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
   });
 
-  it('badges real Codecov branch coverage and links to the file maps', () => {
+  it('badges the Codecov integration without claiming unavailable branch coverage', () => {
+    expect.hasAssertions();
+
+    expect(readme).toContain('https://img.shields.io/badge/Codecov-release%20coverage-configured');
+    expect(readme).toContain('https://app.codecov.io/gh/web2solutions/Jumentix');
+    expect(readme).not.toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
+    expect(readme).not.toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg');
+  });
+
+  it('explains why Codecov uses file-map links before release coverage exists', () => {
+    expect.hasAssertions();
+
+    expect(readme).toContain('full coverage is release-only');
+    expect(readme).toContain('first post-migration release coverage upload');
+  });
+
+  it('links Codecov file maps for long-lived branches', () => {
     expect.hasAssertions();
 
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(
-        `https://codecov.io/gh/XpertMinds/Jumentix/branch/${branch}/graph/badge.svg?flag=project`
-      );
-      expect(readme).toContain(`https://app.codecov.io/gh/XpertMinds/Jumentix/tree/${branch}`);
+      expect(readme).toContain(`https://app.codecov.io/gh/web2solutions/Jumentix/tree/${branch}`);
     }
     expect(readme).toContain('Codecov file map for `dev`');
     expect(readme).toContain('Codecov file map for `main`');
@@ -95,7 +118,7 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
 
     expect(readme).toContain('## Coverage and CI Map');
-    expect(readme).toContain('| Codecov project coverage |');
+    expect(readme).toContain('| Codecov coverage |');
     expect(readme).toContain('| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |');
     expect(readme).toContain('Istanbul JSON and LCOV evidence');
   });
@@ -103,7 +126,6 @@ describe('rEADME badges', () => {
   it('names Bun as the runtime at the pinned version', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     // Requirement 096: Bun is the sole internal runtime. A badge claiming Node
     // misstates what the repository runs on.
     expect(badges).toContain(`badge/bun-${pinnedBunVersion}`);
@@ -112,7 +134,6 @@ describe('rEADME badges', () => {
   it('presents Node as a compatibility target, not as the runtime', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     // Node survives as a declared consumer-facing compatibility target
     // (Requirement 096 §4), which is a materially different claim.
     expect(badges).toContain('node%20compat');
@@ -123,8 +144,8 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
 
     expect.hasAssertions();
-    // Requirement 103: `web2solutions` is deprecated and read-only.
-    expect(badges).not.toContain('web2solutions');
+    // Requirement 103: the canonical repository lives under `web2solutions`.
+    expect(badges).not.toContain('XpertMinds/Jumentix');
   });
 });
 
@@ -193,7 +214,6 @@ describe('web framework badges', () => {
   it('badges every adapter directory that exists', () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
     // Catches the omission a hand-written list invites: a new adapter lands and
     // nobody remembers the README.
     const onDisk = fs.readdirSync(adaptersDir, { withFileTypes: true })

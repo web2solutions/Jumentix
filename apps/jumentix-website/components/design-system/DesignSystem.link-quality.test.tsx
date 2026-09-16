@@ -70,9 +70,9 @@ describe('Design System link quality', () => {
 
   it('ActionLink external has valid href', () => {
     expect.hasAssertions();
-    render(<ActionLink href="https://github.com/XpertMinds/Jumentix" external>GitHub</ActionLink>);
+    render(<ActionLink href="https://github.com/web2solutions/Jumentix" external>GitHub</ActionLink>);
     const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', 'https://github.com/XpertMinds/Jumentix');
+    expect(link).toHaveAttribute('href', 'https://github.com/web2solutions/Jumentix');
   });
 
   it('ActionLink quiet variant has valid href', () => {

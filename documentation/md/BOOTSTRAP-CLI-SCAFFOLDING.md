@@ -5,7 +5,7 @@ This boilerplate now exposes registry-installable bootstrap CLI commands:
 - `jumentix-bootstrap`
 - `jumentix-init`
 
-The command clones `XpertMinds/Jumentix` into a target folder and writes initial service profile metadata.
+The command clones `web2solutions/Jumentix` into a target folder and writes initial service profile metadata.
 
 Workspace ownership:
 

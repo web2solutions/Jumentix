@@ -98,7 +98,7 @@ describe('restify -> User updateDocument suite', () => {
     expect.hasAssertions();
     const requestUpdateDocument: RequestUpdateDocument = {
       ...document1,
-      data: '111-111-111'
+      data: '111-11-1111'
     };
     const response = await request(server)
       .put(`/api/1.0.0/users/${user1.id}/updateDocument/${document1.id}`)
@@ -140,7 +140,7 @@ describe('restify -> User updateDocument suite', () => {
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser1);
-    expect(response.body.message).toBe('Bad Request - countryIssue can not be empty');
+    expect(response.body.message).toContain('OpenAPI validation failed at "payload.countryIssue"');
     expect(response.statusCode).toBe(400);
   });
 

@@ -96,6 +96,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Service Management Operations Console: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-operations-console
 - Runtime Environment Contracts: https://jumentix-website.vercel.app/docs/jumentix/reference/runtime-contracts
 - Service Management Cana Adoption: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-cana-adoption
+- Frontend offline data layer: https://jumentix-website.vercel.app/docs/jumentix/reference/frontend-offline-data-layer
 - Events and Messages Map: https://jumentix-website.vercel.app/docs/jumentix/reference/events-messages
 - Service Management Module Architecture: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-module-architecture
 - Security and PCI Hardening: https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance

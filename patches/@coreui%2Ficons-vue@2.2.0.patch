@@ -1,0 +1,26 @@
+diff --git a/dist/index.es.js b/dist/index.es.js
+index 5a238c043c91dfc39242ee82924db0fb7264dac1..8003d6b7000c3ee83ad03c3a89ff0138251cba96 100644
+--- a/dist/index.es.js
++++ b/dist/index.es.js
+@@ -99,7 +99,7 @@ const CIcon = defineComponent({
+                 ? toCamelCase(_icon.value)
+                 : _icon.value
+             : '');
+-        const titleCode = props.title ? `<title>${props.title}</title>` : 'undefined';
++        const titleCode = props.title ? `<title>${props.title}</title>` : '';
+         const code = computed(() => Array.isArray(_icon.value)
+             ? _icon.value
+             : typeof _icon.value === 'string' && iconName.value && icons[iconName.value]
+diff --git a/dist/index.js b/dist/index.js
+index 85fefbdee57bca131ac354241300b9dda3cfcf77..43875fa0149648537a1f246de273b29b8774e5f0 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -103,7 +103,7 @@ const CIcon = vue.defineComponent({
+                 ? toCamelCase(_icon.value)
+                 : _icon.value
+             : '');
+-        const titleCode = props.title ? `<title>${props.title}</title>` : 'undefined';
++        const titleCode = props.title ? `<title>${props.title}</title>` : '';
+         const code = vue.computed(() => Array.isArray(_icon.value)
+             ? _icon.value
+             : typeof _icon.value === 'string' && iconName.value && icons[iconName.value]

@@ -117,7 +117,7 @@ function sourceFiles(directory) {
  */
 function isSwallowed(source, moduleName) {
   const pattern = new RegExp(
-    `try\\s*\\{[^}]*require\\(['"]${moduleName.replace(/[/@.]/g, '\\$&')}['"]\\)[^}]*\\}\\s*catch`,
+    `try\\s*\\{[^}]*require\\(['"]${moduleName.replace(/[\\/@.]/g, '\\$&')}['"]\\)[^}]*\\}\\s*catch`,
     's'
   );
   return pattern.test(source);

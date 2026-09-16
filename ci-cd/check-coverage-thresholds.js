@@ -60,12 +60,6 @@ const THRESHOLDS = {
  * its threshold, the checker fails until the entry is removed.
  */
 const ACCEPTED_BELOW_THRESHOLD = {
-  branches: {
-    floor: 97.47,
-    issue: 'JUM-579',
-    since: '2026-08-29',
-    reason: 'Release coverage currently misses a small branch-only gap after CI provider migration; keep the 98% threshold as a ratchet.'
-  }
 };
 
 /**

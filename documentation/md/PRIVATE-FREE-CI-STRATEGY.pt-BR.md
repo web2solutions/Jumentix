@@ -1,29 +1,26 @@
-# Estratégia gratuita de CI para repositório privado
+# Estratégia gratuita de CI para open source público
 
 ## Decisão
 
-O Jumentix permanece privado sob `XpertMinds`. GitHub Actions voltou a ser o
-orquestrador canônico, CircleCI está desabilitado, e runners self-hosted do
-repositório fornecem o caminho de execução sem custo enquanto billing bloqueia
-runners hospedados. Quando um serviço cobra pela validação de repositório
-privado, a evidência é gerada e retida pelo próprio repositório. Checks
-obrigatórios falham fechado: resultado pulado, neutro, ausente, expirado ou
-pendente nunca é verde.
+`web2solutions/Jumentix` é o repositório público canônico. GitHub Actions é o
+orquestrador canônico de CI, CircleCI está habilitado como provedor público
+secundário, e ambos usam caminhos gratuitos para open source. Codecov e
+SonarQube Cloud permanecem ativos porque o repositório é público; eles são
+publicados pelo gate completo de cobertura e não substituem os thresholds
+controlados pelo repositório.
 
-## Mapa de substituição gratuita
+Checks obrigatórios falham fechado. Resultado pulado, neutro, ausente,
+expirado, cancelado ou pendente não é verde.
 
-| Serviço aposentado ou instável | Substituição do repositório | Evidência obrigatória |
+## Mapa de provedores
+
+| Provedor | Papel | Evidência obrigatória |
 | --- | --- | --- |
-| Drift de CI hospedada | workflow GitHub Actions por branch no runner self-hosted `jumentix` | `branch-gate` e artefato JSON |
-| Checks privados Codecov | LCOV Jest/Bun, threshold do projeto e linhas alteradas, depois upload Codecov CLI no GitHub Actions | `coverage`, JSON, LCOV, patch e upload `codecov` |
-| GitGuardian | Gitleaks CLI fixado no GitHub Actions | artefatos SARIF e `third-party-review` terminal |
-| Snyk privado | `bun audit`, integridade de overrides e Semgrep fixado | células de dependência/segurança e artefatos SARIF |
-| Revisor hospedado de PR | scanners Semgrep e Gitleaks controlados pelo repositório | check obrigatório `third-party-review` |
-
-SonarQube Cloud continua como defesa em profundidade enquanto houver cota para o
-projeto privado. Ele não é o único proprietário da cobertura ou segurança. Se a
-cota desaparecer, os gates do repositório continuam bloqueantes; a proteção só
-muda na PR governada que registra a aposentadoria do provedor.
+| GitHub Actions | Gate canônico por branch em `ubuntu-latest` | `branch-gate`, jobs da matriz completa, evidência JSON/LCOV/SARIF |
+| CircleCI | Espelho secundário de CI para execução pública open source | Mesmo classificador de contexto, mesmos nomes de jobs e artefatos retidos |
+| Codecov | Mapa público de cobertura arquivo a arquivo | Upload LCOV pelo job completo `coverage` |
+| SonarQube Cloud | Dashboard público de qualidade, confiabilidade, segurança e cobertura | Scanner após a cobertura do repositório passar |
+| OSV.dev, Gitleaks, Semgrep | Checks de segurança controlados pelo repositório | Resultados terminais de dependência/segurança e artefatos SARIF |
 
 ## Plano de gates de pull request
 
@@ -31,72 +28,47 @@ PRs de tarefa miram `dev`; somente promoção de release de `dev` mira `main`.
 
 | Gate | PR de tarefa para `dev` | push em `dev` | promoção `dev -> main` |
 | --- | --- | --- | --- |
-| Build/teste por branch | obrigatório, testes afetados por camada | unitário health | matriz estrita completa |
-| Cobertura do repositório | adiada para promoção | adiada para promoção | obrigatória |
-| Revisão third-party | obrigatória | não obrigatória | obrigatória |
-| Quality gate Sonar | adiado para promoção | adiado para promoção | obrigatório enquanto disponível |
-| Qualidade Storybook/site | somente quando selecionada pelo mapa | adiada para promoção | obrigatória |
-| Governança/rastreabilidade | obrigatória no gate barato | obrigatória | obrigatória |
+| Build/teste por branch | obrigatório, testes afetados por camada | unitário health obrigatório | matriz estrita obrigatória |
+| Review third-party | obrigatório | não obrigatório | obrigatório |
+| Cobertura do repositório | adiada | adiada | obrigatória |
+| Upload Codecov | adiado | adiado | obrigatório |
+| Scan Sonar | adiado | adiado | obrigatório |
+| Qualidade website | somente quando selecionada pelo `test-map.json` | adiada | obrigatória |
+| Matriz de banco | adiada | adiada | obrigatória |
 
 PRs de tarefa para `dev` têm alvo operacional de dez minutos ou menos. O
 `branch-gate` classifica o contexto, lê `test-map.json` e executa apenas suites
 afetadas/relacionadas, mais checks leves de governança e segurança. A matriz
-estrita cobre toolchain, auditoria de dependências, smoke de segredos/segurança,
-arquitetura, workspaces, requisitos/NFR, registry, testes unitários/integração/e2e,
-cobertura, OpenAPI/serverless, build e smoke. Toda célula produz evidência
-terminal; falhas são corrigidas, nunca contornadas.
+completa roda em promoções `dev -> main`, pushes em `main` e execuções completas
+agendadas ou manuais.
 
 ## Contrato de cobertura
 
 - Statements, linhas e funções: 99%.
 - Branches: 90%.
 - Linhas alteradas: 99%.
-- GitHub Actions retém JSON e LCOV para auditoria independente e envia LCOV ao Codecov para visibilidade.
-- Gates locais e PRs até `dev` ficam rápidos: cobertura completa e patch coverage são obrigatórios no GitHub Actions para promoções `dev -> main`, pushes em `main` e execuções completas agendadas.
-- Badges e mapa de cobertura apontam apenas para workflows canônicos.
+- GitHub Actions e CircleCI retêm evidência JSON/LCOV e enviam LCOV ao Codecov
+  quando o job completo de cobertura roda.
+- SonarQube Cloud lê os mesmos caminhos LCOV declarados em
+  `sonar-project.properties`.
+- Gates locais e PRs até `dev` ficam rápidos ao adiar cobertura completa e
+  patch coverage para a promoção de release.
 
-## Contrato de revisão third-party
+## Proteção de branch
 
-O job GitHub Actions `third-party-review` executa Gitleaks e Semgrep fixados.
-Downloads têm checksum, SARIF é retido e erro ou finding retorna saída terminal
-diferente de zero. Tags mutáveis e `continue-on-error` silencioso são recusados
-por `ci:check-third-party-review`.
+`dev` exige os checks baratos do destino: `branch-gate` e
+`third-party-review`, além de assinaturas verificadas, pull requests, proteção
+contra non-fast-forward, proteção contra deleção e threads de review resolvidas.
 
-A revisão automática complementa a matriz; não substitui testes, cobertura,
-responsabilidade humana ou resolução de comentários válidos.
-
-## Operação e recuperação
-
-1. Manter os checks exatos em `dev` e `main`; aprovação pode ser opcional, mas
-   evidência de qualidade e segurança continua obrigatória.
-2. Fixar versões e checksums. Revisar releases mensalmente e atualizar por PR
-   governada com checksum e testes de contrato.
-3. Reter gate, cobertura, SARIF e scanners pelo prazo do workflow; nunca incluir
-   segredos em logs ou artefatos.
-4. Se o runner `jumentix` ficar indisponível, usar runner GitHub Actions efêmero da
-   XpertMinds com os mesmos labels, comandos Bun e sem credenciais persistentes. Execução local é só
-   diagnóstico; checks remotos protegidos ainda precisam terminar.
-5. Se um provedor parar, falhar fechado, registrar no Project Update do Linear,
-   substituí-lo por ferramenta fixada e só alterar proteção após ficar verde.
-6. Semanalmente: conferir checks/agendamentos. Mensalmente: tokens, pins e
-   retenção. Trimestralmente: testar perda de provedor e recuperação de runner.
-
-## Nomes dos checks obrigatórios
-
-- `branch-gate`
-- `coverage`
-- `third-party-review`
-- `website`
-- `workspace-builds`
-- `workspace-tests`
-- `integration`
-- `database-matrix`
-
-Cursor Bugbot é neutro/pulado e não é evidência. Outro revisor hospedado só pode
-ser defesa adicional; não substitui o workflow fixado e fail-closed.
+`main` exige os checks completos do destino: `branch-gate`,
+`third-party-review`, `workspace-builds`, `workspace-tests`, `integration`,
+`coverage`, `website` e `database-matrix`, além de assinaturas verificadas,
+pull requests, proteção contra non-fast-forward, proteção contra deleção e
+threads de review resolvidas.
 
 ## Definição de verde
 
-Uma PR só está verde quando todos os checks obrigatórios terminam com sucesso,
-achados válidos são resolvidos, rastreabilidade PR/Linear está completa e o merge
-protegido ocorre sem `--no-verify`, admin, force ou bypass equivalente.
+Uma PR só está verde quando todos os checks exigidos pelo destino terminam com
+sucesso, threads válidas de review estão resolvidas, a rastreabilidade está
+atualizada e o merge protegido ocorre sem `--no-verify`, admin, force ou bypass
+equivalente.

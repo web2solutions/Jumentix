@@ -23,12 +23,12 @@ import type {
 import {
   composeUsersAuthServices
 } from '@src/modules/Users';
-import {
-  composeCatalogsServices
-} from '@src/modules/Catalogs';
 
-import users from '@seed/users';
-import organizations from '@seed/organizations';
+import users, { seedUserIds } from '@seed/users';
+import organizations, { seedOrganizationIds } from '@seed/organizations';
+import { assertSeedIdNotPurged } from '@jumentix/persistence-contracts';
+import { entityIdLedger } from '@src/infra/persistence/InMemoryDatabase/idReservationLedger';
+import { purgeUserAndOrganizationTombstones } from '@src/infra/persistence/purgeStores';
 
 export class RestAPI<T> {
   private readonly oas: Map<string, OpenAPIV3.Document> = new Map();
@@ -56,8 +56,6 @@ export class RestAPI<T> {
   private readonly messageMediator: IMessageMediator | undefined;
 
   private usersComposition: ReturnType<typeof composeUsersAuthServices> | undefined;
-
-  private catalogsComposition: ReturnType<typeof composeCatalogsServices> | undefined;
 
   constructor(config: IAPIFactory<T>) {
     this.serverType = config.serverType ?? EHTTPFrameworks.express;
@@ -114,6 +112,38 @@ export class RestAPI<T> {
 
     const localhostGet = config.infraHandlers.localhostGetHandlerFactory({ ...noServiceInjection });
     this.server.endPointRegister(localhostGet);
+
+    // AsyncLocalStorage request-context metrics for Service Management scrape
+    // (Monitoring tab / Contract 1c+1d). Loopback-oriented; no request body.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const { snapshotAsyncContextMetrics } = require('@src/infra/context/Context');
+    this.server.endPointRegister({
+      method: 'get',
+      path: '/async-context-metrics',
+      handler: (_req: any, res: any): void => {
+        res.status(200).json(snapshotAsyncContextMetrics());
+      }
+    });
+
+    this.server.endPointRegister({
+      method: 'post',
+      path: '/internal/tombstones/purge',
+      handler: async (req: any, res: any): Promise<void> => {
+        const ip = String(req.ip || req.socket?.remoteAddress || '');
+        const loopback = ip === '127.0.0.1' || ip === '::1' || ip.endsWith('127.0.0.1');
+        if (!loopback) {
+          res.status(403).json({ error: 'Purge is loopback-only.' });
+          return;
+        }
+        const body = req.body || {};
+        const report = await this.purgeTombstones({
+          commit: body.commit === true,
+          olderThanDays: Number(body.olderThanDays) || undefined,
+          protectSeed: body.protectSeed !== false
+        });
+        res.status(200).json(report);
+      }
+    });
 
     // serve API docs as JSON
     const apiVersionsGet = config.infraHandlers.apiVersionsGetHandlerFactory({
@@ -212,7 +242,6 @@ export class RestAPI<T> {
     const { moduleName, controllerName } = RestAPI.resolveControllerMetadata(module);
     const ControllerModule = RestAPI.getControllerModule(moduleName, controllerName);
     const usersModuleComposition = moduleName === 'Users' ? this.composeUsersModule() : undefined;
-    const catalogsModuleComposition = moduleName === 'Catalogs' ? this.composeCatalogsModule() : undefined;
 
     const controller = new ControllerModule({
       authService: usersModuleComposition?.authService ?? this.authService,
@@ -222,7 +251,6 @@ export class RestAPI<T> {
       userUseCases: usersModuleComposition?.userUseCases,
       organizationUseCases: usersModuleComposition?.organizationUseCases,
       authUseCases: usersModuleComposition?.authUseCases,
-      catalogUseCases: catalogsModuleComposition?.catalogUseCases,
       mutexService: this.mutexClient,
       passwordCryptoService: this.passwordCryptoService,
       messageMediator: this.messageMediator
@@ -369,6 +397,26 @@ export class RestAPI<T> {
     await this.seedUsers();
   }
 
+  public async purgeTombstones(options: {
+    commit?: boolean;
+    olderThanDays?: number;
+    protectSeed?: boolean;
+    now?: Date;
+  } = {}) {
+    const excludeIds = options.protectSeed === false
+      ? []
+      : [...seedOrganizationIds, ...seedUserIds];
+    return purgeUserAndOrganizationTombstones({
+      userStore: this.databaseClient.stores.User,
+      organizationStore: this.databaseClient.stores.Organization,
+      ledger: entityIdLedger,
+      now: options.now,
+      olderThanDays: options.olderThanDays,
+      commit: options.commit === true,
+      excludeIds
+    });
+  }
+
   /**
    * Seeded one at a time, on purpose (JUM-687).
    *
@@ -383,17 +431,40 @@ export class RestAPI<T> {
     const seeded: any[] = [];
 
     for (const organization of organizations) {
+      assertSeedIdNotPurged(entityIdLedger, 'Organization', organization.id);
       // eslint-disable-next-line no-await-in-loop
       const existing = await organizationUseCases.getOneById(organization.id);
       if (existing.result) {
         seeded.push(existing.result);
-      } else {
-        // eslint-disable-next-line no-await-in-loop
-        const created = await organizationUseCases.create(organization as any);
-        if (created.error) throw new Error((created.error as Error).message);
-        if (!created.result) throw new Error('Organization seed failed');
-        seeded.push(created.result);
+        // eslint-disable-next-line no-continue
+        continue;
       }
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const tombstone = await this.databaseClient.stores.Organization.getOneById(
+          organization.id,
+          { includeDeleted: true }
+        );
+        if (tombstone) {
+          // eslint-disable-next-line no-await-in-loop
+          await this.databaseClient.stores.Organization.update(organization.id, {
+            ...tombstone,
+            deletedAt: null
+          });
+          // eslint-disable-next-line no-await-in-loop
+          const restored = await organizationUseCases.getOneById(organization.id);
+          if (restored.result) seeded.push(restored.result);
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+      } catch {
+        // Record really missing — create below.
+      }
+      // eslint-disable-next-line no-await-in-loop
+      const created = await organizationUseCases.create(organization as any);
+      if (created.error) throw new Error((created.error as Error).message);
+      if (!created.result) throw new Error('Organization seed failed');
+      seeded.push(created.result);
     }
 
     return seeded;
@@ -406,6 +477,36 @@ export class RestAPI<T> {
     const seeded: IUser[] = [];
 
     for (const user of users) {
+      assertSeedIdNotPurged(entityIdLedger, 'User', user.id);
+      // eslint-disable-next-line no-await-in-loop
+      const existing = await userUseCases.getOneById(user.id);
+      if (existing.result) {
+        seeded.push(existing.result);
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      try {
+        // Tombstones hide from getOneById; the seed id must stay reserved.
+        // eslint-disable-next-line no-await-in-loop
+        const tombstone = await this.databaseClient.stores.User.getOneById(
+          user.id,
+          { includeDeleted: true }
+        );
+        if (tombstone) {
+          // eslint-disable-next-line no-await-in-loop
+          await this.databaseClient.stores.User.update(user.id, {
+            ...tombstone,
+            deletedAt: null
+          });
+          // eslint-disable-next-line no-await-in-loop
+          const restored = await userUseCases.getOneById(user.id);
+          if (restored.result) seeded.push(restored.result);
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+      } catch {
+        // Record really missing — create below.
+      }
       // eslint-disable-next-line no-await-in-loop
       const newUser = await userUseCases.create(user);
       if (newUser.error) throw new Error((newUser.error as Error).message);
@@ -437,17 +538,6 @@ export class RestAPI<T> {
     }
     return Promise.all(requests);
     // console.log('>>>> done');
-  }
-
-  private composeCatalogsModule(): ReturnType<typeof composeCatalogsServices> {
-    if (this.catalogsComposition) return this.catalogsComposition;
-
-    this.catalogsComposition = composeCatalogsServices({
-      databaseClient: this.databaseClient,
-      eventBus: this.eventBus,
-      messageMediator: this.messageMediator
-    });
-    return this.catalogsComposition;
   }
 
   private composeUsersModule(): ReturnType<typeof composeUsersAuthServices> {

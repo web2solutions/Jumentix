@@ -133,7 +133,7 @@ O que o usuário vê:
   fabricado.
 
 **Comprovado por:**
-[`canaMigration.test.ts`](../../apps/backend-template/test/unit/service-management/canaMigration.test.ts)
+[`canaMigration.test.ts`](../../apps/service-management/test/unit/canaMigration.test.ts)
 (unitário) e
 [`canaMigration.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/canaMigration.browser.integration.test.ts)
 (navegador real, IndexedDB real), mais a célula de idempotência da migração
@@ -300,7 +300,7 @@ offline, classificação de falhas, armazenamento privado/bloqueado, IndexedDB
 ausente, evicção, corrupção, aviso de quota seguido de falha), executadas em
 um navegador WebKit real contra o servidor real e o bundle Cana vendored
 real, mais
-[`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts)
+[`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts)
 (o mapeamento taxonomia de erros → porta) em nível unitário. A matriz e esta
 seção são a mesma promessa; mudou uma, mude a outra.
 
@@ -347,7 +347,7 @@ A semântica registrada:
   local de aba única.
 
 **Comprovado por:**
-[`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts)
+[`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts)
 (unitário) e
 [`multiTabSync.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts)
 (contextos reais de navegador com duas abas).
@@ -361,13 +361,13 @@ que existe — portanto ela deve ser óbvia, não meramente disponível.
   Designer baixa `domain-designer.json` — o documento de suíte completa
   (JUM-547: `{ kind: "service-management-suite", version: "2.0.0", domains,
   relationships, interfaces, serviceConfiguration, runtimeEnvironment,
-  deployments, view }`). O **Import JSON** na mesma barra o restaura. Os
+  codeWorkspace, deployments, view }`). O **Import JSON** na mesma barra o restaura. Os
   outros botões de exportação (Markdown, JSON Schema, OAS 3.1, AsyncAPI, gRPC
   proto, boilerplate bundle, pacote de domínio) são artefatos de design para
   ferramentas downstream, não backups.
 - **O escopo da exportação, honestamente:** a exportação JSON carrega as
-  quatro abas do estado da suíte — o modelo de domínio, os adaptadores de
-  interface, a configuração do serviço e os alvos de deploy — com um limite
+  cinco abas do estado da suíte — o modelo de domínio, os adaptadores de
+  interface, a configuração do serviço, o workspace de código gerado e os alvos de deploy — com um limite
   registrado: o ambiente de runtime atravessa apenas como a *seleção* de
   ambiente (`environment`, `fileName`), nunca seus valores, então nenhuma
   configuração da máquina (e nenhum segredo) sai em um bundle; a importação
@@ -452,7 +452,7 @@ Registradas honestamente, com suas issues responsáveis:
   adaptador e a construção do módulo de migração pertencem ao documento E3,
   [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md).
 - **Garantias de paridade** — incluindo o escopo da exportação de suíte
-  completa e a decisão do JUM-547 sobre `runtimeEnvironment` — pertencem ao
+  completa, a travessia de `codeWorkspace` e a decisão do JUM-547 sobre `runtimeEnvironment` — pertencem ao
   documento E4,
   [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md).
 - **O contrato das superfícies de status** — como as mensagens são renderizadas
@@ -470,7 +470,7 @@ Registradas honestamente, com suas issues responsáveis:
 - Migração + estados de ambiente: [`apps/service-management/src/store/canaMigration.js`](../../apps/service-management/src/store/canaMigration.js); adaptador Cana: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js); fábrica: [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 - Motor de sincronização multi-abas: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js); núcleo de estado: [`packages/designer-core/src/state/designerState.js`](../../packages/designer-core/src/state/designerState.js); fiação de boot e cola de exportação/importação: [`apps/service-management/script.js`](../../apps/service-management/script.js)
 - Sincronização do bundle Cana vendored: [`ci-cd/sync-service-management-cana-bundle.js`](../../ci-cd/sync-service-management-cana-bundle.js)
-- Suítes: [`canaMigration.test.ts`](../../apps/backend-template/test/unit/service-management/canaMigration.test.ts), [`canaDesignerStore.test.ts`](../../apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/backend-template/test/unit/service-management/designerSync.test.ts) (unitárias); [`canaMigration.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/canaMigration.browser.integration.test.ts), [`multiTabSync.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts) (navegador); a matriz offline/online do JUM-486 [`offlinePersistenceMatrix.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts) (navegador, [JUM-486](https://linear.app/jumentix/issue/JUM-486/test-offlineonline-matrix-for-designer-persistence-on-cana))
+- Suítes: [`canaMigration.test.ts`](../../apps/service-management/test/unit/canaMigration.test.ts), [`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts) (unitárias); [`canaMigration.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/canaMigration.browser.integration.test.ts), [`multiTabSync.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts) (navegador); a matriz offline/online do JUM-486 [`offlinePersistenceMatrix.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts) (navegador, [JUM-486](https://linear.app/jumentix/issue/JUM-486/test-offlineonline-matrix-for-designer-persistence-on-cana))
 - Esquema de armazenamento: [Requisito 126, Contrato 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md); paridade bilíngue: [Requisito 076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md)
 - Documentação do motor Cana: [CANA-INDEXEDDB-ADAPTER](./CANA-INDEXEDDB-ADAPTER.pt-BR.md), [CANA-USAGE-GUIDE](./CANA-USAGE-GUIDE.pt-BR.md)
 - Documentos irmãos da cadeia E: [Contratos de ambiente de runtime](./RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md) (E1), [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md) (E3), [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md) (E4), [Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md) (E5), [Aplicativo Service Management](./SERVICE-MANAGEMENT-APPLICATION.pt-BR.md), [Funcionalidades e uso do Domain Designer](./DOMAIN-DESIGNER-FEATURES-AND-USAGE.pt-BR.md)

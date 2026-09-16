@@ -26,6 +26,8 @@ import {
   cleanupTempConfigDir,
   envFileContent,
   startServer,
+  clickInPanels,
+  openDesignerPanels,
   stopServer,
   waitForServer
 } from './serverHarness';
@@ -99,7 +101,7 @@ async function bootPage(context: Awaited<ReturnType<Browser['newContext']>>, bas
  * real channel — the sample load doubles as the suite's first sync proof.
  */
 async function loadSampleAndConverge(pageA: Page, pageB: Page) {
-  await pageA.click('#load-sample-btn');
+  await clickInPanels(pageA, '#load-sample-btn');
   await waitForDomain(pageA, 'Users');
   await waitForDomain(pageB, 'Users');
   await waitForRemoteChangeStatus(pageB);
@@ -107,8 +109,9 @@ async function loadSampleAndConverge(pageA: Page, pageB: Page) {
 
 /** Add a domain through the real UI (the same gesture a user makes). */
 async function addDomain(page: Page, name: string) {
+  await openDesignerPanels(page, '#domain-name-input');
   await page.fill('#domain-name-input', name);
-  await page.click('#add-domain-btn');
+  await clickInPanels(page, '#add-domain-btn');
 }
 
 describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
@@ -176,10 +179,11 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
     // Remote applies never import the selection (JUM-485 question 3), so B
     // selects the sample domain through the real UI — the same gesture a
     // human makes — before its context form enables.
-    await pageB.click('#domain-list li button');
+    await clickInPanels(pageB, '#domain-list li button');
 
     // B is mid-form: an unsaved value sits, focused, in the owner-team input.
-    await pageB.click('#domain-owner-team-input');
+    await clickInPanels(pageB, '#domain-owner-team-input');
+    await openDesignerPanels(pageB, '#domain-owner-team-input');
     await pageB.fill('#domain-owner-team-input', 'team-z-unsaved');
 
     // A remote change touches the same model B is editing.

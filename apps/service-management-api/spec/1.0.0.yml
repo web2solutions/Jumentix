@@ -1,0 +1,367 @@
+openapi: 3.1.0
+info:
+  title: Jumentix Service Management Catalog API
+  version: 1.0.0
+  description: Platform-owned shared catalog API for Service Management and Cana
+    synchronization.
+servers:
+  - url: /api/1.0.0
+paths:
+  /catalogs:
+    get:
+      tags:
+        - catalog
+      summary: Get all shared catalog records
+      description: Returns the shared domain designs visible to the caller's tenant
+        scope; tombstoned records are excluded unless includeDeleted=true
+      operationId: getAllCatalogs
+      parameters:
+        - name: page
+          in: query
+          description: Page number to fetch
+          required: false
+          schema:
+            type: string
+          default: 1
+        - name: size
+          in: query
+          description: Page size to fetch
+          required: false
+          schema:
+            type: string
+        - name: includeDeleted
+          in: query
+          description: Include soft-deleted (tombstoned) records so deletions propagate to
+            sync clients
+          required: false
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+          default: "false"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogArrayOf"
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+      security:
+        - bearerAuth:
+            - access_allow
+    post:
+      tags:
+        - catalog
+      summary: Publish a domain design into the shared catalog
+      description: Creates a shared catalog record with version 1
+      operationId: createCatalog
+      requestBody:
+        description: Domain design to share
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestCreateCatalog"
+        required: true
+      responses:
+        "201":
+          description: Catalog record created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Catalog"
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "409":
+          description: Conflict
+      security:
+        - bearerAuth:
+            - access_allow
+  /catalogs/{id}:
+    get:
+      tags:
+        - catalog
+      summary: Get a shared catalog record by ID
+      description: Returns a single shared catalog record
+      operationId: getCatalogById
+      parameters:
+        - name: id
+          in: path
+          description: ID of the catalog record to return
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Catalog"
+        "400":
+          description: Invalid ID supplied
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Catalog record not found
+      security:
+        - bearerAuth:
+            - access_allow
+    put:
+      tags:
+        - catalog
+      summary: Update a shared catalog record
+      description: Updates a shared catalog record when the caller's expected version
+        is current; a stale version is rejected with 409 and the current server
+        version so the edit can be reconciled
+      operationId: updateCatalog
+      parameters:
+        - name: id
+          in: path
+          description: ID of the catalog record to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: New content plus the expected version (optimistic-concurrency token)
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestUpdateCatalog"
+        required: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Catalog"
+        "400":
+          description: Invalid ID supplied
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Catalog record not found
+        "409":
+          description: Stale version conflict
+      security:
+        - bearerAuth:
+            - access_allow
+    delete:
+      tags:
+        - catalog
+      summary: Soft-delete a shared catalog record
+      description: Tombstones a shared catalog record so the deletion propagates to
+        every sync client; recoverable through the restore operation
+      operationId: deleteCatalog
+      parameters:
+        - name: id
+          in: path
+          description: ID of the catalog record to delete
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: Expected current version (optimistic-concurrency token)
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceDeleteResponse"
+        "400":
+          description: Invalid ID supplied
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Catalog record not found
+        "409":
+          description: Stale version conflict
+      security:
+        - bearerAuth:
+            - access_allow
+  /catalogs/{id}/restore:
+    post:
+      tags:
+        - catalog
+      summary: Restore a soft-deleted shared catalog record
+      description: Recovers a tombstoned shared catalog record; a restore is a write,
+        so the version bumps and a restore event is published
+      operationId: restoreCatalog
+      parameters:
+        - name: id
+          in: path
+          description: ID of the catalog record to restore
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Expected version of the tombstoned record
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestRestoreCatalog"
+        required: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Catalog"
+        "400":
+          description: Invalid ID supplied
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Catalog record not found
+        "409":
+          description: Stale version conflict
+      security:
+        - bearerAuth:
+            - access_allow
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Catalog:
+      description: Port output object for one shared catalog record — a shared domain
+        design with its optimistic-concurrency token (JUM-491).
+      required:
+        - id
+        - organization
+        - name
+        - version
+        - design
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Catalog record id
+        organization:
+          type: string
+          description: Tenant organization that owns and shares this record
+        name:
+          type: string
+          minLength: 1
+          description: Human name of the shared domain design
+        description:
+          type: string
+          description: Optional summary of the shared domain design
+        version:
+          type: integer
+          minimum: 1
+          description: Server-managed optimistic-concurrency token (etag); every write
+            bumps it
+        design:
+          type: object
+          description: The shared domain design document (designer domain serialization)
+        provenance:
+          type: object
+          description: Domain-package provenance stamp (package name/version, JUM-492)
+        createdBy:
+          type: string
+          description: Actor that published the record
+        updatedBy:
+          type: string
+          description: Actor of the last write
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          description: Tombstone — empty when active, ISO timestamp when soft-deleted
+    CatalogArrayOf:
+      description: Port output array of shared catalog records.
+      type: array
+      items:
+        $ref: "#/components/schemas/Catalog"
+    RequestCreateCatalog:
+      description: Port input object for publishing a domain design into the shared catalog.
+      required:
+        - name
+        - design
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Human name of the shared domain design
+        description:
+          type: string
+          description: Optional summary of the shared domain design
+        organization:
+          type: string
+          nullable: true
+          description: Owning organization — superadmin only; tenant users are bound to
+            their own organization
+        design:
+          type: object
+          description: The domain design document to share (designer domain serialization)
+        provenance:
+          type: object
+          description: Domain-package provenance stamp (package name/version, JUM-492)
+    RequestUpdateCatalog:
+      description: Port input object for updating a shared catalog record with
+        optimistic concurrency.
+      required:
+        - version
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Human name of the shared domain design
+        description:
+          type: string
+          description: Optional summary of the shared domain design
+        design:
+          type: object
+          description: The domain design document to share (designer domain serialization)
+        provenance:
+          type: object
+          description: Domain-package provenance stamp (package name/version, JUM-492)
+        version:
+          type: integer
+          minimum: 1
+          description: Expected current version — a stale value is rejected with 409
+    RequestRestoreCatalog:
+      description: Port input object for recovering a soft-deleted shared catalog record.
+      required:
+        - version
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+          description: Expected current version of the tombstoned record — a stale value
+            is rejected with 409

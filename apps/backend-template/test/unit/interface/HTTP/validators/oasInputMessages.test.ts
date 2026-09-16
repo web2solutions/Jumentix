@@ -149,13 +149,14 @@ describe('openAPI input validation messages (JUM-681)', () => {
   it('ignores the server-managed properties a client echoed back', () => {
     expect.hasAssertions();
 
-    // `createdAt` and `updatedAt` are not in the contract's input, and a client
-    // that round-trips a record it read must not be refused for sending them.
+    // `createdAt`, `updatedAt` and `deletedAt` are not in the contract's input,
+    // and a client that round-trips a record it read must not be refused.
     expect(throwIfOASInputValidationFails(spec, endPoint('createUser'), {
       username: 'alice',
       password: 'longenough',
       createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-01-01T00:00:00.000Z'
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      deletedAt: null
     })).toBe(true);
   });
 });

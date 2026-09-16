@@ -1,6 +1,10 @@
 import type { IStore } from '@src/infra/ports/persistence/IStore';
-import { ConflictError, DataBaseNotFoundError, DatabasePagingError } from '@src/infra/exceptions';
+import { ConflictError, DataBaseNotFoundError } from '@src/infra/exceptions';
 import type { IPagingRequest, IPagingResponse } from '@src/modules/port';
+import {
+  runListQuery,
+  type IIdReservationLedger
+} from '@jumentix/persistence-contracts';
 
 type Primitive = string | number | boolean | null | undefined;
 
@@ -8,16 +12,13 @@ interface IStoreOptions<T extends Record<string, any>> {
   uniqueIndexes?: (keyof T)[];
   caseInsensitiveUniqueIndexes?: (keyof T)[];
   relationIndexes?: (keyof T)[];
+  /** Soft-delete + hide tombstones. Off for catalog (own tombstone + restore). */
+  softDelete?: boolean;
+  entity?: string;
+  ledger?: IIdReservationLedger;
 }
 
 const stringifyPrimitive = (value: Primitive): string => String(value ?? '');
-
-const matchAllFilters = (
-  record: Record<string, any>,
-  filters: Record<string, Primitive>
-): boolean => {
-  return Object.entries(filters).every(([key, value]) => record[key] === value);
-};
 
 export class InMemoryRelationalStore<T extends Record<string, any>> implements IStore<T> {
   private readonly records = new Map<string, T>();
@@ -102,20 +103,56 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
       set.delete(id);
       if (set.size === 0) this.relationIndexes[field].delete(ref);
     });
-    return this.records.delete(id);
+    if (!this.options.softDelete) {
+      this.records.delete(id);
+      return true;
+    }
+    const tombstone = {
+      ...existing,
+      deletedAt: new Date().toISOString(),
+      updatedAt: new Date()
+    } as T;
+    this.records.set(id, tombstone);
+    return true;
   }
 
-  public async getOneById(id: string): Promise<T> {
+  public async getOneById(id: string, options?: { includeDeleted?: boolean }): Promise<T> {
     const existing = this.records.get(id);
     if (!existing) {
+      throw new DataBaseNotFoundError('Record not found');
+    }
+    if (this.options.softDelete && existing.deletedAt && !options?.includeDeleted) {
       throw new DataBaseNotFoundError('Record not found');
     }
     return existing;
   }
 
+  public async hardDelete(id: string): Promise<boolean> {
+    const existing = this.records.get(id);
+    if (!existing) return false;
+    Object.keys(this.uniqueIndexes).forEach((field) => {
+      const normalized = this.normalizeUniqueValue(field, existing[field]);
+      this.uniqueIndexes[field].delete(normalized);
+    });
+    Object.keys(this.relationIndexes).forEach((field) => {
+      const ref = stringifyPrimitive(existing[field] as Primitive);
+      if (!ref) return;
+      const set = this.relationIndexes[field].get(ref);
+      if (!set) return;
+      set.delete(id);
+      if (set.size === 0) this.relationIndexes[field].delete(ref);
+    });
+    this.records.delete(id);
+    return true;
+  }
+
   public async create(key: string, value: T): Promise<T> {
+    const { entity, ledger } = this.options;
+    if (entity && ledger?.has(entity, key)) {
+      throw new ConflictError('The field "id" already exists.');
+    }
     if (this.records.has(key)) {
-      throw new ConflictError('Duplicated id');
+      throw new ConflictError('The field "id" already exists.');
     }
     this.ensureUniqueIndexes(key, value);
     this.syncRelationIndexes(key, value);
@@ -135,28 +172,25 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
     return merged;
   }
 
+  /**
+   * Filters, search, sort and paging share one implementation with the
+   * external-store proxy (`runListQuery`, JUM-777), so every driver answers
+   * the REST list contract the same way.
+   */
   public async getAll(
     filters: Record<string, string | number>,
     paging: IPagingRequest
   ): Promise<IPagingResponse<T[]>> {
-    const { page, size } = paging;
-    if (page < 1) {
-      throw new DatabasePagingError('page must be greater than 0');
-    }
-    const filtered = [...this.records.values()].filter((entry) => matchAllFilters(entry, filters));
-    const total = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(total / size));
-    if (page > totalPages && total > 0) {
-      throw new DatabasePagingError('page number must be smaller than the number of total pages');
-    }
-    const startAt = (page * size) - size;
-    const result = filtered.slice(startAt, startAt + size);
-    return {
-      result,
-      total,
-      page,
-      size
-    };
+    // The contracts' response type marks `page`/`size` optional; `paginateList`
+    // always sets them, so the application's stricter shape holds.
+    const effectivePaging = this.options.softDelete
+      ? paging
+      : { ...paging, includeDeleted: true };
+    return runListQuery(
+      [...this.records.values()],
+      filters,
+      effectivePaging
+    ) as IPagingResponse<T[]>;
   }
 
   public async getByRelation(field: keyof T, referenceId: string): Promise<T[]> {
@@ -166,6 +200,10 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
     if (!linked) return [];
     return [...linked]
       .map((id) => this.records.get(id))
-      .filter((entry): entry is T => !!entry);
+      .filter((entry): entry is T => {
+        if (!entry) return false;
+        if (this.options.softDelete && entry.deletedAt) return false;
+        return true;
+      });
   }
 }

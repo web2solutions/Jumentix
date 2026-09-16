@@ -390,4 +390,65 @@ describe('auth service extra branches', () => {
     expect(response.result).toBe(true);
     expect(response.error).toBeUndefined();
   });
+
+  it('locks the account on the default lockout window when the env omits it', async () => {
+    expect.hasAssertions();
+    process.env.JUMENTIX_AUTH_MAX_LOGIN_ATTEMPTS = '1';
+    delete process.env.JUMENTIX_AUTH_LOCKOUT_SECONDS;
+    const store = new Map<string, any>();
+    const keyValueStorageClient = {
+      get: jest.fn().mockImplementation(async (key: string) => ({ result: store.get(key) })),
+      set: jest.fn().mockImplementation(async (key: string, value: any) => {
+        store.set(key, value);
+        return { result: true };
+      }),
+      del: jest.fn().mockResolvedValue({ result: true })
+    };
+    const { service, passwordCryptoService } = setup({ keyValueStorageClient });
+
+    passwordCryptoService.compare.mockResolvedValueOnce(false);
+    const failed = await service.authenticate('john', 'invalid', EAuthSchemaType.Bearer);
+    expect(failed.error?.message).toBe('password does not matches');
+    expect(keyValueStorageClient.set).toHaveBeenCalledWith(
+      'auth:locked:john',
+      expect.objectContaining({ count: 1, expiresAt: expect.any(Number) })
+    );
+
+    // The lock lives on the default 900-second window: the next attempt is
+    // refused before any password comparison runs.
+    passwordCryptoService.compare.mockClear();
+    const locked = await service.authenticate('john', 'whatever', EAuthSchemaType.Bearer);
+    expect(locked.error?.message).toBe('authentication temporarily locked');
+    expect(passwordCryptoService.compare).not.toHaveBeenCalled();
+  });
+
+  it('covers logout when the token carries no jti', async () => {
+    expect.hasAssertions();
+    const keyValueStorageClient = {
+      get: jest.fn().mockResolvedValue({ result: null }),
+      set: jest.fn().mockResolvedValue({ result: true }),
+      del: jest.fn().mockResolvedValue({ result: true })
+    };
+    const { service, jwtService } = setup({ keyValueStorageClient });
+    jwtService.decodeToken.mockReturnValueOnce({
+      id: 'u1',
+      username: 'john',
+      exp: Math.floor(Date.now() / 1000) + 120
+    });
+
+    const response = await service.logout('Bearer token');
+    expect(response.result).toBe(true);
+    expect(keyValueStorageClient.set).not.toHaveBeenCalled();
+  });
+
+  it('treats an empty security entry as no required permission', () => {
+    expect.hasAssertions();
+    const { service } = setup();
+
+    const allowed = service.throwIfUserHasNoAccessToResource(
+      { id: 'u1', username: 'john', roles: [EUserRole.user] } as any,
+      { security: [{}] } as any
+    );
+    expect(allowed).toBe(true);
+  });
 });

@@ -186,7 +186,7 @@ describe('service-management selection (JUM-472)', () => {
     },
     suites: [
       smSuite(
-        'apps/backend-template/test/unit/service-management/designerStore.test.ts',
+        'apps/service-management/test/unit/designerStore.test.ts',
         'service-management/designer',
         'unit'
       ),
@@ -222,7 +222,7 @@ describe('service-management selection (JUM-472)', () => {
 
     expect(plan.selectedLayers).toStrictEqual(['service-management/designer']);
     expect(plan.unitSuites).toStrictEqual([
-      'apps/backend-template/test/unit/service-management/designerStore.test.ts'
+      'apps/service-management/test/unit/designerStore.test.ts'
     ]);
     expect(plan.integrationScripts).toStrictEqual(['test:integration:service-management']);
   });
@@ -239,14 +239,14 @@ describe('service-management selection (JUM-472)', () => {
       'service-management/server'
     ]);
     expect(plan.unitSuites).toStrictEqual([
-      'apps/backend-template/test/unit/service-management/designerStore.test.ts'
+      'apps/service-management/test/unit/designerStore.test.ts'
     ]);
   });
 
   it('selects the SM suites for a changed SM suite file, not the tooling layer', () => {
     expect.hasAssertions();
 
-    const plan = planFor(['apps/backend-template/test/unit/service-management/designerStore.test.ts']);
+    const plan = planFor(['apps/service-management/test/unit/designerStore.test.ts']);
 
     expect(plan.selectedLayers).toStrictEqual(['service-management/designer']);
     expect(plan.unitSuites).not.toContain('apps/backend-template/test/unit/ci-cd/check-test-map.test.ts');
@@ -445,5 +445,28 @@ describe('requirement 110 runner rules', () => {
       .map((suite) => suite.path);
 
     expect(unexplained).toStrictEqual([]);
+  });
+});
+
+describe('interface GUI placeholder docs do not select interface/runtime (JUM-757)', () => {
+  const repoRoot = path.resolve(__dirname, '../../../../..');
+  const realManifest = readTestMap(path.join(repoRoot, 'test-map.json'));
+  const planFor = (files: string[]) => createLayerAwarePlan(files, {
+    manifest: realManifest,
+    root: repoRoot,
+    graph: new Map()
+  });
+
+  it('keeps README-only GUI placeholders out of the interface/runtime blast radius', () => {
+    expect.hasAssertions();
+
+    const plan = planFor([
+      'apps/backend-template/src/interface/GUI/README.md',
+      'apps/backend-template/src/interface/GUI/web/README.md',
+      'apps/jumentix-website/components/architecture/HexagonalArchitectureMap.tsx'
+    ]);
+
+    expect(plan.selectedLayers).not.toContain('interface/runtime');
+    expect([...plan.selectedLayers].sort()).toStrictEqual(['tooling', 'website']);
   });
 });

@@ -1,57 +1,52 @@
-# Integrações canônicas e CI privada gratuita
+# Integrações canônicas e rebinding de provedores
 
-`XpertMinds/Jumentix` permanece como repositório privado canônico. O Requisito
-113 substitui serviços pagos indisponíveis por contratos rastreados e
-reproduzíveis. Check obrigatório ausente, ignorado, cancelado, expirado ou com
-falha nunca é verde.
+`web2solutions/Jumentix` é o repositório público canônico. O Requisito 113
+mantém CI e evidência de qualidade em modo fail-closed usando planos gratuitos
+para open source.
 
 ## Contrato canônico
 
-| Área | Contrato gratuito obrigatório | Papel |
+| Área | Contrato obrigatório | Papel |
 | --- | --- | --- |
-| CI | Workflow GitHub Actions canônico deste repositório | Orquestrador canônico das PRs para `dev`, promoções para `main` e branches protegidas; runner self-hosted `jumentix` pertencente ao repositório; CircleCI desabilitado |
-| Cobertura | Job GitHub Actions de cobertura, artefatos JSON/LCOV e limites de projeto e patch | Autoridade canônica; publicação Codecov é visibilidade |
-| Publicação Codecov | Upload pelo Codecov CLI no GitHub Actions com `CODECOV_TOKEN` | Espelho de dashboard após os thresholds próprios passarem |
+| CI | Workflow GitHub Actions canônico deste repositório | Orquestrador canônico das PRs para `dev`, promoções para `main` e branches protegidas; runner GitHub-hosted `ubuntu-latest` |
+| CI secundário | CircleCI habilitado para o repositório público | Espelho independente do mesmo classificador de contexto e nomes de jobs |
+| Cobertura | Job de cobertura do repositório, artefatos JSON/LCOV e thresholds de projeto e patch | Autoridade canônica; Codecov é o dashboard público |
+| Publicação Codecov | GitHub Actions usa `codecov/codecov-action@v5`; CircleCI usa o Codecov CLI verificado, ambos com `CODECOV_TOKEN` | Mapa de cobertura arquivo a arquivo após os thresholds próprios passarem |
 | Qualidade | Gate Bun por branch e build/smoke/prepublish do Storybook | Validação obrigatória de produto e governança |
-| SAST/qualidade | SonarQube Cloud | Defesa em profundidade enquanto houver gratuidade para projeto privado |
-| Dependências | Scanner próprio via OSV.dev e Dependabot | Vulnerabilidades fail-closed e propostas de atualização |
-| Segredos | Scanner OSS fixado executado pelo GitHub Actions | Substituto próprio para checks pagos em PR |
-| Achados de PR | Artefatos SARIF de scanners OSS fixados | Evidência de review third-party sem dar autoridade a reviewer hospedado |
-| Deploy | Build reproduzível e deploy manual documentado | Fallback gratuito sem Git binding privado da organização |
+| SAST/qualidade | Projeto SonarQube Cloud `web2solutions_Jumentix` | Dashboard público de qualidade, confiabilidade, segurança e cobertura |
+| Dependências | Scanner próprio via OSV.dev e Dependabot | Detecção fail-closed de vulnerabilidades e propostas de atualização |
+| Segredos | Scanner OSS fixado executado no CI | Review de segredos controlado pelo repositório sem checks privados pagos |
+| Achados de PR | Artefatos SARIF de scanners OSS fixados | Evidência de review third-party sem dar autoridade única a reviewer hospedado |
+| Deploy | Build reproduzível e deploy documentado | Validação de build continua obrigatória antes de release |
 
-## Serviços aposentados ou opcionais (2026-08-03)
+## Serviços ativos
 
-- **CircleCI desabilitado:** GitHub Actions é o orquestrador ativo, e runners
-  self-hosted pertencentes ao repositório fornecem execução enquanto billing hospedado está bloqueado.
-  `.circleci/config.yml` não deve voltar sem mudança governada de requisito.
-- **Publicação Codecov restaurada:** GitHub Actions envia LCOV pelo Codecov CLI após
-  a cobertura própria passar. Codecov não é a autoridade dos thresholds.
-- **GitGuardian aposentado:** checks de PR privada de organização exigem plano
-  pago. Um scanner OSS fixado assume o gate.
-- Cursor Bugbot é opcional porque a cota pode impedir resultado terminal;
-  scanners via Reviewdog fornecem achados determinísticos.
-- O Git binding da Vercel é opcional no Hobby. O build continua obrigatório e
-  existe fallback manual auditável.
-- SonarQube Cloud é defesa em profundidade, não dono único da cobertura ou
-  segurança. Mudanças no plano não removem os gates próprios.
-
-## Implementação do review third-party em PR
-
-O check obrigatório `third-party-review` executa Gitleaks `8.30.1` e Semgrep
-`1.172.0`. Arquivos de release são validados por checksum, o Semgrep é
-instalado em um virtualenv local do job com versão fixada e a política vive em `.semgrep.yml`. O GitHub Actions retém
-artefatos SARIF; os status dos scanners são aplicados para que publicar
-evidência não esconda falha.
+- **GitHub Actions canônico:** `.github/workflows/ci.yml` roda em
+  `ubuntu-latest`, executa gates baratos até `dev` e reserva a matriz completa
+  para `dev -> main`, `main` e execuções completas agendadas/manuais.
+- **CircleCI habilitado:** `.circleci/config.yml` espelha o mesmo classificador
+  de contexto. Jobs não exigidos pelo destino atual encerram com sucesso antes
+  de iniciar trabalho pesado.
+- **Publicação Codecov:** o job completo de cobertura envia LCOV depois que os
+  thresholds locais de projeto e patch passam. Codecov é dashboard, não
+  autoridade de threshold.
+- **SonarQube Cloud:** o scanner roda depois da cobertura completa nos contextos
+  de release/main e lê os mesmos caminhos LCOV declarados em
+  `sonar-project.properties`.
+- **GitGuardian/Cursor Bugbot/Vercel:** continuam como visibilidade externa ou
+  superfícies de deploy opcionais. A evidência obrigatória permanece nos
+  workflows do repositório.
 
 ## Regras fail-closed
 
-1. Jobs GitHub Actions usam ferramentas fixadas, dependências congeladas e evidência fail-closed.
+1. Jobs de CI usam ferramentas fixadas, dependências congeladas e evidência auditável.
 2. Segredos nunca são impressos, copiados de cofres legados ou commitados.
-3. Gates canônicos de branch, cobertura, website, segurança, governança e
-   resolução de conversas precisam terminar com sucesso.
+3. Gates de branch, cobertura, website, segurança, governança e resolução de
+   conversas precisam terminar com sucesso quando selecionados.
 4. `--no-verify`, merge admin/forçado, status falso ou relaxamento temporário
    não constituem evidência.
-5. A proteção de branch exige somente checks determinísticos dos jobs GitHub Actions.
+5. A proteção de branch exige somente checks determinísticos emitidos por
+   workflows rastreados. Provedores opcionais nunca bloqueiam uma PR por ausência.
 
 ## Validação pertencente ao repositório
 
@@ -60,10 +55,10 @@ bun run ci:gate:branch
 bun run integrations:check
 ```
 
-Os mesmos comandos sem cobertura pesada executam localmente e no GitHub Actions. O
-produtor de cobertura e o gate de thresholds rodam no job GitHub Actions `coverage`
-em promoções de release para `main`, pushes em `main` e execuções completas
-agendadas, depois enviam LCOV ao Codecov para visibilidade.
+Os mesmos comandos sem cobertura pesada executam localmente e no CI. O produtor
+de cobertura pesada e o gate de thresholds rodam em promoções para `main`,
+pushes em `main` e execuções completas agendadas, depois enviam LCOV ao Codecov
+e SonarQube Cloud para visibilidade.
 
 ## Rollback e mudanças de provedor
 

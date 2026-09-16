@@ -495,3 +495,83 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     expect(queries).toBe(1);
   });
 });
+
+describe('failure paths at the effect boundary (JUM-821)', () => {
+  it('swallows a refused close when the component goes away', async () => {
+    expect.hasAssertions();
+
+    // A close that rejects during unmount must not become an unhandled
+    // rejection: the component is already gone, there is no one left to tell.
+    let closes = 0;
+    const client = {
+      open: async () => undefined,
+      close: async () => { closes += 1; throw new Error('close refused'); },
+      subscribe: () => () => undefined,
+      table: () => ({ query: async () => [] })
+    };
+    const { latest, unmount } = await renderHook(() => useCanaClient(() => client as never));
+    expect(latest.current.status).toBe('ready');
+
+    await unmount();
+
+    expect(closes).toBe(1);
+  });
+
+  it('surfaces a failed initial load even when the error reporter throws', async () => {
+    expect.hasAssertions();
+
+    // `reload` reports through `onError` from inside its own catch; when THAT
+    // call throws, the rejection crosses to the effect's `.catch`, which reports
+    // the reporter's failure — the load error is never dropped silently.
+    const broker = brokerDouble({ failQuery: true });
+    const onError = jest.fn()
+      .mockImplementationOnce(() => { throw new Error('reporting failed'); })
+      .mockImplementation(() => undefined);
+
+    const { latest } = await renderHook(() => useCanaLiveQuery<Row>({
+      client: broker.client,
+      store: 'rows',
+      onError
+    }));
+
+    expect(latest.current.status).toBe('error');
+    expect(onError.mock.calls.map(([error]) => (error as Error).message))
+      .toStrictEqual(['query refused', 'reporting failed']);
+  });
+
+  it('surfaces a failed event-triggered reload even when the error reporter throws', async () => {
+    expect.hasAssertions();
+
+    // Same boundary, one level down: the subscription callback's own
+    // `safeReload().catch(...)` is what must not lose the failure.
+    const broker = brokerDouble();
+    const query = jest.fn()
+      .mockResolvedValueOnce([{ id: 'a', name: 'A' }])
+      .mockRejectedValue(new Error('query refused'));
+    const client = {
+      subscribe: (broker.client as unknown as {
+        subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
+      }).subscribe,
+      table: () => ({ query })
+    };
+    const onError = jest.fn()
+      .mockImplementationOnce(() => { throw new Error('reporting failed'); })
+      .mockImplementation(() => undefined);
+
+    const { latest, flush } = await renderHook(() => useCanaLiveQuery<Row>({
+      client: client as never,
+      store: 'rows',
+      query: { limit: 10 },
+      onError
+    }));
+    expect(latest.current.status).toBe('ready');
+    expect(onError).not.toHaveBeenCalled();
+
+    await act(async () => { broker.emit({}); });
+    await flush();
+
+    expect(onError.mock.calls.map(([error]) => (error as Error).message))
+      .toStrictEqual(['query refused', 'reporting failed']);
+    expect(latest.current.status).toBe('error');
+  });
+});

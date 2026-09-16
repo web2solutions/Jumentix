@@ -102,6 +102,7 @@ See also:
 - [133-declared-indexes-for-ordered-queries](requirements/software/133-declared-indexes-for-ordered-queries.md)
 - [134-no-flaky-tests](requirements/software/134-no-flaky-tests.md)
 - [135-no-fake-tests](requirements/software/135-no-fake-tests.md)
+- [136-frontend-knows-backend-only-through-oas](requirements/software/136-frontend-knows-backend-only-through-oas.md)
 
 ## Software and Product Requirements
 

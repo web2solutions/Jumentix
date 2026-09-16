@@ -2,8 +2,8 @@
 
 Rastreamento:
 
-- Épico: [#167](https://github.com/XpertMinds/Jumentix/issues/167)
-- Tarefa: [#172](https://github.com/XpertMinds/Jumentix/issues/172)
+- Épico: [#167](https://github.com/web2solutions/Jumentix/issues/167)
+- Tarefa: [#172](https://github.com/web2solutions/Jumentix/issues/172)
 
 ## Objetivo do Produto
 

@@ -20,7 +20,7 @@ Agentes devem refrescar progresso, bloqueios, branches, PRs e Project Updates de
 - Espelho histórico/local de todos (não canônico):
   - `.agents/project-todos.md`
 - Rastreamento de issues do GitHub para TODOs migrados:
-  - <https://github.com/XpertMinds/Jumentix/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
+  - <https://github.com/web2solutions/Jumentix/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
 - Autoridade oficial de planejamento:
   - `https://linear.app/jumentix`
   - chave da API do Linear em `../.linear` (acesso controlado, nunca commitar ou compartilhar)

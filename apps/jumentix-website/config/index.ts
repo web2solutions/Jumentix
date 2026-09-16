@@ -65,7 +65,7 @@ export default {
    */
   nextraLayout: {
     docsRepositoryBase:
-      'https://github.com/XpertMinds/Jumentix/tree/dev/apps/jumentix-website',
+      'https://github.com/web2solutions/Jumentix/tree/dev/apps/jumentix-website',
     sidebar: {
       defaultMenuCollapseLevel: 1
     }
@@ -89,10 +89,10 @@ export default {
    * This information is used to fetch the releases from the GitHub API.
    */
   gitHub: {
-    repo: 'XpertMinds/Jumentix',
+    repo: 'web2solutions/Jumentix',
     apiUrl: 'https://api.github.com',
-    releasesUrl: 'https://api.github.com/repos/XpertMinds/Jumentix/releases',
-    commitsUrl: 'https://api.github.com/repos/XpertMinds/Jumentix/commits',
+    releasesUrl: 'https://api.github.com/repos/web2solutions/Jumentix/releases',
+    commitsUrl: 'https://api.github.com/repos/web2solutions/Jumentix/commits',
     defaultBranch: 'dev'
   },
 
@@ -101,7 +101,7 @@ export default {
    * This is used to link the release notes in the app.
    */
   releaseNotes: {
-    url: 'https://github.com/XpertMinds/Jumentix/releases',
+    url: 'https://github.com/web2solutions/Jumentix/releases',
     maxReleases: 10
   },
 

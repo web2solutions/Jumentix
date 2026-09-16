@@ -64,7 +64,7 @@ Configured values:
 
 ## Required Vercel environment
 
-Because `XpertMinds/Jumentix` is private, unauthenticated GitHub API calls return 404.
+Because `web2solutions/Jumentix` is private, unauthenticated GitHub API calls return 404.
 Set these on the Vercel project (Production + Preview):
 
 | Name | Purpose |

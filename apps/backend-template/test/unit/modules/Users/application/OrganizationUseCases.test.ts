@@ -19,7 +19,8 @@ describe('organization use cases', () => {
       deletePhone: jest.fn().mockResolvedValue({ result: { id: 'o1' } }),
       createEmail: jest.fn().mockResolvedValue({ result: { id: 'o1' } }),
       updateEmail: jest.fn().mockResolvedValue({ result: { id: 'o1' } }),
-      deleteEmail: jest.fn().mockResolvedValue({ result: { id: 'o1' } })
+      deleteEmail: jest.fn().mockResolvedValue({ result: { id: 'o1' } }),
+      metrics: jest.fn().mockResolvedValue({ result: { metric: 'count', buckets: [] } })
     };
 
     const useCases = OrganizationUseCases.compile(organizationService as any);
@@ -37,5 +38,7 @@ describe('organization use cases', () => {
     expect((await useCases.createEmail('o1', { email: 'contact@org.dev', type: EEmailType.work })).result?.id).toBe('o1');
     expect((await useCases.updateEmail('o1', 'e1', { id: 'e1', email: 'new@org.dev' })).result?.id).toBe('o1');
     expect((await useCases.deleteEmail('o1', 'e1')).result?.id).toBe('o1');
+    expect((await useCases.metrics({}, { metric: 'count' }, { groupable: [], series: [] })).result)
+      .toStrictEqual({ metric: 'count', buckets: [] });
   });
 });

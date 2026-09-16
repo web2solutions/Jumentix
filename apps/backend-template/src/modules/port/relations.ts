@@ -11,36 +11,41 @@ export interface IModelRelationMetadata {
 
 const RELATIONS_KEY = Symbol.for('aaa:model:relations');
 
+interface IStoredRelation {
+  property: string;
+  kind: RelationKind;
+  targetName: string;
+}
+
 const appendRelation = (
   target: any,
   property: string,
   kind: RelationKind,
-  targetFactory: () => EntityConstructor
+  targetName: string
 ): void => {
   const ctor = target.constructor as any;
-  const current: IModelRelationMetadata[] = ctor[RELATIONS_KEY] || [];
-  const targetCtor = targetFactory();
-  const relation: IModelRelationMetadata = {
-    property,
-    kind,
-    target: targetCtor.name
-  };
-  ctor[RELATIONS_KEY] = [...current, relation];
+  const current: IStoredRelation[] = ctor[RELATIONS_KEY] || [];
+  ctor[RELATIONS_KEY] = [...current, { property, kind, targetName }];
 };
 
-export const belongsTo = (targetFactory: () => EntityConstructor): PropertyDecorator => {
+export const belongsTo = (targetName: string): PropertyDecorator => {
   return (target: object, propertyKey: string | symbol) => {
-    appendRelation(target, propertyKey.toString(), 'belongsTo', targetFactory);
+    appendRelation(target, propertyKey.toString(), 'belongsTo', targetName);
   };
 };
 
-export const hasMany = (targetFactory: () => EntityConstructor): PropertyDecorator => {
+export const hasMany = (targetName: string): PropertyDecorator => {
   return (target: object, propertyKey: string | symbol) => {
-    appendRelation(target, propertyKey.toString(), 'hasMany', targetFactory);
+    appendRelation(target, propertyKey.toString(), 'hasMany', targetName);
   };
 };
 
 export const getModelRelations = (model: EntityConstructor): IModelRelationMetadata[] => {
   const ctor = model as any;
-  return [...(ctor[RELATIONS_KEY] || [])];
+  const stored: IStoredRelation[] = ctor[RELATIONS_KEY] || [];
+  return stored.map((relation) => ({
+    property: relation.property,
+    kind: relation.kind,
+    target: relation.targetName
+  }));
 };

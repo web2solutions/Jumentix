@@ -29,7 +29,7 @@ describe('organization domain model', () => {
     expect(Organization.dataEntitySchema.name).toBe('Organization');
     const relations = getModelRelations(Organization as any);
     expect(relations).toStrictEqual(expect.arrayContaining([
-      expect.objectContaining({ property: 'userEntities', kind: 'hasMany' })
+      expect.objectContaining({ property: 'users', kind: 'hasMany', target: 'User' })
     ]));
   });
 

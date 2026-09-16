@@ -58,18 +58,39 @@ describe('the package entry point', () => {
    *
    * The cost was measured rather than assumed: the compiled module is 1.1 kB
    * and tree-shakeable, and no browser package imports this one today.
+   *
+   * JUM-777 added the list-query helpers (filters, search, sort, paging) so
+   * the in-memory store and the external-store proxy share one implementation
+   * of the REST list contract. They are pure functions with no dependencies,
+   * still tree-shakeable; the list below is the new pinned surface.
    */
-  it('exports exactly the store errors at runtime, and nothing else', () => {
+  it('exports exactly the store errors and list-query helpers at runtime, and nothing else', () => {
     expect.hasAssertions();
 
     expect(Object.keys(contracts).sort()).toStrictEqual([
       'ConflictError',
       'DataBaseNotFoundError',
       'DatabasePagingError',
+      'InMemoryIdReservationLedger',
+      'MS_PER_DAY',
       'PERSISTENCE_ERROR_CODES',
       'PERSISTENCE_ERROR_NAMES',
       'PersistenceError',
+      'SEED_PURGED_ID_MESSAGE',
+      'TOMBSTONE_PURGE_TTL_DAYS',
+      'applyListFilters',
+      'applyListSearch',
+      'applyListSort',
+      'assertSeedIdNotPurged',
       'currentCorrelationId',
+      'isTombstone',
+      'matchesListFilters',
+      'paginateList',
+      'parseInstant',
+      'parseListSort',
+      'purgeTombstones',
+      'runListQuery',
+      'runMetricsQuery',
       'setCorrelationIdResolver'
     ]);
   });

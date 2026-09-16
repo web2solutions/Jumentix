@@ -3,7 +3,7 @@ import releases from '@/content/releases.json';
 /**
  * Serves the release notes snapshot baked at build time by
  * `scripts/sync-releases.mjs` (JUM-719). The route used to proxy the GitHub
- * releases API at request time; this private repository answers
+ * releases API at request time; the public canonical repository answers
  * unauthenticated calls with 404, which broke the page in every environment
  * without a valid GITHUB_TOKEN. The data is now bundled by Next.js, so the
  * route has no runtime secret or network dependency.

@@ -17,6 +17,14 @@ import os from 'node:os';
 const { syncServiceManagementDesignerCore } = require(
   path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-designer-core.js')
 ) as { syncServiceManagementDesignerCore: (options: { root: string }) => number };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { syncServiceManagementD3 } = require(
+  path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-d3.js')
+) as { syncServiceManagementD3: (options?: { root?: string }) => number };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { syncServiceManagementCanaBundle } = require(
+  path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-cana-bundle.js')
+) as { syncServiceManagementCanaBundle: (options?: { root?: string }) => number };
 
 export const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
 export const staticRoot = path.resolve(process.cwd(), 'apps/service-management');
@@ -173,6 +181,12 @@ function spawnServerProcess(
 ): SpawnedServer {
   const env: NodeJS.ProcessEnv = {
     ...process.env,
+    // Live reload is a development affordance and not what any of these
+    // suites exercise (JUM-747). Left on, its client opens an EventSource the
+    // offline suites then watch fail, and its file watcher would reload the
+    // page under a test that is mid-interaction. A suite that wants it can
+    // turn it back on through `envOverrides`.
+    JUMENTIX_SERVICE_MANAGEMENT_LIVE_RELOAD: '0',
     ...envOverrides,
     JUMENTIX_SERVICE_MANAGEMENT_PORT: String(port)
   };
@@ -290,6 +304,10 @@ export async function startServer(
   envOverrides: Record<string, string> = {},
   options: { pinnedPort?: number; maxAttempts?: number } = {}
 ): Promise<StartedServer> {
+  const canaSyncResult = syncServiceManagementCanaBundle({ root: process.cwd() });
+  if (canaSyncResult !== 0) {
+    throw new Error('Cana vendor sync failed; the SPA cannot boot without it.');
+  }
   // The SPA statically imports the designer core through the import map's
   // `@jumentix/designer-core/` prefix (JUM-493), which resolves to the
   // vendored, gitignored module tree. Booting without it is a module-load
@@ -300,6 +318,10 @@ export async function startServer(
   const syncResult = syncServiceManagementDesignerCore({ root: process.cwd() });
   if (syncResult !== 0) {
     throw new Error('designer-core vendor sync failed; the SPA cannot boot without it.');
+  }
+  const d3SyncResult = syncServiceManagementD3({ root: process.cwd() });
+  if (d3SyncResult !== 0) {
+    throw new Error('d3 vendor sync failed; Monitoring charts cannot boot without it.');
   }
   return runWithPortRetry({
     pinnedPort: options.pinnedPort,
@@ -442,4 +464,140 @@ export function probeConnection(
       resolve('refused');
     });
   });
+}
+
+/**
+ * Open the Domain Designer's panel drawer (JUM-737).
+ *
+ * The panels used to be a permanent column; they are now an overlay that the
+ * canvas gets back when it is closed, and closed is the default. Every suite
+ * that reaches for a sidebar control — the export buttons, the domain and
+ * entity forms, the model check — has to open it first, the same way a person
+ * does.
+ *
+ * Idempotent, and it waits for the drawer to actually be open: the drawer
+ * animates, and clicking a control mid-transition is the kind of flake that
+ * only shows up on a loaded CI runner.
+ */
+/** The slice of a Playwright page these helpers drive. */
+type DrawerPage = {
+  click: (target: string) => Promise<void>;
+  waitForSelector: (target: string, options?: Record<string, unknown>) => Promise<unknown>;
+  $: (target: string) => Promise<unknown>;
+  evaluate: <T>(fn: (target: string) => T, arg: string) => Promise<T>;
+};
+
+export async function openDesignerPanels(
+  page: DrawerPage,
+  target?: string
+): Promise<void> {
+  // Wait for the app to finish booting before touching the drawer: the state
+  // load is async and re-renders the view when it lands, so a click between
+  // `load` and that render is undone — a window a person cannot hit and an
+  // automated click hits every time.
+  await page.waitForSelector('body[data-designer-ready="true"]');
+
+  /** Open the drawer and select the group holding `target`, once. */
+  const reveal = async (): Promise<string> => page.evaluate((selector) => {
+    // The drawer lives inside the Domain Designer tab section, and an
+    // inactive section is `display: none` — its contents then have no box at
+    // all, so a control can be "not hidden" and still unclickable. Bring the
+    // tab forward first.
+    const designerSection = document.getElementById('tab-domain-designer');
+    if (designerSection && !designerSection.classList.contains('active')) {
+      (document.getElementById('tab-domain-designer-btn') as HTMLElement | null)?.click();
+    }
+
+    const drawer = document.getElementById('designer-sidebar');
+    const toggle = document.getElementById('toggle-sidebar-btn');
+    if (drawer && !drawer.classList.contains('open')) toggle?.click();
+
+    const element = selector ? document.querySelector(selector) : null;
+    const panel = element?.closest('[data-sidebar-group]') as HTMLElement | null;
+    const group = panel?.dataset.sidebarGroup;
+    if (group) {
+      const tab = document.querySelector(`[data-sidebar-tab="${group}"]`) as HTMLElement | null;
+      if (tab?.getAttribute('aria-selected') !== 'true') tab?.click();
+    }
+
+    const designerActive = Boolean(designerSection?.classList.contains('active'));
+    // The box is the only thing that decides clickability: an element can be
+    // in an unhidden panel and still have no area, which is what every
+    // "resolved the locator, element is not visible" timeout comes down to.
+    const rect = (element as HTMLElement | null)?.getBoundingClientRect();
+    const hasArea = Boolean(rect && rect.width > 0 && rect.height > 0);
+    const chain: string[] = [];
+    for (let node = element as HTMLElement | null; node; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (style.display === 'none' || style.visibility === 'hidden') {
+        chain.push(`${node.tagName}#${node.id || ''}.${node.className || ''}:${style.display}/${style.visibility}`);
+      }
+      if (node === document.body) break;
+    }
+    const reachable = hasArea
+      && designerActive
+      && Boolean(element)
+      && panel?.hidden === false
+      && Boolean(drawer?.classList.contains('open'));
+    return JSON.stringify({
+      reachable: selector
+        ? reachable
+        : designerActive && Boolean(drawer?.classList.contains('open')),
+      designerActive,
+      hasArea,
+      hiddenAncestors: chain.slice(0, 4),
+      found: Boolean(element),
+      panelGroup: group ?? null,
+      panelHidden: panel?.hidden ?? null,
+      drawerOpen: drawer?.classList.contains('open') ?? null,
+      activeTab: document.querySelector('.sidebar-tab.active')?.getAttribute('data-sidebar-tab')
+        ?? null
+    });
+  }, target || '');
+
+  // Retried rather than done once: a save result landing after the click
+  // re-renders the view from the stored payload, which can still be the one
+  // written before the group changed, and reverts it. Driving the DOM through
+  // one evaluate keeps each attempt atomic.
+  let last = '';
+  /* eslint-disable no-await-in-loop -- each attempt must observe the result of
+     the previous one; that is the point of the retry. */
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    last = await reveal() as string;
+    if (JSON.parse(last).reachable) {
+      // Held for two frames: a revert that arrives immediately after would
+      // otherwise be handed to the caller as success.
+      await new Promise((resolve) => { setTimeout(resolve, 120); });
+      last = await reveal() as string;
+      if (JSON.parse(last).reachable) return;
+    }
+    await new Promise((resolve) => { setTimeout(resolve, 150); });
+  }
+  /* eslint-enable no-await-in-loop */
+
+  throw new Error(`openDesignerPanels could not reveal ${target ?? 'the drawer'}: ${last}`);
+}
+
+/**
+ * Click a control inside the panel drawer.
+ *
+ * `page.click` waits for its own actionability model to agree the element is
+ * clickable, and inside an overlay that animates on `transform` and
+ * `visibility` it can keep reporting "element is not visible" for a control
+ * that the page itself reports as visible, with a real box, in an open drawer.
+ * The reachability that matters is asserted by `openDesignerPanels` — drawer
+ * open, panel not hidden, non-empty box, designer tab active — so the click
+ * itself is dispatched in the page.
+ */
+export async function clickInPanels(
+  page: DrawerPage,
+  selector: string
+): Promise<void> {
+  await openDesignerPanels(page, selector);
+  const clicked = await page.evaluate((wanted) => {
+    const element = document.querySelector(wanted) as HTMLElement | null;
+    element?.click();
+    return Boolean(element);
+  }, selector);
+  if (!clicked) throw new Error(`clickInPanels found no element for ${selector}`);
 }

@@ -9,11 +9,38 @@ info:
     name: Unlicensed
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
+  # RBAC matrix consumed by generated/OAS-driven frontends (JUM-772): the UI
+  # computes effective scopes from the user's roles using this map and the
+  # per-operation `security` scopes below — it never reads backend code
+  # (requirement 136). Only superadmins manage multiple organizations.
+  x-rbac:
+    description: Role-to-scope matrix enforced by the backend and mirrored here for OAS-driven clients.
+    roles:
+      superadmin:
+        - "*"
+      admin:
+        - access_allow
+        - read_user
+        - create_user
+        - update_user
+        - delete_user
+        - read_organization
+        - update_organization
+      user:
+        - access_allow
+        - read_user
 externalDocs:
   description: Find out more about Xpertminds
   url: http://xpertminds.dev
 servers:
   - url: http://localhost:3000/api/1.0.0
+    x-service-id: core
+x-services:
+  - id: core
+    name: Core
+    kind: core
+    url: http://localhost:3000/api/1.0.0
+    description: Merged Core service that serves every operation in this document (monolith).
 tags:
   - name: user
     description: System users
@@ -136,16 +163,86 @@ paths:
       tags:
         - user
       summary: Get all users
-      description: Returns a collection of all users
+      description: >-
+        Returns a page of users. Delta sync page: sort=`updatedAt:asc,id:asc`,
+        filter `{"updatedAt":{"operator":"gt","value":"<iso>"}}`, page through
+        `page`/`size`, set `includeDeleted=true` so tombstones travel with the
+        cursor (`x-sync`).
       operationId: getAll
+      x-service: core
+      x-sync:
+        cursorField: updatedAt
+        includeDeletedParam: includeDeleted
+      x-list-capabilities:
+        sortable: [firstName, lastName, username, organization, createdAt, updatedAt, id]
+        filterable:
+          firstName: text
+          lastName: text
+          username: text
+          organization: uuid
+          roles: enum
+          createdAt: date
+          updatedAt: date
+        searchable: [firstName, lastName, username]
+        defaultSize: 30
+        maxSize: 100
+        includeDeleted: true
+      x-metrics-capabilities:
+        groupable: [roles, organization]
+        series: [createdAt, updatedAt]
       parameters:
         - name: page
-          in: path
-          description: Page number to fetch
+          in: query
+          description: Page number to fetch (1-based).
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          description: Page size; bounded by `x-list-capabilities.maxSize`.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+        - name: filter
+          in: query
+          description: >-
+            Base64-encoded JSON object keyed by a field listed in
+            `x-list-capabilities.filterable`. A scalar value means equality; an
+            object `{ "operator": "contains" | "eq" | "ne" | "in" | "gte" | "lte" | "between", "value": ... }`
+            applies that operator. Unknown fields or operators are rejected with 400.
           required: false
           schema:
             type: string
-          default: 1
+            maxLength: 4096
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated `field:asc|desc` pairs, fields limited to
+            `x-list-capabilities.sortable`. Unknown fields are rejected with 400.
+          required: false
+          schema:
+            type: string
+            maxLength: 256
+            pattern: "^[A-Za-z0-9_.]+(:(asc|desc))?(,[A-Za-z0-9_.]+(:(asc|desc))?)*$"
+        - name: q
+          in: query
+          description: Case-insensitive free-text search over `x-list-capabilities.searchable`.
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+        - name: includeDeleted
+          in: query
+          description: When true, list includes tombstones (`deletedAt` set). Default false.
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: successful operation
@@ -195,6 +292,57 @@ paths:
       security:
         - bearerAuth:
             - create_user
+  /users/metrics:
+    get:
+      tags:
+        - user
+      summary: User metrics
+      description: Generic aggregates for User (count, groupBy, time series).
+      operationId: getUsersMetrics
+      x-service: core
+      x-metrics-capabilities:
+        groupable: [roles, organization]
+        series: [createdAt, updatedAt]
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [count, groupBy, series]
+        - name: field
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month]
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 4096
+      responses:
+        "200":
+          description: Metrics buckets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityMetricsResponse"
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+      security:
+        - bearerAuth:
+            - read_user
   /users/{id}:
     delete:
       tags:
@@ -553,7 +701,7 @@ paths:
       security:
         - bearerAuth:
             - update_user
-  /users/{id}/documentDelete/{documentId}:
+  /users/{id}/deleteDocument/{documentId}:
     delete:
       tags:
         - user
@@ -679,7 +827,7 @@ paths:
       security:
         - bearerAuth:
             - update_user
-  /users/{id}/phoneDelete/{phoneId}:
+  /users/{id}/deletePhone/{phoneId}:
     delete:
       tags:
         - user
@@ -722,16 +870,81 @@ paths:
       tags:
         - organization
       summary: Get all organizations
-      description: Returns a collection of organizations
+      description: >-
+        Returns a page of organizations. Delta sync page: sort=`updatedAt:asc,id:asc`,
+        filter `{"updatedAt":{"operator":"gt","value":"<iso>"}}`, page through
+        `page`/`size`, set `includeDeleted=true` so tombstones travel with the
+        cursor (`x-sync`).
       operationId: getAllOrganizations
+      x-service: core
+      x-sync:
+        cursorField: updatedAt
+        includeDeletedParam: includeDeleted
+      x-list-capabilities:
+        sortable: [name, createdAt, updatedAt, id]
+        filterable:
+          name: text
+          createdAt: date
+          updatedAt: date
+        searchable: [name]
+        defaultSize: 30
+        maxSize: 100
+        includeDeleted: true
+      x-metrics-capabilities:
+        groupable: []
+        series: [createdAt, updatedAt]
       parameters:
         - name: page
-          in: path
-          description: Page number to fetch
+          in: query
+          description: Page number to fetch (1-based).
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          description: Page size; bounded by `x-list-capabilities.maxSize`.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+        - name: filter
+          in: query
+          description: >-
+            Base64-encoded JSON object keyed by a field listed in
+            `x-list-capabilities.filterable`. A scalar value means equality; an
+            object `{ "operator": "contains" | "eq" | "ne" | "in" | "gte" | "lte" | "between", "value": ... }`
+            applies that operator. Unknown fields or operators are rejected with 400.
           required: false
           schema:
             type: string
-          default: 1
+            maxLength: 4096
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated `field:asc|desc` pairs, fields limited to
+            `x-list-capabilities.sortable`. Unknown fields are rejected with 400.
+          required: false
+          schema:
+            type: string
+            maxLength: 256
+            pattern: "^[A-Za-z0-9_.]+(:(asc|desc))?(,[A-Za-z0-9_.]+(:(asc|desc))?)*$"
+        - name: q
+          in: query
+          description: Case-insensitive free-text search over `x-list-capabilities.searchable`.
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+        - name: includeDeleted
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: successful operation
@@ -779,6 +992,57 @@ paths:
       security:
         - bearerAuth:
             - create_organization
+  /organizations/metrics:
+    get:
+      tags:
+        - organization
+      summary: Organization metrics
+      description: Generic aggregates for Organization (count, groupBy, time series).
+      operationId: getOrganizationsMetrics
+      x-service: core
+      x-metrics-capabilities:
+        groupable: []
+        series: [createdAt, updatedAt]
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [count, groupBy, series]
+        - name: field
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month]
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 4096
+      responses:
+        "200":
+          description: Metrics buckets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityMetricsResponse"
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+      security:
+        - bearerAuth:
+            - read_organization
   /organizations/{id}:
     get:
       tags:
@@ -1248,349 +1512,8 @@ paths:
       security:
         - bearerAuth:
             - update_organization
-  /catalogs:
-    get:
-      tags:
-        - catalog
-      summary: Get all shared catalog records
-      description: Returns the shared domain designs visible to the caller's tenant scope; tombstoned records are excluded unless includeDeleted=true
-      operationId: getAllCatalogs
-      parameters:
-        - name: page
-          in: query
-          description: Page number to fetch
-          required: false
-          schema:
-            type: string
-          default: 1
-        - name: size
-          in: query
-          description: Page size to fetch
-          required: false
-          schema:
-            type: string
-        - name: includeDeleted
-          in: query
-          description: Include soft-deleted (tombstoned) records so deletions propagate to sync clients
-          required: false
-          schema:
-            type: string
-            enum:
-              - "true"
-              - "false"
-          default: "false"
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CatalogArrayOf"
-        "400":
-          description: Invalid request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-      security:
-        - bearerAuth:
-            - read_catalog
-    post:
-      tags:
-        - catalog
-      summary: Publish a domain design into the shared catalog
-      description: Creates a shared catalog record with version 1
-      operationId: createCatalog
-      requestBody:
-        description: Domain design to share
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RequestCreateCatalog"
-        required: true
-      responses:
-        "201":
-          description: Catalog record created successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Catalog"
-        "400":
-          description: Invalid request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "409":
-          description: Conflict
-      security:
-        - bearerAuth:
-            - create_catalog
-  /catalogs/{id}:
-    get:
-      tags:
-        - catalog
-      summary: Get a shared catalog record by ID
-      description: Returns a single shared catalog record
-      operationId: getCatalogById
-      parameters:
-        - name: id
-          in: path
-          description: ID of the catalog record to return
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Catalog"
-        "400":
-          description: Invalid ID supplied
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Catalog record not found
-      security:
-        - bearerAuth:
-            - read_catalog
-    put:
-      tags:
-        - catalog
-      summary: Update a shared catalog record
-      description: Updates a shared catalog record when the caller's expected version is current; a stale version is rejected with 409 and the current server version so the edit can be reconciled
-      operationId: updateCatalog
-      parameters:
-        - name: id
-          in: path
-          description: ID of the catalog record to update
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: New content plus the expected version (optimistic-concurrency token)
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RequestUpdateCatalog"
-        required: true
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Catalog"
-        "400":
-          description: Invalid ID supplied
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Catalog record not found
-        "409":
-          description: Stale version conflict
-      security:
-        - bearerAuth:
-            - update_catalog
-    delete:
-      tags:
-        - catalog
-      summary: Soft-delete a shared catalog record
-      description: Tombstones a shared catalog record so the deletion propagates to every sync client; recoverable through the restore operation
-      operationId: deleteCatalog
-      parameters:
-        - name: id
-          in: path
-          description: ID of the catalog record to delete
-          required: true
-          schema:
-            type: string
-        - name: version
-          in: query
-          description: Expected current version (optimistic-concurrency token)
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResourceDeleteResponse"
-        "400":
-          description: Invalid ID supplied
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Catalog record not found
-        "409":
-          description: Stale version conflict
-      security:
-        - bearerAuth:
-            - delete_catalog
-  /catalogs/{id}/restore:
-    post:
-      tags:
-        - catalog
-      summary: Restore a soft-deleted shared catalog record
-      description: Recovers a tombstoned shared catalog record; a restore is a write, so the version bumps and a restore event is published
-      operationId: restoreCatalog
-      parameters:
-        - name: id
-          in: path
-          description: ID of the catalog record to restore
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Expected version of the tombstoned record
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RequestRestoreCatalog"
-        required: true
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Catalog"
-        "400":
-          description: Invalid ID supplied
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Catalog record not found
-        "409":
-          description: Stale version conflict
-      security:
-        - bearerAuth:
-            - update_catalog
 components:
   schemas:
-    Catalog:
-      description: Port output object for one shared catalog record — a shared domain design with its optimistic-concurrency token (JUM-491).
-      required:
-        - id
-        - organization
-        - name
-        - version
-        - design
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Catalog record id
-        organization:
-          type: string
-          description: Tenant organization that owns and shares this record
-        name:
-          type: string
-          minLength: 1
-          description: Human name of the shared domain design
-        description:
-          type: string
-          description: Optional summary of the shared domain design
-        version:
-          type: integer
-          minimum: 1
-          description: Server-managed optimistic-concurrency token (etag); every write bumps it
-        design:
-          type: object
-          description: The shared domain design document (designer domain serialization)
-        provenance:
-          type: object
-          description: Domain-package provenance stamp (package name/version, JUM-492)
-        createdBy:
-          type: string
-          description: Actor that published the record
-        updatedBy:
-          type: string
-          description: Actor of the last write
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        deletedAt:
-          type: string
-          description: Tombstone — empty when active, ISO timestamp when soft-deleted
-    CatalogArrayOf:
-      description: Port output array of shared catalog records.
-      type: array
-      items:
-        $ref: "#/components/schemas/Catalog"
-    RequestCreateCatalog:
-      description: Port input object for publishing a domain design into the shared catalog.
-      required:
-        - name
-        - design
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-          description: Human name of the shared domain design
-        description:
-          type: string
-          description: Optional summary of the shared domain design
-        organization:
-          type: string
-          nullable: true
-          description: Owning organization — superadmin only; tenant users are bound to their own organization
-        design:
-          type: object
-          description: The domain design document to share (designer domain serialization)
-        provenance:
-          type: object
-          description: Domain-package provenance stamp (package name/version, JUM-492)
-    RequestUpdateCatalog:
-      description: Port input object for updating a shared catalog record with optimistic concurrency.
-      required:
-        - version
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-          description: Human name of the shared domain design
-        description:
-          type: string
-          description: Optional summary of the shared domain design
-        design:
-          type: object
-          description: The domain design document to share (designer domain serialization)
-        provenance:
-          type: object
-          description: Domain-package provenance stamp (package name/version, JUM-492)
-        version:
-          type: integer
-          minimum: 1
-          description: Expected current version — a stale value is rejected with 409
-    RequestRestoreCatalog:
-      description: Port input object for recovering a soft-deleted shared catalog record.
-      required:
-        - version
-      type: object
-      properties:
-        version:
-          type: integer
-          minimum: 1
-          description: Expected current version of the tombstoned record — a stale value is rejected with 409
     ResourceDeleteResponse:
       description: Port output object for delete operations.
       required:
@@ -1598,6 +1521,9 @@ components:
       type: object
       properties:
         data:
+          x-label:
+            en: Number
+            pt-BR: Número
           type: boolean
           default: false
           description: Result of request to delete resource
@@ -1609,20 +1535,30 @@ components:
       type: object
       properties:
         username:
+          x-label:
+            en: Username
+            pt-BR: Usuário
           type: string
           minLength: 1
           example: me@mydomain.com
           description: Username
         password:
+          x-label:
+            en: Password
+            pt-BR: Senha
           type: string
           description: Password
           minLength: 2
           format: password
         schemaType:
+          x-label:
+            en: Schema type
+            pt-BR: Tipo de esquema
           type: string
           example: Bearer
           default: Bearer
           description: HTTP token schema type
+          x-hide: true
           enum:
             - Basic
             - Bearer
@@ -1633,6 +1569,9 @@ components:
       type: object
       properties:
         username:
+          x-label:
+            en: Username
+            pt-BR: Usuário
           type: string
           minLength: 1
           example: me@mydomain.com
@@ -1646,20 +1585,37 @@ components:
       type: object
       properties:
         firstName:
+          x-label:
+            en: First name
+            pt-BR: Nome
           type: string
           minLength: 1
           example: Abraham
           description: User's first name
         username:
+          x-label:
+            en: Username
+            pt-BR: Usuário
           type: string
           minLength: 1
           description: Username to access the system
         organization:
+          x-label:
+            en: Organization
+            pt-BR: Organização
           type: string
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
+          x-relation:
+            entity: Organization
+            match: id
+            display: name
+            kind: belongsTo
         password:
+          x-label:
+            en: Password
+            pt-BR: Senha
           type: string
           minLength: 8
           format: password
@@ -1684,53 +1640,94 @@ components:
       type: object
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
+          format: uuid
+          description: Optional client-supplied uuid. Duplicate ids answer 409.
         firstName:
+          x-label:
+            en: First name
+            pt-BR: Nome
           type: string
           minLength: 1
           example: Abraham
           description: User's first name
         lastName:
+          x-label:
+            en: Last name
+            pt-BR: Sobrenome
           type: string
           example: Abraham
           nullable: true
           description: User's last name
         avatar:
+          x-label:
+            en: Avatar
+            pt-BR: Avatar
           type: string
+          maxLength: 255
           example: avatar.png
           default: avatar.png
           description: User's avatar
         username:
+          x-label:
+            en: Username
+            pt-BR: Usuário
           type: string
           minLength: 1
           description: Username to access the system
         organization:
+          x-label:
+            en: Organization
+            pt-BR: Organização
           type: string
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
+          x-relation:
+            entity: Organization
+            match: id
+            display: name
+            kind: belongsTo
         password:
+          x-label:
+            en: Password
+            pt-BR: Senha
           type: string
           minLength: 8
           format: password
           description: Password to access the system
         emails:
+          x-label:
+            en: Emails
+            pt-BR: E-mails
           type: array
           items:
             $ref: "#/components/schemas/Email"
           description: User's e-mail addresses
           minItems: 1
         documents:
+          x-label:
+            en: Documents
+            pt-BR: Documentos
           type: array
           items:
             $ref: "#/components/schemas/Document"
           description: User's attached documents
         phones:
+          x-label:
+            en: Phones
+            pt-BR: Telefones
           type: array
           items:
             $ref: "#/components/schemas/Phone"
-          description: User's attached documents
+          description: User's attached phone numbers
         roles:
+          x-label:
+            en: Roles
+            pt-BR: Papéis
           type: array
           items:
             type: string
@@ -1742,48 +1739,84 @@ components:
         - id
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
         firstName:
+          x-label:
+            en: First name
+            pt-BR: Nome
           type: string
           minLength: 1
           example: Abraham
           description: User's first name
         lastName:
+          x-label:
+            en: Last name
+            pt-BR: Sobrenome
           type: string
           example: Abraham
           nullable: true
           description: User's last name
         avatar:
+          x-label:
+            en: Avatar
+            pt-BR: Avatar
           type: string
+          maxLength: 255
           example: avatar.png
           default: avatar.png
           description: User's avatar
         username:
+          x-label:
+            en: Username
+            pt-BR: Usuário
           type: string
           minLength: 1
           description: Username to access the system
         organization:
+          x-label:
+            en: Organization
+            pt-BR: Organização
           type: string
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
+          x-relation:
+            entity: Organization
+            match: id
+            display: name
+            kind: belongsTo
         emails:
+          x-label:
+            en: Emails
+            pt-BR: E-mails
           type: array
           items:
             $ref: "#/components/schemas/Email"
           description: User's e-mail addresses
           minItems: 1
         documents:
+          x-label:
+            en: Documents
+            pt-BR: Documentos
           type: array
           items:
             $ref: "#/components/schemas/Document"
           description: User's attached documents
         phones:
+          x-label:
+            en: Phones
+            pt-BR: Telefones
           type: array
           items:
             $ref: "#/components/schemas/Phone"
-          description: User's attached documents
+          description: User's attached phone numbers
         roles:
+          x-label:
+            en: Roles
+            pt-BR: Papéis
           type: array
           items:
             type: string
@@ -1795,24 +1828,42 @@ components:
       type: object
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
           format: uuid
         name:
+          x-label:
+            en: Name
+            pt-BR: Nome
           type: string
           minLength: 1
         address:
+          x-label:
+            en: Addresses
+            pt-BR: Endereços
           type: array
           items:
             $ref: "#/components/schemas/Address"
         phone:
+          x-label:
+            en: Phones
+            pt-BR: Telefones
           type: array
           items:
             $ref: "#/components/schemas/Phone"
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: array
           items:
             $ref: "#/components/schemas/Email"
         users:
+          x-label:
+            en: Members
+            pt-BR: Membros
           type: array
           items:
             type: string
@@ -1823,24 +1874,42 @@ components:
       type: object
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
           format: uuid
         name:
+          x-label:
+            en: Name
+            pt-BR: Nome
           type: string
           minLength: 1
         address:
+          x-label:
+            en: Addresses
+            pt-BR: Endereços
           type: array
           items:
             $ref: "#/components/schemas/Address"
         phone:
+          x-label:
+            en: Phones
+            pt-BR: Telefones
           type: array
           items:
             $ref: "#/components/schemas/Phone"
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: array
           items:
             $ref: "#/components/schemas/Email"
         users:
+          x-label:
+            en: Members
+            pt-BR: Membros
           type: array
           items:
             type: string
@@ -1853,12 +1922,199 @@ components:
         - number
       properties:
         countryCode:
+          x-label:
+            en: Country code
+            pt-BR: Código do país
           type: string
+          maxLength: 4
+          description: E.164 country calling code
+          enum:
+            - '+1'
+            - '+7'
+            - '+20'
+            - '+27'
+            - '+30'
+            - '+31'
+            - '+32'
+            - '+33'
+            - '+34'
+            - '+36'
+            - '+39'
+            - '+40'
+            - '+41'
+            - '+43'
+            - '+44'
+            - '+45'
+            - '+46'
+            - '+47'
+            - '+48'
+            - '+49'
+            - '+51'
+            - '+52'
+            - '+53'
+            - '+54'
+            - '+55'
+            - '+56'
+            - '+57'
+            - '+58'
+            - '+60'
+            - '+61'
+            - '+62'
+            - '+63'
+            - '+64'
+            - '+65'
+            - '+66'
+            - '+81'
+            - '+82'
+            - '+84'
+            - '+86'
+            - '+90'
+            - '+91'
+            - '+92'
+            - '+93'
+            - '+94'
+            - '+95'
+            - '+98'
+            - '+211'
+            - '+212'
+            - '+213'
+            - '+216'
+            - '+218'
+            - '+220'
+            - '+221'
+            - '+224'
+            - '+225'
+            - '+226'
+            - '+227'
+            - '+228'
+            - '+230'
+            - '+233'
+            - '+234'
+            - '+236'
+            - '+241'
+            - '+243'
+            - '+244'
+            - '+248'
+            - '+249'
+            - '+251'
+            - '+252'
+            - '+254'
+            - '+255'
+            - '+256'
+            - '+258'
+            - '+260'
+            - '+261'
+            - '+263'
+            - '+264'
+            - '+265'
+            - '+267'
+            - '+268'
+            - '+269'
+            - '+290'
+            - '+297'
+            - '+298'
+            - '+299'
+            - '+350'
+            - '+351'
+            - '+352'
+            - '+353'
+            - '+354'
+            - '+355'
+            - '+356'
+            - '+357'
+            - '+358'
+            - '+359'
+            - '+370'
+            - '+371'
+            - '+372'
+            - '+373'
+            - '+374'
+            - '+375'
+            - '+376'
+            - '+377'
+            - '+380'
+            - '+381'
+            - '+385'
+            - '+386'
+            - '+387'
+            - '+389'
+            - '+420'
+            - '+421'
+            - '+423'
+            - '+500'
+            - '+501'
+            - '+502'
+            - '+503'
+            - '+504'
+            - '+505'
+            - '+506'
+            - '+507'
+            - '+509'
+            - '+590'
+            - '+591'
+            - '+592'
+            - '+593'
+            - '+594'
+            - '+595'
+            - '+597'
+            - '+598'
+            - '+599'
+            - '+670'
+            - '+673'
+            - '+675'
+            - '+676'
+            - '+677'
+            - '+678'
+            - '+679'
+            - '+680'
+            - '+685'
+            - '+687'
+            - '+689'
+            - '+850'
+            - '+852'
+            - '+853'
+            - '+855'
+            - '+856'
+            - '+880'
+            - '+886'
+            - '+960'
+            - '+961'
+            - '+962'
+            - '+963'
+            - '+964'
+            - '+965'
+            - '+966'
+            - '+968'
+            - '+970'
+            - '+971'
+            - '+972'
+            - '+973'
+            - '+974'
+            - '+975'
+            - '+976'
+            - '+977'
+            - '+992'
+            - '+993'
+            - '+994'
+            - '+995'
+            - '+996'
+            - '+998'
         localCode:
+          x-label:
+            en: Area code
+            pt-BR: DDD
           type: string
+          pattern: '^\d{2,3}$'
+          maxLength: 3
         number:
+          x-label:
+            en: Number
+            pt-BR: Número
           type: string
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
           example: true
           description: Is this the primary User's phone number?
@@ -1870,14 +2126,204 @@ components:
         - id
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
         countryCode:
+          x-label:
+            en: Country code
+            pt-BR: Código do país
           type: string
+          maxLength: 4
+          description: E.164 country calling code
+          enum:
+            - '+1'
+            - '+7'
+            - '+20'
+            - '+27'
+            - '+30'
+            - '+31'
+            - '+32'
+            - '+33'
+            - '+34'
+            - '+36'
+            - '+39'
+            - '+40'
+            - '+41'
+            - '+43'
+            - '+44'
+            - '+45'
+            - '+46'
+            - '+47'
+            - '+48'
+            - '+49'
+            - '+51'
+            - '+52'
+            - '+53'
+            - '+54'
+            - '+55'
+            - '+56'
+            - '+57'
+            - '+58'
+            - '+60'
+            - '+61'
+            - '+62'
+            - '+63'
+            - '+64'
+            - '+65'
+            - '+66'
+            - '+81'
+            - '+82'
+            - '+84'
+            - '+86'
+            - '+90'
+            - '+91'
+            - '+92'
+            - '+93'
+            - '+94'
+            - '+95'
+            - '+98'
+            - '+211'
+            - '+212'
+            - '+213'
+            - '+216'
+            - '+218'
+            - '+220'
+            - '+221'
+            - '+224'
+            - '+225'
+            - '+226'
+            - '+227'
+            - '+228'
+            - '+230'
+            - '+233'
+            - '+234'
+            - '+236'
+            - '+241'
+            - '+243'
+            - '+244'
+            - '+248'
+            - '+249'
+            - '+251'
+            - '+252'
+            - '+254'
+            - '+255'
+            - '+256'
+            - '+258'
+            - '+260'
+            - '+261'
+            - '+263'
+            - '+264'
+            - '+265'
+            - '+267'
+            - '+268'
+            - '+269'
+            - '+290'
+            - '+297'
+            - '+298'
+            - '+299'
+            - '+350'
+            - '+351'
+            - '+352'
+            - '+353'
+            - '+354'
+            - '+355'
+            - '+356'
+            - '+357'
+            - '+358'
+            - '+359'
+            - '+370'
+            - '+371'
+            - '+372'
+            - '+373'
+            - '+374'
+            - '+375'
+            - '+376'
+            - '+377'
+            - '+380'
+            - '+381'
+            - '+385'
+            - '+386'
+            - '+387'
+            - '+389'
+            - '+420'
+            - '+421'
+            - '+423'
+            - '+500'
+            - '+501'
+            - '+502'
+            - '+503'
+            - '+504'
+            - '+505'
+            - '+506'
+            - '+507'
+            - '+509'
+            - '+590'
+            - '+591'
+            - '+592'
+            - '+593'
+            - '+594'
+            - '+595'
+            - '+597'
+            - '+598'
+            - '+599'
+            - '+670'
+            - '+673'
+            - '+675'
+            - '+676'
+            - '+677'
+            - '+678'
+            - '+679'
+            - '+680'
+            - '+685'
+            - '+687'
+            - '+689'
+            - '+850'
+            - '+852'
+            - '+853'
+            - '+855'
+            - '+856'
+            - '+880'
+            - '+886'
+            - '+960'
+            - '+961'
+            - '+962'
+            - '+963'
+            - '+964'
+            - '+965'
+            - '+966'
+            - '+968'
+            - '+970'
+            - '+971'
+            - '+972'
+            - '+973'
+            - '+974'
+            - '+975'
+            - '+976'
+            - '+977'
+            - '+992'
+            - '+993'
+            - '+994'
+            - '+995'
+            - '+996'
+            - '+998'
         localCode:
+          x-label:
+            en: Area code
+            pt-BR: DDD
           type: string
+          pattern: '^\d{2,3}$'
+          maxLength: 3
         number:
+          x-label:
+            en: Number
+            pt-BR: Número
           type: string
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
           example: true
           description: Is this the primary User's phone number?
@@ -1889,15 +2335,24 @@ components:
         - type
       properties:
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: string
           format: email
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - work
             - home
             - vacation
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
           default: false
     RequestUpdateAddress:
@@ -1907,18 +2362,30 @@ components:
         - id
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
           format: uuid
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: string
           format: email
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - work
             - home
             - vacation
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
     RequestCreateEmail:
       description: Port input object for email create endpoint.
@@ -1928,13 +2395,25 @@ components:
         - type
       properties:
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: string
+          format: email
+          pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+          maxLength: 254
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - work
             - personal
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
           example: true
           description: Is this the primary User's e-mail address?
@@ -1946,15 +2425,30 @@ components:
         - id
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: string
+          format: email
+          pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+          maxLength: 254
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - work
             - personal
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
           example: true
           description: Is this the primary User's e-mail address?
@@ -1967,6 +2461,9 @@ components:
         - countryIssue
       properties:
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - CPF
@@ -1976,11 +2473,20 @@ components:
           example: CPF
           description: Type of document
         countryIssue:
+          x-label:
+            en: Issuing country
+            pt-BR: País emissor
           type: string
+          pattern: '^[A-Z]{2}$'
+          maxLength: 2
           example: BR
           description: Country which emitted the document
         data:
+          x-label:
+            en: Number
+            pt-BR: Número
           type: string
+          maxLength: 20
     RequestUpdateDocument:
       description: Port input object for document update endpoint.
       type: object
@@ -1988,8 +2494,14 @@ components:
         - id
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - CPF
@@ -1999,11 +2511,20 @@ components:
           example: CPF
           description: Type of document
         countryIssue:
+          x-label:
+            en: Issuing country
+            pt-BR: País emissor
           type: string
+          pattern: '^[A-Z]{2}$'
+          maxLength: 2
           example: BR
           description: Country which emitted the document
         data:
+          x-label:
+            en: Number
+            pt-BR: Número
           type: string
+          maxLength: 20
     RequestUpdatePassword:
       description: Port input object for password update endpoint.
       type: object
@@ -2011,19 +2532,54 @@ components:
         - password
       properties:
         password:
+          x-label:
+            en: Password
+            pt-BR: Senha
           type: string
           minLength: 8
           format: password
     UserArrayOf:
-      description: Port output array of users.
-      type: array
-      items:
-        $ref: "#/components/schemas/User"
+      description: >-
+        Port output page of users: the `result` slice selected by
+        `page`/`size`/`filter`/`sort`/`q` plus the matching `total` (JUM-777).
+      type: object
+      required: [result, page, size, total]
+      properties:
+        result:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        page:
+          type: integer
+          minimum: 1
+        size:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+          description: Number of records matching the filters and search, across all pages.
     OrganizationArrayOf:
-      description: Port output array of organizations.
-      type: array
-      items:
-        $ref: "#/components/schemas/Organization"
+      description: >-
+        Port output page of organizations: the `result` slice selected by
+        `page`/`size`/`filter`/`sort`/`q` plus the matching `total` (JUM-777).
+      type: object
+      required: [result, page, size, total]
+      properties:
+        result:
+          type: array
+          items:
+            $ref: "#/components/schemas/Organization"
+        page:
+          type: integer
+          minimum: 1
+        size:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+          description: Number of records matching the filters and search, across all pages.
     Document:
       description: Value object contract for Document.
       type: object
@@ -2032,8 +2588,14 @@ components:
         - type
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - CPF
@@ -2043,11 +2605,36 @@ components:
           example: CPF
           description: Type of document
         countryIssue:
+          x-label:
+            en: Issuing country
+            pt-BR: País emissor
           type: string
+          pattern: '^[A-Z]{2}$'
+          maxLength: 2
           example: BR
           description: Country which emitted the document
         data:
+          x-label:
+            en: Number
+            pt-BR: Número
           type: string
+          maxLength: 20
+          x-validation:
+            description: Format rules per document type and issuing country. CPF uses the modulo-11 checksum with two verification digits; SSN uses the US AAA-GG-SSSS layout.
+            rules:
+              - when: { type: CPF, countryIssue: BR }
+                pattern: '^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$'
+                mask: '000.000.000-00'
+                checksum: cpf-mod11
+                example: '123.456.789-09'
+              - when: { type: SSN, countryIssue: US }
+                pattern: '^\d{3}-?\d{2}-?\d{4}$'
+                mask: '000-00-0000'
+                example: '123-45-6789'
+              - when: { type: RG }
+                pattern: '^[A-Za-z0-9.-]{4,20}$'
+              - when: { type: passport }
+                pattern: '^[A-Za-z0-9]{5,20}$'
     Email:
       description: Value object contract for Email.
       type: object
@@ -2056,15 +2643,30 @@ components:
         - type
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: string
+          format: email
+          pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+          maxLength: 254
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - work
             - personal
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
           example: true
           description: Is this the primary User's e-mail address?
@@ -2077,17 +2679,29 @@ components:
         - type
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
           format: uuid
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: string
         type:
+          x-label:
+            en: Type
+            pt-BR: Tipo
           type: string
           enum:
             - work
             - home
             - vacation
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
           default: false
     Phone:
@@ -2099,20 +2713,223 @@ components:
         - number
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
         countryCode:
+          x-label:
+            en: Country code
+            pt-BR: Código do país
           type: string
+          maxLength: 4
+          description: E.164 country calling code
+          enum:
+            - '+1'
+            - '+7'
+            - '+20'
+            - '+27'
+            - '+30'
+            - '+31'
+            - '+32'
+            - '+33'
+            - '+34'
+            - '+36'
+            - '+39'
+            - '+40'
+            - '+41'
+            - '+43'
+            - '+44'
+            - '+45'
+            - '+46'
+            - '+47'
+            - '+48'
+            - '+49'
+            - '+51'
+            - '+52'
+            - '+53'
+            - '+54'
+            - '+55'
+            - '+56'
+            - '+57'
+            - '+58'
+            - '+60'
+            - '+61'
+            - '+62'
+            - '+63'
+            - '+64'
+            - '+65'
+            - '+66'
+            - '+81'
+            - '+82'
+            - '+84'
+            - '+86'
+            - '+90'
+            - '+91'
+            - '+92'
+            - '+93'
+            - '+94'
+            - '+95'
+            - '+98'
+            - '+211'
+            - '+212'
+            - '+213'
+            - '+216'
+            - '+218'
+            - '+220'
+            - '+221'
+            - '+224'
+            - '+225'
+            - '+226'
+            - '+227'
+            - '+228'
+            - '+230'
+            - '+233'
+            - '+234'
+            - '+236'
+            - '+241'
+            - '+243'
+            - '+244'
+            - '+248'
+            - '+249'
+            - '+251'
+            - '+252'
+            - '+254'
+            - '+255'
+            - '+256'
+            - '+258'
+            - '+260'
+            - '+261'
+            - '+263'
+            - '+264'
+            - '+265'
+            - '+267'
+            - '+268'
+            - '+269'
+            - '+290'
+            - '+297'
+            - '+298'
+            - '+299'
+            - '+350'
+            - '+351'
+            - '+352'
+            - '+353'
+            - '+354'
+            - '+355'
+            - '+356'
+            - '+357'
+            - '+358'
+            - '+359'
+            - '+370'
+            - '+371'
+            - '+372'
+            - '+373'
+            - '+374'
+            - '+375'
+            - '+376'
+            - '+377'
+            - '+380'
+            - '+381'
+            - '+385'
+            - '+386'
+            - '+387'
+            - '+389'
+            - '+420'
+            - '+421'
+            - '+423'
+            - '+500'
+            - '+501'
+            - '+502'
+            - '+503'
+            - '+504'
+            - '+505'
+            - '+506'
+            - '+507'
+            - '+509'
+            - '+590'
+            - '+591'
+            - '+592'
+            - '+593'
+            - '+594'
+            - '+595'
+            - '+597'
+            - '+598'
+            - '+599'
+            - '+670'
+            - '+673'
+            - '+675'
+            - '+676'
+            - '+677'
+            - '+678'
+            - '+679'
+            - '+680'
+            - '+685'
+            - '+687'
+            - '+689'
+            - '+850'
+            - '+852'
+            - '+853'
+            - '+855'
+            - '+856'
+            - '+880'
+            - '+886'
+            - '+960'
+            - '+961'
+            - '+962'
+            - '+963'
+            - '+964'
+            - '+965'
+            - '+966'
+            - '+968'
+            - '+970'
+            - '+971'
+            - '+972'
+            - '+973'
+            - '+974'
+            - '+975'
+            - '+976'
+            - '+977'
+            - '+992'
+            - '+993'
+            - '+994'
+            - '+995'
+            - '+996'
+            - '+998'
         localCode:
+          x-label:
+            en: Area code
+            pt-BR: DDD
           type: string
+          pattern: '^\d{2,3}$'
+          maxLength: 3
         number:
+          x-label:
+            en: Number
+            pt-BR: Número
           type: string
+          x-validation:
+            description: National number format per country (countryCode selects the rule).
+            rules:
+              - when: { countryCode: '+55' }
+                pattern: '^\d{4,5}-?\d{4}$'
+                mask: '00000-0000'
+                example: '99805-4033'
+              - when: { countryCode: '+1' }
+                pattern: '^\d{3}-?\d{4}$'
+                mask: '000-0000'
+                example: '555-0100'
         isPrimary:
+          x-label:
+            en: Primary
+            pt-BR: Principal
           type: boolean
           example: true
           description: Is this the primary User's phone number?
           default: false
     User:
       description: Port output object for User resource.
+      x-primary-key: id
+      x-service: core
       required:
         - id
         - createdAt
@@ -2124,60 +2941,113 @@ components:
       type: object
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
+          format: uuid
         firstName:
+          x-label:
+            en: First name
+            pt-BR: Nome
           type: string
           minLength: 1
           example: Abraham
           description: User's first name
         lastName:
+          x-label:
+            en: Last name
+            pt-BR: Sobrenome
           type: string
           example: Abraham
           nullable: true
           description: User's last name
         username:
+          x-label:
+            en: Username
+            pt-BR: Usuário
           type: string
           minLength: 1
           description: Username to access the system
         organization:
+          x-label:
+            en: Organization
+            pt-BR: Organização
           type: string
           format: uuid
           nullable: true
           description: Organization id for tenant users (admin/user)
+          x-relation:
+            entity: Organization
+            match: id
+            display: name
+            kind: belongsTo
         password:
+          x-label:
+            en: Password
+            pt-BR: Senha
           type: string
           minLength: 8
           format: password
           description: Password to access the system
         emails:
+          x-label:
+            en: Emails
+            pt-BR: E-mails
           type: array
           items:
             $ref: "#/components/schemas/Email"
           description: User's e-mail addresses
           minItems: 1
         documents:
+          x-label:
+            en: Documents
+            pt-BR: Documentos
           type: array
           items:
             $ref: "#/components/schemas/Document"
           description: User's attached documents
         phones:
+          x-label:
+            en: Phones
+            pt-BR: Telefones
           type: array
           items:
             $ref: "#/components/schemas/Phone"
-          description: User's attached documents
+          description: User's attached phone numbers
         roles:
+          x-label:
+            en: Roles
+            pt-BR: Papéis
           type: array
           items:
             type: string
           description: User's access roles
         createdAt:
+          x-label:
+            en: Created at
+            pt-BR: Criado em
           type: string
           format: date-time
         updatedAt:
+          x-label:
+            en: Updated at
+            pt-BR: Atualizado em
           type: string
           format: date-time
+        deletedAt:
+          x-label:
+            en: Deleted at
+            pt-BR: Excluído em
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: Tombstone timestamp. Null while the record is alive.
     Organization:
       description: Port output object for Organization resource.
+      x-primary-key: id
+      x-service: core
       required:
         - id
         - createdAt
@@ -2186,32 +3056,95 @@ components:
       type: object
       properties:
         id:
+          x-label:
+            en: ID
+            pt-BR: ID
           type: string
           format: uuid
         name:
+          x-label:
+            en: Name
+            pt-BR: Nome
           type: string
         address:
+          x-label:
+            en: Addresses
+            pt-BR: Endereços
           type: array
           items:
             $ref: "#/components/schemas/Address"
         phone:
+          x-label:
+            en: Phones
+            pt-BR: Telefones
           type: array
           items:
             $ref: "#/components/schemas/Phone"
         email:
+          x-label:
+            en: Email
+            pt-BR: E-mail
           type: array
           items:
             $ref: "#/components/schemas/Email"
         users:
+          x-label:
+            en: Members
+            pt-BR: Membros
           type: array
+          description: Member user ids.
+          x-relation:
+            entity: User
+            match: id
+            display: username
+            kind: hasMany
           items:
             type: string
         createdAt:
+          x-label:
+            en: Created at
+            pt-BR: Criado em
           type: string
           format: date-time
         updatedAt:
+          x-label:
+            en: Updated at
+            pt-BR: Atualizado em
           type: string
           format: date-time
+        deletedAt:
+          x-label:
+            en: Deleted at
+            pt-BR: Excluído em
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: Tombstone timestamp. Null while the record is alive.
+    EntityMetricsResponse:
+      description: Generic entity metrics envelope (JUM-793).
+      required: [metric, buckets]
+      type: object
+      properties:
+        metric:
+          type: string
+          enum: [count, groupBy, series]
+        field:
+          type: string
+        interval:
+          type: string
+          enum: [day, week, month]
+        buckets:
+          type: array
+          items:
+            type: object
+            required: [key, count]
+            properties:
+              key:
+                type: string
+              count:
+                type: integer
+                minimum: 0
     BooleanStringResult:
       description: Port output object for legacy text/plain success responses
         (`true`/`false`).

@@ -9,10 +9,7 @@ import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import type {
   IServiceResponse
 } from '@src/modules/port';
-import {
-  setFilter,
-  setPaging
-} from '@src/modules/port';
+import { setListQuery, setMetricsQuery } from '@src/modules/port';
 import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
 import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
@@ -116,14 +113,30 @@ export class OrganizationController extends BaseController implements IControlle
     event: BaseDomainEvent
   ): Promise<IServiceResponse<IOrganization[]>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
-    const filters = setFilter(event);
+    // JUM-777: page/size/filter/sort/q validated against x-list-capabilities.
+    const { filters, paging } = setListQuery(event);
     const authenticatedUser = this.getAuthenticatedUser(event);
     const tenantScope = resolveOrganizationCollectionScope(authenticatedUser);
     this.throwIfTenantAccessDenied(tenantScope.decision);
-    const paging = setPaging(event);
     return this.organizationUseCases.getAll(
       { ...filters, ...tenantScope.filters },
       paging
+    );
+  }
+
+  @Authorize()
+  public async getOrganizationsMetrics(
+    event: BaseDomainEvent
+  ): Promise<IServiceResponse<unknown>> {
+    validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
+    const { query, filters, capabilities } = setMetricsQuery(event);
+    const authenticatedUser = this.getAuthenticatedUser(event);
+    const tenantScope = resolveOrganizationCollectionScope(authenticatedUser);
+    this.throwIfTenantAccessDenied(tenantScope.decision);
+    return this.organizationUseCases.metrics(
+      { ...filters, ...tenantScope.filters },
+      query,
+      capabilities
     );
   }
 

@@ -6,8 +6,8 @@ Idioma alvo: Português (Brasil)
 
 Rastreamento de problemas:
 
-- Épico: [#124](https://github.com/XpertMinds/Jumentix/issues/124)
-- Tarefa: [#129](https://github.com/XpertMinds/Jumentix/issues/129)
+- Épico: [#124](https://github.com/web2solutions/Jumentix/issues/124)
+- Tarefa: [#129](https://github.com/web2solutions/Jumentix/issues/129)
 
 ## Linha de base de SEO implementada
 

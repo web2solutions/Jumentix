@@ -76,6 +76,8 @@ export function buildSampleModelPayload() {
         color: '#60a5fa',
         x: 80,
         y: 80,
+        width: 780,
+        height: 900,
         context: {
           ubiquitousLanguage: 'identity, organization, tenant, contact point',
           ownerTeam: 'platform'
@@ -142,7 +144,7 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-organization',
             name: 'Organization',
-            x: 240,
+            x: 390,
             y: 14,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
@@ -165,7 +167,7 @@ export function buildSampleModelPayload() {
             id: 'sample-entity-email',
             name: 'Email',
             x: 14,
-            y: 134,
+            y: 380,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
               { name: 'address', type: 'string', required: true, format: 'email' },
@@ -176,8 +178,8 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-phone',
             name: 'Phone',
-            x: 240,
-            y: 134,
+            x: 390,
+            y: 380,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
               { name: 'number', type: 'string', required: true, pattern: '^\\+[1-9]\\d{7,14}$' },
@@ -188,8 +190,8 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-contact-point',
             name: 'ContactPoint',
-            x: 127,
-            y: 254,
+            x: 220,
+            y: 650,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
               {
@@ -209,6 +211,74 @@ export function buildSampleModelPayload() {
             }
           }
         ]
+      },
+      {
+        id: 'sample-domain-tasks',
+        name: 'Tasks',
+        color: '#34d399',
+        x: 920,
+        y: 80,
+        width: 780,
+        height: 650,
+        context: {
+          ubiquitousLanguage: 'project, task, assignee, comment',
+          ownerTeam: 'delivery'
+        },
+        entities: [
+          {
+            id: 'sample-entity-project',
+            name: 'Project',
+            x: 24,
+            y: 74,
+            fields: [
+              { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
+              { name: 'organizationId', type: 'uuid', required: true, fk: true, indexed: true },
+              { name: 'name', type: 'string', required: true, minLength: 1 },
+              {
+                name: 'status',
+                type: 'string',
+                required: true,
+                enumValues: ['draft', 'active', 'archived'],
+                indexed: true
+              },
+              ...auditFields
+            ],
+            meta: {
+              aggregateRoot: true,
+              invariants: [
+                'a project belongs to exactly one organization',
+                'archived projects cannot accept new tasks'
+              ]
+            }
+          },
+          {
+            id: 'sample-entity-task',
+            name: 'Task',
+            x: 390,
+            y: 74,
+            fields: [
+              { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
+              { name: 'projectId', type: 'uuid', required: true, fk: true, indexed: true },
+              { name: 'assigneeId', type: 'uuid', fk: true, indexed: true, nullable: true },
+              { name: 'title', type: 'string', required: true, minLength: 1 },
+              { name: 'done', type: 'boolean', required: true, indexed: true },
+              { name: 'dueDate', type: 'date', indexed: true, nullable: true }
+            ]
+          },
+          {
+            id: 'sample-entity-comment',
+            name: 'Comment',
+            x: 390,
+            y: 318,
+            fields: [
+              { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
+              { name: 'taskId', type: 'uuid', required: true, fk: true, indexed: true },
+              { name: 'authorId', type: 'uuid', required: true, fk: true, indexed: true },
+              { name: 'body', type: 'string', required: true, minLength: 1 },
+              { name: 'createdAt', type: 'datetime', required: true, indexed: true }
+            ]
+          }
+        ]
       }
     ],
     relationships: [
@@ -217,6 +287,8 @@ export function buildSampleModelPayload() {
         fromEntityId: 'sample-entity-user',
         toEntityId: 'sample-entity-organization',
         name: 'User belongs to Organization',
+        fromField: 'organizationId',
+        toField: 'id',
         fromCardinality: 'N',
         toCardinality: '1'
       },
@@ -225,6 +297,8 @@ export function buildSampleModelPayload() {
         fromEntityId: 'sample-entity-email',
         toEntityId: 'sample-entity-user',
         name: 'Email belongs to User',
+        fromField: 'userId',
+        toField: 'id',
         fromCardinality: 'N',
         toCardinality: '1'
       },
@@ -233,6 +307,58 @@ export function buildSampleModelPayload() {
         fromEntityId: 'sample-entity-phone',
         toEntityId: 'sample-entity-user',
         name: 'Phone belongs to User',
+        fromField: 'userId',
+        toField: 'id',
+        fromCardinality: 'N',
+        toCardinality: '1'
+      },
+      {
+        id: 'sample-rel-project-organization',
+        fromEntityId: 'sample-entity-project',
+        toEntityId: 'sample-entity-organization',
+        name: 'Project belongs to Organization',
+        fromField: 'organizationId',
+        toField: 'id',
+        fromCardinality: 'N',
+        toCardinality: '1'
+      },
+      {
+        id: 'sample-rel-task-project',
+        fromEntityId: 'sample-entity-task',
+        toEntityId: 'sample-entity-project',
+        name: 'Task belongs to Project',
+        fromField: 'projectId',
+        toField: 'id',
+        fromCardinality: 'N',
+        toCardinality: '1'
+      },
+      {
+        id: 'sample-rel-task-assignee',
+        fromEntityId: 'sample-entity-task',
+        toEntityId: 'sample-entity-user',
+        name: 'Task assigned to User',
+        fromField: 'assigneeId',
+        toField: 'id',
+        fromCardinality: 'N',
+        toCardinality: '1'
+      },
+      {
+        id: 'sample-rel-comment-task',
+        fromEntityId: 'sample-entity-comment',
+        toEntityId: 'sample-entity-task',
+        name: 'Comment belongs to Task',
+        fromField: 'taskId',
+        toField: 'id',
+        fromCardinality: 'N',
+        toCardinality: '1'
+      },
+      {
+        id: 'sample-rel-comment-author',
+        fromEntityId: 'sample-entity-comment',
+        toEntityId: 'sample-entity-user',
+        name: 'Comment authored by User',
+        fromField: 'authorId',
+        toField: 'id',
         fromCardinality: 'N',
         toCardinality: '1'
       }

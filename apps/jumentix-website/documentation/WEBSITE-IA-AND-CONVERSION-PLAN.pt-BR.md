@@ -6,8 +6,8 @@ Idioma alvo: Português (Brasil)
 
 Rastreamento de problemas:
 
-- Épico: [#124](https://github.com/XpertMinds/Jumentix/issues/124)
-- Tarefa: [#125](https://github.com/XpertMinds/Jumentix/issues/125)
+- Épico: [#124](https://github.com/web2solutions/Jumentix/issues/124)
+- Tarefa: [#125](https://github.com/web2solutions/Jumentix/issues/125)
 
 ## 1. Objetivo
 

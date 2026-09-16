@@ -105,6 +105,14 @@ function readPath(record: unknown, path: string | readonly string[]): unknown {
 
 function writePath(record: Record<string, unknown>, path: string, value: unknown): void {
   const segments = path.split('.');
+  for (const segment of segments) {
+    if (segment === '__proto__' || segment === 'constructor' || segment === 'prototype') {
+      throw canaError(
+        'InvalidRequest',
+        `keyPath "${path}" is not writable: segment "${segment}" would mutate the prototype chain.`
+      );
+    }
+  }
   let cursor: Record<string, unknown> = record;
   for (let i = 0; i < segments.length - 1; i += 1) {
     const segment = segments[i]!;
@@ -479,6 +487,17 @@ export class LocalStorageBackend {
     const schema = storeSchema(this.options.schema, name);
 
     const bag = (): Record<string, unknown> => {
+      // A store named after a prototype-chain key would make the dynamic read
+      // below resolve to Object.prototype (or the Object constructor) itself,
+      // and every record write would then land on it — refuse the name before
+      // the read, instead of relying on the schema never containing it.
+      if (name === '__proto__' || name === 'constructor' || name === 'prototype') {
+        throw canaError(
+          'InvalidRequest',
+          `Store name "${name}" cannot be used as a snapshot property key.`,
+          { store: name }
+        );
+      }
       // eslint-disable-next-line no-param-reassign -- TxState is the mutable scratch snapshot
       working.snapshot.stores[name] ??= {};
       return working.snapshot.stores[name]!;

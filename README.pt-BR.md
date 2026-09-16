@@ -4,18 +4,19 @@ Idioma alvo: Português (Brasil)
 -->
 # Jumentix – Fábrica de Software para Equipes de Produto
 
-[![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
-[![GitHub Actions main](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
-[![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
-[![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
-[![Status do Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Classificação de Segurança](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jumentix)
-[![Cobertura Sonar](https://sonarcloud.io/api/project_badges/measure?project=Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jumentix)
+[![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
+[![GitHub Actions main](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
+[![CircleCI dev](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev)
+[![Gate de release CircleCI](https://img.shields.io/badge/CircleCI-release%20gate-configured?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main)
+[![Codecov](https://img.shields.io/badge/Codecov-release%20coverage-configured?logo=codecov&logoColor=white)](https://app.codecov.io/gh/web2solutions/Jumentix)
+[![Qualidade SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
+[![Confiabilidade SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
+[![Cobertura SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
 [![Bun](https://img.shields.io/badge/bun-1.3.13-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](./spec)
-[![Repositório](https://img.shields.io/badge/repository-private-24292f?logo=github)](https://github.com/XpertMinds/Jumentix)
+[![Repositório](https://img.shields.io/badge/repository-public-24292f?logo=github)](https://github.com/web2solutions/Jumentix)
 [![Licença](https://img.shields.io/badge/license-see%20LICENSE-blue)](./LICENSE)
 [![Rode com Express](https://img.shields.io/badge/Rode%20com-Express-gold?style=flat-square&logo=express&logoColor=000)](https://expressjs.com/)
 [![Rode com Fastify](https://img.shields.io/badge/Rode%20com-Fastify-gold?style=flat-square&logo=fastify&logoColor=000)](https://fastify.dev/)
@@ -35,8 +36,9 @@ Idioma alvo: Português (Brasil)
 
 | Gate obrigatório | `main` | `dev` |
 | --- | :---: | :---: |
-| Workflow GitHub Actions | [![GitHub Actions main](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![GitHub Actions dev](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
-| Cobertura de projeto no Codecov | [![Codecov main](https://codecov.io/gh/XpertMinds/Jumentix/branch/main/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/XpertMinds/Jumentix/branch/dev/graph/badge.svg?flag=project)](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev) |
+| Workflow GitHub Actions | [![GitHub Actions main](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
+| Workflow CircleCI | [![Gate de release CircleCI](https://img.shields.io/badge/CircleCI-release%20gate-configured?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main) | [![CircleCI dev](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev) |
+| Cobertura Codecov | [![Cobertura de release Codecov](https://img.shields.io/badge/Codecov-release%20coverage-configured?logo=codecov&logoColor=white)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main) | [mapa de arquivos; cobertura completa é só no release](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev) |
 | Testes por branch | `branch-gate` | `branch-gate` |
 | Cobertura de projeto + patch | `coverage` | somente promoção de release |
 | Review de segurança third-party | `third-party-review` | somente PR |
@@ -47,13 +49,16 @@ completos de workspace, browser, cobertura, website e banco ficam reservados
 para promoções de release `dev -> main`, pushes em `main` e execuções completas
 agendadas.
 
-A cobertura é produzida e aplicada pelo job GitHub Actions `coverage` quando a suite
-completa roda. O workflow envia LCOV ao Codecov com a flag `project` quando
-`CODECOV_TOKEN` está configurado. O Codecov fornece o mapa de cobertura arquivo
+A cobertura é produzida e aplicada pelo job `coverage` da suite completa quando
+o gate de release roda. GitHub Actions e CircleCI enviam LCOV ao Codecov quando
+`CODECOV_TOKEN` está configurado. O README usa um badge estável da integração
+Codecov até existir o primeiro upload de cobertura de release pós-migração no
+novo owner público. `dev` fica como link de mapa porque usa o health gate
+barato entre promoções de release. O Codecov fornece o mapa de cobertura arquivo
 a arquivo para cada branch longa:
 
-- [Mapa de arquivos Codecov para `dev`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/dev)
-- [Mapa de arquivos Codecov para `main`](https://app.codecov.io/gh/XpertMinds/Jumentix/tree/main)
+- [Mapa de arquivos Codecov para `dev`](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev)
+- [Mapa de arquivos Codecov para `main`](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
 
 O gate rígido continua sendo a cobertura pertencente ao repositório. Cada
 execução retém evidências Istanbul JSON e LCOV. Os mínimos são:
@@ -62,11 +67,11 @@ execução retém evidências Istanbul JSON e LCOV. Os mínimos são:
 | :---: | :---: | :---: | :---: | :---: |
 | ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |
 
-[Abrir execuções GitHub Actions e evidências para download](https://github.com/XpertMinds/Jumentix/actions/workflows/ci.yml)
+[Abrir execuções GitHub Actions e evidências para download](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml)
 
 Jumentix é um produto monorepo que funciona como uma fábrica de software para equipes de engenharia e proprietários de produtos. Ele ajuda você a passar da ideia ao SaaS pronto para produção em dias, não meses, com uma arquitetura que prioriza o contrato, flexibilidade de tempo de execução e governança de nível empresarial.
 
-> **Repositório privado canônico:** `XpertMinds/Jumentix`.
+> **Repositório público canônico:** `web2solutions/Jumentix`.
 > `web2solutions/aaa-typescript-boilerplate` está obsoleto, é somente leitura e
 > não aceita novas modificações. A coordenação de agentes é canônica no
 > Firestore Database (Requisito `089`); os antigos registries em

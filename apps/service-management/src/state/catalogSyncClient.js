@@ -7,8 +7,8 @@
  *
  * designerSync.js synchronises one document across THIS browser's tabs. This
  * client synchronises the SHARED domains inside that document across USERS,
- * against the backend Catalogs module (`apps/backend-template/src/modules/
- * Catalogs`): a team shares one catalog of domain designs, scoped to their
+ * against the Service Management Catalog API (`apps/service-management-api/src/
+ * modules/Catalogs`): a team shares one catalog of domain designs, scoped to their
  * organization by the TENANT-RBAC contract. It is a sibling consumer of the
  * same Cana committed-event stream designerSync subscribes to, and every
  * remote change it applies crosses the same one path — `applyRemoteDocument`
@@ -630,7 +630,13 @@ export function createCatalogHttpTransport({
   // the root is resolved per request, never captured once.
   const resolveRoot = () => {
     const base = typeof baseUrl === 'function' ? baseUrl() : baseUrl;
-    return `${String(base || '').replace(/\/$/, '')}${apiPrefix}`;
+    const normalized = String(base || '').trim().replace(/\/$/, '');
+    if (!normalized) {
+      throw new Error(
+        'Service Management catalog API endpoint is not configured. Set JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL.'
+      );
+    }
+    return `${normalized}${apiPrefix}`;
   };
 
   async function call(method, path, body) {

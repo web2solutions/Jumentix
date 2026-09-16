@@ -124,7 +124,7 @@ describe('fastify -> User createEmail suite', () => {
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser1);
-    expect(response.body.message).toBe('Bad Request - email can not be empty');
+    expect(response.body.message).toContain('OpenAPI validation failed at "payload.email"');
     expect(response.statusCode).toBe(400);
   });
 

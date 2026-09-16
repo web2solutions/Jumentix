@@ -62,12 +62,14 @@
  *    is gone for good — a subsequent `load()` reports `'empty'`.
  *
  * The payload shape crossing `save()`/`load()` is the `service-management.v1`
- * document pinned by Requirement 126 Contract 2 (twelve top-level sections:
+ * document pinned by Requirement 126 Contract 2 (fourteen top-level sections:
  * `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
  * `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
- * `serviceConfiguration`, `runtimeEnvironment`, `deployments`, `view`). The
+ * `serviceConfiguration`, `runtimeEnvironment`, `codeWorkspace`, `deployments`,
+ * `view`). The
  * port itself is schema-agnostic; the pinned wire format belongs to the
- * Cana adapter and to JUM-484's migration (which moved it unchanged).
+ * Cana adapter, JUM-484's migration, and additive sections such as JUM-736's
+ * code workspace.
  *
  * This contract is documented externally by JUM-473.
  */

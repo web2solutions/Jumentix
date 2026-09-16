@@ -42,10 +42,10 @@ Status:
   - `OASdoc/` + `AsyncAPIdoc/` -> `apps/backend-template/*`
 - PM2 ecosystem ownership now lives at root `pm2/*`.
 - Wave closeout evidence:
-  - PR #112: `https://github.com/XpertMinds/Jumentix/pull/112`
-  - Normalization issue: `https://github.com/XpertMinds/Jumentix/issues/113`
-  - CI stabilization issue: `https://github.com/XpertMinds/Jumentix/issues/114`
-  - Serverless path issue: `https://github.com/XpertMinds/Jumentix/issues/115`
+  - PR #112: `https://github.com/web2solutions/Jumentix/pull/112`
+  - Normalization issue: `https://github.com/web2solutions/Jumentix/issues/113`
+  - CI stabilization issue: `https://github.com/web2solutions/Jumentix/issues/114`
+  - Serverless path issue: `https://github.com/web2solutions/Jumentix/issues/115`
 - Residual tasks moved to dedicated follow-up:
   - Governance closure and evidence mapping (`#116`)
   - Wave 6 CI/release hardening subtasks (`#94`, `#98`, `#99`)

@@ -21,7 +21,7 @@ Agents must refresh sibling-agent progress, blockers, branches, PRs, and Project
 - Historical/local todo mirror (non-canonical):
   - `.agents/project-todos.md`
 - GitHub issue tracking for migrated TODOs:
-  - <https://github.com/XpertMinds/Jumentix/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
+  - <https://github.com/web2solutions/Jumentix/issues?q=is%3Aissue+is%3Aopen+label%3Atodo-mvp>
 - Official planning authority:
   - Linear workspace: <https://linear.app/jumentix>
   - Linear API key at `../.linear` (access-controlled, never commit or share)
