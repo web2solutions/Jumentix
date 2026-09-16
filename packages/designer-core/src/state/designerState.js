@@ -33,6 +33,7 @@ import {
   getSupportedServiceTypes,
   isPm2ManagedDeployTarget
 } from '../model/deployCapabilityMatrix.js';
+import { normalizeArchitectureInput } from '../model/architecture.js';
 
 export const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
 /*
@@ -603,6 +604,7 @@ export function normalizeStatePayload(parsed) {
   const runtimeEnvironment = normalizeRuntimeEnvironmentInput(parsed?.runtimeEnvironment);
   const codeWorkspace = normalizeCodeWorkspaceInput(parsed?.codeWorkspace);
   const monitoringHistory = normalizeMonitoringHistoryInput(parsed?.monitoringHistory);
+  const architecture = normalizeArchitectureInput(parsed?.architecture, domains);
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
@@ -637,6 +639,7 @@ export function normalizeStatePayload(parsed) {
     codeWorkspace,
     monitoringHistory,
     deployments,
+    architecture,
     view
   };
 }
@@ -706,6 +709,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     },
     monitoringHistory: createEmptyMonitoringHistory(),
     deployments: [],
+    architecture: { services: [], links: [] },
     view: createDefaultView()
   };
 
@@ -730,6 +734,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       codeWorkspace: state.codeWorkspace,
       monitoringHistory: state.monitoringHistory,
       deployments: state.deployments,
+      architecture: state.architecture,
       view: state.view
     }));
   }
@@ -757,6 +762,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     state.deployments = Array.isArray(snapshot.deployments)
       ? snapshot.deployments.map(normalizeDeploymentInput)
       : [];
+    state.architecture = normalizeArchitectureInput(snapshot.architecture, state.domains);
     state.view = snapshot.view || { zoom: 1 };
     recomputeIdCounter();
   }
@@ -787,6 +793,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
    * rather than assumed durable — the promise is never left unhandled.
    */
   function saveState() {
+    state.architecture = normalizeArchitectureInput(state.architecture, state.domains);
     const payload = {
       domains: state.domains,
       relationships: state.relationships,
@@ -802,6 +809,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       codeWorkspace: state.codeWorkspace,
       monitoringHistory: state.monitoringHistory,
       deployments: state.deployments,
+      architecture: state.architecture,
       view: state.view
     };
     const result = store.save(payload);
@@ -900,6 +908,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       state.codeWorkspace = parsed.codeWorkspace;
       state.monitoringHistory = parsed.monitoringHistory;
       state.deployments = parsed.deployments;
+      state.architecture = parsed.architecture;
       state.view = parsed.view;
       recomputeIdCounter();
       clearHistory();

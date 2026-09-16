@@ -6,7 +6,7 @@
  * runs) against the REAL server. No DOM shims, no fakes (Requirement 115).
  *
  * Pins:
- *  - The SPA boots and each of the six tabs renders without console errors.
+ *  - The SPA boots and each of the eight tabs renders without console errors.
  *  - The export quality gate (Requirement 126 §5): with
  *    `view.exportBlockCritical` true (the default), an export is refused while
  *    model validation reports any error-severity issue; lifting the gate on
@@ -28,11 +28,13 @@ import {
 import type { StartedServer } from './serverHarness';
 
 const TABS = [
+  'architecture',
   'domain-designer',
   'interface-designer',
   'service-config',
   'deploy-management',
   'monitoring',
+  'openapi',
   'code-workspace'
 ];
 
@@ -92,7 +94,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     cleanupTempConfigDir(tempDir);
   });
 
-  it('boots the SPA and renders all six tabs without console errors', async () => {
+  it('boots the SPA and renders all eight tabs without console errors', async () => {
     expect.hasAssertions();
     const context = await browser!.newContext();
     const page = await context.newPage();

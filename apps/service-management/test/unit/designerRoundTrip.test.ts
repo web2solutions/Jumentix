@@ -472,8 +472,6 @@ const UNSUPPORTED_SOURCE_FACETS = [
   // does not store. Lossless carry would need new designer fields.
   'x-relation',
   'x-primary-key',
-  'x-services',
-  'x-service',
   'x-sync',
   'x-metrics-capabilities',
   'readOnly'
@@ -601,6 +599,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
         'runtimeEnvironment',
         'codeWorkspace',
         'deployments',
+        'architecture',
         'view'
       ]);
       expect(document.kind).toBe('service-management-suite');

@@ -33,6 +33,9 @@ import {
   SUITE_EXPORT_VERSION
 } from '../state/designerState.js';
 import {
+  normalizeArchitectureInput
+} from '../model/architecture.js';
+import {
   entityLabel,
   getEntityRbacPolicy,
   oasFieldNameFlags,
@@ -83,6 +86,7 @@ export function buildJsonExportDocument(state) {
     },
     codeWorkspace: state.codeWorkspace || { files: {}, activePath: '' },
     deployments: Array.isArray(state.deployments) ? state.deployments : [],
+    architecture: normalizeArchitectureInput(state.architecture, state.domains),
     view: state.view
   };
 }
@@ -268,15 +272,96 @@ export function buildDomainPackageDocument(domain, exportedAt = new Date().toISO
  *   schema names, not model ids, so relationships survive the crossing without
  *   leaking recomputed ids into the document.
  */
+function architectureOf(state) {
+  return normalizeArchitectureInput(state?.architecture, state?.domains || []);
+}
+
+function serviceByDomainId(architecture) {
+  const map = new Map();
+  architecture.services.forEach((service) => {
+    (service.domains || []).forEach((domainId) => map.set(domainId, service));
+  });
+  return map;
+}
+
+function collectSchemaRefs(node, acc) {
+  if (!node || typeof node !== 'object') return;
+  if (typeof node.$ref === 'string') {
+    const match = node.$ref.match(/#\/components\/schemas\/([^/]+)$/);
+    if (match) acc.add(match[1]);
+  }
+  Object.values(node).forEach((value) => collectSchemaRefs(value, acc));
+}
+
+/**
+ * Filter a merged OAS to one service: own operations plus transitively
+ * referenced schemas (JUM-817).
+ */
+export function filterOasDocumentForService(oas, serviceId) {
+  const wanted = String(serviceId || '').trim();
+  const paths = {};
+  Object.entries(oas?.paths || {}).forEach(([pathKey, operations]) => {
+    const nextOps = {};
+    Object.entries(operations || {}).forEach(([method, operation]) => {
+      if (operation?.['x-service'] === wanted) nextOps[method] = operation;
+    });
+    if (Object.keys(nextOps).length) paths[pathKey] = nextOps;
+  });
+  const needed = new Set();
+  collectSchemaRefs(paths, needed);
+  const schemas = oas?.components?.schemas || {};
+  let grew = true;
+  while (grew) {
+    grew = false;
+    [...needed].forEach((name) => {
+      const before = needed.size;
+      collectSchemaRefs(schemas[name], needed);
+      if (needed.size !== before) grew = true;
+    });
+  }
+  const filteredSchemas = {};
+  needed.forEach((name) => {
+    if (schemas[name]) filteredSchemas[name] = schemas[name];
+  });
+  const service = (oas?.['x-services'] || []).find((entry) => entry.id === wanted);
+  const servers = (oas?.servers || []).filter((server) => server['x-service-id'] === wanted);
+  return {
+    ...oas,
+    info: {
+      ...oas.info,
+      title: service?.name ? `${service.name} API` : oas.info?.title
+    },
+    servers: servers.length ? servers : oas.servers,
+    paths,
+    components: {
+      ...oas.components,
+      schemas: filteredSchemas
+    },
+    'x-services': service ? [service] : []
+  };
+}
+
+export function buildOasDocumentSet(state) {
+  const merged = buildOasDocument(state);
+  const services = {};
+  (merged['x-services'] || []).forEach((entry) => {
+    services[entry.id] = filterOasDocumentForService(merged, entry.id);
+  });
+  return { merged, services };
+}
+
 export function buildOasDocument(state) {
   const schemas = {};
   const paths = {};
   const entitySchemaIndex = {};
   let hasEntities = false;
+  const architecture = architectureOf(state);
+  const domainServices = serviceByDomainId(architecture);
 
   const jsonContent = (schema) => ({ 'application/json': { schema } });
 
   state.domains.forEach((domain) => {
+    const serviceId = domainServices.get(domain.id)?.id || 'core';
     domain.entities.forEach((entity) => {
       hasEntities = true;
       const properties = {};
@@ -314,6 +399,7 @@ export function buildOasDocument(state) {
         required,
         'x-domain': domain.name,
         'x-entity': entity.name,
+        'x-service': serviceId,
         'x-message-contracts': Array.isArray(entity?.meta?.contracts)
           ? entity.meta.contracts.map((contract, index) => normalizeContractInput(contract, index))
           : []
@@ -374,20 +460,23 @@ export function buildOasDocument(state) {
         description: `Port input object for ${entity.name} creation endpoint.`,
         properties,
         required: required.filter((fieldName) => !pkFieldNames.includes(fieldName)),
-        'x-port-object': true
+        'x-port-object': true,
+        'x-service': serviceId
       };
       schemas[`RequestUpdate${schemaName}`] = {
         type: 'object',
         description: `Port input object for ${entity.name} update endpoint.`,
         properties,
         required: pkFieldNames,
-        'x-port-object': true
+        'x-port-object': true,
+        'x-service': serviceId
       };
       schemas[`${schemaName}ArrayOf`] = {
         type: 'array',
         description: `Port output array of ${entity.name} records.`,
         items: entityRef,
-        'x-port-object': true
+        'x-port-object': true,
+        'x-service': serviceId
       };
 
       const domainPath = toPathToken(domain.name);
@@ -435,6 +524,14 @@ export function buildOasDocument(state) {
         }
       };
 
+      const stampOperations = (item) => {
+        Object.keys(item).forEach((method) => {
+          if (item[method] && typeof item[method] === 'object') {
+            item[method]['x-service'] = serviceId;
+          }
+        });
+      };
+      stampOperations(paths[collectionPath]);
       paths[itemPath] = {
         get: {
           operationId: `get${schemaName}ById`,
@@ -485,6 +582,7 @@ export function buildOasDocument(state) {
           }
         }
       };
+      stampOperations(paths[itemPath]);
     });
   });
 
@@ -505,6 +603,18 @@ export function buildOasDocument(state) {
     };
   }
 
+  const xServices = architecture.services.map((service) => ({
+    id: service.id,
+    name: service.name,
+    kind: service.kind,
+    url: service.url,
+    description: service.kind === 'core' ? 'Merged Core service (monolith or host of Users).' : service.name
+  }));
+  const servers = architecture.services.map((service) => ({
+    url: service.url,
+    'x-service-id': service.id
+  }));
+
   return {
     openapi: '3.1.0',
     info: {
@@ -512,7 +622,7 @@ export function buildOasDocument(state) {
       description: 'REST API designed with the Jumentix Domain Designer',
       version: '1.0.0'
     },
-    servers: [{ url: 'http://localhost:3000/api/1.0.0' }],
+    servers,
     paths,
     components: {
       schemas,
@@ -520,6 +630,8 @@ export function buildOasDocument(state) {
         bearerAuth: { type: 'http', scheme: 'bearer' }
       }
     },
+    'x-services': xServices,
+    'x-architecture-links': architecture.links,
     'x-message-contracts': state.domains.flatMap((domain) => (
       domain.entities.flatMap((entity) => (
         (Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : []).map((contract, index) => ({

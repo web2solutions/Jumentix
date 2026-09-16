@@ -34,6 +34,7 @@ export * from './model/modelQueries.js';
 export * from './model/propertyKeys.js';
 export * from './model/rbacContract.js';
 export * from './model/sampleModel.js';
+export * from './model/architecture.js';
 export * from './model/deployCapabilityMatrix.js';
 export * from './model/interfaceFrameworkMatrix.js';
 
@@ -47,6 +48,7 @@ export * from './validation/deployTargetValidation.js';
 export * from './validation/deployTargetLifecycleValidation.js';
 export * from './validation/interfaceAdapterValidation.js';
 export * from './validation/serviceConfigurationValidation.js';
+export * from './validation/architectureValidation.js';
 
 // The exporters: JSON, Markdown, JSON Schema, AsyncAPI, boilerplate bundle,
 // domain package and OAS.

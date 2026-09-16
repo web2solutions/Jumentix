@@ -14,7 +14,7 @@
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.51" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.54" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -28,17 +28,95 @@
     <!-- Tab shell (JUM-488): WAI-ARIA tablist semantics. Roving tabindex and
          arrow-key/Home/End navigation are managed by src/ui/tabs.js. -->
     <nav class="tab-nav" role="tablist" aria-label="Service management tabs">
+      <button id="tab-architecture-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-architecture" tabindex="-1">Architecture</button>
       <button id="tab-domain-designer-btn" class="tab-btn active" type="button" role="tab" aria-selected="true" aria-controls="tab-domain-designer" tabindex="0">Domain Designer</button>
       <button id="tab-interface-designer-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-interface-designer" tabindex="-1">Communication Interface Designer</button>
       <button id="tab-service-config-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-service-config" tabindex="-1">Service Configuration</button>
       <button id="tab-deploy-management-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-deploy-management" tabindex="-1">Deploy Management</button>
       <button id="tab-monitoring-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" tabindex="-1">Monitoring</button>
+      <button id="tab-openapi-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-openapi" tabindex="-1">OpenAPI</button>
       <button id="tab-code-workspace-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-code-workspace" tabindex="-1">Code Workspace</button>
     </nav>
 
     <!-- Non-blocking status surface (JUM-543): validation messages and API
          results are announced here instead of blocking window.alert dialogs. -->
     <div id="status-region" class="status-region" role="status" aria-live="polite" hidden></div>
+
+    <section id="tab-architecture" class="tab-section" role="tabpanel" aria-labelledby="tab-architecture-btn">
+      <div class="app-shell architecture-shell">
+        <aside class="sidebar open" aria-label="Architecture panels">
+          <header class="sidebar-header">
+            <h2>Architecture</h2>
+            <p>Services, domain assignment and links</p>
+          </header>
+          <section class="panel">
+            <h2>Services</h2>
+            <div class="row">
+              <input id="architecture-service-name-input" type="text" placeholder="Service name" aria-label="Service name" />
+              <button id="architecture-add-service-btn" type="button">Add Service</button>
+            </div>
+            <ul id="architecture-service-list" class="list"></ul>
+          </section>
+          <section class="panel">
+            <h2>Domain palette</h2>
+            <p class="hint">Drag a domain onto a service, or assign it in the inspector.</p>
+            <ul id="architecture-domain-palette" class="list architecture-palette"></ul>
+          </section>
+          <section class="panel">
+            <h2>Inspector</h2>
+            <label for="architecture-inspect-name">Name</label>
+            <input id="architecture-inspect-name" type="text" aria-label="Selected service name" />
+            <label for="architecture-inspect-kind">Kind</label>
+            <select id="architecture-inspect-kind" aria-label="Selected service kind">
+              <option value="core">core</option>
+              <option value="domain">domain</option>
+            </select>
+            <label for="architecture-inspect-url">URL</label>
+            <input id="architecture-inspect-url" type="text" aria-label="Selected service URL" />
+            <label for="architecture-inspect-deploy">Deploy target id</label>
+            <input id="architecture-inspect-deploy" type="text" aria-label="Selected service deploy target" />
+            <label for="architecture-inspect-domain">Move domain</label>
+            <div class="row">
+              <select id="architecture-inspect-domain" aria-label="Domain to move"></select>
+              <button id="architecture-move-domain-btn" type="button">Move here</button>
+            </div>
+            <button id="architecture-save-service-btn" type="button">Save Service</button>
+            <button id="architecture-delete-service-btn" type="button">Delete Service</button>
+            <h3>Link</h3>
+            <div class="row">
+              <select id="architecture-link-from" aria-label="Link from service"></select>
+              <select id="architecture-link-to" aria-label="Link to service"></select>
+            </div>
+            <div class="row">
+              <select id="architecture-link-protocol" aria-label="Link protocol">
+                <option value="rest">rest</option>
+                <option value="grpc">grpc</option>
+                <option value="websocket">websocket</option>
+                <option value="message">message</option>
+              </select>
+              <button id="architecture-add-link-btn" type="button">Add Link</button>
+            </div>
+            <ul id="architecture-link-list" class="list"></ul>
+          </section>
+          <section class="panel">
+            <h2>Validation</h2>
+            <ul id="architecture-issue-list" class="list"></ul>
+          </section>
+        </aside>
+        <main class="canvas-workspace" aria-label="Architecture canvas">
+          <aside class="empty-state" id="architecture-empty-state" hidden aria-label="Architecture first-run guidance">
+            <h3>No architecture yet</h3>
+            <p>The designer starts as one Core service (monolith) holding every domain. Split services from the palette, drop a domain onto a service, and draw links.</p>
+            <p>First action: press Add Service or load the sample model.</p>
+          </aside>
+          <div class="canvas-toolbar">
+            <button id="architecture-export-image-btn" type="button">Export image</button>
+          </div>
+          <div id="architecture-canvas" class="architecture-canvas"></div>
+          <div id="architecture-mini-map" class="mini-map architecture-mini-map" aria-hidden="true"></div>
+        </main>
+      </div>
+    </section>
 
     <section id="tab-domain-designer" class="tab-section active" role="tabpanel" aria-labelledby="tab-domain-designer-btn">
       <div class="app-shell">
@@ -953,6 +1031,21 @@
       </div>
     </section>
 
+    <section id="tab-openapi" class="tab-section" role="tabpanel" aria-labelledby="tab-openapi-btn">
+      <div class="tab-body openapi-tab-body">
+        <h2>OpenAPI</h2>
+        <p class="hint">Swagger UI for the generated OAS. Choose a service to filter operations; Try it out uses that service's <code>servers</code> URL.</p>
+        <div class="row">
+          <label for="openapi-service-select">Service</label>
+          <select id="openapi-service-select" aria-label="OpenAPI service selector">
+            <option value="merged">Merged Core document</option>
+          </select>
+          <button id="openapi-refresh-btn" type="button">Refresh</button>
+        </div>
+        <div id="swagger-ui" class="swagger-ui-host" data-theme-host="true"></div>
+      </div>
+    </section>
+
     <section id="tab-code-workspace" class="tab-section" role="tabpanel" aria-labelledby="tab-code-workspace-btn">
       <div class="code-workspace">
         <nav class="code-activity-bar" aria-label="Code workspace views">
@@ -1034,7 +1127,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js?v=0.9.51"></script>
+  <script type="module" src="./script.js?v=0.9.54"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

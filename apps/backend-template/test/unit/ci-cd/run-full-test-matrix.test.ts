@@ -71,6 +71,44 @@ describe('run-full-test-matrix', () => {
     expect(workflow).toContain('bun run coverage:patch');
   });
 
+  it('checks full coverage only after browser coverage is unioned', () => {
+    expect.hasAssertions();
+
+    const workflow = matrixFs.readFileSync(
+      matrixPath.join(fullMatrixRootDir, '.github/workflows/ci.yml'),
+      'utf8'
+    );
+    const jestCoverageIndex = workflow.indexOf('name: Produce Jest coverage');
+    const browserUnionIndex = workflow.indexOf('name: Union browser coverage engines');
+    const fullCoverageCheckIndex = workflow.indexOf('name: Enforce full coverage thresholds');
+    const frontendCoverageIndex = workflow.indexOf('name: Produce frontend coverage for the patch report');
+    const patchCoverageIndex = workflow.indexOf('name: Enforce patch coverage');
+
+    expect([
+      jestCoverageIndex,
+      browserUnionIndex,
+      fullCoverageCheckIndex,
+      frontendCoverageIndex,
+      patchCoverageIndex
+    ]).toStrictEqual([
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number)
+    ]);
+    expect(jestCoverageIndex).toBeGreaterThanOrEqual(0);
+    expect([
+      browserUnionIndex > jestCoverageIndex,
+      fullCoverageCheckIndex > browserUnionIndex,
+      frontendCoverageIndex > fullCoverageCheckIndex,
+      patchCoverageIndex > frontendCoverageIndex
+    ]).toStrictEqual([true, true, true, true]);
+
+    const jestCoverageBlock = workflow.slice(jestCoverageIndex, browserUnionIndex);
+    expect(jestCoverageBlock).not.toContain('coverage:check');
+  });
+
   it('leaves the coverage scripts available for the GitHub Actions coverage gate', () => {
     expect.hasAssertions();
 

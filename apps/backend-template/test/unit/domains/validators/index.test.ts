@@ -1,4 +1,5 @@
 /* eslint-disable jest/prefer-expect-assertions */
+/* eslint-disable jest/max-expects */
 import {
   throwIfNotFound,
   throwIfValuesAreDifferent,
@@ -231,6 +232,18 @@ describe('domain validators', () => {
     expect(() => canNotBeEmpty('field', 'x')).not.toThrow();
     expect(() => canNotBeEmpty('field', { id: '1' })).not.toThrow();
     expect(() => canNotBeEmpty('field', [1])).not.toThrow();
+  });
+  it('allows valid values through guard-only validators', async () => {
+    expect.hasAssertions();
+    expect(() => throwIfNotFound(true)).not.toThrow();
+    expect(() => throwIfValuesAreDifferent([1, 1])).not.toThrow();
+    expect(() => throwIfIsNotObject('field', { id: '1' })).not.toThrow();
+    expect(() => mustBeNumeric('count', 1)).not.toThrow();
+    expect(() => mustBeArray('items', [])).not.toThrow();
+    expect(() => mustBeGreaterThanZero('count', 1)).not.toThrow();
+    expect(() => mustBePositiveNumber('count', 0)).not.toThrow();
+    expect(() => throwIfReadOnly('field', false)).not.toThrow();
+    expect(() => throwIfPreUpdateValidationFails('1', { id: '1' })).not.toThrow();
   });
   it('mustEndsAtLeastInMinutes must ends before 5 minutes - 2 hours in the past', async () => {
     expect.hasAssertions();

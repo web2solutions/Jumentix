@@ -846,13 +846,14 @@ describe('designer state core (JUM-468)', () => {
   });
 
   describe('saveState payload contract', () => {
-    it('writes exactly the fifteen pinned Requirement 126 sections', async () => {
+    it('writes exactly the sixteen pinned Requirement 126 sections', async () => {
       expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
       const payload = JSON.parse(storage.map.get('service-management.v1') as string);
       expect(Object.keys(payload).sort()).toStrictEqual([
         'activeTab',
+        'architecture',
         'codeWorkspace',
         'deployments',
         'domains',
