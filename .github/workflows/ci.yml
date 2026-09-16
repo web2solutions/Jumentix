@@ -317,7 +317,6 @@ jobs:
           bun run test:coverage
           mkdir -p coverage/jest
           cp coverage/coverage-final.json coverage/jest/coverage-final.json
-          JUMENTIX_COVERAGE_INCLUDE_BROWSER=0 JUMENTIX_COVERAGE_REQUIRE_BROWSER=0 bun run coverage:check
       - name: Produce browser coverage for every supported engine
         run: |
           set -euo pipefail
@@ -337,6 +336,8 @@ jobs:
       - name: Union browser coverage engines
         run: |
           bun ci-cd/merge-browser-coverage.js --from-dir coverage
+      - name: Enforce full coverage thresholds
+        run: bun run coverage:check
       - name: Produce frontend coverage for the patch report
         run: bun run frontend:test:coverage
       - name: Enforce patch coverage

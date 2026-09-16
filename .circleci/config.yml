@@ -246,7 +246,6 @@ jobs:
             bun run test:coverage
             mkdir -p coverage/jest
             cp coverage/coverage-final.json coverage/jest/coverage-final.json
-            JUMENTIX_COVERAGE_INCLUDE_BROWSER=0 JUMENTIX_COVERAGE_REQUIRE_BROWSER=0 bun run coverage:check
       - run:
           name: Produce browser coverage for every supported engine
           no_output_timeout: 30m
@@ -270,6 +269,16 @@ jobs:
           command: |
             source "$BASH_ENV"
             bun ci-cd/merge-browser-coverage.js --from-dir coverage
+      - run:
+          name: Enforce full coverage thresholds
+          command: |
+            source "$BASH_ENV"
+            bun run coverage:check
+      - run:
+          name: Produce frontend coverage for the patch report
+          command: |
+            source "$BASH_ENV"
+            bun run frontend:test:coverage
       - run:
           name: Enforce patch coverage
           command: |
