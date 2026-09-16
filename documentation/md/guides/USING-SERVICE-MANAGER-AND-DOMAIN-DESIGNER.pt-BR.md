@@ -231,6 +231,10 @@ Um primeiro ciclo completo:
    `domain-designer-oas-3.1.json`.
 4. Exclua o domínio de exemplo e modele o seu.
 
+## 5.1 Abas Architecture e OpenAPI
+
+Architecture começa como um Core (Users + demais domínios). Separe com Add Service, atribua domínios, desenhe links. OpenAPI mostra o OAS no Swagger UI; escolha um serviço para filtrar operações.
+
 ## 6. Domain Designer
 
 ### 6.1 Canvas e navegação

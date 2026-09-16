@@ -100,6 +100,8 @@ import { createSidebarGroups } from './src/ui/sidebarGroups.js';
 import { createContextMenu } from './src/ui/contextMenu.js';
 import { drawModel } from './src/ui/canvasImage.js';
 import { createCanvas } from './src/ui/canvas.js';
+import { createArchitectureCanvas } from './src/ui/architectureCanvas.js';
+import { createSwaggerTab } from './src/ui/swaggerTab.js';
 import { createInspectors } from './src/ui/inspectors.js';
 import { createMonitoringController } from './src/ui/monitoringApp.js';
 import { createRenderGuard, stableSerialize } from './src/ui/renderGuard.js';
@@ -199,17 +201,21 @@ const interaction = {
 };
 
 const dom = {
+  tabArchitectureBtn: document.getElementById('tab-architecture-btn'),
   tabDomainDesignerBtn: document.getElementById('tab-domain-designer-btn'),
   tabInterfaceDesignerBtn: document.getElementById('tab-interface-designer-btn'),
   tabServiceConfigBtn: document.getElementById('tab-service-config-btn'),
   tabDeployManagementBtn: document.getElementById('tab-deploy-management-btn'),
   tabMonitoringBtn: document.getElementById('tab-monitoring-btn'),
+  tabOpenapiBtn: document.getElementById('tab-openapi-btn'),
   tabCodeWorkspaceBtn: document.getElementById('tab-code-workspace-btn'),
+  tabArchitecture: document.getElementById('tab-architecture'),
   tabDomainDesigner: document.getElementById('tab-domain-designer'),
   tabInterfaceDesigner: document.getElementById('tab-interface-designer'),
   tabServiceConfig: document.getElementById('tab-service-config'),
   tabDeployManagement: document.getElementById('tab-deploy-management'),
   tabMonitoring: document.getElementById('tab-monitoring'),
+  tabOpenapi: document.getElementById('tab-openapi'),
   tabCodeWorkspace: document.getElementById('tab-code-workspace'),
   canvas: document.getElementById('canvas'),
   canvasInner: document.getElementById('canvas-inner'),
@@ -452,6 +458,31 @@ const dom = {
   pm2EcosystemState: document.getElementById('pm2-ecosystem-state'),
   pm2MonitoringCommand: document.getElementById('pm2-monitoring-command'),
   pm2ListCommand: document.getElementById('pm2-list-command'),
+  architectureEmptyState: document.getElementById('architecture-empty-state'),
+  architectureServiceNameInput: document.getElementById('architecture-service-name-input'),
+  architectureAddServiceBtn: document.getElementById('architecture-add-service-btn'),
+  architectureServiceList: document.getElementById('architecture-service-list'),
+  architectureDomainPalette: document.getElementById('architecture-domain-palette'),
+  architectureInspectName: document.getElementById('architecture-inspect-name'),
+  architectureInspectKind: document.getElementById('architecture-inspect-kind'),
+  architectureInspectUrl: document.getElementById('architecture-inspect-url'),
+  architectureInspectDeploy: document.getElementById('architecture-inspect-deploy'),
+  architectureInspectDomain: document.getElementById('architecture-inspect-domain'),
+  architectureMoveDomainBtn: document.getElementById('architecture-move-domain-btn'),
+  architectureSaveServiceBtn: document.getElementById('architecture-save-service-btn'),
+  architectureDeleteServiceBtn: document.getElementById('architecture-delete-service-btn'),
+  architectureLinkFrom: document.getElementById('architecture-link-from'),
+  architectureLinkTo: document.getElementById('architecture-link-to'),
+  architectureLinkProtocol: document.getElementById('architecture-link-protocol'),
+  architectureAddLinkBtn: document.getElementById('architecture-add-link-btn'),
+  architectureLinkList: document.getElementById('architecture-link-list'),
+  architectureIssueList: document.getElementById('architecture-issue-list'),
+  architectureCanvas: document.getElementById('architecture-canvas'),
+  architectureMiniMap: document.getElementById('architecture-mini-map'),
+  architectureExportImageBtn: document.getElementById('architecture-export-image-btn'),
+  openapiServiceSelect: document.getElementById('openapi-service-select'),
+  openapiRefreshBtn: document.getElementById('openapi-refresh-btn'),
+  swaggerUi: document.getElementById('swagger-ui'),
   codeWorkspaceRegenerateBtn: document.getElementById('code-workspace-regenerate-btn'),
   codeWorkspaceKeepMineBtn: document.getElementById('code-workspace-keep-mine-btn'),
   codeWorkspaceTakeGeneratedBtn: document.getElementById('code-workspace-take-generated-btn'),
@@ -500,6 +531,8 @@ const tabs = createTabs({
     }
   },
   afterTabChange(_previous, tab) {
+    if (tab === 'architecture') architectureCanvas.renderArchitecture();
+    if (tab === 'openapi') swaggerTab.renderSwagger();
     if (tab !== 'monitoring') return;
     const environment = dom.pm2MetricsEnvironmentSelect?.value || 'dev';
     if (dom.pm2MonitoringCommand) {
@@ -537,6 +570,12 @@ const canvas = createCanvas({
     confirmAction: (message) => window.confirm(message)
   }
 });
+const architectureCanvas = createArchitectureCanvas({
+  dom,
+  state,
+  actions: { withPersist, render, saveState }
+});
+const swaggerTab = createSwaggerTab({ dom, state });
 
 let codeWorkspaceMonacoEditor = null;
 let codeWorkspaceMonacoSubscription = null;
@@ -2085,6 +2124,7 @@ function importStateFromOasFile(file) {
         // JUM-478: relationships cross the OAS boundary via `x-relations`
         // (endpoints re-keyed to the freshly imported entities).
         state.relationships = result.relationships || [];
+        if (result.architecture) state.architecture = result.architecture;
         state.selectedDomainId = nextDomains[0]?.id || null;
         state.selectedEntityId = null;
         state.selectedRelationshipId = null;
@@ -3009,6 +3049,7 @@ function renderEmptyStates() {
   const modelEmpty = state.domains.length === 0;
   if (dom.domainDesignerEmptyState) dom.domainDesignerEmptyState.hidden = !modelEmpty;
   if (dom.serviceConfigEmptyState) dom.serviceConfigEmptyState.hidden = !modelEmpty;
+  if (dom.architectureEmptyState) dom.architectureEmptyState.hidden = !modelEmpty;
 }
 
 // The single render pass, in the monolith's exact order. The pre-refactor
@@ -3056,6 +3097,7 @@ function render() {
   generateCodePreview();
   renderCodeWorkspace({ skipEditorSync: isCodeWorkspaceEditorActive() });
   generateExamplesPreview();
+  architectureCanvas.renderArchitecture();
   dom.undoBtn.disabled = history.past.length === 0;
   dom.redoBtn.disabled = history.future.length === 0;
   // Optional throughout: a returning visitor can be served a cached shell from
@@ -3203,12 +3245,16 @@ function setActiveDesignerTab(tab) {
 }
 
 function wireEvents() {
+  if (dom.tabArchitectureBtn) dom.tabArchitectureBtn.onclick = () => setActiveDesignerTab('architecture');
   if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => setActiveDesignerTab('domain-designer');
   if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => setActiveDesignerTab('interface-designer');
   if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => setActiveDesignerTab('service-config');
   if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => setActiveDesignerTab('deploy-management');
   if (dom.tabMonitoringBtn) {
     dom.tabMonitoringBtn.onclick = () => setActiveDesignerTab('monitoring');
+  }
+  if (dom.tabOpenapiBtn) {
+    dom.tabOpenapiBtn.onclick = () => setActiveDesignerTab('openapi');
   }
   if (dom.tabCodeWorkspaceBtn) {
     dom.tabCodeWorkspaceBtn.onclick = () => {

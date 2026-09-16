@@ -25,6 +25,10 @@ const { syncServiceManagementD3 } = require(
 const { syncServiceManagementCanaBundle } = require(
   path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-cana-bundle.js')
 ) as { syncServiceManagementCanaBundle: (options?: { root?: string }) => number };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { syncServiceManagementSwaggerUi } = require(
+  path.resolve(process.cwd(), 'ci-cd', 'sync-service-management-swagger-ui.js')
+) as { syncServiceManagementSwaggerUi: (options?: { root?: string }) => number };
 
 export const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
 export const staticRoot = path.resolve(process.cwd(), 'apps/service-management');
@@ -322,6 +326,10 @@ export async function startServer(
   const d3SyncResult = syncServiceManagementD3({ root: process.cwd() });
   if (d3SyncResult !== 0) {
     throw new Error('d3 vendor sync failed; Monitoring charts cannot boot without it.');
+  }
+  const swaggerSyncResult = syncServiceManagementSwaggerUi({ root: process.cwd() });
+  if (swaggerSyncResult !== 0) {
+    throw new Error('swagger-ui vendor sync failed; the OpenAPI tab cannot boot without it.');
   }
   return runWithPortRetry({
     pinnedPort: options.pinnedPort,

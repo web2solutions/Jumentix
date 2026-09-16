@@ -80,6 +80,14 @@ Como usar:
 
 Esses campos são persistidos no estado do designer e exportados por meio de fluxos JSON/pacote.
 
+## 3.1) Designer de arquitetura (JUM-815, JUM-816)
+
+A aba **Architecture** fica ao lado do Domain Designer. Um modelo novo começa como um serviço **Core** (monolito) que hospeda todos os domínios. O Core deve manter o domínio **Users**. Serviços extras são caixas no canvas. Validação: exatamente um Core; Users no Core; cada domínio em um serviço.
+
+## 3.2) Export OAS por serviço e Swagger (JUM-817, JUM-818)
+
+O export OAS 3.1 grava `x-services`, `servers[]` com `x-service-id` e `x-service`. A aba **OpenAPI** embute Swagger UI. O seletor filtra por serviço.
+
 ## 4) Edição de entidades e modelos
 
 Recursos em nível de entidade:

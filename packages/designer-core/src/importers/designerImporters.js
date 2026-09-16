@@ -47,6 +47,7 @@ import {
   SUITE_EXPORT_KIND,
   SUITE_EXPORT_MAJOR
 } from '../state/designerState.js';
+import { buildArchitectureFromOas } from '../model/architecture.js';
 import {
   fromOasType,
   isDomainNameTaken,
@@ -431,7 +432,12 @@ export function buildDomainsFromOas(parsed) {
     }));
   });
 
-  return { ok: true, domains: nextDomains, relationships };
+  return {
+    ok: true,
+    domains: nextDomains,
+    relationships,
+    architecture: buildArchitectureFromOas(parsed, nextDomains)
+  };
 }
 
 
@@ -456,6 +462,7 @@ const SUITE_EXPORT_KNOWN_SECTIONS = new Set([
   'runtimeEnvironment',
   'codeWorkspace',
   'deployments',
+  'architecture',
   'view'
 ]);
 

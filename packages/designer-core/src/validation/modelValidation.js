@@ -35,6 +35,7 @@ import {
   describeQuotedPropertyKey,
   isBarePropertyKey
 } from '../model/propertyKeys.js';
+import { collectArchitectureIssues } from './architectureValidation.js';
 
 /**
  * @typedef {Object} ModelIssue
@@ -200,6 +201,8 @@ export function collectModelIssues(state) {
       pushIssue(`Relationship "${relationship.name || relationship.id}" should define both bendX and bendY or none.`, null, 'warn');
     }
   });
+
+  collectArchitectureIssues(state).forEach((issue) => issues.push(issue));
 
   return issues;
 }

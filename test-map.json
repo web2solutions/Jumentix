@@ -2104,6 +2104,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/swaggerTab.test.ts",
+      "path": "apps/service-management/test/unit/swaggerTab.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/monitoringCharts.test.ts",
       "path": "apps/service-management/test/unit/monitoringCharts.test.ts",
       "layer": "service-management/designer",
@@ -2196,6 +2206,16 @@
     {
       "id": "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
       "path": "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/architectureDesigner.test.ts",
+      "path": "apps/service-management/test/unit/architectureDesigner.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -3222,6 +3242,19 @@
       "id": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/staticServing.integration.test.ts",
       "layer": "service-management/server",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/architectureDesigner.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/architectureDesigner.browser.integration.test.ts",
+      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
@@ -5565,9 +5598,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 325,
-    "integration": 101,
+    "unit": 327,
+    "integration": 102,
     "smoke": 2,
-    "suites": 477
+    "suites": 480
   }
 }
