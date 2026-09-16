@@ -19,6 +19,21 @@ const INVALID_LINK_PATTERNS = [
 
 const EXTERNAL_DOMAINS = ['github.com', 'vercel.com', 'mantine.dev', 'tabler.io', 'bun.sh', 'pm2.keymetrics.io'];
 
+/**
+ * True when `href` is an absolute URL whose host is one of the known external
+ * domains (or a subdomain of it). A substring check would also match
+ * `github.com.evil.example`, which is not a GitHub link.
+ */
+function isKnownExternalUrl(href: string): boolean {
+  let hostname: string;
+  try {
+    hostname = new URL(href).hostname;
+  } catch {
+    return false;
+  }
+  return EXTERNAL_DOMAINS.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
+}
+
 function extractInternalLinks(html: string): string[] {
   const links: string[] = [];
   const hrefRegex = /href="([^"]+)"/g;
@@ -27,7 +42,7 @@ function extractInternalLinks(html: string): string[] {
     const href = match[1];
     if (!href) continue;
     if (href.startsWith('http://') || href.startsWith('https://')) {
-      const isExternal = EXTERNAL_DOMAINS.some((domain) => href.includes(domain));
+      const isExternal = isKnownExternalUrl(href);
       if (!isExternal) {
         links.push(href);
       }
@@ -106,10 +121,7 @@ describe('Link quality', () => {
         // and known duplicate internal links (e.g., home page has duplicate /docs/jumentix)
         const filteredLinks = internalLinks.filter(
           (link) =>
-            !link.includes('github.com') &&
-            !link.includes('vercel.com') &&
-            !link.includes('mantine.dev') &&
-            !link.includes('tabler.io') &&
+            !isKnownExternalUrl(link) &&
             link !== '/docs/jumentix' &&
             link !== '/product' &&
             link !== '/pt-BR/docs/jumentix' &&
@@ -173,9 +185,9 @@ describe('Link quality', () => {
 
     it('ActionLink external has valid href', () => {
     expect.hasAssertions();
-      render(<ActionLink href="https://github.com/XpertMinds/Jumentix" external>GitHub</ActionLink>);
+      render(<ActionLink href="https://github.com/web2solutions/Jumentix" external>GitHub</ActionLink>);
       const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', 'https://github.com/XpertMinds/Jumentix');
+      expect(link).toHaveAttribute('href', 'https://github.com/web2solutions/Jumentix');
     });
 
     it('ActionLink quiet variant has valid href', () => {

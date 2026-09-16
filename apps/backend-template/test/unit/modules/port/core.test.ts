@@ -32,6 +32,8 @@ class TestModelWithOwnSerialize extends BaseModel<any> {
   }
 }
 
+class TestModelWithMeta extends BaseModel<any> {}
+
 class TestRepo extends BaseRepo<any, any, any> {
   public async create(data: any): Promise<any> {
     return data;
@@ -97,6 +99,36 @@ describe('port core helpers', () => {
     expect(model.updatedAt).toBeInstanceOf(Date);
     model.updatedAt = nextDate;
     expect(model.updatedAt.toISOString()).toBe('2026-01-01T00:00:00.000Z');
+  });
+
+  it('normalizes deletedAt through the constructor', () => {
+    expect.hasAssertions();
+
+    const fromDate = new TestModelWithMeta({ deletedAt: new Date('2026-02-01T00:00:00.000Z') });
+    expect(fromDate.deletedAt).toBe('2026-02-01T00:00:00.000Z');
+
+    const fromString = new TestModelWithMeta({ deletedAt: '2026-02-02T00:00:00.000Z' });
+    expect(fromString.deletedAt).toBe('2026-02-02T00:00:00.000Z');
+  });
+
+  it('normalizes deletedAt through the setter', () => {
+    expect.hasAssertions();
+
+    const model = new TestModelWithMeta({ deletedAt: '2026-02-03T00:00:00.000Z' });
+    model.deletedAt = undefined as any;
+    expect(model.deletedAt).toBeNull();
+
+    model.deletedAt = null;
+    expect(model.deletedAt).toBeNull();
+
+    model.deletedAt = '';
+    expect(model.deletedAt).toBe('');
+
+    model.deletedAt = '2026-02-04T00:00:00.000Z';
+    expect(model.deletedAt).toBe('2026-02-04T00:00:00.000Z');
+
+    model.deletedAt = new Date('2026-02-05T00:00:00.000Z');
+    expect(model.deletedAt).toBe('2026-02-05T00:00:00.000Z');
   });
 
   it('builds event metadata and parses string input', () => {

@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=135 unique=135 mapped=135 duplicates= -->
+<!-- requirements-inventory: files=136 unique=136 mapped=136 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -42,16 +42,27 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## C. Contract and Interface Conformance
 
-- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`
+- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`, `136`
 - Spec resources:
   - `spec/1.0.0.yml`
   - `spec/asyncapi/1.0.0.websocket.yml`
   - `spec/asyncapi/1.0.0.grpc.yml`
   - `documentation/md/EVENTS-AND-MESSAGES-MAP.md`
   - `documentation/md/contracts/*`
+  - `apps/frontend/*` (consumes only the OAS surface and generated SDKs)
+  - `documentation/md/PAGINATED-LIST-CONTRACT.md` (`x-list-capabilities`, page envelope, tombstones, delta sync)
+  - `documentation/md/FRONTEND-SEED-AND-XCRUD.md`
+  - `documentation/md/FRONTEND-OFFLINE-DATA-LAYER.md`
+  - `documentation/md/OAS-VENDOR-EXTENSIONS.md` (`x-relation`, `x-primary-key`, `x-services`, `x-sync`, `x-metrics-capabilities`)
+  - `documentation/md/ENTITY-METRICS-CONTRACT.md`
 - Evidence:
   - route/channel resolution checks
   - realtime integration/smoke tests
+  - workspace boundary checks with the frontend workspace present
+  - `apps/frontend` unit + component suites (`bun run frontend:test:unit`), the frontend
+    coverage gate (`bun run frontend:coverage:check`) and the Docker-backed Cypress e2e
+    (`bun run frontend:test:e2e`) — JUM-776
+  - `apps/backend-template/test/integration/Express/Users/getAll.test.ts` for the list contract — JUM-777
 
 ## D. Data Adapter and Persistence Interoperability
 

@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=135 unique=135 mapped=135 duplicates= -->
+<!-- requirements-inventory: files=136 unique=136 mapped=136 duplicates= -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -46,16 +46,25 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## C. Conformidade de contrato e interface
 
-- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`
+- `008`, `010`, `021`, `026`, `027`, `028`, `036`, `047`, `136`
 - Recursos de especificações:
   - `spec/1.0.0.yml`
   - `spec/asyncapi/1.0.0.websocket.yml`
   - `spec/asyncapi/1.0.0.grpc.yml`
   - `documentação/md/EVENTS-AND-MESSAGES-MAP.md`
   - `documentação/md/contratos/*`
+  - `apps/frontend/*` (consome só a superfície OAS e SDKs gerados)
+  - `documentation/md/PAGINATED-LIST-CONTRACT.pt-BR.md` (`x-list-capabilities`, envelope de página)
+  - `documentation/md/FRONTEND-SEED-AND-XCRUD.pt-BR.md`
+  - `documentation/md/FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md`
 - Evidência:
   - verificações de resolução de rota/canal
   - integração em tempo real/testes de fumaça
+  - verificações de fronteira de workspace com o workspace frontend presente
+  - suítes unit + component de `apps/frontend` (`bun run frontend:test:unit`), gate de cobertura
+    do frontend (`bun run frontend:coverage:check`) e e2e Cypress com backend em Docker
+    (`bun run frontend:test:e2e`) — JUM-776
+  - `apps/backend-template/test/integration/Express/Users/getAll.test.ts` para o contrato de listagem — JUM-777
 
 ## D. Adaptador de dados e interoperabilidade de persistência
 

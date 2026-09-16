@@ -44,6 +44,14 @@ export class OrganizationUseCases implements IOrganizationUseCases {
     return this.organizationService.getAll(filters, paging);
   }
 
+  public async metrics(
+    filters: Parameters<OrganizationService['metrics']>[0],
+    query: Parameters<OrganizationService['metrics']>[1],
+    capabilities: Parameters<OrganizationService['metrics']>[2]
+  ) {
+    return this.organizationService.metrics(filters, query, capabilities);
+  }
+
   public async createAddress(
     id: string,
     data: RequestCreateAddress

@@ -20,15 +20,25 @@ export abstract class BaseModel<T> {
 
   public _excludeOnSerialize: string[] = [];
 
+  protected _deletedAt: string | null;
+
   constructor(meta?: {
     id?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    deletedAt?: Date | string | null;
   }) {
     this._id = meta?.id ? UUID.parse(meta.id).toString() : UUID.create().toString();
     const now = new Date();
     this._createdAt = meta?.createdAt ? new Date(meta.createdAt) : now;
     this._updatedAt = meta?.updatedAt ? new Date(meta.updatedAt) : this._createdAt;
+    if (meta?.deletedAt === undefined || meta.deletedAt === null) {
+      this._deletedAt = null;
+    } else if (meta.deletedAt instanceof Date) {
+      this._deletedAt = meta.deletedAt.toISOString();
+    } else {
+      this._deletedAt = String(meta.deletedAt);
+    }
   }
 
   public get id(): string {
@@ -45,6 +55,18 @@ export abstract class BaseModel<T> {
 
   public set updatedAt(_updatedAt: Date) {
     this._updatedAt = _updatedAt;
+  }
+
+  public get deletedAt(): string | null {
+    return this._deletedAt;
+  }
+
+  public set deletedAt(value: Date | string | null) {
+    if (value === undefined || value === null || value === '') {
+      this._deletedAt = value === '' ? '' : null;
+      return;
+    }
+    this._deletedAt = value instanceof Date ? value.toISOString() : String(value);
   }
 
   public static throwIfFieldSchemaIsNotOpenApi31Compliant(
@@ -90,7 +112,8 @@ export abstract class BaseModel<T> {
       id: this.id,
       ...api,
       createdAt: this._createdAt,
-      updatedAt: this._updatedAt
+      updatedAt: this._updatedAt,
+      deletedAt: this._deletedAt
     });
   }
 }

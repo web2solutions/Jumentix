@@ -8,13 +8,13 @@
   <!-- PWA shell (JUM-489): installable manifest + icons. The service worker
        registration lives in the inline module at the end of <body>. -->
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="data:," />
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
   <!-- Design system (JUM-488): the shared --jtx-* tokens must load before
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.51" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -32,6 +32,8 @@
       <button id="tab-interface-designer-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-interface-designer" tabindex="-1">Communication Interface Designer</button>
       <button id="tab-service-config-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-service-config" tabindex="-1">Service Configuration</button>
       <button id="tab-deploy-management-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-deploy-management" tabindex="-1">Deploy Management</button>
+      <button id="tab-monitoring-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" tabindex="-1">Monitoring</button>
+      <button id="tab-code-workspace-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-code-workspace" tabindex="-1">Code Workspace</button>
     </nav>
 
     <!-- Non-blocking status surface (JUM-543): validation messages and API
@@ -40,13 +42,27 @@
 
     <section id="tab-domain-designer" class="tab-section active" role="tabpanel" aria-labelledby="tab-domain-designer-btn">
       <div class="app-shell">
-        <aside class="sidebar">
+        <aside class="sidebar" id="designer-sidebar" aria-label="Domain Designer panels">
           <header class="sidebar-header">
             <h2>Domain Designer</h2>
             <p>ER modeling by domain</p>
           </header>
 
-          <section class="panel">
+          <!--
+            JUM-729 follow-up: the sidebar was ten panels stacked in one scrolling column,
+            so reaching Model Check meant scrolling past the whole inspector and
+            nothing on screen said the panels below existed. They are grouped
+            here and switched by this tab bar; every panel keeps its id and its
+            markup, so the behaviour of each one is unchanged.
+          -->
+          <div class="sidebar-tabs" role="tablist" aria-label="Domain Designer panels">
+            <button id="sidebar-group-model-btn" class="sidebar-tab active" type="button" role="tab" aria-selected="true" aria-controls="sidebar-group-model" data-sidebar-tab="model">Model</button>
+            <button id="sidebar-group-inspector-btn" class="sidebar-tab" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-inspector" data-sidebar-tab="inspector">Inspector</button>
+            <button id="sidebar-group-quality-btn" class="sidebar-tab" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-quality" data-sidebar-tab="quality">Quality</button>
+            <button id="sidebar-group-share-btn" class="sidebar-tab" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-share" data-sidebar-tab="share">Share</button>
+          </div>
+
+          <section class="panel" data-sidebar-group="model">
             <h2>Domains</h2>
             <div class="row">
               <input id="domain-name-input" type="text" placeholder="Domain name" aria-label="Domain name" />
@@ -63,7 +79,7 @@
             <ul id="domain-list" class="list"></ul>
           </section>
 
-          <section class="panel">
+          <section class="panel" data-sidebar-group="model">
             <h2>Bounded Context</h2>
             <p class="hint">Metadata for selected domain context and ownership.</p>
             <div class="column compact">
@@ -81,7 +97,7 @@
             </div>
           </section>
 
-          <section class="panel">
+          <section class="panel" data-sidebar-group="model">
             <h2>Entities</h2>
             <div class="row">
               <input id="entity-name-input" type="text" placeholder="Entity name" aria-label="Entity name" />
@@ -111,7 +127,7 @@
             <p class="hint">Select a domain first.</p>
           </section>
 
-          <section class="panel">
+          <section class="panel" data-sidebar-group="inspector">
             <h2>Relationship</h2>
             <div class="column">
               <select id="from-entity-select" aria-label="From entity"></select>
@@ -168,7 +184,7 @@
             </div>
           </section>
 
-          <section class="panel">
+          <section class="panel" id="entity-inspector-panel" data-sidebar-group="inspector">
             <h2>Entity Inspector</h2>
             <p id="entity-inspector-title" class="hint">No entity selected</p>
             <div class="row">
@@ -278,7 +294,7 @@
             <ul id="entity-api-preview-list" class="list"></ul>
           </section>
 
-          <section class="panel">
+          <section class="panel" data-sidebar-group="share">
             <h2>Export</h2>
             <div class="row">
               <button id="export-json-btn" type="button">Export JSON</button>
@@ -317,7 +333,7 @@
             </div>
           </section>
 
-          <section class="panel">
+          <section class="panel" data-sidebar-group="quality">
             <h2>History</h2>
             <div class="row">
               <button id="undo-btn" type="button">Undo</button>
@@ -325,12 +341,13 @@
             </div>
           </section>
 
-          <section class="panel">
+          <section class="panel" data-sidebar-group="share">
             <h2>Legend</h2>
             <ul class="legend">
               <li>Drag domains and entities</li>
-              <li>Use Space + drag to pan</li>
-              <li>Ctrl/Cmd + wheel to zoom</li>
+              <li>Drag the empty canvas (or Space + drag) to pan</li>
+              <li>Wheel to zoom, or the + and - keys; 0 resets the view</li>
+              <li>Drag a domain's bottom-right corner to resize it</li>
               <li>Alt + L to auto layout</li>
               <li>Select domain to add entity</li>
               <li>Drag from entity edge dots to connect entities</li>
@@ -339,7 +356,7 @@
             </ul>
           </section>
 
-          <section class="panel">
+          <section class="panel" data-sidebar-group="quality">
             <h2>Model Check</h2>
             <div class="row">
               <button id="run-model-check-btn" type="button">Validate Model</button>
@@ -356,7 +373,7 @@
             <ul id="model-check-list" class="list"></ul>
           </section>
 
-          <section class="panel">
+          <section class="panel" data-sidebar-group="quality">
             <h2>Schema Diff</h2>
             <p class="hint">Compare current model against saved baseline and preview migration hints.</p>
             <div class="row">
@@ -396,7 +413,51 @@
             </p>
           </aside>
           <header class="workspace-header">
+            <!--
+              JUM-729 follow-up: the panels open over the canvas instead of taking a
+              permanent column from it. The canvas is the product; ten panels
+              parked beside it at all times left a modelling surface too narrow
+              to hold a domain and its neighbours at once.
+            -->
+            <button
+              id="toggle-sidebar-btn"
+              class="panel-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="designer-sidebar"
+              title="Show panels (P)"
+            >Panels</button>
             <div id="selection-status" role="status" aria-live="polite">No domain selected</div>
+            <!--
+              JUM-729 follow-up: creation lives on the toolbar, not behind a drawer. With
+              the panels closed by default there was no way to add the first
+              domain without opening them first, which is the same "where do I
+              start" the empty state exists to answer.
+            -->
+            <div class="workspace-create">
+              <button id="quick-add-domain-btn" type="button" title="Add a domain (D)">+ Domain</button>
+              <button id="quick-add-entity-btn" type="button" title="Add an entity to the selected domain (E)">+ Entity</button>
+              <button id="quick-undo-btn" type="button" title="Undo (Ctrl/Cmd + Z)" aria-label="Undo">&#8630;</button>
+              <button id="quick-redo-btn" type="button" title="Redo (Ctrl/Cmd + Shift + Z)" aria-label="Redo">&#8631;</button>
+              <button id="quick-add-note-btn" type="button" title="Add a note (N)">+ Note</button>
+              <button id="quick-validate-btn" type="button" title="Validate the model">Validate</button>
+              <button id="export-png-btn" type="button" title="Download the diagram as a PNG">PNG</button>
+            </div>
+            <!--
+              JUM-729 follow-up: search is on the toolbar, not in a panel. On a model
+              with fifteen domains, finding the entity you mean by scrolling
+              the canvas is the slowest thing in the tool.
+            -->
+            <div class="workspace-search">
+              <input
+                id="model-search-input"
+                type="search"
+                placeholder="Search model (/)"
+                aria-label="Search domains, entities and fields"
+                autocomplete="off"
+              />
+              <ul id="model-search-results" class="search-results" hidden></ul>
+            </div>
             <div class="workspace-actions">
               <button id="zoom-out-btn" type="button" title="Zoom out" aria-label="Zoom out">-</button>
               <div id="zoom-indicator" class="zoom-indicator">100%</div>
@@ -680,6 +741,282 @@
         </section>
       </div>
     </section>
+
+    <section id="tab-monitoring" class="tab-section" role="tabpanel" aria-labelledby="tab-monitoring-btn">
+      <div class="tab-body monitoring-dashboard">
+        <header class="monitoring-header">
+          <div>
+            <h2>PM2 Monitoring</h2>
+            <p class="hint">Live host + process telemetry over WebSocket (Contract 1e). HTTP one-shot remains for Contract 1c.</p>
+          </div>
+          <div class="monitoring-controls">
+            <label for="pm2-metrics-environment-select">Environment
+              <select id="pm2-metrics-environment-select">
+                <option value="dev">dev</option>
+                <option value="staging">staging</option>
+                <option value="production">production</option>
+              </select>
+            </label>
+            <label for="pm2-interval-select">Interval
+              <select id="pm2-interval-select">
+                <option value="500">500 ms</option>
+                <option value="1000" selected>1000 ms</option>
+                <option value="2000">2000 ms</option>
+              </select>
+            </label>
+            <span id="pm2-ws-status" class="monitoring-ws-status" data-tone="warn">idle</span>
+          </div>
+        </header>
+
+        <section class="monitoring-health-strip" aria-label="PM2 stream health">
+          <div class="monitoring-health-indicator">
+            <canvas id="pm2-health-gauge" width="56" height="56" aria-hidden="true"></canvas>
+            <strong id="pm2-health-label">Waiting for stream</strong>
+            <span id="pm2-health-gauge-stats" class="chart-stats">—</span>
+          </div>
+          <p id="pm2-metrics-status" class="hint status-line" role="status" aria-live="polite">Open this tab to connect the PM2 WebSocket stream.</p>
+          <span id="pm2-metrics-updated-at" class="monitoring-updated-at">--</span>
+        </section>
+
+        <section class="monitoring-host-grid" aria-label="Host metrics">
+          <article class="monitoring-host-card">
+            <header>
+              <h3>Host CPU</h3>
+              <p id="host-cpu-meta" class="hint">—</p>
+            </header>
+            <div class="monitoring-host-visuals">
+              <div class="chart-block">
+                <canvas id="host-cpu-gauge" width="96" height="96"></canvas>
+                <p id="host-cpu-gauge-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="host-cpu-spark" width="180" height="48"></canvas>
+                <p id="host-cpu-spark-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="host-cpu-cores" width="220" height="64"></canvas>
+                <p id="host-cpu-cores-stats" class="chart-stats">—</p>
+              </div>
+            </div>
+          </article>
+          <article class="monitoring-host-card">
+            <header>
+              <h3>Host memory</h3>
+              <p id="host-mem-meta" class="hint">—</p>
+            </header>
+            <div class="monitoring-host-visuals">
+              <div class="chart-block">
+                <canvas id="host-mem-gauge" width="96" height="96"></canvas>
+                <p id="host-mem-gauge-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="host-mem-spark" width="180" height="48"></canvas>
+                <p id="host-mem-spark-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="host-mem-breakdown" width="220" height="64"></canvas>
+                <p id="host-mem-breakdown-stats" class="chart-stats">—</p>
+              </div>
+            </div>
+          </article>
+          <article class="monitoring-host-card">
+            <header>
+              <h3>Host disk</h3>
+              <p id="host-disk-meta" class="hint">—</p>
+            </header>
+            <div class="monitoring-host-visuals">
+              <div class="chart-block">
+                <canvas id="host-disk-bars" width="320" height="96"></canvas>
+                <p id="host-disk-bars-stats" class="chart-stats">—</p>
+              </div>
+            </div>
+          </article>
+          <article class="monitoring-host-card">
+            <header>
+              <h3>Process aggregates</h3>
+              <p class="hint">CPU · memory · async ALS</p>
+            </header>
+            <div class="monitoring-host-visuals monitoring-host-visuals-agg">
+              <div class="chart-block">
+                <canvas id="proc-cpu-spark" width="140" height="48"></canvas>
+                <p id="proc-cpu-spark-stats" class="chart-stats">—</p>
+              </div>
+              <div class="chart-block">
+                <canvas id="proc-mem-spark" width="140" height="48"></canvas>
+                <p id="proc-mem-spark-stats" class="chart-stats">—</p>
+              </div>
+              <div class="async-sum-block">
+                <span class="metric-label">ALS active Σ</span>
+                <strong id="async-active-sum">0</strong>
+                <canvas id="async-active-spark" width="140" height="40"></canvas>
+                <p id="async-active-spark-stats" class="chart-stats">—</p>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="monitoring-chart-row" aria-label="Process stack charts">
+          <article class="monitoring-chart-panel">
+            <h3>CPU stack (filtered)</h3>
+            <canvas id="stack-cpu-canvas" width="420" height="140"></canvas>
+            <ul id="stack-cpu-legend" class="chart-legend"></ul>
+          </article>
+          <article class="monitoring-chart-panel">
+            <h3>Memory stack (filtered)</h3>
+            <canvas id="stack-mem-canvas" width="420" height="140"></canvas>
+            <ul id="stack-mem-legend" class="chart-legend"></ul>
+          </article>
+          <article class="monitoring-chart-panel">
+            <h3>Status mix</h3>
+            <canvas id="status-bars-canvas" width="280" height="140"></canvas>
+            <p id="status-bars-stats" class="chart-stats">—</p>
+          </article>
+        </section>
+
+        <section class="monitoring-filters" aria-label="Process filters">
+          <label for="pm2-filter-query">Search
+            <input id="pm2-filter-query" type="search" placeholder="name, script, namespace" />
+          </label>
+          <label for="pm2-filter-status">Status
+            <select id="pm2-filter-status">
+              <option value="all">all</option>
+              <option value="online">online</option>
+              <option value="stopped">stopped</option>
+              <option value="errored">errored</option>
+              <option value="launching">launching</option>
+            </select>
+          </label>
+          <label for="pm2-filter-namespace">Namespace
+            <select id="pm2-filter-namespace">
+              <option value="all">all namespaces</option>
+            </select>
+          </label>
+          <label class="check"><input id="pm2-filter-expected-only" type="checkbox" /> expected only</label>
+          <label class="check"><input id="pm2-filter-missing-only" type="checkbox" /> missing only</label>
+          <div class="monitoring-ns-ops">
+            <label for="pm2-namespace-ops-select">Bulk NS
+              <select id="pm2-namespace-ops-select">
+                <option value="default">default</option>
+                <option value="dev">dev</option>
+                <option value="staging">staging</option>
+                <option value="production">production</option>
+              </select>
+            </label>
+            <button id="pm2-ns-start-btn" type="button">Start NS</button>
+            <button id="pm2-ns-stop-btn" type="button">Stop NS</button>
+            <button id="pm2-ns-restart-btn" type="button">Restart NS</button>
+          </div>
+        </section>
+
+        <section class="monitoring-grid">
+          <section class="panel monitoring-panel monitoring-process-panel">
+            <div class="monitoring-panel-header">
+              <h3>Processes</h3>
+              <span id="pm2-process-density-label" class="monitoring-chip">live stream</span>
+            </div>
+            <div class="table-scroll">
+              <table class="monitoring-table">
+                <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Process</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">CPU</th>
+                    <th scope="col">Memory</th>
+                    <th scope="col">Restarts</th>
+                    <th scope="col">ALS</th>
+                    <th scope="col">Uptime</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="pm2-metrics-process-list"></tbody>
+              </table>
+            </div>
+          </section>
+          <aside class="panel monitoring-panel monitoring-ecosystem-panel">
+            <div class="monitoring-panel-header">
+              <h3>Ecosystem</h3>
+              <span id="pm2-ecosystem-state" class="monitoring-chip">checking</span>
+            </div>
+            <p id="pm2-metrics-ecosystem-summary" class="hint"></p>
+            <ul id="pm2-metrics-missing-list" class="monitoring-missing-list"></ul>
+          </aside>
+          <section class="panel monitoring-panel monitoring-command-panel">
+            <div class="monitoring-panel-header">
+              <h3>PM2 Commands</h3>
+              <span class="monitoring-chip">ops</span>
+            </div>
+            <code id="pm2-monitoring-command">pm2 monit</code>
+            <code id="pm2-list-command">pm2 list</code>
+          </section>
+        </section>
+      </div>
+    </section>
+
+    <section id="tab-code-workspace" class="tab-section" role="tabpanel" aria-labelledby="tab-code-workspace-btn">
+      <div class="code-workspace">
+        <nav class="code-activity-bar" aria-label="Code workspace views">
+          <button class="active" type="button" title="Explorer" aria-label="Explorer">EX</button>
+          <button type="button" title="Search" aria-label="Search">SE</button>
+          <button type="button" title="Source Control" aria-label="Source Control">SC</button>
+          <button type="button" title="Problems" aria-label="Problems">PR</button>
+        </nav>
+        <aside class="code-explorer" aria-label="Generated code worktree">
+          <header class="code-explorer-header">
+            <h2>Explorer</h2>
+            <p id="code-workspace-status" class="hint" role="status" aria-live="polite">No generated files yet.</p>
+          </header>
+          <div class="code-workspace-actions">
+            <button id="code-workspace-regenerate-btn" type="button" title="Regenerate generated workspace">Regenerate</button>
+            <button id="code-workspace-keep-mine-btn" type="button" title="Keep your edit for this file" disabled>Keep Mine</button>
+            <button id="code-workspace-take-generated-btn" type="button" title="Replace this file with generated content" disabled>Take Generated</button>
+          </div>
+          <label class="code-workspace-search" for="code-workspace-search-input">
+            <span>Search files</span>
+            <input id="code-workspace-search-input" type="search" autocomplete="off" placeholder="Filter by path" />
+          </label>
+          <div id="code-workspace-summary" class="code-workspace-summary"></div>
+          <div class="worktree-root-label"><span class="code-folder-chevron">v</span>JUMENTIX-GENERATED</div>
+          <ul id="code-workspace-file-list" class="list code-file-list"></ul>
+        </aside>
+        <main class="code-editor-shell" aria-label="Generated code IDE workspace">
+          <header class="code-editor-titlebar">
+            <div id="code-workspace-open-tabs" class="code-editor-tabs" role="tablist" aria-label="Open files">
+            <div class="code-editor-tab active" role="tab" aria-selected="true">
+              <span id="code-workspace-active-icon" class="code-editor-tab-icon">TS</span>
+              <span id="code-workspace-active-file" class="code-editor-tab-title">Preview</span>
+              <button id="code-workspace-close-tab-btn" class="code-editor-tab-close" type="button" title="Close file" aria-label="Close file">x</button>
+            </div>
+            </div>
+            <span id="code-workspace-active-state" class="code-editor-badge">generated</span>
+          </header>
+          <div id="code-workspace-breadcrumbs" class="code-editor-breadcrumbs">No file selected</div>
+          <div class="code-editor-body">
+            <div id="monaco-workspace-editor" class="monaco-editor-host" hidden></div>
+            <textarea id="code-workspace-editor" class="code-editor" spellcheck="false" aria-label="Generated code editor"></textarea>
+            <section id="code-workspace-conflict-panel" class="panel code-conflict-panel" hidden>
+              <h3>Regeneration Conflict</h3>
+              <div class="code-conflict-grid">
+                <div>
+                  <h4>Your Edit</h4>
+                  <pre id="code-workspace-user-version" class="code-preview-output"></pre>
+                </div>
+                <div>
+                  <h4>Generated Version</h4>
+                  <pre id="code-workspace-generated-version" class="code-preview-output"></pre>
+                </div>
+              </div>
+            </section>
+          </div>
+          <footer class="code-editor-statusbar" aria-label="Code editor status">
+            <span id="code-workspace-language">Plain Text</span>
+            <span id="code-workspace-file-count">0 files</span>
+            <span id="code-workspace-edit-count">0 edited</span>
+            <span id="code-workspace-conflict-count">0 conflicts</span>
+          </footer>
+        </main>
+      </div>
+    </section>
   </div>
   <!-- Import map (JUM-484/JUM-493): Cana is the sole designer store; the bare
        `@jumentix/cana` specifier the store factory lazily imports resolves to
@@ -692,11 +1029,12 @@
     {
       "imports": {
         "@jumentix/cana": "./vendor/cana/index.js",
-        "@jumentix/designer-core/": "./vendor/designer-core/"
+        "@jumentix/designer-core/": "./vendor/designer-core/",
+        "d3": "./vendor/d3/index.js"
       }
     }
   </script>
-  <script type="module" src="./script.js"></script>
+  <script type="module" src="./script.js?v=0.9.51"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

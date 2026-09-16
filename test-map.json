@@ -83,9 +83,21 @@
       "tier": "gate",
       "kind": "non-hexagonal"
     },
+    "service-management/catalog-api": {
+      "dependsOn": [
+        "contracts"
+      ],
+      "sourceGlobs": [
+        "apps/service-management-api/**"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
     "service-management/designer": {
       "dependsOn": [
-        "service-management/server"
+        "service-management/server",
+        "service-management/catalog-api"
       ],
       "sourceGlobs": [
         "apps/service-management/script.js",
@@ -102,6 +114,19 @@
       "dependsOn": [],
       "sourceGlobs": [
         "apps/jumentix-website/**"
+      ],
+      "runner": "bun",
+      "tier": "gate",
+      "kind": "non-hexagonal"
+    },
+    "frontend": {
+      "dependsOn": [
+        "contracts"
+      ],
+      "sourceGlobs": [
+        "apps/frontend/**",
+        "packages/sdk-rest-client/src/**",
+        "spec/1.0.0.yml"
       ],
       "runner": "bun",
       "tier": "gate",
@@ -126,6 +151,7 @@
         "tooling/**",
         "apps/jumentix-website/**",
         ".github/**",
+        ".circleci/**",
         "test-map.json",
         "jest.config.js",
         "sonar-project.properties",
@@ -268,8 +294,18 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.catalogs.test.ts",
-      "path": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.catalogs.test.ts",
+      "id": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.moduleResolution.test.ts",
+      "path": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.moduleResolution.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.loadFailure.test.ts",
+      "path": "apps/backend-template/test/unit/interface/Async/RealtimeAPIBase.loadFailure.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -370,6 +406,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.composition.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.composition.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.deadLetterReplay.test.ts",
       "layer": "interface/runtime",
@@ -380,8 +436,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.catalogs.test.ts",
+      "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.loadFailure.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.loadFailure.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -392,6 +448,16 @@
     {
       "id": "apps/backend-template/test/unit/interface/HTTP/RestAPI.handlerFallback.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/RestAPI.handlerFallback.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/express/usersMetrics.handler.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/express/usersMetrics.handler.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -442,6 +508,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/restify/metricsHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/restify/metricsHandlers.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/vercel-functions/vercelFunctionsSecurity.test.ts",
       "layer": "interface/runtime",
@@ -462,6 +538,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/metricsHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/metricsHandlers.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/validators/oasInputMessages.test.ts",
       "layer": "interface/runtime",
@@ -474,6 +570,16 @@
     {
       "id": "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/validators/index.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/interface/HTTP/validators/validateRequestParams.edgeCases.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/validators/validateRequestParams.edgeCases.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -534,6 +640,26 @@
     {
       "id": "apps/backend-template/test/unit/infra/messages/QueueRequestResponseRepository.test.ts",
       "path": "apps/backend-template/test/unit/infra/messages/QueueRequestResponseRepository.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/context/contextInstrumentation.test.ts",
+      "path": "apps/backend-template/test/unit/infra/context/contextInstrumentation.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/context/asyncContextMetrics.test.ts",
+      "path": "apps/backend-template/test/unit/infra/context/asyncContextMetrics.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
       "type": "unit",
@@ -634,6 +760,16 @@
       "runner": "bun",
       "ciRunner": "node",
       "bunCompat": "pending-resetModules-or-native-gap",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/infra/persistence/purgeStores.test.ts",
+      "path": "apps/backend-template/test/unit/infra/persistence/purgeStores.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
       "tier": "gate",
       "timeoutMs": 60000
     },
@@ -740,6 +876,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ServiceManagement/serverHarnessPorts.test.ts",
+      "path": "apps/backend-template/test/unit/ServiceManagement/serverHarnessPorts.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts",
+      "path": "apps/backend-template/test/unit/ServiceManagement/rbacContract.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/domains/validators/index.test.ts",
       "path": "apps/backend-template/test/unit/domains/validators/index.test.ts",
       "layer": "tooling",
@@ -820,299 +976,9 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/deployTargetLifecycle.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerState.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerState.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerNormalizers.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerNormalizers.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/modelValidation.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/modelValidation.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/catalogSyncClientDefaults.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/catalogSyncClientDefaults.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/pwaShell.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/pwaShell.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/mvp.roadmap.features.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/interfaceAdapterValidation.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/interfaceAdapterValidation.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/serverHarnessPorts.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/serverHarnessPorts.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/catalogSyncClient.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/deployTargetValidation.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerSync.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerSync.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/runtimeEnvUi.contract.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/serviceConfigurationValidation.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerOasCompliance.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerImporters.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerImporters.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/catalogSyncTransport.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/catalogSyncTransport.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/modelQueries.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/modelQueries.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerStore.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerStore.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/rbacContract.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/rbacContract.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/canaMigrationFailures.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/canaMigrationFailures.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/canaMigration.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/canaMigration.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/hexagonalCodegen.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/canaDesignerStore.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/sampleModel.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/sampleModel.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts",
-      "layer": "service-management/designer",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/service-management/designerExporters.test.ts",
-      "path": "apps/backend-template/test/unit/service-management/designerExporters.test.ts",
-      "layer": "service-management/designer",
+      "id": "apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts",
+      "path": "apps/backend-template/test/unit/ownership/backendTemplateCatalogOwnership.test.ts",
+      "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
       "runner": "bun",
@@ -1212,6 +1078,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-third-party-review.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/merge-coverage-reports.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/merge-coverage-reports.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1330,6 +1206,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/check-oas-relations.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-oas-relations.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/entry-point.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/entry-point.test.ts",
       "layer": "tooling",
@@ -1400,6 +1286,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/service-management-vendor-wiring.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/service-management-vendor-wiring.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/report-sonar-findings.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/report-sonar-findings.test.ts",
       "layer": "tooling",
@@ -1422,6 +1318,16 @@
     {
       "id": "apps/backend-template/test/unit/ci-cd/check-workspace-quality.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/check-workspace-quality.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/ci-cd/check-frontend-coverage.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/check-frontend-coverage.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1575,6 +1481,26 @@
       "id": "apps/backend-template/test/unit/modules/ddd/valueObjects/AddressValueObject.test.ts",
       "path": "apps/backend-template/test/unit/modules/ddd/valueObjects/AddressValueObject.test.ts",
       "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/express/handlers.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/express/handlers.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/derby-js/handlers.test.ts",
+      "path": "apps/backend-template/test/unit/modules/Users/interface/restapi/frameworks/derby-js/handlers.test.ts",
+      "layer": "adapters/in",
       "kind": "hexagonal",
       "type": "unit",
       "runner": "bun",
@@ -1856,108 +1782,18 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/CatalogModel.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/composition/composeCatalogsServices.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/CatalogController.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/CatalogController.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/restapiHandlers.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/adapters/in/http/restapiHandlers.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/index.exports.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/index.exports.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/application/catalogBoundaries.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/application/catalogBoundaries.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/service/CatalogService.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/service/CatalogService.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
-      "id": "apps/backend-template/test/unit/modules/Catalogs/domain/Model/Catalog.test.ts",
-      "path": "apps/backend-template/test/unit/modules/Catalogs/domain/Model/Catalog.test.ts",
-      "layer": "application",
-      "kind": "hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "apps/backend-template/test/unit/modules/port/core.test.ts",
       "path": "apps/backend-template/test/unit/modules/port/core.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/port/setListQuery.test.ts",
+      "path": "apps/backend-template/test/unit/modules/port/setListQuery.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -1978,6 +1814,16 @@
     {
       "id": "apps/backend-template/test/unit/modules/port/relations.test.ts",
       "path": "apps/backend-template/test/unit/modules/port/relations.test.ts",
+      "layer": "application",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/backend-template/test/unit/modules/port/setMetricsQuery.test.ts",
+      "path": "apps/backend-template/test/unit/modules/port/setMetricsQuery.test.ts",
       "layer": "application",
       "kind": "hexagonal",
       "type": "unit",
@@ -2008,22 +1854,1231 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/hostMetrics.test.ts",
+      "path": "apps/service-management/test/unit/hostMetrics.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/deployTargetLifecycle.test.ts",
+      "path": "apps/service-management/test/unit/deployTargetLifecycle.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/processHelpCatalog.test.ts",
+      "path": "apps/service-management/test/unit/processHelpCatalog.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts",
+      "path": "apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerState.test.ts",
+      "path": "apps/service-management/test/unit/designerState.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/controlHelp.test.ts",
+      "path": "apps/service-management/test/unit/controlHelp.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerAsyncApiExport.test.ts",
+      "path": "apps/service-management/test/unit/designerAsyncApiExport.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/pm2Lifecycle.test.ts",
+      "path": "apps/service-management/test/unit/pm2Lifecycle.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerNormalizers.test.ts",
+      "path": "apps/service-management/test/unit/designerNormalizers.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/pm2DaemonLock.test.ts",
+      "path": "apps/service-management/test/unit/pm2DaemonLock.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/modelValidation.test.ts",
+      "path": "apps/service-management/test/unit/modelValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/hostMetrics.compute.test.ts",
+      "path": "apps/service-management/test/unit/hostMetrics.compute.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/monitoringChartsDraw.test.ts",
+      "path": "apps/service-management/test/unit/monitoringChartsDraw.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/catalogSyncClientDefaults.test.ts",
+      "path": "apps/service-management/test/unit/catalogSyncClientDefaults.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/pwaShell.test.ts",
+      "path": "apps/service-management/test/unit/pwaShell.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/mvp.roadmap.features.test.ts",
+      "path": "apps/service-management/test/unit/mvp.roadmap.features.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/interfaceAdapterValidation.test.ts",
+      "path": "apps/service-management/test/unit/interfaceAdapterValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/controlHelp.dom.test.ts",
+      "path": "apps/service-management/test/unit/controlHelp.dom.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/catalogSyncClient.test.ts",
+      "path": "apps/service-management/test/unit/catalogSyncClient.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/deployTargetValidation.test.ts",
+      "path": "apps/service-management/test/unit/deployTargetValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerSync.test.ts",
+      "path": "apps/service-management/test/unit/designerSync.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/helpPopoverState.test.ts",
+      "path": "apps/service-management/test/unit/helpPopoverState.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/runtimeEnvUi.contract.test.ts",
+      "path": "apps/service-management/test/unit/runtimeEnvUi.contract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerRoundTrip.test.ts",
+      "path": "apps/service-management/test/unit/designerRoundTrip.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/processDiskIo.test.ts",
+      "path": "apps/service-management/test/unit/processDiskIo.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/monitoringCharts.test.ts",
+      "path": "apps/service-management/test/unit/monitoringCharts.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/serviceConfigurationValidation.test.ts",
+      "path": "apps/service-management/test/unit/serviceConfigurationValidation.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerOasCompliance.test.ts",
+      "path": "apps/service-management/test/unit/designerOasCompliance.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerImporters.test.ts",
+      "path": "apps/service-management/test/unit/designerImporters.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/catalogSyncTransport.test.ts",
+      "path": "apps/service-management/test/unit/catalogSyncTransport.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/modelQueries.test.ts",
+      "path": "apps/service-management/test/unit/modelQueries.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/monitoringHistory.normalize.test.ts",
+      "path": "apps/service-management/test/unit/monitoringHistory.normalize.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerStore.test.ts",
+      "path": "apps/service-management/test/unit/designerStore.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/canvasWorkspace.test.ts",
+      "path": "apps/service-management/test/unit/canvasWorkspace.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
+      "path": "apps/service-management/test/unit/processDiskIo.platforms.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/monitoringChartFormat.test.ts",
+      "path": "apps/service-management/test/unit/monitoringChartFormat.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/canaMigrationFailures.test.ts",
+      "path": "apps/service-management/test/unit/canaMigrationFailures.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/canaMigration.test.ts",
+      "path": "apps/service-management/test/unit/canaMigration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/hexagonalCodegen.test.ts",
+      "path": "apps/service-management/test/unit/hexagonalCodegen.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/pm2Lifecycle.startPaths.test.ts",
+      "path": "apps/service-management/test/unit/pm2Lifecycle.startPaths.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/canaDesignerStore.test.ts",
+      "path": "apps/service-management/test/unit/canaDesignerStore.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/hostMetrics.mockedHost.test.ts",
+      "path": "apps/service-management/test/unit/hostMetrics.mockedHost.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/sampleModel.test.ts",
+      "path": "apps/service-management/test/unit/sampleModel.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/darwinProcessDiskIo.test.ts",
+      "path": "apps/service-management/test/unit/darwinProcessDiskIo.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerPackageVersioning.test.ts",
+      "path": "apps/service-management/test/unit/designerPackageVersioning.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/renderGuard.test.ts",
+      "path": "apps/service-management/test/unit/renderGuard.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerExporters.test.ts",
+      "path": "apps/service-management/test/unit/designerExporters.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/startServiceManagementCatalogApi.test.ts",
+      "path": "apps/service-management-api/test/unit/startServiceManagementCatalogApi.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
+      "path": "apps/service-management-api/test/unit/runtime/catalogCors.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+      "path": "apps/service-management-api/test/unit/ServiceManagementCatalogAPI.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/index.exports.test.ts",
+      "path": "apps/service-management-api/test/unit/index.exports.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/CatalogModel.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/CatalogModel.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/composition/composeCatalogsServices.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/composition/composeCatalogsServices.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/index.exports.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/index.exports.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/application/catalogBoundaries.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/application/catalogBoundaries.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/service/CatalogService.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/service/CatalogService.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management-api/test/unit/Catalogs/domain/Model/Catalog.test.ts",
+      "path": "apps/service-management-api/test/unit/Catalogs/domain/Model/Catalog.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/shell/breakpoints.test.ts",
+      "path": "apps/frontend/test/unit/shell/breakpoints.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/shell/toolbarWidgets.test.ts",
+      "path": "apps/frontend/test/unit/shell/toolbarWidgets.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/shell/viewport.test.ts",
+      "path": "apps/frontend/test/unit/shell/viewport.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/errors.test.ts",
+      "path": "apps/frontend/test/unit/contracts/errors.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/labels.test.ts",
+      "path": "apps/frontend/test/unit/contracts/labels.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/apiClientBase.test.ts",
+      "path": "apps/frontend/test/unit/contracts/apiClientBase.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/sessionGuard.test.ts",
+      "path": "apps/frontend/test/unit/contracts/sessionGuard.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/browserShim.test.ts",
+      "path": "apps/frontend/test/unit/contracts/browserShim.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/appOperations.test.ts",
+      "path": "apps/frontend/test/unit/contracts/appOperations.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/formSchema.test.ts",
+      "path": "apps/frontend/test/unit/contracts/formSchema.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/sessionGuardInstall.test.ts",
+      "path": "apps/frontend/test/unit/contracts/sessionGuardInstall.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/usePermissions.test.ts",
+      "path": "apps/frontend/test/unit/contracts/usePermissions.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/edgeCases.test.ts",
+      "path": "apps/frontend/test/unit/contracts/edgeCases.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/listSchema.test.ts",
+      "path": "apps/frontend/test/unit/contracts/listSchema.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/engineGuards.test.ts",
+      "path": "apps/frontend/test/unit/contracts/engineGuards.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/rbac.test.ts",
+      "path": "apps/frontend/test/unit/contracts/rbac.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/patternRules.test.ts",
+      "path": "apps/frontend/test/unit/contracts/patternRules.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/apiClient.test.ts",
+      "path": "apps/frontend/test/unit/contracts/apiClient.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/contracts/validation.test.ts",
+      "path": "apps/frontend/test/unit/contracts/validation.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/features/useSectionNotify.test.ts",
+      "path": "apps/frontend/test/unit/features/useSectionNotify.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/profile.test.ts",
+      "path": "apps/frontend/test/unit/stores/profile.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/auth.test.ts",
+      "path": "apps/frontend/test/unit/stores/auth.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/notifications.test.ts",
+      "path": "apps/frontend/test/unit/stores/notifications.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/network.test.ts",
+      "path": "apps/frontend/test/unit/stores/network.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/profileOffline.test.ts",
+      "path": "apps/frontend/test/unit/stores/profileOffline.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/tasks.test.ts",
+      "path": "apps/frontend/test/unit/stores/tasks.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/entityStore.test.ts",
+      "path": "apps/frontend/test/unit/stores/entityStore.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/stores/theme.test.ts",
+      "path": "apps/frontend/test/unit/stores/theme.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
+      "path": "apps/frontend/test/unit/xcrud/useXCrud.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/xcrud/useXCrudOffline.test.ts",
+      "path": "apps/frontend/test/unit/xcrud/useXCrudOffline.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/xcrud/xCrudFormat.test.ts",
+      "path": "apps/frontend/test/unit/xcrud/xCrudFormat.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/i18n/i18n.test.ts",
+      "path": "apps/frontend/test/unit/i18n/i18n.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/modules/manifest.test.ts",
+      "path": "apps/frontend/test/unit/modules/manifest.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/pwa.test.ts",
+      "path": "apps/frontend/test/unit/data/pwa.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/offlineLayer.test.ts",
+      "path": "apps/frontend/test/unit/data/offlineLayer.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/db.test.ts",
+      "path": "apps/frontend/test/unit/data/db.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/localRepository.test.ts",
+      "path": "apps/frontend/test/unit/data/localRepository.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/syncDelta.test.ts",
+      "path": "apps/frontend/test/unit/data/syncDelta.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/data/outboxExtra.test.ts",
+      "path": "apps/frontend/test/unit/data/outboxExtra.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/main.test.ts",
+      "path": "apps/frontend/test/unit/main.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/router/guardsExtra.test.ts",
+      "path": "apps/frontend/test/unit/router/guardsExtra.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/router/index.test.ts",
+      "path": "apps/frontend/test/unit/router/index.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/router/scopeGuard.test.ts",
+      "path": "apps/frontend/test/unit/router/scopeGuard.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/unit/router/guard.test.ts",
+      "path": "apps/frontend/test/unit/router/guard.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/Profile.test.ts",
+      "path": "apps/frontend/test/component/Profile.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/Shell.test.ts",
+      "path": "apps/frontend/test/component/Shell.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/OasFormField.test.ts",
+      "path": "apps/frontend/test/component/OasFormField.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/ModuleLayout.test.ts",
+      "path": "apps/frontend/test/component/ModuleLayout.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/AppTaskbar.test.ts",
+      "path": "apps/frontend/test/component/AppTaskbar.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/XCrud.test.ts",
+      "path": "apps/frontend/test/component/XCrud.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/frontend/test/component/OfflineWidgets.test.ts",
+      "path": "apps/frontend/test/component/OfflineWidgets.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts",
       "layer": "service-management/server",
-      "kind": "non-hexagonal",
-      "type": "integration",
-      "adapter": "service-management",
-      "script": "test:integration:service-management",
-      "runner": "bun",
-      "ciRunner": "node",
-      "tier": "gate",
-      "timeoutMs": 120000
-    },
-    {
-      "id": "apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts",
-      "path": "apps/backend-template/test/integration/ServiceManagement/catalogSync.integration.test.ts",
-      "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
       "adapter": "service-management",
@@ -2099,8 +3154,34 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/backend-template/test/integration/ServiceManagement/statusOutcome.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/statusOutcome.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/integration/ServiceManagement/firstRun.browser.integration.test.ts",
       "path": "apps/backend-template/test/integration/ServiceManagement/firstRun.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/backend-template/test/integration/ServiceManagement/accessibleNames.browser.integration.test.ts",
+      "path": "apps/backend-template/test/integration/ServiceManagement/accessibleNames.browser.integration.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -2502,8 +3583,21 @@
       "timeoutMs": 300000
     },
     {
-      "id": "apps/backend-template/test/integration/Express/Catalogs/catalogs.test.ts",
-      "path": "apps/backend-template/test/integration/Express/Catalogs/catalogs.test.ts",
+      "id": "apps/backend-template/test/integration/Express/purgeTombstones.test.ts",
+      "path": "apps/backend-template/test/integration/Express/purgeTombstones.test.ts",
+      "layer": "adapters/in",
+      "kind": "hexagonal",
+      "type": "integration",
+      "adapter": "express",
+      "script": "test:integration:express",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 300000
+    },
+    {
+      "id": "apps/backend-template/test/integration/Express/get.async-context-metrics.test.ts",
+      "path": "apps/backend-template/test/integration/Express/get.async-context-metrics.test.ts",
       "layer": "adapters/in",
       "kind": "hexagonal",
       "type": "integration",
@@ -3291,6 +4385,32 @@
       "timeoutMs": 300000
     },
     {
+      "id": "apps/service-management-api/test/integration/catalogSync.integration.test.ts",
+      "path": "apps/service-management-api/test/integration/catalogSync.integration.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management-api",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/service-management-api/test/integration/catalogs.http.integration.test.ts",
+      "path": "apps/service-management-api/test/integration/catalogs.http.integration.test.ts",
+      "layer": "service-management/catalog-api",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management-api",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/backend-template/test/smoke/database/DatabaseDrivers.smoke.test.ts",
       "path": "apps/backend-template/test/smoke/database/DatabaseDrivers.smoke.test.ts",
       "layer": "adapters/out+infra",
@@ -3536,6 +4656,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/designer-core/test/fallback-branches.test.ts",
+      "path": "packages/designer-core/test/fallback-branches.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/designer-core/test/packaging.test.ts",
       "path": "packages/designer-core/test/packaging.test.ts",
       "layer": "service-management/designer",
@@ -3685,6 +4815,36 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/persistence-contracts/test/listQuery.test.ts",
+      "path": "packages/persistence-contracts/test/listQuery.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/persistence-contracts/test/metricsQuery.test.ts",
+      "path": "packages/persistence-contracts/test/metricsQuery.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/persistence-contracts/test/purgeTombstones.test.ts",
+      "path": "packages/persistence-contracts/test/purgeTombstones.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "path": "packages/runtime-infra/test/compileRuntimeInfra.test.ts",
       "layer": "adapters/out+infra",
@@ -3703,6 +4863,16 @@
       "runner": "bun",
       "tier": "gate",
       "timeoutMs": 120000
+    },
+    {
+      "id": "packages/sdk-rest-client/test/RestApiClient.events.test.ts",
+      "path": "packages/sdk-rest-client/test/RestApiClient.events.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
     },
     {
       "id": "packages/sdk-rest-client/test/RestApiClient.test.ts",
@@ -3771,6 +4941,18 @@
     {
       "id": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
       "path": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/components/architecture/HexagonalArchitectureMap.test.tsx",
+      "path": "apps/jumentix-website/components/architecture/HexagonalArchitectureMap.test.tsx",
       "layer": "website",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -4352,6 +5534,7 @@
     "apps/backend-template/test",
     "apps/service-management",
     "apps/jumentix-website",
+    "apps/frontend",
     "packages",
     "ci-cd",
     "tooling"
@@ -4382,9 +5565,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 226,
-    "integration": 97,
+    "unit": 325,
+    "integration": 101,
     "smoke": 2,
-    "suites": 373
+    "suites": 477
   }
 }

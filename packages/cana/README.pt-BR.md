@@ -2,6 +2,9 @@
 
 Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.
 
+O seed de frontend (`apps/frontend`) abre o Cana antes do login e sincroniza
+pela OAS: [Camada de dados offline do frontend](../../documentation/md/FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md).
+
 <figure className="cana-brand-scene">
   <img
     src="/images/cana/jumentix-eating-sugarcane.png"

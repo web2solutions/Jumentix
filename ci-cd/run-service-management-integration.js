@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const CANDIDATE_TEST_DIRS = [
+  'apps/service-management-api/test/integration',
   'apps/backend-template/test/integration/ServiceManagement',
   'test/integration/ServiceManagement'
 ];
@@ -42,26 +43,26 @@ function runServiceManagementIntegration(options = {}) {
   const spawn = options.spawn || spawnSync;
   const discover = options.discover || discoverTestFiles;
   const logger = options.logger || console;
-  const testDir = CANDIDATE_TEST_DIRS.find((target) => exists(path.join(root, target)));
+  const testDirs = CANDIDATE_TEST_DIRS.filter((target) => exists(path.join(root, target)));
 
-  if (!testDir) {
+  if (testDirs.length === 0) {
     logger.error('[ci] service-management integration: no test directories found.');
-    logger.error(`[ci] expected one of: ${CANDIDATE_TEST_DIRS.join(', ')}`);
+    logger.error(`[ci] expected at least one of: ${CANDIDATE_TEST_DIRS.join(', ')}`);
     return 1;
   }
 
-  logger.log(`[ci] service-management integration target: ${testDir}`);
+  logger.log(`[ci] service-management integration targets: ${testDirs.join(', ')}`);
 
-  const testFiles = discover(path.join(root, testDir));
+  const testFiles = testDirs.flatMap((testDir) => discover(path.join(root, testDir)));
   if (testFiles.length === 0) {
-    logger.error(`[ci] service-management integration: no test files discovered in ${testDir}.`);
+    logger.error(`[ci] service-management integration: no test files discovered in ${testDirs.join(', ')}.`);
     logger.error('[ci] failing closed: a smoke suite that runs nothing is a false green (JUM-557).');
     return 1;
   }
 
   logger.log(`[ci] service-management integration: ${String(testFiles.length)} test file(s) discovered.`);
 
-  const result = spawn('jest', [testDir, '--runInBand', '--coverage=false'], {
+  const result = spawn('jest', [...testDirs, '--runInBand', '--coverage=false'], {
     stdio: 'inherit',
     env: {
       ...process.env,

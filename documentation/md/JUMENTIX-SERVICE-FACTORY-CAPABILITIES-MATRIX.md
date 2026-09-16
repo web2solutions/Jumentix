@@ -13,6 +13,15 @@ Define the supported software factory modes for Jumentix so engineering and prod
 | Hybrid Backend + Frontend | Backend services plus SPA/PWA/SSR apps | REST + realtime contracts consumed by SDK clients | API contracts (OpenAPI/AsyncAPI) and event-first integration | Backend adapter plus frontend local/offline storage strategy | End-to-end product delivery from one monorepo |
 | Frontend-only SPA/PWA Offline | Frontend application package with API contract compatibility | Local app + optional remote API consumption | Contract-first client SDK integration | IndexedDB/local storage for offline-first flows | Offline-capable field and operations applications |
 
+## Reference Seeds
+
+- Backend modes: `apps/backend-template`.
+- Hybrid and Frontend-only modes: `apps/frontend` — see
+  [Frontend Seed and the X-CRUD Kit](./FRONTEND-SEED-AND-XCRUD.md) (contract-driven SPA over the
+  [Paginated List Contract](./PAGINATED-LIST-CONTRACT.md), with a login-gated **multitask shell**:
+  one module per domain, taskbar + keep-alive panes, toolbar widget registry, responsive
+  breakpoints). Offline/PWA mode: [Frontend offline data layer](./FRONTEND-OFFLINE-DATA-LAYER.md).
+
 ## Non-functional Guarantees
 
 - DDD + Hexagonal boundaries are mandatory for backend modules.

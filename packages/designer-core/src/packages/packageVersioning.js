@@ -309,6 +309,7 @@ function fieldProjection(field) {
     pk: Boolean(field.pk),
     fk: Boolean(field.fk),
     unique: Boolean(field.unique),
+    indexed: Boolean(field.indexed),
     nullable: Boolean(field.nullable),
     format: field.format || '',
     description: field.description || '',

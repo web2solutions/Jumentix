@@ -29,7 +29,7 @@ This documentation set defines how product intent, architecture constraints, con
 14. [Spec Engineering Practices and Git Policy](./SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md)
 15. [Spec Security and Compliance Practices](./SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md)
 16. [Spec Jumentix Component System](./SPEC-JUMENTIX-COMPONENT-SYSTEM.md)
-17. [Private Repository Free CI Strategy](./PRIVATE-FREE-CI-STRATEGY.md)
+17. [Public Open Source Free CI Strategy](./PRIVATE-FREE-CI-STRATEGY.md)
 
 ## Mandatory Principle
 
@@ -62,7 +62,7 @@ This policy is enforced through:
 ## Binding Sources
 
 Repository authority follows Requirement `103`: private
-`XpertMinds/Jumentix` is canonical for this specification set. Agent
+`web2solutions/Jumentix` is canonical for this specification set. Agent
 coordination is canonical in Firestore Database per Requirement `089`. All
 former `web2solutions` origins — and the legacy
 `XpertMinds/jumentix-agent-registry` GitHub mirror — are deprecated,

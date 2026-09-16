@@ -61,7 +61,7 @@ explanation.
 ### What shipped
 
 - **A contract-first `Catalogs` backend module**
-  (`apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts`),
+  (`apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts`),
   hexagonal like the Users reference module: domain aggregate (version bump,
   tombstone, restore), pure
   `CatalogAuthorizationPolicy`,
@@ -333,7 +333,7 @@ how a designer user's work is stored.
 ### The full-suite export (JUM-547), the portable bundle
 
 The JSON export is the versioned full-suite document
-(`{ kind: "service-management-suite", version: "2.0.0", domains, relationships, interfaces, serviceConfiguration, runtimeEnvironment, deployments, view }`) carrying **all four tabs** in a re-importable shape
+(`{ kind: "service-management-suite", version: "2.0.0", domains, relationships, interfaces, serviceConfiguration, runtimeEnvironment, codeWorkspace, deployments, view }`) carrying **all five tabs** in a re-importable shape
 ([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)).
 One recorded security decision matters for packaging: the bundle carries the
 runtime environment **selection only** (`{ environment, fileName }`) —
@@ -430,7 +430,7 @@ when the gate closes.
 ## References
 
 - Collaboration (JUM-491):
-  `apps/backend-template/src/modules/Catalogs/domain/Model/Catalog.ts`,
+  `apps/service-management-api/src/modules/Catalogs/domain/Model/Catalog.ts`,
   `CatalogAuthorizationPolicy`,
   `CatalogUseCases.ts`,
   `CatalogService.ts`,

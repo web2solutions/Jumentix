@@ -429,9 +429,17 @@ export function createInspectors({ dom, state, interaction, actions }) {
       const li = document.createElement('li');
       const row = document.createElement('div');
       row.className = 'field-row';
+      // JUM-732: every control in a generated field row carries the field it
+      // belongs to in its accessible name. Before this, the name input and the
+      // type select computed no accessible name at all, and the three buttons
+      // read as "meta", "save" and "x" repeated once per field — a name with no
+      // referent. The visible labels stay as they are; only the announced name
+      // changes, so sighted users see the same compact row.
+      const fieldLabel = `field "${field.name}"`;
       const nameInput = document.createElement('input');
       nameInput.type = 'text';
       nameInput.value = field.name;
+      nameInput.setAttribute('aria-label', `Name of ${fieldLabel}`);
       const typeSelect = document.createElement('select');
       FIELD_TYPES.forEach((optionValue) => {
         const option = document.createElement('option');
@@ -440,33 +448,46 @@ export function createInspectors({ dom, state, interaction, actions }) {
         typeSelect.appendChild(option);
       });
       typeSelect.value = field.type;
+      typeSelect.setAttribute('aria-label', `Type of ${fieldLabel}`);
       const requiredCheck = document.createElement('input');
       requiredCheck.type = 'checkbox';
       requiredCheck.checked = field.required;
       requiredCheck.title = 'required';
+      requiredCheck.setAttribute('aria-label', `Required — ${fieldLabel}`);
       const pkCheck = document.createElement('input');
       pkCheck.type = 'checkbox';
       pkCheck.checked = field.pk;
       pkCheck.title = 'PK';
+      pkCheck.setAttribute('aria-label', `Primary key — ${fieldLabel}`);
       const fkCheck = document.createElement('input');
       fkCheck.type = 'checkbox';
       fkCheck.checked = field.fk;
       fkCheck.title = 'FK';
+      fkCheck.setAttribute('aria-label', `Foreign key — ${fieldLabel}`);
       const uniqueCheck = document.createElement('input');
       uniqueCheck.type = 'checkbox';
       uniqueCheck.checked = field.unique;
       uniqueCheck.title = 'unique';
+      uniqueCheck.setAttribute('aria-label', `Unique — ${fieldLabel}`);
+      const indexedCheck = document.createElement('input');
+      indexedCheck.type = 'checkbox';
+      indexedCheck.checked = Boolean(field.indexed);
+      indexedCheck.title = 'indexed';
+      indexedCheck.setAttribute('aria-label', `Indexed — ${fieldLabel}`);
       const nullableCheck = document.createElement('input');
       nullableCheck.type = 'checkbox';
       nullableCheck.checked = field.nullable;
       nullableCheck.title = 'nullable';
+      nullableCheck.setAttribute('aria-label', `Nullable — ${fieldLabel}`);
       const meta = document.createElement('button');
       meta.type = 'button';
       meta.textContent = 'meta';
+      meta.setAttribute('aria-label', `Edit metadata of ${fieldLabel}`);
       meta.onclick = () => editFieldMetadata(found.entity.id, field.name);
       const save = document.createElement('button');
       save.type = 'button';
       save.textContent = 'save';
+      save.setAttribute('aria-label', `Save ${fieldLabel}`);
       save.onclick = () => updateField(found.entity.id, field.name, {
         name: nameInput.value,
         type: typeSelect.value,
@@ -474,11 +495,13 @@ export function createInspectors({ dom, state, interaction, actions }) {
         pk: pkCheck.checked,
         fk: fkCheck.checked,
         unique: uniqueCheck.checked,
+        indexed: indexedCheck.checked,
         nullable: nullableCheck.checked
       });
       const del = document.createElement('button');
       del.type = 'button';
       del.textContent = 'x';
+      del.setAttribute('aria-label', `Delete ${fieldLabel}`);
       del.onclick = () => removeField(found.entity.id, field.name);
       row.appendChild(nameInput);
       row.appendChild(typeSelect);
@@ -486,6 +509,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
       row.appendChild(pkCheck);
       row.appendChild(fkCheck);
       row.appendChild(uniqueCheck);
+      row.appendChild(indexedCheck);
       row.appendChild(nullableCheck);
       row.appendChild(meta);
       row.appendChild(save);

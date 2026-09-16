@@ -211,3 +211,29 @@ describe('check-bun-version input reading (JUM-721)', () => {
     }
   });
 });
+
+describe('check-bun-version manifest reading (JUM-821)', () => {
+  it('reads a manifest without packageManager as absent, not as a crash', () => {
+    expect.hasAssertions();
+
+    // A pre-migration checkout has a package.json with no `packageManager`
+    // key at all; the guard must report the missing declaration rather than
+    // read `undefined` into its comparison.
+    const fs = require('node:fs');
+    const os = require('node:os');
+    const path = require('node:path');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bun-version-'));
+    fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'cold-clone' }));
+
+    const guard = require('../../../../../ci-cd/check-bun-version');
+    const input = guard.readToolchainInput({
+      versions: {},
+      pinPath: '/nonexistent/.bun-version',
+      manifestPath: path.join(dir, 'package.json')
+    });
+
+    expect(input.declaredPackageManager).toBeNull();
+    expect(guard.validateToolchain(input)
+      .some((entry: string) => entry.includes('packageManager is not set'))).toBe(true);
+  });
+});

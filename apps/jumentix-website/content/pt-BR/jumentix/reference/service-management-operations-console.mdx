@@ -408,7 +408,7 @@ console segue o mesmo modelo:
 - Leitor compartilhado da matriz: `packages/designer-core/src/model/deployCapabilityMatrix.js`; documentos de matriz: JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX, JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX
 - Validadores: `serviceConfigurationValidation.js`, `deployTargetValidation.js`, `deployTargetLifecycleValidation.js`
 - Endpoints do servidor: `server.js`; cola da UI: `script.js`, `inspectors.js`, estado/migração: `designerState.js`
-- Fontes de ecossistema: `pm2/ecosystem.dev.cjs`, `pm2/ecosystem.staging.cjs`, `pm2/ecosystem.production.cjs`
+- Fontes de ecossistema: `pm2/ecosystem.dev.config.cjs`, `pm2/ecosystem.staging.config.cjs`, `pm2/ecosystem.production.config.cjs`
 - Suítes: `serviceConfigurationValidation.test.ts`, `deployTargetValidation.test.ts`, `deployTargetLifecycle.test.ts`, `designerState.test.ts`, `pm2EcosystemUi.contract.test.ts`, `runtimeEnvUi.contract.test.ts`, `pm2Ecosystem.integration.test.ts`, `runtimeEnv.integration.test.ts`, `runtimeEnvContract.integration.test.ts`, `deployTargetLifecycle.browser.integration.test.ts`
 - Requisitos: Requisito 126, Contratos 1 e 1b (Contratos 1, 1b e 2), 059 (as matrizes de deploy e da factory), 076 (paridade EN/PT)
 - Documentos irmãos da cadeia E: [Contratos de ambiente de runtime](/docs/pt-BR/jumentix/reference/service-management-runtime-environment) (E1), [Arquitetura de módulos do Service Management](/docs/pt-BR/jumentix/reference/service-management-module-architecture) (E3), [Garantias de paridade de contratos do Service Management](/docs/pt-BR/jumentix/reference/service-management-contract-parity) (E4), Aplicativo Service Management, [Funcionalidades e uso do Domain Designer](/docs/pt-BR/jumentix/reference/domain-designer-features)

@@ -1,6 +1,6 @@
 # Jumentix Documentation Hub
 
-> Canonical private repository: `XpertMinds/Jumentix`. See
+> Canonical public repository: `web2solutions/Jumentix`. See
 > [Canonical Repository Migration](./md/CANONICAL-REPOSITORY-MIGRATION.md) ·
 > [Integration Migration Requirement](../INTEGRATION-MIGRATION-REQUIREMENT.md) ·
 > [Canonical Integrations and Provider Rebinding](./md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md).
@@ -63,6 +63,7 @@ For engineers maintaining and evolving Jumentix:
 ## Component Technical Hubs
 
 - [Backend Template Documentation](../apps/backend-template/documentation/README.md)
+- [Frontend Seed (@jumentix/frontend)](../apps/frontend/README.md)
 - [Service Management Documentation](../apps/service-management/documentation/README.md)
 - [Jumentix Website](../apps/jumentix-website/README.md)
 - [Jumentix Website Technical Docs](../apps/jumentix-website/documentation/README.md)
@@ -72,6 +73,11 @@ For engineers maintaining and evolving Jumentix:
 ## Contract and Runtime References
 
 - [OpenAPI Spec](../spec/1.0.0.yml)
+- [Paginated List Contract](./md/PAGINATED-LIST-CONTRACT.md) ([pt-BR](./md/PAGINATED-LIST-CONTRACT.pt-BR.md))
+- [OAS vendor extensions](./md/OAS-VENDOR-EXTENSIONS.md) ([pt-BR](./md/OAS-VENDOR-EXTENSIONS.pt-BR.md))
+- [Entity metrics contract](./md/ENTITY-METRICS-CONTRACT.md) ([pt-BR](./md/ENTITY-METRICS-CONTRACT.pt-BR.md))
+- [Frontend Seed and the X-CRUD Kit](./md/FRONTEND-SEED-AND-XCRUD.md) ([pt-BR](./md/FRONTEND-SEED-AND-XCRUD.pt-BR.md))
+- [Frontend offline data layer](./md/FRONTEND-OFFLINE-DATA-LAYER.md) ([pt-BR](./md/FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md))
 - [Events and Messages Map](./md/EVENTS-AND-MESSAGES-MAP.md)
 - [Error Contracts and Responses](./md/ERROR-CONTRACTS-AND-RESPONSES.md)
 - [Tenant and RBAC Authorization Contract](./md/TENANT-RBAC-AUTHORIZATION-CONTRACT.md)

@@ -42,13 +42,18 @@ import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/Reques
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
 import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
+import {
+  runMetricsQuery,
+  type IMetricsCapabilities,
+  type IMetricsQuery,
+  type IMetricsResult
+} from '@jumentix/persistence-contracts';
+import { BaseError, ResourceLockedError, ValidationError } from '@src/infra/exceptions';
 
 import { canNotBeEmpty, mustBePassword } from '@src/shared/validators';
 
 import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
 import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-
-import { BaseError, ResourceLockedError } from '@src/infra/exceptions';
 import { shouldRequireOrganization } from '@src/modules/Users/domain/security/Rbac';
 import type { ICacheService } from '@src/infra/cache';
 import type { IDeadLetterQueue } from '@jumentix/dead-letter-queue';
@@ -427,6 +432,30 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
       await this.cacheService?.set(cacheKey, serviceResponse);
     } catch (error) {
       serviceResponse.error = error as BaseError;
+    }
+    return serviceResponse;
+  }
+
+  public async metrics(
+    filters: Record<string, string | number>,
+    query: IMetricsQuery,
+    capabilities: IMetricsCapabilities
+  ): Promise<IServiceResponse<IMetricsResult>> {
+    const serviceResponse: IServiceResponse<IMetricsResult> = {};
+    try {
+      const page = await getAllUsers(filters, { page: 1, size: 10000 }, this.dataRepository);
+      const rows = UserService.sanitizeUsers(page.result).map((user) => ({
+        ...user,
+        createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : user.createdAt,
+        updatedAt: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : user.updatedAt
+      })) as Array<Record<string, unknown>>;
+      serviceResponse.result = runMetricsQuery(rows, { ...query, filters }, capabilities);
+    } catch (error) {
+      if (error instanceof Error && /Accepted:/.test(error.message)) {
+        serviceResponse.error = new ValidationError(error.message);
+      } else {
+        serviceResponse.error = error as BaseError;
+      }
     }
     return serviceResponse;
   }

@@ -1,6 +1,7 @@
 /* eslint-disable jest/max-expects */
 import { OrganizationService } from '@src/modules/Users/service/OrganizationService';
 import { Organization } from '@src/modules/Users/domain/Model/Organization';
+import { ValidationError } from '@src/infra/exceptions';
 
 const domainOrganization = (name = 'Org') => new Organization({
   id: '4fae5b16-261f-4de7-9cff-1429d5614e44',
@@ -219,5 +220,73 @@ describe('organization service', () => {
     expect((await service.createEmail('o1', { email: 'contact@org.dev', type: 'work' } as any)).error?.message).toBe('create-email-fail');
     expect((await service.updateEmail('o1', 'e1', { email: 'new@org.dev' } as any)).error?.message).toBe('update-email-fail');
     expect((await service.deleteEmail('o1', 'e1')).error?.message).toBe('delete-email-fail');
+  });
+});
+
+describe('organization service metrics', () => {
+  const capabilities = { groupable: ['name'], series: ['createdAt'] };
+
+  it('serializes Date and string timestamps before running the query', async () => {
+    expect.hasAssertions();
+    const { service, dataRepository } = setup();
+    dataRepository.getAll.mockResolvedValueOnce({
+      page: 1,
+      size: 2,
+      total: 2,
+      result: [
+        {
+          id: 'o1',
+          name: 'Org',
+          createdAt: new Date('2026-01-05T00:00:00.000Z'),
+          updatedAt: new Date('2026-01-06T00:00:00.000Z')
+        },
+        {
+          id: 'o2',
+          name: 'Org Two',
+          createdAt: '2026-01-07T00:00:00.000Z',
+          updatedAt: '2026-01-08T00:00:00.000Z'
+        }
+      ]
+    });
+
+    const response = await service.metrics({}, { metric: 'count' }, capabilities);
+
+    expect(response.error).toBeUndefined();
+    expect(response.result).toStrictEqual({
+      metric: 'count',
+      buckets: [{ key: 'total', count: 2 }]
+    });
+  });
+
+  it('groups by a groupable field over serialized rows', async () => {
+    expect.hasAssertions();
+    const { service } = setup();
+
+    const response = await service.metrics({}, { metric: 'groupBy', field: 'name' }, capabilities);
+
+    expect(response.error).toBeUndefined();
+    expect(response.result).toStrictEqual({
+      metric: 'groupBy',
+      field: 'name',
+      buckets: [{ key: 'Org', count: 1 }]
+    });
+  });
+
+  it('wraps metric acceptance failures in ValidationError and passes other errors through', async () => {
+    expect.hasAssertions();
+    const { service, dataRepository } = setup();
+
+    const notGroupable = await service.metrics({}, { metric: 'groupBy', field: 'address' }, capabilities);
+    expect(notGroupable.error).toBeInstanceOf(ValidationError);
+    expect(String(notGroupable.error?.message)).toContain('Accepted: name.');
+
+    const missingField = await service.metrics({}, { metric: 'groupBy' }, capabilities);
+    expect(missingField.error).toBeInstanceOf(Error);
+    expect(missingField.error).not.toBeInstanceOf(ValidationError);
+    expect(String(missingField.error?.message)).toContain('field is required');
+
+    dataRepository.getAll.mockRejectedValueOnce('repository exploded');
+    const nonError = await service.metrics({}, { metric: 'count' }, capabilities);
+    expect(nonError.error).toBe('repository exploded');
   });
 });

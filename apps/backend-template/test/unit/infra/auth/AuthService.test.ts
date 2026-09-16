@@ -336,8 +336,9 @@ describe('unit test suite for AuthService', () => {
     beforeAll(async () => {
       const deleteUserPayloads = [user1, user2, user3].map((user, index) => {
         const username = `delete-user-${index + 1}@xpertminds.dev`;
+        const { id: _seedId, ...rest } = user;
         return {
-          ...user,
+          ...rest,
           username,
           password: `delete_user_${index + 1}_password`,
           emails: [{

@@ -68,7 +68,7 @@ Valores configurados:
 
 ## Ambiente obrigatório na Vercel
 
-Como `XpertMinds/Jumentix` é privado, chamadas não autenticadas à API do GitHub retornam 404.
+Como `web2solutions/Jumentix` é privado, chamadas não autenticadas à API do GitHub retornam 404.
 Defina no projeto Vercel (Production + Preview):
 
 | Nome | Propósito |

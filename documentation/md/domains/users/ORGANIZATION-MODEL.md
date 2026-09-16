@@ -25,7 +25,7 @@ Constructor accepts `RequestCreateOrganization` + optional metadata.
 
 ## Relationships
 
-- `@hasMany(() => User)` metadata is declared for `userEntities` to support adapter-level relation mapping while preserving domain contract with `users: string[]`.
+- `@hasMany('User')` metadata is declared for `userEntities` to support adapter-level relation mapping while preserving domain contract with `users: string[]`. The relation target is referenced by entity name, which keeps `User` and `Organization` decoupled (no circular import between the two models).
 
 ## Aggregate invariants
 

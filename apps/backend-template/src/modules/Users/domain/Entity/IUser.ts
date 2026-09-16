@@ -8,6 +8,7 @@ export interface IUser {
   id: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date | string | null;
   firstName: string;
   lastName: string;
   avatar: string;

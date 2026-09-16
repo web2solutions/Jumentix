@@ -10,9 +10,9 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 
 const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
-const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|package\.json$)/;
+const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
 const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
-const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/)|^package\.json$/;
+const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/|\.circleci\/)|^package\.json$/;
 const GOVERNANCE_TEST_PATH = 'apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts';
 const TOOLCHAIN_CONFIG_PATH = /^(bun\.lock|\.bun-version|package\.json)$/;
 const TOOLCHAIN_TEST_PATHS = [
@@ -29,6 +29,20 @@ function normalizeFiles(files) {
 }
 
 function readChangedFiles(options = {}) {
+  // Injected `spawn` means the caller is asserting git discovery — never short-circuit
+  // via the Docker host-side file list.
+  const allowEnv = Object.prototype.hasOwnProperty.call(options, 'spawn')
+    ? false
+    : (options.useChangedFilesEnv ?? process.env.JUMENTIX_TASK_CHANGED_FILES_ACTIVE === '1');
+  const envList = allowEnv
+    ? (options.changedFilesEnv ?? process.env.JUMENTIX_TASK_CHANGED_FILES)
+    : options.changedFilesEnv;
+  if (typeof envList === 'string' && envList.trim()) {
+    // Host-side list for Dockerized runners: nested `git` during `git commit`
+    // cannot always read the index across a macOS→Linux volume mount.
+    return normalizeFiles(envList.split(/\r?\n|,/));
+  }
+
   const mode = options.mode || process.env.JUMENTIX_TASK_TEST_MODE || 'staged';
   const baseRef = options.baseRef || process.env.JUMENTIX_TASK_TEST_BASE || 'origin/dev';
   const args = mode === 'staged'

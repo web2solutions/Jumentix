@@ -171,6 +171,23 @@ function stringFieldProblem(
 }
 
 /**
+ * Strip leading and trailing backtick runs without a regex — even anchored
+ * `x+`/`x+$` patterns are a polynomial-backtracking surface to static
+ * analysis, and a two-pointer walk is linear by construction.
+ */
+function stripBackticks(value: string): string {
+  let start = 0;
+  let end = value.length;
+  while (start < end && value.charAt(start) === '`') {
+    start += 1;
+  }
+  while (end > start && value.charAt(end - 1) === '`') {
+    end -= 1;
+  }
+  return value.slice(start, end);
+}
+
+/**
  * The id a corrupt document should have had.
  *
  * Only formatting is removed — backticks and surrounding whitespace. Anything
@@ -178,7 +195,7 @@ function stringFieldProblem(
  * an id nobody understands is how one bad record becomes two.
  */
 export function canonicalAgentId(rawAgentId: string): string {
-  return String(rawAgentId).trim().replace(/^`+|`+$/g, '').trim();
+  return stripBackticks(String(rawAgentId).trim()).trim();
 }
 
 /**

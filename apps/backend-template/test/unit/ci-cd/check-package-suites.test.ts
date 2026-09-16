@@ -280,3 +280,41 @@ describe('check-package-suites', () => {
     });
   });
 });
+
+describe('check-package-suites default wiring (JUM-821)', () => {
+  it('runs against the working tree when called with no options at all', () => {
+    expect.hasAssertions();
+
+    // Every option has a production default; the bare call is the shape the
+    // entry point uses, and it must read the real tree.
+    const result = run();
+
+    expect(result.ok).toBe(true);
+  });
+
+  it('main reports and returns 0 with its default io and check', () => {
+    expect.hasAssertions();
+
+    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    try {
+      expect(main()).toBe(0);
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('Package suite check passed'));
+    } finally {
+      log.mockRestore();
+    }
+  });
+
+  it('ignores a package whose src holds no runnable source file', () => {
+    expect.hasAssertions();
+
+    // A `src` of only Markdown owns no suite: the per-file filter is what
+    // keeps docs-only sources from reading as untested code.
+    const dir = workspace({});
+    fs.mkdirSync(path.join(dir, 'packages', 'notes-only', 'src'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'packages', 'notes-only', 'src', 'notes.md'), '# notes\n');
+
+    const result = run({ root: dir, register: {}, readFile: () => sonarConfig([]) });
+
+    expect(result.ok).toBe(true);
+  });
+});

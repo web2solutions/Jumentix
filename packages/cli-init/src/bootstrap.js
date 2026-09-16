@@ -4,7 +4,7 @@ const path = require('path');
 const readline = require('readline');
 const { spawnSync } = require('child_process');
 
-const BOILERPLATE_REPOSITORY = 'https://github.com/XpertMinds/Jumentix.git';
+const BOILERPLATE_REPOSITORY = 'https://github.com/web2solutions/Jumentix.git';
 const SERVICE_TYPES = [
   {
     id: 'rest',
@@ -249,7 +249,11 @@ async function run(options = {}) {
     const repository = cliArgs.repository || BOILERPLATE_REPOSITORY;
 
     log('\nCloning boilerplate repository...');
-    execute('git', ['clone', '--branch', gitBranch, repository, targetPath], workingDirectory);
+    // The directory argument is the name the operator gave, which git resolves
+    // against the working directory it already runs in — the resolved absolute
+    // path adds nothing to the command line. `--` keeps a leading-dash
+    // repository or folder name from being read as an option.
+    execute('git', ['clone', '--branch', gitBranch, '--', repository, projectName], workingDirectory);
 
     writeBootstrapProfile(targetPath, {
       generatedAt: new Date().toISOString(),

@@ -137,6 +137,7 @@ describe('run-task-change-tests', () => {
     expect(createTaskTestPlan([
       '.github/dependabot.yml',
       '.github/workflows/ci.yml',
+      '.circleci/config.yml',
       '.husky/pre-push'
     ])).toStrictEqual({
       type: 'mapped-unit-tests',

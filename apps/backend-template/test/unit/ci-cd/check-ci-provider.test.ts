@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-/** Requirement 113 — repository-owned, zero-cost CI for the private repository. */
+/** Requirement 113 — free CI for the public open-source repository. */
 const repoRoot = path.resolve(__dirname, '../../../../..');
 const checker = path.join(repoRoot, 'ci-cd', 'check-ci-provider.js');
 
@@ -26,10 +26,13 @@ function fixture(change?: (directory: string) => void): string {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-provider-'));
   fs.mkdirSync(path.join(directory, 'ci-cd'), { recursive: true });
   fs.mkdirSync(path.join(directory, '.github/workflows'), { recursive: true });
+  fs.mkdirSync(path.join(directory, '.circleci'), { recursive: true });
   fs.copyFileSync(checker, path.join(directory, 'ci-cd', 'check-ci-provider.js'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'), path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
+  fs.copyFileSync(path.join(repoRoot, '.circleci/config.yml'), path.join(directory, '.circleci/config.yml'));
+  fs.copyFileSync(path.join(repoRoot, 'sonar-project.properties'), path.join(directory, 'sonar-project.properties'));
   fs.copyFileSync(path.join(repoRoot, 'package.json'), path.join(directory, 'package.json'));
   change?.(directory);
   return directory;
@@ -41,7 +44,7 @@ describe('check-ci-provider', () => {
 
     const result = run(repoRoot);
     expect(result.code).toBe(0);
-    expect(result.output).toContain('GitHub Actions covers');
+    expect(result.output).toContain('GitHub Actions and CircleCI cover');
   });
 
   it('fails when the repository-owned GitHub Actions workflow is absent', () => {
@@ -51,15 +54,13 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('Missing required GitHub Actions workflow');
   });
 
-  it('fails when CircleCI is re-enabled', () => {
+  it('fails when CircleCI is absent', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
-      const file = path.join(root, '.circleci/config.yml');
-      fs.mkdirSync(path.dirname(file), { recursive: true });
-      fs.writeFileSync(file, 'version: 2.1\n');
+      fs.unlinkSync(path.join(root, '.circleci/config.yml'));
     });
-    expect(run(directory).output).toContain('CircleCI is disabled');
+    expect(run(directory).output).toContain('Missing required CircleCI workflow');
   });
 
   it('fails when patch coverage enforcement is removed', () => {
@@ -82,14 +83,14 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('third-party-review');
   });
 
-  it('fails when hosted runners return to the canonical workflow', () => {
+  it('fails when self-hosted private runners return to the canonical workflow', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('runs-on: [self-hosted, jumentix]', 'runs-on: ubuntu-latest'));
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('runs-on: ubuntu-latest', 'runs-on: [self-hosted, jumentix]'));
     });
-    expect(run(directory).output).toContain('repository-owned self-hosted runner');
+    expect(run(directory).output).toContain('GitHub-hosted ubuntu-latest runners');
   });
 
   it('fails when Docker runtime bootstrap is removed from container-backed jobs', () => {
@@ -183,6 +184,21 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('sonar-scanner -Dsonar\\.scm\\.disabled=true');
   });
 
+  it('fails when Sonar can scan binary assets as source files', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'sonar-project.properties');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8')
+          .replace('sonar.sourceEncoding=UTF-8\n', '')
+          .replace('**/*.png,', '')
+      );
+    });
+    expect(run(directory).output).toContain('encoding-safe source scan marker');
+  });
+
   it('fails when retired Codecov contract returns', () => {
     expect.hasAssertions();
 
@@ -206,7 +222,7 @@ describe('requirement 113 is registered and enforced', () => {
     const text = fs.readFileSync(requirement, 'utf8');
     expect(text).toContain('014');
     expect(text).toContain('GitHub Actions');
-    expect(text).toContain('CircleCI disabled');
+    expect(text).toContain('CircleCI is enabled');
   });
 
   it('is enforced by the canonical gate', () => {

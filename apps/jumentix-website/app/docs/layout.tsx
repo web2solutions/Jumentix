@@ -15,7 +15,7 @@ export default async function DocsLayout({ children }: { children: React.ReactNo
     <Layout
       navbar={<MantineNavBar key="jumentix-docs-navbar" />}
       pageMap={await getPageMap('/docs')}
-      docsRepositoryBase="https://github.com/XpertMinds/Jumentix/tree/dev/apps/jumentix-website"
+      docsRepositoryBase="https://github.com/web2solutions/Jumentix/tree/dev/apps/jumentix-website"
       editLink="Edit this page on GitHub"
       feedback={{
         content: 'Report a documentation issue',

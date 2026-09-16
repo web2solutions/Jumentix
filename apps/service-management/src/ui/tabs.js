@@ -19,8 +19,10 @@
  * @param {Object} options.dom - resolved element map from `script.js`.
  * @param {Object} options.state - shared designer state (mutated in place).
  * @param {Function} options.saveState - persist after a tab switch.
+ * @param {Function} [options.beforeTabChange] - (previous, next) side effects before switch.
+ * @param {Function} [options.afterTabChange] - (previous, next) side effects after switch.
  */
-export function createTabs({ dom, state, saveState }) {
+export function createTabs({ dom, state, saveState, beforeTabChange, afterTabChange }) {
   const tabMap = [
     {
       key: 'domain-designer',
@@ -41,6 +43,16 @@ export function createTabs({ dom, state, saveState }) {
       key: 'deploy-management',
       button: dom.tabDeployManagementBtn,
       section: dom.tabDeployManagement
+    },
+    {
+      key: 'monitoring',
+      button: dom.tabMonitoringBtn,
+      section: dom.tabMonitoring
+    },
+    {
+      key: 'code-workspace',
+      button: dom.tabCodeWorkspaceBtn,
+      section: dom.tabCodeWorkspace
     }
   ];
 
@@ -59,9 +71,12 @@ export function createTabs({ dom, state, saveState }) {
   }
 
   function setActiveTab(tab) {
+    const previous = state.activeTab || 'domain-designer';
+    if (typeof beforeTabChange === 'function') beforeTabChange(previous, tab);
     state.activeTab = tab;
     renderTabs();
     saveState();
+    if (typeof afterTabChange === 'function') afterTabChange(previous, tab);
   }
 
   /**

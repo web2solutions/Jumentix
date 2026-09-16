@@ -64,6 +64,13 @@ Para arquitetura PWA/offline-first:
 - portas CI de back-end
 - construção de front-end e verificações de fumaça offline
 
+O seed híbrido (`apps/frontend`) encaixa um domínio gerado como **módulo**
+(`src/modules/manifest.ts`): o menu lista módulos, cada módulo aberto vira botão
+na taskbar, as entidades são abas mais a aba Dashboard. Ver
+[Seed de Frontend e o Kit X-CRUD](/docs/pt-BR/jumentix/FRONTEND-SEED-AND-XCRUD).
+Offline-first Cana, sync, outbox e PWA:
+[Camada de dados offline do frontend](/docs/pt-BR/jumentix/reference/frontend-offline-data-layer).
+
 ## 6. Offline com Cana + designs
 
 <DocsPlayground runtime="designer-core" id="getting-started" />

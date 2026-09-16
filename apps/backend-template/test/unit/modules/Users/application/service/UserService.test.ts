@@ -3,6 +3,7 @@ import { UserService } from '@src/modules/Users/service/UserService';
 import { EDocumentType } from '@src/modules/ddd/valueObjects/EDocumentType';
 import { EEmailType } from '@src/modules/ddd/valueObjects/EEmailType';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
+import { ValidationError } from '@src/infra/exceptions';
 
 import { createUser } from '@src/modules/Users/features/createUser';
 import { updateUser } from '@src/modules/Users/features/updateUser';
@@ -496,5 +497,75 @@ describe('user service', () => {
     expect(deleted.result).toBe(true);
 
     expect(organizationDataRepository.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('user service metrics', () => {
+  const capabilities = { groupable: ['roles'], series: ['createdAt'] };
+
+  it('serializes Date and string timestamps before running the query', async () => {
+    expect.hasAssertions();
+    const { service } = setup();
+    mockedGetAllUsers.mockResolvedValueOnce({
+      page: 1,
+      size: 2,
+      total: 2,
+      result: [
+        {
+          ...baseUser,
+          createdAt: new Date('2026-01-05T00:00:00.000Z'),
+          updatedAt: new Date('2026-01-06T00:00:00.000Z')
+        },
+        {
+          ...baseUser,
+          id: '00000000-0000-4000-8000-000000000002',
+          createdAt: '2026-01-07T00:00:00.000Z',
+          updatedAt: '2026-01-08T00:00:00.000Z'
+        }
+      ]
+    } as any);
+
+    const response = await service.metrics({}, { metric: 'count' }, capabilities);
+
+    expect(response.error).toBeUndefined();
+    expect(response.result).toStrictEqual({
+      metric: 'count',
+      buckets: [{ key: 'total', count: 2 }]
+    });
+  });
+
+  it('groups by a groupable field over serialized rows', async () => {
+    expect.hasAssertions();
+    const { service } = setup();
+    mockedGetAllUsers.mockResolvedValueOnce({
+      page: 1, size: 2, total: 2, result: [baseUser, { ...baseUser, roles: ['admin'] }]
+    } as any);
+
+    const response = await service.metrics({}, { metric: 'groupBy', field: 'roles' }, capabilities);
+
+    expect(response.error).toBeUndefined();
+    expect(response.result).toStrictEqual({
+      metric: 'groupBy',
+      field: 'roles',
+      buckets: [{ key: 'user', count: 1 }, { key: 'admin', count: 1 }]
+    });
+  });
+
+  it('wraps metric acceptance failures in ValidationError and passes other errors through', async () => {
+    expect.hasAssertions();
+    const { service } = setup();
+
+    const notGroupable = await service.metrics({}, { metric: 'groupBy', field: 'username' }, capabilities);
+    expect(notGroupable.error).toBeInstanceOf(ValidationError);
+    expect(String(notGroupable.error?.message)).toContain('Accepted: roles.');
+
+    const missingField = await service.metrics({}, { metric: 'groupBy' }, capabilities);
+    expect(missingField.error).toBeInstanceOf(Error);
+    expect(missingField.error).not.toBeInstanceOf(ValidationError);
+    expect(String(missingField.error?.message)).toContain('field is required');
+
+    mockedGetAllUsers.mockRejectedValueOnce('repository exploded' as never);
+    const nonError = await service.metrics({}, { metric: 'count' }, capabilities);
+    expect(nonError.error).toBe('repository exploded');
   });
 });
