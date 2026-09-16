@@ -253,6 +253,15 @@ describe('catalogService — optimistic concurrency and events', () => {
 });
 
 describe('catalog OAS documents (JUM-817)', () => {
+  it('returns an empty OAS document set when the design has no valid OAS documents', () => {
+    expect.hasAssertions();
+    expect(CatalogService.oasDocumentsFromDesign(undefined))
+      .toStrictEqual({ merged: null, services: {} });
+    expect(CatalogService.oasDocumentsFromDesign({})).toStrictEqual({ merged: null, services: {} });
+    expect(CatalogService.oasDocumentsFromDesign({ oasDocuments: [] }))
+      .toStrictEqual({ merged: null, services: {} });
+  });
+
   it('stores and serves merged and per-service OAS on the catalog design', async () => {
     expect.hasAssertions();
     const { catalogUseCases } = createServiceStack();
