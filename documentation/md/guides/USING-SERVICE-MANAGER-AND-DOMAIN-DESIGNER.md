@@ -23,10 +23,12 @@ the environment files the backend boots from.
 flowchart TB
   subgraph browser["Browser · http://127.0.0.1:3200"]
     direction LR
-    DD["Tab 1 · Domain Designer<br/>domains, entities, relationships,<br/>RBAC, contracts, exports"]
-    CID["Tab 2 · Communication Interface Designer<br/>inbound adapters"]
-    SC["Tab 3 · Service Configuration<br/>runtime profile, PM2 preview, env keys"]
-    DM["Tab 4 · Deploy Management<br/>deployment targets"]
+    ARCH["Tab · Architecture<br/>Core service, domain services, links"]
+    DD["Tab · Domain Designer<br/>domains, entities, relationships,<br/>RBAC, contracts, exports"]
+    CID["Tab · Communication Interface Designer<br/>inbound adapters"]
+    SC["Tab · Service Configuration<br/>runtime profile, PM2 preview, env keys"]
+    DM["Tab · Deploy Management<br/>deployment targets"]
+    OAS["Tab · OpenAPI<br/>Swagger UI + service selector"]
   end
 
   CANA[("Cana · IndexedDB<br/>the only designer store")]
@@ -228,6 +230,10 @@ A complete first round trip:
 3. Click `Export OAS 3.1` — the browser downloads
    `domain-designer-oas-3.1.json`.
 4. Delete the sample domain and model your own.
+
+## 5.1 Architecture and OpenAPI tabs
+
+Architecture starts as one Core service (Users + every other domain). Split with Add Service, assign domains, draw links. OpenAPI renders the generated OAS in Swagger UI; pick a service to filter operations and Try it out against that address.
 
 ## 6. Domain Designer
 

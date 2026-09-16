@@ -191,6 +191,23 @@ export class CatalogService
     return serviceResponse;
   }
 
+  public static oasDocumentsFromDesign(design: Record<string, any> | undefined): {
+    merged: Record<string, any> | null;
+    services: Record<string, Record<string, any>>;
+  } {
+    const documents = design?.oasDocuments;
+    if (!documents || typeof documents !== 'object' || Array.isArray(documents)) {
+      return { merged: null, services: {} };
+    }
+    const services = documents.services && typeof documents.services === 'object' && !Array.isArray(documents.services)
+      ? documents.services
+      : {};
+    return {
+      merged: documents.merged && typeof documents.merged === 'object' ? documents.merged : null,
+      services
+    };
+  }
+
   public static compile(config: IServiceConfig): CatalogService {
     return new CatalogService(config);
   }

@@ -252,6 +252,36 @@ describe('catalogService — optimistic concurrency and events', () => {
   });
 });
 
+describe('catalog OAS documents (JUM-817)', () => {
+  it('stores and serves merged and per-service OAS on the catalog design', async () => {
+    expect.hasAssertions();
+    const { catalogUseCases } = createServiceStack();
+    const oasDocuments = {
+      merged: { openapi: '3.1.0', info: { title: 'Core' }, paths: { '/users/user': {} } },
+      services: {
+        core: { openapi: '3.1.0', info: { title: 'Core' }, paths: { '/users/user': {} } },
+        billing: { openapi: '3.1.0', info: { title: 'Billing' }, paths: { '/billing/invoice': {} } }
+      }
+    };
+    const { result, error } = await catalogUseCases.create({
+      organization: 'org-1',
+      name: 'Architecture',
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: { name: 'Users' },
+        oasDocuments
+      }
+    }, 'admin@xpertminds.dev');
+    expect(error).toBeUndefined();
+    const stored = CatalogService.oasDocumentsFromDesign(result?.design);
+    expect(stored.merged?.info?.title).toBe('Core');
+    expect(Object.keys(stored.services).sort()).toStrictEqual(['billing', 'core']);
+    const read = await catalogUseCases.getOneById(result!.id);
+    expect(CatalogService.oasDocumentsFromDesign(read.result?.design).services.billing.info.title).toBe('Billing');
+  });
+});
+
 describe('catalog feature functions — repository port mapping', () => {
   it('serializes empty list results and forwards default actors', async () => {
     expect.hasAssertions();

@@ -174,6 +174,7 @@ behind fixed expected outputs.
   defaulted; a document with an unknown top-level section, a newer major
   `version`, or a `kind` other than `service-management-suite` fails clearly
   instead of half-importing.
+- **Architecture** (`architecture.services` / `architecture.links`): JSON suite export carries the architecture slice. OAS export/import uses `x-services`, `x-service`, `servers[].x-service-id` and `x-architecture-links` so a two-service model reaches a fixed point for service identity and addresses (JUM-815/JUM-817).
 - **Domain package** (`buildDomainPackageDocument` → `buildDomainFromPackage`):
   a package round-trips deep-equal into an empty model, stamped with
   provenance (JUM-492): the v2 document carries a `package` block

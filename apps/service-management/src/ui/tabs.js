@@ -25,6 +25,11 @@
 export function createTabs({ dom, state, saveState, beforeTabChange, afterTabChange }) {
   const tabMap = [
     {
+      key: 'architecture',
+      button: dom.tabArchitectureBtn,
+      section: dom.tabArchitecture
+    },
+    {
       key: 'domain-designer',
       button: dom.tabDomainDesignerBtn,
       section: dom.tabDomainDesigner
@@ -48,6 +53,11 @@ export function createTabs({ dom, state, saveState, beforeTabChange, afterTabCha
       key: 'monitoring',
       button: dom.tabMonitoringBtn,
       section: dom.tabMonitoring
+    },
+    {
+      key: 'openapi',
+      button: dom.tabOpenapiBtn,
+      section: dom.tabOpenapi
     },
     {
       key: 'code-workspace',

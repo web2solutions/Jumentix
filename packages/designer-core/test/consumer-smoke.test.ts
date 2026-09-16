@@ -84,10 +84,11 @@ describe('designer-core consumer smoke (JUM-493)', () => {
       'normalizeStatePayload', 'createDesignerState', 'buildSampleModelPayload',
       // validation / model-check engine
       'collectModelIssues', 'validateAsyncApi30Document', 'collectServiceConfigurationIssues',
+      'collectArchitectureIssues', 'normalizeArchitectureInput',
       // exporters: JSON, Markdown, JSON Schema, AsyncAPI, bundle, package, OAS
       'buildJsonExportDocument', 'buildMarkdownExport', 'buildJsonSchemaDocument',
       'buildAsyncApiTransportDocument', 'buildBoilerplateBundleDocument',
-      'buildDomainPackageDocument', 'buildOasDocument',
+      'buildDomainPackageDocument', 'buildOasDocument', 'buildOasDocumentSet', 'filterOasDocumentForService',
       // importers: domain package, state file, OAS file
       'buildDomainFromPackage', 'buildStateFromSuiteExport', 'buildDomainsFromOas',
       // schema-diff / merge-preview engine

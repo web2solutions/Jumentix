@@ -34,6 +34,7 @@ import {
 import type { StartedServer } from './serverHarness';
 
 const OTHER_TABS = [
+  { key: 'architecture', emptyState: '#architecture-empty-state' },
   { key: 'interface-designer', emptyState: '#interface-designer-empty-state' },
   { key: 'service-config', emptyState: '#service-config-empty-state' },
   { key: 'deploy-management', emptyState: '#deploy-management-empty-state' }
