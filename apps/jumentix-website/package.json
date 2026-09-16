@@ -43,7 +43,7 @@
     "@jumentix/sdk-rest-client": "workspace:*",
     "@jumentix/sdk-websocket-client": "workspace:*",
     "@mantine/core": "9.5.1",
-    "@mantine/hooks": "9.5.1",
+    "@mantine/hooks": "9.6.1",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/bundle-analyzer": "^16.2.11",
