@@ -269,6 +269,16 @@ function websiteSuitePaths(root) {
   };
 }
 
+/** Frontend Cypress specs (JUM-813). Docker-backed; nightly like website Cypress. */
+function frontendE2eSpecPaths(root) {
+  return walk(
+    path.join(root, 'apps', 'frontend', 'cypress', 'e2e'),
+    (file) => /\.cy\.ts$/.test(file)
+  )
+    .map((file) => path.relative(root, file).replace(/\\/g, '/'))
+    .sort(byPath);
+}
+
 function readPreviousManifest(root) {
   const previousPath = path.join(root, 'test-map.json');
   if (!fs.existsSync(previousPath)) return null;
@@ -701,6 +711,22 @@ function buildManifest(root = process.cwd()) {
       tier: 'nightly',
       timeoutMs: 600000,
       reason: 'Needs a production build and a running server; nightly rather than gate for that cost alone.'
+    });
+  }
+
+  for (const file of frontendE2eSpecPaths(root)) {
+    suites.push({
+      id: file,
+      path: file,
+      layer: 'frontend',
+      kind: 'non-hexagonal',
+      type: 'integration',
+      adapter: 'cypress',
+      script: 'frontend:test:e2e',
+      runner: 'bun',
+      tier: 'nightly',
+      timeoutMs: 600000,
+      reason: 'Needs Dockerised backend + Vite; nightly rather than gate for that cost alone.'
     });
   }
 

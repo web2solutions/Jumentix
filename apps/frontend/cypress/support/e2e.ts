@@ -1,3 +1,5 @@
+import 'cypress-axe';
+
 /**
  * Seeded accounts (apps/backend-template/seed/users.ts). The e2e backend
  * starts fresh (InMemory) on every run, so these always exist.

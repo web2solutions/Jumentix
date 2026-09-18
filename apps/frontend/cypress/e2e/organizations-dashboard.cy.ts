@@ -1,24 +1,43 @@
 /**
- * JUM-776/781 — organizations listing with member labels, the real dashboard
- * totals, the profile page and the expired-session redirect, all over the
- * containerised backend.
+ * JUM-811/812/813 — dashboard totals and domain widgets vs the metrics contract.
  */
+const backendOrigin = `http://127.0.0.1:${Cypress.env('FRONTEND_E2E_BACKEND_PORT') || '3130'}`;
+
 describe('organizations, dashboard and profile', () => {
   it('lists organizations with member usernames and totals on the dashboard', () => {
     cy.login('superadmin');
-    cy.get('[data-metric="users"]').should('contain', '6');
-    cy.get('[data-metric="organizations"]').should('contain', '3');
+    cy.window().then((win) => {
+      const raw = win.localStorage.getItem('jumentix-frontend-auth');
+      expect(raw).to.be.a('string');
+      const { token } = JSON.parse(raw as string) as { token: string };
+      cy.request({
+        url: `${backendOrigin}/api/1.0.0/users/metrics?metric=count`,
+        headers: { Authorization: token }
+      }).then((usersMetrics) => {
+        const usersTotal = usersMetrics.body.buckets[0].count as number;
+        cy.get('[data-metric="users"]').should('contain', String(usersTotal));
+      });
+      cy.request({
+        url: `${backendOrigin}/api/1.0.0/organizations/metrics?metric=count`,
+        headers: { Authorization: token }
+      }).then((orgMetrics) => {
+        const orgTotal = orgMetrics.body.buckets[0].count as number;
+        cy.get('[data-metric="organizations"]').should('contain', String(orgTotal));
+      });
+    });
+    cy.get('[data-widget="users:admin-user-ratio"]').should('contain', '/');
+    cy.get('[data-widget="users:members-per-org"]').should('exist');
+    cy.get('[data-metric="signups-30d"]').should('exist');
     cy.get('body').should('not.contain', 'Traffic');
     cy.visit('/#/organizations');
-    // Seeded membership: Barack (username `user2`) belongs to ACME.
-    cy.contains('tbody tr', 'ACME').should('contain', 'user2');
-    cy.contains('tbody tr', 'ACME').invoke('text').should('not.match', /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/);
-    cy.contains('tbody tr', 'ACME').find('button[aria-label^="preview "]').click();
+    cy.contains('.xcrud-grid tbody tr', 'ACME').should('contain', 'user2');
+    cy.contains('.xcrud-grid tbody tr', 'ACME').invoke('text').should('not.match', /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/);
+    cy.contains('.xcrud-grid tbody tr', 'ACME').find('button[aria-label^="preview "]').click();
     cy.get('.xcrud-row-detail').should('contain', 'user2');
   });
 
   it('updates the profile scalars and lists sub-resources with contract labels', () => {
-    cy.login('admin'); // `user` has no update_user scope in the x-rbac matrix
+    cy.login('admin');
     cy.get('.header [aria-label="Account"]').click();
     cy.contains('.dropdown-item', 'Profile').click();
     cy.location('hash').should('eq', '#/profile');
@@ -39,7 +58,7 @@ describe('organizations, dashboard and profile', () => {
       win.localStorage.setItem('jumentix-frontend-auth', JSON.stringify(parsed));
     });
     cy.visit('/#/profile');
-    cy.reload(); // a hash-only visit keeps the in-memory session; the persisted one is what expired
+    cy.reload();
     cy.location('hash').should('eq', '#/login');
   });
 });

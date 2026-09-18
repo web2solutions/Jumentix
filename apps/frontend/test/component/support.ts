@@ -141,6 +141,10 @@ export const mountWithShell = <T extends Component>(
         // provide; the chart's inputs are asserted through `aggregateBreakdown`
         // in the unit suite, and the browser e2e renders the real canvas.
         XCrudChart: { props: ['title', 'breakdown'], template: '<div class="xcrud-chart-stub">{{ title }}</div>' },
+        ChartCard: {
+          props: ['title', 'buckets', 'kind'],
+          template: '<div class="chart-card-stub" data-chart-table>{{ title }} {{ buckets && buckets.length }}</div>'
+        },
         ...(options.global?.stubs ?? {})
       }
     },

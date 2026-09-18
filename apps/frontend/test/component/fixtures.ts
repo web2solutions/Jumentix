@@ -70,6 +70,31 @@ export const backend: Responder = (url, init) => {
     const id = path.split('/').pop();
     return { body: users.find((user) => user.id === id) ?? users[0] };
   }
+  let metricsRows: Array<Record<string, unknown>> | null = null;
+  if (path.includes('/organizations/metrics')) metricsRows = organizations;
+  else if (path.includes('/users/metrics')) metricsRows = users;
+  if (init.method === 'GET' && metricsRows) {
+    const metric = url.searchParams.get('metric') ?? 'count';
+    const field = url.searchParams.get('field') ?? '';
+    if (metric === 'count') {
+      return { body: { metric: 'count', buckets: [{ key: 'total', count: metricsRows.length }] } };
+    }
+    const counts = new Map<string, number>();
+    for (const row of metricsRows as Array<Record<string, unknown>>) {
+      const raw = field === 'createdAt' || field === 'updatedAt'
+        ? String(row[field] ?? '').slice(0, 10)
+        : row[field];
+      const keys = Array.isArray(raw) ? raw.map(String) : [String(raw ?? '')];
+      for (const key of keys) counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return {
+      body: {
+        metric,
+        field,
+        buckets: [...counts.entries()].map(([key, count]) => ({ key, count }))
+      }
+    };
+  }
   let collection: Array<Record<string, unknown>> | null = null;
   if (path.endsWith('/organizations')) collection = organizations;
   else if (path.endsWith('/users')) collection = users;
