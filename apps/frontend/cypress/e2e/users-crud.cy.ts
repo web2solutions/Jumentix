@@ -7,18 +7,18 @@ describe('users X-CRUD', () => {
   beforeEach(() => {
     cy.login('superadmin');
     cy.visit('/#/users');
-    cy.get('tbody tr').should('have.length.at.least', 6);
+    cy.get('.xcrud-grid tbody tr').should('have.length.at.least', 6);
   });
 
   it('searches and sorts locally after sync (no q= / sort= on the wire)', () => {
     cy.intercept('GET', '/api/1.0.0/users?*', { forceNetworkError: true }).as('list');
     cy.get('input[aria-label="search"]').type('obama');
-    cy.get('tbody tr').should('have.length', 1);
-    cy.get('tbody tr').first().should('contain', 'Barack');
+    cy.get('.xcrud-grid tbody tr').should('have.length', 1);
+    cy.get('.xcrud-grid tbody tr').first().should('contain', 'Barack');
     cy.get('input[aria-label="search"]').clear();
-    cy.get('tbody tr').should('have.length.at.least', 6);
+    cy.get('.xcrud-grid tbody tr').should('have.length.at.least', 6);
     cy.contains('th', 'First name').click();
-    cy.get('tbody tr').first().should('contain', 'Admin');
+    cy.get('.xcrud-grid tbody tr').first().should('contain', 'Admin');
     cy.get('.xcrud-footer span').invoke('text').should('match', /1–\d+ of \d+/);
   });
 
@@ -26,17 +26,17 @@ describe('users X-CRUD', () => {
     cy.contains('button', 'Filters').click();
     cy.get('.xcrud-filter-row').should('be.visible');
     cy.get('input[aria-label="filter-firstName"]').type('ed');
-    cy.get('tbody tr').should('have.length', 1);
-    cy.get('tbody tr').first().should('contain', 'eduardo');
+    cy.get('.xcrud-grid tbody tr').should('have.length', 1);
+    cy.get('.xcrud-grid tbody tr').first().should('contain', 'eduardo');
     cy.get('input[aria-label="filter-firstName"]').clear();
     cy.get('select[aria-label="organization"]').select('ACME');
     cy.get('tbody').should('not.contain', 'XpertMinds');
-    cy.get('tbody tr').should('have.length.at.least', 1);
-    cy.get('tbody tr').each(($row) => expect($row.text()).to.contain('ACME'));
+    cy.get('.xcrud-grid tbody tr').should('have.length.at.least', 1);
+    cy.get('.xcrud-grid tbody tr').each(($row) => expect($row.text()).to.contain('ACME'));
   });
 
   it('shows the row detail with array tabs, formatted dates and the org label in the edit form', () => {
-    cy.contains('tbody tr', 'Barack').find('button[aria-label^="preview "]').click();
+    cy.contains('.xcrud-grid tbody tr', 'Barack').find('button[aria-label^="preview "]').click();
     cy.get('.xcrud-row-detail .nav-link').should('contain', 'User Data').and('contain', 'Emails');
     cy.get('.xcrud-row-detail').should('not.contain', 'T00:00:');
     cy.get('.xcrud-row-detail').contains('.nav-link', 'Edit User').click();
@@ -59,9 +59,9 @@ describe('users X-CRUD', () => {
     cy.contains('button', 'Create').click();
     cy.get('.alert-success').should('contain', 'record created');
     cy.get('input[aria-label="search"]').type('e2e-');
-    cy.get('tbody tr').should('have.length', 1);
-    cy.get('tbody tr').first().should('contain', username);
-    cy.get('tbody tr').first().find('button[aria-label^="delete "]').click();
+    cy.get('.xcrud-grid tbody tr').should('have.length', 1);
+    cy.get('.xcrud-grid tbody tr').first().should('contain', username);
+    cy.get('.xcrud-grid tbody tr').first().find('button[aria-label^="delete "]').click();
     cy.get('.alert-success').should('contain', 'record removed');
     cy.get('tbody').should('not.contain', username);
   });

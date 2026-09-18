@@ -5,7 +5,7 @@ describe('offline writes', () => {
   it('keeps a created user locally while /api is failing', () => {
     cy.login('superadmin');
     cy.visit('/#/users');
-    cy.get('tbody tr').should('have.length.at.least', 6);
+    cy.get('.xcrud-grid tbody tr').should('have.length.at.least', 6);
     cy.goOffline();
     const username = `offline-${Date.now()}@x.dev`;
     cy.contains('.nav-link', 'New User').click();
@@ -15,6 +15,6 @@ describe('offline writes', () => {
     cy.get('#oas-field-password').type('e2e@123456');
     cy.get('#oas-field-primaryEmail').type(username);
     cy.contains('button', 'Create').click();
-    cy.get('tbody tr').contains(username);
+    cy.get('.xcrud-grid tbody tr').contains(username);
   });
 });

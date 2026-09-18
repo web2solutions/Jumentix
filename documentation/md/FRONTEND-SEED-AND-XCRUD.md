@@ -104,6 +104,15 @@ A generated domain ships one `ModuleManifest` (`src/modules/manifest.ts`): `id`,
 
 The navigation menu is generated from the registry (`src/modules/nav.ts`). Routes are `/m/:moduleId/:tab?`. `/users`, `/organizations` and `/dashboard` redirect into the Users module.
 
+## Dashboards
+
+Every module Dashboard tab (`DashboardView.vue` + `DashboardGrid.vue`) composes two layers:
+
+1. **Generic widgets** (`src/components/dashboard/genericWidgets.ts`) derived from the bundled OAS for each module entity: `count` (plus a pending `_sync` count in Cana mode), `groupBy` for every `x-metrics-capabilities.groupable` field, `series` (interval `day`) for every series field, and **fan-out** for each `x-relation` `hasMany` whose inverse belongsTo field is groupable on the child entity. Data source: `GET …/metrics` in server mode (`getUsersMetrics` / `getOrganizationsMetrics`); `listLocal` + `runMetricsQuery` from `@jumentix/persistence-contracts` when Cana is open. See [Entity metrics contract](./ENTITY-METRICS-CONTRACT.md).
+2. **Domain widgets** registered on `manifest.dashboard.widgets` (`DashboardWidget`: `{ id, title, size, component, query? }`). The Users module ships three examples: members per organization, admin/user ratio, sign-ups in the last 30 days.
+
+A generated domain adds widgets by appending to `dashboard.widgets` with the same `DashboardWidget` contract and loading data through `query` (list + metrics operationIds from the OAS). `ChartCard.vue` draws Chart.js via `@coreui/vue-chartjs` with axis labels and a table fallback toggle (not colour-only).
+
 ## Multitask
 
 The shell is login-gated: `DefaultLayout` never mounts (and module `load()` never runs) before authentication. `src/stores/tasks.ts` keeps **one task instance per module**. `open(moduleId)` activates an already-open task. Closing the active task activates the previous one. The open list and active id persist in `sessionStorage`; X-CRUD form state does not — it survives because every open module stays mounted and is shown with `v-show` (`DefaultLayout.vue`).
@@ -134,6 +143,7 @@ Breakpoint tokens live in `src/styles/breakpoints.scss` and `src/shell/breakpoin
 ## Related
 
 - [Paginated List Contract](./PAGINATED-LIST-CONTRACT.md)
+- [Entity metrics contract](./ENTITY-METRICS-CONTRACT.md)
 - [Creating SPA/PWA with Jumentix](../../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
 - `apps/frontend/AGENTS.md` — rules for agents working in the workspace
 - `.agents/requirements/software/136-frontend-knows-backend-only-through-oas.md`

@@ -1,3 +1,4 @@
+import { usersDomainWidgets } from '@/features/dashboard/usersDomainWidgets';
 import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
 import { usersCrudConfig } from '@/features/users/usersCrudConfig';
 import type { ModuleManifest } from '@/modules/manifest';
@@ -21,6 +22,7 @@ export const usersModule: ModuleManifest = {
     }
   ],
   dashboard: {
-    load: () => import('@/features/dashboard/DashboardView.vue')
+    load: () => import('@/features/dashboard/DashboardView.vue'),
+    widgets: usersDomainWidgets()
   }
 };

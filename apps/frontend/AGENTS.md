@@ -39,12 +39,14 @@ domínio Users/Organizations do `backend-template`, o padrão que qualquer domí
 ```text
 src/contracts/     motor OAS: formSchema (descritores), oasForm (collect/validate), validation
                    (x-validation: máscaras/checksums), labels (x-label → title → humanize),
-                   listSchema (x-list-capabilities), rbac (info.x-rbac + security), apiClient
-                   (singleton SDK), appOperations (operationIds do shell), errors
+                   listSchema (x-list-capabilities), metricsSchema (x-metrics-capabilities),
+                   rbac (info.x-rbac + security), apiClient (singleton SDK), appOperations
+                   (operationIds do shell), errors
 src/data/          Cana schema/boot, repositório local, sync, outbox, PWA
 src/modules/       manifest, Users module registry, nav generated from modules
 src/shell/         toolbar widget registry, breakpoints
-src/components/    OasFormField, SearchableEnumInput, X-CRUD, AppTaskbar, ModuleLayout
+src/components/    OasFormField, SearchableEnumInput, X-CRUD, AppTaskbar, ModuleLayout,
+                   dashboard (DashboardGrid, ChartCard, genericWidgets)
 src/features/      auth, dashboard, profile, users, organizations
 src/stores/        auth, profile, network, entityStore, sidebar, theme, tasks
 src/i18n/          messages (en, pt-BR) + t()/localized()/useI18n()
@@ -73,10 +75,10 @@ explícita do usuário.
 3. `operationId`s do shell (login/register/logout/profile) ficam em `contracts/appOperations.ts`,
    validados no boot contra a OAS; sub-apps X-CRUD declaram os seus na `XCrudEntityConfig`.
 4. Ícones `CIcon` por nome exigem registro em `app.provide('icons', …)` em `src/main.ts`.
-5. Sem dados mock em componentes finais (o dashboard mostra totais reais ou "sem acesso").
+5. Sem dados mock em componentes finais (o dashboard mostra métricas reais da OAS, widgets de domínio, ou "sem acesso").
 6. Não editar `template/`.
 7. Um domínio gerado entra como `ModuleManifest` em `src/modules/` (`registerModule` + `validateModules` no boot). O menu lista **módulos**, não entidades avulsas. Entidades viram abas em `ModuleLayout.vue`.
-8. Widgets da toolbar passam por `src/shell/toolbarWidgets.ts` (`registerToolbarWidget`). Não plugar componentes soltos em `AppHeader.vue`.
+8. Widgets da toolbar passam por `src/shell/toolbarWidgets.ts` (`registerToolbarWidget`). Não plugar componentes soltos em `AppHeader.vue`. Widgets do Dashboard passam por `manifest.dashboard.widgets` + `src/components/dashboard/` (ver `documentation/md/FRONTEND-SEED-AND-XCRUD.md` secção Dashboards).
 9. Estado de um módulo aberto vive no pane (`v-show` em `DefaultLayout`); o store `tasks` só persiste quais módulos estão abertos e qual está ativo (`sessionStorage`).
 10. Offline-first: IndexedDB abre antes do login; listagens após o sync leem Cana. Ver `documentation/md/FRONTEND-OFFLINE-DATA-LAYER.md`.
 

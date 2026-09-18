@@ -1,5 +1,6 @@
 import type { Component } from 'vue';
 
+import type { DashboardWidget } from '@/components/dashboard/types';
 import type { XCrudEntityConfig, XCrudText } from '@/components/x-crud/xCrudTypes';
 import openApi from '@/contracts/openapi.json';
 import { can, requiredScopes } from '@/contracts/rbac';
@@ -13,6 +14,7 @@ export interface ModuleEntity {
 
 export interface ModuleDashboard {
   load: () => Promise<{ default: Component }>;
+  widgets?: DashboardWidget[];
 }
 
 export interface ModuleManifest {
