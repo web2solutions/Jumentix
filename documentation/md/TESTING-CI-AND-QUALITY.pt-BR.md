@@ -178,7 +178,7 @@ Aplicação remota:
 
 - GitHub Actions invoca `bun run ci:gate:branch`
 - o GitHub Actions passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
-- GitHub Actions assume a produção completa de cobertura e patch coverage em promoções `dev -> main`, pushes em `main` e execuções completas agendadas; gates locais e PRs até `dev` ficam rápidos e diagnósticos
+- GitHub Actions assume a produção completa de cobertura (mais upload Codecov e scan SonarCloud) em pushes para `dev` e `main`, promoções `dev -> main` e execuções completas agendadas; gates locais e PRs de tarefa até `dev` ficam rápidos e diagnósticos
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
 - o GitHub Actions publica `artifacts/ci/full-test-matrix.json` quando o gate seleciona a matriz completa

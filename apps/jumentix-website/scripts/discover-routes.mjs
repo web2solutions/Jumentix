@@ -101,7 +101,8 @@ export function discoverRoutes() {
     (file) => /\.mdx?$/.test(file) && !/(^|[\\/])_meta\./.test(file)
   ).map(routeFromContentFile);
 
-  return [...new Set([...staticRoutes, ...docsRoutes, ...RESOLVER_ONLY_ROUTES])].sort();
+  return [...new Set([...staticRoutes, ...docsRoutes, ...RESOLVER_ONLY_ROUTES])]
+    .sort((a, b) => a.localeCompare(b));
 }
 
 if (import.meta.main) {

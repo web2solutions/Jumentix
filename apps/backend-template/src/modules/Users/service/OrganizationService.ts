@@ -62,7 +62,7 @@ RequestUpdateOrganization
       return payload;
     }
     return Object.keys(payload)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .reduce((acc, key) => {
         acc[key] = OrganizationService.sortPayload(payload[key]);
         return acc;

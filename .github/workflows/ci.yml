@@ -274,10 +274,13 @@ jobs:
     name: coverage
     permissions:
       contents: read
+    # Coverage + Codecov + Sonar analyse both long-lived branches (`main` and
+    # `dev`). Other heavy jobs stay release/main/scheduled only (Req 087/113).
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
+      github.ref_name == 'dev' ||
       (github.event_name == 'pull_request' && github.base_ref == 'main' && (
         github.head_ref == 'dev' ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
@@ -353,10 +356,12 @@ jobs:
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: web2solutions/Jumentix
           files: coverage/lcov.info,coverage/browser/lcov.info
           flags: project
-          name: jumentix-${{ github.run_id }}
+          name: jumentix-${{ github.ref_name }}-${{ github.run_id }}
           fail_ci_if_error: true
+          disable_search: true
       - name: Install Sonar scanner
         # SonarCloud Automatic Analysis owns the repository check by default.
         # Enable this CI scanner only after disabling Automatic Analysis in SonarCloud.
@@ -379,9 +384,11 @@ jobs:
       - name: SonarQube Cloud Scan
         if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
         run: |
+          # Analyse both long-lived branches. On PRs, GITHUB_BASE_REF is the
+          # destination; on pushes it is empty and GITHUB_REF_NAME is the branch.
           SONAR_TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF_NAME:-}}"
           if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
-            echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar runs for PRs or pushes targeting dev/main."
+            echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar analyses main and dev only."
             exit 0
           fi
           test -n "${SONAR_TOKEN:-}"

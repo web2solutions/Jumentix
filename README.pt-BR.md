@@ -8,10 +8,10 @@ Idioma alvo: Português (Brasil)
 [![GitHub Actions main](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
 [![CircleCI dev](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev)
 [![Gate de release CircleCI](https://img.shields.io/badge/CircleCI-release%20gate-configured?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main)
-[![Codecov](https://img.shields.io/badge/Codecov-release%20coverage-configured?logo=codecov&logoColor=white)](https://app.codecov.io/gh/web2solutions/Jumentix)
+[![Codecov](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
 [![Qualidade SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
 [![Confiabilidade SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
-[![Cobertura SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=coverage)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
+[![Cobertura SonarCloud](https://img.shields.io/badge/SonarCloud-coverage%20via%20release%20scan-4E9BCD?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
 [![Bun](https://img.shields.io/badge/bun-1.3.13-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
@@ -38,27 +38,35 @@ Idioma alvo: Português (Brasil)
 | --- | :---: | :---: |
 | Workflow GitHub Actions | [![GitHub Actions main](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
 | Workflow CircleCI | [![Gate de release CircleCI](https://img.shields.io/badge/CircleCI-release%20gate-configured?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main) | [![CircleCI dev](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev) |
-| Cobertura Codecov | [![Cobertura de release Codecov](https://img.shields.io/badge/Codecov-release%20coverage-configured?logo=codecov&logoColor=white)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main) | [mapa de arquivos; cobertura completa é só no release](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev) |
+| Cobertura Codecov | [![Codecov main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev) |
 | Testes por branch | `branch-gate` | `branch-gate` |
-| Cobertura de projeto + patch | `coverage` | somente promoção de release |
+| Cobertura de projeto + patch | `coverage` | `coverage` |
 | Review de segurança third-party | `third-party-review` | somente PR |
 
 PRs de feature, fix, docs e CI miram `dev` e rodam o gate barato sensível a
 camadas selecionado por `test-map.json`; o alvo é dez minutos ou menos. Jobs
-completos de workspace, browser, cobertura, website e banco ficam reservados
-para promoções de release `dev -> main`, pushes em `main` e execuções completas
-agendadas.
+completos de workspace, browser, website e banco ficam reservados para
+promoções de release `dev -> main`, pushes em `main` e execuções completas
+agendadas. O job `coverage` (upload Codecov + scan SonarCloud) também roda em
+todo push para `dev` e `main`, para as duas branches longas permanecerem
+analisadas.
 
-A cobertura é produzida e aplicada pelo job `coverage` da suite completa quando
-o gate de release roda. GitHub Actions e CircleCI enviam LCOV ao Codecov quando
-`CODECOV_TOKEN` está configurado. O README usa um badge estável da integração
-Codecov até existir o primeiro upload de cobertura de release pós-migração no
-novo owner público. `dev` fica como link de mapa porque usa o health gate
-barato entre promoções de release. O Codecov fornece o mapa de cobertura arquivo
-a arquivo para cada branch longa:
+A cobertura é produzida e aplicada pelo job `coverage` da suite completa em
+pushes `main`/`dev`, promoções de release e execuções agendadas. GitHub
+Actions envia LCOV ao Codecov com `CODECOV_TOKEN` via
+`codecov/codecov-action@v5`; o CircleCI usa o CLI Codecov verificado nas
+mesmas superfícies. O SonarCloud analisa `main` e `dev` nesse mesmo job quando
+`JUMENTIX_ENABLE_SONAR_CI` está habilitado (caso contrário a Automatic
+Analysis cobre o caminho do app GitHub). O Codecov publica badges ao vivo e o
+gráfico Grid abaixo:
+
+[![Codecov Grid](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graphs/tree.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
+
+Mapas de arquivos por branch:
 
 - [Mapa de arquivos Codecov para `dev`](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev)
 - [Mapa de arquivos Codecov para `main`](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
+- [Codecov Grid para `dev`](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graphs/tree.svg)
 
 O gate rígido continua sendo a cobertura pertencente ao repositório. Cada
 execução retém evidências Istanbul JSON e LCOV. Os mínimos são:

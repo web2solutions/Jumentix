@@ -11,7 +11,7 @@ provider plans.
 | CI | GitHub Actions canonical workflow tracked in this repository | Canonical orchestrator for PRs to `dev`, promotions to `main`, and both protected branches; GitHub-hosted `ubuntu-latest` runner |
 | Secondary CI | CircleCI enabled for the public repository | Independent mirror of the same context classifier and job names |
 | Coverage | repository-owned coverage job, JSON/LCOV artifacts, project and patch thresholds | Canonical coverage authority; Codecov publishing is the public dashboard |
-| Codecov publishing | GitHub Actions uses `codecov/codecov-action@v5`; CircleCI uses the verified Codecov CLI, both with `CODECOV_TOKEN` | File-by-file coverage map after repository-owned thresholds pass |
+| Codecov publishing | GitHub Actions uses `codecov/codecov-action@v5` on `main` and `dev` pushes (plus release/scheduled contexts); CircleCI uses the verified Codecov CLI on the same surfaces, both with `CODECOV_TOKEN` | Live coverage badges + Grid graph after LCOV upload |
 | Quality | Branch-aware Bun quality gate and Storybook build/smoke/prepublish | Required product and governance validation |
 | SAST/quality | SonarQube Cloud project `web2solutions_Jumentix` | Public quality, reliability, security and coverage dashboard |
 | Dependencies | Repository-owned OSV.dev scanner plus Dependabot | Fail-closed vulnerability detection and update proposals |

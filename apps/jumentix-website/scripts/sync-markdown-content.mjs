@@ -318,7 +318,7 @@ async function listMarkdownFiles(directory) {
       files.push(fullPath);
     }
   }
-  return files.sort();
+  return files.sort((a, b) => a.localeCompare(b));
 }
 
 /**

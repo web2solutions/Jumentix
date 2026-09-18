@@ -38,7 +38,7 @@ function collectRequirementInventory(rootDir = process.cwd()) {
     return files;
   }
 
-  const files = walk(directory).sort();
+  const files = walk(directory).sort((a, b) => a.localeCompare(b));
   const invalidFiles = files
     .filter((file) => !/^\d{3}-[a-z0-9-]+\.md$/.test(path.basename(file)))
     .map((file) => path.join(REQUIREMENTS_DIRECTORY, file));
@@ -49,16 +49,16 @@ function collectRequirementInventory(rootDir = process.cwd()) {
     if (id) counts.set(id, (counts.get(id) || 0) + 1);
   }
 
-  const ids = [...counts.keys()].sort();
+  const ids = [...counts.keys()].sort((a, b) => a.localeCompare(b));
   const duplicates = [...counts.entries()]
     .filter(([, count]) => count > 1)
     .map(([id]) => id)
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
   // The files behind each duplicate, so the failure can name them instead of
   // leaving the reader to grep two directories for a three-digit prefix.
   const duplicateFiles = Object.fromEntries(duplicates.map((id) => [
     id,
-    files.filter((file) => path.basename(file).startsWith(`${id}-`)).sort()
+    files.filter((file) => path.basename(file).startsWith(`${id}-`)).sort((a, b) => a.localeCompare(b))
   ]));
 
   return {
@@ -75,13 +75,14 @@ function extractLedgerIds(contents) {
   const groups = String(contents || '').match(
     /## Requirement Groups([\s\S]*?)## Governance Binding/
   )?.[1] || '';
-  return [...new Set([...groups.matchAll(/`(\d{3})`/g)].map((match) => match[1]))].sort();
+  return [...new Set([...groups.matchAll(/`(\d{3})`/g)].map((match) => match[1]))]
+    .sort((a, b) => a.localeCompare(b));
 }
 
 function extractBacktickedIds(contents) {
   return [...new Set(
     [...String(contents || '').matchAll(/`(\d{3})`/g)].map((match) => match[1])
-  )].sort();
+  )].sort((a, b) => a.localeCompare(b));
 }
 
 function extractNfrRegistryIds(contents) {
@@ -90,7 +91,7 @@ function extractNfrRegistryIds(contents) {
     const entryPrefix = line.match(/^- ((?:`\d{3}`\/?)+)(?:\s|$)/)?.[1] || '';
     ids.push(...extractBacktickedIds(entryPrefix));
   });
-  return [...new Set(ids)].sort();
+  return [...new Set(ids)].sort((a, b) => a.localeCompare(b));
 }
 
 function extractCoverageClassification(contents) {
@@ -178,7 +179,7 @@ function validateRequirementsRegistry(rootDir = process.cwd()) {
     const classifiedIds = [...new Set([
       ...classification.nfrIds,
       ...classification.functionalIds
-    ])].sort();
+    ])].sort((a, b) => a.localeCompare(b));
     const overlappingIds = classification.nfrIds.filter(
       (id) => classification.functionalIds.includes(id)
     );

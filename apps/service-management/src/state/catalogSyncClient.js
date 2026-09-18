@@ -86,7 +86,7 @@ export const CATALOG_CONFLICT_STRATEGIES = ['take-server', 'take-local'];
 function canonicalJson(value) {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
   if (value && typeof value === 'object') {
-    const keys = Object.keys(value).sort();
+    const keys = Object.keys(value).sort((a, b) => a.localeCompare(b));
     return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
   }
   return JSON.stringify(value);

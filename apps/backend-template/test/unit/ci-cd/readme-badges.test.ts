@@ -66,16 +66,27 @@ describe('rEADME badges', () => {
     expect.hasAssertions();
 
     const key = sonarProperties.match(/sonar\.projectKey=(\S+)/)?.[1];
-    const expectedBadgeSlugs = [
+    const expectedLiveMeasureSlugs = [
       `sonarcloud.io/api/project_badges/measure?project=${key}&metric=alert_status`,
-      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=reliability_rating`,
-      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=coverage`
+      `sonarcloud.io/api/project_badges/measure?project=${key}&metric=reliability_rating`
     ];
 
     expect(key).toBe('web2solutions_Jumentix');
     expect(badges).toContain(`sonarcloud.io/summary/new_code?id=${key}`);
-    expect(expectedBadgeSlugs.every((slug) => badges.includes(slug))).toBe(true);
+    expect(expectedLiveMeasureSlugs.every((slug) => badges.includes(slug))).toBe(true);
     expect(badges).not.toContain('web2solutions_aaa-typescript-boilerplate');
+  });
+
+  it('badges SonarCloud coverage without a missing live measure endpoint', () => {
+    expect.hasAssertions();
+
+    const key = sonarProperties.match(/sonar\.projectKey=(\S+)/)?.[1];
+    // Coverage is imported only on release/main Sonar scans, so the live
+    // `metric=coverage` badge returns "Measure has not been found". Mirror the
+    // Codecov pattern: a static configured badge that still deep-links the dashboard.
+    expect(key).toBe('web2solutions_Jumentix');
+    expect(badges).toContain('img.shields.io/badge/SonarCloud-coverage%20via%20release%20scan');
+    expect(badges).not.toContain(`sonarcloud.io/api/project_badges/measure?project=${key}&metric=coverage`);
   });
 
   it('carries no badge for a retired service', () => {
@@ -85,35 +96,42 @@ describe('rEADME badges', () => {
     expect(badges).not.toContain('snyk.io');
     expect(badges).not.toContain('token=');
     expect(badges).not.toContain('badge/codecov-via%20CircleCI');
-    expect(badges).not.toContain('codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
+    expect(badges).not.toContain('badge/Codecov-release%20coverage-configured');
   });
 
-  it('badges the Codecov integration without claiming unavailable branch coverage', () => {
+  it('publishes live Codecov coverage badges for main and dev', () => {
     expect.hasAssertions();
 
-    expect(readme).toContain('https://img.shields.io/badge/Codecov-release%20coverage-configured');
+    expect(readme).toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
+    expect(readme).toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg');
     expect(readme).toContain('https://app.codecov.io/gh/web2solutions/Jumentix');
-    expect(readme).not.toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg');
-    expect(readme).not.toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg');
+    expect(readme).not.toContain('badge/Codecov-release%20coverage-configured');
   });
 
-  it('explains why Codecov uses file-map links before release coverage exists', () => {
+  it('embeds the Codecov Grid graph for the long-lived branches', () => {
     expect.hasAssertions();
 
-    expect(readme).toContain('full coverage is release-only');
-    expect(readme).toContain('first post-migration release coverage upload');
+    expect(readme).toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/main/graphs/tree.svg');
+    expect(readme).toContain('https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graphs/tree.svg');
+    expect(readme).toContain('Codecov Grid');
+  });
+
+  it('states that Codecov and SonarCloud analyse main and dev', () => {
+    expect.hasAssertions();
+
+    expect(readme).toContain('also runs on every push');
+    expect(readme).toContain('to `dev` and `main`');
+    expect(readme).toContain('SonarCloud analyses `main` and `dev`');
   });
 
   it('links Codecov file maps for long-lived branches', () => {
     expect.hasAssertions();
 
-    for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`https://app.codecov.io/gh/web2solutions/Jumentix/tree/${branch}`);
-    }
+    expect(readme).toContain('https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev');
+    expect(readme).toContain('https://app.codecov.io/gh/web2solutions/Jumentix/tree/main');
     expect(readme).toContain('Codecov file map for `dev`');
     expect(readme).toContain('Codecov file map for `main`');
   });
-
   it('restores the coverage map with every enforced threshold', () => {
     expect.hasAssertions();
 

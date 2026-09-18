@@ -447,7 +447,7 @@ function BulkDlqMetricsCharts({
   const throughput = attempted / durationSeconds;
   const outcomeBars = [
     { key: 'accepted', label: locale === 'pt-BR' ? 'Criadas direto' : 'Created directly', value: accepted, tone: 'accepted' },
-    { key: 'rejected', label: locale === 'pt-BR' ? 'Lock -> DLQ' : 'Lock -> DLQ', value: rejected, tone: 'rejected' },
+    { key: 'rejected', label: 'Lock -> DLQ', value: rejected, tone: 'rejected' },
     { key: 'interrupted', label: locale === 'pt-BR' ? 'Interrompidas' : 'Interrupted', value: interrupted, tone: 'interrupted' },
     { key: 'replayed', label: locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed', value: replayed, tone: 'replay' },
   ];
@@ -474,7 +474,7 @@ function BulkDlqMetricsCharts({
   ];
   const finalOutcomeSegments = [
     { key: 'persisted', label: locale === 'pt-BR' ? 'persistidas' : 'persisted', value: finalTaskCount, tone: 'accepted' },
-    { key: 'recovered', label: locale === 'pt-BR' ? 'via replay' : 'via replay', value: replayed, tone: 'replay' },
+    { key: 'recovered', label: 'via replay', value: replayed, tone: 'replay' },
     { key: 'unresolved', label: locale === 'pt-BR' ? 'não recuperadas' : 'not recovered', value: unresolvedAfterReplay, tone: 'rejected' },
     { key: 'interrupted', label: locale === 'pt-BR' ? 'interrompidas' : 'interrupted', value: interrupted, tone: 'interrupted' },
   ];
@@ -613,7 +613,7 @@ function BulkDlqMetricsCharts({
       </article>
 
       <article className={classes.metricsChart}>
-        <h6>{locale === 'pt-BR' ? 'Throughput' : 'Throughput'}</h6>
+        <h6>Throughput</h6>
         <strong>{formatCount(throughput)} req/s</strong>
         <span>{formatCount(attempted)} {locale === 'pt-BR' ? 'requisições em' : 'requests in'} {durationSeconds.toFixed(1)}s</span>
       </article>

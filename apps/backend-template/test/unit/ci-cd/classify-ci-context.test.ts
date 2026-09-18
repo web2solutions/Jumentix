@@ -53,7 +53,7 @@ describe('classify-ci-context', () => {
     const evidence = classify({ CIRCLE_BRANCH: 'dev' });
 
     expect(evidence.context).toBe(CONTEXTS.DEV_PUSH);
-    expect(evidence.selectedJobs).toStrictEqual(['branch-gate']);
+    expect(evidence.selectedJobs).toStrictEqual(['branch-gate', 'coverage']);
   });
 
   it('classifies dev to main as a release promotion that runs the full suite', () => {
