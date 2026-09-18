@@ -83,7 +83,7 @@ if (!fs.existsSync(workflowPath)) {
     /fail_ci_if_error:\s*true/,
     /CODECOV_TOKEN/,
     /SonarQube Cloud Scan/,
-    /Sonar runs for PRs or pushes targeting dev\/main/,
+    /Sonar analyses main and dev only/,
     /sonar-scanner -Dsonar\.scm\.disabled=true/,
     /Report Sonar findings/
   ];
@@ -91,11 +91,19 @@ if (!fs.existsSync(workflowPath)) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
   }
 
+  if (!/slug:\s*web2solutions\/Jumentix/.test(contents) || !/disable_search:\s*true/.test(contents)) {
+    failures.push('GitHub Actions Codecov upload must set slug=web2solutions/Jumentix and disable_search=true');
+  }
+
   const heavyContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+  // Coverage (Codecov + Sonar) must also run on pushes to `dev`.
+  const coverageContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   for (const job of ['workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
     const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
-    if (!heavyContextGuard.test(jobBlock)) {
-      failures.push(`.github/workflows/ci.yml must guard ${job} to release/full contexts`);
+    const guard = job === 'coverage' ? coverageContextGuard : heavyContextGuard;
+    const expected = job === 'coverage' ? 'main/dev/release contexts' : 'release/full contexts';
+    if (!guard.test(jobBlock)) {
+      failures.push(`.github/workflows/ci.yml must guard ${job} to ${expected}`);
     }
   }
 

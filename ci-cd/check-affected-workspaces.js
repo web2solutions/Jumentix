@@ -59,8 +59,8 @@ function computeAffectedWorkspaces(files) {
     if (packageName) packagesSet.add(packageName);
   }
 
-  affected.apps = Array.from(appsSet).sort();
-  affected.packages = Array.from(packagesSet).sort();
+  affected.apps = Array.from(appsSet).sort((a, b) => a.localeCompare(b));
+  affected.packages = Array.from(packagesSet).sort((a, b) => a.localeCompare(b));
   return affected;
 }
 

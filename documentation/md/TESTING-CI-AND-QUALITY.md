@@ -172,7 +172,7 @@ Remote enforcement:
 
 - GitHub Actions invokes `bun run ci:gate:branch`
 - GitHub Actions passes the PR base branch or pushed branch explicitly, marks PR events, and stores branch-gate evidence even after failure
-- GitHub Actions owns full coverage production and patch coverage for `dev -> main` promotions, `main` pushes, and scheduled full runs; local gates and PRs up to `dev` stay fast and diagnostic
+- GitHub Actions owns full coverage production (plus Codecov upload and SonarCloud scan) for pushes to `dev` and `main`, `dev -> main` promotions, and scheduled full runs; local gates and task PRs to `dev` stay fast and diagnostic
 - Task-branch push events compare `origin/dev...HEAD`; hosted CI never uses the local staged-diff mode
 - GitHub Actions stores `artifacts/ci/full-test-matrix.json` when the branch gate selects the full matrix
 - `.github/workflows/ci.yml` independently runs Storybook build/smoke and website prepublish checks only for release/full contexts

@@ -82,7 +82,7 @@ function resolveDefaultStorage() {
 function canonicalJson(value) {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
   if (value && typeof value === 'object') {
-    const keys = Object.keys(value).sort();
+    const keys = Object.keys(value).sort((a, b) => a.localeCompare(b));
     return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
   }
   return JSON.stringify(value);
@@ -187,7 +187,7 @@ export async function migrateLocalStorageToCana({
   } catch (error) {
     return { status: 'no-source', reason: `localStorage could not be read: ${errorReason(error)}` };
   }
-  if (rawState === null || rawState === undefined) return { status: 'no-source' };
+  if (rawState === null) return { status: 'no-source' };
 
   let payload;
   try {
@@ -227,7 +227,7 @@ export async function migrateLocalStorageToCana({
   } catch (_) {
     rawBaseline = null;
   }
-  if (rawBaseline !== null && rawBaseline !== undefined) {
+  if (rawBaseline !== null) {
     try {
       baselinePayload = JSON.parse(rawBaseline);
     } catch (error) {

@@ -111,7 +111,7 @@ export const DESIGNER_SYNC_COALESCE_MS = 50;
 function canonicalJson(value) {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
   if (value && typeof value === 'object') {
-    const keys = Object.keys(value).sort();
+    const keys = Object.keys(value).sort((a, b) => a.localeCompare(b));
     return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
   }
   return JSON.stringify(value);
@@ -280,7 +280,7 @@ export function createDesignerSync({
     if (!storage) return null;
     try {
       const raw = storage.getItem(DESIGNER_SYNC_CURSOR_KEY);
-      if (raw === null || raw === undefined) return null;
+      if (raw === null) return null;
       const value = Number(raw);
       return Number.isInteger(value) && value >= 0 ? value : null;
     } catch (_) {

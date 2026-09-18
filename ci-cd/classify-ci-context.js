@@ -28,7 +28,9 @@ const FULL_JOBS = Object.freeze([
 const JOBS_BY_CONTEXT = Object.freeze({
   [CONTEXTS.TASK_BRANCH_PUSH]: Object.freeze(['branch-gate']),
   [CONTEXTS.TASK_PR_TO_DEV]: Object.freeze(['branch-gate', 'third-party-review']),
-  [CONTEXTS.DEV_PUSH]: Object.freeze(['branch-gate']),
+  // Codecov + SonarCloud analyse both long-lived branches; other heavy jobs
+  // stay release/main/scheduled only.
+  [CONTEXTS.DEV_PUSH]: Object.freeze(['branch-gate', 'coverage']),
   [CONTEXTS.RELEASE_PR_TO_MAIN]: FULL_JOBS,
   [CONTEXTS.MAIN_PUSH]: FULL_JOBS,
   [CONTEXTS.SCHEDULED_FULL]: FULL_JOBS

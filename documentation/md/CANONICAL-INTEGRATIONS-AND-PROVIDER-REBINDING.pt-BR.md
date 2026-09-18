@@ -11,7 +11,7 @@ para open source.
 | CI | Workflow GitHub Actions canônico deste repositório | Orquestrador canônico das PRs para `dev`, promoções para `main` e branches protegidas; runner GitHub-hosted `ubuntu-latest` |
 | CI secundário | CircleCI habilitado para o repositório público | Espelho independente do mesmo classificador de contexto e nomes de jobs |
 | Cobertura | Job de cobertura do repositório, artefatos JSON/LCOV e thresholds de projeto e patch | Autoridade canônica; Codecov é o dashboard público |
-| Publicação Codecov | GitHub Actions usa `codecov/codecov-action@v5`; CircleCI usa o Codecov CLI verificado, ambos com `CODECOV_TOKEN` | Mapa de cobertura arquivo a arquivo após os thresholds próprios passarem |
+| Publicação Codecov | GitHub Actions usa `codecov/codecov-action@v5` em pushes `main` e `dev` (mais contextos de release/agendados); CircleCI usa o Codecov CLI verificado nas mesmas superfícies, ambos com `CODECOV_TOKEN` | Badges ao vivo + gráfico Grid após o upload LCOV |
 | Qualidade | Gate Bun por branch e build/smoke/prepublish do Storybook | Validação obrigatória de produto e governança |
 | SAST/qualidade | Projeto SonarQube Cloud `web2solutions_Jumentix` | Dashboard público de qualidade, confiabilidade, segurança e cobertura |
 | Dependências | Scanner próprio via OSV.dev e Dependabot | Detecção fail-closed de vulnerabilidades e propostas de atualização |

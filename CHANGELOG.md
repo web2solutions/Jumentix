@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-18 [JUM-811][Feature] Domain dashboards, OAS metrics widgets and a11y (#354) - Eduardo A.
+- 2026-09-18 feat(frontend): domain dashboards from OAS metrics - Eduardo A.
 - 2026-09-17 chore(release): retrigger dev promotion gate - Eduardo Almeida
 - 2026-09-17 chore(deps): consolidate Dependabot updates (#352) - Eduardo A.
 - 2026-09-17 chore(deps): consolidate Dependabot updates - Eduardo Almeida
