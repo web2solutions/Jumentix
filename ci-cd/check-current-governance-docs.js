@@ -4,6 +4,7 @@
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const { gitBinary } = require('./lib/git-binary.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const EXCLUDED_FILES = new Set([
@@ -26,7 +27,7 @@ const RETIRED_PATHS = [
 ];
 
 function trackedMarkdownFiles(rootDir = ROOT) {
-  return execFileSync('git', ['ls-files', '*.md'], { cwd: rootDir, encoding: 'utf8' })
+  return execFileSync(gitBinary(), ['ls-files', '*.md'], { cwd: rootDir, encoding: 'utf8' })
     .split('\n')
     .filter(Boolean)
     .filter((filePath) => fs.existsSync(path.join(rootDir, filePath)))

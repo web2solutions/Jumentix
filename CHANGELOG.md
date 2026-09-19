@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-19 fix(ci): resolve git binary for governance docs check - Eduardo Almeida
 - 2026-09-19 docs: retire superseded governance material - Eduardo Almeida
 - 2026-09-19 fix(latent): clear bugs documented during JUM-821 promotion rounds (JUM-839) (#356) - Eduardo A.
 - 2026-09-18 fix(ci): analyse main and dev on sonar and codecov (#355) - Eduardo A.
