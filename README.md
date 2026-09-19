@@ -1,167 +1,63 @@
-# Jumentix - Software Factory for Product Teams
+# Jumentix
+
+Jumentix is an open-source software factory for teams building SaaS products. It provides contract-first foundations for APIs, realtime services, web applications, and modular product domains, so teams can concentrate on the product they are creating.
 
 [![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
 [![GitHub Actions main](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
-[![CircleCI dev](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev)
-[![CircleCI release gate](https://img.shields.io/badge/CircleCI-release%20gate-configured?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main)
-[![Codecov](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
-[![SonarCloud quality](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
-[![SonarCloud reliability](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
-[![SonarCloud coverage](https://img.shields.io/badge/SonarCloud-coverage%20via%20release%20scan-4E9BCD?logo=sonarcloud&logoColor=white)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix)
+[![Codecov dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/dev)
+[![Codecov main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/main)
+[![SonarCloud quality dev](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status&branch=dev)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
+[![SonarCloud reliability dev](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating&branch=dev)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
+[![SonarCloud quality main](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status&branch=main)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=main)
+[![SonarCloud reliability main](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating&branch=main)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=main)
 [![Bun](https://img.shields.io/badge/bun-1.3.13-000000?logo=bun&logoColor=white)](https://bun.sh/)
-[![Node compat](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](./spec)
-[![Repository](https://img.shields.io/badge/repository-public-24292f?logo=github)](https://github.com/web2solutions/Jumentix)
-[![License](https://img.shields.io/badge/license-see%20LICENSE-blue)](./LICENSE)
-[![Run with Express](https://img.shields.io/badge/Run%20with-Express-gold?style=flat-square&logo=express&logoColor=000)](https://expressjs.com/)
-[![Run with Fastify](https://img.shields.io/badge/Run%20with-Fastify-gold?style=flat-square&logo=fastify&logoColor=000)](https://fastify.dev/)
-[![Run with Restify](https://img.shields.io/badge/Run%20with-Restify-gold?style=flat-square&logo=node.js&logoColor=000)](http://restify.com/)
-[![Run with AdonisJS](https://img.shields.io/badge/Run%20with-AdonisJS-gold?style=flat-square&logo=adonisjs&logoColor=000)](https://adonisjs.com/)
-[![Run with FeathersJS](https://img.shields.io/badge/Run%20with-FeathersJS-gold?style=flat-square&logo=feathersjs&logoColor=000)](https://feathersjs.com/)
-[![Run with LoopBack](https://img.shields.io/badge/Run%20with-LoopBack-gold?style=flat-square&logo=loopback&logoColor=000)](https://loopback.io/)
-[![Run with SailsJS](https://img.shields.io/badge/Run%20with-SailsJS-gold?style=flat-square&logo=sailsdotjs&logoColor=000)](https://sailsjs.com/)
-[![Run with DerbyJS](https://img.shields.io/badge/Run%20with-DerbyJS-gold?style=flat-square&logo=javascript&logoColor=000)](https://derbyjs.com/)
-[![Run with Total.js](https://img.shields.io/badge/Run%20with-Total.js-gold?style=flat-square&logo=javascript&logoColor=000)](https://www.totaljs.com/)
-[![Run with Serverless](https://img.shields.io/badge/Run%20with-Serverless-gold?style=flat-square&logo=serverless&logoColor=000)](https://www.serverless.com/)
-[![Run on Cloudflare Workers](https://img.shields.io/badge/Run%20on-Cloudflare%20Workers-gold?style=flat-square&logo=cloudflare&logoColor=000)](https://workers.cloudflare.com/)
-[![Run on Vercel Functions](https://img.shields.io/badge/Run%20on-Vercel%20Functions-gold?style=flat-square&logo=vercel&logoColor=000)](https://vercel.com/docs/functions)
-[![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](./LICENSE.md)
 
-## Coverage and CI Map
+## What You Can Build
 
-| Required gate | `main` | `dev` |
-| --- | :---: | :---: |
-| GitHub Actions workflow | [![main GitHub Actions](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain) | [![dev GitHub Actions](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev) |
-| CircleCI workflow | [![CircleCI release gate](https://img.shields.io/badge/CircleCI-release%20gate-configured?logo=circleci&logoColor=white)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=main) | [![dev CircleCI](https://circleci.com/gh/web2solutions/Jumentix/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/web2solutions/Jumentix?branch=dev) |
-| Codecov coverage | [![Codecov main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main) | [![Codecov dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev) |
-| Branch-aware tests | `branch-gate` | `branch-gate` |
-| Project + patch coverage | `coverage` | `coverage` |
-| Third-party security review | `third-party-review` | PR-only |
+- REST, WebSocket, and gRPC APIs with reusable contracts.
+- SaaS applications that can grow from modular domains into services.
+- Product websites, operational tools, and domain design workflows.
+- Deployable services for conventional servers, serverless platforms, and edge runtimes.
 
-Feature, fix, docs and CI task PRs target `dev` and run the cheap layer-aware
-gate selected from `test-map.json`; the target is ten minutes or less. Full
-workspace, browser, website and database jobs are reserved for
-`dev -> main` release promotions, `main` pushes and scheduled full runs.
-The `coverage` job (Codecov upload + SonarCloud scan) also runs on every push
-to `dev` and `main` so both long-lived branches stay analysed.
+## Get Started
 
-Coverage is produced and enforced by the full-suite `coverage` job on
-`main`/`dev` pushes, release promotions, and scheduled full runs. GitHub
-Actions uploads LCOV to Codecov with `CODECOV_TOKEN` via
-`codecov/codecov-action@v5`; CircleCI uses the verified Codecov CLI on the
-same surfaces. SonarCloud analyses `main` and `dev` from that same job when
-`JUMENTIX_ENABLE_SONAR_CI` is enabled (otherwise Automatic Analysis covers
-the GitHub app path). Codecov publishes live coverage badges and the Grid
-graph below:
+```bash
+git clone https://github.com/web2solutions/Jumentix.git
+cd Jumentix
+bun install --frozen-lockfile
+bun run dev:express
+```
 
-[![Codecov Grid](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graphs/tree.svg)](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
+Choose a starting point in the guides below, then adapt the generated contracts and modules to your product.
 
-Branch file maps:
+## Guides and Documentation
 
-- [Codecov file map for `dev`](https://app.codecov.io/gh/web2solutions/Jumentix/tree/dev)
-- [Codecov file map for `main`](https://app.codecov.io/gh/web2solutions/Jumentix/tree/main)
-- [Codecov Grid for `dev`](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graphs/tree.svg)
+- [Documentation hub](documentation/README.md)
+- [Documentation hub in Portuguese](documentation/README.pt-BR.md)
+- [Use the Service Manager and Domain Designer](./documentation/md/guides/USING-SERVICE-MANAGER-AND-DOMAIN-DESIGNER.md)
+- [Create a SPA or PWA](./apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
+- [Create a REST API](./apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md)
+- [Create a realtime API](./apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md)
+- [Create a SaaS monolith](./documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md)
+- [Create SaaS microservices](./documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md)
 
-The hard gate remains the repository-owned coverage check. Every run retains
-Istanbul JSON and LCOV evidence. The hard minimums are:
+## Coverage
 
-| Statements | Lines | Functions | Branches | Changed lines |
-| :---: | :---: | :---: | :---: | :---: |
-| ≥ 99% | ≥ 99% | ≥ 99% | ≥ 90% | ≥ 99% |
+### Development
 
-[Open GitHub Actions runs and downloadable evidence](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml)
+[![Codecov Grid for dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graphs/tree.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/dev)
 
-Jumentix is a monorepo product that works as a software factory for engineering teams and product owners. It helps you go from idea to production-ready SaaS in days, not months, with a contract-first architecture, runtime flexibility, and enterprise-grade governance.
+### Main
 
-> **Canonical public repository:** `web2solutions/Jumentix`.
-> Agent coordination is canonical in Firestore Database (Requirement `089`).
-> Historical migration evidence is retained in
-> `documentation/md/HISTORICAL-TRANSITIONS.md`.
+[![Codecov Grid for main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graphs/tree.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/main)
 
-## Index
+## Contributing
 
-- [The Enterprise Delivery Gap](#the-enterprise-delivery-gap)
-- [Coverage and CI Map](#coverage-and-ci-map)
-- [Why Jumentix Wins](#why-jumentix-wins)
-- [Business ROI](#business-roi)
-- [Who Benefits](#who-benefits)
-- [What You Can Launch](#what-you-can-launch)
-- [Launch Playbooks](#launch-playbooks)
-- [Adoption Paths](#adoption-paths)
-- [Strategic Positioning](#strategic-positioning)
-- [Technical Documentation](#technical-documentation)
-- [Project Governance](#project-governance)
+Contributions are welcome. Please read the [contributing guide](./documentation/md/CONTRIBUTING-AND-TOOLING.md), open an issue to discuss substantial changes, and submit focused pull requests.
 
-## The Enterprise Delivery Gap
+## License
 
-Enterprise teams rarely fail because of ideas. They fail because too much time is spent rebuilding the same platform foundation: architecture decisions, contracts, adapters, CI/CD, security controls, and deployment plumbing.
-
-Jumentix eliminates this waste. Your team starts from a production-grade software factory and invests time where revenue is created: product differentiation.
-
-## Why Jumentix Wins
-
-- **Faster time-to-market**: go from idea to production architecture in days.
-- **Lower delivery risk**: strict quality, security, and governance gates are built-in.
-- **Scalable by design**: start modular, evolve to microservices without rewriting everything.
-- **Contract-first operations**: APIs and realtime channels stay aligned with business models.
-- **Cloud/runtime flexibility**: deploy where your business needs, not where your boilerplate is locked.
-
-## Business ROI
-
-| Metric | Typical custom foundation | With Jumentix |
-| --- | --- | --- |
-| Platform bootstrap time | High and unpredictable | Reduced and standardized |
-| Architecture consistency | Varies by squad | Consistent across teams |
-| Rework during scale phase | Frequent | Significantly lower |
-| Compliance/quality readiness | Late-stage effort | Built into delivery flow |
-| Onboarding for new engineers | Slow | Faster due to repeatable patterns |
-
-## Who Benefits
-
-- **Product Owners**: validate and launch SaaS offerings faster.
-- **CTOs and Engineering Managers**: standardize architecture and execution across squads.
-- **Platform Teams**: enforce quality, coverage, and security policy with reusable foundations.
-- **Developers**: spend less time wiring infrastructure and more time shipping features.
-
-## What You Can Launch With Jumentix
-
-- Enterprise REST APIs
-- Realtime APIs (WebSocket and gRPC)
-- Backend services as functions
-- Modular SaaS monoliths ready for decomposition
-- Microservice ecosystems with shared contracts and governance
-- Commercial product websites with live GitHub-backed changelog visibility
-
-## Launch Playbooks
-
-- [Using the Service Manager and the Domain Designer](./documentation/md/guides/USING-SERVICE-MANAGER-AND-DOMAIN-DESIGNER.md)
-- [Creating SPA/PWA with Jumentix](./apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
-- [Creating a REST API with Jumentix](./apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md)
-- [Creating a Realtime API with Jumentix](./apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md)
-- [Creating a SaaS Monolith with Jumentix](./documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md)
-- [Creating SaaS Microservices with Jumentix](./documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md)
-
-## Adoption Paths
-
-- Start with one mission-critical API and prove delivery speed gains.
-- Expand to a full SaaS monolith with shared frontend/backend workflows.
-- Scale to multiple domain services with standardized contracts and governance.
-- Establish Jumentix as the internal enterprise delivery platform.
-
-## Strategic Positioning
-
-Jumentix is not just a template repository. It is an extensible software factory product for building, scaling, and operating enterprise applications with consistent technical quality.
-
-## Technical Documentation
-
-Technical development documentation is intentionally separated from this commercial README.
-
-- [Documentation Hub (EN)](documentation/README.md)
-- [Hub de Documentação (PT-BR)](documentation/README.pt-BR.md)
-
-## Project Governance
-
-Task management source of truth:
-
-- [Linear - Jumentix](https://linear.app/jumentix)
+Jumentix is licensed under the [GNU Affero General Public License v3.0](./LICENSE.md).

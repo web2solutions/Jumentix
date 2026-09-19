@@ -27,7 +27,7 @@
    ```text
    <operator-confirmed-root>/
      <agent-identifier>/
-       Jumentix/          # git clone of XpertMinds/Jumentix (canonical)
+       Jumentix/          # git clone of web2solutions/Jumentix (canonical)
    ```
 
    Example for this host and agent id `cursor-grok-4.5`:
@@ -38,7 +38,7 @@
 
    - `<agent-identifier>` is the stable agent id used in the Agent Registry
      (Requirement `080`), for example `cursor-grok-4.5` or `codex-primary-001`.
-   - The clone target is always the canonical private repo `XpertMinds/Jumentix`.
+   - The clone target is always the canonical public repo `web2solutions/Jumentix`.
    - The agent registry clone, when needed, lives as a sibling under the same
      agent folder (for example
      `<root>/<agent-identifier>/jumentix-agent-registry`), never inside the
@@ -60,7 +60,7 @@
    1. Confirm root with the human operator (or reuse the host-confirmed root
       above when operating on this machine).
    2. Create `<root>/<agent-identifier>/` if missing.
-   3. Clone `XpertMinds/Jumentix` into `.../Jumentix` (or fetch/reset if already
+   3. Clone `web2solutions/Jumentix` into `.../Jumentix` (or fetch/reset if already
       present).
    4. Fetch and read current `origin/dev` and `origin/main` (Requirements `084`,
       `099`, `116`).
