@@ -20,4 +20,3 @@ TODO mirror or GitHub Project board is maintained for delivery state.
 ## Supersedes
 
 - Requirements `056` and `064`; see `documentation/md/HISTORICAL-TRANSITIONS.md`.
-

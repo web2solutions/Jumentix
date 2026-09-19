@@ -14,4 +14,3 @@
 
 - Backlog tracking is part of delivery quality, not optional project metadata.
 - The delivered/current roadmap is `documentation/md/DOMAIN-DESIGNER-MVP-ROADMAP.md`.
-

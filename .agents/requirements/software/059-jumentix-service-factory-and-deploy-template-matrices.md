@@ -11,4 +11,3 @@ planning or delivery status is tracked in Linear, not in a local TODO file.
 - The README documentation index links to each current matrix.
 - Changes to runtime, deployment, or factory models update the matrices and
   this requirement when contract scope changes.
-

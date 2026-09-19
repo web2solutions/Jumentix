@@ -15,4 +15,3 @@ quality gates. The current monorepo layout is the implemented `apps/*` and
 - Documentation describes the current architecture and rollback path, not a
   completed migration checklist.
 - A PR does not mix unrelated delivery scopes without a documented dependency.
-

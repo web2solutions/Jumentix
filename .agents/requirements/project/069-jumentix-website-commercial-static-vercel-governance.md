@@ -13,4 +13,3 @@ use `bun` commands and the committed `bun.lock`.
 - The website retains its publishable content, route, Storybook, unit, and
   browser quality gates.
 - Website planning and delivery evidence are maintained in Linear.
-

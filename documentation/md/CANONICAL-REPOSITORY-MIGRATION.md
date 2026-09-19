@@ -24,4 +24,3 @@ bun install --frozen-lockfile
 
 Historical repository migration evidence is summarized in
 `documentation/md/HISTORICAL-TRANSITIONS.md`.
-

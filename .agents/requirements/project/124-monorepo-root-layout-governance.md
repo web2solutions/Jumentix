@@ -18,4 +18,3 @@ current architecture documentation.
 
 Completed Wave 5 execution material is summarized in
 `documentation/md/HISTORICAL-TRANSITIONS.md` and is not an active cutover plan.
-

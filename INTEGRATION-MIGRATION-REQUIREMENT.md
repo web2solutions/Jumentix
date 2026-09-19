@@ -32,4 +32,3 @@ configured checks are not successful evidence.
 - `bun run integrations:check` validates provider configuration and fail-closed behavior.
 - Historical migration evidence is summarized in
   `documentation/md/HISTORICAL-TRANSITIONS.md` and is not operational policy.
-

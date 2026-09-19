@@ -14,4 +14,3 @@
 - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
 - `documentation/md/CANONICAL-REPOSITORY-MIGRATION.md`
 - `documentation/md/HISTORICAL-TRANSITIONS.md`
-

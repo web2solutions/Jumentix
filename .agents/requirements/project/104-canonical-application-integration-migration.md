@@ -25,4 +25,3 @@ Active and mandatory.
 - Incomplete provider bindings are recorded as owner-authorized blockers, never
   as passing evidence.
 - Historical migration context is only in `documentation/md/HISTORICAL-TRANSITIONS.md`.
-

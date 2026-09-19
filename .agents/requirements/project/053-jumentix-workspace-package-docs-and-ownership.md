@@ -13,4 +13,3 @@
   `@jumentix/sdk-websocket-client`, and `@jumentix/sdk-grpc-client`.
 - The root README links to the workspace package catalog.
 - `documentation/md/JUMENTIX-WORKSPACE-PACKAGES.md` matches current packages.
-

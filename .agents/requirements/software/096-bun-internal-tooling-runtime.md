@@ -22,4 +22,3 @@
 - `ci-cd/check-dependency-override-integrity.js` rejects restored pnpm surfaces.
 - `documentation/md/BUN-ENGINEERING-GUIDE.md` is the active engineering guide.
 - `documentation/md/HISTORICAL-TRANSITIONS.md` records retired migration evidence.
-

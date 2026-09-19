@@ -32,4 +32,3 @@ ausentes, ignorados, neutros ou apenas configurados nao sao evidencia de sucesso
 - `bun run integrations:check` valida configuracao de provedores e comportamento fail-closed.
 - Evidencias historicas de migracao estao resumidas em
   `documentation/md/HISTORICAL-TRANSITIONS.pt-BR.md` e nao sao politica operacional.
-
