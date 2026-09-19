@@ -17,8 +17,8 @@
  * `.ts`/`.vue` source file they did not touch, counted at 0 — an untested
  * component must lower the number, not vanish from it.
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const APP_ROOT = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(APP_ROOT, '../..');
@@ -80,8 +80,8 @@ function listSources(dir, out = []) {
 }
 
 function isSubject(filePath) {
-  const normalized = filePath.replace(/\\/g, '/');
-  return normalized.startsWith(SOURCE_ROOT.replace(/\\/g, '/'))
+  const normalized = filePath.replaceAll('\\', '/');
+  return normalized.startsWith(SOURCE_ROOT.replaceAll('\\', '/'))
     && !EXCLUDED.some((pattern) => pattern.test(normalized));
 }
 

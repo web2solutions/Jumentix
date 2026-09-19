@@ -8,7 +8,13 @@ const { runSuitePaths } = require('./run-suite');
 const { resolveTestRuntime } = require('./lib/test-runtime');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
-const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$|^ci-cd\/test\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
+const UNIT_TEST_PATH_LEGACY = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
+const UNIT_TEST_PATH_CICD = /^ci-cd\/test\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
+const UNIT_TEST_PATH = {
+  test(file) {
+    return UNIT_TEST_PATH_LEGACY.test(file) || UNIT_TEST_PATH_CICD.test(file);
+  }
+};
 const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
 const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;

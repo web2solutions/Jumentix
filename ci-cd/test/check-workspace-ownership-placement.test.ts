@@ -54,6 +54,46 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect(asserted).toContain('packages/mutex-service');
   });
 
+  it('ignores packages/*/src mentions that live only in comments', () => {
+    expect.hasAssertions();
+    const asserted = inferAssertedWorkspaces(
+      'apps/service-management/test/unit/x.test.ts',
+      '/** extracted from packages/designer-core/src/exporters/x.js */\nconst { x } = require(\'@jumentix/designer-core/exporters/x.js\');',
+      workspaces
+    );
+    expect(asserted).toStrictEqual([]);
+  });
+
+  it('does not treat ci-cd gate fixture paths as foreign SUTs', () => {
+    expect.hasAssertions();
+    const asserted = inferAssertedWorkspaces(
+      'ci-cd/test/check-coverage-thresholds.test.ts',
+      'const fixture = \'packages/mutex-service/src/MutexService\';\nrequire(\'../check-coverage-thresholds\');',
+      workspaces
+    );
+    expect(asserted).toStrictEqual(['ci-cd']);
+  });
+
+  it('allows service-management-api @src composition without flagging backend-template', () => {
+    expect.hasAssertions();
+    const asserted = inferAssertedWorkspaces(
+      'apps/service-management-api/test/unit/x.test.ts',
+      'import { RestAPI } from \'@src/interface/HTTP/RestAPI\';',
+      workspaces
+    );
+    expect(asserted).not.toContain('apps/backend-template');
+  });
+
+  it('still flags @src from service-management (Req 126)', () => {
+    expect.hasAssertions();
+    const asserted = inferAssertedWorkspaces(
+      'apps/service-management/test/unit/x.test.ts',
+      'import { RestAPI } from \'@src/interface/HTTP/RestAPI\';',
+      workspaces
+    );
+    expect(asserted).toContain('apps/backend-template');
+  });
+
   it('does not flag Req 126 config path pins from service-management', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(

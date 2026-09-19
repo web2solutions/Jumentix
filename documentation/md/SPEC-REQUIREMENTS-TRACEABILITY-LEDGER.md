@@ -180,7 +180,11 @@ As of `2026-08-05`, this ledger covers all unique requirement IDs currently regi
 
 ### `126` Service Management ownership and public contracts (JUM-465)
 - Specs: `.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`, `.agents/COMPONENT-OWNERSHIP.md`
-- Evidence: `bun run requirements:check`; `bun run test-map:check`; integration smoke asserting the pinned contracts (`JUM-466`)
+- Evidence: `bun run requirements:check`; `bun run test-map:check`; integration smoke asserting the pinned contracts (`JUM-466`); SM suite evidence under `apps/service-management/test/**`
+
+### `137` Workspace suite and tooling ownership placement (JUM-824…838)
+- Specs: `.agents/requirements/software/137-workspace-suite-and-tooling-ownership.md`, `documentation/md/TESTING-CI-AND-QUALITY.md` (+ pt-BR), `ci-cd/README.md`
+- Evidence: `bun run arch:check-ownership-placement`; `ci-cd/ownership-placement-allowlist.json` steady state `[]`; proof suite `ci-cd/test/check-workspace-ownership-placement.test.ts`; wired into `ci:gate` / branch preflight
 
 ### `125` Agent support declaration (JUM-604)
 - Specs: `documentation/md/AGENT-SUPPORT-DECLARATION.md` (+ pt-BR)

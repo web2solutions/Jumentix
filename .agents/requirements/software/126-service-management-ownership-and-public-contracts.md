@@ -607,30 +607,30 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   `domain-designer-asyncapi.json` 2.x-shaped document), and the gRPC proto export
   (`async-api.proto`) was added, taking the exporter count from seven to eight.
   Pinned by
-  `apps/backend-template/test/unit/service-management/designerAsyncApiExport.test.ts`.
+  `apps/service-management/test/unit/designerAsyncApiExport.test.ts`.
 - Contract 1b added by `JUM-480` (branch
   `kimi/feature/JUM-480-multi-env-pm2-preview`): the read-only
   `GET /api/runtime/pm2-ecosystem` endpoint pins the PM2 preview to the real
   `pm2/ecosystem.*.cjs` files. Pinned by
   `apps/service-management/test/integration/server/pm2Ecosystem.integration.test.ts`
   (server behavior) and
-  `apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts`
+  `apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts`
   (designer-side no-hardcoded-command rule).
 - Contract 3 amended by `JUM-547` (branch
   `kimi/feature/JUM-547-full-suite-export-import`): the JSON export became the
   versioned full-suite document carrying all persisted authoring sections, and the
   `runtimeEnvironment` decision (selection crosses, values never leave the
   machine) is recorded above, in the JSON export bullet. Pinned by
-  `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
+  `apps/service-management/test/unit/designerRoundTrip.test.ts`
   (full-suite deep-equal, backward/forward compatibility) and
-  `apps/backend-template/test/unit/service-management/designerExporters.test.ts`
+  `apps/service-management/test/unit/designerExporters.test.ts`
   (document shape).
 - Contract 2 and 3 amended by `JUM-736`: the Code Workspace tab persists
   generated-file overlays in `codeWorkspace`, suite JSON export/import carries that
   section, and boilerplate bundle export applies edited/stale file content. Pinned
-  by `apps/backend-template/test/unit/service-management/designerState.test.ts`,
-  `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
-  and `apps/backend-template/test/unit/service-management/designerExporters.test.ts`.
+  by `apps/service-management/test/unit/designerState.test.ts`,
+  `apps/service-management/test/unit/designerRoundTrip.test.ts`
+  and `apps/service-management/test/unit/designerExporters.test.ts`.
   This is additive and normalizes old payloads to an empty workspace, so there is
   no versioned key bump.
 - Contract 1c amended by `JUM-736` and extended for host + async-context fields:
@@ -659,9 +659,9 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   and conflict classification recorded above. Contract 2 gained the additive
   provenance/package fields (backward-compatible extension — no versioned key
   bump). Pinned by
-  `apps/backend-template/test/unit/service-management/designerPackageVersioning.test.ts`
+  `apps/service-management/test/unit/designerPackageVersioning.test.ts`
   (version parsing/ordering, ranges, dependency graph, conflict policies) and
-  `apps/backend-template/test/unit/service-management/designerRoundTrip.test.ts`
+  `apps/service-management/test/unit/designerRoundTrip.test.ts`
   (versioned export→import, idempotent re-import, conflicting re-import,
   compatible/incompatible dependency pairs).
 - Registry sync: `.agents/NFR-REGISTRY.md`,

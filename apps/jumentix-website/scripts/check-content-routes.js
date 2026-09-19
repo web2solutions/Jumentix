@@ -22,8 +22,8 @@
  * fails. A listed file that has become reachable also fails, because a stale
  * exemption is how a register stops meaning anything.
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const WEBSITE_DIR = 'apps/jumentix-website';
@@ -86,7 +86,7 @@ function validateWebsiteContentRoutes(rootDir = process.cwd(), register = ACCEPT
   const files = walk(
     contentRoot,
     (file) => /\.mdx?$/.test(file) && !/(^|[\\/])_meta\./.test(file)
-  ).map((file) => path.relative(contentRoot, file).replace(/\\/g, path.sep));
+  ).map((file) => path.relative(contentRoot, file).replaceAll('\\', path.sep));
 
   for (const relativePath of files) {
     const reachable = isReachable(relativePath);
