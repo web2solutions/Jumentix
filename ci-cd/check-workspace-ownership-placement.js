@@ -32,20 +32,21 @@ const FORBIDDEN_SM_HOMES = Object.freeze([
 ]);
 
 /**
- * Resolve a repository root from CLI input without allowing path escape.
- * The candidate must exist, be a directory, and contain a root package.json.
+ * Resolve a repository root for programmatic callers (tests).
+ * CLI never accepts a path argument — always process.cwd() — so LLM-supplied
+ * `--root` cannot reach filesystem APIs (jssecurity:S8707).
  */
 function resolveRepoRoot(candidate) {
-  const resolved = path.resolve(String(candidate || ''));
+  const resolved = path.resolve(String(candidate || process.cwd()));
   if (resolved.includes('\0')) {
-    throw new TypeError('--root must not contain null bytes');
+    throw new TypeError('repository root must not contain null bytes');
   }
   if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
-    throw new TypeError(`--root is not a directory: ${resolved}`);
+    throw new TypeError(`repository root is not a directory: ${resolved}`);
   }
   const manifest = path.join(resolved, 'package.json');
   if (!fs.existsSync(manifest)) {
-    throw new TypeError(`--root must be the repository root (missing package.json): ${resolved}`);
+    throw new TypeError(`repository root missing package.json: ${resolved}`);
   }
   return resolved;
 }
@@ -54,15 +55,15 @@ function resolveRepoRoot(candidate) {
 function safeJoin(root, rel) {
   const base = path.resolve(root);
   const target = path.resolve(base, rel);
-  const prefix = base.endsWith(path.sep) ? base : `${base}${path.sep}`;
-  if (target !== base && !target.startsWith(prefix)) {
+  const relative = path.relative(base, target);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
     throw new TypeError(`path escapes repository root: ${rel}`);
   }
   return target;
 }
 
 function parseArgs(argv) {
-  const out = { changed: null, writeAllowlist: false, root: process.cwd() };
+  const out = { changed: null, writeAllowlist: false };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--changed') {
@@ -72,7 +73,8 @@ function parseArgs(argv) {
     } else if (arg === '--write-allowlist') {
       out.writeAllowlist = true;
     } else if (arg === '--root') {
-      out.root = resolveRepoRoot(argv[++i] || process.cwd());
+      // Deliberately ignored: accepting a CLI path reopens S8707. Use cwd.
+      i += 1;
     }
   }
   return out;
@@ -270,7 +272,7 @@ function collectSuiteViolations(root, suites, allowKeys, workspaces, changed) {
 function collectForbiddenHomeViolations(root) {
   const violations = [];
   for (const home of FORBIDDEN_SM_HOMES) {
-    if (fs.existsSync(path.join(root, home))) {
+    if (fs.existsSync(safeJoin(root, home))) {
       violations.push({
         suite: home,
         home: 'apps/backend-template',
@@ -297,7 +299,7 @@ function findViolations(root, options = {}) {
   ];
 
   for (const entry of allowlist) {
-    if (!fs.existsSync(path.join(root, entry.suite))) {
+    if (!fs.existsSync(safeJoin(root, entry.suite))) {
       shapeFailures.push(
         `allow-list stale: suite missing on disk: ${entry.suite} (${entry.issue})`
       );
@@ -362,7 +364,8 @@ function run(root = process.cwd(), options = {}) {
 
 function main(argv = process.argv) {
   const args = parseArgs(argv);
-  return run(args.root, {
+  // CLI always scans process.cwd() — never a caller-supplied path (S8707).
+  return run(process.cwd(), {
     changed: args.changed,
     writeAllowlist: args.writeAllowlist
   });

@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-19 fix: empty ownership allow-list and clear Sonar debt - Eduardo A.
 - 2026-09-19 chore: absorb #359 sonar/codecov into ci-cd ownership - Eduardo A.
 - 2026-09-19 fix(ci): enforce public quality reporting (#359) - Eduardo A.
 - 2026-09-19 chore(governance): restore suite and tooling ownership (JUM-824) - Eduardo A.
