@@ -14,27 +14,32 @@ bun run <comando>
 | `compat:check-node-version` | Use quando precisar desta operação específica do workspace. | `bun run compat:check-node-version` | `node ci-cd/check-node-version.js` |
 | `preinstall` | Use quando precisar desta operação específica do workspace. | `bun run preinstall` | `bun ci-cd/check-bun-version.js` |
 | `deps:check-overrides` | Use quando precisar desta operação específica do workspace. | `bun run deps:check-overrides` | `bun ci-cd/check-dependency-override-integrity.js` |
-| `mono:build` | Execute operações recursivas no workspace inteiro. | `bun run mono:build` | `bun run --filter '*' build` |
+| `mono:build` | Execute operações recursivas no workspace inteiro. | `bun run mono:build` | `bun run mono:build:deps && bun run --filter '*' build` |
+| `mono:build:deps` | Execute operações recursivas no workspace inteiro. | `bun run mono:build:deps` | `bun run --filter @jumentix/cana build` |
 | `mono:test` | Execute operações recursivas no workspace inteiro. | `bun run mono:test` | `bun run workspace:test` |
 | `mono:lint` | Execute operações recursivas no workspace inteiro. | `bun run mono:lint` | `bun run --filter '*' lint` |
 | `mono:typecheck` | Execute operações recursivas no workspace inteiro. | `bun run mono:typecheck` | `bun run --filter '*' typecheck` |
 | `docs:translate:ptbr` | Gera ou sincroniza artefatos de documentação. | `bun run docs:translate:ptbr` | `bun tooling/scripts/generate-ptbr-docs.mjs` |
 | `docs:translate:ptbr:links` | Gera ou sincroniza artefatos de documentação. | `bun run docs:translate:ptbr:links` | `bun tooling/scripts/patch-ptbr-links.mjs` |
 | `docs:consumers:package-scripts` | Gera ou sincroniza artefatos de documentação. | `bun run docs:consumers:package-scripts` | `bun tooling/scripts/generate-consumer-package-scripts-docs.mjs` |
+| `docs:check-current-governance` | Gera ou sincroniza artefatos de documentação. | `bun run docs:check-current-governance` | `bun ci-cd/check-current-governance-docs.js` |
 | `prepare` | Instala hooks de git (husky). Geralmente roda automaticamente. | `bun run prepare` | `husky install` |
 | `changelog:update` | Gera ou valida changelog a partir do histórico git. | `bun run changelog:update` | `bun ci-cd/update-changelog.js` |
 | `changelog:check` | Gera ou valida changelog a partir do histórico git. | `bun run changelog:check` | `bun ci-cd/update-changelog.js --check` |
 | `oas:check-routes` | Valida contratos OpenAPI e resolução de rotas. | `bun run oas:check-routes` | `bun ci-cd/check-oas-route-resolution.js` |
+| `oas:check-relations` | Valida contratos OpenAPI e resolução de rotas. | `bun run oas:check-relations` | `bun ci-cd/check-oas-relations.js` |
+| `entities:purge-tombstones` | Use quando precisar desta operação específica do workspace. | `bun run entities:purge-tombstones` | `bun apps/backend-template/scripts/purge-tombstones.js` |
 | `deps:check-cycles` | Use quando precisar desta operação específica do workspace. | `bun run deps:check-cycles` | `bun ci-cd/check-core-import-cycles.js` |
 | `arch:check-boundaries` | Valida limites e restrições de arquitetura. | `bun run arch:check-boundaries` | `bun ci-cd/check-hexagonal-boundaries.js` |
 | `arch:check-users-legacy-imports` | Valida limites e restrições de arquitetura. | `bun run arch:check-users-legacy-imports` | `bun ci-cd/check-users-legacy-imports.js` |
 | `arch:check-workspace-boundaries` | Valida limites e restrições de arquitetura. | `bun run arch:check-workspace-boundaries` | `bun ci-cd/check-workspace-boundaries.js` |
+| `arch:check-ownership-placement` | Valida limites e restrições de arquitetura. | `bun run arch:check-ownership-placement` | `bun ci-cd/check-workspace-ownership-placement.js` |
 | `workspace:check-coverage-policy` | Valida políticas em nível de workspace. | `bun run workspace:check-coverage-policy` | `bun ci-cd/check-workspace-coverage-policy.js` |
 | `workspace:check-quality` | Valida políticas em nível de workspace. | `bun run workspace:check-quality` | `bun ci-cd/check-workspace-quality.js` |
 | `ci:affected` | Use em validações de CI e gates de entrega. | `bun run ci:affected` | `bun ci-cd/check-affected-workspaces.js` |
 | `ci:monorepo` | Use em validações de CI e gates de entrega. | `bun run ci:monorepo` | `bun ci-cd/run-monorepo-ci.js` |
 | `release:dry-run` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run` | `bun ci-cd/release-dry-run.js all` |
-| `release:dry-run:packages` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:packages` | `bun ci-cd/release-dry-run.js packages` |
+| `release:dry-run:packages` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:packages` | `bun run npm:packages:check && bun ci-cd/release-dry-run.js packages` |
 | `release:dry-run:apps` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:apps` | `bun ci-cd/release-dry-run.js apps` |
 | `agent-registry:register` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:register` | `bun packages/agent-registry/bin/agent-registry-cli.js register` |
 | `agent-registry:heartbeat` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:heartbeat` | `bun packages/agent-registry/bin/agent-registry-cli.js heartbeat` |
@@ -43,8 +48,12 @@ bun run <comando>
 | `agent-registry:repair` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:repair` | `bun packages/agent-registry/bin/agent-registry-cli.js repair` |
 | `agent-registry:sync` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:sync` | `bun packages/agent-registry/bin/agent-registry-cli.js sync` |
 | `agent-registry:check` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:check` | `bun packages/agent-registry/bin/agent-registry-cli.js check` |
+| `agent-bus:publish` | Use quando precisar desta operação específica do workspace. | `bun run agent-bus:publish` | `bun packages/agent-registry/bin/agent-registry-cli.js publish` |
+| `agent-bus:watch` | Use quando precisar desta operação específica do workspace. | `bun run agent-bus:watch` | `bun packages/agent-registry/bin/agent-registry-cli.js watch` |
+| `agent-bus:status` | Use quando precisar desta operação específica do workspace. | `bun run agent-bus:status` | `bun packages/agent-registry/bin/agent-registry-cli.js status` |
 | `arch:check-http-adapters` | Valida limites e restrições de arquitetura. | `bun run arch:check-http-adapters` | `bun ci-cd/check-http-adapter-authenticity.js` |
 | `ci:check-provider` | Use em validações de CI e gates de entrega. | `bun run ci:check-provider` | `bun ci-cd/check-ci-provider.js` |
+| `sonar:check-reliability` | Use quando precisar desta operação específica do workspace. | `bun run sonar:check-reliability` | `bun ci-cd/check-sonar-reliability.js` |
 | `ci:check-third-party-review` | Use em validações de CI e gates de entrega. | `bun run ci:check-third-party-review` | `bun ci-cd/check-third-party-review.js` |
 | `requirements:check` | Use quando precisar desta operação específica do workspace. | `bun run requirements:check` | `bun ci-cd/check-requirements-registry.js` |
 | `test-map:generate` | Use quando precisar desta operação específica do workspace. | `bun run test-map:generate` | `bun ci-cd/generate-test-map.js` |
@@ -59,7 +68,7 @@ bun run <comando>
 | `ci:smoke` | Use em validações de CI e gates de entrega. | `bun run ci:smoke` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun apps/backend-template/scripts/run-api-smoke.js` |
 | `ci:integration` | Use em validações de CI e gates de entrega. | `bun run ci:integration` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js` |
 | `ci:security-smoke` | Use em validações de CI e gates de entrega. | `bun run ci:security-smoke` | `NODE_ENV=ci bun apps/backend-template/scripts/run-security-smoke.js` |
-| `ci:gate` | Use em validações de CI e gates de entrega. | `bun run ci:gate` | `bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run packages:check-suites && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke` |
+| `ci:gate` | Use em validações de CI e gates de entrega. | `bun run ci:gate` | `bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-ownership-placement && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run docs:check-current-governance && bun run packages:check-suites && bun run packages:check-build-freshness && bun run website:check-content-routes && bun run rtdb:check-indexes && bun run test:integrity && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run frontend:test:coverage && bun run frontend:coverage:check && bun run ci:security-smoke && bun run oas:check-routes && bun run oas:check-relations && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke` |
 | `ci:gate:branch` | Use em validações de CI e gates de entrega. | `bun run ci:gate:branch` | `bun ci-cd/run-branch-quality-gate.js` |
 | `ci:gate:task` | Use em validações de CI e gates de entrega. | `bun run ci:gate:task` | `bun ci-cd/run-task-change-tests.js` |
 | `ci:gate:strict` | Use em validações de CI e gates de entrega. | `bun run ci:gate:strict` | `bun ci-cd/run-full-test-matrix.js` |
@@ -68,10 +77,13 @@ bun run <comando>
 | `website:build` | Opera o ciclo de vida do site comercial. | `bun run website:build` | `bun run --filter @jumentix/website build` |
 | `website:start` | Opera o ciclo de vida do site comercial. | `bun run website:start` | `bun run --filter @jumentix/website start` |
 | `website:storybook` | Opera o ciclo de vida do site comercial. | `bun run website:storybook` | `bun run --filter @jumentix/website storybook` |
-| `website:storybook:build` | Opera o ciclo de vida do site comercial. | `bun run website:storybook:build` | `bun run --filter @jumentix/website storybook:build` |
+| `website:deps:build` | Opera o ciclo de vida do site comercial. | `bun run website:deps:build` | `bun run --filter @jumentix/cana build && bun run --filter @jumentix/cana-react build && bun run --filter @jumentix/cana-vue build && bun run --filter @jumentix/designer-core build && bun run --filter @jumentix/key-value-storage build && bun run --filter @jumentix/message-mediator build && bun run --filter @jumentix/mutex-service build && bun run --filter @jumentix/sdk-grpc-client build && bun run --filter @jumentix/sdk-rest-client build && bun run --filter @jumentix/sdk-websocket-client build` |
+| `website:storybook:build` | Opera o ciclo de vida do site comercial. | `bun run website:storybook:build` | `bun run website:deps:build && bun run --filter @jumentix/website storybook:build` |
 | `website:storybook:smoke` | Opera o ciclo de vida do site comercial. | `bun run website:storybook:smoke` | `bun run --filter @jumentix/website storybook:smoke` |
 | `website:test:prepublish` | Opera o ciclo de vida do site comercial. | `bun run website:test:prepublish` | `bun run --filter @jumentix/website test:prepublish` |
+| `website:test:unit` | Opera o ciclo de vida do site comercial. | `bun run website:test:unit` | `bun run --filter @jumentix/website test:unit` |
 | `website:test:cypress` | Opera o ciclo de vida do site comercial. | `bun run website:test:cypress` | `bun run --filter @jumentix/website test:cypress` |
+| `website:test:routes` | Opera o ciclo de vida do site comercial. | `bun run website:test:routes` | `bun run --filter @jumentix/website test:routes` |
 | `website:test:quality` | Opera o ciclo de vida do site comercial. | `bun run website:test:quality` | `bun run --filter @jumentix/website test:quality` |
 | `website:vercel:link` | Opera o ciclo de vida do site comercial. | `bun run website:vercel:link` | `bun x vercel link --cwd apps/jumentix-website --project jumentix-website --yes` |
 | `website:vercel:pull:preview` | Opera o ciclo de vida do site comercial. | `bun run website:vercel:pull:preview` | `bun x vercel pull --cwd apps/jumentix-website --environment=preview --yes` |
@@ -80,15 +92,16 @@ bun run <comando>
 | `website:publish` | Opera o ciclo de vida do site comercial. | `bun run website:publish` | `bun run website:test:prepublish && bun run website:deploy:vercel` |
 | `website:deploy:vercel:preview` | Opera o ciclo de vida do site comercial. | `bun run website:deploy:vercel:preview` | `bun x vercel --cwd apps/jumentix-website` |
 | `npm:whoami` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:whoami` | `bun pm whoami` |
-| `npm:org:check:xpertminds` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:org:check:xpertminds` | `bun ci-cd/check-npm-org-integration.js` |
-| `npm:publish:dry-run:packages` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:publish:dry-run:packages` | `bun ci-cd/npm-publish-dry-run.js` |
+| `npm:org:check:jumentix` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:org:check:jumentix` | `bun ci-cd/check-npm-org-integration.js` |
+| `npm:packages:check` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:packages:check` | `bun ci-cd/check-npm-package-release.js` |
+| `npm:publish:dry-run:packages` | Executa comandos auxiliares de organização e publicação npm. | `bun run npm:publish:dry-run:packages` | `bun run npm:packages:check` |
 | `pm2:list` | Gerencia processos de runtime com PM2. | `bun run pm2:list` | `pm2 ls` |
 | `pm2:logs` | Gerencia processos de runtime com PM2. | `bun run pm2:logs` | `pm2 logs` |
 | `pm2:stop:all` | Gerencia processos de runtime com PM2. | `bun run pm2:stop:all` | `pm2 stop all` |
 | `pm2:delete:all` | Gerencia processos de runtime com PM2. | `bun run pm2:delete:all` | `pm2 delete all` |
-| `pm2:start:dev:restapi` | Gerencia processos de runtime com PM2. | `bun run pm2:start:dev:restapi` | `pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi --update-env` |
-| `pm2:start:dev:websocket-rest` | Gerencia processos de runtime com PM2. | `bun run pm2:start:dev:websocket-rest` | `pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-websocketapi --update-env` |
-| `pm2:start:dev:grpc-rest` | Gerencia processos de runtime com PM2. | `bun run pm2:start:dev:grpc-rest` | `pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-grpcapi --update-env` |
+| `pm2:start:dev:restapi` | Gerencia processos de runtime com PM2. | `bun run pm2:start:dev:restapi` | `bun run service-management:vendor && pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-purge-tombstones --update-env` |
+| `pm2:start:dev:websocket-rest` | Gerencia processos de runtime com PM2. | `bun run pm2:start:dev:websocket-rest` | `bun run service-management:vendor && pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-websocketapi,jumentix-dev-purge-tombstones --update-env` |
+| `pm2:start:dev:grpc-rest` | Gerencia processos de runtime com PM2. | `bun run pm2:start:dev:grpc-rest` | `bun run service-management:vendor && pm2 start ./pm2/ecosystem.dev.config.cjs --only jumentix-dev-service-management,jumentix-dev-restapi,jumentix-dev-grpcapi,jumentix-dev-purge-tombstones --update-env` |
 | `pm2:start:staging:restapi` | Gerencia processos de runtime com PM2. | `bun run pm2:start:staging:restapi` | `pm2 start ./pm2/ecosystem.staging.config.cjs --only jumentix-staging-service-management,jumentix-staging-restapi --update-env` |
 | `pm2:start:staging:websocket-rest` | Gerencia processos de runtime com PM2. | `bun run pm2:start:staging:websocket-rest` | `pm2 start ./pm2/ecosystem.staging.config.cjs --only jumentix-staging-service-management,jumentix-staging-restapi,jumentix-staging-websocketapi --update-env` |
 | `pm2:start:staging:grpc-rest` | Gerencia processos de runtime com PM2. | `bun run pm2:start:staging:grpc-rest` | `pm2 start ./pm2/ecosystem.staging.config.cjs --only jumentix-staging-service-management,jumentix-staging-restapi,jumentix-staging-grpcapi --update-env` |
@@ -113,9 +126,9 @@ bun run <comando>
 | `test:integration:lambda` | Roda testes para escopo ou perfil específico. | `bun run test:integration:lambda` | `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=inmemory NODE_ENV=dev bun ci-cd/run-suite.js --script-label lambda apps/backend-template/test/integration/Lambda` |
 | `test:integration:cloudflare-workers` | Roda testes para escopo ou perfil específico. | `bun run test:integration:cloudflare-workers` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label cloudflare-workers apps/backend-template/test/integration/Cloudflare-Workers` |
 | `test:integration:vercel-functions` | Roda testes para escopo ou perfil específico. | `bun run test:integration:vercel-functions` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label vercel-functions apps/backend-template/test/integration/Vercel-Functions` |
+| `test:integration:feathers` | Roda testes para escopo ou perfil específico. | `bun run test:integration:feathers` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label feathers apps/backend-template/test/integration/Feathers` |
 | `test:integration:loopback` | Roda testes para escopo ou perfil específico. | `bun run test:integration:loopback` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label loopback apps/backend-template/test/integration/LoopBack` |
 | `test:integration:sails-js` | Roda testes para escopo ou perfil específico. | `bun run test:integration:sails-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label sails-js apps/backend-template/test/integration/Sails-JS` |
-| `test:integration:feathers` | Roda testes para escopo ou perfil específico. | `bun run test:integration:feathers` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label feathers apps/backend-template/test/integration/Feathers` |
 | `test:integration:derby-js` | Roda testes para escopo ou perfil específico. | `bun run test:integration:derby-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label derby-js apps/backend-template/test/integration/Derby-JS` |
 | `test:integration:adonis-js` | Roda testes para escopo ou perfil específico. | `bun run test:integration:adonis-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label adonis-js apps/backend-template/test/integration/Adonis-JS` |
 | `test:integration:total-js` | Roda testes para escopo ou perfil específico. | `bun run test:integration:total-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label total-js apps/backend-template/test/integration/Total-JS` |
@@ -186,7 +199,8 @@ bun run <comando>
 | `cli` | Use quando precisar desta operação específica do workspace. | `bun run cli` | `bun run dev:cli` |
 | `cli:bootstrap` | Use quando precisar desta operação específica do workspace. | `bun run cli:bootstrap` | `node ./bin/jumentix-bootstrap.js` |
 | `dev:cli` | Inicia o modo de runtime para desenvolvimento. | `bun run dev:cli` | `bun -r tsconfig-paths/register ./apps/backend-template/src/interface/CLI/index.ts` |
-| `dev:service-management` | Inicia o modo de runtime para desenvolvimento. | `bun run dev:service-management` | `pm2 start ./apps/service-management/server.js --name jumentix-dev-service-management --interpreter bun --update-env` |
+| `service-management:vendor` | Use quando precisar desta operação específica do workspace. | `bun run service-management:vendor` | `bun apps/service-management/scripts/sync-service-management-cana-bundle.js && bun apps/service-management/scripts/sync-service-management-designer-core.js && bun apps/service-management/scripts/sync-service-management-d3.js && bun apps/service-management/scripts/sync-service-management-swagger-ui.js` |
+| `dev:service-management` | Inicia o modo de runtime para desenvolvimento. | `bun run dev:service-management` | `bun run service-management:vendor && pm2 start ./apps/service-management/server.js --name jumentix-dev-service-management --interpreter bun --update-env` |
 | `start:cli` | Use quando precisar desta operação específica do workspace. | `bun run start:cli` | `bun run dev:cli` |
 | `prod:http` | Inicia o perfil de runtime de produção. | `bun run prod:http` | `pm2 start ./.build/apps/backend-template/src/interface/HTTP/adapters/start-rest-api.js --name jumentix-prod-http --interpreter bun --interpreter-args='--env-file=./.build/apps/backend-template/src/config/.env.prod' --update-env` |
 | `prod:express` | Inicia o perfil de runtime de produção. | `bun run prod:express` | `JUMENTIX_HTTP_FRAMEWORK=express pm2 start ./.build/apps/backend-template/src/interface/HTTP/adapters/start-rest-api.js --name jumentix-prod-express --interpreter bun --interpreter-args='--env-file=./.build/apps/backend-template/src/config/.env.prod' --update-env` |
@@ -247,10 +261,6 @@ bun run <comando>
 | `test:integration:lambda:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:lambda:ci` | `JUMENTIX_TEST_RUNTIME=node JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=inmemory NODE_ENV=dev bun ci-cd/run-suite.js --script-label lambda apps/backend-template/test/integration/Lambda` |
 | `test:integration:cloudflare-workers:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:cloudflare-workers:ci` | `JUMENTIX_TEST_RUNTIME=node NODE_ENV=dev bun ci-cd/run-suite.js --script-label cloudflare-workers apps/backend-template/test/integration/Cloudflare-Workers` |
 | `test:integration:vercel-functions:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:vercel-functions:ci` | `JUMENTIX_TEST_RUNTIME=node NODE_ENV=dev bun ci-cd/run-suite.js --script-label vercel-functions apps/backend-template/test/integration/Vercel-Functions` |
-| `test:integration:loopback:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:loopback:ci` | `JUMENTIX_TEST_RUNTIME=node NODE_ENV=dev bun ci-cd/run-suite.js --script-label loopback apps/backend-template/test/integration/LoopBack` |
-| `test:integration:sails-js:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:sails-js:ci` | `JUMENTIX_TEST_RUNTIME=node NODE_ENV=dev bun ci-cd/run-suite.js --script-label sails-js apps/backend-template/test/integration/Sails-JS` |
-| `test:integration:feathers:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:feathers:ci` | `JUMENTIX_TEST_RUNTIME=node NODE_ENV=dev bun ci-cd/run-suite.js --script-label feathers apps/backend-template/test/integration/Feathers` |
-| `test:integration:derby-js:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:derby-js:ci` | `JUMENTIX_TEST_RUNTIME=node NODE_ENV=dev bun ci-cd/run-suite.js --script-label derby-js apps/backend-template/test/integration/Derby-JS` |
 | `test:integration:adonis-js:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:adonis-js:ci` | `JUMENTIX_TEST_RUNTIME=node NODE_ENV=dev bun ci-cd/run-suite.js --script-label adonis-js apps/backend-template/test/integration/Adonis-JS` |
 | `test:integration:total-js:ci` | Roda testes para escopo ou perfil específico. | `bun run test:integration:total-js:ci` | `JUMENTIX_TEST_RUNTIME=node NODE_ENV=dev bun ci-cd/run-suite.js --script-label total-js apps/backend-template/test/integration/Total-JS` |
 | `test:integration:mutex` | Roda testes para escopo ou perfil específico. | `bun run test:integration:mutex` | `NODE_ENV=dev RUN_REDIS_INTEGRATION=1 bun ci-cd/run-suite.js --script-label mutex apps/backend-template/test/integration/mutex` |
@@ -272,12 +282,23 @@ bun run <comando>
 | `coverage:merge` | Use quando precisar desta operação específica do workspace. | `bun run coverage:merge` | `bun ci-cd/merge-coverage-reports.js` |
 | `workspace:test` | Valida políticas em nível de workspace. | `bun run workspace:test` | `bun ci-cd/run-workspace-tests.js` |
 | `quarantine:flake` | Use quando precisar desta operação específica do workspace. | `bun run quarantine:flake` | `bun ci-cd/quarantine-flake.js` |
-| `test:coverage` | Roda testes para escopo ou perfil específico. | `bun run test:coverage` | `NODE_ENV=dev bun x jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit` |
+| `test:coverage` | Roda testes para escopo ou perfil específico. | `bun run test:coverage` | `NODE_ENV=dev bun x jest apps/backend-template/test/unit apps/service-management/test/unit apps/service-management-api/test/unit ci-cd/test 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit` |
 | `coverage:check` | Use quando precisar desta operação específica do workspace. | `bun run coverage:check` | `bun ci-cd/check-coverage-thresholds.js` |
 | `test:browser` | Roda testes para escopo ou perfil específico. | `bun run test:browser` | `bun packages/cana/scripts/run-browser-tests.js` |
 | `test:integration:key-value` | Roda testes para escopo ou perfil específico. | `bun run test:integration:key-value` | `bun apps/backend-template/scripts/run-redis-key-value-integration.js` |
+| `test:integration:dead-letter` | Roda testes para escopo ou perfil específico. | `bun run test:integration:dead-letter` | `bun apps/backend-template/scripts/run-redis-dead-letter-integration.js` |
 | `smoke:key-value:redis` | Executa smoke checks para validação rápida de ambiente. | `bun run smoke:key-value:redis` | `bun run docker:composeredis && bun run test:integration:key-value && docker compose -f "apps/backend-template/docker-compose-redis.yml" down --remove-orphans` |
+| `smoke:dead-letter:redis` | Executa smoke checks para validação rápida de ambiente. | `bun run smoke:dead-letter:redis` | `bun run docker:composeredis && bun run test:integration:dead-letter && docker compose -f "apps/backend-template/docker-compose-redis.yml" down --remove-orphans` |
 | `test:integration:message-mediator` | Roda testes para escopo ou perfil específico. | `bun run test:integration:message-mediator` | `NODE_ENV=dev RUN_BROKER_INTEGRATION=1 bun ci-cd/run-suite.js --script-label message-mediator --timeout 60000 packages/message-mediator/test/integration` |
 | `test:integration:db-repositories` | Roda testes para escopo ou perfil específico. | `bun run test:integration:db-repositories` | `JUMENTIX_TEST_RUNTIME=bun NODE_ENV=dev RUN_DB_REPOSITORIES_INTEGRATION=1 bun ci-cd/run-suite.js --script-label db-repositories --timeout 120000 packages/external-db-repositories/test/integration` |
 | `smoke:message-mediator` | Executa smoke checks para validação rápida de ambiente. | `bun run smoke:message-mediator` | `bun run docker:composemessaging && bun run test:integration:message-mediator && docker compose -f "apps/backend-template/docker-compose-messaging.yml" down` |
 | `smoke:db-repositories` | Executa smoke checks para validação rápida de ambiente. | `bun run smoke:db-repositories` | `bun run docker:up:cassandra && bun run docker:up:mongodb && bun run test:integration:db-repositories; status=$?; bun run docker:down:cassandra; bun run docker:down:mongodb; exit $status` |
+| `packages:check-build-freshness` | Use quando precisar desta operação específica do workspace. | `bun run packages:check-build-freshness` | `bun ci-cd/check-package-build-freshness.js` |
+| `website:check-content-routes` | Opera o ciclo de vida do site comercial. | `bun run website:check-content-routes` | `bun apps/jumentix-website/scripts/check-content-routes.js` |
+| `rtdb:check-indexes` | Use quando precisar desta operação específica do workspace. | `bun run rtdb:check-indexes` | `bun packages/agent-registry/bin/check-rtdb-indexes.js` |
+| `test:integrity` | Roda testes para escopo ou perfil específico. | `bun run test:integrity` | `bun ci-cd/check-test-integrity.js` |
+| `rtdb:export-rules` | Use quando precisar desta operação específica do workspace. | `bun run rtdb:export-rules` | `bun ci-cd/export-database-rules.js` |
+| `frontend:test:unit` | Use quando precisar desta operação específica do workspace. | `bun run frontend:test:unit` | `bun run --filter @jumentix/frontend test` |
+| `frontend:test:coverage` | Use quando precisar desta operação específica do workspace. | `bun run frontend:test:coverage` | `bun run --filter @jumentix/frontend test:coverage` |
+| `frontend:coverage:check` | Use quando precisar desta operação específica do workspace. | `bun run frontend:coverage:check` | `bun apps/frontend/scripts/check-coverage.js` |
+| `frontend:test:e2e` | Use quando precisar desta operação específica do workspace. | `bun run frontend:test:e2e` | `bun run --filter @jumentix/frontend test:e2e` |

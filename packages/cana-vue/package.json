@@ -37,13 +37,24 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit false && bun run build:esm",
+    "clean": "rm -rf dist",
     "build:esm": "bun build src/index.ts --outfile dist/index.mjs --format esm --target browser --external vue --external pinia --external @jumentix/cana",
     "test": "bun test --isolate test",
     "lint": "echo \"cana-vue: covered by the root eslint run\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "bun run clean && bun run build"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web2solutions/Jumentix.git",
+    "directory": "packages/cana-vue"
+  },
+  "homepage": "https://jumentix-website.vercel.app",
+  "bugs": {
+    "url": "https://github.com/web2solutions/Jumentix/issues"
   },
   "keywords": [
     "indexeddb",
