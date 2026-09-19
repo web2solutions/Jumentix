@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-09-19 chore: sync origin/dev into ownership epic branch - Eduardo A.
+- 2026-09-19 docs: align Codecov grids (#360) - Eduardo A.
+- 2026-09-19 fix: drop ownership --root CLI to clear Sonar S8707 - Eduardo A.
 - 2026-09-19 fix: empty ownership allow-list and clear Sonar debt - Eduardo A.
 - 2026-09-19 chore: absorb #359 sonar/codecov into ci-cd ownership - Eduardo A.
 - 2026-09-19 fix(ci): enforce public quality reporting (#359) - Eduardo A.

@@ -19,6 +19,7 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const APP_ROOT = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(APP_ROOT, '../..');
@@ -148,7 +149,7 @@ module.exports = {
   THRESHOLDS, EXCLUDED, parseLcov, isSubject, summarize, run
 };
 
-if (require.main === module) {
+if (isEntryPoint(module)) {
   const result = run();
   console.log(result.ok ? 'Frontend coverage check passed.' : 'Frontend coverage check failed.');
   result.messages.forEach((message) => console.log(message));

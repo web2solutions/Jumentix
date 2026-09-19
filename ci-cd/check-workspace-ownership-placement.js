@@ -117,9 +117,23 @@ function suiteHome(rel) {
 
 /** Drop block and line comments so prose path mentions are not SUTs. */
 function stripComments(source) {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  let out = '';
+  let i = 0;
+  while (i < source.length) {
+    if (source.startsWith('/*', i)) {
+      const end = source.indexOf('*/', i + 2);
+      i = end === -1 ? source.length : end + 2;
+      continue;
+    }
+    if (source.startsWith('//', i) && (i === 0 || source[i - 1] !== ':')) {
+      const end = source.indexOf('\n', i);
+      i = end === -1 ? source.length : end;
+      continue;
+    }
+    out += source[i];
+    i += 1;
+  }
+  return out;
 }
 
 function isConfigOnlyBackendTemplatePin(contents) {
@@ -131,6 +145,7 @@ function isConfigOnlyBackendTemplatePin(contents) {
 }
 
 function addImportishWorkspaceHits(asserted, contents, home, workspaces) {
+  const lines = contents.split('\n');
   for (const ws of workspaces) {
     if (ws === home) continue;
     if (
@@ -140,32 +155,50 @@ function addImportishWorkspaceHits(asserted, contents, home, workspaces) {
     ) {
       continue;
     }
-    const needle = ws.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const importish = new RegExp(
-      `(?:require\\(\\s*|from\\s+|jest\\.mock\\(\\s*)['"\`]${needle}(/|['"\`])`
-    );
-    if (importish.test(contents)) asserted.add(ws);
+    // Only count a direct quoted specifier after require/from/jest.mock —
+    // not an indirect path.join(repoRoot, 'ci-cd', …) composition.
+    const hit = lines.some((line) => (
+      line.includes(`require('${ws}'`)
+      || line.includes(`require('${ws}/`)
+      || line.includes(`require("${ws}"`)
+      || line.includes(`require("${ws}/`)
+      || line.includes(`require(\`${ws}\``)
+      || line.includes(`require(\`${ws}/`)
+      || line.includes(`from '${ws}'`)
+      || line.includes(`from '${ws}/`)
+      || line.includes(`from "${ws}"`)
+      || line.includes(`from "${ws}/`)
+      || line.includes(`from \`${ws}\``)
+      || line.includes(`from \`${ws}/`)
+      || line.includes(`jest.mock('${ws}'`)
+      || line.includes(`jest.mock('${ws}/`)
+      || line.includes(`jest.mock("${ws}"`)
+      || line.includes(`jest.mock("${ws}/`)
+      || line.includes(`jest.mock(\`${ws}\``)
+      || line.includes(`jest.mock(\`${ws}/`)
+    ));
+    if (hit) asserted.add(ws);
   }
 }
 
 function addDeepPackageHits(asserted, contents) {
-  const deepRe = /(?:require\(|from\s+|jest\.mock\()\s*['"]packages\/([^/'"]+)\/src\//g;
-  let match = deepRe.exec(contents);
-  while (match !== null) {
-    asserted.add(`packages/${match[1]}`);
-    match = deepRe.exec(contents);
-  }
-  const mockRe = /jest\.mock\(\s*['"]packages\/([^/'"]+)\//g;
-  match = mockRe.exec(contents);
-  while (match !== null) {
-    asserted.add(`packages/${match[1]}`);
-    match = mockRe.exec(contents);
+  for (const line of contents.split('\n')) {
+    if (!/(?:require\(|from\s+|jest\.mock\()/.test(line)) continue;
+    const deep = /packages\/([^/'"]+)\/src\//.exec(line);
+    if (deep) asserted.add(`packages/${deep[1]}`);
+    const mock = /jest\.mock\(\s*['"]packages\/([^/'"]+)\//.exec(line);
+    if (mock) asserted.add(`packages/${mock[1]}`);
   }
 }
 
+function lineUsesSrcAlias(line) {
+  return /(?:from\s+|require\(|jest\.mock\()/.test(line)
+    && (line.includes("'@src/") || line.includes('"@src/'));
+}
+
 function addSrcAliasHits(asserted, contents, home) {
-  const usesSrc = /(?:from\s+|require\(|jest\.mock\()\s*['"]@src\//.test(contents);
-  if (usesSrc && !SRC_COMPOSITION_HOMES.includes(home)) {
+  if (SRC_COMPOSITION_HOMES.includes(home)) return;
+  if (contents.split('\n').some(lineUsesSrcAlias)) {
     asserted.add('apps/backend-template');
   }
 }
@@ -234,6 +267,20 @@ function collectSuites(root) {
     .sort(byPath);
 }
 
+function pushForeignAssertions(violations, suite, home, asserted, allowKeys) {
+  for (const assertsWorkspace of asserted) {
+    if (assertsWorkspace === home) continue;
+    const key = `${suite}::${assertsWorkspace}`;
+    if (allowKeys.has(key)) continue;
+    violations.push({
+      suite,
+      home,
+      assertsWorkspace,
+      rule: 'suite-home-vs-sut'
+    });
+  }
+}
+
 function collectSuiteViolations(root, suites, allowKeys, workspaces, changed) {
   const violations = [];
   for (const suite of suites) {
@@ -253,18 +300,13 @@ function collectSuiteViolations(root, suites, allowKeys, workspaces, changed) {
       continue;
     }
 
-    const asserted = inferAssertedWorkspaces(suite, contents, workspaces);
-    for (const assertsWorkspace of asserted) {
-      if (assertsWorkspace === home) continue;
-      const key = `${suite}::${assertsWorkspace}`;
-      if (allowKeys.has(key)) continue;
-      violations.push({
-        suite,
-        home,
-        assertsWorkspace,
-        rule: 'suite-home-vs-sut'
-      });
-    }
+    pushForeignAssertions(
+      violations,
+      suite,
+      home,
+      inferAssertedWorkspaces(suite, contents, workspaces),
+      allowKeys
+    );
   }
   return violations;
 }
