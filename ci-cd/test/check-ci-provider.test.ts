@@ -27,11 +27,13 @@ function fixture(change?: (directory: string) => void): string {
   fs.mkdirSync(path.join(directory, 'ci-cd'), { recursive: true });
   fs.mkdirSync(path.join(directory, '.github/workflows'), { recursive: true });
   fs.mkdirSync(path.join(directory, '.circleci'), { recursive: true });
+  fs.mkdirSync(path.join(directory, '.husky'), { recursive: true });
   fs.copyFileSync(checker, path.join(directory, 'ci-cd', 'check-ci-provider.js'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'), path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
   fs.copyFileSync(path.join(repoRoot, '.circleci/config.yml'), path.join(directory, '.circleci/config.yml'));
+  fs.copyFileSync(path.join(repoRoot, '.husky/pre-commit'), path.join(directory, '.husky/pre-commit'));
   fs.copyFileSync(path.join(repoRoot, 'sonar-project.properties'), path.join(directory, 'sonar-project.properties'));
   fs.copyFileSync(path.join(repoRoot, 'package.json'), path.join(directory, 'package.json'));
   change?.(directory);
@@ -81,6 +83,26 @@ describe('check-ci-provider', () => {
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('third-party-review:', 'third-party-review-removed:'));
     });
     expect(run(directory).output).toContain('third-party-review');
+  });
+
+  it('fails when generated changelog synchronization is removed from dev CI', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('sync-changelog:', 'sync-changelog-removed:'));
+    });
+    expect(run(directory).output).toContain('sync-changelog');
+  });
+
+  it('fails when a local hook resumes mutating the generated changelog', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.husky/pre-commit');
+      fs.appendFileSync(file, '\nbun run changelog:update && git add CHANGELOG.md\n');
+    });
+    expect(run(directory).output).toContain('must not mutate CHANGELOG.md');
   });
 
   it('fails when self-hosted private runners return to the canonical workflow', () => {

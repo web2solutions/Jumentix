@@ -67,6 +67,12 @@
       "kind": "machine",
       "role": "bot",
       "note": "Dependency update pull requests."
+    },
+    {
+      "email": "41898282+github-actions[bot]@users.noreply.github.com",
+      "kind": "machine",
+      "role": "bot",
+      "note": "Generated changelog synchronization on dev."
     }
   ]
 }

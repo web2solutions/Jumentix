@@ -222,7 +222,7 @@ List top risks and how each is mitigated.
 
 - [ ] README updated (if needed)
 - [ ] Additional docs updated (if needed)
-- [ ] Changelog updated/synced (`bun run changelog:update`)
+- [ ] Changelog untouched; GitHub Actions synchronizes it after the validated `dev` merge
 
 ## Reviewer Checklist
 
