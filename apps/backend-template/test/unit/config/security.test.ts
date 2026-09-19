@@ -39,6 +39,13 @@ describe('security config', () => {
     expect(isCorsOriginAllowed(undefined)).toBe(true);
   });
 
+  it('treats an unset NODE_ENV as non-production', () => {
+    expect.hasAssertions();
+    delete (process.env as any).NODE_ENV;
+    delete process.env.JUMENTIX_CORS_ALLOWED_ORIGINS;
+    expect(isCorsOriginAllowed('https://random.example')).toBe(true);
+  });
+
   it('treats NODE_ENV=prod as production alias', () => {
     expect.hasAssertions();
     (process.env as any).NODE_ENV = 'prod';

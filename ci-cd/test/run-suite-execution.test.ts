@@ -317,4 +317,28 @@ describe('run-suite manifest and environment (JUM-721)', () => {
 
     expect(spawn.mock.calls[0][2].env.NODE_ENV).toBe('dev');
   });
+
+  it('gives a node-runtime child a NODE_ENV even when the parent has none', () => {
+    expect.hasAssertions();
+
+    // Same contract as the bun-runtime case above, but through the node/jest
+    // branch of run-suite.js, which builds its own argument list.
+    const spawn = jest.fn().mockReturnValue({ status: 0 });
+    const mutableEnv = process.env as Record<string, string | undefined>;
+    const previous = mutableEnv.NODE_ENV;
+    delete mutableEnv.NODE_ENV;
+
+    try {
+      runSuitePaths(['packages/sample/test'], {
+        spawn,
+        readTestMap,
+        listTestFiles: () => ['packages/sample/test/a.test.ts'],
+        runtime: 'node'
+      });
+    } finally {
+      mutableEnv.NODE_ENV = previous;
+    }
+
+    expect(spawn.mock.calls[0][2].env.NODE_ENV).toBe('dev');
+  });
 });

@@ -133,4 +133,15 @@ describe('password crypto service', () => {
     await expect(service.hash('12345678'))
       .rejects.toThrow('password hasher returned no hash and no error');
   });
+
+  it('treats a compare that resolves nothing as a non-match', async () => {
+    expect.hasAssertions();
+    // The `?? false` guard: an undefined result must not leak through as a
+    // truthy "match" to a caller testing the resolved value.
+    const service = new PasswordCryptoService(hasherWith({
+      compare: async () => undefined as unknown as boolean
+    }));
+
+    await expect(service.compare('12345678', 'hash')).resolves.toBe(false);
+  });
 });

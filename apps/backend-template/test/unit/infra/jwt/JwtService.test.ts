@@ -45,6 +45,15 @@ describe('jwt service', () => {
     expect(first.jti).not.toBe(second.jti);
   });
 
+  it('falls back to an anonymous token id when the principal has neither id nor username', () => {
+    expect.hasAssertions();
+    const service = new JwtService('my_secret');
+    const decoded = service.decodeToken(service.generateToken({ roles: [] })) as any;
+
+    expect(decoded.jti).toStrictEqual(expect.stringMatching(/^anonymous:[0-9a-f-]{36}$/));
+    expect(decoded.username).toBeUndefined();
+  });
+
   it('compiles singleton instance and validates missing secret', () => {
     expect.hasAssertions();
     const first = JwtService.compile();

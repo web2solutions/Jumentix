@@ -57,6 +57,12 @@ describe('error exposure by environment', () => {
     expect(shouldExposeInternalErrors({ NODE_ENV: 'production' } as unknown as NodeJS.ProcessEnv)).toBe(false);
   });
 
+  it('treats a missing NODE_ENV as non-production', () => {
+    expect.hasAssertions();
+    expect(isProductionEnv({} as unknown as NodeJS.ProcessEnv)).toBe(false);
+    expect(shouldExposeInternalErrors({} as unknown as NodeJS.ProcessEnv)).toBe(true);
+  });
+
   it('normalizes NODE_ENV before production check', () => {
     expect.assertions(1);
     expect(isProductionEnv({ NODE_ENV: ' PRODUCTION ' } as unknown as NodeJS.ProcessEnv)).toBe(true);

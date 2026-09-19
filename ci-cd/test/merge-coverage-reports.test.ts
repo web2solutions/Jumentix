@@ -78,4 +78,42 @@ describe('merge-coverage-reports', () => {
     expect(fs.readFileSync(output, 'utf8')).toContain('SF:apps/frontend/src/a.ts');
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  describe('entry point', () => {
+    const script = path.resolve(__dirname, '../merge-coverage-reports.js');
+
+    const runScript = (cwd: string, env: Record<string, string>) => {
+      const { spawnSync } = require('node:child_process');
+      return spawnSync(process.execPath, [script], {
+        cwd,
+        env: { ...process.env, ...env },
+        encoding: 'utf8'
+      });
+    };
+
+    it('honours JUMENTIX_MERGED_LCOV for the merged output path', () => {
+      expect.hasAssertions();
+      const dir = makeTmp();
+      const output = path.join(dir, 'custom-merged.info');
+
+      const result = runScript(dir, { JUMENTIX_MERGED_LCOV: output });
+
+      expect(result.status).toBe(0);
+      expect(fs.existsSync(output)).toBe(true);
+      expect(fs.readFileSync(path.join(dir, 'artifacts', 'ci', 'coverage-merge.json'), 'utf8'))
+        .toContain(output);
+      fs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    it('defaults the merged output to coverage/merged/lcov.info under the cwd', () => {
+      expect.hasAssertions();
+      const dir = makeTmp();
+
+      const result = runScript(dir, { JUMENTIX_MERGED_LCOV: '' });
+
+      expect(result.status).toBe(0);
+      expect(fs.existsSync(path.join(dir, 'coverage', 'merged', 'lcov.info'))).toBe(true);
+      fs.rmSync(dir, { recursive: true, force: true });
+    });
+  });
 });

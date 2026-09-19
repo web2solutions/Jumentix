@@ -5,7 +5,7 @@ const path = require('path');
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 // Resolve the workspace package
-const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
+const packageRoot = path.resolve(__dirname, '..');
 
 function resolveRegistryEntrypoint(root = packageRoot) {
   const manifestPath = path.join(root, 'package.json');

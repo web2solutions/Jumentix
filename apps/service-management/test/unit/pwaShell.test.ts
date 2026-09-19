@@ -1013,6 +1013,21 @@ describe('pwa shell ambient dependencies (JUM-681)', () => {
     // a no-op rather than a crash on `undefined.getRegistrations()`.
     await expect(resetPwaShell(undefined as never)).resolves.toBeUndefined();
   });
+
+  it('reports the shell as unsupported when the runtime has no navigator', async () => {
+    expect.hasAssertions();
+
+    // Node >= 21 exposes a global `navigator`, so the typeof guard's
+    // undefined-branch only runs when the global is removed — the state a
+    // non-browser host without one would present.
+    const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    delete (globalThis as Record<string, unknown>).navigator;
+    try {
+      await expect(registerPwaShell()).resolves.toStrictEqual({ status: 'unsupported' });
+    } finally {
+      restoreGlobalProperty('navigator', previousNavigator);
+    }
+  });
 });
 
 describe('pwa shell cache-first miss path (JUM-821)', () => {

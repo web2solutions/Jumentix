@@ -1718,6 +1718,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/scripts/sync-service-management-d3.test.ts",
+      "path": "apps/service-management/test/unit/scripts/sync-service-management-d3.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/scripts/sync-service-management-swagger-ui.test.ts",
+      "path": "apps/service-management/test/unit/scripts/sync-service-management-swagger-ui.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/scripts/service-management-vendor-wiring.test.ts",
       "path": "apps/service-management/test/unit/scripts/service-management-vendor-wiring.test.ts",
       "layer": "service-management/designer",
@@ -4713,6 +4733,16 @@
       "reason": "Needs the Redis container from docker-compose-redis.yml; skips itself without RUN_REDIS_INTEGRATION rather than passing."
     },
     {
+      "id": "packages/designer-core/test/architecture-branches.test.ts",
+      "path": "packages/designer-core/test/architecture-branches.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/designer-core/test/consumer-smoke.test.ts",
       "path": "packages/designer-core/test/consumer-smoke.test.ts",
       "layer": "service-management/designer",
@@ -5772,9 +5802,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 331,
+    "unit": 334,
     "integration": 102,
     "smoke": 2,
-    "suites": 494
+    "suites": 497
   }
 }

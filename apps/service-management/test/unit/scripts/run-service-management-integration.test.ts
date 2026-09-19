@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-var-requires, jest/no-conditional-in-test */
+import path from 'node:path';
+
 const {
   CANDIDATE_TEST_DIRS,
   discoverTestFiles,
@@ -106,23 +108,73 @@ describe('run-service-management-integration', () => {
     );
   });
 
+  it('falls back to the process working directory and the real fs logger when options are sparse', () => {
+    expect.hasAssertions();
+    const errorsSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      // root '' is falsy, so the runner resolves against process.cwd(); the
+      // injected exists denies everything under /workspace either way.
+      expect(runServiceManagementIntegration({
+        root: '',
+        exists: () => false,
+        logger: undefined
+      })).toBe(1);
+      // Omitting exists exercises the real fs.existsSync default against a
+      // nonexistent workspace root, exiting before any spawn.
+      expect(runServiceManagementIntegration({ root: '/workspace' })).toBe(1);
+    } finally {
+      errorsSpy.mockRestore();
+    }
+  });
+
+  it('defaults NODE_ENV to dev and tolerates a missing PATH when spawning jest', () => {
+    expect.hasAssertions();
+    const NODE_ENV_KEY: string = 'NODE_ENV';
+    const PATH_KEY: string = 'PATH';
+    const originalNodeEnv = process.env[NODE_ENV_KEY];
+    const originalPath = process.env[PATH_KEY];
+    delete process.env[NODE_ENV_KEY];
+    delete process.env[PATH_KEY];
+    try {
+      const spawn = jest.fn().mockReturnValue({ status: 0 });
+      const status = runServiceManagementIntegration({
+        root: '/workspace',
+        exists: () => true,
+        discover: oneTestFile,
+        spawn,
+        logger: { log: jest.fn(), error: jest.fn() }
+      });
+      expect(status).toBe(0);
+      const spawnEnv = spawn.mock.calls[0][2].env;
+      expect(spawnEnv.NODE_ENV).toBe('dev');
+      expect(spawnEnv.PATH.startsWith(`${path.join('/workspace', 'node_modules', '.bin')}${path.delimiter}`))
+        .toBe(true);
+      expect(spawnEnv.PATH.endsWith(path.delimiter)).toBe(true);
+    } finally {
+      if (originalNodeEnv === undefined) delete process.env[NODE_ENV_KEY];
+      else process.env[NODE_ENV_KEY] = originalNodeEnv;
+      if (originalPath === undefined) delete process.env[PATH_KEY];
+      else process.env[PATH_KEY] = originalPath;
+    }
+  });
+
   it('discovers real test files on disk and ignores helper modules', () => {
     expect.hasAssertions();
     const fs = require('fs');
     const os = require('os');
-    const path = require('path');
+    const nodePath = require('path');
 
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sm-discovery-'));
+    const dir = fs.mkdtempSync(nodePath.join(os.tmpdir(), 'sm-discovery-'));
     try {
-      fs.writeFileSync(path.join(dir, 'a.test.ts'), 'it("a", () => {});');
-      fs.writeFileSync(path.join(dir, 'b.spec.js'), 'it("b", () => {});');
-      fs.writeFileSync(path.join(dir, 'serverHarness.ts'), '// not a test');
-      fs.mkdirSync(path.join(dir, 'nested'));
-      fs.writeFileSync(path.join(dir, 'nested', 'c.test.ts'), 'it("c", () => {});');
+      fs.writeFileSync(nodePath.join(dir, 'a.test.ts'), 'it("a", () => {});');
+      fs.writeFileSync(nodePath.join(dir, 'b.spec.js'), 'it("b", () => {});');
+      fs.writeFileSync(nodePath.join(dir, 'serverHarness.ts'), '// not a test');
+      fs.mkdirSync(nodePath.join(dir, 'nested'));
+      fs.writeFileSync(nodePath.join(dir, 'nested', 'c.test.ts'), 'it("c", () => {});');
 
-      const found = discoverTestFiles(dir).map((entry: string) => path.basename(entry)).sort();
+      const found = discoverTestFiles(dir).map((entry: string) => nodePath.basename(entry)).sort();
       expect(found).toStrictEqual(['a.test.ts', 'b.spec.js', 'c.test.ts']);
-      expect(discoverTestFiles(path.join(dir, 'missing'))).toStrictEqual([]);
+      expect(discoverTestFiles(nodePath.join(dir, 'missing'))).toStrictEqual([]);
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
