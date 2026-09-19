@@ -9,6 +9,7 @@ const failures = [];
 
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
+const preCommitPath = path.join(root, '.husky', 'pre-commit');
 const packagePath = path.join(root, 'package.json');
 const sonarPath = path.join(root, 'sonar-project.properties');
 
@@ -36,6 +37,14 @@ if (!fs.existsSync(workflowPath)) {
     /uses:\s*actions\/setup-node@v5/,
     /node-version:\s*22/,
     /branch-gate:/,
+    /sync-changelog:/,
+    /github\.event_name == 'push' && github\.ref_name == 'dev'/,
+    /needs:\s*branch-gate/,
+    /group:\s*changelog-dev/,
+    /cancel-in-progress:\s*false/,
+    /contents:\s*write/,
+    /bun run changelog:update/,
+    /git push origin HEAD:dev/,
     /task-branch-push/,
     /third-party-review:/,
     /workspace-builds:/,
@@ -138,6 +147,15 @@ if (!fs.existsSync(workflowPath)) {
 
   if (/Checkout repository without JavaScript Actions/.test(contents)) {
     failures.push('.github/workflows/ci.yml must not keep the old self-hosted manual checkout path');
+  }
+}
+
+if (!fs.existsSync(preCommitPath)) {
+  failures.push('Missing required local hook: .husky/pre-commit');
+} else {
+  const contents = fs.readFileSync(preCommitPath, 'utf8');
+  if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns dev synchronization.');
   }
 }
 

@@ -103,7 +103,7 @@ function generateChangelog() {
   const lines = [
     '# Changelog',
     '',
-    '<!-- This file is generated from Git history. Run `bun run changelog:update` to refresh it. -->',
+    '<!-- This file is generated from Git history. GitHub Actions synchronizes it after pushes to dev. -->',
     ''
   ];
 

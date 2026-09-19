@@ -168,7 +168,7 @@ fabricar um teste aprovado.
 
 Aplicação local:
 
-- `.husky/pre-commit` sincroniza/adiciona `CHANGELOG.md` e executa o gate da branch
+- `.husky/pre-commit` executa o gate da branch sem modificar arquivos gerados
 - `.husky/pre-push` identifica o destino enviado e executa o gate da branch
 - `.husky/pre-merge-commit` executa o gate do destino do merge
 - `post-commit` é livre de mutações (sem correção automática, sem sinalizadores de bypass)
@@ -179,6 +179,7 @@ Aplicação remota:
 - GitHub Actions invoca `bun run ci:gate:branch`
 - o GitHub Actions passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
 - GitHub Actions assume a produção completa de cobertura (mais upload Codecov e scan SonarCloud) em pushes para `dev` e `main`, promoções `dev -> main` e execuções completas agendadas; gates locais e PRs de tarefa até `dev` ficam rápidos e diagnósticos
+- Após um push validado em `dev`, o GitHub Actions serializa a atualização gerada de `CHANGELOG.md`; branches de tarefa e PRs deixam esse arquivo intacto
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
 - o GitHub Actions publica `artifacts/ci/full-test-matrix.json` quando o gate seleciona a matriz completa
@@ -233,7 +234,7 @@ Importação de cobertura do SonarQube Cloud:
 | Boundaries de workspace + `build:dev` | Arquitetura e emit TypeScript raiz falham fechados antes dos gates baratos | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight de todo caminho do branch-gate (JUM-786) |
 | Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Commitlint + Commitizen | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `bun run commit` |
-| Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git | `ci-cd/update-changelog.js`, `.husky/post-commit` | `bun run changelog:update`, `bun run changelog:check` |
+| Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git sem conflitos de branch de tarefa | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI executa após pushes validados em `dev`; `bun run changelog:check` é apenas diagnóstico |
 | Liberar verificação de governança | Aplica contratos de script de lançamento e metadados de publicação de pacotes | `ci-cd/check-release-governance.js` | `bun run release:governance:check` |
 | Verificação de resolução de rota OpenAPI | Garante que cada OperationId seja mapeado para manipuladores e métodos de controlador | `ci-cd/check-oas-route-resolution.js` | `bun run oas:check-routes` |
 | Verificação de limite hexagonal | Bloqueia violações da camada controladora | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |

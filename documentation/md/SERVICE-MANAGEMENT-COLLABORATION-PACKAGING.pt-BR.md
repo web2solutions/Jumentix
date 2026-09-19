@@ -284,7 +284,7 @@ desescopado (a decisão de 12-01); o pacote desde então foi entregue, e este
 documento registra o estado entregue. O núcleo do designer livre de framework
 é agora o pacote versionado
 [`@jumentix/designer-core`](../../packages/designer-core/) sob a organização
-xpertminds — ESM seguro para navegador, zero dependências de runtime,
+`@jumentix` — ESM seguro para navegador, zero dependências de runtime,
 licenciado sob MIT, com metadados de procedência apontando para sua localização
 no monorepo.
 
@@ -330,15 +330,13 @@ no monorepo.
   `localStorage`) e executa um round trip de validação → exportação →
   reimportação sobre o modelo de exemplo, deep-equal com ponto fixo de
   reexportação.
-- **A política de publicação permanece: somente dry-run.** Conforme o
+- **A política de publicação requer aprovação manual.** Conforme o
   [Requisito 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md),
-  não existe publicação automática. A superfície de dry-run do repositório
-  (`bun run npm:publish:dry-run:packages`, com `npm:org:check:xpertminds`
-  para o lado da organização) reconhece o pacote como qualquer outro pacote
-  de workspace não privado e executa `bun publish --dry-run --access public`;
-  o `prepublishOnly` força um rebuild limpo antes, de modo que o dry run
-  verifica um artefato determinístico cujo conteúdo a suíte de packaging
-  validou.
+  não existe publicação automática. `bun run npm:packages:check` recompila o
+  conjunto público aprovado, inspeciona cada tarball e o importa em um
+  consumidor externo. A publicação é então um workflow manual de `main`,
+  protegido pelo ambiente `npm-publish`; o `prepublishOnly` força um rebuild
+  limpo antes de o npm montar o tarball de release.
 - **Política de versionamento.** O pacote segue semver sobre seu barrel
   público: patch para correções internas, minor para exportações aditivas,
   major para superfície removida ou estreitada. Os contratos de *dados* que

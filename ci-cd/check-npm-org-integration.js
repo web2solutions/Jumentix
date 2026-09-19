@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-const { execSync } = require('node:child_process');
+const { execFileSync } = require('node:child_process');
 
-function run(cmd) {
-  return execSync(cmd, { stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim();
+const NPM_SCOPE = 'jumentix';
+
+function run(args) {
+  const env = { ...process.env };
+  if (env.NPM_JUMENTIX_CI_CD) env.NODE_AUTH_TOKEN = env.NPM_JUMENTIX_CI_CD;
+  return execFileSync('npm', args, { env, stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim();
 }
 
 function fail(message) {
@@ -12,7 +16,7 @@ function fail(message) {
 }
 
 try {
-  const whoami = run('npm whoami');
+  const whoami = run(['whoami']);
   if (!whoami) {
     fail('[npm-org-check] Unable to resolve current npm user.');
   }
@@ -22,7 +26,7 @@ try {
 }
 
 try {
-  const orgUsersRaw = run('npm org ls xpertminds --json');
+  const orgUsersRaw = run(['org', 'ls', NPM_SCOPE, '--json']);
   let orgUsers;
   try {
     orgUsers = JSON.parse(orgUsersRaw);
@@ -30,11 +34,11 @@ try {
     orgUsers = null;
   }
   if (!orgUsers || typeof orgUsers !== 'object') {
-    fail('[npm-org-check] Could not parse xpertminds org members from npm CLI.');
+    fail(`[npm-org-check] Could not parse ${NPM_SCOPE} org members from npm CLI.`);
   }
-  console.log('[npm-org-check] xpertminds org membership data is accessible.');
+  console.log(`[npm-org-check] ${NPM_SCOPE} org membership data is accessible.`);
 } catch (error) {
-  fail('[npm-org-check] Unable to access xpertminds org membership. Ensure account has org access.');
+  fail(`[npm-org-check] Unable to access ${NPM_SCOPE} org membership. Ensure account has org access.`);
 }
 
 console.log('[npm-org-check] npm integration check passed.');

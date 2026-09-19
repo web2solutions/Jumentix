@@ -35,12 +35,14 @@ contract exists in `dev`; planned work must be identified explicitly as planned.
 For teams and product owners using Jumentix to build software:
 
 - [Consumer Documentation Index](./consumers/README.md)
+- [npm Package Publishing](./md/NPM-PACKAGE-PUBLISHING.md)
 
 ## Creator Documentation (maintainers/internal)
 
 For engineers maintaining and evolving Jumentix:
 
 - [Creator Documentation Index](./creators/README.md)
+- [npm Package Publishing](./md/NPM-PACKAGE-PUBLISHING.md)
 - [Agent Operating Requirements 114–121](./md/AGENT-OPERATING-REQUIREMENTS-114-121.md)
   ([pt-BR](./md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md))
 - [Agent Support Declaration](./md/AGENT-SUPPORT-DECLARATION.md)

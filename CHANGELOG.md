@@ -4,7 +4,8 @@
 
 ## All Changes
 
-- 2026-09-19 ci: retarget coverage jobs to packages/cana browser scripts - Eduardo A.
+- 2026-09-19 Merge remote-tracking branch 'origin/dev' into codex/feature/JUM-841-npm-publication - Eduardo Almeida
+- 2026-09-19 feat: [JUM-841] prepare npm package publication - Eduardo Almeida
 - 2026-09-19 chore: clear ownership path freeze leftovers for JUM-834 (#362) - Eduardo A.
 - 2026-09-19 [JUM-824][Governance] Restore suite and tooling ownership (#358) - Eduardo A.
 - 2026-09-19 chore: sync origin/dev before merge of ownership epic - Eduardo A.
