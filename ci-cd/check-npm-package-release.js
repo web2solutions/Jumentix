@@ -4,6 +4,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const PACKAGES_DIR = path.join(ROOT, 'packages');
@@ -109,6 +110,6 @@ function runReleaseCheck() {
   }
 }
 
-if (require.main === module) runReleaseCheck();
+if (isEntryPoint(module)) runReleaseCheck();
 
 module.exports = { PUBLIC_PACKAGE_NAMES, discoverPublishablePackages, validateManifest, assertTarballContents, runReleaseCheck };
