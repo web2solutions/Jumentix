@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=136 unique=136 mapped=136 duplicates= -->
+<!-- requirements-inventory: files=127 unique=127 mapped=127 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -18,7 +18,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## A. Build, Runtime, and Dependency Integrity
 
-- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`, `096`
+- `002`, `013`, `041`, `042`, `043`, `052`, `096`
 - Spec resources:
   - `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
   - `documentation/md/SETUP-RUNTIME-AND-API.md`
@@ -78,12 +78,12 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## E. Architecture and Design Governance
 
-- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060`, `062`, `121`
+- `015`, `016`, `017`, `034`, `049`, `053`, `058`, `059`, `060`, `062`, `121`
 - Spec resources:
   - `documentation/md/ARCHITECTURE-AND-STRUCTURE.md`
   - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
-  - `documentation/md/JUMENTIX-MONOREPO-EXECUTION-PLAN.md`
-  - `documentation/md/JUMENTIX-MIGRATION-INVENTORY-AND-ROLLBACK.md`
+  - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+  - `documentation/md/HISTORICAL-TRANSITIONS.md`
 - Evidence:
   - boundary checks
   - import cycle checks
@@ -91,7 +91,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## F. Quality, Security, and Compliance Gates
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `115`, `118`
+- `011`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`, `106`, `108`, `109`, `110`, `111`, `112`, `113`, `115`, `118`
 - Spec resources:
   - `documentation/md/TESTING-CI-AND-QUALITY.md`
   - `documentation/md/HEXAGONAL-TEST-PYRAMID.md`
@@ -107,7 +107,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `057`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `104`, `105`, `106`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -139,7 +139,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## H. Productization and Platform Expansion
 
-- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`, `125`, `126`
+- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `125`, `126`
 - Spec resources:
   - `packages/cli-init/*`
   - `apps/service-management/documentation/*`
@@ -159,9 +159,9 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-08-05`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements/project/` and `.agents/requirements/software/`:
 
-1. Requirement files in the registry: `126`
-2. Unique requirement IDs in the registry: `126`
-3. Unique IDs mapped in this ledger: `126`
+1. Requirement files in the registry: `127`
+2. Unique requirement IDs in the registry: `127`
+3. Unique IDs mapped in this ledger: `127`
 4. Duplicate IDs with independently binding files: `none`
 5. Missing IDs: `none`
 

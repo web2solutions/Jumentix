@@ -119,7 +119,7 @@ validate for that identity.
 - `bun run governance:check-identity` — validates the identity Git would stamp
   on the next commit.
 - The check runs inside `ci:gate`, so it gates every branch through both CI
-  providers (Requirement `107`).
+  providers (Requirement `113`).
 - `.husky/pre-commit` blocks undeclared author/committer identity before commit
   creation.
 - `.husky/pre-push` blocks publishing any reachable commit with undeclared

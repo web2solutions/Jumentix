@@ -12,21 +12,15 @@ const README_PATH = 'README.md';
 
 const INTEGRATION_MARKERS = Object.freeze([
   'web2solutions/Jumentix',
-  'web2solutions/aaa-typescript-boilerplate',
   'GitHub Actions',
-  'Repository webhooks',
   'CircleCI',
   'Codecov',
   'SonarQube Cloud',
   'OSV.dev',
-  'GitGuardian',
-  'Cursor Bugbot',
   'Vercel',
   'Dependabot',
-  'JUMENTIX_JWT_TOKEN_SECRET_KEY',
-  'JUMENTIX_REDIS_PASSWORD',
-  'JUM-568',
-  'JUM-569'
+  'webhooks',
+  'JUM-568'
 ]);
 
 const CANONICAL_CONFIG_EXPECTATIONS = Object.freeze([
@@ -49,8 +43,7 @@ const CANONICAL_CONFIG_EXPECTATIONS = Object.freeze([
     path: README_PATH,
     markers: [
       'web2solutions/Jumentix',
-      'web2solutions/aaa-typescript-boilerplate',
-      '`103`'
+      'HISTORICAL-TRANSITIONS.md'
     ]
   }
 ]);

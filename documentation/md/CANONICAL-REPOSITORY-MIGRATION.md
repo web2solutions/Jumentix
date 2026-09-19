@@ -1,29 +1,10 @@
-# Canonical Repository Migration
+# Canonical Repository
 
-## Active repositories
+`web2solutions/Jumentix` is the public canonical repository for product source,
+requirements, specifications, documentation, CI, and releases. Firestore is the
+canonical agent-coordination store under Requirement `089`.
 
-Jumentix development and coordination use these canonical repositories:
-
-| Responsibility | Canonical repository |
-| --- | --- |
-| Product, source, requirements, specs, docs, CI, and releases | `web2solutions/Jumentix` |
-| Agent registration, assignments, and branch checks | `XpertMinds/jumentix-agent-registry` |
-
-New work must be created only in these repositories. Access requires an identity
-authorized by the project owner and recorded in Linear.
-
-## Deprecated repositories
-
-The following repositories are historical, read-only, and accept no new
-modifications:
-
-- `web2solutions/aaa-typescript-boilerplate`
-- `web2solutions/jumentix-agent-registry`
-
-They remain archived after the final migration PR to `dev`. Existing links may
-be retained only when they are clearly historical delivery evidence.
-
-## Clone and registry setup
+## Setup
 
 ```bash
 git clone git@github.com:web2solutions/Jumentix.git
@@ -32,24 +13,15 @@ git switch dev
 bun install --frozen-lockfile
 ```
 
-Agent-registry consumers set `GITHUB_TOKEN` or `GH_TOKEN` with private read
-access. The token must never be logged, committed, embedded in URLs, or copied
-into documentation. Mirrors pin the full immutable registry commit.
-
-## Delivery policy
+## Delivery Policy
 
 - Task branches start from and target `dev`.
 - PR titles begin with the matching Linear ID: `[JUM-XXXX][Nature]`.
-- Review approval count is optional.
 - CI, quality, coverage, security, governance, traceability, and valid-comment
   resolution remain mandatory.
 - Missing, failed, skipped, cancelled, timed-out, or incomplete checks are not
   passing evidence and cannot be bypassed.
 
-## Traceability
+Historical repository migration evidence is summarized in
+`documentation/md/HISTORICAL-TRANSITIONS.md`.
 
-- Requirement: `103`, `104`
-- Linear epic: `JUM-562`
-- Documentation task: `JUM-563`
-- Application integration task: `JUM-568`
-- Integration contract: `INTEGRATION-MIGRATION-REQUIREMENT.md`

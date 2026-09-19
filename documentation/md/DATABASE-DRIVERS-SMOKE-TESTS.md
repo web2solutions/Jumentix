@@ -34,24 +34,24 @@ This boilerplate now supports runtime selection of multiple database drivers thr
 - Run all configured smoke drivers:
 
 ```bash
-pnpm run test:smoke:db:all
+bun run test:smoke:db:all
 ```
 
 - Run one driver only:
 
 ```bash
-pnpm run test:smoke:db:postgresql
-pnpm run test:smoke:db:mysql
-pnpm run test:smoke:db:mssql
-pnpm run test:smoke:db:oracle
-pnpm run test:smoke:db:mongo
-pnpm run test:smoke:db:cassandra
-pnpm run test:smoke:db:dynamodb
-pnpm run test:smoke:db:firebase
-pnpm run test:smoke:db:aurora
-pnpm run test:smoke:db:rds
-pnpm run test:smoke:db:sqlite
-pnpm run test:smoke:db:inmemory
+bun run test:smoke:db:postgresql
+bun run test:smoke:db:mysql
+bun run test:smoke:db:mssql
+bun run test:smoke:db:oracle
+bun run test:smoke:db:mongo
+bun run test:smoke:db:cassandra
+bun run test:smoke:db:dynamodb
+bun run test:smoke:db:firebase
+bun run test:smoke:db:aurora
+bun run test:smoke:db:rds
+bun run test:smoke:db:sqlite
+bun run test:smoke:db:inmemory
 ```
 
 ### Driver Filter
@@ -61,7 +61,7 @@ pnpm run test:smoke:db:inmemory
 Example:
 
 ```bash
-JUMENTIX_DB_SMOKE_DRIVERS=PostgreSQL,MySQL pnpm run test:smoke:db
+JUMENTIX_DB_SMOKE_DRIVERS=PostgreSQL,MySQL bun run test:smoke:db
 ```
 
 ## Docker Compose Files Per Database
@@ -82,16 +82,16 @@ JUMENTIX_DB_SMOKE_DRIVERS=PostgreSQL,MySQL pnpm run test:smoke:db
 Each workflow starts container -> runs smoke test -> stops container:
 
 ```bash
-pnpm run smoke:db:postgresql
-pnpm run smoke:db:mysql
-pnpm run smoke:db:mssql
-pnpm run smoke:db:oracle
-pnpm run smoke:db:mongodb
-pnpm run smoke:db:cassandra
-pnpm run smoke:db:dynamodb
-pnpm run smoke:db:firebase
-pnpm run smoke:db:aurora
-pnpm run smoke:db:rds
+bun run smoke:db:postgresql
+bun run smoke:db:mysql
+bun run smoke:db:mssql
+bun run smoke:db:oracle
+bun run smoke:db:mongodb
+bun run smoke:db:cassandra
+bun run smoke:db:dynamodb
+bun run smoke:db:firebase
+bun run smoke:db:aurora
+bun run smoke:db:rds
 ```
 
 ## Environment Variables

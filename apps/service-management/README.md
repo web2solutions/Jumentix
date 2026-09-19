@@ -203,8 +203,8 @@ This application is served via PM2:
 
 Commands:
 
-- `pnpm run dev:service-management`
-- `pnpm run dev` (auto-starts service management + REST profile)
+- `bun run dev:service-management`
+- `bun run dev` (auto-starts service management + REST profile)
 
 ## Static Serving
 

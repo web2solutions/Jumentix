@@ -188,8 +188,8 @@ default `<repo-root>/pm2`) and returns `{ environment, fileName, path, exists,
 apps }`, where each app carries `{ name, script, interpreter, interpreterArgs,
 env, command }`. `command` is derived from the ecosystem definition —
 `pm2 start <ecosystem path> --only <app name> --update-env` — never an embedded
-package-manager string, so the Bun cutover (JUM-33/JUM-40) cannot silently
-invalidate the preview. The ecosystem module is loaded cache-busted: editing an
+package-manager string, so the current Bun toolchain cannot silently invalidate
+the preview. The ecosystem module is loaded cache-busted: editing an
 ecosystem file changes the response with no server restart and no code change.
 
 Failure and edge states follow the same honesty discipline as the env-file API:

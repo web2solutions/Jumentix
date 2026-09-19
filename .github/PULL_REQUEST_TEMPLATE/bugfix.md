@@ -56,12 +56,12 @@
 
 ## Test Evidence
 
-- [ ] `pnpm run lint`
-- [ ] `pnpm run test:unit`
-- [ ] `pnpm run oas:check-routes`
-- [ ] `pnpm run build:dev`
-- [ ] `pnpm run ci:smoke`
-- [ ] `pnpm run ci:gate`
+- [ ] `bun run lint`
+- [ ] `bun run test:unit`
+- [ ] `bun run oas:check-routes`
+- [ ] `bun run build:dev`
+- [ ] `bun run ci:smoke`
+- [ ] `bun run ci:gate`
 
 ## Security and Data Impact
 

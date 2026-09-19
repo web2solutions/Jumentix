@@ -8,7 +8,7 @@ Este documento centraliza o status e as prioridades do Domain Designer MVP.
 
 Fonte canônica do backlog:
 
-- `.agents/project-todos.md` (seção: `Backlog do MVP do Designer de Domínio`)
+- Workspace Linear: <https://linear.app/jumentix>
 
 ## Incrementos de MVP entregues
 

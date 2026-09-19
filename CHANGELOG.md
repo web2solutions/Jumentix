@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-19 docs: retire superseded governance material - Eduardo Almeida
+- 2026-09-19 fix(latent): clear bugs documented during JUM-821 promotion rounds (JUM-839) (#356) - Eduardo A.
 - 2026-09-18 fix(ci): analyse main and dev on sonar and codecov (#355) - Eduardo A.
 - 2026-09-18 [JUM-811][Feature] Domain dashboards, OAS metrics widgets and a11y (#354) - Eduardo A.
 - 2026-09-18 feat(frontend): domain dashboards from OAS metrics - Eduardo A.
@@ -18,3 +20,616 @@
 - 2026-09-16 feat(designer): architecture canvas and OAS split - Eduardo A.
 - 2026-09-16 [JUM-821] Promote dev snapshot with verified signature - Eduardo Almeida
 - 2026-08-29 [JUM-721][Release] Promote dev to main with signed squash (#278) - Eduardo A.
+- 2026-08-29 chore(release): promote dev to main - Eduardo Almeida
+- 2026-08-20 [JUM-724][Release] Promote dev to main with signed squash (#254) - Eduardo A.
+- 2026-08-20 chore(release): promote dev to main for JUM-724 - Eduardo A.
+- 2026-08-10 [JUM-638][Release] Promote dev to main with signed squash (#174) - Eduardo A.
+- 2026-08-10 chore(release): promote dev to main for JUM-638 - Eduardo A.
+- 2026-08-09 [JUM-636][Release] Promote dev to main (#162) - Eduardo A.
+- 2026-08-09 chore(release): promote dev to main - Eduardo A.
+- 2026-08-09 [JUM-634][Release] Promote dev to main (#158) - Eduardo A.
+- 2026-08-09 fix(ci): allow signed dev promotion governance - Eduardo A.
+- 2026-08-09 fix(ci): classify signed dev promotion release branches - Eduardo A.
+- 2026-08-09 chore(release): promote dev to main - Eduardo A.
+- 2026-08-07 [JUM-504][Release] Promote CircleCI-backed dev snapshot to main - Eduardo A.
+- 2026-08-05 [JUM-504][Release] Promote main branch-gate fix - Eduardo A.
+- 2026-08-05 [JUM-504][Release] Promote CircleCI-backed dev snapshot to main - Eduardo A.
+- 2026-08-03 [JUM-417][Release] Promote dev to main: Cana engine matrix, Sonar fixes, temporary CircleCI bridge (#62) - Eduardo A.
+- 2026-08-02 [JUM-540][Release] Promote dev snapshot to main (#60) - Eduardo A.
+- 2026-08-02 chore(release): promote dev snapshot to main - Eduardo A.
+- 2026-08-02 [JUM-594][Release] Promote private free CI strategy (#46) - Eduardo A.
+- 2026-08-02 [JUM-594][Fix] Resolve REST and WebSocket SDK spec paths independent of cwd (#45) - Eduardo A.
+- 2026-08-02 refactor: share canonical spec resolution via shared-contracts - Eduardo A.
+- 2026-08-02 test: cover the explicit-path branch of the WebSocket spec loader - Eduardo A.
+- 2026-08-02 fix: resolve REST and WebSocket SDK spec paths independent of cwd - Eduardo A.
+- 2026-08-02 [JUM-594][Release] Fix loadSpecs cwd resolution to unblock the dev-to-main promotion (#43) - Eduardo A.
+- 2026-08-02 test: cover the missing-spec failure branch of loadSpecs - Eduardo A.
+- 2026-08-02 fix: resolve AsyncAPI gRPC spec independent of the current working directory - Eduardo A.
+- 2026-08-01 chore(registry): resync opencode-primary-001 status to available [JUM-597] (#41) - Eduardo A.
+- 2026-08-01 [JUM-597][Fix] Redis key-value client reports connection failures instead of hanging (#40) - Eduardo A.
+- 2026-08-01 [JUM-586][Testing] Every package owns a real test suite, and every package is measured (#37) - Eduardo A.
+- 2026-08-01 [JUM-595][Docs] Agent operating requirements 114–119 (worktree, tests, Docker, API-first) (#39) - Eduardo A.
+- 2026-08-01 chore: sync release registry [JUM-594] (#35) - Eduardo A.
+- 2026-08-01 docs: define private free CI strategy [JUM-593] (#34) - Eduardo A.
+- 2026-08-01 docs: restore truthful badges and coverage map [JUM-592] (#33) - Eduardo A.
+- 2026-08-01 [JUM-591][CI] Enforce pinned third-party PR review (#32) - Eduardo A.
+- 2026-08-01 [JUM-590][CI] Replace paid private CI providers (#31) - Eduardo A.
+- 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state (#30) - Eduardo A.
+- 2026-08-01 [JUM-589][Governance] Sync terminal Codex onboarding state - Eduardo Almeida
+- 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding (#29) - Eduardo A.
+- 2026-08-01 [JUM-589][Governance] Sync Codex registry onboarding - Eduardo Almeida
+- 2026-08-01 [JUM-587][Release] Promote the test map completeness fixes to main (#28) - Eduardo A.
+- 2026-08-01 fix(ci): make the test map complete in both directions [JUM-587] (#27) - Eduardo A.
+- 2026-08-01 [JUM-585][Release] Reconcile main ancestry into dev (#26) - Eduardo A.
+- 2026-08-01 chore(release): reconcile main ancestry into dev - Eduardo Almeida
+- 2026-08-01 feat(testing): every package owns its suite, with a ratcheting debt register [JUM-585] (#24) (#25) - Eduardo A.
+- 2026-08-01 feat(testing): every package owns its suite, with a ratcheting debt register [JUM-585] (#24) - Eduardo A.
+- 2026-08-01 [JUM-398][Release] Promote Cana adapter, Requirement 111 and gate repairs to main (#22) - Eduardo A.
+- 2026-08-01 fix(ci): isolate integration suites and restore the strict matrix coverage cells [JUM-398] (#23) - Eduardo A.
+- 2026-07-31 feat(database): Cana — IndexedDB offline database adapter [JUM-398] (#15) - Eduardo A.
+- 2026-07-30 feat(testing): finish Hexagonal Test Pyramid with Req 106 Bun-local runtime (#18) - Eduardo A.
+- 2026-07-30 feat(testing): deliver Hexagonal Test Pyramid layer-aware gates [JUM-428][JUM-429][JUM-441][JUM-442][JUM-443] (#16) - Eduardo A.
+- 2026-07-30 chore(governance): register opencode-primary-001 in agent registry - Eduardo Almeida
+- 2026-07-30 [JUM-540][Security] Remove Snyk completely from Jumentix (#14) - Eduardo A.
+- 2026-07-30 [JUM-540][Security] Retire Snyk in favour of the first-party OSV scanner (#13) - Eduardo A.
+- 2026-07-30 fix(security): retire Snyk in favour of the first-party OSV scanner [JUM-540] - Eduardo Almeida
+- 2026-07-30 [JUM-22][Tooling] Replace internal Node and pnpm workflows with Bun (#8) - Eduardo A.
+- 2026-07-30 [JUM-568][Docs] Record terminal provider evidence (#11) - Eduardo A.
+- 2026-07-30 fix(tooling): resolve both Bugbot findings — misplaced --prefix and a type-erased barrel - Eduardo Almeida
+- 2026-07-30 docs(changelog): record provider evidence update - Eduardo Almeida
+- 2026-07-30 docs(integrations): record terminal provider evidence - Eduardo Almeida
+- 2026-07-30 feat(security): first-party OSV dependency scanner, closing the bun.lock blind spot [JUM-540] - Eduardo Almeida
+- 2026-07-30 [JUM-568][CI] Complete provider evidence and fail-closed checks (#10) - Eduardo A.
+- 2026-07-30 ci(JUM-568): make Codecov upload fail closed - Eduardo Almeida
+- 2026-07-30 docs(JUM-568): record GitGuardian plan constraint - Eduardo Almeida
+- 2026-07-30 fix(security): expose the dependency-scanning blind spot created by bun.lock [JUM-540] - Eduardo Almeida
+- 2026-07-30 docs(JUM-568): record terminal PR checks - Eduardo Almeida
+- 2026-07-30 docs(JUM-568): record canonical provider evidence - Eduardo Almeida
+- 2026-07-30 fix(tooling): correct two lint errors, and correct the previous commit message - Eduardo Almeida
+- 2026-07-30 test(tooling): unit-cover the new Bun guards and harden the fail-closed harness - Eduardo Almeida
+- 2026-07-30 Merge origin/dev (JUM-568) into the Bun cutover branch - Eduardo Almeida
+- 2026-07-30 [JUM-568][CI] Recreate canonical integrations and repository controls (#7) - Eduardo A.
+- 2026-07-30 fix(JUM-568): resolve remaining Sonar finding - Eduardo Almeida
+- 2026-07-30 fix(JUM-568): satisfy Sonar quality gate - Eduardo Almeida
+- 2026-07-30 feat(tooling): migrate release tooling to bun and record two open decisions [JUM-36][JUM-37][JUM-540] - Eduardo Almeida
+- 2026-07-30 feat(tooling): fail-closed evidence, Bun engineering guide, cutover cleanup [JUM-38][JUM-39][JUM-40] - Eduardo Almeida
+- 2026-07-29 refactor(tooling): repo-wide import type / export type codemod [JUM-536] - Eduardo Almeida
+- 2026-07-29 feat(tooling): PM2 on Bun interpreter and private-registry token wiring [JUM-33][JUM-539] - Eduardo Almeida
+- 2026-07-29 chore(JUM-568): reconcile canonical integration migration - Eduardo Almeida
+- 2026-07-29 feat(tooling): migrate scripts, hooks and CI to Bun; drop hyper-express [JUM-27][JUM-28][JUM-32][JUM-34][JUM-35][JUM-551] - Eduardo Almeida
+- 2026-07-29 ci(JUM-568): recreate canonical integrations and repository controls - Eduardo Almeida
+- 2026-07-29 fix(tooling): vendor uWebSockets.js and close the hyper-express blocker [JUM-538][JUM-26] - Eduardo Almeida
+- 2026-07-29 feat(tooling): pin Bun toolchain and consolidate dependency pins [JUM-24][JUM-537][JUM-538][JUM-26] - Eduardo Almeida
+- 2026-07-29 Merge pull request #5 from XpertMinds/chore/release/reconcile-main-into-dev - Eduardo A.
+- 2026-07-29 chore(release): reconcile main into dev for XpertMinds promotion - Eduardo Almeida
+- 2026-07-29 Merge pull request #3 from XpertMinds/cursor/ci/JUM-568-recreate-jumentix-integrations - Eduardo A.
+- 2026-07-29 ci(governance): enforce XpertMinds application integration parity [JUM-568] - Eduardo Almeida
+- 2026-07-29 Merge pull request #1 from XpertMinds/codex/ci/JUM-564-restify-process-budget - Eduardo A.
+- 2026-07-29 chore(changelog): record JUM-564 listener stabilization - Eduardo Almeida
+- 2026-07-29 test(http): stabilize integration listener lifecycle [JUM-564] - Eduardo Almeida
+- 2026-07-29 test(ci): isolate registry token assertions [JUM-564] - Eduardo Almeida
+- 2026-07-29 test(ci): satisfy canonical bootstrap lint [JUM-564] - Eduardo Almeida
+- 2026-07-29 Merge branch 'dev' into codex/ci/JUM-564-restify-process-budget - Eduardo Almeida
+- 2026-07-29 Merge pull request #2 from XpertMinds/codex/docs/JUM-563-canonical-repository-requirements - Eduardo A.
+- 2026-07-29 docs(governance): canonicalize XpertMinds repositories [JUM-563] - Eduardo Almeida
+- 2026-07-29 ci(restify): raise finite process budget [JUM-564] - Eduardo Almeida
+- 2026-07-29 [JUM-531][Release] Promote dev to main after JUM-549 stabilization (#252) - Eduardo A.
+- 2026-07-29 chore(release): reconcile main into dev for JUM-531 second promotion - web2solutions
+- 2026-07-29 [JUM-549][CI] Stabilize sustained-load integration budgets (#251) - Eduardo A.
+- 2026-07-29 [JUM-531][Release] Promote current origin/dev to main (#250) - Eduardo A.
+- 2026-07-29 docs(governance): add canonical Project Update template for JUM-502 (#249) - Eduardo A.
+- 2026-07-29 [JUM-531][Release] Reconcile main ancestry into dev for promotion (#248) - Eduardo A.
+- 2026-07-29 chore(release): reconcile main into dev for JUM-531 promotion - web2solutions
+- 2026-07-29 fix(ci): cover Restify integration headroom (#247) - Eduardo A.
+- 2026-07-29 fix(ci): stabilize Express integration timeout (#245) - Eduardo A.
+- 2026-07-29 chore(governance): sync agent registry mirror for JUM-533 (#246) - Eduardo A.
+- 2026-07-29 chore(jum-535): reconcile governance consistency - Eduardo A.
+- 2026-07-29 [JUM-529][Release] Promote dev to main (#238) - Eduardo A.
+- 2026-07-29 [JUM-529][Release] Reconcile main ancestry into dev (#243) - Eduardo A.
+- 2026-07-29 chore(release): reconcile main into dev for promotion - web2solutions
+- 2026-07-29 ci: align branch-aware gate messages - web2solutions
+- 2026-07-29 [Release] Reconcile main into dev (#240) - Eduardo A.
+- 2026-07-29 test(governance): update requirements inventory duplicates - web2solutions
+- 2026-07-29 fix(governance): refresh requirements inventory markers - web2solutions
+- 2026-07-29 fix(governance): separate Project Update requirement - web2solutions
+- 2026-07-28 [JUM-523][Governance] Reconcile Linear authority and mandatory checks (#237) - Eduardo A.
+- 2026-07-28 docs(governance): require active-task switching - web2solutions
+- 2026-07-28 docs(governance): require valid PR comment resolution - web2solutions
+- 2026-07-28 fix(governance): require registry branch evidence - web2solutions
+- 2026-07-28 fix(governance): complete pre-task refresh reads - web2solutions
+- 2026-07-28 docs(governance): require pre-task requirement refresh - web2solutions
+- 2026-07-28 docs(governance): add OpenCode agent support - web2solutions
+- 2026-07-28 chore(governance): require Linear Project Update evidence - web2solutions
+- 2026-07-28 test: repair registry lint regression - web2solutions
+- 2026-07-28 docs(governance): require complete agent intake (#230) - Eduardo A.
+- 2026-07-28 [Chore] Sync public agent-registry pin and authenticated fetch (#226) - Eduardo A.
+- 2026-07-28 [Chore] Sync dev with main and resolve merge conflicts (#229) - Eduardo A.
+- 2026-07-28 chore: clean conflict markers, update PR templates, add AGENTS.md rules 16-23 (#225) - Eduardo A.
+- 2026-07-28 chore: clean conflict markers, update PR templates, add AGENTS.md rules 16-23 (#225) - Eduardo A.
+- 2026-07-28 [Release] Promote dev to main - Eduardo A.
+- 2026-07-28 merge: resolve conflicts with main accepting dev version - Eduardo A.
+- 2026-07-28 docs(governance): require Linear project task updates - Eduardo A.
+- 2026-07-28 docs(governance): enforce task-owned branches and PRs - Eduardo A.
+- 2026-07-28 ci: focused epic metadata enforcement - Eduardo A.
+- 2026-07-28 chore: website registry sync (#172) - Eduardo A.
+- 2026-07-28 fix(ci): Redis config and CircleCI workflow fixes - Eduardo A.
+- 2026-07-28 chore: sync dev with main - Eduardo A.
+- 2026-07-28 chore: update agent registry refs after sync - Eduardo A.
+- 2026-07-28 chore: sync dev with main - Eduardo A.
+- 2026-07-28 [Release] Promote dev to main - Eduardo A.
+- 2026-07-28 fix(governance): resolve merge conflict in req 098 - Eduardo A.
+- 2026-07-28 fix(governance): resolve merge conflict in req 098 - Eduardo A.
+- 2026-07-28 chore(governance): update agent registry and enforcement for req 098 - Eduardo A.
+- 2026-07-28 [Release] Promote dev to main - Eduardo A.
+- 2026-07-28 feat(governance): restrict commit, push, and merge to authorized email only - Eduardo A.
+- 2026-07-28 feat(governance): establish Linear as single source of truth with API security rules - Eduardo A.
+- 2026-07-28 [Docs] Synchronize Jumentix documentation from dev (#198) - Eduardo A.
+- 2026-07-28 chore(changelog): refresh generated history after docs rebase - web2solutions
+- 2026-07-27 docs: synchronize Jumentix documentation from dev - web2solutions
+- 2026-07-28 [Release] Promote governed dev to main (#202) - Eduardo A.
+- 2026-07-28 [Security] Remediate find-my-way vulnerability through Restify (#204) - Eduardo A.
+- 2026-07-28 fix(security): remediate restify find-my-way - Eduardo A.
+- 2026-07-28 [Governance] Require Linear planning metadata lifecycle (#189) - Eduardo A.
+- 2026-07-26 docs(governance): require Linear planning metadata - Eduardo A.
+- 2026-07-28 [Security][Website] Remediate PostCSS vulnerability (#203) - Eduardo A.
+- 2026-07-27 fix(website): remediate PostCSS resolution - Eduardo A.
+- 2026-07-27 [Fix] Remove conditional from registry transport test (#201) - Eduardo A.
+- 2026-07-27 fix(governance): accept Linear project tracking links - Eduardo A.
+- 2026-07-27 fix(ci): remove conditional from registry transport test - Eduardo A.
+- 2026-07-27 [Governance] Sync canonical registry and admin review policy (#200) - Eduardo A.
+- 2026-07-27 docs(governance): sync registry and admin review policy - Eduardo A.
+- 2026-07-27 [Governance] Adopt requirement 096: Bun as internal engineering runtime (JUM-22) (#199) - Eduardo A.
+- 2026-07-27 docs(governance): add requirement 096 bun internal tooling runtime - Eduardo A.
+- 2026-07-27 [Research] Establish Bun compatibility and migration baseline (JUM-23) (#196) - Eduardo A.
+- 2026-07-27 docs(bun): establish bun compatibility and migration baseline - Eduardo A.
+- 2026-07-27 [CI] Eliminate anonymous agent-registry API quota (#194) - Eduardo A.
+- 2026-07-27 ci(registry): avoid anonymous API quota for pinned checks - web2solutions
+- 2026-07-27 [CI] Enforce branch-aware gates and isolate website Storybook (#193) - Eduardo A.
+- 2026-07-27 chore(registry): sync CI task release - web2solutions
+- 2026-07-27 fix(ci): use range diffs for task branch pushes - web2solutions
+- 2026-07-27 ci(workflows): enforce branch-aware quality gates - web2solutions
+- 2026-07-27 [Test] Isolate Storybook quality gates to Jumentix website (#190) - Eduardo A.
+- 2026-07-27 chore(agents): sync released website assignment - web2solutions
+- 2026-07-27 test(website): isolate Storybook quality gates - web2solutions
+- 2026-07-27 [Governance] Require documentation task before epic completion (#186) - Eduardo A.
+- 2026-07-26 docs: require docs task before epic completion - Eduardo A.
+- 2026-07-26 [Chore] Sync completed CI agent assignment (#183) (#187) - Eduardo A.
+- 2026-07-26 chore(agents): sync completed CI assignment (#183) - web2solutions
+- 2026-07-26 [Bug] Preserve unit LCOV for Codecov (#183) (#184) - Eduardo A.
+- 2026-07-26 fix(governance): support bug PR prefixes (#185) - web2solutions
+- 2026-07-26 fix(ci): preserve unit LCOV for Codecov (#183) - web2solutions
+- 2026-07-26 feat(website): rebuild documentation experience (#172) (#181) - Eduardo A.
+- 2026-07-26 [CI] Enforce focused epic metadata without false-green task gates (#176) - Eduardo A.
+- 2026-07-26 feat(website): rebuild OSS commercial experience (#171) - Eduardo A.
+- 2026-07-26 feat(website): establish design system and Storybook (#178) - Eduardo A.
+- 2026-07-26 [Bug] Restore reliable Jumentix documentation routes and links (#177) - Eduardo A.
+- 2026-07-26 fix(website): restore docs layout and routes - web2solutions
+- 2026-07-26 [Docs] Audit OSS reference UX and define website IA (#175) - Eduardo A.
+- 2026-07-26 docs(website): audit OSS reference UX and IA - web2solutions
+- 2026-07-26 [Governance] Require milestones for focused epics (#166) - Eduardo A.
+- 2026-07-26 chore(governance): require milestones for focused epics - web2solutions
+- 2026-07-26 [Governance] Require epic-focused task delegation (#164) - Eduardo A.
+- 2026-07-26 chore(governance): require epic-focused task delegation - web2solutions
+- 2026-07-26 [Release] Promote dev to main (#156) - Eduardo A.
+- 2026-07-26 [Fix][CI] Resolve remaining agent registry lint style (#160) - Eduardo A.
+- 2026-07-26 fix(ci): satisfy agent registry test lint - web2solutions
+- 2026-07-26 [Fix][CI] Restore release lint compliance (#158) - Eduardo A.
+- 2026-07-26 fix(ci): restore release lint compliance - web2solutions
+- 2026-07-26 [Feature] Externalize agent registry canonical source (#144) - Eduardo A.
+- 2026-07-25 feat(governance): externalize agent registry canonical source - web2solutions
+- 2026-07-26 [Docs] Show CircleCI badges for dev and main (#152) - Eduardo A.
+- 2026-07-26 docs(readme): show CircleCI badges for dev and main - web2solutions
+- 2026-07-26 [Chore] Run change-focused tests on task branches (#150) - Eduardo A.
+- 2026-07-26 chore(ci): add change-focused task test gates - web2solutions
+- 2026-07-26 [Chore] Apply branch-aware quality gates (#148) - Eduardo A.
+- 2026-07-26 chore(ci): add branch-aware quality gates - web2solutions
+- 2026-07-26 [Release] Promote dev critical remediation to main (#146) - Eduardo A.
+- 2026-07-25 Merge remote-tracking branch 'origin/main' into dev - web2solutions
+- 2026-07-25 docs(governance): require feature/bug branch cleanup after merge into dev (#145) - Eduardo A.
+- 2026-07-25 chore(ci-governance): fix docs-only changelog CI and add branch/PR requirements - web2solutions
+- 2026-07-25 chore(changelog): sync generated changelog for PR #145 - web2solutions
+- 2026-07-25 chore(merge): sync main into branch and resolve governance conflicts - web2solutions
+- 2026-07-25 docs(governance): require cleanup of feature/bug branches after dev merge - web2solutions
+- 2026-07-25 [Fix] Remediate critical CI and runtime defects #136-#140 (#143) - Eduardo A.
+- 2026-07-25 docs(governance): enforce main branch protection and agent machine identity (#142) - Eduardo A.
+- 2026-07-25 fix(critical): remediate interdependent CI and runtime defects - Eduardo A.
+- 2026-07-25 fix(ci): make changelog check timezone-stable across runners - web2solutions
+- 2026-07-25 docs(governance): add PR body formatting requirement and sync changelog - web2solutions
+- 2026-07-25 docs(governance): add agent registration and operating playbook - web2solutions
+- 2026-07-25 docs(governance): enforce main branch protection and agent machine identity - web2solutions
+- 2026-07-25 docs(governance): fix circleci badge and refresh agent branch sync - web2solutions
+- 2026-07-25 feat(governance): add multi-agent registry and branch-sync requirements (#141) - Eduardo A.
+- 2026-07-25 chore(docs): remove ai draft files - web2solutions
+- 2026-07-25 fix(ci): stabilize changelog check for head commit - web2solutions
+- 2026-07-25 chore(changelog): include latest commit in generated history - web2solutions
+- 2026-07-25 chore(changelog): sync changelog with latest governance commit - web2solutions
+- 2026-07-25 feat(governance): add multi-agent support and agent registry workflow - web2solutions
+- 2026-07-25 fix(ci): stabilize GitHub Actions for pnpm monorepo (#134) - Eduardo A.
+- 2026-07-25 fix(ci): setup pnpm before node cache in sonar workflow - web2solutions
+- 2026-07-25 fix(ci): repair github workflows for pnpm monorepo - web2solutions
+- 2026-07-25 fix(ci): avoid secrets context in workflow if for SonarCloud - web2solutions
+- 2026-07-25 docs(i18n): reorganize documentation by audience and add PT-BR corpus (#132) - Eduardo A.
+- 2026-07-25 docs(consumers): add package scripts reference with usage catalog - web2solutions
+- 2026-07-25 docs(i18n): reorganize docs by audience and add pt-BR corpus - web2solutions
+- 2026-07-25 chore(governance): require task traceability and bilingual docs/site - web2solutions
+- 2026-07-25 feat(website): add reliable pre-publish checks and stabilize production routes - web2solutions
+- 2026-07-25 feat(jumentix): advance monorepo extraction, governance, and wave progress (#112) - Eduardo A.
+- 2026-07-25 docs(spec): codify engineering, security, and product composition governance - web2solutions
+- 2026-07-25 docs(spec): enforce 100% functional and NFR requirements coverage in specs - web2solutions
+- 2026-07-24 docs(spec): establish canonical Spec Development Driven knowledge system - web2solutions
+- 2026-07-24 chore(git): ignore local temp artifacts blocked by push protection - web2solutions
+- 2026-07-24 test(coverage): cover vercel security helper branches - web2solutions
+- 2026-07-24 chore(security): align snyk policy across workspace projects - web2solutions
+- 2026-07-24 fix(security): harden static docs handlers for snyk code - web2solutions
+- 2026-07-24 chore(security): expand snyk policy for transitive website/template findings - web2solutions
+- 2026-07-24 chore(security): suppress protobufjs transitive snyk finding - web2solutions
+- 2026-07-24 chore(security): track restify snyk advisory in policy - web2solutions
+- 2026-07-24 chore(security): extend snyk ignore map for sharp transitive advisories - web2solutions
+- 2026-07-24 chore(security): map snyk policy ids for transitive advisories - web2solutions
+- 2026-07-24 chore(security): add workspace snyk policy files - web2solutions
+- 2026-07-24 fix(ci): stabilize monorepo checks and security dependency graph - web2solutions
+- 2026-07-24 chore(security): add tracked snyk policy and workspace override governance - web2solutions
+- 2026-07-24 fix(security): bump next and fastify stacks to patch known advisories - web2solutions
+- 2026-07-24 feat(website): stabilize docs routing and branding; chore(monorepo): pnpm docs/scripts alignment - web2solutions
+- 2026-07-03 fix(website): force dynamic rendering to avoid not-found prerender failure - web2solutions
+- 2026-07-03 fix(website): remove banner from root layout to avoid prerender crash - web2solutions
+- 2026-07-03 fix(website): stop generating invalid jumentix index meta entry - web2solutions
+- 2026-07-03 fix(website): remove invalid root index entry from nextra meta - web2solutions
+- 2026-07-03 fix(website): remove test-only type defs from build tsconfig - web2solutions
+- 2026-07-03 fix(website): exclude test files from Next production typecheck - web2solutions
+- 2026-07-03 fix(website): add missing next-themes runtime dependency - web2solutions
+- 2026-07-03 fix(website): exclude storybook config from production typecheck - web2solutions
+- 2026-07-03 fix(website): remove unresolved local image from architecture doc - web2solutions
+- 2026-07-03 fix(docs): make architecture miro link mdx-safe at source - web2solutions
+- 2026-07-03 fix(website): harden mdx-safe miro link rendering - web2solutions
+- 2026-07-03 fix(website): resolve CI build deps and MDX link syntax - web2solutions
+- 2026-07-03 fix(test): use development NODE_ENV in auth service env fixture - web2solutions
+- 2026-07-03 fix(test): make env typing resilient under pnpm next globals - web2solutions
+- 2026-07-03 fix(ci): stabilize affected-scope detection and website lint deps - web2solutions
+- 2026-07-03 fix(ci): avoid changed-files arg overflow in monorepo workflow - web2solutions
+- 2026-07-03 feat(website): add commercial site foundation and npm/vercel integration - web2solutions
+- 2026-07-02 fix(ci): ignore compatibility user repository files in coverage threshold - web2solutions
+- 2026-07-02 chore(test): exclude compatibility repository adapters from coverage gate - web2solutions
+- 2026-07-02 fix(ci): unignore users persistence adapters and stabilize boundary test scope - web2solutions
+- 2026-07-02 chore(governance): define GitHub Project as single source of truth - web2solutions
+- 2026-07-02 test(cache): raise patch coverage to 100 for cached read branches - web2solutions
+- 2026-07-02 feat(monorepo): finalize rehome, governance gates, and backlog closeout - web2solutions
+- 2026-07-02 fix(ci): resolve service-management integration test path in monorepo - web2solutions
+- 2026-07-02 fix(tsconfig): allow @src path fallback to legacy src tree - web2solutions
+- 2026-07-02 fix(build): use dedicated tsconfig for compile-only sources - web2solutions
+- 2026-07-02 fix(ci): support serverless handler path fallbacks during monorepo migration - web2solutions
+- 2026-07-02 fix(serverless): update handlers to monorepo restapi paths - web2solutions
+- 2026-07-02 fix(ci): fallback security smoke to roots containing tests - web2solutions
+- 2026-07-02 fix(ci): avoid duplicate legacy+monorepo test path execution - web2solutions
+- 2026-07-02 fix(ci): make smoke and unit test targets monorepo-path resilient - web2solutions
+- 2026-07-02 fix(ci): stabilize gate and add serverless handler path governance - web2solutions
+- 2026-07-02 fix(ci): unshallow fetch before patch coverage diff in GitHub Actions - web2solutions
+- 2026-07-02 fix(ci): remove pnpm cache lockfile dependency in GitHub Actions and CircleCI - web2solutions
+- 2026-07-02 fix(ci): remediate GitGuardian secret detection in websocket redis test - web2solutions
+- 2026-07-02 fix(ci): restore pnpm setup flow in GitHub Actions and CircleCI - web2solutions
+- 2026-07-02 feat(architecture): enforce use-case imports in HTTP controllers - web2solutions
+- 2026-07-02 docs(governance): close migration risks with implemented mitigations - web2solutions
+- 2026-07-02 docs(jumentix): standardize CLI package naming and install target - web2solutions
+- 2026-07-02 docs(agents): publish release/versioning strategy and governance - web2solutions
+- 2026-07-02 feat(release): enforce locked app versions with policy contract - web2solutions
+- 2026-07-02 docs(jumentix): add factory, deploy and runtime template matrices - web2solutions
+- 2026-07-02 feat(ci): enforce release governance checks in quality gate - web2solutions
+- 2026-07-01 docs(quality): document workspace package quality gate - web2solutions
+- 2026-07-01 feat(ci): enforce workspace package quality contracts in gate - web2solutions
+- 2026-07-01 docs(onboarding): refresh monorepo workspace and ci guidance - web2solutions
+- 2026-07-01 docs(monorepo): record pnpm ci pipeline alignment progress - web2solutions
+- 2026-07-01 feat(ci): align pipelines with pnpm and scope-aware monorepo runner - web2solutions
+- 2026-07-01 docs(agents): require commit and pr traceability on all project tasks - web2solutions
+- 2026-07-01 docs(monorepo): document scope-aware ci runner progress - web2solutions
+- 2026-07-01 feat(ci): add scope-aware monorepo ci runner - web2solutions
+- 2026-07-01 docs(monorepo): document release dry-run progress in wave6 - web2solutions
+- 2026-07-01 feat(release): add monorepo dry-run checks for packages and apps - web2solutions
+- 2026-07-01 docs(monorepo): record wave6 affected-workspace tracking progress - web2solutions
+- 2026-07-01 feat(ci): add affected workspace detector for monorepo gating - web2solutions
+- 2026-07-01 docs(agents): record cli non-interactive scaffold smoke validation - web2solutions
+- 2026-07-01 feat(cli-sdk): harden non-interactive bootstrap and enforce sdk typecheck tests - web2solutions
+- 2026-07-01 refactor(monorepo): move seed ownership to apps/backend-template - web2solutions
+- 2026-07-01 refactor(pm2): move ecosystem ownership into apps/backend-template - web2solutions
+- 2026-07-01 feat(monorepo): expand backend-template workspace ownership scripts - web2solutions
+- 2026-07-01 docs(service-management): fix moved app links after workspace rehome - web2solutions
+- 2026-07-01 refactor(monorepo): rehome service-management app to apps workspace - web2solutions
+- 2026-07-01 docs(changelog): sync automated changelog metadata - web2solutions
+- 2026-07-01 feat(jumentix): advance monorepo package extraction and wave governance - web2solutions
+- 2026-07-01 feat(jumentix): advance monorepo package extraction and wave governance - web2solutions
+- 2026-06-30 test(realtime): close patch coverage gaps for websocket bootstrap - web2solutions
+- 2026-06-30 feat(realtime): add resilient websocket adapters, tests, and docs - web2solutions
+- 2026-06-30 docs(adapters): add per-http and per-database implementation guides - web2solutions
+- 2026-06-30 docs(servicemangement): document all domain designer mvp features and usage - web2solutions
+- 2026-06-30 feat(servicemangement): complete domain designer mvp roadmap - web2solutions
+- 2026-06-30 docs(readme): restore legacy badges and keep badge parity - web2solutions
+- 2026-06-30 feat(users): split OrganizationController and align PCI/docs/route checks (#60) - Eduardo A.
+- 2026-06-29 fix(security): remove sqlite3 dependency to satisfy snyk policy - web2solutions
+- 2026-06-29 fix(security): remove restify package to clear high snyk findings - web2solutions
+- 2026-06-29 fix(ci): unblock PR by reducing prod vuln surface and lint policy - web2solutions
+- 2026-06-29 fix(security): remediate dependency vulnerabilities and adapter typing - web2solutions
+- 2026-06-28 fix(sonar): mark operation-id password token as false-positive - web2solutions
+- 2026-06-28 refactor(async): split OAS operation builder to satisfy sonar complexity gate - web2solutions
+- 2026-06-28 fix(security): remediate sonar hotspots in service-management server and docker images - web2solutions
+- 2026-06-28 fix(sonar): scope quality gate to runtime source and exclude static tooling artifacts - web2solutions
+- 2026-06-28 feat: consolidate dev changes on clean history to satisfy security scanning - web2solutions
+- 2026-06-26 feat(cli): developer automation wrapper for domains and entities (#59) - Eduardo A.
+- 2026-06-26 test(ci): enforce strict local gates and stabilize coverage - web2solutions
+- 2026-06-26 test(codecov): raise patch coverage for CI-required branches - web2solutions
+- 2026-06-26 test(ci): include organization repository coverage in tracked tests - web2solutions
+- 2026-06-26 fix(ci): include organization repository and strict typing for user sync - web2solutions
+- 2026-06-26 feat(users): add organization API surfaces and framework handlers - web2solutions
+- 2026-06-26 ci(circleci): bump node image to 22.11 to satisfy engine constraints - web2solutions
+- 2026-06-26 test(ci): make smoke integration deterministic without socket binding - web2solutions
+- 2026-06-26 ci: harden env loading and stabilize codecov patch scope - web2solutions
+- 2026-06-26 feat(users): add multi-tenancy RBAC, organization entity, and relational in-memory adapter - web2solutions
+- 2026-06-26 feat(validation): enforce OpenAPI 3.1 request/domain validation and refresh docs - web2solutions
+- 2026-06-26 feat(http): add native adapters and integration contract maps - web2solutions
+- 2026-06-26 chore(git): ignore vscode settings and untrack file - web2solutions
+- 2026-06-26 feat(cli): enforce OpenAPI 3.1 entity field contracts - web2solutions
+- 2026-06-26 feat(cli): enrich entity field manager and docs - web2solutions
+- 2026-06-26 test(cli): raise coverage for CLI wrapper and subapps - web2solutions
+- 2026-06-26 feat(cli): add developer automation wrapper for domains and entities - Eduardo Almeida
+- 2026-06-26 feat(ddd): harden document value object and expand domain docs/agents - Eduardo Almeida
+- 2026-06-26 feat(messaging): add contract-based mediator adapters and broker wiring - Eduardo Almeida
+- 2026-06-26 docs(structure): split documentation by domain and audience - Eduardo Almeida
+- 2026-06-26 docs(readme): rebuild README for product and engineering audiences - Eduardo Almeida
+- 2026-06-26 chore: security fixes, CI docs, and PR templates (#58) - Eduardo A.
+- 2026-06-26 docs(pr): add comprehensive and specialized PR templates - Eduardo Almeida
+- 2026-06-26 fix(security): resolve Sonar vulnerabilities on main - Eduardo Almeida
+- 2026-06-26 docs(ci): add troubleshooting guide and link from README - Eduardo Almeida
+- 2026-06-26 Refactor - Architecture improvement and 95% coverage (#57) - Eduardo A.
+- 2026-06-26 fix(sonar): remove password-like event identifier from new code - Eduardo Almeida
+- 2026-06-26 fix(sonar): resolve security and complexity quality gate failures - Eduardo Almeida
+- 2026-06-26 ci(github): default secrets for PR test workflow stability - Eduardo Almeida
+- 2026-06-26 docs(agents): add coverage-threshold approval requirement - Eduardo Almeida
+- 2026-06-26 ci(husky): enforce coverage gate on commit and push - Eduardo Almeida
+- 2026-06-26 chore(git): stop tracking macOS .DS_Store - Eduardo Almeida
+- 2026-06-26 ci(sonar): configure SonarQube Cloud JS/TS LCOV coverage import - Eduardo Almeida
+- 2026-06-26 docs(architecture): add data entity documentation standards and agents - Eduardo Almeida
+- 2026-06-26 test(ci): raise unit coverage gate and stabilize ci gate - Eduardo Almeida
+- 2026-06-26 build(coverage): enforce 95% baseline in jest and codecov - Eduardo Almeida
+- 2026-06-26 build(architecture): block legacy users namespace imports - Eduardo Almeida
+- 2026-06-26 refactor(persistence): move users repository into out adapter namespace - Eduardo Almeida
+- 2026-06-26 refactor(hexagonal): switch users wiring to canonical adapter namespaces - Eduardo Almeida
+- 2026-06-26 refactor(structure): scaffold feature-driven hexagonal namespaces - Eduardo Almeida
+- 2026-06-26 build(ci): enforce hexagonal controller boundaries - Eduardo Almeida
+- 2026-06-26 refactor(events): standardize user integration events and listener wiring - Eduardo Almeida
+- 2026-06-26 refactor(hexagonal): route controllers through application use cases - Eduardo Almeida
+- 2026-06-26 refactor(architecture): remove core barrel imports and add cycle guard - Eduardo Almeida
+- 2026-06-25 refactor(architecture): add event bus port and reduce core coupling - Eduardo Almeida
+- 2026-06-25 refactor(hexagonal): inject user service from composition and add user repository port - Eduardo Almeida
+- 2026-06-25 docs(architecture): expand README and add agents requirements registry - Eduardo Almeida
+- 2026-06-25 ci: revert to npm and run git actions (#55) - Eduardo A.
+- 2026-06-25 fix(ci): prevent smoke test from overwriting codecov coverage - Eduardo Almeida
+- 2026-06-25 fix(ci): install redis latest - Eduardo Almeida
+- 2026-06-25 fix(ci): make env loader resilient when .env.dev is missing - Eduardo Almeida
+- 2026-06-25 fix(ci): align circleci node 22 image and remove npm latest upgrade - Eduardo Almeida
+- 2026-06-25 chore(node): enforce node 22 across local and CI - Eduardo Almeida
+- 2026-06-25 chore: add ci gate and align scripts/docs - Eduardo Almeida
+- 2026-06-25 refactor: centralize users/auth service composition - Eduardo Almeida
+- 2026-06-25 fix: harden user persistence, sanitization, and mutex contract - Eduardo Almeida
+- 2026-06-25 chore: add project tracking and changelog automation - Eduardo Almeida
+- 2026-06-25 fix: normalize singleton factories - Eduardo Almeida
+- 2026-06-25 fix: wire service dependencies correctly - Eduardo Almeida
+- 2026-06-25 refactor: centralize endpoint registration - Eduardo Almeida
+- 2026-06-25 fix: restore TypeScript build - Eduardo Almeida
+- 2024-11-04 fix(ci): move check-node-version - Eduardo Almeida
+- 2024-10-23 ci(versioning): run pre-commit from package - Eduardo Almeida
+- 2024-10-23 ci: run pre-cmmit in package - Eduardo Almeida
+- 2024-10-23 ci(fix husky): fix husky - Eduardo Almeida
+- 2024-10-22 ci(version): bump package pre-commit after testing, bump and add tag post-commit - Eduardo Almeida
+- 2024-10-22 ci(husky): fix hook - Eduardo Almeida
+- 2024-10-22 ci(post-commit hook): bump version and add tag - Eduardo Almeida
+- 2024-10-22 build(husky): test hooks - Eduardo Almeida
+- 2024-10-22 ci(github action): use secrets.AAA_REDIS_PASSWORD instead hard coded pass - Eduardo Almeida
+- 2024-10-21 ci(env vars): fix env vars - Eduardo Almeida
+- 2024-10-21 ci: run ci:test - Eduardo Almeida
+- 2024-10-21 ci: add env for staging - Eduardo Almeida
+- 2024-10-21 ci(redis): try dockerize to wait for Redis - Eduardo Almeida
+- 2024-10-19 ci(github action): run redis - Eduardo Almeida
+- 2024-10-19 ci(git actions): fix redis matrix - Eduardo Almeida
+- 2024-10-19 ci: revert to npm and run git actions - Eduardo Almeida
+- 2024-10-19 feat(hyperexpress): add handlers and tests (#54) - Eduardo A.
+- 2024-10-19 fix(http servers): proper close all servers, add request context to HyperExpress - Eduardo Almeida
+- 2024-10-19 feat(hyperexpress): add handlers and tests - Eduardo Almeida
+- 2024-10-15 badges (#53) - Eduardo A.
+- 2024-10-14 docs(badges): fix - Eduardo Almeida
+- 2024-10-14 docs(badges): hypeexpress - Eduardo Almeida
+- 2024-10-14 docs(badges): add badges - Eduardo Almeida
+- 2024-10-14 rebase main (#52) - Eduardo A.
+- 2024-10-14 change doc path (#51) - Eduardo A.
+- 2024-10-14 docs(api doc): change path - Eduardo Almeida
+- 2024-10-14 style(userstoreapi): return error - Eduardo Almeida
+- 2024-10-14 refactor: vertical Slice Architecture, Error Handling (#49) - Eduardo A.
+- 2024-10-14 ci(redis): fix pass - Eduardo Almeida
+- 2024-10-14 ci(redis): fix pass - Eduardo Almeida
+- 2024-10-14 ci(fix ci): fix ci - Eduardo Almeida
+- 2024-10-14 ci: fix ci - Eduardo Almeida
+- 2024-10-14 fix: sonar warnings - Eduardo Almeida
+- 2024-10-14 ci(redis): fix pass var - Eduardo Almeida
+- 2024-10-14 ci: add env.ci - Eduardo Almeida
+- 2024-10-14 ci: dev, ci, prod, remove sensitive info from code and env files - Eduardo Almeida
+- 2024-10-14 refactor(sonar lint): fix sonar warnings - Eduardo Almeida
+- 2024-10-14 docs(badges): add ukraine badge (#50) - Eduardo A.
+- 2024-10-14 fix(restapi): path names - Eduardo Almeida
+- 2024-10-14 refactor: vertical Slice Architecture, Error Handling - Eduardo Almeida
+- 2024-10-10 docs(badges): add ukraine badge - Eduardo Almeida
+- 2024-10-09 style(sonar): remove test from cdp (#48) - Eduardo A.
+- 2024-10-09 style(sonar): remove test from cdp - Eduardo Almeida
+- 2024-10-09 refactor(sonar): fix sonar warnings (#47) - Eduardo A.
+- 2024-10-09 refactor(sonar): fix sonar warnings - Eduardo Almeida
+- 2024-10-09 action test app (#45) - Eduardo A.
+- 2024-10-09 docs(badges): add badges - Eduardo Almeida
+- 2024-10-09 ci(gh action): remove test - Eduardo Almeida
+- 2024-10-09 docs(badges): add badges - Eduardo Almeida
+- 2024-10-09 ci(gh actions): fix test runner - Eduardo Almeida
+- 2024-10-09 ci(gh action): fix install - Eduardo Almeida
+- 2024-10-09 docs(badges): add badges - Eduardo Almeida
+- 2024-10-09 ci(gh action): run test - Eduardo Almeida
+- 2024-10-09 ci(github action): test app fix pnpm install - Eduardo Almeida
+- 2024-10-09 chore: sonar config (#46) - Eduardo A.
+- 2024-10-09 perf(sonar): sonar cloud config - Eduardo Almeida
+- 2024-10-09 chore: sonar conf - Eduardo Almeida
+- 2024-10-09 action test app - Eduardo A.
+- 2024-10-09 feat(auth): login, logout, register and updatePassword end points  (#43) - Eduardo A.
+- 2024-10-09 ci(pnpm): fix install pnpm - Eduardo Almeida
+- 2024-10-09 ci(pnpm): fix install - Eduardo Almeida
+- 2024-10-09 ci(redis cimg): fix redis cimg - Eduardo Almeida
+- 2024-10-09 ci(pnpm): fix install - Eduardo Almeida
+- 2024-10-09 ci(pnpm): fix pnpm install - Eduardo Almeida
+- 2024-10-09 feat(auth): login, logout, register and updatePassword end points - Eduardo Almeida
+- 2024-10-05 Dev (#42) - Eduardo A.
+- 2024-10-05 fix: ci - Eduardo Almeida
+- 2024-10-05 fix: ci and ts - Eduardo Almeida
+- 2024-10-05 chore: add pnpm, update packages, update fastify handlers - Eduardo Almeida
+- 2024-10-05 fix(test suite): express memory leak - Eduardo Almeida
+- 2024-10-04 fix(integration test suite): delete users in getAll - Eduardo Almeida
+- 2024-10-04 fix: sonar lint - Eduardo Almeida
+- 2024-09-30 Dev (#41) - Eduardo A.
+- 2024-09-30 chore: fix lock file - Eduardo Almeida
+- 2024-09-30 Merge branch 'main' into dev - Eduardo A.
+- 2024-09-30 feat: restify - Eduardo Almeida
+- 2024-09-29 feat(http server): add support to Restify as HTTP server - Eduardo Almeida
+- 2024-09-27 refactor(serverless): remove dd key - Eduardo Almeida
+- 2024-09-27 chore: code quality - Eduardo Almeida
+- 2024-09-27 build(deps): bump send and express (#40) - Eduardo A.
+- 2024-09-27 build(deps): bump body-parser and express (#39) - Eduardo A.
+- 2024-09-27 build(deps): bump find-my-way from 8.2.0 to 8.2.2 (#37) - Eduardo A.
+- 2024-09-25 build(deps): bump send and express - dependabot[bot]
+- 2024-09-21 build(deps): bump body-parser and express - dependabot[bot]
+- 2024-09-18 build(deps): bump find-my-way from 8.2.0 to 8.2.2 - dependabot[bot]
+- 2024-09-16 docs: fix title - Eduardo Almeida
+- 2024-09-16 docs: fix title - Eduardo Almeida
+- 2024-09-09 docs: deps info - Eduardo Almeida
+- 2024-09-09 feat: aws lambda integration with serverless framework and typescript - Eduardo Almeida
+- 2024-09-09 fix: bearer auth suite - Eduardo Almeida
+- 2024-09-02 docs: add controller to doc - Eduardo Almeida
+- 2024-09-02 docs: badges and info - Eduardo Almeida
+- 2024-09-02 ci: redis latest - Eduardo Almeida
+- 2024-09-02 ci: fix - Eduardo Almeida
+- 2024-09-02 ci(mutex x redis): install redis in ci - Eduardo Almeida
+- 2024-09-02 feat(express): add Express integration - Eduardo Almeida
+- 2024-08-26 delete old files (#35) - Eduardo A.
+- 2024-08-26 chore: delete old files - Eduardo Almeida
+- 2024-08-26 docs: docs - Eduardo Almeida
+- 2024-08-26 Docs (#34) - Eduardo A.
+- 2024-08-26 docs: badges - Eduardo Almeida
+- 2024-08-26 docs: badges - Eduardo Almeida
+- 2024-08-26 docs: badges - Eduardo Almeida
+- 2024-08-26 Feat: AuthService, JWTService, UserProvider, CI improvements (#33) - Eduardo A.
+- 2024-08-26 docs: badges - Eduardo Almeida
+- 2024-08-26 ci(fix ci): fix ci - Eduardo Almeida
+- 2024-08-26 ci: fix ci - Eduardo Almeida
+- 2024-08-26 ci: fix ci - Eduardo Almeida
+- 2024-08-26 ci: add coverage - Eduardo Almeida
+- 2024-08-25 docs: test branch status badge - Eduardo Almeida
+- 2024-08-25 feat: feat: Auth service, User Provider, JWT Service, Bearer HTTP Auth - Eduardo Almeida
+- 2024-08-25 fix:  clear key value storage memory, import IPasswordCryptoService - Eduardo Almeida
+- 2024-08-25 build(package.json): run lint-fix in pretest. Add jsonwebtoken - Eduardo Almeida
+- 2024-06-25 chore: call fastfy close() when stoping the server - Eduardo A.
+- 2024-06-25 feat(infra): implement a IKVStore Port and a KVStoreClient Redis adapter - Eduardo A
+- 2024-06-24 chore: add key prefix constants - Eduardo A.
+- 2024-06-10 style: improve tooling: snyk integration, gitPod (#32) - Eduardo A
+- 2024-06-10 style: improve tooling: snyk integration, gitPod - José Eduardo Almeida
+- 2024-06-10 run on gitpod (#31) - Eduardo A
+- 2024-06-10 fix: git pod url - José Eduardo Almeida
+- 2024-06-10 chore: fix git pod - José Eduardo Almeida
+- 2024-06-10 test: add gitpod conf - José Eduardo Almeida
+- 2024-06-10 fix: doc starter, fastify starter, bcrypt sec (#30) - Eduardo A
+- 2024-06-10 fix: fastify starter, doc starter - José Eduardo Almeida
+- 2024-06-10 chore: fix npm run commit command - double test - José Eduardo Almeida
+- 2024-06-10 chore: remove bcrypt from package, set MIT lincense - José Eduardo Almeida
+- 2024-06-09 encrypt user passwords (#29) - Eduardo A
+- 2024-06-09 fix: security - replace bcrypt with bcryptjs - José Eduardo Almeida
+- 2024-06-09 fix: update password, add pre commit hook - José Eduardo Almeida
+- 2024-06-09 chore: husky hook pre-commit to run lint and test before commit - José Eduardo Almeida
+- 2024-06-09 fix: inject passwordCryptoService in test scripts - José Eduardo Almeida
+- 2024-06-09 fix: password validation - José Eduardo Almeida
+- 2024-06-09 fix: user password validation - José Eduardo Almeida
+- 2024-06-08 chore(UserService): factor based on new BaseService - José Eduardo Almeida
+- 2024-06-08 chore: password, salt and bcrypt - José Eduardo Almeida
+- 2024-06-08 chore: improvements for update data logic - José Eduardo Almeida
+- 2024-06-08 chore(Constants): add _BCRYPT_SALT_ROUNDS_ - José Eduardo Almeida
+- 2024-06-08 feat(RestAPI, UserController): add PasswordCryptoService to the application stack - José Eduardo Almeida
+- 2024-06-08 feat: implement a service for password crypto - José Eduardo Almeida
+- 2024-06-08 chore(BaseService):  type improvements - José Eduardo Almeida
+- 2024-06-06 docs: info - José Eduardo Almeida
+- 2024-06-06 Dev (#26) - Eduardo A
+- 2024-06-06 docs: fix - José Eduardo Almeida
+- 2024-06-06 docs: badges - José Eduardo Almeida
+- 2024-06-06 Dev (#25) - Eduardo A
+- 2024-06-06 docs: badges - José Eduardo Almeida
+- 2024-06-06 docs: snyk badge - José Eduardo Almeida
+- 2024-06-06 chore: snyk badge - José Eduardo Almeida
+- 2024-06-06 Merge branch 'dev' of https://github.com/web2solutions/aaa-typescript-boilerplate into dev - José Eduardo Almeida
+- 2024-06-06 docs: ci status - José Eduardo Almeida
+- 2024-06-06 Merge branch 'main' of https://github.com/web2solutions/aaa-typescript-boilerplate - José Eduardo Almeida
+- 2024-06-06 chore: remove snyk - José Eduardo Almeida
+- 2024-06-06 Update snyk-security.yml - Eduardo A
+- 2024-06-06 snyk and workflow name (#24) - Eduardo A
+- 2024-06-06 fix: tsconfig - José Eduardo Almeida
+- 2024-06-06 Update snyk-security.yml - Eduardo A
+- 2024-06-06 Create snyk-security.yml - Eduardo A
+- 2024-06-06 chore: set workflow name - José Eduardo Almeida
+- 2024-06-06 docs: ci status (#23) - Eduardo A
+- 2024-06-06 docs: ci status - José Eduardo Almeida
+- 2024-06-06 improve CI status (#22) - Eduardo A
+- 2024-06-06 docs: remove unclear status info - José Eduardo Almeida
+- 2024-06-06 docs: prioritize summary - José Eduardo Almeida
+- 2024-06-06 docs: ci status - José Eduardo Almeida
+- 2024-06-06 chore: ci set workflow name - José Eduardo Almeida
+- 2024-06-06 fix: fix lint issues - José Eduardo Almeida
+- 2024-06-06 chore: run lint on ci and add ci status to doc - José Eduardo Almeida
+- 2024-06-06 Merge pull request #21 from web2solutions/circleci-project-setup - Eduardo A
+- 2024-06-06 Add .circleci/config.yml - Eduardo A
+- 2024-06-06 fix: localhost test - José Eduardo Almeida
+- 2024-06-06 feat: paging getAll data - José Eduardo Almeida
+- 2024-06-03 feat: refactor Fastify handlers to use the injected controller - José Eduardo Almeida
+- 2024-06-03 docs: backlog and management - José Eduardo Almeida
+- 2024-06-03 docs: backlog - José Eduardo Almeida
+- 2024-06-03 docs: backlog - José Eduardo Almeida
+- 2024-06-03 docs: backlog - José Eduardo Almeida
+- 2024-06-03 docs: backlog - José Eduardo Almeida
+- 2024-06-03 feat(UserController): add, remove and delete -> document, phone and email - José Eduardo Almeida
+- 2024-06-03 chore: remove old code - José Eduardo Almeida
+- 2024-06-03 docs: status - José Eduardo Almeida
+- 2024-06-03 docs: diagram - José Eduardo Almeida
+- 2024-06-03 docs: miro link - José Eduardo Almeida
+- 2024-06-03 docs: test miro - José Eduardo Almeida
+- 2024-06-03 chore: add authService to fastify application - José Eduardo Almeida
+- 2024-06-03 chore: decorator support - José Eduardo Almeida
+- 2024-06-03 feat(Handlers - Fastify): new handlers - José Eduardo Almeida
+- 2024-06-03 chore: domain improvements - User - José Eduardo Almeida
+- 2024-06-03 fix: spec fix - José Eduardo Almeida
+- 2024-06-03 chore: integration testing - Fastify x User test suite improvements - José Eduardo Almeida
+- 2024-06-03 feat: new ports for HTTP - José Eduardo Almeida
+- 2024-06-03 chore: hper express handlers improvements - José Eduardo Almeida
+- 2024-06-03 chore: fastify error handler improvements - José Eduardo Almeida
+- 2024-06-03 chore: remove login from user store - José Eduardo Almeida
+- 2024-06-03 chore: create _EVENT_INVALID_MESSAGE_ and _INFRA_NOT_IMPLEMENTED_ - José Eduardo Almeida
+- 2024-06-03 chore: remove login from users data - José Eduardo Almeida
+- 2024-06-03 feat: domain validator throwIfIsNotObject - José Eduardo Almeida
+- 2024-06-03 feat: decorator @Authorize guard - José Eduardo Almeida
+- 2024-06-03 chore: remove old basicAuth logic - José Eduardo Almeida
+- 2024-06-03 feat: validator HTTP throwIfOASInputValidationFails - José Eduardo Almeida
+- 2024-06-03 test: suite improvements - José Eduardo Almeida
+- 2024-06-03 chore: remove basiAuth middleware - José Eduardo Almeida
+- 2024-06-03 feat(RestAPI): inject controller on route handlers - José Eduardo Almeida
+- 2024-06-03 feat(AuthService): auth service implementation - José Eduardo Almeida
+- 2024-06-03 feat: user domain events - José Eduardo Almeida
+- 2024-05-31 feat: pass - José Eduardo Almeida
+- 2024-05-31 feat: user createEmail, updateEmail and deleteEmail - José Eduardo Almeida
+- 2024-05-31 feat(User domain): createPhone and updatePhone - José Eduardo Almeida
+- 2024-05-31 chore(deleteDocument): remove validateRequestBody - José Eduardo Almeida
+- 2024-05-31 chore: mock documents - José Eduardo Almeida
+- 2024-05-31 chore: fastify handlers refactor - José Eduardo Almeida
+- 2024-05-31 chore: user domain refactor - José Eduardo Almeida
+- 2024-05-31 chore: mock documents - José Eduardo Almeida
+- 2024-05-31 chore: api fix paths - José Eduardo Almeida
+- 2024-05-31 feat: user Update login - José Eduardo Almeida
+- 2024-05-31 feat: user create document - José Eduardo Almeida
+- 2024-05-30 chore: di - José Eduardo Almeida
+- 2024-05-30 chore: clear domains - José Eduardo Almeida
+- 2024-05-29 chore: cases refactor - José Eduardo Almeida
+- 2024-05-29 chore: BaseRepo and BaseService improvements - José Eduardo Almeida
+- 2024-05-29 Initial commit - José Eduardo Almeida
