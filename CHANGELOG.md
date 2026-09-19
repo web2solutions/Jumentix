@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-19 feat: [JUM-841] prepare npm package publication - Eduardo Almeida
 - 2026-09-19 docs: restore public project badges (#361) - Eduardo A.
 - 2026-09-19 docs: align Codecov grids (#360) - Eduardo A.
 - 2026-09-19 fix(ci): enforce public quality reporting (#359) - Eduardo A.

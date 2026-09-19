@@ -23,7 +23,7 @@ import { until } from '@test/helpers/until';
  *   whose channels fan each message out to every other channel, mirroring
  *   BroadcastChannel semantics (no self-delivery) without a browser. The
  *   two-page real-browser proof lives in
- *   `test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts`.
+ *   `apps/service-management/test/integration/multiTabSync.browser.integration.test.ts`.
  *
  * The suite also records JUM-485's three mandated design answers as
  * executable behaviour: undo is local-only (remote changes are not undoable

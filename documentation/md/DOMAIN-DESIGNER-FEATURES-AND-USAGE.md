@@ -332,7 +332,7 @@ reaches a fixed point with an empty model-level loss list (asserted by
 
 Service Management smoke tests:
 
-- `apps/backend-template/test/integration/ServiceManagement/domainDesigner.smoke.test.ts`
+- `apps/service-management/test/integration/browser/domainDesigner.smoke.test.ts`
 - `apps/service-management/test/unit/mvp.roadmap.features.test.ts`
 
 Run:

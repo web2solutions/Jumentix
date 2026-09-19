@@ -31,7 +31,7 @@ pacote → app. A SPA zero-build o consome por especificadores bare
 `@jumentix/designer-core/…`: o import map em
 `apps/service-management/index.html` os resolve para uma árvore vendored
 (`apps/service-management/vendor/designer-core/`, sincronizada a partir deste
-pacote por `ci-cd/sync-service-management-designer-core.js`, segura sob o
+pacote por `apps/service-management/scripts/sync-service-management-designer-core.js`, segura sob o
 containment do servidor estático da app), enquanto Bun, Jest e tsc resolvem
 os mesmos especificadores para `src/` pelos mapeamentos de path do
 repositório. O build de publicação copia `src/` para `dist/` verbatim e gera
