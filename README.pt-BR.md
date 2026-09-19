@@ -1,17 +1,26 @@
 # Jumentix
 
+<p align="center">
+  <a href="https://jumentix-website.vercel.app">
+    <img src="https://jumentix-website.vercel.app/brand/jumentix-mascot.png" alt="Mascote do Jumentix" width="200">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://jumentix-website.vercel.app"><strong>Visite o site do Jumentix</strong></a>
+</p>
+
 Jumentix e uma fabrica de software de codigo aberto para equipes que criam produtos SaaS. Ela oferece fundacoes orientadas por contratos para APIs, servicos em tempo real, aplicacoes web e dominios modulares, para que a equipe concentre sua energia no produto.
 
 [![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
 [![GitHub Actions main](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
 [![Codecov dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/dev)
 [![Codecov main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/main)
-[![Qualidade SonarCloud dev](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status&branch=dev)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
-[![Confiabilidade SonarCloud dev](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating&branch=dev)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
-[![Cobertura SonarCloud dev](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=coverage&branch=dev)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
+[![Qualidade SonarCloud dev](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsonarcloud.io%2Fapi%2Fmeasures%2Fcomponent%3Fcomponent%3Dweb2solutions_Jumentix%26metricKeys%3Dalert_status%26branch%3Ddev&query=%24.component.measures%5B0%5D.value&label=Sonar%20qualidade%20dev&color=brightgreen)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
+[![Confiabilidade SonarCloud dev](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsonarcloud.io%2Fapi%2Fmeasures%2Fcomponent%3Fcomponent%3Dweb2solutions_Jumentix%26metricKeys%3Dreliability_rating%26branch%3Ddev&query=%24.component.measures%5B0%5D.value&label=Sonar%20confiabilidade%20dev&color=brightgreen)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
+[![Cobertura SonarCloud dev](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsonarcloud.io%2Fapi%2Fmeasures%2Fcomponent%3Fcomponent%3Dweb2solutions_Jumentix%26metricKeys%3Dcoverage%26branch%3Ddev&query=%24.component.measures%5B0%5D.value&label=Sonar%20cobertura%20dev&suffix=%25&color=yellow)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
 [![Qualidade SonarCloud main](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status&branch=main)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=main)
 [![Confiabilidade SonarCloud main](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating&branch=main)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=main)
-[![Cobertura SonarCloud main](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=coverage&branch=main)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=main)
 [![Bun](https://img.shields.io/badge/bun-1.3.13-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
@@ -34,21 +43,31 @@ Jumentix e uma fabrica de software de codigo aberto para equipes que criam produ
 
 ## O Que Voce Pode Criar
 
-- APIs REST, WebSocket e gRPC com contratos reutilizaveis.
-- Aplicacoes SaaS que evoluem de dominios modulares para servicos.
-- Sites de produto, ferramentas operacionais e fluxos de design de dominio.
-- Servicos para servidores convencionais, plataformas serverless e runtimes de edge.
+- APIs REST com contratos OpenAPI 3.1, alem de servicos WebSocket, gRPC e GraphQL.
+- Servicos de funcoes para AWS, Google Cloud, Azure, Vercel Functions e Cloudflare Workers.
+- Monolitos SaaS modulares que podem evoluir para ecossistemas de servicos implantados de forma independente.
+- Experiencias completas de produto: SPAs, PWAs offline-first e aplicacoes SSR com SDKs de cliente orientados por contratos.
+- Aplicacoes de campo e operacoes offline apoiadas por IndexedDB e armazenamento local.
+- Modelos de dominio e limites de servico desenhados no Service Management, com exportacoes OpenAPI e AsyncAPI por servico.
+- Servicos apoiados por adaptadores de persistencia in-memory, SQL ou NoSQL.
 
 ## Comece Agora
 
 ```bash
-git clone https://github.com/web2solutions/Jumentix.git
-cd Jumentix
-bun install --frozen-lockfile
-bun run dev:express
+bun x github:web2solutions/Jumentix#dev
 ```
 
-Escolha um ponto de partida nos guias abaixo e adapte os contratos e modulos gerados ao seu produto.
+Escolha o perfil do servico e a pasta do projeto quando solicitado. Para um scaffold REST reproduzivel:
+
+```bash
+bun x github:web2solutions/Jumentix#dev \
+  --non-interactive \
+  --service-type=rest \
+  --project-name=meu-produto \
+  --git-branch=dev
+```
+
+A CLI cria o projeto e instala as dependencias com Bun. Escolha um guia abaixo para continuar moldando seu produto.
 
 ## Guias e Documentacao
 

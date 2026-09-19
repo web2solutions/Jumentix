@@ -4,8 +4,10 @@
 
 ## All Changes
 
-- 2026-09-19 fix(ci): resolve git binary for governance docs check - Eduardo Almeida
-- 2026-09-19 docs: retire superseded governance material - Eduardo Almeida
+- 2026-09-19 docs: restore public project badges (#361) - Eduardo A.
+- 2026-09-19 docs: align Codecov grids (#360) - Eduardo A.
+- 2026-09-19 fix(ci): enforce public quality reporting (#359) - Eduardo A.
+- 2026-09-19 [JUM-840][Governance] Retire superseded governance material (#357) - Eduardo A.
 - 2026-09-19 fix(latent): clear bugs documented during JUM-821 promotion rounds (JUM-839) (#356) - Eduardo A.
 - 2026-09-18 fix(ci): analyse main and dev on sonar and codecov (#355) - Eduardo A.
 - 2026-09-18 [JUM-811][Feature] Domain dashboards, OAS metrics widgets and a11y (#354) - Eduardo A.

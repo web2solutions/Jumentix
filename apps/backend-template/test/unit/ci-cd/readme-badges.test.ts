@@ -35,14 +35,49 @@ describe('public README quality links', () => {
     );
   });
 
-  it('shows SonarCloud quality and reliability badges for dev and main', () => {
+  it('shows only SonarCloud badges backed by an available branch measure', () => {
     expect.hasAssertions();
 
-    for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`metric=alert_status&branch=${branch}`);
-      expect(readme).toContain(`metric=reliability_rating&branch=${branch}`);
-      expect(readme).toContain(`metric=coverage&branch=${branch}`);
-      expect(readme).toContain(`https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=${branch}`);
+    const documents = [readme, ptReadme];
+    expect({
+      branchDashboards: ['dev', 'main'].every((branch) => documents.every((document) => document.includes(`https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=${branch}`))),
+      devMetrics: ['alert_status', 'reliability_rating', 'coverage'].every((metric) => documents.every((document) => document.includes(`metricKeys%3D${metric}%26branch%3Ddev`))),
+      mainMetrics: ['alert_status', 'reliability_rating'].every((metric) => documents.every((document) => document.includes(`metric=${metric}&branch=main`))),
+      missingMainCoverage: documents.every((document) => !document.includes('metric=coverage&branch=main'))
+    }).toStrictEqual({
+      branchDashboards: true,
+      devMetrics: true,
+      mainMetrics: true,
+      missingMainCoverage: true
+    });
+  });
+
+  it('puts the mascot and public website ahead of the repository details', () => {
+    expect.hasAssertions();
+
+    for (const document of [readme, ptReadme]) {
+      expect(document).toContain('https://jumentix-website.vercel.app/brand/jumentix-mascot.png');
+      expect(document).toContain('href="https://jumentix-website.vercel.app"');
+    }
+  });
+
+  it('starts product users with the Jumentix CLI rather than repository development commands', () => {
+    expect.hasAssertions();
+
+    for (const document of [readme, ptReadme]) {
+      expect({
+        usesCli: document.includes('bun x github:web2solutions/Jumentix#dev'),
+        choosesDev: document.includes('--git-branch=dev'),
+        choosesRest: document.includes('--service-type=rest'),
+        clonesRepository: document.includes('git clone https://github.com/web2solutions/Jumentix.git'),
+        startsWorkspace: document.includes('bun run dev:express')
+      }).toStrictEqual({
+        usesCli: true,
+        choosesDev: true,
+        choosesRest: true,
+        clonesRepository: false,
+        startsWorkspace: false
+      });
     }
   });
 
