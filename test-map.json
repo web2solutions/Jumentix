@@ -1096,6 +1096,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/ci-cd/npm-package-release.test.ts",
+      "path": "apps/backend-template/test/unit/ci-cd/npm-package-release.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/ci-cd/merge-coverage-reports.test.ts",
       "path": "apps/backend-template/test/unit/ci-cd/merge-coverage-reports.test.ts",
       "layer": "tooling",
@@ -5806,9 +5816,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 334,
+    "unit": 335,
     "integration": 102,
     "smoke": 2,
-    "suites": 497
+    "suites": 498
   }
 }

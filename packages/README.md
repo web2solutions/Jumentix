@@ -7,7 +7,7 @@ This folder contains reusable npm packages shared across Jumentix applications.
 ### Runtime and persistence
 
 - [`@jumentix/adapter-runtime-bootstrap`](./adapter-runtime-bootstrap/README.md) - shared adapter runtime composition.
-- [`@jumentix/cana`](./cana/README.md) - IndexedDB offline database adapter with consumer docs and playgrounds.
+- [`@jumentix/cana`](./cana/README.md) - IndexedDB offline database adapter with consumer docs and playgrounds; public npm release candidate.
 - [`@jumentix/database-client-factory`](./database-client-factory/README.md) - database client compilation by selected driver.
 - [`@jumentix/external-db-repositories`](./external-db-repositories/README.md) - reusable external database repositories.
 - [`@jumentix/external-persistence-core`](./external-persistence-core/README.md) - base external-persistence contracts and implementations.
@@ -31,7 +31,7 @@ This folder contains reusable npm packages shared across Jumentix applications.
 
 ### Service Management
 
-- [`@jumentix/designer-core`](./designer-core/README.md) - framework-free designer core (model, validation, exporters, importers, domain-package versioning); browser-safe ESM, dry-run-only publish.
+- [`@jumentix/designer-core`](./designer-core/README.md) - framework-free designer core (model, validation, exporters, importers, domain-package versioning); browser-safe ESM and public npm release candidate.
 
 ### Private workspace configuration
 
@@ -54,3 +54,4 @@ consumer-facing compatibility target where packages expose Node runtime artifact
 
 - [Jumentix Workspace Packages (Architecture)](/docs/jumentix/concepts/architecture)
 - [SDK Compatibility Bridge](/docs/jumentix/packages)
+- [npm Package Publishing](../documentation/md/NPM-PACKAGE-PUBLISHING.md)

@@ -32,6 +32,15 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web2solutions/Jumentix.git",
+    "directory": "packages/cana"
+  },
+  "homepage": "https://jumentix-website.vercel.app",
+  "bugs": {
+    "url": "https://github.com/web2solutions/Jumentix/issues"
+  },
   "keywords": [
     "indexeddb",
     "offline-first",

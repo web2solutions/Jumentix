@@ -8,11 +8,11 @@ Idioma alvo: Português (Brasil)
 
 Organização alvo para publicação de pacotes:
 
-- `xpertminds`
+- `jumentix`
 
 Configurado na raiz `.npmrc`:
 
-- `@xpertminds:registry=https://registry.npmjs.org/`
+- `@jumentix:registry=https://registry.npmjs.org/`
 - `sempre-auth=true`
 - `proveniência=verdade`
 
@@ -20,14 +20,14 @@ Comandos de validação:
 
 ```bash
 bun run npm:whoami
-bun run npm:org:check:xpertminds
-bun run npm:publish:dry-run:packages
+bun run npm:org:check:jumentix
+bun run npm:packages:check
 ```
 
 Observação:
 
-- A publicação **não** é executada por esses comandos.
-- Avisos de simulação para pacotes que ainda não estão no escopo `@xpertminds/*`.
+- Esses comandos não publicam.
+- O gate de artefatos valida o conjunto aprovado de release `@jumentix/*` em um consumidor externo.
 
 ## Integração Vercel
 

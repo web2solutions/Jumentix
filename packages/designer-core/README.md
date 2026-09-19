@@ -1,7 +1,7 @@
 # @jumentix/designer-core
 
-The framework-free Service Management designer core, published as a versioned
-`@jumentix` package under the xpertminds organization
+The framework-free Service Management designer core, prepared as a versioned
+`@jumentix` package
 ([JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry)).
 Browser-safe ESM, zero runtime dependencies, no DOM, no storage
 implementation.
@@ -93,16 +93,17 @@ payloads themselves — that policy is owned by
 and pinned in Requirement 126, Contract 3; this package's version does not
 restate it.
 
-## Publish policy: dry-run only
+## Publish policy
 
 Per
 [Requirement 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md),
-**no automatic publish exists**. The repository-wide dry-run surface
-(`bun run npm:publish:dry-run:packages`) picks this package up like every
-other non-private workspace package and runs `bun publish --dry-run
---access public`, which executes `prepublishOnly` — a clean rebuild — before
-assembling the tarball. `test/packaging.test.ts` asserts the manifest and the
-packed contents, so the dry run verifies an artifact whose contents are
+**no automatic publish exists**. The repository-wide artifact gate
+(`bun run npm:packages:check`) rebuilds the approved package cohort, inspects
+each tarball, and imports it from an external consumer. The protected manual
+workflow from `main` performs the eventual npm publication. `prepublishOnly`
+performs a clean rebuild before assembling the tarball, and
+`test/packaging.test.ts` asserts the manifest and packed contents, so the gate
+verifies an artifact whose contents are
 proven, not assumed.
 
 ## Development

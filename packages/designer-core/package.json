@@ -36,6 +36,10 @@
     "url": "https://github.com/web2solutions/Jumentix.git",
     "directory": "packages/designer-core"
   },
+  "homepage": "https://jumentix-website.vercel.app",
+  "bugs": {
+    "url": "https://github.com/web2solutions/Jumentix/issues"
+  },
   "keywords": [
     "designer",
     "domain-model",
