@@ -382,6 +382,18 @@ describe('monitoringCharts drawStackedArea', () => {
     ]);
   });
 
+  it('treats a null series as zeros instead of throwing', () => {
+    expect.hasAssertions();
+    const { canvas, calls } = createCanvas();
+    expect(() => drawStackedArea(canvas, { alpha: [1, 2], beta: null })).not.toThrow();
+    // totals are [1, 2]: the null series contributes nothing and stacks on
+    // top of alpha, so both areas reach the same height.
+    expect(callsNamed(calls, 'moveTo')).toStrictEqual([
+      ['moveTo', 0, 40 - (1 / 2) * 40],
+      ['moveTo', 0, 40 - (1 / 2) * 40]
+    ]);
+  });
+
   it('scales to a unit ceiling when every total is zero and accepts custom colors', () => {
     expect.hasAssertions();
     const { canvas, calls } = createCanvas();

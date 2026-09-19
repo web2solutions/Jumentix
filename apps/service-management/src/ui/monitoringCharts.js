@@ -223,7 +223,7 @@ export function drawStackedArea(canvas, seriesByName, options = {}) {
   const length = Math.max(...names.map((name) => (seriesByName[name] || []).length), 0);
   if (length < 2) return;
   const totals = Array.from({ length }, (_, index) => names.reduce(
-    (sum, name) => sum + (Number(seriesByName[name][index]) || 0),
+    (sum, name) => sum + (Number((seriesByName[name] || [])[index]) || 0),
     0
   ));
   const max = d3Max(totals) || 1;

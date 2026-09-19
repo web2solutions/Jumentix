@@ -317,7 +317,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
       newData.password = hash;
       newData.salt = salt;
 
-      const createdUser = await createUser((newData ?? {}), this.dataRepository);
+      const createdUser = await createUser(newData, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(createdUser);
       await this.invalidateReadCache();
       await this.syncOrganizationUsers(createdUser.id, '', createdUser.organization || '');
