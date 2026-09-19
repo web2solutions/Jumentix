@@ -438,12 +438,19 @@ jobs:
         if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: bun ci-cd/report-sonar-findings.js
       - name: Enforce SonarCloud reliability A
+        # On pushes the just-uploaded branch analysis is the right subject. On a
+        # dev->main promotion PR the scanner submits a pull request analysis,
+        # which never refreshes the target branch measures — the base branch
+        # rating would be whatever the last merged main analysis left behind
+        # (stale, and blocking even when the promotion carries every fix). The
+        # head branch was analyzed on its push to dev and is the exact code the
+        # promotion ships, so promotion PRs enforce against the head branch.
         if: >-
           vars.JUMENTIX_ENABLE_SONAR == 'true' &&
           (github.ref_name == 'main' || github.ref_name == 'dev' ||
           (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev'))
         env:
-          SONAR_BRANCH: ${{ github.base_ref || github.ref_name }}
+          SONAR_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: bun run sonar:check-reliability
       - name: Stop local coverage services
         if: always()
