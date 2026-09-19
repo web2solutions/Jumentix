@@ -115,19 +115,21 @@ describe('run-branch-quality-gate', () => {
     // integrity, workspace boundaries, and build:dev run ahead of all three,
     // including the strict matrix path used by release/main (JUM-683 / JUM-786).
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'workspace-boundaries', 'build-dev', 'task-changes',
-      'lint', 'test-integrity', 'workspace-boundaries', 'build-dev', 'unit',
-      'test-integrity', 'workspace-boundaries', 'build-dev', 'full-matrix',
-      'lint', 'test-integrity', 'workspace-boundaries', 'build-dev', 'task-changes'
+      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'build-dev', 'task-changes',
+      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'build-dev', 'unit',
+      'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'build-dev', 'full-matrix',
+      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'build-dev', 'task-changes'
     ]);
     const lintPassed = [
       { id: 'lint', script: 'lint', status: 0 },
       { id: 'test-integrity', script: 'test:integrity', status: 0 },
+      { id: 'current-governance-docs', script: 'docs:check-current-governance', status: 0 },
       { id: 'workspace-boundaries', script: 'arch:check-workspace-boundaries', status: 0 },
       { id: 'build-dev', script: 'build:dev', status: 0 }
     ];
     const integrityOnlyPassed = [
       { id: 'test-integrity', script: 'test:integrity', status: 0 },
+      { id: 'current-governance-docs', script: 'docs:check-current-governance', status: 0 },
       { id: 'workspace-boundaries', script: 'arch:check-workspace-boundaries', status: 0 },
       { id: 'build-dev', script: 'build:dev', status: 0 }
     ];
@@ -224,7 +226,7 @@ describe('run-branch-quality-gate', () => {
       script: 'ci:gate:task'
     });
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'workspace-boundaries', 'build-dev', 'task-changes'
+      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'build-dev', 'task-changes'
     ]);
   });
 
@@ -302,6 +304,10 @@ describe('run-branch-quality-gate', () => {
   it('runs lint, integrity, workspace boundaries, and build:dev ahead of cheap gates (JUM-786)', () => {
     expect.hasAssertions();
     const integrity = { id: 'test-integrity', script: 'test:integrity' };
+    const currentGovernanceDocs = {
+      id: 'current-governance-docs',
+      script: 'docs:check-current-governance'
+    };
     const workspaceBoundaries = {
       id: 'workspace-boundaries',
       script: 'arch:check-workspace-boundaries'
@@ -311,12 +317,14 @@ describe('run-branch-quality-gate', () => {
     expect(TASK_QUALITY_GATE.preflight).toStrictEqual([
       { id: 'lint', script: 'lint' },
       integrity,
+      currentGovernanceDocs,
       workspaceBoundaries,
       buildDev
     ]);
     expect(UNIT_QUALITY_GATE.preflight).toStrictEqual([
       { id: 'lint', script: 'lint' },
       integrity,
+      currentGovernanceDocs,
       workspaceBoundaries,
       buildDev
     ]);
@@ -326,6 +334,7 @@ describe('run-branch-quality-gate', () => {
     // also preflight here (JUM-786) alongside test integrity (JUM-683).
     expect(FULL_MATRIX_QUALITY_GATE.preflight).toStrictEqual([
       integrity,
+      currentGovernanceDocs,
       workspaceBoundaries,
       buildDev
     ]);

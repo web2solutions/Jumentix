@@ -61,12 +61,11 @@ This policy is enforced through:
 
 ## Binding Sources
 
-Repository authority follows Requirement `103`: private
-`web2solutions/Jumentix` is canonical for this specification set. Agent
-coordination is canonical in Firestore Database per Requirement `089`. All
-former `web2solutions` origins — and the legacy
-`XpertMinds/jumentix-agent-registry` GitHub mirror — are deprecated,
-read-only, and accept no new modifications.
+Repository authority follows `documentation/md/CANONICAL-REPOSITORY-MIGRATION.md`:
+public `web2solutions/Jumentix` is canonical for this specification set. Agent
+coordination is canonical in Firestore Database per Requirement `089`.
+Historical transition evidence is consolidated in
+`documentation/md/HISTORICAL-TRANSITIONS.md`.
 
 Requirement `104` additionally binds complete provider rebinding and terminal
 evidence for CI, coverage, security, deployment, dependency, secret,

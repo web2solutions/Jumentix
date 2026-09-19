@@ -75,11 +75,9 @@ Istanbul JSON and LCOV evidence. The hard minimums are:
 Jumentix is a monorepo product that works as a software factory for engineering teams and product owners. It helps you go from idea to production-ready SaaS in days, not months, with a contract-first architecture, runtime flexibility, and enterprise-grade governance.
 
 > **Canonical public repository:** `web2solutions/Jumentix`.
-> `web2solutions/aaa-typescript-boilerplate` is deprecated, read-only, and
-> accepts no new modifications. Agent coordination is canonical in Firestore
-> Database (Requirement `089`); the former `XpertMinds/jumentix-agent-registry`
-> and `web2solutions` registries are deprecated and read-only. See Requirements
-> `089`, `103` and `104`.
+> Agent coordination is canonical in Firestore Database (Requirement `089`).
+> Historical migration evidence is retained in
+> `documentation/md/HISTORICAL-TRANSITIONS.md`.
 
 ## Index
 

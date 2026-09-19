@@ -263,5 +263,5 @@ unaffected by the lockfile change.
 ## References
 
 - Requirement `096` — Bun as the internal engineering runtime and package manager
-- `documentation/md/BUN-MIGRATION-BASELINE.md` — JUM-23 baseline evidence
+- `documentation/md/HISTORICAL-TRANSITIONS.md` — retired Bun migration evidence
 - `documentation/md/BUN-INSTALL-COMPATIBILITY-AUDIT.md` — JUM-538 install-layer audit

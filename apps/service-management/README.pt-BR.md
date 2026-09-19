@@ -218,8 +218,8 @@ Este aplicativo é atendido via PM2:
 
 Comandos:
 
-- `pnpm run dev:service-management`
-- `pnpm run dev` (inicia automaticamente o gerenciamento de serviço + perfil REST)
+- `bun run dev:service-management`
+- `bun run dev` (inicia automaticamente o gerenciamento de serviço + perfil REST)
 
 ## Serviço Estático
 

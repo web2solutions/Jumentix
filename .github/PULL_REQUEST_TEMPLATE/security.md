@@ -50,9 +50,9 @@
 
 ## Validation Evidence
 
-- [ ] `pnpm run lint`
-- [ ] `pnpm run test:unit`
-- [ ] `pnpm run ci:gate`
+- [ ] `bun run lint`
+- [ ] `bun run test:unit`
+- [ ] `bun run ci:gate`
 - [ ] Sonar check passing
 - [ ] Codecov passing
 

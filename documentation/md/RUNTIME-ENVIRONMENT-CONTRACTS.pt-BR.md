@@ -193,8 +193,8 @@ O endpoint lê o arquivo real `pm2/ecosystem.*.cjs` do ambiente selecionado
 onde cada app carrega `{ name, script, interpreter, interpreterArgs, env,
 command }`. `command` deriva da definição do ecossistema —
 `pm2 start <caminho do ecossistema> --only <nome do app> --update-env` — nunca
-uma string de gerenciador de pacotes embutida, de modo que a migração para Bun
-(JUM-33/JUM-40) não pode invalidar silenciosamente a visualização. O módulo do
+uma string de gerenciador de pacotes embutida, de modo que a ferramenta Bun atual
+não pode invalidar silenciosamente a visualização. O módulo do
 ecossistema é carregado sem cache: editar um arquivo de ecossistema muda a
 resposta sem reiniciar o servidor e sem alteração de código.
 
@@ -392,4 +392,3 @@ JUMENTIX_HTTP_FRAMEWORK=express
 JUMENTIX_REALTIME_API=yes
 JUMENTIX_REALTIME_API_PROTOCOL=grpc
 ```
-

@@ -234,14 +234,12 @@ Antes de qualquer execução de tarefa:
 13. A fonte única de verdade do Agent Registry é o Firestore Database (projeto
     `jumentix-service-registry`, coleção `agents`, Requisito `089`). Somente a
     conta proprietária `web2solutions` (`web2solucoes@gmail.com`) e identidades explicitamente
-    autorizadas no Linear podem escrever registros de agentes. O antigo repositório GitHub do
-    registry permanece privado na organização `XpertMinds` como espelho congelado de auditoria.
-14. O Requisito `103` torna `web2solutions/Jumentix` canônico; a canonicidade da coordenação de agentes
-    migrou para o Firestore Database pelo Requisito `089`. As duas origens anteriores em
-    `web2solutions` — e o antigo espelho GitHub do registry — estão obsoletas, são somente leitura,
-    não aceitam novas modificações e permanecem arquivadas.
-15. O Requisito `104` exige inventário e rebind de toda integração aplicável da origem
-    depreciada para `web2solutions/Jumentix`, com instalações incompletas registradas como
+    autorizadas no Linear podem escrever registros de agentes.
+14. `web2solutions/Jumentix` é canônico; a coordenação de agentes é canônica
+    no Firestore Database pelo Requisito `089`. A evidência histórica de
+    transição está consolidada em `documentation/md/HISTORICAL-TRANSITIONS.pt-BR.md`.
+15. O Requisito `104` exige que cada integração aplicável esteja vinculada a
+    `web2solutions/Jumentix`, com instalações incompletas registradas como
     bloqueios owner-auth e validadas por `integration-migration:check`.
 
 ## Expectativas de evidências de auditoria

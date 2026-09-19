@@ -80,11 +80,9 @@ execução retém evidências Istanbul JSON e LCOV. Os mínimos são:
 Jumentix é um produto monorepo que funciona como uma fábrica de software para equipes de engenharia e proprietários de produtos. Ele ajuda você a passar da ideia ao SaaS pronto para produção em dias, não meses, com uma arquitetura que prioriza o contrato, flexibilidade de tempo de execução e governança de nível empresarial.
 
 > **Repositório público canônico:** `web2solutions/Jumentix`.
-> `web2solutions/aaa-typescript-boilerplate` está obsoleto, é somente leitura e
-> não aceita novas modificações. A coordenação de agentes é canônica no
-> Firestore Database (Requisito `089`); os antigos registries em
-> `XpertMinds/jumentix-agent-registry` e `web2solutions` estão obsoletos e são
-> somente leitura. Consulte os Requisitos `089`, `103` e `104`.
+> A coordenação de agentes é canônica no Firestore Database (Requisito `089`).
+> A evidência histórica de migração está em
+> `documentation/md/HISTORICAL-TRANSITIONS.pt-BR.md`.
 
 ## Índice
 

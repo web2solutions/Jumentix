@@ -7,7 +7,7 @@ Guide and validate Domain Designer evolution as a feature-driven ER modeling too
 - ER modeling UX for domains, entities, fields, and relationships
 - OpenAPI 3.1-aware schema modeling support
 - Model validation guardrails and productivity flows
-- MVP backlog tracking (`Open`/`Done`) in `.agents/project-todos.md`
+- MVP backlog tracking and delivery state in Linear
 - Documentation synchronization across `servicemangement/README.md`, `README.md`, and `documentation/md/`
 
 ## Working rules

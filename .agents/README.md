@@ -5,7 +5,7 @@ This folder tracks technical requirements and implementation guardrails agreed f
 Global rule:
 
 - Every new feature must include documentation updates (and README index links when applicable).
-- Domain Designer/Service Management MVP ideas must be tracked in `.agents/project-todos.md` (`Open` and `Done`).
+- Domain Designer/Service Management MVP ideas and delivery state are tracked in Linear.
 
 Each requirement has one dedicated file under:
 
@@ -23,8 +23,6 @@ See also:
 
 - [009-scripts-docs-drift](requirements/project/009-scripts-docs-drift.md)
 - [011-minimal-ci-gate](requirements/project/011-minimal-ci-gate.md)
-- [012-circleci-npm-node-compatibility](requirements/project/012-circleci-npm-node-compatibility.md)
-- [014-codecov-coverage-integrity](requirements/project/014-codecov-coverage-integrity.md)
 - [018-project-documentation-and-structure-sync](requirements/project/018-project-documentation-and-structure-sync.md)
 - [019-domain-data-entity-documentation-standard](requirements/project/019-domain-data-entity-documentation-standard.md)
 - [020-coverage-threshold-approval-gate](requirements/project/020-coverage-threshold-approval-gate.md)
@@ -39,13 +37,11 @@ See also:
 - [053-jumentix-workspace-package-docs-and-ownership](requirements/project/053-jumentix-workspace-package-docs-and-ownership.md)
 - [054-sdk-compatibility-bridge-governance](requirements/project/054-sdk-compatibility-bridge-governance.md)
 - [055-task-traceability-commit-pr-association](requirements/project/055-task-traceability-commit-pr-association.md)
-- [056-jumentix-project-single-source-of-truth](requirements/project/056-jumentix-project-single-source-of-truth.md)
 - [057-pr-grouping-by-priority](requirements/project/057-pr-grouping-by-priority.md)
-- [058-jumentix-migration-inventory-and-rollback-governance](requirements/project/058-jumentix-migration-inventory-and-rollback-governance.md)
+- [058-jumentix-architecture-and-rollback-governance](requirements/project/058-jumentix-architecture-and-rollback-governance.md)
 - [060-jumentix-release-versioning-policy-governance](requirements/project/060-jumentix-release-versioning-policy-governance.md)
 - [062-workspace-dependency-boundaries-governance](requirements/project/062-workspace-dependency-boundaries-governance.md)
 - [063-workspace-coverage-policy-governance](requirements/project/063-workspace-coverage-policy-governance.md)
-- [064-github-project-single-source-of-truth](requirements/project/064-github-project-single-source-of-truth.md)
 - [065-commit-push-integrity-and-real-ci-enforcement](requirements/project/065-commit-push-integrity-and-real-ci-enforcement.md)
 - [066-documentation-round-jumentix-marketing-root-and-component-tech-docs](requirements/project/066-documentation-round-jumentix-marketing-root-and-component-tech-docs.md)
 - [067-bidirectional-task-pr-traceability-governance](requirements/project/067-bidirectional-task-pr-traceability-governance.md)
@@ -80,9 +76,7 @@ See also:
 - [100-valid-pr-comment-resolution](requirements/project/100-valid-pr-comment-resolution.md)
 - [101-active-task-switching-while-checks-run](requirements/project/101-active-task-switching-while-checks-run.md)
 - [102-linear-project-task-progress-updates](requirements/project/102-linear-project-task-progress-updates.md)
-- [103-canonical-repository-migration-and-legacy-freeze](requirements/project/103-canonical-repository-migration-and-legacy-freeze.md)
 - [104-canonical-application-integration-migration](requirements/project/104-canonical-application-integration-migration.md)
-- [107-circleci-as-sole-ci-provider](requirements/project/107-circleci-as-sole-ci-provider.md)
 - [111-authorized-commit-identities](requirements/project/111-authorized-commit-identities.md)
 - [113-private-free-repository-owned-ci](requirements/project/113-private-free-repository-owned-ci.md)
 - [114-agent-worktree-layout-and-onboard-clone](requirements/project/114-agent-worktree-layout-and-onboard-clone.md)
@@ -92,7 +86,6 @@ See also:
 - [120-linear-agent-assignment-visibility](requirements/project/120-linear-agent-assignment-visibility.md)
 - [121-registered-agent-coordinated-delivery-awareness](requirements/project/121-registered-agent-coordinated-delivery-awareness.md)
 - [122-task-owned-branch-and-pr-naming-governance](requirements/project/122-task-owned-branch-and-pr-naming-governance.md)
-- [123-wave5-app-rehoming-cutover-governance](requirements/project/123-wave5-app-rehoming-cutover-governance.md)
 - [124-monorepo-root-layout-governance](requirements/project/124-monorepo-root-layout-governance.md)
 - [125-agent-support-declaration](requirements/project/125-agent-support-declaration.md)
 - [129-mandatory-firebase-agent-bus](requirements/project/129-mandatory-firebase-agent-bus.md)
@@ -106,7 +99,6 @@ See also:
 
 ## Software and Product Requirements
 
-- [001-node-runtime-node22](requirements/software/001-node-runtime-node22.md)
 - [002-build-compatibility](requirements/software/002-build-compatibility.md)
 - [003-service-dependency-wiring](requirements/software/003-service-dependency-wiring.md)
 - [004-singleton-factory-normalization](requirements/software/004-singleton-factory-normalization.md)
@@ -139,7 +131,6 @@ See also:
 - [045-data-entity-controller-ownership](requirements/software/045-data-entity-controller-ownership.md)
 - [046-multi-database-driver-smoke-validation](requirements/software/046-multi-database-driver-smoke-validation.md)
 - [047-realtime-api-test-matrix](requirements/software/047-realtime-api-test-matrix.md)
-- [048-jumentix-pnpm-monorepo-productization](requirements/software/048-jumentix-pnpm-monorepo-productization.md)
 - [050-generic-adapters-as-distributable-packages](requirements/software/050-generic-adapters-as-distributable-packages.md)
 - [051-runtime-bootstrap-shared-packages](requirements/software/051-runtime-bootstrap-shared-packages.md)
 - [052-rest-loader-framework-matrix](requirements/software/052-rest-loader-framework-matrix.md)
