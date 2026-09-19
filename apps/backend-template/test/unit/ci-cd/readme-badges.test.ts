@@ -41,7 +41,35 @@ describe('public README quality links', () => {
     for (const branch of ['dev', 'main']) {
       expect(readme).toContain(`metric=alert_status&branch=${branch}`);
       expect(readme).toContain(`metric=reliability_rating&branch=${branch}`);
+      expect(readme).toContain(`metric=coverage&branch=${branch}`);
       expect(readme).toContain(`https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=${branch}`);
+    }
+  });
+
+  it('keeps public runtime, repository, and platform badges in both README variants', () => {
+    expect.hasAssertions();
+
+    for (const badge of [
+      'node%20compat-22.x',
+      'repository-public',
+      'Run%20with-Express',
+      'Run%20with-Fastify',
+      'Run%20on-Cloudflare%20Workers',
+      'Run%20on-Vercel%20Functions',
+      'StandWithUkraine/main/badges/StandWithUkraine.svg'
+    ]) {
+      expect(readme).toContain(badge);
+      expect(ptReadme).toContain(badge);
+    }
+  });
+
+  it('reflects the canonical MIT license in its badges and public copy', () => {
+    expect.hasAssertions();
+
+    for (const document of [readme, ptReadme]) {
+      expect(document).toMatch(/licen[cs][ae]-MIT-blue/);
+      expect(document).not.toContain('AGPL--3.0');
+      expect(document).not.toContain('GNU Affero General Public License');
     }
   });
 
