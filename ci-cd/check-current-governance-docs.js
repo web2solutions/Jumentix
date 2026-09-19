@@ -5,6 +5,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const { gitBinary } = require('./lib/git-binary.js');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const EXCLUDED_FILES = new Set([
@@ -25,6 +26,7 @@ const RETIRED_PATHS = [
   'JUMENTIX-WAVE5-',
   'BUN-MIGRATION-BASELINE'
 ];
+const RETIRED_REPOSITORY_SLUG = 'XpertMinds/Jumentix';
 
 function trackedMarkdownFiles(rootDir = ROOT) {
   return execFileSync(gitBinary(), ['ls-files', '*.md'], { cwd: rootDir, encoding: 'utf8' })
@@ -52,6 +54,9 @@ function validateCurrentGovernanceDocs(rootDir = ROOT) {
       if (/GitHub Project/i.test(line) && /single source of truth|canonical planning|authoritative planning/i.test(line)) {
         failures.push(`${location}: Linear is the only planning source of truth`);
       }
+      if (line.includes(RETIRED_REPOSITORY_SLUG)) {
+        failures.push(`${location}: active documentation must use web2solutions/Jumentix, not ${RETIRED_REPOSITORY_SLUG}`);
+      }
       for (const retiredPath of RETIRED_PATHS) {
         if (line.includes(retiredPath)) {
           failures.push(`${location}: references retired material ${retiredPath}`);
@@ -75,6 +80,6 @@ function main(rootDir = ROOT) {
   return [];
 }
 
-if (require.main === module) main();
+if (isEntryPoint(module)) main();
 
-module.exports = { RETIRED_PATHS, trackedMarkdownFiles, validateCurrentGovernanceDocs };
+module.exports = { RETIRED_PATHS, RETIRED_REPOSITORY_SLUG, trackedMarkdownFiles, validateCurrentGovernanceDocs };

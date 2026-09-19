@@ -100,7 +100,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
   start, material progress, blocker/risk changes, review readiness, and final handoff.
 - `104` Every applicable application integration from the deprecated origin must be
-  inventoried and rebound to `XpertMinds/Jumentix`, with fail-closed provider credentials,
+  inventoried and rebound to `web2solutions/Jumentix`, with fail-closed provider credentials,
   terminal canonical evidence, and incomplete provider installs recorded as explicit owner-auth
   blockers; `integration-migration:check` and `integrations:check` validate the repository-owned
   contract.

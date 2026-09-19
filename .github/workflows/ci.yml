@@ -272,6 +272,7 @@ jobs:
 
   coverage:
     name: coverage
+    environment: env vars
     permissions:
       contents: read
     # Coverage + Codecov + Sonar analyse both long-lived branches (`main` and
@@ -294,7 +295,7 @@ jobs:
       AAA_BULLMQ_REDIS_PORT: '6379'
       AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -362,10 +363,14 @@ jobs:
           name: jumentix-${{ github.ref_name }}-${{ github.run_id }}
           fail_ci_if_error: true
           disable_search: true
+      - name: Verify Codecov public coverage reports
+        env:
+          CODECOV_BRANCH: ${{ github.ref_name }}
+        run: bun ci-cd/verify-codecov-public-reports.js
       - name: Install Sonar scanner
         # SonarCloud Automatic Analysis owns the repository check by default.
         # Enable this CI scanner only after disabling Automatic Analysis in SonarCloud.
-        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: |
           set -euo pipefail
           case "$(uname -s)-$(uname -m)" in
@@ -382,7 +387,7 @@ jobs:
           unzip -qo /tmp/sonar-scanner.zip -d /tmp
           echo "${sonar_dir}/bin" >> "$GITHUB_PATH"
       - name: SonarQube Cloud Scan
-        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: |
           # Analyse both long-lived branches. On PRs, GITHUB_BASE_REF is the
           # destination; on pushes it is empty and GITHUB_REF_NAME is the branch.
@@ -394,8 +399,16 @@ jobs:
           test -n "${SONAR_TOKEN:-}"
           sonar-scanner -Dsonar.scm.disabled=true
       - name: Report Sonar findings
-        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: bun ci-cd/report-sonar-findings.js
+      - name: Enforce SonarCloud reliability A
+        if: >-
+          vars.JUMENTIX_ENABLE_SONAR == 'true' &&
+          (github.ref_name == 'main' || github.ref_name == 'dev' ||
+          (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev'))
+        env:
+          SONAR_BRANCH: ${{ github.base_ref || github.ref_name }}
+        run: bun run sonar:check-reliability
       - name: Stop local coverage services
         if: always()
         run: ci-cd/cleanup-local-ci-services.sh

@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-19 chore(governance): restore suite and tooling ownership (JUM-824) - Eduardo A.
 - 2026-09-19 [JUM-840][Governance] Retire superseded governance material (#357) - Eduardo A.
 - 2026-09-19 fix(latent): clear bugs documented during JUM-821 promotion rounds (JUM-839) (#356) - Eduardo A.
 - 2026-09-18 fix(ci): analyse main and dev on sonar and codecov (#355) - Eduardo A.

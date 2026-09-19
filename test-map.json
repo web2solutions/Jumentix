@@ -2830,6 +2830,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/check-sonar-reliability.test.ts",
+      "path": "ci-cd/test/check-sonar-reliability.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-integration-migration.test.ts",
       "path": "ci-cd/test/check-integration-migration.test.ts",
       "layer": "tooling",
@@ -2952,6 +2962,16 @@
     {
       "id": "ci-cd/test/check-workspace-quality.test.ts",
       "path": "ci-cd/test/check-workspace-quality.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/verify-codecov-public-reports.test.ts",
+      "path": "ci-cd/test/verify-codecov-public-reports.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -5742,9 +5762,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 328,
+    "unit": 330,
     "integration": 102,
     "smoke": 2,
-    "suites": 491
+    "suites": 493
   }
 }
