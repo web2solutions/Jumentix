@@ -9,6 +9,7 @@ const failures = [];
 
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
+const preCommitPath = path.join(root, '.husky', 'pre-commit');
 const packagePath = path.join(root, 'package.json');
 const sonarPath = path.join(root, 'sonar-project.properties');
 
@@ -36,12 +37,21 @@ if (!fs.existsSync(workflowPath)) {
     /uses:\s*actions\/setup-node@v5/,
     /node-version:\s*22/,
     /branch-gate:/,
+    /sync-changelog:/,
+    /github\.event_name == 'push' && github\.ref_name == 'dev'/,
+    /needs:\s*branch-gate/,
+    /group:\s*changelog-dev/,
+    /cancel-in-progress:\s*false/,
+    /contents:\s*write/,
+    /bun run changelog:update/,
+    /git push origin HEAD:dev/,
     /task-branch-push/,
     /third-party-review:/,
     /workspace-builds:/,
     /workspace-tests:/,
     /integration:/,
     /coverage:/,
+    /environment:\s*env vars/,
     /Fetch branch references for patch coverage/,
     /website:/,
     /database-matrix:/,
@@ -82,20 +92,34 @@ if (!fs.existsSync(workflowPath)) {
     /files:\s*coverage\/lcov\.info,coverage\/browser\/lcov\.info/,
     /fail_ci_if_error:\s*true/,
     /CODECOV_TOKEN/,
+    /secrets\.SONARCLOUD_TOKEN/,
+    /Verify Codecov public coverage reports/,
+    /verify-codecov-public-reports\.js/,
     /SonarQube Cloud Scan/,
-    /Sonar runs for PRs or pushes targeting dev\/main/,
+    /Sonar analyses main and dev only/,
     /sonar-scanner -Dsonar\.scm\.disabled=true/,
-    /Report Sonar findings/
+    /Report Sonar findings/,
+    /Enforce SonarCloud reliability A/,
+    /sonar:check-reliability/,
+    /vars\.JUMENTIX_ENABLE_SONAR == 'true'/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
   }
 
+  if (!/slug:\s*web2solutions\/Jumentix/.test(contents) || !/disable_search:\s*true/.test(contents)) {
+    failures.push('GitHub Actions Codecov upload must set slug=web2solutions/Jumentix and disable_search=true');
+  }
+
   const heavyContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+  // Coverage (Codecov + Sonar) must also run on pushes to `dev`.
+  const coverageContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   for (const job of ['workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
     const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
-    if (!heavyContextGuard.test(jobBlock)) {
-      failures.push(`.github/workflows/ci.yml must guard ${job} to release/full contexts`);
+    const guard = job === 'coverage' ? coverageContextGuard : heavyContextGuard;
+    const expected = job === 'coverage' ? 'main/dev/release contexts' : 'release/full contexts';
+    if (!guard.test(jobBlock)) {
+      failures.push(`.github/workflows/ci.yml must guard ${job} to ${expected}`);
     }
   }
 
@@ -126,6 +150,15 @@ if (!fs.existsSync(workflowPath)) {
   }
 }
 
+if (!fs.existsSync(preCommitPath)) {
+  failures.push('Missing required local hook: .husky/pre-commit');
+} else {
+  const contents = fs.readFileSync(preCommitPath, 'utf8');
+  if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns dev synchronization.');
+  }
+}
+
 if (fs.existsSync(circleciPath)) {
   const contents = fs.readFileSync(circleciPath, 'utf8');
   const requiredMarkers = [
@@ -142,7 +175,10 @@ if (fs.existsSync(circleciPath)) {
     /classify-ci-context\.js/,
     /circleci-agent step halt/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
-    /sonar-scanner -Dsonar\.scm\.disabled=true/
+    /--slug web2solutions\/Jumentix/,
+    /verify-codecov-public-reports\.js/,
+    /sonar-scanner -Dsonar\.scm\.disabled=true/,
+    /sonar:check-reliability/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);

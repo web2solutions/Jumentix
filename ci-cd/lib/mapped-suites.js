@@ -68,7 +68,9 @@ function relative(target, root) {
  */
 function suiteRoots(root) {
   const packagesDir = path.join(root, 'packages');
-  if (!fs.existsSync(packagesDir)) return ['apps'];
+  if (!fs.existsSync(packagesDir)) {
+    return ['apps', 'ci-cd/test'];
+  }
 
   // Sorted: `readdirSync` order is filesystem-dependent, and an unmapped-suite
   // report that changes order between machines reads like a different failure.
@@ -77,7 +79,8 @@ function suiteRoots(root) {
     .map((entry) => path.join('packages', entry.name, 'test'))
     .sort(byPath);
 
-  return ['apps', ...packageRoots];
+  // ci-cd/test is the owner home for monorepo gate proof suites (Req 137 / JUM-829).
+  return ['apps', ...packageRoots, 'ci-cd/test'];
 }
 
 /** Every suite file in the repository, whether or not the manifest lists it. */

@@ -410,7 +410,7 @@ Recorded honestly, with their owning issues:
   `adapter.ts` entry rather than the package index, because bun's full-graph
   bundling of the index emits dangling export bindings WebKit refuses to
   link. The artifact check in
-  `ci-cd/sync-service-management-cana-bundle.js`
+  `apps/service-management/scripts/sync-service-management-cana-bundle.js`
   fails closed against exactly that regression until the bundler defect is
   fixed upstream.
 - **Multi-tab cursor persistence is best-effort.** The sync cursor survives
@@ -445,7 +445,7 @@ Recorded honestly, with their owning issues:
 
 - Migration + environment states: `canaMigration.js`; Cana adapter: `apps/service-management/src/store/CanaDesignerStore.js`; factory: `designerStoreFactory.js`
 - Multi-tab sync engine: `designerSync.js`; state core: `packages/designer-core/src/state/designerState.js`; boot wiring and export/import glue: `apps/service-management/script.js`
-- Vendored Cana bundle sync: `ci-cd/sync-service-management-cana-bundle.js`
+- Vendored Cana bundle sync: `apps/service-management/scripts/sync-service-management-cana-bundle.js`
 - Suites: `canaMigration.test.ts`, `canaDesignerStore.test.ts`, `designerSync.test.ts` (unit); `canaMigration.browser.integration.test.ts`, `multiTabSync.browser.integration.test.ts` (browser); the JUM-486 offline/online matrix `offlinePersistenceMatrix.browser.integration.test.ts` (browser, [JUM-486](https://linear.app/jumentix/issue/JUM-486/test-offlineonline-matrix-for-designer-persistence-on-cana))
 - Storage schema: Requirement 126, Contract 2; bilingual parity: Requirement 076
 - Cana engine documentation: CANA-INDEXEDDB-ADAPTER, [CANA-USAGE-GUIDE](/docs/jumentix/packages/cana/usage)

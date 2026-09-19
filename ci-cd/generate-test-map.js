@@ -32,6 +32,10 @@ function classifyUnit(file) {
   if (file.startsWith('apps/service-management/test/unit/')) {
     return { layer: 'service-management/designer', kind: 'non-hexagonal' };
   }
+  // Req 137 / JUM-829: monorepo gate proof suites live under ci-cd/test.
+  if (file.startsWith('ci-cd/test/')) {
+    return { layer: 'tooling', kind: 'non-hexagonal' };
+  }
 
   const rel = file.replace(/^apps\/backend-template\/test\/unit\//, '');
   if (rel.startsWith('modules/Users/domain/')) return { layer: 'domain', kind: 'hexagonal' };
@@ -133,7 +137,14 @@ function classifyIntegration(file) {
   // separate sub-layers so a `server.js` change and a `script.js` change do not
   // drag each other's unit suites along. Filing it under `interface/runtime`
   // made every SM change run the whole backend interface layer instead.
-  if (bucket === 'ServiceManagement') {
+  //
+  // Dual-path (JUM-827): accept the legacy backend-template bucket and the
+  // owner-home path under apps/service-management/test/integration/** until
+  // JUM-828 finishes the move and drops the old candidate.
+  if (
+    bucket === 'ServiceManagement'
+    || file.startsWith('apps/service-management/test/integration/')
+  ) {
     const area = SERVICE_MANAGEMENT_INTEGRATION_AREA[parts[parts.length - 1]];
     if (!area) {
       throw new Error(
@@ -269,6 +280,16 @@ function websiteSuitePaths(root) {
   };
 }
 
+/** Frontend Cypress specs (JUM-813). Docker-backed; nightly like website Cypress. */
+function frontendE2eSpecPaths(root) {
+  return walk(
+    path.join(root, 'apps', 'frontend', 'cypress', 'e2e'),
+    (file) => /\.cy\.ts$/.test(file)
+  )
+    .map((file) => path.relative(root, file).replace(/\\/g, '/'))
+    .sort(byPath);
+}
+
 function readPreviousManifest(root) {
   const previousPath = path.join(root, 'test-map.json');
   if (!fs.existsSync(previousPath)) return null;
@@ -341,13 +362,16 @@ function buildManifest(root = process.cwd()) {
     // JUM-760: the frontend workspace runs bun:test suites like the backend apps.
     path.join(root, 'apps/frontend/test/unit'),
     // JUM-776: component suites live beside them.
-    path.join(root, 'apps/frontend/test/component')
+    path.join(root, 'apps/frontend/test/component'),
+    // Req 137 / JUM-829: monorepo gate proof suites.
+    path.join(root, 'ci-cd/test')
   ].flatMap((unitRoot) => walk(
     unitRoot,
     (p) => /\.test\.ts$/.test(p)
   )).map((p) => path.relative(root, p).replace(/\\/g, '/'));
   const integrationTests = [
     path.join(root, 'apps/backend-template/test/integration'),
+    path.join(root, 'apps/service-management/test/integration'),
     path.join(root, 'apps/service-management-api/test/integration')
   ].flatMap((integrationRoot) => walk(
     integrationRoot,
@@ -701,6 +725,22 @@ function buildManifest(root = process.cwd()) {
       tier: 'nightly',
       timeoutMs: 600000,
       reason: 'Needs a production build and a running server; nightly rather than gate for that cost alone.'
+    });
+  }
+
+  for (const file of frontendE2eSpecPaths(root)) {
+    suites.push({
+      id: file,
+      path: file,
+      layer: 'frontend',
+      kind: 'non-hexagonal',
+      type: 'integration',
+      adapter: 'cypress',
+      script: 'frontend:test:e2e',
+      runner: 'bun',
+      tier: 'nightly',
+      timeoutMs: 600000,
+      reason: 'Needs Dockerised backend + Vite; nightly rather than gate for that cost alone.'
     });
   }
 

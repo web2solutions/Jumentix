@@ -75,7 +75,7 @@ locales declare the same keys.
   is a Bun plugin that compiles SFCs with `@vue/compiler-sfc`, registered through the app's
   `bunfig.toml`). Chart.js is stubbed — it needs a real canvas — and says so in the harness.
 - `bun run test:coverage` + `bun run frontend:coverage:check` (root) — bun lcov over `src/`
-  gated by `ci-cd/check-frontend-coverage.js` on lines and functions; untouched sources count at
+  gated by `apps/frontend/scripts/check-coverage.js` on lines and functions; untouched sources count at
   zero; branches are reported as *unmeasured* because Bun emits no branch records (Requirement
   `110` §2). The gate runs inside `ci:gate`; the lcov feeds Sonar.
 - `bun run test:e2e` — `scripts/run-e2e.mjs` builds and starts the real Express REST API in Docker
@@ -103,6 +103,15 @@ Seeded accounts: `eduardo@xpertminds.dev` / `eduardo@123456` (superadmin),
 A generated domain ships one `ModuleManifest` (`src/modules/manifest.ts`): `id`, localizable `title`, `icon`, `entities[]` (each with an `XCrudEntityConfig` and a `load()` chunk) and a mandatory `dashboard.load()`. `src/modules/index.ts` registers the Users module (entities `users` and `organizations` plus the existing `DashboardView`). `validateModules()` runs at boot and throws listing every operationId missing from the bundled OAS.
 
 The navigation menu is generated from the registry (`src/modules/nav.ts`). Routes are `/m/:moduleId/:tab?`. `/users`, `/organizations` and `/dashboard` redirect into the Users module.
+
+## Dashboards
+
+Every module Dashboard tab (`DashboardView.vue` + `DashboardGrid.vue`) composes two layers:
+
+1. **Generic widgets** (`src/components/dashboard/genericWidgets.ts`) derived from the bundled OAS for each module entity: `count` (plus a pending `_sync` count in Cana mode), `groupBy` for every `x-metrics-capabilities.groupable` field, `series` (interval `day`) for every series field, and **fan-out** for each `x-relation` `hasMany` whose inverse belongsTo field is groupable on the child entity. Data source: `GET …/metrics` in server mode (`getUsersMetrics` / `getOrganizationsMetrics`); `listLocal` + `runMetricsQuery` from `@jumentix/persistence-contracts` when Cana is open. See [Entity metrics contract](./ENTITY-METRICS-CONTRACT.md).
+2. **Domain widgets** registered on `manifest.dashboard.widgets` (`DashboardWidget`: `{ id, title, size, component, query? }`). The Users module ships three examples: members per organization, admin/user ratio, sign-ups in the last 30 days.
+
+A generated domain adds widgets by appending to `dashboard.widgets` with the same `DashboardWidget` contract and loading data through `query` (list + metrics operationIds from the OAS). `ChartCard.vue` draws Chart.js via `@coreui/vue-chartjs` with axis labels and a table fallback toggle (not colour-only).
 
 ## Multitask
 
@@ -134,6 +143,7 @@ Breakpoint tokens live in `src/styles/breakpoints.scss` and `src/shell/breakpoin
 ## Related
 
 - [Paginated List Contract](./PAGINATED-LIST-CONTRACT.md)
+- [Entity metrics contract](./ENTITY-METRICS-CONTRACT.md)
 - [Creating SPA/PWA with Jumentix](../../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
 - `apps/frontend/AGENTS.md` — rules for agents working in the workspace
 - `.agents/requirements/software/136-frontend-knows-backend-only-through-oas.md`

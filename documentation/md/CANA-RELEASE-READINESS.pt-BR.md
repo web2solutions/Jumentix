@@ -112,12 +112,12 @@ memória que não transferiam para nada.
 Localmente, um motor por invocação (padrão `chrome`):
 
 ```bash
-bun ci-cd/run-browser-tests.js --browser chrome    # ou firefox, ou webkit
+bun packages/cana/scripts/run-browser-tests.js --browser chrome    # ou firefox, ou webkit
 ```
 
 Em CI o workflow `coverage` abre um job por motor e envia o LCOV de cada um como
 artefato; o workflow SonarQube Cloud baixa os três e os mescla com
-`ci-cd/merge-browser-coverage.js`. A mescla é uma união — um local atingido em
+`packages/cana/scripts/merge-browser-coverage.js`. A mescla é uma união — um local atingido em
 qualquer motor conta como coberto — de modo que os caminhos de armazenamento do
 WebKit contam para o mesmo relatório que o Sonar lê, e o contrato de 99% é
 cumprido pela matriz e não por um único navegador.

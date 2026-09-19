@@ -13,7 +13,6 @@ This file consolidates non-functional requirements already requested and stored 
 ## Quality, Coverage, and CI NFRs
 
 - `011` Minimal CI gate baseline.
-- `014` Codecov coverage integrity.
 - `020` Coverage threshold as approval gate.
 - `063` Workspace coverage policy governance.
 - `065` Commit/push integrity with real CI checks.
@@ -29,7 +28,6 @@ This file consolidates non-functional requirements already requested and stored 
 
 ## Runtime and Operations NFRs
 
-- `001` Node 22 runtime standard.
 - `041` PM2 VM orchestration.
 - `042` Env-driven runtime adapter selection.
 - `043` Runtime env docs + governance.
@@ -49,13 +47,13 @@ This file consolidates non-functional requirements already requested and stored 
 - `134` No flaky tests: a suite establishes what it depends on, never sleeps to synchronise
 - `135` No fake tests: assert the effect, declare the assertions, never target a percentage
 - `136` Frontend knows the backend only through its OAS: spec document or generated SDKs, never backend source
+- `137` Workspace suite and tooling ownership placement: suites and component scripts live with their owner; `arch:check-ownership-placement` fails closed
 
 ## Documentation and Governance NFRs
 
 - `018` Project docs and structure sync.
 - `025` Every new feature must be documented.
 - `053` Workspace package docs and ownership.
-- `056`/`064` ~~GitHub project as single source of truth~~ (superseded by `095`).
 - `057` PR grouping by priority.
 - `066` Documentation round governance for marketing root + technical component docs.
 - `068` NFR capture and registry governance.
@@ -86,7 +84,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `093` Consumer documentation information architecture, bilingual route parity, source synchronization, navigation depth, and publication integrity.
 - `094` Every Linear Project used as an epic must have a dedicated documentation Issue completed before the Project can be completed.
 - `095` Linear as single source of truth with API key security rules.
-- `096` A pinned Bun toolchain becomes the sole internal engineering runtime, package manager, script runner and test platform, with phased supersession of `001`, `012` and `048` for internal tooling at Bun cutover; Node remains only as declared consumer-facing compatibility.
+- `096` Bun `1.3.13` is the pinned internal package manager and command interface; Node 22 is allowed only at declared compatibility and tool boundaries.
 - `097` Linear task and Project metadata lifecycle: agents must maintain valid status, priority, dates, labels, ownership, milestone alignment, and auditable Project Updates from acceptance through completion.
 - `098` Commit, push, and merge authorization is restricted to the project owner and explicitly
   authorized identities; platform protection requires checks but not PR approval.
@@ -101,11 +99,8 @@ This file consolidates non-functional requirements already requested and stored 
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
   start, material progress, blocker/risk changes, review readiness, and final handoff.
-- `103` The private `XpertMinds` application and agent-registry repositories are canonical;
-  both former `web2solutions` origins are deprecated, read-only, accept no new modifications,
-  and remain archived after their final migration delivery.
 - `104` Every applicable application integration from the deprecated origin must be
-  inventoried and rebound to `XpertMinds/Jumentix`, with fail-closed provider credentials,
+  inventoried and rebound to `web2solutions/Jumentix`, with fail-closed provider credentials,
   terminal canonical evidence, and incomplete provider installs recorded as explicit owner-auth
   blockers; `integration-migration:check` and `integrations:check` validate the repository-owned
   contract.
@@ -113,10 +108,6 @@ This file consolidates non-functional requirements already requested and stored 
   selection, `JUMENTIX_GATE_V2` flag-gated flip/rollback, and fail-closed selective-gate evidence.
 - `106` Local Bun for **all** suite types; Node/Jest reserved for CI (`ciRunner` /
   `JUMENTIX_TEST_RUNTIME=node`). CI job greenness is out of scope for the Test Pyramid delivery.
-- `107` is superseded by `113`; CircleCI is disabled and GitHub Actions is the
-  canonical orchestrator through repository-owned self-hosted runners. GitHub Actions
-  must cover `dev` and `main` branch gates, coverage, website, third-party review,
-  Codecov publishing, and Sonar defense-in-depth.
 - `108` An HTTP adapter named for a web framework must import that framework and use it;
   a reference assigned to an unused field, or a require swallowed by try/catch, does not
   satisfy this, and the framework must be a declared dependency. Platform targets with no
@@ -164,10 +155,9 @@ This file consolidates non-functional requirements already requested and stored 
   ratchets: a declared package that has since grown a suite fails too, so the list cannot
   become a permanent exemption. The same list is the Sonar coverage exclusion set, and the two
   disagreeing in either direction fails. `packages:check-suites` validates it.
-- `113` Private-repository CI must have a zero-cost repository-owned path.
-  GitHub Actions is the canonical orchestrator, repository-owned self-hosted runners
-  provide the zero-cost execution path, and CircleCI is disabled. Task delivery to
-  `dev` uses cheap layer-aware gates; release promotion to `main` runs full
+- `113` Public open-source CI uses GitHub Actions as the canonical orchestrator and
+  CircleCI as a secondary mirror. Task delivery to `dev` uses cheap layer-aware gates;
+  release promotion to `main` runs full
   coverage, Codecov publishing, Sonar defense-in-depth, website, integration,
   workspace and database checks.
 - `114` Agent onboard uses an operator-confirmed filesystem root (this host:
@@ -194,7 +184,6 @@ This file consolidates non-functional requirements already requested and stored 
 - `129` Agents must publish and consume the Firebase RTDB agent progress bus for
   machine-readable peer sync; Firestore remains ownership SSOT (`089` / `121`).
 - `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
-- `123` Wave 5 app re-homing cutover governance (migrated from duplicate `055`).
 - `124` Monorepo root layout governance (migrated from duplicate `060`).
 - `125` Supported agents are declared as data in `.agents/supported-agents.json`; the PR
   governance gate derives task-branch prefixes from the declaration, verifies each declared

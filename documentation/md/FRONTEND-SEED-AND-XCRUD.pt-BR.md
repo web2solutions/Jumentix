@@ -77,7 +77,7 @@ dois locales declaram as mesmas chaves.
   que compila SFCs com `@vue/compiler-sfc`, registrado pelo `bunfig.toml` da app). Chart.js é
   substituído por stub — precisa de canvas real — e o harness diz isso.
 - `bun run test:coverage` + `bun run frontend:coverage:check` (raiz) — lcov do bun sobre `src/`
-  com gate em linhas e funções (`ci-cd/check-frontend-coverage.js`); fontes não tocadas contam
+  com gate em linhas e funções (`apps/frontend/scripts/check-coverage.js`); fontes não tocadas contam
   zero; branches aparecem como *não medidos* porque o Bun não emite registros de branch
   (Requisito `110` §2). O gate roda dentro do `ci:gate`; o lcov alimenta o Sonar.
 - `bun run test:e2e` — `scripts/run-e2e.mjs` constrói e sobe a REST API Express real em Docker
@@ -103,6 +103,7 @@ Contas seed: `eduardo@xpertminds.dev` / `eduardo@123456` (superadmin),
 ## Relacionados
 
 - [Contrato de Listagem Paginada](./PAGINATED-LIST-CONTRACT.pt-BR.md)
+- [Contrato de métricas de entidade](./ENTITY-METRICS-CONTRACT.pt-BR.md)
 - [Creating SPA/PWA with Jumentix](../../apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md)
 - `apps/frontend/AGENTS.md` — regras para agentes no workspace
 - `.agents/requirements/software/136-frontend-knows-backend-only-through-oas.md`
@@ -112,6 +113,15 @@ Contas seed: `eduardo@xpertminds.dev` / `eduardo@123456` (superadmin),
 Um domínio gerado entrega um `ModuleManifest` (`src/modules/manifest.ts`): `id`, `title` localizável, `icon`, `entities[]` (cada uma com `XCrudEntityConfig` e `load()`) e `dashboard.load()` obrigatório. `src/modules/index.ts` registra o módulo Users (entidades `users` e `organizations` mais o `DashboardView` atual). `validateModules()` roda no boot e lista todo operationId ausente da OAS empacotada.
 
 O menu vem do registry (`src/modules/nav.ts`). Rotas: `/m/:moduleId/:tab?`. `/users`, `/organizations` e `/dashboard` redirecionam para o módulo Users.
+
+## Dashboards
+
+A aba Dashboard de cada módulo (`DashboardView.vue` + `DashboardGrid.vue`) junta duas camadas:
+
+1. **Widgets genéricos** (`src/components/dashboard/genericWidgets.ts`) derivados da OAS empacotada por entidade: `count` (mais pendentes `_sync` no modo Cana), `groupBy` para cada campo `x-metrics-capabilities.groupable`, `series` (intervalo `day`) para cada campo de série, e **fan-out** para cada `x-relation` `hasMany` cujo belongsTo inverso é groupable na entidade filha. Fonte: `GET …/metrics` no servidor; `listLocal` + `runMetricsQuery` (`@jumentix/persistence-contracts`) com Cana aberto. Ver [Contrato de métricas de entidade](./ENTITY-METRICS-CONTRACT.pt-BR.md).
+2. **Widgets de domínio** em `manifest.dashboard.widgets` (`DashboardWidget`: `{ id, title, size, component, query? }`). O módulo Users registra três exemplos: membros por organização, razão admin/usuário, cadastros em 30 dias.
+
+Um domínio gerado acrescenta widgets nesse array, com `query` apontando aos operationIds de list/metrics da OAS. `ChartCard.vue` usa Chart.js via `@coreui/vue-chartjs`, rótulos no eixo e tabela de fallback (não só cor).
 
 ## Multitarefa
 

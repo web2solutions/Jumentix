@@ -92,7 +92,7 @@ function checkPackage(entry) {
   if (missing.length > 0) {
     failures.push(
       `[build-freshness] ${entry.name}: ${entry.manifestMain} is missing `
-      + `${missing.length} export(s) declared in src/index.ts: ${missing.sort().join(', ')}`
+      + `${missing.length} export(s) declared in src/index.ts: ${missing.sort((a, b) => a.localeCompare(b)).join(', ')}`
       + ' — rebuild the package'
     );
   }

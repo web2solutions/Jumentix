@@ -4,6 +4,34 @@
 
 ## All Changes
 
+- 2026-09-19 Merge remote-tracking branch 'origin/dev' into codex/feature/JUM-841-npm-publication - Eduardo Almeida
+- 2026-09-19 feat: [JUM-841] prepare npm package publication - Eduardo Almeida
+- 2026-09-19 chore: clear ownership path freeze leftovers for JUM-834 (#362) - Eduardo A.
+- 2026-09-19 [JUM-824][Governance] Restore suite and tooling ownership (#358) - Eduardo A.
+- 2026-09-19 chore: sync origin/dev before merge of ownership epic - Eduardo A.
+- 2026-09-19 fix: clear Sonar reliability bug and ownership regex smells - Eduardo A.
+- 2026-09-19 docs: restore public project badges (#361) - Eduardo A.
+- 2026-09-19 chore: sync origin/dev into ownership epic branch - Eduardo A.
+- 2026-09-19 docs: align Codecov grids (#360) - Eduardo A.
+- 2026-09-19 fix: drop ownership --root CLI to clear Sonar S8707 - Eduardo A.
+- 2026-09-19 fix: empty ownership allow-list and clear Sonar debt - Eduardo A.
+- 2026-09-19 chore: absorb #359 sonar/codecov into ci-cd ownership - Eduardo A.
+- 2026-09-19 fix(ci): enforce public quality reporting (#359) - Eduardo A.
+- 2026-09-19 chore(governance): restore suite and tooling ownership (JUM-824) - Eduardo A.
+- 2026-09-19 [JUM-840][Governance] Retire superseded governance material (#357) - Eduardo A.
+- 2026-09-19 fix(latent): clear bugs documented during JUM-821 promotion rounds (JUM-839) (#356) - Eduardo A.
+- 2026-09-18 fix(ci): analyse main and dev on sonar and codecov (#355) - Eduardo A.
+- 2026-09-18 [JUM-811][Feature] Domain dashboards, OAS metrics widgets and a11y (#354) - Eduardo A.
+- 2026-09-18 feat(frontend): domain dashboards from OAS metrics - Eduardo A.
+- 2026-09-17 chore(release): retrigger dev promotion gate - Eduardo Almeida
+- 2026-09-17 chore(deps): consolidate Dependabot updates (#352) - Eduardo A.
+- 2026-09-17 chore(deps): consolidate Dependabot updates - Eduardo Almeida
+- 2026-09-16 test(ci): close release coverage gaps - Eduardo Almeida
+- 2026-09-16 fix(ci): enforce coverage after browser union - Eduardo Almeida
+- 2026-09-16 [Deps] Consolidate Dependabot security updates (#345) - Eduardo A.
+- 2026-09-16 chore(deps): consolidate Dependabot security updates - Eduardo Almeida
+- 2026-09-16 [JUM-815][Feature] Architecture designer, Core service, Swagger (#337) - Eduardo A.
+- 2026-09-16 feat(designer): architecture canvas and OAS split - Eduardo A.
 - 2026-09-16 [JUM-821] Promote dev snapshot with verified signature - Eduardo Almeida
 - 2026-08-29 [JUM-721][Release] Promote dev to main with signed squash (#278) - Eduardo A.
 - 2026-08-29 chore(release): promote dev to main - Eduardo Almeida

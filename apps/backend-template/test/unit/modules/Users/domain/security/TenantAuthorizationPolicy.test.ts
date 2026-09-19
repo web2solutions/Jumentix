@@ -72,4 +72,15 @@ describe('tenant authorization policy', () => {
     expect(resolveUserCollectionScope(unboundAdmin).decision.allowed).toBe(false);
     expect(resolveOrganizationCollectionScope(unboundAdmin).decision.allowed).toBe(false);
   });
+
+  it('scopes a user collection to the organization alone when the principal has no id', () => {
+    expect.hasAssertions();
+    // An admin (not a normalized user) without an id still gets the
+    // organization filter, but the id filter is not fabricated.
+    const orgAdmin = { roles: ['admin'], organization: 'org-1' };
+    expect(resolveUserCollectionScope(orgAdmin)).toStrictEqual({
+      decision: { allowed: true },
+      filters: { organization: 'org-1' }
+    });
+  });
 });

@@ -273,5 +273,5 @@ não são afetados pela troca de lockfile.
 ## Referências
 
 - Requisito `096` — Bun como runtime e gerenciador de pacotes interno de engenharia
-- `documentation/md/BUN-MIGRATION-BASELINE.md` — evidência da baseline JUM-23
+- `documentation/md/HISTORICAL-TRANSITIONS.pt-BR.md` — evidência histórica da migração Bun
 - `documentation/md/BUN-INSTALL-COMPATIBILITY-AUDIT.md` — auditoria da camada de install (JUM-538)

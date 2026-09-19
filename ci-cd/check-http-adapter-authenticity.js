@@ -5,11 +5,9 @@
  * The audit that produced this check found two distinct defects, and the second
  * is the one worth building a tool for.
  *
- * **Undeclared dependency.** `sails-js`, `derby-js`, `loopback` and `feathers`
- * genuinely integrate their frameworks — `new Sails()`, `derby.createApp()`,
- * `new RestApplication()`, `feathers()` — but none of those packages is declared
- * in any manifest or present in `node_modules`. `bun run dev:sails-js` fails
- * with "Cannot find module". The code is right; the dependency is missing.
+ * **Undeclared dependency.** Framework integrations must be backed by a
+ * declared package. This check catches adapters that reference their framework
+ * but cannot start because the dependency is missing.
  *
  * **Swallowed require.** `adonis-js` and `total-js` do:
  *
@@ -68,11 +66,7 @@ const PLATFORM_TARGETS = new Set(['aws', 'vercel-functions']);
  */
 const KNOWN_GAPS = {
   'adonis-js': { issue: 'JUM-571', kind: 'swallowed' },
-  'total-js': { issue: 'JUM-576', kind: 'swallowed' },
-  feathers: { issue: 'JUM-572', kind: 'undeclared' },
-  loopback: { issue: 'JUM-573', kind: 'undeclared' },
-  'sails-js': { issue: 'JUM-574', kind: 'undeclared' },
-  'derby-js': { issue: 'JUM-575', kind: 'undeclared' }
+  'total-js': { issue: 'JUM-576', kind: 'swallowed' }
 };
 
 const manifests = [

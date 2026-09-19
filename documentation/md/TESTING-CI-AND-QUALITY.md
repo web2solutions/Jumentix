@@ -162,7 +162,7 @@ the changed Markdown files; they do not manufacture a passing test result.
 
 Local enforcement:
 
-- `.husky/pre-commit` synchronizes/stages `CHANGELOG.md`, then runs the task, `dev`, or `main` gate
+- `.husky/pre-commit` runs the task, `dev`, or `main` gate without modifying generated files
 - `.husky/pre-push` derives the pushed destination and runs the task, `dev`, or `main` gate
 - `.husky/pre-merge-commit` runs the branch-aware gate on the merge destination
 - `post-commit` is mutation-free (no auto-amend, no bypass flags)
@@ -172,7 +172,8 @@ Remote enforcement:
 
 - GitHub Actions invokes `bun run ci:gate:branch`
 - GitHub Actions passes the PR base branch or pushed branch explicitly, marks PR events, and stores branch-gate evidence even after failure
-- GitHub Actions owns full coverage production and patch coverage for `dev -> main` promotions, `main` pushes, and scheduled full runs; local gates and PRs up to `dev` stay fast and diagnostic
+- GitHub Actions owns full coverage production (plus Codecov upload and SonarCloud scan) for pushes to `dev` and `main`, `dev -> main` promotions, and scheduled full runs; local gates and task PRs to `dev` stay fast and diagnostic
+- After a validated `dev` push, GitHub Actions serializes the generated `CHANGELOG.md` update; task branches and PRs leave that file untouched
 - Task-branch push events compare `origin/dev...HEAD`; hosted CI never uses the local staged-diff mode
 - GitHub Actions stores `artifacts/ci/full-test-matrix.json` when the branch gate selects the full matrix
 - `.github/workflows/ci.yml` independently runs Storybook build/smoke and website prepublish checks only for release/full contexts
@@ -226,12 +227,25 @@ SonarQube Cloud coverage import:
 | Workspace boundaries + `build:dev` | Fail-closed architecture and root TypeScript emit before cheap gates | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight of every branch-gate path (JUM-786) |
 | Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `bun run prepare` |
 | Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `bun run commit` |
-| Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history | `ci-cd/update-changelog.js`, `.husky/post-commit` | `bun run changelog:update`, `bun run changelog:check` |
+| Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history without task-branch conflicts | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI runs after validated `dev` pushes; `bun run changelog:check` is diagnostic only |
 | Release governance check | Enforces release script contracts and package publish metadata | `ci-cd/check-release-governance.js` | `bun run release:governance:check` |
 | OpenAPI route resolution check | Ensures each operationId maps to handlers and controller methods | `ci-cd/check-oas-route-resolution.js` | `bun run oas:check-routes` |
 | Hexagonal boundary check | Blocks controller-layer violations | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |
 | Core import cycle check | Prevents cyclic dependencies in core namespaces | `ci-cd/check-core-import-cycles.js` | `bun run deps:check-cycles` |
 | Legacy namespace check | Blocks new imports from old Users namespaces | `ci-cd/check-users-legacy-imports.js` | `bun run arch:check-users-legacy-imports` |
+| Ownership placement (Req 137) | Suite and tooling homes match the code they assert; shrink-only allow-list must stay empty at steady state | `ci-cd/check-workspace-ownership-placement.js`, `ci-cd/ownership-placement-allowlist.json`, `ci-cd/test/check-workspace-ownership-placement.test.ts` | `bun run arch:check-ownership-placement`; wired into `ci:gate` and branch preflight |
+
+### Suite homes (Requirement 137)
+
+| Home | Asserts | Notes |
+| --- | --- | --- |
+| `apps/<A>/test/**` | `apps/<A>` | Consumer `@jumentix/*` wiring is allowed. Deep `packages/*/src` clones and `@src/` from Service Management are not (Req 126). `apps/service-management-api` may compose backend-template via `@src` by design. |
+| `packages/<P>/test/**` | `packages/<P>` only | No app dual-home clones. |
+| `ci-cd/test/**` | Root `ci-cd/**` monorepo gates, runners, test-map, release tooling | Gate fixtures may name other workspaces in prose without counting as foreign SUTs. |
+
+Component-specific scripts live under `apps/<A>/scripts/` or `packages/<P>/scripts/` (or `bin/`). Root `package.json` keeps every public script name and delegates. New suites for a package or app go under that workspace's `test/`; new monorepo gate proof suites go under `ci-cd/test/`. After a move, run `bun run test-map:generate` and `bun run arch:check-ownership-placement`.
+
+The allow-list at `ci-cd/ownership-placement-allowlist.json` is shrink-only. Steady state is `[]`. A stale entry (suite missing on disk) fails closed.
 
 ### CI Platforms and Responsibilities
 
@@ -338,6 +352,7 @@ bun run deps:check-cycles
 bun run arch:check-boundaries
 bun run arch:check-users-legacy-imports
 bun run arch:check-workspace-boundaries
+bun run arch:check-ownership-placement
 bun run workspace:check-quality
 bun run workspace:check-coverage-policy
 bun run release:governance:check

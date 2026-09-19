@@ -4,11 +4,11 @@
 
 Target organization for package publishing:
 
-- `xpertminds`
+- `jumentix`
 
 Configured in root `.npmrc`:
 
-- `@xpertminds:registry=https://registry.npmjs.org/`
+- `@jumentix:registry=https://registry.npmjs.org/`
 - `always-auth=true`
 - `provenance=true`
 
@@ -16,14 +16,14 @@ Validation commands:
 
 ```bash
 bun run npm:whoami
-bun run npm:org:check:xpertminds
-bun run npm:publish:dry-run:packages
+bun run npm:org:check:jumentix
+bun run npm:packages:check
 ```
 
 Note:
 
-- Publishing is **not** executed by these commands.
-- Dry-run warns for packages that are not yet in `@xpertminds/*` scope.
+- These commands do not publish.
+- The artifact gate validates the approved `@jumentix/*` release cohort in an external consumer.
 
 ## Vercel Integration
 

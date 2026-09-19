@@ -47,17 +47,9 @@ Lint + correção:
 bun run lint:fix
 ```
 
-Atualize o changelog do histórico do git:
-
-```bash
-bun run changelog:update
-```
-
-Valide que o changelog está sincronizado:
-
-```bash
-bun run changelog:check
-```
+`CHANGELOG.md` é gerado pelo GitHub Actions após pushes validados para `dev`.
+Não o atualize em uma branch de tarefa ou PR; `bun run changelog:check` fica disponível
+apenas para diagnosticar a geração localmente.
 
 Arquitetura e contratos:
 

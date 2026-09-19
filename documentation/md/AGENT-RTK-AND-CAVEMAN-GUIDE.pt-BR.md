@@ -51,7 +51,7 @@ exista.
 A saída do `rtk` é mais seca do que a da ferramenta original. Dois exemplos deste repositório:
 
 ```
-rtk jest apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts
+rtk jest ci-cd/test/check-pr-governance.test.ts
 PASS (30) FAIL (0)
 ```
 

@@ -1,27 +1,17 @@
-# Requirement 049 - Jumentix Wave Execution Governance
+# Requirement 049 - Jumentix Delivery Governance
 
 ## Requirement
 
-Jumentix monorepo migration must be performed with deterministic, wave-based governance to reduce uncertain implementation and wasted effort.
-
-Each wave must define:
-
-1. Explicit scope.
-2. Deliverables.
-3. Acceptance criteria.
-4. Rollback point.
-5. Quality gates required before proceeding.
+Changes that affect multiple apps or packages must use a bounded Linear task
+with explicit scope, acceptance criteria, rollback approach, and required
+quality gates. The current monorepo layout is the implemented `apps/*` and
+`packages/*` tree; completed migration-wave plans are historical only.
 
 ## Acceptance Criteria
 
-- A centralized execution plan exists and is maintained:
-  - `documentation/md/JUMENTIX-MONOREPO-EXECUTION-PLAN.md`
-- `project-todos` includes the operational wave checklist.
-- Each migration wave only advances when:
-  - build/test/lint/coverage/security checks are green
-  - docs and agents are synchronized
-- No multi-wave mixed PRs unless explicitly justified by dependency constraints.
-
-## Notes
-
-- This requirement is process and governance oriented and complements the technical monorepo requirement.
+- Linear records the task, sequencing, and delivery evidence.
+- Each change advances only after its destination-appropriate build, test,
+  coverage, security, and documentation gates pass.
+- Documentation describes the current architecture and rollback path, not a
+  completed migration checklist.
+- A PR does not mix unrelated delivery scopes without a documented dependency.

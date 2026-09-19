@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=136 unique=136 mapped=136 duplicates= -->
+<!-- requirements-inventory: files=128 unique=128 mapped=128 duplicates= -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -22,7 +22,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## A. Integridade de construção, tempo de execução e dependência
 
-- `001`, `002`, `012`, `013`, `041`, `042`, `043`, `052`, `096`
+- `002`, `013`, `041`, `042`, `043`, `052`, `096`
 - Recursos de especificações:
   - `documentação/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
   - `documentação/md/SETUP-RUNTIME-AND-API.md`
@@ -80,12 +80,12 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## E. Governança de Arquitetura e Design
 
-- `015`, `016`, `017`, `034`, `048`, `049`, `053`, `058`, `059`, `060`, `062`, `121`
+- `015`, `016`, `017`, `034`, `049`, `053`, `058`, `059`, `060`, `062`, `121`
 - Recursos de especificações:
   - `documentação/md/ARQUITETURA-E-ESTRUTURA.md`
   - `documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md`
-  - `documentação/md/JUMENTIX-MONOREPO-EXECUTION-PLAN.md`
-  - `documentação/md/JUMENTIX-MIGRATION-INVENTORY-AND-ROLLBACK.md`
+  - `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
+  - `documentação/md/HISTORICAL-TRANSITIONS.pt-BR.md`
 - Evidência:
   - verificações de limites
   - verificações do ciclo de importação
@@ -93,7 +93,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## F. Portões de qualidade, segurança e conformidade
 
-- `011`, `014`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `115`, `118`
+- `011`, `020`, `044`, `063`, `065`, `074`, `087`, `088`, `104`, `105`, `106`, `108`, `109`, `110`, `111`, `112`, `113`, `115`, `118`, `137`
 - Recursos de especificações:
   - `documentação/md/TESTING-CI-AND-QUALITY.md`
   - `documentation/md/HEXAGONAL-TEST-PYRAMID.pt-BR.md`
@@ -109,7 +109,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## G. Documentação, processo de governança e operações multiagente
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `056`, `057`, `064`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `103`, `104`, `105`, `106`, `107`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `057`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `104`, `105`, `106`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`, `137`
 - Recursos de especificações:
   - `documentação/README.md`
   - `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -141,7 +141,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## H. Produtização e expansão da plataforma
 
-- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `123`, `125`, `126`
+- `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `125`, `126`
 - Recursos de especificações:
   - `pacotes/cli-init/*`
   - `apps/gerenciamento de serviço/documentação/*`
@@ -161,9 +161,9 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 A partir de `2026-08-05`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements/project/` e `.agents/requirements/software/`:
 
-1. Arquivos de requisitos no registro: `126`
-2. IDs exclusivos no registro de requisitos: `126`
-3. IDs exclusivos mapeados neste livro-razão: `126`
+1. Arquivos de requisitos no registro: `127`
+2. IDs exclusivos no registro de requisitos: `127`
+3. IDs exclusivos mapeados neste livro-razão: `127`
 4. IDs duplicados com arquivos vinculantes independentes: `nenhum`
 5. IDs ausentes: `nenhum`
 
@@ -178,7 +178,7 @@ A partir de `2026-08-05`, este livro-razão cobre todos os IDs de requisitos exc
 
 ### `129` Bus obrigatório de progresso de agentes no Firebase RTDB
 - Specs: `.agents/requirements/project/129-mandatory-firebase-agent-bus.md`, `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md` (+ EN), `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.pt-BR.md` (+ EN)
-- Evidência: `packages/agent-registry/src/rtdb-client.ts`, `packages/agent-registry/src/bus-commands.ts`, `ci-cd/agent-registry-cli.js`, `bun run agent-bus:publish|watch|status`, testes unitários do pacote com RTDB mockado
+- Evidência: `packages/agent-registry/src/rtdb-client.ts`, `packages/agent-registry/src/bus-commands.ts`, `packages/agent-registry/bin/agent-registry-cli.js`, `bun run agent-bus:publish|watch|status`, testes unitários do pacote com RTDB mockado
 
 ### `126` Ownership e contratos públicos do Service Management (JUM-465)
 - Specs: `.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.pt-BR.md`, `.agents/COMPONENT-OWNERSHIP.md`

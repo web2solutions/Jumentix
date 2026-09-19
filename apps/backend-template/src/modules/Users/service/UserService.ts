@@ -154,7 +154,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
       return payload;
     }
     return Object.keys(payload)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .reduce((acc, key) => {
         acc[key] = UserService.sortPayload(payload[key]);
         return acc;
@@ -317,7 +317,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
       newData.password = hash;
       newData.salt = salt;
 
-      const createdUser = await createUser((newData ?? {}), this.dataRepository);
+      const createdUser = await createUser(newData, this.dataRepository);
       serviceResponse.result = UserService.sanitizeUser(createdUser);
       await this.invalidateReadCache();
       await this.syncOrganizationUsers(createdUser.id, '', createdUser.organization || '');

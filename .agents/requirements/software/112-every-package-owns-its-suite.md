@@ -101,8 +101,8 @@ had been narrowed until the statement was true.
 
 - `bun run packages:check-suites` — runs the register and the ratchet.
 - The check runs inside `ci:gate`, so it gates every branch through both CI
-  providers (Requirement `107`).
-- `apps/backend-template/test/unit/ci-cd/check-package-suites.test.ts` proves it
+  providers (Requirement `113`).
+- `ci-cd/test/check-package-suites.test.ts` proves it
   fails on an undeclared package, on a declared package that has grown a suite,
   on each malformed declaration, and when the two lists disagree — against
   throwaway workspaces rather than the repository's own layout.

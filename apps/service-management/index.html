@@ -386,15 +386,15 @@
             </div>
             <div class="row">
               <button id="import-json-btn" type="button">Import JSON</button>
-              <input id="import-json-input" type="file" accept="application/json,.json" hidden />
+              <input id="import-json-input" type="file" accept="application/json,.json" hidden aria-label="Import JSON" />
             </div>
             <div class="row">
               <button id="import-oas-btn" type="button">Import OAS 3.1</button>
-              <input id="import-oas-input" type="file" accept="application/json,.json" hidden />
+              <input id="import-oas-input" type="file" accept="application/json,.json" hidden aria-label="Import OAS 3.1" />
             </div>
             <div class="row">
               <button id="import-package-btn" type="button">Import Package</button>
-              <input id="import-package-input" type="file" accept="application/json,.json" hidden />
+              <input id="import-package-input" type="file" accept="application/json,.json" hidden aria-label="Import Package" />
             </div>
             <div class="row">
               <button id="load-sample-btn" type="button">Load Sample Model</button>
@@ -1114,10 +1114,10 @@
   <!-- Import map (JUM-484/JUM-493): Cana is the sole designer store; the bare
        `@jumentix/cana` specifier the store factory lazily imports resolves to
        the vendored ESM bundle, synced from packages/cana's browser build by
-       ci-cd/sync-service-management-cana-bundle.js. The designer core moved
+       apps/service-management/scripts/sync-service-management-cana-bundle.js. The designer core moved
        to packages/designer-core (JUM-493); its bare deep specifiers resolve
        through the prefix entry to the vendored module tree, synced from the
-       package's src/ by ci-cd/sync-service-management-designer-core.js. -->
+       package's src/ by apps/service-management/scripts/sync-service-management-designer-core.js. -->
   <script type="importmap">
     {
       "imports": {

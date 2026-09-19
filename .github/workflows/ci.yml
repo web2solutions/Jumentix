@@ -105,6 +105,42 @@ jobs:
         if: always()
         run: find artifacts/ci -maxdepth 2 -type f -print || true
 
+  sync-changelog:
+    name: sync-changelog
+    if: github.event_name == 'push' && github.ref_name == 'dev'
+    needs: branch-gate
+    permissions:
+      contents: write
+    concurrency:
+      group: changelog-dev
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current development branch
+        uses: actions/checkout@v5
+        with:
+          ref: dev
+          fetch-depth: 0
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Synchronize generated changelog
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin dev
+          git merge --ff-only origin/dev
+          bun run changelog:update
+          if git diff --quiet -- CHANGELOG.md; then
+            echo "CHANGELOG.md is already current."
+            exit 0
+          fi
+          git add CHANGELOG.md
+          git commit -m "chore: synchronize changelog [skip ci]"
+          git push origin HEAD:dev
+
   third-party-review:
     name: third-party-review
     permissions:
@@ -272,12 +308,16 @@ jobs:
 
   coverage:
     name: coverage
+    environment: env vars
     permissions:
       contents: read
+    # Coverage + Codecov + Sonar analyse both long-lived branches (`main` and
+    # `dev`). Other heavy jobs stay release/main/scheduled only (Req 087/113).
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
+      github.ref_name == 'dev' ||
       (github.event_name == 'pull_request' && github.base_ref == 'main' && (
         github.head_ref == 'dev' ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
@@ -291,7 +331,7 @@ jobs:
       AAA_BULLMQ_REDIS_PORT: '6379'
       AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -327,15 +367,15 @@ jobs:
               bun x playwright install webkit
               bun x playwright install-deps webkit
             fi
-            bun ci-cd/run-browser-tests.js --browser "$engine"
-            bun ci-cd/write-browser-lcov.js
+            bun packages/cana/scripts/run-browser-tests.js --browser "$engine"
+            bun packages/cana/scripts/write-browser-lcov.js
             mkdir -p "coverage/browser-$engine"
             cp coverage/browser/coverage-final.json "coverage/browser-$engine/coverage-final.json"
             cp coverage/browser/lcov.info "coverage/browser-$engine/lcov.info"
           done
       - name: Union browser coverage engines
         run: |
-          bun ci-cd/merge-browser-coverage.js --from-dir coverage
+          bun packages/cana/scripts/merge-browser-coverage.js --from-dir coverage
       - name: Enforce full coverage thresholds
         run: bun run coverage:check
       - name: Produce frontend coverage for the patch report
@@ -353,14 +393,20 @@ jobs:
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: web2solutions/Jumentix
           files: coverage/lcov.info,coverage/browser/lcov.info
           flags: project
-          name: jumentix-${{ github.run_id }}
+          name: jumentix-${{ github.ref_name }}-${{ github.run_id }}
           fail_ci_if_error: true
+          disable_search: true
+      - name: Verify Codecov public coverage reports
+        env:
+          CODECOV_BRANCH: ${{ github.ref_name }}
+        run: bun ci-cd/verify-codecov-public-reports.js
       - name: Install Sonar scanner
         # SonarCloud Automatic Analysis owns the repository check by default.
         # Enable this CI scanner only after disabling Automatic Analysis in SonarCloud.
-        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: |
           set -euo pipefail
           case "$(uname -s)-$(uname -m)" in
@@ -377,18 +423,35 @@ jobs:
           unzip -qo /tmp/sonar-scanner.zip -d /tmp
           echo "${sonar_dir}/bin" >> "$GITHUB_PATH"
       - name: SonarQube Cloud Scan
-        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: |
+          # Analyse both long-lived branches. On PRs, GITHUB_BASE_REF is the
+          # destination; on pushes it is empty and GITHUB_REF_NAME is the branch.
           SONAR_TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF_NAME:-}}"
           if [ "$SONAR_TARGET_BRANCH" != "main" ] && [ "$SONAR_TARGET_BRANCH" != "dev" ]; then
-            echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar runs for PRs or pushes targeting dev/main."
+            echo "Skipping Sonar for ${SONAR_TARGET_BRANCH:-unknown}; Sonar analyses main and dev only."
             exit 0
           fi
           test -n "${SONAR_TOKEN:-}"
           sonar-scanner -Dsonar.scm.disabled=true
       - name: Report Sonar findings
-        if: vars.JUMENTIX_ENABLE_SONAR_CI == 'true'
+        if: vars.JUMENTIX_ENABLE_SONAR == 'true'
         run: bun ci-cd/report-sonar-findings.js
+      - name: Enforce SonarCloud reliability A
+        # On pushes the just-uploaded branch analysis is the right subject. On a
+        # dev->main promotion PR the scanner submits a pull request analysis,
+        # which never refreshes the target branch measures — the base branch
+        # rating would be whatever the last merged main analysis left behind
+        # (stale, and blocking even when the promotion carries every fix). The
+        # head branch was analyzed on its push to dev and is the exact code the
+        # promotion ships, so promotion PRs enforce against the head branch.
+        if: >-
+          vars.JUMENTIX_ENABLE_SONAR == 'true' &&
+          (github.ref_name == 'main' || github.ref_name == 'dev' ||
+          (github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'dev'))
+        env:
+          SONAR_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: bun run sonar:check-reliability
       - name: Stop local coverage services
         if: always()
         run: ci-cd/cleanup-local-ci-services.sh

@@ -218,8 +218,8 @@ Este aplicativo é atendido via PM2:
 
 Comandos:
 
-- `pnpm run dev:service-management`
-- `pnpm run dev` (inicia automaticamente o gerenciamento de serviço + perfil REST)
+- `bun run dev:service-management`
+- `bun run dev` (inicia automaticamente o gerenciamento de serviço + perfil REST)
 
 ## Serviço Estático
 
@@ -320,7 +320,7 @@ intocados.
   (handlers do worker, fluxo de atualização, recuperação — com fakes
   injetados).
 - Smoke de navegador:
-  `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`
+  `apps/service-management/test/integration/browser/pwaShell.browser.integration.test.ts`
   (tipos de conteúdo do manifesto/worker, concordância pré-cache↔manifesto
   estático, registro, carregamento offline do shell com o servidor parado, o
   fluxo completo de atualização com limpeza de caches obsoletos).

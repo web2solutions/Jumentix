@@ -12,7 +12,7 @@ pelas aplicações Jumentix.
 ### Runtime e persistência
 
 - [`@jumentix/adapter-runtime-bootstrap`](./adapter-runtime-bootstrap/README.pt-BR.md) - composição compartilhada do runtime de adapters.
-- [`@jumentix/cana`](./cana/README.pt-BR.md) - adaptador IndexedDB offline com documentação e playgrounds para o consumidor.
+- [`@jumentix/cana`](./cana/README.pt-BR.md) - adaptador IndexedDB offline com documentação e playgrounds para o consumidor; candidato a publicação pública no npm.
 - [`@jumentix/database-client-factory`](./database-client-factory/README.pt-BR.md) - compilação do cliente de banco por driver selecionado.
 - [`@jumentix/external-db-repositories`](./external-db-repositories/README.pt-BR.md) - repositórios reutilizáveis para bancos externos.
 - [`@jumentix/external-persistence-core`](./external-persistence-core/README.pt-BR.md) - contratos e implementações-base de persistência externa.
@@ -36,7 +36,7 @@ pelas aplicações Jumentix.
 
 ### Service Management
 
-- [`@jumentix/designer-core`](./designer-core/README.pt-BR.md) - núcleo do designer livre de framework (modelo, validação, exportadores, importadores, versionamento de pacotes de domínio); ESM seguro para navegador, publicação somente dry-run.
+- [`@jumentix/designer-core`](./designer-core/README.pt-BR.md) - núcleo do designer livre de framework (modelo, validação, exportadores, importadores, versionamento de pacotes de domínio); ESM seguro para navegador e candidato a publicação pública no npm.
 
 ### Configuração privada do workspace
 
@@ -59,3 +59,4 @@ artefatos de runtime expostos a consumidores.
 
 - [Pacotes Jumentix Workspace (Arquitetura)](/docs/jumentix/concepts/architecture)
 - [Ponte de compatibilidade do SDK](/docs/jumentix/packages)
+- [Publicação de Pacotes npm](../documentation/md/NPM-PACKAGE-PUBLISHING.pt-BR.md)

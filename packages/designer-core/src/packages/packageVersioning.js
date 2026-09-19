@@ -208,7 +208,8 @@ export function resolvePackageGraph(registry, incoming = null) {
       indegree.set(node.name, indegree.get(node.name) + 1);
     });
   });
-  const queue = [...nodes.keys()].filter((name) => indegree.get(name) === 0).sort();
+  const queue = [...nodes.keys()].filter((name) => indegree.get(name) === 0)
+    .sort((a, b) => a.localeCompare(b));
   const order = [];
   while (queue.length) {
     const name = queue.shift();
@@ -217,7 +218,7 @@ export function resolvePackageGraph(registry, incoming = null) {
       indegree.set(dependent, indegree.get(dependent) - 1);
       if (indegree.get(dependent) === 0) {
         queue.push(dependent);
-        queue.sort();
+        queue.sort((a, b) => a.localeCompare(b));
       }
     });
   }
@@ -240,7 +241,7 @@ export function resolvePackageGraph(registry, incoming = null) {
     stack.pop();
     state.set(name, 'done');
   };
-  [...remaining].sort().forEach((name) => visit(name));
+  [...remaining].sort((a, b) => a.localeCompare(b)).forEach((name) => visit(name));
 
   return { order, missing, incompatible, cycles };
 }
@@ -342,8 +343,8 @@ function metaProjection(meta) {
     contracts: (Array.isArray(source.contracts) ? source.contracts : []).map(contractProjection),
     oasComposition: {
       mode: source.oasComposition?.mode || '',
-      refs: [...(source.oasComposition?.refs || [])].sort(),
-      externalRefs: [...(source.oasComposition?.externalRefs || [])].sort(),
+      refs: [...(source.oasComposition?.refs || [])].sort((a, b) => a.localeCompare(b)),
+      externalRefs: [...(source.oasComposition?.externalRefs || [])].sort((a, b) => a.localeCompare(b)),
       discriminator: source.oasComposition?.discriminator || ''
     }
   };
@@ -354,11 +355,11 @@ function contextProjection(context) {
   return {
     ubiquitousLanguage: source.ubiquitousLanguage || '',
     ownerTeam: source.ownerTeam || '',
-    upstreamDependencies: [...(source.upstreamDependencies || [])].sort(),
-    downstreamDependencies: [...(source.downstreamDependencies || [])].sort(),
+    upstreamDependencies: [...(source.upstreamDependencies || [])].sort((a, b) => a.localeCompare(b)),
+    downstreamDependencies: [...(source.downstreamDependencies || [])].sort((a, b) => a.localeCompare(b)),
     integrationChannel: source.integrationChannel || '',
-    packageDependencies: [...(source.packageDependencies || [])].sort(),
-    sharedValueObjects: [...(source.sharedValueObjects || [])].sort()
+    packageDependencies: [...(source.packageDependencies || [])].sort((a, b) => a.localeCompare(b)),
+    sharedValueObjects: [...(source.sharedValueObjects || [])].sort((a, b) => a.localeCompare(b))
   };
 }
 

@@ -265,7 +265,7 @@ publish.** This section previously recorded JUM-493 as descoped (the 12-01
 decision); the package has since landed, and this document records the landed
 state. The framework-free designer core is now the versioned
 [`@jumentix/designer-core`](../../packages/designer-core/) package under the
-xpertminds organization — browser-safe ESM, zero runtime dependencies, MIT
+the `@jumentix` npm scope — browser-safe ESM, zero runtime dependencies, MIT
 licensed, with provenance metadata pointing at its monorepo location.
 
 - **The package is the canonical home, not a copy.** The core modules moved
@@ -277,7 +277,7 @@ licensed, with provenance metadata pointing at its monorepo location.
   the import map to a vendored tree
   (`apps/service-management/vendor/designer-core/`, containment-safe, synced
   by
-  [`ci-cd/sync-service-management-designer-core.js`](../../ci-cd/sync-service-management-designer-core.js)
+  [`apps/service-management/scripts/sync-service-management-designer-core.js`](../../apps/service-management/scripts/sync-service-management-designer-core.js)
   — the same vendoring model as the Cana bundle) in the browser, and by the
   repo's path mappings (tsconfig `paths`, Jest `moduleNameMapper`) straight
   to the canonical sources in tests. The shipped surface — the domain model
@@ -307,15 +307,13 @@ licensed, with provenance metadata pointing at its monorepo location.
   the built artifact in a **separate non-DOM process** (no `document`, no
   `window`, no `localStorage`) and runs a validate → export → re-import
   round trip on the sample model, deep-equal with a re-export fixed point.
-- **The publish policy stands: dry-run only.** Per
+- **The publish policy is manually approved.** Per
   [Requirement 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md)
-  no automatic publish exists. The repository's dry-run surface
-  (`bun run npm:publish:dry-run:packages`, with
-  `npm:org:check:xpertminds` for the org side) picks the package up like
-  every other non-private workspace package and runs `bun publish --dry-run
-  --access public`; `prepublishOnly` forces a clean rebuild first, so the dry
-  run verifies a deterministic artifact whose contents the packaging suite
-  has asserted.
+  no automatic publish exists. `bun run npm:packages:check` rebuilds the
+  approved public cohort, inspects each tarball, and imports it in an external
+  consumer. Publication is then a manual `main` workflow protected by the
+  `npm-publish` environment; `prepublishOnly` forces a clean rebuild before
+  npm assembles the release tarball.
 - **Versioning policy.** The package follows semver over its public barrel:
   patch for internal fixes, minor for additive exports, major for removed or
   narrowed surface. The *data* contracts it reads and writes (full-suite

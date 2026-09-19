@@ -91,7 +91,7 @@ export function builtModuleList(packageRoot: string): string[] {
       if (entry.isDirectory()) return walk(path.join(dir, rel), rel);
       return entry.name.endsWith('.js') && entry.name !== 'index.js' ? [rel] : [];
     });
-  const modules = walk(srcRoot, '').sort();
+  const modules = walk(srcRoot, '').sort((a, b) => a.localeCompare(b));
   if (modules.length === 0) throw new Error('packages/designer-core/src holds no modules');
   return modules;
 }

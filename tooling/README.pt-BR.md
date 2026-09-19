@@ -14,9 +14,9 @@ Automação documental mantida pelo repositório e executada pelos scripts do pa
 ## Comandos na Raiz
 
 ```bash
-pnpm run docs:translate:ptbr
-pnpm run docs:translate:ptbr:links
-pnpm run docs:consumers:package-scripts
+bun run docs:translate:ptbr
+bun run docs:translate:ptbr:links
+bun run docs:consumers:package-scripts
 ```
 
 Arquivos gerados em português não devem ser editados independentemente da fonte em inglês. Regenere,

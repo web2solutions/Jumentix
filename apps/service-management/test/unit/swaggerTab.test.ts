@@ -228,6 +228,27 @@ describe('swagger tab service selector (JUM-818)', () => {
     expect(updateSpec).toHaveBeenCalledWith(expect.stringContaining('"openapi":"3.1.0"'));
   });
 
+  it('treats an empty selector value as the merged document choice', async () => {
+    expect.hasAssertions();
+    const { createSwaggerTab } = loadSwaggerTabModule();
+    installDocument({ hasCss: true });
+    const bundle = Object.assign(jest.fn(() => ({})), {
+      presets: { apis: 'apis-preset' }
+    });
+    (globalThis as any).SwaggerUIBundle = bundle;
+    // A fresh <select> has no value; the tab must read that as 'merged'.
+    const select = makeSelect('');
+    const tab = createSwaggerTab({
+      dom: { openapiServiceSelect: select, swaggerUi: { textContent: '' } },
+      state: sampleState()
+    });
+    await tab.renderSwagger();
+
+    expect(select.options.map((option: any) => option.value)).toStrictEqual(['merged', 'core']);
+    const merged = select.options.find((option: any) => option.value === 'merged');
+    expect(merged.selected).toBe(true);
+  });
+
   it('skips rendering when the swagger container is absent', async () => {
     expect.hasAssertions();
     const { createSwaggerTab } = loadSwaggerTabModule();

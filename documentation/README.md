@@ -25,6 +25,8 @@ contract exists in `dev`; planned work must be identified explicitly as planned.
   - [Legacy SDK compatibility layer](../sdk-clients/README.md).
   - [OpenAPI and AsyncAPI sources](../spec/).
 - **Automation and delivery**
+  - [CI/CD gates and runners](../ci-cd/README.md) (`ci-cd/`, `ci-cd/test/`, Req 137 ownership gate).
+  - [Testing, CI and quality](./md/TESTING-CI-AND-QUALITY.md) ([pt-BR](./md/TESTING-CI-AND-QUALITY.pt-BR.md)).
   - [Tooling scripts](../tooling/README.md).
   - [Creator documentation](./creators/README.md) for CI, governance, release, and maintenance.
 
@@ -33,12 +35,14 @@ contract exists in `dev`; planned work must be identified explicitly as planned.
 For teams and product owners using Jumentix to build software:
 
 - [Consumer Documentation Index](./consumers/README.md)
+- [npm Package Publishing](./md/NPM-PACKAGE-PUBLISHING.md)
 
 ## Creator Documentation (maintainers/internal)
 
 For engineers maintaining and evolving Jumentix:
 
 - [Creator Documentation Index](./creators/README.md)
+- [npm Package Publishing](./md/NPM-PACKAGE-PUBLISHING.md)
 - [Agent Operating Requirements 114–121](./md/AGENT-OPERATING-REQUIREMENTS-114-121.md)
   ([pt-BR](./md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md))
 - [Agent Support Declaration](./md/AGENT-SUPPORT-DECLARATION.md)

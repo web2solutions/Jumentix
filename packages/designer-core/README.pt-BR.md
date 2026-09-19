@@ -1,7 +1,7 @@
 # @jumentix/designer-core
 
-O núcleo framework-free do designer de Service Management, publicado como um
-pacote `@jumentix` versionado sob a organização xpertminds
+O núcleo framework-free do designer de Service Management, preparado como um
+pacote `@jumentix` versionado
 ([JUM-493](https://linear.app/jumentix/issue/JUM-493/feature-publish-designer-core-as-jumentix-package-xpertminds-org-dry)).
 ESM seguro para navegador, zero dependências de runtime, sem DOM, sem
 implementação de armazenamento.
@@ -26,7 +26,7 @@ pacote → app. A SPA zero-build o consome por especificadores bare
 `@jumentix/designer-core/…`: o import map em
 `apps/service-management/index.html` os resolve para uma árvore vendored
 (`apps/service-management/vendor/designer-core/`, sincronizada a partir deste
-pacote por `ci-cd/sync-service-management-designer-core.js`, segura sob o
+pacote por `apps/service-management/scripts/sync-service-management-designer-core.js`, segura sob o
 containment do servidor estático da app), enquanto Bun, Jest e tsc resolvem
 os mesmos especificadores para `src/` pelos mapeamentos de path do
 repositório. O build de publicação copia `src/` para `dist/` verbatim e gera
@@ -95,16 +95,17 @@ independente dentro dos próprios payloads — essa política pertence ao
 e está fixada no Requisito 126, Contrato 3; a versão deste pacote não a
 repete.
 
-## Política de publicação: apenas dry-run
+## Política de publicação
 
 Conforme o
 [Requisito 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md),
-**não existe publicação automática**. A superfície de dry-run do repositório
-(`bun run npm:publish:dry-run:packages`) reconhece este pacote como qualquer
-outro pacote de workspace não privado e executa `bun publish --dry-run
---access public`, que roda o `prepublishOnly` — um rebuild limpo — antes de
-montar o tarball. O `test/packaging.test.ts` valida o manifesto e o conteúdo
-empacotado, de modo que o dry-run verifica um artefato cujo conteúdo é
+**não existe publicação automática**. O gate de artefatos do repositório
+(`bun run npm:packages:check`) recompila o conjunto de pacotes aprovado,
+inspeciona cada tarball e o importa em um consumidor externo. O workflow
+manual protegido a partir de `main` executa a futura publicação npm.
+`prepublishOnly` executa um rebuild limpo antes de montar o tarball, e
+`test/packaging.test.ts` valida o manifesto e o conteúdo empacotado, de modo
+que o gate verifica um artefato cujo conteúdo é
 provado, não presumido.
 
 ## Desenvolvimento

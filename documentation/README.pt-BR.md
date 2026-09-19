@@ -25,6 +25,8 @@ referenciado existe em `dev`; trabalho futuro deve ser identificado explicitamen
   - [Camada legada de compatibilidade dos SDKs](../sdk-clients/README.pt-BR.md).
   - [Fontes OpenAPI e AsyncAPI](../spec/).
 - **Automação e entrega**
+  - [Gates e runners de CI/CD](../ci-cd/README.pt-BR.md) (`ci-cd/`, `ci-cd/test/`, gate de ownership Req 137).
+  - [Testes, CI e qualidade](./md/TESTING-CI-AND-QUALITY.pt-BR.md) ([EN](./md/TESTING-CI-AND-QUALITY.md)).
   - [Scripts de tooling](../tooling/README.pt-BR.md).
   - [Documentação para criadores](./creators/README.pt-BR.md) sobre CI, governança, release e
     manutenção.
@@ -34,12 +36,14 @@ referenciado existe em `dev`; trabalho futuro deve ser identificado explicitamen
 Para times e product owners que usam o Jumentix para construir software:
 
 - [Índice de Documentação de Consumidores](./consumers/README.pt-BR.md)
+- [Publicação de Pacotes npm](./md/NPM-PACKAGE-PUBLISHING.pt-BR.md)
 
 ## Documentação de Criadores (mantenedores/interna)
 
 Para engenheiros que mantêm e evoluem o Jumentix:
 
 - [Índice de Documentação de Criadores](./creators/README.pt-BR.md)
+- [Publicação de Pacotes npm](./md/NPM-PACKAGE-PUBLISHING.pt-BR.md)
 - [Requisitos Operacionais de Agente 114–121](./md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md)
   ([EN](./md/AGENT-OPERATING-REQUIREMENTS-114-121.md))
 - [Arquitetura de módulos do Service Management e contrato da porta IDesignerStore](./md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)

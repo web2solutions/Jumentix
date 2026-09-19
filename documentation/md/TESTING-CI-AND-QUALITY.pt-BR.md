@@ -168,7 +168,7 @@ fabricar um teste aprovado.
 
 Aplicação local:
 
-- `.husky/pre-commit` sincroniza/adiciona `CHANGELOG.md` e executa o gate da branch
+- `.husky/pre-commit` executa o gate da branch sem modificar arquivos gerados
 - `.husky/pre-push` identifica o destino enviado e executa o gate da branch
 - `.husky/pre-merge-commit` executa o gate do destino do merge
 - `post-commit` é livre de mutações (sem correção automática, sem sinalizadores de bypass)
@@ -178,7 +178,8 @@ Aplicação remota:
 
 - GitHub Actions invoca `bun run ci:gate:branch`
 - o GitHub Actions passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
-- GitHub Actions assume a produção completa de cobertura e patch coverage em promoções `dev -> main`, pushes em `main` e execuções completas agendadas; gates locais e PRs até `dev` ficam rápidos e diagnósticos
+- GitHub Actions assume a produção completa de cobertura (mais upload Codecov e scan SonarCloud) em pushes para `dev` e `main`, promoções `dev -> main` e execuções completas agendadas; gates locais e PRs de tarefa até `dev` ficam rápidos e diagnósticos
+- Após um push validado em `dev`, o GitHub Actions serializa a atualização gerada de `CHANGELOG.md`; branches de tarefa e PRs deixam esse arquivo intacto
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
 - o GitHub Actions publica `artifacts/ci/full-test-matrix.json` quando o gate seleciona a matriz completa
@@ -233,12 +234,25 @@ Importação de cobertura do SonarQube Cloud:
 | Boundaries de workspace + `build:dev` | Arquitetura e emit TypeScript raiz falham fechados antes dos gates baratos | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight de todo caminho do branch-gate (JUM-786) |
 | Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Commitlint + Commitizen | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `bun run commit` |
-| Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git | `ci-cd/update-changelog.js`, `.husky/post-commit` | `bun run changelog:update`, `bun run changelog:check` |
+| Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git sem conflitos de branch de tarefa | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI executa após pushes validados em `dev`; `bun run changelog:check` é apenas diagnóstico |
 | Liberar verificação de governança | Aplica contratos de script de lançamento e metadados de publicação de pacotes | `ci-cd/check-release-governance.js` | `bun run release:governance:check` |
 | Verificação de resolução de rota OpenAPI | Garante que cada OperationId seja mapeado para manipuladores e métodos de controlador | `ci-cd/check-oas-route-resolution.js` | `bun run oas:check-routes` |
 | Verificação de limite hexagonal | Bloqueia violações da camada controladora | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |
 | Verificação do ciclo de importação principal | Impede dependências cíclicas em namespaces principais | `ci-cd/check-core-import-cycles.js` | `bun run deps:check-cycles` |
 | Verificação de namespace herdado | Bloqueia novas importações de namespaces de usuários antigos | `ci-cd/check-users-legacy-imports.js` | `bun run arch:check-users-legacy-imports` |
+| Colocação de ownership (Req 137) | Suites e tooling ficam no workspace do código que afirmam; allow-list shrink-only permanece vazia no estado estável | `ci-cd/check-workspace-ownership-placement.js`, `ci-cd/ownership-placement-allowlist.json`, `ci-cd/test/check-workspace-ownership-placement.test.ts` | `bun run arch:check-ownership-placement`; ligado em `ci:gate` e no preflight de branch |
+
+### Casas de suite (Requisito 137)
+
+| Casa | Afirma | Notas |
+| --- | --- | --- |
+| `apps/<A>/test/**` | `apps/<A>` | Wiring consumidor `@jumentix/*` é permitido. Clones profundos `packages/*/src` e `@src/` a partir do Service Management não são (Req 126). `apps/service-management-api` pode compor o backend-template via `@src` por desenho. |
+| `packages/<P>/test/**` | apenas `packages/<P>` | Sem clones dual-home de apps. |
+| `ci-cd/test/**` | Gates monorepo, runners, test-map e tooling de release em `ci-cd/**` | Fixtures de gate podem nomear outros workspaces em prosa sem contar como SUT estrangeiro. |
+
+Scripts específicos de componente ficam em `apps/<A>/scripts/` ou `packages/<P>/scripts/` (ou `bin/`). O `package.json` raiz mantém cada nome público de script e delega. Suites novas de package/app vão sob o `test/` daquele workspace; provas de gate monorepo vão sob `ci-cd/test/`. Após um move, rode `bun run test-map:generate` e `bun run arch:check-ownership-placement`.
+
+A allow-list em `ci-cd/ownership-placement-allowlist.json` é shrink-only. Estado estável é `[]`. Entrada obsoleta (suite ausente no disco) falha fechada.
 
 ### Plataformas e responsabilidades de CI
 
@@ -346,6 +360,7 @@ bun run deps:check-cycles
 bun run arch:check-boundaries
 bun run arch:check-users-legacy-imports
 bun run arch:check-workspace-boundaries
+bun run arch:check-ownership-placement
 bun run workspace:check-quality
 bun run workspace:check-coverage-policy
 bun run release:governance:check

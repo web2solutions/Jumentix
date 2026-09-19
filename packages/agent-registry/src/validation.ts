@@ -332,7 +332,7 @@ export function duplicateCanonicalIds(agentIds: string[]): string[] {
   return [...seen.entries()]
     .filter(([, count]) => count > 1)
     .map(([canonical]) => canonical)
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
 }
 
 export function describeProblems(problems: IntegrityProblem[]): string {

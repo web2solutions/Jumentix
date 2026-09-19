@@ -2,7 +2,7 @@
 
 ## JUM-432 — Project JUM-23 onto the layer taxonomy
 
-Source baseline: `documentation/md/BUN-MIGRATION-BASELINE.md` (JUM-23).
+Historical baseline summary: `documentation/md/HISTORICAL-TRANSITIONS.md` (JUM-23).
 
 | Layer | Bun-ready posture (local, Req 106) | Notes |
 | --- | --- | --- |

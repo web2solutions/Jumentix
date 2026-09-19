@@ -153,6 +153,7 @@ Priority grouping policy:
 Spec conformance is enforced by executable policy:
 
 - Architecture boundary checks
+- Workspace ownership placement checks (Requirement `137`)
 - Import cycle checks
 - Contract route resolution checks
 - Coverage threshold checks
@@ -223,14 +224,12 @@ Before any task execution:
 13. The Agent Registry single source of truth is Firestore Database (project
     `jumentix-service-registry`, collection `agents`, Requirement `089`). Only the owner account
     `web2solutions` (`web2solucoes@gmail.com`) and identities explicitly authorized in Linear may
-    write agent records. The legacy GitHub registry repository remains private under `XpertMinds`
-    as a frozen audit mirror.
-14. Requirement `103` makes `web2solutions/Jumentix` canonical; agent-coordination canonicity moved to
-    Firestore Database under Requirement `089`. Both former `web2solutions` origins — and the
-    legacy GitHub registry mirror — are deprecated, read-only, accept no new modifications, and
-    remain archived.
-15. Requirement `104` requires every applicable application integration from the deprecated
-    origin to be inventoried and rebound to `web2solutions/Jumentix`, with incomplete provider
+    write agent records.
+14. `web2solutions/Jumentix` is canonical; agent coordination is canonical in
+    Firestore Database under Requirement `089`. Historical transition evidence
+    is consolidated in `documentation/md/HISTORICAL-TRANSITIONS.md`.
+15. Requirement `104` requires every applicable application integration to be
+    bound to `web2solutions/Jumentix`, with incomplete provider
     installs recorded as provider blockers and validated by `integration-migration:check`.
 
 ## Audit Evidence Expectations

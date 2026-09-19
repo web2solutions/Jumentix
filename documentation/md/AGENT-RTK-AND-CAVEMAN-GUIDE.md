@@ -49,7 +49,7 @@ Use a native `rtk` subcommand whenever one exists for the tool; use `proxy` only
 `rtk` output is terser than the raw tool. Two examples from this repository:
 
 ```
-rtk jest apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts
+rtk jest ci-cd/test/check-pr-governance.test.ts
 PASS (30) FAIL (0)
 ```
 

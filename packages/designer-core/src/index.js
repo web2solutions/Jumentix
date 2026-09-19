@@ -9,7 +9,7 @@
  * through the `@jumentix/designer-core/…` bare specifiers, which the import
  * map in `apps/service-management/index.html` resolves to the vendored tree
  * (`vendor/designer-core/`, synced from this package's `src/` by
- * `ci-cd/sync-service-management-designer-core.js`), while Bun, Jest and tsc
+ * `apps/service-management/scripts/sync-service-management-designer-core.js`), while Bun, Jest and tsc
  * resolve the same specifiers to this `src/` through the repo's path mapping.
  *
  * What is in (per the issue): the domain model and its normalizers, the

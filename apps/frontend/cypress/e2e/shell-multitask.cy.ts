@@ -6,8 +6,8 @@ describe('multitask shell', () => {
   it('keeps an open Users edit after visiting the dashboard tab and restores tasks on reload', () => {
     cy.login('superadmin');
     cy.visit('/#/users');
-    cy.get('tbody tr').should('have.length.at.least', 6);
-    cy.contains('tbody tr', 'Barack').find('button[aria-label^="preview "]').click();
+    cy.get('.xcrud-grid tbody tr').should('have.length.at.least', 6);
+    cy.contains('.xcrud-grid tbody tr', 'Barack').find('button[aria-label^="preview "]').click();
     cy.get('.xcrud-row-detail').should('be.visible');
     cy.contains('[data-module-tabs] .nav-link', 'Dashboard').click();
     cy.get('[data-metric="users"]').should('be.visible');

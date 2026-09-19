@@ -35,6 +35,13 @@ const LINT_PREFLIGHT = Object.freeze({ id: 'lint', script: 'lint' });
  */
 const TEST_INTEGRITY_PREFLIGHT = Object.freeze({ id: 'test-integrity', script: 'test:integrity' });
 
+// Active governance guidance is a delivery contract. Keep its small static
+// check in the branch-gate preflight because hosted CI never invokes ci:gate.
+const CURRENT_GOVERNANCE_DOCS_PREFLIGHT = Object.freeze({
+  id: 'current-governance-docs',
+  script: 'docs:check-current-governance'
+});
+
 /**
  * Workspace boundaries + root `build:dev` run before every gate (JUM-786).
  *
@@ -52,6 +59,10 @@ const WORKSPACE_BOUNDARIES_PREFLIGHT = Object.freeze({
   id: 'workspace-boundaries',
   script: 'arch:check-workspace-boundaries'
 });
+const OWNERSHIP_PLACEMENT_PREFLIGHT = Object.freeze({
+  id: 'ownership-placement',
+  script: 'arch:check-ownership-placement'
+});
 const BUILD_DEV_PREFLIGHT = Object.freeze({
   id: 'build-dev',
   script: 'build:dev'
@@ -68,7 +79,9 @@ const FULL_MATRIX_QUALITY_GATE = Object.freeze({
   // re-running them as preflight is seconds and fails closed before the rest.
   preflight: Object.freeze([
     TEST_INTEGRITY_PREFLIGHT,
+    CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
+    OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
   ])
 });
@@ -78,7 +91,9 @@ const UNIT_QUALITY_GATE = Object.freeze({
   preflight: Object.freeze([
     LINT_PREFLIGHT,
     TEST_INTEGRITY_PREFLIGHT,
+    CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
+    OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
   ])
 });
@@ -88,7 +103,9 @@ const TASK_QUALITY_GATE = Object.freeze({
   preflight: Object.freeze([
     LINT_PREFLIGHT,
     TEST_INTEGRITY_PREFLIGHT,
+    CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
+    OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
   ])
 });

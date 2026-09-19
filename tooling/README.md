@@ -14,9 +14,9 @@ Repository-owned documentation automation used from root package scripts.
 ## Root Commands
 
 ```bash
-pnpm run docs:translate:ptbr
-pnpm run docs:translate:ptbr:links
-pnpm run docs:consumers:package-scripts
+bun run docs:translate:ptbr
+bun run docs:translate:ptbr:links
+bun run docs:consumers:package-scripts
 ```
 
 Generated Portuguese files must not be edited independently of their English source. Regenerate,

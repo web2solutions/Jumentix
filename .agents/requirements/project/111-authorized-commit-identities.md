@@ -119,14 +119,14 @@ validate for that identity.
 - `bun run governance:check-identity` — validates the identity Git would stamp
   on the next commit.
 - The check runs inside `ci:gate`, so it gates every branch through both CI
-  providers (Requirement `107`).
+  providers (Requirement `113`).
 - `.husky/pre-commit` blocks undeclared author/committer identity before commit
   creation.
 - `.husky/pre-push` blocks publishing any reachable commit with undeclared
   author/committer identity.
 - GitHub branch protection rejects unsigned commits and commits whose signatures
   are not verified by GitHub.
-- `apps/backend-template/test/unit/ci-cd/check-commit-authorship.test.ts` proves
+- `ci-cd/test/check-commit-authorship.test.ts` proves
   the checker fails when it should: on an undeclared author, on an undeclared
   committer whose author is declared, on each fail-closed condition in §4, and —
   against a real throwaway repository rather than a fake `git` — that it exits

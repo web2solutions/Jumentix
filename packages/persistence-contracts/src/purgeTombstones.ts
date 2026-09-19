@@ -17,6 +17,13 @@ export function assertSeedIdNotPurged(
   }
 }
 
+/**
+ * Contract: `deletedAt` is an ISO-8601 string or a Date. A numeric epoch is
+ * not an accepted representation — `Date.parse(String(epoch))` is NaN, so a
+ * numeric `deletedAt` is treated as "not a tombstone" and never purged. That
+ * is intentional: silently repairing an unknown representation is how one bad
+ * record becomes two; a driver writing epochs must convert at the boundary.
+ */
 export function parseInstant(value: unknown): number | null {
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value.getTime();
   if (typeof value === 'string' || typeof value === 'number') {

@@ -55,15 +55,15 @@
 
 ## Test Evidence
 
-- [ ] `pnpm run lint`
-- [ ] `pnpm run deps:check-cycles`
-- [ ] `pnpm run arch:check-boundaries`
-- [ ] `pnpm run arch:check-users-legacy-imports`
-- [ ] `pnpm run test:unit`
-- [ ] `pnpm run oas:check-routes`
-- [ ] `pnpm run build:dev`
-- [ ] `pnpm run ci:smoke`
-- [ ] `pnpm run ci:gate`
+- [ ] `bun run lint`
+- [ ] `bun run deps:check-cycles`
+- [ ] `bun run arch:check-boundaries`
+- [ ] `bun run arch:check-users-legacy-imports`
+- [ ] `bun run test:unit`
+- [ ] `bun run oas:check-routes`
+- [ ] `bun run build:dev`
+- [ ] `bun run ci:smoke`
+- [ ] `bun run ci:gate`
 
 ## Coverage and Quality Gates
 

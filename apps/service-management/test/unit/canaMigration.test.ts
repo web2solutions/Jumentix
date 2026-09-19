@@ -718,6 +718,9 @@ describe('browser wiring — the Cana bundle is servable by the zero-build SPA (
     expect.hasAssertions();
     const gitignore = fs.readFileSync(path.join(repoRoot, '.gitignore'), 'utf-8');
     expect(gitignore).toContain('apps/service-management/vendor/');
-    expect(fs.existsSync(path.join(repoRoot, 'ci-cd', 'sync-service-management-cana-bundle.js'))).toBe(true);
+    expect(fs.existsSync(path.join(
+      repoRoot,
+      'apps/service-management/scripts/sync-service-management-cana-bundle.js'
+    ))).toBe(true);
   });
 });

@@ -134,7 +134,7 @@ Related files:
 - `jest.config.js`
 - `ci-cd/check-coverage-thresholds.js`
 - `ci-cd/check-patch-coverage.js`
-- `ci-cd/run-service-management-integration.js`
+- `apps/service-management/scripts/run-service-management-integration.js`
 
 ## 6) Husky hooks are not running locally
 

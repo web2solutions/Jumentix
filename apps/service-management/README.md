@@ -203,8 +203,8 @@ This application is served via PM2:
 
 Commands:
 
-- `pnpm run dev:service-management`
-- `pnpm run dev` (auto-starts service management + REST profile)
+- `bun run dev:service-management`
+- `bun run dev` (auto-starts service management + REST profile)
 
 ## Static Serving
 
@@ -291,7 +291,7 @@ the `service-management-shell@*` caches and reloads — Cana data is untouched.
 - Unit: `apps/service-management/test/unit/pwaShell.test.ts`
   (worker handlers, update flow, recovery — with injected fakes).
 - Browser smoke:
-  `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`
+  `apps/service-management/test/integration/browser/pwaShell.browser.integration.test.ts`
   (manifest/worker content types, precache↔static-manifest agreement,
   registration, offline shell load with the server down, the full update
   flow with stale-cache cleanup).

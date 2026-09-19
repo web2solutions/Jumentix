@@ -281,7 +281,7 @@ desescopado (a decisão de 12-01); o pacote desde então foi entregue, e este
 documento registra o estado entregue. O núcleo do designer livre de framework
 é agora o pacote versionado
 `packages/designer-core/` sob a organização
-xpertminds — ESM seguro para navegador, zero dependências de runtime,
+`@jumentix` — ESM seguro para navegador, zero dependências de runtime,
 licenciado sob MIT, com metadados de procedência apontando para sua localização
 no monorepo.
 
@@ -294,7 +294,7 @@ no monorepo.
   resolvidos pelo import map para uma árvore vendored
   (`apps/service-management/vendor/designer-core/`, segura sob o containment,
   sincronizada por
-  `ci-cd/sync-service-management-designer-core.js`
+  `apps/service-management/scripts/sync-service-management-designer-core.js`
   — o mesmo modelo de vendorização do bundle do Cana) no navegador, e pelos
   mapeamentos de path do repositório (tsconfig `paths`, `moduleNameMapper`
   do Jest) diretamente aos fontes canônicos nos testes. A superfície
@@ -326,15 +326,13 @@ no monorepo.
   `localStorage`) e executa um round trip de validação → exportação →
   reimportação sobre o modelo de exemplo, deep-equal com ponto fixo de
   reexportação.
-- **A política de publicação permanece: somente dry-run.** Conforme o
+- **A política de publicação requer aprovação manual.** Conforme o
   Requisito 070,
-  não existe publicação automática. A superfície de dry-run do repositório
-  (`bun run npm:publish:dry-run:packages`, com `npm:org:check:xpertminds`
-  para o lado da organização) reconhece o pacote como qualquer outro pacote
-  de workspace não privado e executa `bun publish --dry-run --access public`;
-  o `prepublishOnly` força um rebuild limpo antes, de modo que o dry run
-  verifica um artefato determinístico cujo conteúdo a suíte de packaging
-  validou.
+  não existe publicação automática. `bun run npm:packages:check` recompila o
+  conjunto público aprovado, inspeciona cada tarball e o importa em um
+  consumidor externo. A publicação é então um workflow manual de `main`,
+  protegido pelo ambiente `npm-publish`; o `prepublishOnly` força um rebuild
+  limpo antes de o npm montar o tarball de release.
 - **Política de versionamento.** O pacote segue semver sobre seu barrel
   público: patch para correções internas, minor para exportações aditivas,
   major para superfície removida ou estreitada. Os contratos de *dados* que
@@ -353,7 +351,7 @@ armazenado.
 ### A exportação full-suite (JUM-547), o pacote portátil
 
 A exportação JSON é o documento full-suite versionado
-(`{ kind: "service-management-suite", version: "2.0.0", domains, relationships, interfaces, serviceConfiguration, runtimeEnvironment, deployments, view }`) carregando **as quatro abas** em um formato
+(`{ kind: "service-management-suite", version: "2.0.0", domains, relationships, interfaces, serviceConfiguration, runtimeEnvironment, codeWorkspace, deployments, view }`) carregando **as cinco abas** em um formato
 reimportável
 ([JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration)).
 Uma decisão de segurança registrada importa para o empacotamento: o pacote

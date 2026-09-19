@@ -257,7 +257,7 @@ describe('catalog REST handlers — express', () => {
     expect(authRes.status).toHaveBeenCalledWith(400);
   });
 
-  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[5]])(
+  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[4], OPERATIONS[5]])(
     '$operationId reports absent authorization as an invalid event',
     async (operation) => {
       expect.hasAssertions();
@@ -360,7 +360,7 @@ describe('catalog REST handlers — fastify', () => {
     expect(authRes.code).toHaveBeenCalledWith(400);
   });
 
-  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[5]])(
+  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[4], OPERATIONS[5]])(
     '$operationId reports absent authorization as an invalid event',
     async (operation) => {
       expect.hasAssertions();
@@ -464,7 +464,7 @@ describe('catalog REST handlers — restify', () => {
     expect(authRes.status).toHaveBeenCalledWith(400);
   });
 
-  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[5]])(
+  it.each([OPERATIONS[1], OPERATIONS[2], OPERATIONS[3], OPERATIONS[4], OPERATIONS[5]])(
     '$operationId reports absent authorization as an invalid event',
     async (operation) => {
       expect.hasAssertions();

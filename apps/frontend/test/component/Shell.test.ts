@@ -92,14 +92,15 @@ describe('DashboardView', () => {
     const wrapper = mountWithShell(DashboardView, {
       pinia, global: { plugins: [pinia, makeRouter()] }
     });
-    await flush(5);
+    await flush(20);
     expect(wrapper.find('[data-metric="users"]').text()).toContain('3');
     expect(wrapper.find('[data-metric="organizations"]').text()).toContain('2');
     expect(wrapper.text()).toContain('Welcome, Zoe Lima');
     expect(wrapper.text()).not.toContain('Traffic');
     expect(wrapper.text()).not.toContain('Yiorgos');
-    const sizes = recorded.filter((c) => c.method === 'GET').map((c) => new URL(c.url).searchParams.get('size'));
-    expect(sizes).toStrictEqual(['1', '1']);
+    const metricsCalls = recorded.filter((call) => call.url.includes('/metrics'));
+    expect(metricsCalls.some((call) => call.url.includes('/users/metrics') && call.url.includes('metric=count'))).toBe(true);
+    expect(metricsCalls.some((call) => call.url.includes('/organizations/metrics') && call.url.includes('metric=count'))).toBe(true);
     wrapper.unmount();
   });
 
@@ -110,7 +111,7 @@ describe('DashboardView', () => {
     const wrapper = mountWithShell(DashboardView, {
       pinia, global: { plugins: [pinia, makeRouter()] }
     });
-    await flush(5);
+    await flush(20);
     expect(wrapper.find('[data-metric="organizations"]').text()).toContain('Your role has no read access');
     expect(recorded.filter((c) => c.url.includes('/organizations'))).toHaveLength(0);
     wrapper.unmount();
