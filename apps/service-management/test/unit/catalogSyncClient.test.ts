@@ -21,7 +21,7 @@ import path from 'node:path';
  *   create, reject-on-stale with a 409-shaped error, tombstone deletes,
  *   versioned restores — because those semantics are pinned against the REAL
  *   backend in
- *   `test/integration/ServiceManagement/catalogSync.integration.test.ts`.
+ *   `apps/service-management/test/integration/catalogSync.integration.test.ts`.
  *   A scripted `down` flag simulates the partition for the convergence cases
  *   here; the integration test proves the same convergence over real HTTP
  *   with a real connection refusal.
