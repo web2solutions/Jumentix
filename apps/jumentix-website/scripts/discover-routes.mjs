@@ -73,7 +73,7 @@ function routeFromPageFile(absolute) {
  * `content/_meta.ts`, which happened to name the seven orphaned top-level files
  * — a proxy for the real cause (the rewrite above), and one that would have
  * stopped matching the first time somebody added a top-level page without
- * hiding it. Those files are gone; `ci-cd/check-website-content-routes.js` now
+ * hiding it. Those files are gone; `apps/jumentix-website/scripts/check-content-routes.js` now
  * asks the reachability question directly, on every content file.
  */
 const RESOLVER_ONLY_ROUTES = ['/docs'];

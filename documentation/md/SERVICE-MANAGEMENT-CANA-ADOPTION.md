@@ -127,7 +127,7 @@ What the user sees:
 **Proven by:**
 [`canaMigration.test.ts`](../../apps/service-management/test/unit/canaMigration.test.ts)
 (unit) and
-[`canaMigration.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/canaMigration.browser.integration.test.ts)
+[`canaMigration.browser.integration.test.ts`](../../apps/service-management/test/integration/browser/canaMigration.browser.integration.test.ts)
 (real browser, real IndexedDB), plus the migration-idempotence-offline cell
 of the JUM-486 matrix.
 
@@ -279,7 +279,7 @@ write-path states surface at the moment they happen.
   automatic. On the failure message: export now.
 
 **Proven by:** the eight cells of
-[`offlinePersistenceMatrix.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts)
+[`offlinePersistenceMatrix.browser.integration.test.ts`](../../apps/service-management/test/integration/browser/offlinePersistenceMatrix.browser.integration.test.ts)
 (the JUM-486 matrix — offline persistence, offline migration idempotence,
 crash classification, private/blocked storage, missing IndexedDB, eviction,
 corruption, quota warning-then-failure), run in a real WebKit browser against
@@ -329,7 +329,7 @@ The recorded semantics:
 **Proven by:**
 [`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts)
 (unit) and
-[`multiTabSync.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts)
+[`multiTabSync.browser.integration.test.ts`](../../apps/service-management/test/integration/browser/multiTabSync.browser.integration.test.ts)
 (real two-tab browser contexts).
 
 ## Export and backup
@@ -407,7 +407,7 @@ Recorded honestly, with their owning issues:
   `adapter.ts` entry rather than the package index, because bun's full-graph
   bundling of the index emits dangling export bindings WebKit refuses to
   link. The artifact check in
-  [`ci-cd/sync-service-management-cana-bundle.js`](../../ci-cd/sync-service-management-cana-bundle.js)
+  [`apps/service-management/scripts/sync-service-management-cana-bundle.js`](../../apps/service-management/scripts/sync-service-management-cana-bundle.js)
   fails closed against exactly that regression until the bundler defect is
   fixed upstream.
 - **Multi-tab cursor persistence is best-effort.** The sync cursor survives
@@ -442,8 +442,8 @@ Recorded honestly, with their owning issues:
 
 - Migration + environment states: [`apps/service-management/src/store/canaMigration.js`](../../apps/service-management/src/store/canaMigration.js); Cana adapter: [`apps/service-management/src/store/CanaDesignerStore.js`](../../apps/service-management/src/store/CanaDesignerStore.js); factory: [`apps/service-management/src/store/designerStoreFactory.js`](../../apps/service-management/src/store/designerStoreFactory.js)
 - Multi-tab sync engine: [`apps/service-management/src/state/designerSync.js`](../../apps/service-management/src/state/designerSync.js); state core: [`packages/designer-core/src/state/designerState.js`](../../packages/designer-core/src/state/designerState.js); boot wiring and export/import glue: [`apps/service-management/script.js`](../../apps/service-management/script.js)
-- Vendored Cana bundle sync: [`ci-cd/sync-service-management-cana-bundle.js`](../../ci-cd/sync-service-management-cana-bundle.js)
-- Suites: [`canaMigration.test.ts`](../../apps/service-management/test/unit/canaMigration.test.ts), [`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts) (unit); [`canaMigration.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/canaMigration.browser.integration.test.ts), [`multiTabSync.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/multiTabSync.browser.integration.test.ts) (browser); the JUM-486 offline/online matrix [`offlinePersistenceMatrix.browser.integration.test.ts`](../../apps/backend-template/test/integration/ServiceManagement/offlinePersistenceMatrix.browser.integration.test.ts) (browser, [JUM-486](https://linear.app/jumentix/issue/JUM-486/test-offlineonline-matrix-for-designer-persistence-on-cana))
+- Vendored Cana bundle sync: [`apps/service-management/scripts/sync-service-management-cana-bundle.js`](../../apps/service-management/scripts/sync-service-management-cana-bundle.js)
+- Suites: [`canaMigration.test.ts`](../../apps/service-management/test/unit/canaMigration.test.ts), [`canaDesignerStore.test.ts`](../../apps/service-management/test/unit/canaDesignerStore.test.ts), [`designerSync.test.ts`](../../apps/service-management/test/unit/designerSync.test.ts) (unit); [`canaMigration.browser.integration.test.ts`](../../apps/service-management/test/integration/browser/canaMigration.browser.integration.test.ts), [`multiTabSync.browser.integration.test.ts`](../../apps/service-management/test/integration/browser/multiTabSync.browser.integration.test.ts) (browser); the JUM-486 offline/online matrix [`offlinePersistenceMatrix.browser.integration.test.ts`](../../apps/service-management/test/integration/browser/offlinePersistenceMatrix.browser.integration.test.ts) (browser, [JUM-486](https://linear.app/jumentix/issue/JUM-486/test-offlineonline-matrix-for-designer-persistence-on-cana))
 - Storage schema: [Requirement 126, Contract 2](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md); bilingual parity: [Requirement 076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md)
 - Cana engine documentation: [CANA-INDEXEDDB-ADAPTER](./CANA-INDEXEDDB-ADAPTER.md), [CANA-USAGE-GUIDE](./CANA-USAGE-GUIDE.md)
 - Sibling E-chain documents: [Runtime Environment Contracts](./RUNTIME-ENVIRONMENT-CONTRACTS.md) (E1), [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md) (E3), [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md) (E4), [Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md) (E5), [Service Management Application](./SERVICE-MANAGEMENT-APPLICATION.md), [Domain Designer Features and Usage](./DOMAIN-DESIGNER-FEATURES-AND-USAGE.md)

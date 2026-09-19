@@ -430,7 +430,7 @@ Registradas honestamente, com suas issues responsáveis:
   `adapter.ts` do `packages/cana` em vez do índice do pacote, porque o
   bundling de grafo completo do índice pelo bun emite bindings de exportação
   pendurados que o WebKit se recusa a linkar. A verificação de artefato em
-  `ci-cd/sync-service-management-cana-bundle.js`
+  `apps/service-management/scripts/sync-service-management-cana-bundle.js`
   falha fechado contra exatamente essa regressão até que o defeito do bundler
   seja corrigido upstream.
 - **A persistência do cursor multi-abas é de melhor esforço.** O cursor de
@@ -468,7 +468,7 @@ Registradas honestamente, com suas issues responsáveis:
 
 - Migração + estados de ambiente: `canaMigration.js`; adaptador Cana: `apps/service-management/src/store/CanaDesignerStore.js`; fábrica: `designerStoreFactory.js`
 - Motor de sincronização multi-abas: `designerSync.js`; núcleo de estado: `packages/designer-core/src/state/designerState.js`; fiação de boot e cola de exportação/importação: `apps/service-management/script.js`
-- Sincronização do bundle Cana vendored: `ci-cd/sync-service-management-cana-bundle.js`
+- Sincronização do bundle Cana vendored: `apps/service-management/scripts/sync-service-management-cana-bundle.js`
 - Suítes: `canaMigration.test.ts`, `canaDesignerStore.test.ts`, `designerSync.test.ts` (unitárias); `canaMigration.browser.integration.test.ts`, `multiTabSync.browser.integration.test.ts` (navegador); a matriz offline/online do JUM-486 `offlinePersistenceMatrix.browser.integration.test.ts` (navegador, [JUM-486](https://linear.app/jumentix/issue/JUM-486/test-offlineonline-matrix-for-designer-persistence-on-cana))
 - Esquema de armazenamento: Requisito 126, Contrato 2; paridade bilíngue: Requisito 076
 - Documentação do motor Cana: CANA-INDEXEDDB-ADAPTER, [CANA-USAGE-GUIDE](/docs/pt-BR/jumentix/packages/cana/usage)

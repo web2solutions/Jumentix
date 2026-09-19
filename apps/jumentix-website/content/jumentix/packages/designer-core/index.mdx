@@ -32,7 +32,7 @@ never package → app. The zero-build SPA consumes it through
 `@jumentix/designer-core/…` bare specifiers: the import map in
 `apps/service-management/index.html` resolves them to a vendored tree
 (`apps/service-management/vendor/designer-core/`, synced from this package by
-`ci-cd/sync-service-management-designer-core.js`, containment-safe under the
+`apps/service-management/scripts/sync-service-management-designer-core.js`, containment-safe under the
 app's static server), while Bun, Jest and tsc resolve the same specifiers to
 `src/` through the repo's path mappings. The publish build copies `src/` into
 `dist/` verbatim and generates type declarations from the JSDoc-annotated

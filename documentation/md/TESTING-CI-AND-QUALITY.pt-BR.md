@@ -239,6 +239,19 @@ Importação de cobertura do SonarQube Cloud:
 | Verificação de limite hexagonal | Bloqueia violações da camada controladora | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |
 | Verificação do ciclo de importação principal | Impede dependências cíclicas em namespaces principais | `ci-cd/check-core-import-cycles.js` | `bun run deps:check-cycles` |
 | Verificação de namespace herdado | Bloqueia novas importações de namespaces de usuários antigos | `ci-cd/check-users-legacy-imports.js` | `bun run arch:check-users-legacy-imports` |
+| Colocação de ownership (Req 137) | Suites e tooling ficam no workspace do código que afirmam; allow-list shrink-only permanece vazia no estado estável | `ci-cd/check-workspace-ownership-placement.js`, `ci-cd/ownership-placement-allowlist.json`, `ci-cd/test/check-workspace-ownership-placement.test.ts` | `bun run arch:check-ownership-placement`; ligado em `ci:gate` e no preflight de branch |
+
+### Casas de suite (Requisito 137)
+
+| Casa | Afirma | Notas |
+| --- | --- | --- |
+| `apps/<A>/test/**` | `apps/<A>` | Wiring consumidor `@jumentix/*` é permitido. Clones profundos `packages/*/src` e `@src/` a partir do Service Management não são (Req 126). `apps/service-management-api` pode compor o backend-template via `@src` por desenho. |
+| `packages/<P>/test/**` | apenas `packages/<P>` | Sem clones dual-home de apps. |
+| `ci-cd/test/**` | Gates monorepo, runners, test-map e tooling de release em `ci-cd/**` | Fixtures de gate podem nomear outros workspaces em prosa sem contar como SUT estrangeiro. |
+
+Scripts específicos de componente ficam em `apps/<A>/scripts/` ou `packages/<P>/scripts/` (ou `bin/`). O `package.json` raiz mantém cada nome público de script e delega. Suites novas de package/app vão sob o `test/` daquele workspace; provas de gate monorepo vão sob `ci-cd/test/`. Após um move, rode `bun run test-map:generate` e `bun run arch:check-ownership-placement`.
+
+A allow-list em `ci-cd/ownership-placement-allowlist.json` é shrink-only. Estado estável é `[]`. Entrada obsoleta (suite ausente no disco) falha fechada.
 
 ### Plataformas e responsabilidades de CI
 
@@ -346,6 +359,7 @@ bun run deps:check-cycles
 bun run arch:check-boundaries
 bun run arch:check-users-legacy-imports
 bun run arch:check-workspace-boundaries
+bun run arch:check-ownership-placement
 bun run workspace:check-quality
 bun run workspace:check-coverage-policy
 bun run release:governance:check

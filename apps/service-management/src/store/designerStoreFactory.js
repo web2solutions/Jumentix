@@ -25,7 +25,7 @@ import {
  *   contract the other drivers are registered through. In the browser that
  *   specifier resolves through the import map in `index.html` to the
  *   vendored bundle (`vendor/cana/index.js`, synced from `packages/cana`'s
- *   ESM dist by `ci-cd/sync-service-management-cana-bundle.js`). A host that
+ *   ESM dist by `apps/service-management/scripts/sync-service-management-cana-bundle.js`). A host that
  *   cannot resolve the import gets a store whose operations report
  *   `'unavailable'` — wired-but-unresolvable is an explicit terminal state
  *   the boot surfaces, never a silent fallback.

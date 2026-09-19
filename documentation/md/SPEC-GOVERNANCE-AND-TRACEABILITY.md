@@ -153,6 +153,7 @@ Priority grouping policy:
 Spec conformance is enforced by executable policy:
 
 - Architecture boundary checks
+- Workspace ownership placement checks (Requirement `137`)
 - Import cycle checks
 - Contract route resolution checks
 - Coverage threshold checks

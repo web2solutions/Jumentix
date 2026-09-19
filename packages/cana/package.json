@@ -19,7 +19,7 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "echo \"cana: covered by the root eslint run\"",
-    "test": "bun test --isolate test && bun --cwd ../.. ci-cd/run-browser-tests.js",
+    "test": "bun test --isolate test && bun --cwd ../.. packages/cana/scripts/run-browser-tests.js",
     "prepublishOnly": "bun run clean && bun run build",
     "build:esm": "bun build src/index.ts --outfile dist/index.mjs --format esm --target browser"
   },

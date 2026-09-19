@@ -232,6 +232,19 @@ SonarQube Cloud coverage import:
 | Hexagonal boundary check | Blocks controller-layer violations | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |
 | Core import cycle check | Prevents cyclic dependencies in core namespaces | `ci-cd/check-core-import-cycles.js` | `bun run deps:check-cycles` |
 | Legacy namespace check | Blocks new imports from old Users namespaces | `ci-cd/check-users-legacy-imports.js` | `bun run arch:check-users-legacy-imports` |
+| Ownership placement (Req 137) | Suite and tooling homes match the code they assert; shrink-only allow-list must stay empty at steady state | `ci-cd/check-workspace-ownership-placement.js`, `ci-cd/ownership-placement-allowlist.json`, `ci-cd/test/check-workspace-ownership-placement.test.ts` | `bun run arch:check-ownership-placement`; wired into `ci:gate` and branch preflight |
+
+### Suite homes (Requirement 137)
+
+| Home | Asserts | Notes |
+| --- | --- | --- |
+| `apps/<A>/test/**` | `apps/<A>` | Consumer `@jumentix/*` wiring is allowed. Deep `packages/*/src` clones and `@src/` from Service Management are not (Req 126). `apps/service-management-api` may compose backend-template via `@src` by design. |
+| `packages/<P>/test/**` | `packages/<P>` only | No app dual-home clones. |
+| `ci-cd/test/**` | Root `ci-cd/**` monorepo gates, runners, test-map, release tooling | Gate fixtures may name other workspaces in prose without counting as foreign SUTs. |
+
+Component-specific scripts live under `apps/<A>/scripts/` or `packages/<P>/scripts/` (or `bin/`). Root `package.json` keeps every public script name and delegates. New suites for a package or app go under that workspace's `test/`; new monorepo gate proof suites go under `ci-cd/test/`. After a move, run `bun run test-map:generate` and `bun run arch:check-ownership-placement`.
+
+The allow-list at `ci-cd/ownership-placement-allowlist.json` is shrink-only. Steady state is `[]`. A stale entry (suite missing on disk) fails closed.
 
 ### CI Platforms and Responsibilities
 
@@ -338,6 +351,7 @@ bun run deps:check-cycles
 bun run arch:check-boundaries
 bun run arch:check-users-legacy-imports
 bun run arch:check-workspace-boundaries
+bun run arch:check-ownership-placement
 bun run workspace:check-quality
 bun run workspace:check-coverage-policy
 bun run release:governance:check

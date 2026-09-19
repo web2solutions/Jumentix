@@ -96,6 +96,7 @@ See also:
 - [134-no-flaky-tests](requirements/software/134-no-flaky-tests.md)
 - [135-no-fake-tests](requirements/software/135-no-fake-tests.md)
 - [136-frontend-knows-backend-only-through-oas](requirements/software/136-frontend-knows-backend-only-through-oas.md)
+- [137-workspace-suite-and-tooling-ownership](requirements/software/137-workspace-suite-and-tooling-ownership.md)
 
 ## Software and Product Requirements
 

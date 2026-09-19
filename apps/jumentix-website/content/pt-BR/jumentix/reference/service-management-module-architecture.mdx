@@ -371,7 +371,7 @@ a abstração da porta se sustentou. As decisões que um leitor precisa:
   `createCanaDatabaseClient`; no navegador, o especificador bare resolve
   através do import map em `index.html` para o bundle vendored
   (`vendor/cana/index.js`, ignorado pelo git, regenerado por
-  `ci-cd/sync-service-management-cana-bundle.js`). Um host que não consegue
+  `apps/service-management/scripts/sync-service-management-cana-bundle.js`). Um host que não consegue
   resolvê-lo recebe `'unavailable'`, nunca um fallback silencioso.
 
 ## A migração unidirecional: `canaMigration.js` (JUM-484)

@@ -36,13 +36,13 @@ bun run <comando>
 | `release:dry-run` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run` | `bun ci-cd/release-dry-run.js all` |
 | `release:dry-run:packages` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:packages` | `bun ci-cd/release-dry-run.js packages` |
 | `release:dry-run:apps` | Executa governança de release e rotinas de dry-run. | `bun run release:dry-run:apps` | `bun ci-cd/release-dry-run.js apps` |
-| `agent-registry:register` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:register` | `bun ci-cd/agent-registry-cli.js register` |
-| `agent-registry:heartbeat` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:heartbeat` | `bun ci-cd/agent-registry-cli.js heartbeat` |
-| `agent-registry:assign` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:assign` | `bun ci-cd/agent-registry-cli.js assign` |
-| `agent-registry:complete` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:complete` | `bun ci-cd/agent-registry-cli.js complete` |
-| `agent-registry:repair` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:repair` | `bun ci-cd/agent-registry-cli.js repair` |
-| `agent-registry:sync` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:sync` | `bun ci-cd/agent-registry-cli.js sync` |
-| `agent-registry:check` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:check` | `bun ci-cd/agent-registry-cli.js check` |
+| `agent-registry:register` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:register` | `bun packages/agent-registry/bin/agent-registry-cli.js register` |
+| `agent-registry:heartbeat` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:heartbeat` | `bun packages/agent-registry/bin/agent-registry-cli.js heartbeat` |
+| `agent-registry:assign` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:assign` | `bun packages/agent-registry/bin/agent-registry-cli.js assign` |
+| `agent-registry:complete` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:complete` | `bun packages/agent-registry/bin/agent-registry-cli.js complete` |
+| `agent-registry:repair` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:repair` | `bun packages/agent-registry/bin/agent-registry-cli.js repair` |
+| `agent-registry:sync` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:sync` | `bun packages/agent-registry/bin/agent-registry-cli.js sync` |
+| `agent-registry:check` | Use quando precisar desta operação específica do workspace. | `bun run agent-registry:check` | `bun packages/agent-registry/bin/agent-registry-cli.js check` |
 | `arch:check-http-adapters` | Valida limites e restrições de arquitetura. | `bun run arch:check-http-adapters` | `bun ci-cd/check-http-adapter-authenticity.js` |
 | `ci:check-provider` | Use em validações de CI e gates de entrega. | `bun run ci:check-provider` | `bun ci-cd/check-ci-provider.js` |
 | `ci:check-third-party-review` | Use em validações de CI e gates de entrega. | `bun run ci:check-third-party-review` | `bun ci-cd/check-third-party-review.js` |
@@ -56,9 +56,9 @@ bun run <comando>
 | `governance:check-identity` | Use quando precisar desta operação específica do workspace. | `bun run governance:check-identity` | `bun ci-cd/check-commit-authorship.js --identity` |
 | `pr:governance:check` | Use quando precisar desta operação específica do workspace. | `bun run pr:governance:check` | `bun ci-cd/check-pr-governance.js` |
 | `serverless:check-handlers` | Use quando precisar desta operação específica do workspace. | `bun run serverless:check-handlers` | `bun ci-cd/check-serverless-handler-paths.js` |
-| `ci:smoke` | Use em validações de CI e gates de entrega. | `bun run ci:smoke` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun ci-cd/run-api-smoke.js` |
+| `ci:smoke` | Use em validações de CI e gates de entrega. | `bun run ci:smoke` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun apps/backend-template/scripts/run-api-smoke.js` |
 | `ci:integration` | Use em validações de CI e gates de entrega. | `bun run ci:integration` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js` |
-| `ci:security-smoke` | Use em validações de CI e gates de entrega. | `bun run ci:security-smoke` | `NODE_ENV=ci bun ci-cd/run-security-smoke.js` |
+| `ci:security-smoke` | Use em validações de CI e gates de entrega. | `bun run ci:security-smoke` | `NODE_ENV=ci bun apps/backend-template/scripts/run-security-smoke.js` |
 | `ci:gate` | Use em validações de CI e gates de entrega. | `bun run ci:gate` | `bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run packages:check-suites && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run ci:security-smoke && bun run oas:check-routes && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke` |
 | `ci:gate:branch` | Use em validações de CI e gates de entrega. | `bun run ci:gate:branch` | `bun ci-cd/run-branch-quality-gate.js` |
 | `ci:gate:task` | Use em validações de CI e gates de entrega. | `bun run ci:gate:task` | `bun ci-cd/run-task-change-tests.js` |
@@ -105,7 +105,7 @@ bun run <comando>
 | `test` | Executa a suíte padrão de testes do backend-template. | `bun run test` | `NODE_ENV=dev bun test ./apps/backend-template/test` |
 | `test:unit` | Roda testes para escopo ou perfil específico. | `bun run test:unit` | `NODE_ENV=dev bun ci-cd/run-unit-tests.js` |
 | `coverage:patch` | Use quando precisar desta operação específica do workspace. | `bun run coverage:patch` | `bun ci-cd/check-patch-coverage.js` |
-| `coverage:browser-lcov` | Use quando precisar desta operação específica do workspace. | `bun run coverage:browser-lcov` | `bun ci-cd/write-browser-lcov.js` |
+| `coverage:browser-lcov` | Use quando precisar desta operação específica do workspace. | `bun run coverage:browser-lcov` | `bun packages/cana/scripts/write-browser-lcov.js` |
 | `test:integration` | Roda testes para escopo ou perfil específico. | `bun run test:integration` | `bun ci-cd/run-integration-tests.js` |
 | `test:integration:express` | Roda testes para escopo ou perfil específico. | `bun run test:integration:express` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label express apps/backend-template/test/integration/Express` |
 | `test:integration:fastify` | Roda testes para escopo ou perfil específico. | `bun run test:integration:fastify` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label fastify apps/backend-template/test/integration/Fastify` |
@@ -119,7 +119,7 @@ bun run <comando>
 | `test:integration:derby-js` | Roda testes para escopo ou perfil específico. | `bun run test:integration:derby-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label derby-js apps/backend-template/test/integration/Derby-JS` |
 | `test:integration:adonis-js` | Roda testes para escopo ou perfil específico. | `bun run test:integration:adonis-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label adonis-js apps/backend-template/test/integration/Adonis-JS` |
 | `test:integration:total-js` | Roda testes para escopo ou perfil específico. | `bun run test:integration:total-js` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label total-js apps/backend-template/test/integration/Total-JS` |
-| `test:integration:service-management` | Roda testes para escopo ou perfil específico. | `bun run test:integration:service-management` | `NODE_ENV=dev bun ci-cd/run-service-management-integration.js` |
+| `test:integration:service-management` | Roda testes para escopo ou perfil específico. | `bun run test:integration:service-management` | `NODE_ENV=dev bun apps/service-management/scripts/run-service-management-integration.js` |
 | `test:integration:realtime:websocket` | Roda testes para escopo ou perfil específico. | `bun run test:integration:realtime:websocket` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label realtime-ws apps/backend-template/test/integration/realtime/websocket.basic.integration.test.ts` |
 | `test:integration:realtime:grpc` | Roda testes para escopo ou perfil específico. | `bun run test:integration:realtime:grpc` | `NODE_ENV=dev bun ci-cd/run-suite.js --script-label realtime-grpc apps/backend-template/test/integration/realtime/grpc.basic.integration.test.ts` |
 | `test:integration:realtime` | Roda testes para escopo ou perfil específico. | `bun run test:integration:realtime` | `bun run test:integration:realtime:websocket && bun run test:integration:realtime:grpc` |
@@ -274,8 +274,8 @@ bun run <comando>
 | `quarantine:flake` | Use quando precisar desta operação específica do workspace. | `bun run quarantine:flake` | `bun ci-cd/quarantine-flake.js` |
 | `test:coverage` | Roda testes para escopo ou perfil específico. | `bun run test:coverage` | `NODE_ENV=dev bun x jest apps/backend-template/test/unit 'packages/[^/]+/test' --coverage --coverageThreshold='{}' --forceExit` |
 | `coverage:check` | Use quando precisar desta operação específica do workspace. | `bun run coverage:check` | `bun ci-cd/check-coverage-thresholds.js` |
-| `test:browser` | Roda testes para escopo ou perfil específico. | `bun run test:browser` | `bun ci-cd/run-browser-tests.js` |
-| `test:integration:key-value` | Roda testes para escopo ou perfil específico. | `bun run test:integration:key-value` | `bun ci-cd/run-redis-key-value-integration.js` |
+| `test:browser` | Roda testes para escopo ou perfil específico. | `bun run test:browser` | `bun packages/cana/scripts/run-browser-tests.js` |
+| `test:integration:key-value` | Roda testes para escopo ou perfil específico. | `bun run test:integration:key-value` | `bun apps/backend-template/scripts/run-redis-key-value-integration.js` |
 | `smoke:key-value:redis` | Executa smoke checks para validação rápida de ambiente. | `bun run smoke:key-value:redis` | `bun run docker:composeredis && bun run test:integration:key-value && docker compose -f "apps/backend-template/docker-compose-redis.yml" down --remove-orphans` |
 | `test:integration:message-mediator` | Roda testes para escopo ou perfil específico. | `bun run test:integration:message-mediator` | `NODE_ENV=dev RUN_BROKER_INTEGRATION=1 bun ci-cd/run-suite.js --script-label message-mediator --timeout 60000 packages/message-mediator/test/integration` |
 | `test:integration:db-repositories` | Roda testes para escopo ou perfil específico. | `bun run test:integration:db-repositories` | `JUMENTIX_TEST_RUNTIME=bun NODE_ENV=dev RUN_DB_REPOSITORIES_INTEGRATION=1 bun ci-cd/run-suite.js --script-label db-repositories --timeout 120000 packages/external-db-repositories/test/integration` |

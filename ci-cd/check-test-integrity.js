@@ -40,7 +40,7 @@ const path = require('path');
 const { isEntryPoint } = require('./lib/entry-point.js');
 const { testsWithoutDeclarations } = require('./lib/test-assertions.js');
 
-const TEST_ROOTS = ['apps', 'packages'];
+const TEST_ROOTS = ['apps', 'packages', 'ci-cd/test'];
 const SKIP_DIRECTORIES = new Set(['node_modules', 'dist', 'build', 'coverage', '.next']);
 
 /**

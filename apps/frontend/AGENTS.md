@@ -113,7 +113,7 @@ decidido pelo **contrato**, não pela config:
   `bunfig.toml`). Toda suíte declara `expect.hasAssertions()`/`expect.assertions(n)`; mocks só
   em `globalThis.fetch`; sem `sleep` como sincronização.
 - `bun run test:coverage` gera `coverage/frontend/lcov.info`; `bun run frontend:coverage:check`
-  (raiz) aplica o gate de linhas/funções (`ci-cd/check-frontend-coverage.js`). Bun não emite
+  (raiz) aplica o gate de linhas/funções (`apps/frontend/scripts/check-coverage.js`). Bun não emite
   branches — o gate diz isso em vez de contar como atingido.
 - `bun run test:e2e` sobe o backend real em Docker (`e2e/docker-compose.yml`), um Vite com proxy
   e roda Cypress (Chrome headless por padrão; `FRONTEND_E2E_BROWSER` para trocar). Falha fechado
