@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-19 ci: retarget coverage jobs to packages/cana browser scripts - Eduardo A.
 - 2026-09-19 chore: clear ownership path freeze leftovers for JUM-834 (#362) - Eduardo A.
 - 2026-09-19 [JUM-824][Governance] Restore suite and tooling ownership (#358) - Eduardo A.
 - 2026-09-19 chore: sync origin/dev before merge of ownership epic - Eduardo A.
