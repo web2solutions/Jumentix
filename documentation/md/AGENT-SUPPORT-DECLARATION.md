@@ -74,5 +74,5 @@ No edit to `ci-cd/check-pr-governance.js` is required.
 
 - `.agents/supported-agents.json`
 - `ci-cd/check-pr-governance.js`
-- `apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts`
+- `ci-cd/test/check-pr-governance.test.ts`
 - `bun run pr:governance:check`

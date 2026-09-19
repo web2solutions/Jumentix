@@ -75,7 +75,7 @@ locales declare the same keys.
   is a Bun plugin that compiles SFCs with `@vue/compiler-sfc`, registered through the app's
   `bunfig.toml`). Chart.js is stubbed — it needs a real canvas — and says so in the harness.
 - `bun run test:coverage` + `bun run frontend:coverage:check` (root) — bun lcov over `src/`
-  gated by `ci-cd/check-frontend-coverage.js` on lines and functions; untouched sources count at
+  gated by `apps/frontend/scripts/check-coverage.js` on lines and functions; untouched sources count at
   zero; branches are reported as *unmeasured* because Bun emits no branch records (Requirement
   `110` §2). The gate runs inside `ci:gate`; the lcov feeds Sonar.
 - `bun run test:e2e` — `scripts/run-e2e.mjs` builds and starts the real Express REST API in Docker

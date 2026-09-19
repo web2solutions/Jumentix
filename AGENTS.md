@@ -106,6 +106,7 @@ otherwise know they exist.
 | `130` | Measured claims and bounded work: no number without the command that produced it, no proxy stated as a cause, corrections published where the claim was published, partial delivery reported as partial. | attestation |
 | `131` | Every built entrypoint must carry every runtime export its source barrel declares. A stale `dist` loads cleanly and fails only at call time. | `bun run packages:check-build-freshness` |
 | `132` | No orphaned published artifacts: content must resolve to a servable route, or be declared with the issue that owns the decision. The register fails in both directions. | `bun run website:check-content-routes` |
+| `137` | Suites and component scripts live with their owner; monorepo gates stay in `ci-cd/`; `arch:check-ownership-placement` fails closed with a shrink-only allow-list. | `bun run arch:check-ownership-placement` |
 
 Both new gates run inside `ci:gate`. Requirements `127`, `128` and `130` are attestation-based
 and say so in their own text — do not mistake them for gates.

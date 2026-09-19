@@ -70,7 +70,7 @@
 
 - `packages/agent-registry/src/rtdb-client.ts`
 - `packages/agent-registry/src/bus-commands.ts`
-- `ci-cd/agent-registry-cli.js`
+- `packages/agent-registry/bin/agent-registry-cli.js`
 - `bun run agent-bus:publish|watch|status`
 - `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.md` (+ pt-BR)
 - `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.md` (+ pt-BR)

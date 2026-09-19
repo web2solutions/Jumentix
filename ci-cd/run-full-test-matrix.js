@@ -10,6 +10,7 @@ const FULL_TEST_MATRIX = Object.freeze([
   { id: 'architecture-boundaries', script: 'arch:check-boundaries' },
   { id: 'architecture-users-legacy', script: 'arch:check-users-legacy-imports' },
   { id: 'architecture-workspaces', script: 'arch:check-workspace-boundaries' },
+  { id: 'ownership-placement', script: 'arch:check-ownership-placement' },
   { id: 'workspace-quality', script: 'workspace:check-quality' },
   { id: 'workspace-coverage-policy', script: 'workspace:check-coverage-policy' },
   { id: 'release-governance', script: 'release:governance:check' },

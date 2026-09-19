@@ -320,7 +320,7 @@ intocados.
   (handlers do worker, fluxo de atualização, recuperação — com fakes
   injetados).
 - Smoke de navegador:
-  `apps/backend-template/test/integration/ServiceManagement/pwaShell.browser.integration.test.ts`
+  `apps/service-management/test/integration/browser/pwaShell.browser.integration.test.ts`
   (tipos de conteúdo do manifesto/worker, concordância pré-cache↔manifesto
   estático, registro, carregamento offline do shell com o servidor parado, o
   fluxo completo de atualização com limpeza de caches obsoletos).

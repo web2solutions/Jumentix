@@ -10,7 +10,8 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 const UNIT_DIRS = [
   'apps/backend-template/test/unit',
   'apps/service-management/test/unit',
-  'apps/service-management-api/test/unit'
+  'apps/service-management-api/test/unit',
+  'ci-cd/test'
 ];
 
 /**

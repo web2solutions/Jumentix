@@ -25,6 +25,8 @@ referenciado existe em `dev`; trabalho futuro deve ser identificado explicitamen
   - [Camada legada de compatibilidade dos SDKs](../sdk-clients/README.pt-BR.md).
   - [Fontes OpenAPI e AsyncAPI](../spec/).
 - **Automação e entrega**
+  - [Gates e runners de CI/CD](../ci-cd/README.pt-BR.md) (`ci-cd/`, `ci-cd/test/`, gate de ownership Req 137).
+  - [Testes, CI e qualidade](./md/TESTING-CI-AND-QUALITY.pt-BR.md) ([EN](./md/TESTING-CI-AND-QUALITY.md)).
   - [Scripts de tooling](../tooling/README.pt-BR.md).
   - [Documentação para criadores](./creators/README.pt-BR.md) sobre CI, governança, release e
     manutenção.

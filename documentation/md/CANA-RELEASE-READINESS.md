@@ -109,12 +109,12 @@ nothing.
 Locally, one engine per invocation (default `chrome`):
 
 ```bash
-bun ci-cd/run-browser-tests.js --browser chrome    # or firefox, or webkit
+bun packages/cana/scripts/run-browser-tests.js --browser chrome    # or firefox, or webkit
 ```
 
 In CI the `coverage` workflow fans out one job per engine and uploads each
 engine's LCOV as an artifact; the SonarQube Cloud workflow downloads all three
-and merges them with `ci-cd/merge-browser-coverage.js`. The merge is a union —
+and merges them with `packages/cana/scripts/merge-browser-coverage.js`. The merge is a union —
 a location hit on any engine is covered — so WebKit's storage paths count
 toward the same report Sonar reads, and the 99% contract is met by the matrix
 rather than by a single browser.

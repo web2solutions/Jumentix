@@ -55,6 +55,6 @@ agents is data, and adding the next agent must be a data change rather than a co
 - `ci-cd/check-pr-governance.js` (`loadSupportedAgents`, `agentBranchPatterns`,
   `validateSupportedAgents`)
 - `KIMI.md`
-- `apps/backend-template/test/unit/ci-cd/check-pr-governance.test.ts`
+- `ci-cd/test/check-pr-governance.test.ts`
 - `documentation/md/AGENT-SUPPORT-DECLARATION.md` (+ pt-BR)
 - `bun run pr:governance:check` and `bun run requirements:check` green

@@ -58,7 +58,7 @@ module.exports = {
     },
     {
       name: 'jumentix-dev-purge-tombstones',
-      script: './ci-cd/purge-tombstones.js',
+      script: './apps/backend-template/scripts/purge-tombstones.js',
       interpreter: 'bun',
       args: '--via-loopback --older-than 90 --protect-seed --dry-run',
       cron_restart: '0 4 * * *',

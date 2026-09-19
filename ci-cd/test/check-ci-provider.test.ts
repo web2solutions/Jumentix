@@ -1,0 +1,260 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+/** Requirement 113 — free CI for the public open-source repository. */
+const repoRoot = path.resolve(__dirname, '../..');
+const checker = path.join(repoRoot, 'ci-cd', 'check-ci-provider.js');
+
+function run(directory: string): { code: number; output: string } {
+  try {
+    return {
+      code: 0,
+      output: execFileSync('bun', [path.join(directory, 'ci-cd', 'check-ci-provider.js')], {
+        cwd: directory, encoding: 'utf8', stdio: 'pipe'
+      })
+    };
+  } catch (error) {
+    const failure = error as { status?: number; stdout?: string; stderr?: string };
+    return { code: failure.status ?? 1, output: `${failure.stdout ?? ''}${failure.stderr ?? ''}` };
+  }
+}
+
+function fixture(change?: (directory: string) => void): string {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-provider-'));
+  fs.mkdirSync(path.join(directory, 'ci-cd'), { recursive: true });
+  fs.mkdirSync(path.join(directory, '.github/workflows'), { recursive: true });
+  fs.mkdirSync(path.join(directory, '.circleci'), { recursive: true });
+  fs.copyFileSync(checker, path.join(directory, 'ci-cd', 'check-ci-provider.js'));
+  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'), path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh'));
+  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
+  fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
+  fs.copyFileSync(path.join(repoRoot, '.circleci/config.yml'), path.join(directory, '.circleci/config.yml'));
+  fs.copyFileSync(path.join(repoRoot, 'sonar-project.properties'), path.join(directory, 'sonar-project.properties'));
+  fs.copyFileSync(path.join(repoRoot, 'package.json'), path.join(directory, 'package.json'));
+  change?.(directory);
+  return directory;
+}
+
+describe('check-ci-provider', () => {
+  it('passes against the real repository', () => {
+    expect.hasAssertions();
+
+    const result = run(repoRoot);
+    expect(result.code).toBe(0);
+    expect(result.output).toContain('GitHub Actions and CircleCI cover');
+  });
+
+  it('fails when the repository-owned GitHub Actions workflow is absent', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => fs.unlinkSync(path.join(root, '.github/workflows/ci.yml')));
+    expect(run(directory).output).toContain('Missing required GitHub Actions workflow');
+  });
+
+  it('fails when CircleCI is absent', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      fs.unlinkSync(path.join(root, '.circleci/config.yml'));
+    });
+    expect(run(directory).output).toContain('Missing required CircleCI workflow');
+  });
+
+  it('fails when patch coverage enforcement is removed', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('coverage:patch', 'coverage:removed'));
+    });
+    expect(run(directory).output).toContain('coverage:patch');
+  });
+
+  it('fails when an essential GitHub Actions job is absent', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('third-party-review:', 'third-party-review-removed:'));
+    });
+    expect(run(directory).output).toContain('third-party-review');
+  });
+
+  it('fails when self-hosted private runners return to the canonical workflow', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('runs-on: ubuntu-latest', 'runs-on: [self-hosted, jumentix]'));
+    });
+    expect(run(directory).output).toContain('GitHub-hosted ubuntu-latest runners');
+  });
+
+  it('fails when Docker runtime bootstrap is removed from container-backed jobs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      fs.unlinkSync(path.join(root, 'ci-cd', 'ensure-docker-runtime.sh'));
+    });
+    expect(run(directory).output).toContain('open -ga Docker');
+  });
+
+  it('fails when the website Storybook build no longer builds exported workspace dependencies', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'package.json');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/website:deps:build/g, 'website:deps:removed'));
+    });
+    expect(run(directory).output).toContain('website:deps:build');
+  });
+
+  it('fails when monorepo builds no longer prime exported workspace dependencies', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'package.json');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/mono:build:deps/g, 'mono:build:parallel'));
+    });
+    expect(run(directory).output).toContain('mono:build:deps');
+  });
+
+  it('fails when expensive jobs lose the release/full context guard', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          /\|\|\n\s+\(startsWith\(github\.head_ref, 'codex\/release\/'\) && endsWith\(github\.head_ref, '-dev-main-signed-squash'\)\)/g,
+          ''
+        )
+      );
+    });
+    expect(run(directory).output).toContain('must guard coverage to main/dev/release contexts');
+  });
+
+  it('fails when the coverage job re-enables real broker or Redis integration suites', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key\n'
+            + '      AAA_REDIS_HOST: 127.0.0.1',
+          '      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key\n'
+            + '      RUN_BROKER_INTEGRATION: \'1\'\n'
+            + '      RUN_REDIS_INTEGRATION: \'1\'\n'
+            + '      AAA_REDIS_HOST: 127.0.0.1'
+        )
+      );
+    });
+    expect(run(directory).output).toContain('coverage job must keep real broker/Redis integration suites');
+  });
+
+  it('fails when Codecov or Sonar return as separate GitHub Actions jobs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        `${fs.readFileSync(file, 'utf8')}\n  codecov:\n    runs-on: ubuntu-latest\n  sonarqube:\n    runs-on: ubuntu-latest\n`
+      );
+    });
+    expect(run(directory).output).toContain('must run inside the coverage job');
+  });
+
+  it('fails when the Sonar scanner partial-clone guard is removed', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('sonar-scanner -Dsonar.scm.disabled=true', 'sonar-scanner')
+      );
+    });
+    expect(run(directory).output).toContain('sonar-scanner -Dsonar\\.scm\\.disabled=true');
+  });
+
+  it('fails when GitHub Actions stops using the dedicated SonarCloud secret', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('secrets.SONARCLOUD_TOKEN', 'secrets.SONAR_TOKEN')
+      );
+    });
+    expect(run(directory).output).toContain('secrets\\.SONARCLOUD_TOKEN');
+  });
+
+  it('fails when the coverage job cannot access the environment-scoped secrets', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('environment: env vars\n', ''));
+    });
+    expect(run(directory).output).toContain('environment:\\s*env vars');
+  });
+
+  it('fails when Sonar can scan binary assets as source files', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'sonar-project.properties');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8')
+          .replace('sonar.sourceEncoding=UTF-8\n', '')
+          .replace('**/*.png,', '')
+      );
+    });
+    expect(run(directory).output).toContain('encoding-safe source scan marker');
+  });
+
+  it('fails when retired Codecov contract returns', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'codecov.yml');
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'retired: true\n');
+    });
+    expect(run(directory).output).toContain('retired by Requirement 113');
+  });
+});
+
+describe('requirement 113 is registered and enforced', () => {
+  it('exists and supersedes the provider-specific requirements', () => {
+    expect.hasAssertions();
+
+    const requirement = path.join(
+      repoRoot,
+      '.agents/requirements/project/113-private-free-repository-owned-ci.md'
+    );
+    const text = fs.readFileSync(requirement, 'utf8');
+    expect(text).toContain('014');
+    expect(text).toContain('GitHub Actions');
+    expect(text).toContain('CircleCI is enabled');
+  });
+
+  it('is enforced by the canonical gate', () => {
+    expect.hasAssertions();
+
+    const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
+      scripts: Record<string, string>;
+    };
+    expect(manifest.scripts['ci:check-provider']).toContain('check-ci-provider');
+    expect(manifest.scripts['ci:gate']).toContain('ci:check-provider');
+  });
+});
