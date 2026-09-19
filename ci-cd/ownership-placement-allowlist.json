@@ -1,0 +1,440 @@
+[
+  {
+    "suite": "apps/service-management-api/test/integration/catalogSync.integration.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management-api/test/integration/catalogs.http.integration.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management-api/test/unit/Catalogs/adapters/CatalogDataRepositoryDefaults.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/CatalogController.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management-api/test/unit/Catalogs/adapters/in/http/restapiHandlers.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management-api/test/unit/Catalogs/application/catalogBoundaries.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management-api/test/unit/Catalogs/domain/security/CatalogAuthorizationPolicy.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management-api/test/unit/Catalogs/service/CatalogService.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/integration/browser/domainDesigner.smoke.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/integration/browser/offlinePersistenceMatrix.browser.integration.test.ts",
+    "assertsWorkspace": "packages/cana",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/canaMigration.test.ts",
+    "assertsWorkspace": "ci-cd",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/deployTargetLifecycle.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/deployTargetValidation.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/designerAsyncApiExport.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/designerExporters.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/designerImporters.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/designerNormalizers.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/designerOasCompliance.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/designerOasCompliance.test.ts",
+    "assertsWorkspace": "ci-cd",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/designerPackageVersioning.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/hexagonalCodegen.test.ts",
+    "assertsWorkspace": "ci-cd",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/hexagonalCodegen.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/interfaceAdapterValidation.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/modelQueries.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/modelValidation.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/rbacContract.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/rbacContract.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/runtimeEnvUi.contract.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/scripts/sync-service-management-designer-core.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "apps/service-management/test/unit/serviceConfigurationValidation.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-affected-workspaces.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-affected-workspaces.test.ts",
+    "assertsWorkspace": "packages/sdk-rest-client",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-coverage-thresholds.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-coverage-thresholds.test.ts",
+    "assertsWorkspace": "packages/cana",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-coverage-thresholds.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-coverage-thresholds.test.ts",
+    "assertsWorkspace": "packages/message-mediator",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-coverage-thresholds.test.ts",
+    "assertsWorkspace": "packages/sdk-rest-client",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-hexagonal-boundaries.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-prevention-gates.test.ts",
+    "assertsWorkspace": "apps/jumentix-website",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-release-governance.test.ts",
+    "assertsWorkspace": "apps/service-management",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-test-map.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-test-map.test.ts",
+    "assertsWorkspace": "apps/jumentix-website",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-test-map.test.ts",
+    "assertsWorkspace": "apps/service-management",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-test-map.test.ts",
+    "assertsWorkspace": "packages/cana",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-workspace-boundaries.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-workspace-boundaries.test.ts",
+    "assertsWorkspace": "apps/service-management",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-workspace-boundaries.test.ts",
+    "assertsWorkspace": "packages/external-store-proxy",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-workspace-boundaries.test.ts",
+    "assertsWorkspace": "packages/sdk-rest-client",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-workspace-ownership-placement.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-workspace-ownership-placement.test.ts",
+    "assertsWorkspace": "apps/service-management",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/check-workspace-ownership-placement.test.ts",
+    "assertsWorkspace": "packages/mutex-service",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/generate-test-map.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/generate-test-map.test.ts",
+    "assertsWorkspace": "apps/service-management",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/generate-test-map.test.ts",
+    "assertsWorkspace": "apps/service-management-api",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/generate-test-map.test.ts",
+    "assertsWorkspace": "packages/alpha",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/generate-test-map.test.ts",
+    "assertsWorkspace": "packages/cana",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/generate-test-map.test.ts",
+    "assertsWorkspace": "packages/designer-core",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/guard-defaults.test.ts",
+    "assertsWorkspace": "packages/mutex-service",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/merge-coverage-reports.test.ts",
+    "assertsWorkspace": "apps/frontend",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/readme-badges.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/readme-badges.test.ts",
+    "assertsWorkspace": "apps/jumentix-website",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/run-full-test-matrix.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/run-monorepo-ci.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/run-monorepo-ci.test.ts",
+    "assertsWorkspace": "packages/sdk-rest-client",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/run-suite-resolution.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/run-task-change-tests.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/run-task-change-tests.test.ts",
+    "assertsWorkspace": "apps/jumentix-website",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/run-unit-tests.test.ts",
+    "assertsWorkspace": "apps/jumentix-website",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/test-map-completeness.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "ci-cd/test/test-map-completeness.test.ts",
+    "assertsWorkspace": "packages/cana",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "packages/designer-core/test/packaging.test.ts",
+    "assertsWorkspace": "apps/service-management",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "packages/message-mediator/test/integration/brokers.integration.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  },
+  {
+    "suite": "packages/persistence-contracts/test/contracts.test.ts",
+    "assertsWorkspace": "apps/backend-template",
+    "reason": "seeded during epic JUM-824 ownership placement; shrink only",
+    "issue": "JUM-826"
+  }
+]

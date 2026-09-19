@@ -59,6 +59,10 @@ const WORKSPACE_BOUNDARIES_PREFLIGHT = Object.freeze({
   id: 'workspace-boundaries',
   script: 'arch:check-workspace-boundaries'
 });
+const OWNERSHIP_PLACEMENT_PREFLIGHT = Object.freeze({
+  id: 'ownership-placement',
+  script: 'arch:check-ownership-placement'
+});
 const BUILD_DEV_PREFLIGHT = Object.freeze({
   id: 'build-dev',
   script: 'build:dev'
@@ -77,6 +81,7 @@ const FULL_MATRIX_QUALITY_GATE = Object.freeze({
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
+    OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
   ])
 });
@@ -88,6 +93,7 @@ const UNIT_QUALITY_GATE = Object.freeze({
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
+    OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
   ])
 });
@@ -99,6 +105,7 @@ const TASK_QUALITY_GATE = Object.freeze({
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
+    OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
   ])
 });

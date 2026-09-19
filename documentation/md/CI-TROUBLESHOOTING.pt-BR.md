@@ -139,7 +139,7 @@ Arquivos relacionados:
 - `jest.config.js`
 - `ci-cd/check-coverage-thresholds.js`
 - `ci-cd/check-patch-coverage.js`
-- `ci-cd/run-service-management-integration.js`
+- `apps/service-management/scripts/run-service-management-integration.js`
 
 ## 6) Os ganchos Husky não estão sendo executados localmente
 

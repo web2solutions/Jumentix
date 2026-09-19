@@ -1,7 +1,7 @@
 /**
  * Dedicated-worker entry for real Worker Cypress tests (JUM-615).
  *
- * Bundled as an IIFE by `ci-cd/run-browser-tests.js` and loaded via a blob URL
+ * Bundled as an IIFE by `packages/cana/scripts/run-browser-tests.js` and loaded via a blob URL
  * so the suite can prove `new Worker(...)` — not only MessageChannel.
  */
 

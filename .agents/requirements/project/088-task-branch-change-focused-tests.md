@@ -41,4 +41,4 @@ Active.
 - GitHub issue `#191`
 - Linear issue `JUM-504`
 - `ci-cd/run-task-change-tests.js`
-- `apps/backend-template/test/unit/ci-cd/run-task-change-tests.test.ts`
+- `ci-cd/test/run-task-change-tests.test.ts`

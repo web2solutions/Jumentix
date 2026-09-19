@@ -126,7 +126,7 @@ validate for that identity.
   author/committer identity.
 - GitHub branch protection rejects unsigned commits and commits whose signatures
   are not verified by GitHub.
-- `apps/backend-template/test/unit/ci-cd/check-commit-authorship.test.ts` proves
+- `ci-cd/test/check-commit-authorship.test.ts` proves
   the checker fails when it should: on an undeclared author, on an undeclared
   committer whose author is declared, on each fail-closed condition in §4, and —
   against a real throwaway repository rather than a fake `git` — that it exits

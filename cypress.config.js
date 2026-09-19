@@ -36,7 +36,7 @@ module.exports = defineConfig({
   video: false,
   screenshotOnRunFailure: false,
   e2e: {
-    // Bundled JavaScript, not the TypeScript sources: `ci-cd/run-browser-tests.js`
+    // Bundled JavaScript, not the TypeScript sources: `packages/cana/scripts/run-browser-tests.js`
     // builds the specs with Bun first, and explains why.
     specPattern: '.browser-tests/**/*.cy.js',
     supportFile: 'cypress/support/e2e.js',

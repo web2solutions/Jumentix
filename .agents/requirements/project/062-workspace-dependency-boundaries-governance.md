@@ -22,6 +22,6 @@ Implemented
 
 ## Evidence
 - Unit tests:
-  - `apps/backend-template/test/unit/ci-cd/check-workspace-boundaries.test.ts`
+  - `ci-cd/test/check-workspace-boundaries.test.ts`
 - Gate run:
   - `npm run ci:gate` passing with boundary check enabled.

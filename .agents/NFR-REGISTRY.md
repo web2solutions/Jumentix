@@ -47,6 +47,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `134` No flaky tests: a suite establishes what it depends on, never sleeps to synchronise
 - `135` No fake tests: assert the effect, declare the assertions, never target a percentage
 - `136` Frontend knows the backend only through its OAS: spec document or generated SDKs, never backend source
+- `137` Workspace suite and tooling ownership placement: suites and component scripts live with their owner; `arch:check-ownership-placement` fails closed
 
 ## Documentation and Governance NFRs
 

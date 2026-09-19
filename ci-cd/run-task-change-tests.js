@@ -8,16 +8,16 @@ const { runSuitePaths } = require('./run-suite');
 const { resolveTestRuntime } = require('./lib/test-runtime');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
-const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
+const UNIT_TEST_PATH = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$|^ci-cd\/test\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
 const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
 const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/|\.circleci\/)|^package\.json$/;
-const GOVERNANCE_TEST_PATH = 'apps/backend-template/test/unit/ci-cd/run-full-test-matrix.test.ts';
+const GOVERNANCE_TEST_PATH = 'ci-cd/test/run-full-test-matrix.test.ts';
 const TOOLCHAIN_CONFIG_PATH = /^(bun\.lock|\.bun-version|package\.json)$/;
 const TOOLCHAIN_TEST_PATHS = [
-  'apps/backend-template/test/unit/ci-cd/check-bun-version.test.ts',
-  'apps/backend-template/test/unit/ci-cd/check-dependency-override-integrity.test.ts'
+  'ci-cd/test/check-bun-version.test.ts',
+  'ci-cd/test/check-dependency-override-integrity.test.ts'
 ];
 const DOCUMENTATION_PATH = /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i;
 const WEBSITE_PATH = /^apps\/jumentix-website\//;

@@ -595,7 +595,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`.
 - Behavior pinned as of the `JUM-458`/`JUM-558`/`JUM-459`/`JUM-462` fix branch
   (`kimi/fix/JUM-458-service-management-env-path`), including its integration suite
-  `apps/backend-template/test/integration/ServiceManagement/runtimeEnv.integration.test.ts`;
+  `apps/service-management/test/integration/server/runtimeEnv.integration.test.ts`;
   enum validation and the full 23-key key classification landed via `JUM-460`
   (branch `kimi/feature/JUM-460-env-allowlist-runtime-matrix`, same integration
   suite extended), the UI label/selector alignment via `JUM-461`, the
@@ -612,7 +612,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   `kimi/feature/JUM-480-multi-env-pm2-preview`): the read-only
   `GET /api/runtime/pm2-ecosystem` endpoint pins the PM2 preview to the real
   `pm2/ecosystem.*.cjs` files. Pinned by
-  `apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts`
+  `apps/service-management/test/integration/server/pm2Ecosystem.integration.test.ts`
   (server behavior) and
   `apps/backend-template/test/unit/service-management/pm2EcosystemUi.contract.test.ts`
   (designer-side no-hardcoded-command rule).
@@ -638,7 +638,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
   the PM2 Node API, compares live processes with the selected ecosystem file, and
   now also returns `host` CPU/memory/disk plus optional per-process
   `asyncContext` scrapes. Pinned by
-  `apps/backend-template/test/integration/ServiceManagement/pm2Ecosystem.integration.test.ts`
+  `apps/service-management/test/integration/server/pm2Ecosystem.integration.test.ts`
   and `apps/service-management/test/unit/pm2EcosystemUi.contract.test.ts`.
 - Contract 1e: Monitoring live UI uses `WS /api/runtime/pm2-ws` (500–2000 ms
   interval, default 1000) with process/namespace/ecosystem-missing start/stop/

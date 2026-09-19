@@ -1114,10 +1114,10 @@
   <!-- Import map (JUM-484/JUM-493): Cana is the sole designer store; the bare
        `@jumentix/cana` specifier the store factory lazily imports resolves to
        the vendored ESM bundle, synced from packages/cana's browser build by
-       ci-cd/sync-service-management-cana-bundle.js. The designer core moved
+       apps/service-management/scripts/sync-service-management-cana-bundle.js. The designer core moved
        to packages/designer-core (JUM-493); its bare deep specifiers resolve
        through the prefix entry to the vendored module tree, synced from the
-       package's src/ by ci-cd/sync-service-management-designer-core.js. -->
+       package's src/ by apps/service-management/scripts/sync-service-management-designer-core.js. -->
   <script type="importmap">
     {
       "imports": {

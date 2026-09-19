@@ -53,7 +53,7 @@ existed.
 - Machine-verifiable: `ci-cd/check-rtdb-indexes.js`, wired into `ci:gate`.
 - Its negative control is the query that shipped before JUM-656, which passed
   every test in this repository —
-  `apps/backend-template/test/unit/ci-cd/check-rtdb-indexes.test.ts`.
+  `ci-cd/test/check-rtdb-indexes.test.ts`.
 - Deploying rules is owner-side and needs project credentials; the gate covers
   the declaration, not the deploy.
 - Complements requirements `129`, `130`, `131`, `132`.

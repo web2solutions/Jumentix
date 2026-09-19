@@ -35,5 +35,5 @@ Implemented
 
 ## Evidence
 - Unit tests:
-  - `apps/backend-template/test/unit/ci-cd/check-workspace-coverage-policy.test.ts`
+  - `ci-cd/test/check-workspace-coverage-policy.test.ts`
 - Runtime packages updated to non-placeholder `test` scripts (`npm run typecheck`) where applicable.

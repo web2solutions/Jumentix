@@ -103,7 +103,7 @@ module.exports = {
     // ci-cd is excluded from coverage wholesale, with named opt-ins. Sonar reads
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.
-    // Keep this list and the suites under test/unit/ci-cd/ in step.
+    // Keep this list and the suites under ci-cd/test/ in step.
     '<rootDir>/ci-cd/(?!(lib/mapped-suites|check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|check-package-suites|merge-coverage-reports|run-full-test-matrix|run-suite)\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'

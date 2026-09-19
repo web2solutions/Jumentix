@@ -77,7 +77,7 @@ dois locales declaram as mesmas chaves.
   que compila SFCs com `@vue/compiler-sfc`, registrado pelo `bunfig.toml` da app). Chart.js é
   substituído por stub — precisa de canvas real — e o harness diz isso.
 - `bun run test:coverage` + `bun run frontend:coverage:check` (raiz) — lcov do bun sobre `src/`
-  com gate em linhas e funções (`ci-cd/check-frontend-coverage.js`); fontes não tocadas contam
+  com gate em linhas e funções (`apps/frontend/scripts/check-coverage.js`); fontes não tocadas contam
   zero; branches aparecem como *não medidos* porque o Bun não emite registros de branch
   (Requisito `110` §2). O gate roda dentro do `ci:gate`; o lcov alimenta o Sonar.
 - `bun run test:e2e` — `scripts/run-e2e.mjs` constrói e sobe a REST API Express real em Docker
