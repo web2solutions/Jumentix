@@ -45,7 +45,7 @@ Options:
   --non-interactive              Disable prompts (requires --service-type and --project-name)
   --service-type=<id>            One of: rest, websocket, grpc, graphql, functions
   --project-name=<name>          Target folder name/path
-  --git-branch=<branch>          Branch to clone (default: main)
+  --git-branch=<branch>          Branch to clone (default: dev)
   --install-deps=<y|n|true|false> Install dependencies after scaffold (default: true)
   --repo=<git-url>               Override template repository URL
 `);
@@ -242,7 +242,7 @@ async function run(options = {}) {
     const targetPath = toAbsolute(projectName, workingDirectory);
     ensureTargetFolderIsEmpty(targetPath);
 
-    const gitBranch = cliArgs.gitBranch || (await prompt.ask('Git branch to clone (default: main): ')) || 'main';
+    const gitBranch = cliArgs.gitBranch || (await prompt.ask('Git branch to clone (default: dev): ')) || 'dev';
     const installDeps = typeof cliArgs.installDeps === 'boolean'
       ? cliArgs.installDeps
       : (((await prompt.ask('Run bun install after scaffold? (Y/n): ')) || 'y').toLowerCase() !== 'n');
@@ -266,7 +266,7 @@ async function run(options = {}) {
 
     if (installDeps) {
       log('\nInstalling dependencies...');
-      execute('npm', ['install'], targetPath);
+      execute('bun', ['install'], targetPath);
     }
 
     log('\nScaffold completed successfully.');

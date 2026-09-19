@@ -22,22 +22,21 @@ Pacote Bootstrap CLI para andaimes do projeto Jumentix.
 ## Uso não interativo
 
 ```bash
-node ./packages/cli-init/bin/jumentix-init.js \
+bun ./packages/cli-init/bin/jumentix-init.js \
   --service-type=rest \
   --project-name=my-service \
-  --git-branch=main \
+  --git-branch=dev \
   --install-deps=false
 ```
 
 ## Ajuda
 
 ```bash
-node ./packages/cli-init/bin/jumentix-init.js --help
+bun ./packages/cli-init/bin/jumentix-init.js --help
 ```
 
 ## Execute o ponto de entrada do pacote local
 
 ```bash
-node ./packages/cli-init/bin/jumentix-init.js
+bun ./packages/cli-init/bin/jumentix-init.js
 ```
-

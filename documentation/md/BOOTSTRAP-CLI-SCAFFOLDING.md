@@ -1,6 +1,6 @@
 # Bootstrap CLI Scaffolding
 
-This boilerplate now exposes registry-installable bootstrap CLI commands:
+This boilerplate exposes bootstrap CLI commands from the canonical repository:
 
 - `jumentix-bootstrap`
 - `jumentix-init`
@@ -14,12 +14,10 @@ Workspace ownership:
 
 ## Usage
 
-Install globally (or run with `bun x` from the package registry):
+Run the current development CLI without a global installation:
 
 ```bash
-bun add --global @jumentix/cli-init
-jumentix-init
-jumentix-bootstrap
+bun x github:web2solutions/Jumentix#dev
 ```
 
 Local repository usage:
@@ -31,13 +29,18 @@ bun run cli:bootstrap
 Non-interactive usage:
 
 ```bash
-jumentix-init --service-type=rest --project-name=my-service --git-branch=main --install-deps=false
+bun x github:web2solutions/Jumentix#dev \
+  --non-interactive \
+  --service-type=rest \
+  --project-name=my-service \
+  --git-branch=dev \
+  --install-deps=false
 ```
 
 CLI help:
 
 ```bash
-jumentix-init --help
+bun x github:web2solutions/Jumentix#dev --help
 ```
 
 Supported flags:
