@@ -26,10 +26,8 @@ const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
 const ptReadme = fs.readFileSync(path.join(repoRoot, 'README.pt-BR.md'), 'utf8');
 
 function badgeTargets(markdown: string): string[] {
-  return markdown
-    .split('\n')
-    .filter((line) => line.trimStart().startsWith('[!['))
-    .map((line) => line.slice(line.lastIndexOf('](') + 2).replace(/\)$/, ''))
+  return [...markdown.matchAll(/\[!\[[^\]]*\]\([^)]*\)\]\(([^)]+)\)/g)]
+    .map((match) => match[1])
     .map((target) => target.replace('./LICENSE.pt-BR.md', './LICENSE.md'))
     .sort((left, right) => left.localeCompare(right));
 }
@@ -44,6 +42,17 @@ describe('public README quality links', () => {
       expect(readme).toContain(`https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graphs/tree.svg`);
       expect(readme).toContain(`https://app.codecov.io/github/web2solutions/Jumentix/tree/${branch}`);
     }
+  });
+
+  it('keeps the Codecov grids side by side', () => {
+    expect.hasAssertions();
+
+    expect(readme).toContain(
+      '| [![Codecov Grid for dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graphs/tree.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/dev) | [![Codecov Grid for main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graphs/tree.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/main) |'
+    );
+    expect(ptReadme).toContain(
+      '| [![Codecov Grid para dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graphs/tree.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/dev) | [![Codecov Grid para main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graphs/tree.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/main) |'
+    );
   });
 
   it('shows SonarCloud quality and reliability badges for dev and main', () => {
