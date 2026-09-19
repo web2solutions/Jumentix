@@ -61,6 +61,7 @@
     "agent-bus:status": "bun ci-cd/agent-registry-cli.js status",
     "arch:check-http-adapters": "bun ci-cd/check-http-adapter-authenticity.js",
     "ci:check-provider": "bun ci-cd/check-ci-provider.js",
+    "sonar:check-reliability": "bun ci-cd/check-sonar-reliability.js",
     "ci:check-third-party-review": "bun ci-cd/check-third-party-review.js",
     "requirements:check": "bun ci-cd/check-requirements-registry.js",
     "test-map:generate": "bun ci-cd/generate-test-map.js",

@@ -184,6 +184,29 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('sonar-scanner -Dsonar\\.scm\\.disabled=true');
   });
 
+  it('fails when GitHub Actions stops using the dedicated SonarCloud secret', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('secrets.SONARCLOUD_TOKEN', 'secrets.SONAR_TOKEN')
+      );
+    });
+    expect(run(directory).output).toContain('secrets\\.SONARCLOUD_TOKEN');
+  });
+
+  it('fails when the coverage job cannot access the environment-scoped secrets', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('environment: env vars\n', ''));
+    });
+    expect(run(directory).output).toContain('environment:\\s*env vars');
+  });
+
   it('fails when Sonar can scan binary assets as source files', () => {
     expect.hasAssertions();
 

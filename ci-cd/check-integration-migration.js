@@ -9,6 +9,7 @@ const PACKAGE_JSON_PATH = 'package.json';
 const BOOTSTRAP_PATH = 'packages/cli-init/src/bootstrap.js';
 const REGISTRY_SOURCE_PATH = '.agents/registry-source.json';
 const README_PATH = 'README.md';
+const HISTORICAL_TRANSITIONS_PATH = 'documentation/md/HISTORICAL-TRANSITIONS.md';
 
 const INTEGRATION_MARKERS = Object.freeze([
   'web2solutions/Jumentix',
@@ -41,10 +42,11 @@ const CANONICAL_CONFIG_EXPECTATIONS = Object.freeze([
   },
   {
     path: README_PATH,
-    markers: [
-      'web2solutions/Jumentix',
-      'HISTORICAL-TRANSITIONS.md'
-    ]
+    markers: ['web2solutions/Jumentix']
+  },
+  {
+    path: HISTORICAL_TRANSITIONS_PATH,
+    markers: ['not an operational runbook']
   }
 ]);
 

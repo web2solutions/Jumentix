@@ -302,10 +302,14 @@ jobs:
             test -n "${CODECOV_TOKEN:-}"
             ./codecov --verbose upload-process --disable-search --fail-on-error \
               -t "$CODECOV_TOKEN" \
+              --slug web2solutions/Jumentix \
               -n "jumentix-circleci-${CIRCLE_WORKFLOW_ID}" \
               -F project \
               -f coverage/lcov.info \
               -f coverage/browser/lcov.info
+      - run:
+          name: Verify Codecov public coverage reports
+          command: CODECOV_BRANCH="${CIRCLE_BRANCH:-}" bun ci-cd/verify-codecov-public-reports.js
       - run:
           name: Install Sonar scanner
           command: |
@@ -327,6 +331,9 @@ jobs:
           command: |
             source "$BASH_ENV"
             bun ci-cd/report-sonar-findings.js
+      - run:
+          name: Enforce SonarCloud reliability A
+          command: SONAR_BRANCH="${CIRCLE_BRANCH:-}" bun run sonar:check-reliability
       - run:
           name: Stop local coverage services
           when: always

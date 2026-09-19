@@ -42,6 +42,7 @@ if (!fs.existsSync(workflowPath)) {
     /workspace-tests:/,
     /integration:/,
     /coverage:/,
+    /environment:\s*env vars/,
     /Fetch branch references for patch coverage/,
     /website:/,
     /database-matrix:/,
@@ -82,10 +83,16 @@ if (!fs.existsSync(workflowPath)) {
     /files:\s*coverage\/lcov\.info,coverage\/browser\/lcov\.info/,
     /fail_ci_if_error:\s*true/,
     /CODECOV_TOKEN/,
+    /secrets\.SONARCLOUD_TOKEN/,
+    /Verify Codecov public coverage reports/,
+    /verify-codecov-public-reports\.js/,
     /SonarQube Cloud Scan/,
     /Sonar analyses main and dev only/,
     /sonar-scanner -Dsonar\.scm\.disabled=true/,
-    /Report Sonar findings/
+    /Report Sonar findings/,
+    /Enforce SonarCloud reliability A/,
+    /sonar:check-reliability/,
+    /vars\.JUMENTIX_ENABLE_SONAR == 'true'/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
@@ -150,7 +157,10 @@ if (fs.existsSync(circleciPath)) {
     /classify-ci-context\.js/,
     /circleci-agent step halt/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
-    /sonar-scanner -Dsonar\.scm\.disabled=true/
+    /--slug web2solutions\/Jumentix/,
+    /verify-codecov-public-reports\.js/,
+    /sonar-scanner -Dsonar\.scm\.disabled=true/,
+    /sonar:check-reliability/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
