@@ -68,4 +68,10 @@ describe('redisStreamsAdapter', () => {
 
     expect(url).toBe('redis://redis.internal:6379/0');
   });
+
+  it('falls back to the loopback defaults when no redis variable is set', () => {
+    expect.hasAssertions();
+    expect(buildRedisConnectionUrl({} as unknown as NodeJS.ProcessEnv))
+      .toBe('redis://127.0.0.1:6379/0');
+  });
 });

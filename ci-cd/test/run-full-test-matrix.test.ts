@@ -194,6 +194,17 @@ describe('run-full-test-matrix', () => {
       // exercises the real spawn rather than an injected stand-in.
       expect(executeMatrixCell({ id: 'version', script: 'check-bun-version' })).toBe(0);
     });
+
+    it('returns 1 when the spawn fails before producing a status', () => {
+      expect.hasAssertions();
+      // A PATH without the bun executable makes spawnSync fail closed
+      // (error, no status) — the `: 1` half of the status normalisation.
+      expect(executeMatrixCell({
+        id: 'unrunnable',
+        script: 'check-bun-version',
+        env: { PATH: '/nonexistent-bin-dir' }
+      })).toBe(1);
+    });
   });
 
   /**
@@ -357,6 +368,26 @@ describe('run-full-test-matrix', () => {
       restoreEnv('JUMENTIX_FULL_MATRIX_SKIP_CELLS', previousSkipCells);
       matrixFs.rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('falls back to the canonical full matrix when no cells are given', () => {
+    expect.hasAssertions();
+    const logger = { log: jest.fn(), error: jest.fn() };
+    const executed: string[] = [];
+
+    const evidence = runFullTestMatrix({
+      execute: (cell: FullMatrixTestCell) => {
+        executed.push(cell.id);
+        return 0;
+      },
+      logger,
+      availableScripts: fullMatrixRootPackage.scripts,
+      env: {},
+      resultFile: ''
+    });
+
+    expect(evidence.outcome).toBe('passed');
+    expect(executed).toStrictEqual(FULL_TEST_MATRIX.map((cell: FullMatrixTestCell) => cell.id));
   });
 
   it('treats missing execution status and crashes as failures', () => {

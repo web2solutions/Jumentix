@@ -128,6 +128,36 @@ describe('http validators', () => {
     expect(() => throwIfOASInputValidationFails(spec, endPointConfig, {})).toThrow(ValidationError);
   });
 
+  it('validates an object schema that declares no required list', () => {
+    expect.hasAssertions();
+    const spec = {
+      components: {
+        schemas: {
+          RequestPatchUser: {
+            type: 'object',
+            properties: { nickname: { type: 'string' } }
+          }
+        }
+      }
+    } as any;
+    const endPointConfig = {
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/RequestPatchUser'
+            }
+          }
+        }
+      }
+    };
+
+    expect(throwIfOASInputValidationFails(spec, endPointConfig, { nickname: 'johnny' })).toBe(true);
+    expect(() => throwIfOASInputValidationFails(spec, endPointConfig, { unknown: true }))
+      .toThrow(ValidationError);
+  });
+
   it('validates payload format/type rules from schema', () => {
     expect.hasAssertions();
     const spec = {
@@ -360,6 +390,16 @@ describe('http validators', () => {
       params: { id: '' },
       input: { firstName: 'John' }
     })).toThrow(ValidationError);
+  });
+
+  it('validates a minimal request that carries no params, query or authorization', () => {
+    expect.hasAssertions();
+    const spec = { components: { schemas: {} } } as any;
+
+    expect(validateRequestAgainstOAS(spec, {}, {})).toBe(true);
+    expect(validateRequestAgainstOAS(spec, {}, {
+      input: { anything: true }
+    })).toBe(true);
   });
 });
 

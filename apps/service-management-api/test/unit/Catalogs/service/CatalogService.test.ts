@@ -187,6 +187,25 @@ describe('catalogService — optimistic concurrency and events', () => {
     expect(current.deletedAt).toBe('');
   });
 
+  it('delete without an expected version takes the -1 token and is rejected as stale', async () => {
+    expect.hasAssertions();
+    const { catalogService } = createServiceStack();
+    const created = (await catalogService.create({
+      organization: 'org-1', name: 'Billing', design: designV1
+    })).result!;
+
+    // The service maps an absent expectedVersion to -1; the repository's
+    // staleness check compares that token literally, so a versionless delete
+    // of an existing record is rejected as a conflict (the -1 sentinel is not
+    // honoured as "unconditional" below the service layer).
+    const { result, error } = await catalogService.delete(created.id);
+    expect(result).toBeUndefined();
+    expect((error as any).code).toBe('GENERIC.CONFLICT');
+    expect((error as any).message).toContain('expected -1');
+    const current = (await catalogService.getOneById(created.id)).result!;
+    expect(current.deletedAt).toBe('');
+  });
+
   it('restore recovers a tombstoned record, bumps the version and publishes catalogs.catalog.restored', async () => {
     expect.hasAssertions();
     const mediator = new InMemoryMessageMediatorAdapter();
@@ -260,6 +279,16 @@ describe('catalog OAS documents (JUM-817)', () => {
     expect(CatalogService.oasDocumentsFromDesign({})).toStrictEqual({ merged: null, services: {} });
     expect(CatalogService.oasDocumentsFromDesign({ oasDocuments: [] }))
       .toStrictEqual({ merged: null, services: {} });
+  });
+
+  it('drops malformed services maps and non-document merged payloads', () => {
+    expect.hasAssertions();
+    expect(CatalogService.oasDocumentsFromDesign({
+      oasDocuments: { services: ['not', 'a', 'map'], merged: 'not-a-document' }
+    })).toStrictEqual({ merged: null, services: {} });
+    expect(CatalogService.oasDocumentsFromDesign({
+      oasDocuments: { services: null, merged: null }
+    })).toStrictEqual({ merged: null, services: {} });
   });
 
   it('stores and serves merged and per-service OAS on the catalog design', async () => {

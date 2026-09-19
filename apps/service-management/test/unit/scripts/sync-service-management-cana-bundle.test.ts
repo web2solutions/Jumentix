@@ -35,6 +35,7 @@ function createHarness(options: {
     distContents = 'function createCanaDatabaseClient(options) { return options; }\n'
       + 'export { createCanaDatabaseClient };\n'
   } = options;
+  const build = { status: buildStatus as number | null };
   const logs: string[] = [];
   const errors: string[] = [];
   const written: Array<{ target: string; contents: string }> = [];
@@ -48,7 +49,7 @@ function createHarness(options: {
     },
     spawn: (command: string, args: string[]) => {
       spawnCalls.push({ command, args: args.map(String) });
-      return { status: buildStatus };
+      return build;
     },
     readFile: () => distContents,
     writeFile: (target: string, contents: string) => { written.push({ target, contents }); },
@@ -109,6 +110,16 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
     expect(written).toStrictEqual([]);
   });
 
+  it('fails closed when the build reports a non-numeric status (spawn error)', () => {
+    expect.hasAssertions();
+    const { harness, errors, written } = createHarness();
+    // A spawn failure surfaces as a null/undefined status, not an exit code.
+    harness.spawn = () => ({ status: null });
+    expect(syncServiceManagementCanaBundle(harness)).toBe(1);
+    expect(errors.join('\n')).toContain('bun build failed');
+    expect(written).toStrictEqual([]);
+  });
+
   it('builds the browser ESM artifact and vendors it with the generated-file header', () => {
     expect.hasAssertions();
     const {
@@ -132,5 +143,19 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
     expect(written[0].contents).toContain(VENDORED_HEADER);
     expect(written[0].contents).toContain('function createCanaDatabaseClient');
     expect(logs.join('\n')).toContain('cana bundle synced');
+  });
+
+  it('defaults to the process working directory when called without options', () => {
+    expect.hasAssertions();
+    const repoRootDir = path.resolve(repoRoot);
+    expect(process.cwd()).toBe(repoRootDir);
+    // The default-argument path runs the real sync against the checkout —
+    // the same bun build + vendor copy the CI script performs, targeted at
+    // the gitignored vendor directory.
+    expect(syncServiceManagementCanaBundle()).toBe(0);
+    const fs = require('fs');
+    const vendored = fs.readFileSync(path.join(repoRootDir, VENDORED_FILE), 'utf8');
+    expect(vendored).toContain(VENDORED_HEADER);
+    expect(vendored).toContain(REQUIRED_BINDING);
   });
 });

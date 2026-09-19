@@ -39,5 +39,9 @@ describe('service-management help popover state (JUM-770)', () => {
     expect(resolveOpenHelpKey(null, visible)).toBeNull();
     expect(resolveOpenHelpKey('default::api', new Set(visible))).toBe('default::api');
     expect(resolveOpenHelpKey('default::api', [])).toBeNull();
+    // A missing key collection (not an array, not an iterable) closes the
+    // popover instead of throwing on the visibility check.
+    expect(resolveOpenHelpKey('default::api', null)).toBeNull();
+    expect(resolveOpenHelpKey('default::api', undefined)).toBeNull();
   });
 });

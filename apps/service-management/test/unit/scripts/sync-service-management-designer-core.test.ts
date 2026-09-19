@@ -122,4 +122,31 @@ describe('sync-service-management-designer-core (JUM-493)', () => {
       .toBe('export function toSchemaName() {}\n');
     expect(logs.join('\n')).toContain('designer-core synced');
   });
+
+  it('skips non-JavaScript files when walking the module tree', () => {
+    expect.hasAssertions();
+    const { harness, written } = createHarness({
+      modules: {
+        'index.js': 'export {}\n',
+        'model/modelQueries.js': 'export function toSchemaName() {}\n',
+        'model/NOTES.md': '# notes\n',
+        'README.md': '# designer-core\n'
+      }
+    });
+    expect(syncServiceManagementDesignerCore(harness)).toBe(0);
+    const copied = written.map((entry) => path.basename(entry.target)).sort();
+    expect(copied).toStrictEqual(['index.js', 'modelQueries.js']);
+  });
+
+  it('defaults to the process working directory when called without options', () => {
+    expect.hasAssertions();
+    // The default-argument path runs the real sync against the checkout: the
+    // package src tree exists, so this is the same replace-not-merge copy the
+    // CI script performs, targeted at the gitignored vendor directory.
+    const repoRootDir = path.resolve(repoRoot);
+    expect(process.cwd()).toBe(repoRootDir);
+    expect(syncServiceManagementDesignerCore()).toBe(0);
+    const fs = require('fs');
+    expect(fs.existsSync(path.join(repoRootDir, VENDORED_DIR, 'index.js'))).toBe(true);
+  });
 });

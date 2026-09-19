@@ -412,6 +412,33 @@ describe('users controllers', () => {
     await expect(controller.update(makeEvent())).rejects.toThrow('lookup failed');
   });
 
+  it('covers authenticated-user fallback and missing-target guard in user operations', async () => {
+    expect.hasAssertions();
+    const factory = makeFactory({
+      authService: {
+        authenticate: jest.fn(),
+        authorize: jest.fn().mockResolvedValue({
+          id: 'u-auth',
+          roles: ['admin'],
+          organization: 'org-1'
+        }),
+        throwIfUserHasNoAccessToResource: jest.fn()
+      }
+    });
+    jest.spyOn(factory.userUseCases, 'getOneById').mockResolvedValue({
+      result: null
+    });
+    const controller = new UserController(factory as any);
+
+    expect((controller as any).getAuthenticatedUser(makeEvent({
+      authenticatedUser: undefined
+    }))).toStrictEqual({});
+
+    await expect(controller.update(makeEvent())).rejects.toThrow(
+      'Insufficient permission - target user not available'
+    );
+  });
+
   it('writes authenticated user id into event metadata when provided', async () => {
     expect.hasAssertions();
     const factory = makeFactory({

@@ -462,6 +462,18 @@ describe('check-commit-authorship', () => {
       expect(code).toBe(1);
       expect(logged).toStrictEqual(['nope']);
     });
+
+    it('dispatches --identity through the real check when none is injected', () => {
+      expect.hasAssertions();
+
+      // Same shape as the "default wiring" suite below: the real
+      // checkConfiguredIdentity shells out to git config, so the assertion is
+      // on the dispatch contract (boolean ok, string message, 0/1 code).
+      const { io } = recorder();
+      const code = main(['bun', 'checker', '--identity'], io, {});
+
+      expect([0, 1]).toContain(code);
+    });
   });
 
   /**
