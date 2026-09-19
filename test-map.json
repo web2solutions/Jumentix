@@ -2782,6 +2782,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/check-npm-org-integration.test.ts",
+      "path": "ci-cd/test/check-npm-org-integration.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-workspace-ownership-placement.test.ts",
       "path": "ci-cd/test/check-workspace-ownership-placement.test.ts",
       "layer": "tooling",
@@ -5814,9 +5824,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 335,
+    "unit": 336,
     "integration": 102,
     "smoke": 2,
-    "suites": 498
+    "suites": 499
   }
 }
