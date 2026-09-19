@@ -258,8 +258,8 @@ jobs:
                 bun x playwright install webkit
                 bun x playwright install-deps webkit
               fi
-              bun ci-cd/run-browser-tests.js --browser "$engine"
-              bun ci-cd/write-browser-lcov.js
+              bun packages/cana/scripts/run-browser-tests.js --browser "$engine"
+              bun packages/cana/scripts/write-browser-lcov.js
               mkdir -p "coverage/browser-$engine"
               cp coverage/browser/coverage-final.json "coverage/browser-$engine/coverage-final.json"
               cp coverage/browser/lcov.info "coverage/browser-$engine/lcov.info"
@@ -268,7 +268,7 @@ jobs:
           name: Union browser coverage engines
           command: |
             source "$BASH_ENV"
-            bun ci-cd/merge-browser-coverage.js --from-dir coverage
+            bun packages/cana/scripts/merge-browser-coverage.js --from-dir coverage
       - run:
           name: Enforce full coverage thresholds
           command: |
