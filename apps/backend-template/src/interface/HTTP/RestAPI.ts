@@ -303,7 +303,7 @@ export class RestAPI<T> {
       const handlerPath = `@src/modules/${moduleName}/interface/restapi/frameworks/${framework}/handlers/${operationId}`;
       try {
         const handlerModule = require(handlerPath);
-        if (handlerModule?.default) {
+        if (typeof handlerModule?.default === 'function') {
           return handlerModule.default(factoryDeps);
         }
       } catch (error: any) {

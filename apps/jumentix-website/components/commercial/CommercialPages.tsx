@@ -308,8 +308,8 @@ await taskStore.create(task);`,
       label: 'Relationship',
       language: 'typescript',
       code: `class Organization extends BaseModel {
-  @hasMany(() => User)
-  users: HasMany<typeof User>;
+  @hasMany('User')
+  users: HasMany<EntityConstructor<IUser>>;
 
   createAddress(input: AddressValueObject): void {
     this.address.push(input);
