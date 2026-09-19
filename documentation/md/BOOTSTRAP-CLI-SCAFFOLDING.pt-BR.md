@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Estrutura CLI Bootstrap
 
-Este modelo agora expõe comandos CLI de bootstrap instaláveis pelo registry:
+Este modelo expõe comandos CLI de bootstrap a partir do repositório canônico:
 
 - `jumentix-bootstrap`
 - `jumentix-init`
@@ -18,12 +18,10 @@ Propriedade do espaço de trabalho:
 
 ## Uso
 
-Instale globalmente (ou execute com `bun x` pelo registry do pacote):
+Execute a CLI de desenvolvimento atual sem instalação global:
 
 ```bash
-bun add --global @jumentix/cli-init
-jumentix-init
-jumentix-bootstrap
+bun x github:web2solutions/Jumentix#dev
 ```
 
 Uso do repositório local:
@@ -35,13 +33,18 @@ bun run cli:bootstrap
 Uso não interativo:
 
 ```bash
-jumentix-init --service-type=rest --project-name=my-service --git-branch=main --install-deps=false
+bun x github:web2solutions/Jumentix#dev \
+  --non-interactive \
+  --service-type=rest \
+  --project-name=my-service \
+  --git-branch=dev \
+  --install-deps=false
 ```
 
 Ajuda CLI:
 
 ```bash
-jumentix-init --help
+bun x github:web2solutions/Jumentix#dev --help
 ```
 
 Sinalizadores suportados:

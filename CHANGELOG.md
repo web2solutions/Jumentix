@@ -4,17 +4,10 @@
 
 ## All Changes
 
-- 2026-09-19 [JUM-824][Governance] Restore suite and tooling ownership (#358) - Eduardo A.
-- 2026-09-19 chore: sync origin/dev before merge of ownership epic - Eduardo A.
-- 2026-09-19 fix: clear Sonar reliability bug and ownership regex smells - Eduardo A.
+- 2026-09-19 docs: [JUM-844] make product setup CLI-first - Eduardo Almeida
 - 2026-09-19 docs: restore public project badges (#361) - Eduardo A.
-- 2026-09-19 chore: sync origin/dev into ownership epic branch - Eduardo A.
 - 2026-09-19 docs: align Codecov grids (#360) - Eduardo A.
-- 2026-09-19 fix: drop ownership --root CLI to clear Sonar S8707 - Eduardo A.
-- 2026-09-19 fix: empty ownership allow-list and clear Sonar debt - Eduardo A.
-- 2026-09-19 chore: absorb #359 sonar/codecov into ci-cd ownership - Eduardo A.
 - 2026-09-19 fix(ci): enforce public quality reporting (#359) - Eduardo A.
-- 2026-09-19 chore(governance): restore suite and tooling ownership (JUM-824) - Eduardo A.
 - 2026-09-19 [JUM-840][Governance] Retire superseded governance material (#357) - Eduardo A.
 - 2026-09-19 fix(latent): clear bugs documented during JUM-821 promotion rounds (JUM-839) (#356) - Eduardo A.
 - 2026-09-18 fix(ci): analyse main and dev on sonar and codecov (#355) - Eduardo A.

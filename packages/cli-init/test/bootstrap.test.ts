@@ -587,13 +587,13 @@ describe('run', () => {
       workingDirectory: workspace
     });
 
-    expect(commands.calls.map((call) => call.command)).toStrictEqual(['git', 'npm']);
+    expect(commands.calls.map((call) => call.command)).toStrictEqual(['git', 'bun']);
     expect(commands.calls[1].args).toStrictEqual(['install']);
     // In the new project, not in the folder the CLI was launched from.
     expect(commands.calls[1].cwd).toBe(path.join(workspace, 'svc'));
   });
 
-  it('defaults to the canonical repository and the main branch', async () => {
+  it('defaults to the canonical repository and the dev branch', async () => {
     expect.hasAssertions();
 
     const workspace = scratch('workspace');
@@ -609,7 +609,7 @@ describe('run', () => {
     });
 
     expect(commands.calls[0].args).toStrictEqual([
-      'clone', '--branch', 'main', '--', BOILERPLATE_REPOSITORY, 'svc'
+      'clone', '--branch', 'dev', '--', BOILERPLATE_REPOSITORY, 'svc'
     ]);
   });
 
@@ -638,7 +638,7 @@ describe('run', () => {
     ).serviceType).toBe(SERVICE_TYPES[1].id);
   });
 
-  it('falls back to main and to installing when the prompts are left blank', async () => {
+  it('falls back to dev and to installing with Bun when the prompts are left blank', async () => {
     expect.hasAssertions();
 
     const workspace = scratch('workspace');
@@ -653,8 +653,8 @@ describe('run', () => {
       createPrompt: prompt.createPrompt
     });
 
-    expect(commands.calls[0].args[2]).toBe('main');
-    expect(commands.calls.map((call) => call.command)).toStrictEqual(['git', 'npm']);
+    expect(commands.calls[0].args[2]).toBe('dev');
+    expect(commands.calls.map((call) => call.command)).toStrictEqual(['git', 'bun']);
   });
 
   it('requires a project name', async () => {
