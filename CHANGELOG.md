@@ -1,12 +1,34 @@
 # Changelog
 
-<!-- This file is generated from Git history. Run `bun run changelog:update` to refresh it. -->
+<!-- This file is generated from Git history. GitHub Actions synchronizes it after pushes to dev. -->
 
 ## All Changes
 
+- 2026-09-20 ci(JUM-862): grant pull-requests write to sync-changelog (#378) - Eduardo A.
+- 2026-09-20 fix(JUM-864): validate keyPath segments at the point of use in writePath (#375) - Eduardo A.
+- 2026-09-20 fix(JUM-863): make versionless catalog delete unconditional and unshadow deletedAt (#374) - Eduardo A.
+- 2026-09-20 ci(JUM-862): synchronize changelog through a PR instead of pushing to dev (#372) - Eduardo A.
+- 2026-09-20 [JUM-844][Refactor] CLI core command router prompts and TypeScript build (#373) - Eduardo A.
+- 2026-09-20 fix(cli-init): build dist before suites when missing - Eduardo A.
+- 2026-09-20 refactor(cli-init): add TS command router, prompts and init config - Eduardo A.
+- 2026-09-20 [JUM-843][Governance] Rewrite Req 037 as factory generator CLI v2 (#371) - Eduardo A.
+- 2026-09-20 docs(governance): rewrite Req 037 as factory generator CLI v2 - Eduardo A.
+- 2026-09-19 fix(JUM-860): enforce Sonar reliability against the analyzed branch (#370) - Eduardo A.
+- 2026-09-19 fix(JUM-859): resolve npm by absolute path in check-npm-org-integration (#369) - Eduardo A.
+- 2026-09-19 test(JUM-858): cover JUM-811 dashboard metrics lines for the patch-coverage gate (#368) - Eduardo A.
+- 2026-09-19 test(JUM-857): restore branch coverage to >= 98% for the release gate (#367) - Eduardo A.
+- 2026-09-19 [JUM-842][Ci] Point coverage jobs at moved cana browser scripts (#364) - Eduardo A.
+- 2026-09-19 Merge remote-tracking branch 'origin/dev' into cursor/ci/JUM-842-browser-coverage-paths - Eduardo Almeida
+- 2026-09-19 feat: [JUM-841] prepare npm package publication (#365) - Eduardo A.
 - 2026-09-19 Merge remote-tracking branch 'origin/dev' into codex/feature/JUM-841-npm-publication - Eduardo Almeida
+- 2026-09-19 docs: [JUM-844] make product setup CLI-first (#363) - Eduardo A.
+- 2026-09-19 Merge remote-tracking branch 'origin/dev' into codex/feature/JUM-841-npm-publication - Eduardo Almeida
+- 2026-09-19 Merge remote-tracking branch 'origin/dev' into codex/fix/JUM-844-sonar-badge-validity - Eduardo Almeida
+- 2026-09-19 chore: sync changelog for JUM-842 coverage path retarget - Eduardo A.
+- 2026-09-19 ci: retarget coverage jobs to packages/cana browser scripts - Eduardo A.
 - 2026-09-19 feat: [JUM-841] prepare npm package publication - Eduardo Almeida
 - 2026-09-19 chore: clear ownership path freeze leftovers for JUM-834 (#362) - Eduardo A.
+- 2026-09-19 docs: [JUM-844] make product setup CLI-first - Eduardo Almeida
 - 2026-09-19 [JUM-824][Governance] Restore suite and tooling ownership (#358) - Eduardo A.
 - 2026-09-19 chore: sync origin/dev before merge of ownership epic - Eduardo A.
 - 2026-09-19 fix: clear Sonar reliability bug and ownership regex smells - Eduardo A.
