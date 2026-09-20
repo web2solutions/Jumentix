@@ -21,7 +21,7 @@ import { execFileSync } from 'node:child_process';
  * about cloning uses the real one.
  */
 
-const bootstrap = require('../src/bootstrap');
+const bootstrap = require('../dist/legacy/bootstrap');
 
 const {
   BOILERPLATE_REPOSITORY,
