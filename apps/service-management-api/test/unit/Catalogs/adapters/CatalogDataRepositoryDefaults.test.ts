@@ -85,17 +85,18 @@ describe('catalog repository fallbacks (JUM-681)', () => {
     expect(conflict?.metadata?.currentVersion).toBe(1);
   });
 
-  it('refuses a delete that names no version at all', async () => {
+  it('tombstones unconditionally when no version is named', async () => {
     expect.hasAssertions();
 
-    // No `expectedVersion` means the caller has not read the record, so the
-    // check must fail rather than default to whatever the current version is —
-    // an unconditional delete is exactly what the concurrency check exists to
-    // stop.
+    // No `expectedVersion` is the unconditional-delete sentinel: the staleness
+    // check only guards optimistic-concurrency deletes (JUM-863).
     const repository = makeRepository();
     const created = await seed(repository);
 
-    await expect(repository.delete(created.id)).rejects.toThrow('expected -1, current is 1');
+    await expect(repository.delete(created.id)).resolves.toBe(true);
+    const stored = await repository.getOneById(created.id);
+    expect(stored.deletedAt).not.toBe('');
+    expect(stored.version).toBe(2);
   });
 
   it('tombstones with the version the caller read, and with no actor', async () => {

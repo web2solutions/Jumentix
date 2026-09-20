@@ -187,23 +187,27 @@ describe('catalogService — optimistic concurrency and events', () => {
     expect(current.deletedAt).toBe('');
   });
 
-  it('delete without an expected version takes the -1 token and is rejected as stale', async () => {
+  it('delete without an expected version is unconditional and publishes the post-tombstone version', async () => {
     expect.hasAssertions();
-    const { catalogService } = createServiceStack();
+    const mediator = new InMemoryMessageMediatorAdapter();
+    const observed: any[] = [];
+    mediator.subscribe(CatalogIntegrationEventName.Deleted, (event) => { observed.push(event); });
+    const { catalogService } = createServiceStack(mediator);
     const created = (await catalogService.create({
       organization: 'org-1', name: 'Billing', design: designV1
     })).result!;
 
-    // The service maps an absent expectedVersion to -1; the repository's
-    // staleness check compares that token literally, so a versionless delete
-    // of an existing record is rejected as a conflict (the -1 sentinel is not
-    // honoured as "unconditional" below the service layer).
     const { result, error } = await catalogService.delete(created.id);
-    expect(result).toBeUndefined();
-    expect((error as any).code).toBe('GENERIC.CONFLICT');
-    expect((error as any).message).toContain('expected -1');
-    const current = (await catalogService.getOneById(created.id)).result!;
-    expect(current.deletedAt).toBe('');
+    expect(error).toBeUndefined();
+    expect(result).toBe(true);
+
+    const tombstoned = (await catalogService.getOneById(created.id)).result!;
+    expect(tombstoned.deletedAt).not.toBe('');
+    expect(tombstoned.deletedAt).not.toBeNull();
+
+    expect(observed).toHaveLength(1);
+    // The event carries the version the tombstone actually wrote.
+    expect(observed[0].payload).toMatchObject({ id: created.id, version: 2 });
   });
 
   it('restore recovers a tombstoned record, bumps the version and publishes catalogs.catalog.restored', async () => {
