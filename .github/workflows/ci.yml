@@ -111,6 +111,10 @@ jobs:
     needs: branch-gate
     permissions:
       contents: write
+      # gh pr create in the sync step needs PR creation rights on top of the
+      # contents token (JUM-862 follow-up: "Resource not accessible by
+      # integration (createPullRequest)").
+      pull-requests: write
     concurrency:
       group: changelog-dev
       cancel-in-progress: false
