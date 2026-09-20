@@ -19,7 +19,7 @@ interface CatalogFactory extends RequestCreateCatalog {
   version?: number;
   createdBy?: string;
   updatedBy?: string;
-  deletedAt?: string;
+  deletedAt?: string | null;
 }
 
 /**
@@ -122,9 +122,9 @@ export class Catalog extends BaseModel<ICatalog> implements ICatalog {
     this._updatedBy = updatedBy ?? '';
   }
 
-  public get deletedAt(): string {
-    return this._deletedAt ?? '';
-  }
+  // `deletedAt` intentionally inherits BaseModel's accessor pair: the
+  // getter-only override here used to shadow the setter, so external
+  // assignment threw a TypeError and the getter hid a null tombstone.
 
   public get deleted(): boolean {
     return this._deletedAt !== '' && this._deletedAt != null;
