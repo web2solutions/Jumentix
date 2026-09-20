@@ -25,7 +25,10 @@ jobs:
           persist-credentials: false
       - name: Install Bun
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Await SonarCloud PR analysis
         env:

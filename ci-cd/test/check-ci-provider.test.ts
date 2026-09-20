@@ -120,6 +120,22 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('sync-changelog');
   });
 
+  it('fails when Bun installation can mask a failed download', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          'curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install',
+          'curl -fsSL https://bun.sh/install | bash'
+        )
+      );
+    });
+    expect(run(directory).output).toContain('Bun installation must fail closed');
+  });
+
   it('fails when a local hook resumes mutating the generated changelog', () => {
     expect.hasAssertions();
 

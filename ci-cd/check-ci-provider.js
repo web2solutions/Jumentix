@@ -38,6 +38,9 @@ if (!fs.existsSync(workflowPath)) {
     /uses:\s*actions\/checkout@v5/,
     /uses:\s*actions\/setup-node@v5/,
     /node-version:\s*22/,
+    /curl -fsSL -o \/tmp\/bun-install\.sh https:\/\/bun\.sh\/install/,
+    /bash \/tmp\/bun-install\.sh "bun-v\$BUN_VERSION"/,
+    /test -x "\$HOME\/\.bun\/bin\/bun"/,
     /branch-gate:/,
     /sync-changelog:/,
     /github\.event_name == 'push' && github\.ref_name == 'dev'/,
@@ -150,6 +153,10 @@ if (!fs.existsSync(workflowPath)) {
   if (/Checkout repository without JavaScript Actions/.test(contents)) {
     failures.push('.github/workflows/ci.yml must not keep the old self-hosted manual checkout path');
   }
+
+  if (/curl -fsSL https:\/\/bun\.sh\/install \| bash/.test(contents)) {
+    failures.push('.github/workflows/ci.yml Bun installation must fail closed instead of masking curl failures in a pipeline.');
+  }
 }
 
 function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMarkers) {
@@ -170,6 +177,9 @@ function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMar
   ];
   for (const marker of [...commonMarkers, ...requiredMarkers]) {
     if (!marker.test(contents)) failures.push(`${label} is missing ${String(marker)}`);
+  }
+  if (/curl -fsSL https:\/\/bun\.sh\/install \| bash/.test(contents)) {
+    failures.push(`${label} Bun installation must fail closed instead of masking curl failures in a pipeline.`);
   }
   if (/(?:contents|issues|pull-requests|actions|checks):\s*write/.test(contents)) {
     failures.push(`${label} must retain read-only GitHub token permissions.`);
