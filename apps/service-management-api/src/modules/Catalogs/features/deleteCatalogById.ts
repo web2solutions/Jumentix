@@ -2,7 +2,7 @@ import type { ICatalogRepository } from '@service-management-api/modules/Catalog
 
 export const deleteCatalogById = async (
   id: string,
-  expectedVersion: number,
+  expectedVersion: number | undefined,
   catalogRepository: ICatalogRepository,
   actor: string = ''
 ): Promise<boolean> => {
