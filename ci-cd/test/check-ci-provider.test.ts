@@ -32,6 +32,8 @@ function fixture(change?: (directory: string) => void): string {
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'), path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
+  fs.copyFileSync(path.join(repoRoot, '.github/workflows/pr-feedback.yml'), path.join(directory, '.github/workflows/pr-feedback.yml'));
+  fs.copyFileSync(path.join(repoRoot, '.github/workflows/sonar-reliability.yml'), path.join(directory, '.github/workflows/sonar-reliability.yml'));
   fs.copyFileSync(path.join(repoRoot, '.circleci/config.yml'), path.join(directory, '.circleci/config.yml'));
   fs.copyFileSync(path.join(repoRoot, '.husky/pre-commit'), path.join(directory, '.husky/pre-commit'));
   fs.copyFileSync(path.join(repoRoot, 'sonar-project.properties'), path.join(directory, 'sonar-project.properties'));
@@ -54,6 +56,29 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => fs.unlinkSync(path.join(root, '.github/workflows/ci.yml')));
     expect(run(directory).output).toContain('Missing required GitHub Actions workflow');
+  });
+
+  it('fails when the trusted PR feedback workflow is absent or checks out PR code', () => {
+    expect.hasAssertions();
+
+    const missing = fixture((root) => fs.unlinkSync(path.join(root, '.github/workflows/pr-feedback.yml')));
+    expect(run(missing).output).toContain('Missing required trusted pull-request workflow');
+
+    const untrusted = fixture((root) => {
+      const file = path.join(root, '.github/workflows/pr-feedback.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('github.event.pull_request.base.sha', 'github.event.pull_request.head.sha'));
+    });
+    expect(run(untrusted).output).toContain('must execute only the trusted PR base revision');
+  });
+
+  it('fails when Sonar reliability is no longer a trusted required PR gate', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/sonar-reliability.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('SONAR_PULL_REQUEST:', 'SONAR_PULL_REQUEST_REMOVED:'));
+    });
+    expect(run(directory).output).toContain('SONAR_PULL_REQUEST');
   });
 
   it('fails when CircleCI is absent', () => {

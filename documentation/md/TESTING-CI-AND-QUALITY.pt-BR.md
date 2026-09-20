@@ -186,6 +186,8 @@ Aplicação remota:
 - `.github/workflows/ci.yml` executa build/smoke do Storybook e prepublish somente em contextos de release/full
 - o Storybook não é executado pela matriz global
 - `ci:monorepo` permanece como entrada de compatibilidade, mas não pode selecionar um plano reduzido somente para documentação
+- O check obrigatório `pr-feedback` roda a partir da revisão confiável da base da PR e reprova threads de revisão não resolvidas ou comentários gerais sem evidência visível de resolução validada. A única exceção é o aviso estrito de limite de uso do Cursor, vindo do login `cursor`.
+- O check obrigatório `sonar-reliability` consulta a análise de pull request do SonarCloud e aceita somente reliability A. Ele usa `SONARCLOUD_TOKEN` apenas no workflow confiável da base e nunca executa código da PR.
 
 #### Matriz de jobs hospedados por contexto (JUM-786)
 
@@ -217,7 +219,7 @@ Importação de cobertura do SonarQube Cloud:
 - Fluxo de trabalho: `.github/workflows/ci.yml`
 - Fonte de cobertura: `./coverage/lcov.info` (Jest LCOV)
 - Configuração do scanner: `sonar.javascript.lcov.reportPaths=./coverage/lcov.info`
-- Segredo GitHub Actions necessário: `SONAR_TOKEN`
+- Segredo GitHub Actions necessário: `SONARCLOUD_TOKEN` (exposto ao scanner e ao verificador de reliability como `SONAR_TOKEN`)
 
 ### Visão geral de ferramentas integradas
 
@@ -227,6 +229,8 @@ Importação de cobertura do SonarQube Cloud:
 | GitHub Actions (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.github/workflows/ci.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
 | GitHub Actions (Codecov) | Publicação de dashboard de cobertura | `.github/workflows/ci.yml` | Requer `CODECOV_TOKEN`; envia LCOV via `codecov/codecov-action@v5` após thresholds locais |
 | GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/ci.yml` | Executa Gitleaks/Semgrep fixados e retém evidência SARIF |
+| GitHub Actions (feedback de PR) | Bloqueia threads de revisão não resolvidas e feedback geral sem tratamento | `.github/workflows/pr-feedback.yml`, `ci-cd/check-pr-feedback.js` | Roda do SHA confiável da base; respostas de resolução identificam o comentário exato e, quando corrigido, um SHA da PR |
+| GitHub Actions (reliability Sonar) | Bloqueia uma PR cuja reliability no SonarCloud não seja A | `.github/workflows/sonar-reliability.yml`, `ci-cd/check-sonar-reliability.js` | Consulta a análise de PR do SonarCloud com `SONARCLOUD_TOKEN`; ausência de análise ou falha da API reprovam de forma fechada |
 | GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/ci.yml` | Executa build/smoke do Storybook e prepublish de forma independente |
 | GitHub Actions (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/ci.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |
 | Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Declarações/linhas/funções/ramos 98%, linhas alteradas 99%; ramos sob piso datado (JUM-721) |
@@ -374,5 +378,5 @@ bun run ci:integration
 
 Para incidentes de CI e verificações com falha, consulte:
 
-- [Solução de problemas de CI / SonarQube / cobertura do repositório](./CI-TROUBLESHOOTING.md)
-- [Guia de teste de API em tempo real](./REALTIME-API-TESTING.md)
+- [Solução de problemas de CI / SonarQube / cobertura do repositório](./CI-TROUBLESHOOTING.pt-BR.md)
+- [Guia de teste de API em tempo real](./REALTIME-API-TESTING.pt-BR.md)

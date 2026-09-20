@@ -1,0 +1,34 @@
+name: PR feedback
+
+on:
+  pull_request_target:
+    branches:
+      - dev
+      - main
+
+env:
+  BUN_VERSION: 1.3.13
+
+jobs:
+  pr-feedback:
+    name: pr-feedback
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted PR base
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Enforce resolved PR feedback
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun ci-cd/check-pr-feedback.js --repo "$GITHUB_REPOSITORY" --pr "${{ github.event.pull_request.number }}"

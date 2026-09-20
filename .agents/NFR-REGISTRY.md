@@ -93,8 +93,9 @@ This file consolidates non-functional requirements already requested and stored 
 
 - `099` Every task begins only after current `main`, `dev`, and the full requirement inventory are refreshed and read.
 - `100` Every valid pull-request comment and every unresolved GitHub review/discussion
-  thread blocks merge until it is corrected, resolved, or answered as invalid with
-  factual PR evidence and applicable gate evidence.
+  thread blocks merge until it is corrected, natively resolved, or answered with
+  validated factual PR evidence; the required trusted-base `pr-feedback` check
+  enforces the versioned Cursor usage-limit exception and fails closed otherwise.
 - `101` Agents waiting only on remote checks must progress another active, non-conflicting task
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at

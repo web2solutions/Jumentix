@@ -179,6 +179,8 @@ Remote enforcement:
 - `.github/workflows/ci.yml` independently runs Storybook build/smoke and website prepublish checks only for release/full contexts
 - Storybook is absent from the repository full matrix
 - `ci:monorepo` remains a compatibility entrypoint but cannot select a reduced docs-only plan
+- The required `pr-feedback` check runs from the trusted PR base revision and rejects unresolved review threads or general comments without validated visible resolution evidence. The sole exception is Cursor's strict usage-limit notice from login `cursor`.
+- The required `sonar-reliability` check queries the SonarCloud pull-request analysis and accepts only reliability rating A. It uses `SONARCLOUD_TOKEN` only from the trusted base workflow and never executes PR code.
 
 #### Hosted job matrix by context (JUM-786)
 
@@ -210,7 +212,7 @@ SonarQube Cloud coverage import:
 - Workflow: `.github/workflows/ci.yml`
 - Coverage source: `./coverage/lcov.info` (Jest LCOV)
 - Scanner setting: `sonar.javascript.lcov.reportPaths=./coverage/lcov.info`
-- Required GitHub Actions secret: `SONAR_TOKEN`
+- Required GitHub Actions secret: `SONARCLOUD_TOKEN` (exposed to the scanner and reliability verifier as `SONAR_TOKEN`)
 
 ### Integrated Tooling Overview
 
@@ -220,6 +222,8 @@ SonarQube Cloud coverage import:
 | GitHub Actions (coverage) | Repository-owned project and patch coverage | `.github/workflows/ci.yml` | Enforces `coverage:check` and `coverage:patch`, then retains JSON/LCOV evidence |
 | GitHub Actions (Codecov) | Coverage dashboard publishing | `.github/workflows/ci.yml` | Requires `CODECOV_TOKEN`; uploads LCOV through `codecov/codecov-action@v5` after local thresholds pass |
 | GitHub Actions (third-party review) | Fail-closed secret and static-analysis review | `.github/workflows/ci.yml` | Runs pinned Gitleaks/Semgrep and retains SARIF evidence |
+| GitHub Actions (PR feedback) | Blocks unresolved review threads and unaddressed general feedback | `.github/workflows/pr-feedback.yml`, `ci-cd/check-pr-feedback.js` | Runs from the trusted base SHA; resolution responses identify the exact comment and, when corrected, a PR SHA |
+| GitHub Actions (Sonar reliability) | Blocks a PR whose SonarCloud reliability is not A | `.github/workflows/sonar-reliability.yml`, `ci-cd/check-sonar-reliability.js` | Queries the SonarCloud PR analysis with `SONARCLOUD_TOKEN`; analysis absence or API failure fails closed |
 | GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/ci.yml` | Runs Storybook build/smoke and prepublish checks independently |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/ci.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; imports retained LCOV after coverage passes |
 | Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions/branches 98%, changed lines 99%; branches under a dated floor (JUM-721) |
