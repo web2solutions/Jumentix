@@ -1,73 +1,70 @@
-# Bootstrap CLI Scaffolding
+# Factory Generator CLI (`@jumentix/cli-init`)
 
-This boilerplate exposes bootstrap CLI commands from the canonical repository:
-
-- `jumentix-bootstrap`
-- `jumentix-init`
-
-The command clones `web2solutions/Jumentix` into a target folder and writes initial service profile metadata.
+Requirement `037` (v2) defines `@jumentix/cli-init` as the **factory generator**:
+it produces a lean Bun workspace for one factory mode instead of cloning the
+entire monorepo.
 
 Workspace ownership:
 
-- `packages/cli-init` contains the canonical bootstrap implementation.
-- root `bin/jumentix-bootstrap.js` delegates to `packages/cli-init` to keep behavior consistent during monorepo migration.
+- `packages/cli-init` owns the CLI implementation, packaged templates, and
+  freshness gate.
+- Root `bin/jumentix-bootstrap.js` delegates to the package for compatibility.
 
-## Usage
+## Commands
 
-Run the current development CLI without a global installation:
+| Command | Purpose |
+| --- | --- |
+| `jumentix init` | Create a workspace (`monolith` / `services` / `hybrid` / `frontend`) |
+| `jumentix add domain\|service\|frontend` | Extend an existing generated project |
+| `jumentix upgrade` | Template three-way merge (`--dry-run` supported) |
+| `jumentix doctor` | Environment and project diagnostics |
+
+Aliases `jumentix-init` and `jumentix-bootstrap` remain; legacy
+`--service-type` invocations map to `init --mode monolith` with a deprecation
+notice.
+
+## Sources
+
+- Designer JSON export, OAS 3.1 file, or catalog URL via `--from`
+- Users preset via `--preset users` when `--from` is omitted
+- Reproducible answers via `--config jumentix.init.json`
+- `--non-interactive` requires every answer from flags/config
+
+## Templates and freshness
+
+Templates are committed under `packages/cli-init/templates/{backend,frontend}/`
+and rebuilt with `packages/cli-init/scripts/build-templates.js`.
+
+Freshness gate (fails closed when templates drift from seeds):
 
 ```bash
-bun x github:web2solutions/Jumentix#dev
+bun run cli:check-template-freshness
 ```
 
-Local repository usage:
+Script: `packages/cli-init/scripts/check-template-freshness.js` (wired into
+`ci:gate`).
+
+## Generated-project contract
+
+Every generated workspace includes:
+
+- `.jumentix/project.json` — plan consumed by `add` / `upgrade` / `doctor`
+- `.jumentix/manifest.json` — sha256 of generated files (upgrade merge)
+- `jumentix.init.json` — answers for `--config` round-trips
+
+`.jumentix/service-profile.json` is retired.
+
+Generated projects must pass their own `lint` / `test` / `build` and boot in
+Docker. Runtime dependencies are published `@jumentix/*` packages pinned to the
+CLI version.
+
+## Local development
 
 ```bash
-bun run cli:bootstrap
+bun run --cwd packages/cli-init test
+node packages/cli-init/bin/jumentix.js --help
 ```
 
-Non-interactive usage:
-
-```bash
-bun x github:web2solutions/Jumentix#dev \
-  --non-interactive \
-  --service-type=rest \
-  --project-name=my-service \
-  --git-branch=dev \
-  --install-deps=false
-```
-
-CLI help:
-
-```bash
-bun x github:web2solutions/Jumentix#dev --help
-```
-
-Supported flags:
-
-- `--service-type` (`rest|websocket|grpc|graphql|functions`)
-- `--project-name`
-- `--git-branch`
-- `--install-deps` (`y|n|true|false`)
-- `--repo` (override template repository URL)
-
-## Supported Scaffold Profiles
-
-1. HTTP/REST server (OpenAPI/Swagger + static assets)
-2. WebSocket server (+ static assets)
-3. gRPC server (+ static assets)
-4. GraphQL server (+ static assets)
-5. Functions bundle (AWS/Google/Azure/Vercel/Cloudflare)
-
-## Generated Metadata
-
-After scaffolding, the CLI writes:
-
-- `.jumentix/service-profile.json`
-
-Example fields:
-
-- selected service type
-- profile flags (`interface`, `functions`, `staticAssets`)
-- repository and branch used for scaffold
-- generation timestamp
+Until the factory commands are fully shipped (epic Issues JUM-844…854), the
+package may still expose the legacy clone path; the normative contract is this
+document and Requirement `037` v2.
