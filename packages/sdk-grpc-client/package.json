@@ -1,22 +1,55 @@
 {
   "name": "@jumentix/sdk-grpc-client",
   "version": "0.0.0",
-  "private": true,
   "description": "Jumentix gRPC SDK client",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE.md",
+    "README.pt-BR.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/copy-proto.cjs",
     "test": "bun test --isolate test",
     "lint": "echo \"sdk-grpc-client: lint managed by root workspace\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "bun run clean && bun run build"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.1",
     "@grpc/proto-loader": "^0.8.0",
-    "yaml": "^2.5.1"
+    "yaml": "^2.5.1",
+    "@jumentix/shared-contracts": "^0.1.0"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web2solutions/Jumentix.git",
+    "directory": "packages/sdk-grpc-client"
+  },
+  "homepage": "https://jumentix-website.vercel.app",
+  "bugs": {
+    "url": "https://github.com/web2solutions/Jumentix/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@jumentix/shared-contracts": "workspace:*"
   }
 }
