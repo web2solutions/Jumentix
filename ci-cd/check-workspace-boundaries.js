@@ -4,7 +4,17 @@ const path = require('path');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const SUPPORTED_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
-const IGNORE_DIRS = new Set(['node_modules', '.git', '.build', 'coverage', '.tmp', 'dist']);
+const IGNORE_DIRS = new Set([
+  'node_modules',
+  '.git',
+  '.build',
+  'coverage',
+  '.tmp',
+  'dist',
+  // Packaged CLI seed slices (JUM-845): opaque data under packages/cli-init/templates,
+  // not package source. Seeds keep their real homes under apps/*.
+  'templates'
+]);
 const IMPORT_REGEX = /from\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 /**
  * Files allowed to reach into the application through the `@src` alias.

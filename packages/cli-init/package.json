@@ -17,8 +17,10 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "build-templates": "bun scripts/build-templates.js",
+    "check-template-freshness": "bun scripts/check-template-freshness.js",
     "pretest": "bun run build",
-    "test": "bun test --isolate test",
+    "test": "bun test --isolate ./test",
     "lint": "echo \"cli-init: lint managed by root workspace\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }

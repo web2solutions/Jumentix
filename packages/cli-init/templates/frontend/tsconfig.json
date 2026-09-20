@@ -1,0 +1,59 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "jsx": "preserve",
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@": [
+        "src"
+      ],
+      "@jumentix/sdk-rest-client": [
+        "../../packages/sdk-rest-client/src/index.ts"
+      ],
+      "@jumentix/cana": [
+        "../../packages/cana/src/index.ts"
+      ],
+      "@jumentix/cana-vue": [
+        "../../packages/cana-vue/src/index.ts"
+      ],
+      "@jumentix/persistence-contracts": [
+        "../../packages/persistence-contracts/src/index.ts"
+      ],
+      "@jumentix/shared-contracts": [
+        "src/contracts/sharedContractsBrowserShim.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue",
+    "vite.config.mjs"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "template"
+  ]
+}
