@@ -104,25 +104,30 @@ function readPath(record: unknown, path: string | readonly string[]): unknown {
 }
 
 function writePath(record: Record<string, unknown>, path: string, value: unknown): void {
-  const segments = path.split('.');
-  for (const segment of segments) {
+  // The guard runs immediately before a segment is used to index or assign,
+  // so each write is validated at the point of use (single traversal).
+  const guard = (segment: string): void => {
     if (segment === '__proto__' || segment === 'constructor' || segment === 'prototype') {
       throw canaError(
         'InvalidRequest',
         `keyPath "${path}" is not writable: segment "${segment}" would mutate the prototype chain.`
       );
     }
-  }
+  };
+  const segments = path.split('.');
   let cursor: Record<string, unknown> = record;
   for (let i = 0; i < segments.length - 1; i += 1) {
     const segment = segments[i]!;
+    guard(segment);
     const next = cursor[segment];
     if (next === null || typeof next !== 'object') {
       cursor[segment] = {};
     }
     cursor = cursor[segment] as Record<string, unknown>;
   }
-  cursor[segments[segments.length - 1]!] = value;
+  const last = segments[segments.length - 1]!;
+  guard(last);
+  cursor[last] = value;
 }
 
 function emptySnapshot(schema: CanaSchema): LsSnapshot {
