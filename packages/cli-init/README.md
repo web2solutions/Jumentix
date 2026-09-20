@@ -1,38 +1,25 @@
 # @jumentix/cli-init
 
-Bootstrap CLI package for Jumentix project scaffolding.
+Factory generator CLI for Jumentix (Requirement `037` v2).
 
-## Commands
+## Commands (target)
 
-- `jumentix-init`
-- `jumentix-bootstrap` (compatibility alias)
+- `jumentix init` — lean workspace per factory mode
+- `jumentix add domain|service|frontend`
+- `jumentix upgrade` / `jumentix doctor`
+- Aliases: `jumentix-init`, `jumentix-bootstrap`
 
-## Behavior
+## Normative docs
 
-- Prompts for service type/profile.
-- Clones repository template.
-- Generates `.jumentix/service-profile.json`.
-- Optionally installs dependencies in target project.
-- Supports non-interactive automation via CLI flags.
+- `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
+- `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md` (+ pt-BR)
 
-## Non-interactive usage
+## Current package entrypoint
 
-```bash
-bun ./packages/cli-init/bin/jumentix-init.js \
-  --service-type=rest \
-  --project-name=my-service \
-  --git-branch=dev \
-  --install-deps=false
-```
-
-## Help
+Until epic Issues JUM-844…854 land, the package still exposes the legacy clone
+flow via `bin/jumentix-init.js`. The contract above is normative.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help
-```
-
-## Run local package entrypoint
-
-```bash
-bun ./packages/cli-init/bin/jumentix-init.js
+bun run --cwd packages/cli-init test
 ```
