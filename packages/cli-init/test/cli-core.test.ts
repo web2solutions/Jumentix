@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+require('./ensure-built');
+
 const { parseArgv, looksLikeLegacyInvocation, mapLegacyServiceTypeToMode } = require('../dist/args');
 const { main, printRootHelp } = require('../dist/cli');
 const { readInitConfig, writeInitConfig } = require('../dist/config');

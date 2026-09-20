@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
 import { PassThrough } from 'node:stream';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -20,6 +20,8 @@ import { execFileSync } from 'node:child_process';
  * the tests that are not about cloning do not have to clone; the test that is
  * about cloning uses the real one.
  */
+
+require('./ensure-built');
 
 const bootstrap = require('../dist/legacy/bootstrap');
 
