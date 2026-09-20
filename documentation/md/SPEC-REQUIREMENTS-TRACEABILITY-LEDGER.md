@@ -141,12 +141,16 @@ For any change, identify impacted requirement IDs and ensure:
 
 - `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `125`, `126`
 - Spec resources:
-  - `packages/cli-init/*`
+  - `packages/cli-init/*` (Req `037` v2 factory generator: `init` / `add` /
+    `upgrade` / `doctor`, packaged templates, freshness gate
+    `packages/cli-init/scripts/check-template-freshness.js`)
+  - `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md` (+ pt-BR)
   - `apps/service-management/documentation/*`
   - `documentation/md/SDK-COMPATIBILITY-BRIDGE.md`
   - website docs and deployment flows
 - Evidence:
   - package/app tests
+  - `bun run cli:check-template-freshness` / generation e2e matrix
   - deployment script validation
   - docs + governance sync
 

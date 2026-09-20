@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-const { run } = require('../packages/cli-init/src/bootstrap');
+const { runAsCli } = require('../packages/cli-init/dist/cli');
 
-run().catch((error) => {
-  console.error(`\nBootstrap failed: ${error.message}`);
+runAsCli().catch((error) => {
+  console.error(`\nBootstrap failed: ${error instanceof Error ? error.message : String(error)}`);
   process.exit(1);
 });

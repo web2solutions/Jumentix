@@ -4722,6 +4722,16 @@
       "timeoutMs": 120000
     },
     {
+      "id": "packages/cli-init/test/cli-core.test.ts",
+      "path": "packages/cli-init/test/cli-core.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
       "path": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
       "layer": "adapters/out+infra",
