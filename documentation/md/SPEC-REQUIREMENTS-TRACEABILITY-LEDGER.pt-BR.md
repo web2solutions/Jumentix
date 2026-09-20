@@ -143,12 +143,16 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 - `037`, `038`, `054`, `055`, `069`, `070`, `091`, `092`, `093`, `125`, `126`
 - Recursos de especificações:
-  - `pacotes/cli-init/*`
-  - `apps/gerenciamento de serviço/documentação/*`
-  - `documentação/md/SDK-COMPATIBILITY-BRIDGE.md`
+  - `packages/cli-init/*` (Req `037` v2 geradora de fábrica: `init` / `add` /
+    `upgrade` / `doctor`, templates empacotados, gate de frescor
+    `packages/cli-init/scripts/check-template-freshness.js`)
+  - `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md` (+ pt-BR)
+  - `apps/service-management/documentation/*`
+  - `documentation/md/SDK-COMPATIBILITY-BRIDGE.md`
   - documentos do site e fluxos de implantação
 - Evidência:
   - testes de pacote/aplicativo
+  - `bun run cli:check-template-freshness` / matriz e2e de geração
   - validação de script de implantação
   - documentos + sincronização de governança
 

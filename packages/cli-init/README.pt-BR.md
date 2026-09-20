@@ -4,39 +4,26 @@ Idioma alvo: Português (Brasil)
 -->
 # @jumentix/cli-init
 
-Pacote Bootstrap CLI para andaimes do projeto Jumentix.
+CLI geradora de fábrica do Jumentix (Requisito `037` v2).
 
-## Comandos
+## Comandos (alvo)
 
-- `jumentix-init`
-- `jumentix-bootstrap` (alias de compatibilidade)
+- `jumentix init` — workspace enxuto por modo de fábrica
+- `jumentix add domain|service|frontend`
+- `jumentix upgrade` / `jumentix doctor`
+- Aliases: `jumentix-init`, `jumentix-bootstrap`
 
-## Comportamento
+## Documentos normativos
 
-- Solicita tipo/perfil de serviço.
-- Modelo de repositório de clones.
-- Gera `.jumentix/service-profile.json`.
-- Opcionalmente, instala dependências no projeto de destino.
-- Suporta automação não interativa por meio de sinalizadores CLI.
+- `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
+- `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md` (+ pt-BR)
 
-## Uso não interativo
+## Entrada atual do pacote
 
-```bash
-bun ./packages/cli-init/bin/jumentix-init.js \
-  --service-type=rest \
-  --project-name=my-service \
-  --git-branch=dev \
-  --install-deps=false
-```
-
-## Ajuda
+Até as Issues JUM-844…854 do épico chegarem, o pacote ainda expõe o fluxo
+legado de clone via `bin/jumentix-init.js`. O contrato acima é normativo.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help
-```
-
-## Execute o ponto de entrada do pacote local
-
-```bash
-bun ./packages/cli-init/bin/jumentix-init.js
+bun run --cwd packages/cli-init test
 ```
