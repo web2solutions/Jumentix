@@ -2,76 +2,74 @@
 Arquivo gerado automaticamente a partir de: documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md
 Idioma alvo: Português (Brasil)
 -->
-# Estrutura CLI Bootstrap
+# CLI geradora de fábrica (`@jumentix/cli-init`)
 
-Este modelo expõe comandos CLI de bootstrap a partir do repositório canônico:
-
-- `jumentix-bootstrap`
-- `jumentix-init`
-
-O comando clona `web2solutions/Jumentix` em uma pasta de destino e grava metadados iniciais do perfil de serviço.
+O requisito `037` (v2) define `@jumentix/cli-init` como a **geradora de fábrica**:
+ela produz um workspace Bun enxuto para um modo de fábrica, em vez de clonar o
+monorepo inteiro.
 
 Propriedade do espaço de trabalho:
 
-- `packages/cli-init` contém a implementação canônica do bootstrap.
-- root `bin/jumentix-bootstrap.js` delega para `packages/cli-init` para manter o comportamento consistente durante a migração monorepo.
+- `packages/cli-init` possui a implementação da CLI, os templates empacotados e
+  o gate de frescor.
+- O `bin/jumentix-bootstrap.js` da raiz delega ao pacote por compatibilidade.
 
-## Uso
+## Comandos
 
-Execute a CLI de desenvolvimento atual sem instalação global:
+| Comando | Propósito |
+| --- | --- |
+| `jumentix init` | Cria um workspace (`monolith` / `services` / `hybrid` / `frontend`) |
+| `jumentix add domain\|service\|frontend` | Estende um projeto já gerado |
+| `jumentix upgrade` | Merge de três vias do template (`--dry-run` suportado) |
+| `jumentix doctor` | Diagnóstico de ambiente e de projeto |
+
+Os aliases `jumentix-init` e `jumentix-bootstrap` permanecem; invocações legadas
+com `--service-type` mapeiam para `init --mode monolith` com aviso de
+descontinuação.
+
+## Fontes
+
+- Export JSON do designer, arquivo OAS 3.1 ou URL de catálogo via `--from`
+- Preset Users via `--preset users` quando `--from` é omitido
+- Respostas reproduzíveis via `--config jumentix.init.json`
+- `--non-interactive` exige todas as respostas por flags/config
+
+## Templates e frescor
+
+Os templates ficam commitados em
+`packages/cli-init/templates/{backend,frontend}/` e são reconstruídos com
+`packages/cli-init/scripts/build-templates.js`.
+
+Gate de frescor (falha fechada quando os templates divergem das seeds):
 
 ```bash
-bun x github:web2solutions/Jumentix#dev
+bun run cli:check-template-freshness
 ```
 
-Uso do repositório local:
+Script: `packages/cli-init/scripts/check-template-freshness.js` (ligado ao
+`ci:gate`).
+
+## Contrato do projeto gerado
+
+Todo workspace gerado inclui:
+
+- `.jumentix/project.json` — plano consumido por `add` / `upgrade` / `doctor`
+- `.jumentix/manifest.json` — sha256 dos arquivos gerados (merge de upgrade)
+- `jumentix.init.json` — respostas para round-trips com `--config`
+
+`.jumentix/service-profile.json` é aposentado.
+
+Projetos gerados devem passar no próprio `lint` / `test` / `build` e subir em
+Docker. Dependências de runtime são pacotes `@jumentix/*` publicados, fixados na
+versão da CLI.
+
+## Desenvolvimento local
 
 ```bash
-bun run cli:bootstrap
+bun run --cwd packages/cli-init test
+node packages/cli-init/bin/jumentix.js --help
 ```
 
-Uso não interativo:
-
-```bash
-bun x github:web2solutions/Jumentix#dev \
-  --non-interactive \
-  --service-type=rest \
-  --project-name=my-service \
-  --git-branch=dev \
-  --install-deps=false
-```
-
-Ajuda CLI:
-
-```bash
-bun x github:web2solutions/Jumentix#dev --help
-```
-
-Sinalizadores suportados:
-
-- `--service-type` (`rest|websocket|grpc|graphql|functions`)
-- `--nome do projeto`
-- `--git-branch`
-- `--install-deps` (`y|n|true|false`)
-- `--repo` (substituir URL do repositório de modelo)
-
-## Perfis de andaime suportados
-
-1. Servidor HTTP/REST (OpenAPI/Swagger + ativos estáticos)
-2. Servidor WebSocket (+ ativos estáticos)
-3. Servidor gRPC (+ ativos estáticos)
-4. Servidor GraphQL (+ ativos estáticos)
-5. Pacote de funções (AWS/Google/Azure/Vercel/Cloudflare)
-
-## Metadados gerados
-
-Após o scaffolding, a CLI escreve:
-
-- `.jumentix/service-profile.json`
-
-Campos de exemplo:
-
-- tipo de serviço selecionado
-- sinalizadores de perfil (`interface`, `funções`, `staticAssets`)
-- repositório e branch usado para scaffold
-- carimbo de data/hora de geração
+Até os comandos de fábrica estarem completamente entregues (Issues do épico
+JUM-844…854), o pacote ainda pode expor o caminho legado de clone; o contrato
+normativo é este documento e o Requisito `037` v2.

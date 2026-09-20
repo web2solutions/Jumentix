@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
 import { PassThrough } from 'node:stream';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -21,7 +21,9 @@ import { execFileSync } from 'node:child_process';
  * about cloning uses the real one.
  */
 
-const bootstrap = require('../src/bootstrap');
+require('./ensure-built');
+
+const bootstrap = require('../dist/legacy/bootstrap');
 
 const {
   BOILERPLATE_REPOSITORY,
