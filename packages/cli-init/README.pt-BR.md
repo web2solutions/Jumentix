@@ -91,13 +91,23 @@ o seed de frontend empacotado para `<dir>/apps/frontend`:
 - `--offline` mantém a camada Cana; sem a flag, desativa o boot Cana e remove
   specs Cypress offline
 
-A montagem do workspace raiz (`.jumentix/project.json`, workspaces Bun) fica
-para Issue posterior (C7). E2e de geração em Docker é C12.
+## Montagem do workspace (JUM-849)
+
+Após a geração de backend/frontend, `assembleWorkspace()` escreve a raiz Bun:
+
+- `package.json` raiz com workspaces `apps/*` e scripts `dev|test|lint|build`
+- `.gitignore`, `docker-compose.yml` (db escolhido + Redis quando realtime ≠ none)
+- `README.md` gerado (como rodar, portas, contas seed)
+- `.jumentix/project.json` (versão da CLI, commit do template, mode, plano, timestamps)
+- `.jumentix/manifest.json` (sha256 por arquivo gerado)
+- `jumentix.init.json` (respostas para round-trip com `--config`)
+- `--install` → `bun install` (cria `bun.lock`); `--git` → `git init` + primeiro commit
+- `.jumentix/service-profile.json` é removido se presente (aposentado)
 
 ```bash
 bun ./packages/cli-init/bin/jumentix.js init demo \
   --preset=users --non-interactive --mode=hybrid --frontend --offline \
-  --http=express --db=sqlite
+  --http=express --db=sqlite --install --git
 ```
 
 ## Documentos normativos
@@ -107,10 +117,9 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 ## Entrada atual do pacote
 
-Roteamento de comandos, resolução de fontes, geração de backend e geração de
-frontend estão ativos. A montagem do workspace raiz chega em Issues
-posteriores; até lá `--mode=monolith` sem `--from`/`--preset` ainda cai no
-clone legado do monorepo.
+Roteamento de comandos, resolução de fontes, geração de backend/frontend e
+montagem do workspace raiz estão ativos. `--mode=monolith` sem `--from`/`--preset`
+ainda cai no clone legado do monorepo.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

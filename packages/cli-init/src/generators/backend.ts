@@ -213,8 +213,8 @@ export async function generateBackendService(options: {
 
 /**
  * Generate all (or selected) backend services from a GenerationPlan.
- * Workspace assembly (root package.json / lockfile) is owned by C7 — this
- * only writes `apps/<service>` stubs.
+ * Root workspace assembly (package.json / lockfile / manifests) is owned by
+ * JUM-849 — this only writes `apps/<service>` stubs.
  */
 export async function generateBackend(
   options: GenerateBackendOptions

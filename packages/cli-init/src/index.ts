@@ -35,7 +35,14 @@ export {
   shouldKeepRelativePath,
   buildServicePackageJson,
   domainsForService,
-  renderCompositionRoot
+  renderCompositionRoot,
+  assembleWorkspace,
+  buildRootPackageJson,
+  buildDockerCompose,
+  buildManifestJson,
+  listGeneratedFiles,
+  resolvePrimaryDb,
+  needsRealtimeRedis
 } from './generators';
 export type {
   GenerateBackendOptions,
@@ -44,5 +51,8 @@ export type {
   GenerateFrontendOptions,
   GenerateFrontendResult,
   EnvRenderInput,
-  SlicePlan
+  SlicePlan,
+  AssembleWorkspaceOptions,
+  AssembleWorkspaceResult,
+  WorkspaceAnswers
 } from './generators';

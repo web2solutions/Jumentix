@@ -66,3 +66,19 @@ export {
   sanitizePackageScope,
   sanitizeServiceId
 } from './paths';
+export {
+  assembleWorkspace,
+  buildRootPackageJson,
+  buildGitignore,
+  buildDockerCompose,
+  buildReadme,
+  buildProjectJson,
+  buildManifestJson,
+  listGeneratedFiles,
+  sha256File,
+  resolvePrimaryDb,
+  needsRealtimeRedis,
+  type AssembleWorkspaceOptions,
+  type AssembleWorkspaceResult,
+  type WorkspaceAnswers
+} from './workspace';

@@ -4772,6 +4772,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cli-init/test/workspace-assembly.test.ts",
+      "path": "packages/cli-init/test/workspace-assembly.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
       "path": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
       "layer": "adapters/out+infra",
@@ -5884,9 +5894,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 342,
+    "unit": 343,
     "integration": 102,
     "smoke": 2,
-    "suites": 505
+    "suites": 506
   }
 }

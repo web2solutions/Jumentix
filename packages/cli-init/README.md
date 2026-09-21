@@ -87,13 +87,24 @@ the packaged frontend seed into `<dir>/apps/frontend`:
 - `--offline` keeps the Cana offline layer; without it the generator disables
   Cana boot and drops offline Cypress specs
 
-Root workspace assembly (`.jumentix/project.json`, Bun workspaces) is owned by
-a later Issue (C7). Generation e2e in Docker is C12.
+## Workspace assembly (JUM-849)
+
+After backend/frontend generation, `assembleWorkspace()` writes the Bun root:
+
+- Root `package.json` with workspaces `apps/*` and fan-out scripts
+  `dev|test|lint|build`
+- `.gitignore`, `docker-compose.yml` (chosen db + Redis when realtime ≠ none)
+- Generated `README.md` (how to run, ports, seeded accounts)
+- `.jumentix/project.json` (cli version, template commit, mode, plan, timestamps)
+- `.jumentix/manifest.json` (sha256 per generated file)
+- `jumentix.init.json` (answers for `--config` round-trips)
+- `--install` → `bun install` (creates `bun.lock`); `--git` → `git init` + first commit
+- `.jumentix/service-profile.json` is removed when present (retired)
 
 ```bash
 bun ./packages/cli-init/bin/jumentix.js init demo \
   --preset=users --non-interactive --mode=hybrid --frontend --offline \
-  --http=express --db=sqlite
+  --http=express --db=sqlite --install --git
 ```
 
 ## Normative docs
@@ -103,10 +114,9 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 ## Current package entrypoint
 
-Factory command routing, source resolution, backend service generation, and
-frontend seed generation are live. Root workspace assembly lands in later
-epic Issues; until then `--mode=monolith` without `--from`/`--preset` still
-falls back to the legacy monorepo clone.
+Factory command routing, source resolution, backend/frontend generation, and
+root workspace assembly are live. `--mode=monolith` without `--from`/`--preset`
+still falls back to the legacy monorepo clone.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help
