@@ -123,7 +123,12 @@ if (!fs.existsSync(workflowPath)) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
   }
 
-  const taskGate = JSON.parse(packageContents).scripts?.['ci:gate:task'];
+  const packageScripts = JSON.parse(packageContents).scripts || {};
+  const workspaceBuild = packageScripts['workspace:build:packages'];
+  const taskGate = packageScripts['ci:gate:task'];
+  if (workspaceBuild !== "bun run --filter @jumentix/cana build && bun run --filter './packages/*' build") {
+    failures.push('Workspace package build must build @jumentix/cana before dependent packages');
+  }
   if (taskGate !== 'bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js') {
     failures.push('Task quality gate must build publishable workspace packages before running selected tests');
   }

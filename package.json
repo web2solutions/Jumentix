@@ -25,7 +25,7 @@
     "deps:check-overrides": "bun ci-cd/check-dependency-override-integrity.js",
     "mono:build": "bun run mono:build:deps && bun run --filter '*' build",
     "mono:build:deps": "bun run --filter @jumentix/cana build",
-    "workspace:build:packages": "bun run --filter './packages/*' build",
+    "workspace:build:packages": "bun run --filter @jumentix/cana build && bun run --filter './packages/*' build",
     "mono:test": "bun run workspace:test",
     "mono:lint": "bun run --filter '*' lint",
     "mono:typecheck": "bun run --filter '*' typecheck",
