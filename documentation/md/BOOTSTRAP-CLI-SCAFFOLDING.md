@@ -74,6 +74,12 @@ generated `README.md` (run steps, ports, seeded accounts), `.jumentix/project.js
 `.jumentix/manifest.json` (sha256 per file), and `jumentix.init.json`. Optional
 `--install` runs `bun install`; `--git` runs `git init` and the first commit.
 
+`jumentix add` (JUM-850) extends an existing generated project: `add domain`
+injects a hexagonal module into Core (or a target service) and refreshes
+frontend modules when present; `add service --domains …` creates a new app in
+services/hybrid mode; `add frontend` turns a backend-only tree into hybrid.
+Missing `.jumentix/project.json` exits `1`; manifest drift requires `--force`.
+
 Generated projects must pass their own `lint` / `test` / `build` and boot in
 Docker. Runtime dependencies are published `@jumentix/*` packages pinned to the
 CLI version.
