@@ -209,14 +209,17 @@ jobs:
           # non-required checks (e.g. the code-scanning AI findings job) fail
           # on every PR and would abort the wait; what matters is that the
           # required contexts are green, which is what CLEAN/UNSTABLE mean.
+          # UNKNOWN is GitHub lazily computing mergeability right after PR
+          # creation — it is not an error, so it stays in the retry loop
+          # (first live run aborted on it seconds after opening the PR).
           deadline=$((SECONDS + 3600))
           while :; do
             state="$(gh pr view "$pr_url" --json mergeStateStatus --jq .mergeStateStatus)"
             case "$state" in
               CLEAN|UNSTABLE|HAS_HOOKS) break ;;
-              BLOCKED)
+              BLOCKED|UNKNOWN)
                 if [ "$SECONDS" -gt "$deadline" ]; then
-                  echo "Required checks did not pass within 60m on $pr_url — leaving the PR open for manual handling."
+                  echo "Required checks did not pass within 60m on $pr_url (last state: $state) — leaving the PR open for manual handling."
                   exit 1
                 fi
                 sleep 30
