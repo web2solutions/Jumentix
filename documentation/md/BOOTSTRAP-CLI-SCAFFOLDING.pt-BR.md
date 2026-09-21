@@ -79,6 +79,12 @@ A montagem do workspace (JUM-849) escreve a raiz Bun após a geração:
 `.jumentix/manifest.json` (sha256 por arquivo) e `jumentix.init.json`.
 `--install` roda `bun install`; `--git` faz `git init` e o primeiro commit.
 
+O comando `jumentix add` (JUM-850) estende um projeto já gerado: `add domain`
+injeta um módulo hexagonal no Core (ou serviço alvo) e atualiza o frontend se
+existir; `add service --domains …` cria um novo app em modo services/hybrid;
+`add frontend` transforma um tree só-backend em hybrid. Sem
+`.jumentix/project.json` a saída é `1`; drift do manifesto exige `--force`.
+
 Projetos gerados devem passar no próprio `lint` / `test` / `build` e subir em
 Docker. Dependências de runtime são pacotes `@jumentix/*` publicados, fixados na
 versão da CLI.

@@ -110,6 +110,18 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
   --http=express --db=sqlite --install --git
 ```
 
+## Comandos add (JUM-850)
+
+Execute dentro de um projeto gerado (exige `.jumentix/project.json`):
+
+| Comando | Efeito |
+| --- | --- |
+| `jumentix add domain <name> [--from …] [--service <id>]` | Injeta domínio hexagonal no Core (ou `--service`) e atualiza módulos do frontend se existir |
+| `jumentix add service <name> --domains a,b` | Cria `apps/<name>` em modo services/hybrid e move a posse dos domínios |
+| `jumentix add frontend [--offline]` | Adiciona `apps/frontend` a um projeto só-backend (mode → `hybrid`) |
+
+Drift do manifesto é recusado sem `--force`. Metadados ausentes saem com código `1`.
+
 ## Documentos normativos
 
 - `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
@@ -117,9 +129,9 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 ## Entrada atual do pacote
 
-Roteamento de comandos, resolução de fontes, geração de backend/frontend e
-montagem do workspace raiz estão ativos. `--mode=monolith` sem `--from`/`--preset`
-ainda cai no clone legado do monorepo.
+Roteamento de comandos, resolução de fontes, geração de backend/frontend,
+montagem do workspace raiz e `add domain|service|frontend` estão ativos.
+`--mode=monolith` sem `--from`/`--preset` ainda cai no clone legado do monorepo.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

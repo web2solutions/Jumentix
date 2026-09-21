@@ -69,6 +69,13 @@ export async function main(
         subcommand: parsed.subcommand,
         positional: parsed.positional,
         help: parsed.init.help,
+        flags: {
+          from: parsed.init.from || undefined,
+          domains: parsed.init.domains || undefined,
+          service: parsed.init.service || undefined,
+          force: parsed.init.force,
+          offline: parsed.init.offline
+        },
         log
       });
     }

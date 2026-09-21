@@ -25,8 +25,11 @@ export {
 export {
   slugifyIdentifier,
   camelCaseName,
+  pascalCaseName,
   writeDomainModule,
   writeModulesIndex,
+  patchI18nTitles,
+  patchRouterHome,
   type GeneratedModuleResult,
   type GeneratedEntityConfig
 } from './frontendModules';

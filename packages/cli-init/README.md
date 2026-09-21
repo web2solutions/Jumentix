@@ -107,6 +107,18 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
   --http=express --db=sqlite --install --git
 ```
 
+## Add commands (JUM-850)
+
+Run inside a generated project (requires `.jumentix/project.json`):
+
+| Command | Effect |
+| --- | --- |
+| `jumentix add domain <name> [--from …] [--service <id>]` | Inject hexagonal domain into Core (or `--service`) and refresh frontend modules when present |
+| `jumentix add service <name> --domains a,b` | Create `apps/<name>` in services/hybrid mode and move domain ownership |
+| `jumentix add frontend [--offline]` | Add `apps/frontend` to a backend-only project (mode → `hybrid`) |
+
+Manifest drift is refused unless `--force`. Missing project metadata exits `1` with a clear message.
+
 ## Normative docs
 
 - `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
@@ -114,9 +126,9 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 ## Current package entrypoint
 
-Factory command routing, source resolution, backend/frontend generation, and
-root workspace assembly are live. `--mode=monolith` without `--from`/`--preset`
-still falls back to the legacy monorepo clone.
+Factory command routing, source resolution, backend/frontend generation, root
+workspace assembly, and `add domain|service|frontend` are live. `--mode=monolith`
+without `--from`/`--preset` still falls back to the legacy monorepo clone.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

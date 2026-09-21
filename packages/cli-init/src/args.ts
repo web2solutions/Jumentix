@@ -18,6 +18,12 @@ export type InitFlags = GlobalFlags & {
   git: boolean;
   install: boolean;
   projectName: string;
+  /** add service --domains=a,b */
+  domains: string;
+  /** add domain --service=<id> */
+  service: string;
+  /** add --force (overwrite when manifest drifted) */
+  force: boolean;
   // legacy
   serviceType: string;
   gitBranch: string;
@@ -70,6 +76,9 @@ export function parseArgv(argv: string[]): ParsedCli {
     git: false,
     install: false,
     projectName: '',
+    domains: '',
+    service: '',
+    force: false,
     serviceType: '',
     gitBranch: '',
     repository: '',
@@ -139,6 +148,28 @@ export function parseArgv(argv: string[]): ParsedCli {
     }
     if (raw === '--install') {
       init.install = true;
+      continue;
+    }
+    if (raw === '--force') {
+      init.force = true;
+      continue;
+    }
+    if (raw.startsWith('--domains=')) {
+      init.domains = takeValue(raw, '--domains=');
+      continue;
+    }
+    if (raw === '--domains') {
+      init.domains = argv[index + 1] || '';
+      index += 1;
+      continue;
+    }
+    if (raw.startsWith('--service=')) {
+      init.service = takeValue(raw, '--service=');
+      continue;
+    }
+    if (raw === '--service') {
+      init.service = argv[index + 1] || '';
+      index += 1;
       continue;
     }
     if (raw.startsWith('--config=')) {
