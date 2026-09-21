@@ -104,8 +104,8 @@ describe('public npm package release policy', () => {
       mainOnly: workflow.includes('github.ref == \'refs/heads/main\''),
       protected: workflow.includes('environment: npm-publish'),
       artifactGate: workflow.includes('bun run npm:packages:check'),
-      tokenMapping: /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_JUMENTIX_CI_CD \}\}/.test(workflow),
-      tokenEcho: /echo\s+.*NPM_JUMENTIX_CI_CD/.test(workflow),
+      tokenMapping: /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_CI_CD \}\}/.test(workflow),
+      tokenEcho: /echo\s+.*NPM_CI_CD/.test(workflow),
       publishesCli: workflow.includes('publish cli-init'),
       publishesRuntime: workflow.includes('publish persistence-contracts'),
       publishesSdks: workflow.includes('publish sdk-rest-client')
