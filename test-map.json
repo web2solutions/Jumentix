@@ -4752,6 +4752,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cli-init/test/doctor.test.ts",
+      "path": "packages/cli-init/test/doctor.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cli-init/test/frontend-generation.test.ts",
       "path": "packages/cli-init/test/frontend-generation.test.ts",
       "layer": "tooling",

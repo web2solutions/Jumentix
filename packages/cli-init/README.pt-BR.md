@@ -138,6 +138,18 @@ templates atual sobre o projeto gerado, usando hashes de
 `--dry-run` imprime o relatório sem gravar. Árvore git suja exige `--force`.
 Ao aplicar, grava `.jumentix/upgrade-<version>.md`.
 
+## Doctor (JUM-852)
+
+`jumentix doctor` reporta saúde do ambiente e do projeto:
+
+| Área | Verificações |
+| --- | --- |
+| environment | versão do bun (obrigatório), node ≥20 se presente, docker |
+| project | `.jumentix/project.json` + mode, versão do template vs CLI, diretórios `apps/*` esperados, drift do manifesto |
+
+Saída `0` quando saudável, `1` para blockers de projeto, `2` para blockers de
+ambiente (por exemplo bun ausente).
+
 ## Documentos normativos
 
 - `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
@@ -146,9 +158,9 @@ Ao aplicar, grava `.jumentix/upgrade-<version>.md`.
 ## Entrada atual do pacote
 
 Roteamento de comandos, resolução de fontes, geração de backend/frontend,
-montagem do workspace raiz, `add domain|service|frontend` e `upgrade` (merge
-de três vias) estão ativos. `--mode=monolith` sem `--from`/`--preset` ainda
-cai no clone legado do monorepo.
+montagem do workspace raiz, `add domain|service|frontend`, `upgrade` (merge
+de três vias) e `doctor` estão ativos. `--mode=monolith` sem `--from`/`--preset`
+ainda cai no clone legado do monorepo.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

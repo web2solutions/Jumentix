@@ -135,6 +135,18 @@ baseline blobs under `.jumentix/objects/<sha256>`:
 `--dry-run` prints the report without writing. Dirty git trees require `--force`.
 A markdown report is written to `.jumentix/upgrade-<version>.md` when applied.
 
+## Doctor (JUM-852)
+
+`jumentix doctor` reports environment and project health:
+
+| Area | Checks |
+| --- | --- |
+| environment | bun version (required), node ≥20 when present, docker availability |
+| project | `.jumentix/project.json` + mode, template version vs CLI templates, expected `apps/*` directories, manifest drift |
+
+Exit `0` when healthy, `1` for project blockers, `2` for environment blockers
+(for example missing bun).
+
 ## Normative docs
 
 - `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
@@ -143,9 +155,9 @@ A markdown report is written to `.jumentix/upgrade-<version>.md` when applied.
 ## Current package entrypoint
 
 Factory command routing, source resolution, backend/frontend generation, root
-workspace assembly, `add domain|service|frontend`, and `upgrade` (three-way
-merge) are live. `--mode=monolith` without `--from`/`--preset` still falls back
-to the legacy monorepo clone.
+workspace assembly, `add domain|service|frontend`, `upgrade` (three-way merge),
+and `doctor` diagnostics are live. `--mode=monolith` without `--from`/`--preset`
+still falls back to the legacy monorepo clone.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

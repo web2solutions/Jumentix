@@ -85,6 +85,12 @@ Missing `.jumentix/project.json` exits `1`; manifest drift requires `--force`.
 Unchanged files are replaced; overlapping edits become conflict markers;
 `--dry-run` reports without writing; dirty git requires `--force`.
 
+`jumentix doctor` (JUM-852) prints environment and project diagnostics: bun
+version, node (when present), docker availability, `.jumentix/project.json`
+presence/mode, manifest drift, missing `apps/*` directories from the plan, and
+template version mismatch vs packaged `templates.manifest.json`. Exit `0` when
+healthy, `1` for project blockers, `2` for environment blockers.
+
 Generated projects must pass their own `lint` / `test` / `build` and boot in
 Docker. Runtime dependencies are published `@jumentix/*` packages pinned to the
 CLI version.

@@ -91,6 +91,13 @@ templates usando hashes de `.jumentix/manifest.json` e baselines em
 sobrepostas geram marcadores de conflito; `--dry-run` só reporta; git sujo
 exige `--force`.
 
+O comando `jumentix doctor` (JUM-852) imprime diagnósticos de ambiente e do
+projeto: versão do bun, node (se presente), disponibilidade do docker,
+presença/mode de `.jumentix/project.json`, drift do manifesto, apps ausentes
+conforme o plano, e mismatch de versão de template vs `templates.manifest.json`.
+Saída `0` quando saudável, `1` para blockers de projeto, `2` para blockers de
+ambiente.
+
 Projetos gerados devem passar no próprio `lint` / `test` / `build` e subir em
 Docker. Dependências de runtime são pacotes `@jumentix/*` publicados, fixados na
 versão da CLI.
