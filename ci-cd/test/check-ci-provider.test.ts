@@ -324,12 +324,15 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('secrets\\.SONARCLOUD_TOKEN');
   });
 
-  it('fails when the coverage job cannot access the environment-scoped secrets', () => {
+  it('fails when no job can access the environment-scoped secrets', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('environment: env vars\n', ''));
+      // Every binding: sync-changelog also reads the "env vars" environment
+      // (CHANGELOG_GH_TOKEN), so stripping only the first occurrence would
+      // leave the check green and make this assertion vacuous.
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/environment: env vars\n/g, ''));
     });
     expect(run(directory).output).toContain('environment:\\s*env vars');
   });
