@@ -297,15 +297,6 @@ if (!fs.existsSync(preCommitPath)) {
   }
 }
 
-if (!fs.existsSync(preCommitPath)) {
-  failures.push('Missing required local hook: .husky/pre-commit');
-} else {
-  const contents = fs.readFileSync(preCommitPath, 'utf8');
-  if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns dev synchronization.');
-  }
-}
-
 if (fs.existsSync(circleciPath)) {
   const contents = fs.readFileSync(circleciPath, 'utf8');
   const requiredMarkers = [
