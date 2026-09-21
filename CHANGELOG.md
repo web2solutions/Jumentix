@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-21 ci(JUM-841): verify npm org access before publishing (#407) - Eduardo A.
+- 2026-09-21 chore: synchronize changelog (#404) - Eduardo A.
 - 2026-09-21 [JUM-862][CI] Treat UNKNOWN merge state as retryable in the changelog sync poll (#401) - Eduardo A.
 - 2026-09-21 chore: synchronize changelog (#402) - Eduardo A.
 - 2026-09-21 [JUM-870][Fix] Restore npm pack gate and map NPM_CI_CD (#398) - Eduardo A.
