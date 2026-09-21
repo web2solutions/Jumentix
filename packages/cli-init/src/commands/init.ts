@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { writeInitConfig, type InitConfig } from '../config';
 import { mapLegacyServiceTypeToMode, type InitFlags } from '../args';
-import { generateBackend } from '../generators';
+import { generateBackend, generateFrontend } from '../generators';
 import { run as runLegacyBootstrap } from '../legacy/bootstrap';
 import {
   printPlanSummary,
@@ -32,8 +32,9 @@ Options:
 
 Source resolution (JUM-846) normalizes --from / --preset into a GenerationPlan.
 Backend generation (JUM-847) writes apps/<service> slices under the target
-directory (workspace assembly lands in C7). Legacy --service-type still clones
-the monorepo.
+directory. Frontend generation (JUM-848) writes apps/frontend for hybrid /
+frontend modes (workspace assembly lands in C7). Legacy --service-type still
+clones the monorepo.
 `);
 }
 
@@ -151,6 +152,22 @@ export async function runInit(options: {
         }
       } else {
         log('Skipping backend generation for mode=frontend.');
+      }
+
+      if (plan.frontend || plan.mode === 'hybrid' || plan.mode === 'frontend') {
+        const frontend = await generateFrontend({
+          plan,
+          outputDir: targetDir,
+          projectName: path.basename(targetDir),
+          log
+        });
+        log(
+          `Frontend generation wrote ${frontend.packageName} at ${frontend.root} `
+          + `(modules=${frontend.modules.map((mod) => mod.moduleId).join(', ') || '(none)'}, `
+          + `offline=${frontend.offline ? 'yes' : 'no'}).`
+        );
+      } else {
+        log('Skipping frontend generation (no --frontend / hybrid|frontend mode).');
       }
 
       log(

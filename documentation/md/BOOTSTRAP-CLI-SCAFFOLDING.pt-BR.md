@@ -64,8 +64,15 @@ partir do seed empacotado: pacote renomeado `@<project>/<service>`, `.env.dev`
 a partir das interfaces/db do plano, suites de integração / compose files de
 db não usados removidos, Users + auth mantidos no core, e domínios do designer
 injetados via `buildHexagonalBundle` em `src/modules/<Domain>/…` com registro
-em `compositionRoot.ts`. A montagem do workspace raiz permanece em Issue
-posterior (C7).
+em `compositionRoot.ts`.
+
+A geração de frontend (JUM-848) escreve `apps/frontend` nos modos
+hybrid/frontend: cópia do seed empacotado, OAS mesclado em
+`src/contracts/openapi.json`, um módulo por domínio (configs a partir dos
+operation ids e `x-list-capabilities`), `.env` com URLs do Core/serviços, e
+camada Cana opcional via `--offline`.
+
+A montagem do workspace raiz permanece em Issue posterior (C7).
 
 Projetos gerados devem passar no próprio `lint` / `test` / `build` e subir em
 Docker. Dependências de runtime são pacotes `@jumentix/*` publicados, fixados na

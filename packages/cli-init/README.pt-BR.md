@@ -76,12 +76,28 @@ para `<dir>/apps/<service>` por serviço:
   `src/modules/compositionRoot.ts`
 - Grava o OAS filtrado por serviço em `spec/1.0.0.yml`
 
+## Geração de frontend (JUM-848)
+
+Para modos `hybrid` / `frontend` (ou `--frontend`), `generateFrontend()` copia
+o seed de frontend empacotado para `<dir>/apps/frontend`:
+
+- Renomeia o pacote para `@<project>/frontend` e fixa deps `@jumentix/*`
+- Grava o OAS mesclado em `src/contracts/openapi.json` (mantém o contrato do
+  seed quando o OAS do plano não tem paths)
+- Gera um módulo por domínio: configs X-CRUD (operations a partir dos
+  operation ids do OAS, `searchFields` de `x-list-capabilities`), views,
+  dashboard, títulos de nav/i18n e redirect inicial do router
+- Escreve `.env` com URLs do Core/serviços (`VITE_API_BASE_URL`, proxies)
+- `--offline` mantém a camada Cana; sem a flag, desativa o boot Cana e remove
+  specs Cypress offline
+
 A montagem do workspace raiz (`.jumentix/project.json`, workspaces Bun) fica
 para Issue posterior (C7). E2e de geração em Docker é C12.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix.js init demo \
-  --preset=users --non-interactive --mode=monolith --http=express --db=sqlite
+  --preset=users --non-interactive --mode=hybrid --frontend --offline \
+  --http=express --db=sqlite
 ```
 
 ## Documentos normativos
@@ -91,10 +107,10 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 ## Entrada atual do pacote
 
-Roteamento de comandos, resolução de fontes e geração de serviços backend
-estão ativos. A montagem do workspace raiz chega em Issues posteriores; até
-lá `--mode=monolith` sem `--from`/`--preset` ainda cai no clone legado do
-monorepo.
+Roteamento de comandos, resolução de fontes, geração de backend e geração de
+frontend estão ativos. A montagem do workspace raiz chega em Issues
+posteriores; até lá `--mode=monolith` sem `--from`/`--preset` ainda cai no
+clone legado do monorepo.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

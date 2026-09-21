@@ -72,12 +72,28 @@ into `<dir>/apps/<service>` per service:
   `src/modules/compositionRoot.ts`
 - Writes the filtered per-service OAS under `spec/1.0.0.yml`
 
+## Frontend generation (JUM-848)
+
+For `hybrid` / `frontend` modes (or `--frontend`), `generateFrontend()` copies
+the packaged frontend seed into `<dir>/apps/frontend`:
+
+- Renames the package to `@<project>/frontend` and pins `@jumentix/*` deps
+- Bakes the merged OAS into `src/contracts/openapi.json` (keeps the seed
+  contract when the plan OAS has no paths)
+- Generates one module per domain: entity CRUD configs (operations from OAS
+  operation ids, `searchFields` from `x-list-capabilities`), views, dashboard
+  registration, nav/i18n titles, and router home redirect
+- Writes `.env` with Core/service URLs (`VITE_API_BASE_URL`, proxy targets)
+- `--offline` keeps the Cana offline layer; without it the generator disables
+  Cana boot and drops offline Cypress specs
+
 Root workspace assembly (`.jumentix/project.json`, Bun workspaces) is owned by
 a later Issue (C7). Generation e2e in Docker is C12.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix.js init demo \
-  --preset=users --non-interactive --mode=monolith --http=express --db=sqlite
+  --preset=users --non-interactive --mode=hybrid --frontend --offline \
+  --http=express --db=sqlite
 ```
 
 ## Normative docs
@@ -87,10 +103,10 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 ## Current package entrypoint
 
-Factory command routing, source resolution, and backend service generation are
-live. Root workspace assembly lands in later epic Issues; until then
-`--mode=monolith` without `--from`/`--preset` still falls back to the legacy
-monorepo clone.
+Factory command routing, source resolution, backend service generation, and
+frontend seed generation are live. Root workspace assembly lands in later
+epic Issues; until then `--mode=monolith` without `--from`/`--preset` still
+falls back to the legacy monorepo clone.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

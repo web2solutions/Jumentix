@@ -17,6 +17,21 @@ export function resolveBackendTemplateRoot(packageRoot?: string): string {
 }
 
 /**
+ * Resolve the packaged frontend template root
+ * (`packages/cli-init/templates/frontend`).
+ */
+export function resolveFrontendTemplateRoot(packageRoot?: string): string {
+  const root = packageRoot || path.resolve(__dirname, '..', '..');
+  const templateRoot = path.join(root, 'templates', 'frontend');
+  if (!fs.existsSync(templateRoot)) {
+    throw new Error(
+      `Frontend template not found at ${templateRoot}. Run bun run cli:build-templates.`
+    );
+  }
+  return templateRoot;
+}
+
+/**
  * Collapse uncontrolled input into a safe npm name segment without
  * quantified character-class regex (avoids ReDoS on long '-' runs).
  */
