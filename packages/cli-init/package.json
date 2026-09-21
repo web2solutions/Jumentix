@@ -13,7 +13,8 @@
   "files": [
     "bin",
     "dist",
-    "templates"
+    "templates",
+    "fixtures"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -23,5 +24,9 @@
     "test": "bun test --isolate ./test",
     "lint": "echo \"cli-init: lint managed by root workspace\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@jumentix/designer-core": "workspace:*",
+    "yaml": "^2.5.1"
   }
 }
