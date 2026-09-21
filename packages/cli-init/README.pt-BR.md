@@ -6,6 +6,17 @@ Idioma alvo: Português (Brasil)
 
 CLI geradora de fábrica do Jumentix (Requisito `037` v2).
 
+## Política de versão
+
+- A versão do pacote da CLI acompanha o cohort de templates da fábrica que ela gera.
+- Projetos gerados fixam versões publicadas de `@jumentix/*` (não `workspace:*`).
+- Pacotes de biblioteca continuam usando `bumpPackage` / conventional commits do repositório para semver.
+- Publique pelo workflow protegido `npm-publish` do GitHub Actions em `main` depois que `bun run npm:packages:check` e `bun run release:dry-run:packages` estiverem verdes. Veja `documentation/md/NPM-PACKAGE-PUBLISHING.pt-BR.md`.
+
+```bash
+npx @jumentix/cli-init init
+```
+
 ## Comandos (alvo)
 
 - `jumentix init` — workspace enxuto por modo de fábrica

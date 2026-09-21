@@ -13,13 +13,45 @@ const PUBLIC_PACKAGE_NAMES = [
   '@jumentix/cana',
   '@jumentix/cana-react',
   '@jumentix/cana-vue',
-  '@jumentix/designer-core'
+  '@jumentix/designer-core',
+  '@jumentix/persistence-contracts',
+  '@jumentix/shared-contracts',
+  '@jumentix/external-persistence-core',
+  '@jumentix/external-store-proxy',
+  '@jumentix/external-db-repositories',
+  '@jumentix/key-value-storage',
+  '@jumentix/database-client-factory',
+  '@jumentix/message-mediator',
+  '@jumentix/mutex-service',
+  '@jumentix/dead-letter-queue',
+  '@jumentix/runtime-infra',
+  '@jumentix/adapter-runtime-bootstrap',
+  '@jumentix/sdk-grpc-client',
+  '@jumentix/sdk-rest-client',
+  '@jumentix/sdk-websocket-client',
+  '@jumentix/cli-init'
 ];
 const SMOKE_IMPORTS = {
   '@jumentix/cana': ['@jumentix/cana'],
   '@jumentix/cana-react': ['@jumentix/cana-react', '@jumentix/cana-react/redux'],
   '@jumentix/cana-vue': ['@jumentix/cana-vue'],
-  '@jumentix/designer-core': ['@jumentix/designer-core']
+  '@jumentix/designer-core': ['@jumentix/designer-core'],
+  '@jumentix/persistence-contracts': ['@jumentix/persistence-contracts'],
+  '@jumentix/shared-contracts': ['@jumentix/shared-contracts'],
+  '@jumentix/external-persistence-core': ['@jumentix/external-persistence-core'],
+  '@jumentix/external-store-proxy': ['@jumentix/external-store-proxy'],
+  '@jumentix/external-db-repositories': ['@jumentix/external-db-repositories'],
+  '@jumentix/key-value-storage': ['@jumentix/key-value-storage'],
+  '@jumentix/database-client-factory': ['@jumentix/database-client-factory'],
+  '@jumentix/message-mediator': ['@jumentix/message-mediator'],
+  '@jumentix/mutex-service': ['@jumentix/mutex-service'],
+  '@jumentix/dead-letter-queue': ['@jumentix/dead-letter-queue'],
+  '@jumentix/runtime-infra': ['@jumentix/runtime-infra'],
+  '@jumentix/adapter-runtime-bootstrap': ['@jumentix/adapter-runtime-bootstrap'],
+  '@jumentix/sdk-grpc-client': ['@jumentix/sdk-grpc-client'],
+  '@jumentix/sdk-rest-client': ['@jumentix/sdk-rest-client'],
+  '@jumentix/sdk-websocket-client': ['@jumentix/sdk-websocket-client'],
+  '@jumentix/cli-init': ['@jumentix/cli-init']
 };
 
 function run(command, args, cwd, options = {}) {
