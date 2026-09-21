@@ -5,6 +5,7 @@ const feedbackChecker = require('../check-pr-feedback') as {
   githubGraphql: (
     token: string, query: string, variables: Record<string, unknown>, fetchFn: typeof fetch
   ) => Promise<unknown>;
+  isAutomatedStatusDecoration: (comment: unknown) => boolean;
   isCursorUsageLimitNotice: (comment: unknown) => boolean;
   parseResolutionMarker: (body: string) => unknown;
   run: (options: {
@@ -144,6 +145,21 @@ describe('check-pr-feedback', () => {
     }))).not.toThrow();
     expect(feedbackChecker.isCursorUsageLimitNotice({ ...cursorNotice, author: { login: 'another-bot' } })).toBe(false);
     expect(feedbackChecker.isCursorUsageLimitNotice({ ...cursorNotice, body: 'Please rename this method.' })).toBe(false);
+  });
+
+  it('exempts SonarCloud quality-gate decorations, which carry no human feedback', () => {
+    expect.hasAssertions();
+
+    const sonarDecoration = makeComment({
+      author: { login: 'sonarqubecloud' },
+      body: '## [![Quality Gate Passed](https://example/qg-passed.png)] **Quality Gate Passed**'
+    });
+    expect(feedbackChecker.isAutomatedStatusDecoration(sonarDecoration)).toBe(true);
+    expect(() => feedbackChecker.validatePullRequestFeedback(makeFeedback({
+      comments: [sonarDecoration]
+    }))).not.toThrow();
+    expect(feedbackChecker.isAutomatedStatusDecoration({ ...sonarDecoration, author: { login: 'another-bot' } })).toBe(false);
+    expect(feedbackChecker.isAutomatedStatusDecoration({ ...sonarDecoration, body: 'Please extract this function.' })).toBe(false);
   });
 
   it('paginates GitHub connections and fails closed on malformed pages', async () => {
