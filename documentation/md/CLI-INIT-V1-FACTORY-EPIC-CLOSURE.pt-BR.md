@@ -10,9 +10,9 @@ Este é o registro de documentação / fechamento do épico do Project Linear
 É a evidência terminal de governança sob o
 [Requisito 094](../../.agents/requirements/project/094-epic-documentation-completion-gate.md).
 
-Ele nomeia a cadeia completa de Issues, registra evidência de PR e commit de
-merge quando conhecida, e mantém linhas-placeholder para links que ainda não
-entraram em `dev`. O comportamento do produto da CLI factory é propriedade de
+Ele nomeia a cadeia completa de Issues e registra evidência de PR e commit de
+merge para cada entrega C1–C14 em `dev`. O comportamento do produto da CLI
+factory é propriedade de
 [Geradora de fábrica CLI (`@jumentix/cli-init`)](./BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md)
 e da
 [Matriz de capacidades da Service Factory](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md);
@@ -65,8 +65,8 @@ C14 é este registro de fechamento e fecha por último.
 
 ## Rastreabilidade: URL do PR + SHA do commit de merge
 
-Preencha cada linha quando o PR da Issue entrar em `dev`. Linhas marcadas
-como **pending** não são reivindicadas como mescladas aqui.
+Todos os PRs de entrega C1–C14 entraram em `dev`. Os SHAs abaixo são os
+commits de merge do GitHub (comando: `gh api repos/web2solutions/Jumentix/pulls/<n> --jq .merge_commit_sha`).
 
 | Elo | Issue | URL do PR | SHA do commit de merge |
 | --- | --- | --- | --- |
@@ -74,16 +74,22 @@ como **pending** não são reivindicadas como mescladas aqui.
 | C2 | JUM-844 | https://github.com/web2solutions/Jumentix/pull/373 | `9e1137a63a5e76feb7fd2a58124384d539217f34` |
 | C3 | JUM-845 | https://github.com/web2solutions/Jumentix/pull/377 | `518645c302f434dbf94789180c24421231b7c893` |
 | C4 | JUM-846 | https://github.com/web2solutions/Jumentix/pull/384 | `cdc0c846b76e8843de7eee5555a031d8b99be8f1` |
-| C5 | JUM-847 | _pending_ | _pending_ |
-| C6 | JUM-848 | _pending_ | _pending_ |
-| C7 | JUM-849 | _pending_ | _pending_ |
-| C8 | JUM-850 | _pending_ | _pending_ |
-| C9 | JUM-851 | _pending_ | _pending_ |
-| C10 | JUM-852 | _pending_ | _pending_ |
+| C5 | JUM-847 | https://github.com/web2solutions/Jumentix/pull/386 | `5987d41574cdcb944bb4581f7627bb2ed11f3e49` |
+| C6 | JUM-848 | https://github.com/web2solutions/Jumentix/pull/387 | `9e37ad64bd034e4b710c197d22be62f0ef007d8e` |
+| C7 | JUM-849 | https://github.com/web2solutions/Jumentix/pull/388 | `0d236b8f8079d514889c8ac9bd3ce61ad01bfbed` |
+| C8 | JUM-850 | https://github.com/web2solutions/Jumentix/pull/389 | `1aa69de89420893b10a138e87610ce2bb034c287` |
+| C9 | JUM-851 | https://github.com/web2solutions/Jumentix/pull/390 | `78bc4a8f92cf50052b3b727cb8bae8e1ab552133` |
+| C10 | JUM-852 | https://github.com/web2solutions/Jumentix/pull/391 | `40bb147de7aa43b11eb5d8af2b690b81c29610fc` |
 | C11 | JUM-853 | https://github.com/web2solutions/Jumentix/pull/379 | `d4d4f19c6124c3ad0d8b7eef16fc6914112630f0` |
-| C12 | JUM-854 | _pending_ | _pending_ |
-| C13 | JUM-855 | _pending_ | _pending_ |
-| C14 | JUM-856 | _pending_ (este PR) | _pending_ |
+| C12 | JUM-854 | https://github.com/web2solutions/Jumentix/pull/392 | `3e87a876b01e7bd0f963ea1f5aac00b92569c031` |
+| C13 | JUM-855 | https://github.com/web2solutions/Jumentix/pull/394 | `a963054cd641652ee85330fde7309ff398256a79` |
+| C14 | JUM-856 | https://github.com/web2solutions/Jumentix/pull/395 | `aa590173d47d2153a6a93e672cbaad7db9e1ffb5` |
+
+**Publicabilidade vs npm ao vivo (Req 130).** JUM-853 tornou os pacotes
+publicáveis e passou `bun run npm:packages:check` / `bun run release:dry-run:packages`.
+A publicação ao vivo `0.1.0-rc.1` e o `npm view` **não** foram executados:
+faltava `NPM_TOKEN` no ambiente de entrega. Não trate presença no registry
+como concluída.
 
 ## Fontes governadas relacionadas
 
