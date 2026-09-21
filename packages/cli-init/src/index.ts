@@ -21,3 +21,21 @@ export type {
   PlanEntity,
   SourceResolveOptions
 } from './sources';
+export {
+  generateBackend,
+  generateBackendService,
+  renderEnvDev,
+  mapDbChoiceToDriver,
+  computeUnusedPaths,
+  shouldKeepRelativePath,
+  buildServicePackageJson,
+  domainsForService,
+  renderCompositionRoot
+} from './generators';
+export type {
+  GenerateBackendOptions,
+  GenerateBackendResult,
+  GeneratedServiceResult,
+  EnvRenderInput,
+  SlicePlan
+} from './generators';

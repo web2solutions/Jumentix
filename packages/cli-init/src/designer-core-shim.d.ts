@@ -23,4 +23,32 @@ declare module '@jumentix/designer-core' {
     state?: unknown;
     reason?: string;
   };
+  export function buildHexagonalBundle(
+    state: unknown,
+    contracts?: {
+      oasDocument?: Record<string, unknown>;
+      asyncApiDocument?: Record<string, unknown>;
+    }
+  ): {
+    modules: Array<{
+      module: string;
+      path: string;
+      files: Record<string, { path: string; content: string } | undefined>;
+      entities: Array<{
+        entity: string;
+        files: Record<string, { path: string; content: string }>;
+      }>;
+    }>;
+  };
+  export function flattenBundleFiles(bundle: {
+    modules: Array<{
+      module: string;
+      path: string;
+      files: Record<string, { path: string; content: string } | undefined>;
+      entities: Array<{
+        entity: string;
+        files: Record<string, { path: string; content: string }>;
+      }>;
+    }>;
+  }): Array<{ path: string; content: string }>;
 }

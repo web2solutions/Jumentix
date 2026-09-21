@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
 import fs from 'node:fs';
 import http from 'node:http';
+import os from 'node:os';
 import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import type { AddressInfo } from 'node:net';
@@ -238,23 +239,30 @@ describe('source resolution — validation (JUM-846)', () => {
 describe('init CLI wires source resolution (JUM-846)', () => {
   it('init --preset users --non-interactive prints GenerationPlan summary', async () => {
     expect.hasAssertions();
-    const messages: string[] = [];
-    const code = await main(
-      [
-        'init',
-        '--non-interactive',
-        '--preset=users',
-        '--mode=services',
-        '--project-name=plan-only'
-      ],
-      (message = '') => {
-        messages.push(message);
-      }
-    );
-    expect(code).toBe(0);
-    const text = messages.join('\n');
-    expect(text).toContain('GenerationPlan resolved:');
-    expect(text).toContain('mode:');
+    const out = fs.mkdtempSync(path.join(os.tmpdir(), 'cli-init-plan-'));
+    const project = path.join(out, 'plan-only');
+    try {
+      const messages: string[] = [];
+      const code = await main(
+        [
+          'init',
+          '--non-interactive',
+          '--preset=users',
+          '--mode=services',
+          `--project-name=${project}`
+        ],
+        (message = '') => {
+          messages.push(message);
+        }
+      );
+      expect(code).toBe(0);
+      const text = messages.join('\n');
+      expect(text).toContain('GenerationPlan resolved:');
+      expect(text).toContain('mode:');
+      expect(text).toContain('Backend generation wrote');
+    } finally {
+      fs.rmSync(out, { recursive: true, force: true });
+    }
   });
 
   it('init --from invalid fixture exits 1 with named message', async () => {

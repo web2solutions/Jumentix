@@ -59,6 +59,14 @@ Todo workspace gerado inclui:
 
 `.jumentix/service-profile.json` é aposentado.
 
+A geração de backend (JUM-847) escreve slices enxutos em `apps/<service>` a
+partir do seed empacotado: pacote renomeado `@<project>/<service>`, `.env.dev`
+a partir das interfaces/db do plano, suites de integração / compose files de
+db não usados removidos, Users + auth mantidos no core, e domínios do designer
+injetados via `buildHexagonalBundle` em `src/modules/<Domain>/…` com registro
+em `compositionRoot.ts`. A montagem do workspace raiz permanece em Issue
+posterior (C7).
+
 Projetos gerados devem passar no próprio `lint` / `test` / `build` e subir em
 Docker. Dependências de runtime são pacotes `@jumentix/*` publicados, fixados na
 versão da CLI.

@@ -56,12 +56,28 @@ monolith mode; unsupported http/realtime interface; duplicate entity names
 across domains.
 
 The Users preset OAS ships under `fixtures/users-oas.yml` (or
-`templates/backend/spec/1.0.0.yml` when packaged). Writing
-`.jumentix/project.json` is deferred to a later Issue; `resolveSources()` is
-exported from the package for generation to consume.
+`templates/backend/spec/1.0.0.yml` when packaged).
+
+## Backend generation (JUM-847)
+
+After a plan resolves, `generateBackend()` copies the packaged backend seed
+into `<dir>/apps/<service>` per service:
+
+- Renames the package to `@<project>/<service>` and pins `@jumentix/*` deps
+- Writes `.env.dev` from plan `http` / `realtime` / `db`
+- Drops unused HTTP integration suites and unused db compose files (runtime
+  adapters under `src/` stay intact)
+- Keeps Users + auth on every core slice; injects other designer domains via
+  `buildHexagonalBundle` into `src/modules/<Domain>/…` and registers them in
+  `src/modules/compositionRoot.ts`
+- Writes the filtered per-service OAS under `spec/1.0.0.yml`
+
+Root workspace assembly (`.jumentix/project.json`, Bun workspaces) is owned by
+a later Issue (C7). Generation e2e in Docker is C12.
 
 ```bash
-bun ./packages/cli-init/bin/jumentix.js init --preset=users --non-interactive --mode=services --project-name=demo
+bun ./packages/cli-init/bin/jumentix.js init demo \
+  --preset=users --non-interactive --mode=monolith --http=express --db=sqlite
 ```
 
 ## Normative docs
@@ -71,9 +87,10 @@ bun ./packages/cli-init/bin/jumentix.js init --preset=users --non-interactive --
 
 ## Current package entrypoint
 
-Factory command routing and source resolution are live. Workspace file
-generation lands in later epic Issues; until then `--mode=monolith` without
-`--from`/`--preset` still falls back to the legacy monorepo clone.
+Factory command routing, source resolution, and backend service generation are
+live. Root workspace assembly lands in later epic Issues; until then
+`--mode=monolith` without `--from`/`--preset` still falls back to the legacy
+monorepo clone.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

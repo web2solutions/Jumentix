@@ -1,7 +1,10 @@
 /* eslint-disable no-console */
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { writeInitConfig, type InitConfig } from '../config';
 import { mapLegacyServiceTypeToMode, type InitFlags } from '../args';
+import { generateBackend } from '../generators';
 import { run as runLegacyBootstrap } from '../legacy/bootstrap';
 import {
   printPlanSummary,
@@ -27,9 +30,10 @@ Options:
   --non-interactive
   --help
 
-Source resolution (JUM-846) normalizes --from / --preset into a GenerationPlan
-and prints a summary. Writing .jumentix/project.json and file generation land
-in later Issues. Legacy --service-type still clones the monorepo.
+Source resolution (JUM-846) normalizes --from / --preset into a GenerationPlan.
+Backend generation (JUM-847) writes apps/<service> slices under the target
+directory (workspace assembly lands in C7). Legacy --service-type still clones
+the monorepo.
 `);
 }
 
@@ -119,9 +123,38 @@ export async function runInit(options: {
         offline: flags.offline
       });
       printPlanSummary(plan, log);
+
+      const projectName = flags.dir || flags.projectName || 'jumentix-app';
+      const outputDir = path.isAbsolute(projectName)
+        ? projectName
+        : path.resolve(workingDirectory, projectName);
+
+      // When no target dir was given, generate into a temp stub so the plan is
+      // still exercised (C7 owns full workspace assembly).
+      const targetDir = (flags.dir || flags.projectName)
+        ? outputDir
+        : fs.mkdtempSync(path.join(os.tmpdir(), 'jumentix-init-'));
+
+      if (plan.mode !== 'frontend') {
+        const generated = await generateBackend({
+          plan,
+          outputDir: targetDir,
+          projectName: path.basename(targetDir),
+          log
+        });
+        log(
+          `Backend generation wrote ${generated.services.length} service(s) under `
+          + `${path.join(targetDir, 'apps')}.`
+        );
+        for (const service of generated.services) {
+          log(`  - ${service.packageName} (${service.root})`);
+        }
+      } else {
+        log('Skipping backend generation for mode=frontend.');
+      }
+
       log(
-        'Note: .jumentix/project.json write and workspace generation land in later Issues '
-        + '(JUM-847+). Plan API is ready via resolveSources().'
+        'Note: .jumentix/project.json and root workspace assembly land in later Issues (C7).'
       );
       return 0;
     } catch (error) {
