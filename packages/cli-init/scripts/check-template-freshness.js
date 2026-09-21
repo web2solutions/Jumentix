@@ -50,11 +50,11 @@ function readCommittedTemplates(packageDir, exclusions = DEFAULT_EXCLUSIONS) {
 }
 
 function readManifest(manifestPath) {
-  if (!fs.existsSync(manifestPath)) return null;
+  if (!fs.existsSync(manifestPath)) return { status: 'missing' };
   try {
-    return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    return { status: 'ready', value: JSON.parse(fs.readFileSync(manifestPath, 'utf8')) };
   } catch {
-    return { __parseError: 'invalid JSON' };
+    return { status: 'invalid' };
   }
 }
 
@@ -113,20 +113,19 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     }
   }
 
-  const manifest = readManifest(manifestPath);
-  if (!manifest) {
+  const manifestResult = readManifest(manifestPath);
+  if (manifestResult.status === 'missing') {
     failures.push(
       '[cli-init template-freshness] missing packages/cli-init/templates.manifest.json'
       + ' — run `bun run cli:build-templates`'
     );
     return failures;
   }
-  if (manifest.__parseError) {
-    failures.push(
-      `[cli-init template-freshness] unreadable templates.manifest.json: ${manifest.__parseError}`
-    );
+  if (manifestResult.status === 'invalid') {
+    failures.push('[cli-init template-freshness] unreadable templates.manifest.json');
     return failures;
   }
+  const manifest = manifestResult.value;
 
   const sourceCommit = options.sourceCommit || resolveSourceCommit(root);
   const expectedManifest = buildManifest(expected, sourceCommit, exclusions);

@@ -104,4 +104,23 @@ describe('template freshness gate (JUM-845)', () => {
       fs.rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it('reports malformed manifests without echoing their contents', () => {
+    expect.hasAssertions();
+    const root = fixtureRoot();
+    try {
+      buildTemplates(root, { sourceCommit: 'fixture-commit' });
+      fs.writeFileSync(
+        path.join(root, 'packages/cli-init/templates.manifest.json'),
+        '{"token":"must-not-be-logged"',
+        'utf8'
+      );
+
+      const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
+      expect(failures).toContain('[cli-init template-freshness] unreadable templates.manifest.json');
+      expect(failures.join('\n')).not.toContain('must-not-be-logged');
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
