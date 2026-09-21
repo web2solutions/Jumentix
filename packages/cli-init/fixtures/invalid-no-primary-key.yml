@@ -1,0 +1,18 @@
+openapi: 3.1.0
+info:
+  title: Invalid — missing primary key
+  version: 1.0.0
+x-services:
+  - id: core
+    name: Core
+    kind: core
+components:
+  schemas:
+    Widget:
+      type: object
+      x-domain: Catalog
+      x-entity: Widget
+      x-service: core
+      properties:
+        name:
+          type: string

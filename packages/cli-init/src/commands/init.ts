@@ -3,6 +3,11 @@ import path from 'node:path';
 import { writeInitConfig, type InitConfig } from '../config';
 import { mapLegacyServiceTypeToMode, type InitFlags } from '../args';
 import { run as runLegacyBootstrap } from '../legacy/bootstrap';
+import {
+  printPlanSummary,
+  resolveSources,
+  SourceResolutionError
+} from '../sources';
 
 export function printInitHelp(log: (message?: string) => void = console.log): void {
   log(`
@@ -22,10 +27,18 @@ Options:
   --non-interactive
   --help
 
-Until generation ships (JUM-845…849), init maps to the legacy monorepo clone
-when --service-type / legacy flags are used, or when --mode=monolith without
---from. Factory generation replaces the clone path in later Issues.
+Source resolution (JUM-846) normalizes --from / --preset into a GenerationPlan
+and prints a summary. Writing .jumentix/project.json and file generation land
+in later Issues. Legacy --service-type still clones the monorepo.
 `);
+}
+
+function wantsSourceResolution(flags: InitFlags): boolean {
+  if (flags.from) return true;
+  if (flags.preset) return true;
+  // Non-monolith factory modes resolve sources (default preset: users).
+  if (flags.mode && flags.mode !== 'monolith') return true;
+  return false;
 }
 
 export async function runInit(options: {
@@ -88,16 +101,41 @@ export async function runInit(options: {
         'Non-interactive init requires --mode and/or --preset/--from (or legacy --service-type).'
       );
     }
-    if (!(flags.dir || flags.projectName)) {
+    if (!(flags.dir || flags.projectName) && !wantsSourceResolution(flags)) {
       throw new Error('Non-interactive init requires a target directory ([dir] or --project-name).');
     }
   }
 
-  // Factory generation lands in JUM-845…849. Until then, monolith without --from
-  // still uses the legacy clone path so the CLI remains usable.
-  if ((flags.mode === 'monolith' || !flags.mode) && !flags.from) {
+  if (wantsSourceResolution(flags)) {
+    try {
+      const plan = await resolveSources({
+        from: flags.from,
+        preset: flags.preset || (flags.from ? undefined : 'users'),
+        mode: flags.mode,
+        http: flags.http,
+        realtime: flags.realtime,
+        db: flags.db,
+        frontend: flags.frontend,
+        offline: flags.offline
+      });
+      printPlanSummary(plan, log);
+      log(
+        'Note: .jumentix/project.json write and workspace generation land in later Issues '
+        + '(JUM-847+). Plan API is ready via resolveSources().'
+      );
+      return 0;
+    } catch (error) {
+      if (error instanceof SourceResolutionError) {
+        log(`\nError: ${error.message}`);
+        return error.exitCode;
+      }
+      throw error;
+    }
+  }
+
+  // Monolith without --from/--preset: legacy clone until generation ships.
+  if (flags.mode === 'monolith' || !flags.mode) {
     const projectName = flags.dir || flags.projectName || 'jumentix-app';
-    log('Factory template packaging is not shipped yet (JUM-845).');
     log('Falling back to legacy monorepo clone for monolith scaffolding.');
     await runLegacyBootstrap({
       argv: [
@@ -124,7 +162,7 @@ export async function runInit(options: {
   }
 
   throw new Error(
-    `Factory generation for mode="${flags.mode || '(none)'}" with --from is not implemented yet `
-    + '(JUM-845…849). Use --mode=monolith or legacy --service-type for now.'
+    `Factory generation for mode="${flags.mode || '(none)'}" is not implemented yet `
+    + '(JUM-847+). Pass --from or --preset to resolve a GenerationPlan.'
   );
 }

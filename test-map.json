@@ -4732,6 +4732,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cli-init/test/source-resolution.test.ts",
+      "path": "packages/cli-init/test/source-resolution.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cli-init/test/template-freshness.test.ts",
       "path": "packages/cli-init/test/template-freshness.test.ts",
       "layer": "tooling",
@@ -5854,9 +5864,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 338,
+    "unit": 340,
     "integration": 102,
     "smoke": 2,
-    "suites": 501
+    "suites": 503
   }
 }
