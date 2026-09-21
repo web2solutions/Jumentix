@@ -67,7 +67,12 @@ one module per domain (entity configs from OAS operation ids and
 `x-list-capabilities`), `.env` with Core/service URLs, and optional Cana
 offline layer via `--offline`.
 
-Root workspace assembly remains a later Issue (C7).
+Workspace assembly (JUM-849) writes the Bun root after generation: `package.json`
+with workspaces `apps/*` and fan-out `dev|test|lint|build`, `.gitignore`,
+`docker-compose.yml` for the chosen database (+ Redis when realtime is enabled),
+generated `README.md` (run steps, ports, seeded accounts), `.jumentix/project.json`,
+`.jumentix/manifest.json` (sha256 per file), and `jumentix.init.json`. Optional
+`--install` runs `bun install`; `--git` runs `git init` and the first commit.
 
 Generated projects must pass their own `lint` / `test` / `build` and boot in
 Docker. Runtime dependencies are published `@jumentix/*` packages pinned to the

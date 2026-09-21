@@ -1,6 +1,6 @@
 /**
  * Normalized generation input produced by every source loader (JUM-846).
- * Writing `.jumentix/project.json` is deferred to C7; loaders only return this plan.
+ * Persisted into `.jumentix/project.json` by workspace assembly (JUM-849).
  */
 
 export type GenerationMode = 'monolith' | 'services' | 'hybrid' | 'frontend';

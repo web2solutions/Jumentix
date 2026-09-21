@@ -72,7 +72,12 @@ hybrid/frontend: cópia do seed empacotado, OAS mesclado em
 operation ids e `x-list-capabilities`), `.env` com URLs do Core/serviços, e
 camada Cana opcional via `--offline`.
 
-A montagem do workspace raiz permanece em Issue posterior (C7).
+A montagem do workspace (JUM-849) escreve a raiz Bun após a geração:
+`package.json` com workspaces `apps/*` e scripts `dev|test|lint|build`,
+`.gitignore`, `docker-compose.yml` para o db escolhido (+ Redis com realtime),
+`README.md` gerado (execução, portas, contas seed), `.jumentix/project.json`,
+`.jumentix/manifest.json` (sha256 por arquivo) e `jumentix.init.json`.
+`--install` roda `bun install`; `--git` faz `git init` e o primeiro commit.
 
 Projetos gerados devem passar no próprio `lint` / `test` / `build` e subir em
 Docker. Dependências de runtime são pacotes `@jumentix/*` publicados, fixados na
