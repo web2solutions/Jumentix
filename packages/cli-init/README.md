@@ -147,6 +147,22 @@ A markdown report is written to `.jumentix/upgrade-<version>.md` when applied.
 Exit `0` when healthy, `1` for project blockers, `2` for environment blockers
 (for example missing bun).
 
+## Generation e2e matrix (JUM-854)
+
+`test/e2e/run-generation-matrix.ts` drives a factory generation matrix
+(monolith/express/sqlite, monolith/fastify/postgres, services, hybrid,
+frontend-only, `--offline`). Default `bun test` always exercises the
+non-Docker `monolith/express/sqlite` cell (generate into a tmp dir, verify
+`apps/*`). Heavy Docker cells run only when `CLI_INIT_E2E_DOCKER=1` and Docker
+is available; otherwise they skip with a named reason. Optional
+`CLI_INIT_E2E_INSTALL=1` adds `bun install` after generation. Each cell records
+runtime; failures name the command that failed.
+
+```bash
+bun run --cwd packages/cli-init test
+CLI_INIT_E2E_DOCKER=1 bun run --cwd packages/cli-init test ./test/e2e
+```
+
 ## Normative docs
 
 - `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
@@ -156,8 +172,9 @@ Exit `0` when healthy, `1` for project blockers, `2` for environment blockers
 
 Factory command routing, source resolution, backend/frontend generation, root
 workspace assembly, `add domain|service|frontend`, `upgrade` (three-way merge),
-and `doctor` diagnostics are live. `--mode=monolith` without `--from`/`--preset`
-still falls back to the legacy monorepo clone.
+`doctor` diagnostics, and the generation e2e matrix (JUM-854) are live.
+`--mode=monolith` without `--from`/`--preset` still falls back to the legacy
+monorepo clone.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help
