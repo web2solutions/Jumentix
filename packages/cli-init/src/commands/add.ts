@@ -10,6 +10,7 @@ import {
   buildManifestJson,
   buildProjectJson,
   sha256File,
+  writeBaselineObjects,
   writeDomainModule,
   writeModulesIndex,
   patchI18nTitles,
@@ -175,6 +176,7 @@ function persistProjectState(
 
   const manifest = buildManifestJson(rootDir);
   writeJson(path.join(rootDir, ...MANIFEST_META.split('/')), manifest);
+  writeBaselineObjects(rootDir, manifest.files);
 }
 
 function coreService(plan: GenerationPlan): PlanService {

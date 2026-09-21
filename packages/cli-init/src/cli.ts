@@ -80,7 +80,12 @@ export async function main(
       });
     }
     if (parsed.command === 'upgrade') {
-      return await runUpgrade({ help: parsed.init.help, dryRun: parsed.dryRun, log });
+      return await runUpgrade({
+        help: parsed.init.help,
+        dryRun: parsed.dryRun,
+        force: parsed.init.force,
+        log
+      });
     }
     if (parsed.command === 'doctor') {
       return await runDoctor({ help: parsed.init.help, log });

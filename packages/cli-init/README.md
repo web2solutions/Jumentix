@@ -119,6 +119,22 @@ Run inside a generated project (requires `.jumentix/project.json`):
 
 Manifest drift is refused unless `--force`. Missing project metadata exits `1` with a clear message.
 
+## Upgrade (JUM-851)
+
+`jumentix upgrade [--dry-run] [--force]` three-way-merges the current template
+cohort onto a generated project using `.jumentix/manifest.json` hashes and
+baseline blobs under `.jumentix/objects/<sha256>`:
+
+| Status | Meaning |
+| --- | --- |
+| updated | Unchanged locally → take template, or clean auto-merge |
+| conflicted | Overlapping edits — conflict markers left in the file |
+| skipped | No template change, or only local edits |
+| added / removed | New template paths / retired paths (retired files kept) |
+
+`--dry-run` prints the report without writing. Dirty git trees require `--force`.
+A markdown report is written to `.jumentix/upgrade-<version>.md` when applied.
+
 ## Normative docs
 
 - `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
@@ -127,8 +143,9 @@ Manifest drift is refused unless `--force`. Missing project metadata exits `1` w
 ## Current package entrypoint
 
 Factory command routing, source resolution, backend/frontend generation, root
-workspace assembly, and `add domain|service|frontend` are live. `--mode=monolith`
-without `--from`/`--preset` still falls back to the legacy monorepo clone.
+workspace assembly, `add domain|service|frontend`, and `upgrade` (three-way
+merge) are live. `--mode=monolith` without `--from`/`--preset` still falls back
+to the legacy monorepo clone.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

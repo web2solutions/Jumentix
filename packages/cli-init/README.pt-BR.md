@@ -122,6 +122,22 @@ Execute dentro de um projeto gerado (exige `.jumentix/project.json`):
 
 Drift do manifesto é recusado sem `--force`. Metadados ausentes saem com código `1`.
 
+## Upgrade (JUM-851)
+
+`jumentix upgrade [--dry-run] [--force]` faz merge de três vias da coorte de
+templates atual sobre o projeto gerado, usando hashes de
+`.jumentix/manifest.json` e blobs de baseline em `.jumentix/objects/<sha256>`:
+
+| Status | Significado |
+| --- | --- |
+| updated | Sem edição local → template, ou auto-merge limpo |
+| conflicted | Edições sobrepostas — marcadores de conflito no arquivo |
+| skipped | Sem mudança de template, ou só edições locais |
+| added / removed | Novos caminhos / aposentados (arquivos aposentados permanecem) |
+
+`--dry-run` imprime o relatório sem gravar. Árvore git suja exige `--force`.
+Ao aplicar, grava `.jumentix/upgrade-<version>.md`.
+
 ## Documentos normativos
 
 - `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
@@ -130,8 +146,9 @@ Drift do manifesto é recusado sem `--force`. Metadados ausentes saem com códig
 ## Entrada atual do pacote
 
 Roteamento de comandos, resolução de fontes, geração de backend/frontend,
-montagem do workspace raiz e `add domain|service|frontend` estão ativos.
-`--mode=monolith` sem `--from`/`--preset` ainda cai no clone legado do monorepo.
+montagem do workspace raiz, `add domain|service|frontend` e `upgrade` (merge
+de três vias) estão ativos. `--mode=monolith` sem `--from`/`--preset` ainda
+cai no clone legado do monorepo.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

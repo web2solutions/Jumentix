@@ -77,6 +77,8 @@ export {
   buildReadme,
   buildProjectJson,
   buildManifestJson,
+  writeBaselineObjects,
+  readBaselineObject,
   listGeneratedFiles,
   sha256File,
   resolvePrimaryDb,

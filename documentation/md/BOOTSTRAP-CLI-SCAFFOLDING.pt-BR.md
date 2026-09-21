@@ -85,6 +85,12 @@ existir; `add service --domains …` cria um novo app em modo services/hybrid;
 `add frontend` transforma um tree só-backend em hybrid. Sem
 `.jumentix/project.json` a saída é `1`; drift do manifesto exige `--force`.
 
+O comando `jumentix upgrade` (JUM-851) faz merge de três vias da coorte de
+templates usando hashes de `.jumentix/manifest.json` e baselines em
+`.jumentix/objects/<sha256>`. Arquivos intactos são substituídos; edições
+sobrepostas geram marcadores de conflito; `--dry-run` só reporta; git sujo
+exige `--force`.
+
 Projetos gerados devem passar no próprio `lint` / `test` / `build` e subir em
 Docker. Dependências de runtime são pacotes `@jumentix/*` publicados, fixados na
 versão da CLI.
