@@ -4,6 +4,35 @@
 
 ## All Changes
 
+- 2026-09-21 [JUM-866][Fix] Restore long-lived CI health (#393) - Eduardo A.
+- 2026-09-21 [JUM-856][Governance] Req 094 epic closure record for factory v1 (#395) - Eduardo A.
+- 2026-09-20 docs(cli-init): req 094 epic closure record for factory v1 - Eduardo A.
+- 2026-09-21 [JUM-855][Docs] Factory getting-started and bootstrap EN/PT (#394) - Eduardo A.
+- 2026-09-20 docs(cli-init): factory getting-started and bootstrap EN/PT - Eduardo A.
+- 2026-09-21 [JUM-854][Test] Add generation e2e matrix harness (#392) - Eduardo A.
+- 2026-09-21 fix(cli-init): link designer-core for spawned e2e CLI - Eduardo A.
+- 2026-09-20 test(cli-init): add generation e2e matrix harness - Eduardo A.
+- 2026-09-21 [JUM-852][Feature] Doctor env and project diagnostics (#391) - Eduardo A.
+- 2026-09-20 feat(cli-init): doctor env and project diagnostics - Eduardo A.
+- 2026-09-21 [JUM-851][Feature] Upgrade generated projects with three-way merge (#390) - Eduardo A.
+- 2026-09-20 feat(cli-init): upgrade generated projects with three-way merge - Eduardo A.
+- 2026-09-21 [JUM-850][Feature] Add domain|service|frontend to generated projects (#389) - Eduardo A.
+- 2026-09-20 feat(cli-init): add domain|service|frontend to generated projects - Eduardo A.
+- 2026-09-21 [JUM-849][Feature] Assemble generated workspace root and manifests (#388) - Eduardo A.
+- 2026-09-20 feat(cli-init): assemble generated workspace root and manifests - Eduardo A.
+- 2026-09-21 [JUM-848][Feature] Generate frontend seed from GenerationPlan (#387) - Eduardo A.
+- 2026-09-20 fix(cli-init): slugify identifiers without ReDoS regex - Eduardo A.
+- 2026-09-20 feat(cli-init): generate frontend seed from GenerationPlan - Eduardo A.
+- 2026-09-20 [JUM-847][Feature] Generate backend services from GenerationPlan (#386) - Eduardo A.
+- 2026-09-20 fix(cli-init): sanitize npm name segments without ReDoS regex - Eduardo A.
+- 2026-09-20 feat(cli-init): generate backend services from GenerationPlan - Eduardo A.
+- 2026-09-20 chore: synchronize changelog (#383) - github-actions[bot]
+- 2026-09-20 ci(JUM-862): open changelog PRs with a PAT and poll mergeability (#385) - Eduardo A.
+- 2026-09-20 [JUM-846][Feature] Resolve sources into GenerationPlan (#384) - Eduardo A.
+- 2026-09-20 chore: merge origin/dev into GenerationPlan branch - Eduardo A.
+- 2026-09-20 feat(cli-init): resolve sources into GenerationPlan - Eduardo A.
+- 2026-09-20 [JUM-853][Feature] Make @jumentix packages and CLI npm-publishable (#379) - Eduardo A.
+- 2026-09-20 feat(release): make @jumentix packages and cli-init publishable - Eduardo A.
 - 2026-09-20 [JUM-845][Feature] Package CLI templates with freshness gate (#377) - Eduardo A.
 - 2026-09-20 feat(cli-init): package backend/frontend seeds with freshness gate - Eduardo A.
 - 2026-09-20 chore: synchronize changelog (#380) - Eduardo A.
