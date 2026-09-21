@@ -1,4 +1,5 @@
 import type { DbChoice, HttpInterface, RealtimeInterface } from '../sources/types';
+import { sanitizePackageScope, sanitizeServiceId } from './paths';
 
 export const JUMENTIX_RUNTIME_DEPS = Object.freeze([
   '@jumentix/adapter-runtime-bootstrap',
@@ -28,17 +29,8 @@ export type PackageJsonInput = {
  * Build a standalone `package.json` for a generated backend service.
  */
 export function buildServicePackageJson(input: PackageJsonInput): Record<string, unknown> {
-  const scope = String(input.projectName || 'app')
-    .trim()
-    .toLowerCase()
-    .replace(/[@/]/g, '')
-    .replace(/[^a-z0-9._-]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'app';
-  const service = String(input.serviceId || 'core')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'core';
+  const scope = sanitizePackageScope(input.projectName);
+  const service = sanitizeServiceId(input.serviceId);
 
   const dependencies: Record<string, string> = {};
   for (const name of JUMENTIX_RUNTIME_DEPS) {
