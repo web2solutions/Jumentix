@@ -5,6 +5,11 @@ const repoRoot = path.resolve(__dirname, '../..');
 const releaseGate = require(path.join(repoRoot, 'ci-cd/check-npm-package-release')) as {
   discoverPublishablePackages: (root: string) => string[];
   validateManifest: (manifest: Record<string, unknown>, directory: string) => string[];
+  assertTarballContents: (
+    manifest: { name: string },
+    packument: { files: Array<{ path: string }> }
+  ) => void;
+  isForbiddenTarballPath: (filePath: string) => boolean;
 };
 
 describe('public npm package release policy', () => {
@@ -46,6 +51,50 @@ describe('public npm package release policy', () => {
     });
   });
 
+  it('allows factory template .env seeds but forbids .env outside templates', () => {
+    expect.hasAssertions();
+
+    expect({
+      templateEnv: releaseGate.isForbiddenTarballPath('templates/backend/src/config/.env.dev'),
+      templateExample: releaseGate.isForbiddenTarballPath('templates/backend/src/config/.env.dev.example'),
+      rootEnv: releaseGate.isForbiddenTarballPath('.env'),
+      distEnv: releaseGate.isForbiddenTarballPath('dist/.env.local'),
+      sourceTree: releaseGate.isForbiddenTarballPath('src/index.js')
+    }).toStrictEqual({
+      templateEnv: false,
+      templateExample: false,
+      rootEnv: true,
+      distEnv: true,
+      sourceTree: true
+    });
+
+    expect(() => releaseGate.assertTarballContents(
+      { name: '@jumentix/cli-init' },
+      {
+        files: [
+          { path: 'package.json' },
+          { path: 'README.md' },
+          { path: 'LICENSE.md' },
+          { path: 'dist/index.js' },
+          { path: 'templates/backend/src/config/.env.dev' }
+        ]
+      }
+    )).not.toThrow();
+
+    expect(() => releaseGate.assertTarballContents(
+      { name: '@jumentix/cana' },
+      {
+        files: [
+          { path: 'package.json' },
+          { path: 'README.md' },
+          { path: 'LICENSE.md' },
+          { path: 'dist/index.js' },
+          { path: '.env' }
+        ]
+      }
+    )).toThrow(/forbidden files: \.env/);
+  });
+
   it('keeps publication manual, main-only, and token-scoped in GitHub Actions', () => {
     expect.hasAssertions();
 
@@ -55,8 +104,8 @@ describe('public npm package release policy', () => {
       mainOnly: workflow.includes('github.ref == \'refs/heads/main\''),
       protected: workflow.includes('environment: npm-publish'),
       artifactGate: workflow.includes('bun run npm:packages:check'),
-      tokenMapping: /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_JUMENTIX_CI_CD \}\}/.test(workflow),
-      tokenEcho: /echo\s+.*NPM_JUMENTIX_CI_CD/.test(workflow),
+      tokenMapping: /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_CI_CD \}\}/.test(workflow),
+      tokenEcho: /echo\s+.*NPM_CI_CD/.test(workflow),
       publishesCli: workflow.includes('publish cli-init'),
       publishesRuntime: workflow.includes('publish persistence-contracts'),
       publishesSdks: workflow.includes('publish sdk-rest-client')

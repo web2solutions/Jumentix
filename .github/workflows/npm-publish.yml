@@ -42,7 +42,7 @@ jobs:
         run: bun run npm:packages:check
       - name: Publish selected release cohort
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_JUMENTIX_CI_CD }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_CD }}
           RELEASE: ${{ inputs.release }}
         run: |
           set -euo pipefail

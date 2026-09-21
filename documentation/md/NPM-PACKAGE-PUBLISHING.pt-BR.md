@@ -48,7 +48,7 @@ bun run release:dry-run:packages
 
 ## Publicacao
 
-Use o workflow `Publish npm packages` do GitHub Actions a partir de `main`. Ele e manual e usa o ambiente protegido `npm-publish`. O workflow executa o gate de artefatos, publica Cana antes das integracoes React e Vue, depois publica contratos, runtime, SDKs e a CLI em ordem de dependencia, e mapeia o segredo GitHub `NPM_JUMENTIX_CI_CD` para `NODE_AUTH_TOKEN` somente no `npm publish`.
+Use o workflow `Publish npm packages` do GitHub Actions a partir de `main`. Ele e manual e usa o ambiente protegido `npm-publish`. O workflow executa o gate de artefatos, publica Cana antes das integracoes React e Vue, depois publica contratos, runtime, SDKs e a CLI em ordem de dependencia, e mapeia o segredo GitHub `NPM_CI_CD` para `NODE_AUTH_TOKEN` somente no `npm publish`.
 
 Configure o ambiente `npm-publish` com revisores obrigatorios antes do primeiro release. Nunca imprima, versione ou armazene o token em um arquivo do projeto.
 
@@ -62,4 +62,4 @@ npx @jumentix/cli-init init
 
 Depois de um release aprovado, verifique as paginas dos pacotes npm (`npm view @jumentix/<package>`), instale as versoes publicadas com Bun e npm em projetos consumidores limpos e inspecione os metadados de proveniencia. Versoes npm sao imutaveis; avance com uma versao corrigida e descontinue uma versao defeituosa em vez de tentar substitui-la.
 
-Se `NPM_TOKEN` / `NPM_JUMENTIX_CI_CD` estiver indisponivel no ambiente do operador, entregue apenas publicabilidade e evidencia de dry-run — nao declare uma publicacao real no registry.
+Se `NPM_TOKEN` / `NPM_CI_CD` estiver indisponivel no ambiente do operador, entregue apenas publicabilidade e evidencia de dry-run — nao declare uma publicacao real no registry.
