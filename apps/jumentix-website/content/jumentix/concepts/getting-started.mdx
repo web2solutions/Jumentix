@@ -9,8 +9,8 @@ description: "Junior on-ramp: install, mental model, and first adoption journey.
 
 - **Owns:** the public on-ramp for juniors adopting Jumentix (mental model + first journey)
 - **Stack:** concepts / learning path (not a runtime package)
-- **Used with:** guides (REST, realtime, SPA/PWA), public packages hub, apps hubs
-- **Not responsible for:** private workspace tooling docs (config-*, agent-registry, cli-init, security-scanner)
+- **Used with:** `@jumentix/cli-init` factory generator, guides (REST, realtime, SPA/PWA), public packages hub
+- **Not responsible for:** private workspace tooling docs (config-*, agent-registry, security-scanner)
 
 ## What it is
 
@@ -60,7 +60,8 @@ bun --version
 | **OpenAPI** | YAML/JSON spec describing REST endpoints, request bodies, and response shapes. |
 | **AsyncAPI** | Spec describing channels and message payloads for WebSocket or event streams. |
 | **Bun** | Fast JavaScript/TypeScript runtime and package manager used across Jumentix workspaces. |
-| **backend-template** | Reference backend app in the monorepo that shows REST/realtime composition for juniors. |
+| **Factory CLI** | `@jumentix/cli-init` — `jumentix init|add|upgrade|doctor` generates a lean workspace for one factory mode. |
+| **GenerationPlan** | Normalized plan from designer export, OAS, catalog URL, or Users preset before files are written. |
 | **Cana** | `@jumentix/cana` — IndexedDB adapter for offline-first PWAs. |
 | **Service Management** | The Jumentix app where Domain Designer and service configuration live. |
 
@@ -79,11 +80,19 @@ Choose one path — do not try both on day one:
 
 | Path | When to use | First command after setup |
 | --- | --- | --- |
-| **Consume published packages** | You build an app that calls Jumentix SDKs | `bun add @jumentix/sdk-rest-client` |
+| **Generate a product workspace** | You want a runnable Jumentix app (default first success) | `npx @jumentix/cli-init init` — see Step 3 |
+| **Consume published packages** | You build an app that calls Jumentix SDKs only | `bun add @jumentix/sdk-rest-client` |
 | **Work inside the monorepo** | You contribute to or extend the factory itself | `bun install` at the repo root |
-| **Study the reference backend** | You need a working REST/realtime service to copy patterns from | See Step 3 (backend-template) |
 
-For product teams consuming published packages:
+For product teams generating a workspace (recommended):
+
+```bash
+npx @jumentix/cli-init init my-app \
+  --preset=users --non-interactive --mode=monolith \
+  --http=express --db=sqlite --install
+```
+
+For teams that only need SDKs:
 
 ```bash
 bun add @jumentix/cana @jumentix/sdk-rest-client
@@ -96,24 +105,42 @@ cd Jumentix
 bun install
 ```
 
-**Success check:** `bun install` completes without errors; `node_modules` exists.
+**Success check:** factory path creates `my-app/` with `.jumentix/project.json`;
+package path completes `bun install` without errors.
 
-### Step 3 — Open the reference backend (< 10 minutes)
+### Step 3 — First success: factory `init` (< 10 minutes)
 
-Private bootstrap tooling is **not** documented on this public site. For your first
-backend, study the reference app already in the monorepo:
+The public factory generator is `@jumentix/cli-init`. It writes a lean Bun
+workspace for one factory mode (`monolith` / `services` / `hybrid` / `frontend`)
+from a GenerationPlan (`--preset=users`, `--from` designer/OAS/catalog).
 
 ```bash
-cd apps/backend-template
-bun install
-# follow scripts in that app's package.json / README for local run
+npx @jumentix/cli-init init demo \
+  --preset=users --non-interactive --mode=hybrid --frontend \
+  --http=express --db=sqlite --install
+
+cd demo
+npx @jumentix/cli-init doctor
+ls apps          # core (+ frontend when hybrid)
 ```
 
-Then open the [REST API guide](/docs/jumentix/guides/rest-api) and reproduce the
-hello path against that template.
+What you should see:
 
-**Success check:** you can locate the HTTP adapter + a use-case folder inside
-`apps/backend-template` and open the REST guide next.
+- `.jumentix/project.json` — mode, plan, template cohort (not the retired `service-profile.json`)
+- `.jumentix/manifest.json` — sha256 of generated files
+- `jumentix.init.json` — answers for `--config` round-trips
+- `apps/*` workspace packages ready for `bun run dev|test|lint|build`
+
+Extend later with `jumentix add domain|service|frontend`, refresh templates with
+`jumentix upgrade`, and diagnose with `jumentix doctor`. Modes map to the
+[service factory capabilities matrix](/docs/jumentix/concepts/architecture)
+(see also repository doc `JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md`).
+
+**Success check:** `demo/.jumentix/project.json` exists, `doctor` exits `0`, and
+you can name the HTTP adapter folder under `apps/`.
+
+Then open the [REST API guide](/docs/jumentix/guides/rest-api) and call the
+generated service.
 
 ### Step 4 — Learn the mental model (< 5 minutes)
 
@@ -133,11 +160,11 @@ Three rules that prevent most junior mistakes:
 2. **Adapters are replaceable** — swap Express for Fastify without rewriting domain code.
 3. **Offline is first-class** — `@jumentix/cana` is the IndexedDB adapter for PWAs; it is not the same as `localStorage`.
 
-### Step 5 — First success: touch Cana in the browser (< 10 minutes)
+### Step 5 — Touch Cana in the browser (< 10 minutes)
 
-Before building a full API, confirm the docs toolchain works. Run the playground
-below — **Run** should return a green result, then **Reset** should restore the
-starting state.
+Before building a full offline PWA, confirm the docs toolchain works. Run the
+playground below — **Run** should return a green result, then **Reset** should
+restore the starting state.
 
 <DocsPlayground runtime="cana" id="getting-started" />
 
@@ -199,13 +226,14 @@ Use the Cana playground in Step 5 to run this pattern live.
 | REST client cannot load specs | Node `fs` loader used in the browser | Inject the OpenAPI object (see REST guide playground) | Mock client returns `/health` |
 | Works in memory, fails in Redis | Wrong key-value adapter for the runtime | Start with InMemory in tests; use Redis adapter only in Node | Unit tests pass locally |
 | Lost offline data | Expecting `localStorage` to behave like IndexedDB | Use Cana; read `client.backend` after `open()` | Records survive page reload |
-| Cannot find adapters in backend-template | Wrong folder | Stay under `apps/backend-template` and use the REST guide map | You can name one HTTP adapter file |
+| `jumentix init` exits 1 on missing answers | `--non-interactive` without full flags/config | Pass `--preset`/`--mode`/`--http`/`--db` or a `jumentix.init.json` via `--config` | Init writes `.jumentix/project.json` |
+| Cannot find adapters in generated app | Looking in the monorepo seed instead of the generated tree | `cd` into the `init` output and open `apps/<service>` | You can name one HTTP adapter file |
 
 ## Junior checklist (“I can …”)
 
 - [ ] Install Bun 1.3.13+ and confirm `bun --version`.
 - [ ] Explain the adapter → application → domain layers using the diagram above.
-- [ ] Scaffold or open a Jumentix service and locate `.jumentix/service-profile.json`.
+- [ ] Run `jumentix init` (or `npx @jumentix/cli-init init`) and locate `.jumentix/project.json`.
 - [ ] Run the Cana playground (**Run** green, **Reset** restores state).
 - [ ] Name the difference between OpenAPI (REST) and AsyncAPI (realtime).
 - [ ] Open the [REST guide](/docs/jumentix/guides/rest-api) and know it is my next hands-on task.

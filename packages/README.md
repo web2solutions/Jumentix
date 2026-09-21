@@ -19,7 +19,7 @@ This folder contains reusable npm packages shared across Jumentix applications.
 
 ### Messaging, bootstrap, and contracts
 
-- [`@jumentix/cli-init`](./cli-init/README.md) - bootstrap CLI for project structures.
+- [`@jumentix/cli-init`](./cli-init/README.md) - factory generator CLI (`init` / `add` / `upgrade` / `doctor`).
 - [`@jumentix/message-mediator`](./message-mediator/README.md) - event and request/response mediator.
 - [`@jumentix/shared-contracts`](./shared-contracts/README.md) - shared canonical OpenAPI/AsyncAPI spec resolution helpers.
 

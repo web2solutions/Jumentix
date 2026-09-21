@@ -17,12 +17,16 @@ CLI geradora de fábrica do Jumentix (Requisito `037` v2).
 npx @jumentix/cli-init init
 ```
 
-## Comandos (alvo)
+## Comandos
 
 - `jumentix init` — workspace enxuto por modo de fábrica
 - `jumentix add domain|service|frontend`
 - `jumentix upgrade` / `jumentix doctor`
 - Aliases: `jumentix-init`, `jumentix-bootstrap`
+
+Superfície normativa (flags, config, GenerationPlan, política de upgrade):
+`documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md`. Modos da fábrica:
+`documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md`.
 
 ## Templates empacotados
 
@@ -175,10 +179,10 @@ CLI_INIT_E2E_DOCKER=1 bun run --cwd packages/cli-init test ./test/e2e
 
 Roteamento de comandos, resolução de fontes, geração de backend/frontend,
 montagem do workspace raiz, `add domain|service|frontend`, `upgrade` (merge
-de três vias), `doctor` e a matriz e2e de geração (JUM-854) estão ativos.
-`--mode=monolith` sem `--from`/`--preset` ainda cai no clone legado do monorepo.
+de três vias), `doctor` e a matriz e2e de geração estão ativos. O caminho
+legado `--service-type` / clone bare monolith permanece só por compatibilidade.
 
 ```bash
-bun ./packages/cli-init/bin/jumentix-init.js --help
+bun ./packages/cli-init/bin/jumentix.js --help
 bun run --cwd packages/cli-init test
 ```
