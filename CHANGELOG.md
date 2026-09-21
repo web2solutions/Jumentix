@@ -4,10 +4,17 @@
 
 ## All Changes
 
+- 2026-09-20 chore: synchronize changelog (#380) - Eduardo A.
+- 2026-09-20 [JUM-865][Chore] Enforce PR feedback and Sonar reliability gates (#376) - Eduardo A.
+- 2026-09-20 Merge remote-tracking branch 'origin/dev' into codex/chore/JUM-865-pr-feedback-resolution-gate - Eduardo Almeida
 - 2026-09-20 ci(JUM-862): grant pull-requests write to sync-changelog (#378) - Eduardo A.
+- 2026-09-20 Merge remote-tracking branch 'origin/dev' into codex/chore/JUM-865-pr-feedback-resolution-gate - Eduardo Almeida
 - 2026-09-20 fix(JUM-864): validate keyPath segments at the point of use in writePath (#375) - Eduardo A.
 - 2026-09-20 fix(JUM-863): make versionless catalog delete unconditional and unshadow deletedAt (#374) - Eduardo A.
 - 2026-09-20 ci(JUM-862): synchronize changelog through a PR instead of pushing to dev (#372) - Eduardo A.
+- 2026-09-20 Merge remote-tracking branch 'origin/dev' into codex/chore/JUM-865-pr-feedback-resolution-gate - Eduardo Almeida
+- 2026-09-20 fix(JUM-865): fail closed Bun installation in CI - Eduardo Almeida
+- 2026-09-20 feat(JUM-865): enforce PR feedback and Sonar reliability gates - Eduardo Almeida
 - 2026-09-20 [JUM-844][Refactor] CLI core command router prompts and TypeScript build (#373) - Eduardo A.
 - 2026-09-20 fix(cli-init): build dist before suites when missing - Eduardo A.
 - 2026-09-20 refactor(cli-init): add TS command router, prompts and init config - Eduardo A.
