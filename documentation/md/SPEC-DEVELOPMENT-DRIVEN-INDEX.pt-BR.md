@@ -83,8 +83,10 @@ A execução orientada por especificações depende e reutiliza estas fontes exi
 - Contratos OpenAPI e AsyncAPI (`/spec`)
 - Documentos de tempo de execução e arquitetura (`documentation/md`)
 - Docs da geradora de fábrica (`BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md`,
-  `JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md`) e getting-started
-  público (`apps/jumentix-website/content/pt-BR/jumentix/concepts/getting-started.mdx`)
+  `JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md`), registro de
+  fechamento do épico (`CLI-INIT-V1-FACTORY-EPIC-CLOSURE.pt-BR.md`, Req `094`)
+  e getting-started público
+  (`apps/jumentix-website/content/pt-BR/jumentix/concepts/getting-started.mdx`)
 - Registro de requisitos de agentes (`.agents/requirements`)
 - Registro NFR (`.agents/NFR-REGISTRY.md`)
 - Instruções oficiais de agentes de IA (`AGENTS.md`, `CLAUDE.md`, `GROK.md`)

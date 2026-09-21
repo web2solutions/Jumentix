@@ -145,6 +145,9 @@ For any change, identify impacted requirement IDs and ensure:
     `upgrade` / `doctor`, packaged templates, freshness gate
     `packages/cli-init/scripts/check-template-freshness.js`)
   - `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md` (+ pt-BR)
+  - `documentation/md/CLI-INIT-V1-FACTORY-EPIC-CLOSURE.md` (+ pt-BR; Req `094`
+    epic documentation / closure record for
+    `[EPIC][CLI] @jumentix/cli-init v1`, Issues JUM-843…856)
   - `apps/service-management/documentation/*`
   - `documentation/md/SDK-COMPATIBILITY-BRIDGE.md`
   - website docs and deployment flows
