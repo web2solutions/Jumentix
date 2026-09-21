@@ -14,6 +14,17 @@ function isCursorUsageLimitNotice(comment) {
     && /(?:out of (?:credit|limit)|usage(?:\s+or\s+spend)?\s+limit|usage limit reached)/i.test(comment.body || '');
 }
 
+/**
+ * Automated quality/status decorations carry no human feedback to resolve:
+ * SonarCloud posts its Quality Gate banner on every analyzed PR and updates
+ * it in place, which the PR feedback gate must not demand a resolution marker
+ * for. Same category as the Cursor usage-limit notice above.
+ */
+function isAutomatedStatusDecoration(comment) {
+  return comment?.author?.login === 'sonarqubecloud'
+    && /quality gate/i.test(comment.body || '');
+}
+
 function parseResolutionMarker(body) {
   if (!body?.includes(MARKER_PREFIX)) return null;
 
@@ -116,7 +127,7 @@ function validatePullRequestFeedback({ pullRequestAuthor, comments, reviewThread
     } catch {
       continue;
     }
-    if (marker || isCursorUsageLimitNotice(comment)) continue;
+    if (marker || isCursorUsageLimitNotice(comment) || isAutomatedStatusDecoration(comment)) continue;
     if (!evidenceByCommentUrl.has(comment.url)) {
       failures.push(`${comment.url}: general PR feedback needs a valid resolved or invalid response marker.`);
     }
@@ -241,6 +252,7 @@ module.exports = {
   MAINTAINER_ASSOCIATIONS,
   collectConnectionPages,
   githubGraphql,
+  isAutomatedStatusDecoration,
   isAuthorizedResolver,
   isCursorUsageLimitNotice,
   loadPullRequestFeedback,
