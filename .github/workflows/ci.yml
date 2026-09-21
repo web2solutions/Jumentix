@@ -139,6 +139,12 @@ jobs:
         timeout-minutes: 90
         env:
           GH_TOKEN: ${{ github.token }}
+          # Fine-grained PAT (contents rw + pull-requests rw, this repo only).
+          # Required because PRs opened with GITHUB_TOKEN never trigger
+          # pull_request_target workflows, and dev's protection requires their
+          # contexts (pr-feedback, sonar-reliability) — a GITHUB_TOKEN PR can
+          # never satisfy them (JUM-862 follow-up).
+          CHANGELOG_GH_TOKEN: ${{ secrets.CHANGELOG_GH_TOKEN }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -158,14 +164,38 @@ jobs:
           git add CHANGELOG.md
           git commit -m "chore: synchronize changelog"
           git push origin "$branch"
-          pr_url="$(gh pr create --base dev --head "$branch" \
+          if [ -z "${CHANGELOG_GH_TOKEN:-}" ]; then
+            echo "Secret CHANGELOG_GH_TOKEN is not configured."
+            echo "Branch $branch is pushed and current — open the PR manually:"
+            echo "  gh pr create --base dev --head $branch --title 'chore: synchronize changelog'"
+            exit 1
+          fi
+          pr_url="$(GH_TOKEN="$CHANGELOG_GH_TOKEN" gh pr create --base dev --head "$branch" \
             --title "chore: synchronize changelog" \
             --body "Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.")"
           echo "Opened $pr_url"
-          if ! gh pr checks "$pr_url" --watch --fail-fast; then
-            echo "Required checks failed on $pr_url — leaving the PR open for manual handling."
-            exit 1
-          fi
+          # Poll mergeability instead of 'gh pr checks --watch --fail-fast':
+          # non-required checks (e.g. the code-scanning AI findings job) fail
+          # on every PR and would abort the wait; what matters is that the
+          # required contexts are green, which is what CLEAN/UNSTABLE mean.
+          deadline=$((SECONDS + 3600))
+          while :; do
+            state="$(gh pr view "$pr_url" --json mergeStateStatus --jq .mergeStateStatus)"
+            case "$state" in
+              CLEAN|UNSTABLE|HAS_HOOKS) break ;;
+              BLOCKED)
+                if [ "$SECONDS" -gt "$deadline" ]; then
+                  echo "Required checks did not pass within 60m on $pr_url — leaving the PR open for manual handling."
+                  exit 1
+                fi
+                sleep 30
+                ;;
+              *)
+                echo "Unexpected merge state '$state' on $pr_url — leaving the PR open for manual handling."
+                exit 1
+                ;;
+            esac
+          done
           if ! gh pr merge "$pr_url" --squash --delete-branch; then
             echo "Merge failed on $pr_url — leaving the PR open for manual handling."
             exit 1
