@@ -6,6 +6,31 @@ export {
   type GeneratedServiceResult
 } from './backend';
 export {
+  generateFrontend,
+  bakeMergedOas,
+  writeFrontendEnv,
+  applyOfflineFlag,
+  type GenerateFrontendOptions,
+  type GenerateFrontendResult
+} from './frontend';
+export {
+  mergeServiceOas,
+  oasPathCount,
+  resolveEntityOperations,
+  searchableFieldsForOperation,
+  resolveRequestSchemas,
+  entityTitleFromOas,
+  type ResolvedCrudOperations
+} from './frontendOas';
+export {
+  slugifyIdentifier,
+  camelCaseName,
+  writeDomainModule,
+  writeModulesIndex,
+  type GeneratedModuleResult,
+  type GeneratedEntityConfig
+} from './frontendModules';
+export {
   renderEnvDev,
   mapDbChoiceToDriver,
   mapRealtimeToEnv,
@@ -37,6 +62,7 @@ export {
 } from './domains';
 export {
   resolveBackendTemplateRoot,
+  resolveFrontendTemplateRoot,
   sanitizePackageScope,
   sanitizeServiceId
 } from './paths';

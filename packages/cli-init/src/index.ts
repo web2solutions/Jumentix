@@ -24,6 +24,11 @@ export type {
 export {
   generateBackend,
   generateBackendService,
+  generateFrontend,
+  bakeMergedOas,
+  writeFrontendEnv,
+  resolveEntityOperations,
+  mergeServiceOas,
   renderEnvDev,
   mapDbChoiceToDriver,
   computeUnusedPaths,
@@ -36,6 +41,8 @@ export type {
   GenerateBackendOptions,
   GenerateBackendResult,
   GeneratedServiceResult,
+  GenerateFrontendOptions,
+  GenerateFrontendResult,
   EnvRenderInput,
   SlicePlan
 } from './generators';

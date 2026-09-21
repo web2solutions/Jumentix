@@ -59,7 +59,15 @@ packaged seed: renamed `@<project>/<service>` package, `.env.dev` from plan
 interfaces/db, unused integration suites / db compose files pruned, Users +
 auth retained on core, and designer domains injected via
 `buildHexagonalBundle` into `src/modules/<Domain>/…` with registration in
-`compositionRoot.ts`. Root workspace assembly remains a later Issue (C7).
+`compositionRoot.ts`.
+
+Frontend generation (JUM-848) writes `apps/frontend` for hybrid/frontend
+modes: packaged seed copy, merged OAS baked into `src/contracts/openapi.json`,
+one module per domain (entity configs from OAS operation ids and
+`x-list-capabilities`), `.env` with Core/service URLs, and optional Cana
+offline layer via `--offline`.
+
+Root workspace assembly remains a later Issue (C7).
 
 Generated projects must pass their own `lint` / `test` / `build` and boot in
 Docker. Runtime dependencies are published `@jumentix/*` packages pinned to the
