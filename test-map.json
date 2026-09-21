@@ -3142,6 +3142,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/check-pr-feedback.test.ts",
+      "path": "ci-cd/test/check-pr-feedback.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
       "path": "apps/backend-template/test/integration/Sails-JS/get.localhost.test.ts",
       "layer": "adapters/in",

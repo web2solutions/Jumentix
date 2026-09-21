@@ -9,6 +9,8 @@ const failures = [];
 
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
+const feedbackWorkflowPath = path.join(root, '.github', 'workflows', 'pr-feedback.yml');
+const sonarReliabilityWorkflowPath = path.join(root, '.github', 'workflows', 'sonar-reliability.yml');
 const preCommitPath = path.join(root, '.husky', 'pre-commit');
 const packagePath = path.join(root, 'package.json');
 const sonarPath = path.join(root, 'sonar-project.properties');
@@ -36,6 +38,9 @@ if (!fs.existsSync(workflowPath)) {
     /uses:\s*actions\/checkout@v5/,
     /uses:\s*actions\/setup-node@v5/,
     /node-version:\s*22/,
+    /curl -fsSL -o \/tmp\/bun-install\.sh https:\/\/bun\.sh\/install/,
+    /bash \/tmp\/bun-install\.sh "bun-v\$BUN_VERSION"/,
+    /test -x "\$HOME\/\.bun\/bin\/bun"/,
     /branch-gate:/,
     /sync-changelog:/,
     /github\.event_name == 'push' && github\.ref_name == 'dev'/,
@@ -150,7 +155,59 @@ if (!fs.existsSync(workflowPath)) {
   if (/Checkout repository without JavaScript Actions/.test(contents)) {
     failures.push('.github/workflows/ci.yml must not keep the old self-hosted manual checkout path');
   }
+
+  if (/curl -fsSL https:\/\/bun\.sh\/install \| bash/.test(contents)) {
+    failures.push('.github/workflows/ci.yml Bun installation must fail closed instead of masking curl failures in a pipeline.');
+  }
 }
+
+function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMarkers) {
+  if (!fs.existsSync(workflowPathToCheck)) {
+    failures.push(`Missing required trusted pull-request workflow: ${path.relative(root, workflowPathToCheck)}`);
+    return;
+  }
+  const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
+  const commonMarkers = [
+    /pull_request_target:/,
+    /branches:\s*\n\s*- dev\s*\n\s*- main/,
+    /permissions:\s*\n\s*contents:\s*read/,
+    /pull-requests:\s*read/,
+    /uses:\s*actions\/checkout@v5/,
+    /ref:\s*\$\{\{ github\.event\.pull_request\.base\.sha \}\}/,
+    /persist-credentials:\s*false/,
+    /BUN_VERSION:\s*1\.3\.13/
+  ];
+  for (const marker of [...commonMarkers, ...requiredMarkers]) {
+    if (!marker.test(contents)) failures.push(`${label} is missing ${String(marker)}`);
+  }
+  if (/curl -fsSL https:\/\/bun\.sh\/install \| bash/.test(contents)) {
+    failures.push(`${label} Bun installation must fail closed instead of masking curl failures in a pipeline.`);
+  }
+  if (/(?:contents|issues|pull-requests|actions|checks):\s*write/.test(contents)) {
+    failures.push(`${label} must retain read-only GitHub token permissions.`);
+  }
+  if (/github\.event\.pull_request\.head\.sha|ref:\s*\$\{\{ github\.sha \}\}/.test(contents)) {
+    failures.push(`${label} must execute only the trusted PR base revision.`);
+  }
+}
+
+checkTrustedPullRequestWorkflow(feedbackWorkflowPath, 'PR feedback workflow', [
+  /name:\s*PR feedback/,
+  /pr-feedback:/,
+  /issues:\s*read/,
+  /GH_TOKEN:\s*\$\{\{ github\.token \}\}/,
+  /check-pr-feedback\.js --repo/,
+  /github\.event\.pull_request\.number/
+]);
+
+checkTrustedPullRequestWorkflow(sonarReliabilityWorkflowPath, 'Sonar reliability workflow', [
+  /name:\s*Sonar reliability/,
+  /sonar-reliability:/,
+  /SONAR_TOKEN:\s*\$\{\{ secrets\.SONARCLOUD_TOKEN \}\}/,
+  /SONAR_PULL_REQUEST:\s*\$\{\{ github\.event\.pull_request\.number \}\}/,
+  /bun run sonar:check-reliability/,
+  /seq 1 18/
+]);
 
 if (!fs.existsSync(preCommitPath)) {
   failures.push('Missing required local hook: .husky/pre-commit');
@@ -220,5 +277,5 @@ if (failures.length > 0) {
 
 console.log(
   'CI provider check passed: GitHub Actions and CircleCI cover cheap dev gates, full main promotion gates, '
-    + 'coverage, website validation, third-party review, and Codecov/Sonar publishing.'
+    + 'coverage, website validation, third-party review, resolved PR feedback, and Codecov/Sonar publishing.'
 );

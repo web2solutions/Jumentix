@@ -47,7 +47,10 @@ jobs:
         run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - name: Install Bun
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Export pull request metadata
         run: |
@@ -127,7 +130,10 @@ jobs:
           fetch-depth: 0
       - name: Install Bun
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Synchronize generated changelog
         timeout-minutes: 90
@@ -242,7 +248,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -275,7 +284,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -313,7 +325,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -370,7 +385,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -511,7 +529,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -556,7 +577,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
