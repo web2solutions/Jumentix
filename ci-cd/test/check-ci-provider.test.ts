@@ -83,7 +83,7 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('SONAR_PULL_REQUEST');
   });
 
-  it('fails when the trusted Sonar workflow stops analyzing the PR merge result', () => {
+  it('fails when the Sonar workflow stops analyzing the pull request', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
@@ -94,6 +94,16 @@ describe('check-ci-provider', () => {
       );
     });
     expect(run(directory).output).toContain('sonar\\.pullrequest\\.key');
+  });
+
+  it('fails when Sonar analysis returns to a privileged pull_request_target workflow', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/sonar-reliability.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('pull_request:', 'pull_request_target:'));
+    });
+    expect(run(directory).output).toContain('unprivileged pull_request workflow');
   });
 
   it('fails when the required browser matrix is absent or can receive secrets', () => {

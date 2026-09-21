@@ -41,7 +41,7 @@ export function threeWayMerge(base: string, ours: string, theirs: string): {
     fs.writeFileSync(oursPath, ours, 'utf8');
     fs.writeFileSync(theirsPath, theirs, 'utf8');
     const result = spawnSync(
-      'git',
+      '/usr/bin/git',
       [
         'merge-file',
         '-p',

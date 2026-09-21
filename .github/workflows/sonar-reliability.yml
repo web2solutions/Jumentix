@@ -1,7 +1,7 @@
-name: Sonar reliability trusted
+name: Sonar reliability
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - dev
       - main
@@ -14,14 +14,12 @@ jobs:
     name: sonar-reliability
     permissions:
       contents: read
-      pull-requests: read
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout trusted PR base
+      - name: Checkout PR merge result
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
       - name: Install Bun
         run: |
@@ -30,15 +28,6 @@ jobs:
           bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
           test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
-      - name: Checkout PR merge source for static analysis
-        env:
-          SONAR_PULL_REQUEST: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          git fetch --no-tags --depth=1 origin "+refs/pull/${SONAR_PULL_REQUEST}/merge:refs/remotes/origin/sonar/pr/${SONAR_PULL_REQUEST}/merge"
-          git worktree add --detach /tmp/jumentix-sonar-pr "refs/remotes/origin/sonar/pr/${SONAR_PULL_REQUEST}/merge"
-          # The PR supplies source text only. The trusted base owns scanner policy.
-          cp "$GITHUB_WORKSPACE/sonar-project.properties" /tmp/jumentix-sonar-pr/sonar-project.properties
       - name: Install Sonar scanner
         run: |
           set -euo pipefail
@@ -53,11 +42,10 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
           SONAR_PULL_REQUEST: ${{ github.event.pull_request.number }}
-          SONAR_PULL_REQUEST_BRANCH: ${{ github.event.pull_request.head.ref }}
-          SONAR_PULL_REQUEST_BASE: ${{ github.event.pull_request.base.ref }}
+          SONAR_PULL_REQUEST_BRANCH: ${{ github.head_ref }}
+          SONAR_PULL_REQUEST_BASE: ${{ github.base_ref }}
         run: |
           set -euo pipefail
-          cd /tmp/jumentix-sonar-pr
           sonar-scanner \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token="$SONAR_TOKEN" \
@@ -81,6 +69,3 @@ jobs:
             fi
             sleep 10
           done
-      - name: Remove PR analysis worktree
-        if: always()
-        run: git worktree remove --force /tmp/jumentix-sonar-pr || true

@@ -109,7 +109,7 @@ function writeJson(filePath: string, value: unknown): void {
 
 export function isGitWorkingTreeDirty(rootDir: string): boolean {
   if (!fs.existsSync(path.join(rootDir, '.git'))) return false;
-  const result = spawnSync('git', ['status', '--porcelain'], {
+  const result = spawnSync('/usr/bin/git', ['status', '--porcelain'], {
     cwd: rootDir,
     encoding: 'utf8'
   });

@@ -53,8 +53,8 @@ function readManifest(manifestPath) {
   if (!fs.existsSync(manifestPath)) return null;
   try {
     return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  } catch (error) {
-    return { __parseError: error instanceof Error ? error.message : String(error) };
+  } catch {
+    return { __parseError: 'invalid JSON' };
   }
 }
 

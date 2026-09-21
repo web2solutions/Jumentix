@@ -217,21 +217,42 @@ checkTrustedPullRequestWorkflow(feedbackWorkflowPath, 'PR feedback workflow', [
   /github\.event\.pull_request\.number/
 ]);
 
-checkTrustedPullRequestWorkflow(sonarReliabilityWorkflowPath, 'Sonar reliability workflow', [
-  /name:\s*Sonar reliability trusted/,
-  /sonar-reliability:/,
-  /SONAR_TOKEN:\s*\$\{\{ secrets\.SONARCLOUD_TOKEN \}\}/,
-  /SONAR_PULL_REQUEST:\s*\$\{\{ github\.event\.pull_request\.number \}\}/,
-  /refs\/pull\/\$\{SONAR_PULL_REQUEST\}\/merge/,
-  /git worktree add --detach \/tmp\/jumentix-sonar-pr/,
-  /cp "\$GITHUB_WORKSPACE\/sonar-project\.properties" \/tmp\/jumentix-sonar-pr\/sonar-project\.properties/,
-  /sonar-scanner/,
-  /-Dsonar\.pullrequest\.key="\$SONAR_PULL_REQUEST"/,
-  /-Dsonar\.pullrequest\.branch="\$SONAR_PULL_REQUEST_BRANCH"/,
-  /-Dsonar\.pullrequest\.base="\$SONAR_PULL_REQUEST_BASE"/,
-  /bun run sonar:check-reliability/,
-  /seq 1 18/
-]);
+function checkSonarReliabilityWorkflow(workflowPathToCheck) {
+  if (!fs.existsSync(workflowPathToCheck)) {
+    failures.push(`Missing required Sonar reliability workflow: ${path.relative(root, workflowPathToCheck)}`);
+    return;
+  }
+  const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
+  const requiredMarkers = [
+    /name:\s*Sonar reliability/,
+    /pull_request:/,
+    /branches:\s*\n\s*- dev\s*\n\s*- main/,
+    /sonar-reliability:/,
+    /permissions:\s*\n\s*contents:\s*read/,
+    /uses:\s*actions\/checkout@v5/,
+    /fetch-depth:\s*0/,
+    /persist-credentials:\s*false/,
+    /SONAR_TOKEN:\s*\$\{\{ secrets\.SONARCLOUD_TOKEN \}\}/,
+    /SONAR_PULL_REQUEST:\s*\$\{\{ github\.event\.pull_request\.number \}\}/,
+    /sonar-scanner/,
+    /-Dsonar\.pullrequest\.key="\$SONAR_PULL_REQUEST"/,
+    /-Dsonar\.pullrequest\.branch="\$SONAR_PULL_REQUEST_BRANCH"/,
+    /-Dsonar\.pullrequest\.base="\$SONAR_PULL_REQUEST_BASE"/,
+    /bun run sonar:check-reliability/,
+    /seq 1 18/
+  ];
+  for (const marker of requiredMarkers) {
+    if (!marker.test(contents)) failures.push(`Sonar reliability workflow is missing ${String(marker)}`);
+  }
+  if (/pull_request_target:|git worktree add|refs\/pull\/\$\{SONAR_PULL_REQUEST\}\/merge/.test(contents)) {
+    failures.push('Sonar reliability must analyze PR code only in the unprivileged pull_request workflow.');
+  }
+  if (/(?:contents|issues|pull-requests|actions|checks):\s*write/.test(contents)) {
+    failures.push('Sonar reliability workflow must retain read-only GitHub token permissions.');
+  }
+}
+
+checkSonarReliabilityWorkflow(sonarReliabilityWorkflowPath);
 
 function checkBrowserMatrixWorkflow(workflowPathToCheck) {
   if (!fs.existsSync(workflowPathToCheck)) {

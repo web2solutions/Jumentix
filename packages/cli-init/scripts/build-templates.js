@@ -105,7 +105,7 @@ function sha256File(filePath) {
 
 function resolveSourceCommit(root = REPO_ROOT) {
   try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], {
+    return execFileSync('/usr/bin/git', ['rev-parse', 'HEAD'], {
       cwd: root,
       encoding: 'utf8'
     }).trim();
