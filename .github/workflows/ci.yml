@@ -108,6 +108,72 @@ jobs:
         if: always()
         run: find artifacts/ci -maxdepth 2 -type f -print || true
 
+  sonar-reliability:
+    name: sonar-reliability
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      # The pull-request workflow can be available before a new dedicated
+      # workflow reaches the default branch. It deliberately executes only the
+      # immutable base SHA, so the token never reaches PR code.
+      - name: Checkout trusted PR base
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Await SonarCloud PR analysis at reliability A
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+          SONAR_PULL_REQUEST: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            if bun run sonar:check-reliability; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 18 ]; then
+              exit 1
+            fi
+            sleep 10
+          done
+
+  pr-feedback:
+    name: pr-feedback
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted PR base
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Enforce resolved PR feedback
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun ci-cd/check-pr-feedback.js --repo "$GITHUB_REPOSITORY" --pr "${{ github.event.pull_request.number }}"
+
   sync-changelog:
     name: sync-changelog
     if: github.event_name == 'push' && github.ref_name == 'dev'

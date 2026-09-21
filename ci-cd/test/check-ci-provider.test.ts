@@ -29,11 +29,13 @@ function fixture(change?: (directory: string) => void): string {
   fs.mkdirSync(path.join(directory, '.circleci'), { recursive: true });
   fs.mkdirSync(path.join(directory, '.husky'), { recursive: true });
   fs.copyFileSync(checker, path.join(directory, 'ci-cd', 'check-ci-provider.js'));
+  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'run-unit-tests.js'), path.join(directory, 'ci-cd', 'run-unit-tests.js'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'), path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/pr-feedback.yml'), path.join(directory, '.github/workflows/pr-feedback.yml'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/sonar-reliability.yml'), path.join(directory, '.github/workflows/sonar-reliability.yml'));
+  fs.copyFileSync(path.join(repoRoot, '.github/workflows/browser-matrix.yml'), path.join(directory, '.github/workflows/browser-matrix.yml'));
   fs.copyFileSync(path.join(repoRoot, '.circleci/config.yml'), path.join(directory, '.circleci/config.yml'));
   fs.copyFileSync(path.join(repoRoot, '.husky/pre-commit'), path.join(directory, '.husky/pre-commit'));
   fs.copyFileSync(path.join(repoRoot, 'sonar-project.properties'), path.join(directory, 'sonar-project.properties'));
@@ -79,6 +81,19 @@ describe('check-ci-provider', () => {
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('SONAR_PULL_REQUEST:', 'SONAR_PULL_REQUEST_REMOVED:'));
     });
     expect(run(directory).output).toContain('SONAR_PULL_REQUEST');
+  });
+
+  it('fails when the required browser matrix is absent or can receive secrets', () => {
+    expect.hasAssertions();
+
+    const missing = fixture((root) => fs.unlinkSync(path.join(root, '.github/workflows/browser-matrix.yml')));
+    expect(run(missing).output).toContain('Missing required browser matrix workflow');
+
+    const privileged = fixture((root) => {
+      const file = path.join(root, '.github/workflows/browser-matrix.yml');
+      fs.appendFileSync(file, `\nenv:\n  TOKEN: ${'${'}{ secrets.TOKEN }}\n`);
+    });
+    expect(run(privileged).output).toContain('must run untrusted PR code without privileged events or secrets');
   });
 
   it('fails when CircleCI is absent', () => {
@@ -185,6 +200,26 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('mono:build:deps');
   });
 
+  it('fails when unit tests stop building publishable workspace artifacts first', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'package.json');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/workspace:build:packages/g, 'workspace:build:removed'));
+    });
+    expect(run(directory).output).toContain('workspace:build:packages');
+  });
+
+  it('fails when unit tests stop resolving workspace packages from source', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'ci-cd', 'run-unit-tests.js');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/--conditions=development/g, '--conditions=production'));
+    });
+    expect(run(directory).output).toContain('--conditions=development');
+  });
+
   it('fails when expensive jobs lose the release/full context guard', () => {
     expect.hasAssertions();
 
@@ -254,7 +289,7 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('secrets.SONARCLOUD_TOKEN', 'secrets.SONAR_TOKEN')
+        fs.readFileSync(file, 'utf8').replace(/secrets\.SONARCLOUD_TOKEN/g, 'secrets.SONAR_TOKEN')
       );
     });
     expect(run(directory).output).toContain('secrets\\.SONARCLOUD_TOKEN');

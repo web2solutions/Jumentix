@@ -14,6 +14,11 @@ Run unit tests:
 bun run test:unit
 ```
 
+This command first builds publishable package artifacts, then resolves
+`@jumentix/*` through the workspace `development` export while the unit suites
+run. The combination verifies package buildability without loading duplicate
+source and `dist` class instances into the same test process.
+
 Run integration tests:
 
 ```bash
@@ -179,8 +184,9 @@ Remote enforcement:
 - `.github/workflows/ci.yml` independently runs Storybook build/smoke and website prepublish checks only for release/full contexts
 - Storybook is absent from the repository full matrix
 - `ci:monorepo` remains a compatibility entrypoint but cannot select a reduced docs-only plan
-- The required `pr-feedback` check runs from the trusted PR base revision and rejects unresolved review threads or general comments without validated visible resolution evidence. The sole exception is Cursor's strict usage-limit notice from login `cursor`.
-- The required `sonar-reliability` check queries the SonarCloud pull-request analysis and accepts only reliability rating A. It uses `SONARCLOUD_TOKEN` only from the trusted base workflow and never executes PR code.
+- The required `pr-feedback` check runs from the trusted PR base revision and rejects unresolved review threads or general comments without validated visible resolution evidence. The sole exception is Cursor's strict usage-limit notice from login `cursor`; the dedicated `pr-feedback-trusted` workflow repeats that defense after it is available from the default branch.
+- The required `sonar-reliability` check queries the SonarCloud pull-request analysis and accepts only reliability rating A. It checks out the trusted base SHA, never PR code, before accessing `SONARCLOUD_TOKEN`; the dedicated `sonar-reliability-trusted` workflow repeats that defense after it is available from the default branch.
+- The required `browser-matrix` check runs Cana's Chrome, Firefox, and WebKit suites on every PR to `dev` or `main`. It has read-only contents access and no secrets.
 
 #### Hosted job matrix by context (JUM-786)
 
@@ -194,7 +200,7 @@ pushes — a skip there is not a pass.
 | Context | Hosted jobs that run | Branch-gate script + preflight |
 | --- | --- | --- |
 | Task-branch push | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
-| PR to `dev` | `branch-gate`, `third-party-review` | same task gate + preflight |
+| PR to `dev` | `branch-gate`, `third-party-review`, `sonar-reliability`, `browser-matrix` | same task gate + preflight |
 | Push to `dev` | `branch-gate` | `test:unit` + lint, integrity, workspace boundaries, `build:dev` |
 | Release PR to `main` / push to `main` / schedule / `workflow_dispatch` | full list (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, workspace boundaries, `build:dev` preflight) |
 
@@ -223,7 +229,8 @@ SonarQube Cloud coverage import:
 | GitHub Actions (Codecov) | Coverage dashboard publishing | `.github/workflows/ci.yml` | Requires `CODECOV_TOKEN`; uploads LCOV through `codecov/codecov-action@v5` after local thresholds pass |
 | GitHub Actions (third-party review) | Fail-closed secret and static-analysis review | `.github/workflows/ci.yml` | Runs pinned Gitleaks/Semgrep and retains SARIF evidence |
 | GitHub Actions (PR feedback) | Blocks unresolved review threads and unaddressed general feedback | `.github/workflows/pr-feedback.yml`, `ci-cd/check-pr-feedback.js` | Runs from the trusted base SHA; resolution responses identify the exact comment and, when corrected, a PR SHA |
-| GitHub Actions (Sonar reliability) | Blocks a PR whose SonarCloud reliability is not A | `.github/workflows/sonar-reliability.yml`, `ci-cd/check-sonar-reliability.js` | Queries the SonarCloud PR analysis with `SONARCLOUD_TOKEN`; analysis absence or API failure fails closed |
+| GitHub Actions (Sonar reliability) | Blocks a PR whose SonarCloud reliability is not A | `.github/workflows/ci.yml`, `.github/workflows/sonar-reliability.yml`, `ci-cd/check-sonar-reliability.js` | Queries the SonarCloud PR analysis from a trusted base SHA with `SONARCLOUD_TOKEN`; analysis absence or API failure fails closed |
+| GitHub Actions (browser matrix) | Blocks browser regressions before merge | `.github/workflows/browser-matrix.yml`, `packages/cana/scripts/run-browser-tests.js` | Runs Chrome, Firefox, and WebKit with read-only contents access and no secrets |
 | GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/ci.yml` | Runs Storybook build/smoke and prepublish checks independently |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/ci.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; imports retained LCOV after coverage passes |
 | Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions/branches 98%, changed lines 99%; branches under a dated floor (JUM-721) |
