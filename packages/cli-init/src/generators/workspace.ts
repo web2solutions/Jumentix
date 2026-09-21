@@ -17,7 +17,9 @@ const MANIFEST_SKIP_DIRS = new Set([
   'coverage',
   '.nyc_output',
   'dist',
-  '.build'
+  '.build',
+  // Content-addressed upgrade baselines (hashed by digest, not path).
+  'objects'
 ]);
 
 const DB_COMPOSE_SOURCE: Partial<Record<DbChoice, string>> = {
@@ -426,6 +428,39 @@ export function buildManifestJson(rootDir: string): {
   };
 }
 
+/**
+ * Persist content-addressed baselines under `.jumentix/objects/<sha256>` so
+ * `jumentix upgrade` can three-way merge after users edit generated files.
+ */
+export function writeBaselineObjects(
+  rootDir: string,
+  files: Record<string, { sha256: string }>
+): void {
+  const objectsDir = path.join(rootDir, '.jumentix', 'objects');
+  fs.mkdirSync(objectsDir, { recursive: true });
+  for (const [rel, meta] of Object.entries(files)) {
+    if (meta?.sha256) {
+      const dest = path.join(objectsDir, meta.sha256);
+      if (!fs.existsSync(dest)) {
+        const src = path.join(rootDir, ...rel.split('/'));
+        if (fs.existsSync(src) && fs.statSync(src).isFile()) {
+          fs.copyFileSync(src, dest);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Read a baseline blob written by {@link writeBaselineObjects}.
+ */
+export function readBaselineObject(rootDir: string, sha256: string): string | null {
+  if (!sha256) return null;
+  const absolute = path.join(rootDir, '.jumentix', 'objects', sha256);
+  if (!fs.existsSync(absolute)) return null;
+  return fs.readFileSync(absolute, 'utf8');
+}
+
 function writeJson(filePath: string, value: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
@@ -558,6 +593,7 @@ export async function assembleWorkspace(
   manifest.generatedAt = timestamp;
   const manifestPath = path.join(jumentixDir, 'manifest.json');
   writeJson(manifestPath, manifest);
+  writeBaselineObjects(outputDir, manifest.files);
 
   // Re-hash after writing manifest so the on-disk file is listed? Spec says
   // "sha256 of every generated file" — include manifest by hashing peers only

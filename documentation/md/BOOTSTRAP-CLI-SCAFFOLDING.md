@@ -80,6 +80,11 @@ frontend modules when present; `add service --domains …` creates a new app in
 services/hybrid mode; `add frontend` turns a backend-only tree into hybrid.
 Missing `.jumentix/project.json` exits `1`; manifest drift requires `--force`.
 
+`jumentix upgrade` (JUM-851) three-way-merges the current template cohort using
+`.jumentix/manifest.json` hashes and `.jumentix/objects/<sha256>` baselines.
+Unchanged files are replaced; overlapping edits become conflict markers;
+`--dry-run` reports without writing; dirty git requires `--force`.
+
 Generated projects must pass their own `lint` / `test` / `build` and boot in
 Docker. Runtime dependencies are published `@jumentix/*` packages pinned to the
 CLI version.
