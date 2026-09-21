@@ -4,6 +4,11 @@
 
 ## All Changes
 
+- 2026-09-21 ci(JUM-862): bind sync-changelog to the env vars environment (#399) - Eduardo A.
+- 2026-09-21 chore: synchronize changelog (#397) - Eduardo A.
+- 2026-09-21 chore: synchronize changelog - github-actions[bot]
+- 2026-09-21 [JUM-856][Docs] Fill factory epic closure merge evidence (#396) - Eduardo A.
+- 2026-09-21 docs(cli-init): fill factory epic closure merge evidence - Eduardo A.
 - 2026-09-21 [JUM-866][Fix] Restore long-lived CI health (#393) - Eduardo A.
 - 2026-09-21 [JUM-856][Governance] Req 094 epic closure record for factory v1 (#395) - Eduardo A.
 - 2026-09-20 docs(cli-init): req 094 epic closure record for factory v1 - Eduardo A.
