@@ -94,6 +94,12 @@ describe('check-ci-provider', () => {
       fs.appendFileSync(file, `\nenv:\n  TOKEN: ${'${'}{ secrets.TOKEN }}\n`);
     });
     expect(run(privileged).output).toContain('must run untrusted PR code without privileged events or secrets');
+
+    const missingPathBootstrap = fixture((root) => {
+      const file = path.join(root, '.github/workflows/browser-matrix.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('export PATH="$HOME/.bun/bin:$PATH"', ''));
+    });
+    expect(run(missingPathBootstrap).output).toContain('export PATH');
   });
 
   it('fails when CircleCI is absent', () => {

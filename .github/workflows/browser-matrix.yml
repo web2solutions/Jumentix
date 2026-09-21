@@ -27,6 +27,7 @@ jobs:
           curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
           bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
           test -x "$HOME/.bun/bin/bun"
+          export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
       - name: Install browser engines

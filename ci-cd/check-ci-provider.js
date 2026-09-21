@@ -238,6 +238,7 @@ function checkBrowserMatrixWorkflow(workflowPathToCheck) {
     /uses:\s*actions\/checkout@v5/,
     /persist-credentials:\s*false/,
     /BUN_VERSION:\s*1\.3\.13/,
+    /export PATH="\$HOME\/\.bun\/bin:\$PATH"/,
     /install --frozen-lockfile/,
     /bun x cypress install/,
     /bun x cypress verify/,
