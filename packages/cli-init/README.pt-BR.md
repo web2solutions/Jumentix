@@ -60,12 +60,28 @@ monolith; interface http/realtime não suportada; nomes de entidade
 duplicados entre domínios.
 
 O OAS do preset Users vive em `fixtures/users-oas.yml` (ou
-`templates/backend/spec/1.0.0.yml` quando empacotado). A escrita de
-`.jumentix/project.json` fica para Issue posterior; `resolveSources()` já é
-exportado.
+`templates/backend/spec/1.0.0.yml` quando empacotado).
+
+## Geração de backend (JUM-847)
+
+Após resolver o plano, `generateBackend()` copia o seed de backend empacotado
+para `<dir>/apps/<service>` por serviço:
+
+- Renomeia o pacote para `@<project>/<service>` e fixa deps `@jumentix/*`
+- Escreve `.env.dev` a partir de `http` / `realtime` / `db` do plano
+- Remove suites de integração HTTP não usadas e compose files de db não
+  usados (adapters em `src/` permanecem)
+- Mantém Users + auth em todo slice core; injeta outros domínios do designer
+  via `buildHexagonalBundle` em `src/modules/<Domain>/…` e registra em
+  `src/modules/compositionRoot.ts`
+- Grava o OAS filtrado por serviço em `spec/1.0.0.yml`
+
+A montagem do workspace raiz (`.jumentix/project.json`, workspaces Bun) fica
+para Issue posterior (C7). E2e de geração em Docker é C12.
 
 ```bash
-bun ./packages/cli-init/bin/jumentix.js init --preset=users --non-interactive --mode=services --project-name=demo
+bun ./packages/cli-init/bin/jumentix.js init demo \
+  --preset=users --non-interactive --mode=monolith --http=express --db=sqlite
 ```
 
 ## Documentos normativos
@@ -75,9 +91,10 @@ bun ./packages/cli-init/bin/jumentix.js init --preset=users --non-interactive --
 
 ## Entrada atual do pacote
 
-Roteamento de comandos e resolução de fontes estão ativos. A geração de
-arquivos do workspace chega em Issues posteriores; até lá `--mode=monolith`
-sem `--from`/`--preset` ainda cai no clone legado do monorepo.
+Roteamento de comandos, resolução de fontes e geração de serviços backend
+estão ativos. A montagem do workspace raiz chega em Issues posteriores; até
+lá `--mode=monolith` sem `--from`/`--preset` ainda cai no clone legado do
+monorepo.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

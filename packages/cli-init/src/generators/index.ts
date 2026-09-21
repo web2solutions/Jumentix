@@ -1,0 +1,42 @@
+export {
+  generateBackend,
+  generateBackendService,
+  type GenerateBackendOptions,
+  type GenerateBackendResult,
+  type GeneratedServiceResult
+} from './backend';
+export {
+  renderEnvDev,
+  mapDbChoiceToDriver,
+  mapRealtimeToEnv,
+  type EnvRenderInput,
+  type EnvDatabaseDriver
+} from './env';
+export {
+  computeUnusedPaths,
+  shouldKeepRelativePath,
+  HTTP_INTEGRATION_SUITES,
+  ALL_HTTP_INTEGRATION_SUITES,
+  DB_COMPOSE_FILES,
+  ALL_DB_COMPOSE_FILES,
+  ALWAYS_KEEP_COMPOSE_FILES,
+  type SlicePlan
+} from './slice';
+export {
+  buildServicePackageJson,
+  JUMENTIX_RUNTIME_DEPS,
+  type PackageJsonInput
+} from './packageJson';
+export {
+  injectDesignerDomains,
+  domainsForService,
+  isUsersDomain,
+  renderCompositionRoot,
+  planDomainsToDesignerState,
+  type InjectedDomainResult
+} from './domains';
+export {
+  resolveBackendTemplateRoot,
+  sanitizePackageScope,
+  sanitizeServiceId
+} from './paths';

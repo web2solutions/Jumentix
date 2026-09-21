@@ -86,10 +86,11 @@ describe('jumentix.init.json round-trip (JUM-844)', () => {
     expect.hasAssertions();
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cli-init-config-main-'));
     try {
+      const projectDir = path.join(dir, 'from-config');
       const configPath = writeInitConfig(dir, {
         mode: 'services',
         preset: 'users',
-        projectName: 'from-config'
+        projectName: projectDir
       });
       const messages: string[] = [];
       const code = await main(
@@ -100,6 +101,7 @@ describe('jumentix.init.json round-trip (JUM-844)', () => {
       );
       expect(code).toBe(0);
       expect(messages.join('\n')).toContain('GenerationPlan resolved:');
+      expect(messages.join('\n')).toContain('Backend generation wrote');
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
