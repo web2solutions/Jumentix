@@ -22,6 +22,7 @@ const {
 
 const { resolveSources } = require('../dist/sources');
 const { main } = require('../dist/cli');
+const { environmentWithoutRepositoryLocation } = require('../dist/legacy/bootstrap');
 
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 const packageRoot = path.join(__dirname, '..');
@@ -283,7 +284,7 @@ describe('workspace assembly — assembleWorkspace (JUM-849)', () => {
       const show = spawnSync(
         'git',
         ['-C', out, 'ls-tree', '-r', '--name-only', 'HEAD'],
-        { encoding: 'utf8' }
+        { encoding: 'utf8', env: environmentWithoutRepositoryLocation() }
       );
       expect(show.status).toBe(0);
       expect(show.stdout).toContain('.jumentix/manifest.json');

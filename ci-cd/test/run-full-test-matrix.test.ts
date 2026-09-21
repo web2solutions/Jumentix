@@ -450,7 +450,7 @@ describe('run-full-test-matrix', () => {
     expect(fullMatrixRootPackage.scripts['ci:gate:branch'])
       .toBe('bun ci-cd/run-branch-quality-gate.js');
     expect(fullMatrixRootPackage.scripts['ci:gate:task'])
-      .toBe('bun ci-cd/run-task-change-tests.js');
+      .toBe('bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js');
     expect([
       fullMatrixRootPackage.scripts['mono:build'].includes('bun run mono:build:deps && bun run --filter'),
       fullMatrixRootPackage.scripts['mono:build:deps'] === 'bun run --filter @jumentix/cana build',

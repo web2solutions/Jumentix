@@ -123,6 +123,11 @@ if (!fs.existsSync(workflowPath)) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
   }
 
+  const taskGate = JSON.parse(packageContents).scripts?.['ci:gate:task'];
+  if (taskGate !== 'bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js') {
+    failures.push('Task quality gate must build publishable workspace packages before running selected tests');
+  }
+
   if (!/slug:\s*web2solutions\/Jumentix/.test(contents) || !/disable_search:\s*true/.test(contents)) {
     failures.push('GitHub Actions Codecov upload must set slug=web2solutions/Jumentix and disable_search=true');
   }

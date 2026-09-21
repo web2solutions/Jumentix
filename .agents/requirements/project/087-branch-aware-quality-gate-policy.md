@@ -41,7 +41,8 @@ that integration stage. Applying a reduced gate to `main` would weaken release s
 
 ## Acceptance Criteria
 
-- Task branches invoke `ci:gate:task`; direct `dev` pushes invoke `test:unit`;
+- Task branches invoke `ci:gate:task` (which builds publishable workspace packages
+  before selecting tests); direct `dev` pushes invoke `test:unit`;
   PRs targeting `dev` invoke `ci:gate:task`.
 - `main` paths invoke `ci:gate:strict`.
 - Unit tests cover branch selection, evidence generation, failed status, and crashes.
