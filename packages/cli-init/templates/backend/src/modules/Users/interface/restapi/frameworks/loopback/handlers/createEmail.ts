@@ -1,0 +1,41 @@
+import type { LoopBackRequest, LoopBackResponse } from '@src/interface/HTTP/adapters/loopback/LoopBackServer';
+import { sendErrorResponse } from '@src/interface/HTTP/adapters/loopback/responses/sendErrorResponse';
+
+import type {
+  IHandlerFactory,
+  IbaseHandler,
+  EndPointFactory
+} from '@src/interface/HTTP/ports';
+
+import type { RequestCreateEmail } from '@src/modules/Users';
+import { UserController, UserEmailCreateRequestEvent } from '@src/modules/Users';
+
+const createEmail: EndPointFactory = (
+  {
+    endPointConfig,
+    controller
+  }: IHandlerFactory
+): IbaseHandler => {
+  return {
+    path: '/users/{id}/createEmail',
+    method: 'post',
+    async handler(req: LoopBackRequest, res: LoopBackResponse) {
+      try {
+        const params = req.params as Record<string, any>;
+        const { result, error } = await (controller! as UserController)
+          .createEmail(new UserEmailCreateRequestEvent({
+            authorization: req.headers.authorization ?? '',
+            params,
+            input: req.body as RequestCreateEmail,
+            schemaOAS: endPointConfig
+          }));
+        if (error) throw error;
+        return res.status(201).json(result);
+      } catch (error: any) {
+        return sendErrorResponse(error, res);
+      }
+    }
+  };
+};
+
+export default createEmail;

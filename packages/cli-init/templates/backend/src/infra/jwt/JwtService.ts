@@ -1,0 +1,79 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import * as jwt from 'jsonwebtoken';
+import { randomUUID } from 'node:crypto';
+
+import type { IJwtService } from '@src/infra/jwt/IJwtService';
+import { _JWT_TOKEN_SECRET_KEY_, _JWT_TOKEN_EXPIRES_IN_ } from '@src/config/jwt';
+import type { ITokenObject } from '@src/modules/Users/service/ports/ITokenObject';
+import { NotImplemented } from '@src/infra/exceptions/NotImplemented';
+import { readProductEnv } from '@src/interface/runtime/RuntimeEnvironment';
+
+let jwtService: any;
+
+export class JwtService implements IJwtService {
+  private secret: string;
+
+  public expiresIn: number;
+
+  constructor(secret = _JWT_TOKEN_SECRET_KEY_) {
+    if (!secret) throw new NotImplemented('JWT secret key is not defined');
+    this.secret = secret;
+    this.expiresIn = _JWT_TOKEN_EXPIRES_IN_;
+  }
+
+  public decodeToken(token: string): ITokenObject | null {
+    // eslint-disable-next-line no-console
+    // console.log('+++++++  decodeToken() SECRET', this.secret);
+    let valid = null;
+    try {
+      const verifyOptions: jwt.VerifyOptions = {};
+      const jwtIssuer = readProductEnv(process.env, 'JUMENTIX_JWT_ISSUER');
+      if (jwtIssuer) {
+        verifyOptions.issuer = jwtIssuer;
+      }
+      const jwtAudience = readProductEnv(process.env, 'JUMENTIX_JWT_AUDIENCE');
+      if (jwtAudience) {
+        verifyOptions.audience = jwtAudience;
+      }
+      valid = jwt.verify(token, this.secret, verifyOptions) as ITokenObject;
+    } catch (error) {
+      valid = null;
+    }
+    return valid;
+  }
+
+  public generateToken(data: Record<any, any>): string {
+    const {
+      id, username, firstName, avatar, organization, roles
+    } = data;
+    const signOptions: jwt.SignOptions = { expiresIn: this.expiresIn };
+    const jwtIssuer = readProductEnv(process.env, 'JUMENTIX_JWT_ISSUER');
+    if (jwtIssuer) {
+      signOptions.issuer = jwtIssuer;
+    }
+    const jwtAudience = readProductEnv(process.env, 'JUMENTIX_JWT_AUDIENCE');
+    if (jwtAudience) {
+      signOptions.audience = jwtAudience;
+    }
+    const token = jwt.sign(
+      {
+        jti: `${id || username || 'anonymous'}:${randomUUID()}`,
+        id,
+        username,
+        firstName,
+        avatar,
+        organization,
+        roles
+      },
+      this.secret,
+      signOptions
+    );
+    return token;
+  }
+
+  public static compile() {
+    if (jwtService) return jwtService;
+    jwtService = new JwtService();
+    return jwtService;
+  }
+}

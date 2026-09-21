@@ -54,6 +54,26 @@ describe('check-workspace-boundaries', () => {
     }
   });
 
+  it('does not scan packaged CLI template slices (JUM-845)', () => {
+    expect.hasAssertions();
+    const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'workspace-boundaries-tpl-'));
+
+    try {
+      const sourceDir = path.join(temporaryRoot, 'packages', 'cli-init', 'src');
+      const templatesDir = path.join(temporaryRoot, 'packages', 'cli-init', 'templates', 'backend');
+      fs.mkdirSync(sourceDir, { recursive: true });
+      fs.mkdirSync(templatesDir, { recursive: true });
+      fs.writeFileSync(path.join(sourceDir, 'index.ts'), 'export {};\n');
+      fs.writeFileSync(path.join(templatesDir, 'seed.ts'), 'import x from \'@src/modules/Users\';\n');
+
+      expect(collectSourceFiles(temporaryRoot, 'packages')).toStrictEqual([
+        path.join(sourceDir, 'index.ts')
+      ]);
+    } finally {
+      fs.rmSync(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+
   it('allows backend @src alias usage', () => {
     expect.hasAssertions();
     const violations = validateImport({

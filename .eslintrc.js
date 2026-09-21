@@ -8,6 +8,9 @@ module.exports = {
       // vendored code is not held to this ruleset. apps/frontend/src follows
       // the Jumentix standard (airbnb + semicolons) and IS linted here.
       'apps/frontend/template',
+      // Packaged CLI seed slices (JUM-845): opaque data copied from apps/*,
+      // not source owned by cli-init. Lint the seeds in their app homes.
+      'packages/cli-init/templates',
       '**/dist/**'
     ],
     parser: '@typescript-eslint/parser',

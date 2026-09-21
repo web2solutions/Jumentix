@@ -1,0 +1,30 @@
+services:
+  redis-server:
+    image: redis/redis-stack-server:latest
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    # So `docker compose up --wait` has something to wait for (JUM-600). The
+    # password is required here: an unauthenticated PING answers NOAUTH, which
+    # is a live server refusing the check rather than a healthy one.
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - '-a'
+        - eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+        - ping
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    networks:
+      - app-network
+    volumes: 
+      - redis-server:/data
+volumes:
+  redis-server:
+    driver: local
+networks:
+    app-network:
+      driver: bridge

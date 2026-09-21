@@ -1,0 +1,35 @@
+# Healthchecks exist so `docker compose up --wait` has something to wait for
+# (JUM-600). `up -d` returns when a container has *started*, and RabbitMQ takes
+# roughly fifteen seconds after that before it accepts an AMQP connection. The
+# broker suite connected into that window and failed with "Socket closed
+# abruptly during opening handshake" — a readiness race that reads exactly like
+# a broken adapter.
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: aaa-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: aaa-rabbitmq
+    restart: unless-stopped
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    healthcheck:
+      # `check_port_connectivity` is what the suite actually needs: the AMQP
+      # listener accepting connections. A plain `ping` returns healthy while
+      # the listener is still binding.
+      test: ['CMD', 'rabbitmq-diagnostics', 'check_port_connectivity']
+      interval: 3s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
