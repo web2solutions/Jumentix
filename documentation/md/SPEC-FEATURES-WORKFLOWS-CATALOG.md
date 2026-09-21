@@ -108,8 +108,11 @@ Includes:
 Required specs:
 
 1. Service management docs in `apps/service-management/documentation/*`
-2. CLI contracts and docs in `packages/cli-init/*`
+2. CLI contracts and docs in `packages/cli-init/*` and
+   `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md` (+ pt-BR);
+   factory modes in `documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md`
 3. Monorepo execution and migration docs
+4. Public on-ramp: `apps/jumentix-website/content/jumentix/concepts/getting-started.mdx`
 
 Mandatory checks:
 

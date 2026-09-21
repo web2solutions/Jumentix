@@ -24,7 +24,7 @@ pelas aplicações Jumentix.
 
 ### Mensageria, bootstrap e contratos
 
-- [`@jumentix/cli-init`](./cli-init/README.pt-BR.md) - CLI de bootstrap de estruturas de projeto.
+- [`@jumentix/cli-init`](./cli-init/README.pt-BR.md) - CLI geradora de fábrica (`init` / `add` / `upgrade` / `doctor`).
 - [`@jumentix/message-mediator`](./message-mediator/README.pt-BR.md) - mediador de eventos e request/response.
 - [`@jumentix/shared-contracts`](./shared-contracts/README.pt-BR.md) - auxiliares compartilhados de resolução de specs canônicas OpenAPI/AsyncAPI.
 

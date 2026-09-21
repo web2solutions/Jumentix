@@ -29,6 +29,7 @@ generates matching SDKs, and uses **Cana (IndexedDB)** for durable offline data.
 | Item | Required | Notes |
 | --- | --- | --- |
 | Bun 1.3.13+ | Yes | [Getting started](/docs/jumentix/concepts/getting-started) |
+| Factory CLI | Recommended | `npx @jumentix/cli-init init --mode=hybrid --frontend` (or `--mode=frontend`) |
 | Service Management app | Recommended | Domain Designer + Communication Interface Designer |
 | Backend contracts | Yes | OpenAPI and/or AsyncAPI from REST/realtime guides |
 | Browser with IndexedDB | Yes | Chrome, Firefox, Safari, Edge |
@@ -44,7 +45,7 @@ generates matching SDKs, and uses **Cana (IndexedDB)** for durable offline data.
 | **designer-core** | `@jumentix/designer-core` — validates design documents (`domains`, `relationships`). |
 | **Cana** | `@jumentix/cana` — IndexedDB adapter; not the same as `localStorage`. |
 | **Conflict strategy** | Rule when offline edits sync — e.g. last-write-wins or domain merge. |
-| **Service profile** | Env keys like `JUMENTIX_HTTP_FRAMEWORK` chosen in Service Configuration. |
+| **Factory CLI** | `@jumentix/cli-init` — generates hybrid/frontend workspaces with baked OAS and modules. |
 
 ## Numbered steps
 
@@ -60,6 +61,24 @@ Open Service Management → **Domain Designer** and define:
 This keeps frontend state models and backend OpenAPI/AsyncAPI aligned from iteration one.
 
 **Success check:** exported design validates with zero blocking issues in designer-core.
+
+### Step 1b — Scaffold hybrid/frontend with the factory CLI (< 5 minutes)
+
+After the design export (or using `--preset=users` for a smoke path), generate
+the SPA/PWA tree instead of hand-copying seeds:
+
+```bash
+npx @jumentix/cli-init init my-spa \
+  --mode=hybrid --frontend --offline \
+  --from=./designer-export.json --non-interactive \
+  --http=express --db=sqlite --install
+```
+
+Use `--mode=frontend` when you only need the client. The generator writes
+`apps/frontend` with merged OAS, one module per domain, and optional Cana via
+`--offline`. See [Getting started](/docs/jumentix/concepts/getting-started).
+
+**Success check:** `my-spa/.jumentix/project.json` exists and `apps/frontend` is present.
 
 ### Step 2 — Define communication contracts (< 10 minutes)
 

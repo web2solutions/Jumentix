@@ -31,15 +31,25 @@ Todos os comandos iniciam o mesmo ponto de entrada da CLI:
 
 - `apps/backend-template/src/interface/CLI/index.ts`
 
-Comando Bootstrap/scaffold:
+Geradora de fábrica / bootstrap (workspace enxuto, não clone do monorepo):
 
 ```bash
+npx @jumentix/cli-init init
+# aliases ainda funcionam:
+jumentix-bootstrap
 bun run cli:bootstrap
 ```
 
-O fluxo de bootstrap também é exposto como comando bin instalável:
+Superfície normativa de comandos:
+[`BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md`](./BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md).
+Modos da fábrica:
+[`JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md`](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md).
+
+O fluxo também é exposto como bins instaláveis:
 
 ```bash
+jumentix
+jumentix-init
 jumentix-bootstrap
 ```
 

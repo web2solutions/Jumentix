@@ -10,17 +10,24 @@ Defina os modos de fábrica de software suportados para Jumentix para que a enge
 
 ## Matriz de Capacidade
 
-| Modo de fábrica | Resultado primário | Interfaces suportadas | Padrão de Comunicação | Estratégia de Persistência | Uso típico |
-|---|---|---|---|---|---|
-| Monólito Modular (Backend) | Serviço de back-end único com vários domínios | REST, substituto WebSocket + REST, substituto gRPC + REST, funções | Solicitação/resposta do MessageMediator em processo + pub/sub | Na memória, SQL, NoSQL via seleção de driver env | Produtos e equipes em estágio inicial otimizando velocidade com caminho de dissociação futuro |
-| Grupo de back-end multisserviço | Vários serviços de back-end em um espaço de trabalho | REST, WebSocket, gRPC, Funções | Mediador baseado em contrato e contratos de eventos por limite de serviço | Seleção de adaptador de banco de dados por serviço | Isolamento de domínio e escalonamento independente por contexto limitado |
-| Back-end híbrido + front-end | Serviços de back-end mais aplicativos SPA/PWA/SSR | Contratos REST + em tempo real consumidos por clientes SDK | Contratos de API (OpenAPI/AsyncAPI) e integração primeiro do evento | Adaptador de backend mais estratégia de armazenamento local/offline de frontend | Entrega de produto ponta a ponta a partir de um monorepo |
-| SPA/PWA off-line somente front-end | Pacote de aplicativos frontend com compatibilidade de contrato API | Aplicativo local + consumo remoto opcional de API | Integração do SDK do cliente com foco no contrato | Armazenamento IndexedDB/local para fluxos offline | Aplicativos de campo e operações com capacidade off-line |
+| Modo de fábrica | CLI `--mode` | Como gerar | Resultado primário | Interfaces suportadas | Padrão de Comunicação | Estratégia de Persistência | Uso típico |
+|---|---|---|---|---|---|---|---|
+| Monólito Modular (Backend) | `monolith` | `jumentix init --mode=monolith --preset=users` (ou `--from`) | Serviço de back-end único com vários domínios | REST, substituto WebSocket + REST, substituto gRPC + REST, funções | Solicitação/resposta do MessageMediator em processo + pub/sub | Na memória, SQL, NoSQL via seleção de driver env | Produtos e equipes em estágio inicial otimizando velocidade com caminho de dissociação futuro |
+| Grupo de back-end multisserviço | `services` | `jumentix init --mode=services --from=<export\|oas>` | Vários serviços de back-end em um espaço de trabalho | REST, WebSocket, gRPC, Funções | Mediador baseado em contrato e contratos de eventos por limite de serviço | Seleção de adaptador de banco de dados por serviço | Isolamento de domínio e escalonamento independente por contexto limitado |
+| Back-end híbrido + front-end | `hybrid` | `jumentix init --mode=hybrid --frontend [--offline]` | Serviços de back-end mais aplicativos SPA/PWA/SSR | Contratos REST + em tempo real consumidos por clientes SDK | Contratos de API (OpenAPI/AsyncAPI) e integração primeiro do evento | Adaptador de backend mais estratégia de armazenamento local/offline de frontend | Entrega de produto ponta a ponta a partir de um monorepo |
+| SPA/PWA off-line somente front-end | `frontend` | `jumentix init --mode=frontend [--offline] --from=<oas>` | Pacote de aplicativos frontend com compatibilidade de contrato API | Aplicativo local + consumo remoto opcional de API | Integração do SDK do cliente com foco no contrato | Armazenamento IndexedDB/local para fluxos offline | Aplicativos de campo e operações com capacidade off-line |
 
-Designer de arquitetura (Service Management): **monólito** é um serviço Core com todos os domínios. **Multi-serviço** é Core (Users + auth) mais serviços de domínio, cada um com URL em `servers` no OAS.
+Designer de arquitetura (Service Management): **monólito** é um serviço Core com todos os
+domínios. **Multi-serviço** é Core (Users + auth) mais serviços de domínio, cada um com URL
+em `servers` no OAS.
+
+Gerador: `@jumentix/cli-init` (`init` / `add` / `upgrade` / `doctor`). Superfície normativa:
+[BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md](./BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md).
 
 ## Seeds de Referência
 
+- Seeds empacotados consumidos pela CLI: `packages/cli-init/templates/{backend,frontend}/`
+  (reconstruídos a partir de `apps/backend-template` e `apps/frontend`).
 - Modos backend: `apps/backend-template`.
 - Modos híbrido e somente front-end: `apps/frontend` — ver
   [Seed de Frontend e o Kit X-CRUD](./FRONTEND-SEED-AND-XCRUD.pt-BR.md) (SPA dirigida pelo contrato
@@ -47,6 +54,7 @@ Designer de arquitetura (Service Management): **monólito** é um serviço Core 
 
 ## Critérios de aceitação
 
-- A seleção do perfil de serviço é mapeada para um dos modos de fábrica acima.
-- Os andaimes gerados incluem arquivos de contrato necessários e scripts de qualidade padrão.
+- O `--mode` da CLI (e o export de arquitetura do designer) mapeia para um dos modos acima.
+- Os scaffolds gerados incluem arquivos de contrato necessários, `.jumentix/project.json` e scripts de qualidade padrão.
 - O índice de documentação faz referência a esta matriz como a fonte canônica de capacidade do produto.
+- Getting-started e docs de bootstrap descrevem geração via `@jumentix/cli-init`, não clone do monorepo.

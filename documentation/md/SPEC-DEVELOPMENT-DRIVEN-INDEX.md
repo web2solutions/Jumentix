@@ -77,6 +77,9 @@ Spec-Driven execution depends on and reuses these existing sources:
 
 - OpenAPI and AsyncAPI contracts (`/spec`)
 - Runtime and architecture docs (`documentation/md`)
+- Factory generator docs (`BOOTSTRAP-CLI-SCAFFOLDING.md`,
+  `JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md`) and public getting-started
+  (`apps/jumentix-website/content/jumentix/concepts/getting-started.mdx`)
 - Agents requirements registry (`.agents/requirements`)
 - NFR registry (`.agents/NFR-REGISTRY.md`)
 - Official AI agent instructions (`AGENTS.md`, `CLAUDE.md`, `GROK.md`)

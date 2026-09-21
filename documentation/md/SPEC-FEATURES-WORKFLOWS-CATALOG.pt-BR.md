@@ -112,8 +112,11 @@ Inclui:
 Especificações necessárias:
 
 1. Documentos de gerenciamento de serviços em `apps/service-management/documentation/*`
-2. Contratos CLI e documentos em `packages/cli-init/*`
-3. Documentos de execução e migração do Monorepo
+2. Contratos CLI e documentos em `packages/cli-init/*` e
+   `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md` (+ pt-BR);
+   modos da fábrica em `documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md`
+3. Documentos de execução e migração do monorepo
+4. Rampa pública: `apps/jumentix-website/content/pt-BR/jumentix/concepts/getting-started.mdx`
 
 Verificações obrigatórias:
 
