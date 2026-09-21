@@ -1,0 +1,163 @@
+{
+  "kind": "service-management-suite",
+  "version": "2.0.0",
+  "domains": [
+    {
+      "id": "domain-users",
+      "name": "Users",
+      "color": "#4F46E5",
+      "x": 120,
+      "y": 90,
+      "entities": [
+        {
+          "id": "entity-user",
+          "name": "User",
+          "x": 14,
+          "y": 14,
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "format": "uuid",
+              "required": true,
+              "pk": true,
+              "fk": false,
+              "unique": true,
+              "indexed": false,
+              "nullable": false
+            },
+            {
+              "name": "username",
+              "type": "string",
+              "required": true,
+              "pk": false,
+              "fk": false,
+              "unique": true,
+              "indexed": false,
+              "nullable": false
+            },
+            {
+              "name": "organizationId",
+              "type": "string",
+              "format": "uuid",
+              "required": false,
+              "pk": false,
+              "fk": true,
+              "unique": false,
+              "indexed": false,
+              "nullable": true
+            }
+          ],
+          "meta": {
+            "aggregateRoot": true,
+            "invariants": [],
+            "rbac": {
+              "list": { "roles": ["admin"], "tenantScoped": true },
+              "getById": { "roles": ["admin"], "tenantScoped": true },
+              "create": { "roles": ["admin"], "tenantScoped": true },
+              "update": { "roles": ["admin"], "tenantScoped": true },
+              "delete": { "roles": ["admin"], "tenantScoped": true }
+            },
+            "contracts": [],
+            "oasComposition": { "mode": "", "refs": "", "externalRefs": "", "discriminator": "" }
+          }
+        },
+        {
+          "id": "entity-org",
+          "name": "Organization",
+          "x": 220,
+          "y": 14,
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "format": "uuid",
+              "required": true,
+              "pk": true,
+              "fk": false,
+              "unique": true,
+              "indexed": false,
+              "nullable": false
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "required": true,
+              "pk": false,
+              "fk": false,
+              "unique": true,
+              "indexed": false,
+              "nullable": false
+            }
+          ],
+          "meta": {
+            "aggregateRoot": true,
+            "invariants": [],
+            "rbac": {
+              "list": { "roles": ["admin"], "tenantScoped": false },
+              "getById": { "roles": ["admin"], "tenantScoped": false },
+              "create": { "roles": ["admin"], "tenantScoped": false },
+              "update": { "roles": ["admin"], "tenantScoped": false },
+              "delete": { "roles": ["admin"], "tenantScoped": false }
+            },
+            "contracts": [],
+            "oasComposition": { "mode": "", "refs": "", "externalRefs": "", "discriminator": "" }
+          }
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-user-org",
+      "name": "UserBelongsToOrganization",
+      "fromEntityId": "entity-user",
+      "toEntityId": "entity-org",
+      "fromCardinality": "many",
+      "toCardinality": "one"
+    }
+  ],
+  "interfaces": [
+    {
+      "type": "http-rest",
+      "framework": "express",
+      "entrypoint": "src/http.ts",
+      "controller": "UsersHttp"
+    }
+  ],
+  "serviceConfiguration": {
+    "serviceKind": "rest-api",
+    "runMode": "local",
+    "cloudProvider": "",
+    "staticAssetsPath": "public",
+    "ports": { "rest": 3000, "websocket": 3001, "grpc": 50051 }
+  },
+  "runtimeEnvironment": {
+    "environment": "dev",
+    "fileName": ".env.dev"
+  },
+  "codeWorkspace": { "files": {}, "activePath": "" },
+  "deployments": [],
+  "architecture": {
+    "services": [
+      {
+        "id": "core",
+        "name": "Core",
+        "kind": "core",
+        "url": "http://localhost:3000/api/1.0.0",
+        "domains": ["domain-users"],
+        "deployTargetId": "",
+        "x": 80,
+        "y": 80,
+        "width": 280,
+        "height": 200
+      }
+    ],
+    "links": []
+  },
+  "view": {
+    "zoom": 1,
+    "panX": 0,
+    "panY": 0
+  }
+}

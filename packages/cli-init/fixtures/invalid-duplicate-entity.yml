@@ -1,0 +1,28 @@
+openapi: 3.1.0
+info:
+  title: Invalid — duplicate entity names
+  version: 1.0.0
+x-services:
+  - id: core
+    name: Core
+    kind: core
+components:
+  schemas:
+    UsersUser:
+      type: object
+      x-primary-key: id
+      x-domain: Users
+      x-entity: User
+      x-service: core
+      properties:
+        id:
+          type: string
+    BillingUser:
+      type: object
+      x-primary-key: id
+      x-domain: Billing
+      x-entity: User
+      x-service: core
+      properties:
+        id:
+          type: string

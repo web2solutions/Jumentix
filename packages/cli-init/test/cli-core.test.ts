@@ -82,7 +82,7 @@ describe('jumentix.init.json round-trip (JUM-844)', () => {
     }
   });
 
-  it('main merges --config into init flags', async () => {
+  it('main merges --config into init flags and resolves GenerationPlan', async () => {
     expect.hasAssertions();
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cli-init-config-main-'));
     try {
@@ -98,8 +98,8 @@ describe('jumentix.init.json round-trip (JUM-844)', () => {
           messages.push(message);
         }
       );
-      expect(code).toBe(1);
-      expect(messages.join('\n')).toContain('not implemented yet');
+      expect(code).toBe(0);
+      expect(messages.join('\n')).toContain('GenerationPlan resolved:');
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
