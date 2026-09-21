@@ -1,0 +1,21 @@
+openapi: 3.1.0
+info:
+  title: Invalid — no core service
+  version: 1.0.0
+x-services:
+  - id: billing
+    name: Billing
+    kind: domain
+components:
+  schemas:
+    Invoice:
+      type: object
+      x-primary-key: id
+      x-domain: Billing
+      x-entity: Invoice
+      x-service: billing
+      properties:
+        id:
+          type: string
+        total:
+          type: number

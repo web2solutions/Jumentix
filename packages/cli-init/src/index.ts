@@ -2,3 +2,22 @@ export { main, printRootHelp, runAsCli } from './cli';
 export { parseArgv, looksLikeLegacyInvocation, mapLegacyServiceTypeToMode } from './args';
 export { createPrompt } from './prompt';
 export { readInitConfig, writeInitConfig } from './config';
+export {
+  resolveSources,
+  printPlanSummary,
+  validateGenerationPlan,
+  SourceResolutionError,
+  SOURCE_MESSAGES,
+  loadOasSource,
+  loadDesignerExportSource,
+  loadCatalogSource,
+  loadPresetSource
+} from './sources';
+export type {
+  GenerationPlan,
+  GenerationMode,
+  PlanService,
+  PlanDomain,
+  PlanEntity,
+  SourceResolveOptions
+} from './sources';
