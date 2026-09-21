@@ -14,23 +14,45 @@ type JsonObject = Record<string, unknown>;
 
 /** Kebab/camel-safe module or entity folder slug. */
 export function slugifyIdentifier(raw: string, fallback = 'module'): string {
-  const slug = String(raw || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  return slug || fallback;
+  const source = String(raw || '').trim().toLowerCase();
+  let out = '';
+  let pendingSep = false;
+  for (let i = 0; i < source.length; i += 1) {
+    const ch = source.charAt(i);
+    if ((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')) {
+      if (pendingSep && out.length > 0) {
+        out += '-';
+        pendingSep = false;
+      }
+      out += ch;
+    } else if (out.length > 0) {
+      pendingSep = true;
+    }
+  }
+  return out || fallback;
 }
 
 /** camelCase identifier from entity name (User → user, Organization → organization). */
 export function camelCaseName(raw: string): string {
-  const cleaned = String(raw || '')
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  if (cleaned.length === 0) return 'entity';
-  return cleaned
+  const parts: string[] = [];
+  let current = '';
+  const source = String(raw || '');
+  for (let i = 0; i < source.length; i += 1) {
+    const ch = source.charAt(i);
+    if (
+      (ch >= 'a' && ch <= 'z')
+      || (ch >= 'A' && ch <= 'Z')
+      || (ch >= '0' && ch <= '9')
+    ) {
+      current += ch;
+    } else if (current) {
+      parts.push(current);
+      current = '';
+    }
+  }
+  if (current) parts.push(current);
+  if (parts.length === 0) return 'entity';
+  return parts
     .map((part, index) => {
       const lower = part.toLowerCase();
       if (index === 0) return lower;
