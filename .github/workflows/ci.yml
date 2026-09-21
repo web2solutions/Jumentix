@@ -485,6 +485,7 @@ jobs:
       - name: Enforce full coverage thresholds
         run: bun run coverage:check
       - name: Produce frontend coverage for the patch report
+        if: github.event_name == 'pull_request'
         run: bun run frontend:test:coverage
       - name: Enforce patch coverage
         run: |
