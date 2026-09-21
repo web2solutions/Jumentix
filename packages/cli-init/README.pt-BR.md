@@ -150,6 +150,22 @@ Ao aplicar, grava `.jumentix/upgrade-<version>.md`.
 Saída `0` quando saudável, `1` para blockers de projeto, `2` para blockers de
 ambiente (por exemplo bun ausente).
 
+## Matriz e2e de geração (JUM-854)
+
+`test/e2e/run-generation-matrix.ts` executa a matriz de geração da fábrica
+(monolith/express/sqlite, monolith/fastify/postgres, services, hybrid,
+frontend-only, `--offline`). O `bun test` padrão sempre exercita a célula
+sem Docker `monolith/express/sqlite` (gera em tmp e verifica `apps/*`).
+Células Docker pesadas só rodam com `CLI_INIT_E2E_DOCKER=1` e Docker
+disponível; caso contrário fazem skip com motivo nomeado. Opcional:
+`CLI_INIT_E2E_INSTALL=1` para `bun install` após a geração. Cada célula
+registra o tempo; falhas nomeiam o comando que falhou.
+
+```bash
+bun run --cwd packages/cli-init test
+CLI_INIT_E2E_DOCKER=1 bun run --cwd packages/cli-init test ./test/e2e
+```
+
 ## Documentos normativos
 
 - `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`
@@ -159,8 +175,8 @@ ambiente (por exemplo bun ausente).
 
 Roteamento de comandos, resolução de fontes, geração de backend/frontend,
 montagem do workspace raiz, `add domain|service|frontend`, `upgrade` (merge
-de três vias) e `doctor` estão ativos. `--mode=monolith` sem `--from`/`--preset`
-ainda cai no clone legado do monorepo.
+de três vias), `doctor` e a matriz e2e de geração (JUM-854) estão ativos.
+`--mode=monolith` sem `--from`/`--preset` ainda cai no clone legado do monorepo.
 
 ```bash
 bun ./packages/cli-init/bin/jumentix-init.js --help

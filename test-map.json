@@ -4762,6 +4762,17 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cli-init/test/e2e/generation-matrix.test.ts",
+      "path": "packages/cli-init/test/e2e/generation-matrix.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 180000,
+      "reason": "Generation e2e matrix (JUM-854); default cell is non-Docker monolith/express/sqlite; Docker cells gated by CLI_INIT_E2E_DOCKER=1."
+    },
+    {
       "id": "packages/cli-init/test/frontend-generation.test.ts",
       "path": "packages/cli-init/test/frontend-generation.test.ts",
       "layer": "tooling",
@@ -5924,9 +5935,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 345,
+    "unit": 347,
     "integration": 102,
     "smoke": 2,
-    "suites": 508
+    "suites": 510
   }
 }
