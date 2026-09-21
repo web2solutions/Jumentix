@@ -394,7 +394,7 @@ export function listGeneratedFiles(rootDir: string): string[] {
     }
   };
   walk(rootDir);
-  return files.sort();
+  return files.sort((left, right) => left.localeCompare(right));
 }
 
 /**

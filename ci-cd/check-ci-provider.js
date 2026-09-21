@@ -11,8 +11,10 @@ const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
 const feedbackWorkflowPath = path.join(root, '.github', 'workflows', 'pr-feedback.yml');
 const sonarReliabilityWorkflowPath = path.join(root, '.github', 'workflows', 'sonar-reliability.yml');
+const browserMatrixWorkflowPath = path.join(root, '.github', 'workflows', 'browser-matrix.yml');
 const preCommitPath = path.join(root, '.husky', 'pre-commit');
 const packagePath = path.join(root, 'package.json');
+const unitRunnerPath = path.join(root, 'ci-cd', 'run-unit-tests.js');
 const sonarPath = path.join(root, 'sonar-project.properties');
 
 if (!fs.existsSync(circleciPath)) {
@@ -28,7 +30,8 @@ if (!fs.existsSync(workflowPath)) {
   const serviceContents = fs.existsSync(servicesPath) ? fs.readFileSync(servicesPath, 'utf8') : '';
   const dockerRuntimeContents = fs.existsSync(dockerRuntimePath) ? fs.readFileSync(dockerRuntimePath, 'utf8') : '';
   const packageContents = fs.existsSync(packagePath) ? fs.readFileSync(packagePath, 'utf8') : '';
-  const ciContents = `${contents}\n${serviceContents}\n${dockerRuntimeContents}\n${packageContents}`;
+  const unitRunnerContents = fs.existsSync(unitRunnerPath) ? fs.readFileSync(unitRunnerPath, 'utf8') : '';
+  const ciContents = `${contents}\n${serviceContents}\n${dockerRuntimeContents}\n${packageContents}\n${unitRunnerContents}`;
   const requiredMarkers = [
     /name:\s*CI/,
     /pull_request:/,
@@ -42,6 +45,8 @@ if (!fs.existsSync(workflowPath)) {
     /bash \/tmp\/bun-install\.sh "bun-v\$BUN_VERSION"/,
     /test -x "\$HOME\/\.bun\/bin\/bun"/,
     /branch-gate:/,
+    /pr-feedback:/,
+    /Enforce resolved PR feedback/,
     /sync-changelog:/,
     /github\.event_name == 'push' && github\.ref_name == 'dev'/,
     /needs:\s*branch-gate/,
@@ -73,9 +78,11 @@ if (!fs.existsSync(workflowPath)) {
     /rabbitmq:3\.13-alpine/,
     /ci-cd\/ensure-docker-runtime\.sh/,
     /open -ga Docker/,
-    /bun install --frozen-lockfile/,
+    /install --frozen-lockfile/,
     /bun run mono:build/,
     /mono:build:deps/,
+    /workspace:build:packages/,
+    /test:unit[\s\S]*--conditions=development/,
     /bun run mono:test/,
     /bun run ci:integration/,
     /website:deps:build/,
@@ -112,6 +119,16 @@ if (!fs.existsSync(workflowPath)) {
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
+  }
+
+  const packageScripts = JSON.parse(packageContents).scripts || {};
+  const workspaceBuild = packageScripts['workspace:build:packages'];
+  const taskGate = packageScripts['ci:gate:task'];
+  if (workspaceBuild !== "bun run --filter @jumentix/cana build && bun run --filter './packages/*' build") {
+    failures.push('Workspace package build must build @jumentix/cana before dependent packages');
+  }
+  if (taskGate !== 'bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js') {
+    failures.push('Task quality gate must build publishable workspace packages before running selected tests');
   }
 
   if (!/slug:\s*web2solutions\/Jumentix/.test(contents) || !/disable_search:\s*true/.test(contents)) {
@@ -192,22 +209,84 @@ function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMar
 }
 
 checkTrustedPullRequestWorkflow(feedbackWorkflowPath, 'PR feedback workflow', [
-  /name:\s*PR feedback/,
-  /pr-feedback:/,
+  /name:\s*PR feedback trusted/,
+  /pr-feedback-trusted:/,
   /issues:\s*read/,
   /GH_TOKEN:\s*\$\{\{ github\.token \}\}/,
   /check-pr-feedback\.js --repo/,
   /github\.event\.pull_request\.number/
 ]);
 
-checkTrustedPullRequestWorkflow(sonarReliabilityWorkflowPath, 'Sonar reliability workflow', [
-  /name:\s*Sonar reliability/,
-  /sonar-reliability:/,
-  /SONAR_TOKEN:\s*\$\{\{ secrets\.SONARCLOUD_TOKEN \}\}/,
-  /SONAR_PULL_REQUEST:\s*\$\{\{ github\.event\.pull_request\.number \}\}/,
-  /bun run sonar:check-reliability/,
-  /seq 1 18/
-]);
+function checkSonarReliabilityWorkflow(workflowPathToCheck) {
+  if (!fs.existsSync(workflowPathToCheck)) {
+    failures.push(`Missing required Sonar reliability workflow: ${path.relative(root, workflowPathToCheck)}`);
+    return;
+  }
+  const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
+  const requiredMarkers = [
+    /name:\s*Sonar reliability/,
+    /pull_request:/,
+    /branches:\s*\n\s*- dev\s*\n\s*- main/,
+    /sonar-reliability:/,
+    /permissions:\s*\n\s*contents:\s*read/,
+    /uses:\s*actions\/checkout@v5/,
+    /fetch-depth:\s*0/,
+    /persist-credentials:\s*false/,
+    /SONAR_TOKEN:\s*\$\{\{ secrets\.SONARCLOUD_TOKEN \}\}/,
+    /SONAR_PULL_REQUEST:\s*\$\{\{ github\.event\.pull_request\.number \}\}/,
+    /sonar-scanner/,
+    /-Dsonar\.pullrequest\.key="\$SONAR_PULL_REQUEST"/,
+    /-Dsonar\.pullrequest\.branch="\$SONAR_PULL_REQUEST_BRANCH"/,
+    /-Dsonar\.pullrequest\.base="\$SONAR_PULL_REQUEST_BASE"/,
+    /bun run sonar:check-reliability/,
+    /seq 1 18/
+  ];
+  for (const marker of requiredMarkers) {
+    if (!marker.test(contents)) failures.push(`Sonar reliability workflow is missing ${String(marker)}`);
+  }
+  if (/pull_request_target:|git worktree add|refs\/pull\/\$\{SONAR_PULL_REQUEST\}\/merge/.test(contents)) {
+    failures.push('Sonar reliability must analyze PR code only in the unprivileged pull_request workflow.');
+  }
+  if (/(?:contents|issues|pull-requests|actions|checks):\s*write/.test(contents)) {
+    failures.push('Sonar reliability workflow must retain read-only GitHub token permissions.');
+  }
+}
+
+checkSonarReliabilityWorkflow(sonarReliabilityWorkflowPath);
+
+function checkBrowserMatrixWorkflow(workflowPathToCheck) {
+  if (!fs.existsSync(workflowPathToCheck)) {
+    failures.push(`Missing required browser matrix workflow: ${path.relative(root, workflowPathToCheck)}`);
+    return;
+  }
+  const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
+  const requiredMarkers = [
+    /name:\s*Browser matrix/,
+    /pull_request:/,
+    /branches:\s*\n\s*- dev\s*\n\s*- main/,
+    /browser-matrix:/,
+    /contents:\s*read/,
+    /uses:\s*actions\/checkout@v5/,
+    /persist-credentials:\s*false/,
+    /BUN_VERSION:\s*1\.3\.13/,
+    /export PATH="\$HOME\/\.bun\/bin:\$PATH"/,
+    /install --frozen-lockfile/,
+    /bun x cypress install/,
+    /bun x cypress verify/,
+    /bun x playwright install webkit/,
+    /bun x playwright install-deps webkit/,
+    /for engine in chrome firefox webkit/,
+    /packages\/cana\/scripts\/run-browser-tests\.js/
+  ];
+  for (const marker of requiredMarkers) {
+    if (!marker.test(contents)) failures.push(`Browser matrix workflow is missing ${String(marker)}`);
+  }
+  if (/pull_request_target:|secrets\./.test(contents)) {
+    failures.push('Browser matrix must run untrusted PR code without privileged events or secrets.');
+  }
+}
+
+checkBrowserMatrixWorkflow(browserMatrixWorkflowPath);
 
 if (!fs.existsSync(preCommitPath)) {
   failures.push('Missing required local hook: .husky/pre-commit');

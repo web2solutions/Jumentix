@@ -66,15 +66,20 @@ function requestedBrowser(options = {}) {
     || 'chrome';
 }
 
-/** Every `*.cy.ts` under any package's `cypress/` directory. */
-function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync(root) : []) {
+function isPackageCypressFile(specRoot, filePath, suffix) {
+  const parts = path.relative(specRoot, filePath).split(path.sep);
+  return parts.length >= 3 && parts[1] === 'cypress' && parts.at(-1).endsWith(suffix);
+}
+
+/** Every `*.cy.ts` directly under a workspace package's `cypress/` directory. */
+function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync(root) : [], specRoot = root) {
   return list.flatMap((name) => {
     const full = path.join(root, name);
     if (fs.statSync(full).isDirectory()) {
       if (name === 'node_modules' || name === 'dist' || name === '.build') return [];
-      return findSpecs(full);
+      return findSpecs(full, undefined, specRoot);
     }
-    return full.endsWith('.cy.ts') ? [full] : [];
+    return isPackageCypressFile(specRoot, full, '.cy.ts') ? [full] : [];
   });
 }
 
@@ -86,15 +91,16 @@ function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync
  */
 function findWorkerEntries(
   root = SPEC_ROOT,
-  list = fs.existsSync(root) ? fs.readdirSync(root) : []
+  list = fs.existsSync(root) ? fs.readdirSync(root) : [],
+  specRoot = root
 ) {
   return list.flatMap((name) => {
     const full = path.join(root, name);
     if (fs.statSync(full).isDirectory()) {
       if (name === 'node_modules' || name === 'dist' || name === '.build') return [];
-      return findWorkerEntries(full);
+      return findWorkerEntries(full, undefined, specRoot);
     }
-    return full.endsWith('-worker.ts') && full.includes(`${path.sep}cypress${path.sep}support${path.sep}`)
+    return isPackageCypressFile(specRoot, full, '-worker.ts') && full.includes(`${path.sep}cypress${path.sep}support${path.sep}`)
       ? [full]
       : [];
   });
@@ -250,6 +256,7 @@ module.exports = {
   buildAll,
   findSpecs,
   findWorkerEntries,
+  isPackageCypressFile,
   main,
   requestedBrowser,
   run,

@@ -1,7 +1,7 @@
 name: Sonar reliability
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - dev
       - main
@@ -14,14 +14,12 @@ jobs:
     name: sonar-reliability
     permissions:
       contents: read
-      pull-requests: read
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout trusted PR base
+      - name: Checkout PR merge result
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
       - name: Install Bun
         run: |
@@ -30,6 +28,32 @@ jobs:
           bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
           test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Install Sonar scanner
+        run: |
+          set -euo pipefail
+          sonar_version="7.1.0.4889"
+          sonar_dir="/tmp/sonar-scanner-${sonar_version}-linux-x64"
+          curl -fsSL -o /tmp/sonar-scanner.zip \
+            "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${sonar_version}-linux-x64.zip"
+          unzip -qo /tmp/sonar-scanner.zip -d /tmp
+          test -x "${sonar_dir}/bin/sonar-scanner"
+          echo "${sonar_dir}/bin" >> "$GITHUB_PATH"
+      - name: Analyze PR reliability
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+          SONAR_PULL_REQUEST: ${{ github.event.pull_request.number }}
+          SONAR_PULL_REQUEST_BRANCH: ${{ github.head_ref }}
+          SONAR_PULL_REQUEST_BASE: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          sonar-scanner \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token="$SONAR_TOKEN" \
+            -Dsonar.organization=web2solutions \
+            -Dsonar.projectKey=web2solutions_Jumentix \
+            -Dsonar.pullrequest.key="$SONAR_PULL_REQUEST" \
+            -Dsonar.pullrequest.branch="$SONAR_PULL_REQUEST_BRANCH" \
+            -Dsonar.pullrequest.base="$SONAR_PULL_REQUEST_BASE"
       - name: Await SonarCloud PR analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}

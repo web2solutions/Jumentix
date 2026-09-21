@@ -41,7 +41,7 @@ export function threeWayMerge(base: string, ours: string, theirs: string): {
     fs.writeFileSync(oursPath, ours, 'utf8');
     fs.writeFileSync(theirsPath, theirs, 'utf8');
     const result = spawnSync(
-      'git',
+      '/usr/bin/git',
       [
         'merge-file',
         '-p',
@@ -170,7 +170,7 @@ export function summarizeResults(results: UpgradeFileResult[]): UpgradeReport {
     report[entry.status].push(entry.path);
   }
   for (const key of Object.keys(report) as Array<keyof UpgradeReport>) {
-    report[key].sort();
+    report[key].sort((left, right) => left.localeCompare(right));
   }
   return report;
 }

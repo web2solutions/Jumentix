@@ -108,6 +108,33 @@ jobs:
         if: always()
         run: find artifacts/ci -maxdepth 2 -type f -print || true
 
+  pr-feedback:
+    name: pr-feedback
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted PR base
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Enforce resolved PR feedback
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun ci-cd/check-pr-feedback.js --repo "$GITHUB_REPOSITORY" --pr "${{ github.event.pull_request.number }}"
+
   sync-changelog:
     name: sync-changelog
     if: github.event_name == 'push' && github.ref_name == 'dev'

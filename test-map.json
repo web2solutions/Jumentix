@@ -4712,6 +4712,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cana/test/scripts/run-browser-tests.test.ts",
+      "path": "packages/cana/test/scripts/run-browser-tests.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "packages/cli-init/test/add-commands.test.ts",
       "path": "packages/cli-init/test/add-commands.test.ts",
       "layer": "tooling",

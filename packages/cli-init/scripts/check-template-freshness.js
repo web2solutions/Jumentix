@@ -50,11 +50,11 @@ function readCommittedTemplates(packageDir, exclusions = DEFAULT_EXCLUSIONS) {
 }
 
 function readManifest(manifestPath) {
-  if (!fs.existsSync(manifestPath)) return null;
+  if (!fs.existsSync(manifestPath)) return { status: 'missing' };
   try {
-    return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  } catch (error) {
-    return { __parseError: error instanceof Error ? error.message : String(error) };
+    return { status: 'ready', value: JSON.parse(fs.readFileSync(manifestPath, 'utf8')) };
+  } catch {
+    return { status: 'invalid' };
   }
 }
 
@@ -85,7 +85,7 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
   const expectedPaths = new Set(expected.keys());
   const actualPaths = new Set(actual.keys());
 
-  for (const templatePath of [...expectedPaths].sort()) {
+  for (const templatePath of [...expectedPaths].sort((left, right) => left.localeCompare(right))) {
     if (!actualPaths.has(templatePath)) {
       failures.push(
         `[cli-init template-freshness] missing packaged file: templates/${templatePath}`
@@ -104,7 +104,7 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     }
   }
 
-  for (const templatePath of [...actualPaths].sort()) {
+  for (const templatePath of [...actualPaths].sort((left, right) => left.localeCompare(right))) {
     if (!expectedPaths.has(templatePath)) {
       failures.push(
         `[cli-init template-freshness] unexpected packaged file: templates/${templatePath}`
@@ -113,20 +113,19 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     }
   }
 
-  const manifest = readManifest(manifestPath);
-  if (!manifest) {
+  const manifestResult = readManifest(manifestPath);
+  if (manifestResult.status === 'missing') {
     failures.push(
       '[cli-init template-freshness] missing packages/cli-init/templates.manifest.json'
       + ' — run `bun run cli:build-templates`'
     );
     return failures;
   }
-  if (manifest.__parseError) {
-    failures.push(
-      `[cli-init template-freshness] unreadable templates.manifest.json: ${manifest.__parseError}`
-    );
+  if (manifestResult.status === 'invalid') {
+    failures.push('[cli-init template-freshness] unreadable templates.manifest.json');
     return failures;
   }
+  const manifest = manifestResult.value;
 
   const sourceCommit = options.sourceCommit || resolveSourceCommit(root);
   const expectedManifest = buildManifest(expected, sourceCommit, exclusions);
@@ -159,7 +158,7 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     }
   }
 
-  for (const templatePath of Object.keys(manifestFiles).sort()) {
+  for (const templatePath of Object.keys(manifestFiles).sort((left, right) => left.localeCompare(right))) {
     if (!expectedManifest.files[templatePath]) {
       failures.push(
         `[cli-init template-freshness] manifest has stale entry: ${templatePath}`
@@ -183,7 +182,7 @@ function run(root = REPO_ROOT, options = {}) {
   return 0;
 }
 
-if (require.main === module) {
+if (require.main?.filename === __filename) {
   try {
     process.exitCode = run();
   } catch (error) {

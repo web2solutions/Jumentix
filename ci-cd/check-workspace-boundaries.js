@@ -62,6 +62,55 @@ function readImports(source) {
   return imports;
 }
 
+function readWorkspaceManifest(rootDir, relativeWorkspacePath) {
+  const manifestPath = path.join(rootDir, relativeWorkspacePath, 'package.json');
+  if (!fs.existsSync(manifestPath)) return null;
+  return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+}
+
+function workspaceManifests(rootDir) {
+  const roots = ['apps', 'packages'];
+  return roots.flatMap((root) => {
+    const absoluteRoot = path.join(rootDir, root);
+    if (!fs.existsSync(absoluteRoot)) return [];
+    return fs.readdirSync(absoluteRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => {
+        const relativePath = path.join(root, entry.name);
+        const manifest = readWorkspaceManifest(rootDir, relativePath);
+        return manifest?.name ? { manifest, relativePath } : null;
+      })
+      .filter(Boolean);
+  });
+}
+
+function workspaceDependencyViolations({ rootDir, filePath, imports, manifests }) {
+  const relativeFilePath = path.relative(rootDir, filePath);
+  const workspace = manifests.find(({ relativePath }) => (
+    relativeFilePath === relativePath || relativeFilePath.startsWith(`${relativePath}${path.sep}`)
+  ));
+  if (!workspace) return [];
+
+  const usesTestDependency = relativeFilePath.includes(`${path.sep}test${path.sep}`);
+  const declared = {
+    ...(workspace.manifest.dependencies || {}),
+    ...(workspace.manifest.optionalDependencies || {}),
+    ...(workspace.manifest.peerDependencies || {}),
+    ...(usesTestDependency ? (workspace.manifest.devDependencies || {}) : {})
+  };
+  const localPackages = new Set(manifests.map(({ manifest }) => manifest.name));
+  const violations = [];
+  for (const importPath of imports) {
+    if (!localPackages.has(importPath) || importPath === workspace.manifest.name) continue;
+    if (!Object.prototype.hasOwnProperty.call(declared, importPath)) {
+      violations.push(
+        `${relativeFilePath}: ${importPath} is a local workspace dependency and must be declared in ${workspace.relativePath}/package.json`
+      );
+    }
+  }
+  return violations;
+}
+
 function classifyZone(relativeFilePath) {
   if (relativeFilePath.startsWith(`apps${path.sep}backend-template${path.sep}`)) return 'backend';
   if (relativeFilePath.startsWith(`apps${path.sep}service-management${path.sep}`)) return 'service-management';
@@ -120,6 +169,7 @@ function run() {
     'packages'
   ];
   const files = targets.flatMap((target) => collectSourceFiles(rootDir, target));
+  const manifests = workspaceManifests(rootDir);
   const violations = [];
 
   for (const filePath of files) {
@@ -135,6 +185,7 @@ function run() {
         importPath
       }));
     }
+    violations.push(...workspaceDependencyViolations({ rootDir, filePath, imports, manifests }));
   }
 
   if (violations.length > 0) {
@@ -154,5 +205,7 @@ module.exports = {
   classifyZone,
   collectSourceFiles,
   readImports,
+  workspaceDependencyViolations,
+  workspaceManifests,
   validateImport
 };

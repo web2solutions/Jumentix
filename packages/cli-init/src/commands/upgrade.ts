@@ -109,7 +109,7 @@ function writeJson(filePath: string, value: unknown): void {
 
 export function isGitWorkingTreeDirty(rootDir: string): boolean {
   if (!fs.existsSync(path.join(rootDir, '.git'))) return false;
-  const result = spawnSync('git', ['status', '--porcelain'], {
+  const result = spawnSync('/usr/bin/git', ['status', '--porcelain'], {
     cwd: rootDir,
     encoding: 'utf8'
   });
@@ -282,7 +282,7 @@ export async function runUpgrade(options: {
   ]);
 
   const results: UpgradeFileResult[] = [];
-  for (const rel of [...paths].sort()) {
+  for (const rel of [...paths].sort((left, right) => left.localeCompare(right))) {
     if (!shouldSkipUpgradePath(rel)) {
       const baseHash = manifest.files?.[rel]?.sha256;
       const absolute = path.join(rootDir, ...rel.split('/'));

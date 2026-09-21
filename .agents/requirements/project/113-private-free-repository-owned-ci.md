@@ -33,7 +33,7 @@
 ## Required CI plan
 
 - Task branches: changed/related tests selected from `test-map.json`.
-- PRs to `dev`: the layer-aware task gate, plus mandatory lightweight third-party review; operational target is ten minutes or less.
+- PRs to `dev`: the layer-aware task gate, mandatory lightweight third-party review, the no-secret Chrome/Firefox/WebKit browser matrix, and a fail-closed SonarCloud reliability-A check; operational target is ten minutes or less.
 - Pushes to `dev`: cheap unit health gate.
 - Promotions to `main`: complete strict matrix, coverage, website, database smoke, third-party review, Codecov publishing, and Sonar defense-in-depth while configured.
 - Pushes to `main`: the same full suite remains mandatory after promotion.
@@ -44,4 +44,4 @@
 - `bun run ci:check-provider`
 - `bun run integrations:check`
 - Full-suite `coverage` job during release/main contexts: `bun run test:coverage && bun run coverage:check && bun run coverage:patch`, followed by Codecov upload and SonarQube Cloud scan.
-- Required task PR checks use GitHub Actions job names `branch-gate` and `third-party-review`; required release/main checks use `branch-gate`, `workspace-builds`, `workspace-tests`, `integration`, `coverage`, `website`, `third-party-review`, and `database-matrix`.
+- Required protected-branch PR checks include `branch-gate`, `third-party-review`, `browser-matrix`, and `sonar-reliability`; release/main checks additionally use `workspace-builds`, `workspace-tests`, `integration`, `coverage`, `website`, and `database-matrix`.

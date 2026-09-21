@@ -450,10 +450,11 @@ describe('run-full-test-matrix', () => {
     expect(fullMatrixRootPackage.scripts['ci:gate:branch'])
       .toBe('bun ci-cd/run-branch-quality-gate.js');
     expect(fullMatrixRootPackage.scripts['ci:gate:task'])
-      .toBe('bun ci-cd/run-task-change-tests.js');
+      .toBe('bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js');
     expect([
       fullMatrixRootPackage.scripts['mono:build'].includes('bun run mono:build:deps && bun run --filter'),
       fullMatrixRootPackage.scripts['mono:build:deps'] === 'bun run --filter @jumentix/cana build',
+      fullMatrixRootPackage.scripts['workspace:build:packages'] === 'bun run --filter @jumentix/cana build && bun run --filter \'./packages/*\' build',
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
@@ -492,7 +493,7 @@ describe('run-full-test-matrix', () => {
       !FULL_TEST_MATRIX.some(
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
-    ]).toStrictEqual(Array(38).fill(true));
+    ]).toStrictEqual(Array(39).fill(true));
   });
 });
 

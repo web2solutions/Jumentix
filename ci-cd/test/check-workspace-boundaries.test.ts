@@ -6,6 +6,7 @@ const {
   classifyZone,
   collectSourceFiles,
   readImports,
+  workspaceDependencyViolations,
   validateImport
 } = require('../check-workspace-boundaries');
 
@@ -32,6 +33,40 @@ describe('check-workspace-boundaries', () => {
       '@jumentix/message-mediator',
       './local-module'
     ]);
+  });
+
+  it('requires source imports of local packages to be declared dependencies', () => {
+    expect.hasAssertions();
+    const dependencies: Record<string, string> = {};
+    const manifests = [
+      {
+        relativePath: path.join('apps', 'backend-template'),
+        manifest: { name: '@jumentix/backend-template', dependencies }
+      },
+      {
+        relativePath: path.join('packages', 'message-mediator'),
+        manifest: { name: '@jumentix/message-mediator' }
+      }
+    ];
+    const filePath = path.join(rootDir, 'apps', 'backend-template', 'src', 'messages.ts');
+
+    expect(workspaceDependencyViolations({
+      rootDir,
+      filePath,
+      imports: ['@jumentix/message-mediator'],
+      manifests
+    })).toStrictEqual([
+      'apps/backend-template/src/messages.ts: @jumentix/message-mediator is a local workspace dependency '
+      + 'and must be declared in apps/backend-template/package.json'
+    ]);
+
+    dependencies['@jumentix/message-mediator'] = 'workspace:*';
+    expect(workspaceDependencyViolations({
+      rootDir,
+      filePath,
+      imports: ['@jumentix/message-mediator'],
+      manifests
+    })).toStrictEqual([]);
   });
 
   it('does not scan generated dist output', () => {

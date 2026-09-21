@@ -20,7 +20,8 @@ that integration stage. Applying a reduced gate to `main` would weaken release s
 4. Local commits and pushes to feature, docs, fix, and other task branches run
    only specialized changed/related tests. A PR to `dev` runs the layer-aware
    specialized gate plus lightweight review in GitHub Actions; a release-promotion PR
-   from `dev` to `main` runs the full matrix.
+   from `dev` to `main` runs the full matrix. Every PR to either protected branch also
+   runs the required no-secret browser matrix and a fail-closed SonarCloud reliability-A check.
 5. The branch-aware selector must fail closed for command crashes, missing status, and
    non-zero exit status, and must emit auditable JSON evidence.
 6. This policy does not relax branch protection, task isolation, coverage thresholds,
@@ -40,7 +41,8 @@ that integration stage. Applying a reduced gate to `main` would weaken release s
 
 ## Acceptance Criteria
 
-- Task branches invoke `ci:gate:task`; direct `dev` pushes invoke `test:unit`;
+- Task branches invoke `ci:gate:task` (which builds publishable workspace packages
+  before selecting tests); direct `dev` pushes invoke `test:unit`;
   PRs targeting `dev` invoke `ci:gate:task`.
 - `main` paths invoke `ci:gate:strict`.
 - Unit tests cover branch selection, evidence generation, failed status, and crashes.
