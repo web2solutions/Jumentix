@@ -78,9 +78,22 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/sonar-reliability.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('SONAR_PULL_REQUEST:', 'SONAR_PULL_REQUEST_REMOVED:'));
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/SONAR_PULL_REQUEST:/g, 'SONAR_PULL_REQUEST_REMOVED:'));
     });
     expect(run(directory).output).toContain('SONAR_PULL_REQUEST');
+  });
+
+  it('fails when the trusted Sonar workflow stops analyzing the PR merge result', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/sonar-reliability.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('-Dsonar.pullrequest.key="$SONAR_PULL_REQUEST"', '-Dsonar.pullrequest.key="removed"')
+      );
+    });
+    expect(run(directory).output).toContain('sonar\\.pullrequest\\.key');
   });
 
   it('fails when the required browser matrix is absent or can receive secrets', () => {

@@ -129,7 +129,7 @@ function findManifestDrift(rootDir: string, manifest: ManifestDocument): string[
       drifted.push(rel);
     }
   }
-  return drifted.sort();
+  return drifted.sort((left, right) => left.localeCompare(right));
 }
 
 function expectedAppPaths(plan: GenerationPlan): string[] {
@@ -143,7 +143,7 @@ function expectedAppPaths(plan: GenerationPlan): string[] {
     plan.frontend || plan.mode === 'hybrid' || plan.mode === 'frontend'
   );
   if (wantsFrontend) apps.push('apps/frontend');
-  return [...new Set(apps)].sort();
+  return [...new Set(apps)].sort((left, right) => left.localeCompare(right));
 }
 
 function collectEnvironmentFindings(probe: DoctorProbe): DoctorFinding[] {

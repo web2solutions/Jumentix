@@ -85,7 +85,7 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
   const expectedPaths = new Set(expected.keys());
   const actualPaths = new Set(actual.keys());
 
-  for (const templatePath of [...expectedPaths].sort()) {
+  for (const templatePath of [...expectedPaths].sort((left, right) => left.localeCompare(right))) {
     if (!actualPaths.has(templatePath)) {
       failures.push(
         `[cli-init template-freshness] missing packaged file: templates/${templatePath}`
@@ -104,7 +104,7 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     }
   }
 
-  for (const templatePath of [...actualPaths].sort()) {
+  for (const templatePath of [...actualPaths].sort((left, right) => left.localeCompare(right))) {
     if (!expectedPaths.has(templatePath)) {
       failures.push(
         `[cli-init template-freshness] unexpected packaged file: templates/${templatePath}`
@@ -159,7 +159,7 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     }
   }
 
-  for (const templatePath of Object.keys(manifestFiles).sort()) {
+  for (const templatePath of Object.keys(manifestFiles).sort((left, right) => left.localeCompare(right))) {
     if (!expectedManifest.files[templatePath]) {
       failures.push(
         `[cli-init template-freshness] manifest has stale entry: ${templatePath}`
@@ -183,7 +183,7 @@ function run(root = REPO_ROOT, options = {}) {
   return 0;
 }
 
-if (require.main === module) {
+if (require.main?.filename === __filename) {
   try {
     process.exitCode = run();
   } catch (error) {

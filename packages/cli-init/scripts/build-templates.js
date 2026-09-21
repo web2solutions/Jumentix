@@ -240,7 +240,7 @@ function run(root = REPO_ROOT) {
   return 0;
 }
 
-if (require.main === module) {
+if (require.main?.filename === __filename) {
   try {
     process.exitCode = run();
   } catch (error) {

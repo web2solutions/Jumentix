@@ -85,7 +85,7 @@ function copyTemplateSlice(
 
   fs.mkdirSync(destRoot, { recursive: true });
   walk(templateRoot);
-  return [...new Set(dropped)].sort();
+  return [...new Set(dropped)].sort((left, right) => left.localeCompare(right));
 }
 
 function writeFilteredOas(serviceRoot: string, service: PlanService, plan: GenerationPlan): void {

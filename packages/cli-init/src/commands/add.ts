@@ -115,7 +115,7 @@ function findManifestDrift(rootDir: string, manifest: ManifestDocument): string[
       drifted.push(rel);
     }
   }
-  return drifted.sort();
+  return drifted.sort((left, right) => left.localeCompare(right));
 }
 
 function assertNoDrift(

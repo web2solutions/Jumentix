@@ -45,8 +45,6 @@ if (!fs.existsSync(workflowPath)) {
     /bash \/tmp\/bun-install\.sh "bun-v\$BUN_VERSION"/,
     /test -x "\$HOME\/\.bun\/bin\/bun"/,
     /branch-gate:/,
-    /sonar-reliability:/,
-    /Await SonarCloud PR analysis at reliability A/,
     /pr-feedback:/,
     /Enforce resolved PR feedback/,
     /sync-changelog:/,
@@ -221,9 +219,16 @@ checkTrustedPullRequestWorkflow(feedbackWorkflowPath, 'PR feedback workflow', [
 
 checkTrustedPullRequestWorkflow(sonarReliabilityWorkflowPath, 'Sonar reliability workflow', [
   /name:\s*Sonar reliability trusted/,
-  /sonar-reliability-trusted:/,
+  /sonar-reliability:/,
   /SONAR_TOKEN:\s*\$\{\{ secrets\.SONARCLOUD_TOKEN \}\}/,
   /SONAR_PULL_REQUEST:\s*\$\{\{ github\.event\.pull_request\.number \}\}/,
+  /refs\/pull\/\$\{SONAR_PULL_REQUEST\}\/merge/,
+  /git worktree add --detach \/tmp\/jumentix-sonar-pr/,
+  /cp "\$GITHUB_WORKSPACE\/sonar-project\.properties" \/tmp\/jumentix-sonar-pr\/sonar-project\.properties/,
+  /sonar-scanner/,
+  /-Dsonar\.pullrequest\.key="\$SONAR_PULL_REQUEST"/,
+  /-Dsonar\.pullrequest\.branch="\$SONAR_PULL_REQUEST_BRANCH"/,
+  /-Dsonar\.pullrequest\.base="\$SONAR_PULL_REQUEST_BASE"/,
   /bun run sonar:check-reliability/,
   /seq 1 18/
 ]);

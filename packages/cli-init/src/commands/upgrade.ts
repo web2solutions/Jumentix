@@ -282,7 +282,7 @@ export async function runUpgrade(options: {
   ]);
 
   const results: UpgradeFileResult[] = [];
-  for (const rel of [...paths].sort()) {
+  for (const rel of [...paths].sort((left, right) => left.localeCompare(right))) {
     if (!shouldSkipUpgradePath(rel)) {
       const baseHash = manifest.files?.[rel]?.sha256;
       const absolute = path.join(rootDir, ...rel.split('/'));
