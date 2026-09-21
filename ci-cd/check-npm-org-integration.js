@@ -66,7 +66,10 @@ function resolveNpmCommand({
 
 function run(args, resolverOptions) {
   const env = { ...process.env };
-  if (env.NPM_JUMENTIX_CI_CD) env.NODE_AUTH_TOKEN = env.NPM_JUMENTIX_CI_CD;
+  // Prefer NPM_CI_CD (GitHub Actions secret on the npm-publish environment).
+  // Keep NPM_JUMENTIX_CI_CD as a local/legacy alias.
+  if (env.NPM_CI_CD) env.NODE_AUTH_TOKEN = env.NPM_CI_CD;
+  else if (env.NPM_JUMENTIX_CI_CD) env.NODE_AUTH_TOKEN = env.NPM_JUMENTIX_CI_CD;
   const npm = resolveNpmCommand(resolverOptions);
   return execFileSync(npm.command, [...npm.argsPrefix, ...args], { env, stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim();
 }
