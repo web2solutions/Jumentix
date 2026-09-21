@@ -12,6 +12,9 @@ on:
           - all
           - designer-core
           - cana
+          - runtime
+          - sdks
+          - cli-init
 
 jobs:
   publish:
@@ -52,12 +55,53 @@ jobs:
               publish cana-react
               publish cana-vue
               publish designer-core
+              publish persistence-contracts
+              publish shared-contracts
+              publish external-persistence-core
+              publish external-store-proxy
+              publish external-db-repositories
+              publish key-value-storage
+              publish database-client-factory
+              publish message-mediator
+              publish mutex-service
+              publish dead-letter-queue
+              publish runtime-infra
+              publish adapter-runtime-bootstrap
+              publish sdk-grpc-client
+              publish sdk-rest-client
+              publish sdk-websocket-client
+              publish cli-init
               ;;
             cana)
               publish cana
+              publish cana-react
+              publish cana-vue
               ;;
             designer-core)
               publish designer-core
+              ;;
+            runtime)
+              publish persistence-contracts
+              publish shared-contracts
+              publish external-persistence-core
+              publish external-store-proxy
+              publish external-db-repositories
+              publish key-value-storage
+              publish database-client-factory
+              publish message-mediator
+              publish mutex-service
+              publish dead-letter-queue
+              publish runtime-infra
+              publish adapter-runtime-bootstrap
+              ;;
+            sdks)
+              publish shared-contracts
+              publish sdk-grpc-client
+              publish sdk-rest-client
+              publish sdk-websocket-client
+              ;;
+            cli-init)
+              publish cli-init
               ;;
             *)
               echo "Unsupported release cohort: $RELEASE" >&2

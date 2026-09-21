@@ -2,6 +2,17 @@
 
 Factory generator CLI for Jumentix (Requirement `037` v2).
 
+## Version policy
+
+- The CLI package version tracks the factory template cohort it scaffolds.
+- Generated projects pin published `@jumentix/*` package versions (not `workspace:*`).
+- Library packages continue to use repository `bumpPackage` / conventional commits for semver.
+- Publish through the protected `npm-publish` GitHub Actions workflow on `main` after `bun run npm:packages:check` and `bun run release:dry-run:packages` are green. See `documentation/md/NPM-PACKAGE-PUBLISHING.md`.
+
+```bash
+npx @jumentix/cli-init init
+```
+
 ## Commands (target)
 
 - `jumentix init` — lean workspace per factory mode
