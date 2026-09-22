@@ -160,8 +160,15 @@ function isSignedDevPromotionBranch(headRef) {
   return /^codex\/release\/[A-Z0-9-]+-dev-main-signed-squash$/i.test(String(headRef || '').trim());
 }
 
-function validateReleasePullRequest({ title, headRef }) {
+function isGeneratedChangelogSync({ title, body, headRef }) {
+  return /^chore\/changelog-sync-[0-9a-f]{8}$/i.test(String(headRef || '').trim())
+    && title === 'chore: synchronize changelog'
+    && body.trim() === 'Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.';
+}
+
+function validateReleasePullRequest({ title, body, headRef }) {
   const failures = [];
+  if (isGeneratedChangelogSync({ title, body, headRef })) return failures;
   if (headRef !== 'dev' && !isSignedDevPromotionBranch(headRef)) {
     failures.push('[pr-governance] only dev may target main');
   }
@@ -258,7 +265,7 @@ function validatePullRequest(metadata, rootDir = process.cwd()) {
   if (!hasPullRequestMetadata({ title, body, headRef, baseRef })) return failures;
 
   if (baseRef === 'main') {
-    return validateReleasePullRequest({ title, headRef });
+    return validateReleasePullRequest({ title, body, headRef });
   }
 
   if (baseRef !== 'dev') {

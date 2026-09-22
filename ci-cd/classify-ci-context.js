@@ -110,6 +110,10 @@ function isSignedDevPromotionBranch(headRef) {
   return /^codex\/release\/[A-Z0-9-]+-dev-main-signed-squash$/i.test(String(headRef || '').trim());
 }
 
+function isGeneratedChangelogSyncBranch(headRef) {
+  return /^chore\/changelog-sync-[0-9a-f]{8}$/i.test(String(headRef || '').trim());
+}
+
 function classifyCiContext(options = {}) {
   const env = options.env || process.env;
   const cwd = options.cwd || process.cwd();
@@ -125,7 +129,10 @@ function classifyCiContext(options = {}) {
     if (!baseRef) {
       throw new Error('[ci-context] pull request context is missing the base branch');
     }
-    if (baseRef === 'main' && (headRef === 'dev' || isSignedDevPromotionBranch(headRef))) {
+    if (
+      baseRef === 'main'
+      && (headRef === 'dev' || isSignedDevPromotionBranch(headRef) || isGeneratedChangelogSyncBranch(headRef))
+    ) {
       context = CONTEXTS.RELEASE_PR_TO_MAIN;
     } else if (baseRef === 'dev') {
       context = CONTEXTS.TASK_PR_TO_DEV;
@@ -216,6 +223,7 @@ module.exports = {
   JOBS_BY_CONTEXT,
   classifyCiContext,
   isPullRequest,
+  isGeneratedChangelogSyncBranch,
   isScheduled,
   jobSelected,
   parseArgs,
