@@ -237,7 +237,7 @@ List top risks and how each is mitigated.
 
 - [ ] README updated (if needed)
 - [ ] Additional docs updated (if needed)
-- [ ] Changelog untouched; GitHub Actions synchronizes it after the validated `dev` merge
+- [ ] Changelog untouched; GitHub Actions synchronizes it only after the validated `main` merge
 
 ## Reviewer Checklist
 

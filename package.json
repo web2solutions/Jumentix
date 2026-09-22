@@ -23,7 +23,7 @@
     "compat:check-node-version": "node ci-cd/check-node-version.js",
     "preinstall": "bun ci-cd/check-bun-version.js",
     "deps:check-overrides": "bun ci-cd/check-dependency-override-integrity.js",
-    "mono:build": "bun run mono:build:deps && bun run --filter '*' build",
+    "mono:build": "bun run workspace:build:packages",
     "mono:build:deps": "bun run --filter @jumentix/cana build",
     "workspace:build:packages": "bun ci-cd/build-workspace-packages.js",
     "mono:test": "bun run workspace:test",

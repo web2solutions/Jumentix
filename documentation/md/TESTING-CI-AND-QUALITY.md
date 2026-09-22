@@ -178,7 +178,7 @@ Remote enforcement:
 - GitHub Actions invokes `bun run ci:gate:branch`
 - GitHub Actions passes the PR base branch or pushed branch explicitly, marks PR events, and stores branch-gate evidence even after failure
 - GitHub Actions owns full coverage production (plus Codecov upload and SonarCloud scan) for pushes to `dev` and `main`, `dev -> main` promotions, and scheduled full runs; local gates and task PRs to `dev` stay fast and diagnostic
-- After a validated `dev` push, GitHub Actions serializes the generated `CHANGELOG.md` update; task branches and PRs leave that file untouched
+- After a validated merge to `main`, GitHub Actions serializes the generated `CHANGELOG.md` update; task branches, `dev`, and PRs leave that file untouched
 - Task-branch push events compare `origin/dev...HEAD`; hosted CI never uses the local staged-diff mode
 - GitHub Actions stores `artifacts/ci/full-test-matrix.json` when the branch gate selects the full matrix
 - `.github/workflows/ci.yml` independently runs Storybook build/smoke and website prepublish checks only for release/full contexts
@@ -238,7 +238,7 @@ SonarQube Cloud coverage import:
 | Workspace boundaries + `build:dev` | Fail-closed architecture and root TypeScript emit before cheap gates | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight of every branch-gate path (JUM-786) |
 | Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `bun run prepare` |
 | Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `bun run commit` |
-| Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history without task-branch conflicts | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI runs after validated `dev` pushes; `bun run changelog:check` is diagnostic only |
+| Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history without task-branch conflicts | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI runs only after a validated merge to `main`; `bun run changelog:check` is diagnostic only |
 | Release governance check | Enforces release script contracts and package publish metadata | `ci-cd/check-release-governance.js` | `bun run release:governance:check` |
 | OpenAPI route resolution check | Ensures each operationId maps to handlers and controller methods | `ci-cd/check-oas-route-resolution.js` | `bun run oas:check-routes` |
 | Hexagonal boundary check | Blocks controller-layer violations | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |

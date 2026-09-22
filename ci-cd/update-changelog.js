@@ -8,6 +8,7 @@ const RECORD_SEPARATOR = '\x1e';
 const FIELD_SEPARATOR = '\x1f';
 const GIT_BIN_CANDIDATES = ['/usr/bin/git', '/usr/local/bin/git'];
 const GIT_BIN = GIT_BIN_CANDIDATES.find((candidate) => fs.existsSync(candidate));
+const GENERATED_CHANGELOG_COMMIT = /^chore:\s+synchronize changelog(?:\s|$)/i;
 
 function runGit(args, options = {}) {
   if (!GIT_BIN) {
@@ -78,7 +79,10 @@ function getCommits(range) {
         author,
         subject
       };
-    });
+    })
+    // The synchronization PR itself is an implementation detail. Ignoring it
+    // makes the main-only job idempotent after that PR is merged.
+    .filter((commit) => !GENERATED_CHANGELOG_COMMIT.test(commit.subject));
 }
 
 function formatCommit(commit) {
@@ -103,7 +107,7 @@ function generateChangelog() {
   const lines = [
     '# Changelog',
     '',
-    '<!-- This file is generated from Git history. GitHub Actions synchronizes it after pushes to dev. -->',
+    '<!-- This file is generated from Git history. GitHub Actions synchronizes it after merges to main. -->',
     ''
   ];
 

@@ -53,13 +53,13 @@ if (!fs.existsSync(workflowPath)) {
     /git checkout origin\/dev -- ci-cd\/check-pr-feedback\.js ci-cd\/lib\/entry-point\.js/,
     /Enforce resolved PR feedback/,
     /sync-changelog:/,
-    /github\.event_name == 'push' && github\.ref_name == 'dev'/,
+    /github\.event_name == 'push' && github\.ref_name == 'main'/,
     /needs:\s*branch-gate/,
-    /group:\s*changelog-dev/,
+    /group:\s*changelog-main/,
     /cancel-in-progress:\s*false/,
     /contents:\s*write/,
     /bun run changelog:update/,
-    /gh pr create --base dev/,
+    /gh pr create --base main/,
     /--watch --fail-fast/,
     /--squash --delete-branch/,
     /task-branch-push/,
@@ -85,7 +85,7 @@ if (!fs.existsSync(workflowPath)) {
     /open -ga Docker/,
     /install --frozen-lockfile/,
     /bun run mono:build/,
-    /mono:build:deps/,
+    /"mono:build":\s*"bun run workspace:build:packages"/,
     /workspace:build:packages/,
     /test:unit[\s\S]*--conditions=development/,
     /bun run mono:test/,
@@ -128,10 +128,14 @@ if (!fs.existsSync(workflowPath)) {
   }
 
   const packageScripts = JSON.parse(packageContents).scripts || {};
+  const monorepoBuild = packageScripts['mono:build'];
   const workspaceBuild = packageScripts['workspace:build:packages'];
   const taskGate = packageScripts['ci:gate:task'];
   if (workspaceBuild !== 'bun ci-cd/build-workspace-packages.js') {
     failures.push('Workspace package build must run the topological level-parallel builder (JUM-871)');
+  }
+  if (monorepoBuild !== 'bun run workspace:build:packages') {
+    failures.push('Monorepo build must delegate to the topological workspace package builder (JUM-871)');
   }
   if (!fs.existsSync(path.join(root, 'ci-cd', 'build-workspace-packages.js'))) {
     failures.push('Missing ci-cd/build-workspace-packages.js referenced by workspace:build:packages');
@@ -302,7 +306,7 @@ if (!fs.existsSync(preCommitPath)) {
 } else {
   const contents = fs.readFileSync(preCommitPath, 'utf8');
   if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns dev synchronization.');
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
   }
 }
 
@@ -311,7 +315,7 @@ if (!fs.existsSync(preCommitPath)) {
 } else {
   const contents = fs.readFileSync(preCommitPath, 'utf8');
   if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns dev synchronization.');
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
   }
 }
 

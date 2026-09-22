@@ -167,14 +167,20 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('third-party-review');
   });
 
-  it('fails when generated changelog synchronization is removed from dev CI', () => {
+  it('fails when generated changelog synchronization is no longer main-only', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('sync-changelog:', 'sync-changelog-removed:'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          'github.event_name == \'push\' && github.ref_name == \'main\'',
+          'github.event_name == \'push\' && github.ref_name == \'dev\''
+        )
+      );
     });
-    expect(run(directory).output).toContain('sync-changelog');
+    expect(run(directory).output).toContain('github\\.event_name == \'push\' && github\\.ref_name == \'main\'');
   });
 
   it('fails when Bun installation can mask a failed download', () => {
@@ -245,14 +251,20 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('@jumentix\\/shared-contracts build');
   });
 
-  it('fails when monorepo builds no longer prime exported workspace dependencies', () => {
+  it('fails when monorepo builds no longer use the topological workspace builder', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
       const file = path.join(root, 'package.json');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/mono:build:deps/g, 'mono:build:parallel'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '"mono:build": "bun run workspace:build:packages"',
+          '"mono:build": "bun run mono:build:parallel"'
+        )
+      );
     });
-    expect(run(directory).output).toContain('mono:build:deps');
+    expect(run(directory).output).toContain('Monorepo build must delegate');
   });
 
   it('fails when unit tests stop building publishable workspace artifacts first', () => {
