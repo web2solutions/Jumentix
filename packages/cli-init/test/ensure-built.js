@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
@@ -31,26 +32,23 @@ function pathExists(targetPath) {
 
 /**
  * Resolve Bun even when this helper is loaded from Jest, whose own process is
- * Node. `BUN_INSTALL` is set by Bun's installer and by `oven-sh/setup-bun`.
- * Keeping the lookup explicit avoids both a PATH-dependent spawn and the
- * accidental `node run build` invocation that prevents coverage collection.
+ * Node. The official installer leaves its absolute executable at
+ * `~/.bun/bin/bun`; `BUN_INSTALL` is optional in GitHub Actions. Keeping the
+ * lookup explicit avoids both a PATH-dependent spawn and the accidental
+ * `node run build` invocation that prevents coverage collection.
  */
 function resolveBunBinary({
   versions = process.versions,
   execPath = process.execPath,
   bunInstall = process.env.BUN_INSTALL,
   platform = process.platform,
+  homeDirectory = os.homedir,
   exists = pathExists
 } = {}) {
   if (versions.bun) return execPath;
 
-  if (!bunInstall) {
-    throw new Error(
-      'ensure-built: BUN_INSTALL is required when Jest runs under Node; cannot build @jumentix/cli-init with Node'
-    );
-  }
-
-  const executable = path.join(bunInstall, 'bin', platform === 'win32' ? 'bun.exe' : 'bun');
+  const installRoot = bunInstall || path.join(homeDirectory(), '.bun');
+  const executable = path.join(installRoot, 'bin', platform === 'win32' ? 'bun.exe' : 'bun');
   if (!exists(executable)) {
     throw new Error(`ensure-built: Bun executable is unavailable at ${executable}`);
   }
