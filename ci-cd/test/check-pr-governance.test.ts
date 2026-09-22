@@ -205,6 +205,19 @@ describe('check-pr-governance', () => {
     })).toHaveLength(2);
   });
 
+  it('allows only the exact CI-generated changelog PR to target main', () => {
+    expect.hasAssertions();
+    const generated = {
+      title: 'chore: synchronize changelog',
+      body: 'Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.',
+      headRef: 'chore/changelog-sync-deadbeef',
+      baseRef: 'main'
+    };
+
+    expect(validatePullRequest(generated)).toStrictEqual([]);
+    expect(validatePullRequest({ ...generated, body: 'manual changelog update' })).toHaveLength(2);
+  });
+
   it('validates templates but skips PR metadata on long-lived branch builds', async () => {
     expect.hasAssertions();
 
