@@ -4,6 +4,13 @@
 
 ## All Changes
 
+- 2026-09-21 ci(JUM-862): bind bot-token jobs to the consolidated secrets environment (#412) - Eduardo A.
+- 2026-09-21 fix(JUM-872): address PR #409 review findings on dev (#411) - Eduardo A.
+- 2026-09-21 ci(JUM-866): guard the patch-report frontend coverage step to PRs (#410) - Eduardo A.
+- 2026-09-21 Merge remote-tracking branch 'origin/main' into dev - Eduardo Almeida
+- 2026-09-21 [JUM-821][Chore] Reconcile main squash ancestry into dev (#408) - Eduardo A.
+- 2026-09-21 ci(JUM-841): verify npm org access before publishing (#407) - Eduardo A.
+- 2026-09-21 chore: synchronize changelog (#404) - Eduardo A.
 - 2026-09-21 [JUM-862][CI] Treat UNKNOWN merge state as retryable in the changelog sync poll (#401) - Eduardo A.
 - 2026-09-21 chore: synchronize changelog (#402) - Eduardo A.
 - 2026-09-21 [JUM-870][Fix] Restore npm pack gate and map NPM_CI_CD (#398) - Eduardo A.
@@ -59,6 +66,7 @@
 - 2026-09-20 refactor(cli-init): add TS command router, prompts and init config - Eduardo A.
 - 2026-09-20 [JUM-843][Governance] Rewrite Req 037 as factory generator CLI v2 (#371) - Eduardo A.
 - 2026-09-20 docs(governance): rewrite Req 037 as factory generator CLI v2 - Eduardo A.
+- 2026-09-19 [JUM-821][Release] Promote dev to main (#366) - Eduardo A.
 - 2026-09-19 fix(JUM-860): enforce Sonar reliability against the analyzed branch (#370) - Eduardo A.
 - 2026-09-19 fix(JUM-859): resolve npm by absolute path in check-npm-org-integration (#369) - Eduardo A.
 - 2026-09-19 test(JUM-858): cover JUM-811 dashboard metrics lines for the patch-coverage gate (#368) - Eduardo A.
@@ -91,15 +99,18 @@
 - 2026-09-18 fix(ci): analyse main and dev on sonar and codecov (#355) - Eduardo A.
 - 2026-09-18 [JUM-811][Feature] Domain dashboards, OAS metrics widgets and a11y (#354) - Eduardo A.
 - 2026-09-18 feat(frontend): domain dashboards from OAS metrics - Eduardo A.
+- 2026-09-17 [JUM-821][Release] Promote dev to main (#353) - Eduardo A.
 - 2026-09-17 chore(release): retrigger dev promotion gate - Eduardo Almeida
 - 2026-09-17 chore(deps): consolidate Dependabot updates (#352) - Eduardo A.
 - 2026-09-17 chore(deps): consolidate Dependabot updates - Eduardo Almeida
+- 2026-09-16 Merge pull request #346 from web2solutions/dev - Eduardo A.
 - 2026-09-16 test(ci): close release coverage gaps - Eduardo Almeida
 - 2026-09-16 fix(ci): enforce coverage after browser union - Eduardo Almeida
 - 2026-09-16 [Deps] Consolidate Dependabot security updates (#345) - Eduardo A.
 - 2026-09-16 chore(deps): consolidate Dependabot security updates - Eduardo Almeida
 - 2026-09-16 [JUM-815][Feature] Architecture designer, Core service, Swagger (#337) - Eduardo A.
 - 2026-09-16 feat(designer): architecture canvas and OAS split - Eduardo A.
+- 2026-09-16 Merge PR #327: JUM-821 dev promotion - Eduardo A.
 - 2026-09-16 [JUM-821] Promote dev snapshot with verified signature - Eduardo Almeida
 - 2026-08-29 [JUM-721][Release] Promote dev to main with signed squash (#278) - Eduardo A.
 - 2026-08-29 chore(release): promote dev to main - Eduardo Almeida
