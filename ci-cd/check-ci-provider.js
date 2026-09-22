@@ -175,6 +175,11 @@ if (!fs.existsSync(workflowPath)) {
       '.github/workflows/ci.yml coverage job must keep real broker/Redis integration suites in dedicated jobs'
     );
   }
+  if (!/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(coverageBlock)) {
+    failures.push(
+      'Coverage job must build workspace package dependencies before frontend patch coverage'
+    );
+  }
 
   [
     /\n\s+codecov:\s*\n/,

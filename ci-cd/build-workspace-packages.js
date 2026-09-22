@@ -206,18 +206,25 @@ async function buildWorkspacePackages(options = {}) {
   return 0;
 }
 
-function main() {
-  return buildWorkspacePackages().catch((error) => {
-    console.error(`[build] ${error instanceof Error ? error.message : String(error)}`);
+function main({ execute = buildWorkspacePackages, logger = console } = {}) {
+  return execute().catch((error) => {
+    logger.error(`[build] ${error instanceof Error ? error.message : String(error)}`);
     return 1;
   });
 }
 
-if (isEntryPoint(module)) {
-  main().then((status) => {
-    process.exitCode = status;
-  });
-}
+const runAsEntryPoint = ({
+  caller = module,
+  entry = require.main,
+  exit = (status) => { process.exitCode = status; },
+  runMain = main
+} = {}) => {
+  if (!isEntryPoint(caller, entry)) return false;
+  void runMain().then(exit);
+  return true;
+};
+
+runAsEntryPoint();
 
 module.exports = {
   buildWorkspacePackages,
@@ -225,6 +232,7 @@ module.exports = {
   discoverWorkspacePackages,
   findCycle,
   main,
+  runAsEntryPoint,
   spawnPackageBuild,
   workspaceEdges
 };

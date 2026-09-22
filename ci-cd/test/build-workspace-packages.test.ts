@@ -19,7 +19,11 @@ import path from 'node:path';
 const {
   buildWorkspacePackages,
   computeBuildLevels,
-  discoverWorkspacePackages
+  discoverWorkspacePackages,
+  findCycle,
+  main,
+  runAsEntryPoint,
+  spawnPackageBuild
 } = require('../build-workspace-packages');
 
 type CloseCallback = (exitCode: number) => void;
@@ -137,6 +141,23 @@ describe('build-workspace-packages (JUM-871)', () => {
     }
   });
 
+  it('ignores an unreadable package manifest while discovering buildable packages', () => {
+    expect.hasAssertions();
+    const entries = [
+      { name: 'broken', isDirectory: () => true },
+      { name: 'working', isDirectory: () => true }
+    ];
+    const packages = discoverWorkspacePackages({
+      packagesDir: '/workspace/packages',
+      readdir: () => entries,
+      readFile: jest.fn()
+        .mockImplementationOnce(() => { throw new Error('unreadable manifest'); })
+        .mockReturnValueOnce(JSON.stringify({ name: 'working', scripts: { build: 'bun build' } }))
+    });
+
+    expect([...packages.keys()]).toStrictEqual(['working']);
+  });
+
   it('fails closed on a dependency cycle, naming the packages on it', async () => {
     expect.hasAssertions();
     const packages = new Map([
@@ -150,6 +171,16 @@ describe('build-workspace-packages (JUM-871)', () => {
     ).rejects.toThrow(/cycle/i);
     expect(() => computeBuildLevels(packages)).toThrow('a');
     expect(errors).toStrictEqual([]);
+  });
+
+  it('reports no cycle when all candidate dependencies are acyclic', () => {
+    expect.hasAssertions();
+    const packages = new Map([
+      ['app', pkg('app', ['lib'])],
+      ['lib', pkg('lib', [])]
+    ]);
+
+    expect(findCycle(packages, new Set(['app', 'lib']))).toBeNull();
   });
 
   it('builds a level in parallel and levels in sequence', async () => {
@@ -253,5 +284,61 @@ describe('build-workspace-packages (JUM-871)', () => {
       buildWorkspacePackages({ packages: new Map(), spawn: jest.fn(), logger })
     ).resolves.toBe(1);
     expect(errors.join('\n')).toContain('no workspace packages');
+  });
+
+  it('fails closed when a package build process cannot start or has no exit code', async () => {
+    expect.hasAssertions();
+    const target = pkg('worker');
+    const spawnError = () => ({
+      on: jest.fn()
+        .mockImplementationOnce((_event: string, callback: (error: Error) => void) => callback(new Error('spawn failed')))
+        .mockReturnValueOnce(undefined)
+    });
+    const spawnCloseWithoutCode = () => ({
+      on: jest.fn()
+        .mockReturnValueOnce(undefined)
+        .mockImplementationOnce((_event: string, callback: (code: null) => void) => callback(null))
+    });
+
+    await expect(spawnPackageBuild(target, {
+      spawn: spawnError
+    })).resolves.toBe(1);
+    await expect(spawnPackageBuild(target, {
+      spawn: spawnCloseWithoutCode
+    })).resolves.toBe(1);
+  });
+
+  it('reports rejected builds and binds the CLI dispatcher to the resulting status', async () => {
+    expect.hasAssertions();
+    const errors: string[] = [];
+    await expect(main({
+      execute: () => Promise.reject(new Error('broken build')),
+      logger: { error: (line: string) => errors.push(line) }
+    })).resolves.toBe(1);
+    expect(errors.join('\n')).toContain('broken build');
+
+    const entry = { id: 'entry' };
+    const exits: number[] = [];
+    expect(runAsEntryPoint({
+      caller: entry,
+      entry,
+      exit: (code: number) => exits.push(code),
+      runMain: () => Promise.resolve(0)
+    })).toBe(true);
+    await tick();
+    expect(exits).toStrictEqual([0]);
+
+    const previousExitCode = process.exitCode;
+    try {
+      expect(runAsEntryPoint({
+        caller: entry,
+        entry,
+        runMain: () => Promise.resolve(0)
+      })).toBe(true);
+      await tick();
+      expect(process.exitCode).toBe(0);
+    } finally {
+      process.exitCode = previousExitCode;
+    }
   });
 });

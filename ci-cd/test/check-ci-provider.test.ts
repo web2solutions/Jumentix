@@ -355,6 +355,24 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('coverage job must keep real broker/Redis integration suites');
   });
 
+  it('fails when frontend patch coverage runs before its workspace dependencies are built', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '      - name: Build workspace package dependencies for frontend coverage\n        run: bun run mono:build\n',
+          ''
+        )
+      );
+    });
+    expect(run(directory).output).toContain(
+      'Coverage job must build workspace package dependencies before frontend patch coverage'
+    );
+  });
+
   it('fails when Codecov or Sonar return as separate GitHub Actions jobs', () => {
     expect.hasAssertions();
 
