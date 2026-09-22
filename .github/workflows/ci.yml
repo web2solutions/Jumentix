@@ -139,10 +139,10 @@ jobs:
     name: sync-changelog
     if: github.event_name == 'push' && github.ref_name == 'dev'
     needs: branch-gate
-    # CHANGELOG_GH_TOKEN lives in the "env vars" environment (same one the
-    # coverage job uses); without this the job cannot see the secret and
-    # degrades to the manual-instructions path.
-    environment: env vars
+    # CHANGELOG_GH_TOKEN lives in the "secrets" environment (all bot tokens
+    # were consolidated there); without this the job cannot see the secret
+    # and degrades to the manual-instructions path.
+    environment: secrets
     permissions:
       contents: write
       # gh pr create in the sync step needs PR creation rights on top of the

@@ -102,7 +102,7 @@ describe('public npm package release policy', () => {
     expect({
       manual: workflow.includes('workflow_dispatch:'),
       mainOnly: workflow.includes('github.ref == \'refs/heads/main\''),
-      protected: workflow.includes('environment: npm-publish'),
+      protected: workflow.includes('environment: secrets'),
       artifactGate: workflow.includes('bun run npm:packages:check'),
       tokenMapping: /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_CI_CD \}\}/.test(workflow),
       tokenEcho: /echo\s+.*NPM_CI_CD/.test(workflow),
