@@ -29,6 +29,34 @@ function pathExists(targetPath) {
   }
 }
 
+/**
+ * Resolve Bun even when this helper is loaded from Jest, whose own process is
+ * Node. `BUN_INSTALL` is set by Bun's installer and by `oven-sh/setup-bun`.
+ * Keeping the lookup explicit avoids both a PATH-dependent spawn and the
+ * accidental `node run build` invocation that prevents coverage collection.
+ */
+function resolveBunBinary({
+  versions = process.versions,
+  execPath = process.execPath,
+  bunInstall = process.env.BUN_INSTALL,
+  platform = process.platform,
+  exists = pathExists
+} = {}) {
+  if (versions.bun) return execPath;
+
+  if (!bunInstall) {
+    throw new Error(
+      'ensure-built: BUN_INSTALL is required when Jest runs under Node; cannot build @jumentix/cli-init with Node'
+    );
+  }
+
+  const executable = path.join(bunInstall, 'bin', platform === 'win32' ? 'bun.exe' : 'bun');
+  if (!exists(executable)) {
+    throw new Error(`ensure-built: Bun executable is unavailable at ${executable}`);
+  }
+  return executable;
+}
+
 function ensureDesignerCoreBuilt() {
   const distEntry = path.join(designerCoreRoot, 'dist', 'index.js');
   if (pathExists(distEntry)) return;
@@ -37,11 +65,7 @@ function ensureDesignerCoreBuilt() {
       'ensure-built: packages/designer-core is missing (required by @jumentix/cli-init)'
     );
   }
-  // `process.execPath` rather than the string `bun`: a bare command is
-  // resolved through PATH (Sonar javascript:S4036 / Security Rating). Using
-  // the same Bun binary that is already running also keeps Requirement 096
-  // pinned.
-  execFileSync(process.execPath, ['run', 'build'], {
+  execFileSync(resolveBunBinary(), ['run', 'build'], {
     cwd: designerCoreRoot,
     stdio: 'inherit'
   });
@@ -75,9 +99,7 @@ function ensureDesignerCoreLinked() {
 function ensureCliInitBuilt() {
   const distEntry = path.join(packageRoot, 'dist', 'index.js');
   if (!pathExists(distEntry)) {
-    // `process.execPath` rather than the string `bun`: a bare command is
-    // resolved through PATH (Sonar javascript:S4036 / Security Rating).
-    execFileSync(process.execPath, ['run', 'build'], {
+    execFileSync(resolveBunBinary(), ['run', 'build'], {
       cwd: packageRoot,
       stdio: 'inherit'
     });
@@ -91,5 +113,6 @@ ensureCliInitBuilt();
 module.exports = {
   ensureCliInitBuilt,
   ensureDesignerCoreBuilt,
-  ensureDesignerCoreLinked
+  ensureDesignerCoreLinked,
+  resolveBunBinary
 };

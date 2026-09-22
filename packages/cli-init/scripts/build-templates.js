@@ -19,6 +19,15 @@ const PACKAGE_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(PACKAGE_DIR, '..', '..');
 const TEMPLATES_DIR = path.join(PACKAGE_DIR, 'templates');
 const MANIFEST_PATH = path.join(PACKAGE_DIR, 'templates.manifest.json');
+const GIT_LOCATION_VARIABLES = Object.freeze([
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_INDEX_FILE',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_COMMON_DIR',
+  'GIT_NAMESPACE'
+]);
 
 const SEEDS = Object.freeze({
   backend: 'apps/backend-template',
@@ -104,10 +113,16 @@ function sha256File(filePath) {
 }
 
 function resolveSourceCommit(root = REPO_ROOT) {
+  // Git invokes hooks with repository-location variables set. They would make
+  // a lookup for a temporary non-repository resolve this repository's HEAD.
+  const environment = { ...process.env };
+  for (const variable of GIT_LOCATION_VARIABLES) delete environment[variable];
+
   try {
     return execFileSync('/usr/bin/git', ['rev-parse', 'HEAD'], {
       cwd: root,
-      encoding: 'utf8'
+      encoding: 'utf8',
+      env: environment
     }).trim();
   } catch {
     return 'unknown';
