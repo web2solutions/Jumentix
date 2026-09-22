@@ -11,7 +11,7 @@
 4. `pre-push` and `pre-commit` must select the executable quality gate defined by
    Requirements `087` and `088` before allowing publication or a commit.
 5. Task branches and their PRs must not modify `CHANGELOG.md`; GitHub Actions must
-   synchronize it serially after validated pushes to `dev`.
+   synchronize it serially only after a merge reaches `main`.
 6. Pull request CI must execute the branch-aware gate: all unit tests for `dev`, and
    the complete matrix for `main`; task branches run changed/related tests locally.
 7. Required commands must propagate non-zero exit status; masked failures, swallowed errors, unconditional success fallbacks, and `--passWithNoTests` are prohibited.
@@ -21,7 +21,7 @@
 ## Implementation Notes
 - Husky `post-commit` is no-op for mutating operations.
 - Husky `pre-commit` executes the branch-aware gate without mutating generated files.
-- GitHub Actions owns changelog generation on `dev` with a serialized, write-scoped job.
+- GitHub Actions owns changelog generation on `main` with a serialized, write-scoped job.
 - Required integration suites fail when no tests are found.
 
 ## Acceptance Criteria

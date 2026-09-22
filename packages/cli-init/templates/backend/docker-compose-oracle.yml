@@ -1,0 +1,21 @@
+services:
+  oracle:
+    image: gvenzl/oracle-free:23-slim
+    container_name: aaa-oracle
+    environment:
+      ORACLE_PASSWORD: '${JUMENTIX_ORACLE_PASSWORD:-${AAA_ORACLE_PASSWORD:-change_me_oracle_password}}'
+      APP_USER: aaa
+      APP_USER_PASSWORD: '${JUMENTIX_ORACLE_APP_USER_PASSWORD:-${AAA_ORACLE_APP_USER_PASSWORD:-change_me_oracle_app_password}}'
+    ports:
+      - '1521:1521'
+    healthcheck:
+      test: ['CMD-SHELL', 'healthcheck.sh']
+      interval: 10s
+      timeout: 10s
+      retries: 40
+      start_period: 60s
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+
+volumes:
+  oracle_data:

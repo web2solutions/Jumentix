@@ -27,18 +27,26 @@ All commands start the same CLI entrypoint:
 
 - `apps/backend-template/src/interface/CLI/index.ts`
 
-Bootstrap/scaffold command:
+Bootstrap / factory generator (lean workspace, not monorepo clone):
 
 ```bash
+npx @jumentix/cli-init init
+# aliases still work:
+jumentix-bootstrap
 bun run cli:bootstrap
 ```
 
-The bootstrap flow is also exposed as installable bin command:
+Normative command surface:
+[`BOOTSTRAP-CLI-SCAFFOLDING.md`](./BOOTSTRAP-CLI-SCAFFOLDING.md). Factory modes:
+[`JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md`](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md).
+
+The bootstrap flow is also exposed as installable bin commands:
 
 ```bash
+jumentix
+jumentix-init
 jumentix-bootstrap
 ```
-
 ## Current Sub Applications
 
 ### 1) Domains CRUD

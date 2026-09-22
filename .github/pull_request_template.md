@@ -168,6 +168,21 @@ Do not mark items as done unless actually executed.
 - [ ] `bun run ci:smoke`
 - [ ] `bun run ci:gate`
 
+## Feedback Resolution (Required)
+
+- [ ] Every GitHub review thread is resolved natively.
+- [ ] Every general comment has a visible resolution response by the PR author or a repository maintainer.
+- [ ] Each resolution response uses exactly one marker and, for `resolved`, a SHA from this PR:
+
+```html
+<!-- jumentix-pr-feedback: resolved comment=https://github.com/OWNER/REPO/pull/NUMBER#issuecomment-ID commit=PR_COMMIT_SHA -->
+<!-- jumentix-pr-feedback: invalid comment=https://github.com/OWNER/REPO/pull/NUMBER#issuecomment-ID -->
+```
+
+`invalid` markers need a factual explanation outside the marker. The only ignored
+comment is a strict Cursor usage-limit notice from login `cursor`; SonarCloud,
+Codecov, human, and all other bot feedback require resolution evidence.
+
 ### Coverage
 
 - Project coverage >= 95%: [ ] Yes [ ] No
@@ -222,7 +237,7 @@ List top risks and how each is mitigated.
 
 - [ ] README updated (if needed)
 - [ ] Additional docs updated (if needed)
-- [ ] Changelog untouched; GitHub Actions synchronizes it after the validated `dev` merge
+- [ ] Changelog untouched; GitHub Actions synchronizes it only after the validated `main` merge
 
 ## Reviewer Checklist
 

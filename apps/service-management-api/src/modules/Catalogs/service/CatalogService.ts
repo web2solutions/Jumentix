@@ -118,7 +118,7 @@ export class CatalogService
       const current = await getCatalogById(id, this.dataRepository);
       serviceResponse.result = await deleteCatalogById(
         id,
-        expectedVersion ?? -1,
+        expectedVersion,
         this.dataRepository,
         actor
       );
@@ -127,7 +127,9 @@ export class CatalogService
         {
           id,
           organization: current.organization,
-          version: (expectedVersion ?? -1) + 1,
+          // The tombstone bumps the token exactly once, so the event carries
+          // the post-delete version whether or not a version was supplied.
+          version: current.version + 1,
           actor
         }
       );

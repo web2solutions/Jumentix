@@ -32,6 +32,26 @@ Use o Designer de Domínio para definir:
 
 Isso mantém o estado do front-end e os contratos de back-end alinhados desde a primeira iteração.
 
+## 1b. Gere hybrid/frontend com a CLI de fábrica
+
+Após o export do design (ou `--preset=users` para smoke), gere a árvore SPA/PWA
+em vez de copiar seeds à mão:
+
+```bash
+npx @jumentix/cli-init init my-spa \
+  --mode=hybrid --frontend --offline \
+  --from=./designer-export.json --non-interactive \
+  --http=express --db=sqlite --install
+```
+
+Use `--mode=frontend` quando precisar só do client. A geradora escreve
+`apps/frontend` com OAS mesclado, um módulo por domínio e Cana opcional via
+`--offline`. Veja [Começando](/docs/pt-BR/jumentix/concepts/getting-started) e
+os docs `BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md` /
+`JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md`.
+
+**Checagem:** `my-spa/.jumentix/project.json` existe e `apps/frontend` está presente.
+
 ## 2. Definir contratos de comunicação
 
 Utilize o Communication Interface Designer para escolher:

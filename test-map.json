@@ -2852,6 +2852,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/build-workspace-packages.test.ts",
+      "path": "ci-cd/test/build-workspace-packages.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/run-suite-execution.test.ts",
       "path": "ci-cd/test/run-suite-execution.test.ts",
       "layer": "tooling",
@@ -2874,6 +2884,16 @@
     {
       "id": "ci-cd/test/readme-badges.test.ts",
       "path": "ci-cd/test/readme-badges.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/start-redis-compose.test.ts",
+      "path": "ci-cd/test/start-redis-compose.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -3134,6 +3154,16 @@
     {
       "id": "ci-cd/test/check-package-suites.test.ts",
       "path": "ci-cd/test/check-package-suites.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/check-pr-feedback.test.ts",
+      "path": "ci-cd/test/check-pr-feedback.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -4702,8 +4732,119 @@
       "timeoutMs": 60000
     },
     {
+      "id": "packages/cana/test/scripts/run-browser-tests.test.ts",
+      "path": "packages/cana/test/scripts/run-browser-tests.test.ts",
+      "layer": "adapters/out+infra",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cli-init/test/add-commands.test.ts",
+      "path": "packages/cli-init/test/add-commands.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "packages/cli-init/test/backend-generation.test.ts",
+      "path": "packages/cli-init/test/backend-generation.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "packages/cli-init/test/bootstrap.test.ts",
       "path": "packages/cli-init/test/bootstrap.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "packages/cli-init/test/cli-core.test.ts",
+      "path": "packages/cli-init/test/cli-core.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cli-init/test/doctor.test.ts",
+      "path": "packages/cli-init/test/doctor.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cli-init/test/e2e/generation-matrix.test.ts",
+      "path": "packages/cli-init/test/e2e/generation-matrix.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 180000,
+      "reason": "Generation e2e matrix (JUM-854); default cell is non-Docker monolith/express/sqlite; Docker cells gated by CLI_INIT_E2E_DOCKER=1."
+    },
+    {
+      "id": "packages/cli-init/test/frontend-generation.test.ts",
+      "path": "packages/cli-init/test/frontend-generation.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "packages/cli-init/test/source-resolution.test.ts",
+      "path": "packages/cli-init/test/source-resolution.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cli-init/test/template-freshness.test.ts",
+      "path": "packages/cli-init/test/template-freshness.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cli-init/test/upgrade.test.ts",
+      "path": "packages/cli-init/test/upgrade.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "packages/cli-init/test/workspace-assembly.test.ts",
+      "path": "packages/cli-init/test/workspace-assembly.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -5824,9 +5965,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 336,
+    "unit": 350,
     "integration": 102,
     "smoke": 2,
-    "suites": 499
+    "suites": 513
   }
 }

@@ -8,11 +8,19 @@ function resolveBranch(env = process.env) {
   return env.SONAR_BRANCH || env.GITHUB_BASE_REF || env.GITHUB_REF_NAME || '';
 }
 
-function buildMeasuresUrl(branch, hostUrl = 'https://sonarcloud.io') {
+function resolveAnalysisTarget(env = process.env) {
+  if (env.SONAR_PULL_REQUEST) return { pullRequest: env.SONAR_PULL_REQUEST };
+  return { branch: resolveBranch(env) };
+}
+
+function buildMeasuresUrl(target, hostUrl = 'https://sonarcloud.io') {
   const url = new URL('/api/measures/component', hostUrl);
   url.searchParams.set('component', PROJECT_KEY);
   url.searchParams.set('metricKeys', 'reliability_rating');
-  url.searchParams.set('branch', branch);
+  if (typeof target === 'string') url.searchParams.set('branch', target);
+  else if (target?.pullRequest) url.searchParams.set('pullRequest', target.pullRequest);
+  else if (target?.branch) url.searchParams.set('branch', target.branch);
+  else throw new Error('A SonarCloud branch or pull request is required to enforce reliability.');
   return url;
 }
 
@@ -22,11 +30,12 @@ function authHeader(token) {
 
 async function checkSonarReliability({ env = process.env, fetchFn = fetch } = {}) {
   const token = env.SONAR_TOKEN;
-  const branch = resolveBranch(env);
+  const target = resolveAnalysisTarget(env);
+  const targetLabel = target.pullRequest ? `PR #${target.pullRequest}` : target.branch;
   if (!token) throw new Error('SONAR_TOKEN is required to enforce SonarCloud reliability.');
-  if (!branch) throw new Error('A SonarCloud branch is required to enforce reliability.');
+  if (!targetLabel) throw new Error('A SonarCloud branch or pull request is required to enforce reliability.');
 
-  const response = await fetchFn(buildMeasuresUrl(branch, env.SONAR_HOST_URL), {
+  const response = await fetchFn(buildMeasuresUrl(target, env.SONAR_HOST_URL), {
     headers: authHeader(token)
   });
   if (!response.ok) {
@@ -37,11 +46,11 @@ async function checkSonarReliability({ env = process.env, fetchFn = fetch } = {}
   const rating = payload.component?.measures?.find((measure) => measure.metric === 'reliability_rating')?.value;
   if (Number(rating) !== REQUIRED_RELIABILITY_RATING) {
     throw new Error(
-      `SonarCloud reliability for ${branch} is ${rating ?? 'unavailable'}; A (1) is required.`
+      `SonarCloud reliability for ${targetLabel} is ${rating ?? 'unavailable'}; A (1) is required.`
     );
   }
 
-  console.log(`[sonar] reliability for ${branch}: A`);
+  console.log(`[sonar] reliability for ${targetLabel}: A`);
 }
 
 if (isEntryPoint(module)) {
@@ -57,5 +66,6 @@ module.exports = {
   authHeader,
   buildMeasuresUrl,
   checkSonarReliability,
+  resolveAnalysisTarget,
   resolveBranch
 };

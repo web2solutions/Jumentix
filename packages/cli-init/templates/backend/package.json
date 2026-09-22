@@ -1,0 +1,31 @@
+{
+  "name": "@jumentix/backend-template",
+  "version": "0.0.2",
+  "private": true,
+  "description": "Jumentix backend template workspace app",
+  "scripts": {
+    "build": "NODE_ENV=dev tsc -p ../../tsconfig.build.json",
+    "build:dev": "NODE_ENV=dev tsc -p ../../tsconfig.build.json",
+    "test": "NODE_ENV=dev bun ../../ci-cd/run-unit-tests.js",
+    "test:unit": "NODE_ENV=dev bun ../../ci-cd/run-unit-tests.js",
+    "test:integration": "NODE_ENV=dev jest ./test/integration --runInBand",
+    "test:integration:smoke": "JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun ./scripts/run-api-smoke.js",
+    "lint": "eslint src test --ext .ts",
+    "coverage:patch": "bun ../../ci-cd/check-patch-coverage.js",
+    "ci:gate": "bun --cwd ../.. run ci:gate",
+    "ci:gate:strict": "bun --cwd ../.. run ci:gate:strict",
+    "typecheck": "NODE_ENV=dev tsc -p ../../tsconfig.build.json --noEmit",
+    "dev:rest": "bun --cwd ../.. run dev:http",
+    "dev:websocket-rest": "bun --cwd ../.. run dev:websocket",
+    "dev:grpc-rest": "bun --cwd ../.. run dev:grpc",
+    "pm2:start:dev:restapi": "bun --cwd ../.. run pm2:start:dev:restapi",
+    "pm2:start:dev:websocket-rest": "bun --cwd ../.. run pm2:start:dev:websocket-rest",
+    "pm2:start:dev:grpc-rest": "bun --cwd ../.. run pm2:start:dev:grpc-rest",
+    "pm2:start:staging:restapi": "bun --cwd ../.. run pm2:start:staging:restapi",
+    "pm2:start:staging:websocket-rest": "bun --cwd ../.. run pm2:start:staging:websocket-rest",
+    "pm2:start:staging:grpc-rest": "bun --cwd ../.. run pm2:start:staging:grpc-rest",
+    "pm2:start:prod:restapi": "bun --cwd ../.. run pm2:start:prod:restapi",
+    "pm2:start:prod:websocket-rest": "bun --cwd ../.. run pm2:start:prod:websocket-rest",
+    "pm2:start:prod:grpc-rest": "bun --cwd ../.. run pm2:start:prod:grpc-rest"
+  }
+}

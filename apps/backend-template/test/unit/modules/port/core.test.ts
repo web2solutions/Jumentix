@@ -209,6 +209,18 @@ describe('port core helpers', () => {
     });
   });
 
+  it('keeps filter and paging defaults when optional query values are absent or invalid', () => {
+    expect.hasAssertions();
+
+    const [filter, paging] = setFilterAndPaging(new TestEvent({ queryString: {} }));
+    expect(filter).toStrictEqual({});
+    expect(paging).toStrictEqual({ page: 1, size: _DEFAULT_PAGE_SIZE_ });
+
+    expect(setPaging(new TestEvent({
+      queryString: { page: '0', size: '-1' }
+    }))).toStrictEqual({ page: 1, size: _DEFAULT_PAGE_SIZE_ });
+  });
+
   it('initializes base repo and service response', async () => {
     expect.hasAssertions();
     const repo = new TestRepo({ databaseClient: { stores: {} } as any });

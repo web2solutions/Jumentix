@@ -13,13 +13,45 @@ const PUBLIC_PACKAGE_NAMES = [
   '@jumentix/cana',
   '@jumentix/cana-react',
   '@jumentix/cana-vue',
-  '@jumentix/designer-core'
+  '@jumentix/designer-core',
+  '@jumentix/persistence-contracts',
+  '@jumentix/shared-contracts',
+  '@jumentix/external-persistence-core',
+  '@jumentix/external-store-proxy',
+  '@jumentix/external-db-repositories',
+  '@jumentix/key-value-storage',
+  '@jumentix/database-client-factory',
+  '@jumentix/message-mediator',
+  '@jumentix/mutex-service',
+  '@jumentix/dead-letter-queue',
+  '@jumentix/runtime-infra',
+  '@jumentix/adapter-runtime-bootstrap',
+  '@jumentix/sdk-grpc-client',
+  '@jumentix/sdk-rest-client',
+  '@jumentix/sdk-websocket-client',
+  '@jumentix/cli-init'
 ];
 const SMOKE_IMPORTS = {
   '@jumentix/cana': ['@jumentix/cana'],
   '@jumentix/cana-react': ['@jumentix/cana-react', '@jumentix/cana-react/redux'],
   '@jumentix/cana-vue': ['@jumentix/cana-vue'],
-  '@jumentix/designer-core': ['@jumentix/designer-core']
+  '@jumentix/designer-core': ['@jumentix/designer-core'],
+  '@jumentix/persistence-contracts': ['@jumentix/persistence-contracts'],
+  '@jumentix/shared-contracts': ['@jumentix/shared-contracts'],
+  '@jumentix/external-persistence-core': ['@jumentix/external-persistence-core'],
+  '@jumentix/external-store-proxy': ['@jumentix/external-store-proxy'],
+  '@jumentix/external-db-repositories': ['@jumentix/external-db-repositories'],
+  '@jumentix/key-value-storage': ['@jumentix/key-value-storage'],
+  '@jumentix/database-client-factory': ['@jumentix/database-client-factory'],
+  '@jumentix/message-mediator': ['@jumentix/message-mediator'],
+  '@jumentix/mutex-service': ['@jumentix/mutex-service'],
+  '@jumentix/dead-letter-queue': ['@jumentix/dead-letter-queue'],
+  '@jumentix/runtime-infra': ['@jumentix/runtime-infra'],
+  '@jumentix/adapter-runtime-bootstrap': ['@jumentix/adapter-runtime-bootstrap'],
+  '@jumentix/sdk-grpc-client': ['@jumentix/sdk-grpc-client'],
+  '@jumentix/sdk-rest-client': ['@jumentix/sdk-rest-client'],
+  '@jumentix/sdk-websocket-client': ['@jumentix/sdk-websocket-client'],
+  '@jumentix/cli-init': ['@jumentix/cli-init']
 };
 
 function run(command, args, cwd, options = {}) {
@@ -65,13 +97,21 @@ function validateManifest(manifest, directory) {
   return failures;
 }
 
+function isForbiddenTarballPath(filePath) {
+  if (/^(src|test|scripts)\//.test(filePath)) return true;
+  // Factory CLI ships intentional seed env files under templates/; forbid .env
+  // everywhere else so secrets cannot ride along in library package tarballs.
+  if (filePath.includes('.env') && !filePath.startsWith('templates/')) return true;
+  return false;
+}
+
 function assertTarballContents(manifest, packument) {
   const files = packument.files.map((file) => file.path);
   const missing = [...REQUIRED_TOP_LEVEL_FILES].filter((file) => !files.includes(file));
   if (missing.length > 0 || !files.some((file) => file.startsWith('dist/'))) {
     throw new Error(`${manifest.name} tarball is missing required public artifacts`);
   }
-  const forbidden = files.filter((file) => /^(src|test|scripts)\//.test(file) || file.includes('.env'));
+  const forbidden = files.filter((file) => isForbiddenTarballPath(file));
   if (forbidden.length > 0) throw new Error(`${manifest.name} tarball contains forbidden files: ${forbidden.join(', ')}`);
 }
 
@@ -82,10 +122,50 @@ function buildAndPack(directory, tarballsDirectory) {
 
   run('bun', ['run', 'clean'], directory, { stdio: 'inherit' });
   run('bun', ['run', 'build'], directory, { stdio: 'inherit' });
-  const output = run('npm', ['pack', '--json', `--pack-destination=${tarballsDirectory}`], directory);
-  const [packument] = JSON.parse(output);
+  // bun pm pack rewrites workspace:* ranges to concrete versions in the packed
+  // package.json; npm pack leaves workspace: protocol intact and breaks consumer install.
+  const output = run('bun', ['pm', 'pack', '--destination', tarballsDirectory, '--quiet'], directory);
+  const packedLine = output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .find((line) => line.endsWith('.tgz'));
+  const packedName = packedLine ? path.basename(packedLine) : null;
+  if (!packedName) {
+    throw new Error(`${manifest.name}: bun pm pack did not report a .tgz path`);
+  }
+  const tarball = path.join(tarballsDirectory, packedName);
+  if (!fs.existsSync(tarball)) {
+    throw new Error(`${manifest.name}: packed tarball missing at ${tarball}`);
+  }
+  // Reconstruct the packument shape npm pack --json provides so assertTarballContents stays shared.
+  const listing = run('tar', ['-tzf', tarball], directory)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((entry) => entry.replace(/^package\//, ''));
+  const packument = {
+    filename: packedName,
+    files: listing.filter((entry) => entry && entry !== '.').map((entryPath) => ({ path: entryPath }))
+  };
   assertTarballContents(manifest, packument);
-  return { manifest, tarball: path.join(tarballsDirectory, packument.filename) };
+  // Fail closed if a packed dependency still carries the workspace protocol.
+  const packedManifest = JSON.parse(
+    run('tar', ['-xOf', tarball, 'package/package.json'], directory)
+  );
+  const depBlocks = [
+    packedManifest.dependencies,
+    packedManifest.optionalDependencies,
+    packedManifest.peerDependencies
+  ].filter(Boolean);
+  for (const block of depBlocks) {
+    for (const [name, range] of Object.entries(block)) {
+      if (typeof range === 'string' && range.startsWith('workspace:')) {
+        throw new Error(`${manifest.name} packed dependency ${name} still uses ${range}`);
+      }
+    }
+  }
+  return { manifest, tarball };
 }
 
 function smokeInstall(packages, consumerDirectory) {
@@ -112,4 +192,11 @@ function runReleaseCheck() {
 
 if (isEntryPoint(module)) runReleaseCheck();
 
-module.exports = { PUBLIC_PACKAGE_NAMES, discoverPublishablePackages, validateManifest, assertTarballContents, runReleaseCheck };
+module.exports = {
+  PUBLIC_PACKAGE_NAMES,
+  discoverPublishablePackages,
+  validateManifest,
+  assertTarballContents,
+  isForbiddenTarballPath,
+  runReleaseCheck
+};

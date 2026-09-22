@@ -6,17 +6,23 @@ Define the supported software factory modes for Jumentix so engineering and prod
 
 ## Capability Matrix
 
-| Factory Mode | Primary Output | Supported Interfaces | Communication Pattern | Persistence Strategy | Typical Use |
-|---|---|---|---|---|---|
-| Modular Monolith (Backend) | Single backend service with multiple domains | REST, WebSocket + REST fallback, gRPC + REST fallback, Functions | In-process MessageMediator request/response + pub/sub | In-memory, SQL, NoSQL via env driver selection | Early-stage products and teams optimizing speed with future decoupling path |
-| Multi-service Backend Group | Multiple backend services in one workspace | REST, WebSocket, gRPC, Functions | Contract-based mediator and event contracts per service boundary | Per-service database adapter selection | Domain isolation and independent scaling by bounded context |
-| Hybrid Backend + Frontend | Backend services plus SPA/PWA/SSR apps | REST + realtime contracts consumed by SDK clients | API contracts (OpenAPI/AsyncAPI) and event-first integration | Backend adapter plus frontend local/offline storage strategy | End-to-end product delivery from one monorepo |
-| Frontend-only SPA/PWA Offline | Frontend application package with API contract compatibility | Local app + optional remote API consumption | Contract-first client SDK integration | IndexedDB/local storage for offline-first flows | Offline-capable field and operations applications |
+| Factory Mode | CLI `--mode` | How to generate | Primary Output | Supported Interfaces | Communication Pattern | Persistence Strategy | Typical Use |
+|---|---|---|---|---|---|---|---|
+| Modular Monolith (Backend) | `monolith` | `jumentix init --mode=monolith --preset=users` (or `--from`) | Single backend service with multiple domains | REST, WebSocket + REST fallback, gRPC + REST fallback, Functions | In-process MessageMediator request/response + pub/sub | In-memory, SQL, NoSQL via env driver selection | Early-stage products and teams optimizing speed with future decoupling path |
+| Multi-service Backend Group | `services` | `jumentix init --mode=services --from=<export\|oas>` | Multiple backend services in one workspace | REST, WebSocket, gRPC, Functions | Contract-based mediator and event contracts per service boundary | Per-service database adapter selection | Domain isolation and independent scaling by bounded context |
+| Hybrid Backend + Frontend | `hybrid` | `jumentix init --mode=hybrid --frontend [--offline]` | Backend services plus SPA/PWA/SSR apps | REST + realtime contracts consumed by SDK clients | API contracts (OpenAPI/AsyncAPI) and event-first integration | Backend adapter plus frontend local/offline storage strategy | End-to-end product delivery from one monorepo |
+| Frontend-only SPA/PWA Offline | `frontend` | `jumentix init --mode=frontend [--offline] --from=<oas>` | Frontend application package with API contract compatibility | Local app + optional remote API consumption | Contract-first client SDK integration | IndexedDB/local storage for offline-first flows | Offline-capable field and operations applications |
 
 Architecture designer (Service Management): **Modular Monolith** is one Core service holding every domain. **Multi-service** is Core (Users + auth) plus domain services, each with its own `servers` URL in the OAS. The OpenAPI tab and per-service export follow that split.
 
+Generator ownership: `@jumentix/cli-init` (`init` / `add` / `upgrade` / `doctor`). Normative
+command surface:
+[BOOTSTRAP-CLI-SCAFFOLDING.md](./BOOTSTRAP-CLI-SCAFFOLDING.md).
+
 ## Reference Seeds
 
+- Packaged seeds consumed by the CLI: `packages/cli-init/templates/{backend,frontend}/`
+  (rebuilt from `apps/backend-template` and `apps/frontend`).
 - Backend modes: `apps/backend-template`.
 - Hybrid and Frontend-only modes: `apps/frontend` — see
   [Frontend Seed and the X-CRUD Kit](./FRONTEND-SEED-AND-XCRUD.md) (contract-driven SPA over the
@@ -43,6 +49,7 @@ Architecture designer (Service Management): **Modular Monolith** is one Core ser
 
 ## Acceptance Criteria
 
-- Service profile selection maps to one of the factory modes above.
-- Generated scaffolds include required contract files and default quality scripts.
+- CLI `--mode` (and designer architecture export) maps to one of the factory modes above.
+- Generated scaffolds include required contract files, `.jumentix/project.json`, and default quality scripts.
 - Documentation index references this matrix as the canonical product capability source.
+- Getting-started and bootstrap docs describe generation via `@jumentix/cli-init`, not monorepo clone.

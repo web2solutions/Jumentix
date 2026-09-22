@@ -64,6 +64,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `073` Engineering practices (git, commit messages, lint, coding best practices) represented in specs.
 - `074` Security and compliance practices represented in specs.
 - `075` Jumentix composition (libraries, tools, templates, components) represented in specs.
+  Factory generator CLI contract is Requirement `037` (functional; see
+  `.agents/requirements/software/037-bootstrap-cli-scaffolding.md`).
 - `076` Mandatory task traceability for AI/humans + documentation sync + EN/PT documentation and website parity.
 - `077` Multi-agent platform support (Codex, Claude Code, Grok, OpenCode) with aligned governance and traceability rules.
 - `078` Agent Registry system (Firestore-backed) with mandatory pre-task registration, planning assignment by availability, and required `main`/`dev` pre-work branch checks.
@@ -93,8 +95,9 @@ This file consolidates non-functional requirements already requested and stored 
 
 - `099` Every task begins only after current `main`, `dev`, and the full requirement inventory are refreshed and read.
 - `100` Every valid pull-request comment and every unresolved GitHub review/discussion
-  thread blocks merge until it is corrected, resolved, or answered as invalid with
-  factual PR evidence and applicable gate evidence.
+  thread blocks merge until it is corrected, natively resolved, or answered with
+  validated factual PR evidence; the required trusted-base `pr-feedback` check
+  enforces the versioned Cursor usage-limit exception and fails closed otherwise.
 - `101` Agents waiting only on remote checks must progress another active, non-conflicting task
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at

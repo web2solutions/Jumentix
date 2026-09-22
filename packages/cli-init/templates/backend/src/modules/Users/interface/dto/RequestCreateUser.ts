@@ -1,0 +1,20 @@
+import {
+  EmailValueObject,
+  DocumentValueObject,
+  PhoneValueObject
+} from '@src/modules/ddd/valueObjects';
+
+export interface RequestCreateUser {
+  id?: string;
+  firstName: string;
+  lastName?: string;
+  username: string;
+  password: string;
+  salt?: string;
+  avatar?: string;
+  organization?: string;
+  emails: EmailValueObject[];
+  documents?: DocumentValueObject[]
+  phones?: PhoneValueObject[];
+  roles?: string[]
+}

@@ -1,21 +1,50 @@
 {
   "name": "@jumentix/shared-contracts",
   "version": "0.1.0",
-  "private": true,
   "description": "Shared OpenAPI/AsyncAPI contract resolution helpers for the Jumentix SDKs.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE.md",
+    "README.pt-BR.md"
   ],
-
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint ./src --ext .ts",
-    "test": "bun test --isolate test"
+    "test": "bun test --isolate test",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "bun run clean && bun run build"
   },
   "dependencies": {
     "yaml": "^2.5.1"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web2solutions/Jumentix.git",
+    "directory": "packages/shared-contracts"
+  },
+  "homepage": "https://jumentix-website.vercel.app",
+  "bugs": {
+    "url": "https://github.com/web2solutions/Jumentix/issues"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

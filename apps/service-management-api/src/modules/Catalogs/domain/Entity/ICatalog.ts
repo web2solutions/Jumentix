@@ -10,7 +10,8 @@
  * the client can reconcile without losing its edit.
  *
  * `deletedAt` is the tombstone: an empty string means the record is active,
- * an ISO timestamp means it was soft-deleted. Deletion propagates to other
+ * an ISO timestamp means it was soft-deleted, and null (assignable through
+ * BaseModel's setter) also means active. Deletion propagates to other
  * users through the catalog feed (list with `includeDeleted`) and is
  * recoverable through the restore operation.
  */
@@ -26,5 +27,5 @@ export interface ICatalog {
   updatedBy?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  deletedAt?: string;
+  deletedAt?: string | null;
 }

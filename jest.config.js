@@ -71,7 +71,14 @@ module.exports = {
     ...unsupportedRuntimeIgnorePatterns,
     ...redisIntegrationIgnorePatterns
   ],
-  modulePathIgnorePatterns: ['dist', '.build', '.serverless', '.resources'],
+  // Entries are REGEXES, not globs: an unescaped leading dot matches any
+  // character, so '.build' silently excluded every path containing '<x>build'
+  // — including first-party test files named *build*.test.ts (found when
+  // ci-cd/test/build-workspace-packages.test.ts was never discovered, JUM-871).
+  // Scope the dot-directories to the repo root and escape the dot. ('dist'
+  // stays a bare substring on purpose: it also keeps node_modules build
+  // output out of the haste crawl.)
+  modulePathIgnorePatterns: ['dist', '<rootDir>/\\.build', '<rootDir>/\\.serverless', '<rootDir>/\\.resources'],
   coveragePathIgnorePatterns: [
     // packages/ is excluded except cana/src, which this epic added with 293 tests.
     // Sonar reads this lcov, so an excluded path reports as 0% covered on new code
@@ -104,7 +111,7 @@ module.exports = {
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.
     // Keep this list and the suites under ci-cd/test/ in step.
-    '<rootDir>/ci-cd/(?!(lib/mapped-suites|check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|check-package-suites|merge-coverage-reports|run-full-test-matrix|run-suite)\\.js$)',
+    '<rootDir>/ci-cd/(?!(lib/mapped-suites|check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|check-package-suites|merge-coverage-reports|run-full-test-matrix|run-suite|build-workspace-packages)\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'
   ],

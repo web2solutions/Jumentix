@@ -18,6 +18,11 @@ Execute testes de unidade:
 bun run test:unit
 ```
 
+Esse comando primeiro compila os artefatos publicáveis dos pacotes e depois
+resolve `@jumentix/*` pelo export `development` do workspace durante as suítes
+unitárias. A combinação valida a compilação dos pacotes sem carregar instâncias
+duplicadas de classes de `src` e `dist` no mesmo processo de teste.
+
 Execute testes de integração:
 
 ```bash
@@ -179,13 +184,16 @@ Aplicação remota:
 - GitHub Actions invoca `bun run ci:gate:branch`
 - o GitHub Actions passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
 - GitHub Actions assume a produção completa de cobertura (mais upload Codecov e scan SonarCloud) em pushes para `dev` e `main`, promoções `dev -> main` e execuções completas agendadas; gates locais e PRs de tarefa até `dev` ficam rápidos e diagnósticos
-- Após um push validado em `dev`, o GitHub Actions serializa a atualização gerada de `CHANGELOG.md`; branches de tarefa e PRs deixam esse arquivo intacto
+- Após um merge validado em `main`, o GitHub Actions serializa a atualização gerada de `CHANGELOG.md`; branches de tarefa, `dev` e PRs deixam esse arquivo intacto
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
 - o GitHub Actions publica `artifacts/ci/full-test-matrix.json` quando o gate seleciona a matriz completa
 - `.github/workflows/ci.yml` executa build/smoke do Storybook e prepublish somente em contextos de release/full
 - o Storybook não é executado pela matriz global
 - `ci:monorepo` permanece como entrada de compatibilidade, mas não pode selecionar um plano reduzido somente para documentação
+- O check obrigatório `pr-feedback` roda a partir da revisão confiável da base da PR e reprova threads de revisão não resolvidas ou comentários gerais sem evidência visível de resolução validada. A única exceção é o aviso estrito de limite de uso do Cursor, vindo do login `cursor`; o workflow dedicado `pr-feedback-trusted` repete essa defesa depois de estar disponível a partir da branch padrão.
+- O check obrigatório `sonar-reliability` consulta a análise de pull request do SonarCloud e aceita somente reliability A. Ele faz checkout do SHA confiável da base, nunca do código da PR, antes de acessar `SONARCLOUD_TOKEN`; o workflow dedicado `sonar-reliability-trusted` repete essa defesa depois de estar disponível a partir da branch padrão.
+- O check obrigatório `browser-matrix` executa as suítes Cana em Chrome, Firefox e WebKit em toda PR para `dev` ou `main`. Ele tem somente leitura de conteúdo e não recebe segredos.
 
 #### Matriz de jobs hospedados por contexto (JUM-786)
 
@@ -199,7 +207,7 @@ pular não é passar.
 | Contexto | Jobs que rodam | Script do branch-gate + preflight |
 | --- | --- | --- |
 | Push de branch de tarefa | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
-| PR para `dev` | `branch-gate`, `third-party-review` | mesmo gate de tarefa + preflight |
+| PR para `dev` | `branch-gate`, `third-party-review`, `sonar-reliability`, `browser-matrix` | mesmo gate de tarefa + preflight |
 | Push para `dev` | `branch-gate` | `test:unit` + lint, integrity, boundaries, `build:dev` |
 | PR de release para `main` / push `main` / schedule / `workflow_dispatch` | lista completa (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
 
@@ -217,7 +225,7 @@ Importação de cobertura do SonarQube Cloud:
 - Fluxo de trabalho: `.github/workflows/ci.yml`
 - Fonte de cobertura: `./coverage/lcov.info` (Jest LCOV)
 - Configuração do scanner: `sonar.javascript.lcov.reportPaths=./coverage/lcov.info`
-- Segredo GitHub Actions necessário: `SONAR_TOKEN`
+- Segredo GitHub Actions necessário: `SONARCLOUD_TOKEN` (exposto ao scanner e ao verificador de reliability como `SONAR_TOKEN`)
 
 ### Visão geral de ferramentas integradas
 
@@ -227,6 +235,9 @@ Importação de cobertura do SonarQube Cloud:
 | GitHub Actions (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.github/workflows/ci.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
 | GitHub Actions (Codecov) | Publicação de dashboard de cobertura | `.github/workflows/ci.yml` | Requer `CODECOV_TOKEN`; envia LCOV via `codecov/codecov-action@v5` após thresholds locais |
 | GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/ci.yml` | Executa Gitleaks/Semgrep fixados e retém evidência SARIF |
+| GitHub Actions (feedback de PR) | Bloqueia threads de revisão não resolvidas e feedback geral sem tratamento | `.github/workflows/pr-feedback.yml`, `ci-cd/check-pr-feedback.js` | Roda do SHA confiável da base; respostas de resolução identificam o comentário exato e, quando corrigido, um SHA da PR |
+| GitHub Actions (reliability Sonar) | Bloqueia uma PR cuja reliability no SonarCloud não seja A | `.github/workflows/ci.yml`, `.github/workflows/sonar-reliability.yml`, `ci-cd/check-sonar-reliability.js` | Consulta a análise da PR no SonarCloud a partir do SHA confiável da base com `SONARCLOUD_TOKEN`; ausência de análise ou falha da API reprovam de forma fechada |
+| GitHub Actions (browser matrix) | Bloqueia regressões de navegador antes do merge | `.github/workflows/browser-matrix.yml`, `packages/cana/scripts/run-browser-tests.js` | Executa Chrome, Firefox e WebKit com acesso somente leitura ao conteúdo e sem segredos |
 | GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/ci.yml` | Executa build/smoke do Storybook e prepublish de forma independente |
 | GitHub Actions (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/ci.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |
 | Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Declarações/linhas/funções/ramos 98%, linhas alteradas 99%; ramos sob piso datado (JUM-721) |
@@ -234,7 +245,7 @@ Importação de cobertura do SonarQube Cloud:
 | Boundaries de workspace + `build:dev` | Arquitetura e emit TypeScript raiz falham fechados antes dos gates baratos | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight de todo caminho do branch-gate (JUM-786) |
 | Husky | Ganchos Git locais para verificações de qualidade | `.husky/*` | Instalado por `bun run prepare` |
 | Commitlint + Commitizen | Commits convencionais e fluxo de commits guiados | `commitlint.config.js`, `package.json` | `bun run commit` |
-| Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git sem conflitos de branch de tarefa | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI executa após pushes validados em `dev`; `bun run changelog:check` é apenas diagnóstico |
+| Automação de sincronização do changelog | Mantém `CHANGELOG.md` alinhado com a história do Git sem conflitos de branch de tarefa | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI executa somente após merge validado em `main`; `bun run changelog:check` é apenas diagnóstico |
 | Liberar verificação de governança | Aplica contratos de script de lançamento e metadados de publicação de pacotes | `ci-cd/check-release-governance.js` | `bun run release:governance:check` |
 | Verificação de resolução de rota OpenAPI | Garante que cada OperationId seja mapeado para manipuladores e métodos de controlador | `ci-cd/check-oas-route-resolution.js` | `bun run oas:check-routes` |
 | Verificação de limite hexagonal | Bloqueia violações da camada controladora | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |
@@ -374,5 +385,5 @@ bun run ci:integration
 
 Para incidentes de CI e verificações com falha, consulte:
 
-- [Solução de problemas de CI / SonarQube / cobertura do repositório](./CI-TROUBLESHOOTING.md)
-- [Guia de teste de API em tempo real](./REALTIME-API-TESTING.md)
+- [Solução de problemas de CI / SonarQube / cobertura do repositório](./CI-TROUBLESHOOTING.pt-BR.md)
+- [Guia de teste de API em tempo real](./REALTIME-API-TESTING.pt-BR.md)

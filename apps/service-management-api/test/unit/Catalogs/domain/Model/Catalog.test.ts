@@ -96,6 +96,20 @@ describe('catalog domain model', () => {
     expect(() => { catalog.name = ''; }).toThrow('name can not be empty');
   });
 
+  it('accepts a null tombstone through the inherited BaseModel setter', () => {
+    expect.hasAssertions();
+    const catalog = new Catalog({ organization: 'org-1', name: 'Billing', design: {} });
+    catalog.tombstone('admin@xpertminds.dev');
+    expect(catalog.deleted).toBe(true);
+    // BaseModel's setter stores null verbatim; the getter (no longer shadowed)
+    // exposes it, and `deleted` treats null and '' alike as "not tombstoned".
+    (catalog as any).deletedAt = null;
+    expect(catalog.deletedAt).toBeNull();
+    expect(catalog.deleted).toBe(false);
+    (catalog as any).deletedAt = '2026-09-20T00:00:00.000Z';
+    expect(catalog.deleted).toBe(true);
+  });
+
   it('serialize carries the concurrency metadata and no methods', () => {
     expect.hasAssertions();
     const catalog = new Catalog({

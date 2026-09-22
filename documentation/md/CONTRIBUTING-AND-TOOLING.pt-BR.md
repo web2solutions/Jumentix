@@ -33,6 +33,21 @@ Este comando executa lint/tests e, em seguida, abre o fluxo de confirmação.
 Os PRs devem incluir a Issue do Linear, o Project focado, o milestone, o Project Update
 obrigatório e as evidências de entrega no GitHub.
 
+Toda thread de revisão deve ser resolvida nativamente no GitHub. Todo comentário
+geral da PR precisa de uma resposta visível do autor da PR ou de um mantenedor do
+repositório, usando um dos marcadores abaixo. Uma resposta `resolved` deve usar a
+URL exata do comentário e um SHA da PR; uma resposta `invalid` deve incluir uma
+explicação factual fora do marcador.
+
+```html
+<!-- jumentix-pr-feedback: resolved comment=https://github.com/OWNER/REPO/pull/NUMBER#issuecomment-ID commit=PR_COMMIT_SHA -->
+<!-- jumentix-pr-feedback: invalid comment=https://github.com/OWNER/REPO/pull/NUMBER#issuecomment-ID -->
+```
+
+O gate automatizado ignora somente o aviso estrito de limite de uso do Cursor,
+feito pelo login `cursor`. Todo outro feedback, inclusive de SonarCloud e
+Codecov, deve ser resolvido ou respondido com esta evidência.
+
 ## Ferramentas
 
 Fiapos:
@@ -47,7 +62,7 @@ Lint + correção:
 bun run lint:fix
 ```
 
-`CHANGELOG.md` é gerado pelo GitHub Actions após pushes validados para `dev`.
+`CHANGELOG.md` é gerado pelo GitHub Actions somente após merges validados para `main`.
 Não o atualize em uma branch de tarefa ou PR; `bun run changelog:check` fica disponível
 apenas para diagnosticar a geração localmente.
 

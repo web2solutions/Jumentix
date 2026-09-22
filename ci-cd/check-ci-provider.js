@@ -9,8 +9,12 @@ const failures = [];
 
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
+const feedbackWorkflowPath = path.join(root, '.github', 'workflows', 'pr-feedback.yml');
+const sonarReliabilityWorkflowPath = path.join(root, '.github', 'workflows', 'sonar-reliability.yml');
+const browserMatrixWorkflowPath = path.join(root, '.github', 'workflows', 'browser-matrix.yml');
 const preCommitPath = path.join(root, '.husky', 'pre-commit');
 const packagePath = path.join(root, 'package.json');
+const unitRunnerPath = path.join(root, 'ci-cd', 'run-unit-tests.js');
 const sonarPath = path.join(root, 'sonar-project.properties');
 
 if (!fs.existsSync(circleciPath)) {
@@ -26,7 +30,8 @@ if (!fs.existsSync(workflowPath)) {
   const serviceContents = fs.existsSync(servicesPath) ? fs.readFileSync(servicesPath, 'utf8') : '';
   const dockerRuntimeContents = fs.existsSync(dockerRuntimePath) ? fs.readFileSync(dockerRuntimePath, 'utf8') : '';
   const packageContents = fs.existsSync(packagePath) ? fs.readFileSync(packagePath, 'utf8') : '';
-  const ciContents = `${contents}\n${serviceContents}\n${dockerRuntimeContents}\n${packageContents}`;
+  const unitRunnerContents = fs.existsSync(unitRunnerPath) ? fs.readFileSync(unitRunnerPath, 'utf8') : '';
+  const ciContents = `${contents}\n${serviceContents}\n${dockerRuntimeContents}\n${packageContents}\n${unitRunnerContents}`;
   const requiredMarkers = [
     /name:\s*CI/,
     /pull_request:/,
@@ -36,15 +41,27 @@ if (!fs.existsSync(workflowPath)) {
     /uses:\s*actions\/checkout@v5/,
     /uses:\s*actions\/setup-node@v5/,
     /node-version:\s*22/,
+    /curl -fsSL -o \/tmp\/bun-install\.sh https:\/\/bun\.sh\/install/,
+    /bash \/tmp\/bun-install\.sh "bun-v\$BUN_VERSION"/,
+    /test -x "\$HOME\/\.bun\/bin\/bun"/,
     /branch-gate:/,
+    /pr-feedback:/,
+    /Checkout trusted PR base/,
+    /github\.event\.pull_request\.base\.sha/,
+    /Bootstrap trusted PR feedback checker/,
+    /git fetch --no-tags --depth=1 origin dev/,
+    /git checkout origin\/dev -- ci-cd\/check-pr-feedback\.js ci-cd\/lib\/entry-point\.js/,
+    /Enforce resolved PR feedback/,
     /sync-changelog:/,
-    /github\.event_name == 'push' && github\.ref_name == 'dev'/,
+    /github\.event_name == 'push' && github\.ref_name == 'main'/,
     /needs:\s*branch-gate/,
-    /group:\s*changelog-dev/,
+    /group:\s*changelog-main/,
     /cancel-in-progress:\s*false/,
     /contents:\s*write/,
     /bun run changelog:update/,
-    /git push origin HEAD:dev/,
+    /gh pr create --base main/,
+    /--watch --fail-fast/,
+    /--squash --delete-branch/,
     /task-branch-push/,
     /third-party-review:/,
     /workspace-builds:/,
@@ -66,18 +83,22 @@ if (!fs.existsSync(workflowPath)) {
     /rabbitmq:3\.13-alpine/,
     /ci-cd\/ensure-docker-runtime\.sh/,
     /open -ga Docker/,
-    /bun install --frozen-lockfile/,
+    /install --frozen-lockfile/,
     /bun run mono:build/,
-    /mono:build:deps/,
+    /"mono:build":\s*"bun run workspace:build:packages"/,
+    /workspace:build:packages/,
+    /test:unit[\s\S]*--conditions=development/,
     /bun run mono:test/,
     /bun run ci:integration/,
     /website:deps:build/,
+    /@jumentix\/shared-contracts build/,
     /FIREBASE_SERVICE_ACCOUNT_KEY/,
     /ci-cd\/ensure-local-ci-services\.sh/,
     /bun run test:coverage/,
     /coverage\/jest\/coverage-final\.json/,
     /bun run coverage:check/,
     /bun run coverage:patch/,
+    /JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
     /website:storybook:build/,
     /website:storybook:smoke/,
     /website:test:prepublish/,
@@ -107,6 +128,27 @@ if (!fs.existsSync(workflowPath)) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
   }
 
+  const packageScripts = JSON.parse(packageContents).scripts || {};
+  const monorepoBuild = packageScripts['mono:build'];
+  const monorepoTest = packageScripts['mono:test'];
+  const workspaceBuild = packageScripts['workspace:build:packages'];
+  const taskGate = packageScripts['ci:gate:task'];
+  if (workspaceBuild !== 'bun ci-cd/build-workspace-packages.js') {
+    failures.push('Workspace package build must run the topological level-parallel builder (JUM-871)');
+  }
+  if (monorepoBuild !== 'bun run workspace:build:packages') {
+    failures.push('Monorepo build must delegate to the topological workspace package builder (JUM-871)');
+  }
+  if (monorepoTest !== 'bun run workspace:build:packages && bun run workspace:test') {
+    failures.push('Monorepo tests must build workspace package dependencies before execution (JUM-871)');
+  }
+  if (!fs.existsSync(path.join(root, 'ci-cd', 'build-workspace-packages.js'))) {
+    failures.push('Missing ci-cd/build-workspace-packages.js referenced by workspace:build:packages');
+  }
+  if (taskGate !== 'bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js') {
+    failures.push('Task quality gate must build publishable workspace packages before running selected tests');
+  }
+
   if (!/slug:\s*web2solutions\/Jumentix/.test(contents) || !/disable_search:\s*true/.test(contents)) {
     failures.push('GitHub Actions Codecov upload must set slug=web2solutions/Jumentix and disable_search=true');
   }
@@ -123,10 +165,20 @@ if (!fs.existsSync(workflowPath)) {
     }
   }
 
+  const databaseMatrixBlock = contents.match(/\n  database-matrix:\n[\s\S]*?(?=\n  [a-z-]+:\n|\n?$)/)?.[0] || '';
+  if (!/Build workspace package dependencies[\s\S]*bun run mono:build/.test(databaseMatrixBlock)) {
+    failures.push('Database matrix must build workspace package dependencies before running isolated smoke tests');
+  }
+
   const coverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z-]+:\n|\n?$)/)?.[0] || '';
   if (/RUN_(BROKER|REDIS)_INTEGRATION:\s*'1'/.test(coverageBlock)) {
     failures.push(
       '.github/workflows/ci.yml coverage job must keep real broker/Redis integration suites in dedicated jobs'
+    );
+  }
+  if (!/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(coverageBlock)) {
+    failures.push(
+      'Coverage job must build workspace package dependencies before frontend patch coverage'
     );
   }
 
@@ -148,6 +200,129 @@ if (!fs.existsSync(workflowPath)) {
   if (/Checkout repository without JavaScript Actions/.test(contents)) {
     failures.push('.github/workflows/ci.yml must not keep the old self-hosted manual checkout path');
   }
+
+  if (/curl -fsSL https:\/\/bun\.sh\/install \| bash/.test(contents)) {
+    failures.push('.github/workflows/ci.yml Bun installation must fail closed instead of masking curl failures in a pipeline.');
+  }
+}
+
+function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMarkers) {
+  if (!fs.existsSync(workflowPathToCheck)) {
+    failures.push(`Missing required trusted pull-request workflow: ${path.relative(root, workflowPathToCheck)}`);
+    return;
+  }
+  const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
+  const commonMarkers = [
+    /pull_request_target:/,
+    /branches:\s*\n\s*- dev\s*\n\s*- main/,
+    /permissions:\s*\n\s*contents:\s*read/,
+    /pull-requests:\s*read/,
+    /uses:\s*actions\/checkout@v5/,
+    /ref:\s*\$\{\{ github\.event\.pull_request\.base\.sha \}\}/,
+    /persist-credentials:\s*false/,
+    /BUN_VERSION:\s*1\.3\.13/
+  ];
+  for (const marker of [...commonMarkers, ...requiredMarkers]) {
+    if (!marker.test(contents)) failures.push(`${label} is missing ${String(marker)}`);
+  }
+  if (/curl -fsSL https:\/\/bun\.sh\/install \| bash/.test(contents)) {
+    failures.push(`${label} Bun installation must fail closed instead of masking curl failures in a pipeline.`);
+  }
+  if (/(?:contents|issues|pull-requests|actions|checks):\s*write/.test(contents)) {
+    failures.push(`${label} must retain read-only GitHub token permissions.`);
+  }
+  if (/github\.event\.pull_request\.head\.sha|ref:\s*\$\{\{ github\.sha \}\}/.test(contents)) {
+    failures.push(`${label} must execute only the trusted PR base revision.`);
+  }
+}
+
+checkTrustedPullRequestWorkflow(feedbackWorkflowPath, 'PR feedback workflow', [
+  /name:\s*PR feedback trusted/,
+  /pr-feedback-trusted:/,
+  /issues:\s*read/,
+  /GH_TOKEN:\s*\$\{\{ github\.token \}\}/,
+  /check-pr-feedback\.js --repo/,
+  /github\.event\.pull_request\.number/
+]);
+
+function checkSonarReliabilityWorkflow(workflowPathToCheck) {
+  if (!fs.existsSync(workflowPathToCheck)) {
+    failures.push(`Missing required Sonar reliability workflow: ${path.relative(root, workflowPathToCheck)}`);
+    return;
+  }
+  const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
+  const requiredMarkers = [
+    /name:\s*Sonar reliability/,
+    /pull_request:/,
+    /branches:\s*\n\s*- dev\s*\n\s*- main/,
+    /sonar-reliability:/,
+    /permissions:\s*\n\s*contents:\s*read/,
+    /uses:\s*actions\/checkout@v5/,
+    /fetch-depth:\s*0/,
+    /persist-credentials:\s*false/,
+    /SONAR_TOKEN:\s*\$\{\{ secrets\.SONARCLOUD_TOKEN \}\}/,
+    /SONAR_PULL_REQUEST:\s*\$\{\{ github\.event\.pull_request\.number \}\}/,
+    /sonar-scanner/,
+    /-Dsonar\.pullrequest\.key="\$SONAR_PULL_REQUEST"/,
+    /-Dsonar\.pullrequest\.branch="\$SONAR_PULL_REQUEST_BRANCH"/,
+    /-Dsonar\.pullrequest\.base="\$SONAR_PULL_REQUEST_BASE"/,
+    /bun run sonar:check-reliability/,
+    /seq 1 18/
+  ];
+  for (const marker of requiredMarkers) {
+    if (!marker.test(contents)) failures.push(`Sonar reliability workflow is missing ${String(marker)}`);
+  }
+  if (/pull_request_target:|git worktree add|refs\/pull\/\$\{SONAR_PULL_REQUEST\}\/merge/.test(contents)) {
+    failures.push('Sonar reliability must analyze PR code only in the unprivileged pull_request workflow.');
+  }
+  if (/(?:contents|issues|pull-requests|actions|checks):\s*write/.test(contents)) {
+    failures.push('Sonar reliability workflow must retain read-only GitHub token permissions.');
+  }
+}
+
+checkSonarReliabilityWorkflow(sonarReliabilityWorkflowPath);
+
+function checkBrowserMatrixWorkflow(workflowPathToCheck) {
+  if (!fs.existsSync(workflowPathToCheck)) {
+    failures.push(`Missing required browser matrix workflow: ${path.relative(root, workflowPathToCheck)}`);
+    return;
+  }
+  const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
+  const requiredMarkers = [
+    /name:\s*Browser matrix/,
+    /pull_request:/,
+    /branches:\s*\n\s*- dev\s*\n\s*- main/,
+    /browser-matrix:/,
+    /contents:\s*read/,
+    /uses:\s*actions\/checkout@v5/,
+    /persist-credentials:\s*false/,
+    /BUN_VERSION:\s*1\.3\.13/,
+    /export PATH="\$HOME\/\.bun\/bin:\$PATH"/,
+    /install --frozen-lockfile/,
+    /bun x cypress install/,
+    /bun x cypress verify/,
+    /bun x playwright install webkit/,
+    /bun x playwright install-deps webkit/,
+    /for engine in chrome firefox webkit/,
+    /packages\/cana\/scripts\/run-browser-tests\.js/
+  ];
+  for (const marker of requiredMarkers) {
+    if (!marker.test(contents)) failures.push(`Browser matrix workflow is missing ${String(marker)}`);
+  }
+  if (/pull_request_target:|secrets\./.test(contents)) {
+    failures.push('Browser matrix must run untrusted PR code without privileged events or secrets.');
+  }
+}
+
+checkBrowserMatrixWorkflow(browserMatrixWorkflowPath);
+
+if (!fs.existsSync(preCommitPath)) {
+  failures.push('Missing required local hook: .husky/pre-commit');
+} else {
+  const contents = fs.readFileSync(preCommitPath, 'utf8');
+  if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
+  }
 }
 
 if (!fs.existsSync(preCommitPath)) {
@@ -155,7 +330,7 @@ if (!fs.existsSync(preCommitPath)) {
 } else {
   const contents = fs.readFileSync(preCommitPath, 'utf8');
   if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns dev synchronization.');
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
   }
 }
 
@@ -218,5 +393,5 @@ if (failures.length > 0) {
 
 console.log(
   'CI provider check passed: GitHub Actions and CircleCI cover cheap dev gates, full main promotion gates, '
-    + 'coverage, website validation, third-party review, and Codecov/Sonar publishing.'
+    + 'coverage, website validation, third-party review, resolved PR feedback, and Codecov/Sonar publishing.'
 );

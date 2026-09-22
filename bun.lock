@@ -231,6 +231,12 @@
     "packages/adapter-runtime-bootstrap": {
       "name": "@jumentix/adapter-runtime-bootstrap",
       "version": "0.1.0",
+      "dependencies": {
+        "@jumentix/runtime-infra": "^0.1.0",
+      },
+      "devDependencies": {
+        "@jumentix/runtime-infra": "workspace:*",
+      },
     },
     "packages/agent-registry": {
       "name": "@jumentix/agent-registry",
@@ -274,8 +280,13 @@
       "name": "@jumentix/cli-init",
       "version": "0.0.0",
       "bin": {
+        "jumentix": "./bin/jumentix.js",
         "jumentix-init": "./bin/jumentix-init.js",
         "jumentix-bootstrap": "./bin/jumentix-init.js",
+      },
+      "dependencies": {
+        "@jumentix/designer-core": "workspace:*",
+        "yaml": "^2.5.1",
       },
     },
     "packages/config-eslint": {
@@ -293,6 +304,16 @@
     "packages/database-client-factory": {
       "name": "@jumentix/database-client-factory",
       "version": "0.1.0",
+      "dependencies": {
+        "@jumentix/external-db-repositories": "^0.1.0",
+        "@jumentix/external-persistence-core": "^0.1.0",
+        "@jumentix/external-store-proxy": "^0.1.0",
+      },
+      "devDependencies": {
+        "@jumentix/external-db-repositories": "workspace:*",
+        "@jumentix/external-persistence-core": "workspace:*",
+        "@jumentix/external-store-proxy": "workspace:*",
+      },
     },
     "packages/dead-letter-queue": {
       "name": "@jumentix/dead-letter-queue",
@@ -305,6 +326,12 @@
     "packages/external-db-repositories": {
       "name": "@jumentix/external-db-repositories",
       "version": "0.1.0",
+      "dependencies": {
+        "@jumentix/external-persistence-core": "^0.1.0",
+      },
+      "devDependencies": {
+        "@jumentix/external-persistence-core": "workspace:*",
+      },
     },
     "packages/external-persistence-core": {
       "name": "@jumentix/external-persistence-core",
@@ -315,7 +342,13 @@
       "version": "0.1.0",
       "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.940.0",
+        "@jumentix/external-persistence-core": "^0.1.0",
+        "@jumentix/persistence-contracts": "^0.1.0",
         "sequelize": "^6.37.7",
+      },
+      "devDependencies": {
+        "@jumentix/external-persistence-core": "workspace:*",
+        "@jumentix/persistence-contracts": "workspace:*",
       },
     },
     "packages/key-value-storage": {
@@ -351,22 +384,34 @@
       "dependencies": {
         "@grpc/grpc-js": "^1.14.1",
         "@grpc/proto-loader": "^0.8.0",
+        "@jumentix/shared-contracts": "^0.1.0",
         "yaml": "^2.5.1",
+      },
+      "devDependencies": {
+        "@jumentix/shared-contracts": "workspace:*",
       },
     },
     "packages/sdk-rest-client": {
       "name": "@jumentix/sdk-rest-client",
       "version": "0.0.0",
       "dependencies": {
+        "@jumentix/shared-contracts": "^0.1.0",
         "yaml": "^2.5.1",
+      },
+      "devDependencies": {
+        "@jumentix/shared-contracts": "workspace:*",
       },
     },
     "packages/sdk-websocket-client": {
       "name": "@jumentix/sdk-websocket-client",
       "version": "0.0.0",
       "dependencies": {
+        "@jumentix/shared-contracts": "^0.1.0",
         "socket.io-client": "^4.8.1",
         "yaml": "^2.5.1",
+      },
+      "devDependencies": {
+        "@jumentix/shared-contracts": "workspace:*",
       },
     },
     "packages/security-scanner": {

@@ -33,7 +33,7 @@ function listModules(dir, prefix = '') {
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
     if (entry.isDirectory()) return listModules(path.join(dir, rel), rel);
     return entry.name.endsWith('.js') ? [rel] : [];
-  }).sort();
+  }).sort((left, right) => left.localeCompare(right));
 }
 
 function main() {

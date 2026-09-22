@@ -1,12 +1,14 @@
 {
   "name": "@jumentix/key-value-storage",
   "version": "0.0.0",
-  "private": true,
   "description": "Jumentix reusable key-value storage adapters",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE.md",
+    "README.pt-BR.md"
   ],
   "dependencies": {
     "redis": "^6.2.1"
@@ -15,6 +17,34 @@
     "build": "tsc -p tsconfig.json",
     "test": "bun test --isolate test",
     "lint": "echo \"key-value-storage package lint pending\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "bun run clean && bun run build"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web2solutions/Jumentix.git",
+    "directory": "packages/key-value-storage"
+  },
+  "homepage": "https://jumentix-website.vercel.app",
+  "bugs": {
+    "url": "https://github.com/web2solutions/Jumentix/issues"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

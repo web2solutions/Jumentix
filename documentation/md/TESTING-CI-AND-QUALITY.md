@@ -14,6 +14,11 @@ Run unit tests:
 bun run test:unit
 ```
 
+This command first builds publishable package artifacts, then resolves
+`@jumentix/*` through the workspace `development` export while the unit suites
+run. The combination verifies package buildability without loading duplicate
+source and `dist` class instances into the same test process.
+
 Run integration tests:
 
 ```bash
@@ -173,12 +178,15 @@ Remote enforcement:
 - GitHub Actions invokes `bun run ci:gate:branch`
 - GitHub Actions passes the PR base branch or pushed branch explicitly, marks PR events, and stores branch-gate evidence even after failure
 - GitHub Actions owns full coverage production (plus Codecov upload and SonarCloud scan) for pushes to `dev` and `main`, `dev -> main` promotions, and scheduled full runs; local gates and task PRs to `dev` stay fast and diagnostic
-- After a validated `dev` push, GitHub Actions serializes the generated `CHANGELOG.md` update; task branches and PRs leave that file untouched
+- After a validated merge to `main`, GitHub Actions serializes the generated `CHANGELOG.md` update; task branches, `dev`, and PRs leave that file untouched
 - Task-branch push events compare `origin/dev...HEAD`; hosted CI never uses the local staged-diff mode
 - GitHub Actions stores `artifacts/ci/full-test-matrix.json` when the branch gate selects the full matrix
 - `.github/workflows/ci.yml` independently runs Storybook build/smoke and website prepublish checks only for release/full contexts
 - Storybook is absent from the repository full matrix
 - `ci:monorepo` remains a compatibility entrypoint but cannot select a reduced docs-only plan
+- The required `pr-feedback` check runs from the trusted PR base revision and rejects unresolved review threads or general comments without validated visible resolution evidence. The sole exception is Cursor's strict usage-limit notice from login `cursor`; the dedicated `pr-feedback-trusted` workflow repeats that defense after it is available from the default branch.
+- The required `sonar-reliability` check queries the SonarCloud pull-request analysis and accepts only reliability rating A. It checks out the trusted base SHA, never PR code, before accessing `SONARCLOUD_TOKEN`; the dedicated `sonar-reliability-trusted` workflow repeats that defense after it is available from the default branch.
+- The required `browser-matrix` check runs Cana's Chrome, Firefox, and WebKit suites on every PR to `dev` or `main`. It has read-only contents access and no secrets.
 
 #### Hosted job matrix by context (JUM-786)
 
@@ -192,7 +200,7 @@ pushes — a skip there is not a pass.
 | Context | Hosted jobs that run | Branch-gate script + preflight |
 | --- | --- | --- |
 | Task-branch push | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
-| PR to `dev` | `branch-gate`, `third-party-review` | same task gate + preflight |
+| PR to `dev` | `branch-gate`, `third-party-review`, `sonar-reliability`, `browser-matrix` | same task gate + preflight |
 | Push to `dev` | `branch-gate` | `test:unit` + lint, integrity, workspace boundaries, `build:dev` |
 | Release PR to `main` / push to `main` / schedule / `workflow_dispatch` | full list (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, workspace boundaries, `build:dev` preflight) |
 
@@ -210,7 +218,7 @@ SonarQube Cloud coverage import:
 - Workflow: `.github/workflows/ci.yml`
 - Coverage source: `./coverage/lcov.info` (Jest LCOV)
 - Scanner setting: `sonar.javascript.lcov.reportPaths=./coverage/lcov.info`
-- Required GitHub Actions secret: `SONAR_TOKEN`
+- Required GitHub Actions secret: `SONARCLOUD_TOKEN` (exposed to the scanner and reliability verifier as `SONAR_TOKEN`)
 
 ### Integrated Tooling Overview
 
@@ -220,6 +228,9 @@ SonarQube Cloud coverage import:
 | GitHub Actions (coverage) | Repository-owned project and patch coverage | `.github/workflows/ci.yml` | Enforces `coverage:check` and `coverage:patch`, then retains JSON/LCOV evidence |
 | GitHub Actions (Codecov) | Coverage dashboard publishing | `.github/workflows/ci.yml` | Requires `CODECOV_TOKEN`; uploads LCOV through `codecov/codecov-action@v5` after local thresholds pass |
 | GitHub Actions (third-party review) | Fail-closed secret and static-analysis review | `.github/workflows/ci.yml` | Runs pinned Gitleaks/Semgrep and retains SARIF evidence |
+| GitHub Actions (PR feedback) | Blocks unresolved review threads and unaddressed general feedback | `.github/workflows/pr-feedback.yml`, `ci-cd/check-pr-feedback.js` | Runs from the trusted base SHA; resolution responses identify the exact comment and, when corrected, a PR SHA |
+| GitHub Actions (Sonar reliability) | Blocks a PR whose SonarCloud reliability is not A | `.github/workflows/ci.yml`, `.github/workflows/sonar-reliability.yml`, `ci-cd/check-sonar-reliability.js` | Queries the SonarCloud PR analysis from a trusted base SHA with `SONARCLOUD_TOKEN`; analysis absence or API failure fails closed |
+| GitHub Actions (browser matrix) | Blocks browser regressions before merge | `.github/workflows/browser-matrix.yml`, `packages/cana/scripts/run-browser-tests.js` | Runs Chrome, Firefox, and WebKit with read-only contents access and no secrets |
 | GitHub Actions (website) | Website-owned Storybook and publication readiness | `.github/workflows/ci.yml` | Runs Storybook build/smoke and prepublish checks independently |
 | GitHub Actions (SonarQube Cloud) | Static analysis + quality gate + coverage import | `.github/workflows/ci.yml`, `sonar-project.properties` | Requires `SONAR_TOKEN`; imports retained LCOV after coverage passes |
 | Repository coverage gate | Local hard gate to prevent low-coverage merges | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Statements/lines/functions/branches 98%, changed lines 99%; branches under a dated floor (JUM-721) |
@@ -227,7 +238,7 @@ SonarQube Cloud coverage import:
 | Workspace boundaries + `build:dev` | Fail-closed architecture and root TypeScript emit before cheap gates | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight of every branch-gate path (JUM-786) |
 | Husky | Local Git hooks for quality checks | `.husky/*` | Installed by `bun run prepare` |
 | Commitlint + Commitizen | Conventional commits and guided commit flow | `commitlint.config.js`, `package.json` | `bun run commit` |
-| Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history without task-branch conflicts | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI runs after validated `dev` pushes; `bun run changelog:check` is diagnostic only |
+| Changelog sync automation | Keeps `CHANGELOG.md` aligned with Git history without task-branch conflicts | `ci-cd/update-changelog.js`, `.github/workflows/ci.yml` | CI runs only after a validated merge to `main`; `bun run changelog:check` is diagnostic only |
 | Release governance check | Enforces release script contracts and package publish metadata | `ci-cd/check-release-governance.js` | `bun run release:governance:check` |
 | OpenAPI route resolution check | Ensures each operationId maps to handlers and controller methods | `ci-cd/check-oas-route-resolution.js` | `bun run oas:check-routes` |
 | Hexagonal boundary check | Blocks controller-layer violations | `ci-cd/check-hexagonal-boundaries.js` | `bun run arch:check-boundaries` |

@@ -1,0 +1,40 @@
+import type { DerbyJsRequest, DerbyJsResponse } from '@src/interface/HTTP/adapters/derby-js/DerbyJsServer';
+import { sendErrorResponse } from '@src/interface/HTTP/adapters/derby-js/responses/sendErrorResponse';
+
+import type {
+  IHandlerFactory,
+  IbaseHandler,
+  EndPointFactory
+} from '@src/interface/HTTP/ports';
+
+import type { IUpdatePasswordRequest } from '@src/modules/Users';
+import { UpdatePasswordRequestEvent } from '@src/modules/Users';
+
+const updateUserPassword: EndPointFactory = (
+  {
+    endPointConfig,
+    controller
+  }: IHandlerFactory
+): IbaseHandler => {
+  return {
+    path: '/auth/updateUserPassword',
+    method: 'post',
+    async handler(req: DerbyJsRequest, res: DerbyJsResponse) {
+      try {
+        const { result, error } = await controller!.updatePassword!(
+          new UpdatePasswordRequestEvent<IUpdatePasswordRequest>({
+            authorization: req.headers.authorization ?? '',
+            input: req.body as IUpdatePasswordRequest,
+            schemaOAS: endPointConfig
+          })
+        );
+        if (error) throw error;
+        return res.status(200).json(result);
+      } catch (error: any) {
+        return sendErrorResponse(error, res);
+      }
+    }
+  };
+};
+
+export default updateUserPassword;

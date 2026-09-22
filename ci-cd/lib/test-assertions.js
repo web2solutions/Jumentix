@@ -77,7 +77,7 @@ function declaresAssertions(node) {
       if (
         (method === 'hasAssertions' || method === 'assertions')
         && ts.isIdentifier(target)
-        && target.escapedText === 'expect'
+        && target.escapedText.toString() === 'expect'
       ) {
         found = true;
         return;

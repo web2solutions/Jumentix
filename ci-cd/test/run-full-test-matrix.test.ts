@@ -450,10 +450,12 @@ describe('run-full-test-matrix', () => {
     expect(fullMatrixRootPackage.scripts['ci:gate:branch'])
       .toBe('bun ci-cd/run-branch-quality-gate.js');
     expect(fullMatrixRootPackage.scripts['ci:gate:task'])
-      .toBe('bun ci-cd/run-task-change-tests.js');
+      .toBe('bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js');
     expect([
-      fullMatrixRootPackage.scripts['mono:build'].includes('bun run mono:build:deps && bun run --filter'),
+      fullMatrixRootPackage.scripts['mono:build'] === 'bun run workspace:build:packages',
+      fullMatrixRootPackage.scripts['mono:test'] === 'bun run workspace:build:packages && bun run workspace:test',
       fullMatrixRootPackage.scripts['mono:build:deps'] === 'bun run --filter @jumentix/cana build',
+      fullMatrixRootPackage.scripts['workspace:build:packages'] === 'bun ci-cd/build-workspace-packages.js',
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
@@ -473,9 +475,11 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/ci.yml').includes('name: Run integration matrix'),
       read('.github/workflows/ci.yml').includes('bun run ci:integration'),
       read('.github/workflows/ci.yml').includes('ci-cd/ensure-docker-runtime.sh'),
+      read('.github/workflows/ci.yml').includes('name: Build workspace package dependencies'),
       !read('.github/workflows/ci.yml').includes('requirepass'),
       !read('.github/workflows/ci.yml').includes('AAA_REDIS_PASSWORD'),
       fullMatrixRootPackage.scripts['website:deps:build'].includes('@jumentix/cana'),
+      fullMatrixRootPackage.scripts['website:deps:build'].includes('@jumentix/shared-contracts'),
       read('.github/workflows/ci.yml').includes('bun run website:storybook:build'),
       read('.github/workflows/ci.yml').includes('bun run website:storybook:smoke'),
       read('.github/workflows/ci.yml').includes('bun run website:test:cypress'),
@@ -492,7 +496,7 @@ describe('run-full-test-matrix', () => {
       !FULL_TEST_MATRIX.some(
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
-    ]).toStrictEqual(Array(38).fill(true));
+    ]).toStrictEqual(Array(42).fill(true));
   });
 });
 

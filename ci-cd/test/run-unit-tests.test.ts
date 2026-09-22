@@ -18,6 +18,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(__dirname, '../..');
 const {
   partitionUnitSuites,
+  runBunUnit,
   runReportOnlyUnit,
   runScriptedUnit,
   runUnitTests
@@ -146,6 +147,25 @@ describe('partitionUnitSuites', () => {
     const { reportOnlySuites } = partitionUnitSuites(manifest, local);
 
     expect(reportOnlySuites).toStrictEqual([]);
+  });
+});
+
+describe('runBunUnit', () => {
+  it('resolves workspace packages from source rather than published dist entry points', () => {
+    expect.hasAssertions();
+
+    const calls: string[][] = [];
+    const status = runBunUnit(['apps/a/test/unit/plain.test.ts'], {
+      spawn: (command: string, args: string[]) => {
+        calls.push([command, ...args]);
+        return { status: 0 } as never;
+      }
+    });
+
+    expect(status).toBe(0);
+    expect(calls).toStrictEqual([[
+      'bun', 'test', '--conditions=development', '--isolate', 'apps/a/test/unit/plain.test.ts'
+    ]]);
   });
 });
 

@@ -78,7 +78,11 @@ export class CatalogDataRepository
 
   public async delete(id: string, expectedVersion?: number, actor: string = ''): Promise<boolean> {
     const current = await this.getOneById(id);
-    CatalogDataRepository.throwIfStale(current, expectedVersion ?? -1);
+    // An absent expectedVersion is the unconditional-delete sentinel; the
+    // staleness check only guards optimistic-concurrency deletes.
+    if (expectedVersion !== undefined) {
+      CatalogDataRepository.throwIfStale(current, expectedVersion);
+    }
     const next = new Catalog({ ...current.serialize() });
     next.tombstone(actor);
     await this.store.update(id, next.serialize());

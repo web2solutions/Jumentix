@@ -118,8 +118,8 @@ const BUN_ISOLATION = '--isolate';
 function runBunUnit(suites, options = {}) {
   const spawn = options.spawn || spawnSync;
   const args = suites.length > 0
-    ? ['test', BUN_ISOLATION, ...suites]
-    : ['test', BUN_ISOLATION, ...UNIT_DIRS];
+    ? ['test', '--conditions=development', BUN_ISOLATION, ...suites]
+    : ['test', '--conditions=development', BUN_ISOLATION, ...UNIT_DIRS];
   console.log(`[ci] unit tests (bun:test, isolated): ${suites.length || 'directory'} target(s)`);
   const result = spawn('bun', args, {
     stdio: 'inherit',

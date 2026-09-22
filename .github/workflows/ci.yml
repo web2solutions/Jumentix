@@ -47,7 +47,10 @@ jobs:
         run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
       - name: Install Bun
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Export pull request metadata
         run: |
@@ -105,41 +108,144 @@ jobs:
         if: always()
         run: find artifacts/ci -maxdepth 2 -type f -print || true
 
+  pr-feedback:
+    name: pr-feedback
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted PR base
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Bootstrap trusted PR feedback checker
+        run: |
+          set -euo pipefail
+          if [ -f ci-cd/check-pr-feedback.js ]; then
+            exit 0
+          fi
+          if [ "${{ github.event.pull_request.base.ref }}" != "main" ] || [ "${{ github.event.pull_request.head.ref }}" != "dev" ]; then
+            echo "The trusted PR feedback checker is absent from the base branch." >&2
+            exit 1
+          fi
+          git fetch --no-tags --depth=1 origin dev
+          git checkout origin/dev -- ci-cd/check-pr-feedback.js ci-cd/lib/entry-point.js
+      - name: Enforce resolved PR feedback
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun ci-cd/check-pr-feedback.js --repo "$GITHUB_REPOSITORY" --pr "${{ github.event.pull_request.number }}"
+
   sync-changelog:
     name: sync-changelog
-    if: github.event_name == 'push' && github.ref_name == 'dev'
+    if: github.event_name == 'push' && github.ref_name == 'main'
     needs: branch-gate
+    # CHANGELOG_GH_TOKEN lives in the "secrets" environment (all bot tokens
+    # were consolidated there); without this the job cannot see the secret
+    # and degrades to the manual-instructions path.
+    environment: secrets
     permissions:
       contents: write
+      # gh pr create in the sync step needs PR creation rights on top of the
+      # contents token (JUM-862 follow-up: "Resource not accessible by
+      # integration (createPullRequest)").
+      pull-requests: write
     concurrency:
-      group: changelog-dev
+      group: changelog-main
       cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout current development branch
+      - name: Checkout current release branch
         uses: actions/checkout@v5
         with:
-          ref: dev
+          ref: main
           fetch-depth: 0
       - name: Install Bun
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Synchronize generated changelog
+        timeout-minutes: 90
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Fine-grained PAT (contents rw + pull-requests rw, this repo only).
+          # Required because PRs opened with GITHUB_TOKEN never trigger
+          # pull_request_target workflows, and dev's protection requires their
+          # contexts (pr-feedback, sonar-reliability) — a GITHUB_TOKEN PR can
+          # never satisfy them (JUM-862 follow-up).
+          CHANGELOG_GH_TOKEN: ${{ secrets.CHANGELOG_GH_TOKEN }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin dev
-          git merge --ff-only origin/dev
+          git fetch origin main
+          git merge --ff-only origin/main
           bun run changelog:update
           if git diff --quiet -- CHANGELOG.md; then
             echo "CHANGELOG.md is already current."
             exit 0
           fi
+          # Branch protection rejects direct pushes to main (GH006), and
+          # allow_auto_merge is off — open a PR, wait out the required checks,
+          # then squash-merge it. No [skip ci]: the checks must run.
+          branch="chore/changelog-sync-${GITHUB_SHA:0:8}"
+          git checkout -b "$branch"
           git add CHANGELOG.md
-          git commit -m "chore: synchronize changelog [skip ci]"
-          git push origin HEAD:dev
+          git commit -m "chore: synchronize changelog"
+          git push origin "$branch"
+          if [ -z "${CHANGELOG_GH_TOKEN:-}" ]; then
+            echo "Secret CHANGELOG_GH_TOKEN is not configured."
+            echo "Branch $branch is pushed and current — open the PR manually:"
+            echo "  gh pr create --base main --head $branch --title 'chore: synchronize changelog'"
+            exit 1
+          fi
+          pr_url="$(GH_TOKEN="$CHANGELOG_GH_TOKEN" gh pr create --base main --head "$branch" \
+            --title "chore: synchronize changelog" \
+            --body "Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.")"
+          echo "Opened $pr_url"
+          # Poll mergeability instead of 'gh pr checks --watch --fail-fast':
+          # non-required checks (e.g. the code-scanning AI findings job) fail
+          # on every PR and would abort the wait; what matters is that the
+          # required contexts are green, which is what CLEAN/UNSTABLE mean.
+          # UNKNOWN is GitHub lazily computing mergeability right after PR
+          # creation — it is not an error, so it stays in the retry loop
+          # (first live run aborted on it seconds after opening the PR).
+          deadline=$((SECONDS + 3600))
+          while :; do
+            state="$(gh pr view "$pr_url" --json mergeStateStatus --jq .mergeStateStatus)"
+            case "$state" in
+              CLEAN|UNSTABLE|HAS_HOOKS) break ;;
+              BLOCKED|UNKNOWN)
+                if [ "$SECONDS" -gt "$deadline" ]; then
+                  echo "Required checks did not pass within 60m on $pr_url (last state: $state) — leaving the PR open for manual handling."
+                  exit 1
+                fi
+                sleep 30
+                ;;
+              *)
+                echo "Unexpected merge state '$state' on $pr_url — leaving the PR open for manual handling."
+                exit 1
+                ;;
+            esac
+          done
+          if ! gh pr merge "$pr_url" --squash --delete-branch; then
+            echo "Merge failed on $pr_url — leaving the PR open for manual handling."
+            exit 1
+          fi
 
   third-party-review:
     name: third-party-review
@@ -218,7 +324,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -251,7 +360,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -289,7 +401,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -346,7 +461,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -378,13 +496,22 @@ jobs:
           bun packages/cana/scripts/merge-browser-coverage.js --from-dir coverage
       - name: Enforce full coverage thresholds
         run: bun run coverage:check
+      - name: Build workspace package dependencies for frontend coverage
+        run: bun run mono:build
       - name: Produce frontend coverage for the patch report
+        if: github.event_name == 'pull_request'
         run: bun run frontend:test:coverage
       - name: Enforce patch coverage
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
             bun run coverage:merge
-            bun run coverage:patch
+            if [ "${GITHUB_BASE_REF}" = "main" ] && { [ "${GITHUB_HEAD_REF}" = "dev" ] || [[ "${GITHUB_HEAD_REF}" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
+              # A release promotion has no new patch beyond protected dev. Codecov's
+              # project comparison remains the required gate against main.
+              JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch
+            else
+              bun run coverage:patch
+            fi
           else
             echo "Patch coverage is PR-only; project coverage already passed."
           fi
@@ -487,7 +614,10 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
@@ -532,10 +662,15 @@ jobs:
           package-manager-cache: false
       - name: Install Bun and dependencies
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
+          test -x "$HOME/.bun/bin/bun"
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Build workspace package dependencies
+        run: bun run mono:build
       - name: Ensure Docker runtime
         run: ci-cd/ensure-docker-runtime.sh
       - name: Database driver smoke matrix against real containers

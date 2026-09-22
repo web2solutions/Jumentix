@@ -66,15 +66,20 @@ function requestedBrowser(options = {}) {
     || 'chrome';
 }
 
-/** Every `*.cy.ts` under any package's `cypress/` directory. */
-function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync(root) : []) {
+function isPackageCypressFile(specRoot, filePath, suffix) {
+  const parts = path.relative(specRoot, filePath).split(path.sep);
+  return parts.length >= 3 && parts[1] === 'cypress' && parts.at(-1).endsWith(suffix);
+}
+
+/** Every `*.cy.ts` directly under a workspace package's `cypress/` directory. */
+function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync(root) : [], specRoot = root) {
   return list.flatMap((name) => {
     const full = path.join(root, name);
     if (fs.statSync(full).isDirectory()) {
       if (name === 'node_modules' || name === 'dist' || name === '.build') return [];
-      return findSpecs(full);
+      return findSpecs(full, undefined, specRoot);
     }
-    return full.endsWith('.cy.ts') ? [full] : [];
+    return isPackageCypressFile(specRoot, full, '.cy.ts') ? [full] : [];
   });
 }
 
@@ -86,15 +91,16 @@ function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync
  */
 function findWorkerEntries(
   root = SPEC_ROOT,
-  list = fs.existsSync(root) ? fs.readdirSync(root) : []
+  list = fs.existsSync(root) ? fs.readdirSync(root) : [],
+  specRoot = root
 ) {
   return list.flatMap((name) => {
     const full = path.join(root, name);
     if (fs.statSync(full).isDirectory()) {
       if (name === 'node_modules' || name === 'dist' || name === '.build') return [];
-      return findWorkerEntries(full);
+      return findWorkerEntries(full, undefined, specRoot);
     }
-    return full.endsWith('-worker.ts') && full.includes(`${path.sep}cypress${path.sep}support${path.sep}`)
+    return isPackageCypressFile(specRoot, full, '-worker.ts') && full.includes(`${path.sep}cypress${path.sep}support${path.sep}`)
       ? [full]
       : [];
   });
@@ -149,6 +155,22 @@ function buildAll(specs, spawn = spawnSync, options = {}) {
   return failures;
 }
 
+function runCypress(spawn, browser, env, attempts = 2) {
+  let result;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    result = spawn(
+      'bun',
+      ['x', 'cypress', 'run', '--e2e', '--browser', browser],
+      { stdio: 'inherit', env }
+    );
+    if (!result.error && result.status === 0) return result;
+    if (attempt < attempts) {
+      console.warn(`[browser] ${browser} did not start cleanly; retrying once.`);
+    }
+  }
+  return result;
+}
+
 function run(options = {}) {
   const spawn = options.spawn || spawnSync;
   const specs = options.specs || findSpecs();
@@ -168,8 +190,9 @@ function run(options = {}) {
   fs.rmSync(BUILD_DIR, { recursive: true, force: true });
 
   const workers = options.workers || findWorkerEntries();
+  const instrument = options.instrument ?? true;
   const failures = [
-    ...buildAll(specs, spawn),
+    ...buildAll(specs, spawn, { instrument }),
     ...buildAll(workers, spawn, { instrument: false })
   ];
   if (failures.length > 0) {
@@ -190,11 +213,7 @@ function run(options = {}) {
   const env = { ...process.env };
   delete env.ELECTRON_RUN_AS_NODE;
 
-  const cypress = spawn(
-    'bun',
-    ['x', 'cypress', 'run', '--e2e', '--browser', browser],
-    { stdio: 'inherit', env }
-  );
+  const cypress = runCypress(spawn, browser, env);
 
   if (cypress.error) {
     return { ok: false, message: `Cypress failed to start: ${cypress.error.message}` };
@@ -203,7 +222,8 @@ function run(options = {}) {
     return { ok: false, message: `Cypress exited with status ${String(cypress.status)}.` };
   }
 
-  const coverage = writeBrowserCoverage();
+  const writeCoverage = options.writeCoverage || writeBrowserCoverage;
+  const coverage = writeCoverage();
   if (!coverage.ok) return coverage;
 
   // Per-engine evidence. The LCOV is identical per engine — the counters come
@@ -215,8 +235,9 @@ function run(options = {}) {
     ranAtUtc: new Date().toISOString(),
     coverage: 'coverage/browser'
   };
-  fs.mkdirSync(path.dirname(EVIDENCE_PATH), { recursive: true });
-  fs.writeFileSync(EVIDENCE_PATH, `${JSON.stringify(evidence, null, 2)}\n`);
+  const evidencePath = options.evidencePath || EVIDENCE_PATH;
+  fs.mkdirSync(path.dirname(evidencePath), { recursive: true });
+  fs.writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
 
   return {
     ok: true,
@@ -246,12 +267,15 @@ module.exports = {
   BUILD_DIR,
   EVIDENCE_PATH,
   SUPPORTED_BROWSERS,
+  bundle,
   bundlePath,
   buildAll,
   findSpecs,
   findWorkerEntries,
+  isPackageCypressFile,
   main,
   requestedBrowser,
+  runCypress,
   run,
   runAsEntryPoint
 };

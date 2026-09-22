@@ -520,6 +520,40 @@ describe('cana localStorage fallback edge coverage', () => {
     expect((Object.prototype as Record<string, unknown>).polluted).to.equal(undefined);
   });
 
+  it('rejects autoIncrement keyPaths with constructor or prototype segments', async () => {
+    // Same class of attack through the other prototype-chain names: each one
+    // would let a generated key mutate Object.prototype. Every segment is
+    // validated at the point of use.
+    const openGuarded = (segment: string) => openLocalStorageBackend({
+      name: uniqueName(`ls-${segment}`),
+      schema: {
+        version: 1,
+        stores: [{ name: 'entries', keyPath: `${segment}.polluted`, autoIncrement: true }]
+      },
+      storage: memoryStorage(),
+      originId: 'o',
+      nextCursor: () => 1
+    });
+
+    const constructorFailure = await rejection(openGuarded('constructor').transaction(
+      'readwrite',
+      ['entries'],
+      async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
+      'c:constructor'
+    ));
+    expect(isCanaErrorCode(constructorFailure, 'InvalidRequest')).to.equal(true);
+
+    const prototypeFailure = await rejection(openGuarded('prototype').transaction(
+      'readwrite',
+      ['entries'],
+      async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
+      'c:prototype'
+    ));
+    expect(isCanaErrorCode(prototypeFailure, 'InvalidRequest')).to.equal(true);
+
+    expect((Object.prototype as Record<string, unknown>).polluted).to.equal(undefined);
+  });
+
   it('refuses a store whose name is a prototype-chain key', async () => {
     // `bag()` resolves `snapshot.stores[name]`; with `name === '__proto__'`
     // that read is Object.prototype itself and every record write would land

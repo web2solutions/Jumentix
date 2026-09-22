@@ -1,6 +1,19 @@
+const fs = require('fs');
 const path = require('path');
 
+function workspacePackageDirs(kind) {
+  const root = path.join(__dirname, kind);
+  if (!fs.existsSync(root)) return [];
+  return fs.readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .filter((entry) => fs.existsSync(path.join(root, entry.name, 'package.json')))
+    .map((entry) => path.join(root, entry.name));
+}
+
 module.exports = {
+    // Nested git worktrees under the main checkout must not inherit the parent
+    // checkout's ESLint config / plugin installs (duplicate @typescript-eslint).
+    root: true,
     ignorePatterns: [
       'apps/jumentix-website/next-env.d.ts',
       // apps/frontend/template is a vendored, frozen third-party catalog
@@ -8,6 +21,9 @@ module.exports = {
       // vendored code is not held to this ruleset. apps/frontend/src follows
       // the Jumentix standard (airbnb + semicolons) and IS linted here.
       'apps/frontend/template',
+      // Packaged CLI seed slices (JUM-845): opaque data copied from apps/*,
+      // not source owned by cli-init. Lint the seeds in their app homes.
+      'packages/cli-init/templates',
       '**/dist/**'
     ],
     parser: '@typescript-eslint/parser',
@@ -77,13 +93,9 @@ module.exports = {
       'import/no-extraneous-dependencies': ['error', {
         packageDir: [
           __dirname,
-          path.join(__dirname, 'apps/backend-template'),
-          path.join(__dirname, 'apps/frontend'),
-          path.join(__dirname, 'apps/jumentix-website'),
-          path.join(__dirname, 'packages/sdk-rest-client'),
-          path.join(__dirname, 'packages/sdk-websocket-client'),
-          path.join(__dirname, 'packages/sdk-grpc-client'),
-          path.join(__dirname, 'packages/message-mediator')
+          ...workspacePackageDirs('apps'),
+          ...workspacePackageDirs('packages'),
+          ...workspacePackageDirs('tooling')
         ]
       }]
     },

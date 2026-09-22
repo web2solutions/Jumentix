@@ -12,12 +12,15 @@ on:
           - all
           - designer-core
           - cana
+          - runtime
+          - sdks
+          - cli-init
 
 jobs:
   publish:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: npm-publish
+    environment: secrets
     permissions:
       contents: read
     steps:
@@ -35,11 +38,15 @@ jobs:
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Install frozen dependencies
         run: bun install --frozen-lockfile
+      - name: Verify npm org access
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_CD }}
+        run: bun run npm:org:check:jumentix
       - name: Validate public package artifacts
         run: bun run npm:packages:check
       - name: Publish selected release cohort
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_JUMENTIX_CI_CD }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_CD }}
           RELEASE: ${{ inputs.release }}
         run: |
           set -euo pipefail
@@ -52,12 +59,53 @@ jobs:
               publish cana-react
               publish cana-vue
               publish designer-core
+              publish persistence-contracts
+              publish shared-contracts
+              publish external-persistence-core
+              publish external-store-proxy
+              publish external-db-repositories
+              publish key-value-storage
+              publish database-client-factory
+              publish message-mediator
+              publish mutex-service
+              publish dead-letter-queue
+              publish runtime-infra
+              publish adapter-runtime-bootstrap
+              publish sdk-grpc-client
+              publish sdk-rest-client
+              publish sdk-websocket-client
+              publish cli-init
               ;;
             cana)
               publish cana
+              publish cana-react
+              publish cana-vue
               ;;
             designer-core)
               publish designer-core
+              ;;
+            runtime)
+              publish persistence-contracts
+              publish shared-contracts
+              publish external-persistence-core
+              publish external-store-proxy
+              publish external-db-repositories
+              publish key-value-storage
+              publish database-client-factory
+              publish message-mediator
+              publish mutex-service
+              publish dead-letter-queue
+              publish runtime-infra
+              publish adapter-runtime-bootstrap
+              ;;
+            sdks)
+              publish shared-contracts
+              publish sdk-grpc-client
+              publish sdk-rest-client
+              publish sdk-websocket-client
+              ;;
+            cli-init)
+              publish cli-init
               ;;
             *)
               echo "Unsupported release cohort: $RELEASE" >&2
