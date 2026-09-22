@@ -505,7 +505,13 @@ jobs:
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
             bun run coverage:merge
-            bun run coverage:patch
+            if [ "${GITHUB_BASE_REF}" = "main" ] && { [ "${GITHUB_HEAD_REF}" = "dev" ] || [[ "${GITHUB_HEAD_REF}" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
+              # A release promotion has no new patch beyond protected dev. Codecov's
+              # project comparison remains the required gate against main.
+              JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch
+            else
+              bun run coverage:patch
+            fi
           else
             echo "Patch coverage is PR-only; project coverage already passed."
           fi
