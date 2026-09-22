@@ -87,10 +87,12 @@ const run = (cmd) => cp.execSync(cmd, {
 }).trim();
 
 const resolveBaseRef = () => {
+  const configuredBaseRef = String(process.env.JUMENTIX_PATCH_BASE_REF || '').trim();
   const candidates = [
+    configuredBaseRef,
     'origin/main',
     'main'
-  ];
+  ].filter(Boolean);
   for (const candidate of candidates) {
     try {
       run(`git rev-parse --verify ${candidate}`);

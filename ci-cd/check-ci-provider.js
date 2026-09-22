@@ -98,6 +98,7 @@ if (!fs.existsSync(workflowPath)) {
     /coverage\/jest\/coverage-final\.json/,
     /bun run coverage:check/,
     /bun run coverage:patch/,
+    /JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
     /website:storybook:build/,
     /website:storybook:smoke/,
     /website:test:prepublish/,
