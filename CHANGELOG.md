@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-21 [JUM-871][Fix] Build workspace packages in topological level order (#414) - Eduardo A.
+- 2026-09-21 chore: synchronize changelog (#413) - Eduardo A.
 - 2026-09-21 ci(JUM-862): bind bot-token jobs to the consolidated secrets environment (#412) - Eduardo A.
 - 2026-09-21 fix(JUM-872): address PR #409 review findings on dev (#411) - Eduardo A.
 - 2026-09-21 ci(JUM-866): guard the patch-report frontend coverage step to PRs (#410) - Eduardo A.
