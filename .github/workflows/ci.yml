@@ -661,6 +661,8 @@ jobs:
           export PATH="$HOME/.bun/bin:$PATH"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
           "$HOME/.bun/bin/bun" install --frozen-lockfile
+      - name: Build workspace package dependencies
+        run: bun run mono:build
       - name: Ensure Docker runtime
         run: ci-cd/ensure-docker-runtime.sh
       - name: Database driver smoke matrix against real containers

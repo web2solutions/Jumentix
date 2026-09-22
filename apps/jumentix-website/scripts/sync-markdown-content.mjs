@@ -349,6 +349,9 @@ function collectionSlug(sourceDir, sourceFile) {
 
 async function prepareRecords(config) {
   const records = [];
+  const explicitRoutes = new Set(
+    config.entries.map((entry) => `${entry.section}/${entry.slug}`)
+  );
 
   for (const entry of config.entries) {
     for (const [locale, localeSettings] of Object.entries(localeConfig)) {
@@ -373,6 +376,9 @@ async function prepareRecords(config) {
 
     for (const englishSource of englishFiles) {
       const slug = collectionSlug(sourceDir, englishSource);
+      // Curated consumer pages are authoritative. A later collection walk over
+      // packages/ must not replace one with a terse package README.
+      if (explicitRoutes.has(`${collection.section}/${slug}`)) continue;
       if (
         collection.section === 'packages'
         && await shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug)
