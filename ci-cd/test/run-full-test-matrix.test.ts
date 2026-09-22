@@ -452,7 +452,7 @@ describe('run-full-test-matrix', () => {
     expect(fullMatrixRootPackage.scripts['ci:gate:task'])
       .toBe('bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js');
     expect([
-      fullMatrixRootPackage.scripts['mono:build'].includes('bun run mono:build:deps && bun run --filter'),
+      fullMatrixRootPackage.scripts['mono:build'] === 'bun run workspace:build:packages',
       fullMatrixRootPackage.scripts['mono:build:deps'] === 'bun run --filter @jumentix/cana build',
       fullMatrixRootPackage.scripts['workspace:build:packages'] === 'bun ci-cd/build-workspace-packages.js',
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),

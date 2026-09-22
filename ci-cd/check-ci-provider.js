@@ -85,7 +85,7 @@ if (!fs.existsSync(workflowPath)) {
     /open -ga Docker/,
     /install --frozen-lockfile/,
     /bun run mono:build/,
-    /mono:build:deps/,
+    /"mono:build":\s*"bun run workspace:build:packages"/,
     /workspace:build:packages/,
     /test:unit[\s\S]*--conditions=development/,
     /bun run mono:test/,
@@ -128,10 +128,14 @@ if (!fs.existsSync(workflowPath)) {
   }
 
   const packageScripts = JSON.parse(packageContents).scripts || {};
+  const monorepoBuild = packageScripts['mono:build'];
   const workspaceBuild = packageScripts['workspace:build:packages'];
   const taskGate = packageScripts['ci:gate:task'];
   if (workspaceBuild !== 'bun ci-cd/build-workspace-packages.js') {
     failures.push('Workspace package build must run the topological level-parallel builder (JUM-871)');
+  }
+  if (monorepoBuild !== 'bun run workspace:build:packages') {
+    failures.push('Monorepo build must delegate to the topological workspace package builder (JUM-871)');
   }
   if (!fs.existsSync(path.join(root, 'ci-cd', 'build-workspace-packages.js'))) {
     failures.push('Missing ci-cd/build-workspace-packages.js referenced by workspace:build:packages');

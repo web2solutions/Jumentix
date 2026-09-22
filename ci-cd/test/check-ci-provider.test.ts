@@ -245,14 +245,20 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('@jumentix\\/shared-contracts build');
   });
 
-  it('fails when monorepo builds no longer prime exported workspace dependencies', () => {
+  it('fails when monorepo builds no longer use the topological workspace builder', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
       const file = path.join(root, 'package.json');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/mono:build:deps/g, 'mono:build:parallel'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '"mono:build": "bun run workspace:build:packages"',
+          '"mono:build": "bun run mono:build:parallel"'
+        )
+      );
     });
-    expect(run(directory).output).toContain('mono:build:deps');
+    expect(run(directory).output).toContain('Monorepo build must delegate');
   });
 
   it('fails when unit tests stop building publishable workspace artifacts first', () => {
