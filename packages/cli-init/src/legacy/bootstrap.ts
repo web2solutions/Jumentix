@@ -151,8 +151,45 @@ export function environmentWithoutRepositoryLocation(
   return copy;
 }
 
+/**
+ * Absolute resolutions for the commands the legacy bootstrap spawns, instead
+ * of bare names the OS would resolve through PATH — a writable PATH entry
+ * could shadow the binary a credential-adjacent scaffold step runs (CodeQL
+ * javascript:S4036, same rationale as ci-cd/lib/git-binary.js). Fail closed
+ * for anything not on the list: an unknown command is a bug, not something
+ * to PATH-search.
+ */
+function resolveFirstExisting(candidates: string[], name: string): string {
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  throw new Error(
+    `Could not resolve "${name}" to an absolute path (looked in: ${candidates.join(', ')}). `
+      + 'This check resolves without PATH on purpose; add the binary location to '
+      + 'RESOLVED_BINARIES in packages/cli-init/src/legacy/bootstrap.ts.'
+  );
+}
+
+const RESOLVED_BINARIES: Record<string, () => string> = {
+  git: () => resolveFirstExisting(['/usr/bin/git', '/bin/git'], 'git'),
+  bun: () => process.execPath,
+  node: () => process.execPath
+};
+
+export function resolveCommandBinary(command: string): string {
+  // An absolute path is already resolved — PATH search is the S4036 risk,
+  // and a caller that went to the trouble of an absolute path is not
+  // searching. Only bare names go through the registry below.
+  if (path.isAbsolute(command)) return command;
+  const resolve = RESOLVED_BINARIES[command];
+  if (!resolve) {
+    throw new Error(`Refusing to spawn unlisted command "${command}" without an absolute path.`);
+  }
+  return resolve();
+}
+
 export function runCommand(command: string, args: string[], cwd: string): void {
-  const result = spawnSync(command, args, {
+  const result = spawnSync(resolveCommandBinary(command), args, {
     cwd,
     stdio: 'inherit',
     env: environmentWithoutRepositoryLocation()
