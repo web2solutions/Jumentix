@@ -164,6 +164,11 @@ if (!fs.existsSync(workflowPath)) {
     }
   }
 
+  const databaseMatrixBlock = contents.match(/\n  database-matrix:\n[\s\S]*?(?=\n  [a-z-]+:\n|\n?$)/)?.[0] || '';
+  if (!/Build workspace package dependencies[\s\S]*bun run mono:build/.test(databaseMatrixBlock)) {
+    failures.push('Database matrix must build workspace package dependencies before running isolated smoke tests');
+  }
+
   const coverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z-]+:\n|\n?$)/)?.[0] || '';
   if (/RUN_(BROKER|REDIS)_INTEGRATION:\s*'1'/.test(coverageBlock)) {
     failures.push(

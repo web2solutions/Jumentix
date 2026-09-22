@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const { findSpecs, findWorkerEntries } = require('../../scripts/run-browser-tests');
+const { findSpecs, findWorkerEntries, runCypress } = require('../../scripts/run-browser-tests');
 
 describe('run-browser-tests discovery', () => {
   it('includes only package-owned Cypress specs and workers', () => {
@@ -25,5 +25,15 @@ describe('run-browser-tests discovery', () => {
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it('retries a transient browser startup once and still fails closed', () => {
+    expect.hasAssertions();
+    const spawn = jest.fn()
+      .mockReturnValueOnce({ status: 1 })
+      .mockReturnValueOnce({ status: 0 });
+
+    expect(runCypress(spawn, 'firefox', { PATH: process.env.PATH })).toStrictEqual({ status: 0 });
+    expect(spawn).toHaveBeenCalledTimes(2);
   });
 });

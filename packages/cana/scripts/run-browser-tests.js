@@ -155,6 +155,22 @@ function buildAll(specs, spawn = spawnSync, options = {}) {
   return failures;
 }
 
+function runCypress(spawn, browser, env, attempts = 2) {
+  let result;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    result = spawn(
+      'bun',
+      ['x', 'cypress', 'run', '--e2e', '--browser', browser],
+      { stdio: 'inherit', env }
+    );
+    if (!result.error && result.status === 0) return result;
+    if (attempt < attempts) {
+      console.warn(`[browser] ${browser} did not start cleanly; retrying once.`);
+    }
+  }
+  return result;
+}
+
 function run(options = {}) {
   const spawn = options.spawn || spawnSync;
   const specs = options.specs || findSpecs();
@@ -196,11 +212,7 @@ function run(options = {}) {
   const env = { ...process.env };
   delete env.ELECTRON_RUN_AS_NODE;
 
-  const cypress = spawn(
-    'bun',
-    ['x', 'cypress', 'run', '--e2e', '--browser', browser],
-    { stdio: 'inherit', env }
-  );
+  const cypress = runCypress(spawn, browser, env);
 
   if (cypress.error) {
     return { ok: false, message: `Cypress failed to start: ${cypress.error.message}` };
@@ -259,6 +271,7 @@ module.exports = {
   isPackageCypressFile,
   main,
   requestedBrowser,
+  runCypress,
   run,
   runAsEntryPoint
 };

@@ -167,6 +167,22 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('third-party-review');
   });
 
+  it('fails when the database matrix stops building workspace dependencies', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '      - name: Build workspace package dependencies\n        run: bun run mono:build\n',
+          ''
+        )
+      );
+    });
+    expect(run(directory).output).toContain('Database matrix must build workspace package dependencies');
+  });
+
   it('fails when generated changelog synchronization is no longer main-only', () => {
     expect.hasAssertions();
 

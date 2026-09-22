@@ -475,6 +475,7 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/ci.yml').includes('name: Run integration matrix'),
       read('.github/workflows/ci.yml').includes('bun run ci:integration'),
       read('.github/workflows/ci.yml').includes('ci-cd/ensure-docker-runtime.sh'),
+      read('.github/workflows/ci.yml').includes('name: Build workspace package dependencies'),
       !read('.github/workflows/ci.yml').includes('requirepass'),
       !read('.github/workflows/ci.yml').includes('AAA_REDIS_PASSWORD'),
       fullMatrixRootPackage.scripts['website:deps:build'].includes('@jumentix/cana'),
@@ -495,7 +496,7 @@ describe('run-full-test-matrix', () => {
       !FULL_TEST_MATRIX.some(
         (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
       )
-    ]).toStrictEqual(Array(41).fill(true));
+    ]).toStrictEqual(Array(42).fill(true));
   });
 });
 
