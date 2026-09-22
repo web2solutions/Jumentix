@@ -53,13 +53,13 @@ if (!fs.existsSync(workflowPath)) {
     /git checkout origin\/dev -- ci-cd\/check-pr-feedback\.js ci-cd\/lib\/entry-point\.js/,
     /Enforce resolved PR feedback/,
     /sync-changelog:/,
-    /github\.event_name == 'push' && github\.ref_name == 'dev'/,
+    /github\.event_name == 'push' && github\.ref_name == 'main'/,
     /needs:\s*branch-gate/,
-    /group:\s*changelog-dev/,
+    /group:\s*changelog-main/,
     /cancel-in-progress:\s*false/,
     /contents:\s*write/,
     /bun run changelog:update/,
-    /gh pr create --base dev/,
+    /gh pr create --base main/,
     /--watch --fail-fast/,
     /--squash --delete-branch/,
     /task-branch-push/,
@@ -306,7 +306,7 @@ if (!fs.existsSync(preCommitPath)) {
 } else {
   const contents = fs.readFileSync(preCommitPath, 'utf8');
   if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns dev synchronization.');
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
   }
 }
 
@@ -315,7 +315,7 @@ if (!fs.existsSync(preCommitPath)) {
 } else {
   const contents = fs.readFileSync(preCommitPath, 'utf8');
   if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns dev synchronization.');
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
   }
 }
 

@@ -62,7 +62,7 @@ Lint + correção:
 bun run lint:fix
 ```
 
-`CHANGELOG.md` é gerado pelo GitHub Actions após pushes validados para `dev`.
+`CHANGELOG.md` é gerado pelo GitHub Actions somente após merges validados para `main`.
 Não o atualize em uma branch de tarefa ou PR; `bun run changelog:check` fica disponível
 apenas para diagnosticar a geração localmente.
 

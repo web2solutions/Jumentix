@@ -149,7 +149,7 @@ jobs:
 
   sync-changelog:
     name: sync-changelog
-    if: github.event_name == 'push' && github.ref_name == 'dev'
+    if: github.event_name == 'push' && github.ref_name == 'main'
     needs: branch-gate
     # CHANGELOG_GH_TOKEN lives in the "secrets" environment (all bot tokens
     # were consolidated there); without this the job cannot see the secret
@@ -162,14 +162,14 @@ jobs:
       # integration (createPullRequest)").
       pull-requests: write
     concurrency:
-      group: changelog-dev
+      group: changelog-main
       cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout current development branch
+      - name: Checkout current release branch
         uses: actions/checkout@v5
         with:
-          ref: dev
+          ref: main
           fetch-depth: 0
       - name: Install Bun
         run: |
@@ -192,14 +192,14 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin dev
-          git merge --ff-only origin/dev
+          git fetch origin main
+          git merge --ff-only origin/main
           bun run changelog:update
           if git diff --quiet -- CHANGELOG.md; then
             echo "CHANGELOG.md is already current."
             exit 0
           fi
-          # Branch protection rejects direct pushes to dev (GH006), and
+          # Branch protection rejects direct pushes to main (GH006), and
           # allow_auto_merge is off — open a PR, wait out the required checks,
           # then squash-merge it. No [skip ci]: the checks must run.
           branch="chore/changelog-sync-${GITHUB_SHA:0:8}"
@@ -210,10 +210,10 @@ jobs:
           if [ -z "${CHANGELOG_GH_TOKEN:-}" ]; then
             echo "Secret CHANGELOG_GH_TOKEN is not configured."
             echo "Branch $branch is pushed and current — open the PR manually:"
-            echo "  gh pr create --base dev --head $branch --title 'chore: synchronize changelog'"
+            echo "  gh pr create --base main --head $branch --title 'chore: synchronize changelog'"
             exit 1
           fi
-          pr_url="$(GH_TOKEN="$CHANGELOG_GH_TOKEN" gh pr create --base dev --head "$branch" \
+          pr_url="$(GH_TOKEN="$CHANGELOG_GH_TOKEN" gh pr create --base main --head "$branch" \
             --title "chore: synchronize changelog" \
             --body "Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.")"
           echo "Opened $pr_url"
