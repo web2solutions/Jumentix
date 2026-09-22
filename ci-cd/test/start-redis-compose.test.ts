@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const ROOT = process.cwd();
-const SCRIPT = join(ROOT, 'ci-cd/start-redis-compose.sh');
+const SCRIPT = join(ROOT, 'ci-cd/start-compose-service.sh');
 
 function runWithDockerFailures(failuresBeforeSuccess: number, attempts: number) {
   const bin = mkdtempSync(join(tmpdir(), 'jumentix-redis-compose-'));
@@ -35,7 +35,7 @@ exit 0
   chmodSync(docker, 0o755);
 
   try {
-    const result = spawnSync('bash', [SCRIPT], {
+    const result = spawnSync('bash', [SCRIPT, 'jumentix-test', 'test-compose.yml'], {
       cwd: ROOT,
       encoding: 'utf8',
       env: {
@@ -55,7 +55,7 @@ exit 0
   }
 }
 
-describe('start-redis-compose', () => {
+describe('start-compose-service', () => {
   it('retries a transient compose startup failure', () => {
     expect.hasAssertions();
     const { attempts, result } = runWithDockerFailures(1, 3);
