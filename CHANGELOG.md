@@ -4,6 +4,8 @@
 
 ## All Changes
 
+- 2026-09-22 fix(cli-init): [JUM-821] resolve Bun in Actions (#419) - Eduardo A.
+- 2026-09-22 chore: synchronize changelog (#418) - Eduardo A.
 - 2026-09-22 fix(ci): [JUM-821] bootstrap promotion gates (#417) - Eduardo A.
 - 2026-09-22 fix(cli-init): [JUM-821] restore coverage setup (#416) - Eduardo A.
 - 2026-09-21 chore: synchronize changelog (#415) - Eduardo A.
