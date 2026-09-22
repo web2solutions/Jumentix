@@ -331,6 +331,21 @@ describe('runCommand', () => {
     expect(() => runCommand('/bin/sh', ['-c', 'exit 3'], scratch('fail')))
       .toThrow('/bin/sh -c exit 3 failed with exit code 3');
   });
+
+  /**
+   * Bare names are resolved through the fixed registry, never PATH: a
+   * writable PATH entry could shadow the binary a scaffold step runs
+   * (S4036). Anything not on the registry is a bug, not something to
+   * PATH-search — the failure is loud and names the command.
+   */
+  it('refuses bare commands that are not on the resolved registry', () => {
+    expect.hasAssertions();
+
+    expect(() => runCommand('definitely-not-a-real-tool', ['--help'], scratch('refused')))
+      .toThrow(
+        'Refusing to spawn unlisted command "definitely-not-a-real-tool" without an absolute path.'
+      );
+  });
 });
 
 describe('the environment git is given', () => {

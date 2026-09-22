@@ -37,7 +37,11 @@ function ensureDesignerCoreBuilt() {
       'ensure-built: packages/designer-core is missing (required by @jumentix/cli-init)'
     );
   }
-  execFileSync('bun', ['run', 'build'], {
+  // `process.execPath` rather than the string `bun`: a bare command is
+  // resolved through PATH (Sonar javascript:S4036 / Security Rating). Using
+  // the same Bun binary that is already running also keeps Requirement 096
+  // pinned.
+  execFileSync(process.execPath, ['run', 'build'], {
     cwd: designerCoreRoot,
     stdio: 'inherit'
   });
@@ -71,7 +75,9 @@ function ensureDesignerCoreLinked() {
 function ensureCliInitBuilt() {
   const distEntry = path.join(packageRoot, 'dist', 'index.js');
   if (!pathExists(distEntry)) {
-    execFileSync('bun', ['run', 'build'], {
+    // `process.execPath` rather than the string `bun`: a bare command is
+    // resolved through PATH (Sonar javascript:S4036 / Security Rating).
+    execFileSync(process.execPath, ['run', 'build'], {
       cwd: packageRoot,
       stdio: 'inherit'
     });
