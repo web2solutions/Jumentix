@@ -26,7 +26,7 @@
     "mono:build": "bun run workspace:build:packages",
     "mono:build:deps": "bun run --filter @jumentix/cana build",
     "workspace:build:packages": "bun ci-cd/build-workspace-packages.js",
-    "mono:test": "bun run workspace:test",
+    "mono:test": "bun run workspace:build:packages && bun run workspace:test",
     "mono:lint": "bun run --filter '*' lint",
     "mono:typecheck": "bun run --filter '*' typecheck",
     "docs:translate:ptbr": "bun tooling/scripts/generate-ptbr-docs.mjs",

@@ -277,6 +277,22 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('workspace:build:packages');
   });
 
+  it('fails when monorepo tests stop building workspace dependencies first', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'package.json');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '"mono:test": "bun run workspace:build:packages && bun run workspace:test"',
+          '"mono:test": "bun run workspace:test"'
+        )
+      );
+    });
+    expect(run(directory).output).toContain('Monorepo tests must build workspace package dependencies');
+  });
+
   it('fails when unit tests stop resolving workspace packages from source', () => {
     expect.hasAssertions();
 

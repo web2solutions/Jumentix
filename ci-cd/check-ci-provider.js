@@ -129,6 +129,7 @@ if (!fs.existsSync(workflowPath)) {
 
   const packageScripts = JSON.parse(packageContents).scripts || {};
   const monorepoBuild = packageScripts['mono:build'];
+  const monorepoTest = packageScripts['mono:test'];
   const workspaceBuild = packageScripts['workspace:build:packages'];
   const taskGate = packageScripts['ci:gate:task'];
   if (workspaceBuild !== 'bun ci-cd/build-workspace-packages.js') {
@@ -136,6 +137,9 @@ if (!fs.existsSync(workflowPath)) {
   }
   if (monorepoBuild !== 'bun run workspace:build:packages') {
     failures.push('Monorepo build must delegate to the topological workspace package builder (JUM-871)');
+  }
+  if (monorepoTest !== 'bun run workspace:build:packages && bun run workspace:test') {
+    failures.push('Monorepo tests must build workspace package dependencies before execution (JUM-871)');
   }
   if (!fs.existsSync(path.join(root, 'ci-cd', 'build-workspace-packages.js'))) {
     failures.push('Missing ci-cd/build-workspace-packages.js referenced by workspace:build:packages');
