@@ -73,6 +73,19 @@ describe('check-ci-provider', () => {
     expect(run(untrusted).output).toContain('must execute only the trusted PR base revision');
   });
 
+  it('fails when the CI PR feedback job loses its trusted bootstrap', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('Bootstrap trusted PR feedback checker', 'Bootstrap removed')
+      );
+    });
+    expect(run(directory).output).toContain('Bootstrap trusted PR feedback checker');
+  });
+
   it('fails when Sonar reliability is no longer a trusted required PR gate', () => {
     expect.hasAssertions();
 
@@ -217,6 +230,19 @@ describe('check-ci-provider', () => {
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/website:deps:build/g, 'website:deps:removed'));
     });
     expect(run(directory).output).toContain('website:deps:build');
+  });
+
+  it('fails when the website dependency build omits shared contracts before the SDKs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, 'package.json');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('bun run --filter @jumentix/shared-contracts build && ', '')
+      );
+    });
+    expect(run(directory).output).toContain('@jumentix\\/shared-contracts build');
   });
 
   it('fails when monorepo builds no longer prime exported workspace dependencies', () => {

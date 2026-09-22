@@ -130,6 +130,18 @@ jobs:
           bash /tmp/bun-install.sh "bun-v$BUN_VERSION"
           test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Bootstrap trusted PR feedback checker
+        run: |
+          set -euo pipefail
+          if [ -f ci-cd/check-pr-feedback.js ]; then
+            exit 0
+          fi
+          if [ "${{ github.event.pull_request.base.ref }}" != "main" ] || [ "${{ github.event.pull_request.head.ref }}" != "dev" ]; then
+            echo "The trusted PR feedback checker is absent from the base branch." >&2
+            exit 1
+          fi
+          git fetch --no-tags --depth=1 origin dev
+          git checkout origin/dev -- ci-cd/check-pr-feedback.js ci-cd/lib/entry-point.js
       - name: Enforce resolved PR feedback
         env:
           GH_TOKEN: ${{ github.token }}
