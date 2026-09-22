@@ -4,6 +4,9 @@
 
 ## All Changes
 
+- 2026-09-22 fix(ci): [JUM-821] bootstrap promotion gates (#417) - Eduardo A.
+- 2026-09-22 fix(cli-init): [JUM-821] restore coverage setup (#416) - Eduardo A.
+- 2026-09-21 chore: synchronize changelog (#415) - Eduardo A.
 - 2026-09-21 [JUM-871][Fix] Build workspace packages in topological level order (#414) - Eduardo A.
 - 2026-09-21 chore: synchronize changelog (#413) - Eduardo A.
 - 2026-09-21 ci(JUM-862): bind bot-token jobs to the consolidated secrets environment (#412) - Eduardo A.
