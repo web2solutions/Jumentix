@@ -161,8 +161,33 @@ export function isInstallEnabled(env: NodeJS.ProcessEnv = process.env): boolean 
   return env[INSTALL_ENV] === '1';
 }
 
+/**
+ * Resolve the `docker` executable to an absolute path instead of leaving it
+ * to PATH (Sonar typescript:S4036): PATH is inherited from whoever started
+ * the process, and a writable directory earlier in it could shadow the real
+ * binary — the matrix would then be asking that binary whether Docker is
+ * available. The probe fails closed: an unresolved docker IS "not
+ * available", which is the semantic this probe exists to report.
+ */
+const DOCKER_CANDIDATES = Object.freeze([
+  '/usr/bin/docker',
+  '/usr/local/bin/docker'
+]);
+
+export function resolveDockerBinary(
+  candidates: readonly string[] = DOCKER_CANDIDATES,
+  exists: (target: string) => boolean = fs.existsSync
+): string | null {
+  for (const candidate of candidates) {
+    if (exists(candidate)) return candidate;
+  }
+  return null;
+}
+
 export function probeDockerAvailable(): boolean {
-  const probe = spawnSync('docker', ['version', '--format', '{{.Server.Version}}'], {
+  const docker = resolveDockerBinary();
+  if (!docker) return false;
+  const probe = spawnSync(docker, ['version', '--format', '{{.Server.Version}}'], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe']
   });
