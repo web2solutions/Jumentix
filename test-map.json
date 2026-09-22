@@ -2892,6 +2892,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/start-redis-compose.test.ts",
+      "path": "ci-cd/test/start-redis-compose.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-sonar-reliability.test.ts",
       "path": "ci-cd/test/check-sonar-reliability.test.ts",
       "layer": "tooling",
@@ -5955,9 +5965,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 349,
+    "unit": 350,
     "integration": 102,
     "smoke": 2,
-    "suites": 512
+    "suites": 513
   }
 }
