@@ -496,6 +496,8 @@ jobs:
           bun packages/cana/scripts/merge-browser-coverage.js --from-dir coverage
       - name: Enforce full coverage thresholds
         run: bun run coverage:check
+      - name: Build workspace package dependencies for frontend coverage
+        run: bun run mono:build
       - name: Produce frontend coverage for the patch report
         if: github.event_name == 'pull_request'
         run: bun run frontend:test:coverage

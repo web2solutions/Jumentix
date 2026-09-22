@@ -190,8 +190,9 @@ function run(options = {}) {
   fs.rmSync(BUILD_DIR, { recursive: true, force: true });
 
   const workers = options.workers || findWorkerEntries();
+  const instrument = options.instrument ?? true;
   const failures = [
-    ...buildAll(specs, spawn),
+    ...buildAll(specs, spawn, { instrument }),
     ...buildAll(workers, spawn, { instrument: false })
   ];
   if (failures.length > 0) {
@@ -221,7 +222,8 @@ function run(options = {}) {
     return { ok: false, message: `Cypress exited with status ${String(cypress.status)}.` };
   }
 
-  const coverage = writeBrowserCoverage();
+  const writeCoverage = options.writeCoverage || writeBrowserCoverage;
+  const coverage = writeCoverage();
   if (!coverage.ok) return coverage;
 
   // Per-engine evidence. The LCOV is identical per engine — the counters come
@@ -233,8 +235,9 @@ function run(options = {}) {
     ranAtUtc: new Date().toISOString(),
     coverage: 'coverage/browser'
   };
-  fs.mkdirSync(path.dirname(EVIDENCE_PATH), { recursive: true });
-  fs.writeFileSync(EVIDENCE_PATH, `${JSON.stringify(evidence, null, 2)}\n`);
+  const evidencePath = options.evidencePath || EVIDENCE_PATH;
+  fs.mkdirSync(path.dirname(evidencePath), { recursive: true });
+  fs.writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
 
   return {
     ok: true,
@@ -264,6 +267,7 @@ module.exports = {
   BUILD_DIR,
   EVIDENCE_PATH,
   SUPPORTED_BROWSERS,
+  bundle,
   bundlePath,
   buildAll,
   findSpecs,
