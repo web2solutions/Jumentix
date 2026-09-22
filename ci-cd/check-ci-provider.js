@@ -124,8 +124,11 @@ if (!fs.existsSync(workflowPath)) {
   const packageScripts = JSON.parse(packageContents).scripts || {};
   const workspaceBuild = packageScripts['workspace:build:packages'];
   const taskGate = packageScripts['ci:gate:task'];
-  if (workspaceBuild !== "bun run --filter @jumentix/cana build && bun run --filter './packages/*' build") {
-    failures.push('Workspace package build must build @jumentix/cana before dependent packages');
+  if (workspaceBuild !== 'bun ci-cd/build-workspace-packages.js') {
+    failures.push('Workspace package build must run the topological level-parallel builder (JUM-871)');
+  }
+  if (!fs.existsSync(path.join(root, 'ci-cd', 'build-workspace-packages.js'))) {
+    failures.push('Missing ci-cd/build-workspace-packages.js referenced by workspace:build:packages');
   }
   if (taskGate !== 'bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js') {
     failures.push('Task quality gate must build publishable workspace packages before running selected tests');
