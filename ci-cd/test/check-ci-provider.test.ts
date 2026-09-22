@@ -157,6 +157,19 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('coverage:patch');
   });
 
+  it('fails when generated changelog PRs skip required main-release jobs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(/startsWith\(github\.head_ref, 'chore\/changelog-sync-'\) \|\|\n/g, '')
+      );
+    });
+    expect(run(directory).output).toContain('chore\\/changelog-sync-');
+  });
+
   it('fails when release patch coverage no longer uses the protected dev baseline', () => {
     expect.hasAssertions();
 
