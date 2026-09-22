@@ -83,6 +83,8 @@ function workspaceEdges(pkg, knownNames) {
  * @param {Map<string, { name: string, dir: string, dependencies: string[] }>} packages
  * @returns {string[][]} level N is the array of package names built at step N
  */
+const byName = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
 function computeBuildLevels(packages) {
   const knownNames = new Set(packages.keys());
   const edges = new Map();
@@ -99,7 +101,7 @@ function computeBuildLevels(packages) {
   });
 
   const levels = [];
-  let current = [...packages.keys()].filter((name) => indegree.get(name) === 0).sort();
+  let current = [...packages.keys()].filter((name) => indegree.get(name) === 0).sort(byName);
   let placed = 0;
   while (current.length > 0) {
     levels.push(current);
@@ -112,7 +114,7 @@ function computeBuildLevels(packages) {
         if (remaining === 0) next.push(dependent);
       }
     }
-    current = next.sort();
+    current = next.sort(byName);
   }
 
   if (placed !== packages.size) {
