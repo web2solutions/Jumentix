@@ -345,16 +345,7 @@ if (!fs.existsSync(preCommitPath)) {
 } else {
   const contents = fs.readFileSync(preCommitPath, 'utf8');
   if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
-  }
-}
-
-if (!fs.existsSync(preCommitPath)) {
-  failures.push('Missing required local hook: .husky/pre-commit');
-} else {
-  const contents = fs.readFileSync(preCommitPath, 'utf8');
-  if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
+    failures.push('Local pre-commit must not mutate CHANGELOG.md; the sync-changelog automation owns main synchronization.');
   }
 }
 
