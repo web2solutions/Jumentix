@@ -212,7 +212,7 @@ jobs:
           changelog_contents="$(base64 -w 0 CHANGELOG.md)"
           mutation='mutation CreateChangelogCommit($input: CreateCommitOnBranchInput!) {
             createCommitOnBranch(input: $input) {
-              commit { oid verification { verified reason } }
+              commit { oid }
             }
           }'
           mutation_result="$(jq -nc \
@@ -226,10 +226,11 @@ jobs:
               expectedHeadOid: $expectedHeadOid,
               message: {headline: "chore: synchronize changelog"},
               fileChanges: {additions: [{path: "CHANGELOG.md", contents: $contents}]}
-            }}}' | gh api graphql --input -)"
+          }}}' | gh api graphql --input -)"
           commit_oid="$(jq -r '.data.createCommitOnBranch.commit.oid // empty' <<<"$mutation_result")"
-          verified="$(jq -r '.data.createCommitOnBranch.commit.verification.verified // false' <<<"$mutation_result")"
-          verification_reason="$(jq -r '.data.createCommitOnBranch.commit.verification.reason // "unknown"' <<<"$mutation_result")"
+          verification="$(gh api "repos/$GITHUB_REPOSITORY/commits/$commit_oid" --jq '.commit.verification')"
+          verified="$(jq -r '.verified // false' <<<"$verification")"
+          verification_reason="$(jq -r '.reason // "unknown"' <<<"$verification")"
           if [ -z "$commit_oid" ] || [ "$verified" != "true" ]; then
             echo "Generated changelog commit was not verified (${verification_reason})." >&2
             exit 1
