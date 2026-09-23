@@ -188,6 +188,23 @@ describe('check-ci-provider', () => {
     expect(output).toContain('coverage:patch');
   });
 
+  it('fails when signed reconciliation patch coverage no longer uses the main baseline', () => {
+    expect.hasAssertions();
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          'JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch',
+          'bun run coverage:patch'
+        )
+      );
+    });
+    const { output } = run(directory);
+    expect(output).toContain('JUMENTIX_PATCH_BASE_REF=origin');
+    expect(output).toContain('coverage:patch');
+  });
+
   it('fails when an essential GitHub Actions job is absent', () => {
     expect.hasAssertions();
 
