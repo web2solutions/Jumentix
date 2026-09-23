@@ -378,9 +378,16 @@ jobs:
       - run:
           name: Upload coverage to Codecov
           command: |
-            test -n "${CODECOV_TOKEN:-}"
+            if [ -n "${CODECOV_TOKEN:-}" ]; then
+              TOKEN_ARGS="-t $CODECOV_TOKEN"
+            else
+              # JUM-875: tokenless upload is valid for public repositories on
+              # supported CI providers; --fail-on-error keeps this fail-closed.
+              echo "CODECOV_TOKEN unset; attempting tokenless upload for the public repository."
+              TOKEN_ARGS=""
+            fi
             ./codecov --verbose upload-process --disable-search --fail-on-error \
-              -t "$CODECOV_TOKEN" \
+              $TOKEN_ARGS \
               --slug web2solutions/Jumentix \
               -n "jumentix-circleci-${CIRCLE_WORKFLOW_ID}" \
               -F project \
