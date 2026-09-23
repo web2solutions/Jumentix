@@ -548,6 +548,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/infraHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/infraHandlers.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
       "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
       "layer": "interface/runtime",
