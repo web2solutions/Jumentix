@@ -8,6 +8,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { gitBinary } = require('./lib/git-binary.js');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { resolveNpmCommand } = require('./check-npm-org-integration.js');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -86,7 +87,8 @@ function publishPackage(meta, options = {}) {
     return { action: 'dry-run', package: meta.name, tag: meta.tag };
   }
 
-  execFileSync('npm', ['publish', '--access', 'public'], {
+  const npm = resolveNpmCommand();
+  execFileSync(npm.command, [...npm.argsPrefix, 'publish', '--access', 'public'], {
     cwd: meta.cwd,
     stdio: 'inherit',
     env: process.env
