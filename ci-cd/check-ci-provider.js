@@ -15,6 +15,7 @@ const browserMatrixWorkflowPath = path.join(root, '.github', 'workflows', 'brows
 const preCommitPath = path.join(root, '.husky', 'pre-commit');
 const packagePath = path.join(root, 'package.json');
 const unitRunnerPath = path.join(root, 'ci-cd', 'run-unit-tests.js');
+const serviceWaitPath = path.join(root, 'ci-cd', 'wait-for-ci-services.sh');
 const sonarPath = path.join(root, 'sonar-project.properties');
 
 if (!fs.existsSync(circleciPath)) {
@@ -366,6 +367,29 @@ if (fs.existsSync(circleciPath)) {
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
+  }
+
+  if (!fs.existsSync(serviceWaitPath)) {
+    failures.push('CircleCI service readiness helper is missing: ci-cd/wait-for-ci-services.sh');
+  } else if (!/nc -z/.test(fs.readFileSync(serviceWaitPath, 'utf8'))) {
+    failures.push('CircleCI service readiness helper must verify TCP availability');
+  }
+
+  if (!/node_bun_services:[\s\S]*redis:7\.2-alpine[\s\S]*rabbitmq:3\.13-alpine/.test(contents)) {
+    failures.push('CircleCI must provide Redis and RabbitMQ as executor services for localhost jobs');
+  }
+
+  for (const job of ['integration', 'coverage']) {
+    const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\nworkflows:|\\n?$)`))?.[0] || '';
+    if (!/executor:\s*node_bun_services/.test(jobBlock)) {
+      failures.push(`CircleCI ${job} must use the executor-local Redis and RabbitMQ services`);
+    }
+    if (!/ci-cd\/wait-for-ci-services\.sh/.test(jobBlock)) {
+      failures.push(`CircleCI ${job} must wait for executor-local Redis and RabbitMQ services`);
+    }
+    if (/setup_remote_docker|ensure-local-ci-services\.sh/.test(jobBlock)) {
+      failures.push(`CircleCI ${job} must not expose remote-Docker services through localhost`);
+    }
   }
 }
 
