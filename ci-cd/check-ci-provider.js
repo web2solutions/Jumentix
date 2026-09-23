@@ -99,6 +99,7 @@ if (!fs.existsSync(workflowPath)) {
     /bun run coverage:check/,
     /bun run coverage:patch/,
     /JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
+    /JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/,
     /startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)/,
     /website:storybook:build/,
     /website:storybook:smoke/,
