@@ -27,7 +27,7 @@ Duas famílias de tags anotadas, ambas criadas por CI — nunca a partir de uma 
 
 | Família | Formato | Quando | Dono |
 | --- | --- | --- | --- |
-| Aplicação | `v<appLockedVersion>` (ex.: `v0.0.3`) | Após cada bump bem-sucedido em `main` | Workflow CircleCI `release` → `bun run release:app-tag` |
+| Aplicação | `v<appLockedVersion>` (ex.: `v0.0.3`) | Após cada bump bem-sucedido em `main` | GitHub Actions `app-release.yml` → `bun ci-cd/create-app-release-tag.js --github-api` |
 | Pacote | `@jumentix/<pkg>@<version>` | Após cada `npm publish` bem-sucedido | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
 
 A próxima versão de aplicação é calculada por `ci-cd/lib/next-version.js` a partir dos commits
@@ -40,7 +40,8 @@ desde a última tag de aplicação (ou do histórico completo quando não houver
 
 Seções de `CHANGELOG.md` só em tags de aplicação (`/^v\d+\.\d+\.\d+$/`). Cada tag de
 aplicação também gera um GitHub Release via `bun run release:github-release`
-(CircleCI em tags `v*`; notas = seção correspondente do changelog; pré-1.0 marcado como prerelease).
+(mesmo job `app-release.yml` após a tag; notas = seção correspondente do changelog;
+pré-1.0 marcado como prerelease).
 
 ## Aplicação da Governança
 
@@ -61,16 +62,16 @@ A validação inclui:
 ## Fluxo de Trabalho Operacional
 
 1. Faça merge de PRs de tarefa em `dev` normalmente (commits locais **não** fazem bump de versão).
-2. Abra um PR de promoção `dev`→`main`. Após o merge, o CircleCI em `main` executa
-   `release:app-tag`: calcula a próxima versão, atualiza root + `release-policy.json`
-   + cada `apps/*/package.json`, faz commit `chore(release): vX.Y.Z`, cria a tag
-   anotada de aplicação, regenera `CHANGELOG.md` e faz push.
-3. O push da tag dispara o CircleCI `create-github-release` → GitHub Release navegável.
-4. Quando for publicar pacotes, dispare **Publish npm packages** em `main`
+2. Abra um PR de promoção `dev`→`main`. Após o merge, `.github/workflows/app-release.yml`
+   roda em `main` com `CHANGELOG_GH_TOKEN` (exceção always-on do Req 113): calcula a
+   próxima versão, abre um PR squash assinado com o bump, faz merge, cria a tag
+   anotada de aplicação no commit squash, regenera `CHANGELOG.md` e cria o
+   GitHub Release.
+3. Quando for publicar pacotes, dispare **Publish npm packages** em `main`
    (Environment protegido `secrets`, Requisito 070). O workflow ignora qualquer
    pacote cuja tag `@jumentix/<pkg>@<version>` já exista, publica o restante e
    cria as tags de pacote no sucesso.
-5. Verifique com `bun run release:governance:check`, `bun run release:dry-run`,
+4. Verifique com `bun run release:governance:check`, `bun run release:dry-run`,
    `gh release list` e `npm view @jumentix/<package>`.
 
 Helpers de dry-run:

@@ -1,20 +1,34 @@
 /* eslint-disable no-console */
 /**
- * Create the application release tag on main after a promotion (JUM-884).
+ * Create the application release tag after a promotion to main (JUM-884 / JUM-889).
  *
- * Order: compute next version → write locked versions → commit → annotated tag
- * → regenerate CHANGELOG → optional sync commit → push. Tag points at the
- * version-bump commit so package consumers and GitHub Releases share one SHA.
+ * Two modes:
+ * 1. Local/git mode (default): commit + annotated tag + push. Only safe on a
+ *    branch that accepts direct pushes (tests, scratch).
+ * 2. `--github-api`: signed createCommitOnBranch + squash PR into `main` +
+ *    annotated tag via GitHub API + GitHub Release. Required for the public
+ *    repository (branch protection + required signatures). Owned by the
+ *    always-on GitHub Actions workflow `.github/workflows/app-release.yml`,
+ *    using CHANGELOG_GH_TOKEN from the `secrets` Environment (same as
+ *    sync-changelog / Req 113 always-on exception).
  */
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { gitBinary } = require('./lib/git-binary.js');
+const { ghBinary } = require('./lib/gh-binary.js');
 const { isEntryPoint } = require('./lib/entry-point.js');
 const {
   APP_TAG_RE,
   resolveNextVersionFromRepo
 } = require('./lib/next-version.js');
+const {
+  createAnnotatedTagRef,
+  createSignedCommitOnBranchWithGh,
+  resolveRepository,
+  resolveToken
+} = require('./lib/github-signed-commit.js');
+const { createGithubRelease } = require('./create-github-release.js');
 
 function runGit(args, options = {}) {
   try {
@@ -22,6 +36,33 @@ function runGit(args, options = {}) {
       encoding: 'utf8',
       stdio: options.inherit ? 'inherit' : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
       cwd: options.cwd
+    }).toString().trim();
+  } catch (error) {
+    if (options.allowFailure) return '';
+    throw error;
+  }
+}
+
+function runGh(args, options = {}) {
+  const token = resolveToken(options.env || process.env);
+  if (!token) {
+    throw new Error(
+      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN (fail closed).'
+    );
+  }
+  try {
+    return execFileSync(ghBinary(), args, {
+      encoding: 'utf8',
+      cwd: options.cwd,
+      env: {
+        ...process.env,
+        ...(options.env || {}),
+        GH_TOKEN: token,
+        GITHUB_TOKEN: token
+      },
+      stdio: options.inherit
+        ? 'inherit'
+        : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe']
     }).toString().trim();
   } catch (error) {
     if (options.allowFailure) return '';
@@ -102,6 +143,64 @@ function configureGitIdentity(rootDir) {
   }
 }
 
+function sleepMs(ms) {
+  const seconds = Math.max(1, Math.ceil(ms / 1000));
+  execFileSync('sleep', [String(seconds)], { stdio: 'ignore' });
+}
+
+function waitForPullRequestMergeable(prUrl, options = {}) {
+  const timeoutMs = options.timeoutMs ?? 60 * 60 * 1000;
+  const pollMs = options.pollMs ?? 30_000;
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const state = runGh(
+      ['pr', 'view', prUrl, '--json', 'mergeStateStatus', '--jq', '.mergeStateStatus'],
+      { env: options.env, cwd: options.cwd }
+    );
+    if (state === 'CLEAN' || state === 'UNSTABLE' || state === 'HAS_HOOKS') {
+      return state;
+    }
+    if (state === 'BLOCKED' || state === 'UNKNOWN') {
+      sleepMs(pollMs);
+      continue;
+    }
+    throw new Error(`Unexpected merge state '${state}' on ${prUrl}`);
+  }
+  throw new Error(`Required checks did not pass within timeout on ${prUrl}`);
+}
+
+function openAndMergeReleasePr({
+  branch,
+  title,
+  body,
+  env,
+  cwd,
+  priorHeadRegex = '^chore/release-v[0-9]',
+  wait = waitForPullRequestMergeable
+}) {
+  // Close older matching PRs so a failed generation cannot block forever.
+  const prior = runGh([
+    'pr', 'list', '--base', 'main', '--state', 'open',
+    '--json', 'number,headRefName',
+    '--jq', `.[] | select(.headRefName | test("${priorHeadRegex}")) | .number`
+  ], { env, cwd, allowFailure: true });
+  for (const number of prior.split('\n').map((s) => s.trim()).filter(Boolean)) {
+    runGh(['pr', 'close', number, '--delete-branch'], { env, cwd, allowFailure: true });
+  }
+
+  const prUrl = runGh([
+    'pr', 'create',
+    '--base', 'main',
+    '--head', branch,
+    '--title', title,
+    '--body', body
+  ], { env, cwd });
+
+  wait(prUrl, { env, cwd });
+  runGh(['pr', 'merge', prUrl, '--squash', '--delete-branch'], { env, cwd, inherit: true });
+  return prUrl;
+}
+
 function createAppReleaseTag(options = {}) {
   const dryRun = Boolean(options.dryRun);
   const push = options.push !== false;
@@ -176,10 +275,224 @@ function createAppReleaseTag(options = {}) {
   };
 }
 
+/**
+ * Production path for protected `main`: signed commits via PR, then tag+release.
+ */
+function resolveRepositoryFromGit(rootDir) {
+  const url = runGit(['remote', 'get-url', 'origin'], { cwd: rootDir, allowFailure: true });
+  if (!url) return '';
+  const match = url.match(/github\.com[/:]([^/]+\/[^/.]+)(?:\.git)?$/i);
+  return match ? match[1] : '';
+}
+
+function createAppReleaseTagGithubApi(options = {}) {
+  const dryRun = Boolean(options.dryRun);
+  const rootDir = options.rootDir || getRepoRoot();
+  const env = options.env || process.env;
+  const repository = options.repository
+    || resolveRepository(env)
+    || resolveRepositoryFromGit(rootDir);
+  if (!repository) {
+    throw new Error('GITHUB_REPOSITORY (or CIRCLE_PROJECT_*) is required for --github-api');
+  }
+  if (!dryRun && !resolveToken(env)) {
+    throw new Error(
+      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN (fail closed).'
+    );
+  }
+
+  // Plan against the current checkout first — never mutate the worktree for dry-run.
+  const existing = headHasAppTag(rootDir);
+  if (existing) {
+    return {
+      action: 'noop',
+      reason: 'head-already-tagged',
+      tag: existing,
+      dryRun,
+      mode: 'github-api'
+    };
+  }
+
+  const next = resolveNextVersionFromRepo({ rootDir });
+  if (next.action === 'noop') {
+    return {
+      action: 'noop',
+      reason: next.reason,
+      dryRun,
+      next,
+      mode: 'github-api'
+    };
+  }
+
+  const tag = `v${next.nextVersion}`;
+  const plan = {
+    action: 'create',
+    tag,
+    version: next.nextVersion,
+    baseVersion: next.baseVersion,
+    bumpLevel: next.bumpLevel,
+    dryRun,
+    mode: 'github-api'
+  };
+
+  if (dryRun) {
+    return plan;
+  }
+
+  runGit(['fetch', '--tags', '--prune', 'origin'], { cwd: rootDir, allowFailure: true });
+  runGit(['fetch', 'origin', 'main'], { cwd: rootDir, allowFailure: true });
+  runGit(['checkout', '-B', 'main', 'origin/main'], { cwd: rootDir });
+
+  // Re-evaluate on origin/main after checkout (HEAD may have differed).
+  const existingOnMain = headHasAppTag(rootDir);
+  if (existingOnMain) {
+    return {
+      action: 'noop',
+      reason: 'head-already-tagged',
+      tag: existingOnMain,
+      dryRun,
+      mode: 'github-api'
+    };
+  }
+
+  const nextOnMain = resolveNextVersionFromRepo({ rootDir });
+  if (nextOnMain.action === 'noop') {
+    return {
+      action: 'noop',
+      reason: nextOnMain.reason,
+      dryRun,
+      next: nextOnMain,
+      mode: 'github-api'
+    };
+  }
+
+  const tagOnMain = `v${nextOnMain.nextVersion}`;
+  const mainSha = runGit(['rev-parse', 'HEAD'], { cwd: rootDir });
+  const branch = `chore/release-${tagOnMain}`;
+  const files = applyLockedVersion(rootDir, nextOnMain.nextVersion);
+  const relativePaths = [files.rootPackage, files.policy, ...files.apps];
+  const additions = relativePaths.map((rel) => ({
+    path: rel,
+    contents: fs.readFileSync(path.join(rootDir, rel), 'utf8')
+  }));
+
+  // Create the release branch at main tip (empty push of the ref).
+  runGh(['api', '-X', 'POST', `repos/${repository}/git/refs`,
+    '-f', `ref=refs/heads/${branch}`,
+    '-f', `sha=${mainSha}`
+  ], { env, cwd: rootDir });
+
+  const bump = createSignedCommitOnBranchWithGh({
+    repository,
+    branch,
+    expectedHeadOid: mainSha,
+    headline: `chore(release): ${tagOnMain}`,
+    additions,
+    env
+  });
+
+  const prUrl = openAndMergeReleasePr({
+    branch,
+    title: `chore(release): ${tagOnMain}`,
+    body: [
+      `Automated application version bump and release for \`${tagOnMain}\`.`,
+      '',
+      'Opened by `.github/workflows/app-release.yml` (JUM-889).',
+      'After merge the workflow creates the annotated tag and GitHub Release.'
+    ].join('\n'),
+    env,
+    cwd: rootDir,
+    priorHeadRegex: '^chore/release-v[0-9]',
+    wait: options.waitForPullRequestMergeable || waitForPullRequestMergeable
+  });
+
+  // Squash merge created a new commit on main — tag that tip.
+  runGit(['fetch', 'origin', 'main'], { cwd: rootDir });
+  runGit(['checkout', '-B', 'main', 'origin/main'], { cwd: rootDir });
+  const releaseSha = runGit(['rev-parse', 'HEAD'], { cwd: rootDir });
+
+  createAnnotatedTagRef({
+    repository,
+    tag: tagOnMain,
+    message: `Application release ${tagOnMain}`,
+    commitSha: releaseSha,
+    env
+  });
+
+  // Refresh tags locally, regenerate changelog, open sync PR if needed.
+  runGit(['fetch', '--tags', '--prune', 'origin'], { cwd: rootDir, allowFailure: true });
+  const bunBin = process.execPath.includes('bun') ? process.execPath : 'bun';
+  execFileSync(bunBin, [path.join(rootDir, 'ci-cd/update-changelog.js')], {
+    cwd: rootDir,
+    stdio: 'inherit'
+  });
+
+  let changelogPr = null;
+  const changelogStatus = runGit(['status', '--porcelain', '--', 'CHANGELOG.md'], {
+    allowFailure: true,
+    cwd: rootDir
+  });
+  if (changelogStatus) {
+    const changelogBranch = `chore/changelog-sync-${releaseSha.slice(0, 8)}`;
+    runGh(['api', '-X', 'POST', `repos/${repository}/git/refs`,
+      '-f', `ref=refs/heads/${changelogBranch}`,
+      '-f', `sha=${releaseSha}`
+    ], { env, cwd: rootDir });
+    createSignedCommitOnBranchWithGh({
+      repository,
+      branch: changelogBranch,
+      expectedHeadOid: releaseSha,
+      headline: 'chore: synchronize changelog',
+      additions: [{
+        path: 'CHANGELOG.md',
+        contents: fs.readFileSync(path.join(rootDir, 'CHANGELOG.md'), 'utf8')
+      }],
+      env
+    });
+    changelogPr = openAndMergeReleasePr({
+      branch: changelogBranch,
+      title: 'chore: synchronize changelog',
+      body: `Changelog sync after application tag \`${tagOnMain}\` (JUM-889).`,
+      env,
+      cwd: rootDir,
+      priorHeadRegex: '^chore/changelog-sync-[0-9a-f]{8}$',
+      wait: options.waitForPullRequestMergeable || waitForPullRequestMergeable
+    });
+    // Re-fetch so release notes match the merged changelog when possible.
+    runGit(['fetch', 'origin', 'main'], { cwd: rootDir });
+    runGit(['checkout', '-B', 'main', 'origin/main'], { cwd: rootDir });
+  }
+
+  const release = createGithubRelease({
+    tagName: tagOnMain,
+    rootDir,
+    env
+  });
+
+  return {
+    action: 'create',
+    tag: tagOnMain,
+    version: nextOnMain.nextVersion,
+    baseVersion: nextOnMain.baseVersion,
+    bumpLevel: nextOnMain.bumpLevel,
+    dryRun: false,
+    mode: 'github-api',
+    files,
+    prUrl,
+    changelogPr,
+    releaseSha,
+    bumpOid: bump.oid,
+    release
+  };
+}
+
 function main(argv = process.argv.slice(2)) {
   const dryRun = argv.includes('--dry-run');
   const noPush = argv.includes('--no-push');
-  const result = createAppReleaseTag({ dryRun, push: !noPush && !dryRun });
+  const githubApi = argv.includes('--github-api');
+  const result = githubApi
+    ? createAppReleaseTagGithubApi({ dryRun })
+    : createAppReleaseTag({ dryRun, push: !noPush && !dryRun });
   console.log(JSON.stringify(result, null, 2));
   return result;
 }
@@ -187,8 +500,11 @@ function main(argv = process.argv.slice(2)) {
 module.exports = {
   applyLockedVersion,
   createAppReleaseTag,
+  createAppReleaseTagGithubApi,
   headHasAppTag,
-  main
+  main,
+  openAndMergeReleasePr,
+  waitForPullRequestMergeable
 };
 
 if (isEntryPoint(module)) {

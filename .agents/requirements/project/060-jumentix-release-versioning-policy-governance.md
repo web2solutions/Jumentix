@@ -18,7 +18,12 @@ Two annotated tag families, both created by CI only — never by a local develop
 
 1. **Application release tag** — format `v<appLockedVersion>` (example: `v0.0.3`).
    Matches `release-policy.json.appLockedVersion` after the promotion bump. Created on
-   the version-bump commit by `ci-cd/create-app-release-tag.js` (CircleCI job on `main`).
+   the version-bump commit by `ci-cd/create-app-release-tag.js --github-api` from the
+   always-on GitHub Actions workflow `.github/workflows/app-release.yml` on `main`
+   (Req 113 always-on exception alongside `sync-changelog`: signed
+   `createCommitOnBranch` + annotated tag via GitHub API, using `CHANGELOG_GH_TOKEN`
+   from the protected `secrets` Environment). CircleCI does not own this path because
+   protected `main` requires verified commits and a pull-request ruleset.
 2. **Package publish tag** — format `@jumentix/<pkg>@<version>` (example: `@jumentix/cana@0.1.0`).
    Matches that package's `package.json.version` at the moment of a successful
    `npm publish`. Created by `ci-cd/publish-npm-cohort.js` inside
@@ -29,7 +34,7 @@ Supporting scripts:
 - `ci-cd/lib/next-version.js` — deterministic next `appLockedVersion` from Conventional
   Commits / PR `[Nature]` prefixes since the last application tag.
 - `ci-cd/create-github-release.js` — GitHub Release notes from the matching
-  `CHANGELOG.md` section (CircleCI on application tags).
+  `CHANGELOG.md` section (invoked by `app-release.yml` after the application tag).
 - `ci-cd/update-changelog.js` — sections only on application tags (`/^v\d+\.\d+\.\d+$/`).
 
 Superseded (removed): `ci-cd/bumpTag.ts`, `ci-cd/bumpPackage.ts`. Local commits must not

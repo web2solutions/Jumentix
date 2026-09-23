@@ -53,8 +53,8 @@ This file consolidates non-functional requirements already requested and stored 
 
 - `060` Release/versioning policy governance: independent packages, locked apps,
   and CI-owned annotated git tags — application `v<appLockedVersion>` on `main`
-  promotion (CircleCI) and package `@jumentix/<pkg>@<version>` after npm publish
-  (GHA). Local bump scripts are superseded.
+  via always-on GHA `app-release.yml` (signed commits + tag API) and package
+  `@jumentix/<pkg>@<version>` after npm publish (GHA). Local bump scripts are superseded.
 - `018` Project docs and structure sync.
 - `025` Every new feature must be documented.
 - `053` Workspace package docs and ownership.

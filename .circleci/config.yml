@@ -661,18 +661,13 @@ workflows:
       - coverage
       - website
       - database-matrix
-  # JUM-884 / JUM-885: application tags and GitHub Releases (CircleCI-canonical).
-  release:
-    jobs:
-      - create-app-release-tag:
-          filters:
-            branches:
-              only: main
-            tags:
-              ignore: /.*/
-      - create-github-release:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
+  # JUM-889: application tags + GitHub Releases moved to the always-on GitHub
+  # Actions workflow `.github/workflows/app-release.yml` (CHANGELOG_GH_TOKEN +
+  # createCommitOnBranch). CircleCI cannot produce required signed commits on
+  # protected `main` without a bypass actor, and GH_TOKEN was never provisioned
+  # here — leaving these jobs enabled kept `main` red (job 562).
+  # release:
+  #   jobs:
+  #     - create-app-release-tag: ...
+  #     - create-github-release: ...
+
