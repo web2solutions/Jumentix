@@ -439,7 +439,11 @@ jobs:
 
   website:
     executor: node_bun
+    # Next.js production builds are SIGKILLed (OOM) on the medium container
+    # (pipeline 139 job 394); large mirrors the coverage job's 8 GiB shape.
+    resource_class: large
     environment:
+      NODE_OPTIONS: --max-old-space-size=6144
       JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: "1"
       JUMENTIX_WEBSITE_CYPRESS_BROWSER: chrome
     steps:
