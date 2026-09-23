@@ -24,6 +24,10 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+    # JUM-876 / Req 113: CircleCI is the canonical CI orchestrator. This job is
+    # retained but disabled by default; re-enable the full GitHub Actions matrix
+    # with the repository variable JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
+    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
@@ -149,7 +153,10 @@ jobs:
 
   sync-changelog:
     name: sync-changelog
-    if: github.event_name == 'push' && github.ref_name == 'main'
+    # JUM-876 / Req 113: always-on exception (no CircleCI equivalent). branch-gate
+    # is skipped while GitHub Actions is flag-disabled, so accept its skipped
+    # result explicitly instead of letting the needs chain silence this job.
+    if: always() && github.event_name == 'push' && github.ref_name == 'main' && (needs.branch-gate.result == 'success' || needs.branch-gate.result == 'skipped')
     needs: branch-gate
     # CHANGELOG_GH_TOKEN lives in the "secrets" environment (all bot tokens
     # were consolidated there); without this the job cannot see the secret
@@ -212,7 +219,7 @@ jobs:
           changelog_contents="$(base64 -w 0 CHANGELOG.md)"
           mutation='mutation CreateChangelogCommit($input: CreateCommitOnBranchInput!) {
             createCommitOnBranch(input: $input) {
-              commit { oid verification { verified reason } }
+              commit { oid }
             }
           }'
           mutation_result="$(jq -nc \
@@ -226,10 +233,11 @@ jobs:
               expectedHeadOid: $expectedHeadOid,
               message: {headline: "chore: synchronize changelog"},
               fileChanges: {additions: [{path: "CHANGELOG.md", contents: $contents}]}
-            }}}' | gh api graphql --input -)"
+          }}}' | gh api graphql --input -)"
           commit_oid="$(jq -r '.data.createCommitOnBranch.commit.oid // empty' <<<"$mutation_result")"
-          verified="$(jq -r '.data.createCommitOnBranch.commit.verification.verified // false' <<<"$mutation_result")"
-          verification_reason="$(jq -r '.data.createCommitOnBranch.commit.verification.reason // "unknown"' <<<"$mutation_result")"
+          verification="$(gh api "repos/$GITHUB_REPOSITORY/commits/$commit_oid" --jq '.commit.verification')"
+          verified="$(jq -r '.verified // false' <<<"$verification")"
+          verification_reason="$(jq -r '.reason // "unknown"' <<<"$verification")"
           if [ -z "$commit_oid" ] || [ "$verified" != "true" ]; then
             echo "Generated changelog commit was not verified (${verification_reason})." >&2
             exit 1
@@ -279,11 +287,16 @@ jobs:
     name: third-party-review
     permissions:
       contents: read
+    # JUM-876 / Req 113: retained fallback — CircleCI runs third-party review
+    # canonically. Re-enable with repository variable
+    # JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
     if: >-
+      vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' && (
       github.event_name == 'pull_request' ||
       github.ref_name == 'main' ||
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -331,7 +344,11 @@ jobs:
     # Intentional: release/main/scheduled only (Req 087/113). Task PRs to `dev`
     # and cheap `dev` pushes skip this job; `arch:check-workspace-boundaries`
     # and `build:dev` still fail closed as branch-gate preflight (JUM-786).
+    # JUM-876 / Req 113: CircleCI is the canonical CI orchestrator. This job is
+    # retained but disabled by default; re-enable the full GitHub Actions matrix
+    # with the repository variable JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
     if: >-
+      vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' && (
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
@@ -339,7 +356,7 @@ jobs:
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
-      ))
+      )))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -368,7 +385,11 @@ jobs:
     name: workspace-tests
     permissions:
       contents: read
+    # JUM-876 / Req 113: CircleCI is the canonical CI orchestrator. This job is
+    # retained but disabled by default; re-enable the full GitHub Actions matrix
+    # with the repository variable JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
     if: >-
+      vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' && (
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
@@ -376,7 +397,7 @@ jobs:
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
-      ))
+      )))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -408,7 +429,11 @@ jobs:
     name: integration
     permissions:
       contents: read
+    # JUM-876 / Req 113: CircleCI is the canonical CI orchestrator. This job is
+    # retained but disabled by default; re-enable the full GitHub Actions matrix
+    # with the repository variable JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
     if: >-
+      vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' && (
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
@@ -416,7 +441,7 @@ jobs:
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
-      ))
+      )))
     runs-on: ubuntu-latest
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
@@ -459,7 +484,10 @@ jobs:
       contents: read
     # Coverage + Codecov + Sonar analyse both long-lived branches (`main` and
     # `dev`). Other heavy jobs stay release/main/scheduled only (Req 087/113).
+    # JUM-876 / Req 113: CircleCI is canonical; retained fallback, re-enable with
+    # repository variable JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
     if: >-
+      vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' && (
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
@@ -468,7 +496,7 @@ jobs:
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
-      ))
+      )))
     runs-on: ubuntu-latest
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
@@ -626,7 +654,11 @@ jobs:
     name: website
     permissions:
       contents: read
+    # JUM-876 / Req 113: CircleCI is the canonical CI orchestrator. This job is
+    # retained but disabled by default; re-enable the full GitHub Actions matrix
+    # with the repository variable JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
     if: >-
+      vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' && (
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
@@ -634,7 +666,7 @@ jobs:
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
-      ))
+      )))
     runs-on: ubuntu-latest
     env:
       JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: '1'
@@ -675,7 +707,11 @@ jobs:
     name: database-matrix
     permissions:
       contents: read
+    # JUM-876 / Req 113: CircleCI is the canonical CI orchestrator. This job is
+    # retained but disabled by default; re-enable the full GitHub Actions matrix
+    # with the repository variable JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
     if: >-
+      vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' && (
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       github.ref_name == 'main' ||
@@ -683,7 +719,7 @@ jobs:
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
-      ))
+      )))
     runs-on: ubuntu-latest
     env:
       FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}

@@ -34,7 +34,7 @@ describe('classify-ci-context', () => {
     });
   });
 
-  it('classifies a task PR to dev as branch-gate plus third-party-review', () => {
+  it('classifies a task PR to dev as branch-gate plus third-party-review and browser-matrix', () => {
     expect.hasAssertions();
 
     const evidence = classify({
@@ -44,7 +44,7 @@ describe('classify-ci-context', () => {
     });
 
     expect(evidence.context).toBe(CONTEXTS.TASK_PR_TO_DEV);
-    expect(evidence.selectedJobs).toStrictEqual(['branch-gate', 'third-party-review']);
+    expect(evidence.selectedJobs).toStrictEqual(['branch-gate', 'third-party-review', 'browser-matrix']);
   });
 
   it('classifies a dev push as the cheap health gate', () => {
@@ -56,7 +56,7 @@ describe('classify-ci-context', () => {
     expect(evidence.selectedJobs).toStrictEqual(['branch-gate', 'coverage']);
   });
 
-  it('classifies dev to main as a release promotion that runs the full suite', () => {
+  it('classifies dev to main as a release promotion that runs the full suite plus browser-matrix', () => {
     expect.hasAssertions();
 
     const evidence = classify({
@@ -66,7 +66,7 @@ describe('classify-ci-context', () => {
     });
 
     expect(evidence.context).toBe(CONTEXTS.RELEASE_PR_TO_MAIN);
-    expect(evidence.selectedJobs).toStrictEqual(FULL_JOBS);
+    expect(evidence.selectedJobs).toStrictEqual([...FULL_JOBS, 'browser-matrix']);
   });
 
   it('classifies a signed dev promotion branch to main as a full-suite release promotion', () => {
@@ -80,7 +80,7 @@ describe('classify-ci-context', () => {
     });
 
     expect(evidence.context).toBe(CONTEXTS.RELEASE_PR_TO_MAIN);
-    expect(evidence.selectedJobs).toStrictEqual(FULL_JOBS);
+    expect(evidence.selectedJobs).toStrictEqual([...FULL_JOBS, 'browser-matrix']);
   });
 
   it('classifies the generated changelog sync branch as a full-suite release promotion', () => {
@@ -94,7 +94,7 @@ describe('classify-ci-context', () => {
     });
 
     expect(evidence.context).toBe(CONTEXTS.RELEASE_PR_TO_MAIN);
-    expect(evidence.selectedJobs).toStrictEqual(FULL_JOBS);
+    expect(evidence.selectedJobs).toStrictEqual([...FULL_JOBS, 'browser-matrix']);
   });
 
   it('classifies a main push as a full-suite event', () => {
@@ -176,5 +176,29 @@ describe('classify-ci-context', () => {
 
     expect(jobSelected(evidence, 'coverage')).toBe(true);
     expect(jobSelected(evidence, 'missing')).toBe(false);
+  });
+
+  it('selects browser-matrix for task PRs to dev and release PRs to main', () => {
+    expect.hasAssertions();
+
+    expect(selectedJobsFor(CONTEXTS.TASK_PR_TO_DEV)).toContain('browser-matrix');
+    expect(selectedJobsFor(CONTEXTS.RELEASE_PR_TO_MAIN)).toContain('browser-matrix');
+  });
+
+  it('keeps browser-matrix out of push and scheduled contexts', () => {
+    expect.hasAssertions();
+
+    expect(selectedJobsFor(CONTEXTS.TASK_BRANCH_PUSH)).not.toContain('browser-matrix');
+    expect(selectedJobsFor(CONTEXTS.DEV_PUSH)).not.toContain('browser-matrix');
+    expect(selectedJobsFor(CONTEXTS.MAIN_PUSH)).not.toContain('browser-matrix');
+    expect(selectedJobsFor(CONTEXTS.SCHEDULED_FULL)).not.toContain('browser-matrix');
+  });
+
+  it('returns exit 78 when browser-matrix is required outside pull request contexts', () => {
+    expect.hasAssertions();
+
+    expect(runCli(['node', 'classify', '--require-job', 'browser-matrix'], {
+      CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci'
+    })).toBe(78);
   });
 });

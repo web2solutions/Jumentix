@@ -98,6 +98,7 @@ For any change, identify impacted requirement IDs and ensure:
   - `documentation/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
   - `documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.md`
+  - `documentation/md/CI-PROVIDER-GOVERNANCE.md`
   - coverage/check scripts in `ci-cd/*`
 - Evidence:
   - destination-appropriate CI gate green

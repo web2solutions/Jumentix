@@ -33,11 +33,12 @@ function badgeTargets(markdown: string): string[] {
 }
 
 describe('public README quality links', () => {
-  it('shows public GitHub Actions and Codecov metrics for dev and main', () => {
+  it('shows public CircleCI and Codecov metrics for dev and main', () => {
     expect.hasAssertions();
 
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=${branch}`);
+      expect(readme).toContain(`https://circleci.com/gh/web2solutions/Jumentix.svg?style=shield&branch=${branch}`);
+      expect(readme).toContain(`https://circleci.com/gh/web2solutions/Jumentix/tree/${branch}`);
       expect(readme).toContain(`https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graph/badge.svg`);
       expect(readme).toContain(`https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graphs/tree.svg`);
       expect(readme).toContain(`https://app.codecov.io/github/web2solutions/Jumentix/tree/${branch}`);
@@ -141,8 +142,7 @@ describe('public README quality links', () => {
       'LCOV evidence',
       'Firestore Database',
       'HISTORICAL-TRANSITIONS',
-      'Requirement `',
-      'CircleCI'
+      'Requirement `'
     ]) {
       expect(readme).not.toContain(term);
       expect(ptReadme).not.toContain(term);

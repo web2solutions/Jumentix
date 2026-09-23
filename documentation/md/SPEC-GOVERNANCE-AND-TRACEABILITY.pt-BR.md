@@ -145,7 +145,7 @@ Política de isolamento e nomenclatura:
   unitária completa e `main` executa a matriz local completa sem cobertura pesada.
 - PRs destinados a `dev` executam o gate especializado por camada selecionado por
   `test-map.json`, mais review obrigatório leve. Promoções de `dev` para `main`
-  executam a matriz completa, além do job obrigatório de cobertura GitHub Actions.
+  executam a matriz completa, além do job obrigatório de cobertura do CircleCI.
 - A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
 - Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
 - Review de PR é opcional. Branch protection e rulesets não devem exigir quantidade de
@@ -175,10 +175,14 @@ Contrato de execução por branch:
 1. Branches de tarefa executam `ci:gate:task` sobre o diff pertencente à tarefa.
 2. Pushes em `dev` executam `test:unit`; pull requests destinados a `dev` executam `ci:gate:task`.
 3. `main` e pull requests de promoção destinados a `main` executam `ci:gate:strict`.
-4. GitHub Actions é o orquestrador pertencente ao repositório, o runner
-   GitHub-hosted `ubuntu-latest` fornece o caminho de execução sem custo, e CircleCI
-   está desabilitado pelo Requisito `113`.
-5. `.github/workflows/ci.yml` é responsável por Storybook, database smoke e cobertura
+4. CircleCI é o orquestrador canônico pertencente ao repositório pelo Requisito
+   `113` (emenda de 2026-09-23), executando a matriz completa em imagens
+   hospedadas `cimg` com gatilho agendado noturno em `main`/`dev`; o GitHub
+   Actions está retido em runners GitHub-hosted `ubuntu-latest` como fallback
+   desabilitado por padrão atrás da variável de Actions do repositório
+   `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` (o antigo mandato de runner self-hosted
+   `jumentix` está superado).
+5. Os jobs `website`, `database-matrix` e `coverage` do CircleCI são responsáveis por Storybook, database smoke e cobertura
    completa em promoções de release, `main` e execuções completas agendadas;
    a matriz completa local não executa Storybook nem produção de cobertura.
 6. Todo gate selecionado emite evidência auditável e falha de forma fechada quando um comando

@@ -27,6 +27,7 @@ referenciado existe em `dev`; trabalho futuro deve ser identificado explicitamen
 - **Automação e entrega**
   - [Gates e runners de CI/CD](../ci-cd/README.pt-BR.md) (`ci-cd/`, `ci-cd/test/`, gate de ownership Req 137).
   - [Testes, CI e qualidade](./md/TESTING-CI-AND-QUALITY.pt-BR.md) ([EN](./md/TESTING-CI-AND-QUALITY.md)).
+  - [Governança de provedores de CI](./md/CI-PROVIDER-GOVERNANCE.pt-BR.md) ([EN](./md/CI-PROVIDER-GOVERNANCE.md)).
   - [Scripts de tooling](../tooling/README.pt-BR.md).
   - [Documentação para criadores](./creators/README.pt-BR.md) sobre CI, governança, release e
     manutenção.

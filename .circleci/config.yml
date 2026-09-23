@@ -1,9 +1,29 @@
 version: 2.1
 
+# force_full=true (API trigger) maps to the scheduled-full context (Req 113 manual full runs).
+parameters:
+  force_full:
+    type: boolean
+    default: false
+
+orbs:
+  browser-tools: circleci/browser-tools@1.5.3
+
 executors:
   node_bun:
     docker:
       - image: cimg/node:22.21
+    environment:
+      BUN_VERSION: 1.3.13
+      JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+      JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+  node_bun_services:
+    docker:
+      - image: cimg/node:22.21
+      - image: redis:7.2-alpine
+      - image: rabbitmq:3.13-alpine
     environment:
       BUN_VERSION: 1.3.13
       JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
@@ -64,18 +84,18 @@ commands:
               throw new Error(`failed to resolve PR metadata: ${response.status} ${response.statusText}`);
             }
             const pr = await response.json();
-            const quote = (value) => JSON.stringify(String(value || ''));
+            const shellQuote = (value) => `'${String(value || '').replace(/'/g, "'\\''")}'`;
             console.log('export AAA_CI_IS_PULL_REQUEST=1');
             console.log('export JUMENTIX_CI_IS_PULL_REQUEST=1');
-            console.log(`export JUMENTIX_PR_BASE_REF=${quote(pr.base?.ref)}`);
-            console.log(`export AAA_PR_BASE_REF=${quote(pr.base?.ref)}`);
-            console.log(`export JUMENTIX_QUALITY_GATE_TARGET=${quote(pr.base?.ref)}`);
-            console.log(`export JUMENTIX_PR_HEAD_REF=${quote(pr.head?.ref)}`);
-            console.log(`export AAA_PR_HEAD_REF=${quote(pr.head?.ref)}`);
-            console.log(`export JUMENTIX_PR_TITLE=${quote(pr.title)}`);
-            console.log(`export AAA_PR_TITLE=${quote(pr.title)}`);
-            console.log(`export JUMENTIX_PR_BODY=${quote(pr.body)}`);
-            console.log(`export AAA_PR_BODY=${quote(pr.body)}`);
+            console.log(`export JUMENTIX_PR_BASE_REF=${shellQuote(pr.base?.ref)}`);
+            console.log(`export AAA_PR_BASE_REF=${shellQuote(pr.base?.ref)}`);
+            console.log(`export JUMENTIX_QUALITY_GATE_TARGET=${shellQuote(pr.base?.ref)}`);
+            console.log(`export JUMENTIX_PR_HEAD_REF=${shellQuote(pr.head?.ref)}`);
+            console.log(`export AAA_PR_HEAD_REF=${shellQuote(pr.head?.ref)}`);
+            console.log(`export JUMENTIX_PR_TITLE=${shellQuote(pr.title)}`);
+            console.log(`export AAA_PR_TITLE=${shellQuote(pr.title)}`);
+            console.log(`export JUMENTIX_PR_BODY=${shellQuote(pr.body)}`);
+            console.log(`export AAA_PR_BODY=${shellQuote(pr.body)}`);
             NODE
   require_ci_job:
     parameters:
@@ -86,6 +106,10 @@ commands:
           name: Classify CI context for << parameters.job >>
           command: |
             source "$BASH_ENV"
+            if [ "<< pipeline.parameters.force_full >>" = "true" ]; then
+              echo 'export JUMENTIX_CI_FORCE_FULL=1' >> "$BASH_ENV"
+              export JUMENTIX_CI_FORCE_FULL=1
+            fi
             set +e
             node ci-cd/classify-ci-context.js \
               --result-file artifacts/ci/ci-context.json \
@@ -97,10 +121,27 @@ commands:
               exit 0
             fi
             exit "$status"
+  # cimg/node ships no display server or browser libraries (proven by
+  # pipelines 122/128/130); every job that runs Cypress needs these.
+  install_browser_deps:
+    steps:
+      - run:
+          name: Install headless browser system dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
+      - browser-tools/install-chrome
+      - browser-tools/install-firefox
 
 jobs:
   branch-gate:
     executor: node_bun
+    # In release/main/scheduled contexts this job runs ci:gate:strict (the full
+    # matrix); the medium container OOMs there, so mirror the coverage job's
+    # larger shape (pipeline 134 job 367).
+    resource_class: large
+    environment:
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - prepare_checkout
       - resolve_pr_metadata
@@ -131,6 +172,11 @@ jobs:
       - resolve_pr_metadata
       - require_ci_job:
           job: third-party-review
+      - run:
+          name: Install Python virtualenv support
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3-venv
       - run:
           name: Install pinned review tools
           command: ci-cd/install-pinned-review-tools.sh "$HOME/review-tools"
@@ -184,6 +230,7 @@ jobs:
       - resolve_pr_metadata
       - require_ci_job:
           job: workspace-tests
+      - install_browser_deps
       - run:
           name: Run workspace package tests
           no_output_timeout: 30m
@@ -194,17 +241,45 @@ jobs:
           path: artifacts/ci
           destination: workspace-tests
 
-  integration:
+  browser-matrix:
     executor: node_bun
     steps:
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
-          job: integration
-      - setup_remote_docker
+          job: browser-matrix
+      - install_browser_deps
       - run:
-          name: Start Redis and RabbitMQ containers
-          command: ci-cd/ensure-local-ci-services.sh
+          name: Install Playwright WebKit
+          command: |
+            source "$BASH_ENV"
+            bun x playwright install webkit
+            bun x playwright install-deps webkit
+      - run:
+          name: Install Cypress binary
+          command: |
+            source "$BASH_ENV"
+            bun x cypress install
+            bun x cypress verify
+      - run:
+          name: Run Cana browser matrix
+          no_output_timeout: 30m
+          command: |
+            source "$BASH_ENV"
+            for engine in chrome firefox webkit; do
+              bun packages/cana/scripts/run-browser-tests.js --browser "$engine"
+            done
+
+  integration:
+    executor: node_bun_services
+    steps:
+      - prepare_checkout
+      - resolve_pr_metadata
+      - require_ci_job:
+          job: integration
+      - run:
+          name: Wait for Redis and RabbitMQ services
+          command: ci-cd/wait-for-ci-services.sh
       - run:
           name: Install WebKit for browser-based integration tests
           command: |
@@ -223,8 +298,12 @@ jobs:
           command: ci-cd/cleanup-local-ci-services.sh
 
   coverage:
-    executor: node_bun
+    executor: node_bun_services
+    # test:coverage OOMs the default 2 GiB heap on the medium container
+    # (proven by pipeline 132 job 329); large gives the runner 8 GiB.
+    resource_class: large
     environment:
+      NODE_OPTIONS: --max-old-space-size=6144
       AAA_REDIS_HOST: 127.0.0.1
       AAA_REDIS_PORT: "6379"
       AAA_BULLMQ_REDIS_HOST: 127.0.0.1
@@ -235,10 +314,9 @@ jobs:
       - resolve_pr_metadata
       - require_ci_job:
           job: coverage
-      - setup_remote_docker
       - run:
-          name: Start Redis and RabbitMQ containers
-          command: ci-cd/ensure-local-ci-services.sh
+          name: Wait for Redis and RabbitMQ services
+          command: ci-cd/wait-for-ci-services.sh
       - run:
           name: Produce Jest coverage
           command: |
@@ -246,6 +324,7 @@ jobs:
             bun run test:coverage
             mkdir -p coverage/jest
             cp coverage/coverage-final.json coverage/jest/coverage-final.json
+      - install_browser_deps
       - run:
           name: Produce browser coverage for every supported engine
           no_output_timeout: 30m
@@ -275,6 +354,12 @@ jobs:
             source "$BASH_ENV"
             bun run coverage:check
       - run:
+          name: Build workspace package dependencies for frontend coverage
+          no_output_timeout: 30m
+          command: |
+            source "$BASH_ENV"
+            bun run mono:build
+      - run:
           name: Produce frontend coverage for the patch report
           command: |
             source "$BASH_ENV"
@@ -299,9 +384,16 @@ jobs:
       - run:
           name: Upload coverage to Codecov
           command: |
-            test -n "${CODECOV_TOKEN:-}"
+            if [ -n "${CODECOV_TOKEN:-}" ]; then
+              TOKEN_ARGS="-t $CODECOV_TOKEN"
+            else
+              # JUM-875: tokenless upload is valid for public repositories on
+              # supported CI providers; --fail-on-error keeps this fail-closed.
+              echo "CODECOV_TOKEN unset; attempting tokenless upload for the public repository."
+              TOKEN_ARGS=""
+            fi
             ./codecov --verbose upload-process --disable-search --fail-on-error \
-              -t "$CODECOV_TOKEN" \
+              $TOKEN_ARGS \
               --slug web2solutions/Jumentix \
               -n "jumentix-circleci-${CIRCLE_WORKFLOW_ID}" \
               -F project \
@@ -325,15 +417,45 @@ jobs:
           command: |
             source "$BASH_ENV"
             test -n "${SONAR_TOKEN:-}"
-            sonar-scanner -Dsonar.scm.disabled=true
+            PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
+            BASE="${JUMENTIX_PR_BASE_REF:-}"
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ] && [ "$BASE" = "main" ]; then
+              # Release promotion PR: submit a pull-request analysis; the target
+              # branch's measures are stale for PR code (mirrors the retired
+              # GitHub sonar-reliability workflow and ci.yml semantics).
+              sonar-scanner -Dsonar.scm.disabled=true \
+                -Dsonar.pullrequest.key="$PR_NUMBER" \
+                -Dsonar.pullrequest.branch="${CIRCLE_BRANCH}" \
+                -Dsonar.pullrequest.base="$BASE"
+            elif [ "${CIRCLE_BRANCH:-}" = "main" ] || [ "${CIRCLE_BRANCH:-}" = "dev" ]; then
+              sonar-scanner -Dsonar.scm.disabled=true -Dsonar.branch.name="${CIRCLE_BRANCH}"
+            else
+              echo "Skipping Sonar scan for ${CIRCLE_BRANCH:-unknown}; Sonar analyses main, dev, and release PRs only."
+              exit 0
+            fi
       - run:
           name: Report Sonar findings
           command: |
             source "$BASH_ENV"
+            if [ ! -f .scannerwork/report-task.txt ]; then
+              echo "No Sonar analysis was submitted in this context; skipping the findings report."
+              exit 0
+            fi
             bun ci-cd/report-sonar-findings.js
       - run:
           name: Enforce SonarCloud reliability A
-          command: SONAR_BRANCH="${CIRCLE_BRANCH:-}" bun run sonar:check-reliability
+          command: |
+            source "$BASH_ENV"
+            PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
+            BASE="${JUMENTIX_PR_BASE_REF:-}"
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ] && [ "$BASE" = "main" ]; then
+              SONAR_PULL_REQUEST="$PR_NUMBER" bun run sonar:check-reliability
+            elif [ "${CIRCLE_BRANCH:-}" = "main" ] || [ "${CIRCLE_BRANCH:-}" = "dev" ]; then
+              SONAR_BRANCH="${CIRCLE_BRANCH}" bun run sonar:check-reliability
+            else
+              echo "Skipping Sonar reliability enforcement for ${CIRCLE_BRANCH:-unknown}."
+              exit 0
+            fi
       - run:
           name: Stop local coverage services
           when: always
@@ -347,7 +469,11 @@ jobs:
 
   website:
     executor: node_bun
+    # Next.js production builds are SIGKILLed (OOM) on the medium container
+    # (pipeline 139 job 394); large mirrors the coverage job's 8 GiB shape.
+    resource_class: large
     environment:
+      NODE_OPTIONS: --max-old-space-size=6144
       JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: "1"
       JUMENTIX_WEBSITE_CYPRESS_BROWSER: chrome
     steps:
@@ -375,6 +501,7 @@ jobs:
           command: |
             source "$BASH_ENV"
             bun run website:test:unit
+      - install_browser_deps
       - run:
           name: Install Cypress binary
           command: |
@@ -387,16 +514,39 @@ jobs:
             bun run website:test:cypress
 
   database-matrix:
-    executor: node_bun
+    # JUM-875: the smoke matrix drives `docker compose` stacks and dials
+    # 127.0.0.1; that only works with a local Docker daemon, so this job runs
+    # on a machine VM instead of the Docker executor + remote docker.
+    machine:
+      image: ubuntu-2404:current
+    environment:
+      BUN_VERSION: 1.3.13
+      JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+      JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
     steps:
+      - run:
+          name: Ensure Node.js 22 on the machine image
+          command: |
+            if ! node --version 2>/dev/null | grep -q '^v22\.'; then
+              curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+            node --version
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
           job: database-matrix
-      - setup_remote_docker
       - run:
           name: Ensure Docker runtime
           command: ci-cd/ensure-docker-runtime.sh
+      - run:
+          name: Build workspace package dependencies
+          no_output_timeout: 30m
+          command: |
+            source "$BASH_ENV"
+            bun run mono:build
       - run:
           name: Database driver smoke matrix against real containers
           no_output_timeout: 45m
@@ -433,6 +583,29 @@ workflows:
     jobs:
       - branch-gate
       - third-party-review
+      - browser-matrix
+      - workspace-builds
+      - workspace-tests
+      - integration
+      - coverage
+      - website
+      - database-matrix
+  # JUM-874: a workflow with a schedule trigger runs ONLY on the schedule, so
+  # the nightly full matrix lives in its own workflow and `ci` keeps running on
+  # every push/PR. The context classifier maps this to scheduled-full.
+  nightly:
+    triggers:
+      - schedule:
+          cron: "17 3 * * *"
+          filters:
+            branches:
+              only:
+                - main
+                - dev
+    jobs:
+      - branch-gate
+      - third-party-review
+      - browser-matrix
       - workspace-builds
       - workspace-tests
       - integration

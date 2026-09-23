@@ -8,10 +8,10 @@ provider plans.
 
 | Concern | Required contract | Role |
 | --- | --- | --- |
-| CI | GitHub Actions canonical workflow tracked in this repository | Canonical orchestrator for PRs to `dev`, promotions to `main`, and both protected branches; GitHub-hosted `ubuntu-latest` runner |
-| Secondary CI | CircleCI enabled for the public repository | Independent mirror of the same context classifier and job names |
+| CI | CircleCI canonical pipeline tracked in this repository (`.circleci/config.yml`) | Canonical orchestrator for PRs to `dev`, promotions to `main`, and both protected branches; nightly scheduled trigger on `main`/`dev` |
+| Fallback CI | GitHub Actions retained for the public repository, disabled by default behind the `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` repository variable | Same context classifier and job names when the flag is `true`; always-on exceptions: `pr-feedback.yml`, the `sync-changelog`/`pr-feedback` jobs in `ci.yml`, and `npm-publish.yml` |
 | Coverage | repository-owned coverage job, JSON/LCOV artifacts, project and patch thresholds | Canonical coverage authority; Codecov publishing is the public dashboard |
-| Codecov publishing | GitHub Actions uses `codecov/codecov-action@v5` on `main` and `dev` pushes (plus release/scheduled contexts); CircleCI uses the verified Codecov CLI on the same surfaces, both with `CODECOV_TOKEN` | Live coverage badges + Grid graph after LCOV upload |
+| Codecov publishing | CircleCI uses the checksum-verified Codecov CLI on `main` and `dev` pushes (plus release/scheduled contexts); when the fallback flag is enabled, GitHub Actions uses `codecov/codecov-action@v5` on the same surfaces, both with `CODECOV_TOKEN` | Live coverage badges + Grid graph after LCOV upload |
 | Quality | Branch-aware Bun quality gate and Storybook build/smoke/prepublish | Required product and governance validation |
 | SAST/quality | SonarQube Cloud project `web2solutions_Jumentix` | Public quality, reliability, security and coverage dashboard |
 | Dependencies | Repository-owned OSV.dev scanner plus Dependabot | Fail-closed vulnerability detection and update proposals |
@@ -21,12 +21,19 @@ provider plans.
 
 ## Active services
 
-- **GitHub Actions canonical:** `.github/workflows/ci.yml` runs on
-  `ubuntu-latest`, executes cheap gates through `dev`, and reserves the full
-  matrix for `dev -> main`, `main`, and scheduled/manual full runs.
-- **CircleCI enabled:** `.circleci/config.yml` mirrors the same context
-  classifier. Jobs that are not required for the current destination halt
-  successfully before starting heavy work.
+- **CircleCI canonical:** `.circleci/config.yml` runs the full matrix —
+  `branch-gate`, `third-party-review`, `browser-matrix`, `workspace-builds`,
+  `workspace-tests`, `integration`, `coverage` (Codecov upload, SonarQube
+  Cloud scan, and `bun run sonar:check-reliability`), `website`, and
+  `database-matrix` — with a nightly scheduled trigger on `main`/`dev`. Jobs
+  that are not required for the current destination halt successfully before
+  starting heavy work.
+- **GitHub Actions retained:** `.github/workflows/ci.yml` (matrix jobs),
+  `browser-matrix.yml`, and `sonar-reliability.yml` are gated behind
+  `if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'` and run as the
+  equivalent fallback when the flag is enabled. The `pr-feedback.yml` workflow,
+  the `sync-changelog`/`pr-feedback` jobs in `ci.yml`, and `npm-publish.yml`
+  stay always-on because they have no CircleCI equivalent.
 - **Codecov publishing:** the full coverage job uploads LCOV after local
   project and patch thresholds pass. Codecov is the coverage dashboard, not the
   threshold authority.
