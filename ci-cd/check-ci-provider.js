@@ -132,7 +132,9 @@ if (!fs.existsSync(workflowPath)) {
     /Report Sonar findings/,
     /Enforce SonarCloud reliability A/,
     /sonar:check-reliability/,
-    /vars\.JUMENTIX_ENABLE_SONAR == 'true'/
+    /vars\.JUMENTIX_ENABLE_SONAR == 'true'/,
+    /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/,
+    /needs\.branch-gate\.result == 'skipped'/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(ciContents)) failures.push(`GitHub Actions CI is missing ${String(marker)}`);
@@ -172,6 +174,18 @@ if (!fs.existsSync(workflowPath)) {
     const expected = job === 'coverage' ? 'main/dev/release contexts' : 'release/full contexts';
     if (!guard.test(jobBlock)) {
       failures.push(`.github/workflows/ci.yml must guard ${job} to ${expected}`);
+    }
+  }
+
+  // Requirement 113 (2026-09-23 amendment): CircleCI is canonical; every retained
+  // GitHub Actions matrix job must stay disabled by default behind the single
+  // reversible flag. Always-on exceptions (pr-feedback, sync-changelog,
+  // pr-feedback.yml, npm-publish.yml) are intentionally absent from this list.
+  const disableFlagGuard = /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/;
+  for (const job of ['branch-gate', 'third-party-review', 'workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
+    const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
+    if (!disableFlagGuard.test(jobBlock)) {
+      failures.push(`.github/workflows/ci.yml must gate ${job} behind vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' (JUM-876)`);
     }
   }
 
@@ -277,7 +291,8 @@ function checkSonarReliabilityWorkflow(workflowPathToCheck) {
     /-Dsonar\.pullrequest\.branch="\$SONAR_PULL_REQUEST_BRANCH"/,
     /-Dsonar\.pullrequest\.base="\$SONAR_PULL_REQUEST_BASE"/,
     /bun run sonar:check-reliability/,
-    /seq 1 18/
+    /seq 1 18/,
+    /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`Sonar reliability workflow is missing ${String(marker)}`);
@@ -314,7 +329,8 @@ function checkBrowserMatrixWorkflow(workflowPathToCheck) {
     /bun x playwright install webkit/,
     /bun x playwright install-deps webkit/,
     /for engine in chrome firefox webkit/,
-    /packages\/cana\/scripts\/run-browser-tests\.js/
+    /packages\/cana\/scripts\/run-browser-tests\.js/,
+    /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`Browser matrix workflow is missing ${String(marker)}`);
@@ -366,13 +382,58 @@ if (fs.existsSync(circleciPath)) {
     /--slug web2solutions\/Jumentix/,
     /verify-codecov-public-reports\.js/,
     /sonar-scanner -Dsonar\.scm\.disabled=true/,
-    /sonar:check-reliability/
+    /sonar:check-reliability/,
+    /-Dsonar\.branch\.name/,
+    /-Dsonar\.pullrequest\.key/,
+    /browser-matrix:/,
+    /report-sonar-findings\.js/,
+    /force_full/,
+    /JUMENTIX_CI_FORCE_FULL/,
+    /machine:\s*\n\s*image: ubuntu-2404/,
+    /apt-get install -y xvfb/,
+    /circleci\/browser-tools@1\.5\.3/,
+    /browser-tools\/install-chrome/,
+    /browser-tools\/install-firefox/,
+    /install_browser_deps/,
+    /resource_class:\s*large/,
+    /--max-old-space-size=6144/,
+    /cron:\s*"17 3 \* \* \*"/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
   }
   if (/const quote = \(value\) => JSON\.stringify/.test(contents)) {
     failures.push('CircleCI PR metadata must shell-quote values before writing BASH_ENV');
+  }
+
+  const browserMatrixBlock = contents.match(/\n  browser-matrix:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/require_ci_job:\s*\n\s*job:\s*browser-matrix/.test(browserMatrixBlock)) {
+    failures.push('CircleCI browser-matrix job must gate on the shared context classifier via require_ci_job');
+  }
+  const ciWorkflowBlock = contents.match(/\n  ci:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\n?$)/)?.[0] || '';
+  if (!/- browser-matrix/.test(ciWorkflowBlock)) {
+    failures.push('CircleCI workflows.ci.jobs must include browser-matrix');
+  }
+  const nightlyBlock = contents.match(/\n  nightly:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\n?$)/)?.[0] || '';
+  if (!/triggers:[\s\S]*?schedule:[\s\S]*?cron:\s*"17 3 \* \* \*"/.test(nightlyBlock)
+    || !/only:\s*\n\s*- main\s*\n\s*- dev/.test(nightlyBlock)
+    || !/- browser-matrix/.test(nightlyBlock)) {
+    failures.push('CircleCI nightly workflow must own the 17 3 * * * schedule on main and dev and run the full matrix including browser-matrix');
+  }
+  if (/setup_remote_docker/.test(contents)) {
+    failures.push(
+      'CircleCI jobs must not use setup_remote_docker: published ports are unreachable from the job container (JUM-875). Use secondary service containers or the machine executor.'
+    );
+  }
+
+  const databaseMatrixBlock = contents.match(/\n  database-matrix:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/Build workspace package dependencies[\s\S]*bun run mono:build/.test(databaseMatrixBlock)) {
+    failures.push('CircleCI database-matrix must build workspace package dependencies before running isolated smoke tests');
+  }
+
+  const circleCoverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(circleCoverageBlock)) {
+    failures.push('CircleCI coverage must build workspace package dependencies before frontend patch coverage');
   }
 
   if (!fs.existsSync(serviceWaitPath)) {
@@ -431,6 +492,8 @@ if (failures.length > 0) {
 }
 
 console.log(
-  'CI provider check passed: GitHub Actions and CircleCI cover cheap dev gates, full main promotion gates, '
-    + 'coverage, website validation, third-party review, resolved PR feedback, and Codecov/Sonar publishing.'
+  'CI provider check passed: CircleCI is the canonical orchestrator (branch gate, browser matrix, full '
+    + 'promotion matrix, coverage, website, third-party review, Codecov/Sonar publishing, nightly schedule); '
+    + 'GitHub Actions retains the same surface disabled-by-default behind JUMENTIX_ENABLE_GITHUB_ACTIONS_CI, '
+    + 'with pr-feedback, sync-changelog, and npm-publish always-on.'
 );

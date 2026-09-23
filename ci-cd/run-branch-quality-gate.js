@@ -45,8 +45,9 @@ const CURRENT_GOVERNANCE_DOCS_PREFLIGHT = Object.freeze({
 /**
  * Workspace boundaries + root `build:dev` run before every gate (JUM-786).
  *
- * Both steps live in `ci:gate` / the full matrix, but GitHub Actions never
- * selects `workspace-builds` (or the local `ci:gate` script) for task PRs to
+ * Both steps live in `ci:gate` / the full matrix, but the canonical CI
+ * (CircleCI, per the 2026-09-23 Req 113 amendment) never selects
+ * `workspace-builds` (or the local `ci:gate` script) for task PRs to
  * `dev` or cheap `dev` pushes (Req 087/113). The failures therefore sat on
  * every local checkout while every required PR check stayed green.
  *

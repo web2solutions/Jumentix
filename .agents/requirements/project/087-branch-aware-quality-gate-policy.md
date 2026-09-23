@@ -1,5 +1,11 @@
 # Requirement 087 - Branch-Aware Quality Gate Policy
 
+> Amendment note (2026-09-23): per the 2026-09-23 amendment of requirement `113`,
+> CircleCI is the canonical CI provider for every gate referenced here (including
+> the `coverage` job), and GitHub Actions is the flag-gated fallback behind the
+> `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` repository variable. The historical text
+> below is unchanged.
+
 ## Context
 
 Jumentix needs fast, credible feedback while preserving release-grade evidence at the
