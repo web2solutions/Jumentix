@@ -383,6 +383,8 @@ if (fs.existsSync(circleciPath)) {
     /verify-codecov-public-reports\.js/,
     /sonar-scanner -Dsonar\.scm\.disabled=true/,
     /sonar:check-reliability/,
+    /-Dsonar\.branch\.name/,
+    /-Dsonar\.pullrequest\.key/,
     /browser-matrix:/,
     /report-sonar-findings\.js/,
     /force_full/,

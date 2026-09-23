@@ -417,15 +417,45 @@ jobs:
           command: |
             source "$BASH_ENV"
             test -n "${SONAR_TOKEN:-}"
-            sonar-scanner -Dsonar.scm.disabled=true
+            PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
+            BASE="${JUMENTIX_PR_BASE_REF:-}"
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ] && [ "$BASE" = "main" ]; then
+              # Release promotion PR: submit a pull-request analysis; the target
+              # branch's measures are stale for PR code (mirrors the retired
+              # GitHub sonar-reliability workflow and ci.yml semantics).
+              sonar-scanner -Dsonar.scm.disabled=true \
+                -Dsonar.pullrequest.key="$PR_NUMBER" \
+                -Dsonar.pullrequest.branch="${CIRCLE_BRANCH}" \
+                -Dsonar.pullrequest.base="$BASE"
+            elif [ "${CIRCLE_BRANCH:-}" = "main" ] || [ "${CIRCLE_BRANCH:-}" = "dev" ]; then
+              sonar-scanner -Dsonar.scm.disabled=true -Dsonar.branch.name="${CIRCLE_BRANCH}"
+            else
+              echo "Skipping Sonar scan for ${CIRCLE_BRANCH:-unknown}; Sonar analyses main, dev, and release PRs only."
+              exit 0
+            fi
       - run:
           name: Report Sonar findings
           command: |
             source "$BASH_ENV"
+            if [ ! -f .scannerwork/report-task.txt ]; then
+              echo "No Sonar analysis was submitted in this context; skipping the findings report."
+              exit 0
+            fi
             bun ci-cd/report-sonar-findings.js
       - run:
           name: Enforce SonarCloud reliability A
-          command: SONAR_BRANCH="${CIRCLE_BRANCH:-}" bun run sonar:check-reliability
+          command: |
+            source "$BASH_ENV"
+            PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
+            BASE="${JUMENTIX_PR_BASE_REF:-}"
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ] && [ "$BASE" = "main" ]; then
+              SONAR_PULL_REQUEST="$PR_NUMBER" bun run sonar:check-reliability
+            elif [ "${CIRCLE_BRANCH:-}" = "main" ] || [ "${CIRCLE_BRANCH:-}" = "dev" ]; then
+              SONAR_BRANCH="${CIRCLE_BRANCH}" bun run sonar:check-reliability
+            else
+              echo "Skipping Sonar reliability enforcement for ${CIRCLE_BRANCH:-unknown}."
+              exit 0
+            fi
       - run:
           name: Stop local coverage services
           when: always
