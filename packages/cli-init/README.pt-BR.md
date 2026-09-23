@@ -10,7 +10,7 @@ CLI geradora de fábrica do Jumentix (Requisito `037` v2).
 
 - A versão do pacote da CLI acompanha o cohort de templates da fábrica que ela gera.
 - Projetos gerados fixam versões publicadas de `@jumentix/*` (não `workspace:*`).
-- Pacotes de biblioteca continuam usando `bumpPackage` / conventional commits do repositório para semver.
+- Pacotes de biblioteca continuam usando tags de aplicação geridas pela CI + versões independentes em package.json (ver JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md).
 - Publique pelo workflow protegido `npm-publish` do GitHub Actions em `main` depois que `bun run npm:packages:check` e `bun run release:dry-run:packages` estiverem verdes. Veja `documentation/md/NPM-PACKAGE-PUBLISHING.pt-BR.md`.
 
 ```bash

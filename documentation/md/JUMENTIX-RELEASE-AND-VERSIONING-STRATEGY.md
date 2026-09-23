@@ -17,6 +17,27 @@ Current values:
 - `appVersioning`: `locked`
 - `appLockedVersion`: must match root `package.json` version
 
+## Git tag families (Requirement 060)
+
+Two annotated tag families, both created by CI — never from a developer machine:
+
+| Family | Format | When | Owner |
+| --- | --- | --- | --- |
+| Application | `v<appLockedVersion>` (e.g. `v0.0.3`) | After each successful version bump on `main` | CircleCI `release` workflow → `bun run release:app-tag` |
+| Package | `@jumentix/<pkg>@<version>` | After each successful `npm publish` | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
+
+The next application version is computed by `ci-cd/lib/next-version.js` from commits
+since the last application tag (or full history when none exist):
+
+- major: `BREAKING CHANGE`, `type!`, Nature `Breaking`
+- minor: Feature / feat
+- patch: Fix / Bug / Security / Perf / Refactor
+- ignore: Docs / Chore / Test / CI / Style / Release (+ changelog sync commits)
+
+`CHANGELOG.md` sections only on application tags (`/^v\d+\.\d+\.\d+$/`). Each
+application tag also gets a GitHub Release via `bun run release:github-release`
+(CircleCI on `v*` tags; notes = matching changelog section; pre-1.0 marked prerelease).
+
 ## Governance Enforcement
 
 The CI gate enforces release policy through:
@@ -26,20 +47,36 @@ The CI gate enforces release policy through:
 
 Validation includes:
 
-- required release scripts exist in root (`changelog:*`, `release:dry-run*`)
+- required release scripts exist in root (`changelog:*`, `release:dry-run*`,
+  `release:next-version`, `release:app-tag`, `release:github-release`,
+  `release:publish-cohort`)
 - `release-policy.json` exists and is valid
 - publishable packages have valid semver and `files` metadata
 - app workspaces are private and their version equals `appLockedVersion`
 
 ## Operational Workflow
 
-1. Update root version intentionally.
-2. Update `release-policy.json` `appLockedVersion` to same value.
-3. Keep app workspace versions synchronized with locked value.
-4. Run:
-   - `bun run release:governance:check`
-   - `bun run release:dry-run`
-5. Open PR with traceability to related Jumentix project issue(s).
+1. Merge task PRs to `dev` as usual (local commits do **not** bump versions).
+2. Open a `dev`→`main` promotion PR. After it merges, CircleCI on `main` runs
+   `release:app-tag`: computes the next version, updates root + `release-policy.json`
+   + every `apps/*/package.json`, commits `chore(release): vX.Y.Z`, creates the
+   annotated application tag, regenerates `CHANGELOG.md`, and pushes.
+3. The tag push triggers CircleCI `create-github-release` → browsable GitHub Release.
+4. When ready to publish packages, dispatch **Publish npm packages** on `main`
+   (protected `secrets` Environment, Requirement 070). The workflow skips any
+   package whose `@jumentix/<pkg>@<version>` tag already exists, publishes the rest,
+   and creates package tags on success.
+5. Verify with `bun run release:governance:check`, `bun run release:dry-run`,
+   `gh release list`, and `npm view @jumentix/<package>`.
+
+Dry-run helpers:
+
+- `bun run release:next-version -- --dry-run` (or `bun ci-cd/lib/next-version.js --dry-run`)
+- `bun run release:app-tag -- --dry-run`
+- `bun run release:github-release -- --dry-run vX.Y.Z`
+- `bun run release:publish-cohort -- --dry-run <cohort>`
+
+Superseded: `ci-cd/bumpTag.ts` and `ci-cd/bumpPackage.ts` (removed).
 
 ## Future Evolution
 

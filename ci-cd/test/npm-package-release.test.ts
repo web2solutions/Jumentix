@@ -99,6 +99,10 @@ describe('public npm package release policy', () => {
     expect.hasAssertions();
 
     const workflow = fs.readFileSync(path.join(repoRoot, '.github/workflows/npm-publish.yml'), 'utf8');
+    const publishScript = fs.readFileSync(
+      path.join(repoRoot, 'ci-cd/publish-npm-cohort.js'),
+      'utf8'
+    );
     expect({
       manual: workflow.includes('workflow_dispatch:'),
       mainOnly: workflow.includes('github.ref == \'refs/heads/main\''),
@@ -107,9 +111,11 @@ describe('public npm package release policy', () => {
       tokenMapping: /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_CI_CD \}\}/.test(workflow),
       tokenEcho: /echo\s+.*NPM_CI_CD/.test(workflow),
       provenanceIdToken: /id-token:\s*write/.test(workflow),
-      publishesCli: workflow.includes('publish cli-init'),
-      publishesRuntime: workflow.includes('publish persistence-contracts'),
-      publishesSdks: workflow.includes('publish sdk-rest-client')
+      contentsWrite: /contents:\s*write/.test(workflow),
+      publishCohort: workflow.includes('bun run release:publish-cohort'),
+      publishesCli: publishScript.includes('\'cli-init\''),
+      publishesRuntime: publishScript.includes('\'persistence-contracts\''),
+      publishesSdks: publishScript.includes('\'sdk-rest-client\'')
     }).toStrictEqual({
       manual: true,
       mainOnly: true,
@@ -118,6 +124,8 @@ describe('public npm package release policy', () => {
       tokenMapping: true,
       tokenEcho: false,
       provenanceIdToken: true,
+      contentsWrite: true,
+      publishCohort: true,
       publishesCli: true,
       publishesRuntime: true,
       publishesSdks: true

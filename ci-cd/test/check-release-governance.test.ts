@@ -15,7 +15,11 @@ describe('check-release-governance', () => {
         'changelog:check': 'node ci-cd/update-changelog.js --check',
         'release:dry-run': 'node ci-cd/release-dry-run.js all',
         'release:dry-run:packages': 'node ci-cd/release-dry-run.js packages',
-        'release:dry-run:apps': 'node ci-cd/release-dry-run.js apps'
+        'release:dry-run:apps': 'node ci-cd/release-dry-run.js apps',
+        'release:next-version': 'bun ci-cd/lib/next-version.js',
+        'release:app-tag': 'bun ci-cd/create-app-release-tag.js',
+        'release:github-release': 'bun ci-cd/create-github-release.js',
+        'release:publish-cohort': 'bun ci-cd/publish-npm-cohort.js'
       }
     });
     expect(failures).toStrictEqual([]);
@@ -29,7 +33,11 @@ describe('check-release-governance', () => {
       '[root] missing required release script: changelog:check',
       '[root] missing required release script: release:dry-run',
       '[root] missing required release script: release:dry-run:packages',
-      '[root] missing required release script: release:dry-run:apps'
+      '[root] missing required release script: release:dry-run:apps',
+      '[root] missing required release script: release:next-version',
+      '[root] missing required release script: release:app-tag',
+      '[root] missing required release script: release:github-release',
+      '[root] missing required release script: release:publish-cohort'
     ]);
   });
 

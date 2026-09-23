@@ -578,6 +578,55 @@ jobs:
             source "$BASH_ENV"
             bun run smoke:db-repositories
 
+  create-app-release-tag:
+    executor: node_bun
+    steps:
+      - prepare_checkout
+      - run:
+          name: Configure git push credentials for release tagging
+          command: |
+            set -euo pipefail
+            TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+            if [ -z "$TOKEN" ]; then
+              echo "Missing GH_TOKEN or GITHUB_TOKEN in the CircleCI context (fail closed)." >&2
+              exit 1
+            fi
+            git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
+            git fetch --tags --prune origin
+      - run:
+          name: Create application release tag on main
+          command: |
+            source "$BASH_ENV"
+            bun run release:app-tag
+
+  create-github-release:
+    executor: node_bun
+    steps:
+      - prepare_checkout
+      - run:
+          name: Install GitHub CLI
+          command: |
+            set -euo pipefail
+            if command -v gh >/dev/null 2>&1; then
+              exit 0
+            fi
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+              | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+              | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+            sudo apt-get update
+            sudo apt-get install -y gh
+      - run:
+          name: Create GitHub Release from application tag
+          command: |
+            source "$BASH_ENV"
+            if [ -z "${GH_TOKEN:-${GITHUB_TOKEN:-}}" ]; then
+              echo "Missing GH_TOKEN or GITHUB_TOKEN in the CircleCI context (fail closed)." >&2
+              exit 1
+            fi
+            export GH_TOKEN="${GH_TOKEN:-$GITHUB_TOKEN}"
+            bun run release:github-release
+
 workflows:
   ci:
     jobs:
@@ -612,3 +661,18 @@ workflows:
       - coverage
       - website
       - database-matrix
+  # JUM-884 / JUM-885: application tags and GitHub Releases (CircleCI-canonical).
+  release:
+    jobs:
+      - create-app-release-tag:
+          filters:
+            branches:
+              only: main
+            tags:
+              ignore: /.*/
+      - create-github-release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v\d+\.\d+\.\d+$/

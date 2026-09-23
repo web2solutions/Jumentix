@@ -22,12 +22,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: secrets
     permissions:
-      contents: read
+      # Package tags are pushed after a successful publish (JUM-886).
+      contents: write
       # Root .npmrc sets provenance=true; npm publish needs OIDC in GHA.
       id-token: write
     steps:
       - name: Checkout release commit
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Use Node.js 22
         uses: actions/setup-node@v5
         with:
@@ -40,6 +43,10 @@ jobs:
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Install frozen dependencies
         run: bun install --frozen-lockfile
+      - name: Configure git identity for package tags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Verify npm org access
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_CD }}
@@ -50,67 +57,4 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_CD }}
           RELEASE: ${{ inputs.release }}
-        run: |
-          set -euo pipefail
-          publish() {
-            (cd "packages/$1" && npm publish --access public)
-          }
-          case "$RELEASE" in
-            all)
-              publish cana
-              publish cana-react
-              publish cana-vue
-              publish designer-core
-              publish persistence-contracts
-              publish shared-contracts
-              publish external-persistence-core
-              publish external-store-proxy
-              publish external-db-repositories
-              publish key-value-storage
-              publish database-client-factory
-              publish message-mediator
-              publish mutex-service
-              publish dead-letter-queue
-              publish runtime-infra
-              publish adapter-runtime-bootstrap
-              publish sdk-grpc-client
-              publish sdk-rest-client
-              publish sdk-websocket-client
-              publish cli-init
-              ;;
-            cana)
-              publish cana
-              publish cana-react
-              publish cana-vue
-              ;;
-            designer-core)
-              publish designer-core
-              ;;
-            runtime)
-              publish persistence-contracts
-              publish shared-contracts
-              publish external-persistence-core
-              publish external-store-proxy
-              publish external-db-repositories
-              publish key-value-storage
-              publish database-client-factory
-              publish message-mediator
-              publish mutex-service
-              publish dead-letter-queue
-              publish runtime-infra
-              publish adapter-runtime-bootstrap
-              ;;
-            sdks)
-              publish shared-contracts
-              publish sdk-grpc-client
-              publish sdk-rest-client
-              publish sdk-websocket-client
-              ;;
-            cli-init)
-              publish cli-init
-              ;;
-            *)
-              echo "Unsupported release cohort: $RELEASE" >&2
-              exit 1
-              ;;
-          esac
+        run: bun run release:publish-cohort "$RELEASE"

@@ -39,6 +39,10 @@ function getTags() {
 
   if (!output) return [];
 
+  // Application tags only (`vX.Y.Z`). Package tags (`@jumentix/pkg@version`)
+  // must not create changelog sections (JUM-882 / Requirement 060).
+  const APP_TAG_RE = /^v\d+\.\d+\.\d+$/;
+
   return output.split('\n').map((line) => {
     const [name, date] = line.split('\t');
     const commit = runGit(['rev-list', '-n', '1', name]);
@@ -47,7 +51,7 @@ function getTags() {
       date,
       commit
     };
-  });
+  }).filter((tag) => APP_TAG_RE.test(tag.name));
 }
 
 function getCommitDate(ref) {

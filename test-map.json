@@ -548,8 +548,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/infraHandlers.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/infraHandlers.test.ts",
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -558,8 +558,8 @@
       "timeoutMs": 60000
     },
     {
-      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
-      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/FastifyServer.edgeCases.test.ts",
+      "id": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/infraHandlers.test.ts",
+      "path": "apps/backend-template/test/unit/interface/HTTP/adapters/fastify/infraHandlers.test.ts",
       "layer": "interface/runtime",
       "kind": "hexagonal",
       "type": "unit",
@@ -2722,6 +2722,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/release-tagging.test.ts",
+      "path": "ci-cd/test/release-tagging.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-ci-provider.test.ts",
       "path": "ci-cd/test/check-ci-provider.test.ts",
       "layer": "tooling",
@@ -3084,6 +3094,16 @@
     {
       "id": "ci-cd/test/check-test-integrity.test.ts",
       "path": "ci-cd/test/check-test-integrity.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/next-version.test.ts",
+      "path": "ci-cd/test/next-version.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -5975,9 +5995,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 350,
+    "unit": 353,
     "integration": 102,
     "smoke": 2,
-    "suites": 513
+    "suites": 516
   }
 }
