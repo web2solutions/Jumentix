@@ -10,6 +10,7 @@ const failures = [];
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
 const feedbackWorkflowPath = path.join(root, '.github', 'workflows', 'pr-feedback.yml');
+const appReleaseWorkflowPath = path.join(root, '.github', 'workflows', 'app-release.yml');
 const sonarReliabilityWorkflowPath = path.join(root, '.github', 'workflows', 'sonar-reliability.yml');
 const browserMatrixWorkflowPath = path.join(root, '.github', 'workflows', 'browser-matrix.yml');
 const preCommitPath = path.join(root, '.husky', 'pre-commit');
@@ -180,7 +181,8 @@ if (!fs.existsSync(workflowPath)) {
   // Requirement 113 (2026-09-23 amendment): CircleCI is canonical; every retained
   // GitHub Actions matrix job must stay disabled by default behind the single
   // reversible flag. Always-on exceptions (pr-feedback, sync-changelog,
-  // pr-feedback.yml, npm-publish.yml) are intentionally absent from this list.
+  // pr-feedback.yml, app-release.yml, npm-publish.yml) are intentionally absent
+  // from this list.
   const disableFlagGuard = /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/;
   for (const job of ['branch-gate', 'third-party-review', 'workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
     const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
@@ -268,6 +270,24 @@ checkTrustedPullRequestWorkflow(feedbackWorkflowPath, 'PR feedback workflow', [
   /check-pr-feedback\.js --repo/,
   /github\.event\.pull_request\.number/
 ]);
+
+if (!fs.existsSync(appReleaseWorkflowPath)) {
+  failures.push('Missing required always-on workflow: .github/workflows/app-release.yml');
+} else {
+  const appReleaseContents = fs.readFileSync(appReleaseWorkflowPath, 'utf8');
+  for (const marker of [
+    /name:\s*Application release/,
+    /create-app-release:/,
+    /environment:\s*secrets/,
+    /CHANGELOG_GH_TOKEN/,
+    /create-app-release-tag\.js --github-api/,
+    /group:\s*app-release-main/
+  ]) {
+    if (!marker.test(appReleaseContents)) {
+      failures.push(`.github/workflows/app-release.yml is missing ${String(marker)}`);
+    }
+  }
+}
 
 function checkSonarReliabilityWorkflow(workflowPathToCheck) {
   if (!fs.existsSync(workflowPathToCheck)) {
@@ -495,5 +515,5 @@ console.log(
   'CI provider check passed: CircleCI is the canonical orchestrator (branch gate, browser matrix, full '
     + 'promotion matrix, coverage, website, third-party review, Codecov/Sonar publishing, nightly schedule); '
     + 'GitHub Actions retains the same surface disabled-by-default behind JUMENTIX_ENABLE_GITHUB_ACTIONS_CI, '
-    + 'with pr-feedback, sync-changelog, and npm-publish always-on.'
+    + 'with pr-feedback, sync-changelog, app-release, and npm-publish always-on.'
 );

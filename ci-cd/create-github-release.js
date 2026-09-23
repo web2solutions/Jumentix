@@ -112,11 +112,12 @@ function createGithubRelease(options = {}) {
 
   const token = (options.env || process.env).GH_TOKEN
     || (options.env || process.env).GITHUB_TOKEN
+    || (options.env || process.env).CHANGELOG_GH_TOKEN
     || '';
   if (!token) {
     throw new Error(
-      'Missing GH_TOKEN or GITHUB_TOKEN. CircleCI must provide a token that can '
-      + 'create GitHub Releases (fail closed).'
+      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN. '
+      + 'CI must provide a token that can create GitHub Releases (fail closed).'
     );
   }
 

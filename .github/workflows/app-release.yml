@@ -1,0 +1,55 @@
+# JUM-889 / Req 113 always-on exception (alongside sync-changelog):
+# Application tags + GitHub Releases need a fine-grained PAT that can open
+# signed commits via createCommitOnBranch and create tags/releases.
+# CircleCI cannot satisfy `main` branch protection (required signatures +
+# pull_request ruleset) without a bypass actor, and GH_TOKEN was never
+# provisioned in a CircleCI context — so this workflow owns the path.
+name: Application release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: app-release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  create-app-release:
+    name: create-app-release
+    if: github.event_name == 'push' && github.ref_name == 'main'
+    environment: secrets
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Install Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v1.3.13"
+          test -x "$HOME/.bun/bin/bun"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Create application tag and GitHub Release
+        env:
+          CHANGELOG_GH_TOKEN: ${{ secrets.CHANGELOG_GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CHANGELOG_GH_TOKEN:-}" ]; then
+            echo "Secret CHANGELOG_GH_TOKEN is not configured in the secrets Environment." >&2
+            exit 1
+          fi
+          export GH_TOKEN="$CHANGELOG_GH_TOKEN"
+          bun ci-cd/create-app-release-tag.js --github-api

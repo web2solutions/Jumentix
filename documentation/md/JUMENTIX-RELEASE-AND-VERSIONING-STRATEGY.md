@@ -23,7 +23,7 @@ Two annotated tag families, both created by CI — never from a developer machin
 
 | Family | Format | When | Owner |
 | --- | --- | --- | --- |
-| Application | `v<appLockedVersion>` (e.g. `v0.0.3`) | After each successful version bump on `main` | CircleCI `release` workflow → `bun run release:app-tag` |
+| Application | `v<appLockedVersion>` (e.g. `v0.0.3`) | After each successful version bump on `main` | GitHub Actions `app-release.yml` → `bun ci-cd/create-app-release-tag.js --github-api` |
 | Package | `@jumentix/<pkg>@<version>` | After each successful `npm publish` | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
 
 The next application version is computed by `ci-cd/lib/next-version.js` from commits
@@ -36,7 +36,8 @@ since the last application tag (or full history when none exist):
 
 `CHANGELOG.md` sections only on application tags (`/^v\d+\.\d+\.\d+$/`). Each
 application tag also gets a GitHub Release via `bun run release:github-release`
-(CircleCI on `v*` tags; notes = matching changelog section; pre-1.0 marked prerelease).
+(same `app-release.yml` job after the tag; notes = matching changelog section;
+pre-1.0 marked prerelease).
 
 ## Governance Enforcement
 
@@ -57,16 +58,16 @@ Validation includes:
 ## Operational Workflow
 
 1. Merge task PRs to `dev` as usual (local commits do **not** bump versions).
-2. Open a `dev`→`main` promotion PR. After it merges, CircleCI on `main` runs
-   `release:app-tag`: computes the next version, updates root + `release-policy.json`
-   + every `apps/*/package.json`, commits `chore(release): vX.Y.Z`, creates the
-   annotated application tag, regenerates `CHANGELOG.md`, and pushes.
-3. The tag push triggers CircleCI `create-github-release` → browsable GitHub Release.
-4. When ready to publish packages, dispatch **Publish npm packages** on `main`
+2. Open a `dev`→`main` promotion PR. After it merges, `.github/workflows/app-release.yml`
+   runs on `main` with `CHANGELOG_GH_TOKEN` (Req 113 always-on exception): computes the
+   next version, opens a signed squash PR for the locked-version bump, merges it,
+   creates the annotated application tag on the squash commit, regenerates
+   `CHANGELOG.md`, and creates the GitHub Release.
+3. When ready to publish packages, dispatch **Publish npm packages** on `main`
    (protected `secrets` Environment, Requirement 070). The workflow skips any
    package whose `@jumentix/<pkg>@<version>` tag already exists, publishes the rest,
    and creates package tags on success.
-5. Verify with `bun run release:governance:check`, `bun run release:dry-run`,
+4. Verify with `bun run release:governance:check`, `bun run release:dry-run`,
    `gh release list`, and `npm view @jumentix/<package>`.
 
 Dry-run helpers:
