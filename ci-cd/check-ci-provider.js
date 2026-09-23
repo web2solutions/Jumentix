@@ -385,10 +385,20 @@ if (fs.existsSync(circleciPath)) {
     /sonar:check-reliability/,
     /for engine in chrome firefox webkit/,
     /packages\/cana\/scripts\/run-browser-tests\.js/,
-    /cron:\s*"17 3 \* \* \*"/
+    /cron:\s*"17 3 \* \* \*"/,
+    /image: redis:7\.2-alpine/,
+    /image: rabbitmq:3\.13-alpine/,
+    /machine:\s*\n\s*image: ubuntu-2404/,
+    /Wait for Redis and RabbitMQ service containers/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
+  }
+
+  if (/setup_remote_docker/.test(contents)) {
+    failures.push(
+      'CircleCI jobs must not use setup_remote_docker: published ports are unreachable from the job container (JUM-875). Use secondary service containers or the machine executor.'
+    );
   }
 
   const browserMatrixBlock = contents.match(/\n  browser-matrix:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\n?$)/)?.[0] || '';

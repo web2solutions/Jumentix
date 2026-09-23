@@ -10,6 +10,20 @@ executors:
       JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
       JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+  # JUM-875: jobs whose tests dial 127.0.0.1 cannot use remote Docker
+  # (published ports live on the remote host). Secondary containers share
+  # localhost with the primary container on the Docker executor.
+  node_bun_services:
+    docker:
+      - image: cimg/node:22.21
+      - image: redis:7.2-alpine
+      - image: rabbitmq:3.13-alpine
+    environment:
+      BUN_VERSION: 1.3.13
+      JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+      JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
 
 commands:
   prepare_checkout:
@@ -97,6 +111,20 @@ commands:
               exit 0
             fi
             exit "$status"
+  wait_for_services:
+    steps:
+      - run:
+          name: Wait for Redis and RabbitMQ service containers
+          command: |
+            for attempt in $(seq 1 30); do
+              if (echo > /dev/tcp/127.0.0.1/6379) 2>/dev/null && (echo > /dev/tcp/127.0.0.1/5672) 2>/dev/null; then
+                echo "Redis and RabbitMQ are accepting connections."
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "Service containers did not become ready." >&2
+            exit 1
 
 jobs:
   branch-gate:
@@ -223,16 +251,13 @@ jobs:
             done
 
   integration:
-    executor: node_bun
+    executor: node_bun_services
     steps:
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
           job: integration
-      - setup_remote_docker
-      - run:
-          name: Start Redis and RabbitMQ containers
-          command: ci-cd/ensure-local-ci-services.sh
+      - wait_for_services
       - run:
           name: Install WebKit for browser-based integration tests
           command: |
@@ -245,13 +270,9 @@ jobs:
           command: |
             source "$BASH_ENV"
             bun run ci:integration
-      - run:
-          name: Stop local integration services
-          when: always
-          command: ci-cd/cleanup-local-ci-services.sh
 
   coverage:
-    executor: node_bun
+    executor: node_bun_services
     environment:
       AAA_REDIS_HOST: 127.0.0.1
       AAA_REDIS_PORT: "6379"
@@ -263,10 +284,7 @@ jobs:
       - resolve_pr_metadata
       - require_ci_job:
           job: coverage
-      - setup_remote_docker
-      - run:
-          name: Start Redis and RabbitMQ containers
-          command: ci-cd/ensure-local-ci-services.sh
+      - wait_for_services
       - run:
           name: Produce Jest coverage
           command: |
@@ -362,10 +380,6 @@ jobs:
       - run:
           name: Enforce SonarCloud reliability A
           command: SONAR_BRANCH="${CIRCLE_BRANCH:-}" bun run sonar:check-reliability
-      - run:
-          name: Stop local coverage services
-          when: always
-          command: ci-cd/cleanup-local-ci-services.sh
       - store_artifacts:
           path: coverage
           destination: coverage
@@ -415,13 +429,30 @@ jobs:
             bun run website:test:cypress
 
   database-matrix:
-    executor: node_bun
+    # JUM-875: the smoke matrix drives `docker compose` stacks and dials
+    # 127.0.0.1; that only works with a local Docker daemon, so this job runs
+    # on a machine VM instead of the Docker executor + remote docker.
+    machine:
+      image: ubuntu-2404:current
+    environment:
+      BUN_VERSION: 1.3.13
+      JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+      JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
     steps:
+      - run:
+          name: Ensure Node.js 22 on the machine image
+          command: |
+            if ! node --version 2>/dev/null | grep -q '^v22\.'; then
+              curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+            node --version
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
           job: database-matrix
-      - setup_remote_docker
       - run:
           name: Ensure Docker runtime
           command: ci-cd/ensure-docker-runtime.sh
