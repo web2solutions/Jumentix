@@ -389,6 +389,9 @@ if (fs.existsSync(circleciPath)) {
     /JUMENTIX_CI_FORCE_FULL/,
     /machine:\s*\n\s*image: ubuntu-2404/,
     /apt-get install -y xvfb/,
+    /circleci\/browser-tools@1\.5\.3/,
+    /browser-tools\/install-chrome/,
+    /browser-tools\/install-firefox/,
     /cron:\s*"17 3 \* \* \*"/
   ];
   for (const marker of requiredMarkers) {

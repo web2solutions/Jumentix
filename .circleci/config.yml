@@ -6,6 +6,9 @@ parameters:
     type: boolean
     default: false
 
+orbs:
+  browser-tools: circleci/browser-tools@1.5.3
+
 executors:
   node_bun:
     docker:
@@ -232,6 +235,8 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
+      - browser-tools/install-chrome
+      - browser-tools/install-firefox
       - run:
           name: Install Playwright WebKit
           command: |
@@ -303,6 +308,8 @@ jobs:
             bun run test:coverage
             mkdir -p coverage/jest
             cp coverage/coverage-final.json coverage/jest/coverage-final.json
+      - browser-tools/install-chrome
+      - browser-tools/install-firefox
       - run:
           name: Produce browser coverage for every supported engine
           no_output_timeout: 30m
@@ -434,6 +441,7 @@ jobs:
           command: |
             source "$BASH_ENV"
             bun run website:test:unit
+      - browser-tools/install-chrome
       - run:
           name: Install Cypress binary
           command: |
