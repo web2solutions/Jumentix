@@ -59,7 +59,11 @@ function validateRootReleaseScripts(rootPackageJson) {
     'changelog:check',
     'release:dry-run',
     'release:dry-run:packages',
-    'release:dry-run:apps'
+    'release:dry-run:apps',
+    'release:next-version',
+    'release:app-tag',
+    'release:github-release',
+    'release:publish-cohort'
   ];
   const failures = [];
 

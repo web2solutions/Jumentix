@@ -27,9 +27,15 @@ Internal workspace packages (`config-*`, `agent-registry`, `security-scanner`, a
 
 ## Version policy
 
-- Library packages use repository `bumpPackage` / conventional commits for semver.
+- Library packages version independently in each package's `package.json`.
+- Application / root locked version is bumped only by CircleCI on `main` via
+  `ci-cd/lib/next-version.js` + `ci-cd/create-app-release-tag.js` (not by local commit scripts).
+- After a successful `npm publish`, CI creates an annotated package tag
+  `@jumentix/<pkg>@<version>` so the published version maps to an exact commit.
+- A second dispatch of the same cohort skips any package whose package tag already exists
+  (re-publish guard) instead of failing at the registry with a generic error.
 - `@jumentix/cli-init` version tracks the factory template cohort it scaffolds; generated projects pin published `@jumentix/*` package versions rather than `workspace:*`.
-- Pre-releases use npm dist-tags (for example `0.1.0-rc.1`) and require the protected `npm-publish` environment secret.
+- Pre-releases use npm dist-tags (for example `0.1.0-rc.1`) and require the protected `secrets` environment.
 
 ## Release Gate
 
@@ -44,7 +50,7 @@ bun run release:dry-run:packages
 
 ## Publication
 
-Use the `Publish npm packages` GitHub Actions workflow from `main`. It is manual and uses the protected `secrets` environment. The workflow verifies `@jumentix` org access, runs the artifact gate, publishes Cana before its React and Vue integrations, then publishes contracts, runtime, SDK, and CLI packages in dependency order. It maps the GitHub secret `NPM_CI_CD` to `NODE_AUTH_TOKEN` for org check and `npm publish`, and grants `id-token: write` so npm provenance (root `.npmrc` `provenance=true`) can attest the GitHub Actions run.
+Use the `Publish npm packages` GitHub Actions workflow from `main`. It is manual and uses the protected `secrets` environment. The workflow verifies `@jumentix` org access, runs the artifact gate, then runs `bun run release:publish-cohort <cohort>` (`ci-cd/publish-npm-cohort.js`), which publishes in dependency order, skips already-tagged versions, and pushes package tags on success. It maps the GitHub secret `NPM_CI_CD` to `NODE_AUTH_TOKEN` for org check and `npm publish`, grants `id-token: write` so npm provenance (root `.npmrc` `provenance=true`) can attest the GitHub Actions run, and grants `contents: write` so package tags can be pushed.
 
 Configure the `secrets` environment with required reviewers before the first release. Never print, commit, or store the token in a project file.
 
@@ -56,6 +62,6 @@ npx @jumentix/cli-init init
 
 ## Verification and Rollback
 
-After an approved release, verify the npm package pages (`npm view @jumentix/<package>`), install the published versions with Bun and npm in clean consumer projects, and inspect their provenance metadata. npm versions are immutable; roll forward with a patched version and deprecate a defective version rather than attempting to replace it.
+After an approved release, verify the npm package pages (`npm view @jumentix/<package>`), the package tags (`git ls-remote --tags origin '@jumentix/*'`), install the published versions with Bun and npm in clean consumer projects, and inspect their provenance metadata. npm versions are immutable; roll forward with a patched version and deprecate a defective version rather than attempting to replace it.
 
 If `NPM_TOKEN` / `NPM_CI_CD` is unavailable in the operator environment, land publishability and dry-run evidence only — do not claim a live registry publish.

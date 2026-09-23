@@ -108,7 +108,7 @@ bun run <command>
 | `pm2:start:prod:restapi` | Manage PM2 runtime processes. | `bun run pm2:start:prod:restapi` | `pm2 start ./pm2/ecosystem.production.config.cjs --only jumentix-prod-service-management,jumentix-prod-restapi --update-env` |
 | `pm2:start:prod:websocket-rest` | Manage PM2 runtime processes. | `bun run pm2:start:prod:websocket-rest` | `pm2 start ./pm2/ecosystem.production.config.cjs --only jumentix-prod-service-management,jumentix-prod-restapi,jumentix-prod-websocketapi --update-env` |
 | `pm2:start:prod:grpc-rest` | Manage PM2 runtime processes. | `bun run pm2:start:prod:grpc-rest` | `pm2 start ./pm2/ecosystem.production.config.cjs --only jumentix-prod-service-management,jumentix-prod-restapi,jumentix-prod-grpcapi --update-env` |
-| `commit` | Use when you need this specific workspace operation. | `bun run commit` | `bun run lint && bun run test && bun ci-cd/bumpPackage.ts && git add . && git-cz` |
+| `commit` | Use when you need this specific workspace operation. | `bun run commit` | `bun run lint && bun run test && git add . && git-cz` |
 | `lint` | Run lint checks before commit/PR. | `bun run lint` | `eslint . --ext .ts` |
 | `lint:fix` | Use when you need this specific workspace operation. | `bun run lint:fix` | `eslint . --ext .ts --fix` |
 | `build:dev` | Use when you need this specific workspace operation. | `bun run build:dev` | `NODE_ENV=dev tsc -p tsconfig.build.json` |
