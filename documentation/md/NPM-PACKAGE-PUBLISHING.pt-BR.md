@@ -31,9 +31,15 @@ Pacotes internos do workspace (`config-*`, `agent-registry`, `security-scanner` 
 
 ## Politica de versao
 
-- Pacotes de biblioteca usam `bumpPackage` / conventional commits do repositorio para semver.
+- Pacotes de biblioteca versionam de forma independente em cada `package.json`.
+- A versao bloqueada de aplicacao / root so sobe no CircleCI em `main` via
+  `ci-cd/lib/next-version.js` + `ci-cd/create-app-release-tag.js` (nao por scripts locais de commit).
+- Apos um `npm publish` bem-sucedido, a CI cria uma tag anotada de pacote
+  `@jumentix/<pkg>@<version>` para mapear a versao publicada a um commit exato.
+- Um segundo dispatch do mesmo cohort ignora qualquer pacote cuja tag de pacote ja exista
+  (guard de re-publish) em vez de falhar no registry com erro generico.
 - A versao de `@jumentix/cli-init` acompanha o cohort de templates da fabrica que ela gera; projetos gerados fixam versoes publicadas de `@jumentix/*` em vez de `workspace:*`.
-- Pre-releases usam dist-tags npm (por exemplo `0.1.0-rc.1`) e exigem o segredo do ambiente protegido `npm-publish`.
+- Pre-releases usam dist-tags npm (por exemplo `0.1.0-rc.1`) e exigem o ambiente protegido `secrets`.
 
 ## Gate de Release
 
@@ -48,7 +54,7 @@ bun run release:dry-run:packages
 
 ## Publicacao
 
-Use o workflow `Publish npm packages` do GitHub Actions a partir de `main`. Ele e manual e usa o ambiente protegido `secrets`. O workflow verifica o acesso a org `@jumentix`, executa o gate de artefatos, publica Cana antes das integracoes React e Vue, depois publica contratos, runtime, SDKs e a CLI em ordem de dependencia. Ele mapeia o segredo GitHub `NPM_CI_CD` para `NODE_AUTH_TOKEN` no check de org e no `npm publish`, e concede `id-token: write` para que a proveniencia npm (`.npmrc` raiz com `provenance=true`) possa atestar a execucao do GitHub Actions.
+Use o workflow `Publish npm packages` do GitHub Actions a partir de `main`. Ele e manual e usa o ambiente protegido `secrets`. O workflow verifica o acesso a org `@jumentix`, executa o gate de artefatos e depois roda `bun run release:publish-cohort <cohort>` (`ci-cd/publish-npm-cohort.js`), que publica em ordem de dependencia, ignora versoes ja tagueadas e faz push das tags de pacote no sucesso. Ele mapeia o segredo GitHub `NPM_CI_CD` para `NODE_AUTH_TOKEN` no check de org e no `npm publish`, concede `id-token: write` para proveniencia npm (`.npmrc` raiz com `provenance=true`) e concede `contents: write` para push das tags de pacote.
 
 Configure o ambiente `secrets` com revisores obrigatorios antes do primeiro release. Nunca imprima, versione ou armazene o token em um arquivo do projeto.
 
@@ -60,6 +66,6 @@ npx @jumentix/cli-init init
 
 ## Verificacao e Rollback
 
-Depois de um release aprovado, verifique as paginas dos pacotes npm (`npm view @jumentix/<package>`), instale as versoes publicadas com Bun e npm em projetos consumidores limpos e inspecione os metadados de proveniencia. Versoes npm sao imutaveis; avance com uma versao corrigida e descontinue uma versao defeituosa em vez de tentar substitui-la.
+Depois de um release aprovado, verifique as paginas dos pacotes npm (`npm view @jumentix/<package>`), as tags de pacote (`git ls-remote --tags origin '@jumentix/*'`), instale as versoes publicadas com Bun e npm em projetos consumidores limpos e inspecione os metadados de proveniencia. Versoes npm sao imutaveis; avance com uma versao corrigida e descontinue uma versao defeituosa em vez de tentar substitui-la.
 
 Se `NPM_TOKEN` / `NPM_CI_CD` estiver indisponivel no ambiente do operador, entregue apenas publicabilidade e evidencia de dry-run — nao declare uma publicacao real no registry.
