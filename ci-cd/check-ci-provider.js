@@ -360,6 +360,8 @@ if (fs.existsSync(circleciPath)) {
     /classify-ci-context\.js/,
     /circleci-agent step halt/,
     /const shellQuote = \(value\) =>/,
+    /Install Python virtualenv support/,
+    /sudo apt-get install -y python3-venv/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
     /--slug web2solutions\/Jumentix/,
     /verify-codecov-public-reports\.js/,

@@ -181,6 +181,16 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('const shellQuote');
   });
 
+  it('fails when CircleCI third-party review lacks Python virtualenv support', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('sudo apt-get install -y python3-venv', 'true'));
+    });
+    expect(run(directory).output).toContain('python3-venv');
+  });
+
   it('fails when patch coverage enforcement is removed', () => {
     expect.hasAssertions();
 

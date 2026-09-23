@@ -143,6 +143,11 @@ jobs:
       - require_ci_job:
           job: third-party-review
       - run:
+          name: Install Python virtualenv support
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3-venv
+      - run:
           name: Install pinned review tools
           command: ci-cd/install-pinned-review-tools.sh "$HOME/review-tools"
       - run:
