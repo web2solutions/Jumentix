@@ -48,9 +48,9 @@ bun run release:dry-run:packages
 
 ## Publicacao
 
-Use o workflow `Publish npm packages` do GitHub Actions a partir de `main`. Ele e manual e usa o ambiente protegido `npm-publish`. O workflow executa o gate de artefatos, publica Cana antes das integracoes React e Vue, depois publica contratos, runtime, SDKs e a CLI em ordem de dependencia, e mapeia o segredo GitHub `NPM_CI_CD` para `NODE_AUTH_TOKEN` somente no `npm publish`.
+Use o workflow `Publish npm packages` do GitHub Actions a partir de `main`. Ele e manual e usa o ambiente protegido `secrets`. O workflow verifica o acesso a org `@jumentix`, executa o gate de artefatos, publica Cana antes das integracoes React e Vue, depois publica contratos, runtime, SDKs e a CLI em ordem de dependencia. Ele mapeia o segredo GitHub `NPM_CI_CD` para `NODE_AUTH_TOKEN` no check de org e no `npm publish`, e concede `id-token: write` para que a proveniencia npm (`.npmrc` raiz com `provenance=true`) possa atestar a execucao do GitHub Actions.
 
-Configure o ambiente `npm-publish` com revisores obrigatorios antes do primeiro release. Nunca imprima, versione ou armazene o token em um arquivo do projeto.
+Configure o ambiente `secrets` com revisores obrigatorios antes do primeiro release. Nunca imprima, versione ou armazene o token em um arquivo do projeto.
 
 Instale a CLI apos uma publicacao bem-sucedida:
 

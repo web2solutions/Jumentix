@@ -106,6 +106,7 @@ describe('public npm package release policy', () => {
       artifactGate: workflow.includes('bun run npm:packages:check'),
       tokenMapping: /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_CI_CD \}\}/.test(workflow),
       tokenEcho: /echo\s+.*NPM_CI_CD/.test(workflow),
+      provenanceIdToken: /id-token:\s*write/.test(workflow),
       publishesCli: workflow.includes('publish cli-init'),
       publishesRuntime: workflow.includes('publish persistence-contracts'),
       publishesSdks: workflow.includes('publish sdk-rest-client')
@@ -116,6 +117,7 @@ describe('public npm package release policy', () => {
       artifactGate: true,
       tokenMapping: true,
       tokenEcho: false,
+      provenanceIdToken: true,
       publishesCli: true,
       publishesRuntime: true,
       publishesSdks: true
