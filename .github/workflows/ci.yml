@@ -509,10 +509,14 @@ jobs:
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
             bun run coverage:merge
-            if [ "${GITHUB_BASE_REF}" = "main" ] && { [ "${GITHUB_HEAD_REF}" = "dev" ] || [[ "${GITHUB_HEAD_REF}" =~ ^chore/changelog-sync-[0-9a-f]{8}$ ]] || [[ "${GITHUB_HEAD_REF}" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
-              # A release promotion has no new patch beyond protected dev. Codecov's
-              # project comparison remains the required gate against main.
+            if [ "${GITHUB_BASE_REF}" = "main" ] && [ "${GITHUB_HEAD_REF}" = "dev" ]; then
+              # A dev-to-main promotion has no new patch beyond protected dev.
+              # Codecov's project comparison remains the required gate against main.
               JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch
+            elif [ "${GITHUB_BASE_REF}" = "main" ] && { [[ "${GITHUB_HEAD_REF}" =~ ^chore/changelog-sync-[0-9a-f]{8}$ ]] || [[ "${GITHUB_HEAD_REF}" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
+              # Generated changelog and signed reconciliation PRs are cut from main;
+              # their patch is only the reconciliation itself, never all of dev.
+              JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch
             else
               bun run coverage:patch
             fi
