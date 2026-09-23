@@ -44,9 +44,9 @@ bun run release:dry-run:packages
 
 ## Publication
 
-Use the `Publish npm packages` GitHub Actions workflow from `main`. It is manual and uses the protected `npm-publish` environment. The workflow runs the artifact gate, publishes Cana before its React and Vue integrations, then publishes contracts, runtime, SDK, and CLI packages in dependency order, and maps the GitHub secret `NPM_CI_CD` to `NODE_AUTH_TOKEN` only for `npm publish`.
+Use the `Publish npm packages` GitHub Actions workflow from `main`. It is manual and uses the protected `secrets` environment. The workflow verifies `@jumentix` org access, runs the artifact gate, publishes Cana before its React and Vue integrations, then publishes contracts, runtime, SDK, and CLI packages in dependency order. It maps the GitHub secret `NPM_CI_CD` to `NODE_AUTH_TOKEN` for org check and `npm publish`, and grants `id-token: write` so npm provenance (root `.npmrc` `provenance=true`) can attest the GitHub Actions run.
 
-Configure the `npm-publish` environment with required reviewers before the first release. Never print, commit, or store the token in a project file.
+Configure the `secrets` environment with required reviewers before the first release. Never print, commit, or store the token in a project file.
 
 Install the CLI after a successful publish:
 
