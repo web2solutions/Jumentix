@@ -157,6 +157,19 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('coverage:patch');
   });
 
+  it('fails when generated changelog PRs skip required main-release jobs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(/startsWith\(github\.head_ref, 'chore\/changelog-sync-'\) \|\|\n/g, '')
+      );
+    });
+    expect(run(directory).output).toContain('chore\\/changelog-sync-');
+  });
+
   it('fails when release patch coverage no longer uses the protected dev baseline', () => {
     expect.hasAssertions();
 
@@ -166,6 +179,23 @@ describe('check-ci-provider', () => {
         file,
         fs.readFileSync(file, 'utf8').replace(
           'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch',
+          'bun run coverage:patch'
+        )
+      );
+    });
+    const { output } = run(directory);
+    expect(output).toContain('JUMENTIX_PATCH_BASE_REF=origin');
+    expect(output).toContain('coverage:patch');
+  });
+
+  it('fails when signed reconciliation patch coverage no longer uses the main baseline', () => {
+    expect.hasAssertions();
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          'JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch',
           'bun run coverage:patch'
         )
       );
