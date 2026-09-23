@@ -353,6 +353,8 @@ if (fs.existsSync(circleciPath)) {
     /third-party-review:/,
     /workspace-builds:/,
     /workspace-tests:/,
+    /Install Cypress virtual display/,
+    /sudo apt-get install -y xvfb/,
     /integration:/,
     /coverage:/,
     /website:/,
@@ -383,6 +385,26 @@ if (fs.existsSync(circleciPath)) {
 
   if (!/node_bun_services:[\s\S]*redis:7\.2-alpine[\s\S]*rabbitmq:3\.13-alpine/.test(contents)) {
     failures.push('CircleCI must provide Redis and RabbitMQ as executor services for localhost jobs');
+  }
+
+  if (!/machine_bun:[\s\S]*machine:[\s\S]*image:\s*ubuntu-2204:2026\.05\.1/.test(contents)) {
+    failures.push('CircleCI database smoke matrix must use the pinned local-Docker machine executor');
+  }
+
+  const workspaceTestsBlock = contents.match(/\n  workspace-tests:\n[\s\S]*?(?=\n  [a-z-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/Install Cypress virtual display/.test(workspaceTestsBlock) || !/sudo apt-get install -y xvfb/.test(workspaceTestsBlock)) {
+    failures.push('CircleCI workspace tests must install Xvfb for Cypress');
+  }
+
+  const databaseMatrixBlock = contents.match(/\n  database-matrix:\n[\s\S]*?(?=\n  [a-z-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/executor:\s*machine_bun/.test(databaseMatrixBlock)) {
+    failures.push('CircleCI database smoke matrix must run with a local Docker daemon');
+  }
+  if (!/ci-cd\/ensure-docker-runtime\.sh/.test(databaseMatrixBlock)) {
+    failures.push('CircleCI database smoke matrix must verify its local Docker runtime');
+  }
+  if (/setup_remote_docker/.test(databaseMatrixBlock)) {
+    failures.push('CircleCI database smoke matrix must not use remote Docker with localhost smoke tests');
   }
 
   for (const job of ['integration', 'coverage']) {

@@ -191,6 +191,26 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('python3-venv');
   });
 
+  it('fails when CircleCI workspace tests omit Cypress Xvfb support', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('sudo apt-get install -y xvfb', 'true'));
+    });
+    expect(run(directory).output).toContain('must install Xvfb for Cypress');
+  });
+
+  it('fails when CircleCI database smoke tests do not use a local Docker executor', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('executor: machine_bun', 'executor: node_bun'));
+    });
+    expect(run(directory).output).toContain('must run with a local Docker daemon');
+  });
+
   it('fails when patch coverage enforcement is removed', () => {
     expect.hasAssertions();
 

@@ -21,6 +21,15 @@ executors:
       JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
       JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
+  machine_bun:
+    machine:
+      image: ubuntu-2204:2026.05.1
+    environment:
+      BUN_VERSION: 1.3.13
+      JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+      JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
 
 commands:
   prepare_checkout:
@@ -200,6 +209,11 @@ jobs:
       - resolve_pr_metadata
       - require_ci_job:
           job: workspace-tests
+      - run:
+          name: Install Cypress virtual display
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y xvfb
       - run:
           name: Run workspace package tests
           no_output_timeout: 30m
@@ -401,13 +415,12 @@ jobs:
             bun run website:test:cypress
 
   database-matrix:
-    executor: node_bun
+    executor: machine_bun
     steps:
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
           job: database-matrix
-      - setup_remote_docker
       - run:
           name: Ensure Docker runtime
           command: ci-cd/ensure-docker-runtime.sh
