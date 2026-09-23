@@ -170,7 +170,7 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('chore\\/changelog-sync-');
   });
 
-  it('fails when release patch coverage no longer uses the protected dev baseline', () => {
+  it('fails when dev-to-main patch coverage no longer uses the protected dev baseline', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
@@ -188,8 +188,9 @@ describe('check-ci-provider', () => {
     expect(output).toContain('coverage:patch');
   });
 
-  it('fails when signed reconciliation patch coverage no longer uses the main baseline', () => {
+  it('fails when changelog and signed reconciliation patch coverage no longer use the main baseline', () => {
     expect.hasAssertions();
+
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
@@ -200,9 +201,9 @@ describe('check-ci-provider', () => {
         )
       );
     });
+
     const { output } = run(directory);
-    expect(output).toContain('JUMENTIX_PATCH_BASE_REF=origin');
-    expect(output).toContain('coverage:patch');
+    expect(output).toContain('JUMENTIX_PATCH_BASE_REF=origin\\/main bun run coverage:patch');
   });
 
   it('fails when an essential GitHub Actions job is absent', () => {
