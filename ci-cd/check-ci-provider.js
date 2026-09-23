@@ -392,6 +392,9 @@ if (fs.existsSync(circleciPath)) {
     /circleci\/browser-tools@1\.5\.3/,
     /browser-tools\/install-chrome/,
     /browser-tools\/install-firefox/,
+    /install_browser_deps/,
+    /resource_class:\s*large/,
+    /--max-old-space-size=6144/,
     /cron:\s*"17 3 \* \* \*"/
   ];
   for (const marker of requiredMarkers) {
@@ -419,6 +422,11 @@ if (fs.existsSync(circleciPath)) {
     failures.push(
       'CircleCI jobs must not use setup_remote_docker: published ports are unreachable from the job container (JUM-875). Use secondary service containers or the machine executor.'
     );
+  }
+
+  const databaseMatrixBlock = contents.match(/\n  database-matrix:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/Build workspace package dependencies[\s\S]*bun run mono:build/.test(databaseMatrixBlock)) {
+    failures.push('CircleCI database-matrix must build workspace package dependencies before running isolated smoke tests');
   }
 
   if (!fs.existsSync(serviceWaitPath)) {

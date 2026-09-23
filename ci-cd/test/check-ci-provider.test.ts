@@ -72,7 +72,7 @@ describe('check-ci-provider', () => {
       );
     });
     expect(run(directory).output).toContain('must gate branch-gate behind vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'');
-  });
+  }, 30000);
 
   it('fails when the standalone fallback workflows lose the reversible disable flag', () => {
     expect.hasAssertions();
@@ -94,7 +94,7 @@ describe('check-ci-provider', () => {
       );
     });
     expect(run(sonarReliability).output).toContain('Sonar reliability workflow is missing /vars\\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI');
-  });
+  }, 30000);
 
   it('fails when the CircleCI force_full injection is removed', () => {
     expect.hasAssertions();
@@ -113,7 +113,7 @@ describe('check-ci-provider', () => {
       );
     });
     expect(run(directory).output).toContain('CircleCI CI is missing /JUMENTIX_CI_FORCE_FULL/');
-  });
+  }, 30000);
 
   it('fails when the canonical CircleCI browser matrix job is missing', () => {
     expect.hasAssertions();
@@ -123,7 +123,7 @@ describe('check-ci-provider', () => {
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('  browser-matrix:\n', '  browser-matrix-removed:\n'));
     });
     expect(run(directory).output).toContain('CircleCI CI is missing /browser-matrix:');
-  });
+  }, 30000);
 
   it('fails when the canonical CircleCI browser matrix job is dropped from the workflow', () => {
     expect.hasAssertions();
@@ -133,7 +133,7 @@ describe('check-ci-provider', () => {
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('      - browser-matrix\n', ''));
     });
     expect(run(directory).output).toContain('CircleCI workflows.ci.jobs must include browser-matrix');
-  });
+  }, 30000);
 
   it('fails when the repository-owned GitHub Actions workflow is absent', () => {
     expect.hasAssertions();

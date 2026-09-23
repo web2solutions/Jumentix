@@ -121,6 +121,17 @@ commands:
               exit 0
             fi
             exit "$status"
+  # cimg/node ships no display server or browser libraries (proven by
+  # pipelines 122/128/130); every job that runs Cypress needs these.
+  install_browser_deps:
+    steps:
+      - run:
+          name: Install headless browser system dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
+      - browser-tools/install-chrome
+      - browser-tools/install-firefox
 
 jobs:
   branch-gate:
@@ -213,6 +224,7 @@ jobs:
       - resolve_pr_metadata
       - require_ci_job:
           job: workspace-tests
+      - install_browser_deps
       - run:
           name: Run workspace package tests
           no_output_timeout: 30m
@@ -230,13 +242,7 @@ jobs:
       - resolve_pr_metadata
       - require_ci_job:
           job: browser-matrix
-      - run:
-          name: Install headless browser system dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
-      - browser-tools/install-chrome
-      - browser-tools/install-firefox
+      - install_browser_deps
       - run:
           name: Install Playwright WebKit
           command: |
@@ -287,7 +293,11 @@ jobs:
 
   coverage:
     executor: node_bun_services
+    # test:coverage OOMs the default 2 GiB heap on the medium container
+    # (proven by pipeline 132 job 329); large gives the runner 8 GiB.
+    resource_class: large
     environment:
+      NODE_OPTIONS: --max-old-space-size=6144
       AAA_REDIS_HOST: 127.0.0.1
       AAA_REDIS_PORT: "6379"
       AAA_BULLMQ_REDIS_HOST: 127.0.0.1
@@ -308,15 +318,12 @@ jobs:
             bun run test:coverage
             mkdir -p coverage/jest
             cp coverage/coverage-final.json coverage/jest/coverage-final.json
-      - browser-tools/install-chrome
-      - browser-tools/install-firefox
+      - install_browser_deps
       - run:
           name: Produce browser coverage for every supported engine
           no_output_timeout: 30m
           command: |
             source "$BASH_ENV"
-            sudo apt-get update
-            sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
             bun x cypress install
             bun x cypress verify
             for engine in chrome firefox webkit; do
@@ -441,13 +448,11 @@ jobs:
           command: |
             source "$BASH_ENV"
             bun run website:test:unit
-      - browser-tools/install-chrome
+      - install_browser_deps
       - run:
           name: Install Cypress binary
           command: |
             source "$BASH_ENV"
-            sudo apt-get update
-            sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
             bun x cypress install
       - run:
           name: Cypress website quality gates
@@ -483,6 +488,12 @@ jobs:
       - run:
           name: Ensure Docker runtime
           command: ci-cd/ensure-docker-runtime.sh
+      - run:
+          name: Build workspace package dependencies
+          no_output_timeout: 30m
+          command: |
+            source "$BASH_ENV"
+            bun run mono:build
       - run:
           name: Database driver smoke matrix against real containers
           no_output_timeout: 45m
