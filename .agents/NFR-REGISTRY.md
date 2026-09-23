@@ -158,11 +158,15 @@ This file consolidates non-functional requirements already requested and stored 
   ratchets: a declared package that has since grown a suite fails too, so the list cannot
   become a permanent exemption. The same list is the Sonar coverage exclusion set, and the two
   disagreeing in either direction fails. `packages:check-suites` validates it.
-- `113` Public open-source CI uses GitHub Actions as the canonical orchestrator and
-  CircleCI as a secondary mirror. Task delivery to `dev` uses cheap layer-aware gates;
-  release promotion to `main` runs full
+- `113` Public open-source CI uses CircleCI as the canonical orchestrator for the
+  full matrix; GitHub Actions is retained, disabled by default behind the single
+  reversible `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` repository variable, with three
+  always-on exceptions (`pr-feedback.yml`, the `ci.yml` `sync-changelog` and
+  `pr-feedback` jobs, `npm-publish.yml`). Task delivery to `dev` uses cheap
+  layer-aware gates; release promotion to `main` runs full
   coverage, Codecov publishing, Sonar defense-in-depth, website, integration,
-  workspace and database checks.
+  workspace and database checks. SonarQube Cloud and Codecov run on CircleCI
+  without interruption.
 - `114` Agent onboard uses an operator-confirmed filesystem root (this host:
   `/Users/eduardoalmeida/apps/XpertMinds`) and the layout
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.

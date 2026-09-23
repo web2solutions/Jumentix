@@ -9,7 +9,7 @@ delivery checklist.
 | --- | --- | --- | --- |
 | Internal Node/pnpm workflow | Requirements `001`, `012`, `048`; Bun baseline research | Requirement `096`, `bun.lock`, `.bun-version`, package scripts | Bun `1.3.13` is pinned; `bun.lock` is committed; pnpm lockfiles are absent. Node 22 remains only for declared compatibility and tool boundaries. |
 | GitHub Project and local TODO tracking | Requirements `056`, `064`; `.agents/project-todos.md` | Requirement `095` and Linear | Linear owns planning, delivery status, estimation, and PR traceability. |
-| Hosted CI bridge | Requirements `014`, `107` | Requirement `113`, `.github/workflows/ci.yml`, `.circleci/config.yml` | GitHub Actions is canonical; CircleCI is the secondary public mirror; repository-owned coverage gates remain authoritative. |
+| Hosted CI bridge | Requirements `014`, `107` | Requirement `113`, `.circleci/config.yml`, `.github/workflows/ci.yml` | CircleCI is canonical; GitHub Actions is retained, disabled by default behind the `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` repository variable; repository-owned coverage gates remain authoritative. |
 | Repository migration and Wave 5 cutover | Requirement `103`, `123`; migration plans, inventories, and Wave 5 snapshots | Requirement `124`, current `apps/*` and `packages/*` layout, `documentation/md/CANONICAL-REPOSITORY-MIGRATION.md` | `web2solutions/Jumentix` is canonical and the monorepo layout is implemented. Legacy repository links are historical evidence only. |
 
 The removed files remain recoverable from Git history. Generated changelog

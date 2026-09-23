@@ -14,6 +14,10 @@ jobs:
     name: sonar-reliability
     permissions:
       contents: read
+    # JUM-876 / Req 113: CircleCI's coverage job owns SonarCloud reliability
+    # canonically (sonar:check-reliability). Retained but disabled by default;
+    # re-enable with the repository variable JUMENTIX_ENABLE_GITHUB_ACTIONS_CI=true.
+    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout PR merge result

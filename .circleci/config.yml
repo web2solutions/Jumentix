@@ -1,5 +1,11 @@
 version: 2.1
 
+# force_full=true (API trigger) maps to the scheduled-full context (Req 113 manual full runs).
+parameters:
+  force_full:
+    type: boolean
+    default: false
+
 executors:
   node_bun:
     docker:
@@ -97,6 +103,10 @@ commands:
           name: Classify CI context for << parameters.job >>
           command: |
             source "$BASH_ENV"
+            if [ "<< pipeline.parameters.force_full >>" = "true" ]; then
+              echo 'export JUMENTIX_CI_FORCE_FULL=1' >> "$BASH_ENV"
+              export JUMENTIX_CI_FORCE_FULL=1
+            fi
             set +e
             node ci-cd/classify-ci-context.js \
               --result-file artifacts/ci/ci-context.json \
@@ -210,6 +220,39 @@ jobs:
           path: artifacts/ci
           destination: workspace-tests
 
+  browser-matrix:
+    executor: node_bun
+    steps:
+      - prepare_checkout
+      - resolve_pr_metadata
+      - require_ci_job:
+          job: browser-matrix
+      - run:
+          name: Install Xvfb for headless Cypress
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+      - run:
+          name: Install Cypress binary
+          command: |
+            source "$BASH_ENV"
+            bun x cypress install
+            bun x cypress verify
+      - run:
+          name: Install Playwright WebKit
+          command: |
+            source "$BASH_ENV"
+            bun x playwright install webkit
+            bun x playwright install-deps webkit
+      - run:
+          name: Run Cana browser matrix
+          no_output_timeout: 30m
+          command: |
+            source "$BASH_ENV"
+            for engine in chrome firefox webkit; do
+              bun packages/cana/scripts/run-browser-tests.js --browser "$engine"
+            done
+
   integration:
     executor: node_bun_services
     steps:
@@ -265,6 +308,8 @@ jobs:
           no_output_timeout: 30m
           command: |
             source "$BASH_ENV"
+            sudo apt-get update
+            sudo apt-get install -y xvfb
             bun x cypress install
             bun x cypress verify
             for engine in chrome firefox webkit; do
@@ -393,6 +438,8 @@ jobs:
           name: Install Cypress binary
           command: |
             source "$BASH_ENV"
+            sudo apt-get update
+            sudo apt-get install -y xvfb
             bun x cypress install
       - run:
           name: Cypress website quality gates
@@ -401,13 +448,30 @@ jobs:
             bun run website:test:cypress
 
   database-matrix:
-    executor: node_bun
+    # JUM-875: the smoke matrix drives `docker compose` stacks and dials
+    # 127.0.0.1; that only works with a local Docker daemon, so this job runs
+    # on a machine VM instead of the Docker executor + remote docker.
+    machine:
+      image: ubuntu-2404:current
+    environment:
+      BUN_VERSION: 1.3.13
+      JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json
+      JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration
+      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
     steps:
+      - run:
+          name: Ensure Node.js 22 on the machine image
+          command: |
+            if ! node --version 2>/dev/null | grep -q '^v22\.'; then
+              curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+            node --version
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:
           job: database-matrix
-      - setup_remote_docker
       - run:
           name: Ensure Docker runtime
           command: ci-cd/ensure-docker-runtime.sh
@@ -447,6 +511,29 @@ workflows:
     jobs:
       - branch-gate
       - third-party-review
+      - browser-matrix
+      - workspace-builds
+      - workspace-tests
+      - integration
+      - coverage
+      - website
+      - database-matrix
+  # JUM-874: a workflow with a schedule trigger runs ONLY on the schedule, so
+  # the nightly full matrix lives in its own workflow and `ci` keeps running on
+  # every push/PR. The context classifier maps this to scheduled-full.
+  nightly:
+    triggers:
+      - schedule:
+          cron: "17 3 * * *"
+          filters:
+            branches:
+              only:
+                - main
+                - dev
+    jobs:
+      - branch-gate
+      - third-party-review
+      - browser-matrix
       - workspace-builds
       - workspace-tests
       - integration
