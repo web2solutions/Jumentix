@@ -348,6 +348,12 @@ jobs:
             source "$BASH_ENV"
             bun run coverage:check
       - run:
+          name: Build workspace package dependencies for frontend coverage
+          no_output_timeout: 30m
+          command: |
+            source "$BASH_ENV"
+            bun run mono:build
+      - run:
           name: Produce frontend coverage for the patch report
           command: |
             source "$BASH_ENV"

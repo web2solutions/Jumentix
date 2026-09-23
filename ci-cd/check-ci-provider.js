@@ -429,6 +429,11 @@ if (fs.existsSync(circleciPath)) {
     failures.push('CircleCI database-matrix must build workspace package dependencies before running isolated smoke tests');
   }
 
+  const circleCoverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(circleCoverageBlock)) {
+    failures.push('CircleCI coverage must build workspace package dependencies before frontend patch coverage');
+  }
+
   if (!fs.existsSync(serviceWaitPath)) {
     failures.push('CircleCI service readiness helper is missing: ci-cd/wait-for-ci-services.sh');
   } else if (!/nc -z/.test(fs.readFileSync(serviceWaitPath, 'utf8'))) {
