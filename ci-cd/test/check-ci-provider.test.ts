@@ -168,6 +168,19 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('must not expose remote-Docker services through localhost');
   });
 
+  it('fails when CircleCI writes untrusted PR metadata to BASH_ENV with JSON quoting', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('const shellQuote =', 'const quote =').replace(/shellQuote\(/g, 'quote(')
+      );
+    });
+    expect(run(directory).output).toContain('const shellQuote');
+  });
+
   it('fails when patch coverage enforcement is removed', () => {
     expect.hasAssertions();
 

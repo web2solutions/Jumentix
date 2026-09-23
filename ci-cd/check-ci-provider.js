@@ -359,6 +359,7 @@ if (fs.existsSync(circleciPath)) {
     /database-matrix:/,
     /classify-ci-context\.js/,
     /circleci-agent step halt/,
+    /const shellQuote = \(value\) =>/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
     /--slug web2solutions\/Jumentix/,
     /verify-codecov-public-reports\.js/,
@@ -367,6 +368,9 @@ if (fs.existsSync(circleciPath)) {
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
+  }
+  if (/const quote = \(value\) => JSON\.stringify/.test(contents)) {
+    failures.push('CircleCI PR metadata must shell-quote values before writing BASH_ENV');
   }
 
   if (!fs.existsSync(serviceWaitPath)) {

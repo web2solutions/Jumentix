@@ -75,18 +75,18 @@ commands:
               throw new Error(`failed to resolve PR metadata: ${response.status} ${response.statusText}`);
             }
             const pr = await response.json();
-            const quote = (value) => JSON.stringify(String(value || ''));
+            const shellQuote = (value) => `'${String(value || '').replace(/'/g, "'\\''")}'`;
             console.log('export AAA_CI_IS_PULL_REQUEST=1');
             console.log('export JUMENTIX_CI_IS_PULL_REQUEST=1');
-            console.log(`export JUMENTIX_PR_BASE_REF=${quote(pr.base?.ref)}`);
-            console.log(`export AAA_PR_BASE_REF=${quote(pr.base?.ref)}`);
-            console.log(`export JUMENTIX_QUALITY_GATE_TARGET=${quote(pr.base?.ref)}`);
-            console.log(`export JUMENTIX_PR_HEAD_REF=${quote(pr.head?.ref)}`);
-            console.log(`export AAA_PR_HEAD_REF=${quote(pr.head?.ref)}`);
-            console.log(`export JUMENTIX_PR_TITLE=${quote(pr.title)}`);
-            console.log(`export AAA_PR_TITLE=${quote(pr.title)}`);
-            console.log(`export JUMENTIX_PR_BODY=${quote(pr.body)}`);
-            console.log(`export AAA_PR_BODY=${quote(pr.body)}`);
+            console.log(`export JUMENTIX_PR_BASE_REF=${shellQuote(pr.base?.ref)}`);
+            console.log(`export AAA_PR_BASE_REF=${shellQuote(pr.base?.ref)}`);
+            console.log(`export JUMENTIX_QUALITY_GATE_TARGET=${shellQuote(pr.base?.ref)}`);
+            console.log(`export JUMENTIX_PR_HEAD_REF=${shellQuote(pr.head?.ref)}`);
+            console.log(`export AAA_PR_HEAD_REF=${shellQuote(pr.head?.ref)}`);
+            console.log(`export JUMENTIX_PR_TITLE=${shellQuote(pr.title)}`);
+            console.log(`export AAA_PR_TITLE=${shellQuote(pr.title)}`);
+            console.log(`export JUMENTIX_PR_BODY=${shellQuote(pr.body)}`);
+            console.log(`export AAA_PR_BODY=${shellQuote(pr.body)}`);
             NODE
   require_ci_job:
     parameters:
