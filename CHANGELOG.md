@@ -4,6 +4,7 @@
 
 ## All Changes
 
+- 2026-09-23 [JUM-882][Release] Promote tag-driven release epic to main - Eduardo A.
 - 2026-09-23 [JUM-890][Release] Verify automated changelog commit signing (#446) - Eduardo A.
 - 2026-09-23 [JUM-890][Chore] Merge main into dev (#451) - Eduardo A.
 - 2026-09-23 chore: merge main into dev - Eduardo Almeida
