@@ -136,6 +136,12 @@ commands:
 jobs:
   branch-gate:
     executor: node_bun
+    # In release/main/scheduled contexts this job runs ci:gate:strict (the full
+    # matrix); the medium container OOMs there, so mirror the coverage job's
+    # larger shape (pipeline 134 job 367).
+    resource_class: large
+    environment:
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - prepare_checkout
       - resolve_pr_metadata
