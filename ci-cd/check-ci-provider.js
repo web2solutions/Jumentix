@@ -380,10 +380,17 @@ if (fs.existsSync(circleciPath)) {
     /image: redis:7\.2-alpine/,
     /image: rabbitmq:3\.13-alpine/,
     /machine:\s*\n\s*image: ubuntu-2404/,
-    /Wait for Redis and RabbitMQ service containers/
+    /Wait for Redis and RabbitMQ service containers/,
+    /replace\(\/'\/g, "'\\\\''"\)/
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
+  }
+
+  if (/JSON\.stringify\(String\(value/.test(contents)) {
+    failures.push(
+      'CircleCI resolve_pr_metadata must shell-quote PR metadata with single quotes; JSON quoting lets PR body backticks/$() execute in $BASH_ENV (JUM-876)'
+    );
   }
 
   if (/setup_remote_docker/.test(contents)) {

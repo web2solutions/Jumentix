@@ -78,7 +78,12 @@ commands:
               throw new Error(`failed to resolve PR metadata: ${response.status} ${response.statusText}`);
             }
             const pr = await response.json();
-            const quote = (value) => JSON.stringify(String(value || ''));
+            // Shell-safe quoting: single quotes disable every expansion. JSON
+            // quoting is NOT safe for $BASH_ENV exports — a PR body with
+            // backticks or $(...) would execute on every subsequent step
+            // (proven: pipeline 113 classify steps timed out executing the PR
+            // body as shell).
+            const quote = (value) => "'" + String(value || '').replace(/'/g, "'\\''") + "'";
             console.log('export AAA_CI_IS_PULL_REQUEST=1');
             console.log('export JUMENTIX_CI_IS_PULL_REQUEST=1');
             console.log(`export JUMENTIX_PR_BASE_REF=${quote(pr.base?.ref)}`);

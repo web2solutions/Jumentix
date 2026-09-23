@@ -95,6 +95,22 @@ describe('check-ci-provider', () => {
     expect(run(sonarReliability).output).toContain('Sonar reliability workflow is missing /vars\\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI');
   });
 
+  it('fails when CircleCI PR metadata exports use shell-unsafe quoting', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '\'\\\\\'\'',
+          '\'BACKSLASH-REMOVED\''
+        )
+      );
+    });
+    expect(run(directory).output).toContain('CircleCI CI is missing');
+  });
+
   it('fails when the canonical CircleCI browser matrix job is missing', () => {
     expect.hasAssertions();
 
