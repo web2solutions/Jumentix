@@ -190,8 +190,6 @@ jobs:
           CHANGELOG_GH_TOKEN: ${{ secrets.CHANGELOG_GH_TOKEN }}
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git merge --ff-only origin/main
           bun run changelog:update
@@ -200,20 +198,50 @@ jobs:
             exit 0
           fi
           # Branch protection rejects direct pushes to main (GH006), and
-          # allow_auto_merge is off — open a PR, wait out the required checks,
-          # then squash-merge it. No [skip ci]: the checks must run.
+          # requires every commit to be verified. createCommitOnBranch creates
+          # the changelog commit server-side and GitHub signs it for the PAT
+          # owner, unlike `git commit` from an Actions runner. No [skip ci]:
+          # the generated PR must satisfy all required checks before merging.
           branch="chore/changelog-sync-${GITHUB_SHA:0:8}"
-          git checkout -b "$branch"
-          git add CHANGELOG.md
-          git commit -m "chore: synchronize changelog"
-          git push origin "$branch"
           if [ -z "${CHANGELOG_GH_TOKEN:-}" ]; then
             echo "Secret CHANGELOG_GH_TOKEN is not configured."
-            echo "Branch $branch is pushed and current — open the PR manually:"
-            echo "  gh pr create --base main --head $branch --title 'chore: synchronize changelog'"
             exit 1
           fi
-          pr_url="$(GH_TOKEN="$CHANGELOG_GH_TOKEN" gh pr create --base main --head "$branch" \
+          export GH_TOKEN="$CHANGELOG_GH_TOKEN"
+          git push origin "HEAD:refs/heads/$branch"
+          changelog_contents="$(base64 -w 0 CHANGELOG.md)"
+          mutation='mutation CreateChangelogCommit($input: CreateCommitOnBranchInput!) {
+            createCommitOnBranch(input: $input) {
+              commit { oid verification { verified reason } }
+            }
+          }'
+          mutation_result="$(jq -nc \
+            --arg query "$mutation" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg branch "$branch" \
+            --arg expectedHeadOid "$GITHUB_SHA" \
+            --arg contents "$changelog_contents" \
+            '{query: $query, variables: {input: {
+              branch: {repositoryNameWithOwner: $repository, branchName: $branch},
+              expectedHeadOid: $expectedHeadOid,
+              message: {headline: "chore: synchronize changelog"},
+              fileChanges: {additions: [{path: "CHANGELOG.md", contents: $contents}]}
+            }}}' | gh api graphql --input -)"
+          commit_oid="$(jq -r '.data.createCommitOnBranch.commit.oid // empty' <<<"$mutation_result")"
+          verified="$(jq -r '.data.createCommitOnBranch.commit.verification.verified // false' <<<"$mutation_result")"
+          verification_reason="$(jq -r '.data.createCommitOnBranch.commit.verification.reason // "unknown"' <<<"$mutation_result")"
+          if [ -z "$commit_oid" ] || [ "$verified" != "true" ]; then
+            echo "Generated changelog commit was not verified (${verification_reason})." >&2
+            exit 1
+          fi
+          # A failed older generation must not remain as a permanently blocked
+          # PR once this signed generation takes over.
+          gh pr list --base main --state open --json number,headRefName --jq \
+            '.[] | select(.headRefName | test("^chore/changelog-sync-[0-9a-f]{8}$")) | .number' | \
+            while read -r prior_pr; do
+              gh pr close "$prior_pr" --delete-branch
+            done
+          pr_url="$(gh pr create --base main --head "$branch" \
             --title "chore: synchronize changelog" \
             --body "Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.")"
           echo "Opened $pr_url"
