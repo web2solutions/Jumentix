@@ -228,22 +228,22 @@ jobs:
       - require_ci_job:
           job: browser-matrix
       - run:
-          name: Install Xvfb for headless Cypress
+          name: Install headless browser system dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install -y xvfb
-      - run:
-          name: Install Cypress binary
-          command: |
-            source "$BASH_ENV"
-            bun x cypress install
-            bun x cypress verify
+            sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk2.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
       - run:
           name: Install Playwright WebKit
           command: |
             source "$BASH_ENV"
             bun x playwright install webkit
             bun x playwright install-deps webkit
+      - run:
+          name: Install Cypress binary
+          command: |
+            source "$BASH_ENV"
+            bun x cypress install
+            bun x cypress verify
       - run:
           name: Run Cana browser matrix
           no_output_timeout: 30m
@@ -309,7 +309,7 @@ jobs:
           command: |
             source "$BASH_ENV"
             sudo apt-get update
-            sudo apt-get install -y xvfb
+            sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk2.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
             bun x cypress install
             bun x cypress verify
             for engine in chrome firefox webkit; do
@@ -439,7 +439,7 @@ jobs:
           command: |
             source "$BASH_ENV"
             sudo apt-get update
-            sudo apt-get install -y xvfb
+            sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk2.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
             bun x cypress install
       - run:
           name: Cypress website quality gates
