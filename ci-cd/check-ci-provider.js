@@ -15,6 +15,7 @@ const browserMatrixWorkflowPath = path.join(root, '.github', 'workflows', 'brows
 const preCommitPath = path.join(root, '.husky', 'pre-commit');
 const packagePath = path.join(root, 'package.json');
 const unitRunnerPath = path.join(root, 'ci-cd', 'run-unit-tests.js');
+const serviceWaitPath = path.join(root, 'ci-cd', 'wait-for-ci-services.sh');
 const sonarPath = path.join(root, 'sonar-project.properties');
 
 if (!fs.existsSync(circleciPath)) {
@@ -59,6 +60,13 @@ if (!fs.existsSync(workflowPath)) {
     /cancel-in-progress:\s*false/,
     /contents:\s*write/,
     /bun run changelog:update/,
+    /createCommitOnBranch/,
+    /expectedHeadOid: \$expectedHeadOid/,
+    /commit \{ oid \}/,
+    /repos\/\$GITHUB_REPOSITORY\/commits\/\$commit_oid/,
+    /Generated changelog commit was not verified/,
+    /git push origin "HEAD:refs\/heads\/\$branch"/,
+    /gh pr close "\$prior_pr" --delete-branch/,
     /gh pr create --base main/,
     /--watch --fail-fast/,
     /--squash --delete-branch/,
@@ -351,6 +359,9 @@ if (fs.existsSync(circleciPath)) {
     /database-matrix:/,
     /classify-ci-context\.js/,
     /circleci-agent step halt/,
+    /const shellQuote = \(value\) =>/,
+    /Install Python virtualenv support/,
+    /sudo apt-get install -y python3-venv/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
     /--slug web2solutions\/Jumentix/,
     /verify-codecov-public-reports\.js/,
@@ -359,6 +370,32 @@ if (fs.existsSync(circleciPath)) {
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(contents)) failures.push(`CircleCI CI is missing ${String(marker)}`);
+  }
+  if (/const quote = \(value\) => JSON\.stringify/.test(contents)) {
+    failures.push('CircleCI PR metadata must shell-quote values before writing BASH_ENV');
+  }
+
+  if (!fs.existsSync(serviceWaitPath)) {
+    failures.push('CircleCI service readiness helper is missing: ci-cd/wait-for-ci-services.sh');
+  } else if (!/nc -z/.test(fs.readFileSync(serviceWaitPath, 'utf8'))) {
+    failures.push('CircleCI service readiness helper must verify TCP availability');
+  }
+
+  if (!/node_bun_services:[\s\S]*redis:7\.2-alpine[\s\S]*rabbitmq:3\.13-alpine/.test(contents)) {
+    failures.push('CircleCI must provide Redis and RabbitMQ as executor services for localhost jobs');
+  }
+
+  for (const job of ['integration', 'coverage']) {
+    const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\nworkflows:|\\n?$)`))?.[0] || '';
+    if (!/executor:\s*node_bun_services/.test(jobBlock)) {
+      failures.push(`CircleCI ${job} must use the executor-local Redis and RabbitMQ services`);
+    }
+    if (!/ci-cd\/wait-for-ci-services\.sh/.test(jobBlock)) {
+      failures.push(`CircleCI ${job} must wait for executor-local Redis and RabbitMQ services`);
+    }
+    if (/setup_remote_docker|ensure-local-ci-services\.sh/.test(jobBlock)) {
+      failures.push(`CircleCI ${job} must not expose remote-Docker services through localhost`);
+    }
   }
 }
 

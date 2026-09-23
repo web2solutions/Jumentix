@@ -29,9 +29,14 @@ function fixture(change?: (directory: string) => void): string {
   fs.mkdirSync(path.join(directory, '.circleci'), { recursive: true });
   fs.mkdirSync(path.join(directory, '.husky'), { recursive: true });
   fs.copyFileSync(checker, path.join(directory, 'ci-cd', 'check-ci-provider.js'));
+  fs.copyFileSync(
+    path.join(repoRoot, 'ci-cd', 'build-workspace-packages.js'),
+    path.join(directory, 'ci-cd', 'build-workspace-packages.js')
+  );
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'run-unit-tests.js'), path.join(directory, 'ci-cd', 'run-unit-tests.js'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'), path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh'));
   fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
+  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'wait-for-ci-services.sh'), path.join(directory, 'ci-cd', 'wait-for-ci-services.sh'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/pr-feedback.yml'), path.join(directory, '.github/workflows/pr-feedback.yml'));
   fs.copyFileSync(path.join(repoRoot, '.github/workflows/sonar-reliability.yml'), path.join(directory, '.github/workflows/sonar-reliability.yml'));
@@ -145,6 +150,45 @@ describe('check-ci-provider', () => {
       fs.unlinkSync(path.join(root, '.circleci/config.yml'));
     });
     expect(run(directory).output).toContain('Missing required CircleCI workflow');
+  });
+
+  it('fails when CircleCI coverage uses remote-Docker services as localhost', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '          command: ci-cd/wait-for-ci-services.sh',
+          '          command: ci-cd/ensure-local-ci-services.sh'
+        )
+      );
+    });
+    expect(run(directory).output).toContain('must not expose remote-Docker services through localhost');
+  });
+
+  it('fails when CircleCI writes untrusted PR metadata to BASH_ENV with JSON quoting', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('const shellQuote =', 'const quote =').replace(/shellQuote\(/g, 'quote(')
+      );
+    });
+    expect(run(directory).output).toContain('const shellQuote');
+  });
+
+  it('fails when CircleCI third-party review lacks Python virtualenv support', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('sudo apt-get install -y python3-venv', 'true'));
+    });
+    expect(run(directory).output).toContain('python3-venv');
   });
 
   it('fails when patch coverage enforcement is removed', () => {
@@ -472,6 +516,19 @@ describe('check-ci-provider', () => {
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/environment: env vars\n/g, ''));
     });
     expect(run(directory).output).toContain('environment:\\s*env vars');
+  });
+
+  it('fails when generated changelog commits are no longer server-signed and verified', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(/createCommitOnBranch/g, 'createUnsignedCommitOnBranch')
+      );
+    });
+    expect(run(directory).output).toContain('createCommitOnBranch');
   });
 
   it('fails when Sonar can scan binary assets as source files', () => {
