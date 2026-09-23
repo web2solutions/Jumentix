@@ -489,6 +489,20 @@ jobs:
 
 workflows:
   ci:
+    jobs:
+      - branch-gate
+      - third-party-review
+      - browser-matrix
+      - workspace-builds
+      - workspace-tests
+      - integration
+      - coverage
+      - website
+      - database-matrix
+  # JUM-874: a workflow with a schedule trigger runs ONLY on the schedule, so
+  # the nightly full matrix lives in its own workflow and `ci` keeps running on
+  # every push/PR. The context classifier maps this to scheduled-full.
+  nightly:
     triggers:
       - schedule:
           cron: "17 3 * * *"

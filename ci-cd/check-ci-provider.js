@@ -405,13 +405,15 @@ if (fs.existsSync(circleciPath)) {
   if (!/require_ci_job:\s*\n\s*job:\s*browser-matrix/.test(browserMatrixBlock)) {
     failures.push('CircleCI browser-matrix job must gate on the shared context classifier via require_ci_job');
   }
-  const workflowJobsBlock = contents.match(/\nworkflows:\n[\s\S]*$/)?.[0] || '';
-  if (!/- browser-matrix/.test(workflowJobsBlock)) {
+  const ciWorkflowBlock = contents.match(/\n  ci:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\n?$)/)?.[0] || '';
+  if (!/- browser-matrix/.test(ciWorkflowBlock)) {
     failures.push('CircleCI workflows.ci.jobs must include browser-matrix');
   }
-  const scheduleBlock = contents.match(/triggers:[\s\S]*?schedule:[\s\S]*?(?=\n    jobs:|\nworkflow|$)/)?.[0] || '';
-  if (!/only:\s*\n\s*- main\s*\n\s*- dev/.test(scheduleBlock)) {
-    failures.push('CircleCI nightly schedule trigger must target main and dev');
+  const nightlyBlock = contents.match(/\n  nightly:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\n?$)/)?.[0] || '';
+  if (!/triggers:[\s\S]*?schedule:[\s\S]*?cron:\s*"17 3 \* \* \*"/.test(nightlyBlock)
+    || !/only:\s*\n\s*- main\s*\n\s*- dev/.test(nightlyBlock)
+    || !/- browser-matrix/.test(nightlyBlock)) {
+    failures.push('CircleCI nightly workflow must own the 17 3 * * * schedule on main and dev and run the full matrix including browser-matrix');
   }
 }
 
