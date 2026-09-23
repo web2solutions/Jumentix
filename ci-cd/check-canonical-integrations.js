@@ -57,8 +57,8 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     markers: [
       'web2solutions/Jumentix',
       'repository-owned coverage',
-      'GitHub Actions canonical',
-      'CircleCI enabled',
+      'CircleCI canonical',
+      'GitHub Actions retained',
       'Codecov publishing',
       'SonarQube Cloud',
       'OSV.dev',
@@ -73,7 +73,8 @@ const INTEGRATION_CONTRACTS = Object.freeze([
     markers: [
       'web2solutions/Jumentix',
       'GitHub Actions',
-      'CircleCI habilitado',
+      'CircleCI canônico',
+      'GitHub Actions retido',
       'Codecov',
       'SonarQube Cloud',
       'OSV.dev',

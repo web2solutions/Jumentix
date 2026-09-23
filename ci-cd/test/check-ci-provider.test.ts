@@ -54,7 +54,65 @@ describe('check-ci-provider', () => {
 
     const result = run(repoRoot);
     expect(result.code).toBe(0);
-    expect(result.output).toContain('GitHub Actions and CircleCI cover');
+    expect(result.output).toContain('CircleCI is the canonical orchestrator');
+  });
+
+  it('fails when a retained GitHub Actions job loses the reversible disable flag', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          '    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'\n    runs-on: ubuntu-latest\n    env:',
+          '    runs-on: ubuntu-latest\n    env:'
+        )
+      );
+    });
+    expect(run(directory).output).toContain('must gate branch-gate behind vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'');
+  });
+
+  it('fails when the standalone fallback workflows lose the reversible disable flag', () => {
+    expect.hasAssertions();
+
+    const browserMatrix = fixture((root) => {
+      const file = path.join(root, '.github/workflows/browser-matrix.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'\n', '')
+      );
+    });
+    expect(run(browserMatrix).output).toContain('Browser matrix workflow is missing /vars\\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI');
+
+    const sonarReliability = fixture((root) => {
+      const file = path.join(root, '.github/workflows/sonar-reliability.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'\n', '')
+      );
+    });
+    expect(run(sonarReliability).output).toContain('Sonar reliability workflow is missing /vars\\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI');
+  });
+
+  it('fails when the canonical CircleCI browser matrix job is missing', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('  browser-matrix:\n', '  browser-matrix-removed:\n'));
+    });
+    expect(run(directory).output).toContain('CircleCI CI is missing /browser-matrix:');
+  });
+
+  it('fails when the canonical CircleCI browser matrix job is dropped from the workflow', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('      - browser-matrix\n', ''));
+    });
+    expect(run(directory).output).toContain('CircleCI workflows.ci.jobs must include browser-matrix');
   });
 
   it('fails when the repository-owned GitHub Actions workflow is absent', () => {
@@ -529,7 +587,8 @@ describe('requirement 113 is registered and enforced', () => {
     const text = fs.readFileSync(requirement, 'utf8');
     expect(text).toContain('014');
     expect(text).toContain('GitHub Actions');
-    expect(text).toContain('CircleCI is enabled');
+    expect(text).toContain('CircleCI is the canonical orchestrator');
+    expect(text).toContain('JUMENTIX_ENABLE_GITHUB_ACTIONS_CI');
   });
 
   it('is enforced by the canonical gate', () => {

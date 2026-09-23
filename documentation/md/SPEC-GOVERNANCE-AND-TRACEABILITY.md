@@ -136,7 +136,7 @@ Task isolation and naming policy:
   unit health gate, and `main` runs the complete local non-coverage matrix.
 - Pull requests targeting `dev` run the layer-aware specialized gate selected by
   `test-map.json`, plus lightweight mandatory review. Release-promotion PRs to
-  `main` run the complete matrix, plus the required GitHub Actions coverage job.
+  `main` run the complete matrix, plus the required CircleCI coverage job.
 - Main-matrix evidence must list every required cell and its terminal result.
 - An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
 - PR review is optional. Branch protection and rulesets must not require an approval count.
@@ -168,10 +168,14 @@ Branch-aware execution contract:
    `x-primary-key` to `@belongsTo` / `@hasMany` and the model key.
 2. `dev` pushes execute `test:unit`; pull requests targeting `dev` execute `ci:gate:task`.
 3. `main` and release-promotion pull requests targeting `main` execute `ci:gate:strict`.
-4. GitHub Actions is the repository-owned orchestrator, the `jumentix` self-hosted
-   runner provides the zero-cost execution path, and CircleCI is enabled by
-   Requirement `113`.
-5. `.github/workflows/ci.yml` owns Storybook checks, database smoke, and full coverage for
+4. CircleCI is the canonical repository-owned orchestrator by Requirement `113`
+   (as amended 2026-09-23), running the full matrix on hosted `cimg` images
+   with a nightly scheduled trigger on `main`/`dev`; GitHub Actions is retained
+   on GitHub-hosted `ubuntu-latest` runners as a fallback disabled by default
+   behind the `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` repository variable (the
+   former self-hosted `jumentix` runner mandate is superseded).
+5. The CircleCI `website`, `database-matrix`, and `coverage` jobs own Storybook checks,
+   database smoke, and full coverage for
    release promotions, `main`, and scheduled full runs; the local full matrix does not
    execute Storybook or coverage production.
 6. Every selected gate emits auditable evidence and fails closed for missing, crashed, or

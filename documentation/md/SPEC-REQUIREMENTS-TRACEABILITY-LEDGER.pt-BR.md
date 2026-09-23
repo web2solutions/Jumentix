@@ -100,6 +100,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
   - `documentação/md/SECURITY-RUNBOOK-PCI.md`
   - `documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`
   - `documentation/md/CANONICAL-INTEGRATIONS-AND-PROVIDER-REBINDING.pt-BR.md`
+  - `documentation/md/CI-PROVIDER-GOVERNANCE.pt-BR.md`
   - scripts de cobertura/verificação em `ci-cd/*`
 - Evidência:
   - Portão CI verde

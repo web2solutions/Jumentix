@@ -181,35 +181,37 @@ Aplicação local:
 
 Aplicação remota:
 
-- GitHub Actions invoca `bun run ci:gate:branch`
-- o GitHub Actions passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
-- GitHub Actions assume a produção completa de cobertura (mais upload Codecov e scan SonarCloud) em pushes para `dev` e `main`, promoções `dev -> main` e execuções completas agendadas; gates locais e PRs de tarefa até `dev` ficam rápidos e diagnósticos
-- Após um merge validado em `main`, o GitHub Actions serializa a atualização gerada de `CHANGELOG.md`; branches de tarefa, `dev` e PRs deixam esse arquivo intacto
+- CircleCI (`.circleci/config.yml`) é o orquestrador hospedado canônico e invoca `bun run ci:gate:branch`
+- o CircleCI passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
+- CircleCI assume a produção completa de cobertura (mais upload Codecov e scan SonarCloud) em pushes para `dev` e `main`, promoções `dev -> main` e nas execuções completas do gatilho agendado noturno; gates locais e PRs de tarefa até `dev` ficam rápidos e diagnósticos
+- Após um merge validado em `main`, o job `sync-changelog` do GitHub Actions, sempre ativo, serializa a atualização gerada de `CHANGELOG.md`; branches de tarefa, `dev` e PRs deixam esse arquivo intacto
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
-- o GitHub Actions publica `artifacts/ci/full-test-matrix.json` quando o gate seleciona a matriz completa
-- `.github/workflows/ci.yml` executa build/smoke do Storybook e prepublish somente em contextos de release/full
+- o CircleCI publica `artifacts/ci/full-test-matrix.json` quando o gate seleciona a matriz completa
+- o job `website` do CircleCI executa build/smoke do Storybook e prepublish somente em contextos de release/full
 - o Storybook não é executado pela matriz global
 - `ci:monorepo` permanece como entrada de compatibilidade, mas não pode selecionar um plano reduzido somente para documentação
-- O check obrigatório `pr-feedback` roda a partir da revisão confiável da base da PR e reprova threads de revisão não resolvidas ou comentários gerais sem evidência visível de resolução validada. A única exceção é o aviso estrito de limite de uso do Cursor, vindo do login `cursor`; o workflow dedicado `pr-feedback-trusted` repete essa defesa depois de estar disponível a partir da branch padrão.
-- O check obrigatório `sonar-reliability` consulta a análise de pull request do SonarCloud e aceita somente reliability A. Ele faz checkout do SHA confiável da base, nunca do código da PR, antes de acessar `SONARCLOUD_TOKEN`; o workflow dedicado `sonar-reliability-trusted` repete essa defesa depois de estar disponível a partir da branch padrão.
-- O check obrigatório `browser-matrix` executa as suítes Cana em Chrome, Firefox e WebKit em toda PR para `dev` ou `main`. Ele tem somente leitura de conteúdo e não recebe segredos.
+- O check obrigatório `pr-feedback` é uma exceção do GitHub Actions sempre ativa: roda a partir da revisão confiável da base da PR e reprova threads de revisão não resolvidas ou comentários gerais sem evidência visível de resolução validada. A única exceção é o aviso estrito de limite de uso do Cursor, vindo do login `cursor`; o workflow dedicado `pr-feedback-trusted` repete essa defesa depois de estar disponível a partir da branch padrão.
+- O check de reliability-A do SonarCloud roda dentro do job `coverage` do CircleCI (`bun run sonar:check-reliability`): consulta a análise de pull request do SonarCloud e aceita somente reliability A. Ele faz checkout do SHA confiável da base, nunca do código da PR, antes de acessar `SONARCLOUD_TOKEN`. Os workflows dedicados do GitHub `sonar-reliability.yml` e `sonar-reliability-trusted` estão retidos, mas atrás do flag `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`.
+- O check obrigatório `browser-matrix` roda como job do CircleCI executando as suítes Cana em Chrome, Firefox e WebKit em toda PR para `dev` ou `main`. Ele tem somente leitura de conteúdo e não recebe segredos; `.github/workflows/browser-matrix.yml` é o fallback retido atrás do flag.
+- A matriz do GitHub Actions (`.github/workflows/ci.yml`, `browser-matrix.yml`, `sonar-reliability.yml`) está retida, desabilitada por padrão, e roda somente quando a variável de Actions do repositório `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` é `true`.
 
 #### Matriz de jobs hospedados por contexto (JUM-786)
 
-`ci-cd/classify-ci-context.js` (`JOBS_BY_CONTEXT`) e os `if:` em
-`.github/workflows/ci.yml` precisam concordar. Jobs pesados (`workspace-builds`,
+`ci-cd/classify-ci-context.js` (`JOBS_BY_CONTEXT`) e os guards de jobs em
+`.circleci/config.yml` precisam concordar. Jobs pesados (`workspace-builds`,
 `workspace-tests`, `integration`, `coverage`, `website`, `database-matrix`)
 correm só em release/`main`/agendado (Requisitos `087`/`113`). Em push de
 tarefa, PR para `dev` e push barato para `dev` eles **pulam de propósito** —
-pular não é passar.
+pular não é passar. O `.github/workflows/ci.yml`, retido atrás do flag, mantém
+`if:` equivalentes por job para o caminho de fallback.
 
-| Contexto | Jobs que rodam | Script do branch-gate + preflight |
+| Contexto | Jobs que rodam (CircleCI) | Script do branch-gate + preflight |
 | --- | --- | --- |
 | Push de branch de tarefa | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
-| PR para `dev` | `branch-gate`, `third-party-review`, `sonar-reliability`, `browser-matrix` | mesmo gate de tarefa + preflight |
+| PR para `dev` | `branch-gate`, `third-party-review`, `browser-matrix` (mais o `pr-feedback` do GitHub, sempre ativo) | mesmo gate de tarefa + preflight |
 | Push para `dev` | `branch-gate` | `test:unit` + lint, integrity, boundaries, `build:dev` |
-| PR de release para `main` / push `main` / schedule / `workflow_dispatch` | lista completa (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
+| PR de release para `main` / push `main` / schedule / gatilho manual | lista completa (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
 
 `build:dev` (`tsc -p tsconfig.build.json`) tipa o TypeScript de backend/pacotes
 do compilador raiz. `apps/frontend/**` fica de fora: o workspace dono é
@@ -222,24 +224,24 @@ pesados pulados num PR para `dev`.
 
 Importação de cobertura do SonarQube Cloud:
 
-- Fluxo de trabalho: `.github/workflows/ci.yml`
+- Fluxo de trabalho: o job `coverage` do CircleCI em `.circleci/config.yml` (`.github/workflows/ci.yml` é o fallback retido atrás do flag)
 - Fonte de cobertura: `./coverage/lcov.info` (Jest LCOV)
 - Configuração do scanner: `sonar.javascript.lcov.reportPaths=./coverage/lcov.info`
-- Segredo GitHub Actions necessário: `SONARCLOUD_TOKEN` (exposto ao scanner e ao verificador de reliability como `SONAR_TOKEN`)
+- Segredo necessário: `SONARCLOUD_TOKEN`, configurado no CircleCI (exposto ao scanner e ao verificador de reliability como `SONAR_TOKEN`)
 
 ### Visão geral de ferramentas integradas
 
 | Integração | Finalidade | Onde está configurado | O que executar/requisitos |
 |------------|---------|----------------------------|-----------------------------|
-| GitHub Actions (branch gate) | Validação orientada ao destino em push/PR | `.github/workflows/ci.yml` | Seleciona pelo destino do PR ou branch enviada e retém evidência do gate |
-| GitHub Actions (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.github/workflows/ci.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
-| GitHub Actions (Codecov) | Publicação de dashboard de cobertura | `.github/workflows/ci.yml` | Requer `CODECOV_TOKEN`; envia LCOV via `codecov/codecov-action@v5` após thresholds locais |
-| GitHub Actions (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.github/workflows/ci.yml` | Executa Gitleaks/Semgrep fixados e retém evidência SARIF |
-| GitHub Actions (feedback de PR) | Bloqueia threads de revisão não resolvidas e feedback geral sem tratamento | `.github/workflows/pr-feedback.yml`, `ci-cd/check-pr-feedback.js` | Roda do SHA confiável da base; respostas de resolução identificam o comentário exato e, quando corrigido, um SHA da PR |
-| GitHub Actions (reliability Sonar) | Bloqueia uma PR cuja reliability no SonarCloud não seja A | `.github/workflows/ci.yml`, `.github/workflows/sonar-reliability.yml`, `ci-cd/check-sonar-reliability.js` | Consulta a análise da PR no SonarCloud a partir do SHA confiável da base com `SONARCLOUD_TOKEN`; ausência de análise ou falha da API reprovam de forma fechada |
-| GitHub Actions (browser matrix) | Bloqueia regressões de navegador antes do merge | `.github/workflows/browser-matrix.yml`, `packages/cana/scripts/run-browser-tests.js` | Executa Chrome, Firefox e WebKit com acesso somente leitura ao conteúdo e sem segredos |
-| GitHub Actions (website) | Storybook e prontidão de publicação pertencentes ao website | `.github/workflows/ci.yml` | Executa build/smoke do Storybook e prepublish de forma independente |
-| GitHub Actions (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.github/workflows/ci.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |
+| CircleCI (branch gate) | Validação orientada ao destino em push/PR | `.circleci/config.yml` | Seleciona pelo destino do PR ou branch enviada e retém evidência do gate |
+| CircleCI (cobertura) | Cobertura de projeto e patch pertencente ao repositório | `.circleci/config.yml` | Aplica `coverage:check` e `coverage:patch` e retém evidência JSON/LCOV |
+| CircleCI (Codecov) | Publicação de dashboard de cobertura | `.circleci/config.yml` | Requer `CODECOV_TOKEN`; envia LCOV via Codecov CLI verificado por checksum após thresholds locais (`codecov/codecov-action@v5` no fallback do GitHub atrás do flag) |
+| CircleCI (revisão third-party) | Revisão fail-closed de segredos e análise estática | `.circleci/config.yml` | Executa Gitleaks/Semgrep fixados e retém evidência SARIF |
+| GitHub Actions (feedback de PR, sempre ativo) | Bloqueia threads de revisão não resolvidas e feedback geral sem tratamento | `.github/workflows/pr-feedback.yml`, `ci-cd/check-pr-feedback.js` | Roda do SHA confiável da base; respostas de resolução identificam o comentário exato e, quando corrigido, um SHA da PR |
+| CircleCI (reliability Sonar) | Bloqueia uma PR cuja reliability no SonarCloud não seja A | `.circleci/config.yml` (job `coverage`), `ci-cd/check-sonar-reliability.js` | Roda `bun run sonar:check-reliability` dentro do job `coverage` a partir do SHA confiável da base com `SONARCLOUD_TOKEN`; ausência de análise ou falha da API reprovam de forma fechada. `.github/workflows/sonar-reliability.yml` é o fallback atrás do flag |
+| CircleCI (browser matrix) | Bloqueia regressões de navegador antes do merge | `.circleci/config.yml`, `packages/cana/scripts/run-browser-tests.js` | Executa Chrome, Firefox e WebKit com acesso somente leitura ao conteúdo e sem segredos; `.github/workflows/browser-matrix.yml` é o fallback atrás do flag |
+| CircleCI (website) | Storybook e prontidão de publicação pertencentes ao website | `.circleci/config.yml` | Executa build/smoke do Storybook e prepublish de forma independente |
+| CircleCI (SonarQube Cloud) | Análise estática + quality gate + importação de cobertura | `.circleci/config.yml`, `sonar-project.properties` | Requer `SONAR_TOKEN`; importa LCOV retido após cobertura |
 | Gate de cobertura do repositório | Hard gate local contra baixa cobertura | `jest.config.js`, `ci-cd/check-coverage-thresholds.js` | Declarações/linhas/funções/ramos 98%, linhas alteradas 99%; ramos sob piso datado (JUM-721) |
 | Gate de integridade de testes | Bloqueia suíte que não afirma nada, que só afirma sobre mock, que dorme como sincronização, ou que está fora do mapa | `ci-cd/check-test-integrity.js`, `ci-cd/run-branch-quality-gate.js` | `bun run test:integrity`; preflight de todo caminho do branch gate (JUM-683) |
 | Boundaries de workspace + `build:dev` | Arquitetura e emit TypeScript raiz falham fechados antes dos gates baratos | `ci-cd/check-workspace-boundaries.js`, `tsconfig.build.json`, `ci-cd/run-branch-quality-gate.js` | `bun run arch:check-workspace-boundaries` + `bun run build:dev`; preflight de todo caminho do branch-gate (JUM-786) |
@@ -269,10 +271,18 @@ A allow-list em `ci-cd/ownership-placement-allowlist.json` é shrink-only. Estad
 
 #### Provedor hospedado ativo
 
-GitHub Actions está ativo pelo Requisito 113, CircleCI está habilitado como provedor público secundário de CI, e o workflow roda em runners GitHub-hosted `ubuntu-latest`. Ele
-roda em `dev`, `main` e pull requests, com Sonar filtrado para as duas branches
-longas. A publicação Codecov roda depois do gate de cobertura do repositório e
-nunca substitui esse gate como autoridade de merge.
+CircleCI está ativo como provedor hospedado canônico pelo Requisito 113 (emenda
+de 2026-09-23), e o GitHub Actions está retido como fallback desabilitado por
+padrão atrás da variável de Actions do repositório
+`JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`. O CircleCI roda a matriz completa em
+`dev`, `main` e pull requests, com Sonar filtrado para as duas branches
+longas e gatilho agendado noturno em `main`/`dev`. A publicação Codecov roda
+depois do gate de cobertura do repositório e
+nunca substitui esse gate como autoridade de merge. Três superfícies do GitHub
+Actions permanecem sempre ativas: `pr-feedback.yml` (execução de forks
+confiáveis via `pull_request_target`), os jobs `sync-changelog`/`pr-feedback`
+em `ci.yml`, e `npm-publish.yml` (GitHub Environment protegido pelo Requisito
+070).
 
 ### Política de Cobertura (Padrão Estrito)
 

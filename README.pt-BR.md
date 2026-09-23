@@ -12,8 +12,8 @@
 
 Jumentix e uma fabrica de software de codigo aberto para equipes que criam produtos SaaS. Ela oferece fundacoes orientadas por contratos para APIs, servicos em tempo real, aplicacoes web e dominios modulares, para que a equipe concentre sua energia no produto.
 
-[![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
-[![GitHub Actions main](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Amain)
+[![CircleCI dev](https://circleci.com/gh/web2solutions/Jumentix.svg?style=shield&branch=dev)](https://circleci.com/gh/web2solutions/Jumentix/tree/dev)
+[![CircleCI main](https://circleci.com/gh/web2solutions/Jumentix.svg?style=shield&branch=main)](https://circleci.com/gh/web2solutions/Jumentix/tree/main)
 [![Codecov dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graph/badge.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/dev)
 [![Codecov main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graph/badge.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/main)
 [![Qualidade SonarCloud dev](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsonarcloud.io%2Fapi%2Fmeasures%2Fcomponent%3Fcomponent%3Dweb2solutions_Jumentix%26metricKeys%3Dalert_status%26branch%3Ddev&query=%24.component.measures%5B0%5D.value&label=Sonar%20qualidade%20dev&color=brightgreen)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
@@ -40,6 +40,8 @@ Jumentix e uma fabrica de software de codigo aberto para equipes que criam produ
 [![Execute em Cloudflare Workers](https://img.shields.io/badge/Run%20on-Cloudflare%20Workers-gold?style=flat-square&logo=cloudflare&logoColor=000)](https://workers.cloudflare.com/)
 [![Execute em Vercel Functions](https://img.shields.io/badge/Run%20on-Vercel%20Functions-gold?style=flat-square&logo=vercel&logoColor=000)](https://vercel.com/docs/functions)
 [![Apoie a Ucrania](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
+
+CircleCI e o orquestrador canonico de CI; o GitHub Actions esta retido e pode ser reativado a qualquer momento definindo a variavel de Actions do repositorio `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` como `true` (veja `documentation/md/CI-PROVIDER-GOVERNANCE.pt-BR.md`).
 
 ## O Que Voce Pode Criar
 

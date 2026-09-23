@@ -1,5 +1,11 @@
 # Requirement 088 - Task-Branch Change-Focused Tests
 
+> Amendment note (2026-09-23): per the 2026-09-23 amendment of requirement `113`,
+> CircleCI is the canonical provider for the target-aware gate described here,
+> and GitHub Actions is the flag-gated fallback behind the
+> `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` repository variable. The historical text
+> below is unchanged.
+
 ## Requirement
 
 Task-owned branches must validate only the tests directly changed by the task or unit tests

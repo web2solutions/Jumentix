@@ -20,8 +20,9 @@ Active and mandatory.
 
 - Canonical provider identifiers and repository metadata target
   `web2solutions/Jumentix`.
-- GitHub Actions remains canonical and CircleCI remains the secondary public CI
-  mirror under Requirement `113`.
+- CircleCI is the canonical CI orchestrator and GitHub Actions is retained,
+  disabled by default behind `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`, under
+  Requirement `113` (2026-09-23 amendment).
 - Incomplete provider bindings are recorded as owner-authorized blockers, never
   as passing evidence.
 - Historical migration context is only in `documentation/md/HISTORICAL-TRANSITIONS.md`.

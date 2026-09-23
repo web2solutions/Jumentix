@@ -13,8 +13,8 @@ ausentes, ignorados, neutros ou apenas configurados nao sao evidencia de sucesso
 
 | Superficie | Contrato canonico |
 | --- | --- |
-| GitHub Actions | CI canonico por branch em runners Node 22 hospedados pelo GitHub com comandos Bun. |
-| CircleCI | Espelho publico secundario de CI com o mesmo classificador de contexto e politica de gates. |
+| GitHub Actions | CI retido por branch em runners Node 22 hospedados pelo GitHub com comandos Bun, desabilitado por padrao atras de `vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` (Req 113, 2026-09-23); `pr-feedback`, `sync-changelog` e `npm-publish` permanecem sempre ativos. |
+| CircleCI | Orquestrador canonico publico de CI com o mesmo classificador de contexto e politica de gates (Req 113, 2026-09-23). |
 | Codecov e SonarQube Cloud | Visibilidade publica para evidencias de cobertura pertencentes ao repositorio. |
 | OSV.dev | Auditoria propria da arvore instalada por `bun run deps:audit`. |
 | Dependabot, Vercel, webhooks, environments | Configuracoes pertencentes ao repositorio vinculadas ao repositorio publico canonico quando aplicavel. |
