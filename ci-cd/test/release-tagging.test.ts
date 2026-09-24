@@ -66,6 +66,31 @@ describe('create-app-release-tag --github-api dry-run', () => {
   });
 });
 
+describe('create-app-release-tag absolute CLI resolution', () => {
+  const {
+    resolveSleepBinary,
+    resolveBunBinary
+  } = require('../create-app-release-tag.js');
+
+  it('resolves sleep to a fixed system path', () => {
+    expect.hasAssertions();
+    expect(resolveSleepBinary(() => true)).toBe('/bin/sleep');
+    expect(resolveSleepBinary((p: string) => p === '/usr/bin/sleep')).toBe('/usr/bin/sleep');
+  });
+
+  it('resolves bun without searching PATH by bare name', () => {
+    expect.hasAssertions();
+    expect(resolveBunBinary({
+      execPath: '/usr/bin/node',
+      exists: (p: string) => p === '/usr/local/bin/bun'
+    })).toBe('/usr/local/bin/bun');
+    expect(resolveBunBinary({
+      execPath: '/opt/homebrew/bin/bun',
+      exists: () => false
+    })).toBe('/opt/homebrew/bin/bun');
+  });
+});
+
 describe('publish-npm-cohort helpers', () => {
   it('builds package tags from name and version', () => {
     expect.hasAssertions();
