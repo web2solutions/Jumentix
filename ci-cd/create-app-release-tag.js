@@ -143,9 +143,32 @@ function configureGitIdentity(rootDir) {
   }
 }
 
+function resolveSleepBinary(exists = fs.existsSync) {
+  for (const candidate of ['/bin/sleep', '/usr/bin/sleep']) {
+    if (exists(candidate)) return candidate;
+  }
+  throw new Error(
+    'Could not find sleep in a fixed system location (/bin/sleep, /usr/bin/sleep).'
+  );
+}
+
 function sleepMs(ms) {
   const seconds = Math.max(1, Math.ceil(ms / 1000));
-  execFileSync('sleep', [String(seconds)], { stdio: 'ignore' });
+  // Absolute path on purpose (Sonar javascript:S4036) — never spawn bare `sleep`.
+  execFileSync(resolveSleepBinary(), [String(seconds)], { stdio: 'ignore' });
+}
+
+function resolveBunBinary(options = {}) {
+  const execPath = options.execPath || process.execPath;
+  const exists = options.exists || fs.existsSync;
+  if (String(execPath).includes('bun')) return execPath;
+  for (const candidate of ['/usr/local/bin/bun', '/opt/homebrew/bin/bun', '/usr/bin/bun']) {
+    if (exists(candidate)) return candidate;
+  }
+  throw new Error(
+    'Could not find bun at process.execPath or a fixed system location. '
+      + 'Run under bun, or install bun to /usr/local/bin/bun.'
+  );
 }
 
 function waitForPullRequestMergeable(prUrl, options = {}) {
@@ -247,8 +270,7 @@ function createAppReleaseTag(options = {}) {
   runGit(['tag', '-a', tag, '-m', `Application release ${tag}`], { cwd: rootDir });
 
   // Tag exists → changelog gains a real per-tag section.
-  const bunBin = process.execPath.includes('bun') ? process.execPath : 'bun';
-  execFileSync(bunBin, [path.join(rootDir, 'ci-cd/update-changelog.js')], {
+  execFileSync(resolveBunBinary(), [path.join(rootDir, 'ci-cd/update-changelog.js')], {
     cwd: rootDir,
     stdio: 'inherit'
   });
@@ -421,8 +443,7 @@ function createAppReleaseTagGithubApi(options = {}) {
 
   // Refresh tags locally, regenerate changelog, open sync PR if needed.
   runGit(['fetch', '--tags', '--prune', 'origin'], { cwd: rootDir, allowFailure: true });
-  const bunBin = process.execPath.includes('bun') ? process.execPath : 'bun';
-  execFileSync(bunBin, [path.join(rootDir, 'ci-cd/update-changelog.js')], {
+  execFileSync(resolveBunBinary(), [path.join(rootDir, 'ci-cd/update-changelog.js')], {
     cwd: rootDir,
     stdio: 'inherit'
   });
@@ -504,6 +525,8 @@ module.exports = {
   headHasAppTag,
   main,
   openAndMergeReleasePr,
+  resolveBunBinary,
+  resolveSleepBinary,
   waitForPullRequestMergeable
 };
 
