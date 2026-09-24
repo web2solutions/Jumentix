@@ -91,6 +91,59 @@ describe('create-app-release-tag absolute CLI resolution', () => {
   });
 });
 
+describe('waitForPullRequestMergeable fail-fast', () => {
+  const {
+    waitForPullRequestMergeable,
+    listFailedRequiredChecks
+  } = require('../create-app-release-tag.js');
+
+  it('lists failed required checks from the rollup', () => {
+    expect.hasAssertions();
+    const failed = listFailedRequiredChecks('https://example.test/pr/1', {
+      runGh: () => JSON.stringify([
+        { name: 'ci/circleci: coverage', url: 'https://circleci.com/gh/x/1' }
+      ])
+    });
+    expect(failed).toStrictEqual([
+      { name: 'ci/circleci: coverage', url: 'https://circleci.com/gh/x/1' }
+    ]);
+  });
+
+  it('throws immediately when BLOCKED with a failed required check', () => {
+    expect.hasAssertions();
+    const calls: string[][] = [];
+    const returns = [
+      'BLOCKED',
+      JSON.stringify([
+        {
+          name: 'ci/circleci: coverage',
+          url: 'https://circleci.com/gh/web2solutions/Jumentix/1025'
+        }
+      ])
+    ];
+    let next = 0;
+    const runGh = (args: string[]) => {
+      calls.push(args);
+      const value = returns[Math.min(next, returns.length - 1)];
+      next += 1;
+      return value;
+    };
+    let thrown: Error | undefined;
+    try {
+      waitForPullRequestMergeable('https://example.test/pr/479', {
+        runGh,
+        pollMs: 1,
+        timeoutMs: 1000
+      });
+    } catch (error) {
+      thrown = error as Error;
+    }
+    expect(thrown).toBeInstanceOf(Error);
+    expect(String(thrown?.message)).toMatch(/Required checks failed.*ci\/circleci: coverage/);
+    expect(calls.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
 describe('publish-npm-cohort helpers', () => {
   it('builds package tags from name and version', () => {
     expect.hasAssertions();
