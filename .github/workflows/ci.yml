@@ -561,10 +561,23 @@ jobs:
       - name: Enforce full coverage thresholds
         run: bun run coverage:check
       - name: Build workspace package dependencies for frontend coverage
-        run: bun run mono:build
+        run: |
+          # Version-only / non-frontend patches skip this build — frontend
+          # coverage is only needed when the patch has apps/frontend subjects
+          # (JUM-889). Keep this step name for check-ci-provider.
+          if bun ci-cd/needs-frontend-patch-coverage.js; then
+            bun run mono:build
+          else
+            echo "No frontend coverage subjects in patch; skipping mono:build for frontend coverage."
+          fi
       - name: Produce frontend coverage for the patch report
         if: github.event_name == 'pull_request'
-        run: bun run frontend:test:coverage
+        run: |
+          if bun ci-cd/needs-frontend-patch-coverage.js; then
+            bun run frontend:test:coverage
+          else
+            echo "No frontend coverage subjects in patch; skipping frontend:test:coverage."
+          fi
       - name: Enforce patch coverage
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then

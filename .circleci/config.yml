@@ -373,12 +373,23 @@ jobs:
           no_output_timeout: 30m
           command: |
             source "$BASH_ENV"
-            bun run mono:build
+            # Version-only / non-frontend patches skip this build — frontend
+            # coverage is only needed when the patch has apps/frontend subjects
+            # (JUM-889). Keep this step name for check-ci-provider.
+            if bun ci-cd/needs-frontend-patch-coverage.js; then
+              bun run mono:build
+            else
+              echo "No frontend coverage subjects in patch; skipping mono:build for frontend coverage."
+            fi
       - run:
           name: Produce frontend coverage for the patch report
           command: |
             source "$BASH_ENV"
-            bun run frontend:test:coverage
+            if bun ci-cd/needs-frontend-patch-coverage.js; then
+              bun run frontend:test:coverage
+            else
+              echo "No frontend coverage subjects in patch; skipping frontend:test:coverage."
+            fi
       - run:
           name: Enforce patch coverage
           command: |
