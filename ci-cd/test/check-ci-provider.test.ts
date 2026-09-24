@@ -608,6 +608,22 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('createCommitOnBranch');
   });
 
+  it('fails when generated changelog commits skip REST signature verification', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          'repos/$GITHUB_REPOSITORY/commits/$commit_oid',
+          'repos/$GITHUB_REPOSITORY/commits/$commit_id'
+        )
+      );
+    });
+    expect(run(directory).output).toContain('repos\\/\\$GITHUB_REPOSITORY\\/commits\\/\\$commit_oid');
+  });
+
   it('fails when Sonar can scan binary assets as source files', () => {
     expect.hasAssertions();
 
