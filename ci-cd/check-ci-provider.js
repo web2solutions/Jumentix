@@ -208,6 +208,11 @@ if (!fs.existsSync(workflowPath)) {
       'Coverage job must build workspace package dependencies before frontend patch coverage'
     );
   }
+  if (!/needs-frontend-patch-coverage\.js/.test(coverageBlock)) {
+    failures.push(
+      'Coverage job must gate frontend coverage with needs-frontend-patch-coverage.js'
+    );
+  }
 
   [
     /\n\s+codecov:\s*\n/,
@@ -455,6 +460,9 @@ if (fs.existsSync(circleciPath)) {
   const circleCoverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
   if (!/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(circleCoverageBlock)) {
     failures.push('CircleCI coverage must build workspace package dependencies before frontend patch coverage');
+  }
+  if (!/needs-frontend-patch-coverage\.js/.test(circleCoverageBlock)) {
+    failures.push('CircleCI coverage must gate frontend coverage with needs-frontend-patch-coverage.js');
   }
 
   if (!fs.existsSync(serviceWaitPath)) {
