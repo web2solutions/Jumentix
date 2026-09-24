@@ -403,7 +403,7 @@
     "eslint-plugin-jest": "^27.9.0",
     "eslint-plugin-module-resolver": "^1.5.0",
     "eslint-plugin-no-async-foreach": "^0.1.1",
-    "husky": "^8.0.3",
+    "husky": "^9.1.7",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-instrument": "^6.0.3",
     "istanbul-lib-source-maps": "^5.0.6",
