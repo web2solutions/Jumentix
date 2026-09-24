@@ -21,8 +21,12 @@ function isCursorUsageLimitNotice(comment) {
  * for. Same category as the Cursor usage-limit notice above.
  */
 function isAutomatedStatusDecoration(comment) {
-  return comment?.author?.login === 'sonarqubecloud'
-    && /quality gate/i.test(comment.body || '');
+  const login = comment?.author?.login || '';
+  if (login === 'sonarqubecloud' && /quality gate/i.test(comment.body || '')) return true;
+  // Codecov posts a coverage summary on every PR; it is status decoration, not
+  // human review feedback (proven by #479 blocking on codecov[bot] comments).
+  if (login === 'codecov' && /codecov\.io/i.test(comment.body || '')) return true;
+  return false;
 }
 
 function parseResolutionMarker(body) {

@@ -264,9 +264,17 @@ export const runSessionSync = async (): Promise<void> => withSyncGate(async () =
   await drainOutbox();
 });
 
-export const bindOnlineReplay = (): void => {
-  if (typeof window === 'undefined') return;
-  window.addEventListener('online', () => {
+/**
+ * Bind a one-shot online → session-sync listener. Returns an unbind so unit
+ * suites under coverage can remove the listener before restoring `fetch`
+ * (otherwise a late `online` event hits the real network and Bun exits 1 on
+ * ECONNREFUSED with zero failing assertions — JUM-889 release PR flake).
+ */
+export const bindOnlineReplay = (): (() => void) => {
+  if (typeof window === 'undefined') return () => undefined;
+  const onOnline = (): void => {
     runSessionSync().catch(() => undefined);
-  });
+  };
+  window.addEventListener('online', onOnline);
+  return () => window.removeEventListener('online', onOnline);
 };

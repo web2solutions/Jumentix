@@ -530,16 +530,31 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
-      fs.writeFileSync(
-        file,
-        fs.readFileSync(file, 'utf8').replace(
-          '      - name: Build workspace package dependencies for frontend coverage\n        run: bun run mono:build\n',
-          ''
-        )
+      const original = fs.readFileSync(file, 'utf8');
+      const mutated = original.replace(
+        /\n {6}- name: Build workspace package dependencies for frontend coverage\n {8}run: \|[\s\S]*?\n {6}- name: Produce frontend coverage for the patch report\n/,
+        '\n      - name: Produce frontend coverage for the patch report\n'
       );
+      expect(mutated).not.toBe(original);
+      fs.writeFileSync(file, mutated);
     });
     expect(run(directory).output).toContain(
       'Coverage job must build workspace package dependencies before frontend patch coverage'
+    );
+  });
+
+  it('fails when frontend coverage is not gated by needs-frontend-patch-coverage', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(/needs-frontend-patch-coverage\.js/g, 'needs-frontend-missing.js')
+      );
+    });
+    expect(run(directory).output).toContain(
+      'Coverage job must gate frontend coverage with needs-frontend-patch-coverage.js'
     );
   });
 

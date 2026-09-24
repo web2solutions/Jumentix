@@ -3,7 +3,10 @@
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
-const { emitsNoJavaScript } = require('./lib/emits-javascript.js');
+const {
+  isCoverageSubject: isCoverageSubjectShared,
+  loadCoverageIgnorePatterns
+} = require('./lib/coverage-subject.js');
 
 const ROOT = process.cwd();
 const LCOV_PATH = process.env.JUMENTIX_MERGED_LCOV
@@ -34,50 +37,16 @@ const selectedLayers = String(process.env.JUMENTIX_SELECTED_LAYERS || '')
  * measurement. Those are read from the Jest configuration rather than restated
  * here: a second list would drift, and the moment it drifts one of the two is
  * silently wrong.
+ *
+ * Predicate lives in `lib/coverage-subject.js` so needs-frontend-patch-coverage
+ * cannot drift from this gate (JUM-889).
  */
-// Cypress specs live under `**/cypress/**` / `*.cy.ts(js)` and are the
-// instrument, not the subject — same false-green trap as `test/` / `*.test.ts`
-// if counted. Generated browser bundles under `.browser-tests/` are the same.
-const TEST_FILE = /(^|\/)(test|cypress|\.browser-tests)\/|\.test\.ts$|\.spec\.ts$|\.cy\.(ts|js)$/;
-// Website `_meta.ts` files are navigation/content metadata. The website job
-// validates their routes and publishability; Jest coverage cannot execute them.
-const WEBSITE_CONTENT_META = /^apps\/jumentix-website\/content\/.*\/_meta\.ts$/;
+const coverageIgnorePatterns = loadCoverageIgnorePatterns(ROOT);
 
-const coverageIgnorePatterns = (() => {
-  try {
-    // eslint-disable-next-line global-require, import/no-dynamic-require
-    const jestConfig = require(path.join(ROOT, 'jest.config.js'));
-    return (jestConfig.coveragePathIgnorePatterns || [])
-      .map((pattern) => new RegExp(pattern.replace('<rootDir>', ROOT)));
-  } catch {
-    // No config to read: measure everything rather than assume an exclusion.
-    return [];
-  }
-})();
-
-/**
- * Istanbul's own file-level opt-out, honoured here for the same reason the Jest
- * ignore patterns are: it is a declared, reviewable exclusion, and a file the
- * instrumenter was told to skip can never appear in the report. Counting its
- * lines as uncovered turns a deliberate decision into an unpayable debt —
- * `start-rest-api.ts` carries the pragma because importing its adapter table
- * boots real HTTP servers, and it contributed 48 unreachable misses.
- */
-// Istanbul accepts `ignore file` with an optional description before `*/`
-// (used by Redis/broker adapters that point at their integration suites).
-// Requiring an immediate `*/` missed those and counted every changed line
-// as uncovered patch debt.
-const ISTANBUL_IGNORE_FILE = /\/\*\s*istanbul\s+ignore\s+file\b/;
-
-const isCoverageSubject = (file) => {
-  if (TEST_FILE.test(file)) return false;
-  if (WEBSITE_CONTENT_META.test(file)) return false;
-  const absolute = path.join(ROOT, file);
-  if (coverageIgnorePatterns.some((pattern) => pattern.test(absolute))) return false;
-  if (!fs.existsSync(absolute)) return false;
-  if (ISTANBUL_IGNORE_FILE.test(fs.readFileSync(absolute, 'utf8'))) return false;
-  return !emitsNoJavaScript(absolute);
-};
+const isCoverageSubject = (file) => isCoverageSubjectShared(file, {
+  rootDir: ROOT,
+  coverageIgnorePatterns
+});
 
 const run = (cmd) => cp.execSync(cmd, {
   cwd: ROOT,

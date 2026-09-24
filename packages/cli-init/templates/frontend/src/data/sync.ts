@@ -264,9 +264,11 @@ export const runSessionSync = async (): Promise<void> => withSyncGate(async () =
   await drainOutbox();
 });
 
-export const bindOnlineReplay = (): void => {
-  if (typeof window === 'undefined') return;
-  window.addEventListener('online', () => {
+export const bindOnlineReplay = (): (() => void) => {
+  if (typeof window === 'undefined') return () => undefined;
+  const onOnline = (): void => {
     runSessionSync().catch(() => undefined);
-  });
+  };
+  window.addEventListener('online', onOnline);
+  return () => window.removeEventListener('online', onOnline);
 };

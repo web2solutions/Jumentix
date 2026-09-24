@@ -2732,6 +2732,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/needs-frontend-patch-coverage.test.ts",
+      "path": "ci-cd/test/needs-frontend-patch-coverage.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-ci-provider.test.ts",
       "path": "ci-cd/test/check-ci-provider.test.ts",
       "layer": "tooling",

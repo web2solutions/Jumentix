@@ -175,12 +175,44 @@ function resolveBunBinary(options = {}) {
   );
 }
 
+/**
+ * Required-check failures under BLOCKED: fail immediately instead of polling
+ * until the 1h timeout (proven by app-release run 36033595770 waiting on #479
+ * while ci/circleci: coverage was already FAILURE).
+ */
+function listFailedRequiredChecks(prUrl, options = {}) {
+  const invoke = options.runGh || runGh;
+  const raw = invoke([
+    'pr', 'view', prUrl,
+    '--json', 'statusCheckRollup',
+    '--jq',
+    '[.statusCheckRollup[]? | select('
+      + '((.conclusion == "FAILURE") or (.state == "FAILURE")'
+      + ' or (.conclusion == "CANCELLED") or (.state == "CANCELLED")'
+      + ' or (.conclusion == "TIMED_OUT") or (.state == "ERROR"))'
+      + ' | {name: (.name // .context // "unknown"),'
+      + ' url: (.detailsUrl // .targetUrl // "")}]'
+  ], {
+    env: options.env,
+    cwd: options.cwd,
+    allowFailure: true
+  });
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function waitForPullRequestMergeable(prUrl, options = {}) {
   const timeoutMs = options.timeoutMs ?? 60 * 60 * 1000;
   const pollMs = options.pollMs ?? 30_000;
+  const invoke = options.runGh || runGh;
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
-    const state = runGh(
+    const state = invoke(
       ['pr', 'view', prUrl, '--json', 'mergeStateStatus', '--jq', '.mergeStateStatus'],
       { env: options.env, cwd: options.cwd }
     );
@@ -188,6 +220,15 @@ function waitForPullRequestMergeable(prUrl, options = {}) {
       return state;
     }
     if (state === 'BLOCKED' || state === 'UNKNOWN') {
+      const failed = listFailedRequiredChecks(prUrl, { ...options, runGh: invoke });
+      if (failed.length > 0) {
+        const detail = failed
+          .map((entry) => `${entry.name}${entry.url ? ` (${entry.url})` : ''}`)
+          .join('; ');
+        throw new Error(
+          `Required checks failed on ${prUrl}: ${detail}`
+        );
+      }
       sleepMs(pollMs);
       continue;
     }
@@ -528,6 +569,7 @@ module.exports = {
   createAppReleaseTag,
   createAppReleaseTagGithubApi,
   headHasAppTag,
+  listFailedRequiredChecks,
   main,
   openAndMergeReleasePr,
   resolveBunBinary,
