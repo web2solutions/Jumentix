@@ -4,7 +4,10 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-09-24 [JUM-889][Release] Promote app-release inherit fix to main (#477) - Eduardo A.
+- 2026-09-24 chore(release): merge main into dev (v0.2.0 ancestry) - Eduardo A.
+- 2026-09-24 fix(release): handle gh inherit stdio returning null (#476) - Eduardo A.
+- 2026-09-24 fix(ci): allow app-release chore branches to target main (#474) - Eduardo A.
 
 ## v0.2.0 - 2026-09-24
 
