@@ -396,7 +396,7 @@
     "cz-conventional-changelog": "^3.3.0",
     "derby": "^4.2.3",
     "dexie": "^4.4.4",
-    "eslint": "^8.57.1",
+    "eslint": "^10.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.31.0",
