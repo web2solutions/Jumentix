@@ -51,7 +51,7 @@ function runGh(args, options = {}) {
     );
   }
   try {
-    return execFileSync(ghBinary(), args, {
+    const stdout = execFileSync(ghBinary(), args, {
       encoding: 'utf8',
       cwd: options.cwd,
       env: {
@@ -60,10 +60,14 @@ function runGh(args, options = {}) {
         GH_TOKEN: token,
         GITHUB_TOKEN: token
       },
+      // inherit returns null from execFileSync — do not call .toString() on it
+      // (proven by app-release run 36023574556 after #472 squash-merged).
       stdio: options.inherit
         ? 'inherit'
         : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe']
-    }).toString().trim();
+    });
+    if (options.inherit) return '';
+    return String(stdout || '').trim();
   } catch (error) {
     if (options.allowFailure) return '';
     throw error;
@@ -520,6 +524,7 @@ function main(argv = process.argv.slice(2)) {
 
 module.exports = {
   applyLockedVersion,
+  runGh,
   createAppReleaseTag,
   createAppReleaseTagGithubApi,
   headHasAppTag,
