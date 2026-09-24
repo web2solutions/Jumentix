@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync, spawnSync } = require('child_process');
 const { gitBinary } = require('./lib/git-binary.js');
+const { ghBinary } = require('./lib/gh-binary.js');
 const { isEntryPoint } = require('./lib/entry-point.js');
 const { APP_TAG_RE } = require('./lib/next-version.js');
 
@@ -58,7 +59,7 @@ function extractChangelogSection(changelogText, tagName) {
 }
 
 function releaseExists(tagName, env = process.env) {
-  const result = spawnSync('gh', ['release', 'view', tagName], {
+  const result = spawnSync(ghBinary(), ['release', 'view', tagName], {
     encoding: 'utf8',
     env,
     stdio: ['ignore', 'pipe', 'pipe']
@@ -111,11 +112,12 @@ function createGithubRelease(options = {}) {
 
   const token = (options.env || process.env).GH_TOKEN
     || (options.env || process.env).GITHUB_TOKEN
+    || (options.env || process.env).CHANGELOG_GH_TOKEN
     || '';
   if (!token) {
     throw new Error(
-      'Missing GH_TOKEN or GITHUB_TOKEN. CircleCI must provide a token that can '
-      + 'create GitHub Releases (fail closed).'
+      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN. '
+      + 'CI must provide a token that can create GitHub Releases (fail closed).'
     );
   }
 
@@ -128,7 +130,7 @@ function createGithubRelease(options = {}) {
       '--notes-file', notesPath
     ];
     if (prerelease) args.push('--prerelease');
-    execFileSync('gh', args, {
+    execFileSync(ghBinary(), args, {
       cwd: rootDir,
       stdio: 'inherit',
       env: {
