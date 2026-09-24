@@ -160,15 +160,27 @@ function isSignedDevPromotionBranch(headRef) {
   return /^codex\/release\/[A-Z0-9-]+-dev-main-signed-squash$/i.test(String(headRef || '').trim());
 }
 
+const GENERATED_CHANGELOG_SYNC_BODY_PREFIX =
+  'Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.';
+const GENERATED_APP_RELEASE_BODY_PREFIX = 'Automated application version bump and release for';
+
 function isGeneratedChangelogSync({ title, body, headRef }) {
+  // Bugbot / other bots may append a summary after the canonical first paragraph.
   return /^chore\/changelog-sync-[0-9a-f]{8}$/i.test(String(headRef || '').trim())
     && title === 'chore: synchronize changelog'
-    && body.trim() === 'Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.';
+    && String(body || '').trimStart().startsWith(GENERATED_CHANGELOG_SYNC_BODY_PREFIX);
+}
+
+function isGeneratedAppRelease({ title, body, headRef }) {
+  return /^chore\/release-v\d+\.\d+\.\d+$/i.test(String(headRef || '').trim())
+    && /^chore\(release\): v\d+\.\d+\.\d+$/.test(String(title || '').trim())
+    && String(body || '').trimStart().startsWith(GENERATED_APP_RELEASE_BODY_PREFIX);
 }
 
 function validateReleasePullRequest({ title, body, headRef }) {
   const failures = [];
   if (isGeneratedChangelogSync({ title, body, headRef })) return failures;
+  if (isGeneratedAppRelease({ title, body, headRef })) return failures;
   if (headRef !== 'dev' && !isSignedDevPromotionBranch(headRef)) {
     failures.push('[pr-governance] only dev may target main');
   }
