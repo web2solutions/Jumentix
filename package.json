@@ -1,6 +1,6 @@
 {
   "name": "jumentix",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Jumentix software factory for product teams. Build services with Authentication, Authorization, and Accounting principles, including service management, REST API, gRPC API, WebSocket API, and more.",
   "packageManager": "bun@1.3.13",
   "main": "apps/backend-template/src/interface/HTTP/adapters/fastify.ts",

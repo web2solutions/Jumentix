@@ -215,7 +215,36 @@ describe('check-pr-governance', () => {
     };
 
     expect(validatePullRequest(generated)).toStrictEqual([]);
+    expect(validatePullRequest({
+      ...generated,
+      body: `${generated.body}\n\n<!-- CURSOR_SUMMARY -->\n> note\n`
+    })).toStrictEqual([]);
     expect(validatePullRequest({ ...generated, body: 'manual changelog update' })).toHaveLength(2);
+  });
+
+  it('allows the CI-generated app-release bump PR to target main', () => {
+    expect.hasAssertions();
+    const generated = {
+      title: 'chore(release): v0.1.0',
+      body: [
+        'Automated application version bump and release for `v0.1.0`.',
+        '',
+        'Opened by `.github/workflows/app-release.yml` (JUM-889).',
+        'After merge the workflow creates the annotated tag and GitHub Release.'
+      ].join('\n'),
+      headRef: 'chore/release-v0.1.0',
+      baseRef: 'main'
+    };
+
+    expect(validatePullRequest(generated)).toStrictEqual([]);
+    expect(validatePullRequest({
+      ...generated,
+      body: `${generated.body}\n\n<!-- CURSOR_SUMMARY -->\n> note\n`
+    })).toStrictEqual([]);
+    expect(validatePullRequest({
+      ...generated,
+      title: 'chore(release): not-a-semver'
+    })).toHaveLength(2);
   });
 
   it('validates templates but skips PR metadata on long-lived branch builds', async () => {

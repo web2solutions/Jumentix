@@ -97,6 +97,20 @@ describe('classify-ci-context', () => {
     expect(evidence.selectedJobs).toStrictEqual([...FULL_JOBS, 'browser-matrix']);
   });
 
+  it('classifies the generated app-release bump branch as a full-suite release promotion', () => {
+    expect.hasAssertions();
+
+    const evidence = classify({
+      GITHUB_EVENT_NAME: 'pull_request',
+      JUMENTIX_CI_IS_PULL_REQUEST: 'true',
+      GITHUB_HEAD_REF: 'chore/release-v0.1.0',
+      GITHUB_BASE_REF: 'main'
+    });
+
+    expect(evidence.context).toBe(CONTEXTS.RELEASE_PR_TO_MAIN);
+    expect(evidence.selectedJobs).toStrictEqual([...FULL_JOBS, 'browser-matrix']);
+  });
+
   it('classifies a main push as a full-suite event', () => {
     expect.hasAssertions();
 
