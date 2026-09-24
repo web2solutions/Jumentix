@@ -355,6 +355,7 @@ jobs:
       (github.event_name == 'pull_request' && github.base_ref == 'main' && (
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
+        startsWith(github.head_ref, 'chore/release-v') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       )))
     runs-on: ubuntu-latest
@@ -396,6 +397,7 @@ jobs:
       (github.event_name == 'pull_request' && github.base_ref == 'main' && (
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
+        startsWith(github.head_ref, 'chore/release-v') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       )))
     runs-on: ubuntu-latest
@@ -440,6 +442,7 @@ jobs:
       (github.event_name == 'pull_request' && github.base_ref == 'main' && (
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
+        startsWith(github.head_ref, 'chore/release-v') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       )))
     runs-on: ubuntu-latest
@@ -495,6 +498,7 @@ jobs:
       (github.event_name == 'pull_request' && github.base_ref == 'main' && (
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
+        startsWith(github.head_ref, 'chore/release-v') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       )))
     runs-on: ubuntu-latest
@@ -569,8 +573,8 @@ jobs:
               # A dev-to-main promotion has no new patch beyond protected dev.
               # Codecov's project comparison remains the required gate against main.
               JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch
-            elif [ "${GITHUB_BASE_REF}" = "main" ] && { [[ "${GITHUB_HEAD_REF}" =~ ^chore/changelog-sync-[0-9a-f]{8}$ ]] || [[ "${GITHUB_HEAD_REF}" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
-              # Generated changelog and signed reconciliation PRs are cut from main;
+            elif [ "${GITHUB_BASE_REF}" = "main" ] && { [[ "${GITHUB_HEAD_REF}" =~ ^chore/changelog-sync-[0-9a-f]{8}$ ]] || [[ "${GITHUB_HEAD_REF}" =~ ^chore/release-v[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "${GITHUB_HEAD_REF}" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
+              # Generated changelog, app-release bump, and signed reconciliation PRs are cut from main;
               # their patch is only the reconciliation itself, never all of dev.
               JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch
             else
@@ -665,6 +669,7 @@ jobs:
       (github.event_name == 'pull_request' && github.base_ref == 'main' && (
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
+        startsWith(github.head_ref, 'chore/release-v') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       )))
     runs-on: ubuntu-latest
@@ -718,6 +723,7 @@ jobs:
       (github.event_name == 'pull_request' && github.base_ref == 'main' && (
         github.head_ref == 'dev' ||
         startsWith(github.head_ref, 'chore/changelog-sync-') ||
+        startsWith(github.head_ref, 'chore/release-v') ||
         (startsWith(github.head_ref, 'codex/release/') && endsWith(github.head_ref, '-dev-main-signed-squash'))
       )))
     runs-on: ubuntu-latest
