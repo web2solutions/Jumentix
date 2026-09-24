@@ -131,6 +131,21 @@ commands:
             sudo apt-get update
             sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
       - browser-tools/install-chrome
+      # Preinstall Firefox from Mozilla so browser-tools/install-firefox
+      # hits installation_check and skips its silenced apt path (exit 100 on
+      # CircleCI job 759 / pipeline 179 — Ubuntu mirror/apt flake under the orb).
+      - run:
+          name: Preinstall Firefox from Mozilla archive
+          command: |
+            set -euo pipefail
+            VER="$(curl -fsSL https://product-details.mozilla.org/1.0/firefox_versions.json | jq -r .LATEST_FIREFOX_VERSION)"
+            test -n "$VER" && test "$VER" != "null"
+            ARCHIVE="https://archive.mozilla.org/pub/firefox/releases/${VER}/linux-x86_64/en-US/firefox-${VER}.tar.xz"
+            curl -fsSL -o /tmp/firefox.tar.xz "$ARCHIVE"
+            sudo rm -rf /opt/firefox
+            sudo tar -xJf /tmp/firefox.tar.xz -C /opt
+            sudo ln -sfn /opt/firefox/firefox /usr/local/bin/firefox
+            firefox --version | grep -F "$VER"
       - browser-tools/install-firefox
 
 jobs:
