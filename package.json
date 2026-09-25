@@ -86,6 +86,7 @@
     "ci:gate:branch": "bun ci-cd/run-branch-quality-gate.js",
     "ci:gate:task": "bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js",
     "ci:gate:strict": "bun ci-cd/run-full-test-matrix.js",
+    "ci:gate:generated-automation": "bun ci-cd/check-generated-automation-pr.js",
     "dev": "bun run pm2:start:dev:restapi",
     "website:dev": "bun run --filter @jumentix/website dev",
     "website:build": "bun run --filter @jumentix/website build",

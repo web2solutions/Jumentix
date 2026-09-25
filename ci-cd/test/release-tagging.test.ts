@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+const releaseFs = require('fs');
+const releasePath = require('path');
 const {
   extractChangelogSection
 } = require('../create-github-release.js');
@@ -59,6 +61,8 @@ describe('create-app-release-tag --github-api dry-run', () => {
       // Decouple from live tip history (after v0.2.1 only ignore-level changelog
       // syncs remain, so the real resolver correctly noops — JUM-889).
       headHasAppTag: () => '',
+      // Locked tag already exists → exercise the bump plan path.
+      remoteTagExists: () => true,
       resolveNextVersion: () => ({
         action: 'bump',
         bumpLevel: 'patch',
@@ -83,6 +87,7 @@ describe('create-app-release-tag --github-api dry-run', () => {
       repository: 'web2solutions/Jumentix',
       env: { CHANGELOG_GH_TOKEN: 'test-token', GITHUB_REPOSITORY: 'web2solutions/Jumentix' },
       headHasAppTag: () => '',
+      remoteTagExists: () => true,
       resolveNextVersion: () => ({
         action: 'noop',
         reason: 'no-releasable-commits'
@@ -121,6 +126,17 @@ describe('create-app-release-tag absolute CLI resolution', () => {
     })).toBe('/opt/homebrew/bin/bun');
   });
 });
+
+function runGhWithNamedResponses(responses: Record<string, string>) {
+  return (args: string[]) => {
+    const byArg: Record<string, string> = {
+      statusCheckRollup: 'rollup',
+      checks: 'checks'
+    };
+    const matched = args.map((arg) => byArg[arg]).find(Boolean);
+    return responses[matched || 'default'] ?? '[]';
+  };
+}
 
 describe('waitForPullRequestMergeable fail-fast', () => {
   const {
@@ -172,6 +188,70 @@ describe('waitForPullRequestMergeable fail-fast', () => {
     expect(thrown).toBeInstanceOf(Error);
     expect(String(thrown?.message)).toMatch(/Required checks failed.*ci\/circleci: coverage/);
     expect(calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('falls back to gh pr checks when the rollup is empty', () => {
+    expect.hasAssertions();
+    const failed = listFailedRequiredChecks('https://example.test/pr/514', {
+      runGh: runGhWithNamedResponses({
+        rollup: '[]',
+        checks: JSON.stringify([
+          { name: 'ci/circleci: branch-gate', url: 'https://circleci.com/gh/x/1953' }
+        ])
+      })
+    });
+    expect(failed).toStrictEqual([
+      { name: 'ci/circleci: branch-gate', url: 'https://circleci.com/gh/x/1953' }
+    ]);
+  });
+
+  it('plans tag-missing-locked-version instead of another bump', () => {
+    expect.hasAssertions();
+    const {
+      createAppReleaseTagGithubApi: createApi,
+      parseFailedCheckJson
+    } = require('../create-app-release-tag.js');
+    expect(parseFailedCheckJson(JSON.stringify([
+      { name: 'ci/circleci: branch-gate', url: 'https://circleci.com/gh/x/1953' }
+    ]))).toStrictEqual([
+      { name: 'ci/circleci: branch-gate', url: 'https://circleci.com/gh/x/1953' }
+    ]);
+    const rootDir = releasePath.join(__dirname, '.tmp-tag-missing-locked');
+    releaseFs.rmSync(rootDir, { recursive: true, force: true });
+    releaseFs.mkdirSync(rootDir, { recursive: true });
+    releaseFs.writeFileSync(
+      releasePath.join(rootDir, 'package.json'),
+      `${JSON.stringify({ name: 'jumentix', version: '0.2.14' }, null, 2)}\n`
+    );
+    releaseFs.writeFileSync(
+      releasePath.join(rootDir, 'release-policy.json'),
+      `${JSON.stringify({ appLockedVersion: '0.2.14' }, null, 2)}\n`
+    );
+
+    const result = createApi({
+      dryRun: true,
+      rootDir,
+      repository: 'web2solutions/Jumentix',
+      env: { CHANGELOG_GH_TOKEN: 'test-token' },
+      headHasAppTag: () => null,
+      remoteTagExists: () => false,
+      resolveNextVersion: () => ({
+        action: 'bump',
+        reason: 'bump:patch',
+        baseVersion: '0.2.14',
+        nextVersion: '0.2.15',
+        bumpLevel: 'patch'
+      })
+    });
+
+    expect(result).toMatchObject({
+      action: 'create',
+      tag: 'v0.2.14',
+      reason: 'tag-missing-locked-version',
+      dryRun: true,
+      mode: 'github-api'
+    });
+    releaseFs.rmSync(rootDir, { recursive: true, force: true });
   });
 });
 
