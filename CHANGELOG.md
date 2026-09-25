@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.2.14 - 2026-09-25
+
 - 2026-09-25 [JUM-889][Release] Promote unattended release automation to main (#517) - Eduardo A.
 - 2026-09-25 [JUM-889][Fix] Unattended release/changelog PR automation (#516) - Eduardo A.
 - 2026-09-25 chore(release): v0.2.14 (#512) - Eduardo A.
