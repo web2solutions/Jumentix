@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-09-25 chore(release): v0.2.13 (#510) - Eduardo A.
 - 2026-09-25 chore(release): v0.2.12 (#508) - Eduardo A.
 - 2026-09-25 chore(release): v0.2.11 (#507) - Eduardo A.
 - 2026-09-25 chore(release): v0.2.10 (#505) - Eduardo A.
