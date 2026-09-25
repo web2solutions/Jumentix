@@ -4,7 +4,16 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-09-25 [JUM-889][Release] Promote coverage harden to main (#486) - Eduardo A.
+- 2026-09-25 [JUM-889][Fix] Ignore cli-init templates in patch coverage (#488) - Eduardo A.
+- 2026-09-25 fix(coverage): ignore cli-init templates in patch coverage - Eduardo A.
+- 2026-09-25 [JUM-889][Fix] Decouple app-release dry-run from live tip history (#487) - Eduardo A.
+- 2026-09-25 fix(test): decouple app-release dry-run from live tip history - Eduardo A.
+- 2026-09-25 [JUM-889][Release] Reconcile main into dev (v0.2.1 ancestry) (#485) - Eduardo A.
+- 2026-09-25 chore(release): merge main into dev (v0.2.1 ancestry) - Eduardo A.
+- 2026-09-24 [JUM-889][CI] Skip frontend coverage on non-frontend release patches (#481) - Eduardo A.
+- 2026-09-24 fix(ci): treat Codecov PR comments as automated decoration - Eduardo A.
+- 2026-09-24 fix(ci): skip frontend coverage on non-frontend release patches - Eduardo A.
 
 ## v0.2.1 - 2026-09-24
 
