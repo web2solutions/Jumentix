@@ -2,9 +2,37 @@
 
 <!-- This file is generated from Git history. GitHub Actions synchronizes it after merges to main. -->
 
-## All Changes
+## Unreleased
 
+- No changes.
+
+## v0.2.1 - 2026-09-24
+
+- 2026-09-24 chore(release): v0.2.1 (#479) - Eduardo A.
+- 2026-09-24 [JUM-889][Release] Promote app-release inherit fix to main (#477) - Eduardo A.
+- 2026-09-24 chore(release): merge main into dev (v0.2.0 ancestry) - Eduardo A.
+- 2026-09-24 fix(release): handle gh inherit stdio returning null (#476) - Eduardo A.
+- 2026-09-24 fix(ci): allow app-release chore branches to target main (#474) - Eduardo A.
+
+## v0.2.0 - 2026-09-24
+
+- 2026-09-24 chore(release): v0.2.0 (#475) - Eduardo A.
+
+## v0.1.0 - 2026-09-24
+
+- 2026-09-24 chore(release): v0.1.0 (#472) - Eduardo A.
+- 2026-09-24 [JUM-889][Release] Promote signed app-release path to main (#468) - Eduardo A.
+- 2026-09-24 fix(ci): preinstall Firefox before browser-tools orb (#471) - Eduardo A.
+- 2026-09-24 fix(release): resolve sleep/bun via absolute paths (#470) - Eduardo A.
+- 2026-09-24 [JUM-890][Test] Guard REST changelog signature verification (#469) - Eduardo A.
+- 2026-09-24 test(ci): guard changelog REST signature verification - Eduardo Almeida
+- 2026-09-24 [JUM-889][Chore] Merge main into dev (ancestry for promote) (#467) - Eduardo A.
+- 2026-09-24 chore(release): merge main into dev (ancestry) - Eduardo A.
+- 2026-09-24 [JUM-889][Chore] Merge main into dev before app-release promote (#465) - Eduardo A.
+- 2026-09-23 fix(release): move app tags to signed GHA path (#457) - Eduardo A.
+- 2026-09-23 [JUM-882][Fix] Resolve gh/npm via absolute paths for Sonar S4036 - Eduardo A.
 - 2026-09-23 [JUM-882][Release] Promote tag-driven release epic to main - Eduardo A.
+- 2026-09-23 [JUM-882][Release] Tag-driven changelog, GitHub Releases and npm publish - Eduardo A.
 - 2026-09-23 [JUM-890][Release] Verify automated changelog commit signing (#446) - Eduardo A.
 - 2026-09-23 [JUM-890][Chore] Merge main into dev (#451) - Eduardo A.
 - 2026-09-23 chore: merge main into dev - Eduardo Almeida
