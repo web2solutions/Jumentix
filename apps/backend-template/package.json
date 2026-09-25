@@ -1,6 +1,6 @@
 {
   "name": "@jumentix/backend-template",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "private": true,
   "description": "Jumentix backend template workspace app",
   "dependencies": {
