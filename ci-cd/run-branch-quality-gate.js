@@ -3,7 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { isEntryPoint } = require('./lib/entry-point.js');
-const { classifyCiContext, CONTEXTS } = require('./classify-ci-context.js');
+const {
+  classifyCiContext,
+  CONTEXTS,
+  isGeneratedAppReleaseBranch,
+  isGeneratedChangelogSyncBranch
+} = require('./classify-ci-context.js');
 
 /**
  * Lint runs before every gate that does not already contain it (JUM-596).
@@ -86,6 +91,23 @@ const FULL_MATRIX_QUALITY_GATE = Object.freeze({
     BUILD_DEV_PREFLIGHT
   ])
 });
+/**
+ * Generated app-release / changelog PRs (JUM-889). Preflight + diff shape only.
+ * Heavy suites already run as selected CircleCI jobs; duplicating `ci:gate:strict`
+ * inside branch-gate flakes and stalls unattended merges.
+ */
+const GENERATED_AUTOMATION_QUALITY_GATE = Object.freeze({
+  id: 'generated-automation',
+  script: 'ci:gate:generated-automation',
+  preflight: Object.freeze([
+    LINT_PREFLIGHT,
+    TEST_INTEGRITY_PREFLIGHT,
+    CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
+    WORKSPACE_BOUNDARIES_PREFLIGHT,
+    OWNERSHIP_PLACEMENT_PREFLIGHT,
+    BUILD_DEV_PREFLIGHT
+  ])
+});
 const UNIT_QUALITY_GATE = Object.freeze({
   id: 'unit',
   script: 'test:unit',
@@ -124,7 +146,14 @@ function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
   return Boolean(process.env.CIRCLE_PULL_REQUEST);
 }
 
+function isGeneratedAutomationHead(headRef) {
+  return isGeneratedAppReleaseBranch(headRef) || isGeneratedChangelogSyncBranch(headRef);
+}
+
 function selectQualityGate(targetBranch, options = {}) {
+  if (isGeneratedAutomationHead(options.headRef)) {
+    return GENERATED_AUTOMATION_QUALITY_GATE;
+  }
   if (options.context) {
     if (
       options.context === CONTEXTS.RELEASE_PR_TO_MAIN
@@ -208,7 +237,8 @@ function runBranchQualityGate(options = {}) {
   const isPullRequest = ciContext?.isPullRequest ?? resolvePullRequestFlag(options.isPullRequest);
   const gate = selectQualityGate(targetBranch, {
     isPullRequest,
-    context: ciContext?.context
+    context: ciContext?.context,
+    headRef: options.headRef || ciContext?.headRef
   });
   logger.log(`[ci] target branch: ${targetBranch}`);
   if (ciContext?.context) logger.log(`[ci] context: ${ciContext.context}`);
@@ -270,9 +300,11 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   FULL_MATRIX_QUALITY_GATE,
+  GENERATED_AUTOMATION_QUALITY_GATE,
   TASK_QUALITY_GATE,
   UNIT_QUALITY_GATE,
   executeQualityGate,
+  isGeneratedAutomationHead,
   resolvePullRequestFlag,
   resolveTargetBranch,
   runBranchQualityGate,

@@ -460,6 +460,8 @@ module.exports = {
   SUPPORTED_AGENT_FIELDS,
   TEMPLATE_PATHS,
   TITLE_PREFIX_BY_NATURE,
+  GENERATED_CHANGELOG_SYNC_BODY_PREFIX,
+  GENERATED_APP_RELEASE_BODY_PREFIX,
   agentBranchPatterns,
   isPlaceholder,
   loadSupportedAgents,
