@@ -204,6 +204,62 @@ describe('run-branch-quality-gate', () => {
     ]);
   });
 
+  it('selects the generated-automation gate for app-release and changelog heads', () => {
+    expect.hasAssertions();
+    const {
+      GENERATED_AUTOMATION_QUALITY_GATE: generatedGate
+    } = require('../run-branch-quality-gate');
+    expect(selectQualityGate('main', {
+      context: 'release-pr-to-main',
+      headRef: 'chore/release-v0.2.15'
+    })).toBe(generatedGate);
+    expect(selectQualityGate('main', {
+      context: 'release-pr-to-main',
+      headRef: 'chore/changelog-sync-deadbeef'
+    })).toBe(generatedGate);
+  });
+
+  it('runs only preflight plus the generated-automation script for release heads', () => {
+    expect.hasAssertions();
+    const execute = jest.fn().mockReturnValue(0);
+    const evidence = runBranchQualityGate({
+      env: {
+        CIRCLE_BRANCH: 'chore/release-v0.2.15',
+        CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/514',
+        CIRCLE_PR_BASE_BRANCH: 'main'
+      },
+      spawn: jest.fn().mockReturnValue({
+        status: 0,
+        stdout: [
+          'package.json',
+          'release-policy.json',
+          'apps/frontend/package.json'
+        ].join('\n')
+      }),
+      execute,
+      logger: { log: jest.fn(), error: jest.fn() },
+      resultFile: ''
+    });
+
+    expect(evidence).toMatchObject({
+      targetBranch: 'main',
+      isPullRequest: true,
+      context: 'release-pr-to-main',
+      gate: 'generated-automation',
+      script: 'ci:gate:generated-automation',
+      outcome: 'passed'
+    });
+    expect(stepIds(execute)).toStrictEqual([
+      'lint',
+      'test-integrity',
+      'current-governance-docs',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'generated-automation'
+    ]);
+  });
+
   it('records CI context evidence when CircleCI metadata is available', () => {
     expect.hasAssertions();
     const execute = jest.fn().mockReturnValue(0);

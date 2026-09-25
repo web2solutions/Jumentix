@@ -2732,16 +2732,6 @@
       "timeoutMs": 60000
     },
     {
-      "id": "ci-cd/test/needs-frontend-patch-coverage.test.ts",
-      "path": "ci-cd/test/needs-frontend-patch-coverage.test.ts",
-      "layer": "tooling",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000
-    },
-    {
       "id": "ci-cd/test/check-ci-provider.test.ts",
       "path": "ci-cd/test/check-ci-provider.test.ts",
       "layer": "tooling",
@@ -2922,6 +2912,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/check-generated-automation-pr.test.ts",
+      "path": "ci-cd/test/check-generated-automation-pr.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/start-redis-compose.test.ts",
       "path": "ci-cd/test/start-redis-compose.test.ts",
       "layer": "tooling",
@@ -3044,6 +3044,16 @@
     {
       "id": "ci-cd/test/report-sonar-findings.test.ts",
       "path": "ci-cd/test/report-sonar-findings.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/needs-frontend-patch-coverage.test.ts",
+      "path": "ci-cd/test/needs-frontend-patch-coverage.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -6005,9 +6015,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 353,
+    "unit": 355,
     "integration": 102,
     "smoke": 2,
-    "suites": 516
+    "suites": 518
   }
 }
