@@ -49,19 +49,50 @@ describe('create-github-release helpers', () => {
 });
 
 describe('create-app-release-tag --github-api dry-run', () => {
-  it('plans a tag without calling GitHub when --dry-run', () => {
+  it('plans a create action without calling GitHub when --dry-run', () => {
     expect.hasAssertions();
     const result = createAppReleaseTagGithubApi({
       dryRun: true,
       rootDir: process.cwd(),
       repository: 'web2solutions/Jumentix',
-      env: { CHANGELOG_GH_TOKEN: 'test-token', GITHUB_REPOSITORY: 'web2solutions/Jumentix' }
+      env: { CHANGELOG_GH_TOKEN: 'test-token', GITHUB_REPOSITORY: 'web2solutions/Jumentix' },
+      // Decouple from live tip history (after v0.2.1 only ignore-level changelog
+      // syncs remain, so the real resolver correctly noops — JUM-889).
+      headHasAppTag: () => '',
+      resolveNextVersion: () => ({
+        action: 'bump',
+        bumpLevel: 'patch',
+        baseVersion: '0.2.1',
+        nextVersion: '0.2.2'
+      })
     });
     expect(result).toStrictEqual(expect.objectContaining({
       mode: 'github-api',
       dryRun: true,
       action: 'create',
-      tag: expect.stringMatching(/^v\d+\.\d+\.\d+$/)
+      tag: 'v0.2.2',
+      version: '0.2.2'
+    }));
+  });
+
+  it('plans a noop when the tip has no releasable commits', () => {
+    expect.hasAssertions();
+    const result = createAppReleaseTagGithubApi({
+      dryRun: true,
+      rootDir: process.cwd(),
+      repository: 'web2solutions/Jumentix',
+      env: { CHANGELOG_GH_TOKEN: 'test-token', GITHUB_REPOSITORY: 'web2solutions/Jumentix' },
+      headHasAppTag: () => '',
+      resolveNextVersion: () => ({
+        action: 'noop',
+        reason: 'no-releasable-commits'
+      })
+    });
+    expect(result).toStrictEqual(expect.objectContaining({
+      mode: 'github-api',
+      dryRun: true,
+      action: 'noop',
+      reason: 'no-releasable-commits'
     }));
   });
 });

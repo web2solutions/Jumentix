@@ -50,6 +50,7 @@ const pollUntil = async (
  */
 describe('delta sync and session orchestration (JUM-805)', () => {
   const originalFetch = globalThis.fetch;
+  let unbindOnlineReplay: (() => void) | undefined;
 
   beforeEach(async () => {
     setActivePinia(createPinia());
@@ -63,6 +64,10 @@ describe('delta sync and session orchestration (JUM-805)', () => {
   });
 
   afterEach(async () => {
+    // Unbind before restoring fetch so a late `online` event cannot hit the
+    // real network under coverage (ECONNREFUSED → Bun exit 1, JUM-889).
+    unbindOnlineReplay?.();
+    unbindOnlineReplay = undefined;
     globalThis.fetch = originalFetch;
     await closeCana();
   });
@@ -261,7 +266,7 @@ describe('delta sync and session orchestration (JUM-805)', () => {
   it('bindOnlineReplay runs a session sync when the browser comes back online', async () => {
     expect.hasAssertions();
     globalThis.fetch = (async () => jsonResponse(200, emptyPage)) as unknown as typeof fetch;
-    bindOnlineReplay();
+    unbindOnlineReplay = bindOnlineReplay();
     window.dispatchEvent(new Event('online'));
     await pollUntil(() => isSynced());
     expect(await isSynced()).toBe(true);
