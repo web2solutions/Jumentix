@@ -369,7 +369,8 @@ function createAppReleaseTagGithubApi(options = {}) {
   }
 
   // Plan against the current checkout first — never mutate the worktree for dry-run.
-  const existing = headHasAppTag(rootDir);
+  const hasTag = options.headHasAppTag || headHasAppTag;
+  const existing = hasTag(rootDir);
   if (existing) {
     return {
       action: 'noop',
@@ -380,7 +381,8 @@ function createAppReleaseTagGithubApi(options = {}) {
     };
   }
 
-  const next = resolveNextVersionFromRepo({ rootDir });
+  const resolveNext = options.resolveNextVersion || resolveNextVersionFromRepo;
+  const next = resolveNext({ rootDir });
   if (next.action === 'noop') {
     return {
       action: 'noop',
