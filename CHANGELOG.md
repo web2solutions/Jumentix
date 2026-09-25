@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-09-25 chore(release): v0.2.3 (#492) - Eduardo A.
 - 2026-09-25 chore(release): v0.2.2 (#489) - Eduardo A.
 - 2026-09-25 [JUM-889][Release] Promote coverage harden to main (#486) - Eduardo A.
 - 2026-09-25 [JUM-889][Fix] Ignore cli-init templates in patch coverage (#488) - Eduardo A.
