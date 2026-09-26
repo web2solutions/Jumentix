@@ -1,29 +1,5 @@
 [
   {
-    "file": "README.md",
-    "rule": "ci-provider-mechanics",
-    "issue": "JUM-893",
-    "reason": "Root README restates CI-provider governance; removed by the README audience fix."
-  },
-  {
-    "file": "README.md",
-    "rule": "internal-ci-variable",
-    "issue": "JUM-893",
-    "reason": "Root README restates CI-provider governance; removed by the README audience fix."
-  },
-  {
-    "file": "README.pt-BR.md",
-    "rule": "ci-provider-mechanics",
-    "issue": "JUM-893",
-    "reason": "Root README restates CI-provider governance; removed by the README audience fix."
-  },
-  {
-    "file": "README.pt-BR.md",
-    "rule": "internal-ci-variable",
-    "issue": "JUM-893",
-    "reason": "Root README restates CI-provider governance; removed by the README audience fix."
-  },
-  {
     "file": "apps/jumentix-website/content/jumentix/guides/service-management.mdx",
     "rule": "requirement-number",
     "issue": "JUM-895",

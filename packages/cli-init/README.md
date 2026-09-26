@@ -18,7 +18,7 @@ npx @jumentix/cli-init init
 - `jumentix init` — lean workspace per factory mode
 - `jumentix add domain|service|frontend`
 - `jumentix upgrade` / `jumentix doctor`
-- Aliases: `jumentix-init`, `jumentix-bootstrap`
+- Aliases: `cli-init` (so `npx @jumentix/cli-init` / `bunx @jumentix/cli-init` resolve), `jumentix-init`, `jumentix-bootstrap`
 
 Normative surface (flags, config, GenerationPlan, upgrade policy):
 `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md` (+ pt-BR). Factory modes:

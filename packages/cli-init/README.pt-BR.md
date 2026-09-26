@@ -22,7 +22,7 @@ npx @jumentix/cli-init init
 - `jumentix init` — workspace enxuto por modo de fábrica
 - `jumentix add domain|service|frontend`
 - `jumentix upgrade` / `jumentix doctor`
-- Aliases: `jumentix-init`, `jumentix-bootstrap`
+- Aliases: `cli-init` (para `npx @jumentix/cli-init` / `bunx @jumentix/cli-init` resolverem), `jumentix-init`, `jumentix-bootstrap`
 
 Superfície normativa (flags, config, GenerationPlan, política de upgrade):
 `documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.pt-BR.md`. Modos da fábrica:

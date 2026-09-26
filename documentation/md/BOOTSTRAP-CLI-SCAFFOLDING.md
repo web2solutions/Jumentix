@@ -8,7 +8,11 @@ Workspace ownership:
 
 - `packages/cli-init` owns the CLI implementation, packaged templates, and
   freshness gate.
-- Root `bin/jumentix-bootstrap.js` delegates to the package for compatibility.
+- Root `bin/jumentix-bootstrap.js` (the `bun x github:web2solutions/Jumentix#dev` entry)
+  runs the local `packages/cli-init` build when it and its dependencies resolve;
+  in a fresh git install, which carries no build output, it runs the published
+  `@jumentix/cli-init` of the same version through `npx` and forwards argv and
+  the exit code (`packages/cli-init/bin/launcher.js`).
 
 Install and invoke:
 
