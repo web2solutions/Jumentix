@@ -194,6 +194,7 @@ if (isEntryPoint(module)) runReleaseCheck();
 
 module.exports = {
   PUBLIC_PACKAGE_NAMES,
+  buildAndPack,
   discoverPublishablePackages,
   validateManifest,
   assertTarballContents,

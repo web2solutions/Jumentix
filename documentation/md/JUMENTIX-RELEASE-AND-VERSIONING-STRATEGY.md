@@ -63,10 +63,11 @@ Validation includes:
    next version, opens a signed squash PR for the locked-version bump, merges it,
    creates the annotated application tag on the squash commit, regenerates
    `CHANGELOG.md`, and creates the GitHub Release.
-3. When ready to publish packages, dispatch **Publish npm packages** on `main`
-   (protected `secrets` Environment, Requirement 070). The workflow skips any
-   package whose `@jumentix/<pkg>@<version>` tag already exists, publishes the rest,
-   and creates package tags on success.
+3. The same `app-release.yml` run then calls **Publish npm packages**
+   (`npm-publish.yml`, `secrets` Environment, Requirement 070). It skips any package
+   whose `@jumentix/<pkg>@<version>` tag or npm version already exists, publishes the
+   rest from `bun pm pack` tarballs, and creates package tags on success. To publish a
+   package, bump its `version` and promote to `main`.
 4. Verify with `bun run release:governance:check`, `bun run release:dry-run`,
    `gh release list`, and `npm view @jumentix/<package>`.
 
