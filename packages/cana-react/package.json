@@ -35,9 +35,9 @@
   "devDependencies": {
     "@jumentix/cana": "workspace:*",
     "@types/react": "19.2.18",
-    "@types/react-test-renderer": "19.1.0",
+    "@types/react-test-renderer": "19.3.0",
     "react": "19.2.8",
-    "react-test-renderer": "19.2.8"
+    "react-test-renderer": "19.3.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit false && bun run build:esm",
