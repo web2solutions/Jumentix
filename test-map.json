@@ -1638,6 +1638,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/architectureCanvasTheme.test.ts",
+      "path": "apps/service-management/test/unit/architectureCanvasTheme.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/modelQueries.test.ts",
       "path": "apps/service-management/test/unit/modelQueries.test.ts",
       "layer": "service-management/designer",
@@ -2926,6 +2936,16 @@
     {
       "id": "ci-cd/test/readme-badges.test.ts",
       "path": "ci-cd/test/readme-badges.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/ci-gate-coverage.test.ts",
+      "path": "ci-cd/test/ci-gate-coverage.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -5281,18 +5301,6 @@
     {
       "id": "apps/jumentix-website/components/ReleaseNotes/ReleaseNotes.test.tsx",
       "path": "apps/jumentix-website/components/ReleaseNotes/ReleaseNotes.test.tsx",
-      "layer": "website",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "script": "website:test:unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000,
-      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
-    },
-    {
-      "id": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
-      "path": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
       "layer": "website",
       "kind": "non-hexagonal",
       "type": "unit",
