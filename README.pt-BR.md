@@ -41,35 +41,44 @@ Jumentix e uma fabrica de software de codigo aberto para equipes que criam produ
 [![Execute em Vercel Functions](https://img.shields.io/badge/Run%20on-Vercel%20Functions-gold?style=flat-square&logo=vercel&logoColor=000)](https://vercel.com/docs/functions)
 [![Apoie a Ucrania](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
 
-CircleCI e o orquestrador canonico de CI; o GitHub Actions esta retido e pode ser reativado a qualquer momento definindo a variavel de Actions do repositorio `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` como `true` (veja `documentation/md/CI-PROVIDER-GOVERNANCE.pt-BR.md`).
-
 ## O Que Voce Pode Criar
 
-- APIs REST com contratos OpenAPI 3.1, alem de servicos WebSocket, gRPC e GraphQL.
-- Servicos de funcoes para AWS, Google Cloud, Azure, Vercel Functions e Cloudflare Workers.
+- APIs REST com contratos OpenAPI 3.1, alem de servicos realtime WebSocket e gRPC.
+- Servicos de funcoes para AWS Lambda, Vercel Functions e Cloudflare Workers.
 - Monolitos SaaS modulares que podem evoluir para ecossistemas de servicos implantados de forma independente.
-- Experiencias completas de produto: SPAs, PWAs offline-first e aplicacoes SSR com SDKs de cliente orientados por contratos.
+- Experiencias completas de produto: SPAs e PWAs offline-first com SDKs de cliente orientados por contratos.
 - Aplicacoes de campo e operacoes offline apoiadas por IndexedDB e armazenamento local.
 - Modelos de dominio e limites de servico desenhados no Service Management, com exportacoes OpenAPI e AsyncAPI por servico.
 - Servicos apoiados por adaptadores de persistencia in-memory, SQL ou NoSQL.
 
+## Por Que Times Escolhem o Jumentix
+
+- **O contrato vem primeiro.** Cada servico e gerado a partir de um modelo OpenAPI ou do Domain Designer, entao APIs, clientes e documentacao concordam desde o primeiro dia.
+- **O codigo e seu.** O Jumentix gera um workspace Bun comum que voce le, altera e publica, sobre bibliotecas open source.
+- **Troque a infraestrutura, mantenha o dominio.** Frameworks HTTP, bancos de dados e mensageria ficam atras de adaptadores; trocar um deles nao mexe nas regras de negocio.
+- **Comece pequeno, divida depois.** Comece como um servico modular e mova dominios para servicos separados quando o produto pedir.
+
 ## Comece Agora
 
-```bash
-bun x github:web2solutions/Jumentix#dev
-```
-
-Escolha o perfil do servico e a pasta do projeto quando solicitado. Para um scaffold REST reproduzivel:
+Crie um projeto e responda algumas perguntas sobre como ele deve rodar:
 
 ```bash
-bun x github:web2solutions/Jumentix#dev \
-  --non-interactive \
-  --service-type=rest \
-  --project-name=meu-produto \
-  --git-branch=dev
+npx @jumentix/cli-init init meu-produto
 ```
 
-A CLI cria o projeto e instala as dependencias com Bun. Escolha um guia abaixo para continuar moldando seu produto.
+Ou gere o mesmo projeto sem perguntas:
+
+```bash
+npx @jumentix/cli-init init meu-produto \
+  --mode=monolith \
+  --preset=users \
+  --http=express \
+  --realtime=none \
+  --db=sqlite \
+  --non-interactive
+```
+
+`--mode` escolhe o formato: `monolith`, `services`, `hybrid` (backend e aplicacao web) ou `frontend`. Comece do seu proprio modelo com `--from=<designer-export.json | openapi.yml>`. Usa Bun? `bunx @jumentix/cli-init init meu-produto` funciona do mesmo jeito. O [guia da CLI](./packages/cli-init/README.pt-BR.md) lista todas as opcoes.
 
 ## Guias e Documentacao
 
