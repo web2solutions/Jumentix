@@ -27,6 +27,7 @@ import {
   type PlanDomain,
   type PlanService
 } from '../sources';
+import { resolveJumentixPin } from '../generators/jumentixVersions';
 
 const PROJECT_META = '.jumentix/project.json';
 const MANIFEST_META = '.jumentix/manifest.json';
@@ -442,7 +443,7 @@ async function addService(options: {
     service: newService,
     outputDir: rootDir,
     projectName,
-    jumentixVersion: readCliVersion(packageRoot),
+    pin: resolveJumentixPin(packageRoot),
     templateRoot,
     log
   });

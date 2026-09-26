@@ -14,6 +14,7 @@ const {
   SEEDS,
   buildManifest,
   collectExpectedFiles,
+  collectPackageVersions,
   isExcluded,
   resolveSourceCommit,
   sha256File
@@ -162,6 +163,22 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     if (!expectedManifest.files[templatePath]) {
       failures.push(
         `[cli-init template-freshness] manifest has stale entry: ${templatePath}`
+        + ' — run `bun run cli:build-templates`'
+      );
+    }
+  }
+
+  // Generated projects pin each @jumentix/* dependency to these versions
+  // (JUM-902); a stale map pins versions that were never published.
+  const expectedVersions = collectPackageVersions(root);
+  const recordedVersions = manifest.packageVersions && typeof manifest.packageVersions === 'object'
+    ? manifest.packageVersions
+    : {};
+  for (const name of [...new Set([...Object.keys(expectedVersions), ...Object.keys(recordedVersions)])].sort()) {
+    if (expectedVersions[name] !== recordedVersions[name]) {
+      failures.push(
+        `[cli-init template-freshness] package version drift: ${name}`
+        + ` (manifest ${recordedVersions[name] ?? 'missing'}, source ${expectedVersions[name] ?? 'missing'})`
         + ' — run `bun run cli:build-templates`'
       );
     }

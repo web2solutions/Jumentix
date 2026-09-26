@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "9e1137a63a5e76feb7fd2a58124384d539217f34",
+  "sourceCommit": "dd9c2dafe15bd8fbfbfe016c859f6dfb5eb350f9",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -26,6 +26,28 @@
   "seeds": {
     "backend": "apps/backend-template",
     "frontend": "apps/frontend"
+  },
+  "packageVersions": {
+    "@jumentix/adapter-runtime-bootstrap": "0.1.0",
+    "@jumentix/cana": "0.1.0",
+    "@jumentix/cana-react": "0.1.0",
+    "@jumentix/cana-vue": "0.1.0",
+    "@jumentix/cli-init": "0.0.0",
+    "@jumentix/database-client-factory": "0.1.0",
+    "@jumentix/dead-letter-queue": "0.1.0",
+    "@jumentix/designer-core": "0.1.0",
+    "@jumentix/external-db-repositories": "0.1.0",
+    "@jumentix/external-persistence-core": "0.1.0",
+    "@jumentix/external-store-proxy": "0.1.0",
+    "@jumentix/key-value-storage": "0.0.0",
+    "@jumentix/message-mediator": "0.0.0",
+    "@jumentix/mutex-service": "0.1.0",
+    "@jumentix/persistence-contracts": "0.1.0",
+    "@jumentix/runtime-infra": "0.1.0",
+    "@jumentix/sdk-grpc-client": "0.0.0",
+    "@jumentix/sdk-rest-client": "0.0.0",
+    "@jumentix/sdk-websocket-client": "0.0.0",
+    "@jumentix/shared-contracts": "0.1.0"
   },
   "fileCount": 1035,
   "files": {
@@ -134,7 +156,7 @@
       "source": "apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.pt-BR.md"
     },
     "backend/package.json": {
-      "sha256": "a28288c5f3fb1724968af5a46d0d923856b9f382a748be4186ceb304515a5067",
+      "sha256": "4948dc86a2e4109b6980726fc68c8db48363e9c7b4a9edfb8a274475881fe4a7",
       "source": "apps/backend-template/package.json"
     },
     "backend/scripts/purge-tombstones.js": {
@@ -614,7 +636,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/fastify/fastify.ts"
     },
     "backend/src/interface/HTTP/adapters/fastify/handlers/apiDocGetHandlerFactory.ts": {
-      "sha256": "62dafebe6070bc3fefd2643ee641ae056e6cf05b20551ef69bd724e9a38dfe02",
+      "sha256": "92f9076b706f60c06e4bcafca2109169395281c5d16690ae5da283d21f978d4b",
       "source": "apps/backend-template/src/interface/HTTP/adapters/fastify/handlers/apiDocGetHandlerFactory.ts"
     },
     "backend/src/interface/HTTP/adapters/fastify/handlers/apiversions.get.ts": {
@@ -3626,7 +3648,7 @@
       "source": "apps/frontend/index.html"
     },
     "frontend/package.json": {
-      "sha256": "8e3652d03fddcd680cab2ebaf2cf211948b205df19690f86415473bffa5c54b4",
+      "sha256": "7118349d30ac4e0ddeb375f5c5087fca7805114fdbd4150fc9be13a76ed5b591",
       "source": "apps/frontend/package.json"
     },
     "frontend/public/android-icon-144x144.png": {
@@ -3970,7 +3992,7 @@
       "source": "apps/frontend/src/data/pwa.ts"
     },
     "frontend/src/data/sync.ts": {
-      "sha256": "6168cede79e962361b776e04c556f672893646289677666dd3064179e03c7854",
+      "sha256": "8d16223510131d56dfe79ecceacf1fd604bf7b3b348bc104fd9e718c5c1c61f7",
       "source": "apps/frontend/src/data/sync.ts"
     },
     "frontend/src/env.d.ts": {

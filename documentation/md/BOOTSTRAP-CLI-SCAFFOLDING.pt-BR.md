@@ -170,8 +170,11 @@ Todo workspace gerado inclui:
 
 `.jumentix/service-profile.json` é aposentado e removido quando presente.
 
-Dependências de runtime são pacotes `@jumentix/*` publicados, fixados na
-versão da CLI (não `workspace:*`). Projetos gerados devem passar no próprio
+Dependências de runtime são pacotes `@jumentix/*` publicados, cada um fixado
+na própria versão registrada em `packages/cli-init/templates.manifest.json`
+(`packageVersions`, reconstruído por `bun run cli:build-templates`) — nunca
+`workspace:*` e nunca uma versão única da CLI, porque os pacotes versionam de
+forma independente. Projetos gerados devem passar no próprio
 `lint` / `test` / `build` e subir em Docker.
 
 ## `add` (estender)
