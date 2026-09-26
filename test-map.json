@@ -2922,6 +2922,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/ci-gate-coverage.test.ts",
+      "path": "ci-cd/test/ci-gate-coverage.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-generated-automation-pr.test.ts",
       "path": "ci-cd/test/check-generated-automation-pr.test.ts",
       "layer": "tooling",
