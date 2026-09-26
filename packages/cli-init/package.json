@@ -13,6 +13,7 @@
     "bin",
     "dist",
     "templates",
+    "templates.manifest.json",
     "fixtures",
     "README.md",
     "LICENSE.md",
