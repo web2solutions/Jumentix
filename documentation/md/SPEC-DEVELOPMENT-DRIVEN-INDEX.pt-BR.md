@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-DEVELOPMENT-DRIVEN-INDEX.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Orientado para o desenvolvimento de especificações - Índice
 
 A Jumentix agora trata as especificações como o principal ativo de engenharia.  
@@ -34,6 +35,7 @@ Este conjunto de documentação define como a intenção do produto, as restriç
 15. [Práticas de segurança e conformidade de especificações](./SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md)
 16. [Sistema de componentes Spec Jumentix](./SPEC-JUMENTIX-COMPONENT-SYSTEM.md)
 17. [Estratégia gratuita de CI para repositório público](./PRIVATE-FREE-CI-STRATEGY.pt-BR.md)
+18. [Guia de ESLint e Formatação](./ESLINT-AND-FORMATTING-GUIDE.pt-BR.md)
 
 ## Princípio Obrigatório
 

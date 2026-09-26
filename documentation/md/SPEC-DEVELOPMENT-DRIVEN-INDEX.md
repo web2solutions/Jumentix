@@ -30,6 +30,7 @@ This documentation set defines how product intent, architecture constraints, con
 15. [Spec Security and Compliance Practices](./SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md)
 16. [Spec Jumentix Component System](./SPEC-JUMENTIX-COMPONENT-SYSTEM.md)
 17. [Public Open Source Free CI Strategy](./PRIVATE-FREE-CI-STRATEGY.md)
+18. [ESLint and Formatting Guide](./ESLINT-AND-FORMATTING-GUIDE.md)
 
 ## Mandatory Principle
 
