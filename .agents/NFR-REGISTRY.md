@@ -59,7 +59,9 @@ This file consolidates non-functional requirements already requested and stored 
 - `025` Every new feature must be documented.
 - `053` Workspace package docs and ownership.
 - `057` PR grouping by priority.
-- `066` Documentation round governance for marketing root + technical component docs.
+- `066` Documentation round governance for marketing root + technical component docs, with
+  an audience matrix (prospect / developer / contributor / agent) and an internal-vocabulary
+  ban on public layers enforced by `docs:check-audience` (shrink-only allow-list, JUM-892).
 - `068` NFR capture and registry governance.
 - `069` Website commercial/static/vercel governance.
 - `070` npm organization and vercel scope integration governance; npm publication is automated
