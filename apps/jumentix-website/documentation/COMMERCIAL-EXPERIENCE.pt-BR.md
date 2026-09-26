@@ -59,6 +59,12 @@ A homepage usa o canvas real do Domain Designer como mídia full-bleed na primei
 página de produto usa o mascote como sinal imediato da marca. A captura está em
 `public/product/domain-designer.png`.
 
+Toda imagem do site mostra o próprio Jumentix. As sobras do template inicial usado no scaffold —
+o placeholder `mantine+nextjs+nextra-template.png`, os componentes sem uso `Welcome`,
+`ProductHunt`, `Content`, `Sponsors` e `ColorSchemeToggle`, as listas de links do autor do
+template e os estilos `@gfazioli/mantine-*` que eles exigiam — foram removidas (JUM-897). O
+único vestígio é a linha de atribuição no README deste app.
+
 ## Implementação
 
 ```text
