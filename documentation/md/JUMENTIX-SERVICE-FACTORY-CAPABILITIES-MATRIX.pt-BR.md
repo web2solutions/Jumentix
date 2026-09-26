@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Matriz de capacidades da fábrica de serviços Jumentix
 
 ## Objetivo
@@ -10,12 +11,12 @@ Defina os modos de fábrica de software suportados para Jumentix para que a enge
 
 ## Matriz de Capacidade
 
-| Modo de fábrica | CLI `--mode` | Como gerar | Resultado primário | Interfaces suportadas | Padrão de Comunicação | Estratégia de Persistência | Uso típico |
-|---|---|---|---|---|---|---|---|
-| Monólito Modular (Backend) | `monolith` | `jumentix init --mode=monolith --preset=users` (ou `--from`) | Serviço de back-end único com vários domínios | REST, substituto WebSocket + REST, substituto gRPC + REST, funções | Solicitação/resposta do MessageMediator em processo + pub/sub | Na memória, SQL, NoSQL via seleção de driver env | Produtos e equipes em estágio inicial otimizando velocidade com caminho de dissociação futuro |
-| Grupo de back-end multisserviço | `services` | `jumentix init --mode=services --from=<export\|oas>` | Vários serviços de back-end em um espaço de trabalho | REST, WebSocket, gRPC, Funções | Mediador baseado em contrato e contratos de eventos por limite de serviço | Seleção de adaptador de banco de dados por serviço | Isolamento de domínio e escalonamento independente por contexto limitado |
-| Back-end híbrido + front-end | `hybrid` | `jumentix init --mode=hybrid --frontend [--offline]` | Serviços de back-end mais aplicativos SPA/PWA/SSR | Contratos REST + em tempo real consumidos por clientes SDK | Contratos de API (OpenAPI/AsyncAPI) e integração primeiro do evento | Adaptador de backend mais estratégia de armazenamento local/offline de frontend | Entrega de produto ponta a ponta a partir de um monorepo |
-| SPA/PWA off-line somente front-end | `frontend` | `jumentix init --mode=frontend [--offline] --from=<oas>` | Pacote de aplicativos frontend com compatibilidade de contrato API | Aplicativo local + consumo remoto opcional de API | Integração do SDK do cliente com foco no contrato | Armazenamento IndexedDB/local para fluxos offline | Aplicativos de campo e operações com capacidade off-line |
+| Modo de fábrica                    | CLI `--mode` | Como gerar                                                   | Resultado primário                                                 | Interfaces suportadas                                              | Padrão de Comunicação                                                     | Estratégia de Persistência                                                      | Uso típico                                                                                    |
+| ---------------------------------- | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Monólito Modular (Backend)         | `monolith`   | `jumentix init --mode=monolith --preset=users` (ou `--from`) | Serviço de back-end único com vários domínios                      | REST, substituto WebSocket + REST, substituto gRPC + REST, funções | Solicitação/resposta do MessageMediator em processo + pub/sub             | Na memória, SQL, NoSQL via seleção de driver env                                | Produtos e equipes em estágio inicial otimizando velocidade com caminho de dissociação futuro |
+| Grupo de back-end multisserviço    | `services`   | `jumentix init --mode=services --from=<export\|oas>`         | Vários serviços de back-end em um espaço de trabalho               | REST, WebSocket, gRPC, Funções                                     | Mediador baseado em contrato e contratos de eventos por limite de serviço | Seleção de adaptador de banco de dados por serviço                              | Isolamento de domínio e escalonamento independente por contexto limitado                      |
+| Back-end híbrido + front-end       | `hybrid`     | `jumentix init --mode=hybrid --frontend [--offline]`         | Serviços de back-end mais aplicativos SPA/PWA/SSR                  | Contratos REST + em tempo real consumidos por clientes SDK         | Contratos de API (OpenAPI/AsyncAPI) e integração primeiro do evento       | Adaptador de backend mais estratégia de armazenamento local/offline de frontend | Entrega de produto ponta a ponta a partir de um monorepo                                      |
+| SPA/PWA off-line somente front-end | `frontend`   | `jumentix init --mode=frontend [--offline] --from=<oas>`     | Pacote de aplicativos frontend com compatibilidade de contrato API | Aplicativo local + consumo remoto opcional de API                  | Integração do SDK do cliente com foco no contrato                         | Armazenamento IndexedDB/local para fluxos offline                               | Aplicativos de campo e operações com capacidade off-line                                      |
 
 Designer de arquitetura (Service Management): **monólito** é um serviço Core com todos os
 domínios. **Multi-serviço** é Core (Users + auth) mais serviços de domínio, cada um com URL
@@ -44,13 +45,13 @@ Gerador: `@jumentix/cli-init` (`init` / `add` / `upgrade` / `doctor`). Superfíc
 
 ## Contratos necessários por modo de fábrica
 
-| Contrato | Monólito Modular | Back-end multisserviço | Híbrido | Somente front-end |
-|---|---:|---:|---:|---:|
-| Contratos de endpoint OpenAPI 3.1 | obrigatório | obrigatório | obrigatório (backend) | opcional (lado do consumidor) |
-| Contratos em tempo real AsyncAPI | necessário quando o tempo real estiver ativado | necessário quando o tempo real estiver ativado | necessário quando o tempo real estiver ativado | opcional |
-| Documentação do mapa de mensagens/eventos | obrigatório | obrigatório | obrigatório | opcional |
-| Mapa de contrato de erro | obrigatório | obrigatório | obrigatório | recomendado |
-| Documentos de entidade/modelo de dados | obrigatório | obrigatório | obrigatório | opcional |
+| Contrato                                  |                               Monólito Modular |                         Back-end multisserviço |                                        Híbrido |             Somente front-end |
+| ----------------------------------------- | ---------------------------------------------: | ---------------------------------------------: | ---------------------------------------------: | ----------------------------: |
+| Contratos de endpoint OpenAPI 3.1         |                                    obrigatório |                                    obrigatório |                          obrigatório (backend) | opcional (lado do consumidor) |
+| Contratos em tempo real AsyncAPI          | necessário quando o tempo real estiver ativado | necessário quando o tempo real estiver ativado | necessário quando o tempo real estiver ativado |                      opcional |
+| Documentação do mapa de mensagens/eventos |                                    obrigatório |                                    obrigatório |                                    obrigatório |                      opcional |
+| Mapa de contrato de erro                  |                                    obrigatório |                                    obrigatório |                                    obrigatório |                   recomendado |
+| Documentos de entidade/modelo de dados    |                                    obrigatório |                                    obrigatório |                                    obrigatório |                      opcional |
 
 ## Critérios de aceitação
 

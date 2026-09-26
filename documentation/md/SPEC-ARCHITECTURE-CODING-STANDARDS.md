@@ -67,4 +67,3 @@ Prohibited patterns:
 2. Any contract or behavior change must update relevant spec files.
 3. NFR-impacting changes must update `.agents/requirements` and NFR registry.
 4. Documentation must include enough operational detail for engineering reuse.
-

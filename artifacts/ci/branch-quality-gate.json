@@ -124,15 +124,11 @@
       "propagatedFrom": []
     },
     "application": {
-      "direct": [
-        "apps/backend-template/test/unit/modules/Users/application/useCases.test.ts"
-      ],
+      "direct": ["apps/backend-template/test/unit/modules/Users/application/useCases.test.ts"],
       "propagatedFrom": []
     },
     "domain": {
-      "direct": [
-        "apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts"
-      ],
+      "direct": ["apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts"],
       "propagatedFrom": []
     },
     "adapters/in": {

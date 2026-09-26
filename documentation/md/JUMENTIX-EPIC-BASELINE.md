@@ -14,14 +14,14 @@ The original product epic, opened before the workspace adopted epic-centred task
 Most of its work predates Requirement `094`, which is why it reached 102 completed issues
 with no dedicated documentation Issue — the gate did not exist when the epic started.
 
-| nature | delivered |
-| --- | --- |
-| unprefixed (pre-taxonomy) | 88 |
-| Fix | 4 |
-| DOC | 4 |
-| Governance | 3 |
-| CI | 2 |
-| Release | 1 |
+| nature                    | delivered |
+| ------------------------- | --------- |
+| unprefixed (pre-taxonomy) | 88        |
+| Fix                       | 4         |
+| DOC                       | 4         |
+| Governance                | 3         |
+| CI                        | 2         |
+| Release                   | 1         |
 
 Three further issues resolved as duplicates. Five issues that had never been scheduled were
 moved out before completion rather than closed as delivered:
@@ -61,10 +61,10 @@ document does not require editing this file to stay accurate.
 
 Run against `dev` at the time of writing:
 
-| check | result |
-| --- | --- |
-| `bun run requirements:check` | 129 files, 129 unique IDs, no duplicates |
-| documentation and registry suites | pass |
+| check                                    | result                                           |
+| ---------------------------------------- | ------------------------------------------------ |
+| `bun run requirements:check`             | 129 files, 129 unique IDs, no duplicates         |
+| documentation and registry suites        | pass                                             |
 | bilingual parity, governed documentation | EN and PT-BR present for every governed document |
 
 Five documents under `documentation/md/` have no PT-BR counterpart:

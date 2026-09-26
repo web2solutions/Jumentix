@@ -55,7 +55,6 @@ class DemoRepository extends BaseExternalDataRepository {
 }
 ```
 
-
 ### 3. Fluxos centrais
 
 ### 1. Read connection options
@@ -70,7 +69,6 @@ Subclass only when a supported adapter does not exist yet.
 
 Expose ports upward; hide driver types inside the adapter.
 
-
 ### 4. Superfície prática (exports)
 
 - `IRepositoryConnectionOptions`
@@ -80,8 +78,8 @@ Use os exports nas camadas de aplicação/adaptadores — não em entidades de d
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
+| Sintoma                                    | Causa          | Correção                                                     |
+| ------------------------------------------ | -------------- | ------------------------------------------------------------ |
 | Subclass leaks mongoose types to use-cases | Boundary break | Map to persistence-contracts types before crossing the port. |
 
 **Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.

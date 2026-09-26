@@ -42,13 +42,13 @@ console.log({ afterUpdate, afterDelete });
 
 ## Escolha do método
 
-| Método | Chave existente | Chave ausente | Melhor uso |
-| --- | --- | --- | --- |
-| `add(record)` | Falha com `ConstraintViolation`. | Insere. | Ações de criação pura. |
-| `put(record)` | Substitui o registro inteiro. | Insere. | Upsert vindo de sync/import. |
-| `update(key, changes)` | Mescla campos. | Falha com `NotFound`. | Edições de UI que não devem ressuscitar linhas apagadas. |
-| `delete(key)` | Apaga. | Nenhum registro fica armazenado. | Ações de remoção. |
-| `clear()` | Remove todos os registros da store. | A store fica vazia. | Fluxos de reset/import. |
+| Método                 | Chave existente                     | Chave ausente                    | Melhor uso                                               |
+| ---------------------- | ----------------------------------- | -------------------------------- | -------------------------------------------------------- |
+| `add(record)`          | Falha com `ConstraintViolation`.    | Insere.                          | Ações de criação pura.                                   |
+| `put(record)`          | Substitui o registro inteiro.       | Insere.                          | Upsert vindo de sync/import.                             |
+| `update(key, changes)` | Mescla campos.                      | Falha com `NotFound`.            | Edições de UI que não devem ressuscitar linhas apagadas. |
+| `delete(key)`          | Apaga.                              | Nenhum registro fica armazenado. | Ações de remoção.                                        |
+| `clear()`              | Remove todos os registros da store. | A store fica vazia.              | Fluxos de reset/import.                                  |
 
 ## Escritas em lote
 

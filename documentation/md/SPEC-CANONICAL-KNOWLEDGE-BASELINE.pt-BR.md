@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-CANONICAL-KNOWLEDGE-BASELINE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Linha de base de conhecimento canônico de especificações
 
 Este documento define a linha de base de conhecimento completa que o Spec Development Driven deve capturar para o Jumentix.

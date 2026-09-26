@@ -8,12 +8,12 @@ Linear: [JUM-793](https://linear.app/jumentix/issue/JUM-793). Portuguese: [ENTIT
 
 Query:
 
-| Parameter | Required | Values |
-| --- | --- | --- |
-| `metric` | yes | `count` \| `groupBy` \| `series` |
-| `field` | `groupBy` and `series` | must be in `x-metrics-capabilities` |
-| `interval` | `series` | `day` \| `week` \| `month` |
-| `filter` | no | same base64 filter as lists |
+| Parameter  | Required               | Values                              |
+| ---------- | ---------------------- | ----------------------------------- |
+| `metric`   | yes                    | `count` \| `groupBy` \| `series`    |
+| `field`    | `groupBy` and `series` | must be in `x-metrics-capabilities` |
+| `interval` | `series`               | `day` \| `week` \| `month`          |
+| `filter`   | no                     | same base64 filter as lists         |
 
 Response:
 

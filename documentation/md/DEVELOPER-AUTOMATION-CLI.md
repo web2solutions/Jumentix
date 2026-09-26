@@ -47,6 +47,7 @@ jumentix
 jumentix-init
 jumentix-bootstrap
 ```
+
 ## Current Sub Applications
 
 ### 1) Domains CRUD

@@ -10,27 +10,27 @@ a política de tenant restringe uma operação permitida.
 
 ## Classes de principal
 
-| Principal | Regra de organização | Limite de dados |
-|---|---|---|
-| `superadmin` | Opcional | Global |
-| `admin` | Obrigatória | Própria organização |
-| `user` | Obrigatória | Próprio usuário e própria organização |
+| Principal                            | Regra de organização                   | Limite de dados                                                  |
+| ------------------------------------ | -------------------------------------- | ---------------------------------------------------------------- |
+| `superadmin`                         | Opcional                               | Global                                                           |
+| `admin`                              | Obrigatória                            | Própria organização                                              |
+| `user`                               | Obrigatória                            | Próprio usuário e própria organização                            |
 | Principal legado com escopos diretos | Não é uma função de tenant normalizada | Limite global retrocompatível, restrito pelos escopos explícitos |
-| Visitante ou identidade ausente | Não aplicável | Sem acesso protegido |
+| Visitante ou identidade ausente      | Não aplicável                          | Sem acesso protegido                                             |
 
 Escopos diretos legados preservam o comportamento global definido por `Rbac.ts`.
 Eles não adquirem implicitamente a semântica de tenant de `admin` ou `user`.
 
 ## Tabela de decisão por operação
 
-| Operação | `superadmin` | `admin` | `user` | Escopos diretos legados |
-|---|---|---|---|---|
-| Criar organização | Permitir | Permitir por `create_organization` | Negar pelos escopos da função | Permitir quando houver escopo explícito `create_organization` |
-| Listar/ler organização | Qualquer organização | Própria organização | Própria organização quando o escopo permitir | Qualquer organização quando o escopo explícito permitir |
-| Alterar/excluir organização | Qualquer organização | Própria organização quando o escopo permitir | Negar pelos escopos da função | Qualquer organização quando o escopo explícito permitir |
-| Criar usuário | Qualquer organização ou sem vínculo | Própria organização; organização ausente é vinculada automaticamente | Negar pelos escopos da função | Qualquer organização ou sem vínculo quando o escopo explícito permitir |
-| Listar usuários | Todos os usuários | Usuários da própria organização | Apenas o próprio usuário | Todos os usuários quando o escopo explícito permitir |
-| Ler/alterar um usuário | Qualquer usuário | Usuário da própria organização quando o escopo permitir | Apenas o próprio usuário quando o escopo permitir | Qualquer usuário quando o escopo explícito permitir |
+| Operação                    | `superadmin`                        | `admin`                                                              | `user`                                            | Escopos diretos legados                                                |
+| --------------------------- | ----------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------- |
+| Criar organização           | Permitir                            | Permitir por `create_organization`                                   | Negar pelos escopos da função                     | Permitir quando houver escopo explícito `create_organization`          |
+| Listar/ler organização      | Qualquer organização                | Própria organização                                                  | Própria organização quando o escopo permitir      | Qualquer organização quando o escopo explícito permitir                |
+| Alterar/excluir organização | Qualquer organização                | Própria organização quando o escopo permitir                         | Negar pelos escopos da função                     | Qualquer organização quando o escopo explícito permitir                |
+| Criar usuário               | Qualquer organização ou sem vínculo | Própria organização; organização ausente é vinculada automaticamente | Negar pelos escopos da função                     | Qualquer organização ou sem vínculo quando o escopo explícito permitir |
+| Listar usuários             | Todos os usuários                   | Usuários da própria organização                                      | Apenas o próprio usuário                          | Todos os usuários quando o escopo explícito permitir                   |
+| Ler/alterar um usuário      | Qualquer usuário                    | Usuário da própria organização quando o escopo permitir              | Apenas o próprio usuário quando o escopo permitir | Qualquer usuário quando o escopo explícito permitir                    |
 
 ## Regras de negação
 

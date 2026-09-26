@@ -53,7 +53,6 @@ Used from the monorepo/backend-template composition — prefer following the RES
 // Follow the REST guide for the full walkthrough.
 ```
 
-
 ### 3. Core workflows
 
 ### 1. Read env contracts
@@ -68,7 +67,6 @@ Bootstrap at process start.
 
 HTTP/realtime adapters receive compiled deps.
 
-
 ### 4. Full practical surface (exports)
 
 - `(see package barrel — bootstrap compilers/helpers)`
@@ -77,8 +75,8 @@ Use exports from application/adapters layers as described above — not from dom
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
+| Symptom     | Cause           | Fix                                       |
+| ----------- | --------------- | ----------------------------------------- |
 | Missing env | Incomplete .env | Compare with runtime contracts reference. |
 
 **Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.

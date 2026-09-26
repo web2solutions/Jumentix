@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-ENGINEERING-PRACTICES-AND-GIT-POLICY.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Práticas de engenharia de especificações e política Git
 
 Esta especificação define regras obrigatórias de execução de engenharia para entrega Jumentix.

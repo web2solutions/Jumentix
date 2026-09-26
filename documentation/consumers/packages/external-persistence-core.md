@@ -55,7 +55,6 @@ class DemoRepository extends BaseExternalDataRepository {
 }
 ```
 
-
 ### 3. Core workflows
 
 ### 1. Read connection options
@@ -70,7 +69,6 @@ Subclass only when a supported adapter does not exist yet.
 
 Expose ports upward; hide driver types inside the adapter.
 
-
 ### 4. Full practical surface (exports)
 
 - `IRepositoryConnectionOptions`
@@ -80,8 +78,8 @@ Use exports from application/adapters layers as described above — not from dom
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
+| Symptom                                    | Cause          | Fix                                                          |
+| ------------------------------------------ | -------------- | ------------------------------------------------------------ |
 | Subclass leaks mongoose types to use-cases | Boundary break | Map to persistence-contracts types before crossing the port. |
 
 **Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.

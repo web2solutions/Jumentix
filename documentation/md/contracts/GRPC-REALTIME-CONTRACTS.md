@@ -66,11 +66,13 @@ When `ok=false`, response carries:
 ```
 
 Error semantics must follow:
+
 - [Error Contracts and Responses](../ERROR-CONTRACTS-AND-RESPONSES.md)
 
 ## Operation Registry
 
 `operationId` must be from:
+
 - `spec/asyncapi/1.0.0.grpc.yml` (`components.schemas.GrpcRequest.properties.operationId.enum`)
 
 ## Stream Semantics

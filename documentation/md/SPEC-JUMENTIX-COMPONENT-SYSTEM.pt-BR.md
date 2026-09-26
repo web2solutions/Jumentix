@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-JUMENTIX-COMPONENT-SYSTEM.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Especificação do sistema de componentes Jumentix
 
 Esta especificação define Jumentix como um sistema de produto composto por bibliotecas, ferramentas, modelos e componentes.

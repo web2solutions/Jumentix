@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-ARCHITECTURE-CODING-STANDARDS.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Arquitetura de especificações e padrões de codificação
 
 Este documento vincula a execução orientada ao desenvolvimento de especificações à arquitetura e aos padrões de engenharia Jumentix.
@@ -71,5 +72,3 @@ Padrões proibidos:
 2. Qualquer contrato ou mudança de comportamento deve atualizar os arquivos de especificações relevantes.
 3. As alterações que impactam o NFR devem atualizar `.agents/requirements` e o registro NFR.
 4. A documentação deve incluir detalhes operacionais suficientes para reutilização de engenharia.
-
-

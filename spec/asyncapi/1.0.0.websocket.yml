@@ -14,47 +14,47 @@ channels:
     address: api:request
     messages:
       request:
-        $ref: '#/components/messages/ApiRequestMessage'
+        $ref: "#/components/messages/ApiRequestMessage"
   api/response:
     address: api:response
     messages:
       response:
-        $ref: '#/components/messages/ApiResponseMessage'
+        $ref: "#/components/messages/ApiResponseMessage"
   api/operation/request:
     address: api:{operationId}:request
     messages:
       request:
-        $ref: '#/components/messages/ApiRequestMessage'
+        $ref: "#/components/messages/ApiRequestMessage"
   api/operation/response:
     address: api:{operationId}:response
     messages:
       response:
-        $ref: '#/components/messages/ApiResponseMessage'
+        $ref: "#/components/messages/ApiResponseMessage"
 operations:
   sendRequest:
     action: send
     channel:
-      $ref: '#/channels/api/request'
+      $ref: "#/channels/api/request"
     messages:
-      - $ref: '#/channels/api/request/messages/request'
+      - $ref: "#/channels/api/request/messages/request"
   receiveResponse:
     action: receive
     channel:
-      $ref: '#/channels/api/response'
+      $ref: "#/channels/api/response"
     messages:
-      - $ref: '#/channels/api/response/messages/response'
+      - $ref: "#/channels/api/response/messages/response"
 components:
   messages:
     ApiRequestMessage:
       name: ApiRequestMessage
       title: Unified async request envelope
       payload:
-        $ref: '#/components/schemas/ApiRequest'
+        $ref: "#/components/schemas/ApiRequest"
     ApiResponseMessage:
       name: ApiResponseMessage
       title: Unified async response envelope
       payload:
-        $ref: '#/components/schemas/ApiResponse'
+        $ref: "#/components/schemas/ApiResponse"
   schemas:
     ApiRequest:
       type: object

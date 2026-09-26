@@ -67,14 +67,14 @@ module:
 
 `spec/1.0.0.yml` (contract-first; `bun run oas:check-routes` enforces it):
 
-| Operation | Path | Scope | Concurrency |
-|---|---|---|---|
-| `getAll` | `GET /catalogs` | `read_catalog` | `includeDeleted=true` returns tombstones |
-| `create` | `POST /catalogs` | `create_catalog` | server assigns `version: 1` |
-| `getOneById` | `GET /catalogs/{id}` | `read_catalog` | — |
-| `update` | `PUT /catalogs/{id}` | `update_catalog` | body `version` required; stale → 409 |
-| `deleteOne` | `DELETE /catalogs/{id}?version=` | `delete_catalog` | soft delete (tombstone); stale → 409 |
-| `restore` | `POST /catalogs/{id}/restore` | `update_catalog` | recovers a tombstone; stale → 409 |
+| Operation    | Path                             | Scope            | Concurrency                              |
+| ------------ | -------------------------------- | ---------------- | ---------------------------------------- |
+| `getAll`     | `GET /catalogs`                  | `read_catalog`   | `includeDeleted=true` returns tombstones |
+| `create`     | `POST /catalogs`                 | `create_catalog` | server assigns `version: 1`              |
+| `getOneById` | `GET /catalogs/{id}`             | `read_catalog`   | —                                        |
+| `update`     | `PUT /catalogs/{id}`             | `update_catalog` | body `version` required; stale → 409     |
+| `deleteOne`  | `DELETE /catalogs/{id}?version=` | `delete_catalog` | soft delete (tombstone); stale → 409     |
+| `restore`    | `POST /catalogs/{id}/restore`    | `update_catalog` | recovers a tombstone; stale → 409        |
 
 ### Authorization (TENANT-RBAC)
 
@@ -116,7 +116,7 @@ adapters in deployments that enable them):
 - **Rejection path in the designer:** the conflict becomes an explicit entry
   (`getConflicts()`), surfaced through the status region, resolved by
   `resolveConflict(id, 'take-server' | 'take-local')`. `take-local` re-pushes
-  against the server's *current* version — a deliberate new write, never a
+  against the server's _current_ version — a deliberate new write, never a
   blind overwrite.
 
 ## Sync over Cana's resync events
@@ -126,14 +126,14 @@ is a sibling consumer of the same Cana committed-event stream that
 `designerSync` (JUM-485) subscribes to:
 
 - **Outbound:** local Cana commits on the state document schedule a debounced
-  push of every *dirty* shared domain. Dirty is decided by a durable marker
+  push of every _dirty_ shared domain. Dirty is decided by a durable marker
   at `domain.context.catalog = { id, version, contentHash }` (additive,
   JUM-492's carry pattern, Requirement 126 Contract 3): `contentHash` is the
   canonical JSON of the **normalized** domain without the marker, so the hash
   is stable across the designer's own load/apply normalization.
 - **Inbound:** the client polls the catalog and converges by **document
   read-back** — `GET /catalogs?includeDeleted=true`, diffed by `(id,
-  version)` against the markers. This is Cana's own resync rule (JUM-413)
+version)` against the markers. This is Cana's own resync rule (JUM-413)
   applied across the network: a gap is a reload signal, never an event
   replay (Cana cursors are per client instance and mean nothing across
   machines).

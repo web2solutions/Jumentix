@@ -49,7 +49,6 @@ Split into contract-communicating microservices without losing shared domain rul
 - [Jumentix Workspace Packages](/docs/jumentix/packages)
 - [Architecture and Structure](/docs/jumentix/concepts/architecture)
 
-
 ## Next steps
 
 1. [Getting started](/docs/jumentix/concepts/getting-started)

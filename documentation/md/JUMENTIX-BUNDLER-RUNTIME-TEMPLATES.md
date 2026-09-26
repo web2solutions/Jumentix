@@ -6,13 +6,13 @@ Define baseline templates by artifact type so the bootstrap CLI and workspace pa
 
 ## Template Matrix
 
-| Artifact Type | Build Tooling Baseline | Runtime Baseline | Output Contract |
-|---|---|---|---|
-| Backend Service (Node) | TypeScript compiler (`tsc`) with workspace paths | Node 22 + PM2 profile + env-based adapter loader | JS build output + source maps + env contract |
-| Frontend SPA | Modern bundler profile (Vite-equivalent) + TS | Browser runtime with static hosting | Static assets bundle + optional PWA manifest |
-| Frontend SSR | SSR-capable bundler profile + TS | Node runtime (server entry) + static assets | server bundle + client bundle + env contract |
-| Backend npm Library | `tsc` + declaration output | Consumer-managed Node runtime | package `main` + `types` + `files` whitelist |
-| Frontend npm Library | bundler library mode + TS declarations | Browser/SSR consumer runtime | ESM/CJS bundle + types + style/assets contract |
+| Artifact Type          | Build Tooling Baseline                           | Runtime Baseline                                 | Output Contract                                |
+| ---------------------- | ------------------------------------------------ | ------------------------------------------------ | ---------------------------------------------- |
+| Backend Service (Node) | TypeScript compiler (`tsc`) with workspace paths | Node 22 + PM2 profile + env-based adapter loader | JS build output + source maps + env contract   |
+| Frontend SPA           | Modern bundler profile (Vite-equivalent) + TS    | Browser runtime with static hosting              | Static assets bundle + optional PWA manifest   |
+| Frontend SSR           | SSR-capable bundler profile + TS                 | Node runtime (server entry) + static assets      | server bundle + client bundle + env contract   |
+| Backend npm Library    | `tsc` + declaration output                       | Consumer-managed Node runtime                    | package `main` + `types` + `files` whitelist   |
+| Frontend npm Library   | bundler library mode + TS declarations           | Browser/SSR consumer runtime                     | ESM/CJS bundle + types + style/assets contract |
 
 ## Runtime Template Rules
 
@@ -41,16 +41,16 @@ Define baseline templates by artifact type so the bootstrap CLI and workspace pa
 
 Bootstrap service types should map to templates:
 
-| CLI Service Type | Template |
-|---|---|
-| `restapi` | Backend Service (Node) |
+| CLI Service Type    | Template                                  |
+| ------------------- | ----------------------------------------- |
+| `restapi`           | Backend Service (Node)                    |
 | `websocket+restapi` | Backend Service (Node) + Realtime profile |
-| `grpc+restapi` | Backend Service (Node) + Realtime profile |
-| `functions` | Provider function bundle template |
-| `frontend-spa` | Frontend SPA |
-| `frontend-ssr` | Frontend SSR |
-| `lib-backend` | Backend npm Library |
-| `lib-frontend` | Frontend npm Library |
+| `grpc+restapi`      | Backend Service (Node) + Realtime profile |
+| `functions`         | Provider function bundle template         |
+| `frontend-spa`      | Frontend SPA                              |
+| `frontend-ssr`      | Frontend SSR                              |
+| `lib-backend`       | Backend npm Library                       |
+| `lib-frontend`      | Frontend npm Library                      |
 
 ## Acceptance Criteria
 

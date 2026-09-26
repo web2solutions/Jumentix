@@ -18,27 +18,27 @@ expirado, cancelado ou pendente não é verde.
 
 ## Mapa de provedores
 
-| Provedor | Papel | Evidência obrigatória |
-| --- | --- | --- |
-| CircleCI | Gate canônico por branch para a matriz completa | `branch-gate`, jobs da matriz completa, evidência JSON/LCOV/SARIF |
-| GitHub Actions | Fallback retido, desabilitado por padrão atrás de `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`; exceções sempre ativas: `pr-feedback.yml`, jobs `sync-changelog`/`pr-feedback`, `npm-publish.yml` | Mesmo classificador de contexto, mesmos nomes de jobs quando o flag é `true`, artefatos retidos |
-| Codecov | Mapa público de cobertura arquivo a arquivo | Upload LCOV pelo job completo `coverage` |
-| SonarQube Cloud | Dashboard público de qualidade, confiabilidade, segurança e cobertura | Scanner após a cobertura do repositório passar |
-| OSV.dev, Gitleaks, Semgrep | Checks de segurança controlados pelo repositório | Resultados terminais de dependência/segurança e artefatos SARIF |
+| Provedor                   | Papel                                                                                                                                                                                    | Evidência obrigatória                                                                           |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| CircleCI                   | Gate canônico por branch para a matriz completa                                                                                                                                          | `branch-gate`, jobs da matriz completa, evidência JSON/LCOV/SARIF                               |
+| GitHub Actions             | Fallback retido, desabilitado por padrão atrás de `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`; exceções sempre ativas: `pr-feedback.yml`, jobs `sync-changelog`/`pr-feedback`, `npm-publish.yml` | Mesmo classificador de contexto, mesmos nomes de jobs quando o flag é `true`, artefatos retidos |
+| Codecov                    | Mapa público de cobertura arquivo a arquivo                                                                                                                                              | Upload LCOV pelo job completo `coverage`                                                        |
+| SonarQube Cloud            | Dashboard público de qualidade, confiabilidade, segurança e cobertura                                                                                                                    | Scanner após a cobertura do repositório passar                                                  |
+| OSV.dev, Gitleaks, Semgrep | Checks de segurança controlados pelo repositório                                                                                                                                         | Resultados terminais de dependência/segurança e artefatos SARIF                                 |
 
 ## Plano de gates de pull request
 
 PRs de tarefa miram `dev`; somente promoção de release de `dev` mira `main`.
 
-| Gate | PR de tarefa para `dev` | push em `dev` | promoção `dev -> main` |
-| --- | --- | --- | --- |
-| Build/teste por branch | obrigatório, testes afetados por camada | unitário health obrigatório | matriz estrita obrigatória |
-| Review third-party | obrigatório | não obrigatório | obrigatório |
-| Cobertura do repositório | adiada | adiada | obrigatória |
-| Upload Codecov | adiado | adiado | obrigatório |
-| Scan Sonar | adiado | adiado | obrigatório |
-| Qualidade website | somente quando selecionada pelo `test-map.json` | adiada | obrigatória |
-| Matriz de banco | adiada | adiada | obrigatória |
+| Gate                     | PR de tarefa para `dev`                         | push em `dev`               | promoção `dev -> main`     |
+| ------------------------ | ----------------------------------------------- | --------------------------- | -------------------------- |
+| Build/teste por branch   | obrigatório, testes afetados por camada         | unitário health obrigatório | matriz estrita obrigatória |
+| Review third-party       | obrigatório                                     | não obrigatório             | obrigatório                |
+| Cobertura do repositório | adiada                                          | adiada                      | obrigatória                |
+| Upload Codecov           | adiado                                          | adiado                      | obrigatório                |
+| Scan Sonar               | adiado                                          | adiado                      | obrigatório                |
+| Qualidade website        | somente quando selecionada pelo `test-map.json` | adiada                      | obrigatória                |
+| Matriz de banco          | adiada                                          | adiada                      | obrigatória                |
 
 PRs de tarefa para `dev` têm alvo operacional de dez minutos ou menos. No
 CircleCI, o job `branch-gate` classifica o contexto, lê `test-map.json` e

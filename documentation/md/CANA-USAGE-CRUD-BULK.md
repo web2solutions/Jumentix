@@ -42,13 +42,13 @@ console.log({ afterUpdate, afterDelete });
 
 ## Method choice
 
-| Method | Existing key | Missing key | Best use |
-| --- | --- | --- | --- |
-| `add(record)` | Fails with `ConstraintViolation`. | Inserts. | Create-only actions. |
-| `put(record)` | Replaces the whole record. | Inserts. | Upsert from sync/import. |
-| `update(key, changes)` | Merges fields. | Fails with `NotFound`. | UI edits that must not resurrect deleted rows. |
-| `delete(key)` | Deletes. | No stored record remains. | Remove actions. |
-| `clear()` | Removes every record in the store. | Store becomes empty. | Reset/import flows. |
+| Method                 | Existing key                       | Missing key               | Best use                                       |
+| ---------------------- | ---------------------------------- | ------------------------- | ---------------------------------------------- |
+| `add(record)`          | Fails with `ConstraintViolation`.  | Inserts.                  | Create-only actions.                           |
+| `put(record)`          | Replaces the whole record.         | Inserts.                  | Upsert from sync/import.                       |
+| `update(key, changes)` | Merges fields.                     | Fails with `NotFound`.    | UI edits that must not resurrect deleted rows. |
+| `delete(key)`          | Deletes.                           | No stored record remains. | Remove actions.                                |
+| `clear()`              | Removes every record in the store. | Store becomes empty.      | Reset/import flows.                            |
 
 ## Bulk writes
 

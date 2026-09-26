@@ -84,11 +84,11 @@ precisa ser resolvida. Com `operationLedger: true`, o id da operação é gravad
 **dentro da mesma transação que os dados**. O IndexedDB garante atomicidade de
 transação, logo o armazenamento não pode confirmar um sem o outro, e depois:
 
-| estado do livro | significado |
-|---|---|
-| id presente | a escrita foi confirmada |
-| id ausente, tentada dentro do horizonte | não foi confirmada |
-| id ausente, tentada antes do horizonte | `unresolvable` — o registro pode ter sido podado |
+| estado do livro                         | significado                                      |
+| --------------------------------------- | ------------------------------------------------ |
+| id presente                             | a escrita foi confirmada                         |
+| id ausente, tentada dentro do horizonte | não foi confirmada                               |
+| id ausente, tentada antes do horizonte  | `unresolvable` — o registro pode ter sido podado |
 
 A terceira linha importa. Colapsar `unresolvable` em `rolled-back` diria a quem
 chamou que é seguro repetir uma escrita que já aconteceu.
@@ -122,7 +122,7 @@ usa `put`.
 
 Não existe `commit()`. Uma transação IndexedDB confirma sozinha assim que o event
 loop cede sem requisições pendentes, então `await fetch(...)` dentro de um escopo
-não pausa a transação — ele a *encerra*. Expor `commit()` sugeriria controle
+não pausa a transação — ele a _encerra_. Expor `commit()` sugeriria controle
 sobre um tempo de vida que quem chama não controla.
 
 **A regra de uso:** aguardar uma requisição do IndexedDB dentro de uma transação
@@ -183,9 +183,7 @@ const client = createClient({
   name: 'designer',
   schema: {
     version: 1,
-    stores: [
-      { name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }
-    ]
+    stores: [{ name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }]
   },
   operationLedger: true
 });
@@ -194,13 +192,9 @@ await client.open();
 
 await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
 
-const { outcome, events } = await client.transaction(
-  'readwrite',
-  ['designs'],
-  async (scope) => {
-    await scope.table('designs').put({ id: 2, name: 'second', owner: 'bruno' });
-  }
-);
+const { outcome, events } = await client.transaction('readwrite', ['designs'], async (scope) => {
+  await scope.table('designs').put({ id: 2, name: 'second', owner: 'bruno' });
+});
 
 const stop = client.subscribe((event) => console.log(event.type), { sinceCursor: 0 });
 
@@ -217,15 +211,15 @@ if (health.level === 'lost') {
 Declarado sem rodeios, porque os testes existentes poderiam ser confundidos com
 uma cobertura maior do que realmente representam.
 
-| Área | Situação |
-|---|---|
-| Ciclo de vida, CRUD, consultas, transações, eventos, hooks, livro no IndexedDB real do browser | **Testado** — suite Cypress do Cana (Requirement 112 §4) |
-| Matriz entre navegadores (Chrome / Firefox / WebKit) | **Testado** onde a matriz de CI executa esses engines (JUM-417 / JUM-581) |
-| Fallback localStorage quando IndexedDB indisponível | **Testado** — `cypress/localstorage-fallback.cy.ts` + conformance (JUM-615) |
-| Hosting em `Worker` dedicado | **Testado** — `cypress/real-worker.cy.ts` (JUM-615) |
-| Worker morto → timeout / pedidos em voo irresolutos | **Testado** — caminho `terminate` do Worker real |
-| Desempenho de consultas em escala | **Não medido.** `explain()` prova o plano, não o custo de parede |
-| Esgotamento real de cota em origem cheia | Política e mapeamento testados; encher cota real em CI não |
+| Área                                                                                           | Situação                                                                    |
+| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Ciclo de vida, CRUD, consultas, transações, eventos, hooks, livro no IndexedDB real do browser | **Testado** — suite Cypress do Cana (Requirement 112 §4)                    |
+| Matriz entre navegadores (Chrome / Firefox / WebKit)                                           | **Testado** onde a matriz de CI executa esses engines (JUM-417 / JUM-581)   |
+| Fallback localStorage quando IndexedDB indisponível                                            | **Testado** — `cypress/localstorage-fallback.cy.ts` + conformance (JUM-615) |
+| Hosting em `Worker` dedicado                                                                   | **Testado** — `cypress/real-worker.cy.ts` (JUM-615)                         |
+| Worker morto → timeout / pedidos em voo irresolutos                                            | **Testado** — caminho `terminate` do Worker real                            |
+| Desempenho de consultas em escala                                                              | **Não medido.** `explain()` prova o plano, não o custo de parede            |
+| Esgotamento real de cota em origem cheia                                                       | Política e mapeamento testados; encher cota real em CI não                  |
 
 ### Sobre o Dexie (JUM-399 — encerrado)
 

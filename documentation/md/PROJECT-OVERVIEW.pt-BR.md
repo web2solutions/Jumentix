@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/PROJECT-OVERVIEW.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Visão geral do projeto
 
 ## Objetivo deste projeto

@@ -55,14 +55,14 @@ flowchart TB
 
 Implementação:
 
-| Caminho | Responsabilidade |
-| --- | --- |
-| `apps/service-management/index.html` | Estrutura de abas, painéis, import map |
-| `apps/service-management/script.js` | Ligação do designer e handlers de evento |
-| `apps/service-management/src/` | Módulos de store, sync, UI e PWA |
-| `apps/service-management/server.js` | Servidor estático e as APIs de runtime |
-| `packages/designer-core/` | Modelo, validação, exportadores e importadores sem DOM |
-| `packages/cana/` | Adaptador IndexedDB usado como store do designer |
+| Caminho                              | Responsabilidade                                       |
+| ------------------------------------ | ------------------------------------------------------ |
+| `apps/service-management/index.html` | Estrutura de abas, painéis, import map                 |
+| `apps/service-management/script.js`  | Ligação do designer e handlers de evento               |
+| `apps/service-management/src/`       | Módulos de store, sync, UI e PWA                       |
+| `apps/service-management/server.js`  | Servidor estático e as APIs de runtime                 |
+| `packages/designer-core/`            | Modelo, validação, exportadores e importadores sem DOM |
+| `packages/cana/`                     | Adaptador IndexedDB usado como store do designer       |
 
 ## 2. Pré-requisitos
 
@@ -162,15 +162,15 @@ NODE_ENV=dev bun apps/service-management/server.js
 Todas as variáveis abaixo têm o prefixo `JUMENTIX_SERVICE_MANAGEMENT_`, exceto
 `NODE_ENV`.
 
-| Variável | Padrão | Finalidade |
-| --- | --- | --- |
-| `…_PORT` | `3200` | Porta HTTP |
-| `…_HOST` | `127.0.0.1` | Endereço de bind |
-| `…_CONFIG_DIR` | `apps/backend-template/src/config` | Onde a API de runtime env lê e grava |
-| `…_PM2_DIR` | `pm2/` | Onde o preview de ecossistema PM2 lê |
-| `…_AUTH_TOKEN` | não definida | Exige `Authorization: Bearer <token>` no `POST` de ambiente |
-| `…_STATIC_MANIFEST_REFRESH` | de `NODE_ENV` | `on-miss` refaz o manifesto estático; `boot-only` nunca refaz |
-| `NODE_ENV` | `dev` | Ambiente de fallback quando a requisição não informa um |
+| Variável                    | Padrão                             | Finalidade                                                    |
+| --------------------------- | ---------------------------------- | ------------------------------------------------------------- |
+| `…_PORT`                    | `3200`                             | Porta HTTP                                                    |
+| `…_HOST`                    | `127.0.0.1`                        | Endereço de bind                                              |
+| `…_CONFIG_DIR`              | `apps/backend-template/src/config` | Onde a API de runtime env lê e grava                          |
+| `…_PM2_DIR`                 | `pm2/`                             | Onde o preview de ecossistema PM2 lê                          |
+| `…_AUTH_TOKEN`              | não definida                       | Exige `Authorization: Bearer <token>` no `POST` de ambiente   |
+| `…_STATIC_MANIFEST_REFRESH` | de `NODE_ENV`                      | `on-miss` refaz o manifesto estático; `boot-only` nunca refaz |
+| `NODE_ENV`                  | `dev`                              | Ambiente de fallback quando a requisição não informa um       |
 
 O servidor **falha fechado no boot** quando o diretório configurado não existe:
 imprime `Service Management config directory not found: <caminho>` em stderr e
@@ -179,11 +179,11 @@ violação de contrato, então ele se recusa a subir.
 
 Portas por perfil PM2:
 
-| Ecossistema | Processo | Porta |
-| --- | --- | --- |
-| `pm2/ecosystem.dev.config.cjs` | `jumentix-dev-service-management` | `3200` |
-| `pm2/ecosystem.staging.config.cjs` | `jumentix-staging-service-management` | `4200` |
-| `pm2/ecosystem.production.config.cjs` | `jumentix-prod-service-management` | `5200` |
+| Ecossistema                           | Processo                              | Porta  |
+| ------------------------------------- | ------------------------------------- | ------ |
+| `pm2/ecosystem.dev.config.cjs`        | `jumentix-dev-service-management`     | `3200` |
+| `pm2/ecosystem.staging.config.cjs`    | `jumentix-staging-service-management` | `4200` |
+| `pm2/ecosystem.production.config.cjs` | `jumentix-prod-service-management`    | `5200` |
 
 ### 4.5 Controle de processos
 
@@ -207,7 +207,7 @@ Em um perfil de navegador novo, o designer sobe com um **modelo vazio**. Cada
 aba mostra um estado vazio guiado que nomeia a primeira ação daquela aba — não
 existe template pré-carregado silenciosamente.
 
-![Primeiro boot: o estado vazio do Domain Designer explicando a aba e oferecendo Load Sample Model](../../images/service-manager/01-first-run-empty-state.png "Estado vazio do primeiro boot")
+![Primeiro boot: o estado vazio do Domain Designer explicando a aba e oferecendo Load Sample Model](../../images/service-manager/01-first-run-empty-state.png 'Estado vazio do primeiro boot')
 
 A primeira ação do Domain Designer é **Load Sample Model** (também disponível no
 painel Export). Um clique carrega um domínio de identidade realista — `Users`,
@@ -215,7 +215,7 @@ painel Export). Um clique carrega um domínio de identidade realista — `Users`
 `spec/1.0.0.yml` declara — com relacionamentos, RBAC por entidade, um contrato
 de mensagem, invariantes e composição OpenAPI `oneOf` + discriminador.
 
-![Canvas do Domain Designer após carregar o modelo de exemplo](../../images/service-manager/02-domain-designer-canvas.png "Canvas do Domain Designer com o modelo de exemplo")
+![Canvas do Domain Designer após carregar o modelo de exemplo](../../images/service-manager/02-domain-designer-canvas.png 'Canvas do Domain Designer com o modelo de exemplo')
 
 O conteúdo de exemplo permanece distinguível do seu trabalho: todo id do
 exemplo carrega o prefixo `sample-` e domínios de exemplo mostram o selo
@@ -239,33 +239,33 @@ Architecture começa como um Core (Users + demais domínios). Separe com Add Ser
 
 ### 6.1 Canvas e navegação
 
-| Controle | Efeito |
-| --- | --- |
-| `Ctrl/Cmd + roda do mouse`, `-` / `+` | Zoom |
-| `Espaço + arrastar` | Deslocar o canvas |
-| `Fit` | Enquadrar todo o modelo |
-| `Reset View` | Restaurar a viewport padrão |
-| `Snap: On` | Alternar o encaixe na grade |
-| `Compact View` | Recolher os cards de entidade até o cabeçalho |
-| `Large Canvas: Off` | Alternar o modo de performance para alta densidade |
-| `Auto Layout` | Reorganizar domínios e entidades |
-| `Curved` / `Orthogonal` | Estilo de roteamento dos relacionamentos |
-| Mini-mapa | Move a viewport para um domínio com um clique |
+| Controle                              | Efeito                                             |
+| ------------------------------------- | -------------------------------------------------- |
+| `Ctrl/Cmd + roda do mouse`, `-` / `+` | Zoom                                               |
+| `Espaço + arrastar`                   | Deslocar o canvas                                  |
+| `Fit`                                 | Enquadrar todo o modelo                            |
+| `Reset View`                          | Restaurar a viewport padrão                        |
+| `Snap: On`                            | Alternar o encaixe na grade                        |
+| `Compact View`                        | Recolher os cards de entidade até o cabeçalho      |
+| `Large Canvas: Off`                   | Alternar o modo de performance para alta densidade |
+| `Auto Layout`                         | Reorganizar domínios e entidades                   |
+| `Curved` / `Orthogonal`               | Estilo de roteamento dos relacionamentos           |
+| Mini-mapa                             | Move a viewport para um domínio com um clique      |
 
 Atalhos de teclado. Todos se desativam enquanto o foco está em um `input`,
 `textarea` ou `select`:
 
-| Atalho | Ação |
-| --- | --- |
-| `Ctrl/Cmd + Z` | Desfazer |
-| `Ctrl/Cmd + Shift + Z`, `Ctrl/Cmd + Y` | Refazer |
-| `Setas` | Mover a entidade selecionada em 8px |
-| `Shift + Setas` | Mover em 16px |
-| `Delete` / `Backspace` | Excluir o relacionamento selecionado, ou a entidade selecionada após confirmação |
-| `Alt + L` | Auto layout |
-| `Alt + R` | Iniciar um relacionamento a partir da entidade selecionada |
-| `Alt + V` | Alternar a visão compacta |
-| `Escape` | Cancelar o modo de seleção, cancelar um arraste de âncora, limpar a seleção de relacionamento |
+| Atalho                                 | Ação                                                                                          |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `Ctrl/Cmd + Z`                         | Desfazer                                                                                      |
+| `Ctrl/Cmd + Shift + Z`, `Ctrl/Cmd + Y` | Refazer                                                                                       |
+| `Setas`                                | Mover a entidade selecionada em 8px                                                           |
+| `Shift + Setas`                        | Mover em 16px                                                                                 |
+| `Delete` / `Backspace`                 | Excluir o relacionamento selecionado, ou a entidade selecionada após confirmação              |
+| `Alt + L`                              | Auto layout                                                                                   |
+| `Alt + R`                              | Iniciar um relacionamento a partir da entidade selecionada                                    |
+| `Alt + V`                              | Alternar a visão compacta                                                                     |
+| `Escape`                               | Cancelar o modo de seleção, cancelar um arraste de âncora, limpar a seleção de relacionamento |
 
 Todo desfecho — sucesso, recusa e motivo — é anunciado na região de status
 abaixo da barra de abas, que também é uma live region para leitores de tela.
@@ -288,27 +288,27 @@ Com uma entidade selecionada, o Entity Inspector oferece `Save Name`,
 agregado e as invariantes (uma regra por linha). Raízes de agregado exibem o
 marcador `AR` no card.
 
-![Entity Inspector: o nome da entidade, a flag de raiz de agregado, as invariantes e a matriz RBAC](../../images/service-manager/03a-entity-inspector-rules-and-rbac.png "Entity Inspector — regras e RBAC")
+![Entity Inspector: o nome da entidade, a flag de raiz de agregado, as invariantes e a matriz RBAC](../../images/service-manager/03a-entity-inspector-rules-and-rbac.png 'Entity Inspector — regras e RBAC')
 
 Os campos carregam metadados alinhados ao OpenAPI:
 
-| Atributo | Valores |
-| --- | --- |
-| `type` | `string`, `integer`, `number`, `boolean`, `array`, `object`, `date`, `datetime`, `uuid` |
-| `format` | `uuid`, `date`, `date-time`, `email`, `uri` |
-| Flags | `required`, `PK`, `FK`, `unique`, `nullable` |
-| `enum` | Valores permitidos, separados por vírgula |
+| Atributo             | Valores                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `type`               | `string`, `integer`, `number`, `boolean`, `array`, `object`, `date`, `datetime`, `uuid`                                    |
+| `format`             | `uuid`, `date`, `date-time`, `email`, `uri`                                                                                |
+| Flags                | `required`, `PK`, `FK`, `unique`, `nullable`                                                                               |
+| `enum`               | Valores permitidos, separados por vírgula                                                                                  |
 | Metadados estendidos | `description`, `pattern`, `minLength`, `maxLength`, `minimum`, `maximum`, `itemsType`, pelo botão `meta` na linha do campo |
 
 Templates de campo adicionam um conjunto fixo de campos, ignorando nomes já
 ocupados:
 
-| Template | Campos adicionados |
-| --- | --- |
-| `tenantRef` | `organizationId` (uuid, obrigatório, FK) |
-| `auditTrail` | `createdBy`, `updatedBy` (uuid, obrigatórios, FK) |
-| `softDelete` | `isDeleted` (boolean, obrigatório), `deletedAt` (datetime, nullable) |
-| `contactPack` | `emails`, `phones` (array de string) |
+| Template      | Campos adicionados                                                   |
+| ------------- | -------------------------------------------------------------------- |
+| `tenantRef`   | `organizationId` (uuid, obrigatório, FK)                             |
+| `auditTrail`  | `createdBy`, `updatedBy` (uuid, obrigatórios, FK)                    |
+| `softDelete`  | `isDeleted` (boolean, obrigatório), `deletedAt` (datetime, nullable) |
+| `contactPack` | `emails`, `phones` (array de string)                                 |
 
 Templates de entidade remodelam a entidade inteira: `crudAggregate`,
 `eventSourced`, `referenceData` e `tenantOwned`.
@@ -346,9 +346,9 @@ escopo da própria organização e `superadmin` é global, que é o que o runtim
 aplica. Escopos diretos legados continuam funcionando, mas não são editáveis
 aqui.
 
-![Entity Inspector: contratos de mensagem e os controles de composição OpenAPI](../../images/service-manager/03b-entity-inspector-contracts-and-composition.png "Entity Inspector — contratos e composição")
+![Entity Inspector: contratos de mensagem e os controles de composição OpenAPI](../../images/service-manager/03b-entity-inspector-contracts-and-composition.png 'Entity Inspector — contratos e composição')
 
-![Entity Inspector: o editor de campos e o preview de CRUD OpenAPI gerado](../../images/service-manager/03c-entity-inspector-fields-and-api-preview.png "Entity Inspector — campos e preview de API")
+![Entity Inspector: o editor de campos e o preview de CRUD OpenAPI gerado](../../images/service-manager/03c-entity-inspector-fields-and-api-preview.png 'Entity Inspector — campos e preview de API')
 
 Declare contratos `event`, `command`, `request` e `response` por entidade com
 nome, canal ou tópico, versão e um schema JSON de payload. `Add Contract`
@@ -369,7 +369,7 @@ fidelidade de cada travessia — é assunto de
 (`error`, `warn`, `info`) e aparece prefixado. O seletor de severidade mínima
 filtra a lista.
 
-![Model Check sem problemas e Schema Diff reportando um campo adicionado em relação ao baseline salvo](../../images/service-manager/04-model-check-and-diff.png "Model Check e Schema Diff")
+![Model Check sem problemas e Schema Diff reportando um campo adicionado em relação ao baseline salvo](../../images/service-manager/04-model-check-and-diff.png 'Model Check e Schema Diff')
 
 Marque **block export on critical issues** para transformar a validação em gate
 rígido. Todas as rotas de exportação chamam o gate antes e recusam enquanto
@@ -397,20 +397,20 @@ caso de uso, controller e handler. `Generate Examples` renderiza exemplos de
 payload de request e response. Selecione uma entidade para limitar a saída, ou
 deixe nada selecionado para gerar a partir de todo o canvas.
 
-![Painel Export: os botões de exportação, importação e geração](../../images/service-manager/05a-export-and-import-targets.png "Alvos de exportação e importação")
+![Painel Export: os botões de exportação, importação e geração](../../images/service-manager/05a-export-and-import-targets.png 'Alvos de exportação e importação')
 
-![Os esqueletos de código gerados e os exemplos de request e response](../../images/service-manager/05b-code-preview-and-examples.png "Preview de código e exemplos gerados")
+![Os esqueletos de código gerados e os exemplos de request e response](../../images/service-manager/05b-code-preview-and-examples.png 'Preview de código e exemplos gerados')
 
-| Botão | Arquivo baixado | Uso |
-| --- | --- | --- |
-| `Export JSON` | `domain-designer.json` | Backup completo do modelo, reimportável |
-| `Export OAS 3.1` | `domain-designer-oas-3.1.json` | Contrato REST |
-| `Export Markdown` | `domain-designer-model.md` | Documentação legível do modelo |
-| `Export JSON Schema` | `domain-designer-json-schema.json` | Schemas de validação |
-| `Export AsyncAPI` | um `<versão>.<transporte>.yml` por transporte | Contratos de eventos e mensagens |
-| `Export Proto` | `async-api.proto` | Definição de serviço gRPC |
-| `Export Boilerplate Bundle` | `domain-designer-boilerplate-bundle.json` | Entrada de scaffolding para o backend template |
-| `Export Package` | `<dominio>-package.json` | Um domínio, compartilhável e reimportável |
+| Botão                       | Arquivo baixado                               | Uso                                            |
+| --------------------------- | --------------------------------------------- | ---------------------------------------------- |
+| `Export JSON`               | `domain-designer.json`                        | Backup completo do modelo, reimportável        |
+| `Export OAS 3.1`            | `domain-designer-oas-3.1.json`                | Contrato REST                                  |
+| `Export Markdown`           | `domain-designer-model.md`                    | Documentação legível do modelo                 |
+| `Export JSON Schema`        | `domain-designer-json-schema.json`            | Schemas de validação                           |
+| `Export AsyncAPI`           | um `<versão>.<transporte>.yml` por transporte | Contratos de eventos e mensagens               |
+| `Export Proto`              | `async-api.proto`                             | Definição de serviço gRPC                      |
+| `Export Boilerplate Bundle` | `domain-designer-boilerplate-bundle.json`     | Entrada de scaffolding para o backend template |
+| `Export Package`            | `<dominio>-package.json`                      | Um domínio, compartilhável e reimportável      |
 
 A exportação de pacote usa o domínio selecionado como fonte, então selecione um
 domínio antes. Os alvos de importação são `Import JSON`, `Import OAS 3.1` e
@@ -425,17 +425,17 @@ conflito são assunto de
 
 Registre os adaptadores de entrada que vão servir as operações modeladas.
 
-![Communication Interface Designer com um adaptador REST e um WebSocket registrados](../../images/service-manager/06-communication-interface-designer.png "Communication Interface Designer")
+![Communication Interface Designer com um adaptador REST e um WebSocket registrados](../../images/service-manager/06-communication-interface-designer.png 'Communication Interface Designer')
 
 O candidato é validado **antes** de tocar o estado, e a recusa se explica na
 região de status:
 
-| Campo | Regra |
-| --- | --- |
-| Interface Type | `HTTP/REST`, `gRPC`, `WebSocket`, `SSE Server` |
-| Framework/Runtime | Segue o tipo de interface, vindo da matriz canônica de runtime. WebSocket oferece `socket-io`; gRPC oferece `grpc`; HTTP/REST e SSE oferecem os onze frameworks HTTP, na grafia canônica (`derby-js`, `sails-js`) |
-| Entrypoint | Um caminho TypeScript/JavaScript **sob `src/interface/`**, por exemplo `src/interface/HTTP/adapters/start-rest-api.ts` |
-| Controller mapping | O formato `XController.action`, por exemplo `UsersController.create` |
+| Campo              | Regra                                                                                                                                                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Interface Type     | `HTTP/REST`, `gRPC`, `WebSocket`, `SSE Server`                                                                                                                                                                    |
+| Framework/Runtime  | Segue o tipo de interface, vindo da matriz canônica de runtime. WebSocket oferece `socket-io`; gRPC oferece `grpc`; HTTP/REST e SSE oferecem os onze frameworks HTTP, na grafia canônica (`derby-js`, `sails-js`) |
+| Entrypoint         | Um caminho TypeScript/JavaScript **sob `src/interface/`**, por exemplo `src/interface/HTTP/adapters/start-rest-api.ts`                                                                                            |
+| Controller mapping | O formato `XController.action`, por exemplo `UsersController.create`                                                                                                                                              |
 
 Duplicatas são detectadas e recusadas. Tipo e framework permanecem
 selecionados após uma inclusão bem-sucedida, então registrar vários adaptadores
@@ -443,17 +443,17 @@ do mesmo tipo não exige escolhê-los de novo a cada vez.
 
 ## 8. Service Configuration
 
-![Service Configuration com o preview do perfil de runtime, o preview do ecossistema PM2 e o editor de ambiente carregado de .env.dev](../../images/service-manager/07-service-configuration.png "Service Configuration")
+![Service Configuration com o preview do perfil de runtime, o preview do ecossistema PM2 e o editor de ambiente carregado de .env.dev](../../images/service-manager/07-service-configuration.png 'Service Configuration')
 
 ### 8.1 Perfil de runtime
 
-| Controle | Valores |
-| --- | --- |
-| Service Kind | `REST API`, `WebSocket API + REST API`, `gRPC API + REST API` |
-| Run Mode | Servidor dedicado (SSH), Máquina virtual (SSH), Container, Functions |
-| Cloud Provider | AWS, Google Cloud, Azure, Vercel, Cloudflare, Docker, Self Hosted |
-| Caminho de assets estáticos | Opcional, por exemplo `public/` |
-| Portas | REST, WebSocket, gRPC |
+| Controle                    | Valores                                                              |
+| --------------------------- | -------------------------------------------------------------------- |
+| Service Kind                | `REST API`, `WebSocket API + REST API`, `gRPC API + REST API`        |
+| Run Mode                    | Servidor dedicado (SSH), Máquina virtual (SSH), Container, Functions |
+| Cloud Provider              | AWS, Google Cloud, Azure, Vercel, Cloudflare, Docker, Self Hosted    |
+| Caminho de assets estáticos | Opcional, por exemplo `public/`                                      |
+| Portas                      | REST, WebSocket, gRPC                                                |
 
 `Save Profile` valida antes de gravar: portas fora da faixa, portas colidindo
 entre os protocolos que o service kind escolhido realmente vincula, e
@@ -475,11 +475,11 @@ silenciosa.
 O editor expõe as chaves de runtime em dois níveis. A lista de escrita é uma
 decisão de segurança, fixada pelo Requisito `126`:
 
-| Nível | Chaves |
-| --- | --- |
-| Editável | `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`, `JUMENTIX_DATABASE_DRIVER`, `JUMENTIX_KEYVALUESTORAGE_DRIVER`, `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`, `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`, `JUMENTIX_WEBSOCKET_REDIS_URL` |
-| Somente leitura | Endpoints de conexão e configuração não secreta, como `JUMENTIX_DATABASE_NAME`, `JUMENTIX_REDIS_HOST`, `JUMENTIX_RABBITMQ_EXCHANGE`, `JUMENTIX_CORS_ALLOWED_ORIGINS` |
-| Nunca exposto | Chaves com credenciais, como `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`, `JUMENTIX_RABBITMQ_URL` — garantido por omissão das duas listas |
+| Nível           | Chaves                                                                                                                                                                                                                                                                                                   |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Editável        | `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`, `JUMENTIX_REALTIME_API_DATABASE_DRIVER`, `JUMENTIX_DATABASE_DRIVER`, `JUMENTIX_KEYVALUESTORAGE_DRIVER`, `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`, `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`, `JUMENTIX_WEBSOCKET_REDIS_URL` |
+| Somente leitura | Endpoints de conexão e configuração não secreta, como `JUMENTIX_DATABASE_NAME`, `JUMENTIX_REDIS_HOST`, `JUMENTIX_RABBITMQ_EXCHANGE`, `JUMENTIX_CORS_ALLOWED_ORIGINS`                                                                                                                                     |
+| Nunca exposto   | Chaves com credenciais, como `JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`, `JUMENTIX_RABBITMQ_URL` — garantido por omissão das duas listas                                                                                                                                                 |
 
 Cada chave editável é restrita a um enum canônico, então o editor não consegue
 gravar um valor que o backend recusaria no bootstrap.
@@ -509,11 +509,11 @@ sequenceDiagram
 
 Nomes de ambiente mapeiam para arquivos:
 
-| Ambiente selecionado | Arquivo |
-| --- | --- |
-| `dev`, `development` | `.env.dev` |
-| `staging` | `.env.staging` |
-| `ci`, `test` | `.env.ci` |
+| Ambiente selecionado | Arquivo        |
+| -------------------- | -------------- |
+| `dev`, `development` | `.env.dev`     |
+| `staging`            | `.env.staging` |
+| `ci`, `test`         | `.env.ci`      |
 
 Qualquer outro valor é recusado com HTTP 400 nomeando o conjunto aceito.
 
@@ -555,15 +555,15 @@ são assunto de
 Registre alvos de deploy com nome, tipo de alvo, tipo de serviço, região e
 versão de runtime. Alvos gerenciados por PM2 também recebem um perfil PM2.
 
-![Deploy Management com um alvo EC2 e um alvo Cloudflare Workers registrados](../../images/service-manager/08-deploy-management.png "Deploy Management")
+![Deploy Management com um alvo EC2 e um alvo Cloudflare Workers registrados](../../images/service-manager/08-deploy-management.png 'Deploy Management')
 
 O formulário valida contra a matriz de deploy do Requisito `059` e explica cada
 recusa:
 
-| Tipo de alvo | Tipos de serviço que pode rodar | Perfil PM2 | Região significa |
-| --- | --- | --- | --- |
-| `dedicated-server`, `vm`, `ec2` | `restapi`, `websocket+restapi`, `grpc+restapi` | Obrigatório (`dev`, `staging`, `production`) | Host SSH ou endereço da instância |
-| `lambda`, `vercel-functions`, `cloudflare-workers` | `functions` | Não se aplica | Região do provedor |
+| Tipo de alvo                                       | Tipos de serviço que pode rodar                | Perfil PM2                                   | Região significa                  |
+| -------------------------------------------------- | ---------------------------------------------- | -------------------------------------------- | --------------------------------- |
+| `dedicated-server`, `vm`, `ec2`                    | `restapi`, `websocket+restapi`, `grpc+restapi` | Obrigatório (`dev`, `staging`, `production`) | Host SSH ou endereço da instância |
+| `lambda`, `vercel-functions`, `cloudflare-workers` | `functions`                                    | Não se aplica                                | Região do provedor                |
 
 O campo runtime/versão espera nome mais versão, como `nodejs22.x` — um nome de
 runtime sozinho é recusado. Alvos podem ser editados no lugar e duplicados;

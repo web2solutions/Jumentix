@@ -53,7 +53,6 @@ const spec = await loadCanonicalSpec({
 });
 ```
 
-
 ### 3. Core workflows
 
 ### 1. Load OpenAPI for REST
@@ -68,7 +67,6 @@ Use websocket/grpc asyncapi documents.
 
 Prefer descriptive errors over silent empty clients.
 
-
 ### 4. Full practical surface (exports)
 
 - `loadCanonicalSpec`
@@ -78,8 +76,8 @@ Use exports from application/adapters layers as described above — not from dom
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
+| Symptom          | Cause                    | Fix                                           |
+| ---------------- | ------------------------ | --------------------------------------------- |
 | Cannot find spec | Wrong cwd / missing file | Pass an explicit base path from the app root. |
 
 **Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.

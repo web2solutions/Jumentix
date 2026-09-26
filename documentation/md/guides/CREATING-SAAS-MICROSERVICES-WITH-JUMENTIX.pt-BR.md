@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Criando microsserviços SaaS com Jumentix
 
 Utilize este caminho quando a escala de domínio, a autonomia da equipa e os perfis de tráfego exigirem a decomposição do nível de serviço.
@@ -52,7 +53,6 @@ Separe microsserviços que se comunicam por contrato sem perder regras de domín
 - [Contratos de mensagens e eventos](/docs/jumentix/reference/events-messages)
 - [Pacotes do workspace Jumentix](/docs/jumentix/packages)
 - [Arquitetura e estrutura](/docs/jumentix/concepts/architecture)
-
 
 ## Próximos passos
 

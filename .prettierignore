@@ -1,0 +1,43 @@
+# Dependencies and VCS
+node_modules
+.git
+
+# Lockfiles and machine-generated manifests
+bun.lock
+*.lock
+packages/cli-init/templates.manifest.json
+
+# Changelog is owned by the release automation (PR template: "Changelog
+# untouched; GitHub Actions synchronizes it only after the main merge").
+CHANGELOG.md
+CHANGELOG.pt-BR.md
+
+# Build outputs
+**/dist
+**/coverage
+**/.build
+apps/jumentix-website/.next
+
+# Vendored / generated third-party bundles (same policy as the lint ignores)
+apps/backend-template/OASdoc
+apps/backend-template/AsyncAPIdoc
+apps/service-management/vendor
+.browser-tests
+apps/jumentix-website/public/_pagefind
+apps/frontend/template
+
+# Generated mirror of the app seeds — regenerated via cli:build-templates,
+# which copies the (already formatted) seeds.
+packages/cli-init/templates
+
+# Secrets and local state
+firebase-adminsdk.json
+.wwebjs_auth
+.wwebjs_cache
+
+# Minified assets
+*.min.js
+
+# Dockerfiles (the .graphql/.yml suffixes are service names, not languages)
+Dockerfile*
+**/Dockerfile.*

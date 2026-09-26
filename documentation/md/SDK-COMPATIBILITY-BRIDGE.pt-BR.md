@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SDK-COMPATIBILITY-BRIDGE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Ponte de compatibilidade SDK
 
 Atualmente, este projeto expõe dois caminhos de acesso do SDK durante a migração monorepo:

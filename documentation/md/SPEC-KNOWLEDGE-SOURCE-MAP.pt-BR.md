@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-KNOWLEDGE-SOURCE-MAP.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Spec Mapa de fonte de conhecimento
 
 Este mapa define onde reside a verdade das especificações e como as fontes são priorizadas.

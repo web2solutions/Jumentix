@@ -22,19 +22,19 @@ aberto é uma linha de base de latência absoluta, que nenhum shim em memória
 consegue produzir e que é a única coisa entre "seguro dentro deste monorepo" e
 um release público no npm.
 
-| Área | Situação |
-|---|---|
-| Motor (ciclo de vida, CRUD, consultas, transações, eventos, hooks) | Completo, testado |
-| Recuperação de falhas (livro de operações) | Completo, testado |
-| Worker host e protocolo | Completo, testado sobre porta de mensagem real |
-| Política de durabilidade e despejo | Completa, testada contra estados construídos |
-| Integração com a factory de clientes Jumentix | Completa, testada |
-| Empacotamento (CJS/ESM duplo, tipos, licença) | Completo, testado |
-| Documentação (projeto, uso, EN + PT-BR) | Completa |
-| Concordância diferencial com o Dexie | Completa, 18/18 concordam, no navegador |
-| **Conformidade entre navegadores** | **Completa — 284/284 no Chrome, Firefox e WebKit** |
-| Desempenho com volume real de dados | Forma de complexidade medida em navegador real; latência absoluta não |
-| Verificação em CI de qualquer item acima | **Roda a cada push/PR pela matriz de cobertura** |
+| Área                                                               | Situação                                                              |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| Motor (ciclo de vida, CRUD, consultas, transações, eventos, hooks) | Completo, testado                                                     |
+| Recuperação de falhas (livro de operações)                         | Completo, testado                                                     |
+| Worker host e protocolo                                            | Completo, testado sobre porta de mensagem real                        |
+| Política de durabilidade e despejo                                 | Completa, testada contra estados construídos                          |
+| Integração com a factory de clientes Jumentix                      | Completa, testada                                                     |
+| Empacotamento (CJS/ESM duplo, tipos, licença)                      | Completo, testado                                                     |
+| Documentação (projeto, uso, EN + PT-BR)                            | Completa                                                              |
+| Concordância diferencial com o Dexie                               | Completa, 18/18 concordam, no navegador                               |
+| **Conformidade entre navegadores**                                 | **Completa — 284/284 no Chrome, Firefox e WebKit**                    |
+| Desempenho com volume real de dados                                | Forma de complexidade medida em navegador real; latência absoluta não |
+| Verificação em CI de qualquer item acima                           | **Roda a cada push/PR pela matriz de cobertura**                      |
 
 ---
 
@@ -76,11 +76,11 @@ através do Cypress, headless, sem shims.
 **284 testes passam em cada um dos três motores**, cada execução contra a
 implementação de armazenamento do próprio motor:
 
-| Motor | Driver | Por que está na lista |
-|---|---|---|
-| Chromium (`chrome`) | Cypress | Maior participação; a implementação de referência |
-| Gecko (`firefox`) | Cypress | Implementação independente de IndexedDB |
-| WebKit | Cypress + `playwright-webkit` | O motor do Safari — historicamente o mais divergente |
+| Motor               | Driver                        | Por que está na lista                                |
+| ------------------- | ----------------------------- | ---------------------------------------------------- |
+| Chromium (`chrome`) | Cypress                       | Maior participação; a implementação de referência    |
+| Gecko (`firefox`)   | Cypress                       | Implementação independente de IndexedDB              |
+| WebKit              | Cypress + `playwright-webkit` | O motor do Safari — historicamente o mais divergente |
 
 A matriz é de motores, não de marcas: `chrome` cobre Chrome, Edge e Brave;
 WebKit é o motor do Safari, aquele cuja política de cota e despejo é a mais
@@ -138,17 +138,17 @@ medido, e não apenas nos que permitem a API conveniente.
 Verificado por `packages/cana/test/packaging.test.ts`, que
 constrói o pacote e carrega o artefato em vez do alias do workspace.
 
-| Item | Estado |
-|---|---|
-| `main` → `dist/index.js` (CommonJS) | sim |
-| `module` / `exports.import` → `dist/index.mjs` (ESM) | sim |
-| `types` → `dist/index.d.ts`, primeiro no mapa de exports | sim |
-| `files` publica `dist`, README, LICENSE — não `src` | sim |
-| `LICENSE.md` presente e coerente com o MIT declarado | sim |
-| Dependências de runtime | **nenhuma** |
-| `sideEffects: false` | sim |
-| `prepublishOnly` limpa e depois constrói | sim |
-| Construído com Bun (Req 096) | sim — `tsc` e depois `bun build` para o ESM |
+| Item                                                     | Estado                                      |
+| -------------------------------------------------------- | ------------------------------------------- |
+| `main` → `dist/index.js` (CommonJS)                      | sim                                         |
+| `module` / `exports.import` → `dist/index.mjs` (ESM)     | sim                                         |
+| `types` → `dist/index.d.ts`, primeiro no mapa de exports | sim                                         |
+| `files` publica `dist`, README, LICENSE — não `src`      | sim                                         |
+| `LICENSE.md` presente e coerente com o MIT declarado     | sim                                         |
+| Dependências de runtime                                  | **nenhuma**                                 |
+| `sideEffects: false`                                     | sim                                         |
+| `prepublishOnly` limpa e depois constrói                 | sim                                         |
+| Construído com Bun (Req 096)                             | sim — `tsc` e depois `bun build` para o ESM |
 
 O formato duplo não é otimização. O Cana é uma biblioteca de navegador, e um
 pacote só-CommonJS não pode ser carregado por um `import` nativo — a página de
@@ -171,7 +171,7 @@ compartilhado é um teste instável que some em um mês — e sumir leva a cober
 junto.
 
 O que isso pega: uma varredura completa ficar 10x mais lenta com 10x os dados é
-correto; uma consulta *indexada* fazer isso é o bug — o índice foi anunciado e
+correto; uma consulta _indexada_ fazer isso é o bug — o índice foi anunciado e
 nunca usado, algo que nenhum teste de correção detecta, porque as linhas
 retornadas são idênticas nos dois casos.
 

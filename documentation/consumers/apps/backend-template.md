@@ -17,7 +17,6 @@ Juniors need a concrete app to open — not only package APIs. This hub orients 
 - **Used with:** persistence packages, SDK clients, REST/Realtime guides
 - **Not responsible for:** browser offline storage (Cana) or private monorepo tooling pages
 
-
 ## Prerequisites
 
 - [Getting started](/docs/jumentix/concepts/getting-started)
@@ -36,10 +35,10 @@ Juniors need a concrete app to open — not only package APIs. This hub orients 
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| Looking for private package docs on the site | Those packages are excluded | Use public packages hub only |
-| Running the wrong app folder | Mixed paths | Stay under `apps/backend-template` |
+| Symptom                                      | Cause                       | Fix                                |
+| -------------------------------------------- | --------------------------- | ---------------------------------- |
+| Looking for private package docs on the site | Those packages are excluded | Use public packages hub only       |
+| Running the wrong app folder                 | Mixed paths                 | Stay under `apps/backend-template` |
 
 ## Junior checklist (“I can …”)
 

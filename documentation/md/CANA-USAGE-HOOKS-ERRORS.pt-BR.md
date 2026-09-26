@@ -85,14 +85,14 @@ try {
 
 ## Erros comuns
 
-| Código | Causa típica | Recuperação |
-| --- | --- | --- |
-| `InvalidRequest` | Usar tabela antes de `open()` ou enviar chave inválida. | Corrigir ordem de chamada ou formato da chave. |
-| `ConstraintViolation` | Chave duplicada ou conflito de índice único. | Mostrar conflito de criação para o usuário. |
-| `NotFound` | Alvo de `update()` ausente ou cursor de replay antigo demais. | Recarregar estado durável e assinar novamente. |
-| `TransactionInactive` | `await` de trabalho não IndexedDB dentro da transação. | Mover rede/timer para fora do corpo da transação. |
-| `QuotaExceeded` | Cota de storage do navegador cheia. | Exportar, limpar ou pedir storage persistente. |
-| `UnknownOutcome` | Worker/aba morreu com escrita em andamento. | Usar `operationLedger` e `resolveWrite()`. |
+| Código                | Causa típica                                                  | Recuperação                                       |
+| --------------------- | ------------------------------------------------------------- | ------------------------------------------------- |
+| `InvalidRequest`      | Usar tabela antes de `open()` ou enviar chave inválida.       | Corrigir ordem de chamada ou formato da chave.    |
+| `ConstraintViolation` | Chave duplicada ou conflito de índice único.                  | Mostrar conflito de criação para o usuário.       |
+| `NotFound`            | Alvo de `update()` ausente ou cursor de replay antigo demais. | Recarregar estado durável e assinar novamente.    |
+| `TransactionInactive` | `await` de trabalho não IndexedDB dentro da transação.        | Mover rede/timer para fora do corpo da transação. |
+| `QuotaExceeded`       | Cota de storage do navegador cheia.                           | Exportar, limpar ou pedir storage persistente.    |
+| `UnknownOutcome`      | Worker/aba morreu com escrita em andamento.                   | Usar `operationLedger` e `resolveWrite()`.        |
 
 ## Execute aqui
 

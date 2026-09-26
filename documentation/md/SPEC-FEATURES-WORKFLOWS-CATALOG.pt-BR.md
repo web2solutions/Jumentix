@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-FEATURES-WORKFLOWS-CATALOG.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Catálogo de recursos e fluxos de trabalho de especificações
 
 Este catálogo mapeia os recursos do Jumentix para os artefatos de especificações necessários e limites de implementação.

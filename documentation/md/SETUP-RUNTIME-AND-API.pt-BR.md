@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SETUP-RUNTIME-AND-API.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Configuração, tempo de execução e API
 
 ## Tempo de execução e pilha necessária
@@ -233,7 +234,7 @@ Aplicativo de gerenciamento de serviços (servido por PM2):
 bun run dev:service-management
 ```
 
-![modo de desenvolvimento sem servidor](../images/sls.png "modo de desenvolvimento sem servidor")
+![modo de desenvolvimento sem servidor](../images/sls.png 'modo de desenvolvimento sem servidor')
 
 ## Comandos de produção
 

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/CACHE-SERVICE-AND-ENDPOINT-CACHING.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Serviço de cache e cache de leitura
 
 ## Propósito
@@ -71,5 +72,3 @@ Invalidação do gatilho de gravação atual:
 - `apps/backend-template/test/unit/infra/cache/CacheService.test.ts`
 - `apps/backend-template/test/unit/modules/Users/service/UserService.test.ts`
 - `apps/backend-template/test/unit/modules/Users/service/OrganizationService.test.ts`
-
-

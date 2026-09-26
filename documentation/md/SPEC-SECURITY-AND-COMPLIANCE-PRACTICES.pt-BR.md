@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-SECURITY-AND-COMPLIANCE-PRACTICES.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Especificações de práticas de segurança e conformidade
 
 Esta especificação define práticas obrigatórias de segurança e conformidade para Jumentix.

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Console de operações do Service Management
 
 Este é o documento E5 da cadeia de documentação E1–E8 do Service Management
@@ -195,7 +196,7 @@ provável de ser desfeita por um atalho futuro — é **de onde ela lê**:
   realidade e a ferramenta Bun atual. É por isso que o Contrato 1b
   **proíbe** qualquer string de gerenciador de pacotes (`pnpm run`, `bun run`,
   `npm run`) ou nome de script `pm2:start:*` no servidor e no designer: o
-  comando relatado é *derivado da definição do ecossistema* (seu caminho e o
+  comando relatado é _derivado da definição do ecossistema_ (seu caminho e o
   nome do app), portanto permanece verdadeiro qualquer que seja o gerenciador
   de pacotes que invoque o PM2. Este documento, portanto, descreve a prévia
   pela sua fonte, não pelas strings literais de comando que ela produz hoje.
@@ -379,7 +380,7 @@ por tipo de target) no portão de adição/edição e a regra de renomeação
 
 A razão de esta seção de lacuna honesta existir: as listas do console são as
 superfícies onde um design se torna uma intenção operacional, e uma entrada
-que só *se torna* válida após um reload — ou uma entrada duplicada que nada
+que só _se torna_ válida após um reload — ou uma entrada duplicada que nada
 rejeita — é uma regra que o usuário não consegue ver. Nomear as issues
 responsáveis mantém a regra visível até o código alcançá-la.
 
@@ -396,7 +397,7 @@ console segue o mesmo modelo:
   um toast não substitui um portão.
 - **Linhas de status inline por painel** — o status da prévia do PM2, o status
   do Service Configuration, o status do ambiente de runtime e a linha de
-  direcionamento por arquivo — carregam falhas *com ambiente, arquivo e causa*
+  direcionamento por arquivo — carregam falhas _com ambiente, arquivo e causa_
   onde o usuário está olhando, em vez de um erro silencioso no console.
 - **Controles de ajuda alcançáveis** — cada formulário, barra de ferramentas e
   ação estática expõe a mesma affordance de ajuda `?` usada pelas superfícies

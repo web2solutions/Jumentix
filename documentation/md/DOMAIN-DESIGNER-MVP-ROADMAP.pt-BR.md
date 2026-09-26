@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/DOMAIN-DESIGNER-MVP-ROADMAP.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Roteiro MVP do Designer de Domínio
 
 Este documento centraliza o status e as prioridades do Domain Designer MVP.

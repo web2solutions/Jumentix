@@ -33,11 +33,11 @@ Property-level relation (JUM-787):
 
 ```yaml
 x-relation:
-  field: organization   # optional; defaults to the property name
+  field: organization # optional; defaults to the property name
   entity: Organization
-  match: id             # optional; defaults to the target's x-primary-key
+  match: id # optional; defaults to the target's x-primary-key
   display: name
-  kind: belongsTo       # or hasMany for arrays of ids
+  kind: belongsTo # or hasMany for arrays of ids
 ```
 
 Consumer: `formSchema.ts` (`FieldDescriptor.relation`), X-CRUD. Backend metadata: `@belongsTo` / `@hasMany` + `getModelRelations`.

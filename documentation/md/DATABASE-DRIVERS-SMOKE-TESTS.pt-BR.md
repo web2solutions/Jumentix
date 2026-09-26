@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/DATABASE-DRIVERS-SMOKE-TESTS.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Testes de fumaça de drivers de banco de dados
 
 Este padrão agora oferece suporte à seleção em tempo de execução de vários drivers de banco de dados por meio de `JUMENTIX_DATABASE_DRIVER` e inclui testes de fumaça e arquivos de composição do Docker por banco de dados para validar o ciclo de vida de inicialização do adaptador (`connect` / `disconnect`) em ambientes locais/dev/staging/prod-like.

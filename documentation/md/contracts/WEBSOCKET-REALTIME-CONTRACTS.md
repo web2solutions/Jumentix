@@ -79,11 +79,13 @@ When `ok=false`, response includes:
 ```
 
 Error semantics must follow:
+
 - [Error Contracts and Responses](../ERROR-CONTRACTS-AND-RESPONSES.md)
 
 ## Operation Registry
 
 `operationId` must match the allowed operation list in:
+
 - `spec/asyncapi/1.0.0.websocket.yml` (`components.schemas.ApiRequest.properties.operationId.enum`)
 
 ## Contract Change Policy

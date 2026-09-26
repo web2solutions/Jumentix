@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/DOMAIN-DESIGNER-FEATURES-AND-USAGE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Recursos e uso do designer de domínio
 
 Este documento é o guia técnico para todos os recursos do Domain Designer MVP dentro de:
@@ -250,7 +251,7 @@ Como usar:
 Exportar:
 
 - modelo JSON
--OpenAPI 3.1
+  -OpenAPI 3.1
 - Remarcação
 - Esquema JSON
 - API assíncrona
@@ -260,7 +261,7 @@ Exportar:
 Importar:
 
 - modelo JSON
--OpenAPI 3.1
+  -OpenAPI 3.1
 - Pacote de domínio
 
 Como usar:
@@ -313,7 +314,7 @@ no nível do modelo vazia (verificado por `designerRoundTrip.test.ts`).
   quando divergem da heurística de nomes do importador (`id` → PK/unique,
   `*Id` → FK).
 - As linhas de `x-relations` carregam `{ name, fromSchema, toSchema,
-  fromCardinality, toCardinality }` — nomes de schema, não ids do modelo — e
+fromCardinality, toCardinality }` — nomes de schema, não ids do modelo — e
   o importador restaura os relacionamentos religados aos ids recomputados das
   entidades, descartando linhas cujos extremos não foram importados.
 - Documentos externos sem as marcações do designer (o canônico
@@ -340,4 +341,3 @@ Correr:
 bun run test:integration:service-management
 NODE_ENV=dev bun x jest apps/service-management/test/unit/mvp.roadmap.features.test.ts --runInBand
 ```
-

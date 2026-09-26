@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Estratégia de lançamento e versionamento do Jumentix
 
 ## Política
@@ -25,10 +26,10 @@ Valores atuais:
 
 Duas famílias de tags anotadas, ambas criadas por CI — nunca a partir de uma máquina de desenvolvedor:
 
-| Família | Formato | Quando | Dono |
-| --- | --- | --- | --- |
-| Aplicação | `v<appLockedVersion>` (ex.: `v0.0.3`) | Após cada bump bem-sucedido em `main` | Workflow CircleCI `release` → `bun run release:app-tag` |
-| Pacote | `@jumentix/<pkg>@<version>` | Após cada `npm publish` bem-sucedido | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
+| Família   | Formato                               | Quando                                | Dono                                                                |
+| --------- | ------------------------------------- | ------------------------------------- | ------------------------------------------------------------------- |
+| Aplicação | `v<appLockedVersion>` (ex.: `v0.0.3`) | Após cada bump bem-sucedido em `main` | Workflow CircleCI `release` → `bun run release:app-tag`             |
+| Pacote    | `@jumentix/<pkg>@<version>`           | Após cada `npm publish` bem-sucedido  | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
 
 A próxima versão de aplicação é calculada por `ci-cd/lib/next-version.js` a partir dos commits
 desde a última tag de aplicação (ou do histórico completo quando não houver nenhuma):
@@ -63,8 +64,8 @@ A validação inclui:
 1. Faça merge de PRs de tarefa em `dev` normalmente (commits locais **não** fazem bump de versão).
 2. Abra um PR de promoção `dev`→`main`. Após o merge, o CircleCI em `main` executa
    `release:app-tag`: calcula a próxima versão, atualiza root + `release-policy.json`
-   + cada `apps/*/package.json`, faz commit `chore(release): vX.Y.Z`, cria a tag
-   anotada de aplicação, regenera `CHANGELOG.md` e faz push.
+   - cada `apps/*/package.json`, faz commit `chore(release): vX.Y.Z`, cria a tag
+     anotada de aplicação, regenera `CHANGELOG.md` e faz push.
 3. O push da tag dispara o CircleCI `create-github-release` → GitHub Release navegável.
 4. Quando for publicar pacotes, dispare **Publish npm packages** em `main`
    (Environment protegido `secrets`, Requisito 070). O workflow ignora qualquer

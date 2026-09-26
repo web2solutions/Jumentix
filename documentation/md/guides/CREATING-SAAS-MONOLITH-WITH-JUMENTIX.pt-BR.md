@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Criando SaaS Monolith com Jumentix
 
 Use esse caminho quando desejar uma entrega rápida com limites modulares fortes e um caminho de migração futuro limpo.
@@ -52,7 +53,6 @@ Lance um monólito modular com limites claros prontos para extrair depois.
 - [Arquitetura e Estrutura](/docs/jumentix/concepts/architecture)
 - [Hub de modelo de back-end](/docs/jumentix/guides/rest-api)
 - Implantar matriz de destino e empacotamento
-
 
 ## Próximos passos
 

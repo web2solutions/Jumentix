@@ -21,10 +21,10 @@ Current values:
 
 Two annotated tag families, both created by CI — never from a developer machine:
 
-| Family | Format | When | Owner |
-| --- | --- | --- | --- |
-| Application | `v<appLockedVersion>` (e.g. `v0.0.3`) | After each successful version bump on `main` | CircleCI `release` workflow → `bun run release:app-tag` |
-| Package | `@jumentix/<pkg>@<version>` | After each successful `npm publish` | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
+| Family      | Format                                | When                                         | Owner                                                               |
+| ----------- | ------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
+| Application | `v<appLockedVersion>` (e.g. `v0.0.3`) | After each successful version bump on `main` | CircleCI `release` workflow → `bun run release:app-tag`             |
+| Package     | `@jumentix/<pkg>@<version>`           | After each successful `npm publish`          | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
 
 The next application version is computed by `ci-cd/lib/next-version.js` from commits
 since the last application tag (or full history when none exist):
@@ -59,8 +59,8 @@ Validation includes:
 1. Merge task PRs to `dev` as usual (local commits do **not** bump versions).
 2. Open a `dev`→`main` promotion PR. After it merges, CircleCI on `main` runs
    `release:app-tag`: computes the next version, updates root + `release-policy.json`
-   + every `apps/*/package.json`, commits `chore(release): vX.Y.Z`, creates the
-   annotated application tag, regenerates `CHANGELOG.md`, and pushes.
+   - every `apps/*/package.json`, commits `chore(release): vX.Y.Z`, creates the
+     annotated application tag, regenerates `CHANGELOG.md`, and pushes.
 3. The tag push triggers CircleCI `create-github-release` → browsable GitHub Release.
 4. When ready to publish packages, dispatch **Publish npm packages** on `main`
    (protected `secrets` Environment, Requirement 070). The workflow skips any

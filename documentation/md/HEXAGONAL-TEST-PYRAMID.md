@@ -18,15 +18,15 @@ Requirements:
 
 `test-map.json` is the machine-readable source of truth:
 
-| Field | Meaning |
-| --- | --- |
-| `layers.*.dependsOn` | Inward hexagonal dependencies |
-| `layers.*.sourceGlobs` | Source ownership predicates |
-| `suites[].runner` | **Local** runner — always `bun` (Req 106) |
-| `suites[].ciRunner` | Optional CI runner (`node` when Jest is still required remotely) |
-| `suites[].tier` | `gate` or `nightly` |
-| `quarantine[]` | Explicit exceptions with Linear issue refs |
-| `flags.gateV2Env` | `JUMENTIX_GATE_V2` (default on) |
+| Field                  | Meaning                                                          |
+| ---------------------- | ---------------------------------------------------------------- |
+| `layers.*.dependsOn`   | Inward hexagonal dependencies                                    |
+| `layers.*.sourceGlobs` | Source ownership predicates                                      |
+| `suites[].runner`      | **Local** runner — always `bun` (Req 106)                        |
+| `suites[].ciRunner`    | Optional CI runner (`node` when Jest is still required remotely) |
+| `suites[].tier`        | `gate` or `nightly`                                              |
+| `quarantine[]`         | Explicit exceptions with Linear issue refs                       |
+| `flags.gateV2Env`      | `JUMENTIX_GATE_V2` (default on)                                  |
 
 ```bash
 bun run test-map:check

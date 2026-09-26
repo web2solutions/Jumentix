@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/CONTRIBUTING-AND-TOOLING.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Contribuição e ferramentas
 
 ## Contribuindo

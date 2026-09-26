@@ -2,30 +2,34 @@
 Arquivo gerado automaticamente a partir de: documentation/md/domains/users/ORGANIZATION-MODEL.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Modelo de Domínio de Usuários (`Organização`)
 
 ## Objetivo
+
 `Organização` é o agregado do locatário no domínio Usuários. Ele modela a identidade da organização, os canais de comunicação e as referências de associação aos usuários.
 
 ## Fonte da verdade
+
 - `apps/backend-template/src/modules/Users/domain/Model/Organization.ts`
 - `apps/backend-template/src/modules/Users/domain/Entity/IOrganization.ts`
 - `apps/backend-template/src/modules/Users/service/OrganizationService.ts`
 
 ## Construção
+
 O construtor aceita `RequestCreateOrganization` + metadados opcionais.
 
-| Campo | Tipo | Padrão | Regra |
-|---|---|---|---|
-| `id` | `string` (UUID) | gerado por `BaseModel` quando ausente | Analisado/normalizado por `UUID.parse` quando fornecido. |
-| `criadoEm` | `Data` | gerado automaticamente | Gerado automaticamente quando a entidade é criada. |
-| `atualizadoEm` | `Data` | gerado automaticamente | Gerado automaticamente na criação e atualizado automaticamente pelo adaptador de persistência nas atualizações. |
-| `nome` | `string` | nenhum | Obrigatório, `canNotBeEmpty`. |
-| `endereço` | `AddressValueObject[]` | `[]` | Cada entrada mapeada para `AddressValueObject`. |
-| `telefone` | `PhoneValueObject[]` | `[]` | Cada entrada mapeada para `PhoneValueObject`. |
-| `e-mail` | `EmailValueObject[]` | `[]` | Cada entrada mapeada para `EmailValueObject`. |
-| `usuários` | `string[]` | `[]` | Referências a IDs de usuários na organização. |
-| `somente leitura` | `booleano` | `falso` | Bloqueia setters mutáveis ​​quando habilitado. |
+| Campo             | Tipo                   | Padrão                                | Regra                                                                                                           |
+| ----------------- | ---------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `id`              | `string` (UUID)        | gerado por `BaseModel` quando ausente | Analisado/normalizado por `UUID.parse` quando fornecido.                                                        |
+| `criadoEm`        | `Data`                 | gerado automaticamente                | Gerado automaticamente quando a entidade é criada.                                                              |
+| `atualizadoEm`    | `Data`                 | gerado automaticamente                | Gerado automaticamente na criação e atualizado automaticamente pelo adaptador de persistência nas atualizações. |
+| `nome`            | `string`               | nenhum                                | Obrigatório, `canNotBeEmpty`.                                                                                   |
+| `endereço`        | `AddressValueObject[]` | `[]`                                  | Cada entrada mapeada para `AddressValueObject`.                                                                 |
+| `telefone`        | `PhoneValueObject[]`   | `[]`                                  | Cada entrada mapeada para `PhoneValueObject`.                                                                   |
+| `e-mail`          | `EmailValueObject[]`   | `[]`                                  | Cada entrada mapeada para `EmailValueObject`.                                                                   |
+| `usuários`        | `string[]`             | `[]`                                  | Referências a IDs de usuários na organização.                                                                   |
+| `somente leitura` | `booleano`             | `falso`                               | Bloqueia setters mutáveis ​​quando habilitado.                                                                  |
 
 ## Relacionamentos
 

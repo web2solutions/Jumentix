@@ -36,9 +36,9 @@
 
 ## Remediation Details
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Security Acceptance Criteria
 

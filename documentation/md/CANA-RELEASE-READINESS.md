@@ -21,19 +21,19 @@ targets. What remains open is an absolute latency baseline, which no
 in-memory shim can produce and which is the only thing standing between
 "safe inside this monorepo" and a public npm release.
 
-| Area | Status |
-|---|---|
-| Engine (lifecycle, CRUD, queries, transactions, events, hooks) | Complete, tested |
-| Crash recovery (operation ledger) | Complete, tested |
-| Worker host and protocol | Complete, tested across a real message port |
-| Durability and eviction policy | Complete, tested against constructed states |
-| Jumentix client-factory integration | Complete, tested |
-| Packaging (dual CJS/ESM, types, licence) | Complete, tested |
-| Documentation (design, usage, EN + PT-BR) | Complete |
-| Differential agreement with Dexie | Complete, 18/18 agree, in-browser |
-| **Cross-browser conformance** | **Complete — 284/284 on Chrome, Firefox and WebKit** |
-| Performance under real data volume | Complexity shape measured in a real browser; absolute latency not |
-| CI verification of any of the above | **Runs on every push/PR via the coverage matrix** |
+| Area                                                           | Status                                                            |
+| -------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Engine (lifecycle, CRUD, queries, transactions, events, hooks) | Complete, tested                                                  |
+| Crash recovery (operation ledger)                              | Complete, tested                                                  |
+| Worker host and protocol                                       | Complete, tested across a real message port                       |
+| Durability and eviction policy                                 | Complete, tested against constructed states                       |
+| Jumentix client-factory integration                            | Complete, tested                                                  |
+| Packaging (dual CJS/ESM, types, licence)                       | Complete, tested                                                  |
+| Documentation (design, usage, EN + PT-BR)                      | Complete                                                          |
+| Differential agreement with Dexie                              | Complete, 18/18 agree, in-browser                                 |
+| **Cross-browser conformance**                                  | **Complete — 284/284 on Chrome, Firefox and WebKit**              |
+| Performance under real data volume                             | Complexity shape measured in a real browser; absolute latency not |
+| CI verification of any of the above                            | **Runs on every push/PR via the coverage matrix**                 |
 
 ---
 
@@ -74,11 +74,11 @@ through Cypress, headless, with no shims.
 **284 tests pass on each of the three engines**, each run against that engine's
 own storage implementation:
 
-| Engine | Driver | Why it is on the list |
-|---|---|---|
-| Chromium (`chrome`) | Cypress | Largest share; the reference implementation |
-| Gecko (`firefox`) | Cypress | Independent IndexedDB implementation |
-| WebKit | Cypress + `playwright-webkit` | Safari's engine — historically the most divergent |
+| Engine              | Driver                        | Why it is on the list                             |
+| ------------------- | ----------------------------- | ------------------------------------------------- |
+| Chromium (`chrome`) | Cypress                       | Largest share; the reference implementation       |
+| Gecko (`firefox`)   | Cypress                       | Independent IndexedDB implementation              |
+| WebKit              | Cypress + `playwright-webkit` | Safari's engine — historically the most divergent |
 
 The matrix is engines, not brand names: `chrome` covers Chrome, Edge and Brave;
 WebKit is Safari's engine, the one whose quota and eviction policy is the
@@ -135,17 +135,17 @@ convenient API.
 Verified by `packages/cana/test/packaging.test.ts`, which
 builds the package and loads the artefact rather than the workspace alias.
 
-| Item | State |
-|---|---|
-| `main` → `dist/index.js` (CommonJS) | yes |
-| `module` / `exports.import` → `dist/index.mjs` (ESM) | yes |
-| `types` → `dist/index.d.ts`, first in the exports map | yes |
-| `files` ships `dist`, README, LICENSE — not `src` | yes |
-| `LICENSE.md` present and matching the declared MIT | yes |
-| Runtime dependencies | **none** |
-| `sideEffects: false` | yes |
-| `prepublishOnly` cleans then builds | yes |
-| Built with Bun (Req 096) | yes — `tsc` then `bun build` for ESM |
+| Item                                                  | State                                |
+| ----------------------------------------------------- | ------------------------------------ |
+| `main` → `dist/index.js` (CommonJS)                   | yes                                  |
+| `module` / `exports.import` → `dist/index.mjs` (ESM)  | yes                                  |
+| `types` → `dist/index.d.ts`, first in the exports map | yes                                  |
+| `files` ships `dist`, README, LICENSE — not `src`     | yes                                  |
+| `LICENSE.md` present and matching the declared MIT    | yes                                  |
+| Runtime dependencies                                  | **none**                             |
+| `sideEffects: false`                                  | yes                                  |
+| `prepublishOnly` cleans then builds                   | yes                                  |
+| Built with Bun (Req 096)                              | yes — `tsc` then `bun build` for ESM |
 
 The dual format is not an optimisation. Cana is a browser library, and a
 CommonJS-only package cannot be loaded by a native `import` at all — the
@@ -167,7 +167,7 @@ flaky test that gets deleted within a month, and deleting it takes the coverage
 with it.
 
 What that catches: a full scan getting 10x slower with 10x the data is correct;
-an *indexed* query doing so is the bug — the index was announced and never used,
+an _indexed_ query doing so is the bug — the index was announced and never used,
 which no correctness test can detect because the rows returned are identical
 either way.
 

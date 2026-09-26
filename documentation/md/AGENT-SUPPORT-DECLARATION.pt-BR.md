@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/AGENT-SUPPORT-DECLARATION.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Declaração de Agentes Suportados
 
 Mecanismo canônico adicionado em 2026-08-05 sob a issue do Linear
@@ -61,13 +62,13 @@ Nenhuma alteração em `ci-cd/check-pr-governance.js` é necessária.
 
 ## Plataformas atualmente declaradas
 
-| Plataforma | Prefixo de branch | Arquivo de instruções |
-| --- | --- | --- |
-| Codex | `codex` | `AGENTS.md` |
-| Claude Code | `claude` | `CLAUDE.md` |
-| Grok | `grok` | `GROK.md` |
-| OpenCode | `opencode` | `OPENCODE.md` |
-| Kimi Code CLI | `kimi` | `KIMI.md` |
+| Plataforma    | Prefixo de branch | Arquivo de instruções |
+| ------------- | ----------------- | --------------------- |
+| Codex         | `codex`           | `AGENTS.md`           |
+| Claude Code   | `claude`          | `CLAUDE.md`           |
+| Grok          | `grok`            | `GROK.md`             |
+| OpenCode      | `opencode`        | `OPENCODE.md`         |
+| Kimi Code CLI | `kimi`            | `KIMI.md`             |
 
 ## Requisitos relacionados
 

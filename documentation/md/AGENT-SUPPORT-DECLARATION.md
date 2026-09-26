@@ -54,13 +54,13 @@ No edit to `ci-cd/check-pr-governance.js` is required.
 
 ## Currently declared platforms
 
-| Platform | Branch prefix | Instructions file |
-| --- | --- | --- |
-| Codex | `codex` | `AGENTS.md` |
-| Claude Code | `claude` | `CLAUDE.md` |
-| Grok | `grok` | `GROK.md` |
-| OpenCode | `opencode` | `OPENCODE.md` |
-| Kimi Code CLI | `kimi` | `KIMI.md` |
+| Platform      | Branch prefix | Instructions file |
+| ------------- | ------------- | ----------------- |
+| Codex         | `codex`       | `AGENTS.md`       |
+| Claude Code   | `claude`      | `CLAUDE.md`       |
+| Grok          | `grok`        | `GROK.md`         |
+| OpenCode      | `opencode`    | `OPENCODE.md`     |
+| Kimi Code CLI | `kimi`        | `KIMI.md`         |
 
 ## Related requirements
 

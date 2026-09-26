@@ -72,7 +72,6 @@ Use the AsyncAPI operation identifiers.
 
 Handle disconnects in the app shell — do not ignore socket errors.
 
-
 ### 4. Full practical surface (exports)
 
 - `WebSocketApiClient`
@@ -81,8 +80,8 @@ Use exports from application/adapters layers as described above — not from dom
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
+| Symptom                 | Cause                     | Fix                                  |
+| ----------------------- | ------------------------- | ------------------------------------ |
 | Timeout waiting for ack | Server down or wrong path | Confirm `/ws` gateway and env ports. |
 
 **Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.

@@ -2,17 +2,17 @@
 
 Restrições canônicas adicionadas em 2026-08-01 sob o Linear [JUM-595](https://linear.app/jumentix/issue/JUM-595), com `120` e `121` adicionados por decisão do owner em 2026-08-02.
 
-| ID | Título | Regra em uma linha |
-| --- | --- | --- |
-| `114` | Layout de worktree do agente | Confirmar a raiz do filesystem com o operador humano e trabalhar só em `<raiz>/<agent-identifier>/Jumentix`. |
-| `115` | Testes funcionais com valor | Testes são obrigatórios; sem suites fake/vacuosas; não testar API de implementação de terceiros; afirmar comportamento Jumentix. |
-| `116` | Releitura dual-branch | Antes de cada tarefa, reler todos os `.agents/requirements/project/*.md`, `.agents/requirements/software/*.md` e o NFR registry em `origin/dev` e `origin/main`; evitar retrabalho. |
-| `117` | Documentação de feature | Toda nova feature atualiza a documentação do software e adiciona docs da feature (EN/PT) na mesma entrega. |
-| `118` | Smoke/integration com Docker | Suites de smoke e integration sobem serviços reais com Docker e exercitam a superfície declarada; skip silencioso não é verde. |
-| `119` | Orquestração via API | Preferir APIs (ou CLIs oficiais) a automação de browser/app para Linear, GitHub e outros; GitHub deve sempre usar `gh`. |
-| `120` | Visibilidade de assignment de agente no Linear | Issues e Projects/Epics no Linear devem identificar o agente ativo e sincronizar com o Agent Registry canônico. |
-| `121` | Consciência coordenada de entrega entre agentes | Agentes registrados devem refrescar progresso, bloqueios, branches, PRs e Project Updates de agentes irmãos antes de iniciar ou retomar trabalho. |
-| `129` | Bus Firebase RTDB de progresso | Agentes devem publicar e consumir o `agent-bus` RTDB via `agent-bus:publish|watch|status`; Firestore continua SSOT de ownership. |
+| ID    | Título                                          | Regra em uma linha                                                                                                                                                                  |
+| ----- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `114` | Layout de worktree do agente                    | Confirmar a raiz do filesystem com o operador humano e trabalhar só em `<raiz>/<agent-identifier>/Jumentix`.                                                                        |
+| `115` | Testes funcionais com valor                     | Testes são obrigatórios; sem suites fake/vacuosas; não testar API de implementação de terceiros; afirmar comportamento Jumentix.                                                    |
+| `116` | Releitura dual-branch                           | Antes de cada tarefa, reler todos os `.agents/requirements/project/*.md`, `.agents/requirements/software/*.md` e o NFR registry em `origin/dev` e `origin/main`; evitar retrabalho. |
+| `117` | Documentação de feature                         | Toda nova feature atualiza a documentação do software e adiciona docs da feature (EN/PT) na mesma entrega.                                                                          |
+| `118` | Smoke/integration com Docker                    | Suites de smoke e integration sobem serviços reais com Docker e exercitam a superfície declarada; skip silencioso não é verde.                                                      |
+| `119` | Orquestração via API                            | Preferir APIs (ou CLIs oficiais) a automação de browser/app para Linear, GitHub e outros; GitHub deve sempre usar `gh`.                                                             |
+| `120` | Visibilidade de assignment de agente no Linear  | Issues e Projects/Epics no Linear devem identificar o agente ativo e sincronizar com o Agent Registry canônico.                                                                     |
+| `121` | Consciência coordenada de entrega entre agentes | Agentes registrados devem refrescar progresso, bloqueios, branches, PRs e Project Updates de agentes irmãos antes de iniciar ou retomar trabalho.                                   |
+| `129` | Bus Firebase RTDB de progresso                  | Agentes devem publicar e consumir o `agent-bus` RTDB via `agent-bus:publish                                                                                                         | watch | status`; Firestore continua SSOT de ownership. |
 
 ## Arquivos de requisito
 

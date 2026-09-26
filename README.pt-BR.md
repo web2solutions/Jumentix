@@ -84,8 +84,8 @@ A CLI cria o projeto e instala as dependencias com Bun. Escolha um guia abaixo p
 
 ## Cobertura
 
-| Desenvolvimento | Main |
-| --- | --- |
+| Desenvolvimento                                                                                                                                                    | Main                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![Codecov Grid para dev](https://codecov.io/gh/web2solutions/Jumentix/branch/dev/graphs/tree.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/dev) | [![Codecov Grid para main](https://codecov.io/gh/web2solutions/Jumentix/branch/main/graphs/tree.svg)](https://app.codecov.io/github/web2solutions/Jumentix/tree/main) |
 
 ## Contribuindo

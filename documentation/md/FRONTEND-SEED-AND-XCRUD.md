@@ -8,7 +8,7 @@ A versão em português está em [FRONTEND-SEED-AND-XCRUD.pt-BR.md](./FRONTEND-S
 ## What it is
 
 `apps/frontend` (`@jumentix/frontend`) is the **seed for frontends the Jumentix factory
-generates** — the *Hybrid Backend + Frontend* and *Frontend-only SPA/PWA* modes of the
+generates** — the _Hybrid Backend + Frontend_ and _Frontend-only SPA/PWA_ modes of the
 [Service Factory Capabilities Matrix](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md). It is
 to frontends what `apps/backend-template` is to backends: a working product over the Users /
 Organizations domain that shows the pattern any generated domain follows.
@@ -20,15 +20,15 @@ file under `src/` imports backend code.
 
 ## Contract-driven rendering
 
-| OAS surface | Frontend module | Renders |
-| --- | --- | --- |
-| `components.schemas.*.properties` (+ `allOf`, `$ref`) | `contracts/formSchema.ts` | one `FieldDescriptor` per property: forms, grid columns, filters |
-| `x-label` (`{ en, pt-BR }`) → `title` → humanized name | `contracts/labels.ts` | every caption; `description` is help text under the control |
-| `x-hide` | `formSchema.ts` | property stays in the contract, never renders |
-| `x-relation` (`entity`, `match`, `display`, `kind`) | `XCrudReferenceInput`, `useXCrud.loadReferences` | FK selects that show the label and emit the id; list op is `<Entity>ArrayOf`; arrays of ids (members) resolved the same way |
-| `x-validation` | `contracts/validation.ts` | masks/checksums (CPF, SSN, phones) before any HTTP |
-| `x-list-capabilities` | `contracts/listSchema.ts` | server-side paging/sort/filter/search (see below) |
-| `info.x-rbac` + per-operation `security` | `contracts/rbac.ts`, router guards, `modules/nav.ts` | which routes, nav items and buttons a role sees |
+| OAS surface                                            | Frontend module                                      | Renders                                                                                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `components.schemas.*.properties` (+ `allOf`, `$ref`)  | `contracts/formSchema.ts`                            | one `FieldDescriptor` per property: forms, grid columns, filters                                                            |
+| `x-label` (`{ en, pt-BR }`) → `title` → humanized name | `contracts/labels.ts`                                | every caption; `description` is help text under the control                                                                 |
+| `x-hide`                                               | `formSchema.ts`                                      | property stays in the contract, never renders                                                                               |
+| `x-relation` (`entity`, `match`, `display`, `kind`)    | `XCrudReferenceInput`, `useXCrud.loadReferences`     | FK selects that show the label and emit the id; list op is `<Entity>ArrayOf`; arrays of ids (members) resolved the same way |
+| `x-validation`                                         | `contracts/validation.ts`                            | masks/checksums (CPF, SSN, phones) before any HTTP                                                                          |
+| `x-list-capabilities`                                  | `contracts/listSchema.ts`                            | server-side paging/sort/filter/search (see below)                                                                           |
+| `info.x-rbac` + per-operation `security`               | `contracts/rbac.ts`, router guards, `modules/nav.ts` | which routes, nav items and buttons a role sees                                                                             |
 
 Operation ids the shell needs (login, register, logout, profile) live in
 `contracts/appOperations.ts` and are validated at boot: a generated app with renamed operations
@@ -76,7 +76,7 @@ locales declare the same keys.
   `bunfig.toml`). Chart.js is stubbed — it needs a real canvas — and says so in the harness.
 - `bun run test:coverage` + `bun run frontend:coverage:check` (root) — bun lcov over `src/`
   gated by `apps/frontend/scripts/check-coverage.js` on lines and functions; untouched sources count at
-  zero; branches are reported as *unmeasured* because Bun emits no branch records (Requirement
+  zero; branches are reported as _unmeasured_ because Bun emits no branch records (Requirement
   `110` §2). The gate runs inside `ci:gate`; the lcov feeds Sonar.
 - `bun run test:e2e` — `scripts/run-e2e.mjs` builds and starts the real Express REST API in Docker
   (`e2e/docker-compose.yml`, `oven/bun` image from the monorepo root, InMemory, seeded), starts

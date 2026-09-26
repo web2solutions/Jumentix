@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-DEPLOY-TARGET-AND-PACKAGING-MATRIX.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Jumentix Deploy Target e Matriz de Embalagem
 
 ## Objetivo
@@ -10,13 +11,13 @@ Defina alvos de implantação e contratos de empacotamento de artefatos para ser
 
 ## Implantar matriz de destino
 
-| Implantar destino | Tipos de serviço | Gerenciador de tempo de execução | Contrato de Embalagem | Caminho de entrega |
-|---|---|---|---|---|
-| Servidor Dedicado (SSH) | REST, WebSocket+REST, gRPC+REST, front-end | PM2 | Resultado da construção + perfil do ecossistema PM2 | Implantação SSH + recarga PM2 |
-| Instância de nuvem VM (VM EC2/GCE/Azure) | REST, WebSocket+REST, gRPC+REST, front-end | PM2 | Resultado da construção + perfil do ecossistema PM2 + contrato ambiental | Implantação IaC/SSH + orquestração PM2 |
-| AWS Lambda | APIs de funções | Estrutura sem servidor | Pacote de funções + configuração sem servidor + contrato env | `implantação sem servidor` |
-| Funções Vercel | APIs de funções | Tempo de execução do Vercel | Pontos de entrada da função Vercel + configuração | Fluxo de trabalho de implantação do Vercel |
-| Trabalhadores da Cloudflare | APIs de função/evento | Tempo de execução do trabalhador | Pacote de módulo de trabalho + configuração de trabalhador | Implantação do Wrangler/Worker |
+| Implantar destino                        | Tipos de serviço                           | Gerenciador de tempo de execução | Contrato de Embalagem                                                    | Caminho de entrega                         |
+| ---------------------------------------- | ------------------------------------------ | -------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------ |
+| Servidor Dedicado (SSH)                  | REST, WebSocket+REST, gRPC+REST, front-end | PM2                              | Resultado da construção + perfil do ecossistema PM2                      | Implantação SSH + recarga PM2              |
+| Instância de nuvem VM (VM EC2/GCE/Azure) | REST, WebSocket+REST, gRPC+REST, front-end | PM2                              | Resultado da construção + perfil do ecossistema PM2 + contrato ambiental | Implantação IaC/SSH + orquestração PM2     |
+| AWS Lambda                               | APIs de funções                            | Estrutura sem servidor           | Pacote de funções + configuração sem servidor + contrato env             | `implantação sem servidor`                 |
+| Funções Vercel                           | APIs de funções                            | Tempo de execução do Vercel      | Pontos de entrada da função Vercel + configuração                        | Fluxo de trabalho de implantação do Vercel |
+| Trabalhadores da Cloudflare              | APIs de função/evento                      | Tempo de execução do trabalhador | Pacote de módulo de trabalho + configuração de trabalhador               | Implantação do Wrangler/Worker             |
 
 ## Leitor legível por máquina
 
@@ -44,13 +45,13 @@ PR.
 
 ## Contratos de embalagem
 
-| Tipo de artefato | Arquivos obrigatórios | Portão de validação |
-|---|---|---|
-| Serviço VM de back-end | `package.json`, saída de compilação, ecossistema PM2, modelo de ambiente | `ci:gate`, construção, testes de fumaça |
-| Serviço em tempo real | Contrato AsyncAPI, ponto de entrada do adaptador de tempo de execução, fiação de fallback REST | testes unitários + integração em tempo real |
-| Pacote de funções | manipuladores de função, manifesto de implantação (`serverless` ou configuração de plataforma), modelo de env | função fumaça + verificações de contrato |
-| Front-end SPA/PWA | saída de compilação de aplicativo, mapeamento de ambiente de tempo de execução, configuração de armazenamento offline | construção/teste/portões de lint de frontend |
-| Pacote Compartilhado (npm) | `package.json` semver, lista de permissões de `files`, saídas de tipo/construção | governança de lançamento + publicação de teste |
+| Tipo de artefato           | Arquivos obrigatórios                                                                                                 | Portão de validação                            |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Serviço VM de back-end     | `package.json`, saída de compilação, ecossistema PM2, modelo de ambiente                                              | `ci:gate`, construção, testes de fumaça        |
+| Serviço em tempo real      | Contrato AsyncAPI, ponto de entrada do adaptador de tempo de execução, fiação de fallback REST                        | testes unitários + integração em tempo real    |
+| Pacote de funções          | manipuladores de função, manifesto de implantação (`serverless` ou configuração de plataforma), modelo de env         | função fumaça + verificações de contrato       |
+| Front-end SPA/PWA          | saída de compilação de aplicativo, mapeamento de ambiente de tempo de execução, configuração de armazenamento offline | construção/teste/portões de lint de frontend   |
+| Pacote Compartilhado (npm) | `package.json` semver, lista de permissões de `files`, saídas de tipo/construção                                      | governança de lançamento + publicação de teste |
 
 ## Contrato de metadados de gerenciamento de serviços
 

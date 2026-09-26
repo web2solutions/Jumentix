@@ -55,7 +55,6 @@ const response = await client.request({
 });
 ```
 
-
 ### 3. Fluxos centrais
 
 ### 1. Point at host:port
@@ -70,7 +69,6 @@ operationId + input matching AsyncAPI/proto.
 
 Do not bundle this into a browser app.
 
-
 ### 4. Superfície prática (exports)
 
 - `GrpcApiClient`
@@ -79,8 +77,8 @@ Use os exports nas camadas de aplicação/adaptadores — não em entidades de d
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
+| Sintoma         | Causa                | Correção                                               |
+| --------------- | -------------------- | ------------------------------------------------------ |
 | Proto not found | Packaging/path issue | Ensure dist proto is present in the installed package. |
 
 **Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.

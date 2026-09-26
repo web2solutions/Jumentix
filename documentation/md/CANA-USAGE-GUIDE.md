@@ -35,10 +35,10 @@ each topic can show complete code without turning one document into a wall.
 
 Every page uses the same small task system. There are two stores:
 
-| Store | Purpose | Main fields |
-| --- | --- | --- |
-| `categories` | Groups tasks by work area. | `id`, `name`, `color`, `createdAt`, `updatedAt` |
-| `tasks` | Durable task records. | `id`, `title`, `categoryId`, `completed`, `priority`, `createdAt`, `updatedAt` |
+| Store        | Purpose                    | Main fields                                                                    |
+| ------------ | -------------------------- | ------------------------------------------------------------------------------ |
+| `categories` | Groups tasks by work area. | `id`, `name`, `color`, `createdAt`, `updatedAt`                                |
+| `tasks`      | Durable task records.      | `id`, `title`, `categoryId`, `completed`, `priority`, `createdAt`, `updatedAt` |
 
 The examples keep framework state outside Cana. Cana owns persistence and
 committed events; React Context, Redux and Pinia own rendering state.

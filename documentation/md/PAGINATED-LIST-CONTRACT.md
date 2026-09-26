@@ -14,21 +14,23 @@ not scale. JUM-777 makes the list behaviour part of the OpenAPI document.
 
 ## Request
 
-| Parameter | In | Type | Meaning |
-| --- | --- | --- | --- |
-| `page` | query | integer ≥ 1, default 1 | 1-based page number |
-| `size` | query | integer 1…`maxSize`, default `defaultSize` | page size |
-| `filter` | query | string | base64 of a JSON object keyed by a **filterable** field |
-| `sort` | query | string | comma-separated `field:asc\|desc` pairs over **sortable** fields |
-| `q` | query | string (≤ 200) | case-insensitive free text over the **searchable** fields |
-| `includeDeleted` | query | boolean, default false | include `deletedAt` tombstones |
+| Parameter        | In    | Type                                       | Meaning                                                          |
+| ---------------- | ----- | ------------------------------------------ | ---------------------------------------------------------------- |
+| `page`           | query | integer ≥ 1, default 1                     | 1-based page number                                              |
+| `size`           | query | integer 1…`maxSize`, default `defaultSize` | page size                                                        |
+| `filter`         | query | string                                     | base64 of a JSON object keyed by a **filterable** field          |
+| `sort`           | query | string                                     | comma-separated `field:asc\|desc` pairs over **sortable** fields |
+| `q`              | query | string (≤ 200)                             | case-insensitive free text over the **searchable** fields        |
+| `includeDeleted` | query | boolean, default false                     | include `deletedAt` tombstones                                   |
 
 `filter` values: a scalar means equality (`{ "roles": "admin" }` matches an array field that
 contains the value); an object applies an operator:
 
 ```json
-{ "firstName": { "operator": "contains", "value": "an" },
-  "createdAt": { "operator": "between", "value": ["2026-01-01", "2026-01-31T23:59:59.999Z"] } }
+{
+  "firstName": { "operator": "contains", "value": "an" },
+  "createdAt": { "operator": "between", "value": ["2026-01-01", "2026-01-31T23:59:59.999Z"] }
+}
 ```
 
 Accepted operators: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`, `contains`, `ilike`, `like`,
@@ -46,8 +48,16 @@ the server rejects anything outside it:
 ```yaml
 x-list-capabilities:
   sortable: [firstName, lastName, username, organization, createdAt, updatedAt]
-  filterable: { firstName: text, lastName: text, username: text, organization: uuid,
-                roles: enum, createdAt: date, updatedAt: date }
+  filterable:
+    {
+      firstName: text,
+      lastName: text,
+      username: text,
+      organization: uuid,
+      roles: enum,
+      createdAt: date,
+      updatedAt: date
+    }
   searchable: [firstName, lastName, username]
   defaultSize: 30
   maxSize: 100

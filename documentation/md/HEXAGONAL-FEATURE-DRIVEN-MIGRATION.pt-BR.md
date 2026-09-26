@@ -2,9 +2,11 @@
 Arquivo gerado automaticamente a partir de: documentation/md/HEXAGONAL-FEATURE-DRIVEN-MIGRATION.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Plano de migração hexagonal + DDD + baseado em recursos
 
 ## Meta
+
 Mova a base de código para uma arquitetura hexagonal alinhada a DDD e orientada a recursos, com separação clara entre domínio e infraestrutura, minimizando o raio de mudança por correção de bug/recurso.
 
 ## Estrutura de destino aprovada
@@ -47,6 +49,7 @@ apps/backend-template/src/
 ## Fases
 
 ### Fase 1 - Guardrails e namespaces canônicos
+
 - Mantenha o comportamento atual.
 - Introduzir pastas canônicas dentro de cada módulo:
   - `aplicação/casos de uso`
@@ -59,33 +62,40 @@ apps/backend-template/src/
   - verificações de limites
 
 Critérios concluídos:
+
 - O módulo Usuários possui pastas canônicas e exportações de ponte.
 - Sem alterações de tempo de execução.
 - `ci:gate` verde.
 
 ### Fase 2 - Consolidação de entrada de aplicativos
+
 - Mover dependências do controlador apenas para portas/casos de uso de aplicativos.
 - Remova as importações diretas de implementação de serviço dos adaptadores de entrada.
 - Mantenha a composição como ponto de ligação único.
 
 Critérios concluídos:
+
 - Os controladores chamam apenas contratos de aplicativos.
 - Nenhum controlador faz referência a implementações de repositório/serviço.
 
 ### Fase 3 - Normalização da porta de saída
+
 - Renomear interfaces de repositório para portas explícitas (nomeação `*Port`).
 - Mover implementações de infra para `adapters/out/*`.
 - Manter domínio/aplicação dependendo apenas das portas.
 
 Critérios concluídos:
+
 - As dependências de saída são orientadas pela interface.
 - O infra é separado física e semanticamente.
 
 ### Fase 4 - Implementação módulo por módulo
+
 - Repita a mesma estrutura para cada contexto limitado.
 - Aplicar regras de nomenclatura e dependência de maneira uniforme.
 
 Critérios concluídos:
+
 - Todos os módulos seguem o mesmo layout hexagonal baseado em recursos.
 
 ## Critérios de aceitação não funcionais
