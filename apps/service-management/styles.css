@@ -3476,10 +3476,30 @@ body {
   }
 }
 
+/* Same token gap for the sidebar and the workspace that anchors the mini-map
+   overlay (JUM-905). */
+.architecture-shell .sidebar {
+  border-color: #272a31;
+  background: rgba(18, 19, 23, 0.97);
+  color: #d8dee8;
+}
+
+.architecture-shell .canvas-workspace {
+  position: relative;
+}
+
+/* The designer is dark by its own palette and never sets :root.dark, so the
+   --jtx-surface token resolves to white here; the architecture canvas uses the
+   Domain Designer's canvas surface and grid instead (JUM-905). */
 .architecture-shell .architecture-canvas {
   position: relative;
   min-height: 640px;
-  background: var(--jtx-surface, #0f172a);
+  background-color: #070707;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.075) 1px, transparent 1.2px),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 12px 12px, 96px 96px, 96px 96px;
   overflow: auto;
 }
 
@@ -3509,9 +3529,15 @@ body {
   height: 100%;
 }
 
+/* Overlay the canvas like the Domain Designer mini-map; a relative position
+   dropped it below the canvas as a white strip (JUM-905). */
 .architecture-mini-map {
-  position: relative;
-  height: 80px;
+  width: 250px;
+  height: 132px;
+  border-color: #343840;
+  border-radius: 8px;
+  background: rgba(31, 22, 16, 0.92);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.45);
 }
 
 .architecture-mini-mark {
