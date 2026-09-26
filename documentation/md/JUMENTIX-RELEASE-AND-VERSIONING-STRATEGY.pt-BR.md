@@ -67,10 +67,11 @@ A validação inclui:
    próxima versão, abre um PR squash assinado com o bump, faz merge, cria a tag
    anotada de aplicação no commit squash, regenera `CHANGELOG.md` e cria o
    GitHub Release.
-3. Quando for publicar pacotes, dispare **Publish npm packages** em `main`
-   (Environment protegido `secrets`, Requisito 070). O workflow ignora qualquer
-   pacote cuja tag `@jumentix/<pkg>@<version>` já exista, publica o restante e
-   cria as tags de pacote no sucesso.
+3. A mesma execução de `app-release.yml` chama então **Publish npm packages**
+   (`npm-publish.yml`, Environment `secrets`, Requisito 070). Ele ignora qualquer
+   pacote cuja tag `@jumentix/<pkg>@<version>` ou versão no npm já exista, publica o
+   restante a partir de tarballs do `bun pm pack` e cria as tags de pacote no sucesso.
+   Para publicar um pacote, suba a `version` dele e promova para `main`.
 4. Verifique com `bun run release:governance:check`, `bun run release:dry-run`,
    `gh release list` e `npm view @jumentix/<package>`.
 

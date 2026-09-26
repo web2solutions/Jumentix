@@ -64,7 +64,8 @@ This file consolidates non-functional requirements already requested and stored 
   ban on public layers enforced by `docs:check-audience` (shrink-only allow-list, JUM-892).
 - `068` NFR capture and registry governance.
 - `069` Website commercial/static/vercel governance.
-- `070` npm organization and vercel scope integration governance.
+- `070` npm organization and vercel scope integration governance; npm publication is automated
+  after each application release on `main` (`app-release.yml` → `npm-publish.yml`, JUM-894).
 - `071` Spec Development Driven governance baseline.
 - `072` Spec Development Driven canonical knowledge coverage.
 - `073` Engineering practices (git, commit messages, lint, coding best practices) represented in specs.
