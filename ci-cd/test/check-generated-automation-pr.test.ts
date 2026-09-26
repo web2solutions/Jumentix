@@ -40,4 +40,18 @@ describe('check-generated-automation-pr', () => {
       '[generated-automation] changelog PR must only touch CHANGELOG.md; unexpected file: package.json'
     ]);
   });
+
+  it('forces base main when CircleCI QUALITY_GATE_TARGET equals the head branch', () => {
+    expect.hasAssertions();
+    const result = validateGeneratedAutomationPr({
+      headRef: 'chore/release-v0.2.15',
+      env: {
+        CIRCLE_BRANCH: 'chore/release-v0.2.15',
+        JUMENTIX_QUALITY_GATE_TARGET: 'chore/release-v0.2.15'
+      },
+      changedFiles: ['package.json', 'release-policy.json']
+    });
+    expect(result.baseRef).toBe('main');
+    expect(result.failures).toStrictEqual([]);
+  });
 });
