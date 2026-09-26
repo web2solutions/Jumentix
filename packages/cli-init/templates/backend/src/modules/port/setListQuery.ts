@@ -1,10 +1,12 @@
 import { parseListSort } from '@jumentix/persistence-contracts';
-import type { IPagingRequest } from '@src/modules/port/IPagingRequest';
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { setFilter } from '@src/modules/port/setFilter';
-import { setPaging } from '@src/modules/port/setPaging';
+
 import { ValidationError } from '@src/infra/exceptions';
-import { Security } from '@src/infra/security';
+import Security from '@src/infra/security';
+import setFilter from '@src/modules/port/setFilter';
+import setPaging from '@src/modules/port/setPaging';
+
+import type BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import type { IPagingRequest } from '@src/modules/port/IPagingRequest';
 
 /**
  * `x-list-capabilities` — the vendor extension a list operation carries in the
@@ -24,7 +26,19 @@ export interface IListCapabilities {
 }
 
 const ALLOWED_OPERATORS = new Set([
-  'eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'nin', 'contains', 'ilike', 'like', 'between', 'exists'
+  'eq',
+  'ne',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'in',
+  'nin',
+  'contains',
+  'ilike',
+  'like',
+  'between',
+  'exists'
 ]);
 
 export const readListCapabilities = (
@@ -119,7 +133,9 @@ export const setListQuery = (
 
   if (q) {
     if (capabilities.searchable.length === 0) {
-      throw new ValidationError('The parameter q is not supported: this operation declares no searchable fields.');
+      throw new ValidationError(
+        'The parameter q is not supported: this operation declares no searchable fields.'
+      );
     }
     paging.searchFields = capabilities.searchable;
   }

@@ -1,10 +1,8 @@
-import type {
-  IUser
-} from '@src/modules/Users/domain/Entity/IUser';
-import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
 
-export const createPhone = async (
+const createPhone = async (
   userId: string,
   payload: RequestCreatePhone,
   userDataRepository: IUserRepository
@@ -12,3 +10,5 @@ export const createPhone = async (
   const model = await userDataRepository.createPhone(userId, payload);
   return model.serialize();
 };
+
+export default createPhone;

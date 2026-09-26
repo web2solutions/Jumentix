@@ -1,19 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable class-methods-use-this */
-import fs from 'fs';
-import path from 'path';
-import { createUuid } from '@src/modules/port/UUID';
-import { _HTTP_PORT_ } from '@src/config/constants';
+import fs from 'node:fs';
+import path from 'node:path';
+
+import { HTTP_PORT } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
-import type {
-  IHTTPRequest,
-  IHTTPResponse,
-  IbaseHandler
-} from '@src/interface/HTTP/ports';
-import {
-  HTTPBaseServer
-} from '@src/interface/HTTP/ports';
+import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+import { createUuid } from '@src/modules/port/UUID';
+
+import type { IbaseHandler, IHTTPRequest, IHTTPResponse } from '@src/interface/HTTP/ports';
 
 export type FeathersRequest = IHTTPRequest;
 export type FeathersResponse = {
@@ -24,11 +18,11 @@ export type FeathersResponse = {
 
 let feathersServer: HTTPBaseServer<any> | undefined;
 
-type RegisteredRoute = {
+interface RegisteredRoute {
   method: string;
   path: string;
   handler: IbaseHandler['handler'];
-};
+}
 
 class FeathersServer extends HTTPBaseServer<any> {
   public readonly application: any;
@@ -52,15 +46,8 @@ class FeathersServer extends HTTPBaseServer<any> {
 
   constructor() {
     super();
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     const { feathers } = require('@feathersjs/feathers');
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
-    const {
-      koa,
-      rest,
-      bodyParser,
-      errorHandler
-    } = require('@feathersjs/koa');
+    const { bodyParser, errorHandler, koa, rest } = require('@feathersjs/koa');
 
     this.application = koa(feathers());
 
@@ -190,7 +177,7 @@ class FeathersServer extends HTTPBaseServer<any> {
         headers: context.request?.headers || {}
       };
       const res = this.createResponseAdapter(context);
-      const result = await matched.route.handler(req as any, res as any);
+      const result = await matched.route.handler(req, res);
       if (result !== undefined && context.body === undefined) {
         context.body = result;
       }
@@ -198,7 +185,7 @@ class FeathersServer extends HTTPBaseServer<any> {
   }
 
   public async start(): Promise<void> {
-    this.httpServer = await this.application.listen(_HTTP_PORT_);
+    this.httpServer = await this.application.listen(HTTP_PORT);
   }
 
   public async stop(): Promise<void> {
@@ -208,9 +195,7 @@ class FeathersServer extends HTTPBaseServer<any> {
   }
 
   public static compile(): HTTPBaseServer<any> {
-    if (!feathersServer) {
-      feathersServer = new FeathersServer();
-    }
+    feathersServer ??= new FeathersServer();
     return feathersServer;
   }
 }

@@ -1,9 +1,10 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import type { IEventMessage } from '@src/modules/port/IEventMessage';
-import { canNotBeEmpty } from '@src/shared/validators';
 import { ComposeEventError } from '@src/infra/exceptions';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import { canNotBeEmpty } from '@src/shared/validators';
 
-export class LogoutRequestEvent<TPayload = any> extends BaseDomainEvent<TPayload> {
+import type { IEventMessage } from '@src/modules/port/IEventMessage';
+
+class LogoutRequestEvent<TPayload = any> extends BaseDomainEvent<TPayload> {
   constructor(message: IEventMessage<TPayload>) {
     super(message);
     try {
@@ -16,3 +17,5 @@ export class LogoutRequestEvent<TPayload = any> extends BaseDomainEvent<TPayload
     }
   }
 }
+
+export default LogoutRequestEvent;

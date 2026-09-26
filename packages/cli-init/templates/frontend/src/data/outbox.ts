@@ -1,11 +1,11 @@
 /* Sequential IndexedDB + REST: one outbox intent at a time. */
-/* eslint-disable no-await-in-loop, no-continue */
-import { apiErrorStatus } from '@/contracts/errors';
+/* eslint-disable no-await-in-loop */
 import { getSharedApiClient } from '@/contracts/apiClient';
+import { apiErrorStatus } from '@/contracts/errors';
+import { entityTable, OUTBOX_STORE } from '@/data/canaSchema';
+import { getCanaClient, isCanaOpen } from '@/data/db';
 import { useAuthStore } from '@/stores/auth';
 import { useNotificationStore } from '@/stores/notifications';
-import { OUTBOX_STORE, entityTable } from '@/data/canaSchema';
-import { getCanaClient, isCanaOpen } from '@/data/db';
 
 export type OutboxKind = 'create' | 'update' | 'delete';
 export type SyncFlag = 'pending' | 'synced';
@@ -68,65 +68,71 @@ export const enqueueMutation = async (input: {
 }): Promise<Record<string, unknown>> => {
   const table = entityTable(input.entity);
   const { keyPath } = table;
-  const payload = stripLocal(
-    JSON.parse(JSON.stringify(input.payload)) as Record<string, unknown>
-  );
-  const key = input.key
-    ?? String(payload[keyPath] ?? (payload.id = (
-      typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `id-${Date.now()}`
-    )));
+  const payload = stripLocal(JSON.parse(JSON.stringify(input.payload)) as Record<string, unknown>);
+  const key =
+    input.key ??
+    String(
+      payload[keyPath] ??
+        (payload.id =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `id-${Date.now()}`)
+    );
   payload[keyPath] = key;
   const client = getCanaClient();
   const existing = await pendingForKey(input.entity, key);
-  const beforeImage = input.kind === 'create'
-    ? undefined
-    : (await client.table(table.storeName).get(key) as Record<string, unknown> | undefined);
+  const beforeImage =
+    input.kind === 'create'
+      ? undefined
+      : ((await client.table(table.storeName).get(key)) as Record<string, unknown> | undefined);
 
-  const intent: OutboxIntent = existing && existing.kind !== 'delete'
-    ? {
-      ...existing,
-      kind: existing.kind === 'create' ? 'create' : input.kind,
-      payload: existing.kind === 'create' ? { ...existing.payload, ...payload } : payload,
-      createdAt: existing.createdAt
+  const intent: OutboxIntent =
+    existing && existing.kind !== 'delete'
+      ? {
+          ...existing,
+          kind: existing.kind === 'create' ? 'create' : input.kind,
+          payload: existing.kind === 'create' ? { ...existing.payload, ...payload } : payload,
+          createdAt: existing.createdAt
+        }
+      : {
+          opId: newOpId(),
+          entity: input.entity,
+          kind: input.kind,
+          key,
+          payload,
+          beforeImage: beforeImage ? stripLocal(beforeImage) : undefined,
+          createdAt: new Date().toISOString(),
+          attempts: 0,
+          dependsOn: existing?.kind === 'create' ? existing.opId : undefined,
+          operations: input.operations
+        };
+
+  const localRecord =
+    input.kind === 'delete'
+      ? {
+          ...JSON.parse(JSON.stringify(beforeImage ?? {})),
+          [keyPath]: key,
+          deletedAt: new Date().toISOString(),
+          [SYNC_FIELD]: 'pending' as SyncFlag
+        }
+      : { ...payload, [SYNC_FIELD]: 'pending' as SyncFlag };
+
+  const result = await client.transaction(
+    'readwrite',
+    [table.storeName, OUTBOX_STORE],
+    async (scope) => {
+      await scope.table(table.storeName).put(localRecord);
+      await scope.table(OUTBOX_STORE).put(intent);
+      return localRecord;
     }
-    : {
-      opId: newOpId(),
-      entity: input.entity,
-      kind: input.kind,
-      key,
-      payload,
-      beforeImage: beforeImage ? stripLocal(beforeImage) : undefined,
-      createdAt: new Date().toISOString(),
-      attempts: 0,
-      dependsOn: existing?.kind === 'create' ? existing.opId : undefined,
-      operations: input.operations
-    };
-
-  const localRecord = input.kind === 'delete'
-    ? {
-      ...JSON.parse(JSON.stringify(beforeImage ?? {})),
-      [keyPath]: key,
-      deletedAt: new Date().toISOString(),
-      [SYNC_FIELD]: 'pending' as SyncFlag
-    }
-    : { ...payload, [SYNC_FIELD]: 'pending' as SyncFlag };
-
-  const result = await client.transaction('readwrite', [table.storeName, OUTBOX_STORE], async (scope) => {
-    await scope.table(table.storeName).put(localRecord);
-    await scope.table(OUTBOX_STORE).put(intent);
-    return localRecord;
-  });
+  );
   if (result.outcome !== 'committed' || !result.result) {
     throw new Error('Local write did not commit.');
   }
   return result.result as Record<string, unknown>;
 };
 
-const isOnline = (): boolean => (
-  typeof navigator === 'undefined' || navigator.onLine !== false
-);
+const isOnline = (): boolean => typeof navigator === 'undefined' || navigator.onLine !== false;
 
 const headers = (): { Authorization: string } => {
   const auth = useAuthStore();
@@ -188,19 +194,15 @@ const confirmIntent = async (
   response: Record<string, unknown> | undefined
 ): Promise<void> => {
   const table = entityTable(intent.entity);
-  await getCanaClient().transaction(
-    'readwrite',
-    [table.storeName, OUTBOX_STORE],
-    async (scope) => {
-      if (intent.kind === 'delete') {
-        await scope.table(table.storeName).delete(intent.key);
-      } else {
-        const confirmed = stripLocal(response ?? intent.payload);
-        await scope.table(table.storeName).put({ ...confirmed, [SYNC_FIELD]: 'synced' });
-      }
-      await scope.table(OUTBOX_STORE).delete(intent.opId);
+  await getCanaClient().transaction('readwrite', [table.storeName, OUTBOX_STORE], async (scope) => {
+    if (intent.kind === 'delete') {
+      await scope.table(table.storeName).delete(intent.key);
+    } else {
+      const confirmed = stripLocal(response ?? intent.payload);
+      await scope.table(table.storeName).put({ ...confirmed, [SYNC_FIELD]: 'synced' });
     }
-  );
+    await scope.table(OUTBOX_STORE).delete(intent.opId);
+  });
 };
 
 const rejectClientError = async (intent: OutboxIntent, error: unknown): Promise<void> => {
@@ -215,7 +217,10 @@ const rejectClientError = async (intent: OutboxIntent, error: unknown): Promise<
   });
 };
 
-const drainOne = async (intent: OutboxIntent, pendingIds: Set<string>): Promise<'stop' | 'next'> => {
+const drainOne = async (
+  intent: OutboxIntent,
+  pendingIds: Set<string>
+): Promise<'stop' | 'next'> => {
   if (intent.dependsOn && pendingIds.has(intent.dependsOn)) return 'next';
   try {
     const response = await replayIntent(intent);

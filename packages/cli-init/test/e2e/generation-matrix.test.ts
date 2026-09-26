@@ -57,5 +57,9 @@ describe('cli-init generation e2e matrix (JUM-854)', () => {
       status: 'passed'
     });
     expect(logs.some((line) => line.includes('monolith/express/sqlite'))).toBe(true);
-  });
+    // 30s: the matrix spawns six real `bun jumentix.js init` child processes;
+    // the 5s default is fine on an idle machine but flakes under shared-CI
+    // load (measured 5.0–7.3s at loadavg >20), which says nothing about the
+    // assertions themselves. Same convention as the other e2e suites.
+  }, 30000);
 });

@@ -4,11 +4,11 @@ import { computed } from 'vue';
 
 import XCrud from '@/components/x-crud/XCrud.vue';
 import { hasSuperadmin } from '@/contracts/rbac';
-import { usePermissions } from '@/contracts/usePermissions';
+import usePermissions from '@/contracts/usePermissions';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
 
-import { usersCrudConfig } from './usersCrudConfig';
+import usersCrudConfig from './usersCrudConfig';
 
 /**
  * Users sub-app (JUM-772): X-CRUD over the Users domain. Tenancy: non-

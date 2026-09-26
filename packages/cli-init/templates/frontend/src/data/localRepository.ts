@@ -1,15 +1,15 @@
-import { parseListSort, runListQuery, type TListFilters } from '@jumentix/persistence-contracts';
+import { parseListSort, runListQuery } from '@jumentix/persistence-contracts';
 
-import type { ListPage, ListQuery } from '@/contracts/listSchema';
 import { fieldDescriptors } from '@/contracts/formSchema';
-import {
-  entityTable, entityTableByStore, type EntityTableSpec
-} from '@/data/canaSchema';
+import { entityTable, entityTableByStore } from '@/data/canaSchema';
 import { getCanaClient, isCanaOpen } from '@/data/db';
 
-const asRecords = <T extends Record<string, unknown>>(
-  rows: readonly unknown[]
-): T[] => rows as T[];
+import type { TListFilters } from '@jumentix/persistence-contracts';
+
+import type { ListPage, ListQuery } from '@/contracts/listSchema';
+import type { EntityTableSpec } from '@/data/canaSchema';
+
+const asRecords = <T extends Record<string, unknown>>(rows: readonly unknown[]): T[] => rows as T[];
 
 const indexedQuery = async <T extends Record<string, unknown>>(
   table: EntityTableSpec,
@@ -22,10 +22,12 @@ const indexedQuery = async <T extends Record<string, unknown>>(
     primary && table.indexes.includes(primary.field) && !query.q && !query.filter
   );
   if (canIndex && primary) {
-    const records = asRecords<T>(await store.query({
-      index: primary.field,
-      direction: primary.direction === 'desc' ? 'prev' : 'next'
-    }));
+    const records = asRecords<T>(
+      await store.query({
+        index: primary.field,
+        direction: primary.direction === 'desc' ? 'prev' : 'next'
+      })
+    );
     return { records, usedIndex: primary.field };
   }
   return { records: asRecords<T>(await store.query()) };
@@ -75,38 +77,37 @@ export const resolveRelations = async (
   row: Record<string, unknown>
 ): Promise<Record<string, unknown>> => {
   const joined: Record<string, unknown> = { ...row };
-  await Promise.all(fieldDescriptors(schemaName).map(async (descriptor) => {
-    const { relation } = descriptor;
-    if (!relation) return;
-    const target = entityTable(relation.entity);
-    const store = getCanaClient().table(target.storeName);
-    if (relation.kind === 'belongsTo') {
-      const key = row[relation.field];
-      if (key == null || key === '') return;
-      const related = await store.get(String(key));
-      if (related) {
-        joined[`${descriptor.name}Record`] = related;
-        joined[`${descriptor.name}Label`] = (related as Record<string, unknown>)[relation.display]
-          ?? key;
+  await Promise.all(
+    fieldDescriptors(schemaName).map(async (descriptor) => {
+      const { relation } = descriptor;
+      if (!relation) return;
+      const target = entityTable(relation.entity);
+      const store = getCanaClient().table(target.storeName);
+      if (relation.kind === 'belongsTo') {
+        const key = row[relation.field];
+        if (key == null || key === '') return;
+        const related = await store.get(String(key));
+        if (related) {
+          joined[`${descriptor.name}Record`] = related;
+          joined[`${descriptor.name}Label`] =
+            (related as Record<string, unknown>)[relation.display] ?? key;
+        }
+        return;
       }
-      return;
-    }
-    const match = String(row[target.keyPath] ?? row.id ?? '');
-    if (!match) return;
-    try {
-      const children = await store.query({ index: relation.field, equals: match });
-      joined[descriptor.name] = children;
-    } catch {
-      joined[descriptor.name] = [];
-    }
-  }));
+      const match = String(row[target.keyPath] ?? row.id ?? '');
+      if (!match) return;
+      try {
+        const children = await store.query({ index: relation.field, equals: match });
+        joined[descriptor.name] = children;
+      } catch {
+        joined[descriptor.name] = [];
+      }
+    })
+  );
   return joined;
 };
 
-export const subscribeLocal = (
-  schemaName: string,
-  listener: () => void
-): (() => void) => {
+export const subscribeLocal = (schemaName: string, listener: () => void): (() => void) => {
   if (!isCanaOpen()) return () => undefined;
   const table = entityTable(schemaName);
   const relatedStores = new Set<string>([table.storeName]);
@@ -120,6 +121,5 @@ export const subscribeLocal = (
   });
 };
 
-export const storeForChange = (storeName: string): EntityTableSpec | undefined => (
-  entityTableByStore(storeName)
-);
+export const storeForChange = (storeName: string): EntityTableSpec | undefined =>
+  entityTableByStore(storeName);

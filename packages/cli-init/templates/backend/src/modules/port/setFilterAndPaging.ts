@@ -1,15 +1,14 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
+import { DEFAULT_PAGE_SIZE } from '@src/config/constants';
+
+import type BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+
 import type { IPagingRequest } from './IPagingRequest';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const setFilterAndPaging = (
-  event: BaseDomainEvent
-): Array<Record<any, any> | IPagingRequest> => {
-  let filter: Record<string, string|number> = {};
+const setFilterAndPaging = (event: BaseDomainEvent): (Record<any, any> | IPagingRequest)[] => {
+  let filter: Record<string, string | number> = {};
   const paging: IPagingRequest = {
     page: 1,
-    size: _DEFAULT_PAGE_SIZE_
+    size: DEFAULT_PAGE_SIZE
   };
   if (event.queryString?.page) {
     if (!Number.isNaN(event.queryString.page)) {
@@ -22,7 +21,9 @@ export const setFilterAndPaging = (
     }
   }
   if (event.queryString?.filter) {
-    filter = { ...(JSON.parse(event.queryString.filter)) };
+    filter = { ...JSON.parse(event.queryString.filter) };
   }
   return [filter, paging];
 };
+
+export default setFilterAndPaging;

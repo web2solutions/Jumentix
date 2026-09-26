@@ -27,7 +27,8 @@ const declaredOperationIds = (): Set<string> => {
   const paths = (openApi as { paths?: Paths }).paths ?? {};
   for (const pathItem of Object.values(paths)) {
     for (const operation of Object.values(pathItem)) {
-      if (operation && typeof operation === 'object' && operation.operationId) ids.add(operation.operationId);
+      if (operation && typeof operation === 'object' && operation.operationId)
+        ids.add(operation.operationId);
     }
   }
   return ids;
@@ -63,8 +64,8 @@ export const configureAppOperations = (overrides?: DeepPartial<AppOperations>): 
   const missing = validateAppOperations(next);
   if (missing.length > 0) {
     throw new Error(
-      `appOperations: the bundled OAS declares no operation for ${missing.join(', ')}. `
-        + 'Regenerate src/contracts/openapi.json or override the ids in configureAppOperations().'
+      `appOperations: the bundled OAS declares no operation for ${missing.join(', ')}. ` +
+        'Regenerate src/contracts/openapi.json or override the ids in configureAppOperations().'
     );
   }
   active = next;

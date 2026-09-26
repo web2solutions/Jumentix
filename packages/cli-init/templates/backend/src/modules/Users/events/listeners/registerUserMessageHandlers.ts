@@ -1,9 +1,7 @@
-import type {
-  IMessageMediator,
-  IMessage
-} from '@src/modules/port';
+import UserMessageContracts from '@src/modules/Users/events/contracts/UserMessageContracts';
+
+import type { IMessage, IMessageMediator } from '@src/modules/port';
 import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import { UserMessageContracts } from '@src/modules/Users/events/contracts/UserMessageContracts';
 
 interface IAuthorizePayload {
   authorization: string;
@@ -13,7 +11,7 @@ interface IEnsureAccessPayload extends IAuthorizePayload {
   schemaOAS: Record<string, any>;
 }
 
-export const registerUserMessageHandlers = (
+const registerUserMessageHandlers = (
   messageMediator: IMessageMediator,
   authService: IAuthService
 ): void => {
@@ -58,3 +56,5 @@ export const registerUserMessageHandlers = (
     }
   );
 };
+
+export default registerUserMessageHandlers;

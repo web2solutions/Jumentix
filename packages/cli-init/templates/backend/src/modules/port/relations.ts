@@ -23,22 +23,22 @@ const appendRelation = (
   kind: RelationKind,
   targetName: string
 ): void => {
-  const ctor = target.constructor as any;
+  const ctor = target.constructor;
   const current: IStoredRelation[] = ctor[RELATIONS_KEY] || [];
   ctor[RELATIONS_KEY] = [...current, { property, kind, targetName }];
 };
 
-export const belongsTo = (targetName: string): PropertyDecorator => {
-  return (target: object, propertyKey: string | symbol) => {
+export const belongsTo =
+  (targetName: string): PropertyDecorator =>
+  (target: object, propertyKey: string | symbol) => {
     appendRelation(target, propertyKey.toString(), 'belongsTo', targetName);
   };
-};
 
-export const hasMany = (targetName: string): PropertyDecorator => {
-  return (target: object, propertyKey: string | symbol) => {
+export const hasMany =
+  (targetName: string): PropertyDecorator =>
+  (target: object, propertyKey: string | symbol) => {
     appendRelation(target, propertyKey.toString(), 'hasMany', targetName);
   };
-};
 
 export const getModelRelations = (model: EntityConstructor): IModelRelationMetadata[] => {
   const ctor = model as any;

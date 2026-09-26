@@ -1,4 +1,4 @@
-import { accounts } from '../support/e2e';
+import accounts from '../support/e2e';
 
 /**
  * JUM-776 — authentication against the real backend: login, RBAC-driven

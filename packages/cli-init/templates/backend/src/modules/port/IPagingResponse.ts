@@ -1,5 +1,5 @@
 export interface IPagingResponse<T> {
-  page: number,
+  page: number;
   size: number;
   total: number;
   result: T;

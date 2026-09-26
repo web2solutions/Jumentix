@@ -23,7 +23,7 @@ import { fieldLabel } from '@/contracts/labels';
 import { collectBody, validateAll } from '@/contracts/oasForm';
 import { useProfileStore, type UserEmail } from '@/stores/profile';
 import { t } from '@/i18n';
-import { useSectionNotify } from './useSectionNotify';
+import useSectionNotify from './useSectionNotify';
 
 const props = defineProps<{ emails: UserEmail[] }>();
 
@@ -61,7 +61,9 @@ const add = () => {
     return;
   }
   return run(async () => {
-    await profile.addEmail(collectBody(createDescriptors, newValues) as { email: string; type: string });
+    await profile.addEmail(
+      collectBody(createDescriptors, newValues) as { email: string; type: string }
+    );
     newValues.email = '';
     newValues.isPrimary = false;
   }, t('profile.updated'));
@@ -73,14 +75,19 @@ const update = (id: string) => {
     errorMessage.value = invalid;
     return;
   }
-  return run(() => profile.updateEmail(id, collectBody(updateDescriptors, edits[id])), t('profile.updated'));
+  return run(
+    () => profile.updateEmail(id, collectBody(updateDescriptors, edits[id])),
+    t('profile.updated')
+  );
 };
 const remove = (id: string) => run(() => profile.removeEmail(id), t('profile.updated'));
 </script>
 
 <template>
   <CCard class="mb-4">
-    <CCardHeader><strong>{{ t('profile.emails') }}</strong></CCardHeader>
+    <CCardHeader
+      ><strong>{{ t('profile.emails') }}</strong></CCardHeader
+    >
     <CCardBody>
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
@@ -108,21 +115,25 @@ const remove = (id: string) => run(() => profile.removeEmail(id), t('profile.upd
               <CFormCheck
                 v-else-if="cellControl(d) === 'checkbox'"
                 :model-value="Boolean(edits[item.id][d.name])"
-                @update:model-value="edits[item.id][d.name] = $event"
                 :aria-label="d.name"
+                @update:model-value="edits[item.id][d.name] = $event"
               />
               <CFormInput
                 v-else
                 :model-value="String(edits[item.id][d.name] ?? '')"
-                @update:model-value="edits[item.id][d.name] = $event"
                 :aria-label="`Email ${item.email}`"
                 :minlength="d.minLength"
                 :maxlength="d.maxLength"
+                @update:model-value="edits[item.id][d.name] = $event"
               />
             </CTableDataCell>
             <CTableDataCell class="text-end">
-              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">{{ t('profile.save.row') }}</CButton>
-              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">{{ t('profile.delete') }}</CButton>
+              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">{{
+                t('profile.save.row')
+              }}</CButton>
+              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">{{
+                t('profile.delete')
+              }}</CButton>
             </CTableDataCell>
           </CTableRow>
         </CTableBody>

@@ -1,22 +1,21 @@
 import { fieldDescriptors } from '@/contracts/formSchema';
 import { fieldLabel } from '@/contracts/labels';
 import { metricsSpecForListOperation } from '@/contracts/metricsSchema';
-import type { ModuleManifest } from '@/modules/manifest';
 import { localized } from '@/i18n';
 
 import MetricWidget from './MetricWidget.vue';
+
+import type { ModuleManifest } from '@/modules/manifest';
+
 import type { DashboardWidget } from './types';
 
-const belongsToInverse = (
-  targetEntity: string,
-  ownerEntity: string
-): string | undefined => (
-  fieldDescriptors(targetEntity).find((descriptor) => (
-    descriptor.relation?.kind === 'belongsTo' && descriptor.relation.entity === ownerEntity
-  ))?.name
-);
+const belongsToInverse = (targetEntity: string, ownerEntity: string): string | undefined =>
+  fieldDescriptors(targetEntity).find(
+    (descriptor) =>
+      descriptor.relation?.kind === 'belongsTo' && descriptor.relation.entity === ownerEntity
+  )?.name;
 
-export const genericWidgetsForModule = (mod: ModuleManifest | undefined): DashboardWidget[] => {
+const genericWidgetsForModule = (mod: ModuleManifest | undefined): DashboardWidget[] => {
   if (!mod) return [];
   const widgets: DashboardWidget[] = [];
   const seen = new Set<string>();
@@ -45,8 +44,9 @@ export const genericWidgetsForModule = (mod: ModuleManifest | undefined): Dashbo
         }
       });
       for (const field of spec.capabilities.groupable) {
-        const descriptor = fieldDescriptors(entity.config.entity)
-          .find((item) => item.name === field);
+        const descriptor = fieldDescriptors(entity.config.entity).find(
+          (item) => item.name === field
+        );
         const label = descriptor ? fieldLabel(descriptor) : field;
         push({
           id: `generic:${entity.id}:groupBy:${field}`,
@@ -66,8 +66,9 @@ export const genericWidgetsForModule = (mod: ModuleManifest | undefined): Dashbo
         });
       }
       for (const field of spec.capabilities.series) {
-        const descriptor = fieldDescriptors(entity.config.entity)
-          .find((item) => item.name === field);
+        const descriptor = fieldDescriptors(entity.config.entity).find(
+          (item) => item.name === field
+        );
         const label = descriptor ? fieldLabel(descriptor) : field;
         push({
           id: `generic:${entity.id}:series:${field}`,
@@ -122,3 +123,5 @@ export const genericWidgetsForModule = (mod: ModuleManifest | undefined): Dashbo
   }
   return widgets;
 };
+
+export default genericWidgetsForModule;

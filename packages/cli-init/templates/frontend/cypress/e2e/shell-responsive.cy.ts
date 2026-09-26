@@ -4,7 +4,9 @@
 describe('responsive shell', () => {
   const assertNoPageScroll = () => {
     cy.document().then((doc) => {
-      expect(doc.documentElement.scrollWidth).to.be.at.most(doc.defaultView!.innerWidth);
+      const view = doc.defaultView;
+      if (!view) throw new Error('document has no window');
+      expect(doc.documentElement.scrollWidth).to.be.at.most(view.innerWidth);
     });
   };
 

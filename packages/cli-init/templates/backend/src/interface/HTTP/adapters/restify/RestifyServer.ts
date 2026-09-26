@@ -1,12 +1,15 @@
-import restify from 'restify';
+import path from 'node:path';
+
 import bunyan from 'bunyan';
-import { _HTTP_PORT_ } from '@src/config/constants';
-import type { IbaseHandler } from '@src/interface/HTTP/ports/IbaseHandler';
-import { HTTPBaseServer } from '@src/interface/HTTP/ports/HTTPBaseServer';
-import path from 'path';
+import restify from 'restify';
+
+import { HTTP_PORT } from '@src/config/constants';
 import { Context } from '@src/infra/context/Context';
+import HTTPBaseServer from '@src/interface/HTTP/ports/HTTPBaseServer';
 import { createUuid } from '@src/modules/port/UUID';
-import { BaseError } from '@src/infra/exceptions';
+
+import type { BaseError } from '@src/infra/exceptions';
+import type { IbaseHandler } from '@src/interface/HTTP/ports/IbaseHandler';
 
 type Restify = restify.Server;
 
@@ -19,10 +22,12 @@ class RestifyServer extends HTTPBaseServer<Restify> {
     this.application = restify.createServer({
       log: bunyan.createLogger({
         name: 'api',
-        streams: [{
-          stream: process.stdout,
-          level: bunyan.FATAL + 1
-        }]
+        streams: [
+          {
+            stream: process.stdout,
+            level: bunyan.FATAL + 1
+          }
+        ]
       })
     });
     // this.application.use(cors());
@@ -65,42 +70,50 @@ class RestifyServer extends HTTPBaseServer<Restify> {
       }
       (this.application as any)[verb](handlerFactory.path, handler);
     } catch (error) {
-      // eslint-disable-next-line no-console
       // console.log(error);
     }
   }
 
   private createDocEndPoint() {
-    this.application.get('/OASdoc/*', restify.plugins.serveStatic({
-      directory: path.resolve(process.cwd(), 'apps/backend-template/OASdoc'),
-      default: 'index.html'
-    }));
-    this.application.get('/AsyncAPIdoc/*', restify.plugins.serveStatic({
-      directory: path.resolve(process.cwd(), 'apps/backend-template/AsyncAPIdoc'),
-      default: 'index.html'
-    }));
-    this.application.get('/docs/asyncapi', (_req, res, next) => {
-      return res.redirect(302, '/AsyncAPIdoc', next);
-    });
+    this.application.get(
+      '/OASdoc/*',
+      restify.plugins.serveStatic({
+        directory: path.resolve(process.cwd(), 'apps/backend-template/OASdoc'),
+        default: 'index.html'
+      })
+    );
+    this.application.get(
+      '/AsyncAPIdoc/*',
+      restify.plugins.serveStatic({
+        directory: path.resolve(process.cwd(), 'apps/backend-template/AsyncAPIdoc'),
+        default: 'index.html'
+      })
+    );
+    this.application.get('/docs/asyncapi', (_req, res, next) =>
+      res.redirect(302, '/AsyncAPIdoc', next)
+    );
   }
 
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.application.listen(_HTTP_PORT_, () => {
+        this.application.listen(HTTP_PORT, () => {
           // eslint-disable-next-line no-console
-          console.log(`Restify App Listening on Port ${_HTTP_PORT_}`);
+          console.log(`Restify App Listening on Port ${HTTP_PORT}`);
           resolve();
         });
       } catch (error) {
         // console.error(`An error occurred: ${JSON.stringify(error)}`);
-        this.stop();
+        // Best-effort cleanup before rejecting; the executor cannot await.
+        // A stop failure stays an unhandled rejection, as before.
+        this.stop().catch((stopError: unknown) => {
+          throw stopError;
+        });
         reject(new Error((error as BaseError).message));
       }
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   public async stop(): Promise<void> {
     await Promise.resolve(this.application.close());
     // process.exit(0);
@@ -114,4 +127,4 @@ class RestifyServer extends HTTPBaseServer<Restify> {
   }
 }
 
-export { RestifyServer };
+export default RestifyServer;

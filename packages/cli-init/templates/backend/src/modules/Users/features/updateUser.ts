@@ -1,10 +1,8 @@
-import type {
-  IUser
-} from '@src/modules/Users/domain/Entity/IUser';
-import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
+import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
 
-export const updateUser = async (
+const updateUser = async (
   id: string,
   payload: RequestUpdateUser,
   userDataRepository: IUserRepository
@@ -12,3 +10,5 @@ export const updateUser = async (
   const document = await userDataRepository.update(id, payload);
   return document.serialize();
 };
+
+export default updateUser;

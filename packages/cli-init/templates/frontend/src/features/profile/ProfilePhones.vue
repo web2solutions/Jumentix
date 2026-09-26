@@ -24,7 +24,7 @@ import { collectBody, validateAll } from '@/contracts/oasForm';
 import { maskPhone, phoneMaskCap, validatePhone } from '@/contracts/validation';
 import { useProfileStore, type UserPhone } from '@/stores/profile';
 import { t } from '@/i18n';
-import { useSectionNotify } from './useSectionNotify';
+import useSectionNotify from './useSectionNotify';
 
 const props = defineProps<{ phones: UserPhone[] }>();
 
@@ -36,9 +36,19 @@ const createDescriptors = fieldDescriptors('RequestCreatePhone');
 const updateDescriptors = fieldDescriptors('RequestUpdatePhone').filter((d) => d.name !== 'id');
 
 // The `number` field carries the OAS x-validation rule selected by countryCode.
-const maskNumber = (values: Record<string, unknown>) => (raw: string) => (
-  maskPhone(String(values.countryCode ?? ''), raw)
-);
+// Form values are scalar by contract; serialize explicitly so an unexpected
+// object never degrades to '[object Object]'.
+const scalarText = (value: unknown): string => {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return String(value);
+  }
+  return JSON.stringify(value) ?? '';
+};
+
+const maskNumber = (values: Record<string, unknown>) => (raw: string) =>
+  maskPhone(scalarText(values.countryCode), raw);
 
 const edits = reactive<Record<string, Record<string, string | boolean>>>({});
 watch(
@@ -59,8 +69,9 @@ watch(
 const newValues = reactive<Record<string, string | boolean>>({ countryCode: '+55' });
 
 const add = () => {
-  const invalid = validateAll(createDescriptors, newValues)
-    ?? validatePhone(
+  const invalid =
+    validateAll(createDescriptors, newValues) ??
+    validatePhone(
       String(newValues.countryCode ?? ''),
       String(newValues.localCode ?? ''),
       String(newValues.number ?? '')
@@ -70,11 +81,13 @@ const add = () => {
     return;
   }
   return run(async () => {
-    await profile.addPhone(collectBody(createDescriptors, newValues) as {
-      countryCode: string;
-      localCode: string;
-      number: string;
-    });
+    await profile.addPhone(
+      collectBody(createDescriptors, newValues) as {
+        countryCode: string;
+        localCode: string;
+        number: string;
+      }
+    );
     newValues.localCode = '';
     newValues.number = '';
     newValues.isPrimary = false;
@@ -83,13 +96,21 @@ const add = () => {
 
 const update = (id: string) => {
   const state = edits[id];
-  const invalid = validateAll(updateDescriptors, state)
-    ?? validatePhone(String(state.countryCode ?? ''), String(state.localCode ?? ''), String(state.number ?? ''));
+  const invalid =
+    validateAll(updateDescriptors, state) ??
+    validatePhone(
+      String(state.countryCode ?? ''),
+      String(state.localCode ?? ''),
+      String(state.number ?? '')
+    );
   if (invalid) {
     errorMessage.value = invalid;
     return;
   }
-  return run(() => profile.updatePhone(id, collectBody(updateDescriptors, state)), t('profile.updated'));
+  return run(
+    () => profile.updatePhone(id, collectBody(updateDescriptors, state)),
+    t('profile.updated')
+  );
 };
 const remove = (id: string) => run(() => profile.removePhone(id), t('profile.updated'));
 
@@ -101,7 +122,9 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text
 
 <template>
   <CCard class="mb-4">
-    <CCardHeader><strong>{{ t('profile.phones') }}</strong></CCardHeader>
+    <CCardHeader
+      ><strong>{{ t('profile.phones') }}</strong></CCardHeader
+    >
     <CCardBody>
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
@@ -135,15 +158,26 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text
                 v-else
                 :model-value="String(edits[item.id][d.name] ?? '')"
                 :aria-label="d.name === 'number' ? `Phone ${item.number}` : d.name"
-                :maxlength="d.maxLength ?? (d.name === 'number' ? phoneMaskCap(String(edits[item.id].countryCode ?? '')) : undefined)"
-                @update:model-value="d.name === 'number'
-                  ? (edits[item.id].number = maskNumber(edits[item.id])($event))
-                  : (edits[item.id][d.name] = $event)"
+                :maxlength="
+                  d.maxLength ??
+                  (d.name === 'number'
+                    ? phoneMaskCap(String(edits[item.id].countryCode ?? ''))
+                    : undefined)
+                "
+                @update:model-value="
+                  d.name === 'number'
+                    ? (edits[item.id].number = maskNumber(edits[item.id])($event))
+                    : (edits[item.id][d.name] = $event)
+                "
               />
             </CTableDataCell>
             <CTableDataCell class="text-end">
-              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">{{ t('profile.save.row') }}</CButton>
-              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">{{ t('profile.delete') }}</CButton>
+              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">{{
+                t('profile.save.row')
+              }}</CButton>
+              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">{{
+                t('profile.delete')
+              }}</CButton>
             </CTableDataCell>
           </CTableRow>
         </CTableBody>
@@ -155,7 +189,9 @@ const cellControl = (descriptor: FieldDescriptor): 'checkbox' | 'select' | 'text
           v-model="newValues[d.name]"
           :descriptor="d"
           :mask="d.name === 'number' ? maskNumber(newValues) : undefined"
-          :mask-cap="d.name === 'number' ? phoneMaskCap(String(newValues.countryCode ?? '')) : undefined"
+          :mask-cap="
+            d.name === 'number' ? phoneMaskCap(String(newValues.countryCode ?? '')) : undefined
+          "
           class="mb-0"
         />
         <CButton color="success" class="mb-3" @click="add">{{ t('profile.add') }}</CButton>

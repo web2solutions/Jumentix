@@ -36,7 +36,9 @@ const toggle = (id: string): void => {
         :data-widget-size="widget.size"
       >
         <CCard class="border-0 shadow-sm h-100" :data-widget-card="widget.id">
-          <CCardHeader class="bg-transparent d-flex justify-content-between align-items-center gap-2">
+          <CCardHeader
+            class="bg-transparent d-flex justify-content-between align-items-center gap-2"
+          >
             <span class="fw-semibold">{{ localized(widget.title) }}</span>
             <button
               type="button"
@@ -48,7 +50,10 @@ const toggle = (id: string): void => {
               {{ collapsed[widget.id] ? t('dashboard.expand') : t('dashboard.collapse') }}
             </button>
           </CCardHeader>
-          <CCardBody v-show="!collapsed[widget.id]" :id="`dashboard-widget-${widget.id.replace(/:/g, '-')}`">
+          <CCardBody
+            v-show="!collapsed[widget.id]"
+            :id="`dashboard-widget-${widget.id.replace(/:/g, '-')}`"
+          >
             <component :is="widget.component" :widget="widget" />
           </CCardBody>
         </CCard>

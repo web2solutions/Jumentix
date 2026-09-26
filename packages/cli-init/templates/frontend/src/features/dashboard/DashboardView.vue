@@ -4,7 +4,7 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 import DashboardGrid from '@/components/dashboard/DashboardGrid.vue';
-import { genericWidgetsForModule } from '@/components/dashboard/genericWidgets';
+import genericWidgetsForModule from '@/components/dashboard/genericWidgets';
 import { hasSuperadmin } from '@/contracts/rbac';
 import { useI18n } from '@/i18n';
 import { findModule } from '@/modules/manifest';
@@ -21,9 +21,9 @@ const auth = useAuthStore();
 const profile = useProfileStore();
 const { t } = useI18n();
 
-const moduleId = computed(() => (
+const moduleId = computed(() =>
   typeof route.params.moduleId === 'string' ? route.params.moduleId : 'users'
-));
+);
 const mod = computed(() => findModule(moduleId.value) ?? findModule('users'));
 const widgets = computed(() => [
   ...genericWidgetsForModule(mod.value),
@@ -31,9 +31,11 @@ const widgets = computed(() => [
 ]);
 
 const roles = computed(() => profile.record?.roles ?? []);
-const displayName = computed(() => (
-  profile.record ? `${profile.record.firstName ?? ''} ${profile.record.lastName ?? ''}`.trim() : auth.username
-));
+const displayName = computed(() =>
+  profile.record
+    ? `${profile.record.firstName ?? ''} ${profile.record.lastName ?? ''}`.trim()
+    : auth.username
+);
 const organizationLabel = computed(() => {
   const id = profile.record?.organization;
   if (!id) return hasSuperadmin(roles.value) ? '*' : '—';
@@ -51,7 +53,9 @@ const organizationLabel = computed(() => {
           <CCardBody class="pb-2">
             <div class="small text-body-secondary text-uppercase">{{ t('dashboard.myRoles') }}</div>
             <div class="mt-1">
-              <span v-for="role in roles" :key="role" class="badge text-bg-primary me-1">{{ role }}</span>
+              <span v-for="role in roles" :key="role" class="badge text-bg-primary me-1">{{
+                role
+              }}</span>
               <span v-if="roles.length === 0" class="text-body-secondary">—</span>
             </div>
           </CCardBody>
@@ -60,8 +64,12 @@ const organizationLabel = computed(() => {
       <CCol :sm="6" :xl="3">
         <CCard class="border-0 shadow-sm h-100">
           <CCardBody class="pb-2">
-            <div class="small text-body-secondary text-uppercase">{{ t('dashboard.myOrganization') }}</div>
-            <div class="mt-1 font-monospace small" :title="organizationLabel">{{ organizationLabel }}</div>
+            <div class="small text-body-secondary text-uppercase">
+              {{ t('dashboard.myOrganization') }}
+            </div>
+            <div class="mt-1 font-monospace small" :title="organizationLabel">
+              {{ organizationLabel }}
+            </div>
           </CCardBody>
         </CCard>
       </CCol>

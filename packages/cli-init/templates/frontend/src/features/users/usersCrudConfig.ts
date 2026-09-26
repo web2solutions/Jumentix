@@ -1,6 +1,7 @@
+import { rbacRoleNames } from '@/contracts/rbac';
+
 import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
 import type { FieldDescriptor } from '@/contracts/formSchema';
-import { rbacRoleNames } from '@/contracts/rbac';
 
 /**
  * X-CRUD Users (JUM-772): full user management — list/create/update/delete,
@@ -15,24 +16,34 @@ const primaryEmailField: FieldDescriptor = {
   xLabel: { en: 'Primary e-mail', 'pt-BR': 'E-mail principal' }
 };
 
-export const usersCrudConfig: XCrudEntityConfig = {
+const usersCrudConfig: XCrudEntityConfig = {
   entity: 'User',
   title: { en: 'User', 'pt-BR': 'Usuário' },
   schemas: { create: 'RequestCreateUser', update: 'RequestUpdateUser' },
   operations: {
-    list: 'getAll', create: 'create', update: 'update', delete: 'deleteOne'
+    list: 'getAll',
+    create: 'create',
+    update: 'update',
+    delete: 'deleteOne'
   },
   searchFields: ['firstName', 'lastName', 'username'],
   pagination: 'pager',
   inlineEdit: true,
   avatarField: 'avatar',
-  quickFilter: { field: 'organization', optionsOperationId: 'getAllOrganizations', allLabel: { en: 'All organizations', 'pt-BR': 'Todas as organizações' } },
+  quickFilter: {
+    field: 'organization',
+    optionsOperationId: 'getAllOrganizations',
+    allLabel: { en: 'All organizations', 'pt-BR': 'Todas as organizações' }
+  },
   // Column labels come from the OAS `x-label` (JUM-780); no overrides needed here.
   aggregates: [
     { field: 'id', op: 'count', label: { en: 'Total users', 'pt-BR': 'Total de usuários' } },
     // count + groupBy = number of distinct groups; the chart shows the per-group split (JUM-781).
     {
-      field: 'id', op: 'count', groupBy: 'organization', label: { en: 'Organizations represented', 'pt-BR': 'Organizações representadas' }
+      field: 'id',
+      op: 'count',
+      groupBy: 'organization',
+      label: { en: 'Organizations represented', 'pt-BR': 'Organizações representadas' }
     }
   ],
   // roles is an array of strings; the checkbox options come from the OAS x-rbac matrix.
@@ -53,3 +64,5 @@ export const usersCrudConfig: XCrudEntityConfig = {
     return body;
   }
 };
+
+export default usersCrudConfig;

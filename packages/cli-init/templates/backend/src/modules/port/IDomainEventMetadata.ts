@@ -1,4 +1,4 @@
-export type IDomainEventMetadata = {
+export interface IDomainEventMetadata {
   /** Timestamp when this domain event occurred */
   readonly timestamp: number;
 
@@ -15,4 +15,4 @@ export type IDomainEventMetadata = {
    * User ID for debugging and logging purposes
    */
   readonly userId?: string;
-};
+}

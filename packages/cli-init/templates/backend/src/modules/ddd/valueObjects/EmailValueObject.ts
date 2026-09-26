@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 import { UUID } from '@src/modules/port';
 import { canNotBeEmpty } from '@src/shared/validators';
-import { EEmailType } from '@src/modules/ddd/valueObjects/EEmailType';
+
+import type EEmailType from '@src/modules/ddd/valueObjects/EEmailType';
 
 export interface EmailValueObject {
   id: string;
@@ -20,12 +21,7 @@ export class EmailValueObject {
   public isPrimary: boolean;
 
   constructor(payload: any) {
-    const {
-      id,
-      type,
-      email,
-      isPrimary
-    } = payload;
+    const { id, type, email, isPrimary } = payload;
     canNotBeEmpty('email', email);
     canNotBeEmpty('type', type);
     this.id = id ? UUID.parse(id).toString() : UUID.create().toString();

@@ -1,28 +1,24 @@
-import { BaseError, EErrorStringCodes } from '@src/infra/exceptions';
 import { formatErrorMessage, toHttpStatus } from '@src/shared/utils';
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { UserController } from '@src/modules/Users';
+
+import type { BaseError, EErrorStringCodes } from '@src/infra/exceptions';
 import type {
-  IHandlerFactory,
-  EndPointFactory,
-  IbaseHandler
-} from '@src/interface/HTTP/ports';
+  DerbyJsRequest,
+  DerbyJsResponse
+} from '@src/interface/HTTP/adapters/derby-js/DerbyJsServer';
+import type { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
+import type BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import type { UserController } from '@src/modules/Users';
 
-import type { DerbyJsRequest, DerbyJsResponse } from '@src/interface/HTTP/adapters/derby-js/DerbyJsServer';
+type ControllerMethod = 'createDocument' | 'updateDocument' | 'deleteDocument';
 
-type ControllerMethod =
-  | 'createDocument'
-  | 'updateDocument'
-  | 'deleteDocument';
-
-type DocumentMutationHandlerFactoryConfig = {
+interface DocumentMutationHandlerFactoryConfig {
   path: string;
   method: IbaseHandler['method'];
   statusCode: number;
   EventClass: new (message: Record<string, any>) => BaseDomainEvent;
   controllerMethod: ControllerMethod;
   withBody?: boolean;
-};
+}
 
 function sendErrorResponse(error: BaseError, res: DerbyJsResponse) {
   return res.status(toHttpStatus(error.code as EErrorStringCodes) || 500).json({
@@ -31,40 +27,36 @@ function sendErrorResponse(error: BaseError, res: DerbyJsResponse) {
   });
 }
 
-export const createDocumentMutationHandler = (
+const createDocumentMutationHandler = (
   config: DocumentMutationHandlerFactoryConfig
 ): EndPointFactory => {
-  const {
+  const { path, method, statusCode, EventClass, controllerMethod, withBody = true } = config;
+
+  return ({ endPointConfig, controller }: IHandlerFactory): IbaseHandler => ({
     path,
     method,
-    statusCode,
-    EventClass,
-    controllerMethod,
-    withBody = true
-  } = config;
-
-  return ({ endPointConfig, controller }: IHandlerFactory): IbaseHandler => {
-    return {
-      path,
-      method,
-      async handler(req: DerbyJsRequest, res: DerbyJsResponse) {
-        try {
-          const params = (req.params || {}) as Record<string, any>;
-          const domainEvent = new EventClass({
-            authorization: req.headers?.authorization ?? '',
-            params,
-            input: withBody ? req.body : undefined,
-            schemaOAS: endPointConfig
-          });
-          const { result, error } = await (controller! as UserController)[controllerMethod](
-            domainEvent
-          );
-          if (error) throw error;
-          return res.status(statusCode).json(result);
-        } catch (error: any) {
-          return sendErrorResponse(error, res);
+    async handler(req: DerbyJsRequest, res: DerbyJsResponse) {
+      try {
+        const params = (req.params || {}) as Record<string, any>;
+        const domainEvent = new EventClass({
+          authorization: req.headers?.authorization ?? '',
+          params,
+          input: withBody ? req.body : undefined,
+          schemaOAS: endPointConfig
+        });
+        if (!controller) {
+          throw new Error('The _documentMutationHandlerFactory endpoint requires a controller.');
         }
+        const { result, error } = await (controller as UserController)[controllerMethod](
+          domainEvent
+        );
+        if (error) throw error;
+        return res.status(statusCode).json(result);
+      } catch (error: any) {
+        return sendErrorResponse(error, res);
       }
-    };
-  };
+    }
+  });
 };
+
+export default createDocumentMutationHandler;

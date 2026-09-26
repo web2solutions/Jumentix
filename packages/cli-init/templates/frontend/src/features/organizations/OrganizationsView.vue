@@ -2,7 +2,7 @@
 import { useI18n } from '@/i18n';
 import XCrud from '@/components/x-crud/XCrud.vue';
 
-import { organizationsCrudConfig } from './organizationsCrudConfig';
+import organizationsCrudConfig from './organizationsCrudConfig';
 
 /**
  * Organizations sub-app (JUM-772): X-CRUD over the Organizations domain.

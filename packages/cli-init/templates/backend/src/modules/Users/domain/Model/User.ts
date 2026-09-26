@@ -1,34 +1,26 @@
-/* eslint-disable no-underscore-dangle */
 // import * as bcrypt from 'bcrypt';
+import { DomainValidationError } from '@src/infra/exceptions';
 import {
-  BaseModel,
-  belongsTo
-} from '@src/modules/port';
+  DocumentValueObject,
+  EmailValueObject,
+  PhoneValueObject
+} from '@src/modules/ddd/valueObjects';
+import { BaseModel, belongsTo } from '@src/modules/port';
+import { normalizeRoles, shouldRequireOrganization } from '@src/modules/Users/domain/security/Rbac';
 import {
   canNotBeEmpty,
   throwIfReadOnly
   // mustBePassword
 } from '@src/shared/validators';
-import {
-  EmailValueObject,
-  DocumentValueObject,
-  PhoneValueObject
-} from '@src/modules/ddd/valueObjects';
-import type {
-  IUser
-} from '@src/modules/Users/domain/Entity/IUser';
-import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
-import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
 import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import { DomainValidationError } from '@src/infra/exceptions';
-import {
-  normalizeRoles,
-  shouldRequireOrganization
-} from '@src/modules/Users/domain/security/Rbac';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 
 interface UserFactory extends RequestCreateUser {
   id?: string;
@@ -39,7 +31,7 @@ interface UserFactory extends RequestCreateUser {
   active?: boolean;
 }
 
-export class User extends BaseModel<IUser> implements IUser {
+class User extends BaseModel<IUser> implements IUser {
   public static readonly dataEntitySchema = {
     name: 'User',
     fields: [
@@ -141,19 +133,19 @@ export class User extends BaseModel<IUser> implements IUser {
     ]
   } as const;
 
-  private _firstName: string = '';
+  private _firstName = '';
 
-  private _lastName: string = '';
+  private _lastName = '';
 
-  private _username: string = '';
+  private _username = '';
 
-  private _password: string = '';
+  private _password = '';
 
-  private _salt: string = '';
+  private _salt = '';
 
-  private _organization: string = '';
+  private _organization = '';
 
-  private _avatar: string = 'avatar.png';
+  private _avatar = 'avatar.png';
 
   private _emails: EmailValueObject[] = [];
 
@@ -167,9 +159,9 @@ export class User extends BaseModel<IUser> implements IUser {
 
   public _excludeOnSerialize: string[] = ['login'];
 
-  public _active: boolean = true;
+  public _active = true;
 
-  private _skipDomainValidation: boolean = true;
+  private _skipDomainValidation = true;
 
   constructor(payload: UserFactory) {
     super({
@@ -205,7 +197,7 @@ export class User extends BaseModel<IUser> implements IUser {
     emails.forEach((e) => this.createEmail(e));
     documents?.forEach((d) => this.createDocument(d));
     phones?.forEach((p) => this.createPhone(p));
-    this._roles = normalizeRoles(roles || []);
+    this._roles = normalizeRoles(roles ?? []);
 
     this._readOnly = readOnly ?? false;
 
@@ -244,10 +236,7 @@ export class User extends BaseModel<IUser> implements IUser {
       phones: this.phones.map((entry) => ({ ...entry }))
     };
     if (this.organization) payload.organization = this.organization;
-    BaseModel.throwIfModelPayloadIsNotOpenApi31Compliant(
-      payload,
-      User.dataEntitySchema as any
-    );
+    BaseModel.throwIfModelPayloadIsNotOpenApi31Compliant(payload, User.dataEntitySchema as any);
   }
 
   public get firstName(): string {
@@ -443,3 +432,5 @@ export class User extends BaseModel<IUser> implements IUser {
     }
   }
 }
+
+export default User;

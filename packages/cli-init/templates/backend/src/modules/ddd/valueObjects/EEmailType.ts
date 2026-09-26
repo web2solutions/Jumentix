@@ -1,5 +1,6 @@
-// eslint-disable-next-line no-shadow
-export enum EEmailType {
+enum EEmailType {
   work = 'work',
-  personal = 'personal',
+  personal = 'personal'
 }
+
+export default EEmailType;

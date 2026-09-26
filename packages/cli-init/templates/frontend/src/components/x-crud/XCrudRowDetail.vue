@@ -40,20 +40,21 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-const isObjectArray = (value: unknown): value is Array<Record<string, unknown>> => (
-  Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0] !== null
-);
+const isObjectArray = (value: unknown): value is Array<Record<string, unknown>> =>
+  Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0] !== null;
 
 /** Array-of-objects fields get an exclusive preview tab each (JUM-772). */
-const arrayFields = computed(() => Object.entries(props.record)
-  .filter(([, value]) => isObjectArray(value))
-  .map(([name, value]) => ({
-    name,
-    label: fieldLabel({ name }, props.config.columnLabels),
-    items: value as Array<Record<string, unknown>>,
-    // Item column labels come from the item schema when the entity declares it.
-    itemLabels: Object.fromEntries((safeItemDescriptors(name)).map((d) => [d.name, fieldLabel(d)]))
-  })));
+const arrayFields = computed(() =>
+  Object.entries(props.record)
+    .filter(([, value]) => isObjectArray(value))
+    .map(([name, value]) => ({
+      name,
+      label: fieldLabel({ name }, props.config.columnLabels),
+      items: value as Array<Record<string, unknown>>,
+      // Item column labels come from the item schema when the entity declares it.
+      itemLabels: Object.fromEntries(safeItemDescriptors(name).map((d) => [d.name, fieldLabel(d)]))
+    }))
+);
 
 const safeItemDescriptors = (field: string): FieldDescriptor[] => {
   try {
@@ -64,9 +65,9 @@ const safeItemDescriptors = (field: string): FieldDescriptor[] => {
 };
 
 /** The main tab carries scalars and scalar arrays only. */
-const scalarRecord = computed(() => Object.fromEntries(
-  Object.entries(props.record).filter(([, value]) => !isObjectArray(value))
-));
+const scalarRecord = computed(() =>
+  Object.fromEntries(Object.entries(props.record).filter(([, value]) => !isObjectArray(value)))
+);
 
 const itemKeys = (items: Array<Record<string, unknown>>): string[] => [
   ...new Set(items.flatMap((item) => Object.keys(item).filter((key) => key !== 'id')))
@@ -117,7 +118,12 @@ watch(
           </a>
         </CNavItem>
       </CNav>
-      <button type="button" class="btn-close ms-auto" :aria-label="t('crud.close')" @click="emit('close')" />
+      <button
+        type="button"
+        class="btn-close ms-auto"
+        :aria-label="t('crud.close')"
+        @click="emit('close')"
+      />
     </div>
     <div class="card-body">
       <CTabContent>
@@ -130,7 +136,11 @@ watch(
             :reference-labels="referenceLabels"
           />
         </CTabPane>
-        <CTabPane v-for="field in arrayFields" :key="field.name" :visible="activeTab === field.name">
+        <CTabPane
+          v-for="field in arrayFields"
+          :key="field.name"
+          :visible="activeTab === field.name"
+        >
           <CTable striped hover align="middle" class="mb-0">
             <CTableHead>
               <CTableRow>

@@ -1,4 +1,5 @@
 import { setCorrelationIdResolver } from '@jumentix/persistence-contracts';
+
 import { Context } from '@src/infra/context/Context';
 
 /**

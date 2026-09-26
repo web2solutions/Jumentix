@@ -1,2 +1,2 @@
-export { UserUseCases } from './UserUseCases';
-export { AuthUseCases } from './AuthUseCases';
+export { default as UserUseCases } from './UserUseCases';
+export { default as AuthUseCases } from './AuthUseCases';

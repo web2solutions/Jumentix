@@ -123,7 +123,9 @@
         "jest.config.js",
         "sonar-project.properties",
         "package.json",
-        "bunfig.toml"
+        "bunfig.toml",
+        "packages/cli-init/templates/**",
+        "packages/cli-init/templates.manifest.json"
       ],
       "runner": "bun",
       "tier": "gate",

@@ -1,8 +1,6 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
+import type BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const setFilter = (event: BaseDomainEvent): Record<any, any> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const setFilter = (event: BaseDomainEvent): Record<any, any> => {
   let filter: Record<any, any> = {};
   if (event.queryString?.filter) {
     const decodedFilterString = Buffer.from(event.queryString?.filter, 'base64').toString();
@@ -16,3 +14,5 @@ export const setFilter = (event: BaseDomainEvent): Record<any, any> => {
   }
   return filter;
 };
+
+export default setFilter;

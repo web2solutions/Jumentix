@@ -1,9 +1,7 @@
-import type {
-  IUser
-} from '@src/modules/Users/domain/Entity/IUser';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
 
-export const deleteDocument = async (
+const deleteDocument = async (
   userId: string,
   documentId: string,
   userDataRepository: IUserRepository
@@ -11,3 +9,5 @@ export const deleteDocument = async (
   const model = await userDataRepository.deleteDocument(userId, documentId);
   return model.serialize();
 };
+
+export default deleteDocument;

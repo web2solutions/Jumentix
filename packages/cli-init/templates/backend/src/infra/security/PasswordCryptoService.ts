@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
-import { _BCRYPT_SALT_ROUNDS_ } from '@src/config/constants';
-import type { IPasswordCryptoService, IHash, IPasswordHasher } from './IPasswordCryptoService';
+
+import { BCRYPT_SALT_ROUNDS } from '@src/config/constants';
+
+import type { IHash, IPasswordCryptoService, IPasswordHasher } from './IPasswordCryptoService';
 
 let passwordCryptoService: IPasswordCryptoService;
 
-export class PasswordCryptoService implements IPasswordCryptoService {
+class PasswordCryptoService implements IPasswordCryptoService {
   private saltRounds: number;
 
   private hasher: IPasswordHasher;
@@ -13,8 +15,8 @@ export class PasswordCryptoService implements IPasswordCryptoService {
    * @param hasher Defaults to `bcryptjs`. Injected only so the error branches
    * are reachable without replacing the module at runtime — see IPasswordHasher.
    */
-  constructor(hasher: IPasswordHasher = bcrypt as unknown as IPasswordHasher) {
-    this.saltRounds = +(_BCRYPT_SALT_ROUNDS_);
+  constructor(hasher: IPasswordHasher = bcrypt) {
+    this.saltRounds = +BCRYPT_SALT_ROUNDS;
     this.hasher = hasher;
   }
 
@@ -49,3 +51,5 @@ export class PasswordCryptoService implements IPasswordCryptoService {
     return passwordCryptoService;
   }
 }
+
+export default PasswordCryptoService;

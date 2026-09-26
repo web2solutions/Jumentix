@@ -23,7 +23,7 @@ import { collectBody, validateAll } from '@/contracts/oasForm';
 import { documentInputCap, filterDocumentData, validateDocumentData } from '@/contracts/validation';
 import { useProfileStore, type UserDocument } from '@/stores/profile';
 import { t } from '@/i18n';
-import { useSectionNotify } from './useSectionNotify';
+import useSectionNotify from './useSectionNotify';
 
 const props = defineProps<{ documents: UserDocument[] }>();
 
@@ -35,15 +35,24 @@ const createDescriptors = fieldDescriptors('RequestCreateDocument');
 const updateDescriptors = fieldDescriptors('RequestUpdateDocument').filter((d) => d.name !== 'id');
 
 // The `data` field carries the OAS x-validation rules (CPF checksum, SSN).
-const maskData = (values: Record<string, unknown>) => (raw: string) => (
-  filterDocumentData(String(values.type ?? ''), String(values.countryIssue ?? ''), raw)
-);
+// Form values are scalar by contract; serialize explicitly so an unexpected
+// object never degrades to '[object Object]'.
+const scalarText = (value: unknown): string => {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return String(value);
+  }
+  return JSON.stringify(value) ?? '';
+};
+
+const maskData = (values: Record<string, unknown>) => (raw: string) =>
+  filterDocumentData(scalarText(values.type), scalarText(values.countryIssue), raw);
 
 // Effective input cap per row (JUM-769): declared maxLength, else the cap
 // derived from the x-validation rule (mask length or pattern upper bound).
-const dataCap = (values: Record<string, unknown>, declared?: number) => (
-  declared ?? documentInputCap(String(values.type ?? ''), String(values.countryIssue ?? ''))
-);
+const dataCap = (values: Record<string, unknown>, declared?: number) =>
+  declared ?? documentInputCap(scalarText(values.type), scalarText(values.countryIssue));
 
 const edits = reactive<Record<string, Record<string, unknown>>>({});
 watch(
@@ -59,46 +68,58 @@ watch(
 const newValues = reactive<Record<string, unknown>>({ type: 'CPF', countryIssue: 'BR' });
 
 const add = () => {
-  const invalid = validateAll(createDescriptors, newValues)
-    ?? validateDocumentData(
-      String(newValues.type ?? ''),
-      String(newValues.countryIssue ?? ''),
-      String(newValues.data ?? '')
+  const invalid =
+    validateAll(createDescriptors, newValues) ??
+    validateDocumentData(
+      scalarText(newValues.type),
+      scalarText(newValues.countryIssue),
+      scalarText(newValues.data)
     );
   if (invalid) {
     errorMessage.value = invalid;
     return;
   }
   return run(async () => {
-    await profile.addDocument(collectBody(createDescriptors, newValues) as {
-      type: string;
-      countryIssue: string;
-      data: string;
-    });
+    await profile.addDocument(
+      collectBody(createDescriptors, newValues) as {
+        type: string;
+        countryIssue: string;
+        data: string;
+      }
+    );
     newValues.data = '';
   }, t('profile.updated'));
 };
 
 const update = (id: string) => {
   const state = edits[id];
-  const invalid = validateAll(updateDescriptors, state)
-    ?? validateDocumentData(String(state.type ?? ''), String(state.countryIssue ?? ''), String(state.data ?? ''));
+  const invalid =
+    validateAll(updateDescriptors, state) ??
+    validateDocumentData(
+      scalarText(state.type),
+      scalarText(state.countryIssue),
+      scalarText(state.data)
+    );
   if (invalid) {
     errorMessage.value = invalid;
     return;
   }
-  return run(() => profile.updateDocument(id, collectBody(updateDescriptors, state)), t('profile.updated'));
+  return run(
+    () => profile.updateDocument(id, collectBody(updateDescriptors, state)),
+    t('profile.updated')
+  );
 };
 const remove = (id: string) => run(() => profile.removeDocument(id), t('profile.updated'));
 
-const cellControl = (descriptor: FieldDescriptor): 'select' | 'text' => (
-  descriptor.enum ? 'select' : 'text'
-);
+const cellControl = (descriptor: FieldDescriptor): 'select' | 'text' =>
+  descriptor.enum ? 'select' : 'text';
 </script>
 
 <template>
   <CCard class="mb-4">
-    <CCardHeader><strong>{{ t('profile.documents') }}</strong></CCardHeader>
+    <CCardHeader
+      ><strong>{{ t('profile.documents') }}</strong></CCardHeader
+    >
     <CCardBody>
       <CAlert v-if="errorMessage" color="danger" role="alert">{{ errorMessage }}</CAlert>
       <CAlert v-if="successMessage" color="success" role="alert">{{ successMessage }}</CAlert>
@@ -128,14 +149,20 @@ const cellControl = (descriptor: FieldDescriptor): 'select' | 'text' => (
                 :model-value="String(edits[item.id][d.name] ?? '')"
                 :aria-label="d.name === 'data' ? `Document ${item.data}` : d.name"
                 :maxlength="d.name === 'data' ? dataCap(edits[item.id], d.maxLength) : d.maxLength"
-                @update:model-value="d.name === 'data'
-                  ? (edits[item.id].data = maskData(edits[item.id])($event))
-                  : (edits[item.id][d.name] = $event)"
+                @update:model-value="
+                  d.name === 'data'
+                    ? (edits[item.id].data = maskData(edits[item.id])($event))
+                    : (edits[item.id][d.name] = $event)
+                "
               />
             </CTableDataCell>
             <CTableDataCell class="text-end">
-              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">{{ t('profile.save.row') }}</CButton>
-              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">{{ t('profile.delete') }}</CButton>
+              <CButton size="sm" color="primary" class="me-2" @click="update(item.id)">{{
+                t('profile.save.row')
+              }}</CButton>
+              <CButton size="sm" color="danger" variant="outline" @click="remove(item.id)">{{
+                t('profile.delete')
+              }}</CButton>
             </CTableDataCell>
           </CTableRow>
         </CTableBody>

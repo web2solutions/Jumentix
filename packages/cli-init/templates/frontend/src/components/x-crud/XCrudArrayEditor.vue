@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CButton, CFormCheck } from '@coreui/vue';
+import { CButton, CFormCheck, CFormLabel } from '@coreui/vue';
 
 import OasFormField from '@/components/OasFormField.vue';
 import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
@@ -22,24 +22,27 @@ const emit = defineEmits<{
   'update:modelValue': [value: Array<Record<string, unknown>>];
 }>();
 
-const blankItem = (): Record<string, unknown> => Object.fromEntries(
-  props.itemDescriptors
-    .filter((d) => d.default !== undefined)
-    .map((d) => [d.name, d.default])
-);
+const blankItem = (): Record<string, unknown> =>
+  Object.fromEntries(
+    props.itemDescriptors.filter((d) => d.default !== undefined).map((d) => [d.name, d.default])
+  );
 
 const addItem = (): void => {
   emit('update:modelValue', [...props.modelValue, blankItem()]);
 };
 
 const removeItem = (index: number): void => {
-  emit('update:modelValue', props.modelValue.filter((_, i) => i !== index));
+  emit(
+    'update:modelValue',
+    props.modelValue.filter((_, i) => i !== index)
+  );
 };
 
 const setItemField = (index: number, field: string, value: unknown): void => {
-  emit('update:modelValue', props.modelValue.map((item, i) => (
-    i === index ? { ...item, [field]: value } : item
-  )));
+  emit(
+    'update:modelValue',
+    props.modelValue.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+  );
 };
 </script>
 
@@ -56,9 +59,9 @@ const setItemField = (index: number, field: string, value: unknown): void => {
     >
       <template v-for="d in itemDescriptors" :key="d.name">
         <div v-if="d.enum" class="xcrud-array-cell">
-          <label class="form-label small mb-1" :for="`${descriptor.name}-${index}-${d.name}`">
+          <CFormLabel class="small mb-1" :for="`${descriptor.name}-${index}-${d.name}`">
             {{ fieldLabel(d) }}<span v-if="d.required" class="text-danger">*</span>
-          </label>
+          </CFormLabel>
           <SearchableEnumInput
             :id="`${descriptor.name}-${index}-${d.name}`"
             :model-value="String(item[d.name] ?? '')"

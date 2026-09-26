@@ -1,42 +1,43 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { CBadge, CNavGroup, CNavItem, CNavTitle, CSidebarNav } from '@coreui/vue'
+import { CBadge, CNavGroup, CNavItem, CNavTitle, CSidebarNav } from '@coreui/vue';
 
-import { can } from '@/contracts/rbac'
-import { useI18n } from '@/i18n'
-import { navFromModules } from '@/modules/nav'
-import type { NavItem } from '@/modules/navTypes'
-import { useProfileStore } from '@/stores/profile'
-import { useTaskStore } from '@/stores/tasks'
-import { useRouter } from 'vue-router'
+import { can } from '@/contracts/rbac';
+import { useI18n } from '@/i18n';
+import navFromModules from '@/modules/nav';
+import type { NavItem } from '@/modules/navTypes';
+import { useProfileStore } from '@/stores/profile';
+import { useTaskStore } from '@/stores/tasks';
+import { useRouter } from 'vue-router';
 
-const profile = useProfileStore()
-const { t } = useI18n()
-const tasks = useTaskStore()
-const router = useRouter()
+const profile = useProfileStore();
+const { t } = useI18n();
+const tasks = useTaskStore();
+const router = useRouter();
 
-const allowed = (item: NavItem): boolean => (
-  !item.operationId || can(profile.record?.roles ?? [], item.operationId)
-)
+const allowed = (item: NavItem): boolean =>
+  !item.operationId || can(profile.record?.roles ?? [], item.operationId);
 
-const visibleItems = computed(() => navFromModules(profile.record?.roles ?? [])
-  .map((item) => {
-    if (!item.items) return allowed(item) ? item : null;
-    const children = item.items.filter(allowed);
-    return children.length ? { ...item, items: children } : null;
-  })
-  .filter((item): item is NavItem => item !== null))
+const visibleItems = computed(() =>
+  navFromModules(profile.record?.roles ?? [])
+    .map((item) => {
+      if (!item.items) return allowed(item) ? item : null;
+      const children = item.items.filter(allowed);
+      return children.length ? { ...item, items: children } : null;
+    })
+    .filter((item): item is NavItem => item !== null)
+);
 
-const isGroup = (item: NavItem) => Boolean(item.items)
-const isTitle = (item: NavItem) => item.component === 'CNavTitle'
+const isGroup = (item: NavItem) => Boolean(item.items);
+const isTitle = (item: NavItem) => item.component === 'CNavTitle';
 
 const openModule = (to: string) => {
   const match = to.match(/^\/m\/([^/]+)/);
   if (match) {
     tasks.openModule(match[1]);
-    router.push(to);
+    void router.push(to);
   }
-}
+};
 </script>
 
 <template>
@@ -49,12 +50,18 @@ const openModule = (to: string) => {
           {{ t(item.name) }}
         </template>
         <CNavItem v-for="child in item.items" :key="child.name">
-          <RouterLink custom :to="child.to ?? '#'" v-slot="{ href, isActive, navigate }">
+          <RouterLink v-slot="{ href, isActive, navigate }" custom :to="child.to ?? '#'">
             <a
               class="nav-link"
               :class="{ active: isActive }"
               :href="href"
-              @click="(event) => { event.preventDefault(); openModule(child.to ?? '#'); navigate(event); }"
+              @click="
+                (event) => {
+                  event.preventDefault();
+                  openModule(child.to ?? '#');
+                  navigate(event);
+                }
+              "
             >
               <span class="nav-icon"><span class="nav-icon-bullet" /></span>
               {{ t(child.name) }}
@@ -63,12 +70,18 @@ const openModule = (to: string) => {
         </CNavItem>
       </CNavGroup>
       <CNavItem v-else-if="item.to">
-        <RouterLink custom :to="item.to" v-slot="{ href, isActive, navigate }">
+        <RouterLink v-slot="{ href, isActive, navigate }" custom :to="item.to">
           <a
             class="nav-link"
             :class="{ active: isActive }"
             :href="href"
-            @click="(event) => { event.preventDefault(); openModule(item.to ?? '#'); navigate(event); }"
+            @click="
+              (event) => {
+                event.preventDefault();
+                openModule(item.to ?? '#');
+                navigate(event);
+              }
+            "
           >
             <CIcon v-if="item.icon" custom-class-name="nav-icon" :icon="item.icon" />
             <span v-else class="nav-icon"><span class="nav-icon-bullet" /></span>

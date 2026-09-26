@@ -1,9 +1,10 @@
+import openApi from '@/contracts/openapi.json';
+import { can, requiredScopes } from '@/contracts/rbac';
+
 import type { Component } from 'vue';
 
 import type { DashboardWidget } from '@/components/dashboard/types';
 import type { XCrudEntityConfig, XCrudText } from '@/components/x-crud/xCrudTypes';
-import openApi from '@/contracts/openapi.json';
-import { can, requiredScopes } from '@/contracts/rbac';
 
 export interface ModuleEntity {
   id: string;
@@ -30,9 +31,7 @@ const modules: ModuleManifest[] = [];
 
 type Paths = Record<string, Record<string, { operationId?: string }>>;
 
-export const declaredOperationIds = (
-  spec: { paths?: Paths } = openApi as { paths?: Paths }
-): Set<string> => {
+export const declaredOperationIds = (spec: { paths?: Paths } = openApi): Set<string> => {
   const ids = new Set<string>();
   for (const pathItem of Object.values(spec.paths ?? {})) {
     for (const operation of Object.values(pathItem)) {
@@ -44,9 +43,8 @@ export const declaredOperationIds = (
   return ids;
 };
 
-export const moduleOperationIds = (mod: ModuleManifest): string[] => (
-  mod.entities.flatMap((entity) => Object.values(entity.config.operations))
-);
+export const moduleOperationIds = (mod: ModuleManifest): string[] =>
+  mod.entities.flatMap((entity) => Object.values(entity.config.operations));
 
 export const moduleRequiredScopes = (mod: ModuleManifest): string[] => {
   const scopes = new Set<string>();
@@ -56,9 +54,8 @@ export const moduleRequiredScopes = (mod: ModuleManifest): string[] => {
   return [...scopes];
 };
 
-export const canOpenModule = (mod: ModuleManifest, roles: string[] | undefined): boolean => (
-  mod.entities.some((entity) => can(roles, entity.config.operations.list))
-);
+export const canOpenModule = (mod: ModuleManifest, roles: string[] | undefined): boolean =>
+  mod.entities.some((entity) => can(roles, entity.config.operations.list));
 
 export const firstAllowedTab = (mod: ModuleManifest, roles: string[] | undefined): string => {
   const entity = mod.entities.find((item) => can(roles, item.config.operations.list));
@@ -69,9 +66,7 @@ export const firstAllowedTab = (mod: ModuleManifest, roles: string[] | undefined
 export const visibleEntityTabs = (
   mod: ModuleManifest,
   roles: string[] | undefined
-): ModuleEntity[] => (
-  mod.entities.filter((entity) => can(roles, entity.config.operations.list))
-);
+): ModuleEntity[] => mod.entities.filter((entity) => can(roles, entity.config.operations.list));
 
 export const validateModules = (
   list: ModuleManifest[] = modules,
@@ -95,9 +90,8 @@ export const registerModule = (mod: ModuleManifest): void => {
 
 export const registeredModules = (): readonly ModuleManifest[] => modules;
 
-export const findModule = (id: string): ModuleManifest | undefined => (
-  modules.find((mod) => mod.id === id)
-);
+export const findModule = (id: string): ModuleManifest | undefined =>
+  modules.find((mod) => mod.id === id);
 
 /** Test hook: drop every registered module. */
 export const resetModules = (): void => {
@@ -108,8 +102,8 @@ export const configureModules = (): void => {
   const missing = validateModules();
   if (missing.length > 0) {
     throw new Error(
-      `modules: the bundled OAS declares no operation for ${missing.join(', ')}. `
-        + 'Regenerate src/contracts/openapi.json or fix the module manifest.'
+      `modules: the bundled OAS declares no operation for ${missing.join(', ')}. ` +
+        'Regenerate src/contracts/openapi.json or fix the module manifest.'
     );
   }
 };

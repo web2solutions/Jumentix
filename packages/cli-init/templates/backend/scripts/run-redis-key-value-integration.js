@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-/* eslint-disable no-console */
 /**
  * Runs the Redis key-value integration suite against docker-compose-redis.
  *
@@ -10,25 +8,21 @@
  * never embeds a secret and CI can still override via secrets. The legacy
  * AAA_REDIS_PASSWORD name is still accepted as a fallback for older shells.
  */
+const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const ROOT = process.cwd();
-const COMPOSE = path.join(
-  ROOT,
-  'apps/backend-template/docker-compose-redis.yml'
-);
+const COMPOSE = path.join(ROOT, 'apps/backend-template/docker-compose-redis.yml');
 const REQUIREPASS = /--requirepass\s+(\S+)/;
 
 function passwordFromCompose(composePath = COMPOSE) {
   const contents = fs.readFileSync(composePath, 'utf8');
   const match = REQUIREPASS.exec(contents);
   if (!match) {
-    throw new Error(
-      `[redis-integration] could not read --requirepass from ${composePath}`
-    );
+    throw new Error(`[redis-integration] could not read --requirepass from ${composePath}`);
   }
   return match[1];
 }
@@ -36,8 +30,7 @@ function passwordFromCompose(composePath = COMPOSE) {
 function run() {
   const env = { ...process.env, NODE_ENV: 'dev', RUN_REDIS_INTEGRATION: '1' };
   if (!env.JUMENTIX_REDIS_PASSWORD) {
-    env.JUMENTIX_REDIS_PASSWORD =
-      env.AAA_REDIS_PASSWORD || passwordFromCompose();
+    env.JUMENTIX_REDIS_PASSWORD = env.AAA_REDIS_PASSWORD || passwordFromCompose();
   }
 
   const result = spawnSync(
@@ -56,7 +49,7 @@ function run() {
 }
 
 if (isEntryPoint(module)) {
-  process.exit(run());
+  process.exitCode = run();
 }
 
 module.exports = { passwordFromCompose, run };

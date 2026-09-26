@@ -1,7 +1,7 @@
 import type { IListSort } from '@jumentix/persistence-contracts';
 
 export interface IPagingRequest {
-  page: number,
+  page: number;
   size: number;
   /** Ordered sort fields parsed from the `sort` query param (JUM-777). */
   sort?: IListSort[];

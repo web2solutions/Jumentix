@@ -24,7 +24,9 @@ defineProps<{
         type="bar"
         :data="{
           labels: breakdown.map((b) => b.label),
-          datasets: [{ label: title, data: breakdown.map((b) => b.value), backgroundColor: '#4a5cd4' }]
+          datasets: [
+            { label: title, data: breakdown.map((b) => b.value), backgroundColor: '#4a5cd4' }
+          ]
         }"
         :options="{
           responsive: true,

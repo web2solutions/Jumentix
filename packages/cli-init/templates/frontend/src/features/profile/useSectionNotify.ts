@@ -8,7 +8,7 @@ import { t } from '@/i18n';
  * own inline alert where the action happened, instead of the page-top alert
  * the user could not see from the bottom of the page.
  */
-export const useSectionNotify = () => {
+const useSectionNotify = () => {
   const errorMessage = ref('');
   const successMessage = ref('');
   let dismissTimer: ReturnType<typeof setTimeout> | undefined;
@@ -21,9 +21,8 @@ export const useSectionNotify = () => {
     successMessage.value = '';
     try {
       const outcome = await action();
-      successMessage.value = outcome === 'already-removed'
-        ? t('profile.alreadyRemoved')
-        : successText;
+      successMessage.value =
+        outcome === 'already-removed' ? t('profile.alreadyRemoved') : successText;
       if (dismissTimer) clearTimeout(dismissTimer);
       dismissTimer = setTimeout(() => {
         successMessage.value = '';
@@ -35,3 +34,5 @@ export const useSectionNotify = () => {
 
   return { errorMessage, successMessage, run };
 };
+
+export default useSectionNotify;

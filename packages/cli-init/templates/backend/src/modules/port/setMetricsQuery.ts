@@ -1,8 +1,14 @@
-import { setFilter } from '@src/modules/port/setFilter';
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
 import { ValidationError } from '@src/infra/exceptions';
-import { Security } from '@src/infra/security';
-import type { IMetricsCapabilities, IMetricsQuery, TMetricsKind } from '@jumentix/persistence-contracts';
+import Security from '@src/infra/security';
+import setFilter from '@src/modules/port/setFilter';
+
+import type {
+  IMetricsCapabilities,
+  IMetricsQuery,
+  TMetricsKind
+} from '@jumentix/persistence-contracts';
+
+import type BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
 
 const METRICS: TMetricsKind[] = ['count', 'groupBy', 'series'];
 const INTERVALS = ['day', 'week', 'month'] as const;
@@ -29,10 +35,8 @@ export const setMetricsQuery = (
     );
   }
   const field = raw.field === undefined ? undefined : Security.xss(String(raw.field));
-  const intervalRaw = raw.interval === undefined
-    ? undefined
-    : Security.xss(String(raw.interval));
-  if (intervalRaw && !INTERVALS.includes(intervalRaw as typeof INTERVALS[number])) {
+  const intervalRaw = raw.interval === undefined ? undefined : Security.xss(String(raw.interval));
+  if (intervalRaw && !INTERVALS.includes(intervalRaw as (typeof INTERVALS)[number])) {
     throw new ValidationError(
       'The parameter interval is not accepted. Accepted: day, week, month.'
     );

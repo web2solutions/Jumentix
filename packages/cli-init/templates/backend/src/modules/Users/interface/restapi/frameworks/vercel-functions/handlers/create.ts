@@ -1,37 +1,36 @@
-import type { VercelFunctionsRequest, VercelFunctionsResponse } from '@src/interface/HTTP/adapters/vercel-functions/vercel-functions';
-import { sendErrorResponse } from '@src/interface/HTTP/adapters/vercel-functions/responses/sendErrorResponse';
+import sendErrorResponse from '@src/interface/HTTP/adapters/vercel-functions/responses/sendErrorResponse';
+import UserCreateRequestEvent from '@src/modules/Users/events/UserCreateRequestEvent';
 
 import type {
-  IHandlerFactory,
-  IbaseHandler,
-  EndPointFactory
-} from '@src/interface/HTTP/ports';
+  VercelFunctionsRequest,
+  VercelFunctionsResponse
+} from '@src/interface/HTTP/adapters/vercel-functions/vercel-functions';
+import type { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
 
-import { UserCreateRequestEvent } from '@src/modules/Users/events/UserCreateRequestEvent';
-
-const create: EndPointFactory = (
-  {
-    endPointConfig,
-    controller
-  }: IHandlerFactory
-): IbaseHandler => {
-  return {
-    path: '/users',
-    method: 'post',
-    async handler(req: VercelFunctionsRequest, res: VercelFunctionsResponse) {
-      try {
-        const { result, error } = await controller!.create!(new UserCreateRequestEvent({
+const create: EndPointFactory = ({
+  endPointConfig,
+  controller
+}: IHandlerFactory): IbaseHandler => ({
+  path: '/users',
+  method: 'post',
+  async handler(req: VercelFunctionsRequest, res: VercelFunctionsResponse) {
+    try {
+      if (!controller?.create) {
+        throw new Error('The create endpoint requires a controller implementing create.');
+      }
+      const { result, error } = await controller.create(
+        new UserCreateRequestEvent({
           authorization: req.headers.authorization ?? '',
           input: req.body,
           schemaOAS: endPointConfig
-        }));
-        if (error) throw error;
-        return res.status(201).json(result);
-      } catch (error: any) {
-        return sendErrorResponse(error, res);
-      }
+        })
+      );
+      if (error) throw error;
+      return res.status(201).json(result);
+    } catch (error: any) {
+      return sendErrorResponse(error, res);
     }
-  };
-};
+  }
+});
 
 export default create;

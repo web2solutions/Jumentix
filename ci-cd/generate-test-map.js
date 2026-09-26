@@ -588,7 +588,14 @@ function buildManifest(root = process.cwd()) {
         'jest.config.js',
         'sonar-project.properties',
         'package.json',
-        'bunfig.toml'
+        'bunfig.toml',
+        // The cli-init template tree is a generated mirror of the app seeds
+        // (cli:build-templates) guarded by template-freshness.test.ts, a
+        // tooling suite. A templates-only regeneration mapped to no layer and
+        // the gate refused it as unsupported-change-set — the same false-red
+        // class JUM-622/JUM-680 fixed for the browser harness and the website.
+        'packages/cli-init/templates/**',
+        'packages/cli-init/templates.manifest.json'
       ],
       runner: 'bun',
       tier: 'gate',

@@ -42,7 +42,9 @@ onMounted(async () => {
   try {
     const auth = useAuthStore();
     const capabilities = listCapabilities(quick.optionsOperationId);
-    const response = await getSharedApiClient().request<{ result?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>>({
+    const response = await getSharedApiClient().request<
+      { result?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>
+    >({
       operationId: quick.optionsOperationId,
       query: capabilities ? { page: 1, size: capabilities.maxSize } : undefined,
       headers: { Authorization: auth.token }
@@ -60,11 +62,11 @@ onMounted(async () => {
 const selectedCount = computed(() => props.crud.selected.value.size);
 const bulkEnabled = computed(() => selectedCount.value > 0);
 const activeFilterCount = computed(() => Object.keys(props.crud.filters).length);
-const counter = computed(() => (
+const counter = computed(() =>
   props.crud.serverMode
     ? t('crud.recordsOf', { count: props.crud.rows.value.length, total: props.crud.total.value })
     : t('crud.records', { count: props.crud.filteredRows.value.length })
-));
+);
 </script>
 
 <template>
@@ -87,7 +89,12 @@ const counter = computed(() => (
       :aria-label="crud.config.quickFilter.field"
       :model-value="String(crud.filters[crud.config.quickFilter.field] ?? '')"
       :options="[
-        { label: crud.config.quickFilter.allLabel ? localized(crud.config.quickFilter.allLabel) : t('app.all'), value: '' },
+        {
+          label: crud.config.quickFilter.allLabel
+            ? localized(crud.config.quickFilter.allLabel)
+            : t('app.all'),
+          value: ''
+        },
         ...quickOptions
       ]"
       @update:model-value="crud.setFilter(crud.config.quickFilter!.field, String($event))"
@@ -101,7 +108,8 @@ const counter = computed(() => (
       aria-label="toggle column filters"
       @click="emit('update:filtersOpen', !filtersOpen)"
     >
-      <CIcon icon="cil-filter" size="sm" /> {{ t('crud.filters') }}{{ activeFilterCount ? ` (${activeFilterCount})` : '' }}
+      <CIcon icon="cil-filter" size="sm" /> {{ t('crud.filters')
+      }}{{ activeFilterCount ? ` (${activeFilterCount})` : '' }}
     </CButton>
 
     <CButton
@@ -123,7 +131,8 @@ const counter = computed(() => (
       size="sm"
       @click="crud.exportJson"
     >
-      <CIcon icon="cil-cloud-download" size="sm" /> {{ crud.serverMode ? t('crud.exportPage') : t('crud.exportJson') }}
+      <CIcon icon="cil-cloud-download" size="sm" />
+      {{ crud.serverMode ? t('crud.exportPage') : t('crud.exportJson') }}
     </CButton>
 
     <CDropdown variant="btn-group">

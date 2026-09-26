@@ -86,7 +86,10 @@ const parseValidationValue = (rawValue: string): unknown => {
     return numeric;
   }
 
-  if ((value.startsWith('[') && value.endsWith(']')) || (value.startsWith('{') && value.endsWith('}'))) {
+  if (
+    (value.startsWith('[') && value.endsWith(']')) ||
+    (value.startsWith('{') && value.endsWith('}'))
+  ) {
     try {
       return JSON.parse(value);
     } catch {
@@ -127,7 +130,7 @@ const resolveSchemaNode = (
   spec: Record<string, any>,
   schema: Record<string, any>
 ): Record<string, any> => {
-  if (schema && schema.$ref && typeof schema.$ref === 'string') {
+  if (schema?.$ref && typeof schema.$ref === 'string') {
     const resolved = resolveRef(spec, schema.$ref);
     if (!resolved) {
       throw new Error(`OpenAPI schema reference "${schema.$ref}" could not be resolved.`);
@@ -139,7 +142,8 @@ const resolveSchemaNode = (
 
 const isDateString = (value: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(value);
 const isDateTimeString = (value: string): boolean => !Number.isNaN(Date.parse(value));
-const isUuidString = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+const isUuidString = (value: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const isEmailString = (value: string): boolean => /^[^\s@]+@[^\s@.]+\.[^\s@]+$/.test(value);
 const isUriString = (value: string): boolean => {
   try {
@@ -150,7 +154,8 @@ const isUriString = (value: string): boolean => {
     return false;
   }
 };
-const isIpv4String = (value: string): boolean => /^(25[0-5]|2[0-4]\d|[01]?\d?\d)(\.(25[0-5]|2[0-4]\d|[01]?\d?\d)){3}$/.test(value);
+const isIpv4String = (value: string): boolean =>
+  /^(25[0-5]|2[0-4]\d|[01]?\d?\d)(\.(25[0-5]|2[0-4]\d|[01]?\d?\d)){3}$/.test(value);
 const isIpv6String = (value: string): boolean => /^[0-9a-f:]+$/i.test(value) && value.includes(':');
 
 const throwValidationError = (path: string, message: string): never => {
@@ -165,12 +170,17 @@ const throwValidationError = (path: string, message: string): never => {
 const MAX_REGEX_PATTERN_LENGTH = 500;
 
 const isDecimalDigitChar = (ch: string): boolean => ch >= '0' && ch <= '9';
-const isHexDigitChar = (ch: string): boolean => (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
+const isHexDigitChar = (ch: string): boolean =>
+  (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
 const isAsciiLetter = (ch: string): boolean => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 
 const REGEXP_CLASS_SET_ESCAPES = 'dDsSwW';
 const REGEXP_CONTROL_ESCAPE_CODES: Record<string, number> = {
-  f: 12, n: 10, r: 13, t: 9, v: 11
+  f: 12,
+  n: 10,
+  r: 13,
+  t: 9,
+  v: 11
 };
 
 /**
@@ -182,8 +192,8 @@ const regexEscapeLength = (value: string, start: number): number => {
   const ch = value.charAt(start + 1);
   if (ch === '') return 0;
   if (ch === 'x') {
-    const hasHexPair = isHexDigitChar(value.charAt(start + 2))
-      && isHexDigitChar(value.charAt(start + 3));
+    const hasHexPair =
+      isHexDigitChar(value.charAt(start + 2)) && isHexDigitChar(value.charAt(start + 3));
     return hasHexPair ? 4 : 2;
   }
   if (ch === 'u') {
@@ -232,19 +242,27 @@ const readRegexClassAtom = (value: string, start: number): RegexClassAtom | null
   const esc = value.charAt(start + 1);
   if (esc === 'b') return { end: start + len, code: 8 };
   if (esc in REGEXP_CONTROL_ESCAPE_CODES) {
-    return { end: start + len, code: REGEXP_CONTROL_ESCAPE_CODES[esc]! };
+    return { end: start + len, code: REGEXP_CONTROL_ESCAPE_CODES[esc] };
   }
   if (esc === '0') return { end: start + len, code: 0 };
   if (esc === 'c' && len === 3) {
-    return { end: start + len, code: value.charAt(start + 2).toUpperCase().charCodeAt(0) % 32 };
+    return {
+      end: start + len,
+      code:
+        value
+          .charAt(start + 2)
+          .toUpperCase()
+          .charCodeAt(0) % 32
+    };
   }
   if (esc === 'x' && len === 4) {
     return { end: start + len, code: Number.parseInt(value.slice(start + 2, start + 4), 16) };
   }
   if (esc === 'u' && len > 2) {
-    const hex = value.charAt(start + 2) === '{'
-      ? value.slice(start + 3, start + len - 1)
-      : value.slice(start + 2, start + len);
+    const hex =
+      value.charAt(start + 2) === '{'
+        ? value.slice(start + 3, start + len - 1)
+        : value.slice(start + 2, start + len);
     return { end: start + len, code: Number.parseInt(hex, 16) };
   }
   // Identity escapes (`\.`, `\8`, …): the escaped character itself. The escape
@@ -413,7 +431,10 @@ const validateFormat = (value: string, format: string, path: string): void => {
   }
   if (format === 'regex') {
     if (value.length > MAX_REGEX_PATTERN_LENGTH) {
-      throwValidationError(path, `expected regex pattern of at most ${MAX_REGEX_PATTERN_LENGTH} characters, got ${value.length}`);
+      throwValidationError(
+        path,
+        `expected regex pattern of at most ${MAX_REGEX_PATTERN_LENGTH} characters, got ${value.length}`
+      );
     }
     if (!isRegexPatternSyntaxValid(value)) {
       throwValidationError(path, `expected regex pattern, got "${value}"`);
@@ -442,8 +463,8 @@ const validatePrimitiveType = (
     throwValidationError(path, `expected array, got ${typeof value}`);
   }
   if (
-    expectedType === 'object'
-    && (typeof value !== 'object' || value === null || Array.isArray(value))
+    expectedType === 'object' &&
+    (typeof value !== 'object' || value === null || Array.isArray(value))
   ) {
     const receivedType = Array.isArray(value) ? 'array' : typeof value;
     throwValidationError(path, `expected object, got ${receivedType}`);
@@ -498,7 +519,7 @@ export const validateValueAgainstOpenApiSchema = (
   value: unknown,
   schemaInput: Record<string, any>,
   spec: Record<string, any>,
-  path: string = 'payload'
+  path = 'payload'
 ): void => {
   const schema = resolveSchemaNode(spec, schemaInput);
   const hasNullableFlag = schema.nullable === true;
@@ -604,21 +625,32 @@ export const validateValueAgainstOpenApiSchema = (
     }
   }
 
-  if (primaryType === 'object' && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+  if (
+    primaryType === 'object' &&
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value)
+  ) {
     const objectValue = value as Record<string, any>;
     const properties = schema.properties || {};
     const required = schema.required || [];
     const { additionalProperties } = schema;
 
-    if (typeof schema.minProperties === 'number' && Object.keys(objectValue).length < schema.minProperties) {
+    if (
+      typeof schema.minProperties === 'number' &&
+      Object.keys(objectValue).length < schema.minProperties
+    ) {
       throwValidationError(path, `minProperties is ${schema.minProperties}`);
     }
-    if (typeof schema.maxProperties === 'number' && Object.keys(objectValue).length > schema.maxProperties) {
+    if (
+      typeof schema.maxProperties === 'number' &&
+      Object.keys(objectValue).length > schema.maxProperties
+    ) {
       throwValidationError(path, `maxProperties is ${schema.maxProperties}`);
     }
 
     required.forEach((key: string) => {
-      const isMissing = !Object.prototype.hasOwnProperty.call(objectValue, key);
+      const isMissing = !Object.hasOwn(objectValue, key);
       const isNullish = objectValue[key] === undefined || objectValue[key] === null;
       if (isMissing || isNullish) {
         throwValidationError(`${path}.${key}`, 'is required');
@@ -627,7 +659,7 @@ export const validateValueAgainstOpenApiSchema = (
 
     for (const [key, raw] of Object.entries(objectValue)) {
       const nextPath = `${path}.${key}`;
-      if (Object.prototype.hasOwnProperty.call(properties, key)) {
+      if (Object.hasOwn(properties, key)) {
         validateValueAgainstOpenApiSchema(raw, properties[key], spec, nextPath);
       } else if (additionalProperties === false) {
         throwValidationError(nextPath, 'is not allowed by schema');
@@ -638,9 +670,8 @@ export const validateValueAgainstOpenApiSchema = (
   }
 };
 
-export const isOpenApiDataType = (value: string): value is OpenApiDataType => {
-  return OPEN_API_31_ALLOWED_TYPES.includes(value as OpenApiDataType);
-};
+export const isOpenApiDataType = (value: string): value is OpenApiDataType =>
+  OPEN_API_31_ALLOWED_TYPES.includes(value as OpenApiDataType);
 
 export const throwIfFieldDefinitionIsNotOpenApi31Compliant = (
   field: IOpenApiFieldDefinitionLike
@@ -658,12 +689,13 @@ export const throwIfFieldDefinitionIsNotOpenApi31Compliant = (
   }
 
   const allowedFormats = OPEN_API_31_FORMATS_BY_TYPE[field.type];
-  const normalizedFormat = field.format && field.format.trim() !== '' ? field.format.trim() : 'none';
+  const normalizedFormat =
+    field.format && field.format.trim() !== '' ? field.format.trim() : 'none';
   if (!allowedFormats.includes(normalizedFormat)) {
     throw new Error(`OpenAPI 3.1 invalid format "${field.format}" for type "${field.type}".`);
   }
 
-  for (const entry of field.validations || []) {
+  for (const entry of field.validations ?? []) {
     const { key } = splitValidation(entry);
     if (!OPEN_API_31_VALIDATIONS_BY_TYPE[field.type].includes(key)) {
       throw new Error(`OpenAPI 3.1 invalid validation "${key}" for type "${field.type}".`);
@@ -691,9 +723,10 @@ export const mapDataEntityToOpenApiSchema = (
 
   for (const field of entity.fields) {
     const type = field.type as OpenApiDataType;
-    const format = field.format && field.format.trim() !== '' && field.format !== 'none'
-      ? field.format.trim()
-      : undefined;
+    const format =
+      field.format && field.format.trim() !== '' && field.format !== 'none'
+        ? field.format.trim()
+        : undefined;
 
     if (field.required) {
       required.push(field.name);
@@ -704,7 +737,7 @@ export const mapDataEntityToOpenApiSchema = (
       schema.format = format;
     }
 
-    for (const entry of field.validations || []) {
+    for (const entry of field.validations ?? []) {
       const { key, value } = splitValidation(entry);
       if (key === 'enum') {
         schema.enum = normalizeEnumValues(parseValidationValue(value));

@@ -1,6 +1,7 @@
-// eslint-disable-next-line no-shadow
-export enum EAddressType {
+enum EAddressType {
   work = 'work',
   home = 'home',
   vacation = 'vacation'
 }
+
+export default EAddressType;

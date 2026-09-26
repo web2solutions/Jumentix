@@ -1,1 +1,3 @@
-export { OracleRepository } from '@jumentix/external-db-repositories';
+import { OracleRepository } from '@jumentix/external-db-repositories';
+
+export default OracleRepository;

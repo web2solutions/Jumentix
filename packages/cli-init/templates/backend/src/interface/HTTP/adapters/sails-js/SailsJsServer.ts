@@ -1,19 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable class-methods-use-this */
-import fs from 'fs';
-import path from 'path';
-import { createUuid } from '@src/modules/port/UUID';
-import { _HTTP_PORT_ } from '@src/config/constants';
+import fs from 'node:fs';
+import path from 'node:path';
+
+import { HTTP_PORT } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
-import type {
-  IHTTPRequest,
-  IHTTPResponse,
-  IbaseHandler
-} from '@src/interface/HTTP/ports';
-import {
-  HTTPBaseServer
-} from '@src/interface/HTTP/ports';
+import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+import { createUuid } from '@src/modules/port/UUID';
+
+import type { IbaseHandler, IHTTPRequest, IHTTPResponse } from '@src/interface/HTTP/ports';
 
 export type SailsJsRequest = IHTTPRequest;
 export type SailsJsResponse = {
@@ -106,7 +100,7 @@ class SailsJsServer extends HTTPBaseServer<any> {
    * answers 500. Same cause as the LoopBack adapter, same remedy: write the
    * status, the content type and the body directly.
    */
-  // eslint-disable-next-line class-methods-use-this
+
   private createResponseAdapter(res: any): any {
     let statusCode = 200;
 
@@ -155,9 +149,8 @@ class SailsJsServer extends HTTPBaseServer<any> {
   }
 
   /** The port is a parameter so a suite can bind an ephemeral one (JUM-704). */
-  public async start(port: number = _HTTP_PORT_): Promise<void> {
+  public async start(port: number = HTTP_PORT): Promise<void> {
     this.registerStaticDocsRoutes();
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     const { Sails } = require('sails');
     this.sails = new Sails();
 
@@ -195,9 +188,7 @@ class SailsJsServer extends HTTPBaseServer<any> {
   }
 
   public static compile(): HTTPBaseServer<any> {
-    if (!sailsJsServer) {
-      sailsJsServer = new SailsJsServer();
-    }
+    sailsJsServer ??= new SailsJsServer();
     return sailsJsServer;
   }
 }

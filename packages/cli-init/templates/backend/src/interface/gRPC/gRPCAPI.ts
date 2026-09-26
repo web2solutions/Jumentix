@@ -1,27 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { loadPackageDefinition, Server, ServerCredentials } from '@grpc/grpc-js';
+import { loadSync } from '@grpc/proto-loader';
 
-import * as grpc from '@grpc/grpc-js';
-import * as protoLoader from '@grpc/proto-loader';
+import { HTTP_PORT } from '@src/config/constants';
+import { RealtimeAPIBase } from '@src/interface/Async/RealtimeAPIBase';
+import { resolveGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';
 
-import { _HTTP_PORT_ } from '@src/config/constants';
+import type { sendUnaryData, ServerDuplexStream, ServerUnaryCall } from '@grpc/grpc-js';
+
 import type {
   IAsyncOperationRequest,
   IAsyncOperationResponse,
   IRealtimeAPIFactory
 } from '@src/interface/Async/RealtimeAPIBase';
-import {
-  RealtimeAPIBase
-} from '@src/interface/Async/RealtimeAPIBase';
-import { resolveGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';
 
 /**
  * Unwrap a CommonJS interop namespace.
  *
- * `@grpc/grpc-js` and `@grpc/proto-loader` are CommonJS. Depending on how the
- * consumer's bundler or runtime performs interop, `import * as x` yields either
- * the module's exports directly or a namespace whose `default` holds them. Both
- * shapes appear in practice across the runtimes this template supports, so the
- * call sites have to cope with either.
+ * Depending on how the consumer's bundler or runtime performs interop,
+ * `import * as x` over a CommonJS module yields either the module's exports
+ * directly or a namespace whose `default` holds them. Both shapes appear in
+ * practice across the runtimes this template supports.
  *
  * Exported so the fallback can be asserted directly. It was previously reached
  * by assigning `undefined` over the live module namespace, which Bun rejects —
@@ -29,7 +27,7 @@ import { resolveGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';
  * (JUM-583).
  */
 export function interopDefault<T>(moduleNamespace: T): T {
-  return ((moduleNamespace as { default?: T }).default ?? moduleNamespace) as T;
+  return (moduleNamespace as { default?: T }).default ?? moduleNamespace;
 }
 
 export interface IGrpcAPIFactory extends IRealtimeAPIFactory {
@@ -69,7 +67,7 @@ export class GrpcAPI extends RealtimeAPIBase {
 
   private readonly protoFilePath: string;
 
-  private server?: grpc.Server;
+  private server?: Server;
 
   constructor(config: IGrpcAPIFactory) {
     super({
@@ -78,7 +76,7 @@ export class GrpcAPI extends RealtimeAPIBase {
       frameworkName: 'grpc'
     });
     this.host = config.host || '0.0.0.0';
-    this.port = config.port || Number(process.env.JUMENTIX_GRPC_PORT || (_HTTP_PORT_ + 2));
+    this.port = config.port || Number(process.env.JUMENTIX_GRPC_PORT || HTTP_PORT + 2);
     this.protoFilePath = resolveGrpcProtoPath(config.protoFilePath);
   }
 
@@ -125,15 +123,13 @@ export class GrpcAPI extends RealtimeAPIBase {
   }
 
   private loadProtoService(): any {
-    const protoLoaderLib: any = interopDefault(protoLoader);
-    const grpcLib: any = interopDefault(grpc);
-    const packageDefinition = protoLoaderLib.loadSync(this.protoFilePath, {
+    const packageDefinition = loadSync(this.protoFilePath, {
       longs: String,
       enums: String,
       defaults: true,
       oneofs: true
     });
-    const grpcObject = grpcLib.loadPackageDefinition(packageDefinition) as any;
+    const grpcObject: any = loadPackageDefinition(packageDefinition);
     return grpcObject.realtime;
   }
 
@@ -145,26 +141,34 @@ export class GrpcAPI extends RealtimeAPIBase {
     await this.databaseClient.connect();
 
     const realtimePackage = this.loadProtoService();
-    const grpcLib: any = interopDefault(grpc);
-    this.server = new grpcLib.Server();
-    this.server!.addService(realtimePackage.AsyncApiGateway.service, {
-      request: async (
-        call: grpc.ServerUnaryCall<IGrpcAsyncApiRequest, IGrpcAsyncApiResponse>,
-        callback: grpc.sendUnaryData<IGrpcAsyncApiResponse>
+    const server = new Server();
+    this.server = server;
+    server.addService(realtimePackage.AsyncApiGateway.service, {
+      request: (
+        call: ServerUnaryCall<IGrpcAsyncApiRequest, IGrpcAsyncApiResponse>,
+        callback: sendUnaryData<IGrpcAsyncApiResponse>
       ) => {
-        const response = await this.executeOperation(
-          GrpcAPI.toDomainRequest(call.request)
-        );
-        callback(null, GrpcAPI.toGrpcResponse(response));
+        // Detached by contract: the gRPC callback settles the call; a
+        // rejection surfaces as an unhandled rejection, as the async form did.
+        this.executeOperation(GrpcAPI.toDomainRequest(call.request))
+          .then((response) => {
+            callback(null, GrpcAPI.toGrpcResponse(response));
+          })
+          .catch((error: unknown) => {
+            throw error;
+          });
       },
-      exchange: (
-        stream: grpc.ServerDuplexStream<IGrpcAsyncApiRequest, IGrpcAsyncApiResponse>
-      ) => {
-        stream.on('data', async (request: IGrpcAsyncApiRequest) => {
-          const response = await this.executeOperation(
-            GrpcAPI.toDomainRequest(request)
-          );
-          stream.write(GrpcAPI.toGrpcResponse(response));
+      exchange: (stream: ServerDuplexStream<IGrpcAsyncApiRequest, IGrpcAsyncApiResponse>) => {
+        stream.on('data', (request: IGrpcAsyncApiRequest) => {
+          // Detached by contract: each datum is answered with a stream write;
+          // a rejection surfaces as an unhandled rejection, as before.
+          this.executeOperation(GrpcAPI.toDomainRequest(request))
+            .then((response) => {
+              stream.write(GrpcAPI.toGrpcResponse(response));
+            })
+            .catch((error: unknown) => {
+              throw error;
+            });
         });
         stream.on('end', () => {
           stream.end();
@@ -173,18 +177,14 @@ export class GrpcAPI extends RealtimeAPIBase {
     });
 
     await new Promise<void>((resolve, reject) => {
-      this.server!.bindAsync(
-        `${this.host}:${this.port}`,
-        grpcLib.ServerCredentials.createInsecure(),
-        (error) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-          this.server!.start();
-          resolve();
+      server.bindAsync(`${this.host}:${this.port}`, ServerCredentials.createInsecure(), (error) => {
+        if (error) {
+          reject(error);
+          return;
         }
-      );
+        server.start();
+        resolve();
+      });
     });
 
     this.started = true;
@@ -193,9 +193,10 @@ export class GrpcAPI extends RealtimeAPIBase {
   public async stop(): Promise<void> {
     if (!this.started) return;
 
-    if (this.server) {
+    const { server } = this;
+    if (server) {
       await new Promise<void>((resolve) => {
-        this.server!.tryShutdown(() => resolve());
+        server.tryShutdown(() => resolve());
       });
       this.server = undefined;
     }

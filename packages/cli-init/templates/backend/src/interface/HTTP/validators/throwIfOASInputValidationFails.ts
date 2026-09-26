@@ -1,9 +1,11 @@
-import { OpenAPIV3 } from 'openapi-types';
 import { ValidationError } from '@src/infra/exceptions';
 import { validateValueAgainstOpenApiSchema } from '@src/shared/openapi/OpenApi31DataEntity';
+
+import checkRequiredProperties from './checkRequiredProperties';
 import getSchema from './getSchema';
 import isPropertiesMatching from './isPropertiesMatching';
-import checkRequiredProperties from './checkRequiredProperties';
+
+import type { OpenAPIV3 } from 'openapi-types';
 
 const SERVER_MANAGED_INPUT_PROPERTIES = new Set(['createdAt', 'updatedAt', 'deletedAt']);
 
@@ -19,14 +21,14 @@ const toPublicValidationMessage = (
   }
 
   const fieldValue = (payload as Record<string, unknown>)[fieldName];
-  if (fieldValue === '' && (
-    message.includes('minLength')
-    || message.includes('value must be one of')
-  )) {
+  if (
+    fieldValue === '' &&
+    (message.includes('minLength') || message.includes('value must be one of'))
+  ) {
     if (
-      fieldName === 'password'
-      && message.includes('minLength')
-      && operationId !== 'updatePassword'
+      fieldName === 'password' &&
+      message.includes('minLength') &&
+      operationId !== 'updatePassword'
     ) {
       const minimum = message.match(/minLength is (\d+)/)?.[1];
       if (minimum) {
@@ -66,27 +68,20 @@ export default function throwIfOASInputValidationFails(
   const schema = getSchema(spec, content);
   if (schema) {
     const objectPayload = payload as Record<string, unknown>;
-    if (
-      typeof objectPayload === 'object'
-      && !Array.isArray(objectPayload)
-      && schema.properties
-    ) {
+    if (typeof objectPayload === 'object' && !Array.isArray(objectPayload) && schema.properties) {
       const contractInput = Object.fromEntries(
-        Object.entries(objectPayload)
-          .filter(([name]) => !SERVER_MANAGED_INPUT_PROPERTIES.has(name))
+        Object.entries(objectPayload).filter(([name]) => !SERVER_MANAGED_INPUT_PROPERTIES.has(name))
       );
       isPropertiesMatching(contractInput, schema.properties);
       checkRequiredProperties(objectPayload, schema.required || []);
     }
 
     try {
-      validateValueAgainstOpenApiSchema(payload, schema, spec as unknown as Record<string, any>);
+      validateValueAgainstOpenApiSchema(payload, schema, spec);
     } catch (error) {
-      throw new ValidationError(toPublicValidationMessage(
-        (error as Error).message,
-        payload,
-        endPointConfig.operationId
-      ));
+      throw new ValidationError(
+        toPublicValidationMessage((error as Error).message, payload, endPointConfig.operationId)
+      );
     }
   }
 

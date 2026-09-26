@@ -1,9 +1,10 @@
-import { usersDomainWidgets } from '@/features/dashboard/usersDomainWidgets';
-import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
-import { usersCrudConfig } from '@/features/users/usersCrudConfig';
+import usersDomainWidgets from '@/features/dashboard/usersDomainWidgets';
+import organizationsCrudConfig from '@/features/organizations/organizationsCrudConfig';
+import usersCrudConfig from '@/features/users/usersCrudConfig';
+
 import type { ModuleManifest } from '@/modules/manifest';
 
-export const usersModule: ModuleManifest = {
+const usersModule: ModuleManifest = {
   id: 'users',
   title: { en: 'Users', 'pt-BR': 'Usuários' },
   icon: 'cil-people',
@@ -26,3 +27,5 @@ export const usersModule: ModuleManifest = {
     widgets: usersDomainWidgets()
   }
 };
+
+export default usersModule;

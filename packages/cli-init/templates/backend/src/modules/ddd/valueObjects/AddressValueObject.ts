@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
+import EAddressType from '@src/modules/ddd/valueObjects/EAddressType';
 import { UUID } from '@src/modules/port';
 import { canNotBeEmpty } from '@src/shared/validators';
-import { EAddressType } from '@src/modules/ddd/valueObjects/EAddressType';
 
 export interface AddressValueObject {
   id: string;
@@ -20,12 +20,7 @@ export class AddressValueObject {
   public isPrimary: boolean;
 
   constructor(payload: any) {
-    const {
-      id,
-      email,
-      type,
-      isPrimary
-    } = payload;
+    const { id, email, type, isPrimary } = payload;
     canNotBeEmpty('email', email);
     canNotBeEmpty('type', type);
     if (!Object.values(EAddressType).includes(type)) {

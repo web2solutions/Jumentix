@@ -1,1 +1,3 @@
-export { MongoMongooseRepository } from '@jumentix/external-db-repositories';
+import { MongoMongooseRepository } from '@jumentix/external-db-repositories';
+
+export default MongoMongooseRepository;

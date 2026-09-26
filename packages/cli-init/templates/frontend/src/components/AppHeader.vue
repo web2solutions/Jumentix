@@ -1,54 +1,57 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useColorModes } from '@coreui/vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useColorModes } from '@coreui/vue';
 
-import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
-import { useI18n } from '@/i18n'
-import { listToolbarWidgets } from '@/shell/toolbarWidgets'
-import { useShellViewport } from '@/shell/breakpoints'
-import { useSidebarStore } from '@/stores/sidebar'
-import { useTaskStore } from '@/stores/tasks'
-import { usePermissions } from '@/contracts/usePermissions'
+import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
+import { useI18n } from '@/i18n';
+import { listToolbarWidgets } from '@/shell/toolbarWidgets';
+import { useShellViewport } from '@/shell/breakpoints';
+import useSidebarStore from '@/stores/sidebar';
+import { useTaskStore } from '@/stores/tasks';
+import usePermissions from '@/contracts/usePermissions';
 
-const headerClassNames = ref('mb-4 p-0')
-const { colorMode, setColorMode } = useColorModes('jumentix-frontend-theme')
-const sidebar = useSidebarStore()
-const { t } = useI18n()
-const { roles } = usePermissions()
-const tasks = useTaskStore()
-const { widgetsOverflow } = useShellViewport()
+const headerClassNames = ref('mb-4 p-0');
+const { colorMode, setColorMode } = useColorModes('jumentix-frontend-theme');
+const sidebar = useSidebarStore();
+const { t } = useI18n();
+const { roles } = usePermissions();
+const tasks = useTaskStore();
+const { widgetsOverflow } = useShellViewport();
 
-const rightWidgets = computed(() => listToolbarWidgets(roles.value, tasks.active, 'right'))
-const leftWidgets = computed(() => listToolbarWidgets(roles.value, tasks.active, 'left'))
-const overflowWidgets = computed(() => (
-  widgetsOverflow.value
-    ? rightWidgets.value.filter((widget) => widget.id !== 'account')
-    : []
-))
-const pinnedRight = computed(() => (
+const rightWidgets = computed(() => listToolbarWidgets(roles.value, tasks.active, 'right'));
+const leftWidgets = computed(() => listToolbarWidgets(roles.value, tasks.active, 'left'));
+const overflowWidgets = computed(() =>
+  widgetsOverflow.value ? rightWidgets.value.filter((widget) => widget.id !== 'account') : []
+);
+const pinnedRight = computed(() =>
   widgetsOverflow.value
     ? rightWidgets.value.filter((widget) => widget.id === 'account')
     : rightWidgets.value
-))
+);
 
 const updateHeaderShadow = () => {
   headerClassNames.value =
-    document.documentElement.scrollTop > 0 ? 'mb-4 p-0 shadow-sm' : 'mb-4 p-0'
-}
+    document.documentElement.scrollTop > 0 ? 'mb-4 p-0 shadow-sm' : 'mb-4 p-0';
+};
 
 onMounted(() => {
-  document.addEventListener('scroll', updateHeaderShadow)
-})
+  document.addEventListener('scroll', updateHeaderShadow);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('scroll', updateHeaderShadow)
-})
+  document.removeEventListener('scroll', updateHeaderShadow);
+});
 </script>
 
 <template>
   <CHeader position="sticky" :class="headerClassNames" data-shell-header>
     <CContainer class="border-bottom px-4" fluid>
-      <CHeaderToggler :aria-label="t('nav.toggleNavigation')" class="app-taskbar__touch" @click="sidebar.toggleVisible()" style="margin-inline-start: -14px">
+      <CHeaderToggler
+        :aria-label="t('nav.toggleNavigation')"
+        class="app-taskbar__touch"
+        style="margin-inline-start: -14px"
+        @click="sidebar.toggleVisible()"
+      >
         <CIcon icon="cil-menu" size="lg" />
       </CHeaderToggler>
       <CHeaderNav class="d-none d-md-flex">

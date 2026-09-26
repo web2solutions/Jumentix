@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink } from 'vue-router';
 
-import AppSidebarNav from '@/components/AppSidebarNav.vue'
-import { useSidebarStore } from '@/stores/sidebar'
+import AppSidebarNav from '@/components/AppSidebarNav.vue';
+import useSidebarStore from '@/stores/sidebar';
 
-const sidebar = useSidebarStore()
+const sidebar = useSidebarStore();
 
 const handleVisibleChange = (value: boolean) => {
-  sidebar.toggleVisible(value)
-}
+  sidebar.toggleVisible(value);
+};
 </script>
 
 <template>
   <CSidebar
     class="border-end"
-    colorScheme="dark"
+    color-scheme="dark"
     position="fixed"
     :unfoldable="sidebar.unfoldable"
     :visible="sidebar.visible"
     @visible-change="handleVisibleChange"
   >
     <CSidebarHeader class="border-bottom">
-      <RouterLink custom to="/" v-slot="{ href, navigate }">
+      <RouterLink v-slot="{ href, navigate }" custom to="/">
         <CSidebarBrand v-bind="$attrs" as="a" :href="href" @click="navigate">
           <span class="sidebar-brand-full fw-bold fs-5">Jumentix</span>
           <span class="sidebar-brand-narrow fw-bold">J</span>

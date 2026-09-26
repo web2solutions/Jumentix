@@ -1,4 +1,5 @@
-import type { IServiceResponse, IPagingRequest } from '@src/modules/port';
+import type { IPagingRequest, IServiceResponse } from '@src/modules/port';
+import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
 import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
@@ -8,10 +9,9 @@ import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/Requ
 import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
 import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { OrganizationService } from '@src/modules/Users/service/OrganizationService';
-import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
+import type OrganizationService from '@src/modules/Users/service/OrganizationService';
 
-export class OrganizationUseCases implements IOrganizationUseCases {
+class OrganizationUseCases implements IOrganizationUseCases {
   private readonly organizationService: OrganizationService;
 
   constructor(organizationService: OrganizationService) {
@@ -89,10 +89,7 @@ export class OrganizationUseCases implements IOrganizationUseCases {
     return this.organizationService.updatePhone(id, phoneId, data);
   }
 
-  public async deletePhone(
-    id: string,
-    phoneId: string
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async deletePhone(id: string, phoneId: string): Promise<IServiceResponse<IOrganization>> {
     return this.organizationService.deletePhone(id, phoneId);
   }
 
@@ -111,10 +108,7 @@ export class OrganizationUseCases implements IOrganizationUseCases {
     return this.organizationService.updateEmail(id, emailId, data);
   }
 
-  public async deleteEmail(
-    id: string,
-    emailId: string
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async deleteEmail(id: string, emailId: string): Promise<IServiceResponse<IOrganization>> {
     return this.organizationService.deleteEmail(id, emailId);
   }
 
@@ -122,3 +116,5 @@ export class OrganizationUseCases implements IOrganizationUseCases {
     return new OrganizationUseCases(organizationService);
   }
 }
+
+export default OrganizationUseCases;

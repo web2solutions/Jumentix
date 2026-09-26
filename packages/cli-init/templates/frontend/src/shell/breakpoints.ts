@@ -1,6 +1,4 @@
-import {
-  computed, onMounted, onUnmounted, ref
-} from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 /** CoreUI/Bootstrap breakpoints used by the multitask shell (JUM-799). */
 export const SHELL_BREAKPOINTS = {
@@ -39,9 +37,9 @@ export const useShellViewport = () => {
     width,
     viewport,
     isPhone: computed(() => width.value < SHELL_BREAKPOINTS.md),
-    isTablet: computed(() => (
-      width.value >= SHELL_BREAKPOINTS.md && width.value < SHELL_BREAKPOINTS.lg
-    )),
+    isTablet: computed(
+      () => width.value >= SHELL_BREAKPOINTS.md && width.value < SHELL_BREAKPOINTS.lg
+    ),
     isDesktop: computed(() => width.value >= SHELL_BREAKPOINTS.lg),
     compactTaskbar: computed(() => width.value < SHELL_BREAKPOINTS.md),
     bottomSheetSwitcher: computed(() => width.value < SHELL_BREAKPOINTS.sm),

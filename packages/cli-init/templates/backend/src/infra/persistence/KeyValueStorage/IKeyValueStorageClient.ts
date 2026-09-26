@@ -1,1 +1,3 @@
-export type { IKeyValueStorageClient } from '@jumentix/key-value-storage';
+import type { IKeyValueStorageClient } from '@jumentix/key-value-storage';
+
+export default IKeyValueStorageClient;

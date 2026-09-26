@@ -1,7 +1,7 @@
-import {
+import { EAddressType, EEmailType } from '@src/modules/ddd/valueObjects';
+
+import type {
   AddressValueObject,
-  EAddressType,
-  EEmailType,
   EmailValueObject,
   PhoneValueObject
 } from '@src/modules/ddd/valueObjects';
@@ -15,22 +15,28 @@ const organizations: IOrganization[] = [
     createdAt: now,
     updatedAt: now,
     name: 'ACME',
-    address: [{
-      email: 'hq@acme.dev',
-      type: EAddressType.work,
-      isPrimary: true
-    } as AddressValueObject],
-    email: [{
-      email: 'contact@acme.dev',
-      type: EEmailType.work,
-      isPrimary: true
-    } as EmailValueObject],
-    phone: [{
-      number: '99805-4033',
-      localCode: '27',
-      countryCode: '+55',
-      isPrimary: true
-    } as PhoneValueObject],
+    address: [
+      {
+        email: 'hq@acme.dev',
+        type: EAddressType.work,
+        isPrimary: true
+      } as AddressValueObject
+    ],
+    email: [
+      {
+        email: 'contact@acme.dev',
+        type: EEmailType.work,
+        isPrimary: true
+      } as EmailValueObject
+    ],
+    phone: [
+      {
+        number: '99805-4033',
+        localCode: '27',
+        countryCode: '+55',
+        isPrimary: true
+      } as PhoneValueObject
+    ],
     users: []
   },
   {
@@ -38,22 +44,28 @@ const organizations: IOrganization[] = [
     createdAt: now,
     updatedAt: now,
     name: 'Umbrella',
-    address: [{
-      email: 'ops@umbrella.dev',
-      type: EAddressType.work,
-      isPrimary: true
-    } as AddressValueObject],
-    email: [{
-      email: 'support@umbrella.dev',
-      type: EEmailType.work,
-      isPrimary: true
-    } as EmailValueObject],
-    phone: [{
-      number: '98883-2732',
-      localCode: '27',
-      countryCode: '+55',
-      isPrimary: true
-    } as PhoneValueObject],
+    address: [
+      {
+        email: 'ops@umbrella.dev',
+        type: EAddressType.work,
+        isPrimary: true
+      } as AddressValueObject
+    ],
+    email: [
+      {
+        email: 'support@umbrella.dev',
+        type: EEmailType.work,
+        isPrimary: true
+      } as EmailValueObject
+    ],
+    phone: [
+      {
+        number: '98883-2732',
+        localCode: '27',
+        countryCode: '+55',
+        isPrimary: true
+      } as PhoneValueObject
+    ],
     users: []
   },
   {
@@ -63,22 +75,28 @@ const organizations: IOrganization[] = [
     createdAt: now,
     updatedAt: now,
     name: 'XpertMinds',
-    address: [{
-      email: 'hq@xpertminds.dev',
-      type: EAddressType.work,
-      isPrimary: true
-    } as AddressValueObject],
-    email: [{
-      email: 'contact@xpertminds.dev',
-      type: EEmailType.work,
-      isPrimary: true
-    } as EmailValueObject],
-    phone: [{
-      number: '99805-4033',
-      localCode: '27',
-      countryCode: '+55',
-      isPrimary: true
-    } as PhoneValueObject],
+    address: [
+      {
+        email: 'hq@xpertminds.dev',
+        type: EAddressType.work,
+        isPrimary: true
+      } as AddressValueObject
+    ],
+    email: [
+      {
+        email: 'contact@xpertminds.dev',
+        type: EEmailType.work,
+        isPrimary: true
+      } as EmailValueObject
+    ],
+    phone: [
+      {
+        number: '99805-4033',
+        localCode: '27',
+        countryCode: '+55',
+        isPrimary: true
+      } as PhoneValueObject
+    ],
     users: []
   }
 ];
