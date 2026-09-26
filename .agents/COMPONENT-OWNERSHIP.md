@@ -18,7 +18,7 @@ because nobody owned the contract that a re-homing broke.
 
 ## Entries
 
-| Component | Owner agent | Contract requirement | Registered |
-|---|---|---|---|
-| `apps/service-management` | `kimi-code-primary-001` | `126` | 2026-08-05 |
-| `apps/service-management-api` | `kimi-code-primary-001` | `126` | 2026-09-07 |
+| Component                     | Owner agent             | Contract requirement | Registered |
+| ----------------------------- | ----------------------- | -------------------- | ---------- |
+| `apps/service-management`     | `kimi-code-primary-001` | `126`                | 2026-08-05 |
+| `apps/service-management-api` | `kimi-code-primary-001` | `126`                | 2026-09-07 |

@@ -1,6 +1,7 @@
 # Requirement 104 - Canonical Application Integration Governance
 
 ## Status
+
 Active and mandatory.
 
 ## Requirement

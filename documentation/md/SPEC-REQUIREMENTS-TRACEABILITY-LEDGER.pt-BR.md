@@ -2,9 +2,10 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=128 unique=128 mapped=128 duplicates= -->
+<!-- requirements-inventory: files=129 unique=129 mapped=129 duplicates= -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -176,23 +177,33 @@ A partir de `2026-08-05`, este livro-razão cobre todos os IDs de requisitos exc
 5. IDs ausentes: `nenhum`
 
 ### `105` Pirâmide de testes hexagonal / gates por camada
+
 - Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.pt-BR.md`, `.agents/requirements/software/105-hexagonal-test-pyramid-layer-aware-gates.md`
 - Evidence: `test-map.json`, `ci-cd/check-test-map.js`, `ci-cd/lib/layer-resolver.js`, `ci-cd/run-task-change-tests.js`, `ci-cd/run-unit-tests.js`
 
 ### `114`–`121` Pacote operacional de agentes (JUM-595 + adições do owner em 2026-08-02)
+
 - Specs: `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md` (+ EN)
 - Requisitos: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidência: `bun run requirements:check`; paridade em `AGENTS.md` / `CLAUDE.md` / `GROK.md`; scripts Docker de smoke/integration para `118`; orquestração API-first / `gh` para `119`; visibilidade de assignment de agente no Linear para `120`; evidência de coordenação entre agentes para `121`
 
 ### `129` Bus obrigatório de progresso de agentes no Firebase RTDB
+
 - Specs: `.agents/requirements/project/129-mandatory-firebase-agent-bus.md`, `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md` (+ EN), `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.pt-BR.md` (+ EN)
 - Evidência: `packages/agent-registry/src/rtdb-client.ts`, `packages/agent-registry/src/bus-commands.ts`, `packages/agent-registry/bin/agent-registry-cli.js`, `bun run agent-bus:publish|watch|status`, testes unitários do pacote com RTDB mockado
 
 ### `126` Ownership e contratos públicos do Service Management (JUM-465)
+
 - Specs: `.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.pt-BR.md`, `.agents/COMPONENT-OWNERSHIP.md`
 - Evidência: `bun run requirements:check`; `bun run test-map:check`; smoke de integração que assegura os contratos fixados (`JUM-466`)
 
 ### `125` Declaração de agentes suportados (JUM-604)
+
 - Specs: `documentation/md/AGENT-SUPPORT-DECLARATION.pt-BR.md` (+ EN)
 - Requisitos: `.agents/requirements/project/125-agent-support-declaration.md`
 - Evidência: `.agents/supported-agents.json`; `ci-cd/check-pr-governance.js` derivando os prefixos de branch de tarefa da declaração e verificando cada arquivo de instruções declarado; `KIMI.md`; `bun run pr:governance:check`; `bun run requirements:check`
+
+### `138` Governança da configuração flat do ESLint 9 (JUM-5…JUM-21, JUM-44, JUM-866…JUM-869)
+
+- Specs: `.agents/requirements/software/138-eslint-9-flat-config-governance.md`, `documentation/md/ESLINT-AND-FORMATTING-GUIDE.pt-BR.md` (+ EN)
+- Evidência: `bun run lint` e `bun run format:check` (`--max-warnings=0`); prova de glob vazio e de encolhimento em `ci-cd/check-lint-coverage.js`; suíte de contrato do `packages/config-eslint` (`bun run --cwd packages/config-eslint test`); `bun run requirements:check`

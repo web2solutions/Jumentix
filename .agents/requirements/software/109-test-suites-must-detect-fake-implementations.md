@@ -37,8 +37,8 @@ catch fired on every start, and the field was always `null`.
 
 **The tests could not have caught this, and that is the point.** They asserted
 the HTTP contract: status codes, bodies, headers, auth behaviour. Node's `http`
-satisfies that contract. So the suite proved the *port* worked, and said nothing
-about the *adapter* — which is the only thing the adapter exists to be.
+satisfies that contract. So the suite proved the _port_ worked, and said nothing
+about the _adapter_ — which is the only thing the adapter exists to be.
 
 The same blindness applies well beyond HTTP. A cache adapter that quietly falls
 back to a `Map`, a message mediator that drops to an in-process emitter, a
@@ -76,7 +76,7 @@ A test that merely calls the endpoint and checks a 200 satisfies none of these.
 ## What this does not ask for
 
 Testing the framework itself. Fastify's correctness is Fastify's problem. The
-requirement is only that the suite can prove Fastify is *there* — one assertion
+requirement is only that the suite can prove Fastify is _there_ — one assertion
 per integration, not a parallel test suite per dependency.
 
 ## Relationship to other requirements

@@ -3,7 +3,7 @@
 - Status: Active
 - Nature: Functional (productization / CLI)
 - Source: Linear epic `[EPIC][CLI] @jumentix/cli-init v1: factory generator
-  (init/add/upgrade/doctor)` (JUM-843…856), 2026-09-19.
+(init/add/upgrade/doctor)` (JUM-843…856), 2026-09-19.
 - Supersedes: v1 clone-the-monorepo bootstrap (five service types,
   `.jumentix/service-profile.json`).
 - Relates to: `050` (distributable packages), `059` (factory matrices),
@@ -31,8 +31,8 @@ entire monorepo.
    - `add` — `add domain <name>`, `add service <name>`, `add frontend`
    - `upgrade` — template three-way merge (supports `--dry-run`)
    - `doctor` — environment and project diagnostics
-   Each command documents `--help`. Exit codes: `0` success, `1` user error
-   (names the flag/answer), `2` environment failure. No telemetry.
+     Each command documents `--help`. Exit codes: `0` success, `1` user error
+     (names the flag/answer), `2` environment failure. No telemetry.
 
 3. **Factory modes (`init --mode`).** Lean output only — never emit `.agents`,
    website, or service-management into the generated tree:
@@ -46,7 +46,7 @@ entire monorepo.
    - OpenAPI 3.1 document (file)
    - catalog URL (`https://…`)
    - Users preset (`--preset users`) when no `--from` is given
-   Sources normalize to one **GenerationPlan** before any files are written.
+     Sources normalize to one **GenerationPlan** before any files are written.
 
 5. **Template packaging and freshness gate.** Backend and frontend seeds are
    packaged inside the CLI under `packages/cli-init/templates/{backend,frontend}/`
@@ -65,8 +65,8 @@ entire monorepo.
    - root Bun workspace `package.json`, lockfile, `.gitignore`, `README.md`,
      and `docker-compose.yml` for the chosen database when a backend exists
    - merged OAS under `spec/` when a backend exists
-   Generated projects MUST pass their own `lint` / `test` / `build` and boot
-   in Docker.
+     Generated projects MUST pass their own `lint` / `test` / `build` and boot
+     in Docker.
 
 7. **Published dependencies.** Generated apps depend on published `@jumentix/*`
    packages pinned to the CLI release version. The CLI itself is publishable

@@ -41,13 +41,13 @@ correctly: `feathers()`, `new RestApplication()`, `new Sails()` then
 `sails.lift()`, `derby.createApp()`. The code is right.
 
 None of those packages is declared in any manifest or present in
-`node_modules`, so `bun run dev:sails-js` fails with *Cannot find module*. The
+`node_modules`, so `bun run dev:sails-js` fails with _Cannot find module_. The
 adapter cannot start. This is the safe half of the problem, because it announces
 itself the moment anyone tries.
 
 Typecheck passes regardless, because each uses a lazy `require` rather than a
-top-level `import` — one file even says so: *"Lazy require keeps compilation
-independent from optional framework install."* That is how an adapter that
+top-level `import` — one file even says so: _"Lazy require keeps compilation
+independent from optional framework install."_ That is how an adapter that
 cannot run reached a green typecheck and a README badge.
 
 ### Swallowed require — fails silently, and is worse
@@ -91,14 +91,14 @@ Tracked under Linear epic `JUM-570`. Each resolves by integrating properly
 read as failure — four adapters that cannot start, plus two that quietly serve on
 Node `http`, are worth less than the four that genuinely work.
 
-| Adapter | Issue | Defect | Framework |
-|---|---|---|---|
-| `adonis-js` | JUM-571 | swallowed require | `@adonisjs/http-server` |
-| `total-js` | JUM-576 | swallowed require | `total4` |
-| `feathers` | JUM-572 | undeclared dependency | `@feathersjs/feathers` |
-| `loopback` | JUM-573 | undeclared dependency | `@loopback/rest` |
-| `sails-js` | JUM-574 | undeclared dependency | `sails` |
-| `derby-js` | JUM-575 | undeclared dependency | `derby` |
+| Adapter     | Issue   | Defect                | Framework               |
+| ----------- | ------- | --------------------- | ----------------------- |
+| `adonis-js` | JUM-571 | swallowed require     | `@adonisjs/http-server` |
+| `total-js`  | JUM-576 | swallowed require     | `total4`                |
+| `feathers`  | JUM-572 | undeclared dependency | `@feathersjs/feathers`  |
+| `loopback`  | JUM-573 | undeclared dependency | `@loopback/rest`        |
+| `sails-js`  | JUM-574 | undeclared dependency | `sails`                 |
+| `derby-js`  | JUM-575 | undeclared dependency | `derby`                 |
 
 Verified compliant: `express`, `fastify`, `restify`, `cloudflare-workers`
 (Hono). Exempt as platform targets: `aws`, `vercel-functions`.

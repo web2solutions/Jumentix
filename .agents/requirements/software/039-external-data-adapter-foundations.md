@@ -1,9 +1,11 @@
 # Requirement 039 - External Data Adapter Foundations
 
 ## Context
+
 The boilerplate must provide explicit repository adapter foundations for relational and NoSQL integrations.
 
 ## Rules
+
 1. Provide repository classes/foundations for:
    - Sequelize SQL (PostgreSQL, MySQL, SQL Server, Oracle, SQLite)
    - Mongoose (MongoDB)
@@ -16,4 +18,5 @@ The boilerplate must provide explicit repository adapter foundations for relatio
 3. Provider adapters must remain behind ports/contracts.
 
 ## Implementation Notes
+
 - Initial foundations live in `apps/backend-template/src/infra/persistence/external/`.

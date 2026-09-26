@@ -1,6 +1,7 @@
 # Requirement 045 - Data Entity Controller Ownership
 
 ## Requirement
+
 Each data entity must expose its own controller, with explicit responsibility boundaries and operation contracts.
 
 ## Rules

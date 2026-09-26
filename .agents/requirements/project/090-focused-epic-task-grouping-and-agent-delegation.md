@@ -24,13 +24,13 @@ and cross-agent coordination ambiguous.
 9. A closed milestone cannot receive new or active epics. Incomplete epics must be moved to a
    new open milestone with an auditable carry-over record before the current milestone closes.
 10. Every task must declare exactly one primary nature using the canonical nature labels:
-   `feature`, `bug`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`,
-   or `chore`.
+    `feature`, `bug`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`,
+    or `chore`.
 11. Tasks must be grouped by nature inside their focused epic. Supporting tasks with a different
-   nature, such as tests or documentation for a feature, remain separate child tasks under the
-   same epic and retain their own nature.
+    nature, such as tests or documentation for a feature, remain separate child tasks under the
+    same epic and retain their own nature.
 12. A task that spans unrelated outcomes or more than one primary nature must be decomposed into
-   separate child tasks before execution.
+    separate child tasks before execution.
 13. The epic relationship must be represented by the task's Linear Project association and, when
     available, Linear parent/sub-issue metadata. A text-only epic reference is insufficient when
     structured linkage is available.
@@ -39,7 +39,7 @@ and cross-agent coordination ambiguous.
 15. Agent planning and delegation happen at epic level after the epic milestone is validated and
     before child tasks are assigned.
 16. An agent may execute a child task only when the agent is assigned or delegated to that task's
-   parent epic and is recorded as available or busy in the canonical Agent Registry.
+    parent epic and is recorded as available or busy in the canonical Agent Registry.
 17. Each child task still has one accountable executing agent, its own issue, project metadata,
     branch, commits, pull request, validation evidence, and closure record.
 18. Multiple agents may collaborate within one epic, but their child-task boundaries must not

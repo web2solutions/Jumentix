@@ -33,7 +33,7 @@
    instance coordination, driver selection) — not vendor API trivia.
 
 5. **Tiering.** Expensive full-matrix Docker stacks may remain on `tier:
-   "nightly"` or release/`main` strict gates per Requirement `105`, but they
+"nightly"` or release/`main` strict gates per Requirement `105`, but they
    still MUST use Docker and real services when they run. Moving a suite to
    nightly is not permission to replace Docker with mocks.
 

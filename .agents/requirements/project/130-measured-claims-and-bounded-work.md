@@ -11,7 +11,7 @@ real numbers were 62 tests across 52 routes. The whole justification for a task
 was built on a number nobody had run the suite to obtain.
 
 **Proxies mistaken for causes.** Six website pages returning 404 were recorded as
-404ing *because* they were marked `display: 'hidden'`. The real cause was the
+404ing _because_ they were marked `display: 'hidden'`. The real cause was the
 docs resolver rewriting single-segment paths into the `jumentix/` subtree. The
 flag happened to name the same files. A filter written against the proxy passes
 today and stops working the moment the coincidence breaks.

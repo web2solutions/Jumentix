@@ -48,6 +48,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `135` No fake tests: assert the effect, declare the assertions, never target a percentage
 - `136` Frontend knows the backend only through its OAS: spec document or generated SDKs, never backend source
 - `137` Workspace suite and tooling ownership placement: suites and component scripts live with their owner; `arch:check-ownership-placement` fails closed
+- `138` ESLint 9 flat-config governance: one shared source (`@jumentix/config-eslint`), one pinned major, Prettier as sole formatting authority, zero-warning gates with false-green proof, narrowly reasoned exceptions
 
 ## Documentation and Governance NFRs
 

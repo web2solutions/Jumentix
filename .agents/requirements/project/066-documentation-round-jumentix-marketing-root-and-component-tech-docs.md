@@ -1,6 +1,7 @@
 # Requirement 066 - Documentation Round: Marketing Root + Component Technical Docs
 
 ## Context
+
 - Jumentix monorepo requires split documentation ownership:
   - root documentation is product/marketing oriented
   - component documentation is technical and implementation oriented
@@ -8,6 +9,7 @@
 - Linear is the canonical source of truth for documentation tasks (Requirement `095`).
 
 ## Mandatory Rules
+
 1. Root `README.md` must keep badges and include product purpose, audience, value proposition, and advantages.
 2. Root `README.md` must contain index links to every major component documentation hub.
 3. Component docs must live under each component folder (`apps/*`, `packages/*`, `tooling/*` when applicable).
@@ -20,6 +22,7 @@
 5. Documentation work must be tracked as Linear issues under the documentation epic (Requirement `095`).
 
 ## Acceptance Criteria
+
 - Root README index has no broken links to component hubs and mandatory guides.
 - Component technical hubs exist and include actionable technical navigation.
 - Epic and child tasks are present in Linear with labels/priorities.
