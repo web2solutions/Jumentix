@@ -1,15 +1,19 @@
 /* global  describe, it, expect */
 import request from 'supertest';
-import { Server as Restify } from 'restify';
-import { RestifyServer } from '@src/interface/HTTP/adapters/restify/RestifyServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/restify/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+
 import users from '@seed/users';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/restify/handlers/infraHandlers';
+import RestifyServer from '@src/interface/HTTP/adapters/restify/RestifyServer';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 import {
   BasicAuthorizationHeaderUser1,
   BasicAuthorizationHeaderUser2,
@@ -17,11 +21,10 @@ import {
   BasicAuthorizationHeaderUser4,
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { UserDataRepository, UserService } from '@src/modules/Users';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+
 import { listenForSupertest } from '../../../helpers/listenForSupertest';
+
+import type { Server as Restify } from 'restify';
 
 const webServer = RestifyServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -42,11 +45,7 @@ const userService = UserService.compile({
   }
 });
 const userProvider = UserProviderLocal.compile(userService);
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 const serverType = EHTTPFrameworks.restify;
@@ -102,7 +101,8 @@ describe('restify -> get Users suite', () => {
   it('set page 1 and size 1 should return 1 item', async () => {
     expect.hasAssertions();
     const paging = {
-      page: 1, size: 1
+      page: 1,
+      size: 1
     };
     const response = await request(server)
       .get(`/api/1.0.0/users?page=${paging.page}&size=${paging.size}`)
@@ -118,7 +118,8 @@ describe('restify -> get Users suite', () => {
   it('set page 2 and size 1 should return 1 item', async () => {
     expect.hasAssertions();
     const paging = {
-      page: 2, size: 1
+      page: 2,
+      size: 1
     };
     const response = await request(server)
       .get(`/api/1.0.0/users?page=${paging.page}&size=${paging.size}`)
@@ -134,7 +135,8 @@ describe('restify -> get Users suite', () => {
   it('set page number greater than existing page total number should return 400 http status', async () => {
     expect.hasAssertions();
     const paging = {
-      page: 2, size: 10
+      page: 2,
+      size: 10
     };
     const response = await request(server)
       .get(`/api/1.0.0/users?page=${paging.page}&size=${paging.size}`)
@@ -143,7 +145,9 @@ describe('restify -> get Users suite', () => {
       .set(BasicAuthorizationHeaderUser1);
     expect(response.statusCode).toBe(400);
     // console.log(response.body);
-    expect(response.body.message).toBe('Bad Request - page number must be smaller than the number of total pages');
+    expect(response.body.message).toBe(
+      'Bad Request - page number must be smaller than the number of total pages'
+    );
     expect(response.body.page).toBeUndefined();
     expect(response.body.size).toBeUndefined();
     expect(response.body.total).toBeUndefined();
@@ -152,7 +156,8 @@ describe('restify -> get Users suite', () => {
   it('set page number as 0 should return 400 http status', async () => {
     expect.hasAssertions();
     const paging = {
-      page: 0, size: 10
+      page: 0,
+      size: 10
     };
     const response = await request(server)
       .get(`/api/1.0.0/users?page=${paging.page}&size=${paging.size}`)
@@ -163,7 +168,9 @@ describe('restify -> get Users suite', () => {
     // console.log(response.body);
     // JUM-777: `page` is a query parameter with `minimum: 1` in the OAS, so the
     // contract validator rejects 0 before the store's own guard runs.
-    expect(response.body.message).toBe('Bad Request - OpenAPI validation failed at "params.page": minimum is 1, got 0');
+    expect(response.body.message).toBe(
+      'Bad Request - OpenAPI validation failed at "params.page": minimum is 1, got 0'
+    );
     expect(response.body.page).toBeUndefined();
     expect(response.body.size).toBeUndefined();
     expect(response.body.total).toBeUndefined();
@@ -202,7 +209,9 @@ describe('restify -> get Users suite', () => {
       .set(BasicAuthorizationHeaderUser4);
     // console.log(response.body.message)
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the read_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the read_user role'
+    );
   });
 
   it('guest must not be able to read an user data - Unauthorized', async () => {

@@ -1,4 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, import/first */
+/* eslint-disable import-x/first, import-x/order --
+ * The deferred SUT import is the point of this file's layout: jest hoists
+ * jest.mock above imports, so the firebase mocks must be registered and
+ * initialized before the module under test loads (see the comment above the
+ * import). Top-level ordering cannot express that requirement. */
+import type { cert, deleteApp, getApps, initializeApp } from 'firebase-admin/app';
+import type { getDatabase } from 'firebase-admin/database';
+
+interface FirebaseAdminAppModule {
+  initializeApp: typeof initializeApp;
+  cert: typeof cert;
+  getApps: typeof getApps;
+  deleteApp: typeof deleteApp;
+}
+
+interface FirebaseAdminDatabaseModule {
+  getDatabase: typeof getDatabase;
+}
+
 const mockInitializeApp = jest.fn();
 const mockCert = jest.fn((value) => ({ credential: value }));
 const mockGetApps = jest.fn();
@@ -6,17 +24,24 @@ const mockDeleteApp = jest.fn(async () => undefined);
 const mockDatabase = { ref: jest.fn() };
 const mockGetDatabase = jest.fn(() => mockDatabase);
 
-jest.mock<typeof import('firebase-admin/app')>('firebase-admin/app', () => ({
+jest.mock<FirebaseAdminAppModule>('firebase-admin/app', () => ({
   initializeApp: mockInitializeApp,
   cert: mockCert,
   getApps: mockGetApps,
   deleteApp: mockDeleteApp
 }));
 
-jest.mock<typeof import('firebase-admin/database')>('firebase-admin/database', () => ({
-  getDatabase: mockGetDatabase
-} as unknown as typeof import('firebase-admin/database')));
+jest.mock<FirebaseAdminDatabaseModule>(
+  'firebase-admin/database',
+  () =>
+    ({
+      getDatabase: mockGetDatabase
+    }) as unknown as FirebaseAdminDatabaseModule
+);
 
+// The SUT import stays below the mock registrations: the jest.mock factories
+// execute when firebase-admin loads during the SUT import, so every mock
+// binding must already be initialized (jest hoists jest.mock above imports).
 import { closeRtdb, createRtdbClient, sanitizeRtdbKey } from '../src/rtdb-client';
 
 function setServiceAccount() {
@@ -103,10 +128,12 @@ describe('agent-registry rtdb client', () => {
   it('reuses an app that already has the matching databaseURL', () => {
     expect.hasAssertions();
     process.env.FIREBASE_DATABASE_URL = 'https://example-default-rtdb.firebaseio.com';
-    mockGetApps.mockReturnValue([{
-      name: '[DEFAULT]',
-      options: { databaseURL: 'https://example-default-rtdb.firebaseio.com' }
-    }]);
+    mockGetApps.mockReturnValue([
+      {
+        name: '[DEFAULT]',
+        options: { databaseURL: 'https://example-default-rtdb.firebaseio.com' }
+      }
+    ]);
 
     expect(createRtdbClient()).toBe(mockDatabase);
     expect(mockInitializeApp).not.toHaveBeenCalled();
@@ -115,10 +142,12 @@ describe('agent-registry rtdb client', () => {
   it('fails closed when an existing app has a different databaseURL', () => {
     expect.hasAssertions();
     process.env.FIREBASE_DATABASE_URL = 'https://expected-default-rtdb.firebaseio.com';
-    mockGetApps.mockReturnValue([{
-      name: '[DEFAULT]',
-      options: { databaseURL: 'https://other-default-rtdb.firebaseio.com' }
-    }]);
+    mockGetApps.mockReturnValue([
+      {
+        name: '[DEFAULT]',
+        options: { databaseURL: 'https://other-default-rtdb.firebaseio.com' }
+      }
+    ]);
 
     expect(() => createRtdbClient()).toThrow('databaseURL does not match');
   });

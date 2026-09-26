@@ -1,4 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, import/first */
+/* eslint-disable import-x/first, import-x/order --
+ * The deferred SUT import is the point of this file's layout: jest hoists
+ * jest.mock above imports, so the firebase mocks must be registered and
+ * initialized before the module under test loads (see the comment above the
+ * import). Top-level ordering cannot express that requirement. */
+import type { cert, deleteApp, getApps, initializeApp } from 'firebase-admin/app';
+import type { getFirestore } from 'firebase-admin/firestore';
+
+interface FirebaseAdminAppModule {
+  initializeApp: typeof initializeApp;
+  cert: typeof cert;
+  getApps: typeof getApps;
+  deleteApp: typeof deleteApp;
+}
+
+interface FirebaseAdminFirestoreModule {
+  getFirestore: typeof getFirestore;
+}
+
 const mockInitializeApp = jest.fn();
 const mockCert = jest.fn((value) => ({ credential: value }));
 const mockGetApps = jest.fn();
@@ -6,22 +24,30 @@ const mockDeleteApp = jest.fn(async () => undefined);
 const mockFirestore = { collection: jest.fn() };
 const mockGetFirestore = jest.fn(() => mockFirestore);
 
-jest.mock<typeof import('firebase-admin/app')>('firebase-admin/app', () => ({
+jest.mock<FirebaseAdminAppModule>('firebase-admin/app', () => ({
   initializeApp: mockInitializeApp,
   cert: mockCert,
   getApps: mockGetApps,
   deleteApp: mockDeleteApp
 }));
 
-jest.mock<typeof import('firebase-admin/firestore')>('firebase-admin/firestore', () => ({
+jest.mock<FirebaseAdminFirestoreModule>('firebase-admin/firestore', () => ({
   getFirestore: mockGetFirestore
 }));
 
-import * as registry from '../src';
+// The SUT imports stay below the mock registrations: the jest.mock factories
+// execute when firebase-admin loads during the SUT import, so every mock
+// binding must already be initialized (jest hoists jest.mock above imports).
 import {
-  closeFirestore,
-  createFirestoreClient
-} from '../src/firestore-client';
+  busStatus,
+  checkSnapshot,
+  createRtdbClient,
+  publishProgress,
+  registerAgent,
+  watchBus
+} from '../src';
+import { closeFirestore, createFirestoreClient } from '../src/firestore-client';
+
 
 function setServiceAccount(overrides: Record<string, unknown> = {}) {
   process.env.FIREBASE_SERVICE_ACCOUNT_KEY = JSON.stringify({
@@ -79,8 +105,7 @@ describe('agent-registry firestore client', () => {
   it('rejects missing, invalid, and incomplete service account values', () => {
     expect.hasAssertions();
 
-    expect(() => createFirestoreClient())
-      .toThrow('Missing Firebase credentials');
+    expect(() => createFirestoreClient()).toThrow('Missing Firebase credentials');
 
     process.env.FIREBASE_SERVICE_ACCOUNT_KEY = 'not-json';
     expect(() => createFirestoreClient()).toThrow('not valid JSON');
@@ -105,14 +130,14 @@ describe('agent-registry firestore client', () => {
     expect.hasAssertions();
 
     expect({
-      createFirestoreClient: registry.createFirestoreClient,
-      closeFirestore: registry.closeFirestore,
-      registerAgent: typeof registry.registerAgent,
-      checkSnapshot: typeof registry.checkSnapshot,
-      createRtdbClient: typeof registry.createRtdbClient,
-      publishProgress: typeof registry.publishProgress,
-      watchBus: typeof registry.watchBus,
-      busStatus: typeof registry.busStatus
+      createFirestoreClient,
+      closeFirestore,
+      registerAgent: typeof registerAgent,
+      checkSnapshot: typeof checkSnapshot,
+      createRtdbClient: typeof createRtdbClient,
+      publishProgress: typeof publishProgress,
+      watchBus: typeof watchBus,
+      busStatus: typeof busStatus
     }).toStrictEqual({
       createFirestoreClient,
       closeFirestore,

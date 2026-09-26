@@ -1,41 +1,33 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import fs from 'node:fs';
 
-import fs from 'fs';
-import YAML from 'yaml';
-import { OpenAPIV3 } from 'openapi-types';
-
-import { _API_PREFIX_, _DOCS_PREFIX_ } from '@src/config/constants';
-import { replaceVars } from '@src/shared/utils';
-import type { IAPIFactory } from '@src/interface/HTTP/ports';
-import { EHTTPFrameworks, HTTPBaseServer } from '@src/interface/HTTP/ports';
-
-import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
-import type { IEventBus, IMessageMediator } from '@src/modules/port';
-
-import type {
-  IUser,
-  IAuthService
-} from '@src/modules/Users';
-import {
-  composeUsersAuthServices
-} from '@src/modules/Users';
-
-import users, { seedUserIds } from '@seed/users';
-import organizations, { seedOrganizationIds } from '@seed/organizations';
 import { assertSeedIdNotPurged } from '@jumentix/persistence-contracts';
-import { entityIdLedger } from '@src/infra/persistence/InMemoryDatabase/idReservationLedger';
+import YAML from 'yaml';
+
+import organizations, { seedOrganizationIds } from '@seed/organizations';
+import users, { seedUserIds } from '@seed/users';
+import { API_PREFIX, DOCS_PREFIX } from '@src/config/constants';
+import entityIdLedger from '@src/infra/persistence/InMemoryDatabase/idReservationLedger';
 import { purgeUserAndOrganizationTombstones } from '@src/infra/persistence/purgeStores';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { composeUsersAuthServices } from '@src/modules/Users';
+import { replaceVars } from '@src/shared/utils';
+
+import type { OpenAPIV3 } from 'openapi-types';
+
+import type IMutexService from '@src/infra/mutex/port/IMutexService';
+import type IKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { HTTPBaseServer, IAPIFactory } from '@src/interface/HTTP/ports';
+import type { IEventBus, IMessageMediator } from '@src/modules/port';
+import type { IAuthService, IUser } from '@src/modules/Users';
 
 export class RestAPI<T> {
   private readonly oas: Map<string, OpenAPIV3.Document> = new Map();
 
   private readonly asyncApiSpecs: Map<string, Record<string, any>> = new Map();
 
-  private started: boolean = false;
+  private started = false;
 
   public readonly server: HTTPBaseServer<T>;
 
@@ -93,12 +85,18 @@ export class RestAPI<T> {
     this.buildInfraEndPoints(config);
 
     process.on('exit', () => {
-      this.stop();
+      // The 'exit' event only runs synchronous listeners; stop is invoked so
+      // its synchronous cleanup still happens, and its promise is settled
+      // because it cannot outlive the event loop.
+      this.stop().catch(() => {
+        // Nothing left to report to: the process is already exiting.
+      });
     });
 
     process.on('unhandledRejection', (e) => {
       // eslint-disable-next-line no-console
       console.error(e);
+      // eslint-disable-next-line n/no-process-exit -- loud exit code 1 on unhandled rejection is the tested contract (RestAPI.composition.test.ts)
       process.exit(1);
     });
   }
@@ -115,7 +113,7 @@ export class RestAPI<T> {
 
     // AsyncLocalStorage request-context metrics for Service Management scrape
     // (Monitoring tab / Contract 1c+1d). Loopback-oriented; no request body.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+
     const { snapshotAsyncContextMetrics } = require('@src/infra/context/Context');
     this.server.endPointRegister({
       method: 'get',
@@ -149,8 +147,7 @@ export class RestAPI<T> {
     const apiVersionsGet = config.infraHandlers.apiVersionsGetHandlerFactory({
       ...noServiceInjection,
       apiDocs: this.oas,
-      authService: this.authService || ({} as IAuthService)
-
+      authService: this.authService ?? ({} as IAuthService)
     });
     this.server.endPointRegister(apiVersionsGet);
 
@@ -162,17 +159,17 @@ export class RestAPI<T> {
           databaseClient: {} as IDatabaseClient,
           endPointConfig: {}
         }),
-        path: `${_DOCS_PREFIX_}/${version}`
+        path: `${DOCS_PREFIX}/${version}`
       });
     }
 
     this.server.endPointRegister({
       method: 'get',
-      path: `${_DOCS_PREFIX_}/asyncapi/versions`,
+      path: `${DOCS_PREFIX}/asyncapi/versions`,
       handler: (_req: any, res: any): void => {
         const versions: Record<string, string> = {};
         for (const [version] of this.asyncApiSpecs) {
-          versions[version] = `${_DOCS_PREFIX_}/asyncapi/${version}`;
+          versions[version] = `${DOCS_PREFIX}/asyncapi/${version}`;
         }
         res.status(200).json({ versions });
       }
@@ -186,13 +183,14 @@ export class RestAPI<T> {
           databaseClient: {} as IDatabaseClient,
           endPointConfig: {}
         }),
-        path: `${_DOCS_PREFIX_}/asyncapi/${version}`
+        path: `${DOCS_PREFIX}/asyncapi/${version}`
       });
     }
   }
 
   private buildWithOAS(): void {
-    const specs = fs.readdirSync('./spec')
+    const specs = fs
+      .readdirSync('./spec')
       .filter((specName) => specName.endsWith('.yml') || specName.endsWith('.yaml'));
     for (const specFileName of specs) {
       const file = fs.readFileSync(`./spec/${specFileName}`, 'utf8');
@@ -204,7 +202,8 @@ export class RestAPI<T> {
 
     const asyncApiDir = './spec/asyncapi';
     if (fs.existsSync(asyncApiDir) && fs.lstatSync(asyncApiDir).isDirectory()) {
-      const asyncApiSpecFiles = fs.readdirSync(asyncApiDir)
+      const asyncApiSpecFiles = fs
+        .readdirSync(asyncApiDir)
         .filter((specName) => specName.endsWith('.yml') || specName.endsWith('.yaml'));
       for (const specFileName of asyncApiSpecFiles) {
         const file = fs.readFileSync(`${asyncApiDir}/${specFileName}`, 'utf8');
@@ -269,7 +268,7 @@ export class RestAPI<T> {
 
     this.server.endPointRegister({
       ...handlerFactory,
-      path: `${_API_PREFIX_}/${version}${replaceVars(handlerFactory.path)}`
+      path: `${API_PREFIX}/${version}${replaceVars(handlerFactory.path)}`
     });
   }
 
@@ -317,9 +316,10 @@ export class RestAPI<T> {
     );
   }
 
-  private static resolveControllerMetadata(
-    module: string
-  ): { moduleName: string; controllerName: string } {
+  private static resolveControllerMetadata(module: string): {
+    moduleName: string;
+    controllerName: string;
+  } {
     if (module === 'auth') {
       return { moduleName: 'Users', controllerName: 'AuthController' };
     }
@@ -334,7 +334,10 @@ export class RestAPI<T> {
   private static getControllerModule(moduleName: string, controllerName: string): any {
     const controllerPath = `@src/modules/${moduleName}/adapters/in/http/controllers/${controllerName}`;
     try {
-      const controllerModule = require(controllerPath)[controllerName];
+      // Controllers are default-export modules (JUM-44 codemod); read the
+      // default first, keep the named lookup for any named-export survivor.
+      const imported = require(controllerPath);
+      const controllerModule = imported?.default ?? imported?.[controllerName];
       if (controllerModule) {
         return controllerModule;
       }
@@ -397,15 +400,16 @@ export class RestAPI<T> {
     await this.seedUsers();
   }
 
-  public async purgeTombstones(options: {
-    commit?: boolean;
-    olderThanDays?: number;
-    protectSeed?: boolean;
-    now?: Date;
-  } = {}) {
-    const excludeIds = options.protectSeed === false
-      ? []
-      : [...seedOrganizationIds, ...seedUserIds];
+  public async purgeTombstones(
+    options: {
+      commit?: boolean;
+      olderThanDays?: number;
+      protectSeed?: boolean;
+      now?: Date;
+    } = {}
+  ) {
+    const excludeIds =
+      options.protectSeed === false ? [] : [...seedOrganizationIds, ...seedUserIds];
     return purgeUserAndOrganizationTombstones({
       userStore: this.databaseClient.stores.User,
       organizationStore: this.databaseClient.stores.Organization,
@@ -436,7 +440,6 @@ export class RestAPI<T> {
       const existing = await organizationUseCases.getOneById(organization.id);
       if (existing.result) {
         seeded.push(existing.result);
-        // eslint-disable-next-line no-continue
         continue;
       }
       try {
@@ -454,15 +457,14 @@ export class RestAPI<T> {
           // eslint-disable-next-line no-await-in-loop
           const restored = await organizationUseCases.getOneById(organization.id);
           if (restored.result) seeded.push(restored.result);
-          // eslint-disable-next-line no-continue
           continue;
         }
       } catch {
         // Record really missing — create below.
       }
       // eslint-disable-next-line no-await-in-loop
-      const created = await organizationUseCases.create(organization as any);
-      if (created.error) throw new Error((created.error as Error).message);
+      const created = await organizationUseCases.create(organization);
+      if (created.error) throw new Error(created.error.message);
       if (!created.result) throw new Error('Organization seed failed');
       seeded.push(created.result);
     }
@@ -482,16 +484,14 @@ export class RestAPI<T> {
       const existing = await userUseCases.getOneById(user.id);
       if (existing.result) {
         seeded.push(existing.result);
-        // eslint-disable-next-line no-continue
         continue;
       }
       try {
         // Tombstones hide from getOneById; the seed id must stay reserved.
         // eslint-disable-next-line no-await-in-loop
-        const tombstone = await this.databaseClient.stores.User.getOneById(
-          user.id,
-          { includeDeleted: true }
-        );
+        const tombstone = await this.databaseClient.stores.User.getOneById(user.id, {
+          includeDeleted: true
+        });
         if (tombstone) {
           // eslint-disable-next-line no-await-in-loop
           await this.databaseClient.stores.User.update(user.id, {
@@ -501,7 +501,6 @@ export class RestAPI<T> {
           // eslint-disable-next-line no-await-in-loop
           const restored = await userUseCases.getOneById(user.id);
           if (restored.result) seeded.push(restored.result);
-          // eslint-disable-next-line no-continue
           continue;
         }
       } catch {
@@ -509,7 +508,7 @@ export class RestAPI<T> {
       }
       // eslint-disable-next-line no-await-in-loop
       const newUser = await userUseCases.create(user);
-      if (newUser.error) throw new Error((newUser.error as Error).message);
+      if (newUser.error) throw new Error(newUser.error.message);
       if (!newUser.result) throw new Error('User seed failed');
       seeded.push(newUser.result);
     }
@@ -520,21 +519,23 @@ export class RestAPI<T> {
   public async deleteUsers(): Promise<boolean[]> {
     const { userUseCases } = this.composeUsersModule();
     const requests: Promise<boolean>[] = [];
-    const allUsers = (await userUseCases.getAll({}, { page: 1, size: 1000 })).result || [];
+    const allUsers = (await userUseCases.getAll({}, { page: 1, size: 1000 })).result ?? [];
     for (const user of allUsers) {
-      requests.push(new Promise((resolve, reject) => {
-        (async () => {
-          try {
-            const deletedUser = await userUseCases.delete(user.id);
-            if (deletedUser.error) throw deletedUser.error;
-            if (deletedUser.result === undefined) throw new Error('User delete failed');
-            resolve(deletedUser.result);
-          } catch (error: any) {
-            // console.log(error.message);
-            reject(new Error(error.message));
-          }
-        })();
-      }));
+      requests.push(
+        new Promise((resolve, reject) => {
+          userUseCases
+            .delete(user.id)
+            .then((deletedUser) => {
+              if (deletedUser.error) throw deletedUser.error;
+              if (deletedUser.result === undefined) throw new Error('User delete failed');
+              resolve(deletedUser.result);
+            })
+            .catch((error: any) => {
+              // console.log(error.message);
+              reject(new Error(error.message));
+            });
+        })
+      );
     }
     return Promise.all(requests);
     // console.log('>>>> done');

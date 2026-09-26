@@ -1,7 +1,7 @@
 import type { ClientContext, CognitoIdentity, Context } from 'aws-lambda';
 
-export const composeContext = (): Context => {
-  return {
+const composeContext = (): Context =>
+  ({
     callbackWaitsForEmptyEventLoop: true,
     functionName: '',
     functionVersion: '',
@@ -12,5 +12,6 @@ export const composeContext = (): Context => {
     logStreamName: '',
     identity: {} as CognitoIdentity,
     clientContext: {} as ClientContext
-  } as Context;
-};
+  }) as Context;
+
+export default composeContext;

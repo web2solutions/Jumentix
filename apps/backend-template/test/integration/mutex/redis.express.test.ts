@@ -2,31 +2,31 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
 import request from 'supertest';
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { RedisKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/RedisKeyValueStorageClient';
 
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import {
+import createdUsers from '@seed/users';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import RedisKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/RedisKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
+import { authenticateForHeader,
   BasicAuthorizationHeaderUserGuest,
   user1,
   // user2,
   user3
-} from '@test/mock';
+ } from '@test/mock';
 
-import createdUsers from '@seed/users';
+import type { Express } from 'express';
 
-import { UserDataRepository, UserService } from '@src/modules/Users';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { JwtService } from '@src/infra/jwt/JwtService';
 import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;
 
@@ -50,11 +50,7 @@ const userService = UserService.compile({
 });
 const userProvider = UserProviderLocal.compile(userService);
 
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 const serverType = EHTTPFrameworks.express;
@@ -87,34 +83,30 @@ describe('express -> Mutex -> Redis client', () => {
     await API.seedData();
     // await server.ready();
 
-    authorizationHeaderUser1 = {
-      ...(await authService.authenticate(
-        createdUser1.username,
-        createdUser1.password,
-        EAuthSchemaType.Basic
-      )).result!
-    };
-    authorizationHeaderUser2 = {
-      ...(await authService.authenticate(
-        createdUser2.username,
-        createdUser2.password,
-        EAuthSchemaType.Basic
-      )).result!
-    };
-    authorizationHeaderUser3 = {
-      ...(await authService.authenticate(
-        createdUser3.username,
-        createdUser3.password,
-        EAuthSchemaType.Basic
-      )).result!
-    };
-    authorizationHeaderUser4 = {
-      ...(await authService.authenticate(
-        createdUser4.username,
-        createdUser4.password,
-        EAuthSchemaType.Basic
-      )).result!
-    };
+    authorizationHeaderUser1 = await authenticateForHeader(
+      authService,
+      createdUser1.username,
+      createdUser1.password,
+      EAuthSchemaType.Basic
+    );
+    authorizationHeaderUser2 = await authenticateForHeader(
+      authService,
+      createdUser2.username,
+      createdUser2.password,
+      EAuthSchemaType.Basic
+    );
+    authorizationHeaderUser3 = await authenticateForHeader(
+      authService,
+      createdUser3.username,
+      createdUser3.password,
+      EAuthSchemaType.Basic
+    );
+    authorizationHeaderUser4 = await authenticateForHeader(
+      authService,
+      createdUser4.username,
+      createdUser4.password,
+      EAuthSchemaType.Basic
+    );
   });
 
   afterAll(async () => {
@@ -209,7 +201,9 @@ describe('express -> Mutex -> Redis client', () => {
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
       .set(authorizationHeaderUser1);
-    expect(response.body.message).toBe('Bad Request - The property invalidFieldName from input payload does not exist.');
+    expect(response.body.message).toBe(
+      'Bad Request - The property invalidFieldName from input payload does not exist.'
+    );
     expect(response.statusCode).toBe(400);
   });
 
@@ -234,7 +228,9 @@ describe('express -> Mutex -> Redis client', () => {
       .set('Accept', 'application/json; charset=utf-8')
       .set(authorizationHeaderUser2);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the create_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the create_user role'
+    );
   });
 
   it('user3 must not be able to create new user - Forbidden: the role create_user is required', async () => {
@@ -247,7 +243,9 @@ describe('express -> Mutex -> Redis client', () => {
       .set(authorizationHeaderUser3);
     // console.log(response.body);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the create_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the create_user role'
+    );
   });
 
   it('user4 must not be able to create new user - Forbidden: the role create_user is required', async () => {
@@ -260,7 +258,9 @@ describe('express -> Mutex -> Redis client', () => {
       .set(authorizationHeaderUser4);
     // console.log(response.body.message)
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the create_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the create_user role'
+    );
   });
 
   it('guest must not be able to create new user - Unauthorized', async () => {

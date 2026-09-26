@@ -1,7 +1,9 @@
 // import { UUID } from '@src/modules/port';
-import { EEmailType, EmailValueObject } from '@src/modules/ddd/valueObjects';
+import { EEmailType } from '@src/modules/ddd/valueObjects';
 
-const emails: Array<EmailValueObject> = [
+import type { EmailValueObject } from '@src/modules/ddd/valueObjects';
+
+const emails: EmailValueObject[] = [
   {
     email: 'eduardo@xpertminds.dev',
     type: EEmailType.work,

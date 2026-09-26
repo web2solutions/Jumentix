@@ -2,24 +2,28 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
 import request from 'supertest';
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-
-import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-
-import {
-  UserDataRepository, UserService, UserProviderLocal, AuthService, EAuthSchemaType
-} from '@src/modules/Users';
 
 import createdUsers from '@seed/users';
-import { closeServer } from '../closeServer';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import {
+  AuthService,
+  EAuthSchemaType,
+  UserDataRepository,
+  UserProviderLocal,
+  UserService
+} from '@src/modules/Users';
+
+import closeServer from '../closeServer';
+
+import type { Express } from 'express';
 
 const [createdUser1] = createdUsers;
 
@@ -43,17 +47,20 @@ const userService = UserService.compile({
 });
 const userProvider = UserProviderLocal.compile(userService);
 
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 const serverType = EHTTPFrameworks.express;
 
 let API: RestAPI<Express>;
 let server: any;
+
+const requireAuthResult = <T>(result: T | undefined): T => {
+  if (!result) {
+    throw new Error('Expected authenticate to return a result.');
+  }
+  return result;
+};
 
 describe('express -> logout suite', () => {
   beforeAll(async () => {
@@ -94,7 +101,7 @@ describe('express -> logout suite', () => {
         EAuthSchemaType.Bearer
       );
       const { result } = authResponse;
-      const token = result!.Authorization;
+      const token = requireAuthResult(result).Authorization;
       const response = await request(server)
         .post('/api/1.0.0/auth/logout')
         .send({ username })
@@ -114,7 +121,7 @@ describe('express -> logout suite', () => {
         EAuthSchemaType.Basic
       );
       const { result } = authResponse;
-      const token = result!.Authorization;
+      const token = requireAuthResult(result).Authorization;
       const response = await request(server)
         .post('/api/1.0.0/auth/logout')
         .send({ username })
@@ -129,11 +136,7 @@ describe('express -> logout suite', () => {
   it('invalid token must return 401', async () => {
     expect.hasAssertions();
     const { username, password } = createdUser1;
-    await authService.authenticate(
-      username,
-      password,
-      EAuthSchemaType.Bearer
-    );
+    await authService.authenticate(username, password, EAuthSchemaType.Bearer);
     const response = await request(server)
       .post('/api/1.0.0/auth/logout')
       .send({ username })
@@ -148,13 +151,9 @@ describe('express -> logout suite', () => {
   it('invalid username must return 400', async () => {
     expect.hasAssertions();
     const { username, password } = createdUser1;
-    const authResponse = await authService.authenticate(
-      username,
-      password,
-      EAuthSchemaType.Bearer
-    );
+    const authResponse = await authService.authenticate(username, password, EAuthSchemaType.Bearer);
     const { result } = authResponse;
-    const token = result!.Authorization;
+    const token = requireAuthResult(result).Authorization;
     const response = await request(server)
       .post('/api/1.0.0/auth/logout')
       .send({ username: 'XXXXXX' })
@@ -182,13 +181,9 @@ describe('express -> logout suite', () => {
   it('non-existing fields must return 400', async () => {
     expect.hasAssertions();
     const { username, password } = createdUser1;
-    const authResponse = await authService.authenticate(
-      username,
-      password,
-      EAuthSchemaType.Bearer
-    );
+    const authResponse = await authService.authenticate(username, password, EAuthSchemaType.Bearer);
     const { result } = authResponse;
-    const token = result!.Authorization;
+    const token = requireAuthResult(result).Authorization;
     const response = await request(server)
       .post('/api/1.0.0/auth/logout')
       .send({ usernames: username, password })
@@ -197,6 +192,8 @@ describe('express -> logout suite', () => {
       .set({ Authorization: token });
     expect(response.statusCode).toBe(400);
     expect(response.body).toHaveProperty('error');
-    expect(response.body.message).toBe('Bad Request - The property usernames from input payload does not exist.');
+    expect(response.body.message).toBe(
+      'Bad Request - The property usernames from input payload does not exist.'
+    );
   });
 });

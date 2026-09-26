@@ -1,14 +1,18 @@
 /* global  describe, it, expect */
 import request from 'supertest';
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { AuthService } from '@src/modules/Users/service/AuthService';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 import {
   BasicAuthorizationHeaderUser1,
   BasicAuthorizationHeaderUser2,
@@ -16,13 +20,13 @@ import {
   BasicAuthorizationHeaderUser4,
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
+
+import closeServer from '../closeServer';
+
+import type { Express } from 'express';
+
+import type { DocumentValueObject } from '@src/modules/ddd/valueObjects';
 import type { IUser } from '@src/modules/Users';
-import { UserDataRepository, UserService } from '@src/modules/Users';
-import { DocumentValueObject } from '@src/modules/ddd/valueObjects';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { closeServer } from '../closeServer';
 
 const webServer = ExpressServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -43,11 +47,7 @@ const userService = UserService.compile({
   }
 });
 const userProvider = UserProviderLocal.compile(userService);
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 const serverType = EHTTPFrameworks.express;
@@ -79,7 +79,7 @@ describe('express -> User deleteDocument suite', () => {
     // await server.ready();
     usersAll = await API.seedUsers();
     [user1] = usersAll;
-    [document1] = user1.documents || [];
+    [document1] = user1.documents ?? [];
     // delete .id;
   });
   afterAll(async () => {
@@ -98,8 +98,8 @@ describe('express -> User deleteDocument suite', () => {
       .set(BasicAuthorizationHeaderUser1);
     // console.log(response.body);
     expect(response.body.documents).toHaveLength(2);
-    expect(response.body.documents[0].data).toBe(user1.documents![1].data);
-    expect(response.body.documents[0].type).toBe(user1.documents![1].type);
+    expect(response.body.documents[0].data).toBe(user1.documents?.[1]?.data);
+    expect(response.body.documents[0].type).toBe(user1.documents?.[1]?.type);
     expect(response.statusCode).toBe(200);
   });
 
@@ -112,7 +112,9 @@ describe('express -> User deleteDocument suite', () => {
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser2);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the delete_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the delete_user role'
+    );
   });
 
   it('user3 must not be able to delete a document of an user - Forbidden: the role delete_user is required', async () => {
@@ -125,7 +127,9 @@ describe('express -> User deleteDocument suite', () => {
       .set(BasicAuthorizationHeaderUser3);
     // console.log(response.body);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the delete_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the delete_user role'
+    );
   });
 
   it('user4 must not be able to delete a document of an user - Forbidden: the role delete_user is required', async () => {
@@ -138,7 +142,9 @@ describe('express -> User deleteDocument suite', () => {
       .set(BasicAuthorizationHeaderUser4);
     // console.log(response.body.message)
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the delete_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the delete_user role'
+    );
   });
 
   it('guest must not be able to delete a document of an user - Unauthorized', async () => {

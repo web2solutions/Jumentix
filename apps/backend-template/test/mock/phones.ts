@@ -1,7 +1,7 @@
 // import { UUID } from '@src/modules/port';
-import { PhoneValueObject } from '@src/modules/ddd/valueObjects';
+import type { PhoneValueObject } from '@src/modules/ddd/valueObjects';
 
-const phones: Array<PhoneValueObject> = [
+const phones: PhoneValueObject[] = [
   {
     number: '99805-4033',
     localCode: '27',

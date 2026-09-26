@@ -1,23 +1,25 @@
 /* global describe, it, expect, beforeAll, afterAll */
-import type { Server } from 'node:http';
 import request from 'supertest';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
 import { AdonisJsServer } from '@src/interface/HTTP/adapters/adonis-js/AdonisJsServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/adonis-js/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { UserDataRepository, UserService } from '@src/modules/Users';
+import infraHandlers from '@src/interface/HTTP/adapters/adonis-js/handlers/infraHandlers';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 import {
   closeSupertestServer,
   createSupertestServer,
   supertestServerUrl
 } from '@test/helpers/listenForSupertest';
+
+import type { Server } from 'node:http';
 
 /**
  * JUM-698 — this suite lives in `test/integration/Adonis-JS/`, and now
@@ -74,7 +76,7 @@ describe('adonis-js -> /localhost suite', () => {
       mutexService
     });
     listener = webServer.requestListener();
-    server = await createSupertestServer(listener as never);
+    server = await createSupertestServer(listener);
     serverUrl = supertestServerUrl(server);
   });
 
@@ -87,9 +89,7 @@ describe('adonis-js -> /localhost suite', () => {
   it('answers the root route through the adapter router', async () => {
     expect.hasAssertions();
 
-    const response = await request(serverUrl)
-      .get('/')
-      .set('Accept', 'application/json');
+    const response = await request(serverUrl).get('/').set('Accept', 'application/json');
 
     expect(response.statusCode).toBe(200);
     expect(response.body.status).toBe('result');

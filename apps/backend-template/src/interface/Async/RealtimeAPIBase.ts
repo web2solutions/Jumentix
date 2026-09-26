@@ -1,18 +1,18 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import fs from 'node:fs';
 
-import fs from 'fs';
 import YAML from 'yaml';
-import { OpenAPIV3 } from 'openapi-types';
 
-import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
-import { RealtimeDomainEvent } from '@src/interface/Async/RealtimeDomainEvent';
-import type { IAuthService } from '@src/modules/Users';
+import RealtimeDomainEvent from '@src/interface/Async/RealtimeDomainEvent';
 import { composeUsersAuthServices } from '@src/modules/Users';
+
+import type { OpenAPIV3 } from 'openapi-types';
+
+import type IMutexService from '@src/infra/mutex/port/IMutexService';
+import type IKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
 import type { IEventBus, IMessageMediator } from '@src/modules/port';
+import type { IAuthService } from '@src/modules/Users';
 
 export interface IAsyncOperationRequest {
   version?: string;
@@ -161,7 +161,7 @@ export abstract class RealtimeAPIBase {
 
       const { controllerMethod, controller } = entry;
       if (entry.runtimeHandler) {
-        return entry.runtimeHandler(request);
+        return await entry.runtimeHandler(request);
       }
 
       const method = controller?.[controllerMethod];
@@ -173,9 +173,9 @@ export abstract class RealtimeAPIBase {
 
       const event = new RealtimeDomainEvent({
         authorization: request.authorization || '',
-        input: request.input || {},
-        params: request.params || {},
-        queryString: request.queryString || {},
+        input: request.input ?? {},
+        params: request.params ?? {},
+        queryString: request.queryString ?? {},
         schemaOAS: entry.endPointConfig,
         entity: entry.moduleName,
         action: controllerMethod,
@@ -191,7 +191,7 @@ export abstract class RealtimeAPIBase {
         ok: true,
         version: entry.version,
         operationId,
-        metadata: request.metadata || {},
+        metadata: request.metadata ?? {},
         result: serviceResponse?.result
       };
     } catch (error: any) {
@@ -199,7 +199,7 @@ export abstract class RealtimeAPIBase {
         ok: false,
         version: request.version,
         operationId: request.operationId,
-        metadata: request.metadata || {},
+        metadata: request.metadata ?? {},
         error: {
           name: error?.name || 'Error',
           message: error?.message || 'Unknown error'
@@ -245,7 +245,8 @@ export abstract class RealtimeAPIBase {
   }
 
   private loadOpenApiSpecs(): void {
-    const specs = fs.readdirSync(this.specDir)
+    const specs = fs
+      .readdirSync(this.specDir)
       .filter((fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'));
 
     for (const fileName of specs) {
@@ -286,14 +287,8 @@ export abstract class RealtimeAPIBase {
     endPointConfig: Record<string, any>;
   }): void {
     const module = path.split('/')[1];
-    const {
-      moduleName,
-      controllerName
-    } = RealtimeAPIBase.resolveControllerMetadata(module);
-    const ControllerModule = RealtimeAPIBase.getControllerModule(
-      moduleName,
-      controllerName
-    );
+    const { moduleName, controllerName } = RealtimeAPIBase.resolveControllerMetadata(module);
+    const ControllerModule = RealtimeAPIBase.getControllerModule(moduleName, controllerName);
     const usersModuleComposition = moduleName === 'Users' ? this.composeUsersModule() : undefined;
     const controller = new ControllerModule({
       authService: usersModuleComposition?.authService ?? this.authService,
@@ -309,8 +304,7 @@ export abstract class RealtimeAPIBase {
     });
 
     const operationId = endPointConfig.operationId as string;
-    const controllerMethod = OPERATION_TO_CONTROLLER_METHOD[operationId]
-      || operationId;
+    const controllerMethod = OPERATION_TO_CONTROLLER_METHOD[operationId] || operationId;
     const runtimeHandler = this.getRuntimeHandlerFactory({
       moduleName,
       operationId,
@@ -353,9 +347,9 @@ export abstract class RealtimeAPIBase {
         invoke: async (request: IAsyncOperationRequest): Promise<IAsyncOperationResponse> => {
           const event = new RealtimeDomainEvent({
             authorization: request.authorization || '',
-            input: request.input || {},
-            params: request.params || {},
-            queryString: request.queryString || {},
+            input: request.input ?? {},
+            params: request.params ?? {},
+            queryString: request.queryString ?? {},
             schemaOAS: endPointConfig,
             entity: moduleName,
             action: controllerMethod,
@@ -369,11 +363,11 @@ export abstract class RealtimeAPIBase {
           return {
             ok: true,
             operationId,
-            metadata: request.metadata || {},
+            metadata: request.metadata ?? {},
             result: serviceResponse?.result
           };
         }
-      } as IRealtimeHandlerFactoryDeps);
+      });
     } catch (error: any) {
       const message = String(error?.message || '');
       if (error?.code !== 'MODULE_NOT_FOUND' && !message.includes('Could not locate module')) {
@@ -383,9 +377,10 @@ export abstract class RealtimeAPIBase {
     return undefined;
   }
 
-  private static resolveControllerMetadata(
-    module: string
-  ): { moduleName: string; controllerName: string } {
+  private static resolveControllerMetadata(module: string): {
+    moduleName: string;
+    controllerName: string;
+  } {
     if (module === 'auth') {
       return { moduleName: 'Users', controllerName: 'AuthController' };
     }
@@ -401,7 +396,10 @@ export abstract class RealtimeAPIBase {
   private static getControllerModule(moduleName: string, controllerName: string): any {
     const controllerPath = `@src/modules/${moduleName}/adapters/in/http/controllers/${controllerName}`;
     try {
-      const controllerModule = require(controllerPath)[controllerName];
+      // Controllers are default-export modules (JUM-44 codemod); read the
+      // default first, keep the named lookup for any named-export survivor.
+      const imported = require(controllerPath);
+      const controllerModule = imported?.default ?? imported?.[controllerName];
       if (controllerModule) return controllerModule;
     } catch (error: any) {
       const message = String(error?.message || '');
@@ -410,8 +408,6 @@ export abstract class RealtimeAPIBase {
       }
     }
 
-    throw new Error(
-      `Controller ${controllerName} not found for module ${moduleName}.`
-    );
+    throw new Error(`Controller ${controllerName} not found for module ${moduleName}.`);
   }
 }

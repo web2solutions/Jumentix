@@ -1,19 +1,22 @@
 /* global describe, it, expect, beforeAll, afterAll */
 import request from 'supertest';
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { UserDataRepository, UserService } from '@src/modules/Users';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { closeServer } from './closeServer';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
+
+import closeServer from './closeServer';
+
+import type { Express } from 'express';
 
 const webServer = ExpressServer.compile();
 const passwordCryptoService = PasswordCryptoService.compile();
