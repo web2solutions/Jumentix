@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
-const { runAsCli } = require('../packages/cli-init/dist/cli');
-
-runAsCli().catch((error) => {
-  console.error(`\nBootstrap failed: ${error instanceof Error ? error.message : String(error)}`);
-  process.exit(1);
-});
+/**
+ * Repository entry point (`bun x github:web2solutions/Jumentix#dev`). Runs the
+ * local CLI build when present, otherwise the published @jumentix/cli-init
+ * (JUM-901).
+ */
+require('../packages/cli-init/bin/launcher.js').launch(process.argv.slice(2));
