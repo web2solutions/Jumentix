@@ -1638,6 +1638,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/architectureCanvasTheme.test.ts",
+      "path": "apps/service-management/test/unit/architectureCanvasTheme.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/modelQueries.test.ts",
       "path": "apps/service-management/test/unit/modelQueries.test.ts",
       "layer": "service-management/designer",
@@ -2652,6 +2662,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/component/AppBreadcrumb.test.ts",
+      "path": "apps/frontend/test/component/AppBreadcrumb.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/component/ModuleLayout.test.ts",
       "path": "apps/frontend/test/component/ModuleLayout.test.ts",
       "layer": "frontend",
@@ -2914,6 +2936,16 @@
     {
       "id": "ci-cd/test/readme-badges.test.ts",
       "path": "ci-cd/test/readme-badges.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/ci-gate-coverage.test.ts",
+      "path": "ci-cd/test/ci-gate-coverage.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -6023,9 +6055,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 357,
+    "unit": 358,
     "integration": 102,
     "smoke": 2,
-    "suites": 519
+    "suites": 521
   }
 }

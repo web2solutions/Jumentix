@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "d038d9ebf8b2d0e234ea7c12c6336f356d4b1595",
+  "sourceCommit": "2a9a981e16853b7596716e505844f22611d2b506",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -3788,7 +3788,7 @@
       "source": "apps/frontend/src/App.vue"
     },
     "frontend/src/components/AppBreadcrumb.vue": {
-      "sha256": "6f3b663e86a6e799b1e424336424f0bf81101e2d6e9c528c39c0e464d910244c",
+      "sha256": "f47862797e201e7c32a01047baa06c52e6574a32e06c824e7924867c8d9b9dff",
       "source": "apps/frontend/src/components/AppBreadcrumb.vue"
     },
     "frontend/src/components/AppFooter.vue": {
@@ -3972,7 +3972,7 @@
       "source": "apps/frontend/src/contracts/validation.ts"
     },
     "frontend/src/data/canaSchema.ts": {
-      "sha256": "358e8e3e26e9b6266b89d7ef568941018d4d5ba19255827cf153cc61605e05d0",
+      "sha256": "1d34048e3b810346d445ea334fb03ac7391521c4fe6149391e278cfddd37b2d9",
       "source": "apps/frontend/src/data/canaSchema.ts"
     },
     "frontend/src/data/db.ts": {

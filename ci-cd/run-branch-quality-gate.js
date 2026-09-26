@@ -52,6 +52,17 @@ const DOCUMENTATION_AUDIENCE_PREFLIGHT = Object.freeze({
   id: 'documentation-audience',
   script: 'docs:check-audience'
 });
+/**
+ * `ci:gate` steps that no CI path ran (JUM-903). Hosted CI never executes the
+ * `ci:gate` script, so a step listed only there was a gate in name only — the
+ * CLI template freshness check was failing on `dev` with every required check
+ * green. `ci:gate:static` groups the cheap checks (static reads plus the OSV
+ * dependency audit) and runs before every gate.
+ */
+const STATIC_GATES_PREFLIGHT = Object.freeze({
+  id: 'static-gates',
+  script: 'ci:gate:static'
+});
 
 /**
  * Workspace boundaries + root `build:dev` run before every gate (JUM-786).
@@ -93,6 +104,7 @@ const FULL_MATRIX_QUALITY_GATE = Object.freeze({
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     DOCUMENTATION_AUDIENCE_PREFLIGHT,
+    STATIC_GATES_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
     OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
@@ -111,6 +123,7 @@ const GENERATED_AUTOMATION_QUALITY_GATE = Object.freeze({
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     DOCUMENTATION_AUDIENCE_PREFLIGHT,
+    STATIC_GATES_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
     OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
@@ -124,6 +137,7 @@ const UNIT_QUALITY_GATE = Object.freeze({
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     DOCUMENTATION_AUDIENCE_PREFLIGHT,
+    STATIC_GATES_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
     OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
@@ -137,6 +151,7 @@ const TASK_QUALITY_GATE = Object.freeze({
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     DOCUMENTATION_AUDIENCE_PREFLIGHT,
+    STATIC_GATES_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
     OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
