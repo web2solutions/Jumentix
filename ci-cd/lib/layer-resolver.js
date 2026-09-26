@@ -149,7 +149,16 @@ function layersForFile(manifest, filePath) {
   // Root toolchain pins (lockfile, package manifests, version pins) gate the
   // same toolchain evidence as ci-cd/ changes — a bun.lock-only change must
   // not fall through to unsupported-change-set.
-  if (filePath === 'bun.lock' || filePath === 'package.json' || filePath === '.bun-version') {
+  if (filePath === 'bun.lock' || filePath === 'package.json' || filePath === '.bun-version'
+    || filePath === '.gitignore') {
+    matched.add('tooling');
+  }
+  // The CLI's packaged templates are data its tooling-layer suites (template
+  // freshness, generation) read from disk, never imports — so no dependency
+  // edge reaches them and a templates-only change was `unsupported-change-set`
+  // (JUM-904).
+  if (filePath.startsWith('packages/cli-init/templates/')
+    || filePath === 'packages/cli-init/templates.manifest.json') {
     matched.add('tooling');
   }
   if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/domain/')) matched.add('domain');
