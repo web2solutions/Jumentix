@@ -134,7 +134,7 @@ How to use:
 ## 5) RBAC Policy Mapping
 
 Per-entity action policy, aligned with the tenant RBAC authorization contract
-(`TENANT-RBAC-AUTHORIZATION-CONTRACT.md`, JUM-477):
+(`TENANT-RBAC-AUTHORIZATION-CONTRACT.md`) (JUM-477):
 
 - Actions:
   - `list`
@@ -277,8 +277,8 @@ How to use:
 
 ### 10.1) OAS 3.1 export contract (Requirement 036, JUM-474)
 
-The OpenAPI 3.1 export produces a document compliant with Requirement 036 and
-the route-resolution check (`ci-cd/check-oas-route-resolution.js`):
+The OpenAPI 3.1 export produces a document compliant with the port-object
+contract rules (Requirement 036) and the route-resolution check (`ci-cd/check-oas-route-resolution.js`):
 
 - Every operation carries a unique `operationId` on the canonical
   `spec/1.0.0.yml` verb scheme (`getAll*`, `create*`, `get*ById`, `update*`,

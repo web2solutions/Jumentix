@@ -473,7 +473,7 @@ silenciosa.
 ### 8.3 Variáveis de ambiente de runtime
 
 O editor expõe as chaves de runtime em dois níveis. A lista de escrita é uma
-decisão de segurança, fixada pelo Requisito `126`:
+decisão de segurança (Requisito `126`):
 
 | Nível | Chaves |
 | --- | --- |
@@ -557,7 +557,7 @@ versão de runtime. Alvos gerenciados por PM2 também recebem um perfil PM2.
 
 ![Deploy Management com um alvo EC2 e um alvo Cloudflare Workers registrados](../../images/service-manager/08-deploy-management.png "Deploy Management")
 
-O formulário valida contra a matriz de deploy do Requisito `059` e explica cada
+O formulário valida contra a matriz de deploy (Requisito `059`) e explica cada
 recusa:
 
 | Tipo de alvo | Tipos de serviço que pode rodar | Perfil PM2 | Região significa |

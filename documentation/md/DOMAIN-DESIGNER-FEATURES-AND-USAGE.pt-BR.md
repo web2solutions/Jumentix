@@ -125,7 +125,7 @@ Como usar:
 ## 5) Mapeamento de políticas RBAC
 
 Política de ação por entidade, alinhada ao contrato de autorização de tenant e
-RBAC (`TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`, JUM-477):
+RBAC (`TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`) (JUM-477):
 
 - Ações:
   - `lista`

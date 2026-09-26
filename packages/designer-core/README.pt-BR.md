@@ -17,8 +17,7 @@ The English version of this document is in [README.md](./README.md).
 
 ## O que é
 
-O núcleo do designer é a lógica separável que a modularização JUM-468/JUM-469
-extraiu do designer de Service Management (`apps/service-management`): tudo o
+O núcleo do designer é a lógica separável (JUM-468/JUM-469) que foi extraída do designer de Service Management (`apps/service-management`): tudo o
 que o designer sabe sobre um modelo de domínio, sem nada sobre como esse
 modelo é renderizado ou persistido. **O `src/` deste pacote é a casa canônica
 desse código** — a direção da dependência é pacote → consumidor, nunca
@@ -90,19 +89,20 @@ O pacote segue semver sobre sua **superfície de API pública** (o barrel
 
 Os *contratos de dados* que o núcleo lê e escreve (o documento de exportação
 full-suite, o documento de pacote de domínio) são versionados de forma
-independente dentro dos próprios payloads — essa política pertence ao
-[JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution)
-e está fixada no Requisito 126, Contrato 3; a versão deste pacote não a
-repete.
+independente dentro dos próprios payloads — essa política é o contrato de
+versionamento de pacotes de domínio
+([JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution),
+Requisito 126); a versão deste pacote não a repete.
 
 ## Política de publicação
 
-Conforme o
-[Requisito 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md),
-**não existe publicação automática**. O gate de artefatos do repositório
-(`bun run npm:packages:check`) recompila o conjunto de pacotes aprovado,
-inspeciona cada tarball e o importa em um consumidor externo. O workflow
-manual protegido a partir de `main` executa a futura publicação npm.
+A publicação é automatizada: depois de cada release da aplicação em `main`, o
+workflow de release publica todo pacote público cuja versão ainda não está no
+npm; uma versão nova sai ao subir `version` aqui e promover para `main`
+([Publicação de pacotes npm](../../documentation/md/NPM-PACKAGE-PUBLISHING.pt-BR.md)).
+O gate de artefatos do repositório (`bun run npm:packages:check`) recompila o
+conjunto de pacotes aprovado, inspeciona cada tarball e o importa em um
+consumidor externo antes de qualquer publicação.
 `prepublishOnly` executa um rebuild limpo antes de montar o tarball, e
 `test/packaging.test.ts` valida o manifesto e o conteúdo empacotado, de modo
 que o gate verifica um artefato cujo conteúdo é

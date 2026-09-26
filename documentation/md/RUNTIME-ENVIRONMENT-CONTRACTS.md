@@ -215,8 +215,8 @@ directory does not exist.
 ### Key tiers and allowlists
 
 Read and write allowlists are separate sets; every key belongs to exactly one tier.
-The authoritative per-key classification (with reasons) lives in
-`.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`.
+The authoritative per-key classification (with reasons) lives in the Service
+Management public-contracts requirement (Requirement `126`).
 
 - **Editable** (read + write) — runtime topology selectors:
   `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
@@ -274,8 +274,8 @@ Every env key belongs to exactly one of three tiers, each with a stated reason:
   same trust boundary as the write.
 
 The landed per-key classification into these tiers — one reason per key — lives in
-[Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md),
-and the tier lists above mirror it. Every addition to the editable set is a security decision.
+the Service Management public-contracts requirement (Requirement `126`), and the tier
+lists above mirror it. Every addition to the editable set is a security decision.
 
 ### Enum sets and alias decision
 

@@ -66,6 +66,11 @@ Páginas de prospect e de desenvolvedor nunca trazem variáveis de controle de C
 issue do Linear nem caminhos `.agents/`. Chaves de runtime como `JUMENTIX_HTTP_FRAMEWORK` são
 configuração do produto e continuam permitidas.
 
+Documentos de contribuidor publicados no site (veja
+`apps/jumentix-website/config/content-sources.json`) podem citar issues e requisitos, mas coloque
+essa proveniência entre parênteses — `(JUM-460; Requisito 126)` — para que o sync do site a remova.
+Citações no meio da prosa chegam ao site e fazem a verificação falhar.
+
 ```bash
 bun run docs:check-audience
 ```

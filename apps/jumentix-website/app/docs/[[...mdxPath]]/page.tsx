@@ -20,8 +20,31 @@ const legacyAliases: Record<string, string[]> = {
   'runtime-contracts': ['reference', 'runtime-contracts'],
 };
 
+/**
+ * Maintainer design records that were published under /docs/jumentix/reference
+ * until JUM-895. They stay in documentation/md for contributors; their old URLs
+ * resolve to the Service Manager guide, the developer-facing replacement
+ * (Requirement 093 rule 7).
+ */
+const retiredReferencePages = new Set([
+  'service-management-module-architecture',
+  'service-management-contract-parity',
+  'service-management-operations-console',
+  'service-management-cana-adoption',
+  'service-management-design-system-pwa',
+  'service-management-collaboration-packaging'
+]);
+
+function retiredReferenceTarget(segments: string[]): string[] | undefined {
+  const [reference, slug] = segments.slice(-2);
+  if (reference !== 'reference' || !retiredReferencePages.has(slug)) return undefined;
+  return [...segments.slice(0, -2), 'guides', 'service-management'];
+}
+
 function getCandidates(mdxPath: MdxPath): string[][] {
   const normalized = Array.isArray(mdxPath) ? mdxPath.filter(Boolean) : [];
+  const retiredTarget = retiredReferenceTarget(normalized);
+  if (retiredTarget) return getCandidates(retiredTarget);
 
   if (normalized.length === 0) {
     return [['jumentix']];

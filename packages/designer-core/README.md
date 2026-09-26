@@ -18,8 +18,7 @@ A versão em português deste documento está em
 
 ## What it is
 
-The designer core is the separable logic the JUM-468/JUM-469 modularization
-carved out of the Service Management designer (`apps/service-management`):
+The designer core is the separable logic (JUM-468/JUM-469) carved out of the Service Management designer (`apps/service-management`):
 everything the designer knows about a domain model, with nothing about how
 that model is rendered or persisted. **This package's `src/` is the canonical
 home of that code** — the dependency direction runs package → consumer,
@@ -88,19 +87,19 @@ The package follows semver over its **public API surface** (the barrel
 
 The *data contracts* the core reads and writes (the full-suite export
 document, the domain-package document) are versioned independently inside the
-payloads themselves — that policy is owned by
-[JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution)
-and pinned in Requirement 126, Contract 3; this package's version does not
-restate it.
+payloads themselves — that policy is the domain-package versioning contract
+([JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution),
+Requirement 126); this package's version does not restate it.
 
 ## Publish policy
 
-Per
-[Requirement 070](../../.agents/requirements/project/070-xpertminds-npm-and-web2solutions-vercel-integration.md),
-**no automatic publish exists**. The repository-wide artifact gate
-(`bun run npm:packages:check`) rebuilds the approved package cohort, inspects
-each tarball, and imports it from an external consumer. The protected manual
-workflow from `main` performs the eventual npm publication. `prepublishOnly`
+Publication is automated: after each application release on `main`, the
+release workflow publishes every public package whose version is not yet on
+npm, so a new version ships by bumping `version` here and promoting to `main`
+([NPM package publishing](../../documentation/md/NPM-PACKAGE-PUBLISHING.md)).
+The repository-wide artifact gate (`bun run npm:packages:check`) rebuilds the
+approved package cohort, inspects each tarball, and imports it from an external
+consumer before anything is published. `prepublishOnly`
 performs a clean rebuild before assembling the tarball, and
 `test/packaging.test.ts` asserts the manifest and packed contents, so the gate
 verifies an artifact whose contents are

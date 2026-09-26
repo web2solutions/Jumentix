@@ -66,6 +66,23 @@ content/
     └── <matching hierarchy>
 ```
 
+## Audience and Maintainer Provenance
+
+The published tree serves developers integrating Jumentix (Requirement 066 audience matrix). Its
+sources under `documentation/md/**` are contributor documents and may cite Linear issues and
+requirement numbers as provenance. The sync keeps the two apart:
+
+- `stripMaintainerProvenance` (`scripts/content-leaks.mjs`) removes parentheticals that only cite
+  issues, requirements or PRs — `(JUM-468)`, `([JUM-493](…))`, `(Requirement \`059\`)`,
+  `(landed by JUM-460; Requirement 126 §3)` — and Linear link reference definitions. Write
+  provenance in parentheses so contributor docs keep it and the site drops it.
+- Provenance cited inline in prose is not rewritten; `bun run docs:check-audience` reports it at
+  the generated page and the source is fixed.
+- Maintainer design records are not published. The Service Management E1–E8 chain (module
+  architecture, contract parity, operations console, Cana adoption, design system and PWA,
+  collaboration and packaging) left `config/content-sources.json` in JUM-895; their former
+  `/docs/…/reference/service-management-*` URLs resolve to the Service Manager guide.
+
 ## Publication Gates
 
 ```bash

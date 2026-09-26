@@ -35,9 +35,9 @@ The following keys are mandatory across env files in `apps/backend-template/src/
     - `derby-js`
     - `adonis-js`
     - `total-js`
-  - alias decision (JUM-461): `derby-js` and `sails-js` are the canonical spellings.
+  - alias decision: `derby-js` and `sails-js` are the canonical spellings.
     The aliases `derby` and `sails` are NOT accepted — `RuntimeEnvironment.ts`
-    fails fast on them. `hyper-express` was dropped from the runtime (JUM-27) and
+    fails fast on them. `hyper-express` was dropped from the runtime and
     is likewise rejected. The Service Management selector offers exactly the
     11 canonical values above; UI options and server-side enum validation must
     always agree.
@@ -180,7 +180,7 @@ Service Management exposes runtime env read/write endpoints:
 
 The env editor mutates only approved keys from this contract, preserving guardrails.
 
-### PM2 ecosystem preview API (JUM-480)
+### PM2 ecosystem preview API
 
 Service Management also exposes a read-only PM2 ecosystem endpoint, the single
 source of the designer's runtime profile preview:
@@ -191,8 +191,8 @@ The endpoint reads the real `pm2/ecosystem.*.cjs` file of the selected
 environment (directory overridable via `JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR`,
 default `<repo-root>/pm2`) and returns `{ environment, fileName, path, exists, apps }`, where each app carries `{ name, script, interpreter, interpreterArgs, env, command }`. `command` is derived from the ecosystem definition —
 `pm2 start <ecosystem path> --only <app name> --update-env` — never an embedded
-package-manager string, so the Bun cutover (JUM-33/JUM-40) cannot silently
-invalidate the preview. The ecosystem module is loaded cache-busted: editing an
+package-manager string, so the current Bun toolchain cannot silently invalidate
+the preview. The ecosystem module is loaded cache-busted: editing an
 ecosystem file changes the response with no server restart and no code change.
 
 Failure and edge states follow the same honesty discipline as the env-file API:
@@ -217,8 +217,8 @@ directory does not exist.
 ### Key tiers and allowlists
 
 Read and write allowlists are separate sets; every key belongs to exactly one tier.
-The authoritative per-key classification (with reasons) lives in
-`.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`.
+The authoritative per-key classification (with reasons) lives in the Service
+Management public-contracts requirement.
 
 - **Editable** (read + write) — runtime topology selectors:
   `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
@@ -276,15 +276,15 @@ Every env key belongs to exactly one of three tiers, each with a stated reason:
   same trust boundary as the write.
 
 The landed per-key classification into these tiers — one reason per key — lives in
-Requirement 126,
-and the tier lists above mirror it. Every addition to the editable set is a security decision.
+the Service Management public-contracts requirement, and the tier
+lists above mirror it. Every addition to the editable set is a security decision.
 
 ### Enum sets and alias decision
 
 Values outside the accepted enum for each key (listed under
 [Runtime Keys](#runtime-keys)) are rejected with the accepted list.
 
-Alias decision (JUM-461): `derby`/`derby-js` and `sails`/`sails-js` are the
+Alias decision: `derby`/`derby-js` and `sails`/`sails-js` are the
 same framework under two spellings. The canonical spellings are `derby-js` and
 `sails-js` — the forms accepted by
 `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts` — and the
@@ -306,8 +306,7 @@ UI.
 
 ### Error contract
 
-Responses distinguish parse, validation, and filesystem failures (landed by
-JUM-543; Requirement 126 §3):
+Responses distinguish parse, validation, and filesystem failures:
 
 - Malformed JSON body (POST): `400 { "error": "Invalid payload.", "details": … }`.
   The parse `try` is narrowed to `JSON.parse` only, so this envelope can never

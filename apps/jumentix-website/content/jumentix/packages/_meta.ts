@@ -13,6 +13,7 @@ export default {
   'runtime-infra': '@jumentix/runtime-infra',
   'cana-react': '@jumentix/cana-react',
   'cana-vue': '@jumentix/cana-vue',
+  'dead-letter-queue': '@jumentix/dead-letter-queue',
   cana: '@jumentix/cana',
   'designer-core': '@jumentix/designer-core',
   'key-value-storage': '@jumentix/key-value-storage',

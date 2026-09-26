@@ -76,11 +76,11 @@ How to use:
 
 1. Select a domain.
 2. Fill values in `Bounded Context`.
-3. Click `Save Context`.
+  3. Click `Save Context`.
 
 These fields are persisted in the designer state and exported through JSON/package flows.
 
-## 3.1) Architecture designer (JUM-815, JUM-816)
+## 3.1) Architecture designer
 
 The **Architecture** tab sits beside Domain Designer. A new model starts as one **Core** service (monolith) that hosts every domain. Core must keep the **Users** domain (identity and authentication). Additional services are boxes on the canvas:
 
@@ -97,9 +97,22 @@ How to use:
 3. Drop or **Move here** a domain other than Users onto the new service.
 4. **Add Link** between Core and the domain service.
 
-## 3.2) Per-service OAS export and Swagger (JUM-817, JUM-818)
+## 3.2) Per-service OAS export and Swagger
 
-Export OAS 3.1 now writes `x-services`, `servers[]` with `x-service-id`, `x-service` on operations and schemas, and `x-architecture-links`. The merged document is the Core view. The **OpenAPI** tab embeds Swagger UI (vendored from `apps/backend-template/OASdoc`). The service selector filters operations; Try it out uses that service's `servers` URL.
+Export OAS 3.1 now writes:
+
+- `x-services` and `servers[]` with `x-service-id`
+- `x-service` on every operation and entity schema
+- `x-architecture-links` for lossless architecture round-trip
+
+The merged document is the Core view (every operation, every service address). **OpenAPI** tab embeds Swagger UI (vendored `swagger-ui-dist` from `apps/backend-template/OASdoc`). The service selector filters to one service; Try it out uses that service's `servers` URL.
+
+How to use:
+
+1. Model architecture, then open **OpenAPI**.
+2. Choose **Merged Core document** or a named service.
+3. Press **Refresh** after model edits.
+4. Export OAS from Domain Designer Share panel for files; the catalog record may store `design.oasDocuments.merged` and `design.oasDocuments.services`.
 
 ## 4) Entity Editing and Templates
 
@@ -126,7 +139,7 @@ How to use:
 ## 5) RBAC Policy Mapping
 
 Per-entity action policy, aligned with the tenant RBAC authorization contract
-(`TENANT-RBAC-AUTHORIZATION-CONTRACT.md`, JUM-477):
+(`TENANT-RBAC-AUTHORIZATION-CONTRACT.md`):
 
 - Actions:
   - `list`
@@ -267,10 +280,10 @@ How to use:
 2. Use import buttons for JSON/OAS/package.
 3. For package export, selected domain is used as source package.
 
-### 10.1) OAS 3.1 export contract (Requirement 036, JUM-474)
+### 10.1) OAS 3.1 export contract
 
-The OpenAPI 3.1 export produces a document compliant with Requirement 036 and
-the route-resolution check (`ci-cd/check-oas-route-resolution.js`):
+The OpenAPI 3.1 export produces a document compliant with the port-object
+contract rules and the route-resolution check (`ci-cd/check-oas-route-resolution.js`):
 
 - Every operation carries a unique `operationId` on the canonical
   `spec/1.0.0.yml` verb scheme (`getAll*`, `create*`, `get*ById`, `update*`,
@@ -287,7 +300,7 @@ the route-resolution check (`ci-cd/check-oas-route-resolution.js`):
   (for example `Foo Bar` vs `Foo-Bar`) fail the export quality gate instead
   of silently overwriting each other in the document.
 
-### 10.2) Lossless OAS round-trip (JUM-478)
+### 10.2) Lossless OAS round-trip
 
 The OAS crossing is a contract between the exporter and the importer: what
 OAS cannot express natively crosses as agreed `x-` extensions and is
