@@ -2,7 +2,7 @@
 
 **Epic:** [P-JUM-32](https://linear.app/jumentix/project/epicrelease-git-tags-drive-changelog-github-releases-and-npm-publish-1488546fc45e)  
 **Issues:** JUM-882 … JUM-889  
-**Status (Req 130):** **Partial delivery** — tooling for F1–F7 is in tree; end-to-end proof is pending the next `main` push after `app-release.yml` lands.
+**Status (Req 130):** application tags and GitHub Releases are proven end to end; npm publication was re-planned and automated by JUM-894 (see below).
 
 ## Shipped in this delivery
 
@@ -26,18 +26,16 @@ from CircleCI cannot land. The repository already uses `CHANGELOG_GH_TOKEN` +
 `createCommitOnBranch` for `sync-changelog` (Req 113 always-on exception).
 Application releases reuse that same credential and signing path.
 
-## Pending E2E proof (blocks JUM-889 Done + Project Completed)
+## End-to-end proof
 
-Measured baseline at epic open (2026-09-23): `git ls-remote --tags origin` → 0 tags; no GitHub Releases; no `@jumentix/*` on npm.
+Baseline at epic open (2026-09-23): `git ls-remote --tags origin` → 0 tags; no GitHub Releases; no `@jumentix/*` on npm.
 
-After `app-release.yml` reaches `main`:
+Measured 2026-09-26:
 
-1. The next `main` push must produce exactly one new application tag `vX.Y.Z` and a matching GitHub Release (`gh release list`).
-2. First approved dispatch of **Publish npm packages** must publish at least one package and create its `@jumentix/<pkg>@<version>` tag (`npm view`, `git ls-remote --tags`).
-
-Paste those command outputs into a Linear Project Update before marking JUM-889 Done and the Project Completed (Req 094 / 102 / 130).
+1. Application tags: `git ls-remote --tags origin` lists `v0.1.0` through `v0.2.15`; `gh release list` shows a GitHub Release per tag (latest `v0.2.15`, 2026-09-26T15:25:33Z).
+2. npm: the only dispatch of **Publish npm packages** (run 35822469950, 2026-09-23) failed before the `id-token: write` fix landed and was never re-run. JUM-894 (epic `[EPIC][Docs] Unified Jumentix Documentation`) fixed two further publisher defects and made publication automatic after each application release; its first publish is recorded on that Issue.
 
 ## Operator prerequisites
 
 - GitHub Environment `secrets` must expose `CHANGELOG_GH_TOKEN` with contents + pull-requests write (already required by `sync-changelog`).
-- `NPM_CI_CD` remains the human gate for npm publish (Req 070).
+- `NPM_CI_CD` in the same environment authenticates the automated npm publish (Requirement 070, amended 2026-09-26).

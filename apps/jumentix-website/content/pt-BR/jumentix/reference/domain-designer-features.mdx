@@ -80,13 +80,26 @@ Como usar:
 
 Esses campos são persistidos no estado do designer e exportados por meio de fluxos JSON/pacote.
 
-## 3.1) Designer de arquitetura (JUM-815, JUM-816)
+## 3.1) Designer de arquitetura
 
-A aba **Architecture** fica ao lado do Domain Designer. Um modelo novo começa como um serviço **Core** (monolito) que hospeda todos os domínios. O Core deve manter o domínio **Users**. Serviços extras são caixas no canvas. Validação: exatamente um Core; Users no Core; cada domínio em um serviço.
+A aba **Architecture** fica ao lado do Domain Designer. Um modelo novo começa como um serviço **Core** (monolito) que hospeda todos os domínios. O Core deve manter o domínio **Users** (identidade e autenticação). Serviços extras são caixas no canvas:
 
-## 3.2) Export OAS por serviço e Swagger (JUM-817, JUM-818)
+- Criar, renomear, definir kind (`core` | `domain`), URL e id opcional de deploy target.
+- Arrastar um domínio para um serviço, ou atribuir pelo inspector (caminho de teclado).
+- Desenhar links com protocolo `rest`, `grpc`, `websocket` ou `message`.
+- Badges de validação: exatamente um Core; Users no Core; cada domínio em um serviço; `x-relation` cruzando fronteira de serviço gera aviso.
+- Mini-mapa, undo/redo e **Export image**.
 
-O export OAS 3.1 grava `x-services`, `servers[]` com `x-service-id` e `x-service`. A aba **OpenAPI** embute Swagger UI. O seletor filtra por serviço.
+Como usar:
+
+1. Abra Architecture.
+2. **Add Service** para separar o monolito.
+3. Solte ou **Move here** um domínio que não seja Users no novo serviço.
+4. **Add Link** entre Core e o serviço de domínio.
+
+## 3.2) Export OAS por serviço e Swagger
+
+O export OAS 3.1 agora grava `x-services`, `servers[]` com `x-service-id`, `x-service` em operações e schemas, e `x-architecture-links`. O documento mesclado é a vista Core. A aba **OpenAPI** embute Swagger UI (arquivos já revisados em `apps/backend-template/OASdoc`). O seletor filtra por serviço; Try it out usa o `servers` daquele serviço.
 
 ## 4) Edição de entidades e modelos
 
@@ -113,7 +126,7 @@ Como usar:
 ## 5) Mapeamento de políticas RBAC
 
 Política de ação por entidade, alinhada ao contrato de autorização de tenant e
-RBAC (`TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`, JUM-477):
+RBAC (`TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`):
 
 - Ações:
   - `lista`
@@ -257,7 +270,7 @@ Como usar:
 2. Use botões de importação para JSON/OAS/pacote.
 3. Para exportação de pacotes, o domínio selecionado é usado como pacote de origem.
 
-### 10.1) Contrato de exportação OAS 3.1 (Requisito 036, JUM-474)
+### 10.1) Contrato de exportação OAS 3.1
 
 A exportação OpenAPI 3.1 produz um documento em conformidade com o Requisito
 036 e com a verificação de resolução de rotas
@@ -280,7 +293,7 @@ A exportação OpenAPI 3.1 produz um documento em conformidade com o Requisito
   (por exemplo `Foo Bar` vs `Foo-Bar`) falham no portão de qualidade de
   exportação em vez de sobrescrever silenciosamente uma à outra no documento.
 
-### 10.2) Ida e volta OAS sem perdas (JUM-478)
+### 10.2) Ida e volta OAS sem perdas
 
 A travessia OAS é um contrato entre o exportador e o importador: o que o OAS
 não consegue expressar nativamente atravessa como extensões `x-` acordadas e

@@ -10,7 +10,8 @@ import {
 } from './cana-consumer-filter.mjs';
 import {
   assertNoContentLeaks,
-  stripGitHubContentLinks
+  stripGitHubContentLinks,
+  stripMaintainerProvenance
 } from './content-leaks.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -427,6 +428,7 @@ async function writeGeneratedDoc(record, routesBySource) {
   if (isCanaUsageGuideSource(record.source)) {
     raw = toCanaConsumerMarkdown(raw, { locale: record.locale });
   }
+  raw = stripMaintainerProvenance(raw);
   const body = sanitizeDocBody(
     joinWrappedInlineCodeSpans(
       await copyDocumentationImages(
