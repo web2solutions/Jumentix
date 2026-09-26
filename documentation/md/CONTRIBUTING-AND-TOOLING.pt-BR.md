@@ -48,6 +48,32 @@ O gate automatizado ignora somente o aviso estrito de limite de uso do Cursor,
 feito pelo login `cursor`. Todo outro feedback, inclusive de SonarCloud e
 Codecov, deve ser resolvido ou respondido com esta evidência.
 
+## Escrevendo documentação para o leitor certo
+
+Cada arquivo de documentação serve um único leitor. Nomeie esse leitor antes de escrever e
+mantenha cada fato em exatamente uma camada — as demais camadas apontam para ele.
+
+| Camada | Arquivos | Leitor |
+| --- | --- | --- |
+| Prospect | `README.md` / `README.pt-BR.md` da raiz, páginas comerciais do site | quem está decidindo se experimenta o Jumentix |
+| Desenvolvedor | páginas `/docs/**` do site (`apps/jumentix-website/content/**`) | quem integra o Jumentix |
+| Contribuidor | `documentation/md/**`, `README.md` de cada componente | quem constrói o Jumentix |
+| Agente / interno | `.agents/**` | um agente executando governança |
+
+Páginas de prospect e de desenvolvedor nunca trazem variáveis de controle de CI/gate
+(`JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`, `JUMENTIX_QUALITY_GATE_TARGET`, `JUMENTIX_GATE_V2`,
+`JUMENTIX_TEST_RUNTIME`), mecânica de fallback de provedor de CI, números de requisito, ids de
+issue do Linear nem caminhos `.agents/`. Chaves de runtime como `JUMENTIX_HTTP_FRAMEWORK` são
+configuração do produto e continuam permitidas.
+
+```bash
+bun run docs:check-audience
+```
+
+A verificação falha citando arquivo, linha e regra. Os casos existentes ficam listados com a
+issue responsável em `ci-cd/documentation-audience-allowlist.json`; a lista só diminui — uma
+entrada para um arquivo já limpo faz a verificação falhar até ser removida.
+
 ## Ferramentas
 
 Fiapos:

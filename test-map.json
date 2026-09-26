@@ -2812,6 +2812,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/check-documentation-audience.test.ts",
+      "path": "ci-cd/test/check-documentation-audience.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-workspace-ownership-placement.test.ts",
       "path": "ci-cd/test/check-workspace-ownership-placement.test.ts",
       "layer": "tooling",
@@ -6015,9 +6025,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 355,
+    "unit": 356,
     "integration": 102,
     "smoke": 2,
-    "suites": 518
+    "suites": 519
   }
 }
