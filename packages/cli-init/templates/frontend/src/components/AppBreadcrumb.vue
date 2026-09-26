@@ -1,44 +1,69 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import router from '@/router'
-import { useI18n } from '@/i18n'
+import { computed } from 'vue'
+import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router'
+import { localized, useI18n } from '@/i18n'
+import { findModule } from '@/modules/manifest'
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 
 interface Breadcrumb {
   active: boolean
-  name: string | symbol | undefined
-  path: string
+  label: string
+  href: string
 }
 
-const breadcrumbs = ref<Breadcrumb[]>([])
-
-const getBreadcrumbs = (): Breadcrumb[] => {
-  return router.currentRoute.value.matched.map((route) => ({
-    active: route.path === router.currentRoute.value.fullPath,
-    name: (route.meta.titleKey as string | undefined) ?? route.name,
-    path: `${router.options.history.base}${route.path}`,
-  }))
+/**
+ * Crumbs for the current location (JUM-906).
+ *
+ * `route.matched` holds route records, whose `path` is the pattern — a module
+ * page rendered "Home / Home" linking to `/#/m/:moduleId/:tab?`. Each crumb now
+ * links to a resolved location, and a module route shows the module and the
+ * active tab by name.
+ */
+const buildBreadcrumbs = (current: RouteLocationNormalizedLoaded): Breadcrumb[] => {
+  const crumbs: Breadcrumb[] = []
+  for (const record of current.matched) {
+    if (record.name === 'Module') {
+      const moduleId = String(current.params.moduleId ?? '')
+      const manifest = findModule(moduleId)
+      crumbs.push({
+        active: false,
+        label: manifest ? localized(manifest.title) : moduleId,
+        href: router.resolve({ name: 'Module', params: { moduleId } }).href
+      })
+      const tab = typeof current.params.tab === 'string' ? current.params.tab : ''
+      const entity = manifest?.entities.find((item) => item.id === tab)
+      const tabLabel = entity ? localized(entity.title) : tab === 'dashboard' ? t('nav.dashboard') : ''
+      if (tabLabel) crumbs.push({ active: false, label: tabLabel, href: router.resolve(current.fullPath).href })
+      continue
+    }
+    const key = record.meta.titleKey as string | undefined
+    crumbs.push({
+      active: false,
+      label: key ? t(key) : String(record.name ?? ''),
+      href: record.name
+        ? router.resolve({ name: record.name, params: record.path.includes(':') ? current.params : {} }).href
+        : router.resolve(current.fullPath).href
+    })
+  }
+  if (crumbs.length > 0) crumbs[crumbs.length - 1].active = true
+  return crumbs
 }
 
-router.afterEach(() => {
-  breadcrumbs.value = getBreadcrumbs()
-})
-
-onMounted(() => {
-  breadcrumbs.value = getBreadcrumbs()
-})
+const breadcrumbs = computed(() => buildBreadcrumbs(route))
 </script>
 
 <template>
   <CBreadcrumb class="my-0">
     <CBreadcrumbItem
       v-for="item in breadcrumbs"
-      :key="item.path"
-      :href="item.active ? '' : item.path"
+      :key="item.href + item.label"
+      :href="item.active ? '' : item.href"
       :active="item.active"
     >
-      {{ typeof item.name === 'string' && item.name.startsWith('nav.') ? t(item.name) : String(item.name ?? '') }}
+      {{ item.label }}
     </CBreadcrumbItem>
   </CBreadcrumb>
 </template>
