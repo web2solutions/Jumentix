@@ -2652,6 +2652,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/component/AppBreadcrumb.test.ts",
+      "path": "apps/frontend/test/component/AppBreadcrumb.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/component/ModuleLayout.test.ts",
       "path": "apps/frontend/test/component/ModuleLayout.test.ts",
       "layer": "frontend",
@@ -6035,9 +6047,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 357,
+    "unit": 358,
     "integration": 102,
     "smoke": 2,
-    "suites": 520
+    "suites": 521
   }
 }
