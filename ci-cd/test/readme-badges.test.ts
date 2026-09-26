@@ -82,20 +82,24 @@ describe('public README quality links', () => {
     }
   });
 
-  it('starts product users with the Jumentix CLI rather than repository development commands', () => {
+  it('starts product users with the published Jumentix CLI rather than repository development commands', () => {
     expect.hasAssertions();
 
+    // JUM-893: the retired clone-the-monorepo flags (`--service-type`,
+    // `--git-branch`) no longer exist on the shipped CLI.
     for (const document of [readme, ptReadme]) {
       expect({
-        usesCli: document.includes('bun x github:web2solutions/Jumentix#dev'),
-        choosesDev: document.includes('--git-branch=dev'),
-        choosesRest: document.includes('--service-type=rest'),
+        usesCli: document.includes('npx @jumentix/cli-init init'),
+        choosesMode: document.includes('--mode=monolith'),
+        usesServiceType: document.includes('--service-type'),
+        usesGitBranch: document.includes('--git-branch'),
         clonesRepository: document.includes('git clone https://github.com/web2solutions/Jumentix.git'),
         startsWorkspace: document.includes('bun run dev:express')
       }).toStrictEqual({
         usesCli: true,
-        choosesDev: true,
-        choosesRest: true,
+        choosesMode: true,
+        usesServiceType: false,
+        usesGitBranch: false,
         clonesRepository: false,
         startsWorkspace: false
       });
