@@ -4,7 +4,9 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-09-26 [JUM-889][Chore] Promote changelog race fix to main (#520) - Eduardo A.
+- 2026-09-26 [JUM-889][Chore] Reconcile main into dev + changelog race fix (#519) - Eduardo A.
+- 2026-09-26 fix(release): tolerate changelog-sync race after tagging - Eduardo A.
 
 ## v0.2.14 - 2026-09-25
 
