@@ -25,6 +25,27 @@ function fillSelect(select, items, selected) {
   });
 }
 
+/**
+ * A link joins the facing edges of two service cards at mid-height. The line
+ * used to run centre-to-centre at `y + 20`, straight through both titles
+ * (JUM-905).
+ */
+export function architectureLinkGeometry(from, to) {
+  const [left, right] = from.x <= to.x ? [from, to] : [to, from];
+  return {
+    x1: left.x + left.width,
+    y1: left.y + left.height / 2,
+    x2: right.x,
+    y2: right.y + right.height / 2
+  };
+}
+
+/** Link list entries name services instead of internal ids like `service-import-2` (JUM-905). */
+export function architectureLinkLabel(link, services) {
+  const nameOf = (id) => services.find((service) => service.id === id)?.name || id;
+  return `${nameOf(link.from)} —${link.protocol}→ ${nameOf(link.to)}`;
+}
+
 export function createArchitectureCanvas({ dom, state, actions }) {
   const { withPersist, saveState } = actions;
 
@@ -109,7 +130,7 @@ export function createArchitectureCanvas({ dom, state, actions }) {
       dom.architectureLinkList.innerHTML = '';
       architecture().links.forEach((link) => {
         const item = document.createElement('li');
-        item.textContent = `${link.from} —${link.protocol}→ ${link.to}`;
+        item.textContent = architectureLinkLabel(link, architecture().services);
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.textContent = 'Remove';
@@ -209,11 +230,12 @@ export function createArchitectureCanvas({ dom, state, actions }) {
       const from = architecture().services.find((service) => service.id === link.from);
       const to = architecture().services.find((service) => service.id === link.to);
       if (!from || !to) return;
+      const geometry = architectureLinkGeometry(from, to);
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', String(from.x + from.width / 2));
-      line.setAttribute('y1', String(from.y + 20));
-      line.setAttribute('x2', String(to.x + to.width / 2));
-      line.setAttribute('y2', String(to.y + 20));
+      line.setAttribute('x1', String(geometry.x1));
+      line.setAttribute('y1', String(geometry.y1));
+      line.setAttribute('x2', String(geometry.x2));
+      line.setAttribute('y2', String(geometry.y2));
       line.setAttribute('stroke', 'currentColor');
       line.dataset.protocol = link.protocol;
       svg.appendChild(line);
