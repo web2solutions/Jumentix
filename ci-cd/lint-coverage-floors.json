@@ -1,0 +1,6 @@
+{
+  "//": "JUM-19 / Requirement 138 §4 — recorded lint coverage floors. ci-cd/run-lint.js fails when a surface discovers fewer files than its floor. Lower a floor only deliberately, with the reason in the commit message.",
+  "root": 2802,
+  "frontend": 178,
+  "website": 179
+}

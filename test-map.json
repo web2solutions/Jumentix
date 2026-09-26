@@ -13,9 +13,7 @@
       "tier": "gate"
     },
     "domain": {
-      "dependsOn": [
-        "contracts"
-      ],
+      "dependsOn": ["contracts"],
       "sourceGlobs": [
         "apps/backend-template/src/modules/*/domain/**",
         "apps/backend-template/src/domains/**"
@@ -24,9 +22,7 @@
       "tier": "gate"
     },
     "application": {
-      "dependsOn": [
-        "domain"
-      ],
+      "dependsOn": ["domain"],
       "sourceGlobs": [
         "apps/backend-template/src/modules/*/application/**",
         "apps/backend-template/src/modules/*/service/**",
@@ -38,9 +34,7 @@
       "tier": "gate"
     },
     "adapters/out+infra": {
-      "dependsOn": [
-        "application"
-      ],
+      "dependsOn": ["application"],
       "sourceGlobs": [
         "apps/backend-template/src/infra/**",
         "apps/backend-template/src/modules/*/adapters/out/**",
@@ -50,9 +44,7 @@
       "tier": "gate"
     },
     "adapters/in": {
-      "dependsOn": [
-        "application"
-      ],
+      "dependsOn": ["application"],
       "sourceGlobs": [
         "apps/backend-template/src/modules/*/adapters/in/**",
         "apps/backend-template/src/interface/HTTP/adapters/**"
@@ -61,44 +53,27 @@
       "tier": "gate"
     },
     "interface/runtime": {
-      "dependsOn": [
-        "adapters/in",
-        "adapters/out+infra"
-      ],
-      "sourceGlobs": [
-        "apps/backend-template/src/interface/**"
-      ],
+      "dependsOn": ["adapters/in", "adapters/out+infra"],
+      "sourceGlobs": ["apps/backend-template/src/interface/**"],
       "runner": "node",
       "tier": "gate"
     },
     "service-management/server": {
-      "dependsOn": [
-        "contracts"
-      ],
-      "sourceGlobs": [
-        "apps/service-management/server.js",
-        "apps/service-management/package.json"
-      ],
+      "dependsOn": ["contracts"],
+      "sourceGlobs": ["apps/service-management/server.js", "apps/service-management/package.json"],
       "runner": "bun",
       "tier": "gate",
       "kind": "non-hexagonal"
     },
     "service-management/catalog-api": {
-      "dependsOn": [
-        "contracts"
-      ],
-      "sourceGlobs": [
-        "apps/service-management-api/**"
-      ],
+      "dependsOn": ["contracts"],
+      "sourceGlobs": ["apps/service-management-api/**"],
       "runner": "bun",
       "tier": "gate",
       "kind": "non-hexagonal"
     },
     "service-management/designer": {
-      "dependsOn": [
-        "service-management/server",
-        "service-management/catalog-api"
-      ],
+      "dependsOn": ["service-management/server", "service-management/catalog-api"],
       "sourceGlobs": [
         "apps/service-management/script.js",
         "apps/service-management/src/**",
@@ -112,22 +87,14 @@
     },
     "website": {
       "dependsOn": [],
-      "sourceGlobs": [
-        "apps/jumentix-website/**"
-      ],
+      "sourceGlobs": ["apps/jumentix-website/**"],
       "runner": "bun",
       "tier": "gate",
       "kind": "non-hexagonal"
     },
     "frontend": {
-      "dependsOn": [
-        "contracts"
-      ],
-      "sourceGlobs": [
-        "apps/frontend/**",
-        "packages/sdk-rest-client/src/**",
-        "spec/1.0.0.yml"
-      ],
+      "dependsOn": ["contracts"],
+      "sourceGlobs": ["apps/frontend/**", "packages/sdk-rest-client/src/**", "spec/1.0.0.yml"],
       "runner": "bun",
       "tier": "gate",
       "kind": "non-hexagonal"
@@ -3012,6 +2979,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/run-lint.test.ts",
+      "path": "ci-cd/test/run-lint.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/run-integration-tests.test.ts",
       "path": "ci-cd/test/run-integration-tests.test.ts",
       "layer": "tooling",
@@ -4883,6 +4860,56 @@
       "timeoutMs": 120000
     },
     {
+      "id": "packages/config-eslint/test/contract.test.ts",
+      "path": "packages/config-eslint/test/contract.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "packages/config-eslint/test/empty-glob.test.ts",
+      "path": "packages/config-eslint/test/empty-glob.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "packages/config-eslint/test/exports.test.ts",
+      "path": "packages/config-eslint/test/exports.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "packages/config-eslint/test/external.test.ts",
+      "path": "packages/config-eslint/test/external.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "packages/config-eslint/test/snapshot.test.ts",
+      "path": "packages/config-eslint/test/snapshot.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
       "path": "packages/database-client-factory/test/compileDatabaseClient.test.ts",
       "layer": "adapters/out+infra",
@@ -5995,9 +6022,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 353,
+    "unit": 359,
     "integration": 102,
     "smoke": 2,
-    "suites": 516
+    "suites": 522
   }
 }
