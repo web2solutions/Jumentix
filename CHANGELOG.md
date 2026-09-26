@@ -6,6 +6,17 @@
 
 - No changes.
 
+## v0.2.15 - 2026-09-26
+
+- 2026-09-26 chore(release): v0.2.15 (#525) - Eduardo A.
+- 2026-09-26 [JUM-889][Fix] Promote unattended release branch-gate fixes to main (#524) - Eduardo A.
+- 2026-09-26 [JUM-889][Fix] Force-reset stale chore/release branch tips (#523) - Eduardo A.
+- 2026-09-26 fix(release): diff generated PRs against main on branch push - Eduardo A.
+- 2026-09-26 fix(release): force-reset stale chore/release branch tips - Eduardo A.
+- 2026-09-26 [JUM-889][Chore] Promote changelog race fix to main (#520) - Eduardo A.
+- 2026-09-26 [JUM-889][Chore] Reconcile main into dev + changelog race fix (#519) - Eduardo A.
+- 2026-09-26 fix(release): tolerate changelog-sync race after tagging - Eduardo A.
+
 ## v0.2.14 - 2026-09-25
 
 - 2026-09-25 [JUM-889][Release] Promote unattended release automation to main (#517) - Eduardo A.
