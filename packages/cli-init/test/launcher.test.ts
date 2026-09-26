@@ -88,4 +88,13 @@ describe('repository CLI launcher (JUM-901)', () => {
       process.exitCode = previous;
     }
   });
+
+  it('exposes a bin named after the package so `npx @jumentix/cli-init` resolves', () => {
+    expect.hasAssertions();
+    const pkg = JSON.parse(require('node:fs').readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+
+    // npx runs the bin whose name equals the unscoped package name when a
+    // package declares several; without it `npx @jumentix/cli-init init` fails.
+    expect(pkg.bin['cli-init']).toBe(pkg.bin.jumentix);
+  });
 });
