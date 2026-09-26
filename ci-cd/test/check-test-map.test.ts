@@ -341,6 +341,20 @@ describe('browser-harness selection (JUM-622, JUM-623)', () => {
     expect(plan.selectedLayers).toStrictEqual(['tooling']);
   });
 
+  it('plans the tooling layer for a CLI-templates and .gitignore change (JUM-904)', () => {
+    expect.hasAssertions();
+
+    // The exact change set the gate rejected as `unsupported-change-set`.
+    const plan = planFor([
+      '.gitignore',
+      'packages/cli-init/templates.manifest.json',
+      'packages/cli-init/templates/backend/src/modules/Users/adapters/out/persistence/index.ts'
+    ]);
+
+    expect(plan.type).toBe('layer-aware');
+    expect(plan.selectedLayers).toStrictEqual(['tooling']);
+  });
+
   it('plans the browser suite for a change to the cypress config', () => {
     expect.hasAssertions();
 
