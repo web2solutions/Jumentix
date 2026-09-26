@@ -12,7 +12,11 @@ Propriedade do espaço de trabalho:
 
 - `packages/cli-init` possui a implementação da CLI, os templates empacotados e
   o gate de frescor.
-- O `bin/jumentix-bootstrap.js` da raiz delega ao pacote por compatibilidade.
+- O `bin/jumentix-bootstrap.js` da raiz (entrada `bun x github:web2solutions/Jumentix#dev`)
+  executa o build local de `packages/cli-init` quando ele e suas dependências
+  resolvem; numa instalação git nova, sem saída de build, executa o
+  `@jumentix/cli-init` publicado na mesma versão via `npx`, repassando argv e o
+  código de saída (`packages/cli-init/bin/launcher.js`).
 
 Instalar e invocar:
 
