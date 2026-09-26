@@ -60,6 +60,12 @@ The homepage uses the real Domain Designer canvas as full-bleed first-viewport m
 page uses the Jumentix mascot as an immediate brand signal. The product capture is stored at
 `public/product/domain-designer.png`.
 
+Every image on the site shows Jumentix itself. The starter-template leftovers the site was
+scaffolded with — the `mantine+nextjs+nextra-template.png` placeholder, the unused `Welcome`,
+`ProductHunt`, `Content`, `Sponsors` and `ColorSchemeToggle` components, the template author's
+footer link lists and the `@gfazioli/mantine-*` styles they needed — were removed (JUM-897).
+The only remaining trace is the attribution line in this app's README.
+
 ## Implementation
 
 ```text

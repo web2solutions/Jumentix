@@ -1,4 +1,4 @@
-# https://next-app-nextra-template.vercel.app/robots.txt
+# https://jumentix-website.vercel.app/robots.txt
 #
 # Search engines are welcome.
 User-agent: Googlebot
