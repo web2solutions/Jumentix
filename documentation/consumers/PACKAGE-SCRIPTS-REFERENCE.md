@@ -23,7 +23,7 @@ bun run <command>
 | `docs:translate:ptbr:links` | Generate or synchronize documentation artifacts. | `bun run docs:translate:ptbr:links` | `bun tooling/scripts/patch-ptbr-links.mjs` |
 | `docs:consumers:package-scripts` | Generate or synchronize documentation artifacts. | `bun run docs:consumers:package-scripts` | `bun tooling/scripts/generate-consumer-package-scripts-docs.mjs` |
 | `docs:check-current-governance` | Generate or synchronize documentation artifacts. | `bun run docs:check-current-governance` | `bun ci-cd/check-current-governance-docs.js` |
-| `prepare` | Install git hooks (husky). Usually runs automatically. | `bun run prepare` | `husky install` |
+| `prepare` | Install git hooks (husky). Usually runs automatically. | `bun run prepare` | `husky` |
 | `changelog:update` | Generate or verify changelog from git history. | `bun run changelog:update` | `bun ci-cd/update-changelog.js` |
 | `changelog:check` | Generate or verify changelog from git history. | `bun run changelog:check` | `bun ci-cd/update-changelog.js --check` |
 | `oas:check-routes` | Validate OpenAPI contracts and route resolution. | `bun run oas:check-routes` | `bun ci-cd/check-oas-route-resolution.js` |
