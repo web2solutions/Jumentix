@@ -165,8 +165,11 @@ Every generated workspace includes:
 
 `.jumentix/service-profile.json` is retired and removed when present.
 
-Runtime dependencies are published `@jumentix/*` packages pinned to the CLI
-version (not `workspace:*`). Generated projects must pass their own
+Runtime dependencies are published `@jumentix/*` packages, each pinned to its
+own version as recorded in `packages/cli-init/templates.manifest.json`
+(`packageVersions`, rebuilt by `bun run cli:build-templates`) — never
+`workspace:*`, and never one shared CLI version, because packages version
+independently. Generated projects must pass their own
 `lint` / `test` / `build` and boot in Docker.
 
 ## `add` (extend)

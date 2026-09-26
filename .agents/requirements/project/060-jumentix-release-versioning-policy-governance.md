@@ -40,8 +40,10 @@ Supporting scripts:
 Superseded (removed): `ci-cd/bumpTag.ts`, `ci-cd/bumpPackage.ts`. Local commits must not
 bump versions; promotion CI owns the app bump; npm publish owns package tags.
 
-The protected `secrets` GitHub Environment for npm publish (Requirement 070) remains a
-manual, human-approved gate. Tagging is additive and never bypasses that approval.
+npm publish runs automatically after each application release on `main` (Requirement 070,
+amended 2026-09-26, JUM-894) through the `secrets` GitHub Environment. The release gates on
+`main` are the approval: a version reaches npm only after its promotion PR passed every
+required check. Package tags are created only after a successful publish.
 
 ## Enforcement
 

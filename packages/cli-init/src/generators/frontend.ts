@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { GenerationPlan } from '../sources/types';
+import { resolveJumentixPin, type JumentixPin } from './jumentixVersions';
 import {
   patchI18nTitles,
   patchRouterHome,
@@ -26,7 +27,7 @@ export type GenerateFrontendOptions = {
   outputDir: string;
   /** npm scope from project name (`@<project>/frontend`). */
   projectName: string;
-  /** Pin for `@jumentix/*` deps (defaults to package version). */
+  /** Force one version for every `@jumentix/*` dep (default: recorded per-package versions). */
   jumentixVersion?: string;
   /** Override template root (tests). */
   templateRoot?: string;
@@ -50,16 +51,6 @@ const FRONTEND_JUMENTIX_DEPS = Object.freeze([
   '@jumentix/persistence-contracts',
   '@jumentix/sdk-rest-client'
 ]);
-
-function readCliVersion(packageRoot: string): string {
-  try {
-    const raw = fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8');
-    const parsed = JSON.parse(raw) as { version?: string };
-    return parsed.version && parsed.version !== '0.0.0' ? parsed.version : '0.0.0';
-  } catch {
-    return '0.0.0';
-  }
-}
 
 function copyFrontendTemplate(templateRoot: string, destRoot: string): void {
   const walk = (srcDir: string, rel = ''): void => {
@@ -85,7 +76,7 @@ function copyFrontendTemplate(templateRoot: string, destRoot: string): void {
 function writeFrontendPackageJson(
   frontendRoot: string,
   projectName: string,
-  jumentixVersion: string
+  pin: JumentixPin
 ): string {
   const pkgPath = path.join(frontendRoot, 'package.json');
   let pkg: Record<string, unknown> = {};
@@ -103,7 +94,7 @@ function writeFrontendPackageJson(
     : {}) as Record<string, string>;
   for (const name of FRONTEND_JUMENTIX_DEPS) {
     if (dependencies[name] !== undefined) {
-      dependencies[name] = jumentixVersion;
+      dependencies[name] = pin(name);
     }
   }
   pkg.dependencies = dependencies;
@@ -258,7 +249,7 @@ export async function generateFrontend(
 
   const packageRoot = path.resolve(__dirname, '..', '..');
   const templateRoot = options.templateRoot || resolveFrontendTemplateRoot(packageRoot);
-  const jumentixVersion = options.jumentixVersion || readCliVersion(packageRoot);
+  const pin = resolveJumentixPin(packageRoot, options.jumentixVersion);
   const scope = sanitizePackageScope(projectName);
   const offline = Boolean(plan.frontend?.offline);
 
@@ -269,7 +260,7 @@ export async function generateFrontend(
 
   log(`Generating frontend → apps/${appFolder} (offline=${offline ? 'yes' : 'no'})`);
   copyFrontendTemplate(templateRoot, frontendRoot);
-  const packageName = writeFrontendPackageJson(frontendRoot, scope, jumentixVersion);
+  const packageName = writeFrontendPackageJson(frontendRoot, scope, pin);
   const { bakedPaths } = bakeMergedOas(frontendRoot, plan);
   const oas = readBundledOas(frontendRoot);
 
