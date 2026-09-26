@@ -195,18 +195,38 @@ function ensureBranchAtSha({
     '-f', `ref=refs/heads/${branch}`,
     '-f', `sha=${sha}`
   ], { env, cwd, allowFailure: true });
-  if (created) return { created: true };
+  if (created) return { created: true, sha };
 
-  const existing = invoke([
+  const existingRaw = invoke([
     'api',
     `repos/${repository}/git/ref/heads/${branch}`
   ], { env, cwd, allowFailure: true });
-  if (!existing) {
+  if (!existingRaw) {
     throw new Error(
       `Could not create or read refs/heads/${branch} at ${sha}`
     );
   }
-  return { created: false, ref: JSON.parse(existing) };
+  const existing = JSON.parse(existingRaw);
+  const tip = existing && existing.object ? existing.object.sha : '';
+  if (tip === sha) {
+    return { created: false, forced: false, ref: existing, sha };
+  }
+
+  // Stale automation branches (e.g. chore/release-v0.2.15 left at an older
+  // bump OID) must be force-reset to the current tip before createCommitOnBranch
+  // (app-release run 36246791005: STALE_DATA vs main merge 23b897e4).
+  const updatedRaw = invoke([
+    'api', '-X', 'PATCH', `repos/${repository}/git/refs/heads/${branch}`,
+    '-f', `sha=${sha}`,
+    '-F', 'force=true'
+  ], { env, cwd, allowFailure: true });
+  if (!updatedRaw) {
+    throw new Error(
+      `Could not force-update refs/heads/${branch} to ${sha} (was ${tip || 'unknown'})`
+    );
+  }
+  const updated = JSON.parse(updatedRaw);
+  return { created: false, forced: true, ref: updated, sha };
 }
 
 function configureGitIdentity(rootDir) {
@@ -687,7 +707,7 @@ function createAppReleaseTagGithubApi(options = {}) {
   const branch = `chore/release-${tagOnMain}`;
   const { files, additions } = buildLockedVersionAdditions(rootDir, nextOnMain.nextVersion);
 
-  ensureBranchAtSha({
+  const ensuredReleaseBranch = ensureBranchAtSha({
     repository,
     branch,
     sha: mainSha,
@@ -698,7 +718,7 @@ function createAppReleaseTagGithubApi(options = {}) {
   const bump = createSignedCommitOnBranchWithGh({
     repository,
     branch,
-    expectedHeadOid: mainSha,
+    expectedHeadOid: ensuredReleaseBranch.sha || mainSha,
     headline: `chore(release): ${tagOnMain}`,
     additions,
     env
@@ -788,6 +808,8 @@ function syncChangelogAfterTag({
   const contents = fs.readFileSync(path.join(rootDir, 'CHANGELOG.md'), 'utf8');
   resetWorktree(rootDir);
 
+  // Force-reset tip to releaseSha when a prior race left the branch elsewhere;
+  // createCommitOnBranch then always expects releaseSha (or the forced tip).
   const ensured = ensureBranchAtSha({
     repository,
     branch: changelogBranch,
@@ -795,13 +817,7 @@ function syncChangelogAfterTag({
     env,
     cwd: rootDir
   });
-
-  // sync-changelog may race and land the same branch first (app-release run
-  // 36175725849). Reuse the current tip instead of insisting on releaseSha.
-  let expectedHeadOid = releaseSha;
-  if (!ensured.created && ensured.ref && ensured.ref.object && ensured.ref.object.sha) {
-    expectedHeadOid = ensured.ref.object.sha;
-  }
+  const expectedHeadOid = ensured.sha || releaseSha;
 
   try {
     createSignedCommitOnBranchWithGh({
@@ -814,7 +830,9 @@ function syncChangelogAfterTag({
     });
   } catch (error) {
     const message = String(error && error.message ? error.message : error);
-    if (!/but expected|Reference already exists|already exists/i.test(message)) {
+    // GitHub GraphQL STALE_DATA wording varies: "Expected branch to point to …
+    // but it did not", "but expected …", or "already exists".
+    if (!/STALE_DATA|Expected branch to point|but expected|but it did not|Reference already exists|already exists/i.test(message)) {
       throw error;
     }
     // Tip moved or commit already present — openAndMergeReleasePr reuses the PR.
