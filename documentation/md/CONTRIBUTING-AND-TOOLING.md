@@ -44,6 +44,32 @@ The automated gate ignores only Cursor's strict usage-limit notice from login
 `cursor`. All other feedback, including SonarCloud and Codecov, must be resolved
 or answered with this evidence.
 
+## Writing documentation for the right reader
+
+Every documentation file serves one reader. Name that reader before writing, and keep each
+fact in exactly one layer — the other layers link to it.
+
+| Layer | Files | Reader |
+| --- | --- | --- |
+| Prospect | root `README.md` / `README.pt-BR.md`, website commercial pages | someone deciding whether to try Jumentix |
+| Developer | website `/docs/**` pages (`apps/jumentix-website/content/**`) | an engineer integrating Jumentix |
+| Contributor | `documentation/md/**`, component `README.md` files | someone building Jumentix |
+| Agent / internal | `.agents/**` | an agent executing governance |
+
+Prospect and developer pages never carry CI/gate control variables
+(`JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`, `JUMENTIX_QUALITY_GATE_TARGET`, `JUMENTIX_GATE_V2`,
+`JUMENTIX_TEST_RUNTIME`), CI-provider fallback mechanics, requirement numbers, Linear issue
+ids, or `.agents/` paths. Runtime keys such as `JUMENTIX_HTTP_FRAMEWORK` are product
+configuration and stay allowed.
+
+```bash
+bun run docs:check-audience
+```
+
+The check fails naming file, line and rule. Existing offenders are listed with their owning
+issue in `ci-cd/documentation-audience-allowlist.json`; the list only shrinks — an entry for
+a file that is already clean fails the check until it is removed.
+
 ## Tooling
 
 Lint:

@@ -49,7 +49,7 @@ function validateCurrentGovernanceDocs(rootDir = ROOT) {
         failures.push(`${location}: active documentation must use bun run, not pnpm run`);
       }
       if (/CircleCI is disabled/i.test(line)) {
-        failures.push(`${location}: CircleCI is the secondary public CI mirror, not disabled`);
+        failures.push(`${location}: CircleCI is the canonical CI orchestrator, not disabled`);
       }
       if (/GitHub Project/i.test(line) && /single source of truth|canonical planning|authoritative planning/i.test(line)) {
         failures.push(`${location}: Linear is the only planning source of truth`);
