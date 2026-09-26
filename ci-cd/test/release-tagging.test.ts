@@ -255,6 +255,93 @@ describe('waitForPullRequestMergeable fail-fast', () => {
   });
 });
 
+describe('ensureBranchAtSha force-reset', () => {
+  const { ensureBranchAtSha } = require('../create-app-release-tag.js');
+
+  it('returns created when POST succeeds', () => {
+    expect.hasAssertions();
+    const calls: string[][] = [];
+    const result = ensureBranchAtSha({
+      repository: 'web2solutions/Jumentix',
+      branch: 'chore/release-v0.2.15',
+      sha: 'aaa111',
+      runGh: (args: string[]) => {
+        calls.push(args);
+        return '{"ref":"refs/heads/chore/release-v0.2.15"}';
+      }
+    });
+    expect(result).toStrictEqual({ created: true, sha: 'aaa111' });
+    expect(calls[0]?.[1]).toBe('-X');
+    expect(calls[0]?.[2]).toBe('POST');
+  });
+
+  it('no-ops when existing tip already matches sha', () => {
+    expect.hasAssertions();
+    const calls: string[][] = [];
+    const responses = [
+      '',
+      JSON.stringify({
+        ref: 'refs/heads/chore/release-v0.2.15',
+        object: { sha: 'bbb222' }
+      })
+    ];
+    let next = 0;
+    const result = ensureBranchAtSha({
+      repository: 'web2solutions/Jumentix',
+      branch: 'chore/release-v0.2.15',
+      sha: 'bbb222',
+      runGh: (args: string[]) => {
+        calls.push(args);
+        const value = responses[Math.min(next, responses.length - 1)];
+        next += 1;
+        return value;
+      }
+    });
+    expect(result.created).toBe(false);
+    expect(result.forced).toBe(false);
+    expect(result.sha).toBe('bbb222');
+    expect(calls.map((args) => args[1])).toStrictEqual(['-X', 'repos/web2solutions/Jumentix/git/ref/heads/chore/release-v0.2.15']);
+  });
+
+  it('force-updates when existing tip differs (stale release branch)', () => {
+    expect.hasAssertions();
+    const calls: string[][] = [];
+    const responses = [
+      '',
+      JSON.stringify({
+        ref: 'refs/heads/chore/release-v0.2.15',
+        object: { sha: '74edae61stale' }
+      }),
+      JSON.stringify({
+        ref: 'refs/heads/chore/release-v0.2.15',
+        object: { sha: 'ccc333' }
+      })
+    ];
+    let next = 0;
+    const result = ensureBranchAtSha({
+      repository: 'web2solutions/Jumentix',
+      branch: 'chore/release-v0.2.15',
+      sha: 'ccc333',
+      runGh: (args: string[]) => {
+        calls.push(args);
+        const value = responses[Math.min(next, responses.length - 1)];
+        next += 1;
+        return value;
+      }
+    });
+    expect(result).toStrictEqual(expect.objectContaining({
+      created: false,
+      forced: true,
+      sha: 'ccc333'
+    }));
+    expect(calls[2]).toStrictEqual([
+      'api', '-X', 'PATCH', 'repos/web2solutions/Jumentix/git/refs/heads/chore/release-v0.2.15',
+      '-f', 'sha=ccc333',
+      '-F', 'force=true'
+    ]);
+  });
+});
+
 describe('publish-npm-cohort helpers', () => {
   it('builds package tags from name and version', () => {
     expect.hasAssertions();

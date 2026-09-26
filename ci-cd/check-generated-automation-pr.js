@@ -57,7 +57,20 @@ function validateGeneratedAutomationPr(options = {}) {
   const env = options.env || process.env;
   const cwd = options.cwd || process.cwd();
   const headRef = options.headRef || resolveHeadRef(env);
-  const baseRef = options.baseRef || resolveBaseRef(env) || 'main';
+  let baseRef = options.baseRef || resolveBaseRef(env) || 'main';
+  // Generated release/changelog PRs always target `main`. On CircleCI branch-push
+  // pipelines (no CIRCLE_PULL_REQUEST), resolve_pr_metadata sets
+  // JUMENTIX_QUALITY_GATE_TARGET=CIRCLE_BRANCH, so resolveBaseRef collapses to the
+  // head itself and `git diff head...HEAD` is empty (job 2158 / PR #522).
+  if (
+    (isGeneratedAppReleaseBranch(headRef) || isGeneratedChangelogSyncBranch(headRef))
+    && baseRef !== 'main'
+    && baseRef !== 'dev'
+    && baseRef !== 'origin/main'
+    && baseRef !== 'origin/dev'
+  ) {
+    baseRef = 'main';
+  }
   const diffBaseRef = options.diffBaseRef
     || (baseRef === 'main' || baseRef === 'dev' ? `origin/${baseRef}` : baseRef);
   const changed = options.changedFiles || listChangedFiles(diffBaseRef, cwd);
