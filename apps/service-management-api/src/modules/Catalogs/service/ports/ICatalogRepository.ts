@@ -1,8 +1,9 @@
 import type { IPagingRequest, IPagingResponse } from '@src/modules/port';
-import type { Catalog } from '@service-management-api/modules/Catalogs/domain/Model/Catalog';
+
+import type Catalog from '@service-management-api/modules/Catalogs/domain/Model/Catalog';
+import type { RequestCatalogListOptions } from '@service-management-api/modules/Catalogs/interface/dto/RequestCatalogListOptions';
 import type { RequestCreateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestCreateCatalog';
 import type { RequestUpdateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestUpdateCatalog';
-import type { RequestCatalogListOptions } from '@service-management-api/modules/Catalogs/interface/dto/RequestCatalogListOptions';
 
 export interface ICatalogRepository {
   create(data: RequestCreateCatalog & { createdBy?: string }): Promise<Catalog>;
@@ -11,7 +12,7 @@ export interface ICatalogRepository {
   restore(id: string, expectedVersion: number, actor?: string): Promise<Catalog>;
   getOneById(id: string): Promise<Catalog>;
   getAll(
-    filters: Record<string, string|number>,
+    filters: Record<string, string | number>,
     paging: IPagingRequest,
     options?: RequestCatalogListOptions
   ): Promise<IPagingResponse<Catalog[]>>;

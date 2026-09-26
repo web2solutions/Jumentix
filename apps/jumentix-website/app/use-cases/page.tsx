@@ -1,5 +1,5 @@
 import { CommercialPage } from '@/components/commercial/CommercialPages';
 
-export default function UseCasesPage() {
-  return <CommercialPage page="use-cases" />;
-}
+const UseCasesPage = () => <CommercialPage page="use-cases" />;
+
+export default UseCasesPage;

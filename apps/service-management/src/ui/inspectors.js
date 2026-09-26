@@ -38,20 +38,10 @@
  * canonical runtime matrix.
  */
 
-import { FIELD_TYPES } from '@jumentix/designer-core/state/designerState.js';
-import { deriveTenantScoped } from '@jumentix/designer-core/model/rbacContract.js';
-import { isSampleDomain } from '@jumentix/designer-core/model/sampleModel.js';
-import { collectServiceConfigurationIssues } from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
-import { collectDeployTargetIssues } from '@jumentix/designer-core/validation/deployTargetValidation.js';
 import {
-  INTERFACE_TYPES,
-  getSupportedFrameworks
+  getSupportedFrameworks,
+  INTERFACE_TYPES
 } from '@jumentix/designer-core/model/interfaceFrameworkMatrix.js';
-import {
-  collectInterfaceAdapterIssues,
-  normalizeInterfaceAdapterInput,
-  upsertInterfaceAdapter
-} from '@jumentix/designer-core/validation/interfaceAdapterValidation.js';
 import {
   entityLabel,
   findEntity,
@@ -60,6 +50,16 @@ import {
   toPathToken,
   toSchemaName
 } from '@jumentix/designer-core/model/modelQueries.js';
+import { deriveTenantScoped } from '@jumentix/designer-core/model/rbacContract.js';
+import { isSampleDomain } from '@jumentix/designer-core/model/sampleModel.js';
+import { FIELD_TYPES } from '@jumentix/designer-core/state/designerState.js';
+import collectDeployTargetIssues from '@jumentix/designer-core/validation/deployTargetValidation.js';
+import {
+  collectInterfaceAdapterIssues,
+  normalizeInterfaceAdapterInput,
+  upsertInterfaceAdapter
+} from '@jumentix/designer-core/validation/interfaceAdapterValidation.js';
+import collectServiceConfigurationIssues from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
 
 /**
  * @param {Object} options
@@ -79,7 +79,7 @@ import {
  * target lifecycle) and `syncDeploymentEditStateAfterRemoval(index)` (keeps an
  * in-flight deploy-target edit consistent when the list removes an entry).
  */
-export function createInspectors({ dom, state, interaction, actions }) {
+function createInspectors({ dom, state, interaction, actions }) {
   const {
     withPersist,
     render,
@@ -131,11 +131,19 @@ export function createInspectors({ dom, state, interaction, actions }) {
     const context = selected?.context || {};
     dom.domainUbiquitousLanguageInput.value = context.ubiquitousLanguage || '';
     dom.domainOwnerTeamInput.value = context.ownerTeam || '';
-    dom.domainUpstreamInput.value = Array.isArray(context.upstreamDependencies) ? context.upstreamDependencies.join(', ') : '';
-    dom.domainDownstreamInput.value = Array.isArray(context.downstreamDependencies) ? context.downstreamDependencies.join(', ') : '';
+    dom.domainUpstreamInput.value = Array.isArray(context.upstreamDependencies)
+      ? context.upstreamDependencies.join(', ')
+      : '';
+    dom.domainDownstreamInput.value = Array.isArray(context.downstreamDependencies)
+      ? context.downstreamDependencies.join(', ')
+      : '';
     dom.domainIntegrationChannelInput.value = context.integrationChannel || '';
-    dom.domainPackageDependenciesInput.value = Array.isArray(context.packageDependencies) ? context.packageDependencies.join(', ') : '';
-    dom.domainSharedValueObjectsInput.value = Array.isArray(context.sharedValueObjects) ? context.sharedValueObjects.join(', ') : '';
+    dom.domainPackageDependenciesInput.value = Array.isArray(context.packageDependencies)
+      ? context.packageDependencies.join(', ')
+      : '';
+    dom.domainSharedValueObjectsInput.value = Array.isArray(context.sharedValueObjects)
+      ? context.sharedValueObjects.join(', ')
+      : '';
     const disabled = !selected;
     dom.domainUbiquitousLanguageInput.disabled = disabled;
     dom.domainOwnerTeamInput.disabled = disabled;
@@ -151,7 +159,9 @@ export function createInspectors({ dom, state, interaction, actions }) {
   function renderEntityOptions() {
     const entries = [];
     state.domains.forEach((domain) => {
-      domain.entities.forEach((entity) => entries.push({ id: entity.id, label: `${domain.name} / ${entity.name}` }));
+      domain.entities.forEach((entity) =>
+        entries.push({ id: entity.id, label: `${domain.name} / ${entity.name}` })
+      );
     });
     const selectedMoveDomain = dom.entityMoveDomainSelect.value;
     dom.entityMoveDomainSelect.innerHTML = '';
@@ -209,7 +219,9 @@ export function createInspectors({ dom, state, interaction, actions }) {
   }
 
   function syncRelationshipInspector() {
-    const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
+    const relationship = state.relationships.find(
+      (candidate) => candidate.id === state.selectedRelationshipId
+    );
     const disabled = !relationship;
     dom.relationshipNameInput.disabled = disabled;
     dom.relationshipFromEntitySelect.disabled = disabled;
@@ -244,11 +256,20 @@ export function createInspectors({ dom, state, interaction, actions }) {
     dom.relationshipToEntitySelect.value = relationship.toEntityId;
     dom.relationshipFromCardSelect.value = relationship.fromCardinality || '1';
     dom.relationshipToCardSelect.value = relationship.toCardinality || '1';
-    dom.relationshipLabelOffsetXInput.value = Number.isFinite(relationship.labelOffsetX) ? String(relationship.labelOffsetX) : '0';
-    dom.relationshipLabelOffsetYInput.value = Number.isFinite(relationship.labelOffsetY) ? String(relationship.labelOffsetY) : '0';
-    dom.relationshipBendXInput.value = Number.isFinite(relationship.bendX) ? String(relationship.bendX) : '';
-    dom.relationshipBendYInput.value = Number.isFinite(relationship.bendY) ? String(relationship.bendY) : '';
-    dom.relationshipAnchorBehaviorSelect.value = relationship.anchorBehavior === 'center' ? 'center' : 'auto';
+    dom.relationshipLabelOffsetXInput.value = Number.isFinite(relationship.labelOffsetX)
+      ? String(relationship.labelOffsetX)
+      : '0';
+    dom.relationshipLabelOffsetYInput.value = Number.isFinite(relationship.labelOffsetY)
+      ? String(relationship.labelOffsetY)
+      : '0';
+    dom.relationshipBendXInput.value = Number.isFinite(relationship.bendX)
+      ? String(relationship.bendX)
+      : '';
+    dom.relationshipBendYInput.value = Number.isFinite(relationship.bendY)
+      ? String(relationship.bendY)
+      : '';
+    dom.relationshipAnchorBehaviorSelect.value =
+      relationship.anchorBehavior === 'center' ? 'center' : 'auto';
   }
 
   function renderPickStatus() {
@@ -303,6 +324,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
       payloadBtn.type = 'button';
       payloadBtn.textContent = 'payload';
       payloadBtn.onclick = () => {
+        // eslint-disable-next-line no-alert -- native prompt collects the free-text input in this no-framework runtime
         const raw = window.prompt(
           `Payload schema JSON for ${contract.type}:${contract.name}`,
           JSON.stringify(contract.payloadSchema || {}, null, 2)
@@ -314,7 +336,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
             contract.payloadSchema = parsed;
             renderEntityContractsInspector(entity);
           });
-        } catch (_) {
+        } catch {
           showStatus('Invalid JSON payload schema.');
         }
       };
@@ -323,7 +345,9 @@ export function createInspectors({ dom, state, interaction, actions }) {
       removeBtn.textContent = 'x';
       removeBtn.onclick = () => {
         withPersist(() => {
-          entity.meta.contracts = entity.meta.contracts.filter((candidate) => candidate.id !== contract.id);
+          entity.meta.contracts = entity.meta.contracts.filter(
+            (candidate) => candidate.id !== contract.id
+          );
           renderEntityContractsInspector(entity);
         });
       };
@@ -417,10 +441,19 @@ export function createInspectors({ dom, state, interaction, actions }) {
     dom.entityOasExternalRefsInput.disabled = false;
     dom.entityOasDiscriminatorInput.disabled = false;
     dom.saveEntityOasCompositionBtn.disabled = false;
-    const composition = found.entity?.meta?.oasComposition || { mode: '', refs: [], externalRefs: [], discriminator: '' };
+    const composition = found.entity?.meta?.oasComposition || {
+      mode: '',
+      refs: [],
+      externalRefs: [],
+      discriminator: ''
+    };
     dom.entityOasCompositionModeSelect.value = composition.mode || '';
-    dom.entityOasCompositionRefsInput.value = Array.isArray(composition.refs) ? composition.refs.join(', ') : '';
-    dom.entityOasExternalRefsInput.value = Array.isArray(composition.externalRefs) ? composition.externalRefs.join(', ') : '';
+    dom.entityOasCompositionRefsInput.value = Array.isArray(composition.refs)
+      ? composition.refs.join(', ')
+      : '';
+    dom.entityOasExternalRefsInput.value = Array.isArray(composition.externalRefs)
+      ? composition.externalRefs.join(', ')
+      : '';
     dom.entityOasDiscriminatorInput.value = composition.discriminator || '';
     dom.fieldTemplateSelect.disabled = false;
     dom.applyFieldTemplateBtn.disabled = false;
@@ -488,16 +521,17 @@ export function createInspectors({ dom, state, interaction, actions }) {
       save.type = 'button';
       save.textContent = 'save';
       save.setAttribute('aria-label', `Save ${fieldLabel}`);
-      save.onclick = () => updateField(found.entity.id, field.name, {
-        name: nameInput.value,
-        type: typeSelect.value,
-        required: requiredCheck.checked,
-        pk: pkCheck.checked,
-        fk: fkCheck.checked,
-        unique: uniqueCheck.checked,
-        indexed: indexedCheck.checked,
-        nullable: nullableCheck.checked
-      });
+      save.onclick = () =>
+        updateField(found.entity.id, field.name, {
+          name: nameInput.value,
+          type: typeSelect.value,
+          required: requiredCheck.checked,
+          pk: pkCheck.checked,
+          fk: fkCheck.checked,
+          unique: uniqueCheck.checked,
+          indexed: indexedCheck.checked,
+          nullable: nullableCheck.checked
+        });
       const del = document.createElement('button');
       del.type = 'button';
       del.textContent = 'x';
@@ -538,7 +572,9 @@ export function createInspectors({ dom, state, interaction, actions }) {
   function renderModelCheckResults(issues) {
     dom.modelCheckList.innerHTML = '';
     const threshold = state.view.modelCheckMinSeverity || 'info';
-    const filtered = issues.filter((issue) => severityRank(issue.severity || 'error') >= severityRank(threshold));
+    const filtered = issues.filter(
+      (issue) => severityRank(issue.severity || 'error') >= severityRank(threshold)
+    );
     if (!filtered.length) {
       const li = document.createElement('li');
       li.textContent = 'No issues found.';
@@ -579,10 +615,14 @@ export function createInspectors({ dom, state, interaction, actions }) {
   async function renderSchemaDiffStatus() {
     if (dom.schemaDiffList.children.length > 0) return;
     const hasBaseline = Boolean(await loadSchemaBaseline());
-    renderSchemaDiffResults([{
-      severity: hasBaseline ? 'info' : 'warn',
-      message: hasBaseline ? 'Baseline loaded. Run diff to preview migration hints.' : 'No baseline saved yet.'
-    }]);
+    renderSchemaDiffResults([
+      {
+        severity: hasBaseline ? 'info' : 'warn',
+        message: hasBaseline
+          ? 'Baseline loaded. Run diff to preview migration hints.'
+          : 'No baseline saved yet.'
+      }
+    ]);
   }
 
   // Index of the adapter whose inline editor is open (JUM-545 edit-in-place);
@@ -609,7 +649,9 @@ export function createInspectors({ dom, state, interaction, actions }) {
       option.textContent = framework;
       dom.interfaceFrameworkSelect.appendChild(option);
     });
-    dom.interfaceFrameworkSelect.value = frameworks.includes(current) ? current : (frameworks[0] || '');
+    dom.interfaceFrameworkSelect.value = frameworks.includes(current)
+      ? current
+      : frameworks[0] || '';
   }
 
   /**
@@ -646,7 +688,9 @@ export function createInspectors({ dom, state, interaction, actions }) {
         option.textContent = framework;
         frameworkSelect.appendChild(option);
       });
-      frameworkSelect.value = frameworks.includes(selectedValue) ? selectedValue : (frameworks[0] || '');
+      frameworkSelect.value = frameworks.includes(selectedValue)
+        ? selectedValue
+        : frameworks[0] || '';
     };
     typeSelect.onchange = () => syncFrameworkOptions('');
     syncFrameworkOptions(adapter.framework);
@@ -706,79 +750,63 @@ export function createInspectors({ dom, state, interaction, actions }) {
     // path, including the partial renders of the delete buttons.
     if (dom.interfaceDesignerEmptyState) {
       dom.interfaceDesignerEmptyState.hidden = state.interfaces.length > 0;
-    if (editingAdapterIndex !== null
-      && (editingAdapterIndex < 0 || editingAdapterIndex >= state.interfaces.length)) {
-      editingAdapterIndex = null;
-    }
-    if (dom.interfaceTypeSelect) {
-      renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
-    }
-    dom.interfaceAdapterList.innerHTML = '';
-    state.interfaces.forEach((adapter, index) => {
-      const item = document.createElement('li');
-      item.className = 'relationship-item';
-      const summary = document.createElement('div');
-      summary.className = 'relationship-name';
-      summary.textContent = `${adapter.type} | ${adapter.framework} | ${adapter.entrypoint} -> ${adapter.controller}`;
-      item.appendChild(summary);
-
-      // A persisted entry can predate the JUM-545 lifecycle validation (it
-      // was free text before the gate existed): flag it inline instead of
-      // rendering it as a valid design. The entry excludes itself from the
-      // duplicate scan (editingIndex = index).
-      const persistedIssues = collectInterfaceAdapterIssues(adapter, state.interfaces, index);
-      if (persistedIssues.length > 0) {
-        const warning = document.createElement('div');
-        warning.className = 'hint status-error';
-        warning.textContent = persistedIssues.map((issue) => issue.message).join(' ');
-        item.appendChild(warning);
+      if (
+        editingAdapterIndex !== null &&
+        (editingAdapterIndex < 0 || editingAdapterIndex >= state.interfaces.length)
+      ) {
+        editingAdapterIndex = null;
       }
+      if (dom.interfaceTypeSelect) {
+        renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
+      }
+      dom.interfaceAdapterList.innerHTML = '';
+      state.interfaces.forEach((adapter, index) => {
+        const item = document.createElement('li');
+        item.className = 'relationship-item';
+        const summary = document.createElement('div');
+        summary.className = 'relationship-name';
+        summary.textContent = `${adapter.type} | ${adapter.framework} | ${adapter.entrypoint} -> ${adapter.controller}`;
+        item.appendChild(summary);
 
-      if (editingAdapterIndex === index) {
-        item.appendChild(buildInterfaceAdapterEditor(adapter, index));
-      } else {
-        const editBtn = document.createElement('button');
-        editBtn.type = 'button';
-        editBtn.textContent = 'Edit';
-        editBtn.onclick = () => {
-          editingAdapterIndex = index;
-          renderInterfaceAdapters();
-        };
-        item.appendChild(editBtn);
+        // A persisted entry can predate the JUM-545 lifecycle validation (it
+        // was free text before the gate existed): flag it inline instead of
+        // rendering it as a valid design. The entry excludes itself from the
+        // duplicate scan (editingIndex = index).
+        const persistedIssues = collectInterfaceAdapterIssues(adapter, state.interfaces, index);
+        if (persistedIssues.length > 0) {
+          const warning = document.createElement('div');
+          warning.className = 'hint status-error';
+          warning.textContent = persistedIssues.map((issue) => issue.message).join(' ');
+          item.appendChild(warning);
+        }
 
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.textContent = 'Delete';
-        removeBtn.onclick = () => {
-          withPersist(() => {
-            state.interfaces.splice(index, 1);
-            editingAdapterIndex = null;
+        if (editingAdapterIndex === index) {
+          item.appendChild(buildInterfaceAdapterEditor(adapter, index));
+        } else {
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.textContent = 'Edit';
+          editBtn.onclick = () => {
+            editingAdapterIndex = index;
             renderInterfaceAdapters();
-          });
-        };
-        item.appendChild(removeBtn);
-      }
-      dom.interfaceAdapterList.appendChild(item);
-    });
-  }
-  }
+          };
+          item.appendChild(editBtn);
 
-  function renderServiceConfiguration() {
-    if (!dom.serviceKindSelect) return;
-    dom.serviceKindSelect.value = state.serviceConfiguration.serviceKind || 'rest-api';
-    dom.runModeSelect.value = state.serviceConfiguration.runMode || 'dedicated-server';
-    dom.cloudProviderSelect.value = state.serviceConfiguration.cloudProvider || 'aws';
-    dom.serviceStaticAssetsInput.value = state.serviceConfiguration.staticAssetsPath || '';
-    const currentPorts = state.serviceConfiguration.ports || { rest: 3000, websocket: 3001, grpc: 3002 };
-    if (dom.serviceHttpPortInput) dom.serviceHttpPortInput.value = String(currentPorts.rest || 3000);
-    if (dom.serviceWebsocketPortInput) dom.serviceWebsocketPortInput.value = String(currentPorts.websocket || 3001);
-    if (dom.serviceGrpcPortInput) dom.serviceGrpcPortInput.value = String(currentPorts.grpc || 3002);
-
-    renderPm2EcosystemPreview();
-    if (!dom.serviceConfigPreview) return;
-    dom.serviceConfigPreview.textContent = JSON.stringify(state.serviceConfiguration, null, 2);
-    renderServiceConfigStatus();
-    renderRuntimeEnvironment();
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.textContent = 'Delete';
+          removeBtn.onclick = () => {
+            withPersist(() => {
+              state.interfaces.splice(index, 1);
+              editingAdapterIndex = null;
+              renderInterfaceAdapters();
+            });
+          };
+          item.appendChild(removeBtn);
+        }
+        dom.interfaceAdapterList.appendChild(item);
+      });
+    }
   }
 
   // Service-kind → ecosystem app-name suffixes (JUM-480). The app names come
@@ -807,11 +835,16 @@ export function createInspectors({ dom, state, interaction, actions }) {
    */
   function renderPm2EcosystemPreview() {
     if (!dom.serviceRuntimeProfilePreview) return;
-    const currentPorts = state.serviceConfiguration.ports || { rest: 3000, websocket: 3001, grpc: 3002 };
+    const currentPorts = state.serviceConfiguration.ports || {
+      rest: 3000,
+      websocket: 3001,
+      grpc: 3002
+    };
     const serviceKind = state.serviceConfiguration.serviceKind || 'rest-api';
     const preview = getPm2EcosystemPreview();
     if (!preview) {
-      dom.serviceRuntimeProfilePreview.textContent = 'PM2 ecosystem preview not loaded yet — select a PM2 Preview Environment above.';
+      dom.serviceRuntimeProfilePreview.textContent =
+        'PM2 ecosystem preview not loaded yet — select a PM2 Preview Environment above.';
       return;
     }
     if (preview.error) {
@@ -822,26 +855,34 @@ export function createInspectors({ dom, state, interaction, actions }) {
       dom.serviceRuntimeProfilePreview.textContent = `No PM2 ecosystem file for environment "${preview.environment}" (expected ${preview.path}). The preview is intentionally empty.`;
       return;
     }
-    const suffixes = SERVICE_KIND_APP_SUFFIXES[serviceKind] || SERVICE_KIND_APP_SUFFIXES['rest-api'];
-    const selectedApps = preview.apps.filter((app) => suffixes.some((suffix) => app.name.endsWith(`-${suffix}`)));
-    const suggestedPm2Command = selectedApps.length > 0
-      ? `pm2 start ${preview.path} --only ${selectedApps.map((app) => app.name).join(',')} --update-env`
-      : '';
-    dom.serviceRuntimeProfilePreview.textContent = JSON.stringify({
-      selectedRuntimeProfile: SERVICE_KIND_LABELS[serviceKind] || SERVICE_KIND_LABELS['rest-api'],
-      vmRequirement: 'Use PM2 with separated processes and ports',
-      environment: preview.environment,
-      ecosystemFile: preview.path,
-      ecosystemApps: preview.apps.map((app) => ({
-        name: app.name,
-        script: app.script,
-        command: app.command
-      })),
-      processCount: selectedApps.length,
-      processes: selectedApps.map((app) => app.name),
-      ports: currentPorts,
-      suggestedPm2Command
-    }, null, 2);
+    const suffixes =
+      SERVICE_KIND_APP_SUFFIXES[serviceKind] || SERVICE_KIND_APP_SUFFIXES['rest-api'];
+    const selectedApps = preview.apps.filter((app) =>
+      suffixes.some((suffix) => app.name.endsWith(`-${suffix}`))
+    );
+    const suggestedPm2Command =
+      selectedApps.length > 0
+        ? `pm2 start ${preview.path} --only ${selectedApps.map((app) => app.name).join(',')} --update-env`
+        : '';
+    dom.serviceRuntimeProfilePreview.textContent = JSON.stringify(
+      {
+        selectedRuntimeProfile: SERVICE_KIND_LABELS[serviceKind] || SERVICE_KIND_LABELS['rest-api'],
+        vmRequirement: 'Use PM2 with separated processes and ports',
+        environment: preview.environment,
+        ecosystemFile: preview.path,
+        ecosystemApps: preview.apps.map((app) => ({
+          name: app.name,
+          script: app.script,
+          command: app.command
+        })),
+        processCount: selectedApps.length,
+        processes: selectedApps.map((app) => app.name),
+        ports: currentPorts,
+        suggestedPm2Command
+      },
+      null,
+      2
+    );
   }
 
   /**
@@ -864,6 +905,31 @@ export function createInspectors({ dom, state, interaction, actions }) {
     }
     dom.serviceConfigStatus.textContent = current.map((issue) => issue.message).join(' ');
     dom.serviceConfigStatus.classList.add('status-error');
+  }
+
+  function renderServiceConfiguration() {
+    if (!dom.serviceKindSelect) return;
+    dom.serviceKindSelect.value = state.serviceConfiguration.serviceKind || 'rest-api';
+    dom.runModeSelect.value = state.serviceConfiguration.runMode || 'dedicated-server';
+    dom.cloudProviderSelect.value = state.serviceConfiguration.cloudProvider || 'aws';
+    dom.serviceStaticAssetsInput.value = state.serviceConfiguration.staticAssetsPath || '';
+    const currentPorts = state.serviceConfiguration.ports || {
+      rest: 3000,
+      websocket: 3001,
+      grpc: 3002
+    };
+    if (dom.serviceHttpPortInput)
+      dom.serviceHttpPortInput.value = String(currentPorts.rest || 3000);
+    if (dom.serviceWebsocketPortInput)
+      dom.serviceWebsocketPortInput.value = String(currentPorts.websocket || 3001);
+    if (dom.serviceGrpcPortInput)
+      dom.serviceGrpcPortInput.value = String(currentPorts.grpc || 3002);
+
+    renderPm2EcosystemPreview();
+    if (!dom.serviceConfigPreview) return;
+    dom.serviceConfigPreview.textContent = JSON.stringify(state.serviceConfiguration, null, 2);
+    renderServiceConfigStatus();
+    renderRuntimeEnvironment();
   }
 
   function renderDeployments() {
@@ -947,3 +1013,5 @@ export function createInspectors({ dom, state, interaction, actions }) {
     renderDeployments
   };
 }
+
+export default createInspectors;

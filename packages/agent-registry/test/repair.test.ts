@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -17,6 +16,7 @@ import {
   syncSnapshot,
   upsertAgent
 } from '../src';
+
 import type { AgentRecord } from '../src';
 
 /**
@@ -47,8 +47,12 @@ const firestore = {
   collection: () => ({
     doc: (id: string) => ({
       get: async () => ({ exists: store.has(id), data: () => store.get(id) }),
-      set: async (data: AgentRecord) => { store.set(id, data); },
-      delete: async () => { store.delete(id); }
+      set: async (data: AgentRecord) => {
+        store.set(id, data);
+      },
+      delete: async () => {
+        store.delete(id);
+      }
     }),
     get: async () => ({
       docs: [...store.entries()].map(([id, agent]) => ({ id, data: () => agent }))
@@ -206,8 +210,9 @@ describe('the agent registry repair', () => {
 
       seedMigrated('fixture-agent-001', { workspace_path: '`unknown`' });
 
-      await expect(repairRegistry(firestore, { apply: true }))
-        .rejects.toThrow(/does not produce a valid record/);
+      await expect(repairRegistry(firestore, { apply: true })).rejects.toThrow(
+        /does not produce a valid record/
+      );
     });
 
     /**
@@ -224,8 +229,9 @@ describe('the agent registry repair', () => {
 
       await repairRegistry(firestore, { apply: true });
 
-      expect(store.get('fixture-agent-001')?.active_epic)
-        .toBe('none (epic closed: JUM-581, promoted as cf6098b)');
+      expect(store.get('fixture-agent-001')?.active_epic).toBe(
+        'none (epic closed: JUM-581, promoted as cf6098b)'
+      );
     });
 
     it('replaces capabilities that are not a list with an empty one', async () => {
@@ -241,10 +247,13 @@ describe('the agent registry repair', () => {
     it('repairs a corrupt record in place when its id was already right', async () => {
       expect.hasAssertions();
 
-      store.set('fixture-agent-001', buildAgent({
-        agent_id: 'fixture-agent-001',
-        workspace_path: '`/tmp/x`'
-      }));
+      store.set(
+        'fixture-agent-001',
+        buildAgent({
+          agent_id: 'fixture-agent-001',
+          workspace_path: '`/tmp/x`'
+        })
+      );
 
       const [action] = (await repairRegistry(firestore, { apply: true })).actions;
 
@@ -265,11 +274,14 @@ describe('the agent registry repair', () => {
       expect.hasAssertions();
 
       seedMigrated('fixture-agent-002', { workspace_path: '`/old/path`' });
-      store.set('fixture-agent-002', buildAgent({
-        agent_id: 'fixture-agent-002',
-        workspace_path: '/current/path',
-        status: 'busy'
-      }));
+      store.set(
+        'fixture-agent-002',
+        buildAgent({
+          agent_id: 'fixture-agent-002',
+          workspace_path: '/current/path',
+          status: 'busy'
+        })
+      );
 
       await repairRegistry(firestore, { apply: true });
 
@@ -296,8 +308,9 @@ describe('the agent registry repair', () => {
 
       store.set('``', buildAgent({ agent_id: '``' }));
 
-      await expect(repairRegistry(firestore, { apply: true }))
-        .rejects.toThrow(/no recoverable agent id/);
+      await expect(repairRegistry(firestore, { apply: true })).rejects.toThrow(
+        /no recoverable agent id/
+      );
     });
 
     /**
@@ -309,8 +322,9 @@ describe('the agent registry repair', () => {
 
       seedMigrated('fixture-agent-001', { status: '`working`' });
 
-      await expect(repairRegistry(firestore, { apply: true }))
-        .rejects.toThrow(/unrecognised status "working"/);
+      await expect(repairRegistry(firestore, { apply: true })).rejects.toThrow(
+        /unrecognised status "working"/
+      );
     });
 
     it('refuses to write back a record that is still invalid after cleaning', async () => {
@@ -318,8 +332,9 @@ describe('the agent registry repair', () => {
 
       seedMigrated('fixture-agent-001', { platform: '``' });
 
-      await expect(repairRegistry(firestore, { apply: true }))
-        .rejects.toThrow(/does not produce a valid record/);
+      await expect(repairRegistry(firestore, { apply: true })).rejects.toThrow(
+        /does not produce a valid record/
+      );
     });
 
     it('leaves the collection untouched when it refuses', async () => {
@@ -327,8 +342,9 @@ describe('the agent registry repair', () => {
 
       seedMigrated('fixture-agent-001', { status: '`working`' });
 
-      await expect(repairRegistry(firestore, { apply: true }))
-        .rejects.toThrow(/unrecognised status/);
+      await expect(repairRegistry(firestore, { apply: true })).rejects.toThrow(
+        /unrecognised status/
+      );
       expect([...store.keys()]).toStrictEqual(['`fixture-agent-001`']);
     });
   });
@@ -378,8 +394,9 @@ describe('the agent registry repair', () => {
       store.set('fixture-agent-002-copy', buildAgent({ agent_id: 'fixture-agent-002' }));
       await syncSnapshot(firestore);
 
-      await expect(checkSnapshot(firestore))
-        .rejects.toThrow(/more than one document per agent: fixture-agent-002/);
+      await expect(checkSnapshot(firestore)).rejects.toThrow(
+        /more than one document per agent: fixture-agent-002/
+      );
     });
 
     /**
@@ -390,23 +407,28 @@ describe('the agent registry repair', () => {
     it('fails when an exempt agent has declared a workspace but is still listed', async () => {
       expect.hasAssertions();
 
-      store.set('codex-primary-001', buildAgent({
-        agent_id: 'codex-primary-001',
-        workspace_path: '/Users/e/apps/XpertMinds/codex-primary-001/Jumentix'
-      }));
+      store.set(
+        'codex-primary-001',
+        buildAgent({
+          agent_id: 'codex-primary-001',
+          workspace_path: '/Users/e/apps/XpertMinds/codex-primary-001/Jumentix'
+        })
+      );
       await syncSnapshot(firestore);
 
-      await expect(checkSnapshot(firestore))
-        .rejects.toThrow(/still exempt: codex-primary-001/);
+      await expect(checkSnapshot(firestore)).rejects.toThrow(/still exempt: codex-primary-001/);
     });
 
     it('passes for an exempt agent that still holds its placeholder', async () => {
       expect.hasAssertions();
 
-      store.set('codex-primary-001', buildAgent({
-        agent_id: 'codex-primary-001',
-        workspace_path: 'unknown'
-      }));
+      store.set(
+        'codex-primary-001',
+        buildAgent({
+          agent_id: 'codex-primary-001',
+          workspace_path: 'unknown'
+        })
+      );
       await syncSnapshot(firestore);
 
       await expect(checkSnapshot(firestore)).resolves.toBeUndefined();
@@ -472,8 +494,7 @@ describe('the agent registry repair', () => {
 
       store.set('a', buildAgent({ agent_id: 'a' }));
 
-      await expect(getAllAgents(firestore))
-        .resolves.toStrictEqual([buildAgent({ agent_id: 'a' })]);
+      await expect(getAllAgents(firestore)).resolves.toStrictEqual([buildAgent({ agent_id: 'a' })]);
 
       const snapshot = await generateSnapshot(firestore);
 
@@ -486,8 +507,7 @@ describe('the agent registry repair', () => {
 
       store.set('a', buildAgent({ agent_id: 'a' }));
 
-      await expect(getAgent(firestore, 'a'))
-        .resolves.toStrictEqual(buildAgent({ agent_id: 'a' }));
+      await expect(getAgent(firestore, 'a')).resolves.toStrictEqual(buildAgent({ agent_id: 'a' }));
       await expect(getAgent(firestore, 'absent')).resolves.toBeNull();
     });
 
@@ -502,8 +522,9 @@ describe('the agent registry repair', () => {
 
       expect(store.has('a')).toBe(true);
 
-      await expect(upsertAgent(firestore, buildAgent({ agent_id: '`b`' })))
-        .rejects.toThrow(/Refusing to write an invalid agent registry record/);
+      await expect(upsertAgent(firestore, buildAgent({ agent_id: '`b`' }))).rejects.toThrow(
+        /Refusing to write an invalid agent registry record/
+      );
       expect(store.has('`b`')).toBe(false);
     });
 
@@ -529,27 +550,29 @@ describe('the agent registry repair', () => {
     });
 
     /**
-   * The front door (JUM-614). Registering is a fresh declaration, so a
-   * placeholder is refused for everyone — including the seven agents whose
-   * *stored* records are exempt. The exemption covers what a migration wrote,
-   * not what an agent chooses to say now.
-   */
+     * The front door (JUM-614). Registering is a fresh declaration, so a
+     * placeholder is refused for everyone — including the seven agents whose
+     * *stored* records are exempt. The exemption covers what a migration wrote,
+     * not what an agent chooses to say now.
+     */
     it.each(['unknown', 'none', 'tbd', 'relative/path'])(
       'refuses to register with %p as a workspace',
       async (workspacePath: string) => {
         expect.hasAssertions();
 
-        await expect(registerAgent(firestore, {
-          agent_id: 'codex-primary-001',
-          agent_name: 'Codex Primary',
-          platform: 'Codex',
-          machine_id: 'machine-001',
-          machine_name: 'test-machine',
-          machine_os: 'Darwin',
-          workspace_path: workspacePath,
-          agent_runtime: 'Codex CLI',
-          agent_version: '1.0.0'
-        })).rejects.toThrow(/workspace_path/);
+        await expect(
+          registerAgent(firestore, {
+            agent_id: 'codex-primary-001',
+            agent_name: 'Codex Primary',
+            platform: 'Codex',
+            machine_id: 'machine-001',
+            machine_name: 'test-machine',
+            machine_os: 'Darwin',
+            workspace_path: workspacePath,
+            agent_runtime: 'Codex CLI',
+            agent_version: '1.0.0'
+          })
+        ).rejects.toThrow(/workspace_path/);
       }
     );
 

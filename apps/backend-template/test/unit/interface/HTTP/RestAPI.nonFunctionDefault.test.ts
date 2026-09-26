@@ -1,4 +1,3 @@
-/* eslint-disable jest/max-expects */
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
 
 // A handler module whose default export is truthy but not callable must not
@@ -13,12 +12,12 @@ describe('restAPI handler factory with a non-function default export', () => {
     expect.hasAssertions();
 
     const api = Object.create(RestAPI.prototype);
-    expect(() => (api as any).getHandlerFactory({
-      moduleName: 'Users',
-      operationId: 'logout',
-      endPointConfig: { operationId: 'logout' }
-    })).toThrow(
-      'Handler not found for module Users, operation logout, framework undefined.'
-    );
+    expect(() =>
+      api.getHandlerFactory({
+        moduleName: 'Users',
+        operationId: 'logout',
+        endPointConfig: { operationId: 'logout' }
+      })
+    ).toThrow('Handler not found for module Users, operation logout, framework undefined.');
   });
 });

@@ -1,8 +1,12 @@
+import Image from 'next/image';
+
 import config from '@/config';
 import changelogEntries from '@/content/changelog.json';
+
 import { ActionLink, Pagination, SectionHeading, StatusBadge } from '../design-system';
-import type { CommercialLocale } from './CommercialPages';
 import classes from './CommercialPages.module.css';
+
+import type { CommercialLocale } from './CommercialPages';
 
 const CHANGES_PER_PAGE = 200;
 
@@ -15,8 +19,7 @@ interface ChangelogEntry {
 
 const entries = changelogEntries as ChangelogEntry[];
 
-const clampPage = (value: number) =>
-  Number.isFinite(value) && value >= 1 ? Math.floor(value) : 1;
+const clampPage = (value: number) => (Number.isFinite(value) && value >= 1 ? Math.floor(value) : 1);
 
 const loadChanges = (page: number) => {
   const totalPages = Math.max(1, Math.ceil(entries.length / CHANGES_PER_PAGE));
@@ -25,7 +28,7 @@ const loadChanges = (page: number) => {
   return {
     changes: entries.slice(start, start + CHANGES_PER_PAGE),
     currentPage,
-    totalPages,
+    totalPages
   };
 };
 
@@ -33,7 +36,7 @@ const formatDate = (value: string, locale: CommercialLocale) =>
   new Date(value).toLocaleString(locale === 'pt-BR' ? 'pt-BR' : 'en-US', {
     year: 'numeric',
     month: 'short',
-    day: '2-digit',
+    day: '2-digit'
   });
 
 const changeUrl = (change: ChangelogEntry) =>
@@ -41,13 +44,14 @@ const changeUrl = (change: ChangelogEntry) =>
     ? `https://github.com/${config.gitHub.repo}/commit/${change.sha}`
     : `https://github.com/${config.gitHub.repo}/commits/${config.gitHub.defaultBranch}`;
 
-export function CommercialChangelogPage({
+// eslint-disable-next-line import-x/prefer-default-export -- single named export consumed via named imports/barrels; converting to default would change the module API
+export const CommercialChangelogPage = ({
   locale = 'en',
-  page: requestedPage = '1',
+  page: requestedPage = '1'
 }: {
   locale?: CommercialLocale;
   page?: string;
-}) {
+}) => {
   const portuguese = locale === 'pt-BR';
   const { changes, currentPage, totalPages } = loadChanges(Number(requestedPage));
 
@@ -66,17 +70,19 @@ export function CommercialChangelogPage({
             </p>
             <div className={classes.sectionActions}>
               <ActionLink
-                href={`https://github.com/${config.gitHub.repo}/commits/${config.gitHub.defaultBranch}`}
                 external
+                href={`https://github.com/${config.gitHub.repo}/commits/${config.gitHub.defaultBranch}`}
               >
                 {portuguese ? 'Histórico completo' : 'Full GitHub history'}
               </ActionLink>
             </div>
           </div>
-          <img
-            className={classes.mascot}
-            src="/brand/jumentix-mascot.png"
+          <Image
             alt={portuguese ? 'Mascote Jumentix' : 'Jumentix mascot'}
+            className={classes.mascot}
+            height={300}
+            src="/brand/jumentix-mascot.png"
+            width={300}
           />
         </div>
       </section>
@@ -85,17 +91,24 @@ export function CommercialChangelogPage({
           <div className={classes.paginationRow}>
             <SectionHeading
               eyebrow={portuguese ? 'Mudanças publicadas' : 'Published changes'}
-              title={portuguese ? `Página ${currentPage} de ${totalPages}` : `Page ${currentPage} of ${totalPages}`}
+              title={
+                portuguese
+                  ? `Página ${currentPage} de ${totalPages}`
+                  : `Page ${currentPage} of ${totalPages}`
+              }
             />
             <Pagination
               current={currentPage}
-              total={Math.min(totalPages, 12)}
               hrefBase={basePath}
+              total={Math.min(totalPages, 12)}
             />
           </div>
           <div className={classes.changelogList}>
             {changes.map((change) => (
-              <article className={classes.change} key={change.sha ?? `${change.date}-${change.message}`}>
+              <article
+                key={change.sha ?? `${change.date}-${change.message}`}
+                className={classes.change}
+              >
                 <div className={classes.changeHeader}>
                   <h2>{change.message}</h2>
                   {change.sha ? <StatusBadge>{change.sha.slice(0, 8)}</StatusBadge> : null}
@@ -106,7 +119,7 @@ export function CommercialChangelogPage({
                     {portuguese ? 'por' : 'by'} {change.author}
                   </span>
                 </div>
-                <a href={changeUrl(change)} target="_blank" rel="noreferrer">
+                <a href={changeUrl(change)} rel="noreferrer" target="_blank">
                   {portuguese ? 'Ver mudança no GitHub' : 'View change on GitHub'}
                 </a>
               </article>
@@ -116,4 +129,4 @@ export function CommercialChangelogPage({
       </section>
     </main>
   );
-}
+};

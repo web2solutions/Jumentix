@@ -1,9 +1,9 @@
-import type { Router } from 'vue-router';
-
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { appOperations } from '@/contracts/appOperations';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
+
+import type { Router } from 'vue-router';
 
 /**
  * Session guard (session expiry auto-redirect): the SDK is the only UI↔server
@@ -50,10 +50,19 @@ export const installSessionGuard = (router: Router): void => {
     const profile = useProfileStore();
     // Reset the profile too: roles cached from the dead session would otherwise
     // survive into the next login in the same tab (JUM-776 e2e finding).
-    handleSdkEvent(event, () => { auth.expire(); profile.reset(); }, () => {
-      if (router.currentRoute.value.meta.public !== true) {
-        router.push('/login');
+    handleSdkEvent(
+      event,
+      () => {
+        auth.expire();
+        profile.reset();
+      },
+      () => {
+        if (router.currentRoute.value.meta.public !== true) {
+          router.push('/login').catch(() => {
+            // Session is already cleared; a failed redirect leaves the current view.
+          });
+        }
       }
-    });
+    );
   });
 };

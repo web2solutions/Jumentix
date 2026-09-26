@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: packages/sdk-rest-client/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # @jumentix/sdk-rest-client
 
 Cliente REST SDK conduzido por OperationIds OpenAPI (`/spec/1.0.0.yml`).
@@ -34,4 +35,3 @@ const response = await client.request({
 ```bash
 bun run --filter @jumentix/sdk-rest-client build
 ```
-

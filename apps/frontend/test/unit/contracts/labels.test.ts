@@ -1,10 +1,10 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
 
 import { fieldDescriptors } from '@/contracts/formSchema';
 import { fieldHelp, fieldLabel, humanize } from '@/contracts/labels';
 import { resetLocale, setLocale } from '@/i18n';
+
+import must from '../support';
 
 /**
  * JUM-780 — labels come from the contract: `x-label[locale]` → `title` →
@@ -19,7 +19,9 @@ describe('field labels from the OAS', () => {
   it('prefers x-label of the active locale, then en, then title, then the humanized name', () => {
     expect.hasAssertions();
     setLocale('pt-BR');
-    expect(fieldLabel({ name: 'firstName', xLabel: { en: 'First name', 'pt-BR': 'Nome' } })).toBe('Nome');
+    expect(fieldLabel({ name: 'firstName', xLabel: { en: 'First name', 'pt-BR': 'Nome' } })).toBe(
+      'Nome'
+    );
     expect(fieldLabel({ name: 'firstName', xLabel: { en: 'First name' } })).toBe('First name');
     expect(fieldLabel({ name: 'firstName', title: 'Given name' })).toBe('Given name');
     expect(fieldLabel({ name: 'firstName' })).toBe('First name');
@@ -36,7 +38,10 @@ describe('field labels from the OAS', () => {
 
   it('reads x-label from the bundled spec and keeps description as help (drift test)', () => {
     expect.hasAssertions();
-    const organization = fieldDescriptors('User').find((d) => d.name === 'organization')!;
+    const organization = must(
+      fieldDescriptors('User').find((d) => d.name === 'organization'),
+      'User.organization'
+    );
     setLocale('en');
     expect(fieldLabel(organization)).toBe('Organization');
     expect(fieldHelp(organization)).toBe('Organization id for tenant users (admin/user)');

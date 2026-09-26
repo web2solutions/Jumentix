@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Dependency override integrity guard.
  *
@@ -33,8 +34,9 @@
  * would have quietly relaxed a security floor.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
@@ -81,7 +83,7 @@ const REQUIRED_OVERRIDES = {
   // Raised on 2026-08-13: openapi-typescript@5 nested `undici@5.29.0` past the
   // resolutions pin; 5.29.0 is the latest 5.x and carries HIGH WebSocket GHSAs.
   // Flat override lifts it to the already-resolved 6.28.0 line.
-  undici: '^6.28.0',
+  undici: '^6.28.0'
 };
 
 /** Resolutions that must survive alongside the overrides. */
@@ -91,7 +93,7 @@ const REQUIRED_RESOLUTIONS = {
   // clearing the current moderate advisories.
   undici: '^6.28.0',
   mermaid: '^11.16.1',
-  dompurify: '^3.4.13',
+  dompurify: '^3.4.13'
 };
 
 /**
@@ -105,7 +107,7 @@ const REQUIRED_PATCHES = {
   // documentation site renders — the container it observes is empty, an empty
   // box has no area, and a box with no area never intersects. Dropped silently,
   // the site goes back to shipping blank spaces where diagrams should be.
-  '@theguild/remark-mermaid@0.3.0': 'patches/@theguild%2Fremark-mermaid@0.3.0.patch',
+  '@theguild/remark-mermaid@0.3.0': 'patches/@theguild%2Fremark-mermaid@0.3.0.patch'
 };
 
 /**
@@ -129,13 +131,13 @@ function validateOverrideIntegrity(pkg, retiredSurfacesPresent = [], patchExists
     const actual = overrides[name];
     if (actual === undefined) {
       failures.push(
-        `override "${name}" is missing. It was pinned to ${expected} before the Bun migration; `
-          + 'removing it lets the vulnerable transitive version resolve again.',
+        `override "${name}" is missing. It was pinned to ${expected} before the Bun migration; ` +
+          'removing it lets the vulnerable transitive version resolve again.'
       );
     } else if (actual !== expected) {
       failures.push(
-        `override "${name}" is "${actual}", expected "${expected}". If this change is intentional, `
-          + 'update REQUIRED_OVERRIDES in this guard in the same commit, with the reason.',
+        `override "${name}" is "${actual}", expected "${expected}". If this change is intentional, ` +
+          'update REQUIRED_OVERRIDES in this guard in the same commit, with the reason.'
       );
     }
   }
@@ -149,8 +151,8 @@ function validateOverrideIntegrity(pkg, retiredSurfacesPresent = [], patchExists
   for (const [target, patchPath] of Object.entries(REQUIRED_PATCHES)) {
     if (patches[target] !== patchPath) {
       failures.push(
-        `patchedDependencies is missing "${target}" -> "${patchPath}". The JUM-23 baseline recorded `
-          + '`bun install` dropping this field entirely; that is exactly what this check catches.',
+        `patchedDependencies is missing "${target}" -> "${patchPath}". The JUM-23 baseline recorded ` +
+          '`bun install` dropping this field entirely; that is exactly what this check catches.'
       );
     } else if (!patchExists(patchPath)) {
       failures.push(`patch file "${patchPath}" is declared but does not exist on disk.`);
@@ -162,8 +164,8 @@ function validateOverrideIntegrity(pkg, retiredSurfacesPresent = [], patchExists
   for (const name of Object.keys(overrides)) {
     if (name.includes('>')) {
       failures.push(
-        `override key "${name}" uses pnpm nested-selector syntax, which Bun and npm do not accept `
-          + '(npm reports EINVALIDTAGNAME). Convert it to a flat pin, which is strictly stronger.',
+        `override key "${name}" uses pnpm nested-selector syntax, which Bun and npm do not accept ` +
+          '(npm reports EINVALIDTAGNAME). Convert it to a flat pin, which is strictly stronger.'
       );
     }
   }
@@ -171,13 +173,15 @@ function validateOverrideIntegrity(pkg, retiredSurfacesPresent = [], patchExists
   // A second surface that CI does not read is a stale pin waiting to be trusted.
   for (const label of retiredSurfacesPresent) {
     failures.push(
-      `${label} still exists. Overrides are now declared once, in package.json. A second surface `
-        + 'that CI does not read is a stale pin waiting to be trusted.',
+      `${label} still exists. Overrides are now declared once, in package.json. A second surface ` +
+        'that CI does not read is a stale pin waiting to be trusted.'
     );
   }
 
   if (pkg.pnpm !== undefined) {
-    failures.push('package.json still declares a "pnpm" section. Its contents must move to the Bun equivalents.');
+    failures.push(
+      'package.json still declares a "pnpm" section. Its contents must move to the Bun equivalents.'
+    );
   }
 
   return failures;
@@ -232,9 +236,9 @@ function validateOverrideMajors(pkg, readDependentRange) {
     const declaredRange = readDependentRange(dependent, overridden);
     if (declaredRange === null) {
       failures.push(
-        `"${dependent}" no longer depends on "${overridden}", but this guard still pairs them. `
-          + 'Remove the entry from OVERRIDE_MAJOR_COMPATIBILITY, or remove the override if it has '
-          + 'no remaining purpose.',
+        `"${dependent}" no longer depends on "${overridden}", but this guard still pairs them. ` +
+          'Remove the entry from OVERRIDE_MAJOR_COMPATIBILITY, or remove the override if it has ' +
+          'no remaining purpose.'
       );
       continue;
     }
@@ -244,19 +248,19 @@ function validateOverrideMajors(pkg, readDependentRange) {
 
     if (declaredMajor !== overrideMajor) {
       failures.push(
-        `override "${overridden}": "${dependent}" declares ${declaredRange} but the override `
-          + `forces ${overrideRange}. Crossing a major means ${dependent} loads a package with a `
-          + 'different API — it will not fail to install and it will not fail to boot. See '
-          + 'JUM-587: this exact shape broke every Express response.',
+        `override "${overridden}": "${dependent}" declares ${declaredRange} but the override ` +
+          `forces ${overrideRange}. Crossing a major means ${dependent} loads a package with a ` +
+          'different API — it will not fail to install and it will not fail to boot. See ' +
+          'JUM-587: this exact shape broke every Express response.'
       );
       continue;
     }
 
     if (declaredMajor !== requiredMajor) {
       failures.push(
-        `"${dependent}" now declares ${overridden} ${declaredRange}, but this guard expects major `
-          + `${requiredMajor}. Update OVERRIDE_MAJOR_COMPATIBILITY deliberately, after confirming `
-          + 'the override is still correct for the new major.',
+        `"${dependent}" now declares ${overridden} ${declaredRange}, but this guard expects major ` +
+          `${requiredMajor}. Update OVERRIDE_MAJOR_COMPATIBILITY deliberately, after confirming ` +
+          'the override is still correct for the new major.'
       );
     }
   }
@@ -277,24 +281,24 @@ function readInstalledDependentRange(dependent, overridden) {
 
 /** pnpm surfaces that must stay retired, reported by label when still on disk. */
 function detectRetiredSurfaces() {
-  return ['pnpm-workspace.yaml', 'pnpm-lock.yaml']
-    .filter((label) => fs.existsSync(path.join(repoRoot, label)));
+  return ['pnpm-workspace.yaml', 'pnpm-lock.yaml'].filter((label) =>
+    fs.existsSync(path.join(repoRoot, label))
+  );
 }
 
 function main() {
   if (!fs.existsSync(packageJsonPath)) {
     console.error('Dependency override integrity guard failed: package.json is missing.');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
   const failures = [
-    ...validateOverrideIntegrity(
-      pkg,
-      detectRetiredSurfaces(),
-      (patchPath) => fs.existsSync(path.join(repoRoot, patchPath)),
+    ...validateOverrideIntegrity(pkg, detectRetiredSurfaces(), (patchPath) =>
+      fs.existsSync(path.join(repoRoot, patchPath))
     ),
-    ...validateOverrideMajors(pkg, readInstalledDependentRange),
+    ...validateOverrideMajors(pkg, readInstalledDependentRange)
   ];
 
   if (failures.length > 0) {
@@ -303,14 +307,15 @@ function main() {
       console.error(`  - ${failure}`);
     }
     console.error('');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log(
-    `Dependency override integrity guard passed: ${Object.keys(REQUIRED_OVERRIDES).length} pins, `
-      + `${Object.keys(REQUIRED_RESOLUTIONS).length} resolutions, `
-      + `${Object.keys(REQUIRED_PATCHES).length} patch(es) intact, `
-      + `${OVERRIDE_MAJOR_COMPATIBILITY.length} major-compatibility pair(s) verified.`,
+    `Dependency override integrity guard passed: ${Object.keys(REQUIRED_OVERRIDES).length} pins, ` +
+      `${Object.keys(REQUIRED_RESOLUTIONS).length} resolutions, ` +
+      `${Object.keys(REQUIRED_PATCHES).length} patch(es) intact, ` +
+      `${OVERRIDE_MAJOR_COMPATIBILITY.length} major-compatibility pair(s) verified.`
   );
 }
 
@@ -319,14 +324,14 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
+  detectRetiredSurfaces,
+  main,
   OVERRIDE_MAJOR_COMPATIBILITY,
   rangeMajor,
   readInstalledDependentRange,
-  validateOverrideMajors,
   REQUIRED_OVERRIDES,
   REQUIRED_PATCHES,
   REQUIRED_RESOLUTIONS,
-  detectRetiredSurfaces,
-  main,
   validateOverrideIntegrity,
+  validateOverrideMajors
 };

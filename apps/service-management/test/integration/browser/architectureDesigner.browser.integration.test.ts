@@ -1,17 +1,21 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
+/* eslint-disable jest/no-conditional-in-test */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+
 import { webkit } from 'playwright-webkit';
-import type { Browser } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  clickInPanels,
+  createTempConfigDir,
   envFileContent,
   startServer,
-  clickInPanels,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
@@ -22,9 +26,24 @@ describe('architecture designer and swagger tab (JUM-819)', () => {
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
   beforeAll(async () => {
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], { cwd: repoRoot, stdio: 'inherit' });
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-designer-core.js'], { cwd: repoRoot, stdio: 'inherit' });
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-cana-bundle.js'],
+      { cwd: repoRoot, stdio: 'inherit' }
+    );
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-designer-core.js'],
+      { cwd: repoRoot, stdio: 'inherit' }
+    );
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
     await waitForServer(server.port);
@@ -40,7 +59,7 @@ describe('architecture designer and swagger tab (JUM-819)', () => {
 
   it('shows the monolith Core, splits a service, moves a domain and draws a link', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
     await page.waitForSelector('body[data-designer-ready="true"]');
@@ -54,7 +73,10 @@ describe('architecture designer and swagger tab (JUM-819)', () => {
     await page.waitForSelector('.architecture-service-domain');
     const serviceCount = await page.$$eval('.architecture-service', (nodes) => nodes.length);
     expect(serviceCount).toBeGreaterThan(1);
-    const domainId = await page.$eval('.architecture-domain-chip', (el) => (el as HTMLElement).dataset.domainId || '');
+    const domainId = await page.$eval(
+      '.architecture-domain-chip',
+      (el) => (el as HTMLElement).dataset.domainId || ''
+    );
     await page.selectOption('#architecture-inspect-domain', domainId);
     await page.click('.architecture-service-domain');
     await page.click('#architecture-move-domain-btn');
@@ -67,14 +89,16 @@ describe('architecture designer and swagger tab (JUM-819)', () => {
 
   it('renders sample operations in the OpenAPI tab', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
     await page.waitForSelector('body[data-designer-ready="true"]');
     await clickInPanels(page, '#load-sample-btn');
     await page.click('#tab-openapi-btn');
     await page.waitForSelector('#openapi-service-select');
-    const options = await page.$$eval('#openapi-service-select option', (nodes) => nodes.map((node) => (node as HTMLOptionElement).value));
+    const options = await page.$$eval('#openapi-service-select option', (nodes) =>
+      nodes.map((node) => (node as HTMLOptionElement).value)
+    );
     expect(options).toContain('merged');
     expect(options).toContain('core');
     await context.close();

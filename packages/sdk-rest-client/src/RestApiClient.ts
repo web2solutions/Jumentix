@@ -33,9 +33,10 @@ const compilePath = (
   pathParams?: Record<string, string | number>
 ): string => {
   if (!pathParams) return pathTemplate;
-  return Object.entries(pathParams).reduce((acc, [key, value]) => {
-    return acc.replace(new RegExp(`{${key}}`, 'g'), String(value));
-  }, pathTemplate);
+  return Object.entries(pathParams).reduce(
+    (acc, [key, value]) => acc.replace(new RegExp(`{${key}}`, 'g'), String(value)),
+    pathTemplate
+  );
 };
 
 export class RestApiClient {
@@ -43,11 +44,14 @@ export class RestApiClient {
 
   private readonly serviceUrls = new Map<string, string>();
 
-  private readonly operationToRoute: Map<string, {
-    method: HttpMethod;
-    path: string;
-    serviceId?: string;
-  }> = new Map();
+  private readonly operationToRoute: Map<
+    string,
+    {
+      method: HttpMethod;
+      path: string;
+      serviceId?: string;
+    }
+  > = new Map();
 
   private readonly listeners: Set<RestApiEventListener> = new Set();
 
@@ -94,12 +98,12 @@ export class RestApiClient {
     if (this.serviceUrls.size <= 1 && this.baseUrl) {
       return this.baseUrl;
     }
-    if (serviceId && this.serviceUrls.has(serviceId)) {
-      return this.serviceUrls.get(serviceId)!;
+    if (serviceId) {
+      const serviceUrl = this.serviceUrls.get(serviceId);
+      if (serviceUrl !== undefined) return serviceUrl;
     }
-    if (this.serviceUrls.has('core')) {
-      return this.serviceUrls.get('core')!;
-    }
+    const coreUrl = this.serviceUrls.get('core');
+    if (coreUrl !== undefined) return coreUrl;
     return this.baseUrl;
   }
 
@@ -143,7 +147,7 @@ export class RestApiClient {
         method: route.method.toUpperCase(),
         headers: {
           'content-type': 'application/json',
-          ...(request.headers || {})
+          ...(request.headers ?? {})
         },
         body: request.body === undefined ? undefined : JSON.stringify(request.body)
       });
@@ -177,6 +181,7 @@ export class RestApiClient {
 
       const contentType = response.headers.get('content-type') || '';
       if (contentType.includes('application/json')) {
+        // eslint-disable-next-line @typescript-eslint/return-await -- a body-parse rejection must propagate raw; awaiting here would route it through the catch and emit a spurious request:error event
         return response.json() as Promise<TResponse>;
       }
       return response.text() as TResponse;

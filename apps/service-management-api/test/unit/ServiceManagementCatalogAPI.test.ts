@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { ServiceManagementCatalogAPI } from '@service-management-api/ServiceManagementCatalogAPI';
 import { createServiceManagementCatalogDbClient } from '@service-management-api/infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
+import { ServiceManagementCatalogAPI } from '@service-management-api/ServiceManagementCatalogAPI';
 
 describe('serviceManagementCatalogAPI ownership host', () => {
   const authService = {
@@ -11,7 +10,7 @@ describe('serviceManagementCatalogAPI ownership host', () => {
 
   it('registers the catalog routes from the platform-owned spec', () => {
     expect.hasAssertions();
-    const registered: Array<{ method: string; path: string }> = [];
+    const registered: { method: string; path: string }[] = [];
     const webServer = {
       endPointRegister: (handler: { method: string; path: string }) => {
         registered.push({ method: handler.method, path: handler.path });
@@ -46,11 +45,11 @@ describe('serviceManagementCatalogAPI ownership host', () => {
       },
       connect: jest.fn(),
       disconnect: jest.fn()
-    } as any);
+    });
 
-    expect(databaseClient.stores.Catalog).toBeDefined();
-    expect(databaseClient.stores.User).toBeDefined();
-    expect(databaseClient.stores.Organization).toBeDefined();
+    expect(typeof databaseClient.stores.Catalog).toBe('object');
+    expect(typeof databaseClient.stores.User).toBe('object');
+    expect(typeof databaseClient.stores.Organization).toBe('object');
   });
 });
 
@@ -61,11 +60,16 @@ describe('serviceManagementCatalogAPI lifecycle and spec edge shapes (JUM-821)',
     throwIfUserHasNoAccessToResource: jest.fn()
   } as any;
 
-  const makeWebServer = (events: string[]) => ({
-    endPointRegister: () => undefined,
-    start: async () => { events.push('server:start'); },
-    stop: async () => { events.push('server:stop'); }
-  } as any);
+  const makeWebServer = (events: string[]) =>
+    ({
+      endPointRegister: () => undefined,
+      start: async () => {
+        events.push('server:start');
+      },
+      stop: async () => {
+        events.push('server:stop');
+      }
+    }) as any;
 
   it('starts once, in dependency order, and stops in reverse', async () => {
     expect.hasAssertions();
@@ -73,8 +77,12 @@ describe('serviceManagementCatalogAPI lifecycle and spec edge shapes (JUM-821)',
     const events: string[] = [];
     const databaseClient = createServiceManagementCatalogDbClient({
       stores: {},
-      connect: async () => { events.push('db:connect'); },
-      disconnect: async () => { events.push('db:disconnect'); }
+      connect: async () => {
+        events.push('db:connect');
+      },
+      disconnect: async () => {
+        events.push('db:disconnect');
+      }
     } as any);
     const catalogAPI = new ServiceManagementCatalogAPI({
       databaseClient,
@@ -96,7 +104,12 @@ describe('serviceManagementCatalogAPI lifecycle and spec edge shapes (JUM-821)',
     // not a stuck flag.
     await catalogAPI.start();
     expect(events).toStrictEqual([
-      'db:connect', 'server:start', 'server:stop', 'db:disconnect', 'db:connect', 'server:start'
+      'db:connect',
+      'server:start',
+      'server:stop',
+      'db:disconnect',
+      'db:connect',
+      'server:start'
     ]);
     await catalogAPI.stop();
   });
@@ -107,16 +120,20 @@ describe('serviceManagementCatalogAPI lifecycle and spec edge shapes (JUM-821)',
     const events: string[] = [];
     const databaseClient = createServiceManagementCatalogDbClient({
       stores: { User: {} },
-      connect: async () => { events.push('base:connect'); },
-      disconnect: async () => { events.push('base:disconnect'); }
+      connect: async () => {
+        events.push('base:connect');
+      },
+      disconnect: async () => {
+        events.push('base:disconnect');
+      }
     } as any);
 
     await databaseClient.connect();
     await databaseClient.disconnect();
 
     expect(events).toStrictEqual(['base:connect', 'base:disconnect']);
-    expect(databaseClient.stores.Catalog).toBeDefined();
-    expect(databaseClient.stores.User).toBeDefined();
+    expect(typeof databaseClient.stores.Catalog).toBe('object');
+    expect(typeof databaseClient.stores.User).toBe('object');
   });
 
   it('tolerates a base client without connect/disconnect hooks', async () => {
@@ -128,7 +145,7 @@ describe('serviceManagementCatalogAPI lifecycle and spec edge shapes (JUM-821)',
 
     await expect(databaseClient.connect()).resolves.toBeUndefined();
     await expect(databaseClient.disconnect()).resolves.toBeUndefined();
-    expect(databaseClient.stores.Catalog).toBeDefined();
+    expect(typeof databaseClient.stores.Catalog).toBe('object');
   });
 
   it('reads spec fixtures: .yaml files, specs without paths, and null path entries', () => {
@@ -141,22 +158,22 @@ describe('serviceManagementCatalogAPI lifecycle and spec edge shapes (JUM-821)',
     const os = require('node:os');
     const path = require('node:path');
     const specDir = fs.mkdtempSync(path.join(os.tmpdir(), 'catalog-spec-'));
-    fs.writeFileSync(path.join(specDir, 'catalog.yaml'), [
-      'openapi: 3.0.0',
-      'info:',
-      '  title: Catalog',
-      '  version: 9.9.9',
-      ''
-    ].join('\n'));
-    fs.writeFileSync(path.join(specDir, 'empty-path.yml'), [
-      'openapi: 3.0.0',
-      'info:',
-      '  title: Empty',
-      '  version: 9.9.8',
-      'paths:',
-      '  /nothing: null',
-      ''
-    ].join('\n'));
+    fs.writeFileSync(
+      path.join(specDir, 'catalog.yaml'),
+      ['openapi: 3.0.0', 'info:', '  title: Catalog', '  version: 9.9.9', ''].join('\n')
+    );
+    fs.writeFileSync(
+      path.join(specDir, 'empty-path.yml'),
+      [
+        'openapi: 3.0.0',
+        'info:',
+        '  title: Empty',
+        '  version: 9.9.8',
+        'paths:',
+        '  /nothing: null',
+        ''
+      ].join('\n')
+    );
     fs.writeFileSync(path.join(specDir, 'notes.txt'), 'not a spec');
     fs.writeFileSync(path.join(specDir, 'not-openapi.yml'), 'hello: world\n');
 
@@ -165,9 +182,15 @@ describe('serviceManagementCatalogAPI lifecycle and spec edge shapes (JUM-821)',
     const catalogAPI = new ServiceManagementCatalogAPI({
       databaseClient: createServiceManagementCatalogDbClient(),
       webServer: {
-        endPointRegister: (handler: { path: string }) => { registered.push(handler.path); },
-        start: async () => { events.push('server:start'); },
-        stop: async () => { events.push('server:stop'); }
+        endPointRegister: (handler: { path: string }) => {
+          registered.push(handler.path);
+        },
+        start: async () => {
+          events.push('server:start');
+        },
+        stop: async () => {
+          events.push('server:stop');
+        }
       } as any,
       authService,
       specDir
@@ -188,23 +211,29 @@ describe('serviceManagementCatalogAPI lifecycle and spec edge shapes (JUM-821)',
     const os = require('node:os');
     const path = require('node:path');
     const specDir = fs.mkdtempSync(path.join(os.tmpdir(), 'catalog-spec-'));
-    fs.writeFileSync(path.join(specDir, 'rogue.yml'), [
-      'openapi: 3.0.0',
-      'info:',
-      '  title: Rogue',
-      '  version: 9.9.7',
-      'paths:',
-      '  /rogue:',
-      '    get:',
-      '      operationId: rogueOperation',
-      ''
-    ].join('\n'));
+    fs.writeFileSync(
+      path.join(specDir, 'rogue.yml'),
+      [
+        'openapi: 3.0.0',
+        'info:',
+        '  title: Rogue',
+        '  version: 9.9.7',
+        'paths:',
+        '  /rogue:',
+        '    get:',
+        '      operationId: rogueOperation',
+        ''
+      ].join('\n')
+    );
 
-    expect(() => new ServiceManagementCatalogAPI({
-      databaseClient: createServiceManagementCatalogDbClient(),
-      webServer: makeWebServer([]),
-      authService,
-      specDir
-    })).toThrow('catalog handler not found for rogueOperation');
+    expect(
+      () =>
+        new ServiceManagementCatalogAPI({
+          databaseClient: createServiceManagementCatalogDbClient(),
+          webServer: makeWebServer([]),
+          authService,
+          specDir
+        })
+    ).toThrow('catalog handler not found for rogueOperation');
   });
 });

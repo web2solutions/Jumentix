@@ -86,8 +86,13 @@ export function collectDeployTargetFieldIssues(candidate, existingDeployments = 
   if (!name) {
     pushError('Deploy target name is required.');
   } else {
-    const duplicate = existing.some((entry, index) => index !== excludeIndex
-      && String(entry?.name || '').trim().toLowerCase() === name.toLowerCase());
+    const duplicate = existing.some(
+      (entry, index) =>
+        index !== excludeIndex &&
+        String(entry?.name || '')
+          .trim()
+          .toLowerCase() === name.toLowerCase()
+    );
     if (duplicate) {
       pushError(`A deploy target named "${name}" already exists — target names must be unique.`);
     }
@@ -96,7 +101,9 @@ export function collectDeployTargetFieldIssues(candidate, existingDeployments = 
   if (!runtime) {
     pushError(`Runtime/version is required — use a name plus version, like "${RUNTIME_EXAMPLE}".`);
   } else if (!RUNTIME_VERSION_PATTERN.test(runtime)) {
-    pushError(`Runtime/version "${runtime}" is not a valid runtime/version — use a name plus version, like "${RUNTIME_EXAMPLE}".`);
+    pushError(
+      `Runtime/version "${runtime}" is not a valid runtime/version — use a name plus version, like "${RUNTIME_EXAMPLE}".`
+    );
   }
 
   // Region is required on cloud targets; the self-hosted Dedicated Server
@@ -105,9 +112,11 @@ export function collectDeployTargetFieldIssues(candidate, existingDeployments = 
   // required path: the JUM-481 vocabulary rule names that problem, and a
   // cloud-looking entry without a region must not slip through.
   if (!region && !isSelfHostedDeployTarget(deployTarget)) {
-    pushError(deployTarget
-      ? `Region is required for cloud deploy target "${deployTarget}" — enter the provider region, like "us-east-1".`
-      : 'Region is required for cloud deploy targets — enter the provider region, like "us-east-1".');
+    pushError(
+      deployTarget
+        ? `Region is required for cloud deploy target "${deployTarget}" — enter the provider region, like "us-east-1".`
+        : 'Region is required for cloud deploy targets — enter the provider region, like "us-east-1".'
+    );
   }
 
   return issues;
@@ -124,8 +133,13 @@ export function collectDeployTargetFieldIssues(candidate, existingDeployments = 
  * @returns {string} the first free ` (copy)`-suffixed name.
  */
 export function duplicateDeployTargetName(baseName, existingNames = []) {
-  const taken = new Set((Array.isArray(existingNames) ? existingNames : [])
-    .map((value) => String(value || '').trim().toLowerCase()));
+  const taken = new Set(
+    (Array.isArray(existingNames) ? existingNames : []).map((value) =>
+      String(value || '')
+        .trim()
+        .toLowerCase()
+    )
+  );
   const base = String(baseName || '').trim() || 'target';
   let candidate = `${base} (copy)`;
   let counter = 2;

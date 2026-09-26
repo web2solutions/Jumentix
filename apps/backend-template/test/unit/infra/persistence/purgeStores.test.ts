@@ -1,13 +1,15 @@
 import {
   InMemoryIdReservationLedger,
-  TOMBSTONE_PURGE_TTL_DAYS,
-  type IStore
+  TOMBSTONE_PURGE_TTL_DAYS
 } from '@jumentix/persistence-contracts';
+
+import InMemoryRelationalStore from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
 import {
   adaptPurgeStore,
   purgeUserAndOrganizationTombstones
 } from '@src/infra/persistence/purgeStores';
-import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
+
+import type { IStore } from '@jumentix/persistence-contracts';
 
 type TRow = Record<string, unknown> & { id: string; name: string; deletedAt?: unknown };
 
@@ -50,8 +52,9 @@ describe('adaptPurgeStore', () => {
     };
     const adapter = adaptPurgeStore('User', store);
     await expect(adapter.listTombstones()).resolves.toStrictEqual([]);
-    await expect(adapter.hardDelete('x'))
-      .rejects.toThrow('Store User does not implement hardDelete');
+    await expect(adapter.hardDelete('x')).rejects.toThrow(
+      'Store User does not implement hardDelete'
+    );
   });
 });
 
@@ -78,7 +81,10 @@ describe('purgeUserAndOrganizationTombstones', () => {
       excludeIds: ['u-seed']
     });
     return {
-      ledger, userStore, organizationStore, report
+      ledger,
+      userStore,
+      organizationStore,
+      report
     };
   };
 
@@ -87,8 +93,10 @@ describe('purgeUserAndOrganizationTombstones', () => {
     const { report } = await committedPurge();
 
     expect(report.dryRun).toBe(false);
-    expect(report.events.map((event) => `${event.entity}:${event.id}`).sort())
-      .toStrictEqual(['Organization:o-old', 'User:u-old']);
+    expect(report.events.map((event) => `${event.entity}:${event.id}`).sort()).toStrictEqual([
+      'Organization:o-old',
+      'User:u-old'
+    ]);
     expect(report.skippedProtected).toBe(1);
   });
 
@@ -105,10 +113,12 @@ describe('purgeUserAndOrganizationTombstones', () => {
     expect.hasAssertions();
     const { userStore } = await committedPurge();
 
-    await expect(userStore.getOneById('u-old', { includeDeleted: true }))
-      .rejects.toThrow('Record not found');
-    await expect(userStore.getOneById('u-seed', { includeDeleted: true }))
-      .resolves.toMatchObject({ id: 'u-seed' });
+    await expect(userStore.getOneById('u-old', { includeDeleted: true })).rejects.toThrow(
+      'Record not found'
+    );
+    await expect(userStore.getOneById('u-seed', { includeDeleted: true })).resolves.toMatchObject({
+      id: 'u-seed'
+    });
     await expect(userStore.getOneById('u-live')).resolves.toMatchObject({ id: 'u-live' });
   });
 
@@ -132,7 +142,8 @@ describe('purgeUserAndOrganizationTombstones', () => {
     expect(report.olderThanDays).toBe(TOMBSTONE_PURGE_TTL_DAYS);
     expect(report.events).toHaveLength(1);
     expect(ledger.list()).toHaveLength(0);
-    await expect(userStore.getOneById('u-old', { includeDeleted: true }))
-      .resolves.toMatchObject({ id: 'u-old' });
+    await expect(userStore.getOneById('u-old', { includeDeleted: true })).resolves.toMatchObject({
+      id: 'u-old'
+    });
   });
 });

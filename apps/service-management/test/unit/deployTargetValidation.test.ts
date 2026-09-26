@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -20,30 +19,29 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../../../..');
-const { collectDeployTargetIssues } = require(
-  '@jumentix/designer-core/validation/deployTargetValidation.js'
-);
 const {
   DATABASE_DRIVERS,
   DEPLOY_TARGET_SERVICE_TYPES,
   DEPLOY_TARGETS,
-  KEY_VALUE_DRIVERS,
-  PM2_MANAGED_DEPLOY_TARGETS,
-  PM2_PROFILES,
-  RUNTIME_PROTOCOLS,
-  SERVICE_TYPES,
-  SERVICE_TYPE_PROTOCOLS,
   getSupportedProtocols,
   getSupportedServiceTypes,
   isPm2ManagedDeployTarget,
   isProtocolSupportedByServiceType,
-  isServiceTypeSupportedByDeployTarget
-} = require(
-  '@jumentix/designer-core/model/deployCapabilityMatrix.js'
-);
-const { normalizeDeploymentInput, normalizeStatePayload } = require(
-  '@jumentix/designer-core/state/designerState.js'
-);
+  isServiceTypeSupportedByDeployTarget,
+  KEY_VALUE_DRIVERS,
+  PM2_MANAGED_DEPLOY_TARGETS,
+  PM2_PROFILES,
+  RUNTIME_PROTOCOLS,
+  SERVICE_TYPE_PROTOCOLS,
+  SERVICE_TYPES
+} = require('@jumentix/designer-core/model/deployCapabilityMatrix.js');
+const {
+  normalizeDeploymentInput,
+  normalizeStatePayload
+} = require('@jumentix/designer-core/state/designerState.js');
+const {
+  default: collectDeployTargetIssues
+} = require('@jumentix/designer-core/validation/deployTargetValidation.js');
 
 const enumValuesFor = (scriptSource: string, key: string): string[] => {
   const match = scriptSource.match(new RegExp(`${key}: \\[([\\s\\S]*?)\\]`));
@@ -66,16 +64,26 @@ function createTarget(overrides: Record<string, unknown> = {}): any {
   };
 }
 
-function messages(issues: Array<{ message: string }>) {
+function messages(issues: { message: string }[]) {
   return issues.map((issue) => issue.message);
 }
 
 describe('deploy capability matrix reader — deploy-target half (JUM-481)', () => {
   it('pins the Requirement 059 metadata contract vocabularies', () => {
     expect.hasAssertions();
-    expect(SERVICE_TYPES).toStrictEqual(['restapi', 'websocket+restapi', 'grpc+restapi', 'functions']);
+    expect(SERVICE_TYPES).toStrictEqual([
+      'restapi',
+      'websocket+restapi',
+      'grpc+restapi',
+      'functions'
+    ]);
     expect(DEPLOY_TARGETS).toStrictEqual([
-      'dedicated-server', 'vm', 'ec2', 'lambda', 'vercel-functions', 'cloudflare-workers'
+      'dedicated-server',
+      'vm',
+      'ec2',
+      'lambda',
+      'vercel-functions',
+      'cloudflare-workers'
     ]);
     expect(RUNTIME_PROTOCOLS).toStrictEqual(['http', 'websocket', 'grpc']);
     expect(PM2_PROFILES).toStrictEqual(['dev', 'staging', 'production']);
@@ -87,11 +95,21 @@ describe('deploy capability matrix reader — deploy-target half (JUM-481)', () 
     // JUMENTIX_DATABASE_DRIVER / JUMENTIX_KEYVALUESTORAGE_DRIVER enums — this
     // is the drift guard between the reader and both declared mirrors
     // (server.js write allowlist and script.js RUNTIME_ENV_ENUM_OPTIONS).
-    const script = fs.readFileSync(path.join(repoRoot, 'apps', 'service-management', 'script.js'), 'utf-8');
-    const server = fs.readFileSync(path.join(repoRoot, 'apps', 'service-management', 'server.js'), 'utf-8');
+    const script = fs.readFileSync(
+      path.join(repoRoot, 'apps', 'service-management', 'script.js'),
+      'utf-8'
+    );
+    const server = fs.readFileSync(
+      path.join(repoRoot, 'apps', 'service-management', 'server.js'),
+      'utf-8'
+    );
     [script, server].forEach((source) => {
-      expect(enumValuesFor(source, 'JUMENTIX_DATABASE_DRIVER').sort()).toStrictEqual([...DATABASE_DRIVERS].sort());
-      expect(enumValuesFor(source, 'JUMENTIX_KEYVALUESTORAGE_DRIVER').sort()).toStrictEqual([...KEY_VALUE_DRIVERS].sort());
+      expect(enumValuesFor(source, 'JUMENTIX_DATABASE_DRIVER').sort()).toStrictEqual(
+        [...DATABASE_DRIVERS].sort()
+      );
+      expect(enumValuesFor(source, 'JUMENTIX_KEYVALUESTORAGE_DRIVER').sort()).toStrictEqual(
+        [...KEY_VALUE_DRIVERS].sort()
+      );
     });
   });
 
@@ -137,21 +155,40 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
     expect.hasAssertions();
     ['dedicated-server', 'vm', 'ec2'].forEach((deployTarget) => {
       expect(collectDeployTargetIssues(createTarget({ deployTarget }))).toStrictEqual([]);
-      expect(collectDeployTargetIssues(createTarget({
-        deployTarget, serviceType: 'websocket+restapi', runtimeProtocol: 'websocket'
-      }))).toStrictEqual([]);
-      expect(collectDeployTargetIssues(createTarget({
-        deployTarget, serviceType: 'grpc+restapi', runtimeProtocol: 'grpc'
-      }))).toStrictEqual([]);
+      expect(
+        collectDeployTargetIssues(
+          createTarget({
+            deployTarget,
+            serviceType: 'websocket+restapi',
+            runtimeProtocol: 'websocket'
+          })
+        )
+      ).toStrictEqual([]);
+      expect(
+        collectDeployTargetIssues(
+          createTarget({
+            deployTarget,
+            serviceType: 'grpc+restapi',
+            runtimeProtocol: 'grpc'
+          })
+        )
+      ).toStrictEqual([]);
     });
   });
 
   it('accepts every function row with an empty PM2 profile', () => {
     expect.hasAssertions();
     ['lambda', 'vercel-functions', 'cloudflare-workers'].forEach((deployTarget) => {
-      expect(collectDeployTargetIssues(createTarget({
-        deployTarget, serviceType: 'functions', runtimeProtocol: 'http', pm2Profile: ''
-      }))).toStrictEqual([]);
+      expect(
+        collectDeployTargetIssues(
+          createTarget({
+            deployTarget,
+            serviceType: 'functions',
+            runtimeProtocol: 'http',
+            pm2Profile: ''
+          })
+        )
+      ).toStrictEqual([]);
     });
   });
 
@@ -165,9 +202,13 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
 
   it('rejects a REST service on a function target, naming the supported rows', () => {
     expect.hasAssertions();
-    const issues = collectDeployTargetIssues(createTarget({
-      deployTarget: 'lambda', serviceType: 'restapi', pm2Profile: ''
-    }));
+    const issues = collectDeployTargetIssues(
+      createTarget({
+        deployTarget: 'lambda',
+        serviceType: 'restapi',
+        pm2Profile: ''
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Deploy target "lambda" cannot run service type "restapi" — the Requirement 059 deploy matrix supports it on: dedicated-server, vm, ec2.'
     ]);
@@ -183,9 +224,13 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
 
   it('rejects a functions deploy target with a PM2 profile', () => {
     expect.hasAssertions();
-    const issues = collectDeployTargetIssues(createTarget({
-      deployTarget: 'cloudflare-workers', serviceType: 'functions', pm2Profile: 'production'
-    }));
+    const issues = collectDeployTargetIssues(
+      createTarget({
+        deployTarget: 'cloudflare-workers',
+        serviceType: 'functions',
+        pm2Profile: 'production'
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Deploy target "cloudflare-workers" is provider-managed (serverless), not PM2-managed — a PM2 profile does not apply; leave it empty.'
     ]);
@@ -201,21 +246,27 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
 
   it('rejects unknown vocabulary values without running the combination rules', () => {
     expect.hasAssertions();
-    const issues = collectDeployTargetIssues(createTarget({
-      serviceType: 'soap',
-      deployTarget: 'azure-functions',
-      runtimeProtocol: 'amqp',
-      databaseDriver: 'MS SQL',
-      keyValueDriver: 'memcached',
-      pm2Profile: ''
-    }));
+    const issues = collectDeployTargetIssues(
+      createTarget({
+        serviceType: 'soap',
+        deployTarget: 'azure-functions',
+        runtimeProtocol: 'amqp',
+        databaseDriver: 'MS SQL',
+        keyValueDriver: 'memcached',
+        pm2Profile: ''
+      })
+    );
     const found = messages(issues);
     expect(found).toHaveLength(5);
     expect(found[0]).toContain('Service type "soap" is not supported');
     expect(found[1]).toContain('Deploy target "azure-functions" is not supported');
     expect(found[2]).toContain('Runtime protocol "amqp" is not supported');
-    expect(found[3]).toContain('Database driver "MS SQL" is not a supported JUMENTIX_DATABASE_DRIVER value');
-    expect(found[4]).toContain('Key-value driver "memcached" is not a supported JUMENTIX_KEYVALUESTORAGE_DRIVER value');
+    expect(found[3]).toContain(
+      'Database driver "MS SQL" is not a supported JUMENTIX_DATABASE_DRIVER value'
+    );
+    expect(found[4]).toContain(
+      'Key-value driver "memcached" is not a supported JUMENTIX_KEYVALUESTORAGE_DRIVER value'
+    );
   });
 
   it('treats a missing candidate as all-vocabulary errors', () => {
@@ -228,9 +279,14 @@ describe('collectDeployTargetIssues (JUM-481)', () => {
 describe('normalizeDeploymentInput (JUM-481 migration)', () => {
   it('migrates a legacy dedicated entry forward without loss', () => {
     expect.hasAssertions();
-    expect(normalizeDeploymentInput({
-      name: 'prod', type: 'dedicated', region: 'us-east-1', runtime: 'nodejs22.x'
-    })).toStrictEqual({
+    expect(
+      normalizeDeploymentInput({
+        name: 'prod',
+        type: 'dedicated',
+        region: 'us-east-1',
+        runtime: 'nodejs22.x'
+      })
+    ).toStrictEqual({
       name: 'prod',
       region: 'us-east-1',
       runtime: 'nodejs22.x',
@@ -246,7 +302,10 @@ describe('normalizeDeploymentInput (JUM-481 migration)', () => {
   it('migrates a legacy lambda entry to a functions target with no PM2 profile', () => {
     expect.hasAssertions();
     const migrated = normalizeDeploymentInput({
-      name: 'fn', type: 'lambda', region: 'us-east-1', runtime: 'nodejs22.x'
+      name: 'fn',
+      type: 'lambda',
+      region: 'us-east-1',
+      runtime: 'nodejs22.x'
     });
     expect(migrated.deployTarget).toBe('lambda');
     expect(migrated.serviceType).toBe('functions');
@@ -258,19 +317,27 @@ describe('normalizeDeploymentInput (JUM-481 migration)', () => {
   it('keeps legacy values with no matrix counterpart verbatim (lossless)', () => {
     expect.hasAssertions();
     const migrated = normalizeDeploymentInput({
-      name: 'legacy', type: 'azure-functions', region: 'eastus', runtime: 'node20'
+      name: 'legacy',
+      type: 'azure-functions',
+      region: 'eastus',
+      runtime: 'node20'
     });
     expect(migrated.deployTarget).toBe('azure-functions');
     expect(migrated.serviceType).toBe('');
     expect(migrated.pm2Profile).toBe('');
     // ...and the validation vocabulary rule flags exactly that value.
-    expect(messages(collectDeployTargetIssues(migrated)).join(' ')).toContain('"azure-functions" is not supported');
+    expect(messages(collectDeployTargetIssues(migrated)).join(' ')).toContain(
+      '"azure-functions" is not supported'
+    );
   });
 
   it('keeps an explicit Requirement 059 entry unchanged', () => {
     expect.hasAssertions();
     const entry = createTarget({
-      deployTarget: 'vm', serviceType: 'grpc+restapi', runtimeProtocol: 'grpc', pm2Profile: 'production'
+      deployTarget: 'vm',
+      serviceType: 'grpc+restapi',
+      runtimeProtocol: 'grpc',
+      pm2Profile: 'production'
     });
     expect(normalizeDeploymentInput(entry)).toStrictEqual(entry);
   });
@@ -295,9 +362,14 @@ describe('normalizeStatePayload deployments (JUM-481)', () => {
   it('returns migrated deployments from a stored payload', () => {
     expect.hasAssertions();
     const normalized = normalizeStatePayload({
-      deployments: [{
-        name: 'prod', type: 'dedicated', region: 'us-east-1', runtime: 'nodejs22.x'
-      }]
+      deployments: [
+        {
+          name: 'prod',
+          type: 'dedicated',
+          region: 'us-east-1',
+          runtime: 'nodejs22.x'
+        }
+      ]
     });
     expect(normalized.deployments).toHaveLength(1);
     expect(normalized.deployments[0].deployTarget).toBe('dedicated-server');

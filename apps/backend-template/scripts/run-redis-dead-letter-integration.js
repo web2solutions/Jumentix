@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-/* eslint-disable no-console */
 /**
  * Runs the dead-letter Redis integration suite against docker-compose-redis.
  *
@@ -7,10 +5,11 @@
  * copying it: the reason that function exists — keeping the local requirepass
  * out of package.json, where gitleaks finds it — applies identically here.
  */
-const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
+const path = require('node:path');
+
 const { passwordFromCompose } = require('./run-redis-key-value-integration.js');
+const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const ROOT = process.cwd();
 
@@ -36,7 +35,7 @@ function run() {
 }
 
 if (isEntryPoint(module)) {
-  process.exit(run());
+  process.exitCode = run();
 }
 
 module.exports = { run };

@@ -1,1 +1,3 @@
-export { FileTreeLabel } from './FileTreeLabel';
+import { FileTreeLabel } from './FileTreeLabel';
+
+export default FileTreeLabel;

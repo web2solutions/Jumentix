@@ -1,4 +1,4 @@
-import { Authorize } from '@src/shared/decorators/guard/Authorize';
+import Authorize from '@src/shared/decorators/guard/Authorize';
 
 class DecoratedHandler {
   public messageMediator: any;

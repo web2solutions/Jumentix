@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@/test-utils';
+
 import { MonacoCodeBlock } from './MonacoCodeBlock';
 import { monacoTestState, resetMonacoTestState } from '../../test/mocks/monaco-editor';
 
@@ -28,7 +29,7 @@ describe('MonacoCodeBlock mount (JUM-701)', () => {
   it('creates a model and an editor in the host element', async () => {
     expect.hasAssertions();
 
-    render(<MonacoCodeBlock value="const answer = 42;" language="ts" testId="mount" />);
+    render(<MonacoCodeBlock language="ts" testId="mount" value="const answer = 42;" />);
 
     await waitFor(() => expect(monacoTestState.editors).toHaveLength(1));
 
@@ -44,7 +45,7 @@ describe('MonacoCodeBlock mount (JUM-701)', () => {
   it('removes trailing blank lines before rendering code', async () => {
     expect.hasAssertions();
 
-    render(<MonacoCodeBlock value={'const answer = 42;\n\n  \n'} language="ts" testId="trim" />);
+    render(<MonacoCodeBlock language="ts" testId="trim" value={'const answer = 42;\n\n  \n'} />);
 
     await waitFor(() => expect(monacoTestState.editors).toHaveLength(1));
 
@@ -62,7 +63,7 @@ describe('MonacoCodeBlock mount (JUM-701)', () => {
 
     // The fallback is what a reader gets before the editor mounts, and what a
     // screen reader would get twice if it stayed exposed afterwards.
-    render(<MonacoCodeBlock value="ok" testId="fallback" />);
+    render(<MonacoCodeBlock testId="fallback" value="ok" />);
 
     const fallback = screen
       .getByTestId('fallback')
@@ -80,7 +81,7 @@ describe('MonacoCodeBlock mount (JUM-701)', () => {
 
     // The render helper pins the scheme to light before the first paint
     // (JUM-701), so this asserts the mapping rather than a race.
-    render(<MonacoCodeBlock value="ok" testId="theme" />);
+    render(<MonacoCodeBlock testId="theme" value="ok" />);
 
     // Only `setTheme` is asserted here: `defineThemes` guards itself with a
     // module-level flag, so the definitions land on the first mount in the
@@ -93,9 +94,9 @@ describe('MonacoCodeBlock mount (JUM-701)', () => {
 
     render(
       <MonacoCodeBlock
-        value={Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join('\n')}
         maxHeight={180}
         testId="scroll"
+        value={Array.from({ length: 40 }, (_, index) => `line ${index + 1}`).join('\n')}
       />
     );
 

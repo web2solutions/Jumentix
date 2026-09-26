@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
 import {
   defaultDatabaseUrl,
   hasFirebaseCredentials,
@@ -36,15 +37,15 @@ describe('firebase-credentials', () => {
     delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
     delete process.env.FIREBASE_DATABASE_URL;
 
-    const filePath = path.join(
-      os.tmpdir(),
-      `jumentix-sa-${Date.now()}.json`
+    const filePath = path.join(os.tmpdir(), `jumentix-sa-${Date.now()}.json`);
+    fs.writeFileSync(
+      filePath,
+      JSON.stringify({
+        project_id: 'jumentix-service-registry',
+        private_key: 'line-one\\nline-two',
+        client_email: 'registry@example.test'
+      })
     );
-    fs.writeFileSync(filePath, JSON.stringify({
-      project_id: 'jumentix-service-registry',
-      private_key: 'line-one\\nline-two',
-      client_email: 'registry@example.test'
-    }));
     process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE = filePath;
 
     try {
@@ -73,11 +74,12 @@ describe('firebase-credentials', () => {
 
   it('strips a trailing slash from an explicit RTDB URL', () => {
     expect.hasAssertions();
-    expect(normalizeDatabaseUrl(
-      'https://jumentix-service-registry-default-rtdb.firebaseio.com/'
-    )).toBe('https://jumentix-service-registry-default-rtdb.firebaseio.com');
+    expect(
+      normalizeDatabaseUrl('https://jumentix-service-registry-default-rtdb.firebaseio.com/')
+    ).toBe('https://jumentix-service-registry-default-rtdb.firebaseio.com');
 
-    process.env.FIREBASE_DATABASE_URL = 'https://jumentix-service-registry-default-rtdb.firebaseio.com/';
+    process.env.FIREBASE_DATABASE_URL =
+      'https://jumentix-service-registry-default-rtdb.firebaseio.com/';
     expect(resolveDatabaseUrl()).toBe(
       'https://jumentix-service-registry-default-rtdb.firebaseio.com'
     );
@@ -95,7 +97,10 @@ describe('firebase-credentials', () => {
   it('reports unreadable credential files with the configured path', () => {
     expect.hasAssertions();
     delete process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-    process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE = path.join(os.tmpdir(), 'missing-jumentix-sa.json');
+    process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE = path.join(
+      os.tmpdir(),
+      'missing-jumentix-sa.json'
+    );
 
     expect(() => loadServiceAccount()).toThrow('Unable to read FIREBASE_SERVICE_ACCOUNT_KEY_FILE');
   });

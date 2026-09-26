@@ -1,8 +1,20 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, import/first */
+/* eslint-disable jest/max-expects */
 /*
  * JUM-770 — number formatting behind the monitoring chart headers: bytes,
  * percents, window min/max, throughput and stacked-area legends.
  */
+
+import {
+  computeWindowThroughput,
+  formatBytesValue,
+  formatPercentValue,
+  formatSeriesSummary,
+  formatThroughputValue,
+  legendEntriesForStack,
+  STACK_PALETTE,
+  stackColorAt,
+  summarizeSeries
+} from '../../src/ui/monitoringCharts.js';
 
 jest.mock('d3', () => {
   const chain = () => {
@@ -18,24 +30,13 @@ jest.mock('d3', () => {
     scaleLinear: () => ({ domain: chain, range: chain }),
     max: (values: number[]) => Math.max(...values),
     min: (values: number[]) => Math.min(...values),
-    sum: (values: unknown[], accessor?: (entry: any) => number) => values.reduce(
-      (total: number, entry) => total + (accessor ? accessor(entry) : Number(entry) || 0),
-      0
-    )
+    sum: (values: unknown[], accessor?: (entry: any) => number) =>
+      values.reduce(
+        (total: number, entry) => total + (accessor ? accessor(entry) : Number(entry) || 0),
+        0
+      )
   };
 });
-
-import {
-  STACK_PALETTE,
-  computeWindowThroughput,
-  formatBytesValue,
-  formatPercentValue,
-  formatSeriesSummary,
-  formatThroughputValue,
-  legendEntriesForStack,
-  stackColorAt,
-  summarizeSeries
-} from '../../src/ui/monitoringCharts.js';
 
 describe('service-management monitoring chart formatting (JUM-770)', () => {
   it('formats bytes as B/KB/MB/GB with one decimal from KB up', () => {
@@ -58,23 +59,36 @@ describe('service-management monitoring chart formatting (JUM-770)', () => {
   it('summarizes a series window as current/min/max and null when empty', () => {
     expect.hasAssertions();
     expect(summarizeSeries([1, 5, 3])).toStrictEqual({
-      current: 3, min: 1, max: 5, count: 3
+      current: 3,
+      min: 1,
+      max: 5,
+      count: 3
     });
     expect(summarizeSeries([7])).toStrictEqual({
-      current: 7, min: 7, max: 7, count: 1
+      current: 7,
+      min: 7,
+      max: 7,
+      count: 1
     });
     expect(summarizeSeries([])).toBeNull();
     expect(summarizeSeries(null)).toBeNull();
     expect(summarizeSeries(['x', 2])).toStrictEqual({
-      current: 2, min: 2, max: 2, count: 1
+      current: 2,
+      min: 2,
+      max: 2,
+      count: 1
     });
   });
 
   it('renders the header line "now X · min Y · max Z" through the given formatter', () => {
     expect.hasAssertions();
-    expect(formatSeriesSummary([10, 30, 20], (value) => `${value}%`)).toBe('now 20% · min 10% · max 30%');
+    expect(formatSeriesSummary([10, 30, 20], (value) => `${value}%`)).toBe(
+      'now 20% · min 10% · max 30%'
+    );
     expect(formatSeriesSummary([], String)).toBe('—');
-    expect(formatSeriesSummary([1024 ** 2], formatBytesValue)).toBe('now 1.0 MB · min 1.0 MB · max 1.0 MB');
+    expect(formatSeriesSummary([1024 ** 2], formatBytesValue)).toBe(
+      'now 1.0 MB · min 1.0 MB · max 1.0 MB'
+    );
   });
 
   it('computes throughput between the last two cumulative samples, clamped at zero', () => {

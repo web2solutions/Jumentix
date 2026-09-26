@@ -1,5 +1,5 @@
-import { registerUserMessageHandlers } from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
-import { UserMessageContracts } from '@src/modules/Users/events/contracts/UserMessageContracts';
+import UserMessageContracts from '@src/modules/Users/events/contracts/UserMessageContracts';
+import registerUserMessageHandlers from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
 
 describe('registerUserMessageHandlers', () => {
   it('registers and resolves authorize and ensure-access contracts', async () => {

@@ -1,23 +1,17 @@
-import type { GenerationPlan } from './types';
-import { SourceResolutionError } from './types';
-import { SOURCE_MESSAGES } from './messages';
-import {
-  buildPlanFromOasDocument,
-  type InterfaceDefaults
-} from './planBuilder';
 import { planFromDesignerDocument } from './designerExport';
-import {
-  isDesignerExport,
-  isHttpUrl,
-  isOpenApiDocument,
-  parseDocumentText
-} from './oas';
+import SOURCE_MESSAGES from './messages';
+import { isDesignerExport, isHttpUrl, isOpenApiDocument, parseDocumentText } from './oas';
+import { buildPlanFromOasDocument } from './planBuilder';
+import { SourceResolutionError } from './types';
+
+import type { InterfaceDefaults } from './planBuilder';
+import type { GenerationPlan } from './types';
 
 /**
  * Fetch a catalog URL and normalize the payload to a GenerationPlan.
  * Accepts OpenAPI documents or designer suite exports.
  */
-export async function loadCatalogSource(
+async function loadCatalogSource(
   url: string,
   defaults: InterfaceDefaults,
   fetchImpl: typeof fetch = fetch
@@ -60,3 +54,5 @@ export async function loadCatalogSource(
     SOURCE_MESSAGES.CATALOG_FETCH_FAILED(url, 'payload is neither OAS nor designer export')
   );
 }
+
+export default loadCatalogSource;

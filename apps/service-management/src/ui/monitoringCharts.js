@@ -1,12 +1,4 @@
-/* eslint-disable no-param-reassign */
-import {
-  arc as d3Arc,
-  max as d3Max,
-  min as d3Min,
-  pie as d3Pie,
-  scaleLinear,
-  sum as d3Sum
-} from 'd3';
+import { arc as d3Arc, max as d3Max, min as d3Min, pie as d3Pie, scaleLinear } from 'd3';
 
 export function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -83,7 +75,9 @@ export function legendEntriesForStack(seriesByName, options = {}) {
   const names = Object.keys(seriesByName || {});
   const palette = options.colors || STACK_PALETTE;
   return names.map((name, index) => {
-    const series = Array.isArray(seriesByName[name]) ? seriesByName[name].map(Number).filter(Number.isFinite) : [];
+    const series = Array.isArray(seriesByName[name])
+      ? seriesByName[name].map(Number).filter(Number.isFinite)
+      : [];
     return {
       name,
       color: stackColorAt(index, palette),
@@ -125,7 +119,9 @@ export function drawSparkline(canvas, series, options = {}) {
     ? options.overlay.series.map(Number).filter(Number.isFinite)
     : [];
   const allValues = overlayValues.length ? values.concat(overlayValues) : values;
-  const x = scaleLinear().domain([0, values.length - 1]).range([0, width]);
+  const x = scaleLinear()
+    .domain([0, values.length - 1])
+    .range([0, width]);
   const y = scaleLinear()
     .domain([d3Min(allValues) ?? 0, d3Max(allValues) ?? 1])
     .range([height - 2, 2]);
@@ -147,7 +143,9 @@ export function drawSparkline(canvas, series, options = {}) {
   // Optional second series drawn as a bare line on the same scale (e.g. load1
   // next to host CPU) — no fill, its own stroke.
   if (overlayValues.length >= 2) {
-    const overlayX = scaleLinear().domain([0, overlayValues.length - 1]).range([0, width]);
+    const overlayX = scaleLinear()
+      .domain([0, overlayValues.length - 1])
+      .range([0, width]);
     ctx.beginPath();
     overlayValues.forEach((value, index) => {
       const px = overlayX(index);
@@ -162,9 +160,8 @@ export function drawSparkline(canvas, series, options = {}) {
   // Optional Y-axis ticks (min/max with unit) — sparklines otherwise carry no
   // readable scale at all.
   if (options.yAxis) {
-    const format = typeof options.yAxis.format === 'function'
-      ? options.yAxis.format
-      : (value) => String(value);
+    const format =
+      typeof options.yAxis.format === 'function' ? options.yAxis.format : (value) => String(value);
     ctx.fillStyle = options.yAxis.color || 'rgba(226, 232, 240, 0.75)';
     ctx.font = '9px sans-serif';
     ctx.textAlign = 'left';
@@ -222,12 +219,13 @@ export function drawStackedArea(canvas, seriesByName, options = {}) {
   if (!names.length) return;
   const length = Math.max(...names.map((name) => (seriesByName[name] || []).length), 0);
   if (length < 2) return;
-  const totals = Array.from({ length }, (_, index) => names.reduce(
-    (sum, name) => sum + (Number((seriesByName[name] || [])[index]) || 0),
-    0
-  ));
+  const totals = Array.from({ length }, (_, index) =>
+    names.reduce((sum, name) => sum + (Number((seriesByName[name] || [])[index]) || 0), 0)
+  );
   const max = d3Max(totals) || 1;
-  const x = scaleLinear().domain([0, length - 1]).range([0, width]);
+  const x = scaleLinear()
+    .domain([0, length - 1])
+    .range([0, width]);
   const y = scaleLinear().domain([0, max]).range([height, 0]);
   const palette = options.colors || STACK_PALETTE;
   const stack = Array(length).fill(0);
@@ -259,10 +257,15 @@ export function drawStatusBars(canvas, statusCounts) {
   const { ctx, width, height } = frame;
   const entries = Object.entries(statusCounts || {}).filter(([, value]) => Number(value) > 0);
   if (!entries.length) return;
-  const pieGen = d3Pie().value((entry) => Number(entry[1])).sort(null);
+  const pieGen = d3Pie()
+    .value((entry) => Number(entry[1]))
+    .sort(null);
   const arcs = pieGen(entries);
   const radius = Math.min(width, height) / 2 - 4;
-  const generator = d3Arc().innerRadius(radius * 0.45).outerRadius(radius).context(ctx);
+  const generator = d3Arc()
+    .innerRadius(radius * 0.45)
+    .outerRadius(radius)
+    .context(ctx);
   ctx.save();
   ctx.translate(width / 2, height / 2);
   arcs.forEach((slice) => {
@@ -281,7 +284,6 @@ export function drawStatusBars(canvas, statusCounts) {
     ctx.fillText(String(slice.data[1]), labelX, labelY);
   });
   ctx.restore();
-  void d3Sum;
 }
 
 export function drawCoreBars(canvas, perCore) {
@@ -291,7 +293,9 @@ export function drawCoreBars(canvas, perCore) {
   const values = Array.isArray(perCore) ? perCore.map(Number) : [];
   if (!values.length) return;
   const barWidth = width / values.length;
-  const y = scaleLinear().domain([0, 100]).range([height - 2, 2]);
+  const y = scaleLinear()
+    .domain([0, 100])
+    .range([height - 2, 2]);
   values.forEach((value, index) => {
     const barHeight = height - y(clamp(value, 0, 100));
     ctx.fillStyle = value > 85 ? '#dc2626' : '#2563eb';

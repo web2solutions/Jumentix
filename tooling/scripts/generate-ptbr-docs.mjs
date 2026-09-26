@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+/* eslint-disable no-console */
 import { execSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -30,7 +30,10 @@ const getTrackedMarkdownFiles = () => {
     .filter((filePath) => !shouldSkipFile(filePath));
 };
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 const normalizeWhitespace = (input) => input.replace(/\s+/g, ' ').trim();
 
@@ -45,12 +48,14 @@ const translateChunk = async (text) => {
   let lastError;
   for (let attempt = 1; attempt <= RETRY_LIMIT; attempt += 1) {
     try {
+      // eslint-disable-next-line no-await-in-loop -- retry loop: each attempt must finish before the next one starts
       const response = await fetch(buildTranslateUrl(text), {
         signal: AbortSignal.timeout(20000)
       });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
+      // eslint-disable-next-line no-await-in-loop -- retry loop: the body must be read before deciding to retry
       const payload = await response.json();
       const translated = Array.isArray(payload?.[0])
         ? payload[0].map((part) => part?.[0] || '').join('')
@@ -62,6 +67,7 @@ const translateChunk = async (text) => {
     } catch (error) {
       lastError = error;
       if (attempt < RETRY_LIMIT) {
+        // eslint-disable-next-line no-await-in-loop -- retry backoff: the delay must elapse before the next attempt
         await sleep(RETRY_BASE_MS * attempt);
       }
     }
@@ -104,9 +110,8 @@ const preserveCodeBlocks = (markdown) => {
   return { transformed, placeholders };
 };
 
-const restorePlaceholders = (text, placeholders) => {
-  return placeholders.reduce((acc, { token, value }) => acc.replace(token, value), text);
-};
+const restorePlaceholders = (text, placeholders) =>
+  placeholders.reduce((acc, { token, value }) => acc.replace(token, value), text);
 
 const translateMarkdown = async (markdown) => {
   const { transformed, placeholders } = preserveCodeBlocks(markdown);
@@ -133,7 +138,9 @@ const translateMarkdown = async (markdown) => {
     const chunks = splitForTranslation(paragraph);
     const translatedChunks = [];
     for (const chunk of chunks) {
+      // eslint-disable-next-line no-await-in-loop -- chunks are translated sequentially to throttle the public translate endpoint
       translatedChunks.push(await translateChunk(chunk));
+      // eslint-disable-next-line no-await-in-loop -- throttle delay between requests to the public translate endpoint
       await sleep(80);
     }
     translatedParagraphs.push(translatedChunks.join(''));
@@ -178,12 +185,15 @@ const run = async () => {
     const sourcePath = files[index];
     process.stdout.write(`[${index + 1}/${files.length}] traduzindo ${sourcePath} ... `);
     try {
+      // eslint-disable-next-line no-await-in-loop -- files are translated one at a time to throttle the public translate endpoint and keep progress output ordered
       const targetPath = await writePortugueseVersion(sourcePath);
       created.push(targetPath);
       console.log(`ok -> ${targetPath}`);
     } catch (error) {
       console.log('erro');
-      throw new Error(`Falha ao traduzir ${sourcePath}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Falha ao traduzir ${sourcePath}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -192,5 +202,5 @@ const run = async () => {
 
 run().catch((error) => {
   console.error('[pt-BR docs] erro:', error.message);
-  process.exit(1);
+  process.exitCode = 1;
 });

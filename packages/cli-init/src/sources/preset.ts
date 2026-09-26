@@ -1,10 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { GenerationPlan } from './types';
-import { SourceResolutionError } from './types';
-import { SOURCE_MESSAGES } from './messages';
-import { buildPlanFromOasDocument, type InterfaceDefaults } from './planBuilder';
+
+import SOURCE_MESSAGES from './messages';
 import { parseDocumentText } from './oas';
+import { buildPlanFromOasDocument } from './planBuilder';
+import { SourceResolutionError } from './types';
+
+import type { InterfaceDefaults } from './planBuilder';
+import type { GenerationPlan } from './types';
 
 /**
  * Resolve the Users preset OAS path.

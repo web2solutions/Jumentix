@@ -65,7 +65,9 @@ function runWhenEntryPoint(options) {
     caller,
     entry = require.main,
     execute,
-    exit = (code) => { process.exitCode = code; }
+    exit = (code) => {
+      process.exitCode = code;
+    }
   } = options;
 
   if (!isEntryPoint(caller, entry)) return false;

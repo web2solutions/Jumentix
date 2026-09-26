@@ -1,4 +1,5 @@
-import { entityModelManagerSubApplication } from '@src/interface/CLI/subapps/entityModelManager';
+import entityModelManagerSubApplication from '@src/interface/CLI/subapps/entityModelManager';
+
 import type { IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 /**
@@ -43,42 +44,51 @@ function scriptedContext(catalog: IWorkspaceCatalog, chooses: number[], asks: st
         askIndex += 1;
         return value;
       },
-      log: (message: string) => { logs.push(message); },
+      log: (message: string) => {
+        logs.push(message);
+      },
       loadCatalog: async () => catalog,
-      saveCatalog: async (next: IWorkspaceCatalog) => { saved.push(next); }
+      saveCatalog: async (next: IWorkspaceCatalog) => {
+        saved.push(next);
+      }
     }
   };
 }
 
 const catalogWithDomain = (): IWorkspaceCatalog => ({
   version: 1,
-  domains: [{
-    id: 'd1',
-    name: 'Billing',
-    description: '',
-    boundedContext: '',
-    status: 'active',
-    tags: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z'
-  }],
+  domains: [
+    {
+      id: 'd1',
+      name: 'Billing',
+      description: '',
+      boundedContext: '',
+      status: 'active',
+      tags: [],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z'
+    }
+  ],
   entities: []
 });
 
-const catalogWithEntity = (fields: unknown[] = []): IWorkspaceCatalog => ({
-  ...catalogWithDomain(),
-  entities: [{
-    id: 'e1',
-    name: 'Invoice',
-    domain: 'Billing',
-    kind: 'entity',
-    description: 'a customer invoice',
-    fields,
-    behaviors: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z'
-  }]
-} as IWorkspaceCatalog);
+const catalogWithEntity = (fields: unknown[] = []): IWorkspaceCatalog =>
+  ({
+    ...catalogWithDomain(),
+    entities: [
+      {
+        id: 'e1',
+        name: 'Invoice',
+        domain: 'Billing',
+        kind: 'entity',
+        description: 'a customer invoice',
+        fields,
+        behaviors: [],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z'
+      }
+    ]
+  }) as IWorkspaceCatalog;
 
 const numberField = () => ({
   name: 'total',
@@ -102,19 +112,21 @@ describe('entity manager flows (JUM-681)', () => {
       ['Invoice', 'a customer invoice', '', 'total', 'y', '', '', '10', 'n', 'calculate,print']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     const [created] = run.saved;
     expect(created.entities).toHaveLength(1);
-    expect(created.entities[0].fields).toStrictEqual([{
-      name: 'total',
-      type: 'number',
-      required: true,
-      format: '',
-      defaultValue: '',
-      validations: ['minimum:10'],
-      behavior: ''
-    }]);
+    expect(created.entities[0].fields).toStrictEqual([
+      {
+        name: 'total',
+        type: 'number',
+        required: true,
+        format: '',
+        defaultValue: '',
+        validations: ['minimum:10'],
+        behavior: ''
+      }
+    ]);
     expect(created.entities[0].behaviors).toStrictEqual(['calculate', 'print']);
   });
 
@@ -129,7 +141,7 @@ describe('entity manager flows (JUM-681)', () => {
       ['Invoice', '', '', 'total', '', '', '', '', 'n', '']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs.join('\n')).toContain('Validation "minimum" skipped because value is empty.');
     expect(run.saved[0].entities[0].fields[0].validations).toStrictEqual([]);
@@ -144,7 +156,7 @@ describe('entity manager flows (JUM-681)', () => {
       ['Invoice', '', '', 'note', 'n', '', '', 'n', '']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].fields[0].required).toBe(false);
   });
@@ -165,7 +177,7 @@ describe('entity manager flows (JUM-681)', () => {
       ['Invoice', '', '', 'note', '', '', '', 'n', '']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].fields[0].required).toBe(false);
   });
@@ -178,7 +190,7 @@ describe('entity manager flows (JUM-681)', () => {
     const empty: IWorkspaceCatalog = { version: 1, domains: [], entities: [] };
     const run = scriptedContext(empty, [2, 0, BACK], ['Invoice', 'Billing', '', 'n', '']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].domain).toBe('Billing');
   });
@@ -192,7 +204,7 @@ describe('entity manager flows (JUM-681)', () => {
       ['Receipt', '', 'settle']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     const [updated] = run.saved;
     expect(updated.entities[0].name).toBe('Receipt');
@@ -205,13 +217,9 @@ describe('entity manager flows (JUM-681)', () => {
 
     // update → entity 0 → kind entity → "Type custom domain" → blank answer →
     // back. The custom-domain prompt falls back to the entity's own domain.
-    const run = scriptedContext(
-      catalogWithEntity(),
-      [3, 0, 0, 1, BACK],
-      ['', '', '', '']
-    );
+    const run = scriptedContext(catalogWithEntity(), [3, 0, 0, 1, BACK], ['', '', '', '']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].domain).toBe('Billing');
   });
@@ -221,13 +229,9 @@ describe('entity manager flows (JUM-681)', () => {
 
     const catalog = catalogWithEntity();
     catalog.entities[0].domain = '';
-    const run = scriptedContext(
-      catalog,
-      [3, 0, 0, 1, BACK],
-      ['', '', '', '']
-    );
+    const run = scriptedContext(catalog, [3, 0, 0, 1, BACK], ['', '', '', '']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].domain).toBe('');
   });
@@ -238,8 +242,8 @@ describe('entity manager flows (JUM-681)', () => {
     const cancelled = scriptedContext(catalogWithEntity(), [4, 0, BACK], ['not-the-name']);
     const confirmed = scriptedContext(catalogWithEntity(), [4, 0, BACK], ['Invoice']);
 
-    await entityModelManagerSubApplication.run(cancelled.context as never);
-    await entityModelManagerSubApplication.run(confirmed.context as never);
+    await entityModelManagerSubApplication.run(cancelled.context);
+    await entityModelManagerSubApplication.run(confirmed.context);
 
     expect(cancelled.logs).toContain('Delete cancelled.');
     expect(cancelled.saved).toHaveLength(0);
@@ -256,11 +260,13 @@ describe('entity manager flows (JUM-681)', () => {
       []
     );
 
-    await entityModelManagerSubApplication.run(empty.context as never);
-    await entityModelManagerSubApplication.run(withField.context as never);
+    await entityModelManagerSubApplication.run(empty.context);
+    await entityModelManagerSubApplication.run(withField.context);
 
     expect(empty.logs).toContain('No fields defined.');
-    expect(withField.logs.join('\n')).toContain('- total: number (required) | validations=minimum:10');
+    expect(withField.logs.join('\n')).toContain(
+      '- total: number (required) | validations=minimum:10'
+    );
   });
 
   it('shows the details of a chosen field', async () => {
@@ -272,7 +278,7 @@ describe('entity manager flows (JUM-681)', () => {
       []
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs.join('\n')).toContain('Field: total');
     expect(run.logs.join('\n')).toContain('  required: yes');
@@ -287,7 +293,7 @@ describe('entity manager flows (JUM-681)', () => {
       ['reference', '', '', '']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].fields[0].name).toBe('reference');
     expect(run.logs.join('\n')).toContain('added');
@@ -302,7 +308,7 @@ describe('entity manager flows (JUM-681)', () => {
       ['computed on write']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     const [field] = run.saved[0].entities[0].fields;
     expect(field.behavior).toBe('computed on write');
@@ -319,8 +325,8 @@ describe('entity manager flows (JUM-681)', () => {
       []
     );
 
-    await entityModelManagerSubApplication.run(empty.context as never);
-    await entityModelManagerSubApplication.run(removed.context as never);
+    await entityModelManagerSubApplication.run(empty.context);
+    await entityModelManagerSubApplication.run(removed.context);
 
     expect(empty.logs).toContain('No fields to delete.');
     expect(removed.saved[0].entities[0].fields).toStrictEqual([]);
@@ -335,7 +341,7 @@ describe('entity manager flows (JUM-681)', () => {
       []
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     // The generated schema is what the codegen and the exporters consume, so
     // the preview has to be the real mapping rather than a summary of it.
@@ -363,9 +369,9 @@ describe('entity manager flows (JUM-681)', () => {
       ['   ']
     );
 
-    await entityModelManagerSubApplication.run(valid.context as never);
-    await entityModelManagerSubApplication.run(invalid.context as never);
-    await entityModelManagerSubApplication.run(empty.context as never);
+    await entityModelManagerSubApplication.run(valid.context);
+    await entityModelManagerSubApplication.run(invalid.context);
+    await entityModelManagerSubApplication.run(empty.context);
 
     expect(valid.logs).toContain('Payload is valid against generated OpenAPI schema.');
     expect(invalid.logs.join('\n')).toContain('Validation failed:');
@@ -405,7 +411,7 @@ describe('entity manager edits and printers (JUM-681)', () => {
       []
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     const printed = run.logs.join('\n');
     expect(printed).toContain('- note: string | validations=none');
@@ -426,7 +432,7 @@ describe('entity manager edits and printers (JUM-681)', () => {
       ['', '', '', '']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     const [saved] = run.saved;
     expect(saved.entities[0].fields[0]).toStrictEqual(optionalField());
@@ -441,7 +447,7 @@ describe('entity manager edits and printers (JUM-681)', () => {
       ['']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].fields[0].behavior).toBe('free text');
   });
@@ -457,7 +463,7 @@ describe('entity manager edits and printers (JUM-681)', () => {
       ['NOTE', '', '', '']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs.join('\n')).toContain('already exists');
     expect(run.saved).toHaveLength(0);
@@ -472,7 +478,7 @@ describe('entity manager edits and printers (JUM-681)', () => {
       ['', '', '']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].description).toBe('a customer invoice');
   });
@@ -490,7 +496,7 @@ describe('entity manager edits and printers (JUM-681)', () => {
       ['Invoice', 'Logistics', '', 'n', '']
     );
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].domain).toBe('Logistics');
   });
@@ -508,15 +514,17 @@ describe('entity manager edits and printers (JUM-681)', () => {
  */
 describe('entity manager empty answers (JUM-721)', () => {
   const bareEntity = () => ({
-    ...catalogWithEntity([{
-      name: 'note',
-      type: 'string',
-      required: false,
-      format: '',
-      defaultValue: '',
-      validations: [],
-      behavior: ''
-    }])
+    ...catalogWithEntity([
+      {
+        name: 'note',
+        type: 'string',
+        required: false,
+        format: '',
+        defaultValue: '',
+        validations: [],
+        behavior: ''
+      }
+    ])
   });
 
   const withoutDescription = () => {
@@ -530,7 +538,7 @@ describe('entity manager empty answers (JUM-721)', () => {
 
     const run = scriptedContext(withoutDescription(), [3, 0, 0, 0, BACK], ['', '', '']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].description).toBe('');
     expect(run.saved[0].entities[0].behaviors).toStrictEqual([]);
@@ -541,7 +549,7 @@ describe('entity manager empty answers (JUM-721)', () => {
 
     const run = scriptedContext(bareEntity(), [5, 0, 4, 0, FIELDS_BACK, BACK], ['']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saved[0].entities[0].fields[0].behavior).toBe('');
   });
@@ -554,7 +562,7 @@ describe('entity manager empty answers (JUM-721)', () => {
     const empty: IWorkspaceCatalog = { version: 1, domains: [], entities: [] };
     const run = scriptedContext(empty, [2, 0, BACK], ['Invoice', '']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('Domain is required.');
     expect(run.saved).toHaveLength(0);

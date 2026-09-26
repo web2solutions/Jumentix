@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const ROOT = process.cwd();
 const EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs']);
@@ -12,8 +12,14 @@ const LEGACY_PATHS = [
 ];
 
 const ALLOWLIST = new Set([
-  path.resolve(ROOT, 'apps/backend-template/src/modules/Users/adapters/in/http/controllers/UserController.ts'),
-  path.resolve(ROOT, 'apps/backend-template/src/modules/Users/adapters/in/http/controllers/AuthController.ts')
+  path.resolve(
+    ROOT,
+    'apps/backend-template/src/modules/Users/adapters/in/http/controllers/UserController.ts'
+  ),
+  path.resolve(
+    ROOT,
+    'apps/backend-template/src/modules/Users/adapters/in/http/controllers/AuthController.ts'
+  )
 ]);
 
 const walk = (dirPath, files = []) => {
@@ -57,7 +63,7 @@ for (const filePath of files) {
 if (violations.length > 0) {
   console.error('Legacy Users namespace imports found:');
   violations.forEach((violation) => console.error(`- ${violation}`));
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log('Users legacy import check passed.');
 }
-
-console.log('Users legacy import check passed.');

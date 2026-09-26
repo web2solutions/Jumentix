@@ -1,4 +1,5 @@
 import { RabbitMqMessageMediatorAdapter } from '../src';
+
 import type { IMessage } from '../src';
 
 /**
@@ -20,8 +21,8 @@ type Consumer = (msg: unknown) => void | Promise<void>;
 
 function fakeAmqp() {
   const consumers: Record<string, Consumer> = {};
-  const sent: Array<{ queue: string; payload: unknown; options: any }> = [];
-  const published: Array<{ exchange: string; key: string; payload: unknown }> = [];
+  const sent: { queue: string; payload: unknown; options: any }[] = [];
+  const published: { exchange: string; key: string; payload: unknown }[] = [];
   const acked: unknown[] = [];
   const closed: string[] = [];
 
@@ -39,13 +40,19 @@ function fakeAmqp() {
     publish: (exchange: string, key: string, payload: Buffer) => {
       published.push({ exchange, key, payload: JSON.parse(payload.toString()) });
     },
-    ack: (msg: unknown) => { acked.push(msg); },
-    close: async () => { closed.push('channel'); }
+    ack: (msg: unknown) => {
+      acked.push(msg);
+    },
+    close: async () => {
+      closed.push('channel');
+    }
   };
 
   const connection = {
     createChannel: async () => channel,
-    close: async () => { closed.push('connection'); }
+    close: async () => {
+      closed.push('connection');
+    }
   };
 
   return {
@@ -64,6 +71,12 @@ const frame = (body: unknown, properties: any = {}, fields: any = {}) => ({
   properties,
   fields
 });
+
+function replyQueueName(broker: { consumers: Record<string, Consumer> }): string {
+  const name = Object.keys(broker.consumers).find((queue) => queue !== 'app.requests');
+  if (!name) throw new Error('expected the adapter to have registered a reply queue consumer');
+  return name;
+}
 
 const message = (over: Partial<IMessage> = {}): IMessage => ({
   contract: 'orders.create',
@@ -93,14 +106,19 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     // The message is the whole value of this path: "Cannot find module 'amqplib'"
     // from inside a mediator tells an operator nothing about what to install.
     const cause = new Error('Cannot find module amqplib');
-    RabbitMqMessageMediatorAdapter.importAmqpLib = async () => { throw cause; };
+    RabbitMqMessageMediatorAdapter.importAmqpLib = async () => {
+      throw cause;
+    };
     const adapter = new RabbitMqMessageMediatorAdapter({ url: 'amqp://localhost' });
 
     await expect(adapter.connect()).rejects.toThrow('bun add amqplib');
     // The original is kept as `cause`, so the operator can still see what the
     // resolver said — asserted directly rather than inside a `catch`, which
     // would pass just as well if nothing ever threw.
-    const thrown = await adapter.connect().then(() => null, (error: any) => error);
+    const thrown = await adapter.connect().then(
+      () => null,
+      (error: any) => error
+    );
     expect(thrown.cause).toBe(cause);
   });
 
@@ -110,7 +128,10 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     const broker = fakeAmqp();
     let connects = 0;
     RabbitMqMessageMediatorAdapter.importAmqpLib = async () => ({
-      connect: async () => { connects += 1; return broker.lib.connect(); }
+      connect: async () => {
+        connects += 1;
+        return broker.lib.connect();
+      }
     });
     const adapter = new RabbitMqMessageMediatorAdapter({ url: 'amqp://localhost' });
 
@@ -131,7 +152,10 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     const broker = fakeAmqp();
     let connects = 0;
     RabbitMqMessageMediatorAdapter.importAmqpLib = async () => ({
-      connect: async () => { connects += 1; return broker.lib.connect(); }
+      connect: async () => {
+        connects += 1;
+        return broker.lib.connect();
+      }
     });
     const adapter = new RabbitMqMessageMediatorAdapter({ url: 'amqp://localhost' });
 
@@ -160,7 +184,7 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     // adapter has nothing to do with — no correlation id, or one whose caller
     // has already timed out — and dropping them silently would grow the queue.
     const { broker } = await connected();
-    const replyQueue = Object.keys(broker.consumers).find((name) => name !== 'app.requests')!;
+    const replyQueue = replyQueueName(broker);
 
     await broker.consumers[replyQueue](null);
     expect(broker.acked).toHaveLength(0);
@@ -177,7 +201,7 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     expect.hasAssertions();
 
     const { adapter, broker } = await connected();
-    const replyQueue = Object.keys(broker.consumers).find((name) => name !== 'app.requests')!;
+    const replyQueue = replyQueueName(broker);
 
     const pending = adapter.request(message({ metadata: { correlationId: 'abc' } } as never));
     // `request` awaits the connection before it sends, so the frame exists on
@@ -187,10 +211,12 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     // The request is in flight: the frame it sent carries the reply queue.
     expect(broker.sent[0].options.replyTo).toBe(replyQueue);
 
-    await broker.consumers[replyQueue](frame(
-      { contract: 'orders.create', version: '1.0.0', result: { created: true } },
-      { correlationId: 'abc' }
-    ));
+    await broker.consumers[replyQueue](
+      frame(
+        { contract: 'orders.create', version: '1.0.0', result: { created: true } },
+        { correlationId: 'abc' }
+      )
+    );
 
     const response = await pending;
 
@@ -208,11 +234,13 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
       result: { id: 7 }
     }));
 
-    await broker.consumers['app.requests'](frame(
-      message(),
-      { replyTo: 'caller-queue', correlationId: 'zed' },
-      { routingKey: 'orders.create' }
-    ));
+    await broker.consumers['app.requests'](
+      frame(
+        message(),
+        { replyTo: 'caller-queue', correlationId: 'zed' },
+        { routingKey: 'orders.create' }
+      )
+    );
 
     const reply = broker.sent.find((entry) => entry.queue === 'caller-queue');
 
@@ -225,7 +253,7 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     expect.hasAssertions();
 
     const { adapter, broker } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: { id: 7 } } as never));
+    adapter.registerHandler('orders.create', async () => ({ result: { id: 7 } }) as never);
 
     await broker.consumers['app.requests'](frame(message(), {}, { routingKey: 'orders.create' }));
     await broker.consumers['app.requests'](null);
@@ -266,16 +294,15 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
       throw new TypeError('handler exploded');
     });
 
-    await broker.consumers['app.requests'](frame(
-      message(),
-      { replyTo: 'caller-queue' },
-      { routingKey: 'orders.create' }
-    ));
+    await broker.consumers['app.requests'](
+      frame(message(), { replyTo: 'caller-queue' }, { routingKey: 'orders.create' })
+    );
 
     const reply = broker.sent.find((entry) => entry.queue === 'caller-queue');
 
     expect((reply?.payload as any).error).toStrictEqual({
-      name: 'TypeError', message: 'handler exploded'
+      name: 'TypeError',
+      message: 'handler exploded'
     });
   });
 
@@ -283,19 +310,20 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     expect.hasAssertions();
 
     const { adapter, broker } = await connected();
-    // eslint-disable-next-line no-throw-literal
-    adapter.registerHandler('orders.create', async () => { throw 'a bare string'; });
 
-    await broker.consumers['app.requests'](frame(
-      message(),
-      { replyTo: 'caller-queue' },
-      { routingKey: 'orders.create' }
-    ));
+    adapter.registerHandler('orders.create', async () => {
+      throw 'a bare string';
+    });
+
+    await broker.consumers['app.requests'](
+      frame(message(), { replyTo: 'caller-queue' }, { routingKey: 'orders.create' })
+    );
 
     const reply = broker.sent.find((entry) => entry.queue === 'caller-queue');
 
     expect((reply?.payload as any).error).toStrictEqual({
-      name: 'Error', message: 'a bare string'
+      name: 'Error',
+      message: 'a bare string'
     });
   });
 
@@ -304,11 +332,13 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
 
     const { broker } = await connected();
 
-    await broker.consumers['app.requests'](frame(
-      message({ contract: 'nobody.handles.this' }),
-      { replyTo: 'caller-queue' },
-      { routingKey: 'nobody.handles.this' }
-    ));
+    await broker.consumers['app.requests'](
+      frame(
+        message({ contract: 'nobody.handles.this' }),
+        { replyTo: 'caller-queue' },
+        { routingKey: 'nobody.handles.this' }
+      )
+    );
 
     const reply = broker.sent.find((entry) => entry.queue === 'caller-queue');
 
@@ -321,16 +351,16 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
     // Three registrations for one contract, distinguished only by how the
     // request asks for them. Resolution order is the behaviour.
     const { adapter } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: 'by-route' } as never), {
+    adapter.registerHandler('orders.create', async () => ({ result: 'by-route' }) as never, {
       routeKey: 'route.a'
     });
-    adapter.registerHandler('orders.create', async () => ({ result: 'by-queue' } as never), {
+    adapter.registerHandler('orders.create', async () => ({ result: 'by-queue' }) as never, {
       queueName: 'queue.b'
     });
     // Registered last on purpose: each registration also claims the contract, so
     // the contract entry is whichever came last. The route and queue maps keep
     // theirs, which is what makes the precedence observable at all.
-    adapter.registerHandler('orders.create', async () => ({ result: 'by-contract' } as never));
+    adapter.registerHandler('orders.create', async () => ({ result: 'by-contract' }) as never);
 
     const byRoute = await adapter.request(message(), { routeKey: 'route.a', timeoutMs: 5 });
     const byQueue = await adapter.request(message(), { queueName: 'queue.b', timeoutMs: 5 });
@@ -346,8 +376,12 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
 
     const { adapter, broker } = await connected();
     const heard: string[] = [];
-    adapter.subscribe('orders.created', (event) => { heard.push(event.name); });
-    adapter.subscribe('orders.created', async (event) => { heard.push(`${event.name}-async`); });
+    adapter.subscribe('orders.created', (event) => {
+      heard.push(event.name);
+    });
+    adapter.subscribe('orders.created', async (event) => {
+      heard.push(`${event.name}-async`);
+    });
 
     await adapter.publish({ name: 'orders.created', payload: { id: 1 } } as never);
 
@@ -373,7 +407,10 @@ describe('rabbitMQ adapter against a broker double (JUM-681)', () => {
 
     const broker = fakeAmqp();
     let prefetched = 0;
-    broker.channel.prefetch = async (value: number) => { prefetched = value; return value; };
+    broker.channel.prefetch = async (value: number) => {
+      prefetched = value;
+      return value;
+    };
     RabbitMqMessageMediatorAdapter.importAmqpLib = async () => broker.lib;
 
     const adapter = new RabbitMqMessageMediatorAdapter({

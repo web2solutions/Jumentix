@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import path from 'node:path';
 
 /**
@@ -21,15 +20,22 @@ import path from 'node:path';
  * building, the error shape — is the production code.
  */
 const repoRoot = path.resolve(__dirname, '../../../..');
-const {
-  createCatalogHttpTransport
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js'));
+const { createCatalogHttpTransport } = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js')
+);
 
-type CallInit = { method: string; headers: Record<string, string>; body?: string };
-type Call = { url: string; init: CallInit };
+interface CallInit {
+  method: string;
+  headers: Record<string, string | undefined>;
+  body?: string;
+}
+interface Call {
+  url: string;
+  init: CallInit;
+}
 
 /** The network stand-in: records each request, answers a scripted response. */
-function fetchDouble(responses: Array<{ ok?: boolean; status?: number; text: string }>) {
+function fetchDouble(responses: { ok?: boolean; status?: number; text: string }[]) {
   const calls: Call[] = [];
   const queue = [...responses];
 
@@ -70,8 +76,9 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // without `fetch` for every suite that follows.
     (globalThis as { fetch?: unknown }).fetch = globalFetch;
 
-    expect((raised as Error).message)
-      .toBe('createCatalogHttpTransport requires a fetch implementation.');
+    expect((raised as Error).message).toBe(
+      'createCatalogHttpTransport requires a fetch implementation.'
+    );
   });
 
   it('falls back to the runtime fetch when none is injected', async () => {
@@ -97,7 +104,7 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     (globalThis as { fetch?: unknown }).fetch = impl;
 
     const transport = createCatalogHttpTransport();
-    await expect(transport.listCatalogs()).rejects.toThrow(
+    await expect(transport.listCatalogs() as Promise<unknown>).rejects.toThrow(
       'Service Management catalog API endpoint is not configured. Set JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL.'
     );
 
@@ -112,7 +119,10 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     const { impl, calls } = fetchDouble([{ text: listPayload }]);
 
     try {
-      const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
+      const transport = createCatalogHttpTransport({
+        baseUrl: 'http://catalog.invalid',
+        fetchImpl: impl
+      });
       await transport.listCatalogs();
     } finally {
       (globalThis as { fetch?: unknown }).fetch = globalFetch;
@@ -144,7 +154,11 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     expect.hasAssertions();
 
     const { impl, calls } = fetchDouble([{ text: listPayload }]);
-    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl, apiPrefix: '/api/2.0.0' });
+    const transport = createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: impl,
+      apiPrefix: '/api/2.0.0'
+    });
 
     await transport.listCatalogs();
 
@@ -155,7 +169,10 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     expect.hasAssertions();
 
     const anonymous = fetchDouble([{ text: listPayload }]);
-    await createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: anonymous.impl }).listCatalogs();
+    await createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: anonymous.impl
+    }).listCatalogs();
 
     const authenticated = fetchDouble([{ text: listPayload }]);
     await createCatalogHttpTransport({
@@ -174,7 +191,10 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     expect.hasAssertions();
 
     const { impl, calls } = fetchDouble([{ text: '{"id":"cat-1"}' }, { text: '{"id":"cat-1"}' }]);
-    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
+    const transport = createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: impl
+    });
 
     await transport.createCatalog({ name: 'Domain' });
     await transport.getCatalog('cat-1');
@@ -191,7 +211,10 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // An id with a slash would otherwise address a different resource
     // entirely — `/catalogs/a/b` is not `/catalogs/a%2Fb`.
     const { impl, calls } = fetchDouble([{ text: '' }, { text: '' }, { text: '' }]);
-    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
+    const transport = createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: impl
+    });
 
     await transport.getCatalog('a/b');
     await transport.updateCatalog('a b', { version: 2 });
@@ -210,7 +233,10 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // string, the backend has nothing to compare and a stale delete succeeds.
     const { impl, calls } = fetchDouble([{ text: '' }]);
 
-    await createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl }).deleteCatalog('cat-1', 7);
+    await createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: impl
+    }).deleteCatalog('cat-1', 7);
 
     expect(calls[0].init.method).toBe('DELETE');
     expect(calls[0].url).toBe('http://catalog.invalid/api/1.0.0/catalogs/cat-1?version=7');
@@ -220,13 +246,18 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     expect.hasAssertions();
 
     const { impl, calls } = fetchDouble([{ text: listPayload }, { text: listPayload }]);
-    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
+    const transport = createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: impl
+    });
 
     await transport.listCatalogs({ page: 2, size: 10 });
     await transport.listCatalogs({ includeDeleted: true });
 
     expect(calls[0].url).toBe('http://catalog.invalid/api/1.0.0/catalogs?page=2&size=10');
-    expect(calls[1].url).toBe('http://catalog.invalid/api/1.0.0/catalogs?page=1&size=500&includeDeleted=true');
+    expect(calls[1].url).toBe(
+      'http://catalog.invalid/api/1.0.0/catalogs?page=1&size=500&includeDeleted=true'
+    );
   });
 
   it('returns an empty list rather than a non-list payload', async () => {
@@ -239,11 +270,16 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
       { text: JSON.stringify({ message: 'no' }) },
       { text: '' }
     ]);
-    const transport = createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl });
+    const transport = createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: impl
+    });
 
-    await expect(transport.listCatalogs()).resolves.toStrictEqual([{ id: 'cat-1' }]);
-    await expect(transport.listCatalogs()).resolves.toStrictEqual([]);
-    await expect(transport.listCatalogs()).resolves.toStrictEqual([]);
+    await expect(transport.listCatalogs() as Promise<unknown>).resolves.toStrictEqual([
+      { id: 'cat-1' }
+    ]);
+    await expect(transport.listCatalogs() as Promise<unknown>).resolves.toStrictEqual([]);
+    await expect(transport.listCatalogs() as Promise<unknown>).resolves.toStrictEqual([]);
   });
 
   it('reads an empty body as null instead of failing to parse it', async () => {
@@ -252,8 +288,12 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // 204-shaped answers are normal for delete; `JSON.parse('')` throws.
     const { impl } = fetchDouble([{ text: '' }]);
 
-    await expect(createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl }).deleteCatalog('cat-1', 1)).resolves
-      .toBeNull();
+    await expect(
+      createCatalogHttpTransport({
+        baseUrl: 'http://catalog.invalid',
+        fetchImpl: impl
+      }).deleteCatalog('cat-1', 1) as Promise<unknown>
+    ).resolves.toBeNull();
   });
 
   it('survives a body that is not JSON at all', async () => {
@@ -263,7 +303,11 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
     // softly, because throwing here would report as a transport outage.
     const { impl } = fetchDouble([{ text: '<html>gateway</html>' }]);
 
-    await expect(createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl }).getCatalog('cat-1')).resolves.toBeNull();
+    await expect(
+      createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl }).getCatalog(
+        'cat-1'
+      ) as Promise<unknown>
+    ).resolves.toBeNull();
   });
 
   it('turns a rejected write into an error carrying the status and the body', async () => {
@@ -271,13 +315,18 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
 
     // This is how a stale write becomes a reviewable conflict: the 409's body
     // holds the server's version, and the sync client reads it off the error.
-    const { impl } = fetchDouble([{
-      ok: false,
-      status: 409,
-      text: JSON.stringify({ result: { version: 9 } })
-    }]);
+    const { impl } = fetchDouble([
+      {
+        ok: false,
+        status: 409,
+        text: JSON.stringify({ result: { version: 9 } })
+      }
+    ]);
 
-    const failure = await createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl })
+    const failure = await createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: impl
+    })
       .updateCatalog('cat-1', { version: 3 })
       .catch((error: Error & { status?: number; body?: unknown }) => error);
 
@@ -291,7 +340,10 @@ describe('createCatalogHttpTransport (JUM-681)', () => {
 
     const { impl } = fetchDouble([{ ok: false, status: 502, text: 'Bad Gateway' }]);
 
-    const failure = await createCatalogHttpTransport({ baseUrl: 'http://catalog.invalid', fetchImpl: impl })
+    const failure = await createCatalogHttpTransport({
+      baseUrl: 'http://catalog.invalid',
+      fetchImpl: impl
+    })
       .listCatalogs()
       .catch((error: Error & { status?: number; body?: unknown }) => error);
 

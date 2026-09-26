@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Site Jumentix
 
 Aplicativo de site comercial para venda da Jumentix como uma fábrica de software empresarial.

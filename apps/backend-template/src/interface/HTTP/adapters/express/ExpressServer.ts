@@ -1,15 +1,18 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import express, { Express } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import express from 'express';
 import helmet from 'helmet';
 import { v4 } from 'uuid';
-import { _HTTP_PORT_ } from '@src/config/constants';
-import { isCorsOriginAllowed } from '@src/config/security';
-import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+
+import { HTTP_PORT } from '@src/config/constants';
+import isCorsOriginAllowed from '@src/config/security';
 import { Context } from '@src/infra/context/Context';
 import { InternalServerError } from '@src/infra/exceptions';
-import { Server } from 'http';
+import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+
+import type { Server } from 'node:http';
+
+import type { Express } from 'express';
 
 let server: any;
 
@@ -21,15 +24,17 @@ class ExpressServer extends HTTPBaseServer<Express> {
   constructor() {
     super();
     this.application = express();
-    this.application.use(cors({
-      origin(origin, callback) {
-        if (isCorsOriginAllowed(origin)) {
-          callback(null, true);
-          return;
+    this.application.use(
+      cors({
+        origin(origin, callback) {
+          if (isCorsOriginAllowed(origin)) {
+            callback(null, true);
+            return;
+          }
+          callback(new Error('Not allowed by CORS'));
         }
-        callback(new Error('Not allowed by CORS'));
-      }
-    }));
+      })
+    );
     this.application.use(helmet());
     this.application.use(bodyParser.json({ limit: '100mb' }));
 
@@ -60,7 +65,7 @@ class ExpressServer extends HTTPBaseServer<Express> {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        const port = Number(process.env.JUMENTIX_HTTP_PORT || _HTTP_PORT_);
+        const port = Number(process.env.JUMENTIX_HTTP_PORT || HTTP_PORT);
         this.server = this.application.listen(port, () => {
           // eslint-disable-next-line no-console
           console.log(`Express App Listening on Port ${port}`);
@@ -68,13 +73,16 @@ class ExpressServer extends HTTPBaseServer<Express> {
         });
       } catch (error) {
         // console.error(`An error occurred: ${JSON.stringify(error)}`);
-        this.stop();
+        // Best-effort cleanup before rejecting; the executor cannot await.
+        // A stop failure stays an unhandled rejection, as before.
+        this.stop().catch((stopError: unknown) => {
+          throw stopError;
+        });
         reject(new InternalServerError((error as Error).message));
       }
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   public async stop(): Promise<void> {
     if (!this.server) {
       return;
@@ -91,4 +99,4 @@ class ExpressServer extends HTTPBaseServer<Express> {
   }
 }
 
-export { ExpressServer };
+export default ExpressServer;

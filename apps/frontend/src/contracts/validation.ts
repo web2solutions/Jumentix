@@ -1,5 +1,6 @@
-import openApi from './openapi.json';
 import { t } from '@/i18n';
+
+import openApi from './openapi.json';
 
 /**
  * Document/phone masks and validations driven by the `x-validation` blocks
@@ -17,30 +18,32 @@ interface ValidationRule {
 
 interface RuleCarrier {
   components?: {
-    schemas?: Record<string, {
-      properties?: Record<string, { 'x-validation'?: { rules?: ValidationRule[] } }>;
-    }>;
+    schemas?: Record<
+      string,
+      {
+        properties?: Record<string, { 'x-validation'?: { rules?: ValidationRule[] } }>;
+      }
+    >;
   };
 }
 
-const rulesOf = (schema: string, property: string): ValidationRule[] => (
-  (openApi as RuleCarrier).components?.schemas?.[schema]?.properties?.[property]?.['x-validation']?.rules ?? []
-);
+const rulesOf = (schema: string, property: string): ValidationRule[] =>
+  (openApi as RuleCarrier).components?.schemas?.[schema]?.properties?.[property]?.['x-validation']
+    ?.rules ?? [];
 
 const documentRules = (): ValidationRule[] => rulesOf('Document', 'data');
 
 const phoneRules = (): ValidationRule[] => rulesOf('Phone', 'number');
 
-export const documentRuleFor = (type: string, countryIssue: string): ValidationRule | undefined => (
-  documentRules().find((rule) => (
-    (!rule.when.type || rule.when.type === type)
-    && (!rule.when.countryIssue || rule.when.countryIssue === countryIssue)
-  ))
-);
+export const documentRuleFor = (type: string, countryIssue: string): ValidationRule | undefined =>
+  documentRules().find(
+    (rule) =>
+      (!rule.when.type || rule.when.type === type) &&
+      (!rule.when.countryIssue || rule.when.countryIssue === countryIssue)
+  );
 
-export const phoneRuleFor = (countryCode: string): ValidationRule | undefined => (
-  phoneRules().find((rule) => rule.when.countryCode === countryCode)
-);
+export const phoneRuleFor = (countryCode: string): ValidationRule | undefined =>
+  phoneRules().find((rule) => rule.when.countryCode === countryCode);
 
 const digitsOnly = (value: string): string => value.replace(/\D/g, '');
 
@@ -60,14 +63,12 @@ const applyMask = (digits: string, mask: string): string => {
 };
 
 /** Progressive CPF mask: digits are grouped 000.000.000-00 as the user types. */
-export const maskCpf = (raw: string): string => (
-  applyMask(digitsOnly(raw).slice(0, 11), '000.000.000-00')
-);
+export const maskCpf = (raw: string): string =>
+  applyMask(digitsOnly(raw).slice(0, 11), '000.000.000-00');
 
 /** Progressive SSN mask: 000-00-0000. */
-export const maskSsn = (raw: string): string => (
-  applyMask(digitsOnly(raw).slice(0, 9), '000-00-0000')
-);
+export const maskSsn = (raw: string): string =>
+  applyMask(digitsOnly(raw).slice(0, 9), '000-00-0000');
 
 /** Progressive phone mask by country rule declared in the OAS. */
 export const maskPhone = (countryCode: string, raw: string): string => {
@@ -84,9 +85,8 @@ export const maskPhone = (countryCode: string, raw: string): string => {
  * (`^[A-Za-z0-9]{5,20}$` → `A-Za-z0-9`). Returns undefined for any other
  * shape — digit-pattern rules (CPF/SSN/phone) are handled by masks instead.
  */
-export const patternAlphabet = (pattern: string | undefined): string | undefined => (
-  pattern?.match(/^\^\[([^\]]+)\]\{\d+(?:,\d*)?\}\$$/)?.[1]
-);
+export const patternAlphabet = (pattern: string | undefined): string | undefined =>
+  pattern?.match(/^\^\[([^\]]+)\]\{\d+(?:,\d*)?\}\$$/)?.[1];
 
 /**
  * Extracts the upper bound of the quantifier in an anchored class pattern
@@ -148,9 +148,8 @@ export const isValidCpf = (value: string): boolean => {
   return checksum(10) === numbers[9] && checksum(11) === numbers[10];
 };
 
-const matches = (pattern: string | undefined, value: string): boolean => (
-  pattern ? new RegExp(pattern).test(value) : true
-);
+const matches = (pattern: string | undefined, value: string): boolean =>
+  pattern ? new RegExp(pattern).test(value) : true;
 
 /**
  * Full document validation: OAS pattern for the type+country, plus the CPF
@@ -189,7 +188,10 @@ export const validatePhone = (
   }
   const rule = phoneRuleFor(countryCode);
   if (rule?.pattern && !matches(rule.pattern, value)) {
-    return t('validation.phoneFormat', { country: countryCode, example: rule.example ?? '0000-0000' });
+    return t('validation.phoneFormat', {
+      country: countryCode,
+      example: rule.example ?? '0000-0000'
+    });
   }
   return null;
 };

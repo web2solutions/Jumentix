@@ -42,13 +42,13 @@ export * from './model/interfaceFrameworkMatrix.js';
 export * from './state/designerState.js';
 
 // The validation / model-check engine.
-export * from './validation/modelValidation.js';
-export * from './validation/asyncApi30Validation.js';
-export * from './validation/deployTargetValidation.js';
+export { default as collectModelIssues } from './validation/modelValidation.js';
+export { default as validateAsyncApi30Document } from './validation/asyncApi30Validation.js';
+export { default as collectDeployTargetIssues } from './validation/deployTargetValidation.js';
 export * from './validation/deployTargetLifecycleValidation.js';
 export * from './validation/interfaceAdapterValidation.js';
-export * from './validation/serviceConfigurationValidation.js';
-export * from './validation/architectureValidation.js';
+export { default as collectServiceConfigurationIssues } from './validation/serviceConfigurationValidation.js';
+export { default as collectArchitectureIssues } from './validation/architectureValidation.js';
 
 // The exporters: JSON, Markdown, JSON Schema, AsyncAPI, boilerplate bundle,
 // domain package and OAS.
@@ -65,4 +65,4 @@ export * from './packages/packageVersioning.js';
 export * from './codegen/hexagonalCodegen.js';
 
 // The storage port as a contract only — no adapter ships in this package.
-export * from './store/IDesignerStore.js';
+export { default as IDesignerStore } from './store/IDesignerStore.js';

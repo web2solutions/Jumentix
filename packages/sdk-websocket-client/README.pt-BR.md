@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: packages/sdk-websocket-client/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # @jumentix/sdk-websocket-client
 
 Cliente WebSocket SDK para a API em tempo real Socket.IO, conduzido pela especificação AsyncAPI WebSocket (`/spec/asyncapi/1.0.0.websocket.yml`).
@@ -35,4 +36,3 @@ const response = await client.request({
 ```bash
 bun run --filter @jumentix/sdk-websocket-client build
 ```
-

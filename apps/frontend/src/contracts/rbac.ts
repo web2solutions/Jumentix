@@ -9,7 +9,7 @@ import openApi from './openapi.json';
 
 interface RbacOperation {
   operationId?: string;
-  security?: Array<Record<string, string[]>>;
+  security?: Record<string, string[]>[];
 }
 
 interface RbacSpec {
@@ -49,8 +49,9 @@ const operationScopesMap = (): Record<string, string[]> => {
       .forEach((operation) => {
         // Our spec declares a single bearerAuth requirement per operation; the
         // scope list inside it is ANDed. Multiple alternatives (OR) are folded.
-        const requirements = (operation.security ?? [])
-          .flatMap((requirement) => Object.values(requirement).flat());
+        const requirements = (operation.security ?? []).flatMap((requirement) =>
+          Object.values(requirement).flat()
+        );
         map[(operation as { operationId?: string }).operationId as string] = requirements;
       });
   }
@@ -60,9 +61,8 @@ const operationScopesMap = (): Record<string, string[]> => {
 const scopesByOperation = operationScopesMap();
 
 /** Scopes an operation requires per the OAS (empty = public operation). */
-export const requiredScopes = (operationId: string): string[] => (
-  scopesByOperation[operationId] ?? []
-);
+export const requiredScopes = (operationId: string): string[] =>
+  scopesByOperation[operationId] ?? [];
 
 /**
  * True when the roles satisfy every scope the operation requires. Operations
@@ -78,6 +78,5 @@ export const can = (roles: string[] | undefined, operationId: string): boolean =
 };
 
 /** True for superadmin roles (matrix `*`). */
-export const hasSuperadmin = (roles: string[] | undefined): boolean => (
-  effectiveScopes(roles ?? []).includes('*')
-);
+export const hasSuperadmin = (roles: string[] | undefined): boolean =>
+  effectiveScopes(roles ?? []).includes('*');

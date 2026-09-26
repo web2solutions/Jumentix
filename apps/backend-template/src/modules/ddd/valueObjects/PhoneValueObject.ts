@@ -1,7 +1,7 @@
 import { UUID } from '@src/modules/port';
 import { canNotBeEmpty } from '@src/shared/validators';
 
-export class PhoneValueObject {
+class PhoneValueObject {
   public id: string;
 
   public countryCode: string;
@@ -13,13 +13,7 @@ export class PhoneValueObject {
   public isPrimary: boolean;
 
   constructor(payload: any) {
-    const {
-      id,
-      countryCode,
-      localCode,
-      number,
-      isPrimary
-    } = payload;
+    const { id, countryCode, localCode, number, isPrimary } = payload;
     canNotBeEmpty('number', number);
     canNotBeEmpty('localCode', localCode);
     canNotBeEmpty('countryCode', countryCode);
@@ -34,3 +28,5 @@ export class PhoneValueObject {
     this.isPrimary = !!isPrimary || false;
   }
 }
+
+export default PhoneValueObject;

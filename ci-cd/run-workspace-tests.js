@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-/* eslint-disable no-console */
 /**
  * Honest workspace test cell (JUM-557).
  * - Packages with real *.test.* files run those tests.
@@ -7,9 +5,10 @@
  *   recorded as typecheck verification (not unit-test green).
  * - Echo placeholders are rejected (false green).
  */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const PLACEHOLDER_RE = /echo\s+["'][^"']*(no tests yet|placeholder|pending|covered by)[^"']*["']/i;
@@ -44,8 +43,7 @@ function hasTestFiles(dir) {
 function classifyPackage(pkg, dir) {
   const scripts = pkg.scripts || {};
   const testScript = String(scripts.test || '');
-  const surface = pkg.jumentix?.testSurface
-    || (hasTestFiles(dir) ? 'unit' : 'typecheck-only');
+  const surface = pkg.jumentix?.testSurface || (hasTestFiles(dir) ? 'unit' : 'typecheck-only');
 
   if (!testScript.trim()) {
     return { kind: 'invalid', reason: 'missing test script' };
@@ -107,8 +105,13 @@ function runWorkspaceTests(options = {}) {
 
   const outDir = path.join(root, 'artifacts', 'ci');
   fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, 'workspace-tests.json'), `${JSON.stringify(evidence, null, 2)}\n`);
-  logger.log(`[ci] workspace-tests ${evidence.outcome}: unit=${evidence.summary.unit} typecheckOnly=${evidence.summary.typecheckOnly}`);
+  fs.writeFileSync(
+    path.join(outDir, 'workspace-tests.json'),
+    `${JSON.stringify(evidence, null, 2)}\n`
+  );
+  logger.log(
+    `[ci] workspace-tests ${evidence.outcome}: unit=${evidence.summary.unit} typecheckOnly=${evidence.summary.typecheckOnly}`
+  );
 
   return evidence;
 }

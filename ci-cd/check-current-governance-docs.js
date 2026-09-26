@@ -1,11 +1,11 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { gitBinary } = require('./lib/git-binary.js');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const EXCLUDED_FILES = new Set([
@@ -51,11 +51,16 @@ function validateCurrentGovernanceDocs(rootDir = ROOT) {
       if (/CircleCI is disabled/i.test(line)) {
         failures.push(`${location}: CircleCI is the secondary public CI mirror, not disabled`);
       }
-      if (/GitHub Project/i.test(line) && /single source of truth|canonical planning|authoritative planning/i.test(line)) {
+      if (
+        /GitHub Project/i.test(line) &&
+        /single source of truth|canonical planning|authoritative planning/i.test(line)
+      ) {
         failures.push(`${location}: Linear is the only planning source of truth`);
       }
       if (line.includes(RETIRED_REPOSITORY_SLUG)) {
-        failures.push(`${location}: active documentation must use web2solutions/Jumentix, not ${RETIRED_REPOSITORY_SLUG}`);
+        failures.push(
+          `${location}: active documentation must use web2solutions/Jumentix, not ${RETIRED_REPOSITORY_SLUG}`
+        );
       }
       for (const retiredPath of RETIRED_PATHS) {
         if (line.includes(retiredPath)) {
@@ -82,4 +87,9 @@ function main(rootDir = ROOT) {
 
 if (isEntryPoint(module)) main();
 
-module.exports = { RETIRED_PATHS, RETIRED_REPOSITORY_SLUG, trackedMarkdownFiles, validateCurrentGovernanceDocs };
+module.exports = {
+  RETIRED_PATHS,
+  RETIRED_REPOSITORY_SLUG,
+  trackedMarkdownFiles,
+  validateCurrentGovernanceDocs
+};

@@ -1,6 +1,6 @@
-/* eslint-disable no-console */
 const fs = require('node:fs');
 const path = require('node:path');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 /**
@@ -16,10 +16,12 @@ function syncServiceManagementSwaggerUi(options = {}) {
   const root = options.root || process.cwd();
   const exists = options.exists || fs.existsSync;
   const readFile = options.readFile || fs.readFileSync;
-  const writeFile = options.writeFile || ((target, contents) => {
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(target, contents);
-  });
+  const writeFile =
+    options.writeFile ||
+    ((target, contents) => {
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, contents);
+    });
   const logger = options.logger || console;
   const sourceDir = path.join(root, SOURCE_DIR);
   for (const file of FILES) {
@@ -38,4 +40,4 @@ if (isEntryPoint(module)) {
   process.exitCode = syncServiceManagementSwaggerUi();
 }
 
-module.exports = { syncServiceManagementSwaggerUi, FILES, SOURCE_DIR, TARGET_DIR };
+module.exports = { FILES, SOURCE_DIR, syncServiceManagementSwaggerUi, TARGET_DIR };

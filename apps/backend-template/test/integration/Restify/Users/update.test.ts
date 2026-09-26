@@ -16,7 +16,11 @@ import { UserDataRepository, UserService } from '@src/modules/Users';
 import AuthService from '@src/modules/Users/service/AuthService';
 import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
 import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
-import { authenticateForHeader, BasicAuthorizationHeaderUserGuest, user1 as updateUserTemplate  } from '@test/mock';
+import {
+  authenticateForHeader,
+  BasicAuthorizationHeaderUserGuest,
+  user1 as updateUserTemplate
+} from '@test/mock';
 
 import { listenForSupertest } from '../../../helpers/listenForSupertest';
 

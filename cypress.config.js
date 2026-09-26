@@ -103,6 +103,7 @@ module.exports = defineConfig({
         '</script>',
         '<script type="module">',
         '  import * as cana from "/cana-dist/index.mjs";',
+        // eslint-disable-next-line no-template-curly-in-string -- page source for the browser: the template literal is meant to be evaluated inside the served page, not here
         '  const name = `cana-dist-link-${Date.now()}`;',
         '  const client = cana.createClient({',
         '    name,',
@@ -148,7 +149,9 @@ module.exports = defineConfig({
           return;
         }
         let body = '';
-        req.on('data', (chunk) => { body += chunk; });
+        req.on('data', (chunk) => {
+          body += chunk;
+        });
         req.on('end', () => {
           try {
             // Two shapes arrive here: the support file's form POST (a single
@@ -176,11 +179,20 @@ module.exports = defineConfig({
         coverageServer.listen(0, '127.0.0.1', () => {
           const { port } = coverageServer.address();
           // Cypress.env is readable from the support file on every engine.
-          config.env.CANA_COVERAGE_URL = `http://127.0.0.1:${port}/browser-coverage`;
-          config.env.CANA_DIST_URL = `http://127.0.0.1:${port}/cana-dist/index.mjs`;
-          config.env.CANA_DIST_PAGE_URL = `http://127.0.0.1:${port}/cana-dist/page.html`;
-          on('after:run', () => new Promise((done) => coverageServer.close(done)));
-          resolve(config);
+          const env = {
+            ...config.env,
+            CANA_COVERAGE_URL: `http://127.0.0.1:${port}/browser-coverage`,
+            CANA_DIST_URL: `http://127.0.0.1:${port}/cana-dist/index.mjs`,
+            CANA_DIST_PAGE_URL: `http://127.0.0.1:${port}/cana-dist/page.html`
+          };
+          on(
+            'after:run',
+            () =>
+              new Promise((done) => {
+                coverageServer.close(done);
+              })
+          );
+          resolve({ ...config, env });
         });
       });
     }

@@ -1,6 +1,8 @@
+/* eslint-disable no-console */
 import fs from 'node:fs';
 import path from 'node:path';
-import process from 'node:process';
+
+const { process } = globalThis;
 
 const appRoot = process.cwd();
 const contentRoot = path.join(appRoot, 'content');
@@ -10,7 +12,8 @@ const portugueseRoot = path.join(contentRoot, 'pt-BR', 'jumentix');
 const listMdxFiles = (directory) =>
   fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = path.join(directory, entry.name);
-    return entry.isDirectory() ? listMdxFiles(fullPath) : /\.mdx$/i.test(entry.name) ? [fullPath] : [];
+    if (entry.isDirectory()) return listMdxFiles(fullPath);
+    return /\.mdx$/i.test(entry.name) ? [fullPath] : [];
   });
 
 const relativeDocuments = (root) =>
@@ -46,14 +49,10 @@ const requiredDocuments = [
   'packages/cana/usage/getting-started.mdx',
   'packages/cana/usage/workers-testing.mdx',
   'reference/index.mdx',
-  'reference/runtime-contracts.mdx',
+  'reference/runtime-contracts.mdx'
 ];
 
-const requiredAiSurfaces = [
-  'llms.txt',
-  'llms-full.txt',
-  'docs-index.json',
-];
+const requiredAiSurfaces = ['llms.txt', 'llms-full.txt', 'docs-index.json'];
 
 for (const surface of requiredAiSurfaces) {
   const fullPath = path.join(appRoot, 'public', surface);
@@ -67,8 +66,12 @@ if (englishDocuments.length < 61) {
 }
 
 if (JSON.stringify(englishDocuments) !== JSON.stringify(portugueseDocuments)) {
-  const missingInPortuguese = englishDocuments.filter((document) => !portugueseDocuments.includes(document));
-  const missingInEnglish = portugueseDocuments.filter((document) => !englishDocuments.includes(document));
+  const missingInPortuguese = englishDocuments.filter(
+    (document) => !portugueseDocuments.includes(document)
+  );
+  const missingInEnglish = portugueseDocuments.filter(
+    (document) => !englishDocuments.includes(document)
+  );
   throw new Error(
     `Documentation locale trees differ. Missing in Portuguese: ${missingInPortuguese.join(', ') || 'none'}. ` +
       `Missing in English: ${missingInEnglish.join(', ') || 'none'}.`

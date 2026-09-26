@@ -1,4 +1,3 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 /*
  * darwinProcessDiskIo — per-process disk I/O via libproc.proc_pid_rusage
  * (bun:ffi). bun:ffi does not exist under Node/Jest, so it is replaced by a
@@ -14,25 +13,25 @@
 
 const mockDlopen = jest.fn();
 
-jest.mock('bun:ffi', () => ({
-  dlopen: (...args: unknown[]) => mockDlopen(...args),
-  FFIType: { i32: 'i32', ptr: 'ptr' }
-}), { virtual: true });
+jest.mock(
+  'bun:ffi',
+  () => ({
+    dlopen: (...args: unknown[]) => mockDlopen(...args),
+    FFIType: { i32: 'i32', ptr: 'ptr' }
+  }),
+  { virtual: true }
+);
 
-const {
-  RUSAGE_INFO_V2,
-  RUSAGE_INFO_V2_SIZE,
-  OFFSET_DISKIO_BYTESREAD,
-  OFFSET_DISKIO_BYTESWRITTEN
-} = (() => {
-  const mod = require('../../src/runtime/darwinProcessDiskIo');
-  return {
-    RUSAGE_INFO_V2: 2,
-    RUSAGE_INFO_V2_SIZE: mod.RUSAGE_INFO_V2_SIZE,
-    OFFSET_DISKIO_BYTESREAD: mod.OFFSET_DISKIO_BYTESREAD,
-    OFFSET_DISKIO_BYTESWRITTEN: mod.OFFSET_DISKIO_BYTESWRITTEN
-  };
-})();
+const { RUSAGE_INFO_V2, RUSAGE_INFO_V2_SIZE, OFFSET_DISKIO_BYTESREAD, OFFSET_DISKIO_BYTESWRITTEN } =
+  (() => {
+    const mod = require('../../src/runtime/darwinProcessDiskIo');
+    return {
+      RUSAGE_INFO_V2: 2,
+      RUSAGE_INFO_V2_SIZE: mod.RUSAGE_INFO_V2_SIZE,
+      OFFSET_DISKIO_BYTESREAD: mod.OFFSET_DISKIO_BYTESREAD,
+      OFFSET_DISKIO_BYTESWRITTEN: mod.OFFSET_DISKIO_BYTESWRITTEN
+    };
+  })();
 
 const moduleInstance = { counter: 0 };
 
@@ -45,7 +44,7 @@ function loadModule() {
     moduleInstance.counter += 1;
     return require(`../../src/runtime/darwinProcessDiskIo.js?case=${moduleInstance.counter}`);
   }
-  // eslint-disable-next-line jest/require-hook
+
   jest.resetModules();
   return require('../../src/runtime/darwinProcessDiskIo');
 }
@@ -57,7 +56,7 @@ describe('service-management darwinProcessDiskIo', () => {
 
   it('reads disk counters from the rusage_info_v2 buffer at the documented offsets', () => {
     expect.hasAssertions();
-    const seen: Array<{ pid: number; flavor: number; size: number }> = [];
+    const seen: { pid: number; flavor: number; size: number }[] = [];
     mockDlopen.mockReturnValue({
       symbols: {
         proc_pid_rusage: (pid: number, flavor: number, buffer: Buffer) => {
@@ -114,7 +113,7 @@ describe('service-management darwinProcessDiskIo', () => {
   it('marks the collector unavailable when bun:ffi itself is missing', () => {
     expect.hasAssertions();
     mockDlopen.mockImplementation(() => {
-      throw new Error('Cannot find module \'bun:ffi\'');
+      throw new Error("Cannot find module 'bun:ffi'");
     });
     const { readDarwinDiskIo } = loadModule();
     const result = readDarwinDiskIo(1);
@@ -143,7 +142,7 @@ describe('service-management darwinProcessDiskIo', () => {
   it('stringifies non-Error throws from the FFI layer', () => {
     expect.hasAssertions();
     mockDlopen.mockImplementation(() => {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberate bare-string throw: the module must stringify non-Error FFI failures
       throw 'ffi exploded';
     });
     const { readDarwinDiskIo } = loadModule();
@@ -161,7 +160,7 @@ describe('service-management darwinProcessDiskIo', () => {
     mockDlopen.mockReturnValue({
       symbols: {
         proc_pid_rusage: () => {
-          // eslint-disable-next-line no-throw-literal
+          // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberate bare-string throw: the module must stringify non-Error symbol failures
           throw 'symbol exploded';
         }
       }

@@ -26,45 +26,45 @@ footer, plus representative documentation pages.
 
 Full-page screenshots:
 
-| Page | Evidence |
-| --- | --- |
-| Home | [home.jpg](./adonisjs/pages/home.jpg) |
-| Packages | [packages.jpg](./adonisjs/pages/packages.jpg) |
-| Wall of love | [wall-of-love.jpg](./adonisjs/pages/wall-of-love.jpg) |
-| Blog | [blog.jpg](./adonisjs/pages/blog.jpg) |
-| Roadmap | [roadmap.jpg](./adonisjs/pages/roadmap.jpg) |
-| Sponsor | [sponsor.jpg](./adonisjs/pages/sponsor.jpg) |
-| About | [about.jpg](./adonisjs/pages/about.jpg) |
-| Stories | [stories.jpg](./adonisjs/pages/stories.jpg) |
-| Releases | [releases.jpg](./adonisjs/pages/releases.jpg) |
-| Contributors | [contributors.jpg](./adonisjs/pages/contributors.jpg) |
-| Support | [support.jpg](./adonisjs/pages/support.jpg) |
-| Brand | [brand.jpg](./adonisjs/pages/brand.jpg) |
-| Team | [team.jpg](./adonisjs/pages/team.jpg) |
-| Documentation home | [docs-home.jpg](./adonisjs/pages/docs-home.jpg) |
-| Documentation introduction | [docs-introduction.jpg](./adonisjs/pages/docs-introduction.jpg) |
-| Documentation routing guide | [docs-routing-guide.jpg](./adonisjs/pages/docs-routing-guide.jpg) |
+| Page                             | Evidence                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| Home                             | [home.jpg](./adonisjs/pages/home.jpg)                                          |
+| Packages                         | [packages.jpg](./adonisjs/pages/packages.jpg)                                  |
+| Wall of love                     | [wall-of-love.jpg](./adonisjs/pages/wall-of-love.jpg)                          |
+| Blog                             | [blog.jpg](./adonisjs/pages/blog.jpg)                                          |
+| Roadmap                          | [roadmap.jpg](./adonisjs/pages/roadmap.jpg)                                    |
+| Sponsor                          | [sponsor.jpg](./adonisjs/pages/sponsor.jpg)                                    |
+| About                            | [about.jpg](./adonisjs/pages/about.jpg)                                        |
+| Stories                          | [stories.jpg](./adonisjs/pages/stories.jpg)                                    |
+| Releases                         | [releases.jpg](./adonisjs/pages/releases.jpg)                                  |
+| Contributors                     | [contributors.jpg](./adonisjs/pages/contributors.jpg)                          |
+| Support                          | [support.jpg](./adonisjs/pages/support.jpg)                                    |
+| Brand                            | [brand.jpg](./adonisjs/pages/brand.jpg)                                        |
+| Team                             | [team.jpg](./adonisjs/pages/team.jpg)                                          |
+| Documentation home               | [docs-home.jpg](./adonisjs/pages/docs-home.jpg)                                |
+| Documentation introduction       | [docs-introduction.jpg](./adonisjs/pages/docs-introduction.jpg)                |
+| Documentation routing guide      | [docs-routing-guide.jpg](./adonisjs/pages/docs-routing-guide.jpg)              |
 | Current Jumentix production docs | [current-production-docs-jumentix.jpg](./current-production-docs-jumentix.jpg) |
 
 ## Public Experience Map
 
-| AdonisJS surface | Product job | Pattern worth adapting for Jumentix |
-| --- | --- | --- |
-| Home | Explain the framework and convert interest | Category statement, code proof, ecosystem breadth, OSS evidence, multiple next steps |
-| Packages | Make the ecosystem inspectable | Searchable directory, official/community distinction, compact package metadata |
-| Wall of love | Build developer trust | Community proof as a dedicated destination |
-| Blog | Maintain an active project narrative | Release, architecture, AI, and engineering articles with visible recency |
-| Roadmap | Show direction and invite participation | Public delivery states, issue links, and community feedback |
-| Sponsor | Explain sustainability | Sponsorship purpose, tiers, placement, and current supporters |
-| About | State philosophy and tradeoffs | Ecosystem problems, design choices, and long-term commitment |
-| Stories | Provide decision evidence | Cases with migration context, scale, team size, and measurable results |
-| Releases | Demonstrate maintenance | Chronological package-level release stream |
-| Contributors | Recognize the community | Visible activity and direct repository linkage |
-| Support | Provide a professional path | Scope, response model, pricing expectations, and qualification CTA |
-| Brand | Enable correct reuse | Assets, naming rules, logo variants, and misuse examples |
-| Team | Establish maintainership | Named maintainers, responsibilities, links, and ownership |
-| Docs home | Route different learning intentions | Search-first entry, task-oriented paths, guides/reference separation |
-| Docs article | Make dense knowledge navigable | Persistent hierarchy, central article, table of contents, search, breadcrumbs |
+| AdonisJS surface | Product job                                | Pattern worth adapting for Jumentix                                                  |
+| ---------------- | ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Home             | Explain the framework and convert interest | Category statement, code proof, ecosystem breadth, OSS evidence, multiple next steps |
+| Packages         | Make the ecosystem inspectable             | Searchable directory, official/community distinction, compact package metadata       |
+| Wall of love     | Build developer trust                      | Community proof as a dedicated destination                                           |
+| Blog             | Maintain an active project narrative       | Release, architecture, AI, and engineering articles with visible recency             |
+| Roadmap          | Show direction and invite participation    | Public delivery states, issue links, and community feedback                          |
+| Sponsor          | Explain sustainability                     | Sponsorship purpose, tiers, placement, and current supporters                        |
+| About            | State philosophy and tradeoffs             | Ecosystem problems, design choices, and long-term commitment                         |
+| Stories          | Provide decision evidence                  | Cases with migration context, scale, team size, and measurable results               |
+| Releases         | Demonstrate maintenance                    | Chronological package-level release stream                                           |
+| Contributors     | Recognize the community                    | Visible activity and direct repository linkage                                       |
+| Support          | Provide a professional path                | Scope, response model, pricing expectations, and qualification CTA                   |
+| Brand            | Enable correct reuse                       | Assets, naming rules, logo variants, and misuse examples                             |
+| Team             | Establish maintainership                   | Named maintainers, responsibilities, links, and ownership                            |
+| Docs home        | Route different learning intentions        | Search-first entry, task-oriented paths, guides/reference separation                 |
+| Docs article     | Make dense knowledge navigable             | Persistent hierarchy, central article, table of contents, search, breadcrumbs        |
 
 ## Strong Patterns to Reuse
 
@@ -379,11 +379,11 @@ Research screenshots remain internal creator documentation and are not website p
 
 ## Delivery Mapping
 
-| Finding | Jumentix task |
-| --- | --- |
-| Broken docs composition and content packaging | #169 |
-| Missing reusable design system and incomplete stories | #170 |
-| Weak OSS product storytelling and code proof | #171 |
-| Documentation cannot scale to the corpus | #172 |
-| Insufficient route, link, layout, and accessibility gates | #173 |
-| Production deployment needs verified evidence | #174 |
+| Finding                                                   | Jumentix task |
+| --------------------------------------------------------- | ------------- |
+| Broken docs composition and content packaging             | #169          |
+| Missing reusable design system and incomplete stories     | #170          |
+| Weak OSS product storytelling and code proof              | #171          |
+| Documentation cannot scale to the corpus                  | #172          |
+| Insufficient route, link, layout, and accessibility gates | #173          |
+| Production deployment needs verified evidence             | #174          |

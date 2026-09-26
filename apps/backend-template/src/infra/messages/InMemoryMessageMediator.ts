@@ -1,4 +1,6 @@
-import { InMemoryMessageMediatorAdapter } from '@src/infra/messages/adapters/InMemoryMessageMediatorAdapter';
+import InMemoryMessageMediatorAdapter from '@src/infra/messages/adapters/InMemoryMessageMediatorAdapter';
 
 // Backward-compatible export name while keeping adapter semantics explicit.
-export class InMemoryMessageMediator extends InMemoryMessageMediatorAdapter {}
+class InMemoryMessageMediator extends InMemoryMessageMediatorAdapter {}
+
+export default InMemoryMessageMediator;

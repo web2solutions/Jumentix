@@ -24,8 +24,9 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { createInstrumenter } = require('istanbul-lib-instrument');
+
 const libCoverage = require('istanbul-lib-coverage');
+const { createInstrumenter } = require('istanbul-lib-instrument');
 const { createSourceMapStore } = require('istanbul-lib-source-maps');
 
 const ROOT = process.cwd();
@@ -176,12 +177,12 @@ function writeBrowserCoverage(options = {}) {
 }
 
 module.exports = {
-  OUTPUT_FILE,
-  toRepositoryPath,
-  RAW_DIR,
   collect,
   instrumentBundle,
   isSubject,
+  OUTPUT_FILE,
+  RAW_DIR,
   readInlineSourceMap,
+  toRepositoryPath,
   writeBrowserCoverage
 };

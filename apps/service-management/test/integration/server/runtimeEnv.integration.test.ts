@@ -1,15 +1,17 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
+/* eslint-disable jest/no-conditional-in-test, jest/max-expects */
 import { spawn } from 'node:child_process';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+
 import {
-  serverPath,
   cleanupTempConfigDir,
   createTempConfigDir,
   requestJson,
+  serverPath,
   startServer,
   stopServer
 } from '../../helpers/serverHarness';
+
 import type { RuntimeEnvPayload, StartedServer } from '../../helpers/serverHarness';
 
 /**
@@ -55,10 +57,13 @@ const ENV_FILE_CONTENT = [
   ''
 ].join('\n');
 
-const configFiles = () => Object.fromEntries(
-  ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example']
-    .map((fileName) => [fileName, ENV_FILE_CONTENT])
-);
+const configFiles = () =>
+  Object.fromEntries(
+    ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example'].map((fileName) => [
+      fileName,
+      ENV_FILE_CONTENT
+    ])
+  );
 
 describe('serviceManagement runtime env server', () => {
   let tempDir: string;
@@ -103,12 +108,9 @@ describe('serviceManagement runtime env server', () => {
   it('rejects POST without auth token when configured', async () => {
     expect.hasAssertions();
     server = await startServer(tempDir, { JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN: 'secret' });
-    const res = await requestJson<{ error: string }>(
-      server.port,
-      'POST',
-      '/api/runtime/env',
-      { values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' } }
-    );
+    const res = await requestJson<{ error: string }>(server.port, 'POST', '/api/runtime/env', {
+      values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' }
+    });
     expect(res.status).toBe(401);
     expect(res.body.error).toBe('Unauthorized.');
   });
@@ -191,7 +193,11 @@ describe('serviceManagement runtime env server', () => {
   it('exposes editable and read-only tiers on GET but never secrets', async () => {
     expect.hasAssertions();
     server = await startServer(tempDir);
-    const res = await requestJson<RuntimeEnvPayload>(server.port, 'GET', '/api/runtime/env?environment=dev');
+    const res = await requestJson<RuntimeEnvPayload>(
+      server.port,
+      'GET',
+      '/api/runtime/env?environment=dev'
+    );
     expect(res.status).toBe(200);
     expect(res.body.values.JUMENTIX_DATABASE_DRIVER).toBe('InMemory');
     expect(res.body.values.JUMENTIX_MESSAGE_MEDIATOR_ADAPTER).toBe('rabbitmq');

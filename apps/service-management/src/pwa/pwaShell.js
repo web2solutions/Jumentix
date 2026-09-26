@@ -39,8 +39,6 @@
  * flow with fakes — no jsdom, no shims (Requirement 115 spirit).
  */
 
-/* global navigator, window, document */
-
 // Prefix shared with sw.js (a classic worker cannot import this module; this
 // module must not import a non-module script). The unit suite pins the two
 // copies equal — if you change one, change both in the same commit.
@@ -51,19 +49,23 @@ export const SKIP_WAITING_MESSAGE_TYPE = 'SKIP_WAITING';
 export const UPDATE_BANNER_ID = 'pwa-update-banner';
 
 function resolveDeps(overrides) {
+  // Lazy fallback: the ambient global is only touched when no override came
+  // in, so non-browser hosts never dereference an absent global.
+  const orDefault = (override, resolveDefault) =>
+    override !== undefined ? override : resolveDefault();
   return {
-    serviceWorkerContainer: overrides.serviceWorkerContainer !== undefined
-      ? overrides.serviceWorkerContainer
-      : (typeof navigator !== 'undefined' ? navigator.serviceWorker : undefined),
-    cacheStorage: overrides.cacheStorage !== undefined
-      ? overrides.cacheStorage
-      : (typeof window !== 'undefined' ? window.caches : undefined),
-    documentRef: overrides.documentRef !== undefined
-      ? overrides.documentRef
-      : (typeof document !== 'undefined' ? document : undefined),
-    locationRef: overrides.locationRef !== undefined
-      ? overrides.locationRef
-      : (typeof window !== 'undefined' ? window.location : undefined),
+    serviceWorkerContainer: orDefault(overrides.serviceWorkerContainer, () =>
+      typeof navigator !== 'undefined' ? navigator.serviceWorker : undefined
+    ),
+    cacheStorage: orDefault(overrides.cacheStorage, () =>
+      typeof window !== 'undefined' ? window.caches : undefined
+    ),
+    documentRef: orDefault(overrides.documentRef, () =>
+      typeof document !== 'undefined' ? document : undefined
+    ),
+    locationRef: orDefault(overrides.locationRef, () =>
+      typeof window !== 'undefined' ? window.location : undefined
+    ),
     serviceWorkerUrl: overrides.serviceWorkerUrl || SERVICE_WORKER_URL
   };
 }
@@ -144,8 +146,9 @@ function showShellError(deps, message) {
         label: 'Reset app shell',
         kind: 'reset',
         onSelect: () => {
-          resetPwaShell({ serviceWorkerContainer, cacheStorage, locationRef })
-            .catch(() => showShellError(deps, 'Could not reset the app shell.'));
+          resetPwaShell({ serviceWorkerContainer, cacheStorage, locationRef }).catch(() =>
+            showShellError(deps, 'Could not reset the app shell.')
+          );
         }
       },
       { label: 'Dismiss', kind: 'later', onSelect: () => removeBanner(documentRef) }
@@ -180,7 +183,7 @@ export function promptForUpdate(deps, registration) {
         label: 'Reload to update',
         kind: 'reload',
         onSelect: () => {
-          const waiting = registration.waiting;
+          const { waiting } = registration;
           if (!waiting) return;
           reloadOnControllerChange = true;
           waiting.postMessage({ type: SKIP_WAITING_MESSAGE_TYPE });
@@ -195,11 +198,10 @@ export function promptForUpdate(deps, registration) {
         label: 'Reset app shell',
         kind: 'reset',
         onSelect: () => {
-          resetPwaShell({ serviceWorkerContainer, cacheStorage, locationRef })
-            .catch(() => {
-              // Even a failed reset ends on the error banner, never silently.
-              showShellError(deps, 'Could not reset the app shell.');
-            });
+          resetPwaShell({ serviceWorkerContainer, cacheStorage, locationRef }).catch(() => {
+            // Even a failed reset ends on the error banner, never silently.
+            showShellError(deps, 'Could not reset the app shell.');
+          });
         }
       }
     ]

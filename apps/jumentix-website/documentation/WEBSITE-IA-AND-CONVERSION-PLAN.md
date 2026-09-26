@@ -101,19 +101,19 @@ Contact:
 
 ## 7. Markdown Source-to-Website Mapping
 
-| Website Section | Source Markdown |
-| --- | --- |
-| Product positioning | `/README.md` |
-| Architecture narrative | `/documentation/md/ARCHITECTURE-AND-STRUCTURE.md` |
-| Project vision/governance | `/documentation/md/PROJECT-OVERVIEW.md`, `/documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md` |
-| REST use case | `/apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md` |
-| Realtime use case | `/apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md` |
-| SPA/PWA use case | `/apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md` |
-| SaaS monolith use case | `/documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md` |
-| SaaS microservices use case | `/documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md` |
-| Integrations matrix | `/documentation/md/adapters/http/README.md`, `/documentation/md/adapters/databases/README.md` |
-| Security/compliance | `/documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`, `/documentation/md/SECURITY-RUNBOOK-PCI.md` |
-| Technical docs gateway | `/documentation/README.md` |
+| Website Section             | Source Markdown                                                                                       |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Product positioning         | `/README.md`                                                                                          |
+| Architecture narrative      | `/documentation/md/ARCHITECTURE-AND-STRUCTURE.md`                                                     |
+| Project vision/governance   | `/documentation/md/PROJECT-OVERVIEW.md`, `/documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`           |
+| REST use case               | `/apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md`                      |
+| Realtime use case           | `/apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md`                  |
+| SPA/PWA use case            | `/apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md`                     |
+| SaaS monolith use case      | `/documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md`                                    |
+| SaaS microservices use case | `/documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md`                               |
+| Integrations matrix         | `/documentation/md/adapters/http/README.md`, `/documentation/md/adapters/databases/README.md`         |
+| Security/compliance         | `/documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`, `/documentation/md/SECURITY-RUNBOOK-PCI.md` |
+| Technical docs gateway      | `/documentation/README.md`                                                                            |
 
 ## 8. Governance and Execution Notes
 

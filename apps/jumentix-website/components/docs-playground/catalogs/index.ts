@@ -1,5 +1,6 @@
-import type { DocsRuntimeId, DocsSnippet } from '../types';
 import { CANA_SNIPPETS } from '../../cana/snippets';
+
+import type { DocsRuntimeId, DocsSnippet } from '../types';
 
 export const DESIGNER_CORE_SNIPPETS: readonly DocsSnippet[] = [
   {
@@ -7,7 +8,8 @@ export const DESIGNER_CORE_SNIPPETS: readonly DocsSnippet[] = [
     title: { en: 'Validate a design', 'pt-BR': 'Validar um design' },
     description: {
       en: 'Normalize the sample model and collect validation issues (real designer-core API).',
-      'pt-BR': 'Normalize o modelo de exemplo e colete issues de validação (API real do designer-core).'
+      'pt-BR':
+        'Normalize o modelo de exemplo e colete issues de validação (API real do designer-core).'
     },
     // Must match @jumentix/designer-core public surface:
     // collectModelIssues(state) expects { domains, relationships } after
@@ -31,7 +33,8 @@ export const JUMENTIX_BROWSER_LAB_SNIPPETS: readonly DocsSnippet[] = [
     title: { en: 'Full Jumentix browser app', 'pt-BR': 'App Jumentix completo no browser' },
     description: {
       en: 'Run Category and Task as separate domains that exchange messages through the mediator to compose a task board without a server.',
-      'pt-BR': 'Execute Category e Task como domínios separados que trocam mensagens pelo mediator para compor um task board sem servidor.'
+      'pt-BR':
+        'Execute Category e Task como domínios separados que trocam mensagens pelo mediator para compor um task board sem servidor.'
     },
     code: `const database = api.createInMemoryDatabase({
   stores: ['categories', 'tasks']
@@ -193,7 +196,8 @@ return {
     title: { en: 'Bulk writes with mutex + DLQ', 'pt-BR': 'Criação em massa com mutex + DLQ' },
     description: {
       en: 'Create many Task records for one Category, force lock contention, enqueue rejected controller requests in a dead-letter queue, then replay them through the controller workflow.',
-      'pt-BR': 'Crie muitos registros Task para uma Category, force contenção de lock, envie requests rejeitados pelo controller para uma dead-letter queue e reprocesse tudo pelo fluxo do controller.'
+      'pt-BR':
+        'Crie muitos registros Task para uma Category, force contenção de lock, envie requests rejeitados pelo controller para uma dead-letter queue e reprocesse tudo pelo fluxo do controller.'
     },
     code: `const taskSchema = {
   version: 1,
@@ -925,10 +929,14 @@ return {
   },
   {
     id: 'rest-mvp-use-case',
-    title: { en: 'REST MVP Day 1 — use-case on the in-memory adapter', 'pt-BR': 'MVP REST Dia 1 — use-case no adaptador in-memory' },
+    title: {
+      en: 'REST MVP Day 1 — use-case on the in-memory adapter',
+      'pt-BR': 'MVP REST Dia 1 — use-case no adaptador in-memory'
+    },
     description: {
       en: 'Run the create task use-case against the real in-memory database adapter and prove the 201/400/404 rules.',
-      'pt-BR': 'Execute o use-case de criar task contra o adaptador real in-memory e prove as regras 201/400/404.'
+      'pt-BR':
+        'Execute o use-case de criar task contra o adaptador real in-memory e prove as regras 201/400/404.'
     },
     code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
 await database.connect();
@@ -967,10 +975,14 @@ return {
   },
   {
     id: 'rest-mvp-client',
-    title: { en: 'REST MVP Day 2 — typed client over the same adapter', 'pt-BR': 'MVP REST Dia 2 — client tipado sobre o mesmo adaptador' },
+    title: {
+      en: 'REST MVP Day 2 — typed client over the same adapter',
+      'pt-BR': 'MVP REST Dia 2 — client tipado sobre o mesmo adaptador'
+    },
     description: {
       en: 'Route OpenAPI operationIds through a REST client into a handler backed by the in-memory adapter.',
-      'pt-BR': 'Roteie operationIds OpenAPI por um client REST para um handler apoiado no adaptador in-memory.'
+      'pt-BR':
+        'Roteie operationIds OpenAPI por um client REST para um handler apoiado no adaptador in-memory.'
     },
     code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
 await database.connect();
@@ -1021,10 +1033,14 @@ return {
   },
   {
     id: 'realtime-mvp-live',
-    title: { en: 'Realtime MVP Day 1 — live command with ack and broadcast', 'pt-BR': 'MVP realtime Dia 1 — comando live com ack e broadcast' },
+    title: {
+      en: 'Realtime MVP Day 1 — live command with ack and broadcast',
+      'pt-BR': 'MVP realtime Dia 1 — comando live com ack e broadcast'
+    },
     description: {
       en: 'Wire a WebSocket client to a mediator handler that persists through the in-memory adapter and broadcasts the created event.',
-      'pt-BR': 'Ligue um client WebSocket a um handler do mediator que persiste pelo adaptador in-memory e transmite o evento de criação.'
+      'pt-BR':
+        'Ligue um client WebSocket a um handler do mediator que persiste pelo adaptador in-memory e transmite o evento de criação.'
     },
     code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
 const mediator = api.createMessageMediator();
@@ -1078,10 +1094,14 @@ return {
   },
   {
     id: 'realtime-mvp-fallback',
-    title: { en: 'Realtime MVP Day 2 — REST fallback parity drill', 'pt-BR': 'MVP realtime Dia 2 — drill de paridade do fallback REST' },
+    title: {
+      en: 'Realtime MVP Day 2 — REST fallback parity drill',
+      'pt-BR': 'MVP realtime Dia 2 — drill de paridade do fallback REST'
+    },
     description: {
       en: 'Kill the socket handler and prove the REST fallback returns the same business result through the same in-memory adapter.',
-      'pt-BR': 'Derrube o handler do socket e prove que o fallback REST retorna o mesmo resultado de negócio pelo mesmo adaptador in-memory.'
+      'pt-BR':
+        'Derrube o handler do socket e prove que o fallback REST retorna o mesmo resultado de negócio pelo mesmo adaptador in-memory.'
     },
     code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
 await database.connect();
@@ -1130,10 +1150,14 @@ return {
   },
   {
     id: 'saas-mvp-tenant',
-    title: { en: 'SaaS MVP Day 1 — tenant policy on the in-memory adapter', 'pt-BR': 'MVP SaaS Dia 1 — policy de tenant no adaptador in-memory' },
+    title: {
+      en: 'SaaS MVP Day 1 — tenant policy on the in-memory adapter',
+      'pt-BR': 'MVP SaaS Dia 1 — policy de tenant no adaptador in-memory'
+    },
     description: {
       en: 'Prove the tenant guard: org-1 writes its own task, org-2 is denied, and the store only holds the legitimate record.',
-      'pt-BR': 'Prove a guarda de tenant: org-1 escreve a própria task, org-2 é negado e o store só guarda o registro legítimo.'
+      'pt-BR':
+        'Prove a guarda de tenant: org-1 escreve a própria task, org-2 é negado e o store só guarda o registro legítimo.'
     },
     code: `const database = api.createInMemoryDatabase({ stores: ['categories', 'tasks'] });
 await database.connect();
@@ -1173,10 +1197,14 @@ return {
   },
   {
     id: 'micro-mvp-worker',
-    title: { en: 'Microservices MVP Day 2 — worker persisting real notifications', 'pt-BR': 'MVP microsserviços Dia 2 — worker persistindo notificações reais' },
+    title: {
+      en: 'Microservices MVP Day 2 — worker persisting real notifications',
+      'pt-BR': 'MVP microsserviços Dia 2 — worker persistindo notificações reais'
+    },
     description: {
       en: 'Subscribe a notification worker to the mediator and persist each delivery in its own in-memory store — no fake HTTP endpoint.',
-      'pt-BR': 'Assine um worker de notificação no mediator e persista cada entrega no próprio store in-memory — sem endpoint HTTP falso.'
+      'pt-BR':
+        'Assine um worker de notificação no mediator e persista cada entrega no próprio store in-memory — sem endpoint HTTP falso.'
     },
     code: `const database = api.createInMemoryDatabase({ stores: ['tasks', 'notifications'] });
 const mediator = api.createMessageMediator();
@@ -1216,10 +1244,14 @@ return {
   },
   {
     id: 'micro-mvp-dead-letter',
-    title: { en: 'Microservices MVP Release — explicit failure with DLQ replay', 'pt-BR': 'MVP microsserviços Release — falha explícita com replay via DLQ' },
+    title: {
+      en: 'Microservices MVP Release — explicit failure with DLQ replay',
+      'pt-BR': 'MVP microsserviços Release — falha explícita com replay via DLQ'
+    },
     description: {
       en: 'Route a poison message to the dead-letter queue and replay it, proving the failure mode is explicit and measured.',
-      'pt-BR': 'Envie uma mensagem venenosa para a dead-letter queue e reprocesse, provando que o modo de falha é explícito e medido.'
+      'pt-BR':
+        'Envie uma mensagem venenosa para a dead-letter queue e reprocesse, provando que o modo de falha é explícito e medido.'
     },
     code: `const deadLetterQueue = api.createDeadLetterQueue({ maxAttempts: 2 });
 const mediator = api.createMessageMediator();
@@ -1264,7 +1296,8 @@ export const KV_SNIPPETS: readonly DocsSnippet[] = [
     title: { en: 'In-memory key/value', 'pt-BR': 'Chave/valor em memória' },
     description: {
       en: 'Cache UI preferences for the Task list with the same service-result shape used by package adapters.',
-      'pt-BR': 'Guarde preferências da lista de Task com o mesmo formato de resposta usado pelos adaptadores do pacote.'
+      'pt-BR':
+        'Guarde preferências da lista de Task com o mesmo formato de resposta usado pelos adaptadores do pacote.'
     },
     code: `const client = api.createInMemory();
 await client.connect();
@@ -1296,7 +1329,8 @@ export const MEDIATOR_SNIPPETS: readonly DocsSnippet[] = [
     title: { en: 'In-memory mediator', 'pt-BR': 'Mediator em memória' },
     description: {
       en: 'Exchange messages between Category and Task domains, then compose a read model through mediator request/response.',
-      'pt-BR': 'Troque mensagens entre os domínios Category e Task e componha um read model via request/response do mediator.'
+      'pt-BR':
+        'Troque mensagens entre os domínios Category e Task e componha um read model via request/response do mediator.'
     },
     code: `const domainMessages = [];
 const events = [];
@@ -1391,10 +1425,14 @@ return {
   },
   {
     id: 'micro-mvp-mediator',
-    title: { en: 'Microservices MVP Day 1 — contract over the in-memory mediator', 'pt-BR': 'MVP microsserviços Dia 1 — contrato sobre o mediator in-memory' },
+    title: {
+      en: 'Microservices MVP Day 1 — contract over the in-memory mediator',
+      'pt-BR': 'MVP microsserviços Dia 1 — contrato sobre o mediator in-memory'
+    },
     description: {
       en: 'Prove request/response and publish/listen on the real in-memory mediator, including the explicit error for an unknown contract.',
-      'pt-BR': 'Prove request/response e publish/listen no mediator in-memory real, incluindo o erro explícito para contrato desconhecido.'
+      'pt-BR':
+        'Prove request/response e publish/listen no mediator in-memory real, incluindo o erro explícito para contrato desconhecido.'
     },
     code: `const mediator = api.createInMemory();
 const receivedEvents = [];
@@ -1437,7 +1475,8 @@ export const MUTEX_SNIPPETS: readonly DocsSnippet[] = [
     title: { en: 'Mutex with in-memory KV', 'pt-BR': 'Mutex com KV em memória' },
     description: {
       en: 'Protect a Category update while two Task writers compete for the same resource.',
-      'pt-BR': 'Proteja uma atualização de Category enquanto dois escritores de Task competem pelo mesmo recurso.'
+      'pt-BR':
+        'Proteja uma atualização de Category enquanto dois escritores de Task competem pelo mesmo recurso.'
     },
     code: `const keyValue = api.createKeyValueStorage();
 const mutex = api.create(keyValue);
@@ -1537,10 +1576,7 @@ const CATALOGS: Record<DocsRuntimeId, readonly DocsSnippet[]> = {
   'sdk-websocket-client': WS_SDK_SNIPPETS
 };
 
-export function getDocsSnippet(
-  runtime: DocsRuntimeId,
-  id: string
-): DocsSnippet | undefined {
+export function getDocsSnippet(runtime: DocsRuntimeId, id: string): DocsSnippet | undefined {
   return CATALOGS[runtime]?.find((snippet) => snippet.id === id);
 }
 

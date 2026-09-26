@@ -1,1 +1,3 @@
-export { WebSocketApiClient } from '@jumentix/sdk-websocket-client';
+import { WebSocketApiClient } from '@jumentix/sdk-websocket-client';
+
+export default WebSocketApiClient;

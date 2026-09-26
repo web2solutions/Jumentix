@@ -1,5 +1,6 @@
+import ServiceResponse from './ServiceResponse';
+
 import type { IKeyValueStorageClient, IMutexService, IServiceResponse } from './contracts';
-import { ServiceResponse } from './ServiceResponse';
 
 let mutexService: IMutexService | undefined;
 
@@ -23,6 +24,12 @@ export class MutexService implements IMutexService {
     this.prefix = `${prefix}:`;
   }
 
+  private static toError(error: Error | Record<string, any>): Error {
+    return error instanceof Error
+      ? error
+      : Object.assign(new Error('Key-value storage operation failed'), { cause: error });
+  }
+
   public async lock(resourceName: string, uuid: string): Promise<IServiceResponse> {
     try {
       const previouslyLocked = await this.isLocked(resourceName, uuid);
@@ -33,7 +40,7 @@ export class MutexService implements IMutexService {
         `${this.prefix}:${resourceName}:${uuid}`,
         'locked'
       );
-      if (error) throw error;
+      if (error) throw MutexService.toError(error);
       return new ServiceResponse({
         result: {
           previouslyLocked: false,
@@ -50,7 +57,7 @@ export class MutexService implements IMutexService {
       const { result, error } = await this.keyValueStorageClient.get(
         `${this.prefix}:${resourceName}:${uuid}`
       );
-      if (error) throw error;
+      if (error) throw MutexService.toError(error);
       return new ServiceResponse({ result: !!result });
     } catch (error: unknown) {
       return new ServiceResponse({ error: error as Error });
@@ -62,7 +69,7 @@ export class MutexService implements IMutexService {
       const { result, error } = await this.keyValueStorageClient.del(
         `${this.prefix}:${resourceName}:${uuid}`
       );
-      if (error) throw error;
+      if (error) throw MutexService.toError(error);
       return new ServiceResponse({ result });
     } catch (error: unknown) {
       return new ServiceResponse({ error: error as Error });

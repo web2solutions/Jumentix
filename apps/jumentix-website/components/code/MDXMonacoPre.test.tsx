@@ -1,8 +1,14 @@
 import { render, screen, waitFor } from '@/test-utils';
-import { monacoTestState, resetMonacoTestState } from '../../test/mocks/monaco-editor';
+
 import { MDXCodeSourceProvider, parseMDXCodeBlocks } from './MDXCodeSourceProvider';
-import type { ReactNode } from 'react';
 import { MDXMonacoPre } from './MDXMonacoPre';
+import { monacoTestState, resetMonacoTestState } from '../../test/mocks/monaco-editor';
+
+import type { ReactNode } from 'react';
+
+const ThemePre = (props: { children?: ReactNode; [key: string]: unknown }) => (
+  <pre data-theme-pre="" {...props} />
+);
 
 describe('MDXMonacoPre', () => {
   beforeEach(() => {
@@ -29,15 +35,17 @@ describe('MDXMonacoPre', () => {
     const [model] = monacoTestState.models;
     expect(model.language).toBe('typescript');
     expect(model.getValue()).toContain("{ name: 'categories', keyPath: 'id' }");
-    expect(model.getValue()).toBe([
-      'const client = createClient({',
-      '  schema: {',
-      '    stores: [',
-      "      { name: 'categories', keyPath: 'id' }",
-      '    ]',
-      '  }',
-      '});'
-    ].join('\n'));
+    expect(model.getValue()).toBe(
+      [
+        'const client = createClient({',
+        '  schema: {',
+        '    stores: [',
+        "      { name: 'categories', keyPath: 'id' }",
+        '    ]',
+        '  }',
+        '});'
+      ].join('\n')
+    );
     expect(screen.getByText(/categories/)).toBeInTheDocument();
   });
 
@@ -76,10 +84,6 @@ describe('MDXMonacoPre', () => {
   it('renders a shell fence through the pre component it is given', () => {
     expect.hasAssertions();
 
-    function ThemePre(props: { children?: ReactNode; [key: string]: unknown }) {
-      return <pre data-theme-pre="" {...props} />;
-    }
-
     const { container } = render(
       <MDXMonacoPre DefaultPre={ThemePre}>
         <code className="language-bash">{'bun run dev\n'}</code>
@@ -94,7 +98,7 @@ describe('MDXMonacoPre', () => {
     expect.hasAssertions();
 
     const { container } = render(
-      <MDXMonacoPre data-language="bash" data-copy="">
+      <MDXMonacoPre data-copy="" data-language="bash">
         <code>{'bun run dev\n'}</code>
       </MDXMonacoPre>
     );
@@ -119,7 +123,7 @@ describe('MDXMonacoPre', () => {
   it('keeps empty pre blocks as plain pre elements', () => {
     expect.hasAssertions();
 
-    const { container } = render(<MDXMonacoPre>{''}</MDXMonacoPre>);
+    const { container } = render(<MDXMonacoPre />);
 
     expect(container.querySelector('pre')).toBeInTheDocument();
     expect(monacoTestState.models).toHaveLength(0);
@@ -128,7 +132,10 @@ describe('MDXMonacoPre', () => {
   it('expands documentation code blocks to their full natural height', async () => {
     expect.hasAssertions();
 
-    const longCode = Array.from({ length: 48 }, (_, index) => `const line${index + 1} = ${index + 1};`).join('\n');
+    const longCode = Array.from(
+      { length: 48 },
+      (_, index) => `const line${index + 1} = ${index + 1};`
+    ).join('\n');
     const { container } = render(
       <MDXMonacoPre>
         <code className="language-ts">{longCode}</code>
@@ -169,25 +176,53 @@ describe('MDXMonacoPre', () => {
       '}'
     ].join('\n');
     const truncatedHighlight = [
-      <span key="1"><span>type</span><span> HttpAdapterChoice</span><span>{' = {'}</span></span>,
+      <span key="1">
+        <span>type</span>
+        <span> HttpAdapterChoice</span>
+        <span>{' = {'}</span>
+      </span>,
       '\n',
-      <span key="2"><span>  adapter</span><span>: string;</span></span>,
+      <span key="2">
+        <span>{'  adapter'}</span>
+        <span>: string;</span>
+      </span>,
       '\n',
-      <span key="3"><span>  runtime</span><span>: string;</span></span>,
+      <span key="3">
+        <span>{'  runtime'}</span>
+        <span>: string;</span>
+      </span>,
       '\n',
-      <span key="4"><span>  command</span><span>?: string;</span></span>,
+      <span key="4">
+        <span>{'  command'}</span>
+        <span>?: string;</span>
+      </span>,
       '\n',
-      <span key="5"><span>{'};'}</span></span>,
+      <span key="5">
+        <span>{'};'}</span>
+      </span>,
       '\n',
       <span key="6"> </span>,
       '\n',
-      <span key="7"><span>const</span><span> choices: HttpAdapterChoice[] = [</span></span>,
+      <span key="7">
+        <span>const</span>
+        <span> choices: HttpAdapterChoice[] = [</span>
+      </span>,
       '\n',
-      <span key="8"><span>{"  { adapter: 'express', runtime: 'Node/Bun process', command: 'bun run dev:express' },"}</span></span>,
+      <span key="8">
+        <span>
+          {"  { adapter: 'express', runtime: 'Node/Bun process', command: 'bun run dev:express' },"}
+        </span>
+      </span>,
       '\n',
-      <span key="9"><span>{"  { adapter: 'fastify', runtime: 'Node/Bun process', command: 'bun run dev:fastify' },"}</span></span>,
+      <span key="9">
+        <span>
+          {"  { adapter: 'fastify', runtime: 'Node/Bun process', command: 'bun run dev:fastify' },"}
+        </span>
+      </span>,
       '\n',
-      <span key="10"><span>{"  { adapter: 'restify', runtime: 'Node/Bun process'"}</span></span>
+      <span key="10">
+        <span>{"  { adapter: 'restify', runtime: 'Node/Bun process'"}</span>
+      </span>
     ];
 
     render(

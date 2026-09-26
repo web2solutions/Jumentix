@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -14,12 +13,9 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../..');
-const {
-  main,
-  readSonarExclusions,
-  run,
-  runAsEntryPoint
-} = require(path.join(repoRoot, 'ci-cd', 'check-package-suites.js'));
+const { main, readSonarExclusions, run, runAsEntryPoint } = require(
+  path.join(repoRoot, 'ci-cd', 'check-package-suites.js')
+);
 
 /** A throwaway workspace with the given packages. */
 function workspace(packages: Record<string, { source?: boolean; suite?: boolean }>): string {
@@ -64,7 +60,10 @@ const declared = {
 
 describe('check-package-suites', () => {
   const dirs: string[] = [];
-  const track = (dir: string) => { dirs.push(dir); return dir; };
+  const track = (dir: string) => {
+    dirs.push(dir);
+    return dir;
+  };
 
   afterAll(() => {
     for (const dir of dirs) fs.rmSync(dir, { recursive: true, force: true });
@@ -113,7 +112,11 @@ describe('check-package-suites', () => {
 
   it.each([
     ['no since date', { issue: 'JUM-585', reason: 'x' }, 'valid ISO `since`'],
-    ['a malformed since date', { since: '01/08/2026', issue: 'JUM-585', reason: 'x' }, 'valid ISO `since`'],
+    [
+      'a malformed since date',
+      { since: '01/08/2026', issue: 'JUM-585', reason: 'x' },
+      'valid ISO `since`'
+    ],
     ['no issue', { since: '2026-08-01', reason: 'x' }, 'tracking `issue`'],
     ['no reason', { since: '2026-08-01', issue: 'JUM-585' }, '`reason`']
   ])('fails on a declaration with %s', (_label, entry, expected) => {
@@ -167,7 +170,9 @@ describe('check-package-suites', () => {
     const result = run({
       root: dir,
       register: {},
-      readFile: () => { throw new Error('ENOENT'); }
+      readFile: () => {
+        throw new Error('ENOENT');
+      }
     });
 
     expect(result.ok).toBe(false);
@@ -245,12 +250,14 @@ describe('check-package-suites', () => {
 
       const exits: number[] = [];
 
-      expect(runAsEntryPoint({
-        caller: { id: 'imported' },
-        entry: { id: 'something-else' },
-        exit: (code: number) => exits.push(code),
-        runMain: () => 0
-      })).toBe(false);
+      expect(
+        runAsEntryPoint({
+          caller: { id: 'imported' },
+          entry: { id: 'something-else' },
+          exit: (code: number) => exits.push(code),
+          runMain: () => 0
+        })
+      ).toBe(false);
       expect(exits).toStrictEqual([]);
     });
 
@@ -260,12 +267,14 @@ describe('check-package-suites', () => {
       const entry = { id: 'the-entry-point' };
       const exits: number[] = [];
 
-      expect(runAsEntryPoint({
-        caller: entry,
-        entry,
-        exit: (code: number) => exits.push(code),
-        runMain: () => 1
-      })).toBe(true);
+      expect(
+        runAsEntryPoint({
+          caller: entry,
+          entry,
+          exit: (code: number) => exits.push(code),
+          runMain: () => 1
+        })
+      ).toBe(true);
       expect(exits).toStrictEqual([1]);
     });
   });
@@ -295,7 +304,7 @@ describe('check-package-suites default wiring (JUM-821)', () => {
   it('main reports and returns 0 with its default io and check', () => {
     expect.hasAssertions();
 
-    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
     try {
       expect(main()).toBe(0);
       expect(log).toHaveBeenCalledWith(expect.stringContaining('Package suite check passed'));

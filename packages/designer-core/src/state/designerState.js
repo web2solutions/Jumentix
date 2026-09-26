@@ -23,19 +23,24 @@
  * load path (load itself still restores the model slice only).
  */
 
-import {
-  RBAC_ACTIONS,
-  deriveTenantScoped,
-  normalizeRbacRule
-} from '../model/rbacContract.js';
+import { normalizeArchitectureInput } from '../model/architecture.js';
 import {
   getSupportedProtocols,
   getSupportedServiceTypes,
   isPm2ManagedDeployTarget
 } from '../model/deployCapabilityMatrix.js';
-import { normalizeArchitectureInput } from '../model/architecture.js';
+import { deriveTenantScoped, normalizeRbacRule, RBAC_ACTIONS } from '../model/rbacContract.js';
 
-export const DOMAIN_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#22d3ee', '#a78bfa', '#fb7185', '#84cc16'];
+export const DOMAIN_COLORS = [
+  '#60a5fa',
+  '#34d399',
+  '#f59e0b',
+  '#f472b6',
+  '#22d3ee',
+  '#a78bfa',
+  '#fb7185',
+  '#84cc16'
+];
 /*
  * Domain box geometry (JUM-729 follow-up).
  *
@@ -63,7 +68,17 @@ export const ENTITY_MAX_WIDTH = 720;
 export const ENTITY_MIN_HEIGHT = 96;
 export const ENTITY_MAX_HEIGHT = 640;
 
-export const FIELD_TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object', 'date', 'datetime', 'uuid'];
+export const FIELD_TYPES = [
+  'string',
+  'integer',
+  'number',
+  'boolean',
+  'array',
+  'object',
+  'date',
+  'datetime',
+  'uuid'
+];
 
 /**
  * Identity and schema version of the full-suite JSON export document
@@ -140,7 +155,7 @@ export function normalizeField(field, fieldIndex) {
     maxLength,
     minimum,
     maximum,
-    itemsType: type === 'array' ? (itemsType || 'string') : ''
+    itemsType: type === 'array' ? itemsType || 'string' : ''
   };
 }
 
@@ -149,12 +164,15 @@ export function normalizeContractInput(contract, contractIndex = 0) {
   return {
     id,
     name: String(contract?.name || '').trim() || `Contract_${contractIndex + 1}`,
-    type: ['event', 'command', 'request', 'response'].includes(contract?.type) ? contract.type : 'event',
+    type: ['event', 'command', 'request', 'response'].includes(contract?.type)
+      ? contract.type
+      : 'event',
     channel: String(contract?.channel || '').trim(),
     version: String(contract?.version || '').trim() || '1.0.0',
-    payloadSchema: contract?.payloadSchema && typeof contract.payloadSchema === 'object'
-      ? contract.payloadSchema
-      : {}
+    payloadSchema:
+      contract?.payloadSchema && typeof contract.payloadSchema === 'object'
+        ? contract.payloadSchema
+        : {}
   };
 }
 
@@ -183,8 +201,12 @@ export function normalizeRelationship(relationship) {
     name: relationship.name || `${relationship.fromEntityId} -> ${relationship.toEntityId}`,
     fromCardinality: relationship.fromCardinality || 'N',
     toCardinality: relationship.toCardinality || '1',
-    fromAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.fromAnchorSide) ? relationship.fromAnchorSide : null,
-    toAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.toAnchorSide) ? relationship.toAnchorSide : null,
+    fromAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.fromAnchorSide)
+      ? relationship.fromAnchorSide
+      : null,
+    toAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.toAnchorSide)
+      ? relationship.toAnchorSide
+      : null,
     // JUM-729 follow-up: the columns the link joins. Additive — a relationship saved
     // before field anchors existed normalises to null on both ends and is
     // drawn from the entity side exactly as it was.
@@ -246,34 +268,36 @@ export function normalizeMonitoringHistoryInput(input) {
   const samplesInput = Array.isArray(source.samples) ? source.samples : [];
   const samples = samplesInput.slice(-MONITORING_HISTORY_CAP).map((sample) => ({
     t: String(sample?.t || ''),
-    hostCpu: sample?.hostCpu == null || !Number.isFinite(Number(sample.hostCpu))
-      ? null
-      : Number(sample.hostCpu),
-    hostMemUsedPercent: sample?.hostMemUsedPercent == null
-      || !Number.isFinite(Number(sample.hostMemUsedPercent))
-      ? null
-      : Number(sample.hostMemUsedPercent),
+    hostCpu:
+      sample?.hostCpu == null || !Number.isFinite(Number(sample.hostCpu))
+        ? null
+        : Number(sample.hostCpu),
+    hostMemUsedPercent:
+      sample?.hostMemUsedPercent == null || !Number.isFinite(Number(sample.hostMemUsedPercent))
+        ? null
+        : Number(sample.hostMemUsedPercent),
     cpuTotal: Number(sample?.cpuTotal) || 0,
     memTotal: Number(sample?.memTotal) || 0,
     onlineRatio: Number(sample?.onlineRatio) || 0,
     asyncActiveSum: Number(sample?.asyncActiveSum) || 0
   }));
   const processes = {};
-  const processSource = source.processes && typeof source.processes === 'object'
-    ? source.processes
-    : {};
-  Object.entries(processSource).slice(0, MONITORING_HISTORY_PROCESS_LIMIT).forEach(([key, bucket]) => {
-    const name = String(key || '').trim();
-    if (!name) return;
-    processes[name] = {
-      cpu: clampNumberSeries(bucket?.cpu),
-      mem: clampNumberSeries(bucket?.mem),
-      restarts: clampNumberSeries(bucket?.restarts),
-      asyncActive: clampNumberSeries(bucket?.asyncActive),
-      diskReadBytes: clampNumberSeries(bucket?.diskReadBytes),
-      diskWriteBytes: clampNumberSeries(bucket?.diskWriteBytes)
-    };
-  });
+  const processSource =
+    source.processes && typeof source.processes === 'object' ? source.processes : {};
+  Object.entries(processSource)
+    .slice(0, MONITORING_HISTORY_PROCESS_LIMIT)
+    .forEach(([key, bucket]) => {
+      const name = String(key || '').trim();
+      if (!name) return;
+      processes[name] = {
+        cpu: clampNumberSeries(bucket?.cpu),
+        mem: clampNumberSeries(bucket?.mem),
+        restarts: clampNumberSeries(bucket?.restarts),
+        asyncActive: clampNumberSeries(bucket?.asyncActive),
+        diskReadBytes: clampNumberSeries(bucket?.diskReadBytes),
+        diskWriteBytes: clampNumberSeries(bucket?.diskWriteBytes)
+      };
+    });
   return {
     version: 1,
     updatedAt: String(source.updatedAt || ''),
@@ -316,15 +340,14 @@ const LEGACY_DEPLOY_TYPE_ALIASES = {
 export function normalizeDeploymentInput(deployment) {
   const source = deployment || {};
   const legacyType = String(source.type || '').trim();
-  const deployTarget = String(source.deployTarget || '').trim()
-    || LEGACY_DEPLOY_TYPE_ALIASES[legacyType]
-    || legacyType;
-  const serviceType = String(source.serviceType || '').trim()
-    || getSupportedServiceTypes(deployTarget)[0]
-    || '';
-  const runtimeProtocol = String(source.runtimeProtocol || '').trim()
-    || getSupportedProtocols(serviceType)[0]
-    || '';
+  const deployTarget =
+    String(source.deployTarget || '').trim() ||
+    LEGACY_DEPLOY_TYPE_ALIASES[legacyType] ||
+    legacyType;
+  const serviceType =
+    String(source.serviceType || '').trim() || getSupportedServiceTypes(deployTarget)[0] || '';
+  const runtimeProtocol =
+    String(source.runtimeProtocol || '').trim() || getSupportedProtocols(serviceType)[0] || '';
   return {
     name: String(source.name || '').trim(),
     region: String(source.region || '').trim(),
@@ -334,8 +357,9 @@ export function normalizeDeploymentInput(deployment) {
     runtimeProtocol,
     databaseDriver: String(source.databaseDriver || '').trim() || 'InMemory',
     keyValueDriver: String(source.keyValueDriver || '').trim() || 'redis',
-    pm2Profile: String(source.pm2Profile || '').trim()
-      || (isPm2ManagedDeployTarget(deployTarget) ? 'dev' : '')
+    pm2Profile:
+      String(source.pm2Profile || '').trim() ||
+      (isPm2ManagedDeployTarget(deployTarget) ? 'dev' : '')
   };
 }
 
@@ -368,9 +392,8 @@ export function normalizeInterfaceInput(entry) {
 export function normalizeServiceConfigurationInput(configuration) {
   const source = configuration || {};
   const enumOrDefault = (value, fallback) => String(value || '').trim() || fallback;
-  const portOrDefault = (value, fallback) => (Number.isFinite(Number(value)) && value !== null && value !== ''
-    ? Number(value)
-    : fallback);
+  const portOrDefault = (value, fallback) =>
+    Number.isFinite(Number(value)) && value !== null && value !== '' ? Number(value) : fallback;
   const ports = source.ports || {};
   return {
     serviceKind: enumOrDefault(source.serviceKind, 'rest-api'),
@@ -397,9 +420,10 @@ export function normalizeServiceConfigurationInput(configuration) {
  */
 export function normalizeRuntimeEnvironmentInput(runtimeEnvironment) {
   const source = runtimeEnvironment || {};
-  const values = source.values && typeof source.values === 'object' && !Array.isArray(source.values)
-    ? { ...source.values }
-    : {};
+  const values =
+    source.values && typeof source.values === 'object' && !Array.isArray(source.values)
+      ? { ...source.values }
+      : {};
   return {
     environment: String(source.environment || '').trim() || 'dev',
     fileName: String(source.fileName || '').trim() || '.env.dev',
@@ -452,9 +476,18 @@ export function normalizeRbacPolicyInput(sourceRbac) {
 
 export function defaultFields() {
   return [
-    normalizeField({ name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true }, 0),
-    normalizeField({ name: 'createdAt', type: 'date', required: true, pk: false, fk: false, unique: false }, 1),
-    normalizeField({ name: 'updatedAt', type: 'date', required: true, pk: false, fk: false, unique: false }, 2)
+    normalizeField(
+      { name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true },
+      0
+    ),
+    normalizeField(
+      { name: 'createdAt', type: 'date', required: true, pk: false, fk: false, unique: false },
+      1
+    ),
+    normalizeField(
+      { name: 'updatedAt', type: 'date', required: true, pk: false, fk: false, unique: false },
+      2
+    )
   ];
 }
 
@@ -499,11 +532,11 @@ export function normalizeEntityInput(entity, entityIndex) {
       // pre-JUM-492 payloads normalise to exactly the shape they always did.
       ...(entity?.meta?.provenance && typeof entity.meta.provenance === 'object'
         ? {
-          provenance: {
-            package: String(entity.meta.provenance.package || '').trim(),
-            version: String(entity.meta.provenance.version || '').trim()
+            provenance: {
+              package: String(entity.meta.provenance.package || '').trim(),
+              version: String(entity.meta.provenance.version || '').trim()
+            }
           }
-        }
         : {})
     }
   };
@@ -511,11 +544,15 @@ export function normalizeEntityInput(entity, entityIndex) {
 
 export function normalizeDomainInput(domain, domainIndex) {
   const entitiesInput = Array.isArray(domain?.entities) ? domain.entities : [];
-  const entities = entitiesInput.map((entity, entityIndex) => normalizeEntityInput(entity, entityIndex));
+  const entities = entitiesInput.map((entity, entityIndex) =>
+    normalizeEntityInput(entity, entityIndex)
+  );
   return {
     id: domain?.id || fallbackId('domain', domainIndex),
     name: String(domain?.name || '').trim() || `Domain_${domainIndex + 1}`,
-    color: /^#[0-9a-f]{6}$/i.test(domain?.color || '') ? domain.color : DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
+    color: /^#[0-9a-f]{6}$/i.test(domain?.color || '')
+      ? domain.color
+      : DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
     x: Number.isFinite(domain?.x) ? domain.x : 120 + domainIndex * 40,
     y: Number.isFinite(domain?.y) ? domain.y : 90 + domainIndex * 30,
     // JUM-729 follow-up: absent in every model saved before the domain box could be
@@ -548,25 +585,25 @@ export function normalizeDomainInput(domain, domainIndex) {
         : {}),
       ...(domain?.context?.provenance && typeof domain.context.provenance === 'object'
         ? {
-          provenance: {
-            package: String(domain.context.provenance.package || '').trim(),
-            version: String(domain.context.provenance.version || '').trim()
+            provenance: {
+              package: String(domain.context.provenance.package || '').trim(),
+              version: String(domain.context.provenance.version || '').trim()
+            }
           }
-        }
         : {}),
       // JUM-491 (shared catalog sync): the catalog link is additive sync
       // metadata — carried only when the source declares it, exactly like the
       // JUM-492 package identity above, so non-shared domains are unchanged.
       ...(domain?.context?.catalog && typeof domain.context.catalog === 'object'
         ? {
-          catalog: {
-            id: String(domain.context.catalog.id || '').trim(),
-            version: Number.isFinite(domain.context.catalog.version)
-              ? domain.context.catalog.version
-              : 0,
-            contentHash: String(domain.context.catalog.contentHash || '')
+            catalog: {
+              id: String(domain.context.catalog.id || '').trim(),
+              version: Number.isFinite(domain.context.catalog.version)
+                ? domain.context.catalog.version
+                : 0,
+              contentHash: String(domain.context.catalog.contentHash || '')
+            }
           }
-        }
         : {})
     },
     entities
@@ -588,12 +625,19 @@ export function normalizeDomainInput(domain, domainIndex) {
  */
 export function normalizeStatePayload(parsed) {
   const domainsInput = Array.isArray(parsed?.domains) ? parsed.domains : [];
-  const domains = domainsInput.map((domain, domainIndex) => normalizeDomainInput(domain, domainIndex));
-  const entityIds = new Set(domains.flatMap((domain) => domain.entities.map((entity) => entity.id)));
+  const domains = domainsInput.map((domain, domainIndex) =>
+    normalizeDomainInput(domain, domainIndex)
+  );
+  const entityIds = new Set(
+    domains.flatMap((domain) => domain.entities.map((entity) => entity.id))
+  );
   const relationshipsInput = Array.isArray(parsed?.relationships) ? parsed.relationships : [];
   const relationships = relationshipsInput
     .map(normalizeRelationship)
-    .filter((relationship) => entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId));
+    .filter(
+      (relationship) =>
+        entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId)
+    );
   const notesInput = Array.isArray(parsed?.notes) ? parsed.notes : [];
   const notes = notesInput.map(normalizeNote);
   const deploymentsInput = Array.isArray(parsed?.deployments) ? parsed.deployments : [];
@@ -618,7 +662,9 @@ export function normalizeStatePayload(parsed) {
     // for, and a first run should show it whole.
     sidebarOpen: Boolean(parsed?.view?.sidebarOpen),
     snapToGrid: parsed?.view?.snapToGrid !== false,
-    edgeStyle: ['curved', 'orthogonal'].includes(parsed?.view?.edgeStyle) ? parsed.view.edgeStyle : 'curved',
+    edgeStyle: ['curved', 'orthogonal'].includes(parsed?.view?.edgeStyle)
+      ? parsed.view.edgeStyle
+      : 'curved',
     modelCheckMinSeverity: ['info', 'warn', 'error'].includes(parsed?.view?.modelCheckMinSeverity)
       ? parsed.view.modelCheckMinSeverity
       : 'info',
@@ -676,7 +722,13 @@ export function createDefaultView() {
  * outcome is surfaced and reconciled by the caller, never silently assumed
  * successful. Observation is fire-and-forget; persistence timing is unchanged.
  */
-export function createDesignerState({ store, seed, render, runtimeEnvDefaults = {}, onSaveResult }) {
+export function createDesignerState({
+  store,
+  seed,
+  render,
+  runtimeEnvDefaults = {},
+  onSaveResult
+}) {
   const state = {
     domains: [],
     relationships: [],
@@ -719,24 +771,26 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
   };
 
   function snapshotState() {
-    return JSON.parse(JSON.stringify({
-      domains: state.domains,
-      relationships: state.relationships,
-      notes: state.notes,
-      selectedDomainId: state.selectedDomainId,
-      selectedEntityId: state.selectedEntityId,
-      selectedRelationshipId: state.selectedRelationshipId,
-      idCounter: state.idCounter,
-      activeTab: state.activeTab,
-      interfaces: state.interfaces,
-      serviceConfiguration: state.serviceConfiguration,
-      runtimeEnvironment: state.runtimeEnvironment,
-      codeWorkspace: state.codeWorkspace,
-      monitoringHistory: state.monitoringHistory,
-      deployments: state.deployments,
-      architecture: state.architecture,
-      view: state.view
-    }));
+    return JSON.parse(
+      JSON.stringify({
+        domains: state.domains,
+        relationships: state.relationships,
+        notes: state.notes,
+        selectedDomainId: state.selectedDomainId,
+        selectedEntityId: state.selectedEntityId,
+        selectedRelationshipId: state.selectedRelationshipId,
+        idCounter: state.idCounter,
+        activeTab: state.activeTab,
+        interfaces: state.interfaces,
+        serviceConfiguration: state.serviceConfiguration,
+        runtimeEnvironment: state.runtimeEnvironment,
+        codeWorkspace: state.codeWorkspace,
+        monitoringHistory: state.monitoringHistory,
+        deployments: state.deployments,
+        architecture: state.architecture,
+        view: state.view
+      })
+    );
   }
 
   function applySnapshot(snapshot) {
@@ -764,6 +818,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       : [];
     state.architecture = normalizeArchitectureInput(snapshot.architecture, state.domains);
     state.view = snapshot.view || { zoom: 1 };
+    // eslint-disable-next-line no-use-before-define -- hoisted inner function declaration; safe to call here
     recomputeIdCounter();
   }
 
@@ -816,10 +871,14 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     if (typeof onSaveResult === 'function') {
       Promise.resolve(result).then(
         (saveResult) => onSaveResult(saveResult, payload),
-        (error) => onSaveResult({
-          status: 'unknown',
-          reason: `save-rejected: ${String((error && error.message) || error)}`
-        }, payload)
+        (error) =>
+          onSaveResult(
+            {
+              status: 'unknown',
+              reason: `save-rejected: ${String((error && error.message) || error)}`
+            },
+            payload
+          )
       );
     }
     return result;

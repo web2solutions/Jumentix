@@ -1,6 +1,6 @@
 ---
-title: "Crie uma API REST"
-description: "Construa APIs REST orientadas a contratos com o Jumentix."
+title: 'Crie uma API REST'
+description: 'Construa APIs REST orientadas a contratos com o Jumentix.'
 ---
 
 # Criando API REST com Jumentix
@@ -26,27 +26,27 @@ oferece um caminho repetível de perfil de env → servidor rodando → testes v
 
 ## Pré-requisitos
 
-| Item | Obrigatório | Notas |
-| --- | --- | --- |
-| Bun 1.3.13+ | Sim | Veja [Começando](/docs/pt-BR/jumentix/concepts/getting-started) |
-| Getting-started concluído | Recomendado | Modelo mental + playground Cana |
-| Scaffold backend-template | Sim | Use o monorepo `apps/backend-template` ou o fluxo interno de bootstrap |
-| Service Management (opcional) | Times design-first | Domain Designer gera entidades alinhadas ao OpenAPI |
+| Item                          | Obrigatório        | Notas                                                                  |
+| ----------------------------- | ------------------ | ---------------------------------------------------------------------- |
+| Bun 1.3.13+                   | Sim                | Veja [Começando](/docs/pt-BR/jumentix/concepts/getting-started)        |
+| Getting-started concluído     | Recomendado        | Modelo mental + playground Cana                                        |
+| Scaffold backend-template     | Sim                | Use o monorepo `apps/backend-template` ou o fluxo interno de bootstrap |
+| Service Management (opcional) | Times design-first | Domain Designer gera entidades alinhadas ao OpenAPI                    |
 
 **Arquivo de ambiente:** `apps/backend-template/src/config/.env.dev` (ou equivalente do seu scaffold).
 
 ## Glossário
 
-| Termo | Significado nesta página |
-| --- | --- |
-| **REST** | API HTTP com verbos (GET, POST, …) e payloads JSON. |
-| **OpenAPI** | Spec em `spec/1.0.0.yml` descrevendo paths, schemas e operationIds. |
-| **Perfil de runtime** | Variáveis de env (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`) que selecionam adaptadores. |
-| **Controller** | Classe da camada de interface mapeando requests HTTP para casos de uso. |
-| **Caso de uso** | Serviço de aplicação implementando uma operação de negócio. |
-| **Porta de repositório** | Interface de persistência; implementada por adaptador de banco. |
-| **Adaptador HTTP** | Módulo Express/Fastify/etc. montando rotas a partir de operationIds OpenAPI. |
-| **oas:check-routes** | Script que verifica se todo path OpenAPI resolve para um handler registrado. |
+| Termo                    | Significado nesta página                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| **REST**                 | API HTTP com verbos (GET, POST, …) e payloads JSON.                                               |
+| **OpenAPI**              | Spec em `spec/1.0.0.yml` descrevendo paths, schemas e operationIds.                               |
+| **Perfil de runtime**    | Variáveis de env (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`) que selecionam adaptadores. |
+| **Controller**           | Classe da camada de interface mapeando requests HTTP para casos de uso.                           |
+| **Caso de uso**          | Serviço de aplicação implementando uma operação de negócio.                                       |
+| **Porta de repositório** | Interface de persistência; implementada por adaptador de banco.                                   |
+| **Adaptador HTTP**       | Módulo Express/Fastify/etc. montando rotas a partir de operationIds OpenAPI.                      |
+| **oas:check-routes**     | Script que verifica se todo path OpenAPI resolve para um handler registrado.                      |
 
 ## Passos numerados
 
@@ -169,14 +169,14 @@ Experimente o client REST mockado — **Run** deve retornar `/health` com sucess
 
 ## Erros comuns
 
-| Sintoma | Causa provável | Correção | Verificar sucesso |
-| --- | --- | --- | --- |
-| Processo PM2 sai imediatamente | Caminho de env inválido ou secret ausente | Confirme `--env-file=./apps/backend-template/src/config/.env.dev` | `bun run dev:http` permanece online |
-| `oas:check-routes` falha | Path OpenAPI sem handler | Adicione handler + método de controller; rode de novo | Script sai com 0 |
-| 404 em rota documentada | Adaptador HTTP errado carregado | Alinhe `JUMENTIX_HTTP_FRAMEWORK` ao módulo ligado | curl retorna 200 |
-| Timeout em teste de integração | Servidor parado ou porta errada | Suba perfil dev antes da suite | `test:integration:express` verde |
-| Client browser não carrega YAML | `fs.readFile` no bundle | Injete objeto OpenAPI parseado (padrão do playground) | Mock client funciona no browser |
-| Domínio importa Express | Violação de camada | Mova código HTTP para adaptador/handler | `arch:check-boundaries` passa |
+| Sintoma                         | Causa provável                            | Correção                                                          | Verificar sucesso                   |
+| ------------------------------- | ----------------------------------------- | ----------------------------------------------------------------- | ----------------------------------- |
+| Processo PM2 sai imediatamente  | Caminho de env inválido ou secret ausente | Confirme `--env-file=./apps/backend-template/src/config/.env.dev` | `bun run dev:http` permanece online |
+| `oas:check-routes` falha        | Path OpenAPI sem handler                  | Adicione handler + método de controller; rode de novo             | Script sai com 0                    |
+| 404 em rota documentada         | Adaptador HTTP errado carregado           | Alinhe `JUMENTIX_HTTP_FRAMEWORK` ao módulo ligado                 | curl retorna 200                    |
+| Timeout em teste de integração  | Servidor parado ou porta errada           | Suba perfil dev antes da suite                                    | `test:integration:express` verde    |
+| Client browser não carrega YAML | `fs.readFile` no bundle                   | Injete objeto OpenAPI parseado (padrão do playground)             | Mock client funciona no browser     |
+| Domínio importa Express         | Violação de camada                        | Mova código HTTP para adaptador/handler                           | `arch:check-boundaries` passa       |
 
 ## Checklist júnior (“Eu consigo …”)
 

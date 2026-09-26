@@ -1,6 +1,6 @@
 ---
-title: "@jumentix/cana"
-description: "Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix."
+title: '@jumentix/cana'
+description: 'Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.'
 ---
 
 # @jumentix/cana
@@ -16,8 +16,8 @@ pela OAS: [Camada de dados offline do frontend](/docs/pt-BR/jumentix/reference/f
     alt="Mascote Jumentix comendo uma planta de cana-de-açúcar"
   />
   <figcaption>
-    O Cana mantém dados duráveis no navegador perto da aplicação: cana como
-    combustível, Jumentix totalmente energizado e persistência fora do caminho da UI.
+    O Cana mantém dados duráveis no navegador perto da aplicação: cana como combustível, Jumentix
+    totalmente energizado e persistência fora do caminho da UI.
   </figcaption>
 </figure>
 
@@ -251,16 +251,16 @@ flowchart LR
 
 #### Modelo algorítmico
 
-| Caminho | Forma algorítmica | O que a implementação evita |
-| --- | --- | --- |
-| Query limitada | `O(limit)` depois que o cursor abre. | Ler a store inteira e cortar o array em JavaScript. |
-| Busca indexada | Modelo comum de índice do IndexedDB: `O(log n + matches)`. | Anunciar um índice no `explain()` enquanto ainda faz full scan. |
-| `get()` por chave primária | Modelo comum de busca por chave no IndexedDB: `O(log n)`. | Varrer linhas para encontrar uma chave conhecida. |
-| `count()` nativo | Uma requisição nativa `count()` do IndexedDB; o Cana não materializa linhas em JavaScript. O custo interno do browser depende da implementação. | Contar lendo todos os registros. |
-| `bulkAdd()` | `O(n)` escritas em uma transação IndexedDB. | Disparar um fan-out grande e desordenado de promises que perde a ordem de entrada e a posição de falha parcial. |
-| `bulkAdd()` via worker | Ainda é `O(n)` de trabalho de storage, mais overhead de structured clone e mensagens. | Bloquear a thread da página enquanto o caminho de persistência prepara e commita o lote. |
-| Shards paralelos em workers | Alvo de wall-clock `O(n / w)` para bancos independentes ou shards independentes, com trabalho total `O(n)`. Locks de storage do browser podem limitar o ganho. | Fingir que vários workers tornam paralela uma única transação IndexedDB no mesmo object store. |
-| Paginação profunda | `O(offset + limit)` de movimento de cursor, com clone para JavaScript só dos registros retornados. | Ler milhares de registros em um array antes de aplicar `offset`. |
+| Caminho                     | Forma algorítmica                                                                                                                                              | O que a implementação evita                                                                                     |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Query limitada              | `O(limit)` depois que o cursor abre.                                                                                                                           | Ler a store inteira e cortar o array em JavaScript.                                                             |
+| Busca indexada              | Modelo comum de índice do IndexedDB: `O(log n + matches)`.                                                                                                     | Anunciar um índice no `explain()` enquanto ainda faz full scan.                                                 |
+| `get()` por chave primária  | Modelo comum de busca por chave no IndexedDB: `O(log n)`.                                                                                                      | Varrer linhas para encontrar uma chave conhecida.                                                               |
+| `count()` nativo            | Uma requisição nativa `count()` do IndexedDB; o Cana não materializa linhas em JavaScript. O custo interno do browser depende da implementação.                | Contar lendo todos os registros.                                                                                |
+| `bulkAdd()`                 | `O(n)` escritas em uma transação IndexedDB.                                                                                                                    | Disparar um fan-out grande e desordenado de promises que perde a ordem de entrada e a posição de falha parcial. |
+| `bulkAdd()` via worker      | Ainda é `O(n)` de trabalho de storage, mais overhead de structured clone e mensagens.                                                                          | Bloquear a thread da página enquanto o caminho de persistência prepara e commita o lote.                        |
+| Shards paralelos em workers | Alvo de wall-clock `O(n / w)` para bancos independentes ou shards independentes, com trabalho total `O(n)`. Locks de storage do browser podem limitar o ganho. | Fingir que vários workers tornam paralela uma única transação IndexedDB no mesmo object store.                  |
+| Paginação profunda          | `O(offset + limit)` de movimento de cursor, com clone para JavaScript só dos registros retornados.                                                             | Ler milhares de registros em um array antes de aplicar `offset`.                                                |
 
 #### Referência medida
 
@@ -273,22 +273,22 @@ quantidade de chaves commitadas antes de apagar cada banco. Leituras mostram a
 mediana de cinco execuções salvo quando indicado; escritas em lote mostram uma
 execução medida porque cada execução grava uma massa nova de dados.
 
-| Operação | Registros na store | Query / tamanho do resultado | Complexidade usada no exemplo | Mediana local |
-| --- | ---: | --- | --- | ---: |
-| `bulkAdd()` | 1.000 | escreve 1.000 linhas | `O(n)` | 172,6 ms |
-| `bulkAdd()` | 10.000 | escreve 10.000 linhas | `O(n)` | 1.811,8 ms |
-| `bulkAdd()` via worker | 10.000 | 1 worker dedicado escreve 10.000 linhas | `O(n)` mais overhead de mensagem | 1.815,4 ms |
-| `bulkAdd()` paralelo em workers | 10.000 total | 4 workers dedicados x 2.500 linhas em bancos independentes | alvo `O(n / w)` wall-clock, trabalho total `O(n)` | 1.442,6 ms |
-| Query limitada | 1.000 | `limit: 10`, retorna 10 linhas | `O(limit)` | 1,5 ms |
-| Query limitada | 10.000 | `limit: 10`, retorna 10 linhas | `O(limit)` | 0,6 ms |
-| Busca indexada | 1.000 | 100 grupos, `equals: 'g7'`, retorna 10 linhas | `O(log n + matches)` | 1,1 ms |
-| Busca indexada | 10.000 | 100 grupos, `equals: 'g7'`, retorna 100 linhas | `O(log n + matches)` | 2,7 ms |
-| `get()` por chave primária | 1.000 | chave `500` | `O(log n)` | 0,3 ms |
-| `get()` por chave primária | 10.000 | chave `5000` | `O(log n)` | 0,3 ms |
-| `count()` nativo | 10.000 | conta todas as linhas sem retorná-las | uma requisição nativa; sem materialização em JS | 5,5 ms |
-| Query completa | 10.000 | retorna as 10.000 linhas | `O(n)` | 96,7 ms |
-| Página inicial | 10.000 | `offset: 10`, `limit: 20`, retorna 20 linhas | `O(offset + limit)` | 1,6 ms |
-| Página profunda | 10.000 | `offset: 9000`, `limit: 20`, retorna 20 linhas | `O(offset + limit)` com avanço de cursor | 29,8 ms |
+| Operação                        | Registros na store | Query / tamanho do resultado                               | Complexidade usada no exemplo                     | Mediana local |
+| ------------------------------- | -----------------: | ---------------------------------------------------------- | ------------------------------------------------- | ------------: |
+| `bulkAdd()`                     |              1.000 | escreve 1.000 linhas                                       | `O(n)`                                            |      172,6 ms |
+| `bulkAdd()`                     |             10.000 | escreve 10.000 linhas                                      | `O(n)`                                            |    1.811,8 ms |
+| `bulkAdd()` via worker          |             10.000 | 1 worker dedicado escreve 10.000 linhas                    | `O(n)` mais overhead de mensagem                  |    1.815,4 ms |
+| `bulkAdd()` paralelo em workers |       10.000 total | 4 workers dedicados x 2.500 linhas em bancos independentes | alvo `O(n / w)` wall-clock, trabalho total `O(n)` |    1.442,6 ms |
+| Query limitada                  |              1.000 | `limit: 10`, retorna 10 linhas                             | `O(limit)`                                        |        1,5 ms |
+| Query limitada                  |             10.000 | `limit: 10`, retorna 10 linhas                             | `O(limit)`                                        |        0,6 ms |
+| Busca indexada                  |              1.000 | 100 grupos, `equals: 'g7'`, retorna 10 linhas              | `O(log n + matches)`                              |        1,1 ms |
+| Busca indexada                  |             10.000 | 100 grupos, `equals: 'g7'`, retorna 100 linhas             | `O(log n + matches)`                              |        2,7 ms |
+| `get()` por chave primária      |              1.000 | chave `500`                                                | `O(log n)`                                        |        0,3 ms |
+| `get()` por chave primária      |             10.000 | chave `5000`                                               | `O(log n)`                                        |        0,3 ms |
+| `count()` nativo                |             10.000 | conta todas as linhas sem retorná-las                      | uma requisição nativa; sem materialização em JS   |        5,5 ms |
+| Query completa                  |             10.000 | retorna as 10.000 linhas                                   | `O(n)`                                            |       96,7 ms |
+| Página inicial                  |             10.000 | `offset: 10`, `limit: 20`, retorna 20 linhas               | `O(offset + limit)`                               |        1,6 ms |
+| Página profunda                 |             10.000 | `offset: 9000`, `limit: 20`, retorna 20 linhas             | `O(offset + limit)` com avanço de cursor          |       29,8 ms |
 
 #### O que workers mudam
 

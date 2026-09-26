@@ -31,14 +31,24 @@ const inputId = computed(() => `oas-field-${props.descriptor.name}`);
 // Effective cap: declared maxLength wins; a mask derives its own length.
 const maxLength = computed(() => props.descriptor.maxLength ?? props.maskCap);
 
-const isNumericField = computed(() => Boolean(
-  props.descriptor.pattern && /^\^\\[dsS]|^\^\\d/.test(props.descriptor.pattern)
-));
+const isNumericField = computed(() =>
+  Boolean(props.descriptor.pattern && /^\^\\[dsS]|^\^\\d/.test(props.descriptor.pattern))
+);
 
 const text = computed({
-  get: () => (props.modelValue === undefined || props.modelValue === null
-    ? ''
-    : String(props.modelValue)),
+  get: () => {
+    const value = props.modelValue;
+    if (value === undefined || value === null) {
+      return '';
+    }
+    // Explicit serializer: scalar field values render directly; anything
+    // object-shaped is JSON so it never degrades to '[object Object]'.
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+      return String(value);
+    }
+    return JSON.stringify(value) ?? '';
+  },
   set: (value: string) => {
     emit('update:modelValue', props.mask ? props.mask(value) : value);
   }
@@ -65,11 +75,7 @@ const placeholder = computed(() => props.descriptor.example ?? label.value);
 <template>
   <div class="mb-3">
     <template v-if="descriptor.type === 'boolean'">
-      <CFormCheck
-        :id="inputId"
-        v-model="checked"
-        :label="label"
-      />
+      <CFormCheck :id="inputId" v-model="checked" :label="label" />
       <div v-if="help" class="form-text">{{ help }}</div>
     </template>
     <template v-else>

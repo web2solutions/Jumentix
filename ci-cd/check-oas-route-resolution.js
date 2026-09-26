@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const YAML = require('yaml');
+
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace']);
@@ -76,7 +78,8 @@ function resolveSchemaByRef(document, ref) {
 }
 
 function getOperationRequestSchemaRef(operation) {
-  if (!operation?.requestBody?.content || typeof operation.requestBody.content !== 'object') return null;
+  if (!operation?.requestBody?.content || typeof operation.requestBody.content !== 'object')
+    return null;
   const entries = Object.values(operation.requestBody.content);
   for (const content of entries) {
     const ref = content?.schema?.$ref;
@@ -108,11 +111,15 @@ function validatePortObjectContracts(fileName, document, routePath, method, oper
   if (operation?.requestBody) {
     const requestRef = getOperationRequestSchemaRef(operation);
     if (!requestRef) {
-      errors.push(`${fileName}: ${operationLabel} requestBody must reference a components schema via $ref`);
+      errors.push(
+        `${fileName}: ${operationLabel} requestBody must reference a components schema via $ref`
+      );
     } else {
       const resolvedRequest = resolveSchemaByRef(document, requestRef);
       if (!resolvedRequest) {
-        errors.push(`${fileName}: ${operationLabel} requestBody schema ref not found: ${requestRef}`);
+        errors.push(
+          `${fileName}: ${operationLabel} requestBody schema ref not found: ${requestRef}`
+        );
       } else if (!String(resolvedRequest.schema.description || '').trim()) {
         errors.push(
           `${fileName}: ${operationLabel} requestBody schema "${resolvedRequest.schemaName}" must include description`
@@ -122,20 +129,28 @@ function validatePortObjectContracts(fileName, document, routePath, method, oper
   }
 
   const responseRefs = getOperationResponseSchemaRefs(operation);
-  const successResponseRefs = responseRefs.filter(({ statusCode }) => String(statusCode).startsWith('2'));
+  const successResponseRefs = responseRefs.filter(({ statusCode }) =>
+    String(statusCode).startsWith('2')
+  );
   if (successResponseRefs.length === 0) {
-    errors.push(`${fileName}: ${operationLabel} must define at least one 2xx response content schema`);
+    errors.push(
+      `${fileName}: ${operationLabel} must define at least one 2xx response content schema`
+    );
     return;
   }
 
   successResponseRefs.forEach(({ statusCode, ref }) => {
     if (!ref) {
-      errors.push(`${fileName}: ${operationLabel} response ${statusCode} must reference a components schema via $ref`);
+      errors.push(
+        `${fileName}: ${operationLabel} response ${statusCode} must reference a components schema via $ref`
+      );
       return;
     }
     const resolvedResponse = resolveSchemaByRef(document, ref);
     if (!resolvedResponse) {
-      errors.push(`${fileName}: ${operationLabel} response ${statusCode} schema ref not found: ${ref}`);
+      errors.push(
+        `${fileName}: ${operationLabel} response ${statusCode} schema ref not found: ${ref}`
+      );
       return;
     }
     if (!String(resolvedResponse.schema.description || '').trim()) {
@@ -190,7 +205,9 @@ function collectRouteResolutionErrors(root) {
       const controllerFile = controllerCandidates.find((candidate) => fileExists(candidate));
 
       if (!controllerFile) {
-        errors.push(`${fileName}: missing controller file for "${routePath}" -> ${controllerCandidates.join(' or ')}`);
+        errors.push(
+          `${fileName}: missing controller file for "${routePath}" -> ${controllerCandidates.join(' or ')}`
+        );
         return;
       }
 
@@ -201,7 +218,7 @@ function collectRouteResolutionErrors(root) {
 
         validatePortObjectContracts(fileName, document, routePath, method, config, errors);
 
-        const operationId = config.operationId;
+        const { operationId } = config;
         if (!operationId) {
           errors.push(`${fileName}: missing operationId for ${method.toUpperCase()} ${routePath}`);
           return;
@@ -224,7 +241,9 @@ function collectRouteResolutionErrors(root) {
           );
 
           if (!fileExists(handlerFile)) {
-            errors.push(`${fileName}: missing ${framework} handler for operationId "${operationId}" -> ${handlerFile}`);
+            errors.push(
+              `${fileName}: missing ${framework} handler for operationId "${operationId}" -> ${handlerFile}`
+            );
             return;
           }
 

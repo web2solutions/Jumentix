@@ -1,6 +1,6 @@
 ---
-title: "Crie uma API realtime"
-description: "Construa interfaces Socket.IO e gRPC com fallback REST."
+title: 'Crie uma API realtime'
+description: 'Construa interfaces Socket.IO e gRPC com fallback REST.'
 ---
 
 # Criando API em tempo real com Jumentix
@@ -27,25 +27,25 @@ REST, e realtime degradado cai para HTTP.
 
 ## Pré-requisitos
 
-| Item | Obrigatório | Notas |
-| --- | --- | --- |
-| Bun 1.3.13+ | Sim | [Começando](/docs/pt-BR/jumentix/concepts/getting-started) |
+| Item                    | Obrigatório | Notas                                                                 |
+| ----------------------- | ----------- | --------------------------------------------------------------------- |
+| Bun 1.3.13+             | Sim         | [Começando](/docs/pt-BR/jumentix/concepts/getting-started)            |
 | Perfil REST funcionando | Recomendado | Complete o [guia REST](/docs/pt-BR/jumentix/guides/rest-api) primeiro |
-| Specs AsyncAPI | Sim | Em `spec/` junto com OpenAPI |
-| Arquivo de env | Sim | `apps/backend-template/src/config/.env.dev` |
+| Specs AsyncAPI          | Sim         | Em `spec/` junto com OpenAPI                                          |
+| Arquivo de env          | Sim         | `apps/backend-template/src/config/.env.dev`                           |
 
 ## Glossário
 
-| Termo | Significado nesta página |
-| --- | --- |
-| **API em tempo real** | Interface primária não-HTTP — WebSocket ou gRPC — para mensagens push/pull. |
-| **AsyncAPI** | Spec descrevendo canais, mensagens e schemas de payload para tempo real. |
-| **WebSocket** | Conexão persistente amigável ao browser; protocolo padrão para SPAs. |
-| **gRPC** | Protocolo RPC binário; use serviço-a-serviço, não clients de browser. |
-| **Fallback REST** | Endpoints HTTP ainda disponíveis quando o canal realtime cai ou não é suportado. |
-| **Handler de mensagem** | Código adaptador que recebe mensagem, chama controller e responde no mesmo id de correlação. |
-| **Id de correlação** | Token ligando request do client à response no mesmo socket. |
-| **JUMENTIX_REALTIME_API** | Flag de env `yes`/`no` habilitando perfil de startup realtime. |
+| Termo                     | Significado nesta página                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------- |
+| **API em tempo real**     | Interface primária não-HTTP — WebSocket ou gRPC — para mensagens push/pull.                  |
+| **AsyncAPI**              | Spec descrevendo canais, mensagens e schemas de payload para tempo real.                     |
+| **WebSocket**             | Conexão persistente amigável ao browser; protocolo padrão para SPAs.                         |
+| **gRPC**                  | Protocolo RPC binário; use serviço-a-serviço, não clients de browser.                        |
+| **Fallback REST**         | Endpoints HTTP ainda disponíveis quando o canal realtime cai ou não é suportado.             |
+| **Handler de mensagem**   | Código adaptador que recebe mensagem, chama controller e responde no mesmo id de correlação. |
+| **Id de correlação**      | Token ligando request do client à response no mesmo socket.                                  |
+| **JUMENTIX_REALTIME_API** | Flag de env `yes`/`no` habilitando perfil de startup realtime.                               |
 
 ## Passos numerados
 
@@ -155,14 +155,14 @@ sub.on('message', (msg) => console.log(msg.payload));
 
 ## Erros comuns
 
-| Sintoma | Causa provável | Correção | Verificar sucesso |
-| --- | --- | --- | --- |
-| Realtime sobe mas REST 404 | Adaptador HTTP não carregado no perfil combinado | Mantenha `JUMENTIX_HTTP_FRAMEWORK=express`; use `dev:websocket` | `/health` retorna 200 |
-| Handler nunca responde | Id de correlação ausente na resposta | Ecoe id da mensagem do client no reply do adaptador | Teste de integração verde |
-| Browser não usa gRPC | gRPC não é protocolo de browser | Use WebSocket para SPA; gRPC para serviços backend | Run do playground WS verde |
-| `test:integration:realtime` falha no grpc | `JUMENTIX_REALTIME_API_PROTOCOL` errado | Alinhe env ao script (`websocket` vs `grpc`) | Teste do protocolo alvo passa |
-| Handling duplicado de mensagem | Handler registrado duas vezes | Um registro por canal no bootstrap do adaptador | Uma resposta por envio |
-| Teste redis streams pulado | `RUN_REDIS_INTEGRATION` não definido | Suba compose redis; defina flag de env | Integração redis-streams verde |
+| Sintoma                                   | Causa provável                                   | Correção                                                        | Verificar sucesso              |
+| ----------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------- | ------------------------------ |
+| Realtime sobe mas REST 404                | Adaptador HTTP não carregado no perfil combinado | Mantenha `JUMENTIX_HTTP_FRAMEWORK=express`; use `dev:websocket` | `/health` retorna 200          |
+| Handler nunca responde                    | Id de correlação ausente na resposta             | Ecoe id da mensagem do client no reply do adaptador             | Teste de integração verde      |
+| Browser não usa gRPC                      | gRPC não é protocolo de browser                  | Use WebSocket para SPA; gRPC para serviços backend              | Run do playground WS verde     |
+| `test:integration:realtime` falha no grpc | `JUMENTIX_REALTIME_API_PROTOCOL` errado          | Alinhe env ao script (`websocket` vs `grpc`)                    | Teste do protocolo alvo passa  |
+| Handling duplicado de mensagem            | Handler registrado duas vezes                    | Um registro por canal no bootstrap do adaptador                 | Uma resposta por envio         |
+| Teste redis streams pulado                | `RUN_REDIS_INTEGRATION` não definido             | Suba compose redis; defina flag de env                          | Integração redis-streams verde |
 
 ## Checklist júnior (“Eu consigo …”)
 

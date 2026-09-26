@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 function readPackageJson(targetDir) {
@@ -12,7 +13,8 @@ function readPackageJson(targetDir) {
 function getWorkspacePackageDirs(rootDir) {
   const packagesDir = path.join(rootDir, 'packages');
   if (!fs.existsSync(packagesDir)) return [];
-  return fs.readdirSync(packagesDir)
+  return fs
+    .readdirSync(packagesDir)
     .map((name) => path.join(packagesDir, name))
     .filter((fullPath) => fs.statSync(fullPath).isDirectory());
 }
@@ -52,7 +54,8 @@ function run() {
     for (const failure of failures) {
       console.error(failure);
     }
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log('Workspace package quality check passed.');

@@ -7,27 +7,36 @@
  * on assertions rather than process plumbing.
  */
 import { spawn } from 'node:child_process';
-import type { ChildProcess } from 'node:child_process';
-import path from 'node:path';
-import http from 'node:http';
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
+import path from 'node:path';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+import type { ChildProcess } from 'node:child_process';
+
 const { syncServiceManagementDesignerCore } = require(
-  path.resolve(process.cwd(), 'apps/service-management/scripts/sync-service-management-designer-core.js')
+  path.resolve(
+    process.cwd(),
+    'apps/service-management/scripts/sync-service-management-designer-core.js'
+  )
 ) as { syncServiceManagementDesignerCore: (options: { root: string }) => number };
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const { syncServiceManagementD3 } = require(
   path.resolve(process.cwd(), 'apps/service-management/scripts/sync-service-management-d3.js')
 ) as { syncServiceManagementD3: (options?: { root?: string }) => number };
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const { syncServiceManagementCanaBundle } = require(
-  path.resolve(process.cwd(), 'apps/service-management/scripts/sync-service-management-cana-bundle.js')
+  path.resolve(
+    process.cwd(),
+    'apps/service-management/scripts/sync-service-management-cana-bundle.js'
+  )
 ) as { syncServiceManagementCanaBundle: (options?: { root?: string }) => number };
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const { syncServiceManagementSwaggerUi } = require(
-  path.resolve(process.cwd(), 'apps/service-management/scripts/sync-service-management-swagger-ui.js')
+  path.resolve(
+    process.cwd(),
+    'apps/service-management/scripts/sync-service-management-swagger-ui.js'
+  )
 ) as { syncServiceManagementSwaggerUi: (options?: { root?: string }) => number };
 
 export const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
@@ -39,19 +48,19 @@ export const pinnedDefaultConfigDir = path.resolve(
   'apps/backend-template/src/config'
 );
 
-export type RuntimeEnvPayload = {
+export interface RuntimeEnvPayload {
   environment: string;
   fileName: string;
   /** Keys the endpoint admits for editing; absent keys are read-only by policy. */
   editableKeys?: string[];
   values: Record<string, string>;
-};
+}
 
-export type StartedServer = {
+export interface StartedServer {
   proc: ChildProcess;
   port: number;
   stderr: () => string;
-};
+}
 
 export const EDITABLE_FRAMEWORK_VALUES = [
   'express',
@@ -119,7 +128,7 @@ export function isAddrInUseError(error: unknown): boolean {
   return (error as NodeJS.ErrnoException | null)?.code === 'EADDRINUSE';
 }
 
-export type PortRetryOptions<T> = {
+export interface PortRetryOptions<T> {
   /**
    * Forced port. Pinned origins (offline matrix cells restarting a server on
    * the SAME origin for IDB/SW) cannot move to another port, so a busy pinned
@@ -131,12 +140,8 @@ export type PortRetryOptions<T> = {
   /** One bind attempt; rejects with an EADDRINUSE-coded error when the port is busy. */
   attempt: (port: number) => Promise<T>;
   /** Called before each retry — the harness logs here so flakes are diagnosable. */
-  onRetry?: (event: {
-    port: number;
-    attempt: number;
-    maxAttempts: number;
-  }) => void;
-};
+  onRetry?: (event: { port: number; attempt: number; maxAttempts: number }) => void;
+}
 
 /**
  * Runs `attempt(port)` until it succeeds, retrying with a fresh random port on
@@ -160,8 +165,8 @@ export async function runWithPortRetry<T>(options: PortRetryOptions<T>): Promise
       lastBusyPort = port;
       if (options.pinnedPort !== undefined) {
         throw new Error(
-          `[serverHarness] pinned port ${String(port)} is already in use (EADDRINUSE); `
-            + 'a pinned origin cannot move — free the stale process holding it and re-run.'
+          `[serverHarness] pinned port ${String(port)} is already in use (EADDRINUSE); ` +
+            'a pinned origin cannot move — free the stale process holding it and re-run.'
         );
       }
       if (attempt < maxAttempts) {
@@ -170,9 +175,9 @@ export async function runWithPortRetry<T>(options: PortRetryOptions<T>): Promise
     }
   }
   throw new Error(
-    `[serverHarness] no free port after ${String(maxAttempts)} attempts `
-      + `(last busy port ${String(lastBusyPort)}); stale server.js processes are `
-      + 'likely holding the range — kill them and re-run.'
+    `[serverHarness] no free port after ${String(maxAttempts)} attempts ` +
+      `(last busy port ${String(lastBusyPort)}); stale server.js processes are ` +
+      'likely holding the range — kill them and re-run.'
   );
 }
 
@@ -256,35 +261,42 @@ function waitForListening(server: SpawnedServer): Promise<void> {
     timer = setTimeout(() => {
       finish(
         new Error(
-          `[serverHarness] server on port ${String(server.port)} printed no listen line `
-            + `within ${String(LISTEN_TIMEOUT_MS)}ms; stderr so far:\n${server.stderr()}`
+          `[serverHarness] server on port ${String(server.port)} printed no listen line ` +
+            `within ${String(LISTEN_TIMEOUT_MS)}ms; stderr so far:\n${server.stderr()}`
         )
       );
     }, LISTEN_TIMEOUT_MS);
-    server.proc.on('exit', async (code, signal) => {
-      const stderr = server.stderr();
-      if (stderr.includes('EADDRINUSE')) {
-        const error: NodeJS.ErrnoException = new Error(
-          `port ${String(server.port)} is already in use (EADDRINUSE)`
+    // 'close' (not 'exit'): stdio is flushed by then, so a child that died on
+    // EADDRINUSE has already delivered the stderr this handler matches on.
+    // Under parallel load 'exit' can fire before the stderr chunks arrive and
+    // misclassify a busy port as an early exit.
+    server.proc.on('close', (code, signal) => {
+      const reportExit = async (): Promise<void> => {
+        const stderr = server.stderr();
+        if (stderr.includes('EADDRINUSE')) {
+          const error: NodeJS.ErrnoException = new Error(
+            `port ${String(server.port)} is already in use (EADDRINUSE)`
+          );
+          error.code = 'EADDRINUSE';
+          finish(error);
+          return;
+        }
+        if (await loopbackPortAcceptsConnection(server.port)) {
+          const error: NodeJS.ErrnoException = new Error(
+            `port ${String(server.port)} is already in use (EADDRINUSE)`
+          );
+          error.code = 'EADDRINUSE';
+          finish(error);
+          return;
+        }
+        finish(
+          new Error(
+            `[serverHarness] server on port ${String(server.port)} exited before listening ` +
+              `(code ${String(code)}, signal ${String(signal)}); stderr:\n${stderr}`
+          )
         );
-        error.code = 'EADDRINUSE';
-        finish(error);
-        return;
-      }
-      if (await loopbackPortAcceptsConnection(server.port)) {
-        const error: NodeJS.ErrnoException = new Error(
-          `port ${String(server.port)} is already in use (EADDRINUSE)`
-        );
-        error.code = 'EADDRINUSE';
-        finish(error);
-        return;
-      }
-      finish(
-        new Error(
-          `[serverHarness] server on port ${String(server.port)} exited before listening `
-            + `(code ${String(code)}, signal ${String(signal)}); stderr:\n${stderr}`
-        )
-      );
+      };
+      reportExit().catch(finish);
     });
     server.proc.on('error', (error) => {
       finish(error);
@@ -337,8 +349,8 @@ export async function startServer(
     onRetry: ({ port, attempt, maxAttempts }) => {
       // eslint-disable-next-line no-console
       console.warn(
-        `[serverHarness] port ${String(port)} busy (EADDRINUSE); `
-          + `retrying with a fresh port (attempt ${String(attempt)}/${String(maxAttempts)})`
+        `[serverHarness] port ${String(port)} busy (EADDRINUSE); ` +
+          `retrying with a fresh port (attempt ${String(attempt)}/${String(maxAttempts)})`
       );
     },
     attempt: async (port) => {
@@ -375,11 +387,11 @@ export function waitForServer(port: number, maxAttempts = 50): Promise<void> {
   });
 }
 
-export type RawResponse = {
+export interface RawResponse {
   status: number;
   headers: http.IncomingHttpHeaders;
   rawBody: string;
-};
+}
 
 /**
  * Low-level request that never pre-parses the body and sends `path` verbatim —
@@ -488,17 +500,14 @@ export function probeConnection(
  * only shows up on a loaded CI runner.
  */
 /** The slice of a Playwright page these helpers drive. */
-type DrawerPage = {
+interface DrawerPage {
   click: (target: string) => Promise<void>;
   waitForSelector: (target: string, options?: Record<string, unknown>) => Promise<unknown>;
   $: (target: string) => Promise<unknown>;
   evaluate: <T>(fn: (target: string) => T, arg: string) => Promise<T>;
-};
+}
 
-export async function openDesignerPanels(
-  page: DrawerPage,
-  target?: string
-): Promise<void> {
+export async function openDesignerPanels(page: DrawerPage, target?: string): Promise<void> {
   // Wait for the app to finish booting before touching the drawer: the state
   // load is async and re-renders the view when it lands, so a click between
   // `load` and that render is undone — a window a person cannot hit and an
@@ -506,62 +515,66 @@ export async function openDesignerPanels(
   await page.waitForSelector('body[data-designer-ready="true"]');
 
   /** Open the drawer and select the group holding `target`, once. */
-  const reveal = async (): Promise<string> => page.evaluate((selector) => {
-    // The drawer lives inside the Domain Designer tab section, and an
-    // inactive section is `display: none` — its contents then have no box at
-    // all, so a control can be "not hidden" and still unclickable. Bring the
-    // tab forward first.
-    const designerSection = document.getElementById('tab-domain-designer');
-    if (designerSection && !designerSection.classList.contains('active')) {
-      (document.getElementById('tab-domain-designer-btn') as HTMLElement | null)?.click();
-    }
-
-    const drawer = document.getElementById('designer-sidebar');
-    const toggle = document.getElementById('toggle-sidebar-btn');
-    if (drawer && !drawer.classList.contains('open')) toggle?.click();
-
-    const element = selector ? document.querySelector(selector) : null;
-    const panel = element?.closest('[data-sidebar-group]') as HTMLElement | null;
-    const group = panel?.dataset.sidebarGroup;
-    if (group) {
-      const tab = document.querySelector(`[data-sidebar-tab="${group}"]`) as HTMLElement | null;
-      if (tab?.getAttribute('aria-selected') !== 'true') tab?.click();
-    }
-
-    const designerActive = Boolean(designerSection?.classList.contains('active'));
-    // The box is the only thing that decides clickability: an element can be
-    // in an unhidden panel and still have no area, which is what every
-    // "resolved the locator, element is not visible" timeout comes down to.
-    const rect = (element as HTMLElement | null)?.getBoundingClientRect();
-    const hasArea = Boolean(rect && rect.width > 0 && rect.height > 0);
-    const chain: string[] = [];
-    for (let node = element as HTMLElement | null; node; node = node.parentElement) {
-      const style = getComputedStyle(node);
-      if (style.display === 'none' || style.visibility === 'hidden') {
-        chain.push(`${node.tagName}#${node.id || ''}.${node.className || ''}:${style.display}/${style.visibility}`);
+  const reveal = async (): Promise<string> =>
+    page.evaluate((selector) => {
+      // The drawer lives inside the Domain Designer tab section, and an
+      // inactive section is `display: none` — its contents then have no box at
+      // all, so a control can be "not hidden" and still unclickable. Bring the
+      // tab forward first.
+      const designerSection = document.getElementById('tab-domain-designer');
+      if (designerSection && !designerSection.classList.contains('active')) {
+        document.getElementById('tab-domain-designer-btn')?.click();
       }
-      if (node === document.body) break;
-    }
-    const reachable = hasArea
-      && designerActive
-      && Boolean(element)
-      && panel?.hidden === false
-      && Boolean(drawer?.classList.contains('open'));
-    return JSON.stringify({
-      reachable: selector
-        ? reachable
-        : designerActive && Boolean(drawer?.classList.contains('open')),
-      designerActive,
-      hasArea,
-      hiddenAncestors: chain.slice(0, 4),
-      found: Boolean(element),
-      panelGroup: group ?? null,
-      panelHidden: panel?.hidden ?? null,
-      drawerOpen: drawer?.classList.contains('open') ?? null,
-      activeTab: document.querySelector('.sidebar-tab.active')?.getAttribute('data-sidebar-tab')
-        ?? null
-    });
-  }, target || '');
+
+      const drawer = document.getElementById('designer-sidebar');
+      const toggle = document.getElementById('toggle-sidebar-btn');
+      if (drawer && !drawer.classList.contains('open')) toggle?.click();
+
+      const element = selector ? document.querySelector(selector) : null;
+      const panel = element?.closest('[data-sidebar-group]') as HTMLElement | null;
+      const group = panel?.dataset.sidebarGroup;
+      if (group) {
+        const tab = document.querySelector<HTMLElement>(`[data-sidebar-tab="${group}"]`);
+        if (tab?.getAttribute('aria-selected') !== 'true') tab?.click();
+      }
+
+      const designerActive = Boolean(designerSection?.classList.contains('active'));
+      // The box is the only thing that decides clickability: an element can be
+      // in an unhidden panel and still have no area, which is what every
+      // "resolved the locator, element is not visible" timeout comes down to.
+      const rect = (element as HTMLElement | null)?.getBoundingClientRect();
+      const hasArea = Boolean(rect && rect.width > 0 && rect.height > 0);
+      const chain: string[] = [];
+      for (let node = element as HTMLElement | null; node; node = node.parentElement) {
+        const style = getComputedStyle(node);
+        if (style.display === 'none' || style.visibility === 'hidden') {
+          chain.push(
+            `${node.tagName}#${node.id || ''}.${node.className || ''}:${style.display}/${style.visibility}`
+          );
+        }
+        if (node === document.body) break;
+      }
+      const reachable =
+        hasArea &&
+        designerActive &&
+        Boolean(element) &&
+        panel?.hidden === false &&
+        Boolean(drawer?.classList.contains('open'));
+      return JSON.stringify({
+        reachable: selector
+          ? reachable
+          : designerActive && Boolean(drawer?.classList.contains('open')),
+        designerActive,
+        hasArea,
+        hiddenAncestors: chain.slice(0, 4),
+        found: Boolean(element),
+        panelGroup: group ?? null,
+        panelHidden: panel?.hidden ?? null,
+        drawerOpen: drawer?.classList.contains('open') ?? null,
+        activeTab:
+          document.querySelector('.sidebar-tab.active')?.getAttribute('data-sidebar-tab') ?? null
+      });
+    }, target || '');
 
   // Retried rather than done once: a save result landing after the click
   // re-renders the view from the stored payload, which can still be the one
@@ -571,15 +584,19 @@ export async function openDesignerPanels(
   /* eslint-disable no-await-in-loop -- each attempt must observe the result of
      the previous one; that is the point of the retry. */
   for (let attempt = 0; attempt < 20; attempt += 1) {
-    last = await reveal() as string;
+    last = await reveal();
     if (JSON.parse(last).reachable) {
       // Held for two frames: a revert that arrives immediately after would
       // otherwise be handed to the caller as success.
-      await new Promise((resolve) => { setTimeout(resolve, 120); });
-      last = await reveal() as string;
+      await new Promise((resolve) => {
+        setTimeout(resolve, 120);
+      });
+      last = await reveal();
       if (JSON.parse(last).reachable) return;
     }
-    await new Promise((resolve) => { setTimeout(resolve, 150); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 150);
+    });
   }
   /* eslint-enable no-await-in-loop */
 
@@ -597,13 +614,10 @@ export async function openDesignerPanels(
  * open, panel not hidden, non-empty box, designer tab active — so the click
  * itself is dispatched in the page.
  */
-export async function clickInPanels(
-  page: DrawerPage,
-  selector: string
-): Promise<void> {
+export async function clickInPanels(page: DrawerPage, selector: string): Promise<void> {
   await openDesignerPanels(page, selector);
   const clicked = await page.evaluate((wanted) => {
-    const element = document.querySelector(wanted) as HTMLElement | null;
+    const element = document.querySelector<HTMLElement>(wanted);
     element?.click();
     return Boolean(element);
   }, selector);

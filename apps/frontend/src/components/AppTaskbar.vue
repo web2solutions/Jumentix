@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import {
-  CButton,
-  CDropdown,
-  CDropdownItem,
-  CDropdownMenu,
-  CDropdownToggle
-} from '@coreui/vue';
+import { CButton, CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/vue';
 
 import { localized, useI18n } from '@/i18n';
 import { findModule } from '@/modules/manifest';
@@ -17,19 +11,16 @@ import { useTaskStore, visibleTaskSlice } from '@/stores/tasks';
 const tasks = useTaskStore();
 const router = useRouter();
 const { t } = useI18n();
-const {
-  compactTaskbar,
-  bottomSheetSwitcher
-} = useShellViewport();
+const { compactTaskbar, bottomSheetSwitcher } = useShellViewport();
 const sheetOpen = ref(false);
 
 const MAX_VISIBLE = 8;
 
-const sliced = computed(() => (
+const sliced = computed(() =>
   bottomSheetSwitcher.value
     ? { shown: [] as string[], overflow: tasks.open }
     : visibleTaskSlice(tasks.open, MAX_VISIBLE)
-));
+);
 
 const titleFor = (moduleId: string): string => {
   const mod = findModule(moduleId);
@@ -40,7 +31,7 @@ const iconFor = (moduleId: string): string => findModule(moduleId)?.icon ?? 'cil
 
 const activate = (moduleId: string) => {
   tasks.activate(moduleId);
-  router.push(`/m/${moduleId}`);
+  void router.push(`/m/${moduleId}`);
   sheetOpen.value = false;
 };
 
@@ -49,7 +40,7 @@ const closeTask = (moduleId: string, event: Event) => {
   event.preventDefault();
   tasks.close(moduleId);
   if (tasks.active) {
-    router.push(`/m/${tasks.active}`);
+    void router.push(`/m/${tasks.active}`);
   }
 };
 
@@ -76,10 +67,7 @@ const onKey = (event: KeyboardEvent, moduleId: string) => {
     :data-sheet="bottomSheetSwitcher ? 'true' : 'false'"
     :aria-label="t('taskbar.label')"
   >
-    <div
-      v-if="bottomSheetSwitcher"
-      class="app-taskbar__sheet"
-    >
+    <div v-if="bottomSheetSwitcher" class="app-taskbar__sheet">
       <CButton
         color="secondary"
         variant="ghost"
@@ -98,11 +86,7 @@ const onKey = (event: KeyboardEvent, moduleId: string) => {
         </li>
       </ul>
     </div>
-    <div
-      v-else
-      class="app-taskbar__row"
-      role="tablist"
-    >
+    <div v-else class="app-taskbar__row" role="tablist">
       <div
         v-for="id in sliced.shown"
         :key="id"

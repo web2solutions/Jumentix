@@ -1,9 +1,9 @@
 import {
   isOpenApiDataType,
+  mapDataEntityToOpenApiSchema,
   OPEN_API_31_ALLOWED_TYPES,
   OPEN_API_31_FORMATS_BY_TYPE,
   OPEN_API_31_VALIDATIONS_BY_TYPE,
-  mapDataEntityToOpenApiSchema,
   throwIfDataEntityIsNotOpenApi31Compliant,
   throwIfFieldDefinitionIsNotOpenApi31Compliant,
   validateValueAgainstOpenApiSchema
@@ -34,69 +34,83 @@ describe('openapi 3.1 data-entity helpers', () => {
 
   it('validates compliant field definitions', () => {
     expect.hasAssertions();
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant({
-      name: 'email',
-      type: 'string',
-      format: 'email',
-      validations: ['minLength:3', 'pattern:^.+@.+$']
-    })).not.toThrow();
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant({
+        name: 'email',
+        type: 'string',
+        format: 'email',
+        validations: ['minLength:3', 'pattern:^.+@.+$']
+      })
+    ).not.toThrow();
   });
 
   it('rejects invalid field definitions', () => {
     expect.hasAssertions();
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant({
-      name: '',
-      type: 'string',
-      format: 'email',
-      validations: []
-    })).toThrow('field name is required');
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant({
+        name: '',
+        type: 'string',
+        format: 'email',
+        validations: []
+      })
+    ).toThrow('field name is required');
 
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant({
-      name: 'createdAt',
-      type: 'datetime',
-      format: 'date-time',
-      validations: []
-    })).toThrow('invalid field type');
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant({
+        name: 'createdAt',
+        type: 'datetime',
+        format: 'date-time',
+        validations: []
+      })
+    ).toThrow('invalid field type');
 
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant({
-      name: 'createdAt',
-      type: 'string',
-      format: 'int64',
-      validations: []
-    })).toThrow('invalid format');
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant({
+        name: 'createdAt',
+        type: 'string',
+        format: 'int64',
+        validations: []
+      })
+    ).toThrow('invalid format');
 
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant({
-      name: 'active',
-      type: 'boolean',
-      format: 'none',
-      validations: ['minLength:1']
-    })).toThrow('invalid validation');
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant({
+        name: 'active',
+        type: 'boolean',
+        format: 'none',
+        validations: ['minLength:1']
+      })
+    ).toThrow('invalid validation');
   });
 
   it('validates compliant data entities and rejects invalid ones', () => {
     expect.hasAssertions();
-    expect(() => throwIfDataEntityIsNotOpenApi31Compliant({
-      name: 'User',
-      fields: [
-        {
-          name: 'id',
-          type: 'string',
-          format: 'uuid',
-          validations: ['pattern:^[0-9a-fA-F-]{36}$']
-        },
-        {
-          name: 'active',
-          type: 'boolean',
-          format: 'none',
-          validations: []
-        }
-      ]
-    })).not.toThrow();
+    expect(() =>
+      throwIfDataEntityIsNotOpenApi31Compliant({
+        name: 'User',
+        fields: [
+          {
+            name: 'id',
+            type: 'string',
+            format: 'uuid',
+            validations: ['pattern:^[0-9a-fA-F-]{36}$']
+          },
+          {
+            name: 'active',
+            type: 'boolean',
+            format: 'none',
+            validations: []
+          }
+        ]
+      })
+    ).not.toThrow();
 
-    expect(() => throwIfDataEntityIsNotOpenApi31Compliant({
-      name: '',
-      fields: []
-    })).toThrow('entity name is required');
+    expect(() =>
+      throwIfDataEntityIsNotOpenApi31Compliant({
+        name: '',
+        fields: []
+      })
+    ).toThrow('entity name is required');
   });
 
   it('maps data entity to openapi schema and validates payload', () => {
@@ -121,23 +135,27 @@ describe('openapi 3.1 data-entity helpers', () => {
     });
 
     expect(schema.required).toStrictEqual(['id']);
-    expect(() => validateValueAgainstOpenApiSchema(
-      {
-        id: '00000000-0000-4000-8000-000000000111',
-        age: 18
-      },
-      schema,
-      { components: { schemas: {} } }
-    )).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        {
+          id: '00000000-0000-4000-8000-000000000111',
+          age: 18
+        },
+        schema,
+        { components: { schemas: {} } }
+      )
+    ).not.toThrow();
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      {
-        id: 'invalid',
-        age: 10
-      },
-      schema,
-      { components: { schemas: {} } }
-    )).toThrow('validation failed');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        {
+          id: 'invalid',
+          age: 10
+        },
+        schema,
+        { components: { schemas: {} } }
+      )
+    ).toThrow('validation failed');
   });
 
   const buildAdvancedSpec = (): any => ({
@@ -170,245 +188,312 @@ describe('openapi 3.1 data-entity helpers', () => {
     expect.hasAssertions();
     const spec = buildAdvancedSpec();
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      'john@example.com',
-      { $ref: '#/components/schemas/Email' },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      'wrong-email',
-      { $ref: '#/components/schemas/Email' },
-      spec
-    )).toThrow('email format');
-    expect(() => validateValueAgainstOpenApiSchema(
-      { name: 'John', age: 20 },
-      { $ref: '#/components/schemas/Profile' },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      { name: 'J', age: 17, unknown: true },
-      { $ref: '#/components/schemas/Profile' },
-      spec
-    )).toThrow('minLength');
-    expect(() => validateValueAgainstOpenApiSchema(
-      ['a', 'a'],
-      { $ref: '#/components/schemas/TagList' },
-      spec
-    )).toThrow('uniqueItems');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'john@example.com',
+        { $ref: '#/components/schemas/Email' },
+        spec
+      )
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema('wrong-email', { $ref: '#/components/schemas/Email' }, spec)
+    ).toThrow('email format');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        { name: 'John', age: 20 },
+        { $ref: '#/components/schemas/Profile' },
+        spec
+      )
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        { name: 'J', age: 17, unknown: true },
+        { $ref: '#/components/schemas/Profile' },
+        spec
+      )
+    ).toThrow('minLength');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(['a', 'a'], { $ref: '#/components/schemas/TagList' }, spec)
+    ).toThrow('uniqueItems');
   });
 
   it('validates composition and nullable success scenarios', () => {
     expect.hasAssertions();
     const spec = buildAdvancedSpec();
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      ['a', 'b'],
-      { $ref: '#/components/schemas/TagList' },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      null,
-      { type: ['null', 'string'] },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      'ok',
-      { oneOf: [{ type: 'number' }, { type: 'string', minLength: 2 }] },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      true,
-      { anyOf: [{ type: 'boolean' }, { type: 'integer' }] },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      12,
-      { allOf: [{ type: 'integer', minimum: 10 }, { type: 'integer', maximum: 20 }] },
-      spec
-    )).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(['a', 'b'], { $ref: '#/components/schemas/TagList' }, spec)
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(null, { type: ['null', 'string'] }, spec)
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'ok',
+        { oneOf: [{ type: 'number' }, { type: 'string', minLength: 2 }] },
+        spec
+      )
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        true,
+        { anyOf: [{ type: 'boolean' }, { type: 'integer' }] },
+        spec
+      )
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        12,
+        {
+          allOf: [
+            { type: 'integer', minimum: 10 },
+            { type: 'integer', maximum: 20 }
+          ]
+        },
+        spec
+      )
+    ).not.toThrow();
   });
 
   it('validates success scenarios for string formats', () => {
     expect.hasAssertions();
     const spec = buildAdvancedSpec();
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      '2026-01-01',
-      { type: 'string', format: 'date' },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      '2026-01-01T10:30:00.000Z',
-      { type: 'string', format: 'date-time' },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      'http://localhost:3000',
-      { type: 'string', format: 'uri' },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      '127.0.0.1',
-      { type: 'string', format: 'ipv4' },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      '2001:db8::1',
-      { type: 'string', format: 'ipv6' },
-      spec
-    )).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema('2026-01-01', { type: 'string', format: 'date' }, spec)
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        '2026-01-01T10:30:00.000Z',
+        { type: 'string', format: 'date-time' },
+        spec
+      )
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'http://localhost:3000',
+        { type: 'string', format: 'uri' },
+        spec
+      )
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema('127.0.0.1', { type: 'string', format: 'ipv4' }, spec)
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema('2001:db8::1', { type: 'string', format: 'ipv6' }, spec)
+    ).not.toThrow();
   });
 
   it('validates regex format success scenario', () => {
     expect.hasAssertions();
     const spec = buildAdvancedSpec();
-    expect(() => validateValueAgainstOpenApiSchema(
-      '^abc$',
-      { type: 'string', format: 'regex' },
-      spec
-    )).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema('^abc$', { type: 'string', format: 'regex' }, spec)
+    ).not.toThrow();
   });
 
   it('throws on invalid refs, enum mismatch and numeric boundaries', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      'x',
-      { $ref: '#/components/schemas/Missing' },
-      spec
-    )).toThrow('could not be resolved');
+    expect(() =>
+      validateValueAgainstOpenApiSchema('x', { $ref: '#/components/schemas/Missing' }, spec)
+    ).toThrow('could not be resolved');
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      'x',
-      { type: 'string', enum: ['a', 'b'] },
-      spec
-    )).toThrow('must be one of');
+    expect(() =>
+      validateValueAgainstOpenApiSchema('x', { type: 'string', enum: ['a', 'b'] }, spec)
+    ).toThrow('must be one of');
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      4,
-      { type: 'number', exclusiveMinimum: 4 },
-      spec
-    )).toThrow('exclusiveMinimum');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(4, { type: 'number', exclusiveMinimum: 4 }, spec)
+    ).toThrow('exclusiveMinimum');
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      6,
-      { type: 'number', exclusiveMaximum: 6 },
-      spec
-    )).toThrow('exclusiveMaximum');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(6, { type: 'number', exclusiveMaximum: 6 }, spec)
+    ).toThrow('exclusiveMaximum');
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      7,
-      { type: 'number', multipleOf: 2 },
-      spec
-    )).toThrow('multipleOf');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(7, { type: 'number', multipleOf: 2 }, spec)
+    ).toThrow('multipleOf');
   });
 
   it('throws on array minItems boundary', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
-    expect(() => validateValueAgainstOpenApiSchema(
-      [],
-      { type: 'array', minItems: 1 },
-      spec
-    )).toThrow('minItems');
+    expect(() =>
+      validateValueAgainstOpenApiSchema([], { type: 'array', minItems: 1 }, spec)
+    ).toThrow('minItems');
   });
 
   it('covers primitive type mismatch branches', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema(null, { type: 'string' }, spec))
-      .toThrow('null is not allowed');
-    expect(() => validateValueAgainstOpenApiSchema(1, { type: 'string' }, spec))
-      .toThrow('expected one of');
-    expect(() => validateValueAgainstOpenApiSchema('x', { type: 'number' }, spec))
-      .toThrow('expected one of');
-    expect(() => validateValueAgainstOpenApiSchema(1.2, { type: 'integer' }, spec))
-      .toThrow('expected one of [integer]');
-    expect(() => validateValueAgainstOpenApiSchema('true', { type: 'boolean' }, spec))
-      .toThrow('expected one of');
+    expect(() => validateValueAgainstOpenApiSchema(null, { type: 'string' }, spec)).toThrow(
+      'null is not allowed'
+    );
+    expect(() => validateValueAgainstOpenApiSchema(1, { type: 'string' }, spec)).toThrow(
+      'expected one of'
+    );
+    expect(() => validateValueAgainstOpenApiSchema('x', { type: 'number' }, spec)).toThrow(
+      'expected one of'
+    );
+    expect(() => validateValueAgainstOpenApiSchema(1.2, { type: 'integer' }, spec)).toThrow(
+      'expected one of [integer]'
+    );
+    expect(() => validateValueAgainstOpenApiSchema('true', { type: 'boolean' }, spec)).toThrow(
+      'expected one of'
+    );
   });
 
   it('covers array/object primitive mismatch branches', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema('true', { type: 'boolean' }, spec))
-      .toThrow('expected one of');
-    expect(() => validateValueAgainstOpenApiSchema({}, { type: 'array' }, spec))
-      .toThrow('expected one of');
-    expect(() => validateValueAgainstOpenApiSchema([], { type: 'object' }, spec))
-      .toThrow('expected one of');
+    expect(() => validateValueAgainstOpenApiSchema('true', { type: 'boolean' }, spec)).toThrow(
+      'expected one of'
+    );
+    expect(() => validateValueAgainstOpenApiSchema({}, { type: 'array' }, spec)).toThrow(
+      'expected one of'
+    );
+    expect(() => validateValueAgainstOpenApiSchema([], { type: 'object' }, spec)).toThrow(
+      'expected one of'
+    );
   });
 
   it('covers string length/pattern constraint branches', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema('12345', {
-      type: 'string',
-      maxLength: 2
-    }, spec)).toThrow('maxLength');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        '12345',
+        {
+          type: 'string',
+          maxLength: 2
+        },
+        spec
+      )
+    ).toThrow('maxLength');
 
-    expect(() => validateValueAgainstOpenApiSchema('abc', {
-      type: 'string',
-      pattern: '^xyz$'
-    }, spec)).toThrow('pattern');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'abc',
+        {
+          type: 'string',
+          pattern: '^xyz$'
+        },
+        spec
+      )
+    ).toThrow('pattern');
   });
 
   it('covers invalid date/date-time/email format branches', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema('20260101', {
-      type: 'string',
-      format: 'date'
-    }, spec)).toThrow('expected date format');
-    expect(() => validateValueAgainstOpenApiSchema('not-date-time', {
-      type: 'string',
-      format: 'date-time'
-    }, spec)).toThrow('expected date-time format');
-    expect(() => validateValueAgainstOpenApiSchema('invalid-email', {
-      type: 'string',
-      format: 'email'
-    }, spec)).toThrow('expected email format');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        '20260101',
+        {
+          type: 'string',
+          format: 'date'
+        },
+        spec
+      )
+    ).toThrow('expected date format');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'not-date-time',
+        {
+          type: 'string',
+          format: 'date-time'
+        },
+        spec
+      )
+    ).toThrow('expected date-time format');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'invalid-email',
+        {
+          type: 'string',
+          format: 'email'
+        },
+        spec
+      )
+    ).toThrow('expected email format');
   });
 
   it('covers invalid uuid/uri/ip/regex format branches', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema('invalid-uuid', {
-      type: 'string',
-      format: 'uuid'
-    }, spec)).toThrow('expected uuid format');
-    expect(() => validateValueAgainstOpenApiSchema('not uri', {
-      type: 'string',
-      format: 'uri'
-    }, spec)).toThrow('expected uri format');
-    expect(() => validateValueAgainstOpenApiSchema('300.1.1.1', {
-      type: 'string',
-      format: 'ipv4'
-    }, spec)).toThrow('expected ipv4 format');
-    expect(() => validateValueAgainstOpenApiSchema('xyz', {
-      type: 'string',
-      format: 'ipv6'
-    }, spec)).toThrow('expected ipv6 format');
-    expect(() => validateValueAgainstOpenApiSchema('[', {
-      type: 'string',
-      format: 'regex'
-    }, spec)).toThrow('expected regex pattern');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'invalid-uuid',
+        {
+          type: 'string',
+          format: 'uuid'
+        },
+        spec
+      )
+    ).toThrow('expected uuid format');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'not uri',
+        {
+          type: 'string',
+          format: 'uri'
+        },
+        spec
+      )
+    ).toThrow('expected uri format');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        '300.1.1.1',
+        {
+          type: 'string',
+          format: 'ipv4'
+        },
+        spec
+      )
+    ).toThrow('expected ipv4 format');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'xyz',
+        {
+          type: 'string',
+          format: 'ipv6'
+        },
+        spec
+      )
+    ).toThrow('expected ipv6 format');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        '[',
+        {
+          type: 'string',
+          format: 'regex'
+        },
+        spec
+      )
+    ).toThrow('expected regex pattern');
   });
 
   it('rejects a regex format value beyond the compile-safety length bound', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema('a'.repeat(501), {
-      type: 'string',
-      format: 'regex'
-    }, spec)).toThrow('at most 500 characters');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'a'.repeat(501),
+        {
+          type: 'string',
+          format: 'regex'
+        },
+        spec
+      )
+    ).toThrow('at most 500 characters');
   });
 
   /**
@@ -421,33 +506,124 @@ describe('openapi 3.1 data-entity helpers', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
     const valid = [
-      '^abc$', '\\d+', '[a-z]', '[]', '[^]', '[]]', ']', '[a-]', '[-a]', '[a-b-c]',
-      '[\\b-\\x41]', '[\\u0041-\\u005A]', '[a-\\d]', '[\\n-\\r]', '[\\cA-\\cZ]', '[\\.-/]',
-      '\\x41', '\\x4', '\\x',
-      '\\u0041', '\\u004', '\\u{41}', '\\u{}', '\\u{110000}', '\\cA', '\\c',
-      '\\k<name>', '\\k<name', '\\1', '\\12', '\\0', '\\q', 'a*', 'a+?', 'a??',
-      '(?=a)*', 'a{2}', 'a{2,}', 'a{2,4}', 'a{', 'a{2', 'a{,2}', 'a{2,x}', 'a{2}?',
-      '(?:a)', '(?=a)', '(?!a)', '(?<=a)', '(?<!a)', '(?<name>a)', '()',
-      '(a)\\2', '|', '', 'a\\b', '\\p{L}', 'x{0}', '\\cz', '[\\0-\\9]',
+      '^abc$',
+      '\\d+',
+      '[a-z]',
+      '[]',
+      '[^]',
+      '[]]',
+      ']',
+      '[a-]',
+      '[-a]',
+      '[a-b-c]',
+      '[\\b-\\x41]',
+      '[\\u0041-\\u005A]',
+      '[a-\\d]',
+      '[\\n-\\r]',
+      '[\\cA-\\cZ]',
+      '[\\.-/]',
+      '\\x41',
+      '\\x4',
+      '\\x',
+      '\\u0041',
+      '\\u004',
+      '\\u{41}',
+      '\\u{}',
+      '\\u{110000}',
+      '\\cA',
+      '\\c',
+      '\\k<name>',
+      '\\k<name',
+      '\\1',
+      '\\12',
+      '\\0',
+      '\\q',
+      'a*',
+      'a+?',
+      'a??',
+      '(?=a)*',
+      'a{2}',
+      'a{2,}',
+      'a{2,4}',
+      'a{',
+      'a{2',
+      'a{,2}',
+      'a{2,x}',
+      'a{2}?',
+      '(?:a)',
+      '(?=a)',
+      '(?!a)',
+      '(?<=a)',
+      '(?<!a)',
+      '(?<name>a)',
+      '()',
+      '(a)\\2',
+      '|',
+      '',
+      'a\\b',
+      '\\p{L}',
+      'x{0}',
+      '\\cz',
+      '[\\0-\\9]',
       '[\\u{41}-\\u{5A}]'
     ];
     const invalid = [
-      '[', '(', ')', '*a', '+a', '?a', 'a|*b', '(*a)', 'a**', 'a*+',
-      '^*', '$+', '\\b*', '\\B+', 'a{2,1}', '{2}', 'a|{2}b', 'x{0}{2}',
-      '(?i)a', '(?x)a', '(?<>a)', '(?<namea)', 'a\\', '\\', '[\\', '[a-\\',
-      '[z-a]', '[\\x41-\\b]', 'a)', '(a', '((a)', '(a))'
+      '[',
+      '(',
+      ')',
+      '*a',
+      '+a',
+      '?a',
+      'a|*b',
+      '(*a)',
+      'a**',
+      'a*+',
+      '^*',
+      '$+',
+      '\\b*',
+      '\\B+',
+      'a{2,1}',
+      '{2}',
+      'a|{2}b',
+      'x{0}{2}',
+      '(?i)a',
+      '(?x)a',
+      '(?<>a)',
+      '(?<namea)',
+      'a\\',
+      '\\',
+      '[\\',
+      '[a-\\',
+      '[z-a]',
+      '[\\x41-\\b]',
+      'a)',
+      '(a',
+      '((a)',
+      '(a))'
     ];
     for (const pattern of valid) {
-      expect(() => validateValueAgainstOpenApiSchema(pattern, {
-        type: 'string',
-        format: 'regex'
-      }, spec)).not.toThrow();
+      expect(() =>
+        validateValueAgainstOpenApiSchema(
+          pattern,
+          {
+            type: 'string',
+            format: 'regex'
+          },
+          spec
+        )
+      ).not.toThrow();
     }
     for (const pattern of invalid) {
-      expect(() => validateValueAgainstOpenApiSchema(pattern, {
-        type: 'string',
-        format: 'regex'
-      }, spec)).toThrow('expected regex pattern');
+      expect(() =>
+        validateValueAgainstOpenApiSchema(
+          pattern,
+          {
+            type: 'string',
+            format: 'regex'
+          },
+          spec
+        )
+      ).toThrow('expected regex pattern');
     }
   });
 
@@ -455,62 +631,80 @@ describe('openapi 3.1 data-entity helpers', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema('x', {
-      oneOf: [{ type: 'number' }, { type: 'boolean' }]
-    }, spec)).toThrow('oneOf');
-    expect(() => validateValueAgainstOpenApiSchema('x', {
-      anyOf: [{ type: 'number' }, { type: 'boolean' }]
-    }, spec)).toThrow('anyOf');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'x',
+        {
+          oneOf: [{ type: 'number' }, { type: 'boolean' }]
+        },
+        spec
+      )
+    ).toThrow('oneOf');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'x',
+        {
+          anyOf: [{ type: 'number' }, { type: 'boolean' }]
+        },
+        spec
+      )
+    ).toThrow('anyOf');
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      { a: 1 },
-      {
-        type: 'object',
-        minProperties: 2,
-        properties: { a: { type: 'number' } }
-      },
-      spec
-    )).toThrow('minProperties');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        { a: 1 },
+        {
+          type: 'object',
+          minProperties: 2,
+          properties: { a: { type: 'number' } }
+        },
+        spec
+      )
+    ).toThrow('minProperties');
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      { a: 1, b: 2 },
-      {
-        type: 'object',
-        maxProperties: 1,
-        properties: { a: { type: 'number' } }
-      },
-      spec
-    )).toThrow('maxProperties');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        { a: 1, b: 2 },
+        {
+          type: 'object',
+          maxProperties: 1,
+          properties: { a: { type: 'number' } }
+        },
+        spec
+      )
+    ).toThrow('maxProperties');
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      { known: 1, extra: 'x' },
-      {
-        type: 'object',
-        properties: { known: { type: 'number' } },
-        additionalProperties: false
-      },
-      spec
-    )).toThrow('not allowed');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        { known: 1, extra: 'x' },
+        {
+          type: 'object',
+          properties: { known: { type: 'number' } },
+          additionalProperties: false
+        },
+        spec
+      )
+    ).toThrow('not allowed');
   });
 
   it('covers additionalProperties object and maxItems branches', () => {
     expect.hasAssertions();
     const spec = { components: { schemas: {} } } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      { known: 1, extra: 'x' },
-      {
-        type: 'object',
-        properties: { known: { type: 'number' } },
-        additionalProperties: { type: 'string' }
-      },
-      spec
-    )).not.toThrow();
-    expect(() => validateValueAgainstOpenApiSchema(
-      ['a', 'b', 'c'],
-      { type: 'array', maxItems: 2 },
-      spec
-    )).toThrow('maxItems');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        { known: 1, extra: 'x' },
+        {
+          type: 'object',
+          properties: { known: { type: 'number' } },
+          additionalProperties: { type: 'string' }
+        },
+        spec
+      )
+    ).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(['a', 'b', 'c'], { type: 'array', maxItems: 2 }, spec)
+    ).toThrow('maxItems');
   });
 
   it('covers data-entity mapping branches for enum parsing and required flag validation', () => {
@@ -546,23 +740,27 @@ describe('openapi 3.1 data-entity helpers', () => {
     expect(schema.properties.fallbackEnum.enum).toStrictEqual(['[invalid-json']);
     expect(schema.properties.ratio.minimum).toBe(0.1);
 
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant({
-      name: 'enabled',
-      type: 'boolean',
-      required: 'yes' as any,
-      validations: []
-    })).toThrow('invalid required flag');
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant({
+        name: 'enabled',
+        type: 'boolean',
+        required: 'yes' as any,
+        validations: []
+      })
+    ).toThrow('invalid required flag');
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      {
-        enabled: true,
-        tags: 'a',
-        fallbackEnum: '[invalid-json',
-        ratio: 0.5
-      },
-      schema,
-      { components: { schemas: {} } }
-    )).not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        {
+          enabled: true,
+          tags: 'a',
+          fallbackEnum: '[invalid-json',
+          ratio: 0.5
+        },
+        schema,
+        { components: { schemas: {} } }
+      )
+    ).not.toThrow();
   });
 
   it('covers ref and validation parsing edge branches', () => {
@@ -575,16 +773,20 @@ describe('openapi 3.1 data-entity helpers', () => {
       }
     } as any;
 
-    expect(() => validateValueAgainstOpenApiSchema(
-      'x',
-      { $ref: '#/components/schemas/StringSchema/type' },
-      spec
-    )).toThrow('could not be resolved');
-    expect(() => validateValueAgainstOpenApiSchema(
-      'x',
-      { $ref: '#/components/schemas/StringSchema/type/extra' },
-      spec
-    )).toThrow('could not be resolved');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'x',
+        { $ref: '#/components/schemas/StringSchema/type' },
+        spec
+      )
+    ).toThrow('could not be resolved');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        'x',
+        { $ref: '#/components/schemas/StringSchema/type/extra' },
+        spec
+      )
+    ).toThrow('could not be resolved');
 
     const mapped = mapDataEntityToOpenApiSchema({
       name: 'Config',
@@ -609,10 +811,12 @@ describe('openapi 3.1 data-entity helpers', () => {
 
     expect(mapped.properties.options.enum).toStrictEqual(['[invalid-json]']);
     expect(mapped.properties.csv.enum).toStrictEqual(['a', 'b', 'c']);
-    expect(() => validateValueAgainstOpenApiSchema(
-      { options: '[invalid-json]', csv: 'a', limit: 12 },
-      mapped,
-      { components: { schemas: {} } }
-    )).toThrow('maximum');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        { options: '[invalid-json]', csv: 'a', limit: 12 },
+        mapped,
+        { components: { schemas: {} } }
+      )
+    ).toThrow('maximum');
   });
 });

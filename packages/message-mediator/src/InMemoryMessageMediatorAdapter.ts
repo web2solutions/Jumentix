@@ -9,14 +9,14 @@ import type {
 } from './contracts';
 
 interface IRegisteredHandler {
-  handler: MessageHandler<any, any>;
+  handler: MessageHandler;
   options?: IMessageHandlerRegistrationOptions;
 }
 
-export class InMemoryMessageMediatorAdapter implements IMessageMediator {
+class InMemoryMessageMediatorAdapter implements IMessageMediator {
   private readonly eventListeners: Record<
     string,
-    Array<(event: IIntegrationEvent) => Promise<void> | void>
+    ((event: IIntegrationEvent) => Promise<void> | void)[]
   > = {};
 
   private readonly handlersByContract: Record<string, IRegisteredHandler> = {};
@@ -46,7 +46,7 @@ export class InMemoryMessageMediatorAdapter implements IMessageMediator {
     options?: IMessageHandlerRegistrationOptions
   ): void {
     const registration: IRegisteredHandler = {
-      handler: handler as MessageHandler<any, any>,
+      handler: handler as MessageHandler,
       options
     };
 
@@ -87,7 +87,7 @@ export class InMemoryMessageMediatorAdapter implements IMessageMediator {
         contract: response.contract ?? message.contract,
         version: response.version ?? message.version,
         metadata: response.metadata ?? message.metadata
-      } as IMessageResponse<TResult>;
+      };
     } catch (error) {
       return {
         contract: message.contract,
@@ -112,17 +112,17 @@ export class InMemoryMessageMediatorAdapter implements IMessageMediator {
   }
 
   private static async executeRequestWithOptionalTimeout(
-    handler: MessageHandler<any, any>,
-    message: IMessage<any>,
+    handler: MessageHandler,
+    message: IMessage,
     timeoutMs?: number
-  ): Promise<IMessageResponse<any>> {
+  ): Promise<IMessageResponse> {
     if (!timeoutMs || timeoutMs <= 0) {
       return handler(message);
     }
 
     return Promise.race([
       Promise.resolve(handler(message)),
-      new Promise<IMessageResponse<any>>((_, reject) => {
+      new Promise<IMessageResponse>((_, reject) => {
         setTimeout(() => {
           reject(new Error(`Message request timed out after ${timeoutMs}ms`));
         }, timeoutMs);
@@ -134,3 +134,5 @@ export class InMemoryMessageMediatorAdapter implements IMessageMediator {
     return new InMemoryMessageMediatorAdapter();
   }
 }
+
+export default InMemoryMessageMediatorAdapter;

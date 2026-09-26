@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
-const { isEntryPoint } = require('./lib/entry-point.js');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { classifyCiContext, CONTEXTS } = require('./classify-ci-context.js');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 /**
  * Lint runs before every gate that does not already contain it (JUM-596).
@@ -112,13 +112,17 @@ const TASK_QUALITY_GATE = Object.freeze({
 });
 
 function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {
-  const branch = String(value || '').trim().toLowerCase();
+  const branch = String(value || '')
+    .trim()
+    .toLowerCase();
   return branch || 'dev';
 }
 
 function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
   if (typeof value === 'boolean') return value;
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
   if (['1', 'true', 'yes'].includes(normalized)) return true;
   if (['0', 'false', 'no'].includes(normalized)) return false;
   return Boolean(process.env.CIRCLE_PULL_REQUEST);
@@ -127,9 +131,9 @@ function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
 function selectQualityGate(targetBranch, options = {}) {
   if (options.context) {
     if (
-      options.context === CONTEXTS.RELEASE_PR_TO_MAIN
-      || options.context === CONTEXTS.MAIN_PUSH
-      || options.context === CONTEXTS.SCHEDULED_FULL
+      options.context === CONTEXTS.RELEASE_PR_TO_MAIN ||
+      options.context === CONTEXTS.MAIN_PUSH ||
+      options.context === CONTEXTS.SCHEDULED_FULL
     ) {
       return FULL_MATRIX_QUALITY_GATE;
     }
@@ -169,12 +173,12 @@ function runBranchQualityGate(options = {}) {
   const logger = options.logger || console;
   const resultFile = options.resultFile ?? process.env.JUMENTIX_CI_GATE_RESULT_FILE;
   const hasCiSignal = Boolean(
-    env.CIRCLE_BRANCH
-      || env.CIRCLE_PULL_REQUEST
-      || env.CIRCLE_PR_BASE_BRANCH
-      || env.GITHUB_BASE_REF
-      || env.JUMENTIX_CI_FORCE_FULL
-      || env.JUMENTIX_CI_SCHEDULED_FULL
+    env.CIRCLE_BRANCH ||
+    env.CIRCLE_PULL_REQUEST ||
+    env.CIRCLE_PR_BASE_BRANCH ||
+    env.GITHUB_BASE_REF ||
+    env.JUMENTIX_CI_FORCE_FULL ||
+    env.JUMENTIX_CI_SCHEDULED_FULL
   );
   if (!ciContext && options.useCiContext !== false && hasCiSignal) {
     try {
@@ -186,7 +190,9 @@ function runBranchQualityGate(options = {}) {
     } catch (error) {
       const evidence = {
         schemaVersion: 2,
-        targetBranch: resolveTargetBranch(options.targetBranch || env.CIRCLE_PR_BASE_BRANCH || env.CIRCLE_BRANCH),
+        targetBranch: resolveTargetBranch(
+          options.targetBranch || env.CIRCLE_PR_BASE_BRANCH || env.CIRCLE_BRANCH
+        ),
         isPullRequest: resolvePullRequestFlag(options.isPullRequest),
         context: null,
         selectedJobs: null,
@@ -269,13 +275,13 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
-  FULL_MATRIX_QUALITY_GATE,
-  TASK_QUALITY_GATE,
-  UNIT_QUALITY_GATE,
   executeQualityGate,
+  FULL_MATRIX_QUALITY_GATE,
   resolvePullRequestFlag,
   resolveTargetBranch,
   runBranchQualityGate,
   selectQualityGate,
+  TASK_QUALITY_GATE,
+  UNIT_QUALITY_GATE,
   writeGateEvidence
 };

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -30,7 +29,6 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../../../..');
-const YAML = require('yaml');
 
 const {
   ASYNCAPI_TRANSPORTS,
@@ -39,12 +37,11 @@ const {
   buildGrpcProto,
   toYaml
 } = require('@jumentix/designer-core/exporters/asyncApiExporters.js');
+const { normalizeStatePayload } = require('@jumentix/designer-core/state/designerState.js');
 const {
-  validateAsyncApi30Document
+  default: validateAsyncApi30Document
 } = require('@jumentix/designer-core/validation/asyncApi30Validation.js');
-const { normalizeStatePayload } = require(
-  '@jumentix/designer-core/state/designerState.js'
-);
+const YAML = require('yaml');
 
 const CANONICAL_SPEC_DIR = path.join(repoRoot, 'spec', 'asyncapi');
 
@@ -105,14 +102,16 @@ function createModelState() {
             name: 'Receipt',
             fields: [],
             meta: {
-              contracts: [{
-                id: 'c4',
-                name: 'reconcile',
-                type: 'command',
-                channel: '',
-                version: '1.0.0',
-                payloadSchema: {}
-              }]
+              contracts: [
+                {
+                  id: 'c4',
+                  name: 'reconcile',
+                  type: 'command',
+                  channel: '',
+                  version: '1.0.0',
+                  payloadSchema: {}
+                }
+              ]
             }
           },
           { id: 'entity-3', name: 'Silent', fields: [] }
@@ -158,11 +157,12 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
 
     it('matches the canonical directory layout one-for-one', () => {
       expect.hasAssertions();
-      const canonicalYamlFiles = fs.readdirSync(CANONICAL_SPEC_DIR)
+      const canonicalYamlFiles = fs
+        .readdirSync(CANONICAL_SPEC_DIR)
         .filter((fileName) => fileName.endsWith('.yml'))
         .sort();
-      const exportedNames = buildAsyncApiFileSet(createModelState()).files
-        .map((file: { fileName: string }) => file.fileName)
+      const exportedNames = buildAsyncApiFileSet(createModelState())
+        .files.map((file: { fileName: string }) => file.fileName)
         .sort();
       expect(exportedNames).toStrictEqual(canonicalYamlFiles);
     });
@@ -201,11 +201,19 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
         ...createModelState(),
         serviceConfiguration: { ports: { websocket: 4101, grpc: 4102 } }
       };
-      expect(buildAsyncApiTransportDocument(state, 'websocket').servers.local.host).toBe('localhost:4101');
-      expect(buildAsyncApiTransportDocument(state, 'grpc').servers.local.host).toBe('localhost:4102');
+      expect(buildAsyncApiTransportDocument(state, 'websocket').servers.local.host).toBe(
+        'localhost:4101'
+      );
+      expect(buildAsyncApiTransportDocument(state, 'grpc').servers.local.host).toBe(
+        'localhost:4102'
+      );
       const bare = { domains: [] };
-      expect(buildAsyncApiTransportDocument(bare, 'websocket').servers.local.host).toBe('localhost:3001');
-      expect(buildAsyncApiTransportDocument(bare, 'grpc').servers.local.host).toBe('localhost:3002');
+      expect(buildAsyncApiTransportDocument(bare, 'websocket').servers.local.host).toBe(
+        'localhost:3001'
+      );
+      expect(buildAsyncApiTransportDocument(bare, 'grpc').servers.local.host).toBe(
+        'localhost:3002'
+      );
     });
 
     it('falls back to the websocket conventions for an unknown transport', () => {
@@ -275,19 +283,32 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
 
     it('treats a non-object payload schema as the empty schema', () => {
       expect.hasAssertions();
-      const document = buildAsyncApiTransportDocument({
-        domains: [{
-          name: 'Billing',
-          entities: [{
-            name: 'Invoice',
-            meta: {
-              contracts: [{
-                name: 'ping', type: 'event', channel: '', version: '1.0.0', payloadSchema: 'bogus'
-              }]
+      const document = buildAsyncApiTransportDocument(
+        {
+          domains: [
+            {
+              name: 'Billing',
+              entities: [
+                {
+                  name: 'Invoice',
+                  meta: {
+                    contracts: [
+                      {
+                        name: 'ping',
+                        type: 'event',
+                        channel: '',
+                        version: '1.0.0',
+                        payloadSchema: 'bogus'
+                      }
+                    ]
+                  }
+                }
+              ]
             }
-          }]
-        }]
-      }, 'websocket');
+          ]
+        },
+        'websocket'
+      );
       expect(document.components.schemas.Billing_Invoice_PingPayload).toStrictEqual({});
     });
 
@@ -338,7 +359,9 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     it('keeps safe plain scalars unquoted, matching the canonical style', () => {
       expect.hasAssertions();
       expect(toYaml({ asyncapi: '3.0.0' })).toBe('asyncapi: 3.0.0\n');
-      expect(toYaml({ address: 'api:{operationId}:request' })).toBe('address: api:{operationId}:request\n');
+      expect(toYaml({ address: 'api:{operationId}:request' })).toBe(
+        'address: api:{operationId}:request\n'
+      );
       expect(toYaml({ 'billing.issued': 1 })).toBe('billing.issued: 1\n');
     });
 
@@ -371,17 +394,24 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
     it('tolerates missing domains, missing entities and non-array contracts', () => {
       expect.hasAssertions();
       expect(buildAsyncApiTransportDocument({}, 'websocket').channels).toStrictEqual({});
-      expect(buildAsyncApiTransportDocument({ domains: [{ name: 'Empty' }] }, 'websocket').channels)
-        .toStrictEqual({});
-      const document = buildAsyncApiTransportDocument({
-        domains: [{
-          name: 'Billing',
-          entities: [{ name: 'Invoice', meta: { contracts: 'bogus' } }]
-        }]
-      }, 'websocket');
+      expect(
+        buildAsyncApiTransportDocument({ domains: [{ name: 'Empty' }] }, 'websocket').channels
+      ).toStrictEqual({});
+      const document = buildAsyncApiTransportDocument(
+        {
+          domains: [
+            {
+              name: 'Billing',
+              entities: [{ name: 'Invoice', meta: { contracts: 'bogus' } }]
+            }
+          ]
+        },
+        'websocket'
+      );
       expect(document.channels).toStrictEqual({});
-      expect(buildGrpcProto({ domains: [{ name: 'Empty' }] }))
-        .toContain('service AsyncApiGateway {');
+      expect(buildGrpcProto({ domains: [{ name: 'Empty' }] })).toContain(
+        'service AsyncApiGateway {'
+      );
     });
 
     it('falls back to the component name when a contract has no usable name', () => {
@@ -389,32 +419,49 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
       // Real states are normalized (normalizeContractInput always assigns a
       // name); raw states can still reach the exporter, and the fallbacks
       // must yield valid identifiers rather than empty keys.
-      const document = buildAsyncApiTransportDocument({
-        domains: [{
-          name: 'Billing',
-          entities: [
+      const document = buildAsyncApiTransportDocument(
+        {
+          domains: [
             {
-              name: 'Invoice',
-              meta: {
-                contracts: [{
-                  type: 'event', channel: 'noname', version: '1.0.0', payloadSchema: {}
-                }]
-              }
-            },
-            {
-              name: 'Receipt',
-              meta: {
-                contracts: [{
-                  name: '!!!', type: 'event', channel: 'symbols', version: '1.0.0', payloadSchema: {}
-                }]
-              }
+              name: 'Billing',
+              entities: [
+                {
+                  name: 'Invoice',
+                  meta: {
+                    contracts: [
+                      {
+                        type: 'event',
+                        channel: 'noname',
+                        version: '1.0.0',
+                        payloadSchema: {}
+                      }
+                    ]
+                  }
+                },
+                {
+                  name: 'Receipt',
+                  meta: {
+                    contracts: [
+                      {
+                        name: '!!!',
+                        type: 'event',
+                        channel: 'symbols',
+                        version: '1.0.0',
+                        payloadSchema: {}
+                      }
+                    ]
+                  }
+                }
+              ]
             }
           ]
-        }]
-      }, 'websocket');
+        },
+        'websocket'
+      );
       // No name: the channel message key falls back to the component name.
-      expect(Object.keys(document.channels.noname.messages))
-        .toStrictEqual(['Billing_Invoice_Contract']);
+      expect(Object.keys(document.channels.noname.messages)).toStrictEqual([
+        'Billing_Invoice_Contract'
+      ]);
       // A name that sanitizes to nothing still yields a valid component name.
       expect(Object.keys(document.channels.symbols.messages)).toStrictEqual(['---']);
       expect(Object.keys(document.components.messages)).toStrictEqual([
@@ -457,133 +504,182 @@ describe('asyncapi 3.0 per-transport export (JUM-475)', () => {
       };
       // The 2.x shape has no top-level operations and channel keys the 3.0
       // rules do not define; the version assertion below pins the 2.x case.
-      expect(validateAsyncApi30Document({ ...legacy, asyncapi: '2.6.0' }))
-        .toContain('asyncapi must declare a 3.x version, got "2.6.0"');
+      expect(validateAsyncApi30Document({ ...legacy, asyncapi: '2.6.0' })).toContain(
+        'asyncapi must declare a 3.x version, got "2.6.0"'
+      );
     });
 
     it('reports every structural violation class', () => {
       expect.hasAssertions();
       expect(validateAsyncApi30Document(null)).toStrictEqual(['document must be an object']);
-      expect(validateAsyncApi30Document({ info: { title: 't', version: '1' } }))
-        .toContain('asyncapi must declare a 3.x version, got "<missing>"');
+      expect(validateAsyncApi30Document({ info: { title: 't', version: '1' } })).toContain(
+        'asyncapi must declare a 3.x version, got "<missing>"'
+      );
       expect(validateAsyncApi30Document({ asyncapi: '3.0.0' })).toContain('info is required');
-      expect(validateAsyncApi30Document({ asyncapi: '3.0.0', info: {} }))
-        .toStrictEqual(expect.arrayContaining(['info.title is required', 'info.version is required']));
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        servers: 'bogus'
-      })).toContain('servers must be a map');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        servers: { local: { host: '' } }
-      })).toContain('servers.local must declare host and protocol');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        servers: { local: null }
-      })).toContain('servers.local must declare host and protocol');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        servers: { local: { host: 'h' } }
-      })).toContain('servers.local must declare host and protocol');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: []
-      })).toContain('channels must be a map');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: { c: 'bogus' }
-      })).toContain('channels.c must be an object');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: { c: { address: 42, messages: [] } }
-      })).toStrictEqual(expect.arrayContaining([
-        'channels.c.address must be a string',
-        'channels.c.messages must be a map'
-      ]));
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: { c: { messages: { m: 'bogus' } } }
-      })).toContain('channels.c.messages.m must be an object');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: { c: { messages: { m: { $ref: '#/components/messages/Missing' } } } }
-      })).toContain('channels.c.messages.m $ref does not resolve: #/components/messages/Missing');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        operations: []
-      })).toContain('operations must be a map');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        operations: { op: 'bogus' }
-      })).toContain('operations.op must be an object');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        operations: { op: { action: 'publish' } }
-      })).toStrictEqual(expect.arrayContaining([
-        'operations.op.action must be send|receive, got "publish"',
-        'operations.op.channel must be a $ref to a channel'
-      ]));
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        operations: { op: { action: 'send', channel: { $ref: '#/channels/ghost' } } }
-      })).toContain('operations.op.channel $ref does not resolve: #/channels/ghost');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: { c: { address: 'c' } },
-        operations: { op: { action: 'send', channel: { $ref: '#/channels/c' }, messages: {} } }
-      })).toContain('operations.op.messages must be a list');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: { c: { address: 'c' } },
-        operations: {
-          op: {
-            action: 'send',
-            channel: { $ref: '#/channels/c' },
-            messages: [{ $ref: '#/channels/c/messages/ghost' }, 'bogus']
+      expect(validateAsyncApi30Document({ asyncapi: '3.0.0', info: {} })).toStrictEqual(
+        expect.arrayContaining(['info.title is required', 'info.version is required'])
+      );
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          servers: 'bogus'
+        })
+      ).toContain('servers must be a map');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          servers: { local: { host: '' } }
+        })
+      ).toContain('servers.local must declare host and protocol');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          servers: { local: null }
+        })
+      ).toContain('servers.local must declare host and protocol');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          servers: { local: { host: 'h' } }
+        })
+      ).toContain('servers.local must declare host and protocol');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: []
+        })
+      ).toContain('channels must be a map');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: { c: 'bogus' }
+        })
+      ).toContain('channels.c must be an object');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: { c: { address: 42, messages: [] } }
+        })
+      ).toStrictEqual(
+        expect.arrayContaining([
+          'channels.c.address must be a string',
+          'channels.c.messages must be a map'
+        ])
+      );
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: { c: { messages: { m: 'bogus' } } }
+        })
+      ).toContain('channels.c.messages.m must be an object');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: { c: { messages: { m: { $ref: '#/components/messages/Missing' } } } }
+        })
+      ).toContain('channels.c.messages.m $ref does not resolve: #/components/messages/Missing');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          operations: []
+        })
+      ).toContain('operations must be a map');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          operations: { op: 'bogus' }
+        })
+      ).toContain('operations.op must be an object');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          operations: { op: { action: 'publish' } }
+        })
+      ).toStrictEqual(
+        expect.arrayContaining([
+          'operations.op.action must be send|receive, got "publish"',
+          'operations.op.channel must be a $ref to a channel'
+        ])
+      );
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          operations: { op: { action: 'send', channel: { $ref: '#/channels/ghost' } } }
+        })
+      ).toContain('operations.op.channel $ref does not resolve: #/channels/ghost');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: { c: { address: 'c' } },
+          operations: { op: { action: 'send', channel: { $ref: '#/channels/c' }, messages: {} } }
+        })
+      ).toContain('operations.op.messages must be a list');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: { c: { address: 'c' } },
+          operations: {
+            op: {
+              action: 'send',
+              channel: { $ref: '#/channels/c' },
+              messages: [{ $ref: '#/channels/c/messages/ghost' }, 'bogus']
+            }
           }
-        }
-      })).toStrictEqual(expect.arrayContaining([
-        'operations.op.messages.0 $ref does not resolve: #/channels/c/messages/ghost',
-        'operations.op.messages.1 $ref does not resolve: undefined'
-      ]));
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        components: { messages: { M: 'bogus' } }
-      })).toContain('components.messages.M must be an object');
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        components: { messages: { M: { payload: { $ref: '#/components/schemas/Ghost' } } } }
-      })).toContain('components.messages.M.payload $ref does not resolve: #/components/schemas/Ghost');
+        })
+      ).toStrictEqual(
+        expect.arrayContaining([
+          'operations.op.messages.0 $ref does not resolve: #/channels/c/messages/ghost',
+          'operations.op.messages.1 $ref does not resolve: undefined'
+        ])
+      );
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          components: { messages: { M: 'bogus' } }
+        })
+      ).toContain('components.messages.M must be an object');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          components: { messages: { M: { payload: { $ref: '#/components/schemas/Ghost' } } } }
+        })
+      ).toContain(
+        'components.messages.M.payload $ref does not resolve: #/components/schemas/Ghost'
+      );
       // An external (non-local) message ref cannot resolve against the document.
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: { c: { messages: { m: { $ref: 'other.yml#/components/messages/M' } } } }
-      })).toContain('channels.c.messages.m $ref does not resolve: other.yml#/components/messages/M');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: { c: { messages: { m: { $ref: 'other.yml#/components/messages/M' } } } }
+        })
+      ).toContain('channels.c.messages.m $ref does not resolve: other.yml#/components/messages/M');
       // A ref that walks through a scalar cannot resolve either.
-      expect(validateAsyncApi30Document({
-        asyncapi: '3.0.0',
-        info: { title: 't', version: '1' },
-        channels: { c: { messages: { m: { $ref: '#/components/messages/M' } } } },
-        components: { messages: 'bogus' }
-      })).toContain('channels.c.messages.m $ref does not resolve: #/components/messages/M');
+      expect(
+        validateAsyncApi30Document({
+          asyncapi: '3.0.0',
+          info: { title: 't', version: '1' },
+          channels: { c: { messages: { m: { $ref: '#/components/messages/M' } } } },
+          components: { messages: 'bogus' }
+        })
+      ).toContain('channels.c.messages.m $ref does not resolve: #/components/messages/M');
     });
 
     it('accepts inline message payloads and non-$ref channel messages', () => {
@@ -616,12 +712,9 @@ describe('gRPC proto export (JUM-475)', () => {
   it('derives one message per contract with proto-typed fields from the payload schema', () => {
     expect.hasAssertions();
     const proto = buildGrpcProto(createModelState());
-    expect(proto).toContain([
-      'message BillingInvoiceIssued {',
-      '  string id = 1;',
-      '  double total = 2;',
-      '}'
-    ].join('\n'));
+    expect(proto).toContain(
+      ['message BillingInvoiceIssued {', '  string id = 1;', '  double total = 2;', '}'].join('\n')
+    );
   });
 
   it('pairs request/response contracts on the same channel into a unary rpc', () => {
@@ -646,25 +739,39 @@ describe('gRPC proto export (JUM-475)', () => {
   it('falls back to the canonical envelopes for unpaired request/response contracts', () => {
     expect.hasAssertions();
     const state = normalizeStatePayload({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          fields: [],
-          meta: {
-            contracts: [
-              {
-                id: 'c1', name: 'fetch', type: 'request', channel: 'a', version: '1.0.0', payloadSchema: {}
-              },
-              {
-                id: 'c2', name: 'pong', type: 'response', channel: 'b', version: '1.0.0', payloadSchema: {}
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'Invoice',
+              fields: [],
+              meta: {
+                contracts: [
+                  {
+                    id: 'c1',
+                    name: 'fetch',
+                    type: 'request',
+                    channel: 'a',
+                    version: '1.0.0',
+                    payloadSchema: {}
+                  },
+                  {
+                    id: 'c2',
+                    name: 'pong',
+                    type: 'response',
+                    channel: 'b',
+                    version: '1.0.0',
+                    payloadSchema: {}
+                  }
+                ]
               }
-            ]
-          }
-        }]
-      }],
+            }
+          ]
+        }
+      ],
       relationships: []
     });
     const proto = buildGrpcProto(state);
@@ -677,20 +784,31 @@ describe('gRPC proto export (JUM-475)', () => {
   it('includes only the response envelope when just requests are unpaired', () => {
     expect.hasAssertions();
     const state = normalizeStatePayload({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          fields: [],
-          meta: {
-            contracts: [{
-              id: 'c1', name: 'fetch', type: 'request', channel: 'a', version: '1.0.0', payloadSchema: {}
-            }]
-          }
-        }]
-      }],
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'Invoice',
+              fields: [],
+              meta: {
+                contracts: [
+                  {
+                    id: 'c1',
+                    name: 'fetch',
+                    type: 'request',
+                    channel: 'a',
+                    version: '1.0.0',
+                    payloadSchema: {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
       relationships: []
     });
     const proto = buildGrpcProto(state);
@@ -701,37 +819,43 @@ describe('gRPC proto export (JUM-475)', () => {
   it('maps payload property types and sanitizes proto identifiers', () => {
     expect.hasAssertions();
     const proto = buildGrpcProto({
-      domains: [{
-        name: 'Billing',
-        entities: [{
-          name: 'Invoice',
-          meta: {
-            contracts: [{
-              name: 'typed',
-              type: 'event',
-              channel: 'typed',
-              version: '1.0.0',
-              payloadSchema: {
-                type: 'object',
-                properties: {
-                  name: { type: 'string' },
-                  count: { type: 'integer' },
-                  ratio: { type: 'number' },
-                  active: { type: 'boolean' },
-                  issuedOn: { type: 'string', format: 'date' },
-                  tags: { type: 'array', items: { type: 'string' } },
-                  scores: { type: 'array', items: { type: 'number' } },
-                  ids: { type: 'array' },
-                  meta: { type: 'object' },
-                  '9lives': { type: 'string' },
-                  'with-dash': { type: 'boolean' },
-                  '': 'not-an-object'
-                }
+      domains: [
+        {
+          name: 'Billing',
+          entities: [
+            {
+              name: 'Invoice',
+              meta: {
+                contracts: [
+                  {
+                    name: 'typed',
+                    type: 'event',
+                    channel: 'typed',
+                    version: '1.0.0',
+                    payloadSchema: {
+                      type: 'object',
+                      properties: {
+                        name: { type: 'string' },
+                        count: { type: 'integer' },
+                        ratio: { type: 'number' },
+                        active: { type: 'boolean' },
+                        issuedOn: { type: 'string', format: 'date' },
+                        tags: { type: 'array', items: { type: 'string' } },
+                        scores: { type: 'array', items: { type: 'number' } },
+                        ids: { type: 'array' },
+                        meta: { type: 'object' },
+                        '9lives': { type: 'string' },
+                        'with-dash': { type: 'boolean' },
+                        '': 'not-an-object'
+                      }
+                    }
+                  }
+                ]
               }
-            }]
-          }
-        }]
-      }]
+            }
+          ]
+        }
+      ]
     });
     expect(proto).toContain('  string name = 1;');
     expect(proto).toContain('  int64 count = 2;');

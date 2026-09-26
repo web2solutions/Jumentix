@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const taskFs = require('fs');
-const taskPath = require('path');
+const taskFs = require('node:fs');
+const taskPath = require('node:path');
+
 const {
   createTaskTestPlan,
   documentationRequiresRegistryCheck,
@@ -45,7 +45,7 @@ describe('run-task-change-tests', () => {
     // One real resolution, not four: enough to catch the resolver changing its
     // type strings or its shape under the stubs, without paying the cost per
     // assertion in the outcome test.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+
     const { createLayerAwarePlan } = require('../lib/layer-resolver');
     const real = createLayerAwarePlan(['ci-cd/example.js'], {});
     const stub = planFor('layer-aware')(['ci-cd/example.js']);
@@ -57,8 +57,9 @@ describe('run-task-change-tests', () => {
 
   it('normalizes unique changed file paths', () => {
     expect.hasAssertions();
-    expect(normalizeFiles(['apps\\backend-template\\src\\a.ts', 'apps/backend-template/src/a.ts', '']))
-      .toStrictEqual(['apps/backend-template/src/a.ts']);
+    expect(
+      normalizeFiles(['apps\\backend-template\\src\\a.ts', 'apps/backend-template/src/a.ts', ''])
+    ).toStrictEqual(['apps/backend-template/src/a.ts']);
   });
 
   it('reads staged and range diffs using explicit git commands', () => {
@@ -66,23 +67,29 @@ describe('run-task-change-tests', () => {
     const spawn = jest.fn().mockReturnValue({ status: 0, stdout: 'a.ts\nb.ts\n' });
 
     expect(readChangedFiles({ mode: 'staged', spawn })).toStrictEqual(['a.ts', 'b.ts']);
-    expect(readChangedFiles({ mode: 'range', baseRef: 'origin/dev', spawn })).toStrictEqual(['a.ts', 'b.ts']);
+    expect(readChangedFiles({ mode: 'range', baseRef: 'origin/dev', spawn })).toStrictEqual([
+      'a.ts',
+      'b.ts'
+    ]);
     expect(spawn.mock.calls[0][1]).toContain('--cached');
     expect(spawn.mock.calls[1][1]).toContain('origin/dev...HEAD');
   });
 
   it('fails when git cannot provide changed files', () => {
     expect.hasAssertions();
-    expect(() => readChangedFiles({ spawn: () => ({ status: 1 }) }))
-      .toThrow('Unable to read changed files');
+    expect(() => readChangedFiles({ spawn: () => ({ status: 1 }) })).toThrow(
+      'Unable to read changed files'
+    );
   });
 
   it('runs only changed unit tests when they are present', () => {
     expect.hasAssertions();
-    expect(createTaskTestPlan([
-      'apps/backend-template/src/example.ts',
-      'apps/backend-template/test/unit/example.test.ts'
-    ])).toStrictEqual({
+    expect(
+      createTaskTestPlan([
+        'apps/backend-template/src/example.ts',
+        'apps/backend-template/test/unit/example.test.ts'
+      ])
+    ).toStrictEqual({
       type: 'changed-unit-tests',
       files: ['apps/backend-template/test/unit/example.test.ts']
     });
@@ -98,12 +105,14 @@ describe('run-task-change-tests', () => {
 
   it('runs changed integration and planner tests with Restify timeout headroom', () => {
     expect.hasAssertions();
-    expect(createTaskTestPlan([
-      'apps/backend-template/test/helpers/listenForSupertest.ts',
-      'apps/backend-template/test/integration/Fastify/auth/login.test.ts',
-      'apps/backend-template/test/integration/Restify/auth/login.test.ts',
-      'ci-cd/test/run-task-change-tests.test.ts'
-    ])).toStrictEqual({
+    expect(
+      createTaskTestPlan([
+        'apps/backend-template/test/helpers/listenForSupertest.ts',
+        'apps/backend-template/test/integration/Fastify/auth/login.test.ts',
+        'apps/backend-template/test/integration/Restify/auth/login.test.ts',
+        'ci-cd/test/run-task-change-tests.test.ts'
+      ])
+    ).toStrictEqual({
       type: 'changed-integration-tests',
       files: [
         'ci-cd/test/run-task-change-tests.test.ts',
@@ -116,12 +125,14 @@ describe('run-task-change-tests', () => {
 
   it('selects website-native gates and preserves other related test inputs', () => {
     expect.hasAssertions();
-    expect(createTaskTestPlan([
-      'apps/jumentix-website/app/page.tsx',
-      'apps/jumentix-website/scripts/prepublish-site-checks.mjs',
-      'ci-cd/run-task-change-tests.js',
-      'ci-cd/test/run-task-change-tests.test.ts'
-    ])).toStrictEqual({
+    expect(
+      createTaskTestPlan([
+        'apps/jumentix-website/app/page.tsx',
+        'apps/jumentix-website/scripts/prepublish-site-checks.mjs',
+        'ci-cd/run-task-change-tests.js',
+        'ci-cd/test/run-task-change-tests.test.ts'
+      ])
+    ).toStrictEqual({
       type: 'website-quality-gate',
       files: [
         'apps/jumentix-website/app/page.tsx',
@@ -134,12 +145,14 @@ describe('run-task-change-tests', () => {
 
   it('maps CI config and hook changes to their governance unit test', () => {
     expect.hasAssertions();
-    expect(createTaskTestPlan([
-      '.github/dependabot.yml',
-      '.github/workflows/ci.yml',
-      '.circleci/config.yml',
-      '.husky/pre-push'
-    ])).toStrictEqual({
+    expect(
+      createTaskTestPlan([
+        '.github/dependabot.yml',
+        '.github/workflows/ci.yml',
+        '.circleci/config.yml',
+        '.husky/pre-push'
+      ])
+    ).toStrictEqual({
       type: 'mapped-unit-tests',
       files: ['ci-cd/test/run-full-test-matrix.test.ts']
     });
@@ -174,7 +187,7 @@ describe('run-task-change-tests', () => {
 
   it('validates documentation content and conflict markers', () => {
     expect.hasAssertions();
-    const rootDir = taskFs.mkdtempSync(taskPath.join(require('os').tmpdir(), 'task-docs-'));
+    const rootDir = taskFs.mkdtempSync(taskPath.join(require('node:os').tmpdir(), 'task-docs-'));
     taskFs.writeFileSync(taskPath.join(rootDir, 'valid.md'), '# Valid\n');
     taskFs.writeFileSync(taskPath.join(rootDir, 'conflict.md'), '<<<<<<< HEAD\n');
     expect(validateDocumentationFiles(['valid.md'], rootDir)).toBe(0);
@@ -185,7 +198,7 @@ describe('run-task-change-tests', () => {
 
   it('runs the requirements registry check for requirement documentation changes', () => {
     expect.hasAssertions();
-    const rootDir = taskFs.mkdtempSync(taskPath.join(require('os').tmpdir(), 'task-docs-'));
+    const rootDir = taskFs.mkdtempSync(taskPath.join(require('node:os').tmpdir(), 'task-docs-'));
     taskFs.mkdirSync(taskPath.join(rootDir, '.agents/requirements/project'), { recursive: true });
     taskFs.writeFileSync(
       taskPath.join(rootDir, '.agents/requirements/project/999-example.md'),
@@ -193,25 +206,29 @@ describe('run-task-change-tests', () => {
     );
     const spawn = jest.fn().mockReturnValue({ status: 0 });
 
-    expect(documentationRequiresRegistryCheck(['.agents/requirements/project/999-example.md']))
-      .toBe(true);
-    expect(executeDocumentationValidation(['.agents/requirements/project/999-example.md'], {
-      rootDir,
-      spawn
-    })).toBe(0);
+    expect(
+      documentationRequiresRegistryCheck(['.agents/requirements/project/999-example.md'])
+    ).toBe(true);
+    expect(
+      executeDocumentationValidation(['.agents/requirements/project/999-example.md'], {
+        rootDir,
+        spawn
+      })
+    ).toBe(0);
     expect(spawn).toHaveBeenCalledWith('bun', ['run', 'requirements:check'], expect.any(Object));
     taskFs.rmSync(rootDir, { recursive: true, force: true });
   });
 
   it('does not run the requirements registry check for ordinary docs-only changes', () => {
     expect.hasAssertions();
-    const rootDir = taskFs.mkdtempSync(taskPath.join(require('os').tmpdir(), 'task-docs-'));
+    const rootDir = taskFs.mkdtempSync(taskPath.join(require('node:os').tmpdir(), 'task-docs-'));
     taskFs.mkdirSync(taskPath.join(rootDir, 'documentation/md'), { recursive: true });
     taskFs.writeFileSync(taskPath.join(rootDir, 'documentation/md/ordinary.md'), '# Ordinary\n');
     const spawn = jest.fn().mockReturnValue({ status: 0 });
 
-    expect(executeDocumentationValidation(['documentation/md/ordinary.md'], { rootDir, spawn }))
-      .toBe(0);
+    expect(
+      executeDocumentationValidation(['documentation/md/ordinary.md'], { rootDir, spawn })
+    ).toBe(0);
     expect(spawn).not.toHaveBeenCalled();
     taskFs.rmSync(rootDir, { recursive: true, force: true });
   });
@@ -249,7 +266,9 @@ describe('run-task-change-tests', () => {
     const crashed = runTaskChangeTests({
       files: ['ci-cd/example.js'],
       resolvePlan: planFor('layer-aware'),
-      execute: () => { throw new Error('deliberate failure'); },
+      execute: () => {
+        throw new Error('deliberate failure');
+      },
       logger,
       resultFile: ''
     });
@@ -265,7 +284,9 @@ describe('run-task-change-tests', () => {
     expect(failed.outcome).toBe('failed');
     expect(crashed.outcome).toBe('failed');
     expect(documentation).toMatchObject({
-      plan: 'documentation-validation', outcome: 'not-applicable', status: 0
+      plan: 'documentation-validation',
+      outcome: 'not-applicable',
+      status: 0
     });
     expect(logger.error).toHaveBeenCalledTimes(2);
     // The 30s bound this carried is gone: nothing here reads the repository
@@ -279,9 +300,9 @@ describe('run-task-change-tests', () => {
       'utf8'
     );
 
-    expect(source).not.toContain('\'storybook:build\'');
-    expect(source).not.toContain('\'storybook:smoke\'');
-    expect(source).toContain('\'test:prepublish\'');
+    expect(source).not.toContain("'storybook:build'");
+    expect(source).not.toContain("'storybook:smoke'");
+    expect(source).toContain("'test:prepublish'");
   });
 
   it('writes JSON evidence for the selected change-focused test plan', () => {
@@ -313,9 +334,8 @@ describe('run-task-change-tests', () => {
  * immediately after passing.
  */
 describe('layer-aware evidence for integration scripts', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const taskRunner = require('../run-task-change-tests');
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+
   const { buildGateEvidence, validateGateEvidence } = require('../lib/gate-evidence');
 
   const planWith = (script: string) => ({
@@ -348,12 +368,13 @@ describe('layer-aware evidence for integration scripts', () => {
       spawn: () => ({ status: 0 })
     });
 
-    expect((plan as { _execution: { executedSuites: string[] } })._execution.executedSuites)
-      .toStrictEqual([
-        'test:integration:express',
-        'apps/backend-template/test/integration/Express/Users/create.test.ts',
-        'apps/backend-template/test/integration/Express/auth/login.test.ts'
-      ]);
+    expect(
+      (plan as { _execution: { executedSuites: string[] } })._execution.executedSuites
+    ).toStrictEqual([
+      'test:integration:express',
+      'apps/backend-template/test/integration/Express/Users/create.test.ts',
+      'apps/backend-template/test/integration/Express/auth/login.test.ts'
+    ]);
   });
 
   it('produces evidence that validates, rather than reporting its own suites unrun', () => {
@@ -406,8 +427,9 @@ describe('layer-aware evidence for integration scripts', () => {
     });
 
     expect(spawned).toStrictEqual(['oas:check-routes']);
-    expect((plan as { _execution: { executedSuites: string[] } })._execution.executedSuites)
-      .toStrictEqual(['oas:check-routes', 'ci-cd/check-oas-route-resolution.js']);
+    expect(
+      (plan as { _execution: { executedSuites: string[] } })._execution.executedSuites
+    ).toStrictEqual(['oas:check-routes', 'ci-cd/check-oas-route-resolution.js']);
 
     const execution = (plan as { _execution: unknown })._execution;
     const evidence = buildGateEvidence(
@@ -427,7 +449,6 @@ describe('layer-aware evidence for integration scripts', () => {
  * dangerous: it would run someone else's tests and report them as this suite's.
  */
 describe('suite path validation', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const { invalidSuitePaths } = require('../run-suite') as {
     invalidSuitePaths: (paths: unknown[], root?: string) => unknown[];
   };
@@ -436,8 +457,9 @@ describe('suite path validation', () => {
 
   it('accepts a relative path inside the repository', () => {
     expect.hasAssertions();
-    expect(invalidSuitePaths(['apps/backend-template/test/unit/x.test.ts'], root))
-      .toStrictEqual([]);
+    expect(invalidSuitePaths(['apps/backend-template/test/unit/x.test.ts'], root)).toStrictEqual(
+      []
+    );
   });
 
   it.each([
@@ -464,8 +486,10 @@ describe('suite path validation', () => {
     expect.hasAssertions();
     // The message is the whole diagnosis; reporting one of three would send
     // someone round the loop twice.
-    expect(invalidSuitePaths(['ok/a.test.ts', '/etc/passwd', '../b.test.ts'], root))
-      .toStrictEqual(['/etc/passwd', '../b.test.ts']);
+    expect(invalidSuitePaths(['ok/a.test.ts', '/etc/passwd', '../b.test.ts'], root)).toStrictEqual([
+      '/etc/passwd',
+      '../b.test.ts'
+    ]);
   });
 });
 
@@ -479,7 +503,6 @@ describe('suite path validation', () => {
  * covered.
  */
 describe('suite path canonicalisation', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const { canonicalSuitePaths } = require('../run-suite') as {
     canonicalSuitePaths: (paths: string[], root?: string) => string[];
   };
@@ -488,20 +511,23 @@ describe('suite path canonicalisation', () => {
 
   it('leaves an already-canonical path alone', () => {
     expect.hasAssertions();
-    expect(canonicalSuitePaths(['apps/x/test/a.test.ts'], root))
-      .toStrictEqual(['apps/x/test/a.test.ts']);
+    expect(canonicalSuitePaths(['apps/x/test/a.test.ts'], root)).toStrictEqual([
+      'apps/x/test/a.test.ts'
+    ]);
   });
 
   it('collapses a path that walks back through itself', () => {
     expect.hasAssertions();
-    expect(canonicalSuitePaths(['apps/./x/../x/test/a.test.ts'], root))
-      .toStrictEqual(['apps/x/test/a.test.ts']);
+    expect(canonicalSuitePaths(['apps/./x/../x/test/a.test.ts'], root)).toStrictEqual([
+      'apps/x/test/a.test.ts'
+    ]);
   });
 
   it('returns paths relative to the repository root', () => {
     expect.hasAssertions();
     // The runner is invoked from the root, so a relative path is what it expects.
-    expect(canonicalSuitePaths(['/repo/apps/x/a.test.ts'], root))
-      .toStrictEqual(['apps/x/a.test.ts']);
+    expect(canonicalSuitePaths(['/repo/apps/x/a.test.ts'], root)).toStrictEqual([
+      'apps/x/a.test.ts'
+    ]);
   });
 });

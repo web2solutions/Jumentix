@@ -1,9 +1,9 @@
 export type { IKeyValueStorageClient, IServiceResponse } from './contracts';
-export { ServiceResponse } from './ServiceResponse';
-export { BaseKeyValueStorageClient } from './BaseKeyValueStorageClient';
-export { InMemoryKeyValueStorageClient } from './InMemoryKeyValueStorageClient';
+export { default as ServiceResponse } from './ServiceResponse';
+export { default as BaseKeyValueStorageClient } from './BaseKeyValueStorageClient';
+export { default as InMemoryKeyValueStorageClient } from './InMemoryKeyValueStorageClient';
 export {
   RedisKeyValueStorageClient,
   resetRedisKeyValueStorageClientForTests
 } from './RedisKeyValueStorageClient';
-export { compileKeyValueStorageClient } from './compileKeyValueStorageClient';
+export { default as compileKeyValueStorageClient } from './compileKeyValueStorageClient';

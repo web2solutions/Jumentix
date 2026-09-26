@@ -1,10 +1,10 @@
-/* eslint-disable jest/max-expects */
+import { TENANT_AUTHORIZATION_REASONS } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+
 import {
   decideCatalogAccess,
   resolveCatalogCollectionScope,
   resolveCatalogCreationOrganization
 } from '@service-management-api/modules/Catalogs/domain/security/CatalogAuthorizationPolicy';
-import { TENANT_AUTHORIZATION_REASONS } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
 
 /**
  * Unit suite for the catalog TENANT-RBAC policy (JUM-491): the catalog is
@@ -18,9 +18,13 @@ describe('catalogAuthorizationPolicy', () => {
 
   it('allows superadmin globally, even without an organization', () => {
     expect.hasAssertions();
-    expect(decideCatalogAccess({ roles: ['superadmin'] }, orgRecord)).toStrictEqual({ allowed: true });
-    expect(resolveCatalogCollectionScope({ roles: ['superadmin'] }))
-      .toStrictEqual({ decision: { allowed: true }, filters: {} });
+    expect(decideCatalogAccess({ roles: ['superadmin'] }, orgRecord)).toStrictEqual({
+      allowed: true
+    });
+    expect(resolveCatalogCollectionScope({ roles: ['superadmin'] })).toStrictEqual({
+      decision: { allowed: true },
+      filters: {}
+    });
   });
 
   it('allows an admin inside its own organization', () => {
@@ -94,7 +98,10 @@ describe('catalogAuthorizationPolicy', () => {
 
   it('denies creation for a tenant principal without an organization', () => {
     expect.hasAssertions();
-    const { decision, organization } = resolveCatalogCreationOrganization({ id: 'u9', roles: ['admin'] }, 'org-1');
+    const { decision, organization } = resolveCatalogCreationOrganization(
+      { id: 'u9', roles: ['admin'] },
+      'org-1'
+    );
     expect(decision).toStrictEqual({
       allowed: false,
       reason: TENANT_AUTHORIZATION_REASONS.organizationRequired

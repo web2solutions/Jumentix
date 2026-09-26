@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+/* eslint-disable no-console */
 /**
  * Coverage thresholds, enforced from the lcov report rather than by a runner.
  *
@@ -31,6 +31,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
@@ -59,8 +60,7 @@ const THRESHOLDS = {
  * the entry must name a floor, issue, date and reason; once the metric reaches
  * its threshold, the checker fails until the entry is removed.
  */
-const ACCEPTED_BELOW_THRESHOLD = {
-};
+const ACCEPTED_BELOW_THRESHOLD = {};
 
 /**
  * Istanbul counter maps, by metric.
@@ -75,6 +75,25 @@ const COUNTERS = {
   branches: 'b'
 };
 
+/** Distinct source lines, and how many of them were hit at least once. */
+function lineTotals(report) {
+  let found = 0;
+  let hit = 0;
+
+  for (const file of Object.values(report)) {
+    const byLine = new Map();
+    for (const [id, location] of Object.entries(file.statementMap || {})) {
+      const { line } = location.start;
+      const count = (file.s || {})[id] || 0;
+      byLine.set(line, (byLine.get(line) || 0) + count);
+    }
+    found += byLine.size;
+    hit += [...byLine.values()].filter((count) => count > 0).length;
+  }
+
+  return { found, hit };
+}
+
 /** Sum found/hit across every file in an Istanbul report. */
 function summarize(report) {
   const totals = {
@@ -87,9 +106,8 @@ function summarize(report) {
     for (const [metric, key] of Object.entries(COUNTERS)) {
       const counters = file[key] || {};
       // A branch point holds one count per path, so its paths are the unit.
-      const counts = metric === 'branches'
-        ? Object.values(counters).flat()
-        : Object.values(counters);
+      const counts =
+        metric === 'branches' ? Object.values(counters).flat() : Object.values(counters);
 
       totals[metric].found += counts.length;
       totals[metric].hit += counts.filter((count) => count > 0).length;
@@ -102,25 +120,6 @@ function summarize(report) {
   // line numbers so it measures lines rather than repeating the statement count.
   totals.lines = lineTotals(report);
   return totals;
-}
-
-/** Distinct source lines, and how many of them were hit at least once. */
-function lineTotals(report) {
-  let found = 0;
-  let hit = 0;
-
-  for (const file of Object.values(report)) {
-    const byLine = new Map();
-    for (const [id, location] of Object.entries(file.statementMap || {})) {
-      const line = location.start.line;
-      const count = (file.s || {})[id] || 0;
-      byLine.set(line, (byLine.get(line) || 0) + count);
-    }
-    found += byLine.size;
-    hit += [...byLine.values()].filter((count) => count > 0).length;
-  }
-
-  return { found, hit };
 }
 
 /**
@@ -179,9 +178,9 @@ function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED
       // and "unmeasured" must not read as "met" — that is how a threshold
       // disappears without anyone deciding to remove it.
       failures.push(
-        `${metric}: the coverage report contains no ${metric} counters, so the ${String(minimum)}% `
-          + 'threshold could not be evaluated. A threshold that cannot be checked is not a '
-          + 'threshold; fix the report rather than lowering the bar.'
+        `${metric}: the coverage report contains no ${metric} counters, so the ${String(minimum)}% ` +
+          'threshold could not be evaluated. A threshold that cannot be checked is not a ' +
+          'threshold; fix the report rather than lowering the bar.'
       );
       continue;
     }
@@ -192,9 +191,9 @@ function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED
       // The exception outlived its reason. Leaving it would turn a dated,
       // tracked concession into a permanently lowered bar that nobody notices.
       failures.push(
-        `${metric}: ${formatPercentage(actual)}% now meets the ${String(minimum)}% threshold, but an `
-          + `exception is still recorded (${exception.issue}, since ${exception.since}). Remove `
-          + 'it from ACCEPTED_BELOW_THRESHOLD and close the issue.'
+        `${metric}: ${formatPercentage(actual)}% now meets the ${String(minimum)}% threshold, but an ` +
+          `exception is still recorded (${exception.issue}, since ${exception.since}). Remove ` +
+          'it from ACCEPTED_BELOW_THRESHOLD and close the issue.'
       );
       continue;
     }
@@ -204,10 +203,10 @@ function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED
       // below it fails. The concession can be held or improved, never spent.
       if (actual + Number.EPSILON < exception.floor) {
         failures.push(
-          `${metric}: ${formatPercentage(actual)}% is below the accepted floor of `
-            + `${String(exception.floor)}% (${exception.issue}). The threshold is `
-            + `${String(minimum)}%; this metric is under a tracked exception since `
-            + `${exception.since}, and it may not regress further.`
+          `${metric}: ${formatPercentage(actual)}% is below the accepted floor of ` +
+            `${String(exception.floor)}% (${exception.issue}). The threshold is ` +
+            `${String(minimum)}%; this metric is under a tracked exception since ` +
+            `${exception.since}, and it may not regress further.`
         );
       }
       continue;
@@ -215,8 +214,8 @@ function validateCoverage(totals, thresholds = THRESHOLDS, exceptions = ACCEPTED
 
     if (actual + Number.EPSILON < minimum) {
       failures.push(
-        `${metric}: ${formatPercentage(actual)}% is below the required ${String(minimum)}% `
-          + '(Requirements 020 / 063).'
+        `${metric}: ${formatPercentage(actual)}% is below the required ${String(minimum)}% ` +
+          '(Requirements 020 / 063).'
       );
     }
   }
@@ -281,7 +280,10 @@ function defaultReadReport() {
   const nodeReportPath = fs.existsSync(jestReportPath) ? jestReportPath : reportPath;
   if (!fs.existsSync(nodeReportPath)) return null;
   const includeBrowserReport = readsEnvFlag('JUMENTIX_COVERAGE_INCLUDE_BROWSER', true);
-  const requireBrowserReport = readsEnvFlag('JUMENTIX_COVERAGE_REQUIRE_BROWSER', includeBrowserReport);
+  const requireBrowserReport = readsEnvFlag(
+    'JUMENTIX_COVERAGE_REQUIRE_BROWSER',
+    includeBrowserReport
+  );
   const jest = JSON.parse(fs.readFileSync(nodeReportPath, 'utf8'));
   if (!includeBrowserReport) return filterThresholdSubjects(jest);
 
@@ -306,22 +308,24 @@ function main(readReport = defaultReadReport, exceptions = ACCEPTED_BELOW_THRESH
 
   if (coverage === null) {
     console.error(
-      'Coverage threshold check failed: coverage/coverage-final.json does not exist.\n\n'
-        + '  Run `bun run test:coverage` first. Treating a missing report as a pass would mean\n'
-        + '  the thresholds stop applying the moment coverage stops being produced, which is\n'
-        + '  precisely when they matter most.'
+      'Coverage threshold check failed: coverage/coverage-final.json does not exist.\n\n' +
+        '  Run `bun run test:coverage` first. Treating a missing report as a pass would mean\n' +
+        '  the thresholds stop applying the moment coverage stops being produced, which is\n' +
+        '  precisely when they matter most.'
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   if (coverage && coverage.missingBrowserReport) {
     console.error(
-      'Coverage threshold check failed: coverage/browser/coverage-final.json does not exist.\n\n'
-        + '  Requirement 112 §4 measures `packages/cana` in a real browser. Run\n'
-        + '  `bun run test:browser` after `bun run test:coverage` before this check.\n'
-        + '  Passing on the Jest half alone would leave cana unmeasured.'
+      'Coverage threshold check failed: coverage/browser/coverage-final.json does not exist.\n\n' +
+        '  Requirement 112 §4 measures `packages/cana` in a real browser. Run\n' +
+        '  `bun run test:browser` after `bun run test:coverage` before this check.\n' +
+        '  Passing on the Jest half alone would leave cana unmeasured.'
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const totals = summarize(coverage);
@@ -331,7 +335,8 @@ function main(readReport = defaultReadReport, exceptions = ACCEPTED_BELOW_THRESH
     console.error('Coverage threshold check failed:\n');
     for (const failure of failures) console.error(`  - ${failure}`);
     console.error('');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const summary = Object.entries(report)
@@ -353,16 +358,16 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   ACCEPTED_BELOW_THRESHOLD,
-  formatPercentage,
   COUNTERS,
   defaultReadReport,
   filterThresholdSubjects,
+  formatPercentage,
   isThresholdSubject,
   lineTotals,
-  readsEnvFlag,
-  THRESHOLDS,
   main,
   percentage,
+  readsEnvFlag,
   summarize,
+  THRESHOLDS,
   validateCoverage
 };

@@ -58,21 +58,59 @@ const NON_BLOCKING_SEVERITIES = new Set(['LOW', 'NONE', 'UNKNOWN']);
  * than permanent.
  */
 const ACCEPTED_RISK = {
-  'GHSA-rrr8-f88r-h8q6': { until: '2026-10-31', reason: 'restify 11.1.0 pins find-my-way 7.x; no patched major-compatible release' },
-  'GHSA-c96f-x56v-gq3h': { until: '2026-10-31', reason: 'restify transport required for adapter compatibility; awaiting upstream' },
-  'GHSA-m6fv-jmcg-4jfg': { until: '2026-10-31', reason: 'send advisory inherited through the restify path only' },
-  'GHSA-xcpc-8h2w-3j85': { until: '2026-10-31', reason: 'inherited via cassandra-driver; awaiting release consuming adm-zip >=0.6.0' },
+  'GHSA-rrr8-f88r-h8q6': {
+    until: '2026-10-31',
+    reason: 'restify 11.1.0 pins find-my-way 7.x; no patched major-compatible release'
+  },
+  'GHSA-c96f-x56v-gq3h': {
+    until: '2026-10-31',
+    reason: 'restify transport required for adapter compatibility; awaiting upstream'
+  },
+  'GHSA-m6fv-jmcg-4jfg': {
+    until: '2026-10-31',
+    reason: 'send advisory inherited through the restify path only'
+  },
+  'GHSA-xcpc-8h2w-3j85': {
+    until: '2026-10-31',
+    reason: 'inherited via cassandra-driver; awaiting release consuming adm-zip >=0.6.0'
+  },
   // Completed on 2026-07-30 after the initial migration captured only four of
   // eight GHSA identifiers. Recording the correction prevents a silent policy
   // change.
-  'GHSA-395f-4hp3-45gv': { until: '2026-10-31', reason: 'inherited through the concurrently legacy chain in the local tooling path' },
-  'GHSA-f88m-g3jw-g9cj': { until: '2026-10-31', reason: 'Next.js still resolves sharp 0.34.x transitively in the current Nextra stack' },
-  'GHSA-6g55-p6wh-862q': { until: '2026-10-31', reason: 'postcss inherited from the Next.js transitive chain; awaiting upstream' },
-  'GHSA-r28c-9q8g-f849': { until: '2026-10-31', reason: 'website stack retains transitive postcss chains until upstream updates land' },
-  'GHSA-5p2g-fcmc-qvqq': { until: '2026-10-31', reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling' },
-  'GHSA-w3rx-r6r6-pgpr': { until: '2026-10-31', reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling' },
-  'GHSA-4mjr-xmp4-gh2g': { until: '2026-10-31', reason: 'qs 6.15.3 is inherited from express 4.22.2 through Sails/LoopBack; Bun cannot override this nested edge yet' },
-  'GHSA-x5fp-wj9c-mxmx': { until: '2026-10-31', reason: 'qs 6.15.3 is inherited from express 4.22.2 through Sails/LoopBack; Bun cannot override this nested edge yet' },
+  'GHSA-395f-4hp3-45gv': {
+    until: '2026-10-31',
+    reason: 'inherited through the concurrently legacy chain in the local tooling path'
+  },
+  'GHSA-f88m-g3jw-g9cj': {
+    until: '2026-10-31',
+    reason: 'Next.js still resolves sharp 0.34.x transitively in the current Nextra stack'
+  },
+  'GHSA-6g55-p6wh-862q': {
+    until: '2026-10-31',
+    reason: 'postcss inherited from the Next.js transitive chain; awaiting upstream'
+  },
+  'GHSA-r28c-9q8g-f849': {
+    until: '2026-10-31',
+    reason: 'website stack retains transitive postcss chains until upstream updates land'
+  },
+  'GHSA-5p2g-fcmc-qvqq': {
+    until: '2026-10-31',
+    reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling'
+  },
+  'GHSA-w3rx-r6r6-pgpr': {
+    until: '2026-10-31',
+    reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling'
+  },
+  'GHSA-4mjr-xmp4-gh2g': {
+    until: '2026-10-31',
+    reason:
+      'qs 6.15.3 is inherited from express 4.22.2 through Sails/LoopBack; Bun cannot override this nested edge yet'
+  },
+  'GHSA-x5fp-wj9c-mxmx': {
+    until: '2026-10-31',
+    reason:
+      'qs 6.15.3 is inherited from express 4.22.2 through Sails/LoopBack; Bun cannot override this nested edge yet'
+  }
 };
 
 /**
@@ -117,7 +155,7 @@ async function postJson(url, body) {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
   });
   if (!response.ok) {
     throw new Error(`OSV request failed: HTTP ${response.status} (${url})`);
@@ -165,16 +203,19 @@ async function evaluatePackages(packages, io = {}) {
   //    proportional to the tree rather than to the number of packages.
   const idsByPackage = new Map();
   for (const group of chunk(targets, BATCH_SIZE)) {
-    const payload = await batch(group.map((target) => ({
-      package: { name: target.name, ecosystem: 'npm' },
-      version: target.version,
-    })));
+    // eslint-disable-next-line no-await-in-loop -- OSV batch requests stay sequential to bound request rate against the public API
+    const payload = await batch(
+      group.map((target) => ({
+        package: { name: target.name, ecosystem: 'npm' },
+        version: target.version
+      }))
+    );
 
     const results = payload?.results;
     if (!Array.isArray(results) || results.length !== group.length) {
       throw new Error(
-        'OSV batch response did not match the request shape; refusing to treat an '
-          + 'unverifiable result as clean.',
+        'OSV batch response did not match the request shape; refusing to treat an ' +
+          'unverifiable result as clean.'
       );
     }
 
@@ -198,6 +239,7 @@ async function evaluatePackages(packages, io = {}) {
       if (isAcceptedRisk(id, now)) continue;
 
       if (!cache.has(id)) {
+        // eslint-disable-next-line no-await-in-loop -- vulnerability detail fetches stay sequential to bound request rate and populate the cache in order
         cache.set(id, await detail(id));
       }
       const vuln = cache.get(id);
@@ -208,7 +250,7 @@ async function evaluatePackages(packages, io = {}) {
         level: FATAL_SEVERITIES.has(severity) ? 'fatal' : 'warn',
         package: packageKey,
         url: `https://osv.dev/vulnerability/${id}`,
-        description: `${severity}: ${vuln?.summary || id}`,
+        description: `${severity}: ${vuln?.summary || id}`
       });
     }
   }
@@ -223,14 +265,14 @@ export const scanner = {
     // outcome when the dependency set could not be verified. Swallowing it here
     // would reproduce the exact false green that motivated this scanner.
     return evaluatePackages(packages);
-  },
+  }
 };
 
 export {
   ACCEPTED_RISK,
-  NON_BLOCKING_SEVERITIES,
-  FATAL_SEVERITIES,
   evaluatePackages,
+  FATAL_SEVERITIES,
   isAcceptedRisk,
-  severityOf,
+  NON_BLOCKING_SEVERITIES,
+  severityOf
 };

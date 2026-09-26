@@ -1,6 +1,6 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import fs from 'fs';
-import path from 'path';
+/* eslint-disable jest/max-expects */
+import fs from 'node:fs';
+import path from 'node:path';
 
 describe('service management mvp roadmap features', () => {
   const indexPath = path.resolve(process.cwd(), 'apps/service-management/index.html');
@@ -48,7 +48,10 @@ describe('service management mvp roadmap features', () => {
     expect.hasAssertions();
     const html = fs.readFileSync(indexPath, 'utf-8');
     const script = fs.readFileSync(scriptPath, 'utf-8');
-    const server = fs.readFileSync(path.resolve(process.cwd(), 'apps/service-management/server.js'), 'utf-8');
+    const server = fs.readFileSync(
+      path.resolve(process.cwd(), 'apps/service-management/server.js'),
+      'utf-8'
+    );
     expect(html).toContain('class="code-activity-bar"');
     expect(html).toContain('id="code-workspace-search-input"');
     expect(html).toContain('id="code-workspace-breadcrumbs"');

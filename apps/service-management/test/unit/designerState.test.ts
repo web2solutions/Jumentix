@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -16,15 +15,15 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(__dirname, '../../../..');
 const {
-  DOMAIN_COLORS,
   clampZoom,
-  createDesignerState,
   createDefaultView,
+  createDesignerState,
   defaultFields,
+  DOMAIN_COLORS,
   fallbackId,
   getDefaultRbacPolicy,
-  normalizeContractInput,
   normalizeCodeWorkspaceInput,
+  normalizeContractInput,
   normalizeDomainInput,
   normalizeEntityInput,
   normalizeField,
@@ -35,16 +34,20 @@ const {
   parseEnumValues
 } = require('@jumentix/designer-core/state/designerState.js');
 
-const {
-  MemoryDesignerStore
-} = require(path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts'));
+const { default: MemoryDesignerStore } = require(
+  path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts')
+);
 
 function createFakeStorage(initial: Record<string, string> = {}) {
   const map = new Map<string, string>(Object.entries(initial));
   return {
     getItem: (key: string) => (map.has(key) ? (map.get(key) as string) : null),
-    setItem: (key: string, value: string) => { map.set(key, String(value)); },
-    removeItem: (key: string) => { map.delete(key); },
+    setItem: (key: string, value: string) => {
+      map.set(key, String(value));
+    },
+    removeItem: (key: string) => {
+      map.delete(key);
+    },
     map
   };
 }
@@ -55,24 +58,32 @@ function createCore(storage = createFakeStorage()) {
   const store = new MemoryDesignerStore({ storage });
   let core: Core;
   const seed = () => {
-    core.state.domains = [{
-      id: 'domain-1',
-      name: 'Seed',
-      color: '#60a5fa',
-      x: 80,
-      y: 80,
-      context: {},
-      entities: [{
-        id: 'entity-1',
-        name: 'SeedEntity',
-        x: 14,
-        y: 14,
-        fields: [],
-        meta: {
-          aggregateRoot: false, invariants: [], rbac: {}, contracts: [], oasComposition: {}
-        }
-      }]
-    }];
+    core.state.domains = [
+      {
+        id: 'domain-1',
+        name: 'Seed',
+        color: '#60a5fa',
+        x: 80,
+        y: 80,
+        context: {},
+        entities: [
+          {
+            id: 'entity-1',
+            name: 'SeedEntity',
+            x: 14,
+            y: 14,
+            fields: [],
+            meta: {
+              aggregateRoot: false,
+              invariants: [],
+              rbac: {},
+              contracts: [],
+              oasComposition: {}
+            }
+          }
+        ]
+      }
+    ];
     core.state.relationships = [];
     core.state.selectedDomainId = 'domain-1';
     core.state.selectedEntityId = null;
@@ -83,7 +94,10 @@ function createCore(storage = createFakeStorage()) {
   const renders: number[] = [];
   core = createDesignerState({ store, seed, render: () => renders.push(1) });
   return {
-    core, store, storage, renders
+    core,
+    store,
+    storage,
+    renders
   };
 }
 
@@ -92,21 +106,24 @@ describe('designer state core (JUM-468)', () => {
     expect.hasAssertions();
     // Since JUM-493 the core modules live in the publishable package; the
     // store adapters stay in the app. Both sides keep the DOM-free rule.
-    const movedCore = ['state/designerState.js', 'store/IDesignerStore.js', 'model/rbacContract.js']
-      .map((rel) => path.join(repoRoot, 'packages', 'designer-core', 'src', ...rel.split('/')));
-    const appAdapters = ['src/store/CanaDesignerStore.js', 'src/store/canaMigration.js', 'src/store/designerStoreFactory.js']
-      .map((rel) => path.join(repoRoot, 'apps', 'service-management', ...rel.split('/')));
-    [...movedCore, ...appAdapters]
-      .forEach((absolutePath) => {
-        const source = fs.readFileSync(absolutePath, 'utf-8');
-        // Strip comments so prose about the contract cannot false-positive;
-        // what remains must not reach the DOM globals.
-        const code = source
-          .replace(/\/\*[\s\S]*?\*\//g, '')
-          .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
-        expect(code).not.toMatch(/\bdocument\s*\./);
-        expect(code).not.toMatch(/\bwindow\s*\./);
-      });
+    const movedCore = [
+      'state/designerState.js',
+      'store/IDesignerStore.js',
+      'model/rbacContract.js'
+    ].map((rel) => path.join(repoRoot, 'packages', 'designer-core', 'src', ...rel.split('/')));
+    const appAdapters = [
+      'src/store/CanaDesignerStore.js',
+      'src/store/canaMigration.js',
+      'src/store/designerStoreFactory.js'
+    ].map((rel) => path.join(repoRoot, 'apps', 'service-management', ...rel.split('/')));
+    [...movedCore, ...appAdapters].forEach((absolutePath) => {
+      const source = fs.readFileSync(absolutePath, 'utf-8');
+      // Strip comments so prose about the contract cannot false-positive;
+      // what remains must not reach the DOM globals.
+      const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+      expect(code).not.toMatch(/\bdocument\s*\./);
+      expect(code).not.toMatch(/\bwindow\s*\./);
+    });
   });
 
   describe('normalizeStatePayload', () => {
@@ -124,11 +141,13 @@ describe('designer state core (JUM-468)', () => {
     it('drops relationships pointing at unknown entities and clamps the view', () => {
       expect.hasAssertions();
       const normalized = normalizeStatePayload({
-        domains: [{
-          id: 'domain-1',
-          name: 'Billing',
-          entities: [{ id: 'entity-1', name: 'Invoice', fields: [] }]
-        }],
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [{ id: 'entity-1', name: 'Invoice', fields: [] }]
+          }
+        ],
         relationships: [
           { id: 'rel-1', fromEntityId: 'entity-1', toEntityId: 'entity-1' },
           { id: 'rel-2', fromEntityId: 'entity-1', toEntityId: 'ghost' }
@@ -224,7 +243,10 @@ describe('designer state core (JUM-468)', () => {
           relationships: [],
           deployments: [
             {
-              name: 'prod', type: 'dedicated', region: 'us-east-1', runtime: 'nodejs22.x'
+              name: 'prod',
+              type: 'dedicated',
+              region: 'us-east-1',
+              runtime: 'nodejs22.x'
             },
             {
               name: 'fn',
@@ -270,14 +292,20 @@ describe('designer state core (JUM-468)', () => {
       expect(core.state.domains[0].name).toBe('Seed');
       expect(core.state.view).toStrictEqual(createDefaultView());
       // The recovered state overwrites the corrupted payload, as before.
-      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe('Seed');
+      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe(
+        'Seed'
+      );
     });
 
     it('seeds in memory only when storage is unavailable — no fallback, no write', async () => {
       expect.hasAssertions();
       const storage = createFakeStorage();
-      storage.getItem = () => { throw new Error('SecurityError'); };
-      storage.setItem = () => { throw new Error('SecurityError'); };
+      storage.getItem = () => {
+        throw new Error('SecurityError');
+      };
+      storage.setItem = () => {
+        throw new Error('SecurityError');
+      };
       const { core } = createCore(storage);
       await core.loadState();
       expect(core.state.domains[0].name).toBe('Seed');
@@ -289,10 +317,14 @@ describe('designer state core (JUM-468)', () => {
     it('reports empty on a first run, ok on a healthy restore', async () => {
       expect.hasAssertions();
       const first = createCore();
-      await expect(first.core.loadState()).resolves.toStrictEqual({ status: 'empty' });
+      await expect(first.core.loadState() as Promise<unknown>).resolves.toStrictEqual({
+        status: 'empty'
+      });
 
       const second = createCore(first.storage);
-      await expect(second.core.loadState()).resolves.toStrictEqual({ status: 'ok' });
+      await expect(second.core.loadState() as Promise<unknown>).resolves.toStrictEqual({
+        status: 'ok'
+      });
     });
 
     it('reports lost with the port reason on a corrupted payload — recovery still happens', async () => {
@@ -303,14 +335,20 @@ describe('designer state core (JUM-468)', () => {
       expect(outcome.status).toBe('lost');
       expect(outcome.reason).toContain('not readable JSON');
       // Recovery is unchanged: the seed template is persisted over the corrupt record.
-      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe('Seed');
+      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe(
+        'Seed'
+      );
     });
 
     it('reports unavailable with the reason when storage cannot be read', async () => {
       expect.hasAssertions();
       const storage = createFakeStorage();
-      storage.getItem = () => { throw new Error('SecurityError'); };
-      storage.setItem = () => { throw new Error('SecurityError'); };
+      storage.getItem = () => {
+        throw new Error('SecurityError');
+      };
+      storage.setItem = () => {
+        throw new Error('SecurityError');
+      };
       const { core } = createCore(storage);
       const outcome = await core.loadState();
       expect(outcome.status).toBe('unavailable');
@@ -340,18 +378,25 @@ describe('designer state core (JUM-468)', () => {
       });
       expect(core.history.past).toHaveLength(1);
       expect(core.history.past[0].domains[0].name).toBe('Seed');
-      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe('Changed');
+      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe(
+        'Changed'
+      );
     });
 
     it('skips history when recordHistory is false but still saves', async () => {
       expect.hasAssertions();
       const { core, storage } = createCore();
       await core.loadState();
-      core.withPersist(() => {
-        core.state.domains[0].name = 'Quiet';
-      }, { recordHistory: false });
+      core.withPersist(
+        () => {
+          core.state.domains[0].name = 'Quiet';
+        },
+        { recordHistory: false }
+      );
       expect(core.history.past).toHaveLength(0);
-      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe('Quiet');
+      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe(
+        'Quiet'
+      );
     });
 
     it('undo restores the previous snapshot and redo reapplies it, rendering each time', async () => {
@@ -407,54 +452,95 @@ describe('designer state core (JUM-468)', () => {
       const snapshot = core.buildModelSnapshot();
       expect(Object.keys(snapshot).sort()).toStrictEqual(['domains', 'relationships']);
       const entity = snapshot.domains[0].entities[0];
-      expect(Object.keys(snapshot.domains[0]).sort()).toStrictEqual(['color', 'context', 'entities', 'id', 'name']);
-      expect(Object.keys(entity).sort()).toStrictEqual(['contracts', 'fields', 'id', 'meta', 'name']);
+      expect(Object.keys(snapshot.domains[0]).sort()).toStrictEqual([
+        'color',
+        'context',
+        'entities',
+        'id',
+        'name'
+      ]);
+      expect(Object.keys(entity).sort()).toStrictEqual([
+        'contracts',
+        'fields',
+        'id',
+        'meta',
+        'name'
+      ]);
     });
 
     it('falls back for missing context/meta and maps populated contracts and fields', () => {
       expect.hasAssertions();
       const { core } = createCore();
-      core.state.domains = [{
-        id: 'domain-1',
-        name: 'Bare',
-        color: '#60a5fa',
-        x: 0,
-        y: 0,
-        entities: [{
-          id: 'entity-1',
-          name: 'BareEntity',
+      core.state.domains = [
+        {
+          id: 'domain-1',
+          name: 'Bare',
+          color: '#60a5fa',
           x: 0,
           y: 0,
-          fields: [
-            { name: 'id', type: 'uuid', required: true },
+          entities: [
             {
-              name: 'status', type: 'string', format: 'enum', itemsType: 'string', enumValues: ['a', 'b']
+              id: 'entity-1',
+              name: 'BareEntity',
+              x: 0,
+              y: 0,
+              fields: [
+                { name: 'id', type: 'uuid', required: true },
+                {
+                  name: 'status',
+                  type: 'string',
+                  format: 'enum',
+                  itemsType: 'string',
+                  enumValues: ['a', 'b']
+                }
+              ],
+              meta: {
+                contracts: [
+                  {
+                    id: 'c1',
+                    name: 'Ping',
+                    type: 'command',
+                    channel: 'ch',
+                    version: '2.0.0',
+                    payloadSchema: {}
+                  }
+                ]
+              }
+            },
+            {
+              id: 'entity-2',
+              name: 'MetaLess',
+              x: 0,
+              y: 0,
+              fields: []
             }
-          ],
-          meta: {
-            contracts: [{
-              id: 'c1', name: 'Ping', type: 'command', channel: 'ch', version: '2.0.0', payloadSchema: {}
-            }]
-          }
-        }, {
-          id: 'entity-2',
-          name: 'MetaLess',
-          x: 0,
-          y: 0,
-          fields: []
-        }]
-      }];
-      core.state.relationships = [{
-        id: 'rel-1', fromEntityId: 'entity-1', toEntityId: 'entity-1', fromCardinality: 'N', toCardinality: '1'
-      }];
+          ]
+        }
+      ];
+      core.state.relationships = [
+        {
+          id: 'rel-1',
+          fromEntityId: 'entity-1',
+          toEntityId: 'entity-1',
+          fromCardinality: 'N',
+          toCardinality: '1'
+        }
+      ];
       const snapshot = core.buildModelSnapshot();
       const domain = snapshot.domains[0];
       // Missing context/meta fall back to empty shapes.
       expect(domain.context).toStrictEqual({});
       expect(domain.entities[0].meta).toStrictEqual({
-        contracts: [{
-          id: 'c1', name: 'Ping', type: 'command', channel: 'ch', version: '2.0.0', payloadSchema: {}
-        }]
+        contracts: [
+          {
+            id: 'c1',
+            name: 'Ping',
+            type: 'command',
+            channel: 'ch',
+            version: '2.0.0',
+            payloadSchema: {}
+          }
+        ]
       });
       const [bare, rich] = domain.entities[0].fields;
       expect(bare).toStrictEqual({
@@ -476,7 +562,11 @@ describe('designer state core (JUM-468)', () => {
       // An entity without meta falls back to the empty baseline meta shape.
       expect(domain.entities[1].meta).toStrictEqual({ aggregateRoot: false, invariants: [] });
       expect(snapshot.relationships[0]).toStrictEqual({
-        id: 'rel-1', fromEntityId: 'entity-1', toEntityId: 'entity-1', fromCardinality: 'N', toCardinality: '1'
+        id: 'rel-1',
+        fromEntityId: 'entity-1',
+        toEntityId: 'entity-1',
+        fromCardinality: 'N',
+        toCardinality: '1'
       });
     });
   });
@@ -542,25 +632,28 @@ describe('designer state core (JUM-468)', () => {
 
     it('normalizeField keeps valid input and resolves array item types', () => {
       expect.hasAssertions();
-      const rich = normalizeField({
-        name: 'tags',
-        type: 'array',
-        itemsType: 'uuid',
-        enum: 'a, b',
-        format: 'f',
-        description: 'd',
-        pattern: 'p',
-        minLength: '1',
-        maxLength: 5,
-        minimum: 0,
-        maximum: 10,
-        required: true,
-        pk: true,
-        fk: true,
-        unique: true,
-        indexed: true,
-        nullable: true
-      }, 0);
+      const rich = normalizeField(
+        {
+          name: 'tags',
+          type: 'array',
+          itemsType: 'uuid',
+          enum: 'a, b',
+          format: 'f',
+          description: 'd',
+          pattern: 'p',
+          minLength: '1',
+          maxLength: 5,
+          minimum: 0,
+          maximum: 10,
+          required: true,
+          pk: true,
+          fk: true,
+          unique: true,
+          indexed: true,
+          nullable: true
+        },
+        0
+      );
       expect(rich).toStrictEqual({
         name: 'tags',
         type: 'array',
@@ -592,15 +685,35 @@ describe('designer state core (JUM-468)', () => {
       const sparse = normalizeContractInput();
       expect(sparse.id).toMatch(/^contract-import-0-[a-z0-9]+$/);
       expect(sparse).toStrictEqual({
-        id: sparse.id, name: 'Contract_1', type: 'event', channel: '', version: '1.0.0', payloadSchema: {}
+        id: sparse.id,
+        name: 'Contract_1',
+        type: 'event',
+        channel: '',
+        version: '1.0.0',
+        payloadSchema: {}
       });
-      const rich = normalizeContractInput({
-        id: 'c-1', name: 'Ping', type: 'response', channel: 'ch', version: '3.0.0', payloadSchema: { type: 'object' }
-      }, 4);
+      const rich = normalizeContractInput(
+        {
+          id: 'c-1',
+          name: 'Ping',
+          type: 'response',
+          channel: 'ch',
+          version: '3.0.0',
+          payloadSchema: { type: 'object' }
+        },
+        4
+      );
       expect(rich).toStrictEqual({
-        id: 'c-1', name: 'Ping', type: 'response', channel: 'ch', version: '3.0.0', payloadSchema: { type: 'object' }
+        id: 'c-1',
+        name: 'Ping',
+        type: 'response',
+        channel: 'ch',
+        version: '3.0.0',
+        payloadSchema: { type: 'object' }
       });
-      expect(normalizeContractInput({ payloadSchema: 'not-an-object' }, 0).payloadSchema).toStrictEqual({});
+      expect(
+        normalizeContractInput({ payloadSchema: 'not-an-object' }, 0).payloadSchema
+      ).toStrictEqual({});
     });
 
     it('normalizeRelationship fills anchors, cardinals and offsets', () => {
@@ -648,10 +761,19 @@ describe('designer state core (JUM-468)', () => {
     it('getDefaultRbacPolicy and defaultFields return the pinned shapes', () => {
       expect.hasAssertions();
       const rbac = getDefaultRbacPolicy();
-      expect(Object.keys(rbac).sort()).toStrictEqual(['create', 'delete', 'getById', 'list', 'update']);
+      expect(Object.keys(rbac).sort()).toStrictEqual([
+        'create',
+        'delete',
+        'getById',
+        'list',
+        'update'
+      ]);
       expect(rbac.getById.roles).toContain('user');
-      expect(defaultFields().map((field: { name: string }) => field.name))
-        .toStrictEqual(['id', 'createdAt', 'updatedAt']);
+      expect(defaultFields().map((field: { name: string }) => field.name)).toStrictEqual([
+        'id',
+        'createdAt',
+        'updatedAt'
+      ]);
     });
   });
 
@@ -661,8 +783,11 @@ describe('designer state core (JUM-468)', () => {
       const entity = normalizeEntityInput(undefined, 0);
       expect(entity.id).toMatch(/^entity-import-0-[a-z0-9]+$/);
       expect(entity.name).toBe('Entity_1');
-      expect(entity.fields.map((field: { name: string }) => field.name))
-        .toStrictEqual(['id', 'createdAt', 'updatedAt']);
+      expect(entity.fields.map((field: { name: string }) => field.name)).toStrictEqual([
+        'id',
+        'createdAt',
+        'updatedAt'
+      ]);
       expect(entity.x).toBe(14);
       expect(entity.y).toBe(14);
       expect(entity.meta.aggregateRoot).toBe(false);
@@ -670,31 +795,40 @@ describe('designer state core (JUM-468)', () => {
       expect(entity.meta.rbac.list.roles).toStrictEqual(['superadmin', 'admin']);
       expect(entity.meta.contracts).toStrictEqual([]);
       expect(entity.meta.oasComposition).toStrictEqual({
-        mode: '', refs: [], externalRefs: [], discriminator: ''
+        mode: '',
+        refs: [],
+        externalRefs: [],
+        discriminator: ''
       });
     });
 
     it('keeps rich input, merging rbac rules over the defaults', () => {
       expect.hasAssertions();
-      const entity = normalizeEntityInput({
-        id: 'e-9',
-        name: 'Order',
-        x: 100,
-        y: 200,
-        fields: [{ name: 'total', type: 'number' }],
-        meta: {
-          aggregateRoot: true,
-          invariants: ['a', ' b ', ''],
-          rbac: {
-            list: { roles: ['admin'], tenantScoped: false },
-            delete: { roles: 'nope', tenantScoped: 'yes' }
-          },
-          contracts: [{ name: 'Placed' }],
-          oasComposition: {
-            mode: 'allOf', refs: 'A,B', externalRefs: ['X'], discriminator: 'kind'
+      const entity = normalizeEntityInput(
+        {
+          id: 'e-9',
+          name: 'Order',
+          x: 100,
+          y: 200,
+          fields: [{ name: 'total', type: 'number' }],
+          meta: {
+            aggregateRoot: true,
+            invariants: ['a', ' b ', ''],
+            rbac: {
+              list: { roles: ['admin'], tenantScoped: false },
+              delete: { roles: 'nope', tenantScoped: 'yes' }
+            },
+            contracts: [{ name: 'Placed' }],
+            oasComposition: {
+              mode: 'allOf',
+              refs: 'A,B',
+              externalRefs: ['X'],
+              discriminator: 'kind'
+            }
           }
-        }
-      }, 1);
+        },
+        1
+      );
       expect(entity.id).toBe('e-9');
       expect(entity.x).toBe(100);
       expect(entity.y).toBe(200);
@@ -712,7 +846,10 @@ describe('designer state core (JUM-468)', () => {
       expect(entity.meta.contracts).toHaveLength(1);
       expect(entity.meta.contracts[0].name).toBe('Placed');
       expect(entity.meta.oasComposition).toStrictEqual({
-        mode: 'allOf', refs: ['A', 'B'], externalRefs: ['X'], discriminator: 'kind'
+        mode: 'allOf',
+        refs: ['A', 'B'],
+        externalRefs: ['X'],
+        discriminator: 'kind'
       });
     });
   });
@@ -740,23 +877,26 @@ describe('designer state core (JUM-468)', () => {
 
     it('keeps rich input including context lists and a valid color', () => {
       expect.hasAssertions();
-      const domain = normalizeDomainInput({
-        id: 'd-1',
-        name: 'Sales',
-        color: '#A1B2C3',
-        x: 5,
-        y: 6,
-        context: {
-          ubiquitousLanguage: 'UL',
-          ownerTeam: 'Team',
-          upstreamDependencies: 'a,b',
-          downstreamDependencies: ['c'],
-          integrationChannel: 'ch',
-          packageDependencies: 'p',
-          sharedValueObjects: ['v']
+      const domain = normalizeDomainInput(
+        {
+          id: 'd-1',
+          name: 'Sales',
+          color: '#A1B2C3',
+          x: 5,
+          y: 6,
+          context: {
+            ubiquitousLanguage: 'UL',
+            ownerTeam: 'Team',
+            upstreamDependencies: 'a,b',
+            downstreamDependencies: ['c'],
+            integrationChannel: 'ch',
+            packageDependencies: 'p',
+            sharedValueObjects: ['v']
+          },
+          entities: [{ id: 'e-1', name: 'E' }]
         },
-        entities: [{ id: 'e-1', name: 'E' }]
-      }, 2);
+        2
+      );
       expect(domain.id).toBe('d-1');
       expect(domain.color).toBe('#A1B2C3');
       expect(domain.x).toBe(5);
@@ -914,7 +1054,9 @@ describe('designer state core (JUM-468)', () => {
       await core.loadState();
       expect(core.state.domains[0].name).toBe('Seed');
       expect(core.state.view).toStrictEqual(createDefaultView());
-      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe('Seed');
+      expect(JSON.parse(storage.map.get('service-management.v1') as string).domains[0].name).toBe(
+        'Seed'
+      );
     });
   });
 });
@@ -925,7 +1067,10 @@ describe('additive metadata fallback arms (JUM-493)', () => {
     const normalized = normalizeStatePayload({
       domains: [{ name: 'D', entities: [{ name: 'E', fields: [], meta: { provenance: {} } }] }]
     });
-    expect(normalized.domains[0].entities[0].meta.provenance).toStrictEqual({ package: '', version: '' });
+    expect(normalized.domains[0].entities[0].meta.provenance).toStrictEqual({
+      package: '',
+      version: ''
+    });
   });
 
   it('carries domain package identity and catalog metadata with field defaults', () => {
@@ -943,11 +1088,11 @@ describe('additive metadata fallback arms (JUM-493)', () => {
 
   it('reports a non-Error save rejection with the raw reason, never unhandled', async () => {
     expect.hasAssertions();
-    const seen: Array<{ status: string; reason?: string }> = [];
+    const seen: { status: string; reason?: string }[] = [];
     // A non-Error rejection is exactly the path under test: the reporter's
     // `(error && error.message) || error` fallback exists for rejections that
     // are not Error instances.
-    // eslint-disable-next-line prefer-promise-reject-errors
+
     const rejectingStore = { save: () => Promise.reject('disk-on-fire') };
     const core = createDesignerState({
       store: rejectingStore,
@@ -977,7 +1122,7 @@ describe('loadState recovery cause reporting (JUM-821)', () => {
         status: 'ok',
         payload: {
           get domains(): never {
-            // eslint-disable-next-line no-throw-literal
+            // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberate bare-value throw: the port must surface a non-Error corruption verbatim
             throw 'corrupt sector' as never;
           }
         }

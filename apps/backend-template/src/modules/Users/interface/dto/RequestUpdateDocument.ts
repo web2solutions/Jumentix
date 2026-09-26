@@ -1,4 +1,4 @@
-import { EDocumentType } from '@src/modules/ddd/valueObjects';
+import type { EDocumentType } from '@src/modules/ddd/valueObjects';
 
 export interface RequestUpdateDocument {
   id: string;

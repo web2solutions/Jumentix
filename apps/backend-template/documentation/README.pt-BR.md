@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/backend-template/documentation/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Hub de documentação de modelo de back-end
 
 Este é o centro de documentação técnica para o aplicativo de modelo de back-end usado pela Jumentix para inicializar serviços de back-end.

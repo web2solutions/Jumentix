@@ -42,9 +42,13 @@ async function main(): Promise<void> {
   // 3. The lock has not cleared. The record survives, with the attempt counted
   //    and the reason kept.
   console.log('2. drain #1  ', await queue.replay(handlers));
-  console.log('   pending   ', (await queue.pending()).map((r) => ({
-    attempts: r.attempts, lastError: r.lastError
-  })));
+  console.log(
+    '   pending   ',
+    (await queue.pending()).map((r) => ({
+      attempts: r.attempts,
+      lastError: r.lastError
+    }))
+  );
 
   // 4. The lock clears. The write lands, and the assertion that matters is the
   //    row — not that the queue drained.
@@ -57,9 +61,16 @@ async function main(): Promise<void> {
   //    permanent load.
   const stuck = new DeadLetterQueue({ maxAttempts: 2 });
   await stuck.enqueue({
-    entityName: 'User', resourceId: 'user-2', operation: 'update', payload: {}
+    entityName: 'User',
+    resourceId: 'user-2',
+    operation: 'update',
+    payload: {}
   });
-  const alwaysLocked = { update: async () => { throw new Error('still locked'); } };
+  const alwaysLocked = {
+    update: async () => {
+      throw new Error('still locked');
+    }
+  };
   await stuck.replay(alwaysLocked);
   const final = await stuck.replay(alwaysLocked);
   console.log('4. bound     ', final);

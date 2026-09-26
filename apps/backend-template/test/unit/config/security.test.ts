@@ -1,4 +1,4 @@
-import { isCorsOriginAllowed } from '@src/config/security';
+import isCorsOriginAllowed from '@src/config/security';
 
 describe('security config', () => {
   const originalEnv = process.env;

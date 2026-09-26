@@ -13,13 +13,13 @@ mature open-source framework with source-level traceability to the monorepo.
 
 ## Information Architecture
 
-| Section | Reader question | Typical content |
-| --- | --- | --- |
-| Concepts | Why does Jumentix work this way? | Architecture, domains, contracts, event-driven design |
-| Guides | How do I build a product? | REST, realtime, SPA/PWA, monolith, microservices |
-| Adapters | Which runtime or infrastructure should I use? | HTTP, database, and realtime adapters |
-| Packages | Which reusable library should I install? | Message mediator, runtime bootstrap, SDK packages |
-| Reference | What is the exact behavior? | Runtime contracts, commands, security, entities, events |
+| Section   | Reader question                               | Typical content                                         |
+| --------- | --------------------------------------------- | ------------------------------------------------------- |
+| Concepts  | Why does Jumentix work this way?              | Architecture, domains, contracts, event-driven design   |
+| Guides    | How do I build a product?                     | REST, realtime, SPA/PWA, monolith, microservices        |
+| Adapters  | Which runtime or infrastructure should I use? | HTTP, database, and realtime adapters                   |
+| Packages  | Which reusable library should I install?      | Message mediator, runtime bootstrap, SDK packages       |
+| Reference | What is the exact behavior?                   | Runtime contracts, commands, security, entities, events |
 
 Canonical English routes start at `/docs/jumentix`. Portuguese routes preserve the same hierarchy
 under `/docs/pt-BR/jumentix`.

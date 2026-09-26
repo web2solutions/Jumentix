@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 require('./ensure-built');
 
-const { main } = require('../dist/cli');
-const { runAdd, printAddHelp } = require('../dist/commands/add');
 const { parseArgv } = require('../dist/args');
+const { main } = require('../dist/cli');
+const { printAddHelp, runAdd } = require('../dist/commands/add');
 
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 
@@ -105,13 +105,9 @@ describe('add domain (JUM-850)', () => {
 
       const projectJson = JSON.parse(
         fs.readFileSync(path.join(project, '.jumentix', 'project.json'), 'utf8')
-      ) as { plan: { domains: Array<{ name?: string }> } };
-      expect(
-        projectJson.plan.domains.some((domain) => domain.name === 'Catalog')
-      ).toBe(true);
-      expect(
-        fs.existsSync(path.join(project, '.jumentix', 'manifest.json'))
-      ).toBe(true);
+      ) as { plan: { domains: { name?: string }[] } };
+      expect(projectJson.plan.domains.some((domain) => domain.name === 'Catalog')).toBe(true);
+      expect(fs.existsSync(path.join(project, '.jumentix', 'manifest.json'))).toBe(true);
     } finally {
       fs.rmSync(out, { recursive: true, force: true });
     }

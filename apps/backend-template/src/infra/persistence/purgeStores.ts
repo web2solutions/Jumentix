@@ -1,10 +1,10 @@
-import {
-  purgeTombstones,
-  TOMBSTONE_PURGE_TTL_DAYS,
-  type IIdReservationLedger,
-  type IPurgeReport,
-  type IPurgeStore,
-  type IStore
+import { purgeTombstones, TOMBSTONE_PURGE_TTL_DAYS } from '@jumentix/persistence-contracts';
+
+import type {
+  IIdReservationLedger,
+  IPurgeReport,
+  IPurgeStore,
+  IStore
 } from '@jumentix/persistence-contracts';
 
 export const adaptPurgeStore = (
@@ -14,7 +14,7 @@ export const adaptPurgeStore = (
   entity,
   async listTombstones() {
     const page = await store.getAll({}, { page: 1, size: 10_000, includeDeleted: true });
-    return (page.result || []).filter((row) => row.deletedAt);
+    return (page.result ?? []).filter((row) => row.deletedAt);
   },
   async hardDelete(id: string) {
     if (!store.hardDelete) {

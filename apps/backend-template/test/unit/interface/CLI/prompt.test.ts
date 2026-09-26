@@ -1,4 +1,4 @@
-import { Prompt } from '@src/interface/CLI/core/prompt';
+import Prompt from '@src/interface/CLI/core/prompt';
 
 describe('cli prompt', () => {
   it('asks and trims values', async () => {
@@ -6,7 +6,7 @@ describe('cli prompt', () => {
     const question = jest.fn().mockResolvedValue('  hello  ');
     const close = jest.fn();
 
-    const prompt = new Prompt(() => ({ question, close } as any));
+    const prompt = new Prompt(() => ({ question, close }) as any);
     const value = await prompt.ask('Type: ');
 
     expect(question).toHaveBeenCalledWith('Type: ');
@@ -17,14 +17,15 @@ describe('cli prompt', () => {
 
   it('keeps asking choose until a valid option is provided', async () => {
     expect.hasAssertions();
-    const question = jest.fn()
+    const question = jest
+      .fn()
       .mockResolvedValueOnce('0')
       .mockResolvedValueOnce('abc')
       .mockResolvedValueOnce('2');
     const close = jest.fn();
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-    const prompt = new Prompt(() => ({ question, close } as any));
+    const prompt = new Prompt(() => ({ question, close }) as any);
     const selected = await prompt.choose('Menu', ['One', 'Two', 'Three']);
 
     expect(selected).toBe(1);

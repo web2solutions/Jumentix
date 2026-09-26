@@ -1,16 +1,17 @@
-import {
-  beforeEach, describe, expect, it
-} from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
-import type { RouteLocationNormalized } from 'vue-router';
 
 import { requireAuthRedirect, requireSyncRedirect } from '@/router/guards';
 import { useAuthStore } from '@/stores/auth';
 
-const routeTo = (path: string, isPublic = false): RouteLocationNormalized => ({
-  path,
-  meta: isPublic ? { public: true } : {}
-}) as RouteLocationNormalized;
+import type { RouteLocationNormalized } from 'vue-router';
+
+const routeTo = (path: string, isPublic = false): RouteLocationNormalized =>
+  ({
+    path,
+    meta: isPublic ? { public: true } : {}
+  }) as RouteLocationNormalized;
 
 describe('router auth guard (JUM-760)', () => {
   beforeEach(() => {

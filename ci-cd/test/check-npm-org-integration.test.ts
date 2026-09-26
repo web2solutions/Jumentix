@@ -7,9 +7,9 @@
  */
 
 const {
+  checkNpmOrgAccess,
   NPM_INSTALL_CANDIDATES,
   NPM_SCOPE,
-  checkNpmOrgAccess,
   resolveNpmCommand
 } = require('../check-npm-org-integration');
 
@@ -85,11 +85,13 @@ describe('resolveNpmCommand (JUM-859)', () => {
 
   it('fails closed when no absolute npm CLI resolves', () => {
     expect.hasAssertions();
-    expect(() => resolveNpmCommand({
-      env: {},
-      execPath: '/usr/bin/node',
-      exists: () => false
-    })).toThrow(/Could not resolve the npm CLI/);
+    expect(() =>
+      resolveNpmCommand({
+        env: {},
+        execPath: '/usr/bin/node',
+        exists: () => false
+      })
+    ).toThrow(/Could not resolve the npm CLI/);
   });
 
   it('imports without running main (no exit, no npm spawn)', () => {
@@ -122,24 +124,23 @@ describe('checkNpmOrgAccess (JUM-859)', () => {
       [`org ls ${NPM_SCOPE} --json`]: '{"users":["release-bot"]}'
     });
     expect(checkNpmOrgAccess(runner.runCommand)).toBe('release-bot');
-    expect(runner.calls).toStrictEqual([
-      ['whoami'],
-      ['org', 'ls', NPM_SCOPE, '--json']
-    ]);
+    expect(runner.calls).toStrictEqual([['whoami'], ['org', 'ls', NPM_SCOPE, '--json']]);
   });
 
   it('reports unauthenticated when whoami itself fails', () => {
     expect.hasAssertions();
     const runner = fakeRunner({ whoami: new Error('ENEEDAUTH') });
-    expect(() => checkNpmOrgAccess(runner.runCommand))
-      .toThrow('npm authentication is not configured. Run npm login for the target account.');
+    expect(() => checkNpmOrgAccess(runner.runCommand)).toThrow(
+      'npm authentication is not configured. Run npm login for the target account.'
+    );
   });
 
   it('reports unresolvable user when whoami answers empty', () => {
     expect.hasAssertions();
     const runner = fakeRunner({ whoami: '' });
-    expect(() => checkNpmOrgAccess(runner.runCommand))
-      .toThrow('Unable to resolve current npm user.');
+    expect(() => checkNpmOrgAccess(runner.runCommand)).toThrow(
+      'Unable to resolve current npm user.'
+    );
   });
 
   it('reports missing org access when org ls fails', () => {
@@ -148,8 +149,9 @@ describe('checkNpmOrgAccess (JUM-859)', () => {
       whoami: 'release-bot',
       [`org ls ${NPM_SCOPE} --json`]: new Error('E403')
     });
-    expect(() => checkNpmOrgAccess(runner.runCommand))
-      .toThrow(`Unable to access ${NPM_SCOPE} org membership. Ensure account has org access.`);
+    expect(() => checkNpmOrgAccess(runner.runCommand)).toThrow(
+      `Unable to access ${NPM_SCOPE} org membership. Ensure account has org access.`
+    );
   });
 
   it('reports unparsable membership when org ls answers non-JSON', () => {
@@ -158,8 +160,9 @@ describe('checkNpmOrgAccess (JUM-859)', () => {
       whoami: 'release-bot',
       [`org ls ${NPM_SCOPE} --json`]: 'not json at all'
     });
-    expect(() => checkNpmOrgAccess(runner.runCommand))
-      .toThrow(`Could not parse ${NPM_SCOPE} org members from npm CLI.`);
+    expect(() => checkNpmOrgAccess(runner.runCommand)).toThrow(
+      `Could not parse ${NPM_SCOPE} org members from npm CLI.`
+    );
   });
 
   it('reports unparsable membership when org ls answers JSON null', () => {
@@ -168,7 +171,8 @@ describe('checkNpmOrgAccess (JUM-859)', () => {
       whoami: 'release-bot',
       [`org ls ${NPM_SCOPE} --json`]: 'null'
     });
-    expect(() => checkNpmOrgAccess(runner.runCommand))
-      .toThrow(`Could not parse ${NPM_SCOPE} org members from npm CLI.`);
+    expect(() => checkNpmOrgAccess(runner.runCommand)).toThrow(
+      `Could not parse ${NPM_SCOPE} org members from npm CLI.`
+    );
   });
 });

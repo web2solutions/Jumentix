@@ -1,6 +1,4 @@
-import type { APIGatewayProxyEvent, APIGatewayProxyResult, Handler } from 'aws-lambda';
-import { BaseError } from '@src/infra/exceptions';
-import { sendErrorResponse } from '@src/interface/HTTP/adapters/aws/lambda/responses/sendErrorResponse';
+import sendErrorResponse from '@src/interface/HTTP/adapters/aws/lambda/responses/sendErrorResponse';
 import {
   LoginRequestEvent,
   LogoutRequestEvent,
@@ -22,27 +20,32 @@ import {
   UserPhoneUpdateRequestEvent,
   UserUpdateRequestEvent
 } from '@src/modules/Users';
-import { OrganizationCreateRequestEvent } from '@src/modules/Users/events/OrganizationCreateRequestEvent';
-import { OrganizationGetAllRequestEvent } from '@src/modules/Users/events/OrganizationGetAllRequestEvent';
-import { OrganizationGetOneRequestEvent } from '@src/modules/Users/events/OrganizationGetOneRequestEvent';
-import { OrganizationUpdateRequestEvent } from '@src/modules/Users/events/OrganizationUpdateRequestEvent';
-import { OrganizationDeleteRequestEvent } from '@src/modules/Users/events/OrganizationDeleteRequestEvent';
-import { OrganizationAddressCreateRequestEvent } from '@src/modules/Users/events/OrganizationAddressCreateRequestEvent';
-import { OrganizationAddressUpdateRequestEvent } from '@src/modules/Users/events/OrganizationAddressUpdateRequestEvent';
-import { OrganizationAddressDeleteRequestEvent } from '@src/modules/Users/events/OrganizationAddressDeleteRequestEvent';
-import { OrganizationPhoneCreateRequestEvent } from '@src/modules/Users/events/OrganizationPhoneCreateRequestEvent';
-import { OrganizationPhoneUpdateRequestEvent } from '@src/modules/Users/events/OrganizationPhoneUpdateRequestEvent';
-import { OrganizationPhoneDeleteRequestEvent } from '@src/modules/Users/events/OrganizationPhoneDeleteRequestEvent';
-import { OrganizationEmailCreateRequestEvent } from '@src/modules/Users/events/OrganizationEmailCreateRequestEvent';
-import { OrganizationEmailUpdateRequestEvent } from '@src/modules/Users/events/OrganizationEmailUpdateRequestEvent';
-import { OrganizationEmailDeleteRequestEvent } from '@src/modules/Users/events/OrganizationEmailDeleteRequestEvent';
+import OrganizationAddressCreateRequestEvent from '@src/modules/Users/events/OrganizationAddressCreateRequestEvent';
+import OrganizationAddressDeleteRequestEvent from '@src/modules/Users/events/OrganizationAddressDeleteRequestEvent';
+import OrganizationAddressUpdateRequestEvent from '@src/modules/Users/events/OrganizationAddressUpdateRequestEvent';
+import OrganizationCreateRequestEvent from '@src/modules/Users/events/OrganizationCreateRequestEvent';
+import OrganizationDeleteRequestEvent from '@src/modules/Users/events/OrganizationDeleteRequestEvent';
+import OrganizationEmailCreateRequestEvent from '@src/modules/Users/events/OrganizationEmailCreateRequestEvent';
+import OrganizationEmailDeleteRequestEvent from '@src/modules/Users/events/OrganizationEmailDeleteRequestEvent';
+import OrganizationEmailUpdateRequestEvent from '@src/modules/Users/events/OrganizationEmailUpdateRequestEvent';
+import OrganizationGetAllRequestEvent from '@src/modules/Users/events/OrganizationGetAllRequestEvent';
+import OrganizationGetOneRequestEvent from '@src/modules/Users/events/OrganizationGetOneRequestEvent';
+import OrganizationPhoneCreateRequestEvent from '@src/modules/Users/events/OrganizationPhoneCreateRequestEvent';
+import OrganizationPhoneDeleteRequestEvent from '@src/modules/Users/events/OrganizationPhoneDeleteRequestEvent';
+import OrganizationPhoneUpdateRequestEvent from '@src/modules/Users/events/OrganizationPhoneUpdateRequestEvent';
+import OrganizationUpdateRequestEvent from '@src/modules/Users/events/OrganizationUpdateRequestEvent';
+
 import {
   authController,
-  userController,
-  organizationController,
   getSchemaOAS,
+  organizationController,
+  userController,
   withLambdaContext
 } from './runtime';
+
+import type { APIGatewayProxyEvent, APIGatewayProxyResult, Handler } from 'aws-lambda';
+
+import type { BaseError } from '@src/infra/exceptions';
 
 type OperationId =
   | 'login'
@@ -79,25 +82,32 @@ type OperationId =
   | 'updateOrganizationEmail'
   | 'deleteOrganizationEmail';
 
-type OperationConfig = {
+interface OperationConfig {
   statusCode: number;
   controllerKey:
-    | keyof typeof userController
-    | keyof typeof authController
-    | keyof typeof organizationController;
+    keyof typeof userController | keyof typeof authController | keyof typeof organizationController;
   target: 'user' | 'auth' | 'organization';
   EventClass: new (input: any) => any;
-};
+}
 
 const OPERATION_CONFIG: Record<OperationId, OperationConfig> = {
   login: {
-    target: 'auth', controllerKey: 'login', EventClass: LoginRequestEvent, statusCode: 200
+    target: 'auth',
+    controllerKey: 'login',
+    EventClass: LoginRequestEvent,
+    statusCode: 200
   },
   logout: {
-    target: 'auth', controllerKey: 'logout', EventClass: LogoutRequestEvent, statusCode: 200
+    target: 'auth',
+    controllerKey: 'logout',
+    EventClass: LogoutRequestEvent,
+    statusCode: 200
   },
   register: {
-    target: 'auth', controllerKey: 'register', EventClass: RegisterRequestEvent, statusCode: 201
+    target: 'auth',
+    controllerKey: 'register',
+    EventClass: RegisterRequestEvent,
+    statusCode: 201
   },
   updateUserPassword: {
     target: 'auth',
@@ -106,19 +116,34 @@ const OPERATION_CONFIG: Record<OperationId, OperationConfig> = {
     statusCode: 200
   },
   create: {
-    target: 'user', controllerKey: 'create', EventClass: UserCreateRequestEvent, statusCode: 201
+    target: 'user',
+    controllerKey: 'create',
+    EventClass: UserCreateRequestEvent,
+    statusCode: 201
   },
   getAll: {
-    target: 'user', controllerKey: 'getAll', EventClass: UserGetAllRequestEvent, statusCode: 200
+    target: 'user',
+    controllerKey: 'getAll',
+    EventClass: UserGetAllRequestEvent,
+    statusCode: 200
   },
   deleteOne: {
-    target: 'user', controllerKey: 'delete', EventClass: UserDeleteRequestEvent, statusCode: 200
+    target: 'user',
+    controllerKey: 'delete',
+    EventClass: UserDeleteRequestEvent,
+    statusCode: 200
   },
   update: {
-    target: 'user', controllerKey: 'update', EventClass: UserUpdateRequestEvent, statusCode: 200
+    target: 'user',
+    controllerKey: 'update',
+    EventClass: UserUpdateRequestEvent,
+    statusCode: 200
   },
   getOneById: {
-    target: 'user', controllerKey: 'getOneById', EventClass: UserGetOneRequestEvent, statusCode: 200
+    target: 'user',
+    controllerKey: 'getOneById',
+    EventClass: UserGetOneRequestEvent,
+    statusCode: 200
   },
   updatePassword: {
     target: 'user',
@@ -127,13 +152,22 @@ const OPERATION_CONFIG: Record<OperationId, OperationConfig> = {
     statusCode: 200
   },
   createEmail: {
-    target: 'user', controllerKey: 'createEmail', EventClass: UserEmailCreateRequestEvent, statusCode: 201
+    target: 'user',
+    controllerKey: 'createEmail',
+    EventClass: UserEmailCreateRequestEvent,
+    statusCode: 201
   },
   updateEmail: {
-    target: 'user', controllerKey: 'updateEmail', EventClass: UserEmailUpdateRequestEvent, statusCode: 200
+    target: 'user',
+    controllerKey: 'updateEmail',
+    EventClass: UserEmailUpdateRequestEvent,
+    statusCode: 200
   },
   deleteEmail: {
-    target: 'user', controllerKey: 'deleteEmail', EventClass: UserEmailDeleteRequestEvent, statusCode: 200
+    target: 'user',
+    controllerKey: 'deleteEmail',
+    EventClass: UserEmailDeleteRequestEvent,
+    statusCode: 200
   },
   createDocument: {
     target: 'user',
@@ -154,13 +188,22 @@ const OPERATION_CONFIG: Record<OperationId, OperationConfig> = {
     statusCode: 200
   },
   createPhone: {
-    target: 'user', controllerKey: 'createPhone', EventClass: UserPhoneCreateRequestEvent, statusCode: 201
+    target: 'user',
+    controllerKey: 'createPhone',
+    EventClass: UserPhoneCreateRequestEvent,
+    statusCode: 201
   },
   updatePhone: {
-    target: 'user', controllerKey: 'updatePhone', EventClass: UserPhoneUpdateRequestEvent, statusCode: 200
+    target: 'user',
+    controllerKey: 'updatePhone',
+    EventClass: UserPhoneUpdateRequestEvent,
+    statusCode: 200
   },
   deletePhone: {
-    target: 'user', controllerKey: 'deletePhone', EventClass: UserPhoneDeleteRequestEvent, statusCode: 200
+    target: 'user',
+    controllerKey: 'deletePhone',
+    EventClass: UserPhoneDeleteRequestEvent,
+    statusCode: 200
   },
   createOrganization: {
     target: 'organization',
@@ -258,11 +301,11 @@ const parseBody = (body: APIGatewayProxyEvent['body']) => {
   }
 };
 
-export const createLambdaOperationHandler = (operationId: OperationId): Handler => {
+const createLambdaOperationHandler = (operationId: OperationId): Handler => {
   const operation = OPERATION_CONFIG[operationId];
 
-  return async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    return withLambdaContext(event, async () => {
+  return async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> =>
+    withLambdaContext(event, async () => {
       try {
         const headers = event.headers || {};
         const authorization = headers.authorization || headers.Authorization || '';
@@ -273,26 +316,29 @@ export const createLambdaOperationHandler = (operationId: OperationId): Handler 
         } else if (operation.target === 'organization') {
           controller = organizationController;
         }
-        const method = controller[operation.controllerKey] as any;
+        const method = controller[operation.controllerKey];
 
         const domainEvent = new operation.EventClass({
           authorization,
           input: parseBody(event.body),
-          params: event.pathParameters || {},
-          queryString: event.queryStringParameters || {},
+          params: event.pathParameters ?? {},
+          queryString: event.queryStringParameters ?? {},
           schemaOAS
         });
 
-        const {
-          result, error, page, size, total
-        } = await method.bind(controller)(domainEvent);
+        const { result, error, page, size, total } = await method.bind(controller)(domainEvent);
         if (error) throw error;
 
-        const body = operationId === 'getAll' || operationId === 'getAllOrganizations'
-          ? {
-            result, error, page, size, total
-          }
-          : { result, error };
+        const body =
+          operationId === 'getAll' || operationId === 'getAllOrganizations'
+            ? {
+                result,
+                error,
+                page,
+                size,
+                total
+              }
+            : { result, error };
 
         return {
           statusCode: operation.statusCode,
@@ -302,5 +348,6 @@ export const createLambdaOperationHandler = (operationId: OperationId): Handler 
         return sendErrorResponse(error as BaseError);
       }
     });
-  };
 };
+
+export default createLambdaOperationHandler;

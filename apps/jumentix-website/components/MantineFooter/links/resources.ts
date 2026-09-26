@@ -1,4 +1,4 @@
-export const resources = [
+const resources = [
   {
     key: 'mantine-discord',
     title: 'Mantine Discord',
@@ -20,3 +20,5 @@ export const resources = [
     href: 'https://help.mantine.dev/'
   }
 ];
+
+export default resources;

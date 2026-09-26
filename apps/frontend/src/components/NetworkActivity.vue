@@ -28,7 +28,12 @@ const statusColor = (ok: boolean, status?: number): string => {
   <CDropdown variant="nav-item" placement="bottom-end" :aria-label="t('network.title')">
     <CDropdownToggle :caret="false">
       <span class="position-relative d-inline-flex align-items-center">
-        <CSpinner v-if="network.inFlight > 0" color="primary" size="sm" :aria-label="t('network.inFlight', { count: network.inFlight })" />
+        <CSpinner
+          v-if="network.inFlight > 0"
+          color="primary"
+          size="sm"
+          :aria-label="t('network.inFlight', { count: network.inFlight })"
+        />
         <CIcon v-else icon="cil-cloud-download" size="lg" />
         <CBadge
           v-if="network.inFlight > 0"
@@ -41,11 +46,7 @@ const statusColor = (ok: boolean, status?: number): string => {
       </span>
     </CDropdownToggle>
     <CDropdownMenu class="pt-0" style="min-width: 22rem">
-      <CDropdownItem
-        v-if="network.recent.length === 0"
-        disabled
-        class="text-body-secondary"
-      >
+      <CDropdownItem v-if="network.recent.length === 0" disabled class="text-body-secondary">
         {{ t('network.empty') }}
       </CDropdownItem>
       <CDropdownItem

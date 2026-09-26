@@ -1,13 +1,13 @@
-#!/usr/bin/env node
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const cp = require('child_process');
+const cp = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { emitsNoJavaScript } = require('./lib/emits-javascript.js');
 
 const ROOT = process.cwd();
-const LCOV_PATH = process.env.JUMENTIX_MERGED_LCOV
-  || path.join(ROOT, 'coverage', 'merged', 'lcov.info');
+const LCOV_PATH =
+  process.env.JUMENTIX_MERGED_LCOV || path.join(ROOT, 'coverage', 'merged', 'lcov.info');
 const LCOV_FALLBACK = path.join(ROOT, 'coverage', 'lcov.info');
 const threshold = Number(process.env.PATCH_COVERAGE_THRESHOLD || '99');
 // JUM-555: under selective gates, only evaluate files owned by selected layers.
@@ -45,10 +45,10 @@ const WEBSITE_CONTENT_META = /^apps\/jumentix-website\/content\/.*\/_meta\.ts$/;
 
 const coverageIgnorePatterns = (() => {
   try {
-    // eslint-disable-next-line global-require, import/no-dynamic-require
     const jestConfig = require(path.join(ROOT, 'jest.config.js'));
-    return (jestConfig.coveragePathIgnorePatterns || [])
-      .map((pattern) => new RegExp(pattern.replace('<rootDir>', ROOT)));
+    return (jestConfig.coveragePathIgnorePatterns || []).map(
+      (pattern) => new RegExp(pattern.replace('<rootDir>', ROOT))
+    );
   } catch {
     // No config to read: measure everything rather than assume an exclusion.
     return [];
@@ -79,25 +79,24 @@ const isCoverageSubject = (file) => {
   return !emitsNoJavaScript(absolute);
 };
 
-const run = (cmd) => cp.execSync(cmd, {
-  cwd: ROOT,
-  encoding: 'utf8',
-  stdio: ['ignore', 'pipe', 'pipe'],
-  maxBuffer: 1024 * 1024 * 32
-}).trim();
+const run = (cmd) =>
+  cp
+    .execSync(cmd, {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: 1024 * 1024 * 32
+    })
+    .trim();
 
 const resolveBaseRef = () => {
   const configuredBaseRef = String(process.env.JUMENTIX_PATCH_BASE_REF || '').trim();
-  const candidates = [
-    configuredBaseRef,
-    'origin/main',
-    'main'
-  ].filter(Boolean);
+  const candidates = [configuredBaseRef, 'origin/main', 'main'].filter(Boolean);
   for (const candidate of candidates) {
     try {
       run(`git rev-parse --verify ${candidate}`);
       return candidate;
-    } catch (error) {
+    } catch {
       // keep trying candidates
     }
   }
@@ -177,9 +176,7 @@ const fileOwnedBySelectedLayers = (file) => {
   if (selectedLayers.length === 0) return true;
   try {
     // Lazy require keeps this script usable without a manifest.
-    // eslint-disable-next-line global-require, import/no-dynamic-require
     const { readTestMap } = require('./lib/test-map');
-    // eslint-disable-next-line global-require, import/no-dynamic-require
     const { layersForFile } = require('./lib/layer-resolver');
     const manifest = readTestMap(path.join(ROOT, 'test-map.json'));
     const layers = layersForFile(manifest, file);
@@ -196,7 +193,9 @@ const fileOwnedBySelectedLayers = (file) => {
 const main = () => {
   const lcovPath = fs.existsSync(LCOV_PATH) ? LCOV_PATH : LCOV_FALLBACK;
   if (!fs.existsSync(lcovPath)) {
-    throw new Error(`Coverage file not found at ${LCOV_PATH} or ${LCOV_FALLBACK}. Run unit tests with coverage first.`);
+    throw new Error(
+      `Coverage file not found at ${LCOV_PATH} or ${LCOV_FALLBACK}. Run unit tests with coverage first.`
+    );
   }
 
   const baseRef = resolveBaseRef();
@@ -242,18 +241,23 @@ const main = () => {
 
   if (ignoredNotSubject > 0) {
     console.log(
-      `[patch-coverage] ignored ${ignoredNotSubject} changed line(s) in test files and in `
-        + 'paths jest.config.js excludes from coverage'
+      `[patch-coverage] ignored ${ignoredNotSubject} changed line(s) in test files and in ` +
+        'paths jest.config.js excludes from coverage'
     );
   }
 
   if (ignoredUnselected > 0) {
-    console.log(`[patch-coverage] ignored ${ignoredUnselected} changed line(s) outside JUMENTIX_SELECTED_LAYERS=[${selectedLayers.join(',')}]`);
+    console.log(
+      `[patch-coverage] ignored ${ignoredUnselected} changed line(s) outside JUMENTIX_SELECTED_LAYERS=[${selectedLayers.join(',')}]`
+    );
   }
 
   if (total === 0) {
-    console.log(`[patch-coverage] No changed executable TypeScript lines found. threshold=${threshold}%`);
-    process.exit(0);
+    console.log(
+      `[patch-coverage] No changed executable TypeScript lines found. threshold=${threshold}%`
+    );
+    process.exitCode = 0;
+    return;
   }
 
   const pct = Number(((covered / total) * 100).toFixed(2));
@@ -268,7 +272,8 @@ const main = () => {
         console.error(`  ... and ${missing.length - 80} more`);
       }
     }
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log('[patch-coverage] PASS');
@@ -278,5 +283,5 @@ try {
   main();
 } catch (error) {
   console.error('[patch-coverage] ERROR:', error.message);
-  process.exit(1);
+  process.exitCode = 1;
 }

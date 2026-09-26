@@ -15,11 +15,11 @@ import { RestAPI } from '@src/interface/HTTP/RestAPI';
  * because `started` is private, and Jest typechecks while Bun does not — so
  * that mistake passes one runner and fails the other.
  */
-type LifecycleApi = {
+interface LifecycleApi {
   start: () => Promise<void>;
   stop: () => Promise<void>;
   started: boolean;
-};
+}
 
 function apiWith(worker?: { start: jest.Mock; stop: jest.Mock }) {
   const api = Object.create(RestAPI.prototype) as Record<string, unknown>;
@@ -29,11 +29,15 @@ function apiWith(worker?: { start: jest.Mock; stop: jest.Mock }) {
   api.started = false;
   api.databaseClient = {
     connect: jest.fn(),
-    disconnect: jest.fn(() => { order.push('database'); })
+    disconnect: jest.fn(() => {
+      order.push('database');
+    })
   };
   api.keyValueStorageClient = {
     connect: jest.fn(),
-    disconnect: jest.fn(() => { order.push('key-value'); })
+    disconnect: jest.fn(() => {
+      order.push('key-value');
+    })
   };
   api.server = { start: jest.fn(), stop: jest.fn() };
   api.usersComposition = composition;
@@ -67,7 +71,9 @@ describe('restAPI dead-letter replay lifecycle (JUM-53)', () => {
     const order: string[] = [];
     const worker = {
       start: jest.fn(),
-      stop: jest.fn(() => { order.push('worker'); })
+      stop: jest.fn(() => {
+        order.push('worker');
+      })
     };
     const { api, order: clientOrder } = apiWith(worker);
 

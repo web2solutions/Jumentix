@@ -1,14 +1,19 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 
+const {
+  buildBoilerplateBundleDocument,
+  buildOasDocument,
+  buildOasDocumentSet,
+  filterOasDocumentForService
+} = require('@jumentix/designer-core/exporters/designerExporters.js');
+const { buildDomainsFromOas } = require('@jumentix/designer-core/importers/designerImporters.js');
 const {
   addArchitectureLink,
   addArchitectureService,
   assignDomainToService,
   buildArchitectureFromOas,
-  findUsersDomain,
   buildMonolithArchitecture,
+  findUsersDomain,
   normalizeArchitectureInput,
   normalizeArchitectureLink,
   normalizeArchitectureService,
@@ -16,17 +21,10 @@ const {
   removeArchitectureService,
   serviceForDomain
 } = require('@jumentix/designer-core/model/architecture.js');
-const { collectArchitectureIssues } = require(
-  '@jumentix/designer-core/validation/architectureValidation.js'
-);
-const {
-  buildBoilerplateBundleDocument,
-  buildOasDocument,
-  buildOasDocumentSet,
-  filterOasDocumentForService
-} = require('@jumentix/designer-core/exporters/designerExporters.js');
 const { normalizeStatePayload } = require('@jumentix/designer-core/state/designerState.js');
-const { buildDomainsFromOas } = require('@jumentix/designer-core/importers/designerImporters.js');
+const {
+  default: collectArchitectureIssues
+} = require('@jumentix/designer-core/validation/architectureValidation.js');
 
 function usersAndBilling() {
   return [
@@ -44,7 +42,10 @@ describe('architecture model (JUM-815)', () => {
       id: 'core',
       kind: 'core'
     });
-    expect(parsed.architecture.services[0].domains).toStrictEqual(['domain-users', 'domain-billing']);
+    expect(parsed.architecture.services[0].domains).toStrictEqual([
+      'domain-users',
+      'domain-billing'
+    ]);
   });
 
   it('rejects missing Core and a Core without Users', () => {
@@ -53,9 +54,15 @@ describe('architecture model (JUM-815)', () => {
     const noCore = {
       domains,
       architecture: {
-        services: [{
-          id: 'billing-svc', name: 'Billing', kind: 'domain', url: 'http://b', domains: ['domain-users', 'domain-billing']
-        }],
+        services: [
+          {
+            id: 'billing-svc',
+            name: 'Billing',
+            kind: 'domain',
+            url: 'http://b',
+            domains: ['domain-users', 'domain-billing']
+          }
+        ],
         links: []
       }
     };
@@ -81,8 +88,16 @@ describe('architecture model (JUM-815)', () => {
         links: []
       }
     };
-    expect(collectArchitectureIssues(noCore).some((issue: { message: string }) => issue.message.includes('exactly one Core'))).toBe(true);
-    expect(collectArchitectureIssues(missingUsers).some((issue: { message: string }) => issue.message.includes('Users domain'))).toBe(true);
+    expect(
+      collectArchitectureIssues(noCore).some((issue: { message: string }) =>
+        issue.message.includes('exactly one Core')
+      )
+    ).toBe(true);
+    expect(
+      collectArchitectureIssues(missingUsers).some((issue: { message: string }) =>
+        issue.message.includes('Users domain')
+      )
+    ).toBe(true);
   });
 
   it('warns when an x-relation crosses a service boundary', () => {
@@ -101,39 +116,62 @@ describe('architecture model (JUM-815)', () => {
     ];
     const state = {
       domains,
-      relationships: [{
-        id: 'rel-1',
-        name: 'Invoice belongs to User',
-        fromEntityId: 'entity-invoice',
-        toEntityId: 'entity-user',
-        fromCardinality: 'N',
-        toCardinality: '1'
-      }],
+      relationships: [
+        {
+          id: 'rel-1',
+          name: 'Invoice belongs to User',
+          fromEntityId: 'entity-invoice',
+          toEntityId: 'entity-user',
+          fromCardinality: 'N',
+          toCardinality: '1'
+        }
+      ],
       architecture: {
         services: [
           {
-            id: 'core', name: 'Core', kind: 'core', url: 'http://localhost:3000/api/1.0.0', domains: ['domain-users']
+            id: 'core',
+            name: 'Core',
+            kind: 'core',
+            url: 'http://localhost:3000/api/1.0.0',
+            domains: ['domain-users']
           },
           {
-            id: 'billing-svc', name: 'Billing', kind: 'domain', url: 'http://localhost:3001/api/1.0.0', domains: ['domain-billing']
+            id: 'billing-svc',
+            name: 'Billing',
+            kind: 'domain',
+            url: 'http://localhost:3001/api/1.0.0',
+            domains: ['domain-billing']
           }
         ],
         links: []
       }
     };
-    const warnings = collectArchitectureIssues(state).filter((issue: { severity: string }) => issue.severity === 'warn');
-    expect(warnings.some((issue: { message: string }) => issue.message.includes('crosses'))).toBe(true);
+    const warnings = collectArchitectureIssues(state).filter(
+      (issue: { severity: string }) => issue.severity === 'warn'
+    );
+    expect(warnings.some((issue: { message: string }) => issue.message.includes('crosses'))).toBe(
+      true
+    );
   });
 
   it('assigns a domain to exactly one service when moved', () => {
     expect.hasAssertions();
     const domains = usersAndBilling();
     let architecture = buildMonolithArchitecture(domains);
-    architecture = addArchitectureService(architecture, {
-      id: 'billing-svc', name: 'Billing', kind: 'domain', url: 'http://localhost:3001/api/1.0.0'
-    }, domains);
+    architecture = addArchitectureService(
+      architecture,
+      {
+        id: 'billing-svc',
+        name: 'Billing',
+        kind: 'domain',
+        url: 'http://localhost:3001/api/1.0.0'
+      },
+      domains
+    );
     architecture = assignDomainToService(architecture, 'domain-billing', 'billing-svc');
-    const billing = architecture.services.find((service: { id: string }) => service.id === 'billing-svc');
+    const billing = architecture.services.find(
+      (service: { id: string }) => service.id === 'billing-svc'
+    );
     const core = architecture.services.find((service: { kind: string }) => service.kind === 'core');
     expect(billing.domains).toStrictEqual(['domain-billing']);
     expect(core.domains).toStrictEqual(['domain-users']);
@@ -143,15 +181,19 @@ describe('architecture model (JUM-815)', () => {
     expect.hasAssertions();
     const domains = usersAndBilling();
     const knownDomainIds = new Set(domains.map((domain) => domain.id));
-    const normalizedService = normalizeArchitectureService({
-      kind: 'worker',
-      domains: 'domain-users, missing-domain',
-      width: 20,
-      height: 40,
-      x: Number.NaN,
-      y: 24,
-      deployTargetId: ' pm2-dev '
-    }, 1, knownDomainIds);
+    const normalizedService = normalizeArchitectureService(
+      {
+        kind: 'worker',
+        domains: 'domain-users, missing-domain',
+        width: 20,
+        height: 40,
+        x: Number.NaN,
+        y: 24,
+        deployTargetId: ' pm2-dev '
+      },
+      1,
+      knownDomainIds
+    );
     expect(normalizedService).toMatchObject({
       id: 'service-import-2',
       name: 'Service_2',
@@ -165,7 +207,11 @@ describe('architecture model (JUM-815)', () => {
       height: 140
     });
 
-    const normalizedCore = normalizeArchitectureService({ kind: 'core', domains: ['domain-billing'] }, 0, knownDomainIds);
+    const normalizedCore = normalizeArchitectureService(
+      { kind: 'core', domains: ['domain-billing'] },
+      0,
+      knownDomainIds
+    );
     expect(normalizedCore).toMatchObject({
       id: 'core',
       name: 'Core',
@@ -173,13 +219,21 @@ describe('architecture model (JUM-815)', () => {
     });
 
     const knownServiceIds = new Set(['core', 'billing-svc']);
-    expect(normalizeArchitectureLink({ from: 'core', to: 'missing' }, 0, knownServiceIds)).toBeNull();
-    expect(normalizeArchitectureLink({
-      from: 'core',
-      to: 'billing-svc',
-      protocol: 'soap',
-      contractRef: '  openapi.yaml#/paths/~1billing  '
-    }, 2, knownServiceIds)).toStrictEqual({
+    expect(
+      normalizeArchitectureLink({ from: 'core', to: 'missing' }, 0, knownServiceIds)
+    ).toBeNull();
+    expect(
+      normalizeArchitectureLink(
+        {
+          from: 'core',
+          to: 'billing-svc',
+          protocol: 'soap',
+          contractRef: '  openapi.yaml#/paths/~1billing  '
+        },
+        2,
+        knownServiceIds
+      )
+    ).toStrictEqual({
       id: 'arch-link-import-3',
       from: 'core',
       to: 'billing-svc',
@@ -199,7 +253,9 @@ describe('architecture model (JUM-815)', () => {
       protocol: 'rest',
       contractRef: ''
     });
-    expect(buildMonolithArchitecture(null, { url: '   ', deployTargetId: '   ' }).services[0]).toMatchObject({
+    expect(
+      buildMonolithArchitecture(null, { url: '   ', deployTargetId: '   ' }).services[0]
+    ).toMatchObject({
       domains: [],
       url: 'http://localhost:3000/api/1.0.0',
       deployTargetId: ''
@@ -208,20 +264,26 @@ describe('architecture model (JUM-815)', () => {
 
   it('keeps every domain assigned and reconnects domains when services are removed', () => {
     expect.hasAssertions();
-    const domains = [
-      ...usersAndBilling(),
-      { id: 'domain-catalog', name: 'Catalog', entities: [] }
-    ];
-    const normalized = normalizeArchitectureInput({
-      services: [{
-        id: 'billing-svc',
-        name: 'Billing',
-        kind: 'domain',
-        domains: ['domain-billing']
-      }],
-      links: []
-    }, domains);
-    expect(normalized.services[0].domains).toStrictEqual(['domain-billing', 'domain-users', 'domain-catalog']);
+    const domains = [...usersAndBilling(), { id: 'domain-catalog', name: 'Catalog', entities: [] }];
+    const normalized = normalizeArchitectureInput(
+      {
+        services: [
+          {
+            id: 'billing-svc',
+            name: 'Billing',
+            kind: 'domain',
+            domains: ['domain-billing']
+          }
+        ],
+        links: []
+      },
+      domains
+    );
+    expect(normalized.services[0].domains).toStrictEqual([
+      'domain-billing',
+      'domain-users',
+      'domain-catalog'
+    ]);
     expect(findUsersDomain('not-an-array')).toBeNull();
     expect(findUsersDomain(domains)?.id).toBe('domain-users');
     expect(serviceForDomain(normalized, 'domain-catalog')?.id).toBe('billing-svc');
@@ -243,42 +305,83 @@ describe('architecture model (JUM-815)', () => {
           domains: ['domain-billing']
         }
       ],
-      links: [{
-        id: 'link-1', from: 'core', to: 'billing-svc', protocol: 'grpc'
-      }]
+      links: [
+        {
+          id: 'link-1',
+          from: 'core',
+          to: 'billing-svc',
+          protocol: 'grpc'
+        }
+      ]
     };
     const removed = removeArchitectureService(expanded, 'billing-svc', domains);
     expect(removed.services).toHaveLength(1);
-    expect(removed.services[0].domains.sort()).toStrictEqual(['domain-billing', 'domain-catalog', 'domain-users']);
+    expect(removed.services[0].domains.sort()).toStrictEqual([
+      'domain-billing',
+      'domain-catalog',
+      'domain-users'
+    ]);
     expect(removed.links).toStrictEqual([]);
-    expect(removeArchitectureService({ services: [{ id: 'core', kind: 'core', domains: [] }], links: [] }, 'core', domains).services[0].id)
-      .toBe('core');
+    expect(
+      removeArchitectureService(
+        { services: [{ id: 'core', kind: 'core', domains: [] }], links: [] },
+        'core',
+        domains
+      ).services[0].id
+    ).toBe('core');
     const removedMissing = removeArchitectureService(expanded, 'missing-svc', domains);
     expect(removedMissing.services).toHaveLength(2);
-    expect(removeArchitectureService({
-      services: [
+    expect(
+      removeArchitectureService(
         {
-          id: 'a', name: 'A', kind: 'domain', domains: ['domain-users']
+          services: [
+            {
+              id: 'a',
+              name: 'A',
+              kind: 'domain',
+              domains: ['domain-users']
+            },
+            {
+              id: 'b',
+              name: 'B',
+              kind: 'domain',
+              domains: ['domain-billing']
+            }
+          ],
+          links: []
         },
-        {
-          id: 'b', name: 'B', kind: 'domain', domains: ['domain-billing']
-        }
-      ],
-      links: []
-    }, 'b', domains).services[0].domains).toContain('domain-billing');
-    const unchangedLinks = addArchitectureLink(expanded, { from: 'core', to: 'missing', protocol: 'rest' }, domains);
-    expect(unchangedLinks.links).toStrictEqual([{
-      id: 'link-1',
-      from: 'core',
-      to: 'billing-svc',
-      protocol: 'grpc',
-      contractRef: ''
-    }]);
+        'b',
+        domains
+      ).services[0].domains
+    ).toContain('domain-billing');
+    const unchangedLinks = addArchitectureLink(
+      expanded,
+      { from: 'core', to: 'missing', protocol: 'rest' },
+      domains
+    );
+    expect(unchangedLinks.links).toStrictEqual([
+      {
+        id: 'link-1',
+        from: 'core',
+        to: 'billing-svc',
+        protocol: 'grpc',
+        contractRef: ''
+      }
+    ]);
     expect(serviceForDomain(null, 'domain-users')).toBeNull();
-    expect(assignDomainToService(null, 'domain-users', 'missing')).toStrictEqual({ services: [], links: [] });
-    expect(addArchitectureService(null, { domains: 'domain-users' }, domains).services).toHaveLength(2);
-    expect(normalizeArchitectureInput({ services: [{ id: 'core', kind: 'core', domains: [] }], links: 'bad-links' }, null).links)
-      .toStrictEqual([]);
+    expect(assignDomainToService(null, 'domain-users', 'missing')).toStrictEqual({
+      services: [],
+      links: []
+    });
+    expect(
+      addArchitectureService(null, { domains: 'domain-users' }, domains).services
+    ).toHaveLength(2);
+    expect(
+      normalizeArchitectureInput(
+        { services: [{ id: 'core', kind: 'core', domains: [] }], links: 'bad-links' },
+        null
+      ).links
+    ).toStrictEqual([]);
   });
 
   it('imports architecture services from OAS service, server and schema metadata', () => {
@@ -288,48 +391,66 @@ describe('architecture model (JUM-815)', () => {
     expect(fallback.services).toHaveLength(1);
     expect(fallback.services[0].id).toBe('core');
 
-    const architecture = buildArchitectureFromOas({
-      openapi: '3.1.0',
-      servers: [
-        { url: 'http://core.example/api', 'x-service-id': 'core' },
-        { url: 'http://billing.example/api', 'x-service-id': 'billing-svc' },
-        { 'x-service-id': 'empty-url' },
-        { url: 'http://missing-id.example/api' }
-      ],
-      'x-services': [
-        { id: 'core', name: 'Core', kind: 'core' },
-        { id: 'billing-svc', name: 'Billing', kind: 'domain' },
-        { name: 'Generated', domains: 'domain-billing' }
-      ],
-      components: {
-        schemas: {
-          User: { 'x-service': 'core', 'x-domain': 'Users' },
-          Invoice: { 'x-service': 'billing-svc', 'x-domain': 'Billing' },
-          Ignored: { 'x-service': '', 'x-domain': 'Billing' }
-        }
-      },
-      'x-architecture-links': [
-        {
-          id: 'core-to-billing', from: 'core', to: 'billing-svc', protocol: 'grpc'
+    const architecture = buildArchitectureFromOas(
+      {
+        openapi: '3.1.0',
+        servers: [
+          { url: 'http://core.example/api', 'x-service-id': 'core' },
+          { url: 'http://billing.example/api', 'x-service-id': 'billing-svc' },
+          { 'x-service-id': 'empty-url' },
+          { url: 'http://missing-id.example/api' }
+        ],
+        'x-services': [
+          { id: 'core', name: 'Core', kind: 'core' },
+          { id: 'billing-svc', name: 'Billing', kind: 'domain' },
+          { name: 'Generated', domains: 'domain-billing' }
+        ],
+        components: {
+          schemas: {
+            User: { 'x-service': 'core', 'x-domain': 'Users' },
+            Invoice: { 'x-service': 'billing-svc', 'x-domain': 'Billing' },
+            Ignored: { 'x-service': '', 'x-domain': 'Billing' }
+          }
         },
-        {
-          id: 'bad-link', from: 'core', to: 'missing-svc', protocol: 'rest'
-        }
-      ]
-    }, domains);
+        'x-architecture-links': [
+          {
+            id: 'core-to-billing',
+            from: 'core',
+            to: 'billing-svc',
+            protocol: 'grpc'
+          },
+          {
+            id: 'bad-link',
+            from: 'core',
+            to: 'missing-svc',
+            protocol: 'rest'
+          }
+        ]
+      },
+      domains
+    );
     const core = architecture.services.find((service: { id: string }) => service.id === 'core');
-    const billing = architecture.services.find((service: { id: string }) => service.id === 'billing-svc');
-    const generated = architecture.services.find((service: { id: string }) => service.id === 'service-import-3');
+    const billing = architecture.services.find(
+      (service: { id: string }) => service.id === 'billing-svc'
+    );
+    const generated = architecture.services.find(
+      (service: { id: string }) => service.id === 'service-import-3'
+    );
     expect(core).toMatchObject({ url: 'http://core.example/api', domains: ['domain-users'] });
-    expect(billing).toMatchObject({ url: 'http://billing.example/api', domains: ['domain-billing'] });
+    expect(billing).toMatchObject({
+      url: 'http://billing.example/api',
+      domains: ['domain-billing']
+    });
     expect(generated?.domains).toStrictEqual(['domain-billing']);
-    expect(architecture.links).toStrictEqual([{
-      id: 'core-to-billing',
-      from: 'core',
-      to: 'billing-svc',
-      protocol: 'grpc',
-      contractRef: ''
-    }]);
+    expect(architecture.links).toStrictEqual([
+      {
+        id: 'core-to-billing',
+        from: 'core',
+        to: 'billing-svc',
+        protocol: 'grpc',
+        contractRef: ''
+      }
+    ]);
     expect(buildArchitectureFromOas(null, null).services[0].domains).toStrictEqual([]);
   });
 
@@ -363,16 +484,35 @@ describe('architecture model (JUM-815)', () => {
             domains: []
           }
         ],
-        links: [{
-          id: 'link-1', from: 'core', to: 'catalog-svc', protocol: 'rest'
-        }]
+        links: [
+          {
+            id: 'link-1',
+            from: 'core',
+            to: 'catalog-svc',
+            protocol: 'rest'
+          }
+        ]
       }
     });
-    expect(issues.some((issue: { message: string }) => issue.message.includes('extra Core services'))).toBe(true);
-    expect(issues.some((issue: { message: string }) => issue.message.includes('requires a Users domain'))).toBe(true);
-    expect(issues.some((issue: { message: string }) => issue.message.includes('more than one service'))).toBe(true);
-    expect(issues.some((issue: { message: string }) => issue.message.includes('no declared interface adapter supports'))).toBe(true);
-    expect(collectArchitectureIssues({}).some((issue: { severity: string }) => issue.severity === 'error')).toBe(false);
+    expect(
+      issues.some((issue: { message: string }) => issue.message.includes('extra Core services'))
+    ).toBe(true);
+    expect(
+      issues.some((issue: { message: string }) => issue.message.includes('requires a Users domain'))
+    ).toBe(true);
+    expect(
+      issues.some((issue: { message: string }) => issue.message.includes('more than one service'))
+    ).toBe(true);
+    expect(
+      issues.some((issue: { message: string }) =>
+        issue.message.includes('no declared interface adapter supports')
+      )
+    ).toBe(true);
+    expect(
+      collectArchitectureIssues({}).some(
+        (issue: { severity: string }) => issue.severity === 'error'
+      )
+    ).toBe(false);
   });
 });
 
@@ -382,30 +522,38 @@ describe('per-service OAS (JUM-817)', () => {
       {
         id: 'domain-users',
         name: 'Users',
-        entities: [{
-          id: 'entity-user',
-          name: 'User',
-          fields: [{
-            name: 'id',
-            type: 'uuid',
-            required: true,
-            pk: true
-          }]
-        }]
+        entities: [
+          {
+            id: 'entity-user',
+            name: 'User',
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true
+              }
+            ]
+          }
+        ]
       },
       {
         id: 'domain-billing',
         name: 'Billing',
-        entities: [{
-          id: 'entity-invoice',
-          name: 'Invoice',
-          fields: [{
-            name: 'id',
-            type: 'uuid',
-            required: true,
-            pk: true
-          }]
-        }]
+        entities: [
+          {
+            id: 'entity-invoice',
+            name: 'Invoice',
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true
+              }
+            ]
+          }
+        ]
       }
     ];
     return normalizeStatePayload({
@@ -413,12 +561,16 @@ describe('per-service OAS (JUM-817)', () => {
       relationships: [],
       architecture: addArchitectureLink(
         assignDomainToService(
-          addArchitectureService(buildMonolithArchitecture(domains), {
-            id: 'billing-svc',
-            name: 'Billing',
-            kind: 'domain',
-            url: 'http://localhost:3001/api/1.0.0'
-          }, domains),
+          addArchitectureService(
+            buildMonolithArchitecture(domains),
+            {
+              id: 'billing-svc',
+              name: 'Billing',
+              kind: 'domain',
+              url: 'http://localhost:3001/api/1.0.0'
+            },
+            domains
+          ),
           'domain-billing',
           'billing-svc'
         ),
@@ -431,8 +583,13 @@ describe('per-service OAS (JUM-817)', () => {
   it('emits x-services, servers and x-service on operations', () => {
     expect.hasAssertions();
     const document = buildOasDocument(twoServiceState());
-    expect(document['x-services'].map((entry: { id: string }) => entry.id).sort()).toStrictEqual(['billing-svc', 'core']);
-    expect(document.servers.map((server: { 'x-service-id': string }) => server['x-service-id']).sort()).toStrictEqual(['billing-svc', 'core']);
+    expect(document['x-services'].map((entry: { id: string }) => entry.id).sort()).toStrictEqual([
+      'billing-svc',
+      'core'
+    ]);
+    expect(
+      document.servers.map((server: { 'x-service-id': string }) => server['x-service-id']).sort()
+    ).toStrictEqual(['billing-svc', 'core']);
     const userList = document.paths['/users/user'].get;
     const invoiceList = document.paths['/billing/invoice'].get;
     expect(userList['x-service']).toBe('core');
@@ -446,17 +603,21 @@ describe('per-service OAS (JUM-817)', () => {
     const billingOnly = filterOasDocumentForService(set.merged, 'billing-svc');
     expect(billingOnly.paths['/billing/invoice']).toBeDefined();
     expect(billingOnly.paths['/users/user']).toBeUndefined();
-    expect(billingOnly.servers).toStrictEqual([{
-      url: 'http://localhost:3001/api/1.0.0',
-      'x-service-id': 'billing-svc'
-    }]);
+    expect(billingOnly.servers).toStrictEqual([
+      {
+        url: 'http://localhost:3001/api/1.0.0',
+        'x-service-id': 'billing-svc'
+      }
+    ]);
     const imported = buildDomainsFromOas(JSON.parse(JSON.stringify(set.merged)));
     expect(imported.ok).toBe(true);
-    const second = buildOasDocument(normalizeStatePayload({
-      domains: imported.domains,
-      relationships: imported.relationships,
-      architecture: imported.architecture
-    }));
+    const second = buildOasDocument(
+      normalizeStatePayload({
+        domains: imported.domains,
+        relationships: imported.relationships,
+        architecture: imported.architecture
+      })
+    );
     expect(second['x-services'].map((entry: { id: string }) => entry.id).sort()).toStrictEqual(
       set.merged['x-services'].map((entry: { id: string }) => entry.id).sort()
     );
@@ -536,10 +697,12 @@ describe('per-service OAS (JUM-817)', () => {
     expect(filteredMissing.paths).toStrictEqual({});
     expect(filteredMissing['x-services']).toStrictEqual([]);
 
-    const noEntityDocument = buildOasDocument(normalizeStatePayload({
-      domains: [{ id: 'domain-empty', name: 'Empty', entities: [] }],
-      relationships: []
-    }));
+    const noEntityDocument = buildOasDocument(
+      normalizeStatePayload({
+        domains: [{ id: 'domain-empty', name: 'Empty', entities: [] }],
+        relationships: []
+      })
+    );
     expect(noEntityDocument.components.schemas.ResourceDeleteResponse).toBeUndefined();
   });
 
@@ -551,24 +714,31 @@ describe('per-service OAS (JUM-817)', () => {
       (module: { files: Record<string, { path: string }> }) => Object.values(module.files)
     );
     const firstFile = initialFiles[0];
-    const overlaid = buildBoilerplateBundleDocument({
-      ...state,
-      codeWorkspace: {
-        files: {
-          [firstFile.path]: {
-            state: 'edited',
-            content: '// local edit'
-          },
-          'ignored.ts': {
-            state: 'generated',
-            content: '// ignored'
+    const overlaid = buildBoilerplateBundleDocument(
+      {
+        ...state,
+        codeWorkspace: {
+          files: {
+            [firstFile.path]: {
+              state: 'edited',
+              content: '// local edit'
+            },
+            'ignored.ts': {
+              state: 'generated',
+              content: '// ignored'
+            }
           }
         }
-      }
-    }, '2026-09-16T00:00:00.000Z');
-    const overlaidFiles = new Map(overlaid.modules.flatMap(
-      (module: { files: Record<string, { path: string }> }) => Object.values(module.files)
-    ).map((file: { path: string }) => [file.path, file]));
+      },
+      '2026-09-16T00:00:00.000Z'
+    );
+    const overlaidFiles = new Map(
+      overlaid.modules
+        .flatMap((module: { files: Record<string, { path: string }> }) =>
+          Object.values(module.files)
+        )
+        .map((file: { path: string }) => [file.path, file])
+    );
     const overlaidFile = overlaidFiles.get(firstFile.path);
     expect(overlaid.generatedAt).toBe('2026-09-16T00:00:00.000Z');
     expect(overlaidFile).toMatchObject({

@@ -42,6 +42,10 @@ function byPath(left, right) {
  * Accepts a file as readily as a directory: `run-suite.js` is handed both, and a
  * caller that had to know which it held would end up asking the filesystem twice.
  */
+function relative(target, root) {
+  return path.relative(root, target).replace(/\\/g, '/');
+}
+
 function listTestFiles(target, root) {
   if (!fs.existsSync(target)) return [];
 
@@ -49,14 +53,11 @@ function listTestFiles(target, root) {
     return TEST_FILE.test(target) ? [relative(target, root)] : [];
   }
 
-  return fs.readdirSync(target, { withFileTypes: true })
+  return fs
+    .readdirSync(target, { withFileTypes: true })
     .filter((entry) => !SKIP.includes(entry.name))
     .flatMap((entry) => listTestFiles(path.join(target, entry.name), root))
     .sort(byPath);
-}
-
-function relative(target, root) {
-  return path.relative(root, target).replace(/\\/g, '/');
 }
 
 /**
@@ -74,7 +75,8 @@ function suiteRoots(root) {
 
   // Sorted: `readdirSync` order is filesystem-dependent, and an unmapped-suite
   // report that changes order between machines reads like a different failure.
-  const packageRoots = fs.readdirSync(packagesDir, { withFileTypes: true })
+  const packageRoots = fs
+    .readdirSync(packagesDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join('packages', entry.name, 'test'))
     .sort(byPath);
@@ -85,9 +87,9 @@ function suiteRoots(root) {
 
 /** Every suite file in the repository, whether or not the manifest lists it. */
 function allTestFilesOnDisk(root, roots = suiteRoots(root)) {
-  return [...new Set(
-    roots.flatMap((suiteRoot) => listTestFiles(path.join(root, suiteRoot), root))
-  )].sort(byPath);
+  return [
+    ...new Set(roots.flatMap((suiteRoot) => listTestFiles(path.join(root, suiteRoot), root)))
+  ].sort(byPath);
 }
 
 /**
@@ -102,10 +104,10 @@ function unmappedTestFiles(manifest, root, roots) {
 }
 
 module.exports = {
-  SKIP,
-  byPath,
   allTestFilesOnDisk,
+  byPath,
   listTestFiles,
+  SKIP,
   suiteRoots,
   unmappedTestFiles
 };

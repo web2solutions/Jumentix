@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -42,31 +41,35 @@ function declaration(emails: string[]): string {
 
 /** A fake `git log` returning the given commits in the checker's own format. */
 function gitReturning(
-  commits: Array<{ sha: string; author: string; committer?: string }>
+  commits: { sha: string; author: string; committer?: string }[]
 ): () => string {
-  return () => commits
-    .map((commit) => [
-      commit.sha,
-      'Some Name',
-      commit.author,
-      'Some Name',
-      commit.committer ?? commit.author
-    ].join(US))
-    .join('\n');
+  return () =>
+    commits
+      .map((commit) =>
+        [
+          commit.sha,
+          'Some Name',
+          commit.author,
+          'Some Name',
+          commit.committer ?? commit.author
+        ].join(US)
+      )
+      .join('\n');
 }
 
 /** A fake `git var`, which returns "Name <email> <timestamp> <offset>". */
 function identReturning(author: string, committer?: string) {
   const asCommitter = committer ?? author;
-  return (args: string[]) => (args[1] === 'GIT_AUTHOR_IDENT'
-    ? `Someone <${author}> 1700000000 +0000`
-    : `Someone <${asCommitter}> 1700000000 +0000`);
+  return (args: string[]) =>
+    args[1] === 'GIT_AUTHOR_IDENT'
+      ? `Someone <${author}> 1700000000 +0000`
+      : `Someone <${asCommitter}> 1700000000 +0000`;
 }
 
 function runWith(options: {
   emails?: string[];
   declarationText?: string;
-  commits?: Array<{ sha: string; author: string; committer?: string }>;
+  commits?: { sha: string; author: string; committer?: string }[];
   runGit?: () => string;
 }) {
   return run({
@@ -104,7 +107,10 @@ function hermeticGitEnv(): NodeJS.ProcessEnv {
 function runChecker(workingDirectory: string): { code: number; output: string } {
   try {
     const output = execFileSync('bun', [checkerPath], {
-      cwd: workingDirectory, encoding: 'utf8', stdio: 'pipe', env: hermeticGitEnv()
+      cwd: workingDirectory,
+      encoding: 'utf8',
+      stdio: 'pipe',
+      env: hermeticGitEnv()
     });
     return { code: 0, output };
   } catch (error) {
@@ -153,11 +159,13 @@ describe('check-commit-authorship', () => {
 
       const result = runWith({
         emails: ['ok@example.com'],
-        commits: [{
-          sha: 'c'.repeat(40),
-          author: 'ok@example.com',
-          committer: 'stranger@elsewhere.test'
-        }]
+        commits: [
+          {
+            sha: 'c'.repeat(40),
+            author: 'ok@example.com',
+            committer: 'stranger@elsewhere.test'
+          }
+        ]
       });
 
       expect(result.ok).toBe(false);
@@ -199,7 +207,9 @@ describe('check-commit-authorship', () => {
       expect.hasAssertions();
 
       const result = run({
-        readFile: () => { throw new Error('ENOENT: no such file'); },
+        readFile: () => {
+          throw new Error('ENOENT: no such file');
+        },
         runGit: gitReturning([])
       });
 
@@ -281,10 +291,11 @@ describe('check-commit-authorship', () => {
 
       const ranges: string[] = [];
       const result = run({
-        readFile: () => JSON.stringify({
-          historyCutoff: { commit: FULL_HISTORY },
-          identities: [{ email: 'ok@example.com' }]
-        }),
+        readFile: () =>
+          JSON.stringify({
+            historyCutoff: { commit: FULL_HISTORY },
+            identities: [{ email: 'ok@example.com' }]
+          }),
         runGit: (args: string[]) => {
           ranges.push(args[1]);
           return '';
@@ -316,7 +327,9 @@ describe('check-commit-authorship', () => {
       expect.hasAssertions();
 
       const result = runWith({
-        runGit: () => { throw new Error('not a git repository'); }
+        runGit: () => {
+          throw new Error('not a git repository');
+        }
       });
 
       expect(result.ok).toBe(false);
@@ -376,7 +389,9 @@ describe('check-commit-authorship', () => {
 
       const result = checkConfiguredIdentity({
         readFile: () => declaration(['ok@example.com']),
-        runGit: () => { throw new Error('unable to auto-detect email address'); }
+        runGit: () => {
+          throw new Error('unable to auto-detect email address');
+        }
       });
 
       expect(result.ok).toBe(false);
@@ -405,7 +420,9 @@ describe('check-commit-authorship', () => {
       expect.hasAssertions();
 
       const result = checkConfiguredIdentity({
-        readFile: () => { throw new Error('ENOENT'); },
+        readFile: () => {
+          throw new Error('ENOENT');
+        },
         runGit: identReturning('ok@example.com')
       });
 
@@ -590,10 +607,12 @@ describe('check-commit-authorship', () => {
     it('lowercases and trims declared addresses', () => {
       expect.hasAssertions();
 
-      const parsed = parseDeclaration(JSON.stringify({
-        historyCutoff: { commit: CUTOFF },
-        identities: [{ email: '  Mixed@Case.Test  ' }]
-      }));
+      const parsed = parseDeclaration(
+        JSON.stringify({
+          historyCutoff: { commit: CUTOFF },
+          identities: [{ email: '  Mixed@Case.Test  ' }]
+        })
+      );
 
       expect(parsed.emails.has('mixed@case.test')).toBe(true);
     });
@@ -624,11 +643,12 @@ describe('check-commit-authorship', () => {
     beforeAll(() => {
       workdir = fs.mkdtempSync(path.join(os.tmpdir(), 'authorship-'));
 
-      const git = (...args: string[]) => execFileSync('git', args, {
-        cwd: workdir,
-        encoding: 'utf8',
-        env: hermeticGitEnv()
-      });
+      const git = (...args: string[]) =>
+        execFileSync('git', args, {
+          cwd: workdir,
+          encoding: 'utf8',
+          env: hermeticGitEnv()
+        });
 
       git('init', '-q', '-b', 'main');
 
@@ -692,7 +712,6 @@ describe('check-commit-authorship', () => {
  * dispatch paths and both exit codes are asserted here.
  */
 describe('check-commit-authorship CLI (JUM-681)', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const authorship = require('../check-commit-authorship') as {
     main: (
       argv: string[],

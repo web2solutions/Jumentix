@@ -1,9 +1,9 @@
 import {
-  validateValueAgainstOpenApiSchema,
   mapDataEntityToOpenApiSchema,
   throwIfDataEntityIsNotOpenApi31Compliant,
   throwIfDataEntityPayloadIsNotOpenApi31Compliant,
-  throwIfFieldDefinitionIsNotOpenApi31Compliant
+  throwIfFieldDefinitionIsNotOpenApi31Compliant,
+  validateValueAgainstOpenApiSchema
 } from '@src/shared/openapi/OpenApi31DataEntity';
 
 /**
@@ -22,13 +22,14 @@ import {
  * that must not be iterated, and the type mismatches that must be named rather
  * than passed through.
  */
-const field = (overrides: Record<string, unknown> = {}) => ({
-  name: 'value',
-  type: 'string',
-  required: false,
-  validations: [],
-  ...overrides
-}) as never;
+const field = (overrides: Record<string, unknown> = {}) =>
+  ({
+    name: 'value',
+    type: 'string',
+    required: false,
+    validations: [],
+    ...overrides
+  }) as never;
 
 describe('validation rule parsing (JUM-681)', () => {
   it('accepts both the colon and the equals separator', () => {
@@ -40,7 +41,7 @@ describe('validation rule parsing (JUM-681)', () => {
         field({ name: 'a', validations: ['minLength:3'] }),
         field({ name: 'b', validations: ['maxLength=8'] })
       ]
-    } as never);
+    });
 
     expect(schema.properties.a.minLength).toBe(3);
     expect(schema.properties.b.maxLength).toBe(8);
@@ -58,7 +59,7 @@ describe('validation rule parsing (JUM-681)', () => {
         field({ name: 'flag', type: 'boolean', validations: ['enum:false'] }),
         field({ name: 'text', validations: ['pattern:'] })
       ]
-    } as never);
+    });
 
     expect(schema.properties.list.uniqueItems).toBe(true);
     expect(schema.properties.list.minItems).toBe(0);
@@ -75,7 +76,7 @@ describe('validation rule parsing (JUM-681)', () => {
         field({ name: 'choice', validations: ['enum:["a","b"]'] }),
         field({ name: 'bag', type: 'object', validations: ['required:["id"]'] })
       ]
-    } as never);
+    });
 
     expect(schema.properties.choice.enum).toStrictEqual(['a', 'b']);
     expect(schema.properties.bag.required).toStrictEqual(['id']);
@@ -89,7 +90,7 @@ describe('validation rule parsing (JUM-681)', () => {
     const schema = mapDataEntityToOpenApiSchema({
       name: 'Sample',
       fields: [field({ name: 'broken', validations: ['pattern:[unclosed'] })]
-    } as never);
+    });
 
     expect(schema.properties.broken.pattern).toBe('[unclosed');
   });
@@ -103,7 +104,7 @@ describe('validation rule parsing (JUM-681)', () => {
         field({ name: 'piped', validations: ['enum:red|green'] }),
         field({ name: 'commas', validations: ['enum:red, green'] })
       ]
-    } as never);
+    });
 
     expect(schema.properties.piped.enum).toStrictEqual(['red', 'green']);
     expect(schema.properties.commas.enum).toStrictEqual(['red', 'green']);
@@ -117,7 +118,7 @@ describe('validation rule parsing (JUM-681)', () => {
     const schema = mapDataEntityToOpenApiSchema({
       name: 'Sample',
       fields: [field({ name: 'only', validations: ['enum:red'] })]
-    } as never);
+    });
 
     expect(schema.properties.only.enum).toStrictEqual(['red']);
   });
@@ -133,7 +134,7 @@ describe('validation rule parsing (JUM-681)', () => {
         field({ name: 'blank', format: '   ' }),
         field({ name: 'missing' })
       ]
-    } as never);
+    });
 
     expect(schema.properties.when.format).toBe('date');
     expect(schema.properties.plain.format).toBeUndefined();
@@ -147,7 +148,7 @@ describe('validation rule parsing (JUM-681)', () => {
     const schema = mapDataEntityToOpenApiSchema({
       name: 'Sample',
       fields: [field({ name: 'id', required: true }), field({ name: 'note' })]
-    } as never);
+    });
 
     expect(schema.required).toStrictEqual(['id']);
     expect(schema.additionalProperties).toBe(false);
@@ -160,62 +161,82 @@ describe('entity and field compliance (JUM-681)', () => {
 
     // `validations` is optional in the stored shape; iterating an absent list
     // is a crash on the way into the schema builder.
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant({
-      name: 'value', type: 'string'
-    } as never)).not.toThrow();
-    expect(() => throwIfDataEntityIsNotOpenApi31Compliant({ name: 'Sample' } as never))
-      .not.toThrow();
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant({
+        name: 'value',
+        type: 'string'
+      })
+    ).not.toThrow();
+    expect(() =>
+      throwIfDataEntityIsNotOpenApi31Compliant({ name: 'Sample' } as never)
+    ).not.toThrow();
   });
 
   it('refuses an entity with no name', () => {
     expect.hasAssertions();
 
-    expect(() => throwIfDataEntityIsNotOpenApi31Compliant({ name: '  ' } as never))
-      .toThrow('OpenAPI 3.1 entity name is required.');
+    expect(() => throwIfDataEntityIsNotOpenApi31Compliant({ name: '  ' } as never)).toThrow(
+      'OpenAPI 3.1 entity name is required.'
+    );
   });
 
   it('refuses a field with no name, a bad type, or a non-boolean required flag', () => {
     expect.hasAssertions();
 
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ name: '  ' })))
-      .toThrow('OpenAPI 3.1 field name is required.');
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ type: 'date' })))
-      .toThrow('invalid field type "date"');
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ required: 'yes' })))
-      .toThrow('invalid required flag');
+    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ name: '  ' }))).toThrow(
+      'OpenAPI 3.1 field name is required.'
+    );
+    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ type: 'date' }))).toThrow(
+      'invalid field type "date"'
+    );
+    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ required: 'yes' }))).toThrow(
+      'invalid required flag'
+    );
   });
 
   it('refuses a format the type does not have, and a rule the type does not have', () => {
     expect.hasAssertions();
 
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ format: 'uuid', type: 'number' })))
-      .toThrow('invalid format "uuid" for type "number"');
-    expect(() => throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ validations: ['minItems:1'] })))
-      .toThrow('invalid validation "minItems" for type "string"');
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ format: 'uuid', type: 'number' }))
+    ).toThrow('invalid format "uuid" for type "number"');
+    expect(() =>
+      throwIfFieldDefinitionIsNotOpenApi31Compliant(field({ validations: ['minItems:1'] }))
+    ).toThrow('invalid validation "minItems" for type "string"');
   });
 });
 
 describe('payload validation type mismatches (JUM-681)', () => {
-  const entityWith = (type: string, extra: Record<string, unknown> = {}) => ({
-    name: 'Sample',
-    fields: [field({
-      name: 'value', type, required: true, ...extra
-    })]
-  }) as never;
+  const entityWith = (type: string, extra: Record<string, unknown> = {}) =>
+    ({
+      name: 'Sample',
+      fields: [
+        field({
+          name: 'value',
+          type,
+          required: true,
+          ...extra
+        })
+      ]
+    }) as never;
 
   it('rejects every scalar mismatch, naming the field', () => {
     expect.hasAssertions();
 
     // The per-type check runs inside the union match, so the message a caller
     // sees names the accepted types and the path — the field, not the value.
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: 1 }, entityWith('string')))
-      .toThrow('Sample.value": expected one of [string]');
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: '1' }, entityWith('number')))
-      .toThrow('expected one of [number]');
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: 1.5 }, entityWith('integer')))
-      .toThrow('expected one of [integer]');
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: 'x' }, entityWith('boolean')))
-      .toThrow('expected one of [boolean]');
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: 1 }, entityWith('string'))
+    ).toThrow('Sample.value": expected one of [string]');
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: '1' }, entityWith('number'))
+    ).toThrow('expected one of [number]');
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: 1.5 }, entityWith('integer'))
+    ).toThrow('expected one of [integer]');
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: 'x' }, entityWith('boolean'))
+    ).toThrow('expected one of [boolean]');
   });
 
   it('separates an array from an object in both directions', () => {
@@ -223,18 +244,15 @@ describe('payload validation type mismatches (JUM-681)', () => {
 
     // `typeof []` is "object", so an array passed where an object belongs is the
     // mismatch a naive check waves through.
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant(
-      { value: { a: 1 } },
-      entityWith('array')
-    )).toThrow('expected one of [array]');
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant(
-      { value: [1] },
-      entityWith('object')
-    )).toThrow('expected one of [object]');
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant(
-      { value: 'x' },
-      entityWith('object')
-    )).toThrow('expected one of [object]');
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: { a: 1 } }, entityWith('array'))
+    ).toThrow('expected one of [array]');
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: [1] }, entityWith('object'))
+    ).toThrow('expected one of [object]');
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: 'x' }, entityWith('object'))
+    ).toThrow('expected one of [object]');
   });
 
   it('reports a required field that is present but null', () => {
@@ -242,21 +260,23 @@ describe('payload validation type mismatches (JUM-681)', () => {
 
     // Present-and-null is the shape a form sends for "cleared", and it is not
     // the same as provided.
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant(
-      { value: null },
-      entityWith('string')
-    )).toThrow('is required');
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant({}, entityWith('string')))
-      .toThrow('is required');
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant({ value: null }, entityWith('string'))
+    ).toThrow('is required');
+    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant({}, entityWith('string'))).toThrow(
+      'is required'
+    );
   });
 
   it('accepts a payload that satisfies every declared rule', () => {
     expect.hasAssertions();
 
-    expect(() => throwIfDataEntityPayloadIsNotOpenApi31Compliant(
-      { value: 'abc' },
-      entityWith('string', { validations: ['minLength:2', 'maxLength:5'] })
-    )).not.toThrow();
+    expect(() =>
+      throwIfDataEntityPayloadIsNotOpenApi31Compliant(
+        { value: 'abc' },
+        entityWith('string', { validations: ['minLength:2', 'maxLength:5'] })
+      )
+    ).not.toThrow();
   });
 });
 
@@ -287,18 +307,21 @@ describe('openAPI schema resolution edges (JUM-681)', () => {
     // to say so: validating against an unresolved `{ $ref: ... }` constrains
     // nothing, so a bundling mistake would read as a passing validation of a
     // schema that was never loaded.
-    expect(() => validateValueAgainstOpenApiSchema(
-      { id: 'a' },
-      { $ref: 'other.yaml#/components/schemas/Row' },
-      spec
-    )).toThrow('could not be resolved');
+    expect(() =>
+      validateValueAgainstOpenApiSchema(
+        { id: 'a' },
+        { $ref: 'other.yaml#/components/schemas/Row' },
+        spec
+      )
+    ).toThrow('could not be resolved');
   });
 
   it('accepts anything when there is no schema to validate against', () => {
     expect.hasAssertions();
 
-    expect(() => validateValueAgainstOpenApiSchema('anything', undefined as never, spec))
-      .not.toThrow();
+    expect(() =>
+      validateValueAgainstOpenApiSchema('anything', undefined as never, spec)
+    ).not.toThrow();
   });
 
   it('names the value itself when the failure has no path', () => {
@@ -306,12 +329,9 @@ describe('openAPI schema resolution edges (JUM-681)', () => {
 
     // The top-level call passes an empty path. "failed at \"\"" tells a reader
     // nothing, so the message says `value`.
-    expect(() => validateValueAgainstOpenApiSchema(
-      1,
-      { type: 'string' },
-      spec,
-      ''
-    )).toThrow('failed at "value"');
+    expect(() => validateValueAgainstOpenApiSchema(1, { type: 'string' }, spec, '')).toThrow(
+      'failed at "value"'
+    );
   });
 
   it('reads a JSON object written as a validation value', () => {
@@ -319,13 +339,15 @@ describe('openAPI schema resolution edges (JUM-681)', () => {
 
     const schema = mapDataEntityToOpenApiSchema({
       name: 'Sample',
-      fields: [{
-        name: 'shape',
-        type: 'string',
-        required: false,
-        validations: ['enum:{"a":1}']
-      }]
-    } as never);
+      fields: [
+        {
+          name: 'shape',
+          type: 'string',
+          required: false,
+          validations: ['enum:{"a":1}']
+        }
+      ]
+    });
 
     expect(schema.properties.shape.enum).toStrictEqual([{ a: 1 }]);
   });
@@ -339,7 +361,7 @@ describe('openAPI schema resolution edges (JUM-681)', () => {
     const schema = mapDataEntityToOpenApiSchema({
       name: 'Sample',
       fields: [{ name: 'plain', type: 'string', required: true }]
-    } as never);
+    });
 
     expect(schema.properties.plain).toStrictEqual({ type: 'string' });
     expect(schema.required).toStrictEqual(['plain']);

@@ -53,9 +53,9 @@ function isServiceManagerProcess(name) {
 
 function selfGuardError(action, name) {
   const error = new Error(
-    `Refused: "${name}" is the service manager itself. The service manager cannot ${action} `
-    + 'itself — doing so would kill this console mid-action. Restart it manually from a shell '
-    + '(e.g. `pm2 restart ' + String(name) + '`).'
+    `Refused: "${name}" is the service manager itself. The service manager cannot ${action} ` +
+      `itself — doing so would kill this console mid-action. Restart it manually from a shell ` +
+      `(e.g. \`pm2 restart ${String(name)}\`).`
   );
   error.code = 'SELF_ACTION_BLOCKED';
   return error;
@@ -63,19 +63,20 @@ function selfGuardError(action, name) {
 
 function startVerifyError(name) {
   const error = new Error(
-    `Start of "${name}" did not register a PM2 process — the process is absent from `
-    + '`pm2 list` after the start call. Refusing to report a success that did not happen.'
+    `Start of "${name}" did not register a PM2 process — the process is absent from ` +
+      '`pm2 list` after the start call. Refusing to report a success that did not happen.'
   );
   error.code = 'START_VERIFY_FAILED';
   return error;
 }
 
 function matchesTarget(processEntry, request, target) {
-  return Boolean(processEntry) && (
-    (request?.name && processEntry.name === request.name)
-    || (request?.pmId != null && processEntry.pmId === Number(request.pmId))
-    || processEntry.name === String(target)
-    || processEntry.pmId === Number(target)
+  return (
+    Boolean(processEntry) &&
+    ((request?.name && processEntry.name === request.name) ||
+      (request?.pmId != null && processEntry.pmId === Number(request.pmId)) ||
+      processEntry.name === String(target) ||
+      processEntry.pmId === Number(target))
   );
 }
 
@@ -87,10 +88,10 @@ function matchesTarget(processEntry, request, target) {
  * @param {(method: string, ...args: unknown[]) => Promise<unknown>} deps.runMethod
  */
 function createPm2ActionRunner(deps) {
-  const normalizeEnvironment = deps.normalizeEnvironment;
-  const readEcosystem = deps.readEcosystem;
-  const listProcesses = deps.listProcesses;
-  const runMethod = deps.runMethod;
+  const { normalizeEnvironment } = deps;
+  const { readEcosystem } = deps;
+  const { listProcesses } = deps;
+  const { runMethod } = deps;
 
   async function verifyStarted(name) {
     const live = await listProcesses();
@@ -107,9 +108,11 @@ function createPm2ActionRunner(deps) {
     // manager itself is refused with an explicit reason — even `delete`,
     // which is otherwise unsupported, must fail with the self-guard message
     // rather than a generic "unsupported" when the target is the manager.
-    if (['stop', 'restart', 'delete'].includes(action)
-      && scope === 'process'
-      && isServiceManagerProcess(request?.name)) {
+    if (
+      ['stop', 'restart', 'delete'].includes(action) &&
+      scope === 'process' &&
+      isServiceManagerProcess(request?.name)
+    ) {
       throw selfGuardError(action, String(request.name));
     }
     if (!['start', 'stop', 'restart'].includes(action)) {
@@ -127,9 +130,14 @@ function createPm2ActionRunner(deps) {
       const live = await listProcesses();
       const existing = live.find((entry) => matchesTarget(entry, request, target));
       const targetName = String(request?.name || existing?.name || target);
-      if (action !== 'start' && (isServiceManagerProcess(targetName)
-        || isServiceManagerProcess(existing?.name))) {
-        throw selfGuardError(action, isServiceManagerProcess(targetName) ? targetName : existing.name);
+      if (
+        action !== 'start' &&
+        (isServiceManagerProcess(targetName) || isServiceManagerProcess(existing?.name))
+      ) {
+        throw selfGuardError(
+          action,
+          isServiceManagerProcess(targetName) ? targetName : existing.name
+        );
       }
       if (action === 'start') {
         if (existing) {
@@ -161,21 +169,25 @@ function createPm2ActionRunner(deps) {
     }
     if (scope === 'namespace') {
       const namespace = String(request?.namespace || 'default');
-      const list = (await listProcesses())
-        .filter((processEntry) => processEntry.namespace === namespace);
+      const list = (await listProcesses()).filter(
+        (processEntry) => processEntry.namespace === namespace
+      );
       // The service manager is never part of a stop/restart batch: killing it
       // would kill this console before the batch even finished. It is skipped
       // and reported, never silently dropped.
-      const guarded = action === 'start'
-        ? { runnable: list, skipped: [] }
-        : {
-          runnable: list.filter((processEntry) => !isServiceManagerProcess(processEntry.name)),
-          skipped: list.filter((processEntry) => isServiceManagerProcess(processEntry.name))
-            .map((processEntry) => processEntry.name)
-        };
+      const guarded =
+        action === 'start'
+          ? { runnable: list, skipped: [] }
+          : {
+              runnable: list.filter((processEntry) => !isServiceManagerProcess(processEntry.name)),
+              skipped: list
+                .filter((processEntry) => isServiceManagerProcess(processEntry.name))
+                .map((processEntry) => processEntry.name)
+            };
       for (const processEntry of guarded.runnable) {
         const target = processEntry.name || processEntry.pmId;
         // Namespace start operates on processes already listed — start by name.
+        // eslint-disable-next-line no-await-in-loop -- pm2 actions on the shared daemon must stay serialized (see withPm2DaemonLock)
         await runMethod(action === 'start' ? 'start' : action, String(target));
       }
       return {
@@ -207,9 +219,9 @@ function createPm2ActionRunner(deps) {
 }
 
 module.exports = {
-  PM2_CONFIG_FILE_EXTENSIONS,
-  SERVICE_MANAGER_NAME_PATTERN,
+  createPm2ActionRunner,
   isPm2ConfigFile,
   isServiceManagerProcess,
-  createPm2ActionRunner
+  PM2_CONFIG_FILE_EXTENSIONS,
+  SERVICE_MANAGER_NAME_PATTERN
 };

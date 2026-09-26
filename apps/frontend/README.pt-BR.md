@@ -1,7 +1,7 @@
 # @jumentix/frontend
 
-Seed dos frontends que a fábrica Jumentix gera — os modos *Hybrid Backend + Frontend* e
-*Frontend-only SPA/PWA* da matriz da fábrica. Uma SPA administrativa enterprise dirigida pela OAS
+Seed dos frontends que a fábrica Jumentix gera — os modos _Hybrid Backend + Frontend_ e
+_Frontend-only SPA/PWA_ da matriz da fábrica. Uma SPA administrativa enterprise dirigida pela OAS
 (Vue 3 + Vite + CoreUI + Pinia) sobre o domínio Users / Organizations do `apps/backend-template`.
 
 The English version is at [README.md](./README.md).

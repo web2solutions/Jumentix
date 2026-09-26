@@ -1,4 +1,5 @@
 import { QueueRequestResponseRepository } from '@src/infra/messages/repositories';
+
 import type { IMessageMediator, IMessageResponse } from '@src/modules/port';
 
 describe('queue request-response repository', () => {
@@ -6,14 +7,17 @@ describe('queue request-response repository', () => {
     expect.hasAssertions();
 
     const mediator: IMessageMediator = {
-      request: jest.fn().mockImplementation(async (message) => ({
-        contract: message.contract,
-        version: message.version,
-        metadata: message.metadata,
-        result: {
-          ok: true
-        }
-      } as IMessageResponse<{ ok: boolean }>)),
+      request: jest.fn().mockImplementation(
+        async (message) =>
+          ({
+            contract: message.contract,
+            version: message.version,
+            metadata: message.metadata,
+            result: {
+              ok: true
+            }
+          }) as IMessageResponse<{ ok: boolean }>
+      ),
       publish: jest.fn().mockResolvedValue(undefined),
       subscribe: jest.fn(),
       registerHandler: jest.fn()

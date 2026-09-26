@@ -40,9 +40,10 @@ const stripShebang = (source) => (source.startsWith('#!') ? source.replace(SHEBA
  * result for exactly the files that need it gone — which is what made the first
  * attempt at this look like it had no effect at all.
  */
-const stripped = (result) => (typeof result === 'string'
-  ? stripShebang(result)
-  : { ...result, code: stripShebang(result.code) });
+const stripped = (result) =>
+  typeof result === 'string'
+    ? stripShebang(result)
+    : { ...result, code: stripShebang(result.code) };
 
 module.exports = {
   process(source, path, options) {

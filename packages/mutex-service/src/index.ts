@@ -1,3 +1,3 @@
 export * from './contracts';
-export * from './ServiceResponse';
+export { default as ServiceResponse } from './ServiceResponse';
 export * from './MutexService';

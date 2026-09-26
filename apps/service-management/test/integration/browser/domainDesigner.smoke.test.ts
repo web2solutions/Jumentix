@@ -1,6 +1,6 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import fs from 'fs';
-import path from 'path';
+/* eslint-disable jest/max-expects */
+import fs from 'node:fs';
+import path from 'node:path';
 
 describe('serviceManagement domain designer smoke', () => {
   const htmlPath = path.resolve(process.cwd(), 'apps/service-management/index.html');
@@ -27,7 +27,10 @@ describe('serviceManagement domain designer smoke', () => {
       path.resolve(process.cwd(), 'apps/service-management/src/ui/canvas.js'),
       'utf-8'
     );
-    const css = fs.readFileSync(path.resolve(process.cwd(), 'apps/service-management/styles.css'), 'utf-8');
+    const css = fs.readFileSync(
+      path.resolve(process.cwd(), 'apps/service-management/styles.css'),
+      'utf-8'
+    );
     expect(canvasSource).toContain('scheduleEdgesRender');
     expect(canvasSource).toContain('edge-bend-handle');
     expect(canvasSource).toContain('edge-end-handle');
@@ -41,7 +44,7 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('centerCanvasFromMiniMapPointer');
     expect(canvasSource).toContain('wireMiniMapEvents');
     expect(canvasSource).toMatch(/dom\.miniMap\.addEventListener\('pointerdown'/);
-    expect(canvasSource).toMatch(/dom\.canvas\.addEventListener\('scroll'/);
+    expect(canvasSource).toMatch(/dom\.canvas\.addEventListener\(\s*'scroll'/);
     expect(canvasSource).toContain('totalDx');
     expect(canvasSource).toContain('domainDragOrigin');
     expect(canvasSource).toContain('entityDragOrigin');
@@ -55,8 +58,10 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('edgeX - canvasRect.left');
     expect(canvasSource).toContain('pointOutsideEndpoint');
     expect(canvasSource).toContain('edgeHitRoutePoints');
-    expect(canvasSource).toContain('hit.setAttribute(\'d\', hitPathD)');
-    expect(canvasSource).toContain('handlePoint: useCenter ? from : pointOutsideEndpoint(from, fromEndpoint.side, to)');
+    expect(canvasSource).toContain("hit.setAttribute('d', hitPathD)");
+    expect(canvasSource).toContain(
+      'handlePoint: useCenter ? from : pointOutsideEndpoint(from, fromEndpoint.side, to)'
+    );
     expect(canvasSource).toContain('dataset.fieldName');
     expect(canvasSource).toContain('relationship-field-connected');
     expect(canvasSource).toMatch(/entityEl\.style\.left = `\$\{entity\.x\}px`/);
@@ -64,22 +69,24 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('liveTransformOrigin');
     expect(canvasSource).toMatch(/translate3d\(\$\{dx\}px, \$\{dy\}px, 0\)/);
     expect(canvasSource).toContain('afterPaint');
-    expect(canvasSource).toContain('scheduleEdgesRender(aligned.guides, { afterPaint: Boolean(target.liveTransformOrigin) })');
-    expect(canvasSource).toContain('entityEl.style.transform = \'\'');
+    expect(canvasSource).toContain(
+      'scheduleEdgesRender(aligned.guides, { afterPaint: Boolean(target.liveTransformOrigin) })'
+    );
+    expect(canvasSource).toContain("entityEl.style.transform = ''");
     expect(canvasSource).toContain('domain.x = origin.x + drag.totalDx');
     expect(canvasSource).toContain('note.x = origin.x + drag.totalDx');
     expect(canvasSource).not.toContain('domain.x = Math.max(0');
     expect(canvasSource).not.toContain('note.x = Math.max(0');
     expect(canvasSource).not.toContain('entity.x = Math.max(0');
     expect(canvasSource).not.toContain('Math.max(8, x)');
-    expect(canvasSource).toContain('nameEl.addEventListener(\'pointerup\', () => nameEl.focus())');
+    expect(canvasSource).toContain("nameEl.addEventListener('pointerup', () => nameEl.focus())");
     expect(canvasSource).toContain('resizeHandleForEntity');
     expect(canvasSource).toContain('entity-resize-handle');
     expect(canvasSource).toContain('resizeEntityBox');
     expect(canvasSource).toContain('entityBoxHeight');
     expect(canvasSource).toContain('zoomAtPointer');
-    expect(canvasSource).toContain('typeEl.addEventListener(\'pointerdown\'');
-    expect(canvasSource).toContain('addFieldBtn.addEventListener(\'pointerdown\'');
+    expect(canvasSource).toContain("typeEl.addEventListener('pointerdown'");
+    expect(canvasSource).toContain("addFieldBtn.addEventListener('pointerdown'");
     expect(canvasSource).toContain('event.preventDefault()');
     expect(canvasSource).toContain('event.stopPropagation()');
     expect(canvasSource).toContain('capture: true');
@@ -89,7 +96,7 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('createFieldSchemaEditor');
     expect(canvasSource).toContain('field-schema-editor');
     expect(canvasSource).toContain('indexed');
-    expect(canvasSource).toContain('buildRoutedEdgePathD');
+    expect(canvasSource).toContain('roundedRoutePathD');
     expect(canvasSource).toContain('routeCollisionCount');
     expect(canvasSource).toContain('relationshipRouteOrdinal');
     expect(canvasSource).toContain('routeLabelOffset');
@@ -116,7 +123,9 @@ describe('serviceManagement domain designer smoke', () => {
     expect(css).toContain('.entity-resize-handle');
     expect(css).toContain('.entity.resizing');
     expect(css).toContain('position: absolute');
-    expect(css).toContain('grid-template-columns: auto minmax(104px, 1fr) minmax(78px, 96px) auto auto auto 30px');
+    expect(css).toContain(
+      'grid-template-columns: auto minmax(104px, 1fr) minmax(78px, 96px) auto auto auto 30px'
+    );
     expect(css).toContain('right: -9px');
     expect(css).toContain('transform: translateY(-50%)');
     expect(css).toMatch(/\.entity-field-add\s*\{[\s\S]*z-index:\s*8/);
@@ -157,8 +166,8 @@ describe('serviceManagement domain designer smoke', () => {
     expect(sampleSource).toMatch(/name: 'Project'/);
     expect(sampleSource).toMatch(/name: 'Task'/);
     expect(sampleSource).toMatch(/name: 'Comment'/);
-    expect(sampleSource).toContain('id: \'sample-rel-task-project\'');
-    expect(sampleSource).toContain('fromField: \'projectId\'');
+    expect(sampleSource).toContain("id: 'sample-rel-task-project'");
+    expect(sampleSource).toContain("fromField: 'projectId'");
     expect(sampleSource).toContain('y: 650');
   });
 

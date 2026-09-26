@@ -3,34 +3,55 @@
  * Publish an npm release cohort with a re-publish guard and per-package tags
  * (JUM-886 / Requirement 070 additive tagging).
  */
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
-const { gitBinary } = require('./lib/git-binary.js');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 
 const ROOT = path.resolve(__dirname, '..');
 
 const COHORTS = {
   all: [
-    'cana', 'cana-react', 'cana-vue', 'designer-core', 'persistence-contracts',
-    'shared-contracts', 'external-persistence-core', 'external-store-proxy',
-    'external-db-repositories', 'key-value-storage', 'database-client-factory',
-    'message-mediator', 'mutex-service', 'dead-letter-queue', 'runtime-infra',
-    'adapter-runtime-bootstrap', 'sdk-grpc-client', 'sdk-rest-client',
-    'sdk-websocket-client', 'cli-init'
+    'cana',
+    'cana-react',
+    'cana-vue',
+    'designer-core',
+    'persistence-contracts',
+    'shared-contracts',
+    'external-persistence-core',
+    'external-store-proxy',
+    'external-db-repositories',
+    'key-value-storage',
+    'database-client-factory',
+    'message-mediator',
+    'mutex-service',
+    'dead-letter-queue',
+    'runtime-infra',
+    'adapter-runtime-bootstrap',
+    'sdk-grpc-client',
+    'sdk-rest-client',
+    'sdk-websocket-client',
+    'cli-init'
   ],
   cana: ['cana', 'cana-react', 'cana-vue'],
   'designer-core': ['designer-core'],
   runtime: [
-    'persistence-contracts', 'shared-contracts', 'external-persistence-core',
-    'external-store-proxy', 'external-db-repositories', 'key-value-storage',
-    'database-client-factory', 'message-mediator', 'mutex-service',
-    'dead-letter-queue', 'runtime-infra', 'adapter-runtime-bootstrap'
+    'persistence-contracts',
+    'shared-contracts',
+    'external-persistence-core',
+    'external-store-proxy',
+    'external-db-repositories',
+    'key-value-storage',
+    'database-client-factory',
+    'message-mediator',
+    'mutex-service',
+    'dead-letter-queue',
+    'runtime-infra',
+    'adapter-runtime-bootstrap'
   ],
-  sdks: [
-    'shared-contracts', 'sdk-grpc-client', 'sdk-rest-client', 'sdk-websocket-client'
-  ],
+  sdks: ['shared-contracts', 'sdk-grpc-client', 'sdk-rest-client', 'sdk-websocket-client'],
   'cli-init': ['cli-init']
 };
 
@@ -38,9 +59,13 @@ function runGit(args, options = {}) {
   try {
     return execFileSync(gitBinary(), args, {
       encoding: 'utf8',
-      stdio: options.inherit ? 'inherit' : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
+      stdio: options.inherit
+        ? 'inherit'
+        : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
       cwd: options.cwd || ROOT
-    }).toString().trim();
+    })
+      .toString()
+      .trim();
   } catch (error) {
     if (options.allowFailure) return '';
     throw error;
@@ -120,24 +145,30 @@ function main(argv = process.argv.slice(2)) {
   const dryRun = argv.includes('--dry-run');
   const cohort = argv.find((arg) => !arg.startsWith('-')) || process.env.RELEASE || 'all';
   const summary = publishNpmCohort(cohort, { dryRun });
-  console.log(JSON.stringify({
-    cohort: summary.cohort,
-    published: summary.results.filter((r) => r.action === 'published').length,
-    skipped: summary.results.filter((r) => r.action === 'skip').length,
-    dryRun: summary.results.filter((r) => r.action === 'dry-run').length
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        cohort: summary.cohort,
+        published: summary.results.filter((r) => r.action === 'published').length,
+        skipped: summary.results.filter((r) => r.action === 'skip').length,
+        dryRun: summary.results.filter((r) => r.action === 'dry-run').length
+      },
+      null,
+      2
+    )
+  );
   return summary;
 }
 
 module.exports = {
   COHORTS,
+  main,
   packageTagName,
   publishNpmCohort,
   publishPackage,
   readPackageMeta,
   remoteTagExists,
-  resolveCohort,
-  main
+  resolveCohort
 };
 
 if (isEntryPoint(module)) {

@@ -1,8 +1,11 @@
 'use client';
 
+import { polymorphic, Tooltip, UnstyledButton } from '@mantine/core';
 import cx from 'clsx';
-import { BoxProps, polymorphic, Tooltip, UnstyledButton } from '@mantine/core';
+
 import classes from './HeaderControl.module.css';
+
+import type { BoxProps } from '@mantine/core';
 
 export interface HeaderControlProps extends BoxProps {
   tooltip: string;
@@ -10,21 +13,19 @@ export interface HeaderControlProps extends BoxProps {
   children: React.ReactNode;
 }
 
-function _HeaderControl({
+const HeaderControlBase = ({
   tooltip,
   className,
   'aria-label': label,
   ...others
-}: HeaderControlProps) {
-  return (
-    <Tooltip label={tooltip}>
-      <UnstyledButton
-        className={cx(classes.control, className)}
-        aria-label={label || tooltip}
-        {...others}
-      />
-    </Tooltip>
-  );
-}
+}: HeaderControlProps) => (
+  <Tooltip label={tooltip}>
+    <UnstyledButton
+      aria-label={label || tooltip}
+      className={cx(classes.control, className)}
+      {...others}
+    />
+  </Tooltip>
+);
 
-export const HeaderControl = polymorphic<'button', HeaderControlProps>(_HeaderControl);
+export const HeaderControl = polymorphic<'button', HeaderControlProps>(HeaderControlBase);

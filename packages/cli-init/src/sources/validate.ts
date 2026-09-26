@@ -1,11 +1,7 @@
-import {
-  ALLOWED_HTTP,
-  ALLOWED_REALTIME,
-  type GenerationPlan,
-  type PlanService,
-  SourceResolutionError
-} from './types';
-import { SOURCE_MESSAGES } from './messages';
+import SOURCE_MESSAGES from './messages';
+import { ALLOWED_HTTP, ALLOWED_REALTIME, SourceResolutionError } from './types';
+
+import type { GenerationPlan, PlanService } from './types';
 
 function serviceIdForDomain(services: PlanService[], domainId: string): string | undefined {
   const owner = services.find((service) => service.domains.includes(domainId));
@@ -26,7 +22,7 @@ function entityServiceMap(plan: GenerationPlan): Map<string, string> {
 /**
  * Fail closed with named messages (exit code 1 via SourceResolutionError).
  */
-export function validateGenerationPlan(plan: GenerationPlan): void {
+function validateGenerationPlan(plan: GenerationPlan): void {
   const hasCore = plan.services.some((service) => service.kind === 'core');
   if (!hasCore) {
     throw new SourceResolutionError(SOURCE_MESSAGES.NO_CORE_SERVICE);
@@ -88,3 +84,5 @@ export function validateGenerationPlan(plan: GenerationPlan): void {
     }
   }
 }
+
+export default validateGenerationPlan;

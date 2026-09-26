@@ -1,4 +1,4 @@
-import { InMemoryMessageMediator } from '@src/infra/messages/InMemoryMessageMediator';
+import InMemoryMessageMediator from '@src/infra/messages/InMemoryMessageMediator';
 
 describe('in-memory message mediator', () => {
   it('handles request/response and pub/sub contracts', async () => {
@@ -24,9 +24,11 @@ describe('in-memory message mediator', () => {
     });
 
     expect(response.result).toStrictEqual({ authorized: true, userId: 'u1' });
-    expect(eventListener).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'users.user.created'
-    }));
+    expect(eventListener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'users.user.created'
+      })
+    );
   });
 
   it('returns error when handler is not registered', async () => {
@@ -86,14 +88,13 @@ describe('in-memory message mediator', () => {
     // statement about a quiet machine. Here the handler cannot finish until
     // this test lets it, so the timeout is the only clock in the assertion.
     let releaseSlowHandler: () => void = () => undefined;
-    const slowHandler = new Promise<void>((resolve) => { releaseSlowHandler = resolve; });
-    mediator.registerHandler(
-      'users.auth.slow',
-      async () => {
-        await slowHandler;
-        return { contract: 'users.auth.slow', result: { ok: true } };
-      }
-    );
+    const slowHandler = new Promise<void>((resolve) => {
+      releaseSlowHandler = resolve;
+    });
+    mediator.registerHandler('users.auth.slow', async () => {
+      await slowHandler;
+      return { contract: 'users.auth.slow', result: { ok: true } };
+    });
 
     const timeoutResponse = await mediator.request(
       { contract: 'users.auth.slow', payload: {} },

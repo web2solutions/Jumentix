@@ -46,12 +46,12 @@ suites under Requirement 135), and `seed/*-large.json`.
 `init --from` / `--preset` normalize every accepted source into one
 **GenerationPlan** before any files are written:
 
-| Source | Flag | Loader |
-| --- | --- | --- |
-| Designer suite export JSON | `--from=export.json` | `loadDesignerExportSource` |
-| OpenAPI 3.x YAML/JSON | `--from=spec.yml` | `loadOasSource` |
-| Catalog URL | `--from=https://…` | `loadCatalogSource` |
-| Users preset | `--preset=users` (default when `--from` omitted) | `loadPresetSource` |
+| Source                     | Flag                                             | Loader                     |
+| -------------------------- | ------------------------------------------------ | -------------------------- |
+| Designer suite export JSON | `--from=export.json`                             | `loadDesignerExportSource` |
+| OpenAPI 3.x YAML/JSON      | `--from=spec.yml`                                | `loadOasSource`            |
+| Catalog URL                | `--from=https://…`                               | `loadCatalogSource`        |
+| Users preset               | `--preset=users` (default when `--from` omitted) | `loadPresetSource`         |
 
 Mode is inferred from architecture (one service → `monolith`) unless `--mode`
 is set. Validation fails closed with named exit-1 messages for: no core
@@ -115,11 +115,11 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 Run inside a generated project (requires `.jumentix/project.json`):
 
-| Command | Effect |
-| --- | --- |
+| Command                                                  | Effect                                                                                       |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `jumentix add domain <name> [--from …] [--service <id>]` | Inject hexagonal domain into Core (or `--service`) and refresh frontend modules when present |
-| `jumentix add service <name> --domains a,b` | Create `apps/<name>` in services/hybrid mode and move domain ownership |
-| `jumentix add frontend [--offline]` | Add `apps/frontend` to a backend-only project (mode → `hybrid`) |
+| `jumentix add service <name> --domains a,b`              | Create `apps/<name>` in services/hybrid mode and move domain ownership                       |
+| `jumentix add frontend [--offline]`                      | Add `apps/frontend` to a backend-only project (mode → `hybrid`)                              |
 
 Manifest drift is refused unless `--force`. Missing project metadata exits `1` with a clear message.
 
@@ -129,11 +129,11 @@ Manifest drift is refused unless `--force`. Missing project metadata exits `1` w
 cohort onto a generated project using `.jumentix/manifest.json` hashes and
 baseline blobs under `.jumentix/objects/<sha256>`:
 
-| Status | Meaning |
-| --- | --- |
-| updated | Unchanged locally → take template, or clean auto-merge |
-| conflicted | Overlapping edits — conflict markers left in the file |
-| skipped | No template change, or only local edits |
+| Status          | Meaning                                                 |
+| --------------- | ------------------------------------------------------- |
+| updated         | Unchanged locally → take template, or clean auto-merge  |
+| conflicted      | Overlapping edits — conflict markers left in the file   |
+| skipped         | No template change, or only local edits                 |
 | added / removed | New template paths / retired paths (retired files kept) |
 
 `--dry-run` prints the report without writing. Dirty git trees require `--force`.
@@ -143,10 +143,10 @@ A markdown report is written to `.jumentix/upgrade-<version>.md` when applied.
 
 `jumentix doctor` reports environment and project health:
 
-| Area | Checks |
-| --- | --- |
-| environment | bun version (required), node ≥20 when present, docker availability |
-| project | `.jumentix/project.json` + mode, template version vs CLI templates, expected `apps/*` directories, manifest drift |
+| Area        | Checks                                                                                                            |
+| ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| environment | bun version (required), node ≥20 when present, docker availability                                                |
+| project     | `.jumentix/project.json` + mode, template version vs CLI templates, expected `apps/*` directories, manifest drift |
 
 Exit `0` when healthy, `1` for project blockers, `2` for environment blockers
 (for example missing bun).

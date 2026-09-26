@@ -8,6 +8,8 @@ import {
   patternCap
 } from '@/contracts/validation';
 
+import must from '../support';
+
 /**
  * JUM-769: pattern-only x-validation rules (passport, RG) must enforce
  * alphabet + cap at the input, not just at save time. All expectations are
@@ -33,7 +35,9 @@ describe('pattern-only OAS rules enforced at input level (JUM-769)', () => {
 
   it('passport strips characters outside the OAS alphabet and caps at 20', () => {
     expect.assertions(3);
-    expect(filterDocumentData('passport', 'BR', 'abc123xyz!!!999888777')).toBe('abc123xyz999888777');
+    expect(filterDocumentData('passport', 'BR', 'abc123xyz!!!999888777')).toBe(
+      'abc123xyz999888777'
+    );
     expect(filterDocumentData('passport', 'BR', 'AB 123-456')).toBe('AB123456');
     expect(filterDocumentData('passport', 'BR', 'A'.repeat(25))).toBe('A'.repeat(20));
   });
@@ -60,8 +64,14 @@ describe('pattern-only OAS rules enforced at input level (JUM-769)', () => {
 
   it('Document.data declares maxLength 20 in the bundled OAS', () => {
     expect.assertions(3);
-    const create = fieldDescriptors('RequestCreateDocument').find((d) => d.name === 'data')!;
-    const update = fieldDescriptors('RequestUpdateDocument').find((d) => d.name === 'data')!;
+    const create = must(
+      fieldDescriptors('RequestCreateDocument').find((d) => d.name === 'data'),
+      'RequestCreateDocument.data'
+    );
+    const update = must(
+      fieldDescriptors('RequestUpdateDocument').find((d) => d.name === 'data'),
+      'RequestUpdateDocument.data'
+    );
     expect(create.maxLength).toBe(20);
     expect(update.maxLength).toBe(20);
     expect(filterDocumentData('unknown-type', 'BR', 'free form !')).toBe('free form !'); // no rule: free-form per OAS

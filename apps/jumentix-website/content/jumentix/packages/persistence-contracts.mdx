@@ -1,6 +1,6 @@
 ---
-title: "@jumentix/persistence-contracts"
-description: "Shared persistence ports (IStore, IDatabaseClient)."
+title: '@jumentix/persistence-contracts'
+description: 'Shared persistence ports (IStore, IDatabaseClient).'
 ---
 
 # @jumentix/persistence-contracts
@@ -23,7 +23,7 @@ Without shared ports, every adapter invents incompatible method names and paging
 
 - **Stack layer:** persistence / ports (application boundary)
 - **Problem boundary it owns:** Persistence port types only — no runtime drivers.
-- **Used with:** Implemented by external-* packages and database-client-factory compositions.
+- **Used with:** Implemented by external-\* packages and database-client-factory compositions.
 - **Typical composition:** Application imports contracts; adapters implement them; guides wire backend-template.
 - **Journeys:** Concepts architecture → REST guide → persistence adapters.
 - **Not responsible for:** Connecting to databases, Redis, or HTTP.
@@ -54,10 +54,9 @@ bun add @jumentix/persistence-contracts
 import type { IStore } from '@jumentix/persistence-contracts';
 
 export async function listItems(store: IStore) {
-  return store.query({ /* paging / filter per contract */ });
+  return store.query({/* paging / filter per contract */});
 }
 ```
-
 
 ### 3. Core workflows
 
@@ -73,7 +72,6 @@ Only adapters import mongoose/sequelize.
 
 Use `IPagingRequest` / `IPagingResponse` across HTTP and DB.
 
-
 ### 4. Full practical surface (exports)
 
 - `IStore`
@@ -85,8 +83,8 @@ Use exports from application/adapters layers as described above — not from dom
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
+| Symptom                 | Cause       | Fix                                |
+| ----------------------- | ----------- | ---------------------------------- |
 | Domain imports mongoose | Wrong layer | Depend on these contracts instead. |
 
 **Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.

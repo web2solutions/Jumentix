@@ -3,11 +3,12 @@
  * Deterministic appLockedVersion bump from Conventional Commits / PR [Nature]
  * prefixes since the last application tag (JUM-883 / Requirement 060).
  */
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
-const { gitBinary } = require('./git-binary.js');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./entry-point.js');
+const { gitBinary } = require('./git-binary.js');
 
 const APP_TAG_RE = /^v\d+\.\d+\.\d+$/;
 const SEMVER_RE = /^(\d+)\.(\d+)\.(\d+)$/;
@@ -17,10 +18,25 @@ const RELEASE_COMMIT = /^chore\(release\):\s+v\d+\.\d+\.\d+/i;
 const MAJOR_NATURES = new Set(['breaking']);
 const MINOR_NATURES = new Set(['feature', 'feat']);
 const PATCH_NATURES = new Set([
-  'fix', 'bug', 'bugfix', 'security', 'perf', 'refactor', 'improvement'
+  'fix',
+  'bug',
+  'bugfix',
+  'security',
+  'perf',
+  'refactor',
+  'improvement'
 ]);
 const IGNORE_NATURES = new Set([
-  'docs', 'doc', 'chore', 'test', 'tests', 'ci', 'style', 'release', 'build', 'revert'
+  'docs',
+  'doc',
+  'chore',
+  'test',
+  'tests',
+  'ci',
+  'style',
+  'release',
+  'build',
+  'revert'
 ]);
 
 function runGit(args, options = {}) {
@@ -121,33 +137,29 @@ function rankLevel(level) {
 }
 
 function getApplicationTags(cwd) {
-  const output = runGit([
-    'for-each-ref',
-    '--sort=-creatordate',
-    '--format=%(refname:short)',
-    'refs/tags'
-  ], { allowFailure: true, cwd });
+  const output = runGit(
+    ['for-each-ref', '--sort=-creatordate', '--format=%(refname:short)', 'refs/tags'],
+    { allowFailure: true, cwd }
+  );
 
   if (!output) return [];
-  return output.split('\n').map((line) => line.trim()).filter((name) => APP_TAG_RE.test(name));
+  return output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((name) => APP_TAG_RE.test(name));
 }
 
 function getCommitSubjectsSince(tagName, cwd) {
   const range = tagName ? `${tagName}..HEAD` : 'HEAD';
-  const output = runGit([
-    'log',
-    '--pretty=format:%s',
-    range
-  ], { allowFailure: true, cwd });
+  const output = runGit(['log', '--pretty=format:%s', range], { allowFailure: true, cwd });
   if (!output) return [];
-  return output.split('\n').map((line) => line.trim()).filter(Boolean);
+  return output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
-function computeNextVersion({
-  baseVersion,
-  subjects,
-  lastAppTag = null
-} = {}) {
+function computeNextVersion({ baseVersion, subjects, lastAppTag = null } = {}) {
   const commits = (subjects || []).map((subject) => ({
     subject,
     level: classifySubject(subject)
@@ -197,8 +209,7 @@ function computeNextVersion({
 }
 
 function resolveNextVersionFromRepo(options = {}) {
-  const rootDir = options.rootDir
-    || runGit(['rev-parse', '--show-toplevel'], { cwd: options.cwd });
+  const rootDir = options.rootDir || runGit(['rev-parse', '--show-toplevel'], { cwd: options.cwd });
   const policy = options.policy || readReleasePolicy(rootDir);
   const baseVersion = options.baseVersion || policy.appLockedVersion;
   const tags = options.tags || getApplicationTags(rootDir);
@@ -235,9 +246,9 @@ module.exports = {
   getApplicationTags,
   getCommitSubjectsSince,
   hasBreakingMarker,
+  main,
   parseSemver,
-  resolveNextVersionFromRepo,
-  main
+  resolveNextVersionFromRepo
 };
 
 if (isEntryPoint(module)) {

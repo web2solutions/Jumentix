@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -19,16 +18,16 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../..');
-const {
-  allTestFilesOnDisk,
-  listTestFiles,
-  suiteRoots,
-  unmappedTestFiles
-} = require(path.join(repoRoot, 'ci-cd', 'lib', 'mapped-suites.js'));
+const { allTestFilesOnDisk, listTestFiles, suiteRoots, unmappedTestFiles } = require(
+  path.join(repoRoot, 'ci-cd', 'lib', 'mapped-suites.js')
+);
 const { validateTestMap } = require(path.join(repoRoot, 'ci-cd', 'lib', 'test-map.js'));
 
 const dirs: string[] = [];
-const track = (dir: string) => { dirs.push(dir); return dir; };
+const track = (dir: string) => {
+  dirs.push(dir);
+  return dir;
+};
 
 /** A throwaway tree with the given repository-relative files. */
 function tree(files: string[]): string {
@@ -138,8 +137,9 @@ describe('unmappedTestFiles', () => {
 
     const dir = tree(['apps/a/test/mapped.test.ts', 'apps/a/test/forgotten.test.ts']);
 
-    expect(unmappedTestFiles(manifestFor(['apps/a/test/mapped.test.ts']), dir))
-      .toStrictEqual(['apps/a/test/forgotten.test.ts']);
+    expect(unmappedTestFiles(manifestFor(['apps/a/test/mapped.test.ts']), dir)).toStrictEqual([
+      'apps/a/test/forgotten.test.ts'
+    ]);
   });
 
   it('reports nothing when every suite is mapped', () => {
@@ -157,8 +157,9 @@ describe('unmappedTestFiles', () => {
 
     const dir = tree(['packages/alpha/test/forgotten.test.ts']);
 
-    expect(unmappedTestFiles(manifestFor([]), dir))
-      .toStrictEqual(['packages/alpha/test/forgotten.test.ts']);
+    expect(unmappedTestFiles(manifestFor([]), dir)).toStrictEqual([
+      'packages/alpha/test/forgotten.test.ts'
+    ]);
   });
 
   it('treats an empty manifest as mapping nothing', () => {
@@ -237,9 +238,7 @@ describe('the repository itself', () => {
   it('maps every suite that exists', () => {
     expect.hasAssertions();
 
-    const manifest = JSON.parse(
-      fs.readFileSync(path.join(repoRoot, 'test-map.json'), 'utf8')
-    );
+    const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'test-map.json'), 'utf8'));
 
     expect(unmappedTestFiles(manifest, repoRoot)).toStrictEqual([]);
   });
@@ -249,7 +248,8 @@ describe('the repository itself', () => {
 
     const onDisk = allTestFilesOnDisk(repoRoot);
 
-    expect(onDisk.filter((file: string) => file.startsWith('packages/cana/test/')).length)
-      .toBeGreaterThan(0);
+    expect(
+      onDisk.filter((file: string) => file.startsWith('packages/cana/test/')).length
+    ).toBeGreaterThan(0);
   });
 });

@@ -1,18 +1,19 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { mount } from '@vue/test-utils';
-import { createPinia, setActivePinia, type Pinia } from 'pinia';
+import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, h } from 'vue';
 
-import { useXCrud, type XCrud } from '@/components/x-crud/useXCrud';
+import { useXCrud } from '@/components/x-crud/useXCrud';
 import { resetSharedApiClient } from '@/contracts/apiClient';
-import {
-  closeCana, getCanaClient, openCana, wipeCanaDatabase
-} from '@/data/db';
-import { usersCrudConfig } from '@/features/users/usersCrudConfig';
+import { closeCana, getCanaClient, openCana, wipeCanaDatabase } from '@/data/db';
+import usersCrudConfig from '@/features/users/usersCrudConfig';
 import { setLocale } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
+
+import type { Pinia } from 'pinia';
+
+import type { XCrud } from '@/components/x-crud/useXCrud';
 
 const DB = 'jumentix-frontend-test-xcrud-offline';
 
@@ -51,7 +52,10 @@ describe('useXCrud with Cana open (JUM-804/809)', () => {
       status: 200,
       headers: { get: () => 'application/json' },
       json: async () => ({
-        result: [], page: 1, size: 30, total: 0
+        result: [],
+        page: 1,
+        size: 30,
+        total: 0
       }),
       text: async () => ''
     })) as unknown as typeof fetch;
@@ -87,14 +91,20 @@ describe('useXCrud with Cana open (JUM-804/809)', () => {
     expect(instance.rows.value).toHaveLength(0);
 
     await getCanaClient().table('users').put({
-      id: 'u-local', firstName: 'Local', username: 'local@x.dev', updatedAt: '2026-01-01T00:00:00.000Z'
+      id: 'u-local',
+      firstName: 'Local',
+      username: 'local@x.dev',
+      updatedAt: '2026-01-01T00:00:00.000Z'
     });
     await pollUntil(() => instance.rows.value.length === 1);
     expect(instance.rows.value[0].username).toBe('local@x.dev');
 
     wrapper.unmount();
     await getCanaClient().table('users').put({
-      id: 'u-after', firstName: 'After', username: 'after@x.dev', updatedAt: '2026-01-02T00:00:00.000Z'
+      id: 'u-after',
+      firstName: 'After',
+      username: 'after@x.dev',
+      updatedAt: '2026-01-02T00:00:00.000Z'
     });
     for (let index = 0; index < 5; index += 1) {
       // eslint-disable-next-line no-await-in-loop

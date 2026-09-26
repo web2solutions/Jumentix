@@ -9,11 +9,14 @@ describe('service-management pm2DaemonLock', () => {
   it('serializes overlapping sections in call order', async () => {
     expect.hasAssertions();
     const events: string[] = [];
-    const delayed = (label: string, ms: number) => withPm2DaemonLock(async () => {
-      events.push(`${label}:enter`);
-      await new Promise((resolve) => { setTimeout(resolve, ms); });
-      events.push(`${label}:exit`);
-    });
+    const delayed = (label: string, ms: number) =>
+      withPm2DaemonLock(async () => {
+        events.push(`${label}:enter`);
+        await new Promise((resolve) => {
+          setTimeout(resolve, ms);
+        });
+        events.push(`${label}:exit`);
+      });
     await Promise.all([delayed('slow', 30), delayed('fast', 1)]);
     expect(events).toStrictEqual(['slow:enter', 'slow:exit', 'fast:enter', 'fast:exit']);
   });
@@ -23,7 +26,9 @@ describe('service-management pm2DaemonLock', () => {
     const failure = withPm2DaemonLock(async () => {
       throw new Error('daemon blew up');
     });
-    await expect(failure).rejects.toThrow('daemon blew up');
-    await expect(withPm2DaemonLock(async () => 'recovered')).resolves.toBe('recovered');
+    await expect(failure as Promise<unknown>).rejects.toThrow('daemon blew up');
+    await expect(withPm2DaemonLock(async () => 'recovered') as Promise<unknown>).resolves.toBe(
+      'recovered'
+    );
   });
 });

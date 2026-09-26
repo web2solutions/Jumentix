@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+import { classifyOpen, StorageDurability } from '../src';
+
 import type { DatabaseObservation, StorageEnvironment } from '../src';
-import { StorageDurability, classifyOpen } from '../src';
 
 /**
  * These suites live with the package they test.
@@ -30,8 +30,12 @@ const tombstone = (initial: Record<string, string> = {}) => {
     store,
     api: {
       get: (key: string) => store.get(key) ?? null,
-      set: (key: string, value: string) => { store.set(key, value); },
-      remove: (key: string) => { store.delete(key); }
+      set: (key: string, value: string) => {
+        store.set(key, value);
+      },
+      remove: (key: string) => {
+        store.delete(key);
+      }
     }
   };
 };
@@ -161,8 +165,11 @@ describe('cana storage — durability surface', () => {
       estimate: async () => ({ usage: 90, quota: 100 })
     };
 
-    expect(await new StorageDurability(environment).state())
-      .to.deep.include({ nearQuota: true, usageBytes: 90, quotaBytes: 100 });
+    expect(await new StorageDurability(environment).state()).to.deep.include({
+      nearQuota: true,
+      usageBytes: 90,
+      quotaBytes: 100
+    });
 
     const roomy: StorageEnvironment = { estimate: async () => ({ usage: 10, quota: 100 }) };
 
@@ -171,11 +178,18 @@ describe('cana storage — durability surface', () => {
 
   it('survives an environment whose storage APIs throw', async () => {
     const hostile: StorageEnvironment = {
-      estimate: async () => { throw new Error('denied'); },
-      persisted: async () => { throw new Error('denied'); }
+      estimate: async () => {
+        throw new Error('denied');
+      },
+      persisted: async () => {
+        throw new Error('denied');
+      }
     };
 
-    expect(await new StorageDurability(hostile).state()).to.deep.include({ persistent: 'unknown', nearQuota: false });
+    expect(await new StorageDurability(hostile).state()).to.deep.include({
+      persistent: 'unknown',
+      nearQuota: false
+    });
   });
 
   /**

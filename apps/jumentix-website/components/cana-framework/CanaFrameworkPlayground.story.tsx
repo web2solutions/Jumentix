@@ -5,14 +5,8 @@ export default {
   component: CanaFrameworkPlayground
 };
 
-export const ReactContextBasic = () => (
-  <CanaFrameworkPlayground id="react-context-basic" />
-);
+export const ReactContextBasic = () => <CanaFrameworkPlayground id="react-context-basic" />;
 
-export const ReactReduxAdvanced = () => (
-  <CanaFrameworkPlayground id="react-redux-advanced" />
-);
+export const ReactReduxAdvanced = () => <CanaFrameworkPlayground id="react-redux-advanced" />;
 
-export const VuePiniaBasic = () => (
-  <CanaFrameworkPlayground id="vue-pinia-basic" />
-);
+export const VuePiniaBasic = () => <CanaFrameworkPlayground id="vue-pinia-basic" />;

@@ -1296,7 +1296,8 @@ export const CANA_FRAMEWORK_EXAMPLES: readonly CanaFrameworkExample[] = [
     },
     description: {
       en: 'The Pinia store records the last Cana cursor and reloads when replay is unavailable.',
-      'pt-BR': 'A store Pinia guarda o ultimo cursor do Cana e recarrega quando o replay nao esta disponivel.'
+      'pt-BR':
+        'A store Pinia guarda o ultimo cursor do Cana e recarrega quando o replay nao esta disponivel.'
     },
     download: download.vuePinia,
     files: [

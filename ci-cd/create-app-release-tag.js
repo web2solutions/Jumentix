@@ -6,23 +6,25 @@
  * → regenerate CHANGELOG → optional sync commit → push. Tag points at the
  * version-bump commit so package consumers and GitHub Releases share one SHA.
  */
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
-const { gitBinary } = require('./lib/git-binary.js');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
-const {
-  APP_TAG_RE,
-  resolveNextVersionFromRepo
-} = require('./lib/next-version.js');
+const { gitBinary } = require('./lib/git-binary.js');
+const { APP_TAG_RE, resolveNextVersionFromRepo } = require('./lib/next-version.js');
 
 function runGit(args, options = {}) {
   try {
     return execFileSync(gitBinary(), args, {
       encoding: 'utf8',
-      stdio: options.inherit ? 'inherit' : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
+      stdio: options.inherit
+        ? 'inherit'
+        : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
       cwd: options.cwd
-    }).toString().trim();
+    })
+      .toString()
+      .trim();
   } catch (error) {
     if (options.allowFailure) return '';
     throw error;
@@ -44,7 +46,8 @@ function writeJson(filePath, value) {
 function listAppPackageJsons(rootDir) {
   const appsDir = path.join(rootDir, 'apps');
   if (!fs.existsSync(appsDir)) return [];
-  return fs.readdirSync(appsDir)
+  return fs
+    .readdirSync(appsDir)
     .map((name) => path.join(appsDir, name, 'package.json'))
     .filter((filePath) => fs.existsSync(filePath));
 }
@@ -52,11 +55,14 @@ function listAppPackageJsons(rootDir) {
 function headHasAppTag(rootDir) {
   const head = runGit(['rev-parse', 'HEAD'], { cwd: rootDir });
   // Peel annotated tags to the commit SHA (*objectname); fall back to lightweight.
-  const output = runGit([
-    'for-each-ref',
-    '--format=%(refname:short)%09%(if)%(*objectname)%(then)%(*objectname)%(else)%(objectname)%(end)',
-    'refs/tags'
-  ], { allowFailure: true, cwd: rootDir });
+  const output = runGit(
+    [
+      'for-each-ref',
+      '--format=%(refname:short)%09%(if)%(*objectname)%(then)%(*objectname)%(else)%(objectname)%(end)',
+      'refs/tags'
+    ],
+    { allowFailure: true, cwd: rootDir }
+  );
   if (!output) return null;
   for (const line of output.split('\n')) {
     const [name, sha] = line.split('\t');

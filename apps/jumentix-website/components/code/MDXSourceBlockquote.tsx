@@ -1,10 +1,11 @@
-import type { ElementType, ReactNode } from 'react';
 import { isValidElement } from 'react';
 
-type BlockquoteProps = {
+import type { ElementType, ReactNode } from 'react';
+
+interface BlockquoteProps {
   children?: ReactNode;
   [key: string]: unknown;
-};
+}
 
 function textFromNode(node: ReactNode): string {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
@@ -18,22 +19,21 @@ function isGeneratedSourceBlock(children: ReactNode): boolean {
   return /^Source:\s*/i.test(textFromNode(children).trim());
 }
 
-export function createMDXSourceBlockquote(
-  DefaultBlockquote: ElementType<BlockquoteProps>
-) {
-  function MDXSourceBlockquote({ children, ...props }: BlockquoteProps) {
+// eslint-disable-next-line import-x/prefer-default-export -- single named export consumed via named imports/barrels; converting to default would change the module API
+export function createMDXSourceBlockquote(DefaultBlockquote: ElementType<BlockquoteProps>) {
+  const MDXSourceBlockquote = ({ children, ...props }: BlockquoteProps) => {
     const text = textFromNode(children).trim();
 
     if (isGeneratedSourceBlock(children)) {
       return (
-        <span hidden data-doc-source data-agent-metadata="source">
+        <span data-doc-source hidden data-agent-metadata="source">
           {text}
         </span>
       );
     }
 
     return <DefaultBlockquote {...props}>{children}</DefaultBlockquote>;
-  }
+  };
 
   return MDXSourceBlockquote;
 }

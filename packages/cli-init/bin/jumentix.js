@@ -4,5 +4,5 @@ const { runAsCli } = require('../dist/cli');
 
 runAsCli().catch((error) => {
   console.error(`\nCLI failed: ${error instanceof Error ? error.message : String(error)}`);
-  process.exit(2);
+  process.exitCode = 2;
 });

@@ -1,28 +1,16 @@
-export interface IRuntimeInfraDependencies<
-  TDatabaseClient,
-  TKeyValueStorageClient,
-  TMutexService
-> {
+export interface IRuntimeInfraDependencies<TDatabaseClient, TKeyValueStorageClient, TMutexService> {
   databaseClient: TDatabaseClient;
   keyValueStorageClient: TKeyValueStorageClient;
   mutexService: TMutexService;
 }
 
-export interface IRuntimeInfraCompilers<
-  TDatabaseClient,
-  TKeyValueStorageClient,
-  TMutexService
-> {
+export interface IRuntimeInfraCompilers<TDatabaseClient, TKeyValueStorageClient, TMutexService> {
   compileDatabaseClient: () => TDatabaseClient;
   compileKeyValueStorageClient: (driver?: string) => TKeyValueStorageClient;
   compileMutexService: (keyValueStorageClient: TKeyValueStorageClient) => TMutexService;
 }
 
-export function compileRuntimeInfra<
-  TDatabaseClient,
-  TKeyValueStorageClient,
-  TMutexService
->(
+export function compileRuntimeInfra<TDatabaseClient, TKeyValueStorageClient, TMutexService>(
   compilers: IRuntimeInfraCompilers<TDatabaseClient, TKeyValueStorageClient, TMutexService>,
   env: NodeJS.ProcessEnv = process.env
 ): IRuntimeInfraDependencies<TDatabaseClient, TKeyValueStorageClient, TMutexService> {

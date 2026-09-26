@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-untyped-mock-factory */
 import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
 
 const grpcAdapterStart = jest.fn().mockResolvedValue(undefined);
@@ -10,23 +9,25 @@ const compileDatabaseClientMock = jest.fn<IDatabaseClient, []>().mockReturnValue
 });
 
 jest.mock('@src/interface/gRPC/gRPCAPI', () => ({
-  GrpcAPI: jest.fn().mockImplementation(() => ({
+  GrpcAPI: jest.fn().mockReturnValue({
     start: grpcAdapterStart
-  }))
+  })
 }));
 
 jest.mock('@src/interface/HTTP/RestAPI', () => ({
-  RestAPI: jest.fn().mockImplementation(() => ({
+  RestAPI: jest.fn().mockReturnValue({
     start: grpcFallbackRestStart
-  }))
+  })
 }));
 
 jest.mock('@src/interface/HTTP/adapters/express/ExpressServer', () => ({
-  ExpressServer: { compile: jest.fn().mockReturnValue({}) }
+  __esModule: true,
+  default: { compile: jest.fn().mockReturnValue({}) }
 }));
 
 jest.mock('@src/interface/HTTP/adapters/express/handlers/infraHandlers', () => ({
-  infraHandlers: []
+  __esModule: true,
+  default: []
 }));
 
 jest.mock('@src/interface/HTTP/ports', () => ({
@@ -38,23 +39,28 @@ jest.mock('@src/modules/Users', () => ({
 }));
 
 jest.mock('@src/infra/messages/compileMessageMediator', () => ({
-  compileMessageMediator: jest.fn().mockReturnValue({})
+  __esModule: true,
+  default: jest.fn().mockReturnValue({})
 }));
 
 jest.mock('@src/infra/security/PasswordCryptoService', () => ({
-  PasswordCryptoService: { compile: jest.fn().mockReturnValue({}) }
+  __esModule: true,
+  default: { compile: jest.fn().mockReturnValue({}) }
 }));
 
 jest.mock('@src/infra/jwt/JwtService', () => ({
-  JwtService: { compile: jest.fn().mockReturnValue({}) }
+  __esModule: true,
+  default: { compile: jest.fn().mockReturnValue({}) }
 }));
 
 jest.mock('@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient', () => ({
-  compileKeyValueStorageClient: jest.fn().mockReturnValue({})
+  __esModule: true,
+  default: jest.fn().mockReturnValue({})
 }));
 
 jest.mock('@src/infra/mutex/adapter/MutexService', () => ({
-  MutexService: { compile: jest.fn().mockReturnValue({}) }
+  __esModule: true,
+  default: { compile: jest.fn().mockReturnValue({}) }
 }));
 
 jest.mock('@src/infra/persistence/compileDatabaseClient', () => ({
@@ -77,8 +83,12 @@ describe('grpc adapter bootstrap', () => {
   it('resolves fallback strategy from env', async () => {
     expect.assertions(3);
     const { shouldStartFallbackRestApi } = await import('@src/interface/gRPC/adapters/grpc/grpc');
-    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'true' } as any)).toBe(false);
-    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'false' } as any)).toBe(true);
+    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'true' } as any)).toBe(
+      false
+    );
+    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'false' } as any)).toBe(
+      true
+    );
     expect(shouldStartFallbackRestApi({} as any)).toBe(true);
   });
 
@@ -88,7 +98,7 @@ describe('grpc adapter bootstrap', () => {
     const { startGrpcAdapter } = await import('@src/interface/gRPC/adapters/grpc/grpc');
     await startGrpcAdapter();
     expect(grpcAdapterStart).toHaveBeenCalledTimes(1);
-    expect(grpcFallbackRestStart).toHaveBeenCalledTimes(0);
+    expect(grpcFallbackRestStart).not.toHaveBeenCalled();
   });
 
   it('starts grpc and fallback rest when fallback is enabled', async () => {

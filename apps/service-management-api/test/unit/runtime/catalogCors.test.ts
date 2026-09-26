@@ -7,7 +7,10 @@ describe('service management catalog API CORS defaults', () => {
   it('adds the dev designer origins without dropping the inherited backend origin', () => {
     expect.assertions(1);
 
-    const normalized = normalizeCatalogCorsAllowedOrigins('http://localhost:3000,http://127.0.0.1:3000', 'dev');
+    const normalized = normalizeCatalogCorsAllowedOrigins(
+      'http://localhost:3000,http://127.0.0.1:3000',
+      'dev'
+    );
 
     expect(normalized.split(',')).toStrictEqual([
       'http://localhost:3000',
@@ -20,7 +23,10 @@ describe('service management catalog API CORS defaults', () => {
   it('adds CI designer origins without dropping the inherited backend origin', () => {
     expect.assertions(1);
 
-    const normalized = normalizeCatalogCorsAllowedOrigins('http://localhost:3000,http://127.0.0.1:3000', 'ci');
+    const normalized = normalizeCatalogCorsAllowedOrigins(
+      'http://localhost:3000,http://127.0.0.1:3000',
+      'ci'
+    );
 
     expect(normalized.split(',')).toStrictEqual([
       'http://localhost:3000',
@@ -35,10 +41,7 @@ describe('service management catalog API CORS defaults', () => {
 
     const normalized = normalizeCatalogCorsAllowedOrigins('', 'staging');
 
-    expect(normalized.split(',')).toStrictEqual([
-      'http://localhost:4200',
-      'http://127.0.0.1:4200'
-    ]);
+    expect(normalized.split(',')).toStrictEqual(['http://localhost:4200', 'http://127.0.0.1:4200']);
   });
 
   it('derives the production designer origins without carrying dev ports', () => {
@@ -46,16 +49,16 @@ describe('service management catalog API CORS defaults', () => {
 
     const normalized = normalizeCatalogCorsAllowedOrigins('', 'prod');
 
-    expect(normalized.split(',')).toStrictEqual([
-      'http://localhost:5200',
-      'http://127.0.0.1:5200'
-    ]);
+    expect(normalized.split(',')).toStrictEqual(['http://localhost:5200', 'http://127.0.0.1:5200']);
   });
 
   it('keeps an explicit production allowlist exact', () => {
     expect.assertions(1);
 
-    const normalized = normalizeCatalogCorsAllowedOrigins('https://app.jumentix.example', 'production');
+    const normalized = normalizeCatalogCorsAllowedOrigins(
+      'https://app.jumentix.example',
+      'production'
+    );
 
     expect(normalized).toBe('https://app.jumentix.example');
   });
@@ -84,7 +87,10 @@ describe('service management catalog API CORS defaults', () => {
   it('keeps an explicit staging allowlist exact', () => {
     expect.assertions(1);
 
-    const normalized = normalizeCatalogCorsAllowedOrigins('https://staging.jumentix.example', 'staging');
+    const normalized = normalizeCatalogCorsAllowedOrigins(
+      'https://staging.jumentix.example',
+      'staging'
+    );
 
     expect(normalized).toBe('https://staging.jumentix.example');
   });
@@ -110,8 +116,9 @@ describe('service management catalog API CORS defaults', () => {
     try {
       applyCatalogCorsDefaults();
 
-      expect(process.env.JUMENTIX_CORS_ALLOWED_ORIGINS)
-        .toBe('http://localhost:3200,http://127.0.0.1:3200');
+      expect(process.env.JUMENTIX_CORS_ALLOWED_ORIGINS).toBe(
+        'http://localhost:3200,http://127.0.0.1:3200'
+      );
     } finally {
       // eslint-disable-next-line jest/no-conditional-in-test
       if (previous === undefined) delete process.env.JUMENTIX_CORS_ALLOWED_ORIGINS;
@@ -126,14 +133,14 @@ describe('service management catalog API CORS defaults', () => {
 
     applyCatalogCorsDefaults(env);
 
-    expect(env.JUMENTIX_CORS_ALLOWED_ORIGINS)
-      .toBe('http://localhost:3200,http://127.0.0.1:3200');
+    expect(env.JUMENTIX_CORS_ALLOWED_ORIGINS).toBe('http://localhost:3200,http://127.0.0.1:3200');
   });
 
   it('defaults every parameter to the dev designer origins', () => {
     expect.assertions(1);
 
-    expect(normalizeCatalogCorsAllowedOrigins())
-      .toBe('http://localhost:3200,http://127.0.0.1:3200');
+    expect(normalizeCatalogCorsAllowedOrigins()).toBe(
+      'http://localhost:3200,http://127.0.0.1:3200'
+    );
   });
 });

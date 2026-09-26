@@ -1,8 +1,8 @@
 /* eslint-disable jest/max-expects */
-import { composeCatalogsServices } from '@service-management-api/modules/Catalogs/composition/composeCatalogsServices';
-import { CatalogDataRepository } from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
-import { CatalogService } from '@service-management-api/modules/Catalogs/service/CatalogService';
-import { CatalogUseCases } from '@service-management-api/modules/Catalogs/application/use-cases/CatalogUseCases';
+import CatalogDataRepository from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
+import CatalogUseCases from '@service-management-api/modules/Catalogs/application/use-cases/CatalogUseCases';
+import composeCatalogsServices from '@service-management-api/modules/Catalogs/composition/composeCatalogsServices';
+import CatalogService from '@service-management-api/modules/Catalogs/service/CatalogService';
 
 describe('compose catalogs services', () => {
   beforeEach(() => {

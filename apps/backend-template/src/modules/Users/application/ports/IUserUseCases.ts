@@ -1,3 +1,9 @@
+import type {
+  IMetricsCapabilities,
+  IMetricsQuery,
+  IMetricsResult
+} from '@jumentix/persistence-contracts';
+
 import type { IPagingRequest } from '@src/modules/port/IPagingRequest';
 import type { IServiceResponse } from '@src/modules/port/IServiceResponse';
 import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
@@ -10,7 +16,6 @@ import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/Reques
 import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
 import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
-import type { IMetricsCapabilities, IMetricsQuery, IMetricsResult } from '@jumentix/persistence-contracts';
 
 export interface IUserUseCases {
   create(data: RequestCreateUser): Promise<IServiceResponse<IUser>>;
@@ -18,7 +23,7 @@ export interface IUserUseCases {
   delete(id: string): Promise<IServiceResponse<boolean>>;
   getOneById(id: string): Promise<IServiceResponse<IUser>>;
   getAll(
-    filters: Record<string, string|number>,
+    filters: Record<string, string | number>,
     paging: IPagingRequest
   ): Promise<IServiceResponse<IUser[]>>;
   metrics(

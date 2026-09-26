@@ -1,6 +1,6 @@
 ---
-title: "Uso do message-mediator"
-description: "Guia júnior e playground do mediator em memória."
+title: 'Uso do message-mediator'
+description: 'Guia júnior e playground do mediator em memória.'
 ---
 
 # @jumentix/message-mediator — guia de uso
@@ -38,15 +38,15 @@ atrás de um broker — sem reescrever lógica de negócio.
 
 ## Glossário
 
-| Termo | Significado |
-| --- | --- |
+| Termo                    | Significado                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
 | **Evento de integração** | Notificação fire-and-forget: `{ name, payload, occurredAt, metadata? }`. |
-| **Message** | Payload de request: `{ contract, version?, payload, metadata? }`. |
-| **Handler** | Função registrada para um `contract` — retorna `IMessageResponse`. |
-| **Mediator** | Objeto com publish/subscribe **e** registerHandler/request. |
-| **Contrato** | Id string estável de comando ou query (ex.: `users.create`). |
-| **Adaptador in-memory** | `InMemoryMessageMediatorAdapter` — sem durabilidade, mesmo processo. |
-| **Adaptador broker** | RabbitMQ ou BullMQ — multi-processo, sobrevive a restarts (só Node). |
+| **Message**              | Payload de request: `{ contract, version?, payload, metadata? }`.        |
+| **Handler**              | Função registrada para um `contract` — retorna `IMessageResponse`.       |
+| **Mediator**             | Objeto com publish/subscribe **e** registerHandler/request.              |
+| **Contrato**             | Id string estável de comando ou query (ex.: `users.create`).             |
+| **Adaptador in-memory**  | `InMemoryMessageMediatorAdapter` — sem durabilidade, mesmo processo.     |
+| **Adaptador broker**     | RabbitMQ ou BullMQ — multi-processo, sobrevive a restarts (só Node).     |
 
 ## Passos
 
@@ -110,11 +110,11 @@ import { compileMessageMediator } from '@jumentix/message-mediator';
 const mediator = compileMessageMediator();
 ```
 
-| Env do adaptador | Quando usar |
-| --- | --- |
-| `inmemory` (padrão) | Dev local, demos no browser, testes unitários |
-| `rabbitmq` / `rabbit` | Mensageria async multi-serviço |
-| `bullmq` / `bull` | Filas de jobs com Redis |
+| Env do adaptador      | Quando usar                                   |
+| --------------------- | --------------------------------------------- |
+| `inmemory` (padrão)   | Dev local, demos no browser, testes unitários |
+| `rabbitmq` / `rabbit` | Mensageria async multi-serviço                |
+| `bullmq` / `bull`     | Filas de jobs com Redis                       |
 
 Adaptadores broker exigem env vars documentadas; URL ausente lança na compilação
 com mensagem clara.
@@ -134,14 +134,14 @@ contrato.
 
 ### 6. Superfície completa — mapa da API
 
-| Export | Papel |
-| --- | --- |
-| `IMessageMediator` | Tipo da porta completa |
-| `IEventBus` | Só `publish` + `subscribe` |
-| `InMemoryMessageMediatorAdapter.compile()` | Mediator in-process |
-| `RabbitMqMessageMediatorAdapter` | RabbitMQ (Node) |
-| `BullMqMessageMediatorAdapter` | BullMQ (Node) |
-| `compileMessageMediator()` | Factory orientada a env |
+| Export                                                                       | Papel                          |
+| ---------------------------------------------------------------------------- | ------------------------------ |
+| `IMessageMediator`                                                           | Tipo da porta completa         |
+| `IEventBus`                                                                  | Só `publish` + `subscribe`     |
+| `InMemoryMessageMediatorAdapter.compile()`                                   | Mediator in-process            |
+| `RabbitMqMessageMediatorAdapter`                                             | RabbitMQ (Node)                |
+| `BullMqMessageMediatorAdapter`                                               | BullMQ (Node)                  |
+| `compileMessageMediator()`                                                   | Factory orientada a env        |
 | Tipos: `IMessage`, `IMessageResponse`, `IIntegrationEvent`, `MessageHandler` | Tipagem de handlers e payloads |
 
 ## Experimente no playground de docs
@@ -153,7 +153,9 @@ O stub do playground usa subscribe/publish estilo tópico:
 ```js
 const seen = [];
 const mediator = api.createInMemory();
-await mediator.subscribe('demo.ping', async (msg) => { seen.push(msg); });
+await mediator.subscribe('demo.ping', async (msg) => {
+  seen.push(msg);
+});
 await mediator.publish('demo.ping', { hello: true });
 ```
 
@@ -170,13 +172,13 @@ Mantenha adaptadores broker fora de bundles de browser.
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção | Verificar sucesso |
-| --- | --- | --- | --- |
-| Handler nunca roda | String errada de `name` ou `contract` | Igualdade exata; logue registros | `seen` ou `response.result` preenchido |
-| `No handler registered for contract …` | Falta `registerHandler` | Registre antes de `request` | `response.error` ausente |
-| Request trava até timeout | Handler nunca resolve | Retorne ou rejeite no handler; use `timeoutMs` | Resposta dentro do timeout |
-| Eventos perdidos após refresh | Adaptador in-memory | Troque para broker em Node | Evento sobrevive a restart |
-| `JUMENTIX_RABBITMQ_URL is required` | Adaptador Rabbit sem URL | Configure env ou use `inmemory` local | `compileMessageMediator()` funciona |
+| Sintoma                                | Causa                                 | Correção                                       | Verificar sucesso                      |
+| -------------------------------------- | ------------------------------------- | ---------------------------------------------- | -------------------------------------- |
+| Handler nunca roda                     | String errada de `name` ou `contract` | Igualdade exata; logue registros               | `seen` ou `response.result` preenchido |
+| `No handler registered for contract …` | Falta `registerHandler`               | Registre antes de `request`                    | `response.error` ausente               |
+| Request trava até timeout              | Handler nunca resolve                 | Retorne ou rejeite no handler; use `timeoutMs` | Resposta dentro do timeout             |
+| Eventos perdidos após refresh          | Adaptador in-memory                   | Troque para broker em Node                     | Evento sobrevive a restart             |
+| `JUMENTIX_RABBITMQ_URL is required`    | Adaptador Rabbit sem URL              | Configure env ou use `inmemory` local          | `compileMessageMediator()` funciona    |
 
 ## Checklist júnior (“Eu consigo …”)
 

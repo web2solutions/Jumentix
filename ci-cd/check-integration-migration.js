@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const INTEGRATION_POLICY_PATH = 'INTEGRATION-MIGRATION-REQUIREMENT.md';
@@ -55,9 +56,9 @@ function read(rootDir, relativePath) {
 }
 
 function validateIntegrationPolicy(content) {
-  return INTEGRATION_MARKERS
-    .filter((marker) => !String(content || '').includes(marker))
-    .map((marker) => `Integration migration requirement is missing marker: ${marker}.`);
+  return INTEGRATION_MARKERS.filter((marker) => !String(content || '').includes(marker)).map(
+    (marker) => `Integration migration requirement is missing marker: ${marker}.`
+  );
 }
 
 function validateCanonicalConfig(rootDir = process.cwd()) {

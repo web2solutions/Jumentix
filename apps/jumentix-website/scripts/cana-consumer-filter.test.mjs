@@ -1,10 +1,7 @@
-import {
-  assertNoCanaContentLeaks,
-  toCanaConsumerMarkdown
-} from './cana-consumer-filter.mjs';
+import { assertNoCanaContentLeaks, toCanaConsumerMarkdown } from './cana-consumer-filter.mjs';
 
 describe('cana consumer filter', () => {
-  test('strips related internal links without appending hidden content', () => {
+  it('strips related internal links without appending hidden content', () => {
     expect.hasAssertions();
     const input = `# Guide
 

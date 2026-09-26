@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Merge Bun + Node LCOV without double-counting files (JUM-437).
@@ -10,8 +9,9 @@
  * to the repository root; otherwise every changed frontend line reports as
  * uncovered patch debt even when the frontend suite covers it (JUM-821).
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 function splitRecords(lcovText) {
@@ -81,12 +81,18 @@ function main() {
     {
       path: path.join(root, 'coverage', 'frontend', 'lcov.info'),
       pathPrefix: 'apps/frontend/'
+    },
+    {
+      path: path.join(root, 'coverage', 'config-eslint', 'lcov.info'),
+      pathPrefix: 'packages/config-eslint/'
     }
   ];
-  const output = process.env.JUMENTIX_MERGED_LCOV
-    || path.join(root, 'coverage', 'merged', 'lcov.info');
+  const output =
+    process.env.JUMENTIX_MERGED_LCOV || path.join(root, 'coverage', 'merged', 'lcov.info');
   const stats = mergeLcovFiles(inputs, output);
-  console.log(`[coverage-merge] wrote ${output} records=${stats.records} dupesSkipped=${stats.skippedDuplicates} withBranches=${stats.withBranches}`);
+  console.log(
+    `[coverage-merge] wrote ${output} records=${stats.records} dupesSkipped=${stats.skippedDuplicates} withBranches=${stats.withBranches}`
+  );
   const verdictPath = path.join(root, 'artifacts', 'ci', 'coverage-merge.json');
   fs.mkdirSync(path.dirname(verdictPath), { recursive: true });
   fs.writeFileSync(verdictPath, `${JSON.stringify({ ...stats, output }, null, 2)}\n`);
@@ -97,7 +103,7 @@ if (isEntryPoint(module)) {
     main();
   } catch (error) {
     console.error('[coverage-merge]', error.message);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 

@@ -1,16 +1,15 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { resetSharedApiClient } from '@/contracts/apiClient';
-import {
-  closeCana, getCanaClient, openCana, wipeCanaDatabase
-} from '@/data/db';
+import { closeCana, getCanaClient, openCana, wipeCanaDatabase } from '@/data/db';
 import { getLocal } from '@/data/localRepository';
 import { listOutbox } from '@/data/outbox';
 import { useAuthStore } from '@/stores/auth';
-import { useProfileStore, type UserRecord } from '@/stores/profile';
+import { useProfileStore } from '@/stores/profile';
+
+import type { UserRecord } from '@/stores/profile';
 
 const DB = 'jumentix-frontend-test-profile-offline';
 
@@ -19,9 +18,14 @@ const recordFixture: UserRecord = {
   firstName: 'Abraham',
   lastName: '',
   username: 'me@mydomain.com',
-  emails: [{
-    id: 'email-9', type: 'work', email: 'me@mydomain.com', isPrimary: true
-  }],
+  emails: [
+    {
+      id: 'email-9',
+      type: 'work',
+      email: 'me@mydomain.com',
+      isPrimary: true
+    }
+  ],
   documents: [],
   phones: []
 };
@@ -29,16 +33,20 @@ const recordFixture: UserRecord = {
 const jsonResponse = (status: number, body: unknown) => ({
   ok: status >= 200 && status < 300,
   status,
-  headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) },
+  headers: {
+    get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null)
+  },
   json: async () => body,
   text: async () => JSON.stringify(body)
 });
 
 const seedLocalUser = async (): Promise<void> => {
-  await getCanaClient().table('users').put({
-    ...JSON.parse(JSON.stringify(recordFixture)),
-    _sync: 'synced'
-  });
+  await getCanaClient()
+    .table('users')
+    .put({
+      ...JSON.parse(JSON.stringify(recordFixture)),
+      _sync: 'synced'
+    });
 };
 
 /** Profile store with Cana open (JUM-803/804): local reads, outbox writes. */
@@ -94,7 +102,8 @@ describe('profile store with Cana open (JUM-803/804)', () => {
   it('saves scalars through the outbox and re-reads the local record', async () => {
     expect.hasAssertions();
     await seedLocalUser();
-    globalThis.fetch = (async () => jsonResponse(503, { message: 'offline' })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      jsonResponse(503, { message: 'offline' })) as unknown as typeof fetch;
     const profile = useProfileStore();
     await profile.load();
 
@@ -111,7 +120,7 @@ describe('profile store with Cana open (JUM-803/804)', () => {
 
   it('maps updateDocument to the OAS sub-resource and reloads', async () => {
     expect.hasAssertions();
-    const recorded: Array<{ url: string; method: string }> = [];
+    const recorded: { url: string; method: string }[] = [];
     globalThis.fetch = (async (url: string, init?: RequestInit) => {
       recorded.push({ url: String(url), method: String(init?.method ?? 'GET') });
       return jsonResponse(200, recordFixture);

@@ -1,12 +1,10 @@
 import { notFound } from 'next/navigation';
-import {
-  CommercialPage,
-  CommercialUseCasePage,
-  type CommercialPageName,
-  type UseCaseName,
-} from '@/components/commercial/CommercialPages';
+
 import { CommercialChangelogPage } from '@/components/commercial/ChangelogPage';
+import { CommercialPage, CommercialUseCasePage } from '@/components/commercial/CommercialPages';
 import { ReleaseNotes } from '@/components/ReleaseNotes/ReleaseNotes';
+
+import type { CommercialPageName, UseCaseName } from '@/components/commercial/CommercialPages';
 
 const pages: Record<string, CommercialPageName> = {
   '': 'home',
@@ -18,7 +16,7 @@ const pages: Record<string, CommercialPageName> = {
   'pricing-or-engagement': 'engagement',
   contact: 'contact',
   community: 'community',
-  roadmap: 'roadmap',
+  roadmap: 'roadmap'
 };
 
 const useCases: UseCaseName[] = [
@@ -26,16 +24,16 @@ const useCases: UseCaseName[] = [
   'realtime-api',
   'saas-monolith',
   'saas-microservices',
-  'spa-pwa',
+  'spa-pwa'
 ];
 
-export default async function PortuguesePage({
+const PortuguesePage = async ({
   params,
-  searchParams,
+  searchParams
 }: {
   params: Promise<{ slug?: string[] }>;
   searchParams?: Promise<{ page?: string }>;
-}) {
+}) => {
   const { slug = [] } = await params;
   const path = slug.join('/');
 
@@ -56,4 +54,6 @@ export default async function PortuguesePage({
   const page = pages[path];
   if (!page) notFound();
   return <CommercialPage locale="pt-BR" page={page} />;
-}
+};
+
+export default PortuguesePage;

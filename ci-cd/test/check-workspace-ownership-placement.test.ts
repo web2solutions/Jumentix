@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,7 +19,9 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
   it('derives suite home from path', () => {
     expect.hasAssertions();
     expect(suiteHome('ci-cd/test/entry-point.test.ts')).toBe('ci-cd');
-    expect(suiteHome('apps/service-management/test/unit/x.test.ts')).toBe('apps/service-management');
+    expect(suiteHome('apps/service-management/test/unit/x.test.ts')).toBe(
+      'apps/service-management'
+    );
     expect(suiteHome('packages/mutex-service/test/x.test.ts')).toBe('packages/mutex-service');
   });
 
@@ -28,7 +29,7 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(
       'apps/backend-template/test/unit/ServiceManagement/x.test.ts',
-      'require(\'apps/service-management/server.js\')',
+      "require('apps/service-management/server.js')",
       workspaces
     );
     expect(asserted).toContain('apps/service-management');
@@ -38,7 +39,7 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(
       'apps/service-management/test/unit/x.test.ts',
-      'const { x } = require(\'@jumentix/designer-core/model/rbacContract.js\');',
+      "const { x } = require('@jumentix/designer-core/model/rbacContract.js');",
       workspaces
     );
     expect(asserted).toStrictEqual([]);
@@ -48,7 +49,7 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(
       'apps/backend-template/test/unit/infra/x.test.ts',
-      'jest.mock(\'packages/mutex-service/src/MutexService\');',
+      "jest.mock('packages/mutex-service/src/MutexService');",
       workspaces
     );
     expect(asserted).toContain('packages/mutex-service');
@@ -58,7 +59,7 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(
       'apps/service-management/test/unit/x.test.ts',
-      '/** extracted from packages/designer-core/src/exporters/x.js */\nconst { x } = require(\'@jumentix/designer-core/exporters/x.js\');',
+      "/** extracted from packages/designer-core/src/exporters/x.js */\nconst { x } = require('@jumentix/designer-core/exporters/x.js');",
       workspaces
     );
     expect(asserted).toStrictEqual([]);
@@ -68,7 +69,7 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(
       'ci-cd/test/check-coverage-thresholds.test.ts',
-      'const fixture = \'packages/mutex-service/src/MutexService\';\nrequire(\'../check-coverage-thresholds\');',
+      "const fixture = 'packages/mutex-service/src/MutexService';\nrequire('../check-coverage-thresholds');",
       workspaces
     );
     expect(asserted).toStrictEqual(['ci-cd']);
@@ -78,7 +79,7 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(
       'apps/service-management-api/test/unit/x.test.ts',
-      'import { RestAPI } from \'@src/interface/HTTP/RestAPI\';',
+      "import { RestAPI } from '@src/interface/HTTP/RestAPI';",
       workspaces
     );
     expect(asserted).not.toContain('apps/backend-template');
@@ -88,7 +89,7 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(
       'apps/service-management/test/unit/x.test.ts',
-      'import { RestAPI } from \'@src/interface/HTTP/RestAPI\';',
+      "import { RestAPI } from '@src/interface/HTTP/RestAPI';",
       workspaces
     );
     expect(asserted).toContain('apps/backend-template');
@@ -98,7 +99,7 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
     expect.hasAssertions();
     const asserted = inferAssertedWorkspaces(
       'apps/service-management/test/unit/x.test.ts',
-      'const pinned = \'apps/backend-template/src/config\';',
+      "const pinned = 'apps/backend-template/src/config';",
       workspaces
     );
     expect(asserted).not.toContain('apps/backend-template');
@@ -112,7 +113,9 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
       fs.mkdirSync(forbidden, { recursive: true });
       fs.writeFileSync(path.join(forbidden, 'x.test.ts'), 'it("x", () => {});');
       const { violations } = findViolations(root, { allowlist: [] });
-      expect(violations.some((v: { rule: string }) => v.rule === 'forbidden-sm-under-backend-template')).toBe(true);
+      expect(
+        violations.some((v: { rule: string }) => v.rule === 'forbidden-sm-under-backend-template')
+      ).toBe(true);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
@@ -124,7 +127,11 @@ describe('check-workspace-ownership-placement (Req 137)', () => {
       allowlist: [],
       changed: ['ci-cd/test/entry-point.test.ts']
     });
-    const suiteHits = violations.filter((v: { rule: string; suite: string }) => v.rule === 'suite-home-vs-sut');
-    expect(suiteHits.every((v: { suite: string }) => v.suite === 'ci-cd/test/entry-point.test.ts')).toBe(true);
+    const suiteHits = violations.filter(
+      (v: { rule: string; suite: string }) => v.rule === 'suite-home-vs-sut'
+    );
+    expect(
+      suiteHits.every((v: { suite: string }) => v.suite === 'ci-cd/test/entry-point.test.ts')
+    ).toBe(true);
   });
 });

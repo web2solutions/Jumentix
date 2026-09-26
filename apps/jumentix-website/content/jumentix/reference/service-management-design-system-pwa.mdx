@@ -1,14 +1,14 @@
 ---
-title: "Service Management Design System and PWA"
-description: "Design tokens, the accessibility model, and installing, updating and recovering the app shell."
+title: 'Service Management Design System and PWA'
+description: 'Design tokens, the accessibility model, and installing, updating and recovering the app shell.'
 ---
 
 # Service Management Design System and PWA Shell
 
 This is the E7 document of the Service Management E1–E8 documentation chain
 ([JUM-490](https://linear.app/jumentix/issue/JUM-490/docs-e7-documentation-design-system-and-pwa-shell)).
-It documents the two surfaces that define what the designer *looks like* and
-*how it reaches the user's machine*: the **design-system adoption**
+It documents the two surfaces that define what the designer _looks like_ and
+_how it reaches the user's machine_: the **design-system adoption**
 ([JUM-488](https://linear.app/jumentix/issue/JUM-488/feature-adopt-jumentix-design-system-and-storybook-coverage))
 and the **installable PWA shell**
 ([JUM-489](https://linear.app/jumentix/issue/JUM-489/feature-installable-pwa-shell-service-worker-manifest))
@@ -27,7 +27,7 @@ Two deliberate boundaries:
 
 - **The data story is linked, not duplicated.** Where the designer's work
   lives (Cana), how the localStorage migration behaved, and what offline
-  means for *data* belong to the E6 document
+  means for _data_ belong to the E6 document
   ([JUM-487](https://linear.app/jumentix/issue/JUM-487/docs-e6-documentation-cana-adoption-migration-and-offline-behavior)),
   with the storage port contract in the E3 document,
   [Service Management Module Architecture](/docs/jumentix/reference/service-management-module-architecture).
@@ -38,7 +38,7 @@ Two deliberate boundaries:
   inventory, the design constraints and the Storybook workflow are owned by
   the website's
   Design System and Storybook
-  document. This document covers the designer's *adoption* of that system;
+  document. This document covers the designer's _adoption_ of that system;
   it does not redefine it.
 
 ## Design system adoption at the token layer (JUM-488)
@@ -99,7 +99,7 @@ Two corollaries a contributor must know:
 
 - **The website file is extended additively, never designer-first.** When the
   designer needed the typography stacks as tokens (JUM-488), they were added
-  to the *website* file — because the vendored copy exists, non-Mantine
+  to the _website_ file — because the vendored copy exists, non-Mantine
   consumers inherit the same type voice — and then mirrored down. A token
   added only to the designer's copy would be invisible to the website and
   silently deleted on the next mirror.
@@ -111,7 +111,7 @@ Two corollaries a contributor must know:
 
 1. **Reuse existing tokens before introducing a new value.** A cosmetic
    literal in `styles.css` is a regression to the pre-JUM-488 state; if no
-   token fits, add a *semantic* token to the website's `tokens.css` first and
+   token fits, add a _semantic_ token to the website's `tokens.css` first and
    mirror it into the vendored copy in the same change.
 2. **Keep structural geometry literal only when the canvas math owns it** —
    and when it does, the number belongs in `modelQueries.js`'s pinned set,
@@ -312,7 +312,7 @@ non-GET requests and cross-origin requests pass straight to the network (and
 fail naturally offline), and **zero application data is cached** — a
 convenience copy in the Cache API would be a fallback by the back door, with
 weaker guarantees than the store it shadows. What offline means for your
-*data* is Cana's story, told by the E6 document.
+_data_ is Cana's story, told by the E6 document.
 
 ## The storage boundary: what installing does not do
 
@@ -327,7 +327,7 @@ data are separate storages with separate lifecycles:
 
 One asymmetry every user should know: the browser's own **"clear site data"**
 (or clearing browsing data for this origin) removes **both** — the shell
-caches *and* the Cana database. The shell being present never implies your
+caches _and_ the Cana database. The shell being present never implies your
 designs are safe; there is no copy of your work in the shell to fall back to.
 Export your designs through the designer's exporters when you want a durable
 copy.

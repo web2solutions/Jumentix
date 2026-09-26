@@ -1,9 +1,8 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
-import { usersCrudConfig } from '@/features/users/usersCrudConfig';
+import usersCrudConfig from '@/features/users/usersCrudConfig';
 import {
   canOpenModule,
   configureModules,
@@ -13,7 +12,7 @@ import {
   resetModules,
   validateModules
 } from '@/modules/manifest';
-import { usersModule } from '@/modules/users';
+import usersModule from '@/modules/users';
 
 describe('module manifest (JUM-795)', () => {
   beforeEach(() => {
@@ -31,15 +30,17 @@ describe('module manifest (JUM-795)', () => {
     registerModule({
       ...usersModule,
       id: 'broken',
-      entities: [{
-        id: 'ghost',
-        title: 'Ghost',
-        config: {
-          ...usersCrudConfig,
-          operations: { ...usersCrudConfig.operations, list: 'notARealOperation' }
-        },
-        load: () => import('@/features/users/UsersView.vue')
-      }]
+      entities: [
+        {
+          id: 'ghost',
+          title: 'Ghost',
+          config: {
+            ...usersCrudConfig,
+            operations: { ...usersCrudConfig.operations, list: 'notARealOperation' }
+          },
+          load: () => import('@/features/users/UsersView.vue')
+        }
+      ]
     });
     expect(validateModules()).toContain('broken → "notARealOperation"');
     expect(() => configureModules()).toThrow(/notARealOperation/);

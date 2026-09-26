@@ -10,10 +10,10 @@
  * Templates are opaque data for the published CLI (Req 037 / 062): this script
  * runs at build/CI time only and must never be imported by runtime entrypoints.
  */
+const { execFileSync } = require('node:child_process');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
 
 const PACKAGE_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(PACKAGE_DIR, '..', '..');
@@ -180,11 +180,15 @@ function collectExpectedFiles(root = REPO_ROOT, exclusions = DEFAULT_EXCLUSIONS)
   return files;
 }
 
+function compareTemplatePaths(a, b) {
+  if (a[0] < b[0]) return -1;
+  if (a[0] > b[0]) return 1;
+  return 0;
+}
+
 function buildManifest(expectedFiles, sourceCommit, exclusions = DEFAULT_EXCLUSIONS) {
   const files = {};
-  for (const [templatePath, meta] of [...expectedFiles.entries()].sort((a, b) => (
-    a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0
-  ))) {
+  for (const [templatePath, meta] of [...expectedFiles.entries()].sort(compareTemplatePaths)) {
     files[templatePath] = {
       sha256: meta.sha256,
       source: meta.sourcePath
@@ -265,20 +269,20 @@ if (require.main?.filename === __filename) {
 }
 
 module.exports = {
-  DEFAULT_EXCLUSIONS,
-  MANIFEST_PATH,
-  PACKAGE_DIR,
-  REPO_ROOT,
-  SEEDS,
-  TEMPLATES_DIR,
   buildManifest,
   buildTemplates,
   collectExpectedFiles,
+  DEFAULT_EXCLUSIONS,
   isExcluded,
+  MANIFEST_PATH,
   matchGlob,
+  PACKAGE_DIR,
+  REPO_ROOT,
   resolveSourceCommit,
   run,
+  SEEDS,
   sha256Buffer,
   sha256File,
-  stripExcludedFromTree
+  stripExcludedFromTree,
+  TEMPLATES_DIR
 };

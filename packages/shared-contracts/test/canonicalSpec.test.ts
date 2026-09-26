@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
 import { candidateSpecPaths, loadCanonicalSpec } from '../src';
 
 /**
@@ -17,7 +18,8 @@ import { candidateSpecPaths, loadCanonicalSpec } from '../src';
  * walking up from the module directory, and the failure when neither exists.
  */
 
-const scratch = (suffix: string) => fs.mkdtempSync(path.join(os.tmpdir(), `shared-contracts-${suffix}-`));
+const scratch = (suffix: string) =>
+  fs.mkdtempSync(path.join(os.tmpdir(), `shared-contracts-${suffix}-`));
 
 describe('candidateSpecPaths', () => {
   it('walks from the module directory to the filesystem root', () => {
@@ -49,12 +51,14 @@ describe('loadCanonicalSpec', () => {
       'utf8'
     );
 
-    expect(loadCanonicalSpec({
-      basePath: base,
-      moduleDirectory: __dirname,
-      specSegments: ['asyncapi', '1.0.0.grpc.yml'],
-      artifactLabel: 'AsyncAPI gRPC spec'
-    })).toStrictEqual({ servers: { local: { host: 'example.test:9999' } } });
+    expect(
+      loadCanonicalSpec({
+        basePath: base,
+        moduleDirectory: __dirname,
+        specSegments: ['asyncapi', '1.0.0.grpc.yml'],
+        artifactLabel: 'AsyncAPI gRPC spec'
+      })
+    ).toStrictEqual({ servers: { local: { host: 'example.test:9999' } } });
   });
 
   it('finds a spec in a sibling package directory when no base path is given', () => {
@@ -74,12 +78,14 @@ describe('loadCanonicalSpec', () => {
   it('fails when the base path has no spec document', () => {
     expect.hasAssertions();
 
-    expect(() => loadCanonicalSpec({
-      basePath: scratch('empty'),
-      moduleDirectory: __dirname,
-      specSegments: ['1.0.0.yml'],
-      artifactLabel: 'OpenAPI spec'
-    })).toThrow(/ENOENT/);
+    expect(() =>
+      loadCanonicalSpec({
+        basePath: scratch('empty'),
+        moduleDirectory: __dirname,
+        specSegments: ['1.0.0.yml'],
+        artifactLabel: 'OpenAPI spec'
+      })
+    ).toThrow(/ENOENT/);
   });
 
   it('fails when no canonical spec exists above the module directory', () => {
@@ -87,10 +93,12 @@ describe('loadCanonicalSpec', () => {
 
     // An isolated directory under the OS temp root has no `spec/` anywhere
     // above it, so the walk-up finds nothing.
-    expect(() => loadCanonicalSpec({
-      moduleDirectory: scratch('nothing'),
-      specSegments: ['asyncapi', '1.0.0.grpc.yml'],
-      artifactLabel: 'AsyncAPI gRPC spec'
-    })).toThrow(/1\.0\.0\.grpc\.yml/);
+    expect(() =>
+      loadCanonicalSpec({
+        moduleDirectory: scratch('nothing'),
+        specSegments: ['asyncapi', '1.0.0.grpc.yml'],
+        artifactLabel: 'AsyncAPI gRPC spec'
+      })
+    ).toThrow(/1\.0\.0\.grpc\.yml/);
   });
 });

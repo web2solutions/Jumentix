@@ -1,6 +1,6 @@
 ---
-title: "Uso do key-value-storage"
-description: "Guia júnior e playground em memória para chave/valor."
+title: 'Uso do key-value-storage'
+description: 'Guia júnior e playground em memória para chave/valor.'
 ---
 
 # @jumentix/key-value-storage — guia de uso
@@ -36,14 +36,14 @@ servidores Node via configuração de ambiente — sem mudar os call sites.
 
 ## Glossário
 
-| Termo | Significado |
-| --- | --- |
-| **Porta** | `IKeyValueStorageClient` — interface que todo adaptador implementa. |
-| **Adaptador** | Client concreto (`InMemoryKeyValueStorageClient`, `RedisKeyValueStorageClient`). |
-| **ServiceResponse** | Wrapper `{ result?, error? }` de todo método — verifique `error` antes de usar `result`. |
-| **Prefixo** | Chaves armazenadas como `{prefix}:{keyName}`; padrão vem de `JUMENTIX_KV_KEY_PREFIX` ou `jumentix__`. |
-| **Driver** | Valor de `JUMENTIX_KEYVALUESTORAGE_DRIVER` passado a `compileKeyValueStorageClient`. |
-| **Connected** | Flag booleana de `connect()`; adaptadores esperam `connect()` antes de I/O em código server. |
+| Termo               | Significado                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Porta**           | `IKeyValueStorageClient` — interface que todo adaptador implementa.                                   |
+| **Adaptador**       | Client concreto (`InMemoryKeyValueStorageClient`, `RedisKeyValueStorageClient`).                      |
+| **ServiceResponse** | Wrapper `{ result?, error? }` de todo método — verifique `error` antes de usar `result`.              |
+| **Prefixo**         | Chaves armazenadas como `{prefix}:{keyName}`; padrão vem de `JUMENTIX_KV_KEY_PREFIX` ou `jumentix__`. |
+| **Driver**          | Valor de `JUMENTIX_KEYVALUESTORAGE_DRIVER` passado a `compileKeyValueStorageClient`.                  |
+| **Connected**       | Flag booleana de `connect()`; adaptadores esperam `connect()` antes de I/O em código server.          |
 
 ## Passos
 
@@ -88,10 +88,10 @@ const client = compileKeyValueStorageClient();
 await client.connect();
 ```
 
-| Valor do driver | Adaptador | Ambiente |
-| --- | --- | --- |
-| `inmemory`, `in-memory`, `memory` | InMemory | Demos no browser, testes unitários |
-| *(padrão / redis)* | Redis | Servidores Node |
+| Valor do driver                   | Adaptador | Ambiente                           |
+| --------------------------------- | --------- | ---------------------------------- |
+| `inmemory`, `in-memory`, `memory` | InMemory  | Demos no browser, testes unitários |
+| _(padrão / redis)_                | Redis     | Servidores Node                    |
 
 ### 4. Fluxo central — leituras seguras a erro
 
@@ -113,14 +113,14 @@ compartilhado e passe a `MutexService.compile` (veja o
 
 ### 6. Superfície completa — mapa da API
 
-| Export | Papel |
-| --- | --- |
-| `IKeyValueStorageClient` | Tipo de todo adaptador |
-| `InMemoryKeyValueStorageClient.compile()` | Map singleton em memória |
-| `RedisKeyValueStorageClient.compile()` | Client com Redis (Node) |
-| `compileKeyValueStorageClient(driver?)` | Factory orientada a env |
-| `ServiceResponse` | Helper padrão `{ result, error }` |
-| `BaseKeyValueStorageClient` | Lógica compartilhada de prefix/connect para adaptadores custom |
+| Export                                    | Papel                                                          |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| `IKeyValueStorageClient`                  | Tipo de todo adaptador                                         |
+| `InMemoryKeyValueStorageClient.compile()` | Map singleton em memória                                       |
+| `RedisKeyValueStorageClient.compile()`    | Client com Redis (Node)                                        |
+| `compileKeyValueStorageClient(driver?)`   | Factory orientada a env                                        |
+| `ServiceResponse`                         | Helper padrão `{ result, error }`                              |
+| `BaseKeyValueStorageClient`               | Lógica compartilhada de prefix/connect para adaptadores custom |
 
 ## Experimente no playground de docs
 
@@ -139,13 +139,13 @@ Em apps reais, use `InMemoryKeyValueStorageClient.compile()` e trate
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção | Verificar sucesso |
-| --- | --- | --- | --- |
-| `result` é `undefined` sem error | Chave nunca setada ou foi apagada | Chame `set` primeiro; confira o nome da chave | `get` retorna valor esperado |
-| Connection refused no Redis | Redis parado ou host/porta errados | Suba Redis; confira env vars | `connect()` retorna sem `error` |
-| Valor errado em testes de carga | Client InMemory singleton reutilizado | Isole chaves por teste ou reinicie estado | Chaves isoladas por teste |
-| Chaves colidem entre apps | Mesmo prefixo no Redis compartilhado | Defina `JUMENTIX_KV_KEY_PREFIX` por serviço | Chaves namespaced no Redis CLI |
-| `connected` permanece false | Pulou `connect()` | Aguarde `connect()` antes de I/O | `client.connected === true` |
+| Sintoma                          | Causa                                 | Correção                                      | Verificar sucesso               |
+| -------------------------------- | ------------------------------------- | --------------------------------------------- | ------------------------------- |
+| `result` é `undefined` sem error | Chave nunca setada ou foi apagada     | Chame `set` primeiro; confira o nome da chave | `get` retorna valor esperado    |
+| Connection refused no Redis      | Redis parado ou host/porta errados    | Suba Redis; confira env vars                  | `connect()` retorna sem `error` |
+| Valor errado em testes de carga  | Client InMemory singleton reutilizado | Isole chaves por teste ou reinicie estado     | Chaves isoladas por teste       |
+| Chaves colidem entre apps        | Mesmo prefixo no Redis compartilhado  | Defina `JUMENTIX_KV_KEY_PREFIX` por serviço   | Chaves namespaced no Redis CLI  |
+| `connected` permanece false      | Pulou `connect()`                     | Aguarde `connect()` antes de I/O              | `client.connected === true`     |
 
 ## Checklist júnior (“Eu consigo …”)
 

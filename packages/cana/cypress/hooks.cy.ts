@@ -1,5 +1,6 @@
-import type { CanaChangeEvent, CanaHooks, CanaSchema } from '../src';
 import { createClient, isCanaErrorCode } from '../src';
+
+import type { CanaChangeEvent, CanaHooks, CanaSchema } from '../src';
 
 /**
  * The hook contract is mostly a set of things a hook is *not* allowed to do, so
@@ -20,7 +21,10 @@ const schema: CanaSchema = {
 
 async function openWith(hooks: CanaHooks, factory: IDBFactory = indexedDB) {
   const client = createClient({
-    name: 'designer', schema, factory, hooks
+    name: 'designer',
+    schema,
+    factory,
+    hooks
   });
   await client.open();
   return client;
@@ -36,7 +40,11 @@ describe('cana write hooks', () => {
 
     await client.table<Design>('designs').add({ id: 1, name: 'a' });
 
-    expect(await client.table<Design>('designs').get(1)).to.deep.include({ id: 1, name: 'a', stamped: 'yes' });
+    expect(await client.table<Design>('designs').get(1)).to.deep.include({
+      id: 1,
+      name: 'a',
+      stamped: 'yes'
+    });
     await client.close();
   });
 
@@ -55,11 +63,17 @@ describe('cana write hooks', () => {
     // The emptiness check must run against the *same* factory — a fresh one
     // would be a different database and would report zero regardless.
     const factory = indexedDB;
-    const client = await openWith({
-      beforeWrite: () => { throw new Error('not allowed'); }
-    }, factory);
+    const client = await openWith(
+      {
+        beforeWrite: () => {
+          throw new Error('not allowed');
+        }
+      },
+      factory
+    );
 
-    const failure = await client.table<Design>('designs')
+    const failure = await client
+      .table<Design>('designs')
       .add({ id: 1, name: 'a' })
       .catch((error: unknown) => error);
 
@@ -95,7 +109,8 @@ describe('cana write hooks', () => {
       beforeWrite: () => Promise.resolve({ id: 1, name: 'async' }) as unknown as Design
     });
 
-    const failure = await client.table<Design>('designs')
+    const failure = await client
+      .table<Design>('designs')
       .add({ id: 1, name: 'a' })
       .catch((error: unknown) => error);
 
@@ -107,14 +122,19 @@ describe('cana write hooks', () => {
   it('runs on every write type, including bulk', async () => {
     const seen: string[] = [];
     const client = await openWith({
-      beforeWrite: (context) => { seen.push(`${context.type}:${context.store}`); }
+      beforeWrite: (context) => {
+        seen.push(`${context.type}:${context.store}`);
+      }
     });
 
     const table = client.table<Design>('designs');
     await table.add({ id: 1, name: 'a' });
     await table.put({ id: 1, name: 'b' });
     await table.update(1, { name: 'c' });
-    await table.bulkAdd([{ id: 2, name: 'd' }, { id: 3, name: 'e' }]);
+    await table.bulkAdd([
+      { id: 2, name: 'd' },
+      { id: 3, name: 'e' }
+    ]);
 
     expect(seen).to.deep.equal([
       'created:designs',
@@ -129,7 +149,9 @@ describe('cana write hooks', () => {
   it('does not run beforeWrite for a delete, which carries no record', async () => {
     const seen: string[] = [];
     const client = await openWith({
-      beforeWrite: (context) => { seen.push(context.type); }
+      beforeWrite: (context) => {
+        seen.push(context.type);
+      }
     });
 
     const table = client.table<Design>('designs');
@@ -161,7 +183,9 @@ describe('cana commit hooks', () => {
     let frozen: boolean | undefined;
 
     const client = await openWith({
-      afterCommit: (events) => { frozen = Object.isFrozen(events[0]); }
+      afterCommit: (events) => {
+        frozen = Object.isFrozen(events[0]);
+      }
     });
     client.subscribe((event) => seenBySubscriber.push(event));
 
@@ -176,7 +200,9 @@ describe('cana commit hooks', () => {
     // The data is already on disk. Reporting a failure here would be a lie about
     // durability in the direction that causes duplicate writes on retry.
     const client = await openWith({
-      afterCommit: () => { throw new Error('reporting is broken'); }
+      afterCommit: () => {
+        throw new Error('reporting is broken');
+      }
     });
 
     const written = await client.table<Design>('designs').add({ id: 1, name: 'a' });
@@ -188,12 +214,18 @@ describe('cana commit hooks', () => {
 
   it('does not call afterCommit when the transaction aborted', async () => {
     let called = false;
-    const client = await openWith({ afterCommit: () => { called = true; } });
+    const client = await openWith({
+      afterCommit: () => {
+        called = true;
+      }
+    });
 
-    await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add({ id: 1, name: 'a' });
-      scope.abort();
-    }).catch(() => undefined);
+    await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add({ id: 1, name: 'a' });
+        scope.abort();
+      })
+      .catch(() => undefined);
 
     expect(called).to.equal(false);
     await client.close();
@@ -203,10 +235,12 @@ describe('cana commit hooks', () => {
     const outcomes: string[] = [];
     const client = await openWith({ afterRollback: (outcome) => outcomes.push(outcome) });
 
-    await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add({ id: 1, name: 'a' });
-      scope.abort('deliberate');
-    }).catch(() => undefined);
+    await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add({ id: 1, name: 'a' });
+        scope.abort('deliberate');
+      })
+      .catch(() => undefined);
 
     expect(outcomes).to.deep.equal(['rolled-back']);
     await client.close();
@@ -214,13 +248,17 @@ describe('cana commit hooks', () => {
 
   it('does not let a throwing afterRollback mask the original failure', async () => {
     const client = await openWith({
-      afterRollback: () => { throw new Error('hook is broken too'); }
+      afterRollback: () => {
+        throw new Error('hook is broken too');
+      }
     });
 
-    const failure = await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add({ id: 1, name: 'a' });
-      scope.abort('the real reason');
-    }).catch((error: unknown) => error);
+    const failure = await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add({ id: 1, name: 'a' });
+        scope.abort('the real reason');
+      })
+      .catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'TransactionAborted')).to.equal(true);
     expect((failure as { message: string }).message).to.include('the real reason');

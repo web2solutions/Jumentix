@@ -1,10 +1,11 @@
+import { DatabasePagingError } from './errors';
+
 import type {
   IPagingRequest,
   IPagingResponse,
   IStoreFilterExpression,
   TFilterOperator
 } from './IStore';
-import { DatabasePagingError } from './errors';
 
 /**
  * List query helpers shared by every `IStore.getAll` implementation (JUM-777).
@@ -35,9 +36,8 @@ export interface IListSort {
   direction: 'asc' | 'desc';
 }
 
-const isExpression = (value: unknown): value is IStoreFilterExpression => (
-  typeof value === 'object' && value !== null && !Array.isArray(value) && 'operator' in value
-);
+const isExpression = (value: unknown): value is IStoreFilterExpression =>
+  typeof value === 'object' && value !== null && !Array.isArray(value) && 'operator' in value;
 
 const comparable = (value: unknown): number | string | null => {
   if (value === null || value === undefined) return null;
@@ -93,26 +93,34 @@ const matchesOperator = (
     case 'lte':
       return compare(actual, expected) <= 0 && actual !== null && actual !== undefined;
     case 'in':
-      return (Array.isArray(expected) ? expected : [expected])
-        .some((candidate) => matchesOperator(actual, 'eq', candidate));
+      return (Array.isArray(expected) ? expected : [expected]).some((candidate) =>
+        matchesOperator(actual, 'eq', candidate)
+      );
     case 'nin':
       return !matchesOperator(actual, 'in', expected);
     case 'like':
       return textOf(actual).includes(String(expected ?? ''));
     case 'ilike':
     case 'contains':
-      return textOf(actual).toLowerCase().includes(String(expected ?? '').toLowerCase());
+      return textOf(actual)
+        .toLowerCase()
+        .includes(String(expected ?? '').toLowerCase());
     case 'regex':
       return new RegExp(String(expected)).test(textOf(actual));
     case 'exists':
       return (actual !== undefined && actual !== null) === Boolean(expected);
     case 'overlaps':
-      return Array.isArray(actual) && (Array.isArray(expected) ? expected : [expected])
-        .some((candidate) => actual.some((entry) => String(entry) === String(candidate)));
+      return (
+        Array.isArray(actual) &&
+        (Array.isArray(expected) ? expected : [expected]).some((candidate) =>
+          actual.some((entry) => String(entry) === String(candidate))
+        )
+      );
     case 'between': {
       const [from, to] = Array.isArray(expected) ? expected : [expected, expected];
       if (actual === null || actual === undefined) return false;
-      const fromOk = from === null || from === undefined || from === '' || compare(actual, from) >= 0;
+      const fromOk =
+        from === null || from === undefined || from === '' || compare(actual, from) >= 0;
       const toOk = to === null || to === undefined || to === '' || compare(actual, to) <= 0;
       return fromOk && toOk;
     }
@@ -125,17 +133,18 @@ const matchesOperator = (
 export const matchesListFilters = (
   record: Record<string, unknown>,
   filters: TListFilters | Record<string, string | number> | undefined
-): boolean => Object.entries(filters ?? {}).every(([field, value]) => {
-  if (value === undefined) return true;
-  const actual = record[field];
-  if (isExpression(value)) {
-    return matchesOperator(actual, value.operator, value.value);
-  }
-  if (Array.isArray(value)) {
-    return matchesOperator(actual, 'in', value);
-  }
-  return matchesOperator(actual, 'eq', value);
-});
+): boolean =>
+  Object.entries(filters ?? {}).every(([field, value]) => {
+    if (value === undefined) return true;
+    const actual = record[field];
+    if (isExpression(value)) {
+      return matchesOperator(actual, value.operator, value.value);
+    }
+    if (Array.isArray(value)) {
+      return matchesOperator(actual, 'in', value);
+    }
+    return matchesOperator(actual, 'eq', value);
+  });
 
 export const applyListFilters = <T extends Record<string, unknown>>(
   records: T[],
@@ -153,14 +162,12 @@ export const applyListSearch = <T extends Record<string, unknown>>(
 ): T[] => {
   const needle = (q ?? '').trim().toLowerCase();
   if (!needle || !fields || fields.length === 0) return records;
-  return records.filter((record) => fields.some(
-    (field) => textOf(record[field]).toLowerCase().includes(needle)
-  ));
+  return records.filter((record) =>
+    fields.some((field) => textOf(record[field]).toLowerCase().includes(needle))
+  );
 };
 
-const primaryKeyOf = (record: Record<string, unknown>): unknown => (
-  record.id ?? record._id
-);
+const primaryKeyOf = (record: Record<string, unknown>): unknown => record.id ?? record._id;
 
 /** Stable multi-field sort; nulls last regardless of direction. */
 export const applyListSort = <T extends Record<string, unknown>>(
@@ -197,10 +204,7 @@ export const applyListSort = <T extends Record<string, unknown>>(
  * results: a client paging with a stale total would otherwise render an empty
  * grid and report it as "no records".
  */
-export const paginateList = <T>(
-  records: T[],
-  paging: IPagingRequest
-): IPagingResponse<T[]> => {
+export const paginateList = <T>(records: T[], paging: IPagingRequest): IPagingResponse<T[]> => {
   const page = paging.page ?? paging.currentPage ?? 1;
   const size = paging.size ?? paging.perPage ?? 10;
   if (!Number.isInteger(page) || page < 1) {
@@ -214,7 +218,7 @@ export const paginateList = <T>(
   if (page > totalPages && total > 0) {
     throw new DatabasePagingError('page number must be smaller than the number of total pages');
   }
-  const startAt = (page * size) - size;
+  const startAt = page * size - size;
   return {
     result: records.slice(startAt, startAt + size),
     total,
@@ -228,9 +232,8 @@ export const paginateList = <T>(
  * `IPagingRequest.sort`, `q` and `searchFields` are read from the paging
  * request so `IStore.getAll(filters, paging)` keeps its two-argument shape.
  */
-const withoutTombstones = <T extends Record<string, unknown>>(records: T[]): T[] => (
-  records.filter((record) => record.deletedAt == null || record.deletedAt === '')
-);
+const withoutTombstones = <T extends Record<string, unknown>>(records: T[]): T[] =>
+  records.filter((record) => record.deletedAt == null || record.deletedAt === '');
 
 export const runListQuery = <T extends Record<string, unknown>>(
   records: T[],
@@ -252,11 +255,14 @@ export const runListQuery = <T extends Record<string, unknown>>(
 export const parseListSort = (raw: string | undefined | null): IListSort[] | undefined => {
   const text = (raw ?? '').trim();
   if (!text) return undefined;
-  return text.split(',').map((part): IListSort => {
-    const [field, direction] = part.trim().split(':');
-    return {
-      field: field.trim(),
-      direction: direction?.trim().toLowerCase() === 'desc' ? 'desc' : 'asc'
-    };
-  }).filter((entry) => entry.field.length > 0);
+  return text
+    .split(',')
+    .map((part): IListSort => {
+      const [field, direction] = part.trim().split(':');
+      return {
+        field: field.trim(),
+        direction: direction?.trim().toLowerCase() === 'desc' ? 'desc' : 'asc'
+      };
+    })
+    .filter((entry) => entry.field.length > 0);
 };

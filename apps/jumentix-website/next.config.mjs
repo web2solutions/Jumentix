@@ -1,13 +1,16 @@
-import bundleAnalyzer from '@next/bundle-analyzer';
-import nextra from 'nextra';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import bundleAnalyzer from '@next/bundle-analyzer';
+import nextra from 'nextra';
+
+const { process } = globalThis;
 
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const monorepoRoot = path.resolve(appRoot, '../..');
 
 const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env.ANALYZE === 'true'
 });
 
 const withNextra = nextra({
@@ -18,8 +21,8 @@ const withNextra = nextra({
   search: {
     codeblocks: false
   },
-  contentDirBasePath: '/docs',
-})
+  contentDirBasePath: '/docs'
+});
 
 export default withNextra(
   withBundleAnalyzer({
@@ -37,7 +40,7 @@ export default withNextra(
     ],
 
     experimental: {
-      optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
+      optimizePackageImports: ['@mantine/core', '@mantine/hooks']
     },
     turbopack: {
       root: monorepoRoot,
@@ -45,10 +48,11 @@ export default withNextra(
         '*.svg': {
           loaders: ['turbopack-inline-svg-loader'],
           condition: {
-            content: /^[\s\S]{0,4000}$/, // <-- Inline SVGs smaller than ~4Kb (since Next.js v16)
+            content: /^[\s\S]{0,4000}$/ // <-- Inline SVGs smaller than ~4Kb (since Next.js v16)
           },
-          as: '*.js',
-        },
-      },
-    },
-  }));
+          as: '*.js'
+        }
+      }
+    }
+  })
+);

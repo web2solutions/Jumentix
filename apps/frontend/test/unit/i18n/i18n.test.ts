@@ -1,10 +1,6 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 
-import {
-  currentLocale, localized, resetLocale, setLocale, t
-} from '@/i18n';
+import { currentLocale, localized, resetLocale, setLocale, t } from '@/i18n';
 import { LOCALES, messages } from '@/i18n/messages';
 
 /** JUM-780 — one message table per locale, interpolation, persistence, fallbacks. */

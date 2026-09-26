@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -123,8 +122,8 @@ describe('third-party review contract', () => {
       const file = path.join(directory, contracts[0]);
       fs.appendFileSync(
         file,
-        '\n# A machine executor rather than setup_remote_docker, and never docker run.\n'
-        + '# uses: actions/checkout@v4 would be a mutable reference.\n'
+        '\n# A machine executor rather than setup_remote_docker, and never docker run.\n' +
+          '# uses: actions/checkout@v4 would be a mutable reference.\n'
       );
     });
 
@@ -144,18 +143,20 @@ describe('third-party review contract', () => {
 
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[0]);
-      const text = fs.readFileSync(file, 'utf8').replace(
-        '  workspace-builds:',
-        '  unrelated-job:\n'
-        + '    runs-on: ubuntu-latest\n'
-        + '    steps:\n'
-        + '      - setup_remote_docker\n'
-        + '      - run:\n'
-        + '          name: probe\n'
-        + '          command: docker run hello-world\n'
-        + '\n'
-        + '  workspace-builds:'
-      );
+      const text = fs
+        .readFileSync(file, 'utf8')
+        .replace(
+          '  workspace-builds:',
+          '  unrelated-job:\n' +
+            '    runs-on: ubuntu-latest\n' +
+            '    steps:\n' +
+            '      - setup_remote_docker\n' +
+            '      - run:\n' +
+            '          name: probe\n' +
+            '          command: docker run hello-world\n' +
+            '\n' +
+            '  workspace-builds:'
+        );
       fs.writeFileSync(file, text);
     });
 
@@ -183,7 +184,10 @@ describe('third-party review contract', () => {
 
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[1]);
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('checksum mismatch', 'checksum skipped'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('checksum mismatch', 'checksum skipped')
+      );
     });
     expect(run(root).output).toContain('checksum mismatch');
   });
@@ -193,7 +197,10 @@ describe('third-party review contract', () => {
 
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[0]);
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('Enforce scanner outcomes', 'Ignore scanner outcomes'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('Enforce scanner outcomes', 'Ignore scanner outcomes')
+      );
     });
     expect(run(root).output).toContain('Enforce scanner outcomes');
   });
@@ -213,7 +220,10 @@ describe('third-party review contract', () => {
 
     const root = fixture((directory) => {
       const file = path.join(directory, contracts[0]);
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('List review evidence', 'Hide review evidence'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('List review evidence', 'Hide review evidence')
+      );
     });
 
     expect(run(root).output).toContain('List review evidence');
@@ -231,13 +241,14 @@ describe('third-party review contract', () => {
       ].join('\n');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          alwaysEnforce,
-          '      - name: Enforce scanner outcomes\n'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(alwaysEnforce, '      - name: Enforce scanner outcomes\n')
       );
     });
 
-    expect(run(root).output).toContain('scanner enforcement must run even when evidence upload fails');
+    expect(run(root).output).toContain(
+      'scanner enforcement must run even when evidence upload fails'
+    );
   });
 });

@@ -1,7 +1,8 @@
-import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
-export class AuroraRepository extends BaseExternalDataRepository {
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+
+class AuroraRepository extends BaseExternalDataRepository {
   private client: any | null = null;
 
   constructor(options: IRepositoryConnectionOptions) {
@@ -14,23 +15,23 @@ export class AuroraRepository extends BaseExternalDataRepository {
   public async connect(): Promise<void> {
     const postgresModule = await this.loadModule('postgres');
     const postgres = postgresModule.default || postgresModule;
-    const connectionUrl = this.options.connectionUrl || this.getExtraOption<string>('connectionUrl', '');
+    const connectionUrl =
+      this.options.connectionUrl || this.getExtraOption<string>('connectionUrl', '');
     const max = this.getExtraOption<number>('poolMax', 20);
 
-    const dsqlConnector = await this.loadOptionalModule('@aws/aurora-dsql-postgresjs')
-      || await this.loadOptionalModule('@aws/aurora-dsql-connector')
-      || await this.loadOptionalModule('@aws/aurora-dsql');
+    const dsqlConnector =
+      (await this.loadOptionalModule('@aws/aurora-dsql-postgresjs')) ||
+      (await this.loadOptionalModule('@aws/aurora-dsql-connector')) ||
+      (await this.loadOptionalModule('@aws/aurora-dsql'));
 
     if (dsqlConnector) {
-      const createDsqlClient = (
-        dsqlConnector.createClient || dsqlConnector.default?.createClient
-      );
+      const createDsqlClient = dsqlConnector.createClient || dsqlConnector.default?.createClient;
       const dsqlConfig = {
         region: this.options.region || this.getExtraOption<string>('region', 'us-east-1'),
-        endpoint: this.options.endpoint
-          || this.getExtraOption<string | undefined>('endpoint', undefined),
-        database: this.options.database
-          || this.getExtraOption<string | undefined>('database', undefined)
+        endpoint:
+          this.options.endpoint || this.getExtraOption<string | undefined>('endpoint', undefined),
+        database:
+          this.options.database || this.getExtraOption<string | undefined>('database', undefined)
       };
       if (typeof createDsqlClient === 'function') {
         this.client = await createDsqlClient({
@@ -72,3 +73,5 @@ export class AuroraRepository extends BaseExternalDataRepository {
     return this.client;
   }
 }
+
+export default AuroraRepository;

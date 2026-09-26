@@ -31,22 +31,6 @@
  * Contract 3, implemented in `src/packages/packageVersioning.js`).
  */
 
-import {
-  DOMAIN_COLORS,
-  defaultFields,
-  fallbackId,
-  normalizeContractInput,
-  normalizeDomainInput,
-  normalizeField,
-  normalizeOptionalNumber,
-  normalizeRbacPolicyInput,
-  normalizeRelationship,
-  normalizeStatePayload,
-  parseCommaSeparated,
-  parseEnumValues,
-  SUITE_EXPORT_KIND,
-  SUITE_EXPORT_MAJOR
-} from '../state/designerState.js';
 import { buildArchitectureFromOas } from '../model/architecture.js';
 import {
   fromOasType,
@@ -64,6 +48,22 @@ import {
   packageContentsEqual,
   resolvePackageGraph
 } from '../packages/packageVersioning.js';
+import {
+  defaultFields,
+  DOMAIN_COLORS,
+  fallbackId,
+  normalizeContractInput,
+  normalizeDomainInput,
+  normalizeField,
+  normalizeOptionalNumber,
+  normalizeRbacPolicyInput,
+  normalizeRelationship,
+  normalizeStatePayload,
+  parseCommaSeparated,
+  parseEnumValues,
+  SUITE_EXPORT_KIND,
+  SUITE_EXPORT_MAJOR
+} from '../state/designerState.js';
 
 /**
  * Resolve an imported id against the ids already taken: an id that is free
@@ -143,8 +143,12 @@ export function buildDomainFromPackage(parsed, existingDomains) {
     });
   });
   nextDomain.context = nextDomain.context || {};
-  nextDomain.context.packageDependencies = uniqueStrings(nextDomain.context.packageDependencies || []);
-  nextDomain.context.sharedValueObjects = uniqueStrings(nextDomain.context.sharedValueObjects || []);
+  nextDomain.context.packageDependencies = uniqueStrings(
+    nextDomain.context.packageDependencies || []
+  );
+  nextDomain.context.sharedValueObjects = uniqueStrings(
+    nextDomain.context.sharedValueObjects || []
+  );
 
   // Dependency graph (JUM-492): the registry derives from provenance only,
   // and the incoming package is overlaid before resolution so its own
@@ -156,15 +160,17 @@ export function buildDomainFromPackage(parsed, existingDomains) {
     return { ok: false, reason: 'dependency-cycle', cycle: incomingCycle, package: packageInfo };
   }
   const warnings = [
-    ...graph.missing.map((entry) => (
-      `Package '${entry.requiredBy}' depends on '${entry.name}@${entry.range}', which is not imported.`
-    )),
-    ...graph.incompatible.map((entry) => (
-      `Package '${entry.requiredBy}' requires '${entry.name}@${entry.range}' but '${entry.name}@${entry.installed}' is imported.`
-    )),
-    ...graph.cycles.map((cycle) => (
-      `Dependency cycle reported (not entered): ${cycle.join(' -> ')}.`
-    ))
+    ...graph.missing.map(
+      (entry) =>
+        `Package '${entry.requiredBy}' depends on '${entry.name}@${entry.range}', which is not imported.`
+    ),
+    ...graph.incompatible.map(
+      (entry) =>
+        `Package '${entry.requiredBy}' requires '${entry.name}@${entry.range}' but '${entry.name}@${entry.installed}' is imported.`
+    ),
+    ...graph.cycles.map(
+      (cycle) => `Dependency cycle reported (not entered): ${cycle.join(' -> ')}.`
+    )
   ];
 
   const installed = registry.get(packageInfo.name);
@@ -207,9 +213,10 @@ export function buildDomainFromPackage(parsed, existingDomains) {
   }
 
   nextDomain.id = uniqueImportedId(nextDomain.id, 'domain', existingDomains.length, takenIds);
-  nextDomain.entities.forEach((entity, entityIndex) => {
-    entity.id = uniqueImportedId(entity.id, 'entity', entityIndex, takenIds);
-  });
+  nextDomain.entities = nextDomain.entities.map((entity, entityIndex) => ({
+    ...entity,
+    id: uniqueImportedId(entity.id, 'entity', entityIndex, takenIds)
+  }));
   let domainName = nextDomain.name;
   let suffix = 2;
   while (isDomainNameTaken(existingDomains, domainName)) {
@@ -223,9 +230,10 @@ export function buildDomainFromPackage(parsed, existingDomains) {
   nextDomain.context.packageName = packageInfo.name;
   nextDomain.context.packageVersion = packageInfo.version;
   nextDomain.context.provenance = provenance;
-  nextDomain.entities.forEach((entity) => {
-    entity.meta = { ...(entity.meta || {}), provenance };
-  });
+  nextDomain.entities = nextDomain.entities.map((entity) => ({
+    ...entity,
+    meta: { ...(entity.meta || {}), provenance }
+  }));
   return { ok: true, domain: nextDomain, package: packageInfo, warnings };
 }
 
@@ -235,11 +243,13 @@ export function buildDomainFromPackage(parsed, existingDomains) {
  * `BooleanStringResult`) are not entity candidates at all (JUM-478).
  */
 function isObjectContractSchema(schemaValue) {
-  return schemaValue.type === 'object'
-    || (schemaValue.properties && typeof schemaValue.properties === 'object')
-    || Array.isArray(schemaValue.oneOf)
-    || Array.isArray(schemaValue.allOf)
-    || Array.isArray(schemaValue.anyOf);
+  return (
+    schemaValue.type === 'object' ||
+    (schemaValue.properties && typeof schemaValue.properties === 'object') ||
+    Array.isArray(schemaValue.oneOf) ||
+    Array.isArray(schemaValue.allOf) ||
+    Array.isArray(schemaValue.anyOf)
+  );
 }
 
 /**
@@ -260,7 +270,10 @@ function isPortObjectSchema(schemaKey, schemaValue) {
   if (schemaKey === 'ResourceDeleteResponse' || schemaKey === 'EntityMetricsResponse') return true;
   if (/^Request[A-Z]/.test(schemaKey) || /ArrayOf$/.test(schemaKey)) return true;
   const description = String(schemaValue.description || '');
-  if (/^Port (input|output) object/.test(description) && !/^Port output object for .+ resource\./.test(description)) {
+  if (
+    /^Port (input|output) object/.test(description) &&
+    !/^Port output object for .+ resource\./.test(description)
+  ) {
     return true;
   }
   return !isObjectContractSchema(schemaValue);
@@ -276,7 +289,9 @@ function compositionModeOf(schemaValue) {
 
 /** Strip the local schemas prefix from a `$ref`, keeping anything else verbatim. */
 function schemaRefName(ref) {
-  return String(ref || '').replace(/^#\/components\/schemas\//, '').trim();
+  return String(ref || '')
+    .replace(/^#\/components\/schemas\//, '')
+    .trim();
 }
 
 /**
@@ -291,7 +306,9 @@ function buildEntityMetaFromOas(schemaValue) {
     ? invariantsInput.map((item) => String(item).trim()).filter(Boolean)
     : parseCommaSeparated(invariantsInput || []);
   const contracts = Array.isArray(schemaValue['x-message-contracts'])
-    ? schemaValue['x-message-contracts'].map((contract, index) => normalizeContractInput(contract, index))
+    ? schemaValue['x-message-contracts'].map((contract, index) =>
+        normalizeContractInput(contract, index)
+      )
     : [];
   const mode = compositionModeOf(schemaValue);
   const refs = mode
@@ -343,9 +360,10 @@ export function buildDomainsFromOas(parsed) {
     const domainName = String(schemaValue['x-domain'] || 'Imported').trim() || 'Imported';
     const entityName = String(schemaValue['x-entity'] || schemaKey).trim() || schemaKey;
     const required = Array.isArray(schemaValue.required) ? schemaValue.required : [];
-    const properties = schemaValue.properties && typeof schemaValue.properties === 'object'
-      ? schemaValue.properties
-      : {};
+    const properties =
+      schemaValue.properties && typeof schemaValue.properties === 'object'
+        ? schemaValue.properties
+        : {};
 
     let domain = byDomain.get(domainName);
     if (!domain) {
@@ -367,40 +385,46 @@ export function buildDomainsFromOas(parsed) {
       // PK/FK/unique default to the name heuristic; indexed defaults to false. An explicit
       // `x-field-flags` extension (JUM-478) overrides it per flag.
       const heuristic = oasFieldNameFlags(fieldName);
-      const flagOverrides = field['x-field-flags'] && typeof field['x-field-flags'] === 'object'
-        ? field['x-field-flags']
-        : {};
-      const flag = (key) => (typeof flagOverrides[key] === 'boolean' ? flagOverrides[key] : heuristic[key]);
+      const flagOverrides =
+        field['x-field-flags'] && typeof field['x-field-flags'] === 'object'
+          ? field['x-field-flags']
+          : {};
+      const flag = (key) =>
+        typeof flagOverrides[key] === 'boolean' ? flagOverrides[key] : heuristic[key];
       const indexed = typeof flagOverrides.indexed === 'boolean' ? flagOverrides.indexed : false;
-      return normalizeField({
-        name: fieldName,
-        type: fromOasType(field),
-        format: String(field.format || '').trim(),
-        description: String(field.description || '').trim(),
-        nullable: Boolean(field.nullable),
-        enumValues: parseEnumValues(field.enum),
-        pattern: String(field.pattern || '').trim(),
-        minLength: normalizeOptionalNumber(field.minLength),
-        maxLength: normalizeOptionalNumber(field.maxLength),
-        minimum: normalizeOptionalNumber(field.minimum),
-        maximum: normalizeOptionalNumber(field.maximum),
-        itemsType: fromOasType(field.items || {}),
-        required: required.includes(fieldName),
-        pk: flag('pk'),
-        fk: flag('fk'),
-        unique: flag('unique'),
-        indexed
-      }, 0);
+      return normalizeField(
+        {
+          name: fieldName,
+          type: fromOasType(field),
+          format: String(field.format || '').trim(),
+          description: String(field.description || '').trim(),
+          nullable: Boolean(field.nullable),
+          enumValues: parseEnumValues(field.enum),
+          pattern: String(field.pattern || '').trim(),
+          minLength: normalizeOptionalNumber(field.minLength),
+          maxLength: normalizeOptionalNumber(field.maxLength),
+          minimum: normalizeOptionalNumber(field.minimum),
+          maximum: normalizeOptionalNumber(field.maximum),
+          itemsType: fromOasType(field.items || {}),
+          required: required.includes(fieldName),
+          pk: flag('pk'),
+          fk: flag('fk'),
+          unique: flag('unique'),
+          indexed
+        },
+        0
+      );
     });
 
+    // A marked fieldless entity keeps its empty field set; an unmarked
+    // schema without properties keeps the legacy default-fields fallback.
+    const fallbackFields = schemaValue['x-fieldless'] === true ? [] : defaultFields();
     const entity = {
       id: fallbackId('entity', entityIndex),
       name: entityName,
       x: 14 + (domain.entities.length % 2) * 206,
       y: 14 + Math.floor(domain.entities.length / 2) * 120,
-      // A marked fieldless entity keeps its empty field set; an unmarked
-      // schema without properties keeps the legacy default-fields fallback.
-      fields: fields.length ? fields : (schemaValue['x-fieldless'] === true ? [] : defaultFields()),
+      fields: fields.length ? fields : fallbackFields,
       meta: buildEntityMetaFromOas(schemaValue)
     };
     domain.entities.push(entity);
@@ -422,14 +446,17 @@ export function buildDomainsFromOas(parsed) {
     const fromEntity = entityBySchema.get(relation?.fromSchema);
     const toEntity = entityBySchema.get(relation?.toSchema);
     if (!fromEntity || !toEntity) return;
-    relationships.push(normalizeRelationship({
-      id: fallbackId('relationship', relationships.length),
-      name: String(relation.name || '').trim() || `${relation.fromSchema} -> ${relation.toSchema}`,
-      fromEntityId: fromEntity.id,
-      toEntityId: toEntity.id,
-      fromCardinality: relation.fromCardinality,
-      toCardinality: relation.toCardinality
-    }));
+    relationships.push(
+      normalizeRelationship({
+        id: fallbackId('relationship', relationships.length),
+        name:
+          String(relation.name || '').trim() || `${relation.fromSchema} -> ${relation.toSchema}`,
+        fromEntityId: fromEntity.id,
+        toEntityId: toEntity.id,
+        fromCardinality: relation.fromCardinality,
+        toCardinality: relation.toCardinality
+      })
+    );
   });
 
   return {
@@ -439,7 +466,6 @@ export function buildDomainsFromOas(parsed) {
     architecture: buildArchitectureFromOas(parsed, nextDomains)
   };
 }
-
 
 /**
  * Sections a full-suite export document may carry (JUM-547): the Requirement
@@ -509,17 +535,25 @@ export function buildStateFromSuiteExport(parsed, currentState) {
       return { ok: false, reason: 'unsupported-version', version: parsed.version };
     }
   }
-  const unknownSections = Object.keys(parsed).filter((key) => !SUITE_EXPORT_KNOWN_SECTIONS.has(key));
+  const unknownSections = Object.keys(parsed).filter(
+    (key) => !SUITE_EXPORT_KNOWN_SECTIONS.has(key)
+  );
   if (unknownSections.length) {
     return { ok: false, reason: 'unknown-sections', sections: unknownSections };
   }
   const state = normalizeStatePayload(parsed);
-  const documentCarriesValues = parsed.runtimeEnvironment
-    && typeof parsed.runtimeEnvironment === 'object'
-    && parsed.runtimeEnvironment.values !== undefined
-    && parsed.runtimeEnvironment.values !== null;
+  const documentCarriesValues =
+    parsed.runtimeEnvironment &&
+    typeof parsed.runtimeEnvironment === 'object' &&
+    parsed.runtimeEnvironment.values !== undefined &&
+    parsed.runtimeEnvironment.values !== null;
   const localValues = currentState?.runtimeEnvironment?.values;
-  if (!documentCarriesValues && localValues && typeof localValues === 'object' && !Array.isArray(localValues)) {
+  if (
+    !documentCarriesValues &&
+    localValues &&
+    typeof localValues === 'object' &&
+    !Array.isArray(localValues)
+  ) {
     state.runtimeEnvironment = { ...state.runtimeEnvironment, values: { ...localValues } };
   }
   return { ok: true, state };

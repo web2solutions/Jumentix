@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-/* eslint-disable no-console */
 /**
  * Requirement 112 — every package and app owns its own test suite.
  *
@@ -22,9 +20,10 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+
+const { emitsNoJavaScript } = require('./lib/emits-javascript.js');
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
 const { byPath } = require('./lib/mapped-suites.js');
-const { emitsNoJavaScript } = require('./lib/emits-javascript.js');
 
 const PACKAGES_DIR = 'packages';
 const SONAR_CONFIG = 'sonar-project.properties';
@@ -36,8 +35,7 @@ const SONAR_CONFIG = 'sonar-project.properties';
  * where the work is tracked, and `reason` says why it has not happened yet —
  * "no time" is a reason; the absence of one is not.
  */
-const WITHOUT_SUITE_YET = Object.freeze({
-});
+const WITHOUT_SUITE_YET = Object.freeze({});
 
 /**
  * A package with no source of its own has nothing to test.
@@ -60,6 +58,15 @@ const WITHOUT_SUITE_YET = Object.freeze({
  * constant in with its types still owes a suite, and a package that later grows
  * a runtime file starts owing one the moment it does.
  */
+function listFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    if (['node_modules', 'dist', '.build', 'coverage'].includes(entry.name)) return [];
+    const full = path.join(dir, entry.name);
+    return entry.isDirectory() ? listFiles(full) : [full];
+  });
+}
+
 function hasSource(packageDir) {
   const src = path.join(packageDir, 'src');
   if (!fs.existsSync(src)) return false;
@@ -74,15 +81,6 @@ function hasSuite(packageDir) {
   return listFiles(packageDir).some((file) => /\.(test|spec)\.ts$/.test(file));
 }
 
-function listFiles(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    if (['node_modules', 'dist', '.build', 'coverage'].includes(entry.name)) return [];
-    const full = path.join(dir, entry.name);
-    return entry.isDirectory() ? listFiles(full) : [full];
-  });
-}
-
 function readSonarExclusions(root, readFile) {
   const contents = readFile(path.join(root, SONAR_CONFIG));
   // Continuation lines end with a backslash; join before splitting on commas.
@@ -91,7 +89,8 @@ function readSonarExclusions(root, readFile) {
   if (!line) return new Set();
 
   return new Set(
-    line.slice('sonar.coverage.exclusions='.length)
+    line
+      .slice('sonar.coverage.exclusions='.length)
       .split(',')
       .map((entry) => entry.trim())
       .filter(Boolean)
@@ -102,7 +101,8 @@ function run(options = {}) {
   const root = options.root || process.cwd();
   const register = options.register || WITHOUT_SUITE_YET;
   const readFile = options.readFile || ((file) => fs.readFileSync(file, 'utf8'));
-  const listPackages = options.listPackages || (() => fs.readdirSync(path.join(root, PACKAGES_DIR)));
+  const listPackages =
+    options.listPackages || (() => fs.readdirSync(path.join(root, PACKAGES_DIR)));
 
   const failures = [];
   let sonarExclusions;
@@ -117,15 +117,15 @@ function run(options = {}) {
     if (!options.listPackages && !fs.statSync(dir).isDirectory()) continue;
     if (!hasSource(dir)) continue;
 
-    const declared = Object.prototype.hasOwnProperty.call(register, name);
+    const declared = Object.hasOwn(register, name);
     const suite = hasSuite(dir);
 
     if (!suite && !declared) {
       failures.push(
-        `${name} has source but no test suite of its own, and is not declared.\n`
-          + '    Requirement 112: a library covered only by an application\'s tests is not\n'
-          + '    tested — the application is. Add a suite under packages/' + name + '/test/,\n'
-          + '    or record the debt in WITHOUT_SUITE_YET with a since date and an issue.'
+        `${name} has source but no test suite of its own, and is not declared.\n` +
+          `    Requirement 112: a library covered only by an application's tests is not\n` +
+          `    tested — the application is. Add a suite under packages/${name}/test/,\n` +
+          `    or record the debt in WITHOUT_SUITE_YET with a since date and an issue.`
       );
       continue;
     }
@@ -133,9 +133,9 @@ function run(options = {}) {
     // The ratchet. Without this the register is write-only and never shrinks.
     if (suite && declared) {
       failures.push(
-        `${name} now has a suite but is still declared in WITHOUT_SUITE_YET.\n`
-          + `    Remove the entry, and remove packages/${name}/** from\n`
-          + `    sonar.coverage.exclusions so its own coverage starts counting.`
+        `${name} now has a suite but is still declared in WITHOUT_SUITE_YET.\n` +
+          `    Remove the entry, and remove packages/${name}/** from\n` +
+          `    sonar.coverage.exclusions so its own coverage starts counting.`
       );
       continue;
     }
@@ -151,9 +151,9 @@ function run(options = {}) {
       // Sonar must not be told a declared package is covered.
       if (!sonarExclusions.has(`packages/${name}/**`)) {
         failures.push(
-          `${name} has no suite but is not in sonar.coverage.exclusions.\n`
-            + '    Sonar would report it 0% covered on new code and fail the quality gate\n'
-            + '    for a gap already recorded here.'
+          `${name} has no suite but is not in sonar.coverage.exclusions.\n` +
+            '    Sonar would report it 0% covered on new code and fail the quality gate\n' +
+            '    for a gap already recorded here.'
         );
       }
     }
@@ -168,11 +168,11 @@ function run(options = {}) {
     const dir = path.join(root, PACKAGES_DIR, name);
     if (!fs.existsSync(dir)) continue;
     if (!hasSource(dir)) continue;
-    if (!Object.prototype.hasOwnProperty.call(register, name)) {
+    if (!Object.hasOwn(register, name)) {
       failures.push(
-        `packages/${name}/** is excluded from Sonar coverage but is not declared in\n`
-          + '    WITHOUT_SUITE_YET. Either it has a suite — in which case the exclusion\n'
-          + '    hides it — or the debt is unrecorded.'
+        `packages/${name}/** is excluded from Sonar coverage but is not declared in\n` +
+          '    WITHOUT_SUITE_YET. Either it has a suite — in which case the exclusion\n' +
+          '    hides it — or the debt is unrecorded.'
       );
     }
   }
@@ -187,9 +187,10 @@ function run(options = {}) {
   const outstanding = Object.keys(register).length;
   return {
     ok: true,
-    message: outstanding === 0
-      ? 'Package suite check passed: every package with source owns a suite.'
-      : `Package suite check passed: ${outstanding} package(s) still owe a suite, each declared with a date and an issue.`
+    message:
+      outstanding === 0
+        ? 'Package suite check passed: every package with source owns a suite.'
+        : `Package suite check passed: ${outstanding} package(s) still owe a suite, each declared with a date and an issue.`
   };
 }
 
@@ -205,18 +206,19 @@ function main(io = console, execute = run) {
 
 // `runMain` rather than the helper's `execute`: the option name is this
 // module's published contract and its suite injects through it.
-const runAsEntryPoint = ({ runMain = main, ...rest } = {}) => runWhenEntryPoint({
-  caller: module,
-  execute: runMain,
-  ...rest
-});
+const runAsEntryPoint = ({ runMain = main, ...rest } = {}) =>
+  runWhenEntryPoint({
+    caller: module,
+    execute: runMain,
+    ...rest
+  });
 
 runAsEntryPoint();
 
 module.exports = {
-  WITHOUT_SUITE_YET,
   main,
   readSonarExclusions,
   run,
-  runAsEntryPoint
+  runAsEntryPoint,
+  WITHOUT_SUITE_YET
 };

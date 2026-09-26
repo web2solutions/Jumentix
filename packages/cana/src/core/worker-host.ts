@@ -26,23 +26,18 @@
  * out its timeout for a failure that was already known.
  */
 
-import type {
-  CanaChangeEvent, CanaKey, CanaQuery, CanaTransactionMode
-} from '../contracts';
 import { isCanaError } from '../contracts';
-import type { Client, ClientOptions } from './client';
 import { createClient } from './client';
 import { canaError, translateError } from './errors';
-import type {
-  CanaRequestEnvelope,
-  CanaResponseEnvelope,
-  MessagePort
-} from './protocol';
+
+import type { Client, ClientOptions } from './client';
+import type { CanaChangeEvent, CanaKey, CanaQuery, CanaTransactionMode } from '../contracts';
+import type { CanaRequestEnvelope, CanaResponseEnvelope, MessagePort } from './protocol';
 
 /** What a `write` request carries. */
 export interface WritePayload {
-  readonly operation: 'add' | 'put' | 'update' | 'delete' | 'clear'
-  | 'bulkAdd' | 'bulkPut' | 'bulkDelete';
+  readonly operation:
+    'add' | 'put' | 'update' | 'delete' | 'clear' | 'bulkAdd' | 'bulkPut' | 'bulkDelete';
   readonly record?: unknown;
   readonly records?: readonly unknown[];
   readonly keys?: readonly CanaKey[];
@@ -68,6 +63,7 @@ export interface WorkerHost {
 
 function requireStore(request: CanaRequestEnvelope): string {
   if (!request.store) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError('InvalidRequest', `${request.kind} requires a store name.`);
   }
   return request.store;
@@ -75,9 +71,9 @@ function requireStore(request: CanaRequestEnvelope): string {
 
 function requireKey(request: CanaRequestEnvelope): CanaKey {
   if (request.key === undefined) {
-    // Every caller reaches here only after `requireStore`, so `store` is always set.
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError('InvalidRequest', `${request.kind} requires a key.`, {
-      store: request.store!
+      store: requireStore(request)
     });
   }
   return request.key;
@@ -88,6 +84,7 @@ async function applyWrite(client: Client, request: CanaRequestEnvelope): Promise
   const payload = request.payload as WritePayload | undefined;
 
   if (!payload?.operation) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError('InvalidRequest', 'write requires an operation.', { store });
   }
 
@@ -111,6 +108,7 @@ async function applyWrite(client: Client, request: CanaRequestEnvelope): Promise
     case 'bulkDelete':
       return table.bulkDelete(payload.keys ?? []);
     default:
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'InvalidRequest',
         `Unsupported write operation "${String(payload.operation)}".`,
@@ -153,10 +151,11 @@ export async function serve(client: Client, request: CanaRequestEnvelope): Promi
     case 'resolve-write': {
       const payload = request.payload as { correlationId?: string; attemptedAt?: number };
       if (typeof payload?.correlationId !== 'string' || typeof payload?.attemptedAt !== 'number') {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
         throw canaError(
           'InvalidRequest',
-          'resolve-write needs both correlationId and attemptedAt: an id alone cannot '
-            + 'distinguish a rollback from a pruned record.'
+          'resolve-write needs both correlationId and attemptedAt: an id alone cannot ' +
+            'distinguish a rollback from a pruned record.'
         );
       }
       return client.resolveWrite(payload.correlationId, payload.attemptedAt);
@@ -169,14 +168,16 @@ export async function serve(client: Client, request: CanaRequestEnvelope): Promi
       // A transaction body is a function, and functions do not survive
       // structured clone. Saying so is more useful than the DataCloneError the
       // caller would otherwise get from `postMessage` with no explanation.
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'InvalidRequest',
-        'Multi-operation transactions cannot cross the worker boundary: the body is a '
-          + 'function, and functions are not structured-cloneable. Run the transaction inside '
-          + 'the worker, or send the operations individually.'
+        'Multi-operation transactions cannot cross the worker boundary: the body is a ' +
+          'function, and functions are not structured-cloneable. Run the transaction inside ' +
+          'the worker, or send the operations individually.'
       );
 
     default:
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError('InvalidRequest', `Unsupported request kind "${String(request.kind)}".`);
   }
 }
@@ -218,11 +219,13 @@ export function createWorkerHost(options: WorkerHostOptions): WorkerHost {
     // reported through `reply`, so nothing is lost by not awaiting.
     serve(client, request)
       .then((result) => reply({ requestId: request.requestId, ok: true, result }))
-      .catch((error: unknown) => reply({
-        requestId: request.requestId,
-        ok: false,
-        error: isCanaError(error) ? error : translateError(error)
-      }));
+      .catch((error: unknown) =>
+        reply({
+          requestId: request.requestId,
+          ok: false,
+          error: isCanaError(error) ? error : translateError(error)
+        })
+      );
   };
 
   port.addEventListener('message', handler);
@@ -292,29 +295,32 @@ export function createWorkerClient(router: RequestSender): CanaWorkerClient {
     payload: WritePayload,
     key?: CanaKey,
     mode: CanaTransactionMode = 'readwrite'
-  ) => router.send({
-    kind: 'write',
-    store,
-    mode,
-    payload,
-    ...(key === undefined ? {} : { key })
-  });
+  ) =>
+    router.send({
+      kind: 'write',
+      store,
+      mode,
+      payload,
+      ...(key === undefined ? {} : { key })
+    });
 
   return {
     ping: () => router.send({ kind: 'ping' }),
     open: () => router.send({ kind: 'open' }),
     close: () => router.send({ kind: 'close' }),
 
-    get: <TRecord>(store: string, key: CanaKey) => router
-      .send({ kind: 'get', store, key }) as Promise<TRecord | undefined>,
+    get: <TRecord>(store: string, key: CanaKey) =>
+      router.send({ kind: 'get', store, key }) as Promise<TRecord | undefined>,
 
-    query: <TRecord>(store: string, query?: CanaQuery) => router
-      .send({ kind: 'query', store, ...(query === undefined ? {} : { query }) })
-      .then((rows) => rows as readonly TRecord[]),
+    query: <TRecord>(store: string, query?: CanaQuery) =>
+      router
+        .send({ kind: 'query', store, ...(query === undefined ? {} : { query }) })
+        .then((rows) => rows as readonly TRecord[]),
 
-    count: (store: string, query?: CanaQuery) => router
-      .send({ kind: 'count', store, ...(query === undefined ? {} : { query }) })
-      .then((value) => value as number),
+    count: (store: string, query?: CanaQuery) =>
+      router
+        .send({ kind: 'count', store, ...(query === undefined ? {} : { query }) })
+        .then((value) => value as number),
 
     add: (store, record, key) => write(store, { operation: 'add', record }, key),
     put: (store, record, key) => write(store, { operation: 'put', record }, key),
@@ -326,9 +332,10 @@ export function createWorkerClient(router: RequestSender): CanaWorkerClient {
     bulkDelete: (store, keys) => write(store, { operation: 'bulkDelete', keys }),
 
     storageState: () => router.send({ kind: 'storage-state' }),
-    resolveWrite: (correlationId, attemptedAt) => router.send({
-      kind: 'resolve-write',
-      payload: { correlationId, attemptedAt }
-    })
+    resolveWrite: (correlationId, attemptedAt) =>
+      router.send({
+        kind: 'resolve-write',
+        payload: { correlationId, attemptedAt }
+      })
   };
 }

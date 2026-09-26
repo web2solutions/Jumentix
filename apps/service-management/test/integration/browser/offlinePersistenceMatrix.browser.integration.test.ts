@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires, no-await-in-loop */
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable jest/no-conditional-in-test, jest/max-expects */
 /*
  * JUM-486 — the offline/online persistence matrix for the designer on Cana,
  * run in a REAL browser (Playwright WebKit, the engine this repository pins)
@@ -48,19 +48,23 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { webkit } from 'playwright-webkit';
-import type { Browser, BrowserContext, Page } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  clickInPanels,
+  createTempConfigDir,
   envFileContent,
+  openDesignerPanels,
   startServer,
   staticRoot,
-  clickInPanels,
-  openDesignerPanels,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser, BrowserContext, Page } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
@@ -88,7 +92,13 @@ const LEGACY_PAYLOAD = {
           meta: { aggregateRoot: true, invariants: [], contracts: [] },
           fields: [
             {
-              name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true, nullable: false
+              name: 'id',
+              type: 'uuid',
+              required: true,
+              pk: true,
+              fk: false,
+              unique: true,
+              nullable: false
             }
           ]
         }
@@ -179,16 +189,20 @@ function startPinnedServer(configDir: string, port: number): Promise<StartedServ
 async function newFaultSeamContext(browser: Browser): Promise<BrowserContext> {
   const context = await browser.newContext();
   const vendoredBundle = fs.readFileSync(VENDORED_BUNDLE_PATH, 'utf8');
-  await context.route('**/vendor/cana/index.fault-seam-original.js', (route) => route.fulfill({
-    status: 200,
-    contentType: 'application/javascript',
-    body: vendoredBundle
-  }));
-  await context.route('**/vendor/cana/index.js', (route) => route.fulfill({
-    status: 200,
-    contentType: 'application/javascript',
-    body: FAULT_SEAM_WRAPPER_SOURCE
-  }));
+  await context.route('**/vendor/cana/index.fault-seam-original.js', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: vendoredBundle
+    })
+  );
+  await context.route('**/vendor/cana/index.js', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: FAULT_SEAM_WRAPPER_SOURCE
+    })
+  );
   return context;
 }
 
@@ -211,16 +225,20 @@ function readCanaStateRecord() {
   });
 }
 
-type StoreResultRead = { status: string; payload?: unknown; reason?: string };
+interface StoreResultRead {
+  status: string;
+  payload?: unknown;
+  reason?: string;
+}
 
-type CrashClassification = {
+interface CrashClassification {
   committed: StoreResultRead;
   committedLoad: StoreResultRead;
   quotaRejected: StoreResultRead;
   quotaLoad: StoreResultRead;
   unknownOutcome: StoreResultRead;
   unknownLoad: StoreResultRead;
-};
+}
 
 async function canaStateRecord(page: Page): Promise<string | null> {
   return page.evaluate(readCanaStateRecord) as Promise<string | null>;
@@ -230,20 +248,21 @@ async function canaStateRecord(page: Page): Promise<string | null> {
 async function waitForHealthyBoot(page: Page) {
   await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
   await page.waitForFunction(
-    () => new Promise((resolve) => {
-      const request = indexedDB.open('service-management');
-      request.onsuccess = () => {
-        try {
-          const tx = request.result.transaction('designerDocuments', 'readonly');
-          const getRequest = tx.objectStore('designerDocuments').get('service-management.v1');
-          getRequest.onsuccess = () => resolve(typeof getRequest.result === 'string');
-          getRequest.onerror = () => resolve(false);
-        } catch (_) {
-          resolve(false);
-        }
-      };
-      request.onerror = () => resolve(false);
-    }),
+    () =>
+      new Promise((resolve) => {
+        const request = indexedDB.open('service-management');
+        request.onsuccess = () => {
+          try {
+            const tx = request.result.transaction('designerDocuments', 'readonly');
+            const getRequest = tx.objectStore('designerDocuments').get('service-management.v1');
+            getRequest.onsuccess = () => resolve(typeof getRequest.result === 'string');
+            getRequest.onerror = () => resolve(false);
+          } catch (_) {
+            resolve(false);
+          }
+        };
+        request.onerror = () => resolve(false);
+      }),
     undefined,
     { polling: 250, timeout: 15000 }
   );
@@ -273,22 +292,25 @@ async function addDomainThroughUi(page: Page, name: string) {
   await page.fill('#domain-name-input', name);
   await clickInPanels(page, '#add-domain-btn');
   await page.waitForFunction(
-    (domainName) => new Promise((resolve) => {
-      const request = indexedDB.open('service-management');
-      request.onsuccess = () => {
-        try {
-          const tx = request.result.transaction('designerDocuments', 'readonly');
-          const getRequest = tx.objectStore('designerDocuments').get('service-management.v1');
-          getRequest.onsuccess = () => resolve(
-            typeof getRequest.result === 'string' && getRequest.result.includes(`"name":"${domainName}"`)
-          );
-          getRequest.onerror = () => resolve(false);
-        } catch (_) {
-          resolve(false);
-        }
-      };
-      request.onerror = () => resolve(false);
-    }),
+    (domainName) =>
+      new Promise((resolve) => {
+        const request = indexedDB.open('service-management');
+        request.onsuccess = () => {
+          try {
+            const tx = request.result.transaction('designerDocuments', 'readonly');
+            const getRequest = tx.objectStore('designerDocuments').get('service-management.v1');
+            getRequest.onsuccess = () =>
+              resolve(
+                typeof getRequest.result === 'string' &&
+                  getRequest.result.includes(`"name":"${domainName}"`)
+              );
+            getRequest.onerror = () => resolve(false);
+          } catch (_) {
+            resolve(false);
+          }
+        };
+        request.onerror = () => resolve(false);
+      }),
     name,
     { polling: 250, timeout: 15000 }
   );
@@ -296,7 +318,8 @@ async function addDomainThroughUi(page: Page, name: string) {
 
 async function waitForDomainRendered(page: Page, name: string) {
   await page.waitForFunction(
-    (domainName) => (document.getElementById('domain-list')?.textContent || '').includes(domainName),
+    (domainName) =>
+      (document.getElementById('domain-list')?.textContent || '').includes(domainName),
     name,
     { polling: 250, timeout: 30000 }
   );
@@ -367,7 +390,7 @@ async function addStatusRegionRecorder(context: BrowserContext) {
 async function waitForStatusLogged(page: Page, fragment: string, timeoutMs = 15000) {
   await page.waitForFunction(
     (text) => {
-      const log = (window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || [];
+      const log = (window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog ?? [];
       const regionText = document.getElementById('status-region')?.textContent || '';
       return regionText.includes(text) || log.some((message) => message.includes(text));
     },
@@ -378,7 +401,7 @@ async function waitForStatusLogged(page: Page, fragment: string, timeoutMs = 150
 
 function statusRegionLog(page: Page): Promise<string[]> {
   return page.evaluate(
-    () => (window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog || []
+    () => (window as unknown as { __statusRegionLog?: string[] }).__statusRegionLog ?? []
   );
 }
 
@@ -406,13 +429,24 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
   beforeAll(async () => {
     // Regenerate the vendored Cana bundle so no cell boots against a stale or
     // absent artifact (same discipline as the sibling browser suites).
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], {
-      cwd: repoRoot,
-      stdio: 'inherit'
-    });
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-cana-bundle.js'],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit'
+      }
+    );
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
     await waitForServer(server.port);
@@ -436,7 +470,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
     const { port } = offlineServer;
     await waitForServer(port);
     const offlineUrl = `http://127.0.0.1:${String(port)}/`;
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     const pageErrors = collectPageErrors(page);
     const downloads: string[] = [];
@@ -482,7 +516,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
       await waitForDomainRendered(page, 'OfflineDomain');
       const recoveredRecord = JSON.parse((await canaStateRecord(page)) as string) as {
-        domains: Array<{ name: string }>;
+        domains: { name: string }[];
       };
       const names = recoveredRecord.domains.map((domain) => domain.name);
       expect(names.filter((name) => name === 'OnlineDomain')).toHaveLength(1);
@@ -497,9 +531,14 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // intentionally dead server (SW-forwarded API fetches failing while
       // offline). Anything else — a boot exception, a shell-cache miss —
       // fails the cell.
-      expect(pageErrors.filter(
-        (message) => !/FetchEvent\.respondWith|Fetch API cannot load|503 \(Service Unavailable\)/.test(message)
-      )).toStrictEqual([]);
+      expect(
+        pageErrors.filter(
+          (message) =>
+            !/FetchEvent\.respondWith|Fetch API cannot load|503 \(Service Unavailable\)/.test(
+              message
+            )
+        )
+      ).toStrictEqual([]);
     } finally {
       stopServer(offlineServer);
       cleanupTempConfigDir(offlineTempDir);
@@ -514,7 +553,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
     const { port } = offlineServer;
     await waitForServer(port);
     const offlineUrl = `http://127.0.0.1:${String(port)}/`;
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     await context.addInitScript(
       (data: Record<string, unknown>) => {
         window.localStorage.setItem(data.stateKey as string, JSON.stringify(data.state));
@@ -565,23 +604,32 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       const recoveredList = await domainListText(page);
       expect(recoveredList).toContain('MigratedDomain');
       expect(recoveredList).toContain('OfflineRecoveryDomain');
-      const marker = JSON.parse((await page.evaluate(
-        (markerKey) => window.localStorage.getItem(markerKey),
-        MARKER_KEY
-      )) as string);
+      const marker = JSON.parse(
+        (await page.evaluate(
+          (markerKey) => window.localStorage.getItem(markerKey),
+          MARKER_KEY
+        )) as string
+      );
       expect(marker.status).toBe('verified');
       await page.waitForTimeout(1500);
       expect(downloads).toHaveLength(1);
       const record = JSON.parse((await canaStateRecord(page)) as string) as {
-        domains: Array<{ name: string }>;
+        domains: { name: string }[];
       };
       expect(record.domains.filter((domain) => domain.name === 'MigratedDomain')).toHaveLength(1);
-      expect(record.domains.filter((domain) => domain.name === 'OfflineRecoveryDomain')).toHaveLength(1);
+      expect(
+        record.domains.filter((domain) => domain.name === 'OfflineRecoveryDomain')
+      ).toHaveLength(1);
       // Same tolerated-noise rule as the other offline cell: only the dead
       // server's own network-layer complaints may appear.
-      expect(pageErrors.filter(
-        (message) => !/FetchEvent\.respondWith|Fetch API cannot load|503 \(Service Unavailable\)/.test(message)
-      )).toStrictEqual([]);
+      expect(
+        pageErrors.filter(
+          (message) =>
+            !/FetchEvent\.respondWith|Fetch API cannot load|503 \(Service Unavailable\)/.test(
+              message
+            )
+        )
+      ).toStrictEqual([]);
     } finally {
       stopServer(offlineServer);
       cleanupTempConfigDir(offlineTempDir);
@@ -591,7 +639,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
   it('worker crash mid-save: committed / rolled back / unknown are classified, and unknown is never reported as saved', async () => {
     expect.hasAssertions();
-    const context = await newFaultSeamContext(browser!);
+    const context = await newFaultSeamContext(launchedBrowser());
     const page = await context.newPage();
     const pageErrors = collectPageErrors(page);
     try {
@@ -602,7 +650,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // against WebKit's genuine IndexedDB through the fault-seam engine.
       // String-evaluated on purpose: the repo compiles tests to commonjs,
       // which would rewrite a dynamic import inside a function body.
-      const classification = (await page.evaluate(`(async () => {
+      const classification = await page.evaluate<CrashClassification>(`(async () => {
         const { CanaDesignerStore } = await import('/src/store/CanaDesignerStore.js');
         const canaModule = await import('/vendor/cana/index.js');
         const makeStore = (name) => new CanaDesignerStore({
@@ -643,7 +691,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
         const unknownLoad = await crashStore.load();
 
         return { committed, committedLoad, quotaRejected, quotaLoad, unknownOutcome, unknownLoad };
-      })()`)) as CrashClassification;
+      })()`);
 
       expect(classification.committed.status).toBe('persisted');
       expect(classification.committedLoad.status).toBe('ok');
@@ -670,7 +718,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
   it('private/blocked storage declares a non-persisting session at startup, before any doomed edit', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     // One ambient capability overridden: IndexedDB open requests fail, as they
     // do when the browser blocks storage (private/incognito). Everything below
     // — engine, adapter, boot, status region — is genuine.
@@ -718,12 +766,18 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // start, probe round-trip) shares the runner with the crash cell's
       // teardown, and 15s of wall clock proved not to be a correctness
       // bound (JUM-628's recurring flake was this wait, not the designer).
-      await waitForStatusLogged(page, 'Persistent storage is unavailable in this browsing context', 45000);
+      await waitForStatusLogged(
+        page,
+        'Persistent storage is unavailable in this browsing context',
+        45000
+      );
       await waitForGuidedEmptyState(page, 45000);
       const logBeforeEdit = await statusRegionLog(page);
-      expect(logBeforeEdit.some(
-        (message) => message.includes('Persistent storage is unavailable in this browsing context')
-      )).toBe(true);
+      expect(
+        logBeforeEdit.some((message) =>
+          message.includes('Persistent storage is unavailable in this browsing context')
+        )
+      ).toBe(true);
 
       // An edit in this session is doomed: there is nothing behind the store
       // to write to. The startup declaration above is the user-facing warning
@@ -743,7 +797,8 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
         await registration?.unregister();
         const cacheKeys = await window.caches.keys();
         await Promise.all(
-          cacheKeys.filter((key) => key.startsWith(cachePrefix))
+          cacheKeys
+            .filter((key) => key.startsWith(cachePrefix))
             .map((key) => window.caches.delete(key))
         );
       }, SHELL_CACHE_PREFIX);
@@ -752,7 +807,11 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       const freshErrors = collectPageErrors(freshPage);
       await freshPage.goto(baseUrl, { waitUntil: 'load' });
       await freshPage.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
-      await waitForStatusLogged(freshPage, 'Persistent storage is unavailable in this browsing context', 45000);
+      await waitForStatusLogged(
+        freshPage,
+        'Persistent storage is unavailable in this browsing context',
+        45000
+      );
       await waitForGuidedEmptyState(freshPage, 45000);
       await expect(domainListText(freshPage)).resolves.not.toContain('DoomedDomain');
 
@@ -764,7 +823,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
   it('a browser without usable IndexedDB declares an unsupported environment, not a blank screen', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     await context.addInitScript(() => {
       try {
         Object.defineProperty(window, 'indexedDB', {
@@ -786,9 +845,10 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // private-mode state — the two are distinct declared environments.
       // Asserted against the mutation record (see the private-mode cell).
       await waitForStatusLogged(page, 'no usable IndexedDB storage', 45000);
-      const declared = (await statusRegionLog(page)).find(
-        (message) => message.includes('no usable IndexedDB storage')
-      ) || '';
+      const declared =
+        (await statusRegionLog(page)).find((message) =>
+          message.includes('no usable IndexedDB storage')
+        ) || '';
       expect(declared).toContain('unsupported');
       expect(declared).toContain('nothing you build here can be saved');
 
@@ -803,7 +863,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
   it('eviction between sessions declares data loss explicitly — never presented as a first run', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     let page = await context.newPage();
     const pageErrors = collectPageErrors(page);
     try {
@@ -815,10 +875,9 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
       await waitForDomainRendered(page, 'EvictionVictim');
-      const tombstone = JSON.parse((await page.evaluate(
-        (key) => window.localStorage.getItem(key),
-        TOMBSTONE_KEY
-      )) as string);
+      const tombstone = JSON.parse(
+        (await page.evaluate((key) => window.localStorage.getItem(key), TOMBSTONE_KEY)) as string
+      );
       expect(tombstone.hadData).toBe(true);
 
       // The eviction, for real: the page (and its IndexedDB connection)
@@ -839,17 +898,20 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
         return (await indexedDB.databases()).map((entry) => entry.name);
       })()`);
       expect(databasesAfterDelete).not.toContain('service-management');
-      await expect(page.evaluate(
-        (key) => window.localStorage.getItem(key) !== null,
-        TOMBSTONE_KEY
-      )).resolves.toBe(true);
+      await expect(
+        page.evaluate((key) => window.localStorage.getItem(key) !== null, TOMBSTONE_KEY)
+      ).resolves.toBe(true);
 
       // Session 2: the designer opens, finds the database gone, and declares
       // the loss. It must NOT present this as a first run. (45s: boot-latency
       // headroom, same rationale as the environment cells above.)
       await page.goto(baseUrl, { waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
-      await waitForStatusRegion(page, 'Previously saved designer data is no longer readable', 45000);
+      await waitForStatusRegion(
+        page,
+        'Previously saved designer data is no longer readable',
+        45000
+      );
       await waitForGuidedEmptyState(page, 45000);
       const evictedList = await domainListText(page);
       expect(evictedList).not.toContain('EvictionVictim');
@@ -860,7 +922,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
     // The distinguishing assertion: a genuinely fresh origin (no tombstone,
     // no database) is a first run and must NOT be reported as data loss.
-    const freshContext = await browser!.newContext();
+    const freshContext = await launchedBrowser().newContext();
     const freshPage = await freshContext.newPage();
     const freshErrors = collectPageErrors(freshPage);
     try {
@@ -875,7 +937,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
   it('a corrupted record reports lost — not empty — through the real port, and the designer recovers and ANNOUNCES the loss (JUM-626)', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     const pageErrors = collectPageErrors(page);
     try {
@@ -902,7 +964,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
       // The REAL port, in the real browser, against the real database: a
       // stored payload that no longer parses is 'lost', NEVER 'empty'.
-      const verdict = (await page.evaluate(`(async () => {
+      const verdict = await page.evaluate<StoreResultRead>(`(async () => {
         const { CanaDesignerStore } = await import('/src/store/CanaDesignerStore.js');
         const canaModule = await import('/vendor/cana/index.js');
         const store = new CanaDesignerStore({
@@ -912,7 +974,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
           }).cana
         });
         return store.load();
-      })()`)) as StoreResultRead;
+      })()`);
       expect(verdict.status).toBe('lost');
       expect(verdict.status).not.toBe('empty');
       expect(verdict.payload).toBeNull();
@@ -933,7 +995,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       await waitForGuidedEmptyState(page, 45000);
       await expect(domainListText(page)).resolves.not.toContain('CorruptionVictim');
       const healed = JSON.parse((await canaStateRecord(page)) as string) as {
-        domains: Array<{ name: string }>;
+        domains: { name: string }[];
       };
       expect(Array.isArray(healed.domains)).toBe(true);
       expect(pageErrors).toStrictEqual([]);
@@ -944,7 +1006,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
   it('quota pressure warns before the hard failure with a reachable export path; a quota-failed write is never persisted', async () => {
     expect.hasAssertions();
-    const context = await newFaultSeamContext(browser!);
+    const context = await newFaultSeamContext(launchedBrowser());
     // Deterministic quota pressure through the fault seam (set before the
     // first probe, so the very first boot sees it): scripting the client's
     // storageState removes the dependence on the host WebKit's StorageManager
@@ -983,15 +1045,17 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
 
       // The hard failure: a write rejected with QuotaExceeded did NOT happen.
       // The storageState scripting stays in place beside the write error.
-      await page.evaluate('window.__canaTestFaults = {'
-        + ' storageState: { nearQuota: true, usageBytes: 950, quotaBytes: 1000 },'
-        + ' writeError: {'
-        + '   canaError: true,'
-        + '   code: "QuotaExceeded",'
-        + '   message: "Simulated quota exhaustion mid-session.",'
-        + '   retryable: false'
-        + ' }'
-        + '}');
+      await page.evaluate(
+        'window.__canaTestFaults = {' +
+          ' storageState: { nearQuota: true, usageBytes: 950, quotaBytes: 1000 },' +
+          ' writeError: {' +
+          '   canaError: true,' +
+          '   code: "QuotaExceeded",' +
+          '   message: "Simulated quota exhaustion mid-session.",' +
+          '   retryable: false' +
+          ' }' +
+          '}'
+      );
       await openDesignerPanels(page, '#domain-name-input');
       await page.fill('#domain-name-input', 'QuotaDoomedDomain');
       await clickInPanels(page, '#add-domain-btn');
@@ -1013,7 +1077,8 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
         await registration?.unregister();
         const cacheKeys = await window.caches.keys();
         await Promise.all(
-          cacheKeys.filter((key) => key.startsWith(cachePrefix))
+          cacheKeys
+            .filter((key) => key.startsWith(cachePrefix))
             .map((key) => window.caches.delete(key))
         );
       }, SHELL_CACHE_PREFIX);

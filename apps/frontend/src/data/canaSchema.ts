@@ -1,10 +1,13 @@
-import type { CanaSchema, CanaStoreSchema } from '@jumentix/cana';
-
-import openApi from '@/contracts/openapi.json';
 import {
-  entityPrimaryKey, fieldDescriptors, getOperationForEntity, listOperationForEntity
+  entityPrimaryKey,
+  fieldDescriptors,
+  getOperationForEntity,
+  listOperationForEntity
 } from '@/contracts/formSchema';
 import { listCapabilities } from '@/contracts/listSchema';
+import openApi from '@/contracts/openapi.json';
+
+import type { CanaSchema, CanaStoreSchema } from '@jumentix/cana';
 
 export const DATABASE_NAME = 'jumentix-frontend';
 export const META_STORE = 'meta';
@@ -40,16 +43,18 @@ const storeNameFromListPath = (operationId: string, schemaName: string): string 
   return `${schemaName[0]?.toLowerCase() ?? ''}${schemaName.slice(1)}s`;
 };
 
-const relationFields = (schemaName: string): string[] => (
-  fieldDescriptors(schemaName)
-    .filter((descriptor) => descriptor.relation)
-    .map((descriptor) => descriptor.relation!.field)
-);
+const relationFields = (schemaName: string): string[] =>
+  fieldDescriptors(schemaName).flatMap((descriptor) =>
+    descriptor.relation ? [descriptor.relation.field] : []
+  );
 
 export const deriveEntityTables = (): EntityTableSpec[] => {
-  const schemas = (openApi as {
-    components?: { schemas?: Record<string, unknown> };
-  }).components?.schemas ?? {};
+  const schemas =
+    (
+      openApi as {
+        components?: { schemas?: Record<string, unknown> };
+      }
+    ).components?.schemas ?? {};
   const tables: EntityTableSpec[] = [];
   for (const schemaName of Object.keys(schemas)) {
     const listOperationId = listOperationForEntity(schemaName);
@@ -94,13 +99,11 @@ export const entityTable = (schemaName: string): EntityTableSpec => {
   return found;
 };
 
-export const entityTableByStore = (storeName: string): EntityTableSpec | undefined => (
-  deriveEntityTables().find((table) => table.storeName === storeName)
-);
+export const entityTableByStore = (storeName: string): EntityTableSpec | undefined =>
+  deriveEntityTables().find((table) => table.storeName === storeName);
 
-export const schemaFingerprint = (stores: readonly CanaStoreSchema[]): string => (
-  JSON.stringify(stores)
-);
+export const schemaFingerprint = (stores: readonly CanaStoreSchema[]): string =>
+  JSON.stringify(stores);
 
 /** Stable positive integer in `[1, 2^31-2]` from the derived store set. */
 export const schemaVersionFromStores = (stores: readonly CanaStoreSchema[]): number => {

@@ -1,4 +1,3 @@
-import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 import {
   AuroraRepository,
   CassandraRepository,
@@ -10,6 +9,8 @@ import {
   SqlSequelizeRepository
 } from '@jumentix/external-db-repositories';
 import { createExternalStores } from '@jumentix/external-store-proxy';
+
+import type { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
 export type DriverName =
   | 'InMemory'
@@ -134,13 +135,12 @@ const parseJson = (value: string | undefined): Record<string, unknown> | undefin
 const toExternalClient = <TDatabaseClient extends IDatabaseClientLike>(
   driver: ExternalDriverName,
   connector: BaseExternalDataRepository
-): TDatabaseClient => {
-  return {
+): TDatabaseClient =>
+  ({
     stores: createExternalStores(driver, connector),
     connect: () => connector.connect(),
     disconnect: () => connector.disconnect()
-  } as unknown as TDatabaseClient;
-};
+  }) as unknown as TDatabaseClient;
 
 export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseClientLike>({
   inMemoryClient,
@@ -152,10 +152,10 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
       // application on a database that disappears when the tab closes, while
       // reporting nothing — the offline app would look fine and lose everything.
       throw new Error(
-        'Database driver "IndexedDB" was selected but no indexedDbClient factory was provided. '
-          + 'Pass one to buildDatabaseClientCompilers, built with createCanaDatabaseClient from '
-          + '@jumentix/cana. It is injected rather than imported so this package stays free of '
-          + 'browser-only dependencies.'
+        'Database driver "IndexedDB" was selected but no indexedDbClient factory was provided. ' +
+          'Pass one to buildDatabaseClientCompilers, built with createCanaDatabaseClient from ' +
+          '@jumentix/cana. It is injected rather than imported so this package stays free of ' +
+          'browser-only dependencies.'
       );
     }
     if (typeof indexedDB === 'undefined') {
@@ -163,8 +163,8 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
       // global — a server-side render, or a test runner in node. Saying so is
       // more useful than the DOMException the driver would raise later.
       throw new Error(
-        'Database driver "IndexedDB" was selected but this runtime has no indexedDB global. '
-          + 'Cana runs in the browser; select a server driver for server-side processes.'
+        'Database driver "IndexedDB" was selected but this runtime has no indexedDB global. ' +
+          'Cana runs in the browser; select a server driver for server-side processes.'
       );
     }
     return indexedDbClient();
@@ -261,9 +261,11 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
 
   const createRdsClient = (): TDatabaseClient => {
     const dialectRaw = sanitize(process.env.JUMENTIX_DATABASE_DIALECT || 'postgres');
-    const dialect = (['postgres', 'mysql', 'mssql', 'oracle', 'sqlite'].includes(dialectRaw)
-      ? dialectRaw
-      : 'postgres') as 'postgres' | 'mysql' | 'mssql' | 'oracle' | 'sqlite';
+    const dialect = (
+      ['postgres', 'mysql', 'mssql', 'oracle', 'sqlite'].includes(dialectRaw)
+        ? dialectRaw
+        : 'postgres'
+    ) as 'postgres' | 'mysql' | 'mssql' | 'oracle' | 'sqlite';
     const connector = new RdsRepository({
       connectionUrl: process.env.JUMENTIX_DATABASE_CONNECTION_URL,
       database: process.env.JUMENTIX_DATABASE_NAME,
@@ -306,9 +308,8 @@ export const buildDatabaseClientCompilers = <TDatabaseClient extends IDatabaseCl
     return buildByDriver(driver);
   };
 
-  const compileDatabaseClientByDriver = (driver: string): TDatabaseClient => {
-    return buildByDriver(normalizeDriver(driver));
-  };
+  const compileDatabaseClientByDriver = (driver: string): TDatabaseClient =>
+    buildByDriver(normalizeDriver(driver));
 
   return {
     compileDatabaseClient,

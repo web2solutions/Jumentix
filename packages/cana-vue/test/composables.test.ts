@@ -1,8 +1,8 @@
-import {
-  createRenderer, defineComponent, h, ref
-} from 'vue';
-import type { CanaChangeEvent } from '@jumentix/cana';
+import { createRenderer, defineComponent, h, ref } from 'vue';
+
 import { connectCanaToPinia, useCanaLiveQuery, useCanaSubscription } from '../src';
+
+import type { CanaChangeEvent } from '@jumentix/cana';
 
 /**
  * The composables, run inside a real Vue component instance (JUM-681).
@@ -25,7 +25,10 @@ import { connectCanaToPinia, useCanaLiveQuery, useCanaSubscription } from '../sr
  * the assertions are about the arguments the composable passed and the state it
  * produced, never about a store's behaviour.
  */
-type Row = { id: string; name: string };
+interface Row {
+  id: string;
+  name: string;
+}
 
 /** Host operations for a renderer with no DOM: nodes are objects, and unused. */
 const nodeOps = {
@@ -48,22 +51,26 @@ const { createApp } = createRenderer(nodeOps as never);
 /** Mount `setup` in a real component, returning its result and an unmount. */
 function mounted<TResult>(setup: () => TResult): { result: TResult; unmount: () => void } {
   let result!: TResult;
-  const app = createApp(defineComponent({
-    setup() {
-      result = setup();
-      return () => h('div');
-    }
-  }));
+  const app = createApp(
+    defineComponent({
+      setup() {
+        result = setup();
+        return () => h('div');
+      }
+    })
+  );
   app.mount(nodeOps.createElement('root') as never);
   return { result, unmount: () => app.unmount() };
 }
 
 /** A change broker double: records its subscription, replays on demand. */
-function brokerDouble(options: {
-  rows?: Row[];
-  failQuery?: boolean;
-  failSubscribe?: boolean;
-} = {}) {
+function brokerDouble(
+  options: {
+    rows?: Row[];
+    failQuery?: boolean;
+    failSubscribe?: boolean;
+  } = {}
+) {
   const calls: { sinceCursor?: number }[] = [];
   let listener: ((event: CanaChangeEvent) => void) | undefined;
   let stopped = 0;
@@ -73,7 +80,9 @@ function brokerDouble(options: {
       if (options.failSubscribe) throw new Error('subscribe refused');
       calls.push({ sinceCursor: subscribeOptions?.sinceCursor });
       listener = next;
-      return () => { stopped += 1; };
+      return () => {
+        stopped += 1;
+      };
     },
     table() {
       return {
@@ -89,22 +98,26 @@ function brokerDouble(options: {
     client: client as never,
     calls,
     stops: () => stopped,
-    emit: (event: Partial<CanaChangeEvent<Row>>) => listener?.({
-      type: 'created',
-      store: 'rows',
-      key: 'a',
-      record: { id: 'a', name: 'A' },
-      cursor: 1,
-      correlationId: 'corr',
-      at: 1,
-      originId: 'test',
-      ...event
-    } as CanaChangeEvent)
+    emit: (event: Partial<CanaChangeEvent<Row>>) =>
+      listener?.({
+        type: 'created',
+        store: 'rows',
+        key: 'a',
+        record: { id: 'a', name: 'A' },
+        cursor: 1,
+        correlationId: 'corr',
+        at: 1,
+        originId: 'test',
+        ...event
+      } as CanaChangeEvent)
   };
 }
 
 /** Lets Vue's scheduler and the composable's own promises settle. */
-const settle = async () => { await Promise.resolve(); await Promise.resolve(); };
+const settle = async () => {
+  await Promise.resolve();
+  await Promise.resolve();
+};
 
 describe('useCanaSubscription (JUM-681)', () => {
   it('subscribes on mount and stops on unmount', () => {
@@ -166,9 +179,11 @@ describe('useCanaSubscription (JUM-681)', () => {
     const broker = brokerDouble({ failSubscribe: true });
     const errors: unknown[] = [];
 
-    mounted(() => useCanaSubscription(broker.client, () => undefined, {
-      onError: (error) => errors.push(error)
-    }));
+    mounted(() =>
+      useCanaSubscription(broker.client, () => undefined, {
+        onError: (error) => errors.push(error)
+      })
+    );
 
     expect(errors).toHaveLength(1);
     expect((errors[0] as Error).message).toBe('subscribe refused');
@@ -186,10 +201,7 @@ describe('useCanaSubscription (JUM-681)', () => {
     expect.hasAssertions();
 
     const broker = brokerDouble();
-    const { result, unmount } = mounted(() => useCanaSubscription(
-      broker.client,
-      () => undefined
-    ));
+    const { result, unmount } = mounted(() => useCanaSubscription(broker.client, () => undefined));
 
     result.stop();
     result.stop();
@@ -205,12 +217,19 @@ describe('useCanaLiveQuery (JUM-681)', () => {
   it('loads on mount and reports ready', async () => {
     expect.hasAssertions();
 
-    const broker = brokerDouble({ rows: [{ id: 'b', name: 'B' }, { id: 'a', name: 'A' }] });
-    const { result } = mounted(() => useCanaLiveQuery<Row>({
-      client: ref(broker.client) as never,
-      store: 'rows',
-      sort: (left, right) => left.id.localeCompare(right.id)
-    }));
+    const broker = brokerDouble({
+      rows: [
+        { id: 'b', name: 'B' },
+        { id: 'a', name: 'A' }
+      ]
+    });
+    const { result } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: ref(broker.client) as never,
+        store: 'rows',
+        sort: (left, right) => left.id.localeCompare(right.id)
+      })
+    );
 
     await settle();
 
@@ -225,11 +244,13 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     // reads `records`, which is why `status` and `error` exist.
     const broker = brokerDouble({ failQuery: true });
     const errors: unknown[] = [];
-    const { result } = mounted(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      onError: (error) => errors.push(error)
-    }));
+    const { result } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        onError: (error) => errors.push(error)
+      })
+    );
 
     await settle();
 
@@ -244,11 +265,13 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     // No query means no reload on every event: the event is applied to the array
     // that is already there, which is the whole point of the live collection.
     const broker = brokerDouble({ rows: [] });
-    const { result } = mounted(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      getKey: (row) => row.id
-    }));
+    const { result } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        getKey: (row) => row.id
+      })
+    );
 
     await settle();
     broker.emit({ record: { id: 'c', name: 'C' } });
@@ -265,11 +288,13 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     expect.hasAssertions();
 
     const broker = brokerDouble({ rows: [] });
-    const { result } = mounted(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      getKey: (row) => row.id
-    }));
+    const { result } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        getKey: (row) => row.id
+      })
+    );
 
     await settle();
     broker.emit({ store: 'other', record: { id: 'z', name: 'Z' } });
@@ -285,20 +310,27 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     let served: Row[] = [{ id: 'a', name: 'A' }];
     const broker = brokerDouble();
     const client = {
-      subscribe: (broker.client as unknown as {
-        subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
-      }).subscribe,
+      subscribe: (
+        broker.client as unknown as {
+          subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
+        }
+      ).subscribe,
       table: () => ({ query: async () => served })
     };
 
-    const { result } = mounted(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows',
-      query: { limit: 10 }
-    }));
+    const { result } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows',
+        query: { limit: 10 }
+      })
+    );
 
     await settle();
-    served = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
+    served = [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' }
+    ];
     broker.emit({});
     await settle();
 
@@ -309,11 +341,13 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     expect.hasAssertions();
 
     const disabled = brokerDouble({ rows: [{ id: 'a', name: 'A' }] });
-    const off = mounted(() => useCanaLiveQuery<Row>({
-      client: disabled.client,
-      store: 'rows',
-      enabled: false
-    }));
+    const off = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: disabled.client,
+        store: 'rows',
+        enabled: false
+      })
+    );
     const none = mounted(() => useCanaLiveQuery<Row>({ client: null, store: 'rows' }));
 
     await settle();
@@ -329,16 +363,20 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     // The reload is in flight when the component goes away. Writing its result
     // is a Vue warning at best and a resurrected subscription at worst.
     let release: (rows: Row[]) => void = () => undefined;
-    const pending = new Promise<Row[]>((resolve) => { release = resolve; });
+    const pending = new Promise<Row[]>((resolve) => {
+      release = resolve;
+    });
     const client = {
       subscribe: () => () => undefined,
       table: () => ({ query: () => pending })
     };
 
-    const { result, unmount } = mounted(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows'
-    }));
+    const { result, unmount } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows'
+      })
+    );
 
     unmount();
     release([{ id: 'a', name: 'A' }]);
@@ -352,18 +390,22 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     expect.hasAssertions();
 
     let reject: (error: unknown) => void = () => undefined;
-    const pending = new Promise<Row[]>((_resolve, onReject) => { reject = onReject; });
+    const pending = new Promise<Row[]>((_resolve, onReject) => {
+      reject = onReject;
+    });
     const errors: unknown[] = [];
     const client = {
       subscribe: () => () => undefined,
       table: () => ({ query: () => pending })
     };
 
-    const { result, unmount } = mounted(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows',
-      onError: (error) => errors.push(error)
-    }));
+    const { result, unmount } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows',
+        onError: (error) => errors.push(error)
+      })
+    );
 
     unmount();
     reject(new Error('too late'));
@@ -379,10 +421,12 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     expect.hasAssertions();
 
     const broker = brokerDouble({ rows: [] });
-    const { result, unmount } = mounted(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows'
-    }));
+    const { result, unmount } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows'
+      })
+    );
 
     await settle();
     result.stop();
@@ -417,11 +461,13 @@ describe('connectCanaToPinia (JUM-681)', () => {
     const broker = brokerDouble({ failSubscribe: true });
     const errors: unknown[] = [];
 
-    expect(() => connectCanaToPinia({
-      client: broker.client,
-      apply: () => undefined,
-      onError: (error) => errors.push(error)
-    })).toThrow('subscribe refused');
+    expect(() =>
+      connectCanaToPinia({
+        client: broker.client,
+        apply: () => undefined,
+        onError: (error) => errors.push(error)
+      })
+    ).toThrow('subscribe refused');
     expect(errors).toHaveLength(1);
   });
 });
@@ -460,10 +506,12 @@ describe('no-op and reporting boundaries (JUM-821)', () => {
     expect(() => none.result.stop()).not.toThrow();
 
     const broker = brokerDouble({ rows: [] });
-    const { result, unmount } = mounted(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows'
-    }));
+    const { result, unmount } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows'
+      })
+    );
     await settle();
     unmount();
     expect(broker.stops()).toBe(1);
@@ -478,45 +526,60 @@ describe('no-op and reporting boundaries (JUM-821)', () => {
     // rejection crosses to the mount hook's `.catch`, which reports the
     // reporter's failure — the load error is never dropped silently.
     const broker = brokerDouble({ failQuery: true });
-    const onError = jest.fn()
-      .mockImplementationOnce(() => { throw new Error('reporting failed'); })
-      .mockImplementation(() => undefined);
+    const onError = jest
+      .fn()
+      .mockImplementationOnce(() => {
+        throw new Error('reporting failed');
+      })
+      .mockReturnValue(undefined);
 
-    const { result } = mounted(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      onError
-    }));
+    const { result } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        onError
+      })
+    );
     await settle();
 
     expect(result.status.value).toBe('error');
-    expect(onError.mock.calls.map(([error]) => (error as Error).message))
-      .toStrictEqual(['query refused', 'reporting failed']);
+    expect(onError.mock.calls.map(([error]) => (error as Error).message)).toStrictEqual([
+      'query refused',
+      'reporting failed'
+    ]);
   });
 
   it('surfaces a failed event-triggered reload even when the error reporter throws', async () => {
     expect.hasAssertions();
 
     const broker = brokerDouble();
-    const query = jest.fn()
+    const query = jest
+      .fn()
       .mockResolvedValueOnce([{ id: 'a', name: 'A' }])
       .mockRejectedValue(new Error('query refused'));
     const client = {
-      subscribe: (broker.client as unknown as {
-        subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
-      }).subscribe,
+      subscribe: (
+        broker.client as unknown as {
+          subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
+        }
+      ).subscribe,
       table: () => ({ query })
     };
-    const onError = jest.fn()
-      .mockImplementationOnce(() => { throw new Error('reporting failed'); })
-      .mockImplementation(() => undefined);
+    const onError = jest
+      .fn()
+      .mockImplementationOnce(() => {
+        throw new Error('reporting failed');
+      })
+      .mockReturnValue(undefined);
 
-    const { result } = mounted(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows',
-      query: { limit: 10 },
-      onError
-    }));
+    const { result } = mounted(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows',
+        query: { limit: 10 },
+        onError
+      })
+    );
     await settle();
     expect(result.status.value).toBe('ready');
     expect(onError).not.toHaveBeenCalled();
@@ -524,8 +587,10 @@ describe('no-op and reporting boundaries (JUM-821)', () => {
     broker.emit({});
     await settle();
 
-    expect(onError.mock.calls.map(([error]) => (error as Error).message))
-      .toStrictEqual(['query refused', 'reporting failed']);
+    expect(onError.mock.calls.map(([error]) => (error as Error).message)).toStrictEqual([
+      'query refused',
+      'reporting failed'
+    ]);
     expect(result.status.value).toBe('error');
   });
 });

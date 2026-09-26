@@ -1,22 +1,24 @@
 /* eslint-disable jest/max-expects, jest/prefer-called-with */
-import { composeUsersAuthServices } from '@src/modules/Users/composition/composeUsersAuthServices';
-import { registerUserEventListeners } from '@src/modules/Users/events/listeners/registerUserEventListeners';
-import { registerUserMessageHandlers } from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
+import OrganizationDataRepository from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
 import { UserDataRepository } from '@src/modules/Users/adapters/out/persistence/UserDataRepository';
-import { OrganizationDataRepository } from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
-import { UserService } from '@src/modules/Users/service/UserService';
-import { OrganizationService } from '@src/modules/Users/service/OrganizationService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { UserUseCases } from '@src/modules/Users/application/use-cases/UserUseCases';
-import { OrganizationUseCases } from '@src/modules/Users/application/use-cases/OrganizationUseCases';
-import { AuthUseCases } from '@src/modules/Users/application/use-cases/AuthUseCases';
+import AuthUseCases from '@src/modules/Users/application/use-cases/AuthUseCases';
+import OrganizationUseCases from '@src/modules/Users/application/use-cases/OrganizationUseCases';
+import UserUseCases from '@src/modules/Users/application/use-cases/UserUseCases';
+import composeUsersAuthServices from '@src/modules/Users/composition/composeUsersAuthServices';
+import registerUserEventListeners from '@src/modules/Users/events/listeners/registerUserEventListeners';
+import registerUserMessageHandlers from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
+import AuthService from '@src/modules/Users/service/AuthService';
+import OrganizationService from '@src/modules/Users/service/OrganizationService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
+import UserService from '@src/modules/Users/service/UserService';
 
-jest.mock<typeof import('@src/modules/Users/events/listeners/registerUserEventListeners')>('@src/modules/Users/events/listeners/registerUserEventListeners', () => ({
-  registerUserEventListeners: jest.fn()
+jest.mock('@src/modules/Users/events/listeners/registerUserEventListeners', () => ({
+  __esModule: true,
+  default: jest.fn()
 }));
-jest.mock<typeof import('@src/modules/Users/events/listeners/registerUserMessageHandlers')>('@src/modules/Users/events/listeners/registerUserMessageHandlers', () => ({
-  registerUserMessageHandlers: jest.fn()
+jest.mock('@src/modules/Users/events/listeners/registerUserMessageHandlers', () => ({
+  __esModule: true,
+  default: jest.fn()
 }));
 
 describe('compose users auth services', () => {
@@ -38,19 +40,25 @@ describe('compose users auth services', () => {
     const authUseCases = {} as any;
 
     const repoSpy = jest.spyOn(UserDataRepository, 'compile').mockReturnValue(dataRepository);
-    const organizationRepoSpy = jest.spyOn(OrganizationDataRepository, 'compile').mockReturnValue(organizationDataRepository);
+    const organizationRepoSpy = jest
+      .spyOn(OrganizationDataRepository, 'compile')
+      .mockReturnValue(organizationDataRepository);
     const serviceSpy = jest.spyOn(UserService, 'compile').mockReturnValue(userService);
-    const organizationServiceSpy = jest.spyOn(OrganizationService, 'compile').mockReturnValue(organizationService);
+    const organizationServiceSpy = jest
+      .spyOn(OrganizationService, 'compile')
+      .mockReturnValue(organizationService);
     const providerSpy = jest.spyOn(UserProviderLocal, 'compile').mockReturnValue(userProvider);
     const authServiceSpy = jest.spyOn(AuthService, 'compile').mockReturnValue(authService);
     const userUseCasesSpy = jest.spyOn(UserUseCases, 'compile').mockReturnValue(userUseCases);
-    const organizationUseCasesSpy = jest.spyOn(OrganizationUseCases, 'compile').mockReturnValue(organizationUseCases);
+    const organizationUseCasesSpy = jest
+      .spyOn(OrganizationUseCases, 'compile')
+      .mockReturnValue(organizationUseCases);
     const authUseCasesSpy = jest.spyOn(AuthUseCases, 'compile').mockReturnValue(authUseCases);
 
     const eventBus = { publish: jest.fn() };
     const result = composeUsersAuthServices({
       databaseClient: { stores: {} } as any,
-      passwordCryptoService: { hash: jest.fn(), compare: jest.fn() } as any,
+      passwordCryptoService: { hash: jest.fn(), compare: jest.fn() },
       mutexService: { lock: jest.fn(), unlock: jest.fn() } as any,
       jwtService: { sign: jest.fn(), verify: jest.fn() } as any,
       eventBus: eventBus as any
@@ -99,7 +107,7 @@ describe('compose users auth services', () => {
 
     composeUsersAuthServices({
       databaseClient: { stores: {} } as any,
-      passwordCryptoService: { hash: jest.fn(), compare: jest.fn() } as any,
+      passwordCryptoService: { hash: jest.fn(), compare: jest.fn() },
       mutexService: { lock: jest.fn(), unlock: jest.fn() } as any,
       jwtService: { sign: jest.fn(), verify: jest.fn() } as any
     });
@@ -130,10 +138,10 @@ describe('compose users auth services', () => {
 
     composeUsersAuthServices({
       databaseClient: { stores: {} } as any,
-      passwordCryptoService: { hash: jest.fn(), compare: jest.fn() } as any,
+      passwordCryptoService: { hash: jest.fn(), compare: jest.fn() },
       mutexService: { lock: jest.fn(), unlock: jest.fn() } as any,
       jwtService: { sign: jest.fn(), verify: jest.fn() } as any,
-      messageMediator: messageMediator as any
+      messageMediator
     });
 
     expect(registerUserEventListeners).toHaveBeenCalledWith(messageMediator, undefined);

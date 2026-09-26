@@ -1,9 +1,10 @@
 'use client';
 
-import { useTheme } from 'next-themes';
 import { Button, Group, useMantineColorScheme } from '@mantine/core';
+import { useTheme } from 'next-themes';
 
-export function ColorSchemeToggle() {
+// eslint-disable-next-line import-x/prefer-default-export -- single named export consumed via named imports/barrels; converting to default would change the module API
+export const ColorSchemeToggle = () => {
   const { setColorScheme } = useMantineColorScheme();
   const { setTheme } = useTheme();
 
@@ -40,4 +41,4 @@ export function ColorSchemeToggle() {
       </Button>
     </Group>
   );
-}
+};

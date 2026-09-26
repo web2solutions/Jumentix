@@ -25,18 +25,13 @@
 
 import type { AgentRecord, AgentStatus } from './types';
 
-export const AGENT_STATUSES: readonly AgentStatus[] = [
-  'available',
-  'busy',
-  'blocked',
-  'offline'
-];
+export const AGENT_STATUSES: readonly AgentStatus[] = ['available', 'busy', 'blocked', 'offline'];
 
 /**
  * Fields every document must carry. `capabilities` is validated separately: it
  * is the only non-string field.
  */
-const REQUIRED_STRING_FIELDS: ReadonlyArray<keyof AgentRecord> = [
+const REQUIRED_STRING_FIELDS: readonly (keyof AgentRecord)[] = [
   'agent_id',
   'agent_name',
   'platform',
@@ -61,10 +56,7 @@ const REQUIRED_STRING_FIELDS: ReadonlyArray<keyof AgentRecord> = [
  * record, and `registerAgent` writes `''` for both. Empty is a fact here, not a
  * missing value.
  */
-const MAY_BE_EMPTY: ReadonlyArray<keyof AgentRecord> = [
-  'main_ref_checked',
-  'dev_ref_checked'
-];
+const MAY_BE_EMPTY: readonly (keyof AgentRecord)[] = ['main_ref_checked', 'dev_ref_checked'];
 
 /**
  * Values that occupy `workspace_path` without declaring anything (JUM-614).
@@ -75,13 +67,7 @@ const MAY_BE_EMPTY: ReadonlyArray<keyof AgentRecord> = [
  * agent must fail closed if it is not working under the declared layout — and
  * that cannot be checked at all while the field is allowed to say nothing.
  */
-const PLACEHOLDER_WORKSPACE_PATHS: readonly string[] = [
-  'unknown',
-  'n/a',
-  'none',
-  'tbd',
-  '-'
-];
+const PLACEHOLDER_WORKSPACE_PATHS: readonly string[] = ['unknown', 'n/a', 'none', 'tbd', '-'];
 
 export interface WorkspaceExemption {
   /** ISO date the exemption was granted. */
@@ -110,8 +96,16 @@ export interface WorkspaceExemption {
  * records already stored.
  */
 export const AGENTS_WITHOUT_DECLARED_WORKSPACE: Readonly<Record<string, WorkspaceExemption>> = {
-  'codex-governance-001': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
-  'codex-governance-002': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
+  'codex-governance-001': {
+    since: '2026-08-06',
+    issue: 'JUM-614',
+    reason: 'migrated with no path'
+  },
+  'codex-governance-002': {
+    since: '2026-08-06',
+    issue: 'JUM-614',
+    reason: 'migrated with no path'
+  },
   'codex-primary-001': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
   'codex-primary-002': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
   'codex-website-001': { since: '2026-08-06', issue: 'JUM-614', reason: 'migrated with no path' },
@@ -126,8 +120,7 @@ export function workspacePathProblem(workspacePath: unknown): string | undefined
   }
   const value = workspacePath.trim();
   if (PLACEHOLDER_WORKSPACE_PATHS.includes(value.toLowerCase())) {
-    return `must be the path the agent works in, not the placeholder "${value}" `
-      + '(Requirement 114)';
+    return `must be the path the agent works in, not the placeholder "${value}" (Requirement 114)`;
   }
   if (!value.startsWith('/')) {
     return `must be an absolute path, found "${value}" (Requirement 114)`;
@@ -278,8 +271,11 @@ export function findIntegrityProblems(
   const exemption = AGENTS_WITHOUT_DECLARED_WORKSPACE[canonicalId];
   const workspaceProblem = workspacePathProblem(agent.workspace_path);
 
-  if (workspaceProblem && typeof agent.workspace_path === 'string'
-      && agent.workspace_path.trim() !== '') {
+  if (
+    workspaceProblem &&
+    typeof agent.workspace_path === 'string' &&
+    agent.workspace_path.trim() !== ''
+  ) {
     if (!honourExemptions || !exemption) {
       add('workspace_path', workspaceProblem);
     }

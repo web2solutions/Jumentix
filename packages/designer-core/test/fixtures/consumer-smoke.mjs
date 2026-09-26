@@ -16,8 +16,7 @@
 import assert from 'node:assert/strict';
 
 const fail = (message) => {
-  console.error(`[consumer-smoke] ${message}`);
-  process.exit(1);
+  throw new Error(`[consumer-smoke] ${message}`);
 };
 
 // 1. The environment is genuinely non-DOM. If a future runtime ships one of
@@ -55,11 +54,17 @@ const leaks = ['CanaDesignerStore', 'LocalStorageDesignerStore'].filter((name) =
 assert.deepEqual(leaks, [], 'storage adapters must not be exported by the core package');
 
 // 5. The contract type is part of the surface.
-assert.equal(typeof core.IDesignerStore, 'function', 'IDesignerStore must be exported as the store contract');
+assert.equal(
+  typeof core.IDesignerStore,
+  'function',
+  'IDesignerStore must be exported as the store contract'
+);
 
-console.log(JSON.stringify({
-  ok: true,
-  exportCount: Object.keys(core).length,
-  domainCount: state.domains.length,
-  exports: Object.keys(core).sort((left, right) => left.localeCompare(right))
-}));
+process.stdout.write(
+  `${JSON.stringify({
+    ok: true,
+    exportCount: Object.keys(core).length,
+    domainCount: state.domains.length,
+    exports: Object.keys(core).sort((left, right) => left.localeCompare(right))
+  })}\n`
+);

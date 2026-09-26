@@ -1,19 +1,22 @@
-/* eslint-disable max-classes-per-file, class-methods-use-this, @typescript-eslint/no-unused-vars */
-import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { BaseModel } from '@src/modules/port/BaseModel';
-import { BaseRepo } from '@src/modules/port/BaseRepo';
-import { ServiceResponse } from '@src/modules/port/ServiceResponse';
-import { UUID } from '@src/modules/port/UUID';
-import { setFilter } from '@src/modules/port/setFilter';
-import { setFilterAndPaging } from '@src/modules/port/setFilterAndPaging';
-import { setPaging } from '@src/modules/port/setPaging';
+/* eslint-disable max-classes-per-file, class-methods-use-this */
+import { DEFAULT_PAGE_SIZE } from '@src/config/constants';
 import { Context } from '@src/infra/context/Context';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import BaseModel from '@src/modules/port/BaseModel';
+import BaseRepo from '@src/modules/port/BaseRepo';
+import ServiceResponse from '@src/modules/port/ServiceResponse';
+import setFilter from '@src/modules/port/setFilter';
+import setFilterAndPaging from '@src/modules/port/setFilterAndPaging';
+import setPaging from '@src/modules/port/setPaging';
+import { UUID } from '@src/modules/port/UUID';
 
-class TestEvent extends BaseDomainEvent<any> {}
+class TestEvent extends BaseDomainEvent {}
 
 class TestModel extends BaseModel<any> {
-  constructor(id?: string, public name: string = 'name') {
+  constructor(
+    id?: string,
+    public name = 'name'
+  ) {
     super({ id });
   }
 
@@ -23,7 +26,7 @@ class TestModel extends BaseModel<any> {
 }
 
 class TestModelWithOwnSerialize extends BaseModel<any> {
-  constructor(public value: string = 'v') {
+  constructor(public value = 'v') {
     super();
   }
 
@@ -56,7 +59,10 @@ class TestRepo extends BaseRepo<any, any, any> {
     _paging: { page: number; size: number }
   ): Promise<any> {
     return {
-      result: [], page: 1, size: 1, total: 0
+      result: [],
+      page: 1,
+      size: 1,
+      total: 0
     };
   }
 }
@@ -76,9 +82,9 @@ describe('port core helpers', () => {
     model._excludeOnSerialize = ['label'];
     const serialized = model.serialize();
     expect(serialized.id).toBeDefined();
-    expect((serialized as any).createdAt).toBeDefined();
-    expect((serialized as any).updatedAt).toBeDefined();
-    expect((serialized as any).label).toBeUndefined();
+    expect(serialized.createdAt).toBeDefined();
+    expect(serialized.updatedAt).toBeDefined();
+    expect(serialized.label).toBeUndefined();
   });
 
   it('serializes model that overrides serialize without leaking method metadata', () => {
@@ -86,9 +92,9 @@ describe('port core helpers', () => {
     const model = new TestModelWithOwnSerialize('x');
     const serialized = model.serialize();
     expect(serialized.id).toBeDefined();
-    expect((serialized as any).createdAt).toBeDefined();
-    expect((serialized as any).updatedAt).toBeDefined();
-    expect(typeof (serialized as any).serialize).toBe('undefined');
+    expect(serialized.createdAt).toBeDefined();
+    expect(serialized.updatedAt).toBeDefined();
+    expect(typeof serialized.serialize).toBe('undefined');
   });
 
   it('exposes createdAt/updatedAt and allows updating updatedAt', () => {
@@ -142,7 +148,10 @@ describe('port core helpers', () => {
       queryString: { page: '2' },
       schemaOAS: { operationId: 'x' },
       metadata: {
-        correlationId: 'c', causationId: 'p', timestamp: 1, userId: 'u'
+        correlationId: 'c',
+        causationId: 'p',
+        timestamp: 1,
+        userId: 'u'
       }
     });
     expect(event.input).toStrictEqual({ id: '1' });
@@ -157,19 +166,22 @@ describe('port core helpers', () => {
 
   it('loads event metadata defaults from async context store when metadata is missing', () => {
     expect.hasAssertions();
-    Context.run(new Map([
-      ['correlationId', 'ctx-correlation'],
-      ['userId', 'ctx-user']
-    ]), () => {
-      const event = new TestEvent({
-        input: { ok: true }
-      } as any);
+    Context.run(
+      new Map([
+        ['correlationId', 'ctx-correlation'],
+        ['userId', 'ctx-user']
+      ]),
+      () => {
+        const event = new TestEvent({
+          input: { ok: true }
+        } as any);
 
-      expect(event.metadata.correlationId).toBe('ctx-correlation');
-      expect(event.metadata.causationId).toBe('ctx-correlation');
-      expect(event.metadata.userId).toBe('ctx-user');
-      expect(typeof event.metadata.timestamp).toBe('number');
-    });
+        expect(event.metadata.correlationId).toBe('ctx-correlation');
+        expect(event.metadata.causationId).toBe('ctx-correlation');
+        expect(event.metadata.userId).toBe('ctx-user');
+        expect(typeof event.metadata.timestamp).toBe('number');
+      }
+    );
   });
 
   it('parses filter and paging helpers', () => {
@@ -184,13 +196,15 @@ describe('port core helpers', () => {
     expect(setFilter(event)).toStrictEqual({ role: 'admin' });
     expect(setPaging(event)).toStrictEqual({ page: 2, size: 10 });
 
-    const [filter, paging] = setFilterAndPaging(new TestEvent({
-      queryString: {
-        filter: JSON.stringify({ active: true }),
-        page: '3',
-        size: '7'
-      }
-    }));
+    const [filter, paging] = setFilterAndPaging(
+      new TestEvent({
+        queryString: {
+          filter: JSON.stringify({ active: true }),
+          page: '3',
+          size: '7'
+        }
+      })
+    );
     expect(filter).toStrictEqual({ active: true });
     expect(paging).toStrictEqual({ page: 3, size: 7 });
   });
@@ -205,7 +219,7 @@ describe('port core helpers', () => {
     expect(setFilter(malformed)).toStrictEqual({});
     expect(setPaging(new TestEvent({ queryString: {} }))).toStrictEqual({
       page: 1,
-      size: _DEFAULT_PAGE_SIZE_
+      size: DEFAULT_PAGE_SIZE
     });
   });
 
@@ -214,17 +228,21 @@ describe('port core helpers', () => {
 
     const [filter, paging] = setFilterAndPaging(new TestEvent({ queryString: {} }));
     expect(filter).toStrictEqual({});
-    expect(paging).toStrictEqual({ page: 1, size: _DEFAULT_PAGE_SIZE_ });
+    expect(paging).toStrictEqual({ page: 1, size: DEFAULT_PAGE_SIZE });
 
-    expect(setPaging(new TestEvent({
-      queryString: { page: '0', size: '-1' }
-    }))).toStrictEqual({ page: 1, size: _DEFAULT_PAGE_SIZE_ });
+    expect(
+      setPaging(
+        new TestEvent({
+          queryString: { page: '0', size: '-1' }
+        })
+      )
+    ).toStrictEqual({ page: 1, size: DEFAULT_PAGE_SIZE });
   });
 
   it('initializes base repo and service response', async () => {
     expect.hasAssertions();
     const repo = new TestRepo({ databaseClient: { stores: {} } as any });
-    expect(repo.limit).toBe(_DEFAULT_PAGE_SIZE_);
+    expect(repo.limit).toBe(DEFAULT_PAGE_SIZE);
     await expect(repo.delete('1')).resolves.toBe(true);
 
     const response = new ServiceResponse({ result: true, message: 'ok' });
@@ -234,80 +252,92 @@ describe('port core helpers', () => {
 
   it('validates openapi 3.1 field/data-entity schema contracts', () => {
     expect.hasAssertions();
-    expect(() => BaseModel.throwIfFieldSchemaIsNotOpenApi31Compliant({
-      name: 'email',
-      type: 'string',
-      format: 'email',
-      validations: ['minLength:3']
-    })).not.toThrow();
-
-    expect(() => BaseModel.throwIfFieldSchemaIsNotOpenApi31Compliant({
-      name: 'createdAt',
-      type: 'datetime',
-      format: 'date-time',
-      validations: []
-    } as any)).toThrow('invalid field type');
-
-    expect(() => BaseModel.throwIfDataEntitySchemaIsNotOpenApi31Compliant({
-      name: 'User',
-      fields: [{
-        name: 'id',
+    expect(() =>
+      BaseModel.throwIfFieldSchemaIsNotOpenApi31Compliant({
+        name: 'email',
         type: 'string',
-        format: 'uuid',
+        format: 'email',
+        validations: ['minLength:3']
+      })
+    ).not.toThrow();
+
+    expect(() =>
+      BaseModel.throwIfFieldSchemaIsNotOpenApi31Compliant({
+        name: 'createdAt',
+        type: 'datetime',
+        format: 'date-time',
         validations: []
-      }]
-    })).not.toThrow();
+      } as any)
+    ).toThrow('invalid field type');
 
-    expect(() => BaseModel.throwIfModelPayloadIsNotOpenApi31Compliant(
-      {
-        id: '00000000-0000-4000-8000-000000000001',
-        email: 'john@example.com'
-      },
-      {
+    expect(() =>
+      BaseModel.throwIfDataEntitySchemaIsNotOpenApi31Compliant({
         name: 'User',
         fields: [
           {
             name: 'id',
             type: 'string',
             format: 'uuid',
-            required: true,
-            validations: []
-          },
-          {
-            name: 'email',
-            type: 'string',
-            format: 'email',
-            required: true,
             validations: []
           }
         ]
-      }
-    )).not.toThrow();
+      })
+    ).not.toThrow();
 
-    expect(() => BaseModel.throwIfModelPayloadIsNotOpenApi31Compliant(
-      {
-        id: 'invalid-uuid',
-        email: 'john@example.com'
-      },
-      {
-        name: 'User',
-        fields: [
-          {
-            name: 'id',
-            type: 'string',
-            format: 'uuid',
-            required: true,
-            validations: []
-          },
-          {
-            name: 'email',
-            type: 'string',
-            format: 'email',
-            required: true,
-            validations: []
-          }
-        ]
-      }
-    )).toThrow('validation failed');
+    expect(() =>
+      BaseModel.throwIfModelPayloadIsNotOpenApi31Compliant(
+        {
+          id: '00000000-0000-4000-8000-000000000001',
+          email: 'john@example.com'
+        },
+        {
+          name: 'User',
+          fields: [
+            {
+              name: 'id',
+              type: 'string',
+              format: 'uuid',
+              required: true,
+              validations: []
+            },
+            {
+              name: 'email',
+              type: 'string',
+              format: 'email',
+              required: true,
+              validations: []
+            }
+          ]
+        }
+      )
+    ).not.toThrow();
+
+    expect(() =>
+      BaseModel.throwIfModelPayloadIsNotOpenApi31Compliant(
+        {
+          id: 'invalid-uuid',
+          email: 'john@example.com'
+        },
+        {
+          name: 'User',
+          fields: [
+            {
+              name: 'id',
+              type: 'string',
+              format: 'uuid',
+              required: true,
+              validations: []
+            },
+            {
+              name: 'email',
+              type: 'string',
+              format: 'email',
+              required: true,
+              validations: []
+            }
+          ]
+        }
+      )
+    ).toThrow('validation failed');
   });
 });

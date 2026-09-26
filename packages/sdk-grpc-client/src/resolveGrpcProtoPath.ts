@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const PROTO_FILE_NAME = 'async-api.proto';
 const CANONICAL_PROTO_SEGMENTS = ['spec', 'asyncapi', PROTO_FILE_NAME];
@@ -25,9 +25,7 @@ export const resolveGrpcProtoPath = (
   if (explicitPath) {
     const resolvedExplicitPath = path.resolve(explicitPath);
     if (fs.existsSync(resolvedExplicitPath)) return resolvedExplicitPath;
-    throw new Error(
-      `gRPC proto file not found at configured path: ${resolvedExplicitPath}`
-    );
+    throw new Error(`gRPC proto file not found at configured path: ${resolvedExplicitPath}`);
   }
 
   const candidates = candidatePaths(moduleDirectory);

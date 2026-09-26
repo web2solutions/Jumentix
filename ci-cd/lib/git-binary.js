@@ -26,10 +26,7 @@ const fs = require('node:fs');
  * `oven/bun` CI image, GitHub's runners, and macOS with the Xcode command line
  * tools — provides `/usr/bin/git`.
  */
-const GIT_CANDIDATES = Object.freeze([
-  '/usr/bin/git',
-  '/bin/git'
-]);
+const GIT_CANDIDATES = Object.freeze(['/usr/bin/git', '/bin/git']);
 
 let cached = null;
 
@@ -39,12 +36,12 @@ function resolveGitBinary(candidates = GIT_CANDIDATES, exists = fs.existsSync) {
   }
 
   throw new Error(
-    'Could not find git in a fixed system location '
-      + `(looked in: ${candidates.join(', ')}).\n`
-      + '  This resolves git by absolute path on purpose: searching PATH lets a writable\n'
-      + '  directory shadow the real binary, and these checks trust what git tells them.\n'
-      + '  If git lives elsewhere on this machine, add that path to GIT_CANDIDATES in\n'
-      + '  ci-cd/lib/git-binary.js — and only if it is root-owned.'
+    'Could not find git in a fixed system location ' +
+      `(looked in: ${candidates.join(', ')}).\n` +
+      '  This resolves git by absolute path on purpose: searching PATH lets a writable\n' +
+      '  directory shadow the real binary, and these checks trust what git tells them.\n' +
+      '  If git lives elsewhere on this machine, add that path to GIT_CANDIDATES in\n' +
+      '  ci-cd/lib/git-binary.js — and only if it is root-owned.'
   );
 }
 

@@ -1,1 +1,3 @@
-export { UserDataRepository } from './UserDataRepository';
+import { UserDataRepository } from './UserDataRepository';
+
+export default UserDataRepository;

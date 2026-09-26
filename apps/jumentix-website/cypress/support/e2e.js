@@ -3,14 +3,16 @@ import 'cypress-axe';
 const browserErrors = [];
 
 const isAllowedBrowserNoise = (message) =>
-  /ResizeObserver loop/i.test(message)
-  || /Loading CSS chunk/i.test(message)
+  /ResizeObserver loop/i.test(message) ||
+  /Loading CSS chunk/i.test(message) ||
   // Next 16 + Mantine production builds emit React #418/#423 on <html>
   // scheme attributes under Cypress even when the visible tree is correct
   // (reproduced on /docs routes that render no commercial chrome). User-
   // visible hydration failure is still asserted in visitQuiet via body text.
-  || /Minified React error #(418|423|425)/.test(message)
-  || /The following error originated from your application code[\s\S]*Minified React error #(418|423|425)/.test(message);
+  /Minified React error #(418|423|425)/.test(message) ||
+  /The following error originated from your application code[\s\S]*Minified React error #(418|423|425)/.test(
+    message
+  );
 
 Cypress.on('window:before:load', (win) => {
   win.addEventListener('error', (event) => {
@@ -33,9 +35,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  const unexpected = [...new Set(
-    browserErrors.filter((message) => !isAllowedBrowserNoise(message))
-  )];
+  const unexpected = [
+    ...new Set(browserErrors.filter((message) => !isAllowedBrowserNoise(message)))
+  ];
   expect(unexpected, 'uncaught browser errors').to.deep.equal([]);
 });
 
@@ -65,9 +67,8 @@ Cypress.Commands.add('visitQuiet', (path, options = {}) => {
 Cypress.Commands.add('assertNoHorizontalOverflow', () => {
   cy.document().then((document) => {
     const root = document.documentElement;
-    expect(
-      root.scrollWidth,
-      'document should not overflow horizontally'
-    ).to.be.at.most(root.clientWidth + 1);
+    expect(root.scrollWidth, 'document should not overflow horizontally').to.be.at.most(
+      root.clientWidth + 1
+    );
   });
 });

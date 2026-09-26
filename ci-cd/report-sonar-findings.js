@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+/* eslint-disable no-console */
 /**
  * Print SonarQube Cloud's findings into the CI log.
  *
@@ -23,6 +23,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const repoRoot = path.resolve(__dirname, '..');
@@ -82,7 +83,10 @@ async function fetchJson(url, token) {
   return response.json();
 }
 
-const delay = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+const delay = (ms) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 /**
  * Wait for the submitted analysis to finish processing.
@@ -117,8 +121,12 @@ async function waitForAnalysis(ceTaskUrl, token, now = () => Date.now()) {
  * hide text entirely.
  */
 function forLog(text) {
-  // eslint-disable-next-line no-control-regex
-  return String(text).replace(/[\u0000-\u001f\u007f]+/g, ' ').trim();
+  return (
+    String(text)
+      // eslint-disable-next-line no-control-regex -- control characters are stripped on purpose: an ANSI sequence in the CI log can forge a line
+      .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+      .trim()
+  );
 }
 
 /** One line per issue, ordered so the worst reads first. */
@@ -134,9 +142,11 @@ function formatIssues(issues) {
     .map((issue) => {
       const file = String(issue.component).split(':').pop();
       const line = issue.line === undefined ? '' : `:${String(issue.line)}`;
-      return `  ${forLog(issue.type)} ${forLog(issue.severity)} ${forLog(file)}${line}\n`
-        + `    ${forLog(issue.message)}\n`
-        + `    rule: ${forLog(issue.rule)}`;
+      return (
+        `  ${forLog(issue.type)} ${forLog(issue.severity)} ${forLog(file)}${line}\n` +
+        `    ${forLog(issue.message)}\n` +
+        `    rule: ${forLog(issue.rule)}`
+      );
     });
 }
 
@@ -209,7 +219,9 @@ async function main() {
     console.log(`\n[sonar] ${hotspotCount} security hotspot(s) to review:\n`);
     for (const hotspot of hotspots) {
       const file = String(hotspot.component).split(':').pop();
-      console.log(`  ${forLog(hotspot.vulnerabilityProbability)} ${forLog(file)}:${hotspot.line ?? '?'}`);
+      console.log(
+        `  ${forLog(hotspot.vulnerabilityProbability)} ${forLog(file)}:${hotspot.line ?? '?'}`
+      );
       console.log(`    ${forLog(hotspot.message)}`);
     }
   }
@@ -227,9 +239,9 @@ if (isEntryPoint(module)) {
 module.exports = {
   ANALYSIS_TIMEOUT_MS,
   forLog,
-  resolvePullRequestKey,
   formatIssues,
   main,
   readTaskMetadata,
+  resolvePullRequestKey,
   waitForAnalysis
 };

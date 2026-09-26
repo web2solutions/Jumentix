@@ -48,7 +48,6 @@ import {
 } from '../src';
 import { closeFirestore, createFirestoreClient } from '../src/firestore-client';
 
-
 function setServiceAccount(overrides: Record<string, unknown> = {}) {
   process.env.FIREBASE_SERVICE_ACCOUNT_KEY = JSON.stringify({
     project_id: 'jumentix-service-registry',

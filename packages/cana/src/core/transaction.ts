@@ -29,12 +29,9 @@
  * `CanaChangeEvent` carries the meaning its name implies: this is on disk.
  */
 
-import type {
-  CanaChangeEvent,
-  CanaTransactionMode,
-  CanaWriteOutcome
-} from '../contracts';
 import { canaError, translateError } from './errors';
+
+import type { CanaChangeEvent, CanaTransactionMode, CanaWriteOutcome } from '../contracts';
 
 /**
  * An event as a writer supplies it. The buffer stamps the three fields a writer
@@ -64,7 +61,10 @@ export function createChangeBuffer(
       // the contract's required `at` was never actually set — the cast defeated
       // the only check that would have caught it.
       pending.push({
-        ...event, cursor: nextCursor(), originId, at: now()
+        ...event,
+        cursor: nextCursor(),
+        originId,
+        at: now()
       });
     },
     drain() {
@@ -103,24 +103,29 @@ interface RunOptions<TResult> {
 export async function runTransaction<TResult>(
   options: RunOptions<TResult>
 ): Promise<TransactionOutcome<TResult>> {
-  const {
-    database, stores, mode, buffer, body
-  } = options;
+  const { database, stores, mode, buffer, body } = options;
 
   let transaction: IDBTransaction;
   try {
     transaction = database.transaction([...stores], mode);
   } catch (error) {
     buffer.discard();
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw translateError(error);
   }
 
   // Attached before the body runs. Registering them afterwards would miss an
   // abort that a synchronous failure inside the body triggers immediately.
   const finished = new Promise<'complete' | 'abort' | 'error'>((resolve) => {
-    transaction.oncomplete = () => { resolve('complete'); };
-    transaction.onabort = () => { resolve('abort'); };
-    transaction.onerror = () => { resolve('error'); };
+    transaction.oncomplete = () => {
+      resolve('complete');
+    };
+    transaction.onabort = () => {
+      resolve('abort');
+    };
+    transaction.onerror = () => {
+      resolve('error');
+    };
   });
 
   let result: TResult | undefined;
@@ -156,12 +161,14 @@ export async function runTransaction<TResult>(
 
   buffer.discard();
 
+  // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
   if (bodyFailure !== undefined) throw translateError(bodyFailure);
 
+  // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
   throw canaError(
     'TransactionAborted',
-    `Transaction over [${stores.join(', ')}] ${ending === 'abort' ? 'was aborted' : 'failed'} `
-      + 'before committing. Nothing was written.',
+    `Transaction over [${stores.join(', ')}] ${ending === 'abort' ? 'was aborted' : 'failed'} ` +
+      'before committing. Nothing was written.',
     { cause: transaction.error }
   );
 }
@@ -178,6 +185,7 @@ export function abortWithReason(transaction: IDBTransaction, reason?: string): n
   } catch {
     // Already ending.
   }
+  // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
   throw canaError(
     'TransactionAborted',
     reason ?? 'Transaction aborted by the caller. Nothing was written.'

@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
-const path = require('path');
-const { readTestMap, validateTestMap } = require('./lib/test-map');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { readTestMap, validateTestMap } = require('./lib/test-map');
 
 function main() {
   const root = path.resolve(__dirname, '..');
@@ -14,7 +15,8 @@ function main() {
     for (const error of result.errors) {
       console.error(` - ${error}`);
     }
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log(

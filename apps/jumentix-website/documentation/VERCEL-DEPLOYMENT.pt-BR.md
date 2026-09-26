@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/documentation/VERCEL-DEPLOYMENT.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Implantação Vercel
 
 Rastreamento de problemas:
@@ -71,8 +72,8 @@ Valores configurados:
 Como `web2solutions/Jumentix` é privado, chamadas não autenticadas à API do GitHub retornam 404.
 Defina no projeto Vercel (Production + Preview):
 
-| Nome | Propósito |
-| --- | --- |
+| Nome           | Propósito                                                                                                                                                                                                                                           |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GITHUB_TOKEN` | Variável legada opcional. Nada em runtime precisa dela: `/changelog` e `/api/github-releases` empacotam seus dados em build (`scripts/sync-changelog.mjs`, `scripts/sync-releases.mjs`). O snapshot de releases a utiliza em build quando presente. |
 
 Analytics da Vercel é montado no layout raiz do App Router via

@@ -7,7 +7,7 @@ import type { DeadLetterRecord, IDeadLetterStore } from './contracts';
  * writes to the same resource must be replayed in the order they were
  * attempted, or the later one loses to the earlier one.
  */
-export class InMemoryDeadLetterStore implements IDeadLetterStore {
+class InMemoryDeadLetterStore implements IDeadLetterStore {
   private readonly records = new Map<string, DeadLetterRecord>();
 
   public async put(record: DeadLetterRecord): Promise<void> {
@@ -29,3 +29,5 @@ export class InMemoryDeadLetterStore implements IDeadLetterStore {
     this.records.clear();
   }
 }
+
+export default InMemoryDeadLetterStore;

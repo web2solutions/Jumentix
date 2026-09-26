@@ -1,13 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+const overrideGuardRootPackage = require('../../package.json');
 const {
+  detectRetiredSurfaces,
   REQUIRED_OVERRIDES,
   REQUIRED_PATCHES,
   REQUIRED_RESOLUTIONS,
-  detectRetiredSurfaces,
   validateOverrideIntegrity
 } = require('../check-dependency-override-integrity');
-
-const overrideGuardRootPackage = require('../../package.json');
 
 /** A manifest that satisfies the frozen baseline exactly. */
 const soundManifest = () => ({
@@ -62,19 +60,22 @@ describe('check-dependency-override-integrity', () => {
     withoutPatch.patchedDependencies = {};
 
     expect(validateOverrideIntegrity(withoutPatch)[0]).toContain('patchedDependencies is missing');
-    expect(validateOverrideIntegrity(soundManifest(), [], () => false)[0])
-      .toContain('does not exist on disk');
+    expect(validateOverrideIntegrity(soundManifest(), [], () => false)[0]).toContain(
+      'does not exist on disk'
+    );
   });
 
   it('rejects a resurrected pnpm surface or pnpm section', () => {
     expect.hasAssertions();
-    expect(validateOverrideIntegrity(soundManifest(), ['pnpm-workspace.yaml'])[0])
-      .toContain('pnpm-workspace.yaml still exists');
+    expect(validateOverrideIntegrity(soundManifest(), ['pnpm-workspace.yaml'])[0]).toContain(
+      'pnpm-workspace.yaml still exists'
+    );
 
     const withPnpmSection = { ...soundManifest(), pnpm: { overrides: {} } };
 
-    expect(validateOverrideIntegrity(withPnpmSection)[0])
-      .toContain('still declares a "pnpm" section');
+    expect(validateOverrideIntegrity(withPnpmSection)[0]).toContain(
+      'still declares a "pnpm" section'
+    );
   });
 
   it('rejects a missing resolution', () => {
@@ -102,7 +103,7 @@ describe('check-dependency-override-integrity CLI', () => {
   it('reports the intact pin counts against the committed manifest', () => {
     expect.hasAssertions();
     const { main } = require('../check-dependency-override-integrity');
-    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
 
     main();
 
@@ -112,26 +113,27 @@ describe('check-dependency-override-integrity CLI', () => {
   it('prints each failure and exits non-zero when a pin is missing', () => {
     expect.hasAssertions();
     const mod = require('../check-dependency-override-integrity');
-    const fs = require('fs');
-    const error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    const exit = jest.spyOn(process, 'exit').mockImplementation(((): never => {
-      throw new Error('process.exit called');
-    }) as never);
+    const fs = require('node:fs');
+    const error = jest.spyOn(console, 'error').mockReturnValue(undefined);
+    const previousExitCode = process.exitCode;
 
     // Precomputed outside the mock: a conditional inside the test body trips
     // jest/no-conditional-in-test, and the guard only ever reads package.json.
     const brokenManifest = JSON.stringify({
       ...overrideGuardRootPackage,
       overrides: Object.fromEntries(
-        Object.entries(overrideGuardRootPackage.overrides)
-          .filter(([name]) => name !== 'form-data')
+        Object.entries(overrideGuardRootPackage.overrides).filter(([name]) => name !== 'form-data')
       )
     });
-    jest.spyOn(fs, 'readFileSync').mockReturnValue(brokenManifest as never);
+    jest.spyOn(fs, 'readFileSync').mockReturnValue(brokenManifest);
 
-    expect(() => mod.main()).toThrow('process.exit called');
-    expect(exit).toHaveBeenCalledWith(1);
-    expect(error.mock.calls.flat().join('\n')).toContain('override "form-data" is missing');
+    try {
+      mod.main();
+      expect(process.exitCode).toBe(1);
+      expect(error.mock.calls.flat().join('\n')).toContain('override "form-data" is missing');
+    } finally {
+      process.exitCode = previousExitCode;
+    }
   });
 });
 
@@ -148,7 +150,6 @@ describe('check-dependency-override-integrity CLI', () => {
  * broken state stays reproducible after the Express 5 upgrade fixed it.
  */
 describe('override major compatibility', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const guard = require('../check-dependency-override-integrity') as {
     validateOverrideMajors: (
       pkg: { overrides?: Record<string, string> },
@@ -161,10 +162,7 @@ describe('override major compatibility', () => {
 
   it('rejects an override that crosses the major its dependent declares', () => {
     expect.hasAssertions();
-    const failures = validateOverrideMajors(
-      { overrides: { send: '^1.2.0' } },
-      () => '~0.19.0'
-    );
+    const failures = validateOverrideMajors({ overrides: { send: '^1.2.0' } }, () => '~0.19.0');
 
     expect(failures).toHaveLength(1);
     expect(failures[0]).toContain('declares ~0.19.0 but the override forces ^1.2.0');
@@ -173,10 +171,7 @@ describe('override major compatibility', () => {
   it('accepts an override inside the declared major', () => {
     expect.hasAssertions();
     // Express 5, which is what fixed it: `send: ^1.1.0` and no `mime@1` call site.
-    const failures = validateOverrideMajors(
-      { overrides: { send: '^1.2.0' } },
-      () => '^1.1.0'
-    );
+    const failures = validateOverrideMajors({ overrides: { send: '^1.2.0' } }, () => '^1.1.0');
 
     expect(failures).toStrictEqual([]);
   });
@@ -191,10 +186,7 @@ describe('override major compatibility', () => {
     expect.hasAssertions();
     // Otherwise the pair rots into an assertion about nothing, which is the
     // state that lets the next one through.
-    const failures = validateOverrideMajors(
-      { overrides: { send: '^1.2.0' } },
-      () => null
-    );
+    const failures = validateOverrideMajors({ overrides: { send: '^1.2.0' } }, () => null);
 
     expect(failures).toHaveLength(1);
     expect(failures[0]).toContain('no longer depends on');
@@ -214,10 +206,9 @@ describe('override major compatibility', () => {
   it('passes against the real installed tree', () => {
     expect.hasAssertions();
     // The control. Without it the suite only ever proves the checker can fail.
-    expect(validateOverrideMajors(
-      overrideGuardRootPackage,
-      guard.readInstalledDependentRange
-    )).toStrictEqual([]);
+    expect(
+      validateOverrideMajors(overrideGuardRootPackage, guard.readInstalledDependentRange)
+    ).toStrictEqual([]);
   });
 });
 
@@ -230,7 +221,6 @@ describe('override major compatibility', () => {
  * mid-check.
  */
 describe('installed dependent range reader', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const guardModule = require('../check-dependency-override-integrity') as {
     readInstalledDependentRange: (dependent: string, overridden: string) => string | null;
   };
@@ -268,11 +258,13 @@ describe('installed dependent range reader', () => {
 describe('override major compatibility, before the comparison (JUM-681)', () => {
   // Required locally, matching the suite above: the module is CommonJS and the
   // top-level import list is the shape the other describes already use.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+
   const majors = require('../check-dependency-override-integrity') as {
-    OVERRIDE_MAJOR_COMPATIBILITY: Array<{
-      dependent: string; overridden: string; requiredMajor: number;
-    }>;
+    OVERRIDE_MAJOR_COMPATIBILITY: {
+      dependent: string;
+      overridden: string;
+      requiredMajor: number;
+    }[];
     validateOverrideMajors: (
       pkg: { overrides?: Record<string, string> },
       read: (dependent: string, overridden: string) => string | null
@@ -310,11 +302,12 @@ describe('override major compatibility, before the comparison (JUM-681)', () => 
  * mismatch it should report.
  */
 describe('override major compatibility, the remaining branches (JUM-681)', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const guard = require('../check-dependency-override-integrity') as {
-    OVERRIDE_MAJOR_COMPATIBILITY: Array<{
-      dependent: string; overridden: string; requiredMajor: number;
-    }>;
+    OVERRIDE_MAJOR_COMPATIBILITY: {
+      dependent: string;
+      overridden: string;
+      requiredMajor: number;
+    }[];
     rangeMajor: (range: string) => number | null;
     validateOverrideMajors: (
       pkg: { overrides?: Record<string, string> },
@@ -392,7 +385,7 @@ describe('override major compatibility, the remaining branches (JUM-681)', () =>
     // non-zero on any failure, so reaching the summary at all is the assertion;
     // the counts in it are what a reader uses to see the guard checked
     // something rather than nothing.
-    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
 
     guard.main();
     const summary = log.mock.calls.map((call) => String(call[0])).join('\n');

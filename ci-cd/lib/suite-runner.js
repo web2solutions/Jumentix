@@ -1,9 +1,8 @@
-/* eslint-disable no-console */
 /**
  * Runner-agnostic suite invocation (JUM-554).
  * Callers select suites; this module maps runner → package-script / bun test.
  */
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
 
 function runViaPackageScript(scriptName, options = {}) {
   const spawn = options.spawn || spawnSync;

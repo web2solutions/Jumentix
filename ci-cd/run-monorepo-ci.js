@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+
 const { computeAffectedWorkspaces, readChangedFiles } = require('./check-affected-workspaces');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
@@ -13,6 +14,7 @@ function runCommand(command, args, cwd = process.cwd()) {
 function resolveCiPlan(affected) {
   // Scope information remains useful evidence, but delivery boundaries must never
   // omit required cells. The canonical matrix already covers every workspace.
+  // eslint-disable-next-line no-void -- marks the parameter deliberately unused without dropping it from the signature
   void affected;
   return [['bun', ['run', 'ci:gate:strict']]];
 }
@@ -24,9 +26,8 @@ function resolveInputFiles(argvFiles = [], options = {}) {
   }
 
   const baseRef = String(options.baseRef || process.env.JUMENTIX_CI_BASE_REF || 'origin/main');
-  const readChanged = typeof options.readChangedFiles === 'function'
-    ? options.readChangedFiles
-    : readChangedFiles;
+  const readChanged =
+    typeof options.readChangedFiles === 'function' ? options.readChangedFiles : readChangedFiles;
   return readChanged(baseRef);
 }
 

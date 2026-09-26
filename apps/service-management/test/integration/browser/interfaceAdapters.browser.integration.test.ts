@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test */
+/* eslint-disable jest/no-conditional-in-test */
 /* eslint-disable jest/max-expects */
 /*
  * JUM-545 — Communication Interface Designer adapter lifecycle, run in a
@@ -18,20 +18,32 @@
  *    replaces the entry without delete-and-re-add.
  */
 import { webkit } from 'playwright-webkit';
-import type { Browser } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  createTempConfigDir,
   envFileContent,
   startServer,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const HTTP_FRAMEWORKS = [
-  'express', 'fastify', 'restify', 'cloudflare-workers', 'vercel-functions',
-  'loopback', 'sails-js', 'feathers', 'derby-js', 'adonis-js', 'total-js'
+  'express',
+  'fastify',
+  'restify',
+  'cloudflare-workers',
+  'vercel-functions',
+  'loopback',
+  'sails-js',
+  'feathers',
+  'derby-js',
+  'adonis-js',
+  'total-js'
 ];
 
 describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
@@ -39,6 +51,13 @@ describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
   let server: StartedServer | undefined;
   let browser: Browser | undefined;
   let baseUrl: string;
+
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
 
   beforeAll(async () => {
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
@@ -58,7 +77,7 @@ describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
 
   it('scopes framework options per interface type from the canonical matrix', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     const consoleErrors: string[] = [];
     page.on('pageerror', (error) => consoleErrors.push(String(error)));
@@ -66,25 +85,22 @@ describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
     await page.goto(baseUrl, { waitUntil: 'load' });
     await page.click('#tab-interface-designer-btn');
 
-    const httpOptions = await page.$$eval(
-      '#interface-framework-select option',
-      (options) => options.map((option) => (option as HTMLOptionElement).value)
+    const httpOptions = await page.$$eval('#interface-framework-select option', (options) =>
+      options.map((option) => (option as HTMLOptionElement).value)
     );
     expect(httpOptions).toStrictEqual(HTTP_FRAMEWORKS);
     expect(httpOptions).not.toContain('derby');
     expect(httpOptions).not.toContain('sails');
 
     await page.selectOption('#interface-type-select', 'websocket');
-    const websocketOptions = await page.$$eval(
-      '#interface-framework-select option',
-      (options) => options.map((option) => (option as HTMLOptionElement).value)
+    const websocketOptions = await page.$$eval('#interface-framework-select option', (options) =>
+      options.map((option) => (option as HTMLOptionElement).value)
     );
     expect(websocketOptions).toStrictEqual(['socket-io']);
 
     await page.selectOption('#interface-type-select', 'grpc');
-    const grpcOptions = await page.$$eval(
-      '#interface-framework-select option',
-      (options) => options.map((option) => (option as HTMLOptionElement).value)
+    const grpcOptions = await page.$$eval('#interface-framework-select option', (options) =>
+      options.map((option) => (option as HTMLOptionElement).value)
     );
     expect(grpcOptions).toStrictEqual(['grpc']);
 
@@ -94,7 +110,7 @@ describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
 
   it('adds, rejects duplicates with the reason, and edits adapters in place', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     const consoleErrors: string[] = [];
     page.on('pageerror', (error) => consoleErrors.push(String(error)));
@@ -116,16 +132,19 @@ describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
     await page.fill('#interface-entrypoint-input', 'src/interface/HTTP/server.ts');
     await page.fill('#interface-controller-input', 'UsersController.list');
     await page.click('#add-interface-adapter-btn');
-    const status = () => page.$eval('#status-region', (el) => ({
-      hidden: (el as HTMLElement).hidden,
-      text: el.textContent || ''
-    }));
+    const status = () =>
+      page.$eval('#status-region', (el) => ({
+        hidden: (el as HTMLElement).hidden,
+        text: el.textContent || ''
+      }));
     let currentStatus = await status();
     expect(currentStatus.hidden).toBe(false);
     expect(currentStatus.text).toContain(
       'Duplicate adapter: interface type "http-rest" is already registered at entrypoint "src/interface/HTTP/server.ts".'
     );
-    await expect(page.$$eval('#interface-adapter-list li', (items) => items.length)).resolves.toBe(1);
+    await expect(page.$$eval('#interface-adapter-list li', (items) => items.length)).resolves.toBe(
+      1
+    );
 
     // Duplicate controller mapping: refused too, with its own reason.
     await page.fill('#interface-entrypoint-input', 'src/interface/HTTP/other-server.ts');
@@ -135,7 +154,9 @@ describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
     expect(currentStatus.text).toContain(
       'Duplicate controller mapping "UsersController.create" — another adapter already maps it.'
     );
-    await expect(page.$$eval('#interface-adapter-list li', (items) => items.length)).resolves.toBe(1);
+    await expect(page.$$eval('#interface-adapter-list li', (items) => items.length)).resolves.toBe(
+      1
+    );
 
     // Off-shape controller mapping on the add gate: refused with the shape.
     await page.fill('#interface-entrypoint-input', 'src/interface/HTTP/other-server.ts');
@@ -145,12 +166,17 @@ describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
     expect(currentStatus.text).toContain(
       'Controller mapping "userscontroller" must have the shape XController.action (e.g. UsersController.create).'
     );
-    await expect(page.$$eval('#interface-adapter-list li', (items) => items.length)).resolves.toBe(1);
+    await expect(page.$$eval('#interface-adapter-list li', (items) => items.length)).resolves.toBe(
+      1
+    );
 
     // Edit in place: an invalid save is refused and the entry is untouched.
     await page.locator('#interface-adapter-list li button', { hasText: 'Edit' }).click();
     await expect(page.$('.interface-adapter-editor')).resolves.not.toBeNull();
-    await page.fill('.interface-adapter-editor input[aria-label="Edit controller mapping"]', 'broken-mapping');
+    await page.fill(
+      '.interface-adapter-editor input[aria-label="Edit controller mapping"]',
+      'broken-mapping'
+    );
     await page.locator('.interface-adapter-editor button', { hasText: 'Save' }).click();
     currentStatus = await status();
     expect(currentStatus.text).toContain('must have the shape XController.action');
@@ -168,7 +194,9 @@ describe('serviceManagement interface adapter lifecycle (JUM-545)', () => {
       'UsersController.list'
     );
     await page.locator('.interface-adapter-editor button', { hasText: 'Save' }).click();
-    await expect(page.$$eval('#interface-adapter-list li', (items) => items.length)).resolves.toBe(1);
+    await expect(page.$$eval('#interface-adapter-list li', (items) => items.length)).resolves.toBe(
+      1
+    );
     await expect(listSummary()).resolves.toContain(
       'http-rest | fastify | src/interface/HTTP/rest-server.ts -> UsersController.list'
     );

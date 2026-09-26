@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/nextjs';
 import {
   IconApi,
   IconArrowsShuffle,
   IconBinaryTree,
   IconCloudComputing,
   IconDatabase,
-  IconShieldCheck,
+  IconShieldCheck
 } from '@tabler/icons-react';
+
 import {
   ActionLink,
   ArchitectureFlow as ArchitectureFlowComponent,
@@ -23,22 +23,24 @@ import {
   SectionHeading as SectionHeadingComponent,
   SiteFooter as SiteFooterComponent,
   SiteHeader as SiteHeaderComponent,
-  StatusBadge as StatusBadgeComponent,
+  StatusBadge as StatusBadgeComponent
 } from '.';
+
+import type { Meta, StoryObj } from '@storybook/nextjs';
 
 const meta = {
   title: 'Design System/Overview',
   parameters: {
-    layout: 'padded',
+    layout: 'padded'
   },
-  tags: ['autodocs'],
+  tags: ['autodocs']
 } satisfies Meta;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const BrandMark: Story = {
-  render: () => <BrandMarkComponent />,
+  render: () => <BrandMarkComponent />
 };
 
 export const ActionLinks: Story = {
@@ -48,11 +50,11 @@ export const ActionLinks: Story = {
       <ActionLink href="/product" variant="secondary">
         Explore the platform
       </ActionLink>
-      <ActionLink href="https://github.com/web2solutions/Jumentix" variant="quiet" external>
+      <ActionLink external href="https://github.com/web2solutions/Jumentix" variant="quiet">
         View on GitHub
       </ActionLink>
     </div>
-  ),
+  )
 };
 
 export const StatusBadges: Story = {
@@ -62,17 +64,17 @@ export const StatusBadges: Story = {
       <StatusBadgeComponent tone="success">Production ready</StatusBadgeComponent>
       <StatusBadgeComponent tone="attention">Action required</StatusBadgeComponent>
     </div>
-  ),
+  )
 };
 
 export const SectionHeading: Story = {
   render: () => (
     <SectionHeadingComponent
+      description="Keep domain behavior stable while swapping databases, transports, queues, and deployment targets."
       eyebrow="Architecture without lock-in"
       title="Choose infrastructure at the edge of your application"
-      description="Keep domain behavior stable while swapping databases, transports, queues, and deployment targets."
     />
-  ),
+  )
 };
 
 export const FeatureGrid: Story = {
@@ -82,21 +84,23 @@ export const FeatureGrid: Story = {
         {
           title: 'Contract-first interfaces',
           description: 'OpenAPI and AsyncAPI contracts drive HTTP, WebSocket, and gRPC delivery.',
-          icon: <IconApi size={21} />,
+          icon: <IconApi size={21} />
         },
         {
           title: 'Portable persistence',
-          description: 'A stable store port shields use cases from relational and document databases.',
-          icon: <IconDatabase size={21} />,
+          description:
+            'A stable store port shields use cases from relational and document databases.',
+          icon: <IconDatabase size={21} />
         },
         {
           title: 'Service communication',
-          description: 'Request-response and event messaging work in a monolith or across services.',
-          icon: <IconArrowsShuffle size={21} />,
-        },
+          description:
+            'Request-response and event messaging work in a monolith or across services.',
+          icon: <IconArrowsShuffle size={21} />
+        }
       ]}
     />
-  ),
+  )
 };
 
 export const Callout: Story = {
@@ -112,7 +116,7 @@ export const Callout: Story = {
         Validate compatibility evidence before replacing an adapter in a production service.
       </CalloutComponent>
     </div>
-  ),
+  )
 };
 
 export const MetricStrip: Story = {
@@ -122,22 +126,30 @@ export const MetricStrip: Story = {
         { value: '12', label: 'HTTP adapters' },
         { value: '3', label: 'API protocols' },
         { value: '11', label: 'Database drivers' },
-        { value: '99%', label: 'Coverage policy' },
+        { value: '99%', label: 'Coverage policy' }
       ]}
     />
-  ),
+  )
 };
 
 export const CapabilityTable: Story = {
   render: () => (
     <CapabilityTableComponent
       rows={[
-        { capability: 'REST API', implementation: 'OpenAPI 3.1 + framework adapters', status: 'Available' },
-        { capability: 'Realtime API', implementation: 'Socket.IO + Redis Streams', status: 'Available' },
-        { capability: 'gRPC API', implementation: '@grpc/grpc-js + AsyncAPI', status: 'Available' },
+        {
+          capability: 'REST API',
+          implementation: 'OpenAPI 3.1 + framework adapters',
+          status: 'Available'
+        },
+        {
+          capability: 'Realtime API',
+          implementation: 'Socket.IO + Redis Streams',
+          status: 'Available'
+        },
+        { capability: 'gRPC API', implementation: '@grpc/grpc-js + AsyncAPI', status: 'Available' }
       ]}
     />
-  ),
+  )
 };
 
 const codeSamples = [
@@ -146,7 +158,7 @@ const codeSamples = [
     language: 'shell',
     code: `bun install
 bun run cli
-bun run dev:express`,
+bun run dev:express`
   },
   {
     label: 'Controller',
@@ -157,7 +169,7 @@ bun run dev:express`,
   async create(input: CreateOrganizationInput) {
     return this.createOrganization.execute(input)
   }
-}`,
+}`
   },
   {
     label: 'Message contract',
@@ -166,20 +178,20 @@ bun run dev:express`,
   contract: 'users.identity.verify.v1',
   payload: { token },
   correlationId,
-})`,
-  },
+})`
+  }
 ];
 
 export const CodeShowcase: Story = {
-  render: () => <CodeShowcaseComponent samples={codeSamples} />,
+  render: () => <CodeShowcaseComponent samples={codeSamples} />
 };
 
 export const SearchField: Story = {
-  render: () => <SearchFieldComponent />,
+  render: () => <SearchFieldComponent />
 };
 
 export const Pagination: Story = {
-  render: () => <PaginationComponent current={2} total={5} />,
+  render: () => <PaginationComponent current={2} total={5} />
 };
 
 export const LocaleSwitch: Story = {
@@ -188,31 +200,31 @@ export const LocaleSwitch: Story = {
       <LocaleSwitchComponent locale="EN" />
       <LocaleSwitchComponent locale="PT-BR" />
     </div>
-  ),
+  )
 };
 
 export const SiteHeader: Story = {
   parameters: { layout: 'fullscreen' },
-  render: () => <SiteHeaderComponent />,
+  render: () => <SiteHeaderComponent />
 };
 
 export const SiteHeaderMobile: Story = {
   parameters: {
-    layout: 'fullscreen',
+    layout: 'fullscreen'
   },
   globals: {
-    viewport: { value: 'mobile1', isRotated: false },
+    viewport: { value: 'mobile1', isRotated: false }
   },
-  render: () => <SiteHeaderComponent />,
+  render: () => <SiteHeaderComponent />
 };
 
 export const SiteFooter: Story = {
   parameters: { layout: 'fullscreen' },
-  render: () => <SiteFooterComponent />,
+  render: () => <SiteFooterComponent />
 };
 
 export const DocsToolbar: Story = {
-  render: () => <DocsToolbarComponent />,
+  render: () => <DocsToolbarComponent />
 };
 
 export const ArchitectureFlow: Story = {
@@ -222,15 +234,15 @@ export const ArchitectureFlow: Story = {
         { title: 'Interface adapter', description: 'Receives a transport-specific request.' },
         { title: 'Controller', description: 'Maps the contract to an application command.' },
         { title: 'Use case', description: 'Coordinates domain behavior and ports.' },
-        { title: 'Output adapter', description: 'Persists state or publishes a message.' },
+        { title: 'Output adapter', description: 'Persists state or publishes a message.' }
       ]}
     />
-  ),
+  )
 };
 
 export const ArchitectureFlowMobile: Story = {
   globals: {
-    viewport: { value: 'mobile1', isRotated: false },
+    viewport: { value: 'mobile1', isRotated: false }
   },
   render: () => (
     <ArchitectureFlowComponent
@@ -238,20 +250,32 @@ export const ArchitectureFlowMobile: Story = {
         { title: 'HTTP', description: 'Express, Fastify, Workers, and more.' },
         { title: 'Application', description: 'Controllers and use cases.' },
         { title: 'Domain', description: 'Entities and business rules.' },
-        { title: 'Infrastructure', description: 'Databases, queues, and clouds.' },
+        { title: 'Infrastructure', description: 'Databases, queues, and clouds.' }
       ]}
     />
-  ),
+  )
 };
 
 export const ComponentInventory: Story = {
   render: () => (
     <FeatureGridComponent
       features={[
-        { title: 'Delivery', description: 'Headers, footers, CTAs, pagination, and locale controls.', icon: <IconCloudComputing size={21} /> },
-        { title: 'Technical content', description: 'Code tabs, callouts, tables, search, and architecture flows.', icon: <IconBinaryTree size={21} /> },
-        { title: 'Trust', description: 'Metrics, status badges, governance, and compliance evidence.', icon: <IconShieldCheck size={21} /> },
+        {
+          title: 'Delivery',
+          description: 'Headers, footers, CTAs, pagination, and locale controls.',
+          icon: <IconCloudComputing size={21} />
+        },
+        {
+          title: 'Technical content',
+          description: 'Code tabs, callouts, tables, search, and architecture flows.',
+          icon: <IconBinaryTree size={21} />
+        },
+        {
+          title: 'Trust',
+          description: 'Metrics, status badges, governance, and compliance evidence.',
+          icon: <IconShieldCheck size={21} />
+        }
       ]}
     />
-  ),
+  )
 };

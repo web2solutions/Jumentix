@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Build-time release notes data source for /api/github-releases.
  *
@@ -17,8 +18,9 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+
+const { process } = globalThis;
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, '..');
@@ -27,8 +29,16 @@ const REPO = 'web2solutions/Jumentix';
 const MAX_RELEASES = 20;
 
 const RELEASE_FIELDS = [
-  'id', 'tag_name', 'name', 'body', 'draft', 'prerelease',
-  'created_at', 'published_at', 'html_url', 'target_commitish'
+  'id',
+  'tag_name',
+  'name',
+  'body',
+  'draft',
+  'prerelease',
+  'created_at',
+  'published_at',
+  'html_url',
+  'target_commitish'
 ];
 
 function ghCliToken() {
@@ -63,9 +73,9 @@ async function fetchReleases() {
     if (!Array.isArray(releases)) return null;
     return releases
       .filter((release) => !release.draft)
-      .map((release) => Object.fromEntries(
-        RELEASE_FIELDS.map((field) => [field, release[field] ?? null])
-      ));
+      .map((release) =>
+        Object.fromEntries(RELEASE_FIELDS.map((field) => [field, release[field] ?? null]))
+      );
   } catch {
     return null;
   }

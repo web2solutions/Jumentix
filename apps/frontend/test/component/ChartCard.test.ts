@@ -1,6 +1,4 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
 
 import ChartCard from '@/components/dashboard/ChartCard.vue';
 

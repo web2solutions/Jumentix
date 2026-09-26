@@ -1,4 +1,4 @@
-import { Catalog } from '@service-management-api/modules/Catalogs/domain/Model/Catalog';
+import Catalog from '@service-management-api/modules/Catalogs/domain/Model/Catalog';
 
 /**
  * The catalog aggregate constructed and mutated directly (JUM-681/JUM-491).
@@ -55,7 +55,7 @@ describe('catalog model defaults (JUM-681)', () => {
       provenance: { author: 'a' },
       createdBy: 'creator',
       updatedBy: 'editor'
-    } as never);
+    });
 
     expect({
       version: catalog.version,
@@ -73,10 +73,12 @@ describe('catalog model defaults (JUM-681)', () => {
   it('refuses a payload with no name and one with no organization', () => {
     expect.hasAssertions();
 
-    expect(() => new Catalog({ name: '', organization: 'org-1' } as never))
-      .toThrow('name can not be empty');
-    expect(() => new Catalog({ name: 'Billing', organization: '' } as never))
-      .toThrow('organization can not be empty');
+    expect(() => new Catalog({ name: '', organization: 'org-1' } as never)).toThrow(
+      'name can not be empty'
+    );
+    expect(() => new Catalog({ name: 'Billing', organization: '' } as never)).toThrow(
+      'organization can not be empty'
+    );
   });
 
   it('bumps the version with no actor, and with one', () => {
@@ -127,7 +129,7 @@ describe('catalog model defaults (JUM-681)', () => {
     expect.hasAssertions();
 
     const catalog = new Catalog({ name: 'Billing', organization: 'org-1' } as never);
-    const rebuilt = new Catalog(catalog.serialize() as never);
+    const rebuilt = new Catalog(catalog.serialize());
 
     expect(rebuilt.id).toBe(catalog.id);
     expect(rebuilt.version).toBe(catalog.version);

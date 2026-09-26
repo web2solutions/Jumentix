@@ -3,9 +3,10 @@
  * `new QueueEvents(...)`, `new Worker(...)` — so three classes and their empty
  * constructors are the shape the library dictates, not a style choice.
  */
-/* eslint-disable max-classes-per-file, no-useless-constructor, no-empty-function */
-/* eslint-disable class-methods-use-this, object-curly-newline */
+/* eslint-disable max-classes-per-file */
+/* eslint-disable class-methods-use-this */
 import { BullMqMessageMediatorAdapter } from '../src';
+
 import type { IMessage } from '../src';
 
 /**
@@ -26,7 +27,7 @@ type JobHandler = (job: { data: any }) => Promise<unknown>;
 
 function fakeBullMq() {
   const closed: string[] = [];
-  const added: Array<{ queue: string; name: string; data: any; options: any }> = [];
+  const added: { queue: string; name: string; data: any; options: any }[] = [];
   const workers: Record<string, JobHandler> = {};
   let failWith: Error | null = null;
   let readyFailure: Error | null = null;
@@ -44,7 +45,9 @@ function fakeBullMq() {
       };
     }
 
-    public async close() { closed.push(`queue:${this.name}`); }
+    public async close() {
+      closed.push(`queue:${this.name}`);
+    }
   }
 
   class QueueEvents {
@@ -54,25 +57,38 @@ function fakeBullMq() {
       if (readyFailure) throw readyFailure;
     }
 
-    public async close() { closed.push(`events:${this.name}`); }
+    public async close() {
+      closed.push(`events:${this.name}`);
+    }
   }
 
   class Worker {
-    public constructor(public readonly name: string, handler: JobHandler) {
+    public constructor(
+      public readonly name: string,
+      handler: JobHandler
+    ) {
       workers[name] = handler;
     }
 
-    public async waitUntilReady() { return undefined; }
+    public async waitUntilReady() {
+      return undefined;
+    }
 
-    public async close() { closed.push(`worker:${this.name}`); }
+    public async close() {
+      closed.push(`worker:${this.name}`);
+    }
   }
 
   return {
     lib: { Queue, QueueEvents, Worker },
     added,
     closed,
-    failNextWait: (error: Error) => { failWith = error; },
-    failReadiness: (error: Error) => { readyFailure = error; }
+    failNextWait: (error: Error) => {
+      failWith = error;
+    },
+    failReadiness: (error: Error) => {
+      readyFailure = error;
+    }
   };
 }
 
@@ -102,7 +118,9 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     expect.hasAssertions();
 
     const cause = new Error('Cannot find module bullmq');
-    BullMqMessageMediatorAdapter.importBullMq = async () => { throw cause; };
+    BullMqMessageMediatorAdapter.importBullMq = async () => {
+      throw cause;
+    };
     const adapter = new BullMqMessageMediatorAdapter({ connection: {} } as never);
 
     await expect(adapter.connect()).rejects.toThrow('bun add bullmq');
@@ -112,7 +130,7 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     expect.hasAssertions();
 
     const { adapter, broker } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: 'ok' } as never));
+    adapter.registerHandler('orders.create', async () => ({ result: 'ok' }) as never);
 
     await adapter.request(message());
     await adapter.request(message());
@@ -120,8 +138,11 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
 
     // Two requests on the default queue, one on another: three jobs, and the
     // second request must not rebuild what the first already made.
-    expect(broker.added.map((entry) => entry.queue))
-      .toStrictEqual(['app.requests', 'app.requests', 'other.queue']);
+    expect(broker.added.map((entry) => entry.queue)).toStrictEqual([
+      'app.requests',
+      'app.requests',
+      'other.queue'
+    ]);
     await adapter.disconnect();
     expect(broker.closed.filter((entry) => entry.startsWith('queue:'))).toHaveLength(2);
   });
@@ -133,7 +154,7 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     // finishes, and the caller's one poll then fails with a missing key. The
     // retention window is the request timeout, with a floor.
     const { adapter, broker } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: 'ok' } as never));
+    adapter.registerHandler('orders.create', async () => ({ result: 'ok' }) as never);
 
     await adapter.request(message(), { timeoutMs: 120_000 });
     await adapter.request(message(), { timeoutMs: 500 });
@@ -150,13 +171,14 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     // The defect JUM-621 was filed against: every rejection was reported as a
     // timeout, including a missing-key rejection that arrives in milliseconds.
     const { adapter, broker } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: 'ok' } as never));
+    adapter.registerHandler('orders.create', async () => ({ result: 'ok' }) as never);
     broker.failNextWait(new Error('Missing key for job 12. isFinished'));
 
     const failed = await adapter.request(message(), { timeoutMs: 15_000 });
 
-    expect((failed.error as Error).message)
-      .toBe('Message request failed: Missing key for job 12. isFinished');
+    expect((failed.error as Error).message).toBe(
+      'Message request failed: Missing key for job 12. isFinished'
+    );
     expect((failed.error as Error).message).not.toContain('timed out');
   });
 
@@ -164,7 +186,7 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     expect.hasAssertions();
 
     const { adapter, broker } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: 'ok' } as never));
+    adapter.registerHandler('orders.create', async () => ({ result: 'ok' }) as never);
     broker.failNextWait(new Error('job timed out before finishing'));
 
     const failed = await adapter.request(message(), { timeoutMs: 15_000 });
@@ -176,7 +198,7 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     expect.hasAssertions();
 
     const { adapter, broker } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: 'ok' } as never));
+    adapter.registerHandler('orders.create', async () => ({ result: 'ok' }) as never);
     broker.failNextWait('redis went away' as unknown as Error);
 
     const failed = await adapter.request(message());
@@ -259,7 +281,6 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     // readable `{ name, message }`, not as `{}`.
     const { adapter } = await connected();
     adapter.registerHandler('orders.create', async () => {
-      // eslint-disable-next-line no-throw-literal
       throw 'handler exploded' as never;
     });
 
@@ -296,13 +317,16 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
 
     const { adapter, broker } = await connected();
     const heard: string[] = [];
-    adapter.subscribe('orders.created', (event) => { heard.push(event.name); });
+    adapter.subscribe('orders.created', (event) => {
+      heard.push(event.name);
+    });
 
     await adapter.publish({ name: 'orders.created', payload: { id: 1 } } as never);
 
     expect(heard).toStrictEqual(['orders.created']);
-    expect(broker.added.find((entry) => entry.queue === 'events.orders.created')?.options)
-      .toStrictEqual({ removeOnComplete: true });
+    expect(
+      broker.added.find((entry) => entry.queue === 'events.orders.created')?.options
+    ).toStrictEqual({ removeOnComplete: true });
   });
 
   it('disconnects cleanly when nothing was ever connected', async () => {
@@ -327,7 +351,7 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
 
     await adapter.connect();
     await adapter.connect();
-    adapter.registerHandler('orders.create', async () => ({ result: 'ok' } as never));
+    adapter.registerHandler('orders.create', async () => ({ result: 'ok' }) as never);
     await adapter.request(message());
 
     expect(broker.added.map((entry) => entry.queue)).toStrictEqual(['tenant.requests']);
@@ -339,12 +363,10 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     // A route key is how two deployments of the same contract are told apart.
     // Resolving by contract first would send both to whichever registered last.
     const { adapter } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: 'by-contract' } as never));
-    adapter.registerHandler(
-      'orders.create.v2',
-      async () => ({ result: 'by-route-key' } as never),
-      { routeKey: 'orders.create.eu' } as never
-    );
+    adapter.registerHandler('orders.create', async () => ({ result: 'by-contract' }) as never);
+    adapter.registerHandler('orders.create.v2', async () => ({ result: 'by-route-key' }) as never, {
+      routeKey: 'orders.create.eu'
+    } as never);
 
     const response = await adapter.request(message(), { routeKey: 'orders.create.eu' });
 
@@ -355,12 +377,10 @@ describe('bullMQ adapter against a queue double (JUM-681)', () => {
     expect.hasAssertions();
 
     const { adapter } = await connected();
-    adapter.registerHandler('orders.create', async () => ({ result: 'by-contract' } as never));
-    adapter.registerHandler(
-      'orders.create.batch',
-      async () => ({ result: 'by-queue' } as never),
-      { queueName: 'batch.queue' } as never
-    );
+    adapter.registerHandler('orders.create', async () => ({ result: 'by-contract' }) as never);
+    adapter.registerHandler('orders.create.batch', async () => ({ result: 'by-queue' }) as never, {
+      queueName: 'batch.queue'
+    } as never);
 
     const response = await adapter.request(message(), { queueName: 'batch.queue' });
 

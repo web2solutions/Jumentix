@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import path from 'node:path';
 
 /**
@@ -25,9 +24,15 @@ const {
   createCatalogSyncClient,
   CATALOG_SYNC_POLL_INTERVAL_MS,
   CATALOG_SYNC_PUSH_DEBOUNCE_MS
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js'));
+} = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js')
+);
 
-type Domain = { id: string; name: string; context?: Record<string, unknown> };
+interface Domain {
+  id: string;
+  name: string;
+  context?: Record<string, unknown>;
+}
 
 const STORE_NAME = 'designerDocuments';
 const STATE_KEY = 'service-management.v1';
@@ -69,7 +74,9 @@ function blockCrypto(): () => void {
   const original = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
   Object.defineProperty(globalThis, 'crypto', {
     configurable: true,
-    get() { throw new Error('crypto is blocked'); }
+    get() {
+      throw new Error('crypto is blocked');
+    }
   });
 
   return () => {
@@ -96,9 +103,7 @@ function transportFailingWrites(state: { failing: boolean }) {
     getCatalog: async () => ({ id: 'cat-1', version: 1, design: {} }),
     updateCatalog: async () => {
       const failure = state.failing ? messagelessFailure() : null;
-      return failure === null
-        ? { id: 'cat-1', version: 2 }
-        : Promise.reject(failure);
+      return failure === null ? { id: 'cat-1', version: 2 } : Promise.reject(failure);
     }
   });
 }
@@ -185,7 +190,9 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
     const canaClient = {
       subscribe: () => {
         subscribed += 1;
-        return () => { unsubscribed += 1; };
+        return () => {
+          unsubscribed += 1;
+        };
       }
     };
     const client = createCatalogSyncClient({
@@ -211,7 +218,9 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
       designerState: designerStateWith([]),
       store: storeWith(),
       transport: transportDouble({
-        listCatalogs: async () => { throw new Error('connection refused'); }
+        listCatalogs: async () => {
+          throw new Error('connection refused');
+        }
       })
     });
 
@@ -232,7 +241,10 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
       designerState: designerStateWith([]),
       store: storeWith(),
       transport: transportDouble({
-        listCatalogs: async () => { pushes += 1; return []; }
+        listCatalogs: async () => {
+          pushes += 1;
+          return [];
+        }
       })
     });
 
@@ -240,7 +252,9 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
     client.onLocalCommit({ store: STORE_NAME, key: STATE_KEY, type: 'updated' });
     const beforeStop = pushes;
     client.stop();
-    await new Promise((resolve) => { setTimeout(resolve, CATALOG_SYNC_PUSH_DEBOUNCE_MS + 25); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, CATALOG_SYNC_PUSH_DEBOUNCE_MS + 25);
+    });
 
     expect(CATALOG_SYNC_PUSH_DEBOUNCE_MS).toBeGreaterThan(0);
     expect(pushes).toBe(beforeStop);
@@ -284,10 +298,14 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
       transport: transportDouble()
     });
 
-    await expect(client.publishDomain('missing')).resolves
-      .toStrictEqual({ published: false, reason: 'domain-not-found' });
-    await expect(client.publishDomain('d2')).resolves
-      .toStrictEqual({ published: false, reason: 'already-shared' });
+    await expect(client.publishDomain('missing') as Promise<unknown>).resolves.toStrictEqual({
+      published: false,
+      reason: 'domain-not-found'
+    });
+    await expect(client.publishDomain('d2') as Promise<unknown>).resolves.toStrictEqual({
+      published: false,
+      reason: 'already-shared'
+    });
   });
 
   it('refuses to unpublish a domain that was never shared', async () => {
@@ -299,10 +317,14 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
       transport: transportDouble()
     });
 
-    await expect(client.unpublishDomain('d1')).resolves
-      .toStrictEqual({ unpublished: false, reason: 'not-shared' });
-    await expect(client.unpublishDomain('missing')).resolves
-      .toStrictEqual({ unpublished: false, reason: 'not-shared' });
+    await expect(client.unpublishDomain('d1') as Promise<unknown>).resolves.toStrictEqual({
+      unpublished: false,
+      reason: 'not-shared'
+    });
+    await expect(client.unpublishDomain('missing') as Promise<unknown>).resolves.toStrictEqual({
+      unpublished: false,
+      reason: 'not-shared'
+    });
   });
 
   it('ignores a marker with no id when deciding what is shared', async () => {
@@ -367,7 +389,9 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
     const client = createCatalogSyncClient({
       designerState: designerStateWith([]),
       store: storeWith(),
-      notify: (message: string) => { notified.push(message); },
+      notify: (message: string) => {
+        notified.push(message);
+      },
       transport: transportDouble({
         listCatalogs: async () => Promise.reject(messagelessFailure())
       })
@@ -389,7 +413,7 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
     // path. The write starts failing after `start`, which is also how it
     // happens — the catalog goes away while the tab is open.
     const notified: string[] = [];
-    const scheduled: Array<() => unknown> = [];
+    const scheduled: (() => unknown)[] = [];
     const writes = { failing: false };
     const shared: Domain = {
       id: 'd1',
@@ -399,8 +423,13 @@ describe('createCatalogSyncClient with the app defaults (JUM-681)', () => {
     const client = createCatalogSyncClient({
       designerState: designerStateWith([shared]),
       store: storeWith(),
-      notify: (message: string) => { notified.push(message); },
-      schedule: (fn: () => unknown) => { scheduled.push(fn); return scheduled.length; },
+      notify: (message: string) => {
+        notified.push(message);
+      },
+      schedule: (fn: () => unknown) => {
+        scheduled.push(fn);
+        return scheduled.length;
+      },
       cancelSchedule: () => undefined,
       transport: transportFailingWrites(writes)
     });

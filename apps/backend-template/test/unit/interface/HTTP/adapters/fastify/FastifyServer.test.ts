@@ -1,5 +1,5 @@
 import { FastifyServer } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
-import { HTTPBaseServer } from '@src/interface/HTTP/ports/HTTPBaseServer';
+import HTTPBaseServer from '@src/interface/HTTP/ports/HTTPBaseServer';
 
 describe('fastify server', () => {
   it('composes repeatedly while registering both static documentation roots once', async () => {
@@ -48,7 +48,7 @@ describe('fastify server', () => {
     class ServerUnderTest extends HTTPBaseServer<Record<string, any>> {
       public application = {
         get: () => {
-          // eslint-disable-next-line no-throw-literal
+          // eslint-disable-next-line @typescript-eslint/only-throw-error -- the test asserts endPointRegister survives a non-Error throw, so the double must throw a bare value
           throw 'route refused';
         }
       };
@@ -63,10 +63,12 @@ describe('fastify server', () => {
     }
 
     const server = new ServerUnderTest();
-    expect(() => server.endPointRegister({
-      method: 'get',
-      path: '/broken',
-      handler: () => undefined
-    })).toThrow('Endpoint registration failed for GET /broken: route refused');
+    expect(() =>
+      server.endPointRegister({
+        method: 'get',
+        path: '/broken',
+        handler: () => undefined
+      })
+    ).toThrow('Endpoint registration failed for GET /broken: route refused');
   });
 });

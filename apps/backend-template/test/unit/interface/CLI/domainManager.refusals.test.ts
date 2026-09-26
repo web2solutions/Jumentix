@@ -1,4 +1,5 @@
-import { domainManagerSubApplication } from '@src/interface/CLI/subapps/domainManager';
+import domainManagerSubApplication from '@src/interface/CLI/subapps/domainManager';
+
 import type { IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 /**
@@ -40,9 +41,13 @@ function scriptedContext(catalog: IWorkspaceCatalog, chooses: number[], asks: st
         askIndex += 1;
         return value;
       },
-      log: (message: string) => { logs.push(message); },
+      log: (message: string) => {
+        logs.push(message);
+      },
       loadCatalog: async () => catalog,
-      saveCatalog: async (next: IWorkspaceCatalog) => { saved.push(next); }
+      saveCatalog: async (next: IWorkspaceCatalog) => {
+        saved.push(next);
+      }
     }
   };
 }
@@ -59,11 +64,12 @@ const domain = (overrides: Record<string, unknown> = {}) => ({
   ...overrides
 });
 
-const catalogWith = (domains: unknown[]): IWorkspaceCatalog => ({
-  version: 1,
-  domains,
-  entities: []
-} as IWorkspaceCatalog);
+const catalogWith = (domains: unknown[]): IWorkspaceCatalog =>
+  ({
+    version: 1,
+    domains,
+    entities: []
+  }) as IWorkspaceCatalog;
 
 /** The five answers `askDomainData` reads, in order. */
 const domainAnswers = (
@@ -82,9 +88,9 @@ describe('domain manager refusals (JUM-681)', () => {
     const updated = scriptedContext(catalogWith([]), [3, BACK], []);
     const removed = scriptedContext(catalogWith([]), [4, BACK], []);
 
-    await domainManagerSubApplication.run(listed.context as never);
-    await domainManagerSubApplication.run(updated.context as never);
-    await domainManagerSubApplication.run(removed.context as never);
+    await domainManagerSubApplication.run(listed.context);
+    await domainManagerSubApplication.run(updated.context);
+    await domainManagerSubApplication.run(removed.context);
 
     expect(listed.logs).toContain('No domains registered yet.');
     expect(updated.logs).toContain('No domains available.');
@@ -96,7 +102,7 @@ describe('domain manager refusals (JUM-681)', () => {
 
     const run = scriptedContext(catalogWith([domain()]), [0, BACK], []);
 
-    await domainManagerSubApplication.run(run.context as never);
+    await domainManagerSubApplication.run(run.context);
 
     expect(run.logs.join('\n')).toContain('context=n/a');
     expect(run.logs.join('\n')).toContain('tags=none');
@@ -107,7 +113,7 @@ describe('domain manager refusals (JUM-681)', () => {
 
     const run = scriptedContext(catalogWith([]), [2, BACK], domainAnswers(''));
 
-    await domainManagerSubApplication.run(run.context as never);
+    await domainManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('Domain name is required.');
     expect(run.saved).toHaveLength(0);
@@ -118,13 +124,9 @@ describe('domain manager refusals (JUM-681)', () => {
 
     // Domains are referenced by name everywhere else in the CLI, so "billing"
     // beside "Billing" makes every later lookup ambiguous.
-    const run = scriptedContext(
-      catalogWith([domain()]),
-      [2, BACK],
-      domainAnswers('billing')
-    );
+    const run = scriptedContext(catalogWith([domain()]), [2, BACK], domainAnswers('billing'));
 
-    await domainManagerSubApplication.run(run.context as never);
+    await domainManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('Domain "billing" already exists.');
     expect(run.saved).toHaveLength(0);
@@ -141,7 +143,7 @@ describe('domain manager refusals (JUM-681)', () => {
       domainAnswers('Shipping', 'parcels', 'logistics', 'retired', 'a, b')
     );
 
-    await domainManagerSubApplication.run(run.context as never);
+    await domainManagerSubApplication.run(run.context);
 
     const [created] = run.saved;
     expect(created.domains).toHaveLength(1);
@@ -158,7 +160,7 @@ describe('domain manager refusals (JUM-681)', () => {
       domainAnswers('Shipping', '', '', 'deprecated')
     );
 
-    await domainManagerSubApplication.run(run.context as never);
+    await domainManagerSubApplication.run(run.context);
 
     expect(run.saved[0].domains[0].status).toBe('deprecated');
   });
@@ -166,19 +168,15 @@ describe('domain manager refusals (JUM-681)', () => {
   it('says so when a search matches nothing, and matches on a tag when it does', async () => {
     expect.hasAssertions();
 
-    const missing = scriptedContext(
-      catalogWith([domain()]),
-      [1, BACK],
-      ['nothing-like-this']
-    );
+    const missing = scriptedContext(catalogWith([domain()]), [1, BACK], ['nothing-like-this']);
     const byTag = scriptedContext(
       catalogWith([domain({ tags: ['payments'] })]),
       [1, BACK],
       ['payments']
     );
 
-    await domainManagerSubApplication.run(missing.context as never);
-    await domainManagerSubApplication.run(byTag.context as never);
+    await domainManagerSubApplication.run(missing.context);
+    await domainManagerSubApplication.run(byTag.context);
 
     expect(missing.logs).toContain('No matching domains.');
     expect(byTag.logs).toContain('Found 1 domain(s):');
@@ -189,7 +187,7 @@ describe('domain manager refusals (JUM-681)', () => {
 
     const run = scriptedContext(catalogWith([domain()]), [BACK], []);
 
-    await domainManagerSubApplication.run(run.context as never);
+    await domainManagerSubApplication.run(run.context);
 
     expect(run.logs).toStrictEqual([]);
     expect(run.saved).toHaveLength(0);

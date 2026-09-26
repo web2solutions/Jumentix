@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const SUPPORTED_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
@@ -73,7 +74,8 @@ function workspaceManifests(rootDir) {
   return roots.flatMap((root) => {
     const absoluteRoot = path.join(rootDir, root);
     if (!fs.existsSync(absoluteRoot)) return [];
-    return fs.readdirSync(absoluteRoot, { withFileTypes: true })
+    return fs
+      .readdirSync(absoluteRoot, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => {
         const relativePath = path.join(root, entry.name);
@@ -86,9 +88,10 @@ function workspaceManifests(rootDir) {
 
 function workspaceDependencyViolations({ rootDir, filePath, imports, manifests }) {
   const relativeFilePath = path.relative(rootDir, filePath);
-  const workspace = manifests.find(({ relativePath }) => (
-    relativeFilePath === relativePath || relativeFilePath.startsWith(`${relativePath}${path.sep}`)
-  ));
+  const workspace = manifests.find(
+    ({ relativePath }) =>
+      relativeFilePath === relativePath || relativeFilePath.startsWith(`${relativePath}${path.sep}`)
+  );
   if (!workspace) return [];
 
   const usesTestDependency = relativeFilePath.includes(`${path.sep}test${path.sep}`);
@@ -96,13 +99,13 @@ function workspaceDependencyViolations({ rootDir, filePath, imports, manifests }
     ...(workspace.manifest.dependencies || {}),
     ...(workspace.manifest.optionalDependencies || {}),
     ...(workspace.manifest.peerDependencies || {}),
-    ...(usesTestDependency ? (workspace.manifest.devDependencies || {}) : {})
+    ...(usesTestDependency ? workspace.manifest.devDependencies || {} : {})
   };
   const localPackages = new Set(manifests.map(({ manifest }) => manifest.name));
   const violations = [];
   for (const importPath of imports) {
     if (!localPackages.has(importPath) || importPath === workspace.manifest.name) continue;
-    if (!Object.prototype.hasOwnProperty.call(declared, importPath)) {
+    if (!Object.hasOwn(declared, importPath)) {
       violations.push(
         `${relativeFilePath}: ${importPath} is a local workspace dependency and must be declared in ${workspace.relativePath}/package.json`
       );
@@ -113,7 +116,8 @@ function workspaceDependencyViolations({ rootDir, filePath, imports, manifests }
 
 function classifyZone(relativeFilePath) {
   if (relativeFilePath.startsWith(`apps${path.sep}backend-template${path.sep}`)) return 'backend';
-  if (relativeFilePath.startsWith(`apps${path.sep}service-management${path.sep}`)) return 'service-management';
+  if (relativeFilePath.startsWith(`apps${path.sep}service-management${path.sep}`))
+    return 'service-management';
   if (relativeFilePath.startsWith(`packages${path.sep}`)) return 'package';
   if (relativeFilePath.startsWith(`sdk-clients${path.sep}`)) return 'legacy-sdk';
   return 'other';
@@ -124,12 +128,7 @@ function normalizeImportTarget(currentFile, importPath) {
   return path.resolve(path.dirname(currentFile), importPath);
 }
 
-function validateImport({
-  rootDir,
-  currentFile,
-  relativeFilePath,
-  importPath
-}) {
+function validateImport({ rootDir, currentFile, relativeFilePath, importPath }) {
   const zone = classifyZone(relativeFilePath);
   const violations = [];
   const normalized = importPath.replace(/\\/g, '/');
@@ -139,8 +138,13 @@ function validateImport({
     violations.push(`${relativeFilePath}: @src alias is only allowed inside apps/backend-template`);
   }
 
-  if (zone !== 'legacy-sdk' && (normalized.startsWith('sdk-clients/') || normalized.includes('/sdk-clients/'))) {
-    violations.push(`${relativeFilePath}: legacy sdk-clients import is forbidden ("${importPath}")`);
+  if (
+    zone !== 'legacy-sdk' &&
+    (normalized.startsWith('sdk-clients/') || normalized.includes('/sdk-clients/'))
+  ) {
+    violations.push(
+      `${relativeFilePath}: legacy sdk-clients import is forbidden ("${importPath}")`
+    );
   }
 
   const resolvedRelative = normalizeImportTarget(currentFile, importPath);
@@ -153,9 +157,13 @@ function validateImport({
     violations.push(`${relativeFilePath}: packages must not import from apps ("${importPath}")`);
   }
 
-  if (zone === 'service-management'
-    && resolved.startsWith(`apps${path.sep}backend-template${path.sep}`)) {
-    violations.push(`${relativeFilePath}: service-management must not import backend-template internals ("${importPath}")`);
+  if (
+    zone === 'service-management' &&
+    resolved.startsWith(`apps${path.sep}backend-template${path.sep}`)
+  ) {
+    violations.push(
+      `${relativeFilePath}: service-management must not import backend-template internals ("${importPath}")`
+    );
   }
 
   return violations;
@@ -178,12 +186,14 @@ function run() {
     const relativeFilePath = path.relative(rootDir, filePath);
 
     for (const importPath of imports) {
-      violations.push(...validateImport({
-        rootDir,
-        currentFile: filePath,
-        relativeFilePath,
-        importPath
-      }));
+      violations.push(
+        ...validateImport({
+          rootDir,
+          currentFile: filePath,
+          relativeFilePath,
+          importPath
+        })
+      );
     }
     violations.push(...workspaceDependencyViolations({ rootDir, filePath, imports, manifests }));
   }
@@ -191,7 +201,8 @@ function run() {
   if (violations.length > 0) {
     console.error('Workspace boundary violations found:');
     violations.forEach((violation) => console.error(`- ${violation}`));
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log('Workspace boundary check passed.');
@@ -205,7 +216,7 @@ module.exports = {
   classifyZone,
   collectSourceFiles,
   readImports,
+  validateImport,
   workspaceDependencyViolations,
-  workspaceManifests,
-  validateImport
+  workspaceManifests
 };

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Criando SPA/PWA com Jumentix
 
 Este guia descreve como usar Jumentix para planejar e entregar aplicativos frontend (SPA/PWA) integrados com serviços backend.

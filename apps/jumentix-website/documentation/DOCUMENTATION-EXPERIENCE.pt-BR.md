@@ -13,13 +13,13 @@ maduro com rastreabilidade até os arquivos canônicos do monorepo.
 
 ## Arquitetura da Informação
 
-| Seção | Pergunta do leitor | Conteúdo típico |
-| --- | --- | --- |
-| Conceitos | Por que o Jumentix funciona assim? | Arquitetura, domínios, contratos e Event-Driven Design |
-| Guias | Como construo um produto? | REST, realtime, SPA/PWA, monólito e microsserviços |
-| Adaptadores | Qual runtime ou infraestrutura devo usar? | HTTP, bancos de dados e realtime |
-| Pacotes | Qual biblioteca reutilizável devo instalar? | Message Mediator, runtime bootstrap e SDKs |
-| Referência | Qual é o comportamento exato? | Contratos, comandos, segurança, entidades e eventos |
+| Seção       | Pergunta do leitor                          | Conteúdo típico                                        |
+| ----------- | ------------------------------------------- | ------------------------------------------------------ |
+| Conceitos   | Por que o Jumentix funciona assim?          | Arquitetura, domínios, contratos e Event-Driven Design |
+| Guias       | Como construo um produto?                   | REST, realtime, SPA/PWA, monólito e microsserviços     |
+| Adaptadores | Qual runtime ou infraestrutura devo usar?   | HTTP, bancos de dados e realtime                       |
+| Pacotes     | Qual biblioteca reutilizável devo instalar? | Message Mediator, runtime bootstrap e SDKs             |
+| Referência  | Qual é o comportamento exato?               | Contratos, comandos, segurança, entidades e eventos    |
 
 As rotas em inglês começam em `/docs/jumentix`. As páginas em português preservam a mesma
 hierarquia sob `/docs/pt-BR/jumentix`.

@@ -42,7 +42,9 @@ export function isBarePropertyKey(name) {
  * @returns {string}
  */
 export function describeQuotedPropertyKey(name) {
-  return `will be emitted as "${name}" in the OpenAPI schema and the generated code, `
-    + 'reachable only by index. A name starting with a letter, `_` or `$` and '
-    + 'continuing with letters, digits, `_` or `$` is emitted bare.';
+  return (
+    `will be emitted as "${name}" in the OpenAPI schema and the generated code, ` +
+    'reachable only by index. A name starting with a letter, `_` or `$` and ' +
+    'continuing with letters, digits, `_` or `$` is emitted bare.'
+  );
 }

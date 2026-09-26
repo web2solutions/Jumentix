@@ -1,25 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import fs from 'fs';
-import path from 'path';
-import YAML from 'yaml';
-import { OpenAPIV3 } from 'openapi-types';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { _API_PREFIX_ } from '@src/config/constants';
 import { replaceVars } from '@src/shared/utils';
-import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import type { IAuthService } from '@src/modules/Users';
-import type { IEventBus, IMessageMediator } from '@src/modules/port';
-import type { HTTPBaseServer, IbaseHandler } from '@src/interface/HTTP/ports';
+import YAML from 'yaml';
 
-import { CatalogController } from '@service-management-api/modules/Catalogs/adapters/in/http/controllers/CatalogController';
 import { composeCatalogsServices } from '@service-management-api/modules/Catalogs';
-
+import CatalogController from '@service-management-api/modules/Catalogs/adapters/in/http/controllers/CatalogController';
 import expressCreate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/createCatalog';
 import expressDelete from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/deleteCatalog';
 import expressGetAll from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/getAllCatalogs';
 import expressGetOne from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/getCatalogById';
 import expressRestore from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/restoreCatalog';
 import expressUpdate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/updateCatalog';
+
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { HTTPBaseServer, IbaseHandler } from '@src/interface/HTTP/ports';
+import type { IEventBus, IMessageMediator } from '@src/modules/port';
+import type { IAuthService } from '@src/modules/Users';
+import type { OpenAPIV3 } from 'openapi-types';
 
 export interface IServiceManagementCatalogAPIFactory<T> {
   databaseClient: IDatabaseClient;
@@ -67,7 +66,8 @@ export class ServiceManagementCatalogAPI<T> {
   }
 
   private buildWithOAS(): void {
-    const specs = fs.readdirSync(this.specDir)
+    const specs = fs
+      .readdirSync(this.specDir)
       .filter((specName) => specName.endsWith('.yml') || specName.endsWith('.yaml'));
     for (const specFileName of specs) {
       const file = fs.readFileSync(path.join(this.specDir, specFileName), 'utf8');
@@ -92,14 +92,16 @@ export class ServiceManagementCatalogAPI<T> {
         databaseClient: this.databaseClient,
         catalogUseCases,
         messageMediator: this.messageMediator
-      } as any);
+      });
       for (const routePath of Object.keys(spec.paths || {})) {
         const endPointConfigs: Record<string, any> = spec.paths[routePath] ?? {};
         for (const method of Object.keys(endPointConfigs)) {
           const endPointConfig = endPointConfigs[method];
           const factory = handlerFactoryByOperationId[endPointConfig.operationId];
           if (!factory) {
-            throw new Error(`Service Management catalog handler not found for ${endPointConfig.operationId}.`);
+            throw new Error(
+              `Service Management catalog handler not found for ${endPointConfig.operationId}.`
+            );
           }
           const handler = factory({ endPointConfig, controller }) as IbaseHandler;
           this.server.endPointRegister({

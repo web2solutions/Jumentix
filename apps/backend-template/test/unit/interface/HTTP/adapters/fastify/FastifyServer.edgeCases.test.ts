@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { FastifyServer } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
 
 const CORS_ORIGINS_ENV = 'JUMENTIX_CORS_ALLOWED_ORIGINS';
@@ -60,7 +58,7 @@ describe('fastify server origin rejection and startup failure', () => {
     // the observable contract.
     const stop = jest.spyOn(server, 'stop').mockResolvedValue(undefined);
 
-    await expect(server.start()).rejects.toThrow('port already in use');
+    await expect(server.start() as Promise<void>).rejects.toThrow('port already in use');
 
     expect(errorLog).toHaveBeenCalledWith(expect.stringContaining('An error occurred'));
     expect(stop).toHaveBeenCalledTimes(1);

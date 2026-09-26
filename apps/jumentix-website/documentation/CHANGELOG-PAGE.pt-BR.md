@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/documentation/CHANGELOG-PAGE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Página de registro de alterações
 
 O site expõe `/changelog` como uma página de histórico de alterações verificável para Jumentix.

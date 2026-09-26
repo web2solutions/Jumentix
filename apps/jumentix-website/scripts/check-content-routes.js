@@ -24,7 +24,10 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
+
+const { process } = globalThis;
 
 const WEBSITE_DIR = 'apps/jumentix-website';
 const CONTENT_DIR = `${WEBSITE_DIR}/content`;
@@ -97,17 +100,17 @@ function validateWebsiteContentRoutes(rootDir = process.cwd(), register = ACCEPT
 
     if (!reachable && !exemption) {
       failures.push(
-        `[website-content] ${CONTENT_DIR}/${key} cannot be served: the docs resolver only reads`
-        + ' jumentix/ and pt-BR/jumentix/. Move it under one of those, or record it in'
-        + ' ACCEPTED_UNREACHABLE with the issue that owns the decision.'
+        `[website-content] ${CONTENT_DIR}/${key} cannot be served: the docs resolver only reads` +
+          ' jumentix/ and pt-BR/jumentix/. Move it under one of those, or record it in' +
+          ' ACCEPTED_UNREACHABLE with the issue that owns the decision.'
       );
     }
 
     if (reachable && exemption) {
       failures.push(
-        `[website-content] ${CONTENT_DIR}/${key} is reachable but still listed in`
-        + ` ACCEPTED_UNREACHABLE (${exemption.issue}). Remove the entry — a stale exemption`
-        + ' hides the next real one.'
+        `[website-content] ${CONTENT_DIR}/${key} is reachable but still listed in` +
+          ` ACCEPTED_UNREACHABLE (${exemption.issue}). Remove the entry — a stale exemption` +
+          ' hides the next real one.'
       );
     }
   }
@@ -115,8 +118,8 @@ function validateWebsiteContentRoutes(rootDir = process.cwd(), register = ACCEPT
   for (const [key, entry] of accepted) {
     if (!seenAccepted.has(key)) {
       failures.push(
-        `[website-content] ACCEPTED_UNREACHABLE lists ${CONTENT_DIR}/${key} (${entry.issue}),`
-        + ' which no longer exists. Remove the entry.'
+        `[website-content] ACCEPTED_UNREACHABLE lists ${CONTENT_DIR}/${key} (${entry.issue}),` +
+          ' which no longer exists. Remove the entry.'
       );
     }
   }
@@ -131,8 +134,8 @@ function run(rootDir = process.cwd()) {
     return 1;
   }
   console.log(
-    `Website content route check passed: every content file is reachable or declared`
-    + ` (${ACCEPTED_UNREACHABLE.length} declared unreachable).`
+    `Website content route check passed: every content file is reachable or declared` +
+      ` (${ACCEPTED_UNREACHABLE.length} declared unreachable).`
   );
   return 0;
 }

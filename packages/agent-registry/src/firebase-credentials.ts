@@ -60,17 +60,15 @@ export function loadServiceAccount(): Record<string, unknown> {
       raw = readFileSync(filePath, 'utf8');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `Unable to read FIREBASE_SERVICE_ACCOUNT_KEY_FILE (${filePath}): ${message}`
-      );
+      throw new Error(`Unable to read FIREBASE_SERVICE_ACCOUNT_KEY_FILE (${filePath}): ${message}`);
     }
     return parseServiceAccountJson(raw, 'FIREBASE_SERVICE_ACCOUNT_KEY_FILE');
   }
 
   throw new Error(
-    'Missing Firebase credentials: set FIREBASE_SERVICE_ACCOUNT_KEY '
-    + 'or FIREBASE_SERVICE_ACCOUNT_KEY_FILE (reuse the existing '
-    + 'jumentix-service-registry adminsdk JSON).'
+    'Missing Firebase credentials: set FIREBASE_SERVICE_ACCOUNT_KEY ' +
+      'or FIREBASE_SERVICE_ACCOUNT_KEY_FILE (reuse the existing ' +
+      'jumentix-service-registry adminsdk JSON).'
   );
 }
 
@@ -81,9 +79,7 @@ export function loadServiceAccount(): Record<string, unknown> {
  * URL from the service-account `project_id` so operators reuse the same
  * Firebase project as Firestore without a second secret.
  */
-export function resolveDatabaseUrl(
-  serviceAccount?: Record<string, unknown>
-): string {
+export function resolveDatabaseUrl(serviceAccount?: Record<string, unknown>): string {
   const explicit = process.env.FIREBASE_DATABASE_URL?.trim();
   if (explicit) return normalizeDatabaseUrl(explicit);
   const account = serviceAccount ?? loadServiceAccount();
@@ -92,7 +88,7 @@ export function resolveDatabaseUrl(
 
 export function hasFirebaseCredentials(): boolean {
   return Boolean(
-    process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.trim()
-    || process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE?.trim()
+    process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.trim() ||
+    process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE?.trim()
   );
 }

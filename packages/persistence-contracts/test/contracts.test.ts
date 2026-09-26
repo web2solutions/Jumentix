@@ -1,13 +1,13 @@
-import * as contracts from '../src';
 import {
   ConflictError,
+  currentCorrelationId,
   DataBaseNotFoundError,
   DatabasePagingError,
   PERSISTENCE_ERROR_CODES,
   PERSISTENCE_ERROR_NAMES,
-  currentCorrelationId,
   setCorrelationIdResolver
 } from '../src';
+
 import type {
   IDatabaseClient,
   IStore,
@@ -64,8 +64,12 @@ describe('the package entry point', () => {
    * of the REST list contract. They are pure functions with no dependencies,
    * still tree-shakeable; the list below is the new pinned surface.
    */
-  it('exports exactly the store errors and list-query helpers at runtime, and nothing else', () => {
+  it('exports exactly the store errors and list-query helpers at runtime, and nothing else', async () => {
     expect.hasAssertions();
+
+    // Dynamic import: the namespace object is what pins the exact runtime
+    // surface, and a static namespace import is barred by import-x/no-namespace.
+    const contracts = await import('../src');
 
     expect(Object.keys(contracts).sort()).toStrictEqual([
       'ConflictError',
@@ -305,18 +309,17 @@ describe('the store errors', () => {
     [ConflictError, 'database_duplicated', 'GENERIC.CONFLICT'],
     [DataBaseNotFoundError, 'database_not_found', 'GENERIC.NOT_FOUND'],
     [DatabasePagingError, 'database_paging_error', 'GENERIC.INVALID_INPUT']
-  ])('%p carries the name and code the application matches on', (
-    ErrorClass: new (message: string) => Error & { code: string },
-    name: string,
-    code: string
-  ) => {
-    expect.hasAssertions();
+  ])(
+    '%p carries the name and code the application matches on',
+    (ErrorClass: new (message: string) => Error & { code: string }, name: string, code: string) => {
+      expect.hasAssertions();
 
-    const error = new ErrorClass('something went wrong');
+      const error = new ErrorClass('something went wrong');
 
-    expect(error.name).toBe(name);
-    expect(error.code).toBe(code);
-  });
+      expect(error.name).toBe(name);
+      expect(error.code).toBe(code);
+    }
+  );
 
   it('is a real Error, so it can be thrown and caught as one', () => {
     expect.hasAssertions();

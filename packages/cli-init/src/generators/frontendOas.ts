@@ -27,21 +27,20 @@ export function mergeServiceOas(
       if (Array.isArray(doc.servers)) merged.servers = doc.servers;
       if (Array.isArray(doc['x-services'])) merged['x-services'] = doc['x-services'];
 
-      const docPaths = doc.paths && typeof doc.paths === 'object'
-        ? doc.paths as JsonObject
-        : {};
+      const docPaths = doc.paths && typeof doc.paths === 'object' ? (doc.paths as JsonObject) : {};
       for (const [pathKey, pathItem] of Object.entries(docPaths)) {
         if (!paths[pathKey]) {
           paths[pathKey] = pathItem;
         }
       }
 
-      const docSchemas = doc.components
-        && typeof doc.components === 'object'
-        && (doc.components as JsonObject).schemas
-        && typeof (doc.components as JsonObject).schemas === 'object'
-        ? (doc.components as JsonObject).schemas as JsonObject
-        : {};
+      const docSchemas =
+        doc.components &&
+        typeof doc.components === 'object' &&
+        (doc.components as JsonObject).schemas &&
+        typeof (doc.components as JsonObject).schemas === 'object'
+          ? ((doc.components as JsonObject).schemas as JsonObject)
+          : {};
       for (const [schemaKey, schema] of Object.entries(docSchemas)) {
         if (!schemas[schemaKey]) {
           schemas[schemaKey] = schema;
@@ -61,27 +60,28 @@ export function oasPathCount(doc: JsonObject | undefined): number {
   return Object.keys(paths).length;
 }
 
-type RawOperation = {
+interface RawOperation {
   operationId?: string;
   tags?: unknown;
   summary?: string;
   'x-list-capabilities'?: { searchable?: string[] };
   requestBody?: unknown;
   responses?: unknown;
-};
+}
 
-export type OasOperationRef = {
+export interface OasOperationRef {
   method: string;
   path: string;
   operationId: string;
   operation: RawOperation;
-};
+}
 
 /** Flatten OAS paths into operation refs. */
 export function listOasOperations(oas: JsonObject): OasOperationRef[] {
-  const paths = oas.paths && typeof oas.paths === 'object'
-    ? oas.paths as Record<string, Record<string, RawOperation>>
-    : {};
+  const paths =
+    oas.paths && typeof oas.paths === 'object'
+      ? (oas.paths as Record<string, Record<string, RawOperation>>)
+      : {};
   const out: OasOperationRef[] = [];
   for (const [pathKey, methods] of Object.entries(paths)) {
     for (const [method, operation] of Object.entries(methods || {})) {
@@ -112,12 +112,12 @@ function pathHasItemParam(pathKey: string): boolean {
   return /\{[^}]+\}/.test(pathKey);
 }
 
-export type ResolvedCrudOperations = {
+export interface ResolvedCrudOperations {
   list: string;
   create: string;
   update: string;
   delete: string;
-};
+}
 
 /**
  * Resolve list/create/update/delete operationIds for an entity from the OAS.
@@ -149,19 +149,32 @@ export function resolveEntityOperations(
     } else if (ref.method === 'POST' && !pathHasItemParam(ref.path)) {
       if (!create || /^create/i.test(id)) create = id;
     } else if ((ref.method === 'PUT' || ref.method === 'PATCH') && pathHasItemParam(ref.path)) {
-      const nested = /\/(update|create|delete)(email|phone|document|address|password)/i.test(ref.path)
-        || /email|phone|document|address|password/i.test(idLower);
+      const nested =
+        /\/(update|create|delete)(email|phone|document|address|password)/i.test(ref.path) ||
+        /email|phone|document|address|password/i.test(idLower);
       if (!nested && (!update || /^update/i.test(id))) update = id;
     } else if (ref.method === 'DELETE' && pathHasItemParam(ref.path)) {
       const nested = /email|phone|document|address/i.test(idLower);
       if (!nested && (!deleteOp || /^delete/i.test(id))) deleteOp = id;
     } else if (!list && /^(getall|list)/i.test(idLower)) {
       list = id;
-    } else if (!create && /^create/i.test(idLower) && !/email|phone|document|address/i.test(idLower)) {
+    } else if (
+      !create &&
+      /^create/i.test(idLower) &&
+      !/email|phone|document|address/i.test(idLower)
+    ) {
       create = id;
-    } else if (!update && /^update/i.test(idLower) && !/password|email|phone|document|address/i.test(idLower)) {
+    } else if (
+      !update &&
+      /^update/i.test(idLower) &&
+      !/password|email|phone|document|address/i.test(idLower)
+    ) {
       update = id;
-    } else if (!deleteOp && /^delete/i.test(idLower) && !/email|phone|document|address/i.test(idLower)) {
+    } else if (
+      !deleteOp &&
+      /^delete/i.test(idLower) &&
+      !/email|phone|document|address/i.test(idLower)
+    ) {
       deleteOp = id;
     }
   }
@@ -175,10 +188,7 @@ export function resolveEntityOperations(
 }
 
 /** Read `x-list-capabilities.searchable` for a list operationId. */
-export function searchableFieldsForOperation(
-  oas: JsonObject,
-  listOperationId: string
-): string[] {
+export function searchableFieldsForOperation(oas: JsonObject, listOperationId: string): string[] {
   const refs = listOasOperations(oas);
   const match = refs.find((ref) => ref.operationId === listOperationId);
   const caps = match?.operation['x-list-capabilities'];
@@ -193,12 +203,13 @@ export function resolveRequestSchemas(
   oas: JsonObject,
   entityName: string
 ): { create: string; update: string } {
-  const schemas = oas.components
-    && typeof oas.components === 'object'
-    && (oas.components as JsonObject).schemas
-    && typeof (oas.components as JsonObject).schemas === 'object'
-    ? (oas.components as JsonObject).schemas as JsonObject
-    : {};
+  const schemas =
+    oas.components &&
+    typeof oas.components === 'object' &&
+    (oas.components as JsonObject).schemas &&
+    typeof (oas.components as JsonObject).schemas === 'object'
+      ? ((oas.components as JsonObject).schemas as JsonObject)
+      : {};
   const createKey = `RequestCreate${entityName}`;
   const updateKey = `RequestUpdate${entityName}`;
   return {
@@ -207,19 +218,20 @@ export function resolveRequestSchemas(
   };
 }
 
-export type LocalizedTitle = { en: string; 'pt-BR': string };
+export interface LocalizedTitle {
+  en: string;
+  'pt-BR': string;
+}
 
 /** Title from schema `x-label` or a humanized entity name. */
-export function entityTitleFromOas(
-  oas: JsonObject,
-  entityName: string
-): LocalizedTitle {
-  const schemas = oas.components
-    && typeof oas.components === 'object'
-    && (oas.components as JsonObject).schemas
-    && typeof (oas.components as JsonObject).schemas === 'object'
-    ? (oas.components as JsonObject).schemas as JsonObject
-    : {};
+export function entityTitleFromOas(oas: JsonObject, entityName: string): LocalizedTitle {
+  const schemas =
+    oas.components &&
+    typeof oas.components === 'object' &&
+    (oas.components as JsonObject).schemas &&
+    typeof (oas.components as JsonObject).schemas === 'object'
+      ? ((oas.components as JsonObject).schemas as JsonObject)
+      : {};
   const schema = schemas[entityName];
   if (schema && typeof schema === 'object') {
     const label = (schema as JsonObject)['x-label'];
@@ -233,12 +245,11 @@ export function entityTitleFromOas(
 }
 
 /** Fallback searchable fields from string-ish entity properties (skip id). */
-export function fallbackSearchFields(
-  entitySchema: Record<string, unknown> | undefined
-): string[] {
-  const props = entitySchema?.properties && typeof entitySchema.properties === 'object'
-    ? entitySchema.properties as Record<string, { type?: string }>
-    : {};
+export function fallbackSearchFields(entitySchema: Record<string, unknown> | undefined): string[] {
+  const props =
+    entitySchema?.properties && typeof entitySchema.properties === 'object'
+      ? (entitySchema.properties as Record<string, { type?: string }>)
+      : {};
   const fields: string[] = [];
   for (const [name, prop] of Object.entries(props)) {
     if (name === 'id') {

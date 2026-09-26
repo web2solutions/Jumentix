@@ -1,12 +1,10 @@
-import type { GenerationPlan } from './types';
-import { SourceResolutionError } from './types';
-import { SOURCE_MESSAGES } from './messages';
-import {
-  buildPlanFromDesignerState,
-  loadDesignerCore,
-  type InterfaceDefaults
-} from './planBuilder';
+import SOURCE_MESSAGES from './messages';
 import { isDesignerExport, readLocalDocument } from './oas';
+import { buildPlanFromDesignerState, loadDesignerCore } from './planBuilder';
+import { SourceResolutionError } from './types';
+
+import type { InterfaceDefaults } from './planBuilder';
+import type { GenerationPlan } from './types';
 
 /**
  * Load a designer suite export JSON into a GenerationPlan.

@@ -1,4 +1,3 @@
-
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- the serverless framework contract is CJS (`module.exports`); a top-level type import would trip import-x/no-import-module-exports on the same file
 type Serverless = import('serverless/aws').Serverless;
 

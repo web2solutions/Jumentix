@@ -58,16 +58,16 @@ describe('profile fixtures — positive passes, negative flags', () => {
   it('node: deprecated Buffer constructor flags', async () => {
     expect.hasAssertions();
     const config = [...base(), ...node(), ...stylistic()];
-    const negative = await lintFixtures(config, ['node/negative.fixture.js']);
+    const negative = await lintFixtures(config, ['node/negative.fixture.mjs']);
     expect(ruleIds(negative)).toContain('n/no-deprecated-api');
-    const positive = await lintFixtures(config, ['node/positive.fixture.js']);
+    const positive = await lintFixtures(config, ['node/positive.fixture.mjs']);
     expect(ruleIds(positive)).toStrictEqual([]);
   });
 
   it('node strict: an undeclared package flags via the dependency guard', async () => {
     expect.hasAssertions();
-    const config = [...base(), ...nodeStrict(), ...stylistic()];
-    const results = await lintFixtures(config, ['node/negative-extraneous.fixture.js']);
+    const config = [...base({ packageDirs: [FIXTURES] }), ...nodeStrict(), ...stylistic()];
+    const results = await lintFixtures(config, ['node/negative-extraneous.fixture.mjs']);
     expect(ruleIds(results)).toContain('import-x/no-extraneous-dependencies');
   });
 

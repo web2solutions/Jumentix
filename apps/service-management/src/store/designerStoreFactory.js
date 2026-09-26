@@ -1,7 +1,4 @@
-import {
-  CANA_DESIGNER_CLIENT_OPTIONS,
-  CanaDesignerStore
-} from './CanaDesignerStore.js';
+import { CANA_DESIGNER_CLIENT_OPTIONS, CanaDesignerStore } from './CanaDesignerStore.js';
 
 /**
  * designerStoreFactory — the store construction seam (JUM-483), now the
@@ -52,12 +49,8 @@ export const CANA_MODULE_SPECIFIER = '@jumentix/cana';
  *   imports when neither client nor factory is supplied (tests).
  * @returns {import('@jumentix/designer-core/store/IDesignerStore.js').IDesignerStore}
  */
-export function createDesignerStore({
-  canaClient,
-  indexedDbClient,
-  canaModuleSpecifier
-} = {}) {
-  let client = canaClient;
+export function createDesignerStore({ canaClient, indexedDbClient, canaModuleSpecifier } = {}) {
+  const client = canaClient;
   let clientProvider;
   if (!client && typeof indexedDbClient === 'function') {
     clientProvider = async () => {

@@ -1,4 +1,5 @@
-import os from 'os';
+import os from 'node:os';
+
 import {
   isClusterSocketIoEnabled,
   resolveWebSocketClusterWorkers
@@ -7,31 +8,39 @@ import {
 describe('clusterAdapter', () => {
   it('should enable cluster adapter when configured', () => {
     expect.hasAssertions();
-    expect(isClusterSocketIoEnabled({
-      JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
-    } as unknown as NodeJS.ProcessEnv)).toBe(true);
+    expect(
+      isClusterSocketIoEnabled({
+        JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'cluster'
+      } as unknown as NodeJS.ProcessEnv)
+    ).toBe(true);
   });
 
   it('should disable cluster adapter for other values', () => {
     expect.hasAssertions();
-    expect(isClusterSocketIoEnabled({
-      JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'redis-streams'
-    } as unknown as NodeJS.ProcessEnv)).toBe(false);
+    expect(
+      isClusterSocketIoEnabled({
+        JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'redis-streams'
+      } as unknown as NodeJS.ProcessEnv)
+    ).toBe(false);
   });
 
   it('should resolve worker count from env', () => {
     expect.hasAssertions();
-    expect(resolveWebSocketClusterWorkers({
-      JUMENTIX_WEBSOCKET_CLUSTER_WORKERS: '8'
-    } as unknown as NodeJS.ProcessEnv)).toBe(8);
+    expect(
+      resolveWebSocketClusterWorkers({
+        JUMENTIX_WEBSOCKET_CLUSTER_WORKERS: '8'
+      } as unknown as NodeJS.ProcessEnv)
+    ).toBe(8);
   });
 
   it('should fallback to cpu count when env is missing/invalid', () => {
     expect.hasAssertions();
     const fallback = Math.max(1, os.cpus().length);
     expect(resolveWebSocketClusterWorkers({} as unknown as NodeJS.ProcessEnv)).toBe(fallback);
-    expect(resolveWebSocketClusterWorkers({
-      JUMENTIX_WEBSOCKET_CLUSTER_WORKERS: '0'
-    } as unknown as NodeJS.ProcessEnv)).toBe(fallback);
+    expect(
+      resolveWebSocketClusterWorkers({
+        JUMENTIX_WEBSOCKET_CLUSTER_WORKERS: '0'
+      } as unknown as NodeJS.ProcessEnv)
+    ).toBe(fallback);
   });
 });

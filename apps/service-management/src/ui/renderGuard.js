@@ -30,11 +30,13 @@ export function stableSerialize(value) {
     seen.add(input);
     if (Array.isArray(input)) return input.map(normalize);
     const output = {};
-    Object.keys(input).sort((a, b) => a.localeCompare(b)).forEach((key) => {
-      const item = input[key];
-      if (typeof item === 'function' || item === undefined) return;
-      output[key] = normalize(item);
-    });
+    Object.keys(input)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach((key) => {
+        const item = input[key];
+        if (typeof item === 'function' || item === undefined) return;
+        output[key] = normalize(item);
+      });
     return output;
   };
   return JSON.stringify(normalize(value));
@@ -46,9 +48,8 @@ export function createRenderGuard(computeSignature) {
     // Returns true when the render must run (first call, changed signature,
     // or after invalidate) and records the new signature.
     shouldRender() {
-      const signature = typeof computeSignature === 'function'
-        ? computeSignature()
-        : String(computeSignature);
+      const signature =
+        typeof computeSignature === 'function' ? computeSignature() : String(computeSignature);
       if (signature === lastSignature) return false;
       lastSignature = signature;
       return true;

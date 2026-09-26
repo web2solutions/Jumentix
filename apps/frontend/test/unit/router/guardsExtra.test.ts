@@ -1,32 +1,32 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
-import type { RouteLocationNormalized } from 'vue-router';
 
 import { META_STORE, SESSION_META_ID } from '@/data/canaSchema';
-import {
-  closeCana, getCanaClient, openCana, wipeCanaDatabase
-} from '@/data/db';
+import { closeCana, getCanaClient, openCana, wipeCanaDatabase } from '@/data/db';
 import { requireAuthRedirect, requireScopeRedirect, requireSyncRedirect } from '@/router/guards';
 import { useAuthStore } from '@/stores/auth';
+
+import type { RouteLocationNormalized } from 'vue-router';
 
 const DB = 'jumentix-frontend-test-guards';
 
 const makeJwt = (expSeconds: number): string => {
-  const payload = Buffer.from(JSON.stringify({ id: 'u1', username: 'a@b.c', exp: expSeconds }))
-    .toString('base64url');
+  const payload = Buffer.from(
+    JSON.stringify({ id: 'u1', username: 'a@b.c', exp: expSeconds })
+  ).toString('base64url');
   return `x.${payload}.y`;
 };
 
 const routeTo = (
   path: string,
   extra: Partial<RouteLocationNormalized> = {}
-): RouteLocationNormalized => ({
-  path,
-  meta: {},
-  ...extra
-}) as RouteLocationNormalized;
+): RouteLocationNormalized =>
+  ({
+    path,
+    meta: {},
+    ...extra
+  }) as RouteLocationNormalized;
 
 /** Router guards beyond the auth-only paths (JUM-760/772/802). */
 describe('router guards with session state and Cana (JUM-760/772/802)', () => {

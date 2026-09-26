@@ -1,12 +1,17 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
-const { createLayerAwarePlan } = require('./lib/layer-resolver');
-const { buildGateEvidence, validateGateEvidence, writeGateEvidence } = require('./lib/gate-evidence');
-const { runSuitePaths } = require('./run-suite');
-const { resolveTestRuntime } = require('./lib/test-runtime');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const {
+  buildGateEvidence,
+  validateGateEvidence,
+  writeGateEvidence
+} = require('./lib/gate-evidence');
+const { createLayerAwarePlan } = require('./lib/layer-resolver');
+const { resolveTestRuntime } = require('./lib/test-runtime');
+const { runSuitePaths } = require('./run-suite');
 
 const UNIT_TEST_PATH_LEGACY = /(^|\/)test\/unit\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
 const UNIT_TEST_PATH_CICD = /^ci-cd\/test\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
@@ -16,8 +21,10 @@ const UNIT_TEST_PATH = {
   }
 };
 const INTEGRATION_TEST_PATH = /(^|\/)test\/integration\/.*\.(test|spec)\.[cm]?[jt]sx?$/;
-const IMPLEMENTATION_PATH = /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
-const RELATED_SOURCE_PATH = /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
+const IMPLEMENTATION_PATH =
+  /^(ci-cd\/|apps\/[^/]+\/(src|scripts)\/|packages\/[^/]+\/src\/|tooling\/|\.husky\/|\.github\/|\.circleci\/|package\.json$)/;
+const RELATED_SOURCE_PATH =
+  /^(ci-cd\/.*\.[cm]?js|apps\/[^/]+\/(src|scripts)\/.*\.[cm]?[jt]sx?|packages\/[^/]+\/src\/.*\.[cm]?[jt]sx?|tooling\/.*\.[cm]?[jt]sx?)$/;
 const GOVERNANCE_CONFIG_PATH = /^(\.husky\/|\.github\/|\.circleci\/)|^package\.json$/;
 const GOVERNANCE_TEST_PATH = 'ci-cd/test/run-full-test-matrix.test.ts';
 const TOOLCHAIN_CONFIG_PATH = /^(bun\.lock|\.bun-version|package\.json)$/;
@@ -25,19 +32,28 @@ const TOOLCHAIN_TEST_PATHS = [
   'ci-cd/test/check-bun-version.test.ts',
   'ci-cd/test/check-dependency-override-integrity.test.ts'
 ];
-const DOCUMENTATION_PATH = /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i;
+const DOCUMENTATION_PATH =
+  /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i;
 const WEBSITE_PATH = /^apps\/jumentix-website\//;
 
 function normalizeFiles(files) {
-  return [...new Set((files || [])
-    .map((file) => String(file || '').trim().replace(/\\/g, '/'))
-    .filter(Boolean))];
+  return [
+    ...new Set(
+      (files || [])
+        .map((file) =>
+          String(file || '')
+            .trim()
+            .replace(/\\/g, '/')
+        )
+        .filter(Boolean)
+    )
+  ];
 }
 
 function readChangedFiles(options = {}) {
   // Injected `spawn` means the caller is asserting git discovery — never short-circuit
   // via the Docker host-side file list.
-  const allowEnv = Object.prototype.hasOwnProperty.call(options, 'spawn')
+  const allowEnv = Object.hasOwn(options, 'spawn')
     ? false
     : (options.useChangedFilesEnv ?? process.env.JUMENTIX_TASK_CHANGED_FILES_ACTIVE === '1');
   const envList = allowEnv
@@ -51,9 +67,10 @@ function readChangedFiles(options = {}) {
 
   const mode = options.mode || process.env.JUMENTIX_TASK_TEST_MODE || 'staged';
   const baseRef = options.baseRef || process.env.JUMENTIX_TASK_TEST_BASE || 'origin/dev';
-  const args = mode === 'staged'
-    ? ['diff', '--cached', '--name-only', '--diff-filter=ACMR']
-    : ['diff', '--name-only', '--diff-filter=ACMR', `${baseRef}...HEAD`];
+  const args =
+    mode === 'staged'
+      ? ['diff', '--cached', '--name-only', '--diff-filter=ACMR']
+      : ['diff', '--name-only', '--diff-filter=ACMR', `${baseRef}...HEAD`];
   const result = (options.spawn || spawnSync)('git', args, { encoding: 'utf8' });
 
   if (result.status !== 0) {
@@ -103,7 +120,9 @@ function createTaskTestPlan(files) {
     return {
       type: 'changed-integration-tests',
       files: normalizeFiles([...unitTests, ...governanceTests, ...integrationTests]),
-      testTimeoutMs: integrationTests.some((file) => file.includes('/Restify/')) ? 15_000 : undefined
+      testTimeoutMs: integrationTests.some((file) => file.includes('/Restify/'))
+        ? 15_000
+        : undefined
     };
   }
 
@@ -144,11 +163,14 @@ function validateDocumentationFiles(files, rootDir = process.cwd()) {
 }
 
 function documentationRequiresRegistryCheck(files) {
-  return normalizeFiles(files).some((file) => file.startsWith('.agents/requirements/')
-    || file === '.agents/README.md'
-    || file === '.agents/NFR-REGISTRY.md'
-    || file === 'documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md'
-    || file === 'documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.pt-BR.md');
+  return normalizeFiles(files).some(
+    (file) =>
+      file.startsWith('.agents/requirements/') ||
+      file === '.agents/README.md' ||
+      file === '.agents/NFR-REGISTRY.md' ||
+      file === 'documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.md' ||
+      file === 'documentation/md/SPEC-REQUIREMENTS-TRACEABILITY-LEDGER.pt-BR.md'
+  );
 }
 
 function executeDocumentationValidation(files, options = {}) {
@@ -164,69 +186,6 @@ function executeDocumentationValidation(files, options = {}) {
     env: { ...process.env }
   });
   return Number.isInteger(result.status) ? result.status : 1;
-}
-
-function executeTaskTestPlan(plan) {
-  if (plan.type === 'documentation-validation') {
-    return executeDocumentationValidation(plan.files);
-  }
-  if (plan.type === 'unsupported-change-set') return 1;
-
-  if (plan.type === 'website-quality-gate') {
-    const websiteResult = spawnSync(process.execPath, ['run', '--filter', '@jumentix/website', 'test:prepublish'], {
-      stdio: 'inherit',
-      env: { ...process.env }
-    });
-    if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
-
-    // JUM-158: website component, accessibility, and link-quality jest suites
-    // are owned by the website workflow (Requirement 091). Run them whenever a
-    // website file changes so a dev task branch cannot merge past them.
-    const websiteUnitResult = spawnSync(process.execPath, ['run', '--filter', '@jumentix/website', 'test:unit'], {
-      stdio: 'inherit',
-      env: { ...process.env }
-    });
-    if (websiteUnitResult.status !== 0) return Number(websiteUnitResult.status ?? 1);
-
-    if (plan.unitTests.length > 0) {
-      const status = runSuitePaths(plan.unitTests, { label: 'website-unit' });
-      if (status !== 0) return status;
-    }
-
-    if (plan.relatedFiles.length === 0) return 0;
-    // Related-file discovery stays Jest-shaped under CI node runtime only.
-    if (resolveTestRuntime() === 'node') {
-      const relatedResult = spawnSync(
-        'bun',
-        ['x', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.relatedFiles],
-        { stdio: 'inherit', env: { ...process.env } }
-      );
-      return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
-    }
-    return runSuitePaths(plan.relatedFiles, { label: 'website-related' });
-  }
-
-  if (plan.type === 'layer-aware') {
-    return executeLayerAwarePlan(plan);
-  }
-
-  if (['changed-unit-tests', 'mapped-unit-tests', 'changed-integration-tests'].includes(plan.type)) {
-    return runSuitePaths(plan.files, {
-      label: plan.type,
-      timeoutMs: plan.testTimeoutMs
-    });
-  }
-
-  // related-unit-tests: under Bun local, execute the related paths directly.
-  if (resolveTestRuntime() === 'node') {
-    const result = spawnSync(
-      'bun',
-      ['x', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files],
-      { stdio: 'inherit', env: { ...process.env } }
-    );
-    return Number.isInteger(result.status) ? result.status : 1;
-  }
-  return runSuitePaths(plan.files, { label: plan.type });
 }
 
 /**
@@ -249,9 +208,8 @@ function executeLayerAwarePlan(plan, options = {}) {
     // jsdom and the website's Jest config; `bun test` cannot run them at all.
     const scripted = [...new Set(unitSuites.filter((s) => s.script).map((s) => s.script))];
     const unitPaths = unitSuites.filter((suite) => !suite.script).map((s) => s.path);
-    let status = unitPaths.length > 0
-      ? runSuites(unitPaths, { label: 'layer-aware-unit', runtime })
-      : 0;
+    let status =
+      unitPaths.length > 0 ? runSuites(unitPaths, { label: 'layer-aware-unit', runtime }) : 0;
     for (const script of scripted) {
       if (status !== 0) break;
       console.log(`[ci] layer-aware unit script: ${script}`);
@@ -277,6 +235,7 @@ function executeLayerAwarePlan(plan, options = {}) {
       });
     }
     if (status !== 0) {
+      // eslint-disable-next-line no-param-reassign -- plan doubles as the execution context: runTaskChangeTests reads plan._execution for evidence
       plan._execution = { executedSuites, suiteResults, status };
       return status;
     }
@@ -305,7 +264,10 @@ function executeLayerAwarePlan(plan, options = {}) {
     // they run through `oas:check-routes` / `serverless:check-handlers`, so they
     // are recorded here too (JUM-474).
     const covered = (plan.suites || [])
-      .filter((suite) => (suite.type === 'integration' || suite.type === 'contract') && suite.script === script)
+      .filter(
+        (suite) =>
+          (suite.type === 'integration' || suite.type === 'contract') && suite.script === script
+      )
       .map((suite) => suite.path);
 
     for (const suite of covered) {
@@ -315,20 +277,105 @@ function executeLayerAwarePlan(plan, options = {}) {
 
     suiteResults.push({ suite: script, status: outcome, runner: 'node' });
     if (status !== 0) {
+      // eslint-disable-next-line no-param-reassign -- plan doubles as the execution context: runTaskChangeTests reads plan._execution for evidence
       plan._execution = { executedSuites, suiteResults, status };
       return status;
     }
   }
 
-  if ((plan.unitSuites.length + (plan.integrationScripts || []).length) === 0
-    && plan.type === 'layer-aware'
-    && (plan.files || []).length > 0) {
+  if (
+    plan.unitSuites.length + (plan.integrationScripts || []).length === 0 &&
+    plan.type === 'layer-aware' &&
+    (plan.files || []).length > 0
+  ) {
+    // eslint-disable-next-line no-param-reassign -- plan doubles as the execution context: runTaskChangeTests reads plan._execution for evidence
     plan._execution = { executedSuites, suiteResults, status: 1 };
     return 1;
   }
 
+  // eslint-disable-next-line no-param-reassign -- plan doubles as the execution context: runTaskChangeTests reads plan._execution for evidence
   plan._execution = { executedSuites, suiteResults, status: 0 };
   return 0;
+}
+
+function executeTaskTestPlan(plan) {
+  if (plan.type === 'documentation-validation') {
+    return executeDocumentationValidation(plan.files);
+  }
+  if (plan.type === 'unsupported-change-set') return 1;
+
+  if (plan.type === 'website-quality-gate') {
+    const websiteResult = spawnSync(
+      process.execPath,
+      ['run', '--filter', '@jumentix/website', 'test:prepublish'],
+      {
+        stdio: 'inherit',
+        env: { ...process.env }
+      }
+    );
+    if (websiteResult.status !== 0) return Number(websiteResult.status ?? 1);
+
+    // JUM-158: website component, accessibility, and link-quality jest suites
+    // are owned by the website workflow (Requirement 091). Run them whenever a
+    // website file changes so a dev task branch cannot merge past them.
+    const websiteUnitResult = spawnSync(
+      process.execPath,
+      ['run', '--filter', '@jumentix/website', 'test:unit'],
+      {
+        stdio: 'inherit',
+        env: { ...process.env }
+      }
+    );
+    if (websiteUnitResult.status !== 0) return Number(websiteUnitResult.status ?? 1);
+
+    if (plan.unitTests.length > 0) {
+      const status = runSuitePaths(plan.unitTests, { label: 'website-unit' });
+      if (status !== 0) return status;
+    }
+
+    if (plan.relatedFiles.length === 0) return 0;
+    // Related-file discovery stays Jest-shaped under CI node runtime only.
+    if (resolveTestRuntime() === 'node') {
+      const relatedResult = spawnSync(
+        'bun',
+        [
+          'x',
+          'jest',
+          '--runInBand',
+          '--coverage=false',
+          '--findRelatedTests',
+          ...plan.relatedFiles
+        ],
+        { stdio: 'inherit', env: { ...process.env } }
+      );
+      return Number.isInteger(relatedResult.status) ? relatedResult.status : 1;
+    }
+    return runSuitePaths(plan.relatedFiles, { label: 'website-related' });
+  }
+
+  if (plan.type === 'layer-aware') {
+    return executeLayerAwarePlan(plan);
+  }
+
+  if (
+    ['changed-unit-tests', 'mapped-unit-tests', 'changed-integration-tests'].includes(plan.type)
+  ) {
+    return runSuitePaths(plan.files, {
+      label: plan.type,
+      timeoutMs: plan.testTimeoutMs
+    });
+  }
+
+  // related-unit-tests: under Bun local, execute the related paths directly.
+  if (resolveTestRuntime() === 'node') {
+    const result = spawnSync(
+      'bun',
+      ['x', 'jest', '--runInBand', '--coverage=false', '--findRelatedTests', ...plan.files],
+      { stdio: 'inherit', env: { ...process.env } }
+    );
+    return Number.isInteger(result.status) ? result.status : 1;
+  }
+  return runSuitePaths(plan.files, { label: plan.type });
 }
 
 function writeTaskTestEvidence(evidence, resultFile) {
@@ -416,6 +463,10 @@ function runTaskChangeTests(options = {}) {
       evidence.validationErrors = validation.errors;
     }
   } else {
+    let outcome = 'failed';
+    if (status === 0) {
+      outcome = plan.type === 'documentation-validation' ? 'not-applicable' : 'passed';
+    }
     evidence = {
       schemaVersion: 1,
       gate: 'task-change-tests',
@@ -423,9 +474,7 @@ function runTaskChangeTests(options = {}) {
       plan: plan.type,
       changedFiles,
       selectedFiles: plan.files,
-      outcome: status === 0
-        ? (plan.type === 'documentation-validation' ? 'not-applicable' : 'passed')
-        : 'failed',
+      outcome,
       status,
       shadow
     };
@@ -443,24 +492,24 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
+  createTaskTestPlan,
+  DOCUMENTATION_PATH,
+  documentationRequiresRegistryCheck,
+  executeDocumentationValidation,
+  executeLayerAwarePlan,
+  executeTaskTestPlan,
+  gateV2Enabled,
   GOVERNANCE_CONFIG_PATH,
   GOVERNANCE_TEST_PATH,
   IMPLEMENTATION_PATH,
   INTEGRATION_TEST_PATH,
-  RELATED_SOURCE_PATH,
-  DOCUMENTATION_PATH,
-  UNIT_TEST_PATH,
-  WEBSITE_PATH,
-  createTaskTestPlan,
-  executeTaskTestPlan,
-  executeLayerAwarePlan,
-  executeDocumentationValidation,
-  gateV2Enabled,
-  documentationRequiresRegistryCheck,
   normalizeFiles,
   readChangedFiles,
+  RELATED_SOURCE_PATH,
   runTaskChangeTests,
   shadowEnabled,
+  UNIT_TEST_PATH,
   validateDocumentationFiles,
+  WEBSITE_PATH,
   writeTaskTestEvidence
 };

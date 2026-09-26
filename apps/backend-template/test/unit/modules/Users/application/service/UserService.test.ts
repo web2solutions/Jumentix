@@ -1,41 +1,89 @@
 /* eslint-disable jest/max-expects */
-import { UserService } from '@src/modules/Users/service/UserService';
-import { EDocumentType } from '@src/modules/ddd/valueObjects/EDocumentType';
-import { EEmailType } from '@src/modules/ddd/valueObjects/EEmailType';
-import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
+/* eslint-disable jest/prefer-jest-mocked -- jest.mocked() is the lint-preferred
+   form, but bun:test (the Requirement 096 runner for this suite) does not
+   implement it; `as jest.MockedFunction<typeof fn>` is erased at compile time
+   and works identically under both Jest and bun:test. */
 import { ValidationError } from '@src/infra/exceptions';
+import EDocumentType from '@src/modules/ddd/valueObjects/EDocumentType';
+import EEmailType from '@src/modules/ddd/valueObjects/EEmailType';
+import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
+import createDocument from '@src/modules/Users/features/createDocument';
+import createEmail from '@src/modules/Users/features/createEmail';
+import createPhone from '@src/modules/Users/features/createPhone';
+import createUser from '@src/modules/Users/features/createUser';
+import deleteDocument from '@src/modules/Users/features/deleteDocument';
+import deleteEmail from '@src/modules/Users/features/deleteEmail';
+import deletePhone from '@src/modules/Users/features/deletePhone';
+import deleteUserById from '@src/modules/Users/features/deleteUserById';
+import getAllUsers from '@src/modules/Users/features/getAllUsers';
+import getUserById from '@src/modules/Users/features/getUserById';
+import updateDocument from '@src/modules/Users/features/updateDocument';
+import updateEmail from '@src/modules/Users/features/updateEmail';
+import updatePassword from '@src/modules/Users/features/updatePassword';
+import updatePhone from '@src/modules/Users/features/updatePhone';
+import updateUser from '@src/modules/Users/features/updateUser';
+import UserService from '@src/modules/Users/service/UserService';
 
-import { createUser } from '@src/modules/Users/features/createUser';
-import { updateUser } from '@src/modules/Users/features/updateUser';
-import { deleteUserById } from '@src/modules/Users/features/deleteUserById';
-import { getUserById } from '@src/modules/Users/features/getUserById';
-import { getAllUsers } from '@src/modules/Users/features/getAllUsers';
-import { updatePassword } from '@src/modules/Users/features/updatePassword';
-import { createDocument } from '@src/modules/Users/features/createDocument';
-import { updateDocument } from '@src/modules/Users/features/updateDocument';
-import { deleteDocument } from '@src/modules/Users/features/deleteDocument';
-import { createPhone } from '@src/modules/Users/features/createPhone';
-import { updatePhone } from '@src/modules/Users/features/updatePhone';
-import { deletePhone } from '@src/modules/Users/features/deletePhone';
-import { createEmail } from '@src/modules/Users/features/createEmail';
-import { updateEmail } from '@src/modules/Users/features/updateEmail';
-import { deleteEmail } from '@src/modules/Users/features/deleteEmail';
-
-jest.mock<typeof import('@src/modules/Users/features/createUser')>('@src/modules/Users/features/createUser', () => ({ createUser: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/updateUser')>('@src/modules/Users/features/updateUser', () => ({ updateUser: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/deleteUserById')>('@src/modules/Users/features/deleteUserById', () => ({ deleteUserById: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/getUserById')>('@src/modules/Users/features/getUserById', () => ({ getUserById: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/getAllUsers')>('@src/modules/Users/features/getAllUsers', () => ({ getAllUsers: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/updatePassword')>('@src/modules/Users/features/updatePassword', () => ({ updatePassword: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/createDocument')>('@src/modules/Users/features/createDocument', () => ({ createDocument: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/updateDocument')>('@src/modules/Users/features/updateDocument', () => ({ updateDocument: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/deleteDocument')>('@src/modules/Users/features/deleteDocument', () => ({ deleteDocument: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/createPhone')>('@src/modules/Users/features/createPhone', () => ({ createPhone: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/updatePhone')>('@src/modules/Users/features/updatePhone', () => ({ updatePhone: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/deletePhone')>('@src/modules/Users/features/deletePhone', () => ({ deletePhone: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/createEmail')>('@src/modules/Users/features/createEmail', () => ({ createEmail: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/updateEmail')>('@src/modules/Users/features/updateEmail', () => ({ updateEmail: jest.fn() }));
-jest.mock<typeof import('@src/modules/Users/features/deleteEmail')>('@src/modules/Users/features/deleteEmail', () => ({ deleteEmail: jest.fn() }));
+jest.mock('@src/modules/Users/features/createUser', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/updateUser', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/deleteUserById', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/getUserById', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/getAllUsers', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/updatePassword', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/createDocument', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/updateDocument', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/deleteDocument', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/createPhone', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/updatePhone', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/deletePhone', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/createEmail', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/updateEmail', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
+jest.mock('@src/modules/Users/features/deleteEmail', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
 
 const mockedCreateUser = createUser as jest.MockedFunction<typeof createUser>;
 const mockedUpdateUser = updateUser as jest.MockedFunction<typeof updateUser>;
@@ -60,15 +108,31 @@ const baseUser = {
   password: 'hashed',
   salt: 'salt',
   avatar: 'avatar.png',
-  emails: [{
-    id: 'e1', email: 'john@example.com', type: EEmailType.personal, isPrimary: true
-  }],
-  documents: [{
-    id: 'd1', type: EDocumentType.CPF, countryIssue: 'BR', data: '111'
-  }],
-  phones: [{
-    id: 'p1', countryCode: '55', localCode: '11', number: '999', isPrimary: true
-  }],
+  emails: [
+    {
+      id: 'e1',
+      email: 'john@example.com',
+      type: EEmailType.personal,
+      isPrimary: true
+    }
+  ],
+  documents: [
+    {
+      id: 'd1',
+      type: EDocumentType.CPF,
+      countryIssue: 'BR',
+      data: '111'
+    }
+  ],
+  phones: [
+    {
+      id: 'p1',
+      countryCode: '55',
+      localCode: '11',
+      number: '999',
+      isPrimary: true
+    }
+  ],
   roles: ['user']
 };
 
@@ -115,7 +179,7 @@ const setup = () => {
       eventBus,
       cacheService
     }
-  } as any);
+  });
 
   return {
     service,
@@ -136,7 +200,10 @@ describe('user service', () => {
     mockedDeleteUserById.mockResolvedValue(true);
     mockedGetUserById.mockResolvedValue(baseUser as any);
     mockedGetAllUsers.mockResolvedValue({
-      page: 1, size: 10, total: 1, result: [baseUser]
+      page: 1,
+      size: 10,
+      total: 1,
+      result: [baseUser]
     } as any);
     mockedUpdatePassword.mockResolvedValue(baseUser as any);
     mockedCreateDocument.mockResolvedValue(baseUser as any);
@@ -162,9 +229,11 @@ describe('user service', () => {
     } as any);
     expect((created.result as any)?.password).toBeUndefined();
     expect((created.result as any)?.salt).toBeUndefined();
-    expect(eventBus.publish).toHaveBeenCalledWith(expect.objectContaining({
-      name: UserIntegrationEventName.Created
-    }));
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: UserIntegrationEventName.Created
+      })
+    );
 
     const one = await service.getOneById(baseUser.id);
     expect((one.result as any)?.password).toBeUndefined();
@@ -229,20 +298,68 @@ describe('user service', () => {
     expect.hasAssertions();
     const { service, eventBus } = setup();
 
-    const password = await service.updatePassword(baseUser.id, { password: '12345678' } as any);
+    const password = await service.updatePassword(baseUser.id, { password: '12345678' });
     expect((password.result as any)?.password).toBeUndefined();
-    expect(eventBus.publish).toHaveBeenCalledWith(expect.objectContaining({
-      name: UserIntegrationEventName.CredentialChanged
-    }));
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: UserIntegrationEventName.CredentialChanged
+      })
+    );
 
-    expect((await service.createDocument(baseUser.id, { type: EDocumentType.RG, countryIssue: 'BR', data: '1' } as any)).result?.id).toBe(baseUser.id);
-    expect((await service.updateDocument(baseUser.id, 'd1', { type: EDocumentType.SSN, countryIssue: 'US', data: '2' } as any)).result?.id).toBe(baseUser.id);
+    expect(
+      (
+        await service.createDocument(baseUser.id, {
+          type: EDocumentType.RG,
+          countryIssue: 'BR',
+          data: '1'
+        } as any)
+      ).result?.id
+    ).toBe(baseUser.id);
+    expect(
+      (
+        await service.updateDocument(baseUser.id, 'd1', {
+          type: EDocumentType.SSN,
+          countryIssue: 'US',
+          data: '2'
+        } as any)
+      ).result?.id
+    ).toBe(baseUser.id);
     expect((await service.deleteDocument(baseUser.id, 'd1')).result?.id).toBe(baseUser.id);
-    expect((await service.createPhone(baseUser.id, { countryCode: '55', localCode: '11', number: '9' } as any)).result?.id).toBe(baseUser.id);
-    expect((await service.updatePhone(baseUser.id, 'p1', { countryCode: '55', localCode: '11', number: '8' } as any)).result?.id).toBe(baseUser.id);
+    expect(
+      (
+        await service.createPhone(baseUser.id, {
+          countryCode: '55',
+          localCode: '11',
+          number: '9'
+        } as any)
+      ).result?.id
+    ).toBe(baseUser.id);
+    expect(
+      (
+        await service.updatePhone(baseUser.id, 'p1', {
+          countryCode: '55',
+          localCode: '11',
+          number: '8'
+        } as any)
+      ).result?.id
+    ).toBe(baseUser.id);
     expect((await service.deletePhone(baseUser.id, 'p1')).result?.id).toBe(baseUser.id);
-    expect((await service.createEmail(baseUser.id, { email: 'john@example.com', type: EEmailType.personal } as any)).result?.id).toBe(baseUser.id);
-    expect((await service.updateEmail(baseUser.id, 'e1', { email: 'john+2@example.com', type: EEmailType.work } as any)).result?.id).toBe(baseUser.id);
+    expect(
+      (
+        await service.createEmail(baseUser.id, {
+          email: 'john@example.com',
+          type: EEmailType.personal
+        } as any)
+      ).result?.id
+    ).toBe(baseUser.id);
+    expect(
+      (
+        await service.updateEmail(baseUser.id, 'e1', {
+          email: 'john+2@example.com',
+          type: EEmailType.work
+        } as any)
+      ).result?.id
+    ).toBe(baseUser.id);
     expect((await service.deleteEmail(baseUser.id, 'e1')).result?.id).toBe(baseUser.id);
   });
 
@@ -300,10 +417,8 @@ describe('user service', () => {
 
   it('synchronizes organization-user relationship on update and delete', async () => {
     expect.hasAssertions();
-    const {
-      service, organizationDataRepository, dataRepository, cacheService
-    } = setup();
-    (dataRepository.getOneById as jest.Mock).mockResolvedValueOnce({
+    const { service, organizationDataRepository, dataRepository, cacheService } = setup();
+    dataRepository.getOneById.mockResolvedValueOnce({
       ...baseUser,
       organization: 'org-1'
     });
@@ -351,7 +466,7 @@ describe('user service', () => {
     );
     expect(cacheService.bumpVersion).toHaveBeenCalledWith('organizations');
 
-    (dataRepository.getOneById as jest.Mock).mockResolvedValueOnce({
+    dataRepository.getOneById.mockResolvedValueOnce({
       ...baseUser,
       organization: 'org-2'
     });
@@ -399,14 +514,32 @@ describe('user service', () => {
       service.update(baseUser.id, { firstName: 'Mary' } as any),
       service.delete(baseUser.id),
       service.updatePassword(baseUser.id, { password: '12345678' } as any),
-      service.createDocument(baseUser.id, { type: EDocumentType.RG, countryIssue: 'BR', data: '1' } as any),
-      service.updateDocument(baseUser.id, 'd1', { type: EDocumentType.SSN, countryIssue: 'US', data: '2' } as any),
+      service.createDocument(baseUser.id, {
+        type: EDocumentType.RG,
+        countryIssue: 'BR',
+        data: '1'
+      } as any),
+      service.updateDocument(baseUser.id, 'd1', {
+        type: EDocumentType.SSN,
+        countryIssue: 'US',
+        data: '2'
+      } as any),
       service.deleteDocument(baseUser.id, 'd1'),
       service.createPhone(baseUser.id, { countryCode: '55', localCode: '11', number: '9' } as any),
-      service.updatePhone(baseUser.id, 'p1', { countryCode: '55', localCode: '11', number: '8' } as any),
+      service.updatePhone(baseUser.id, 'p1', {
+        countryCode: '55',
+        localCode: '11',
+        number: '8'
+      } as any),
       service.deletePhone(baseUser.id, 'p1'),
-      service.createEmail(baseUser.id, { email: 'john@example.com', type: EEmailType.personal } as any),
-      service.updateEmail(baseUser.id, 'e1', { email: 'john+2@example.com', type: EEmailType.work } as any),
+      service.createEmail(baseUser.id, {
+        email: 'john@example.com',
+        type: EEmailType.personal
+      } as any),
+      service.updateEmail(baseUser.id, 'e1', {
+        email: 'john+2@example.com',
+        type: EEmailType.work
+      } as any),
       service.deleteEmail(baseUser.id, 'e1')
     ]);
 
@@ -421,7 +554,7 @@ describe('user service', () => {
     const service = UserService.compile({
       dataRepository: {} as any,
       services: { mutexService, passwordCryptoService, eventBus }
-    } as any);
+    });
     expect(service).toBeInstanceOf(UserService);
   });
 
@@ -476,7 +609,7 @@ describe('user service', () => {
     } as any);
     expect(created.result?.id).toBe(baseUser.id);
 
-    (dataRepository.getOneById as jest.Mock).mockResolvedValueOnce({
+    dataRepository.getOneById.mockResolvedValueOnce({
       ...baseUser,
       organization: undefined,
       roles: []
@@ -489,7 +622,7 @@ describe('user service', () => {
     const updated = await service.update(baseUser.id, { firstName: 'No Org' } as any);
     expect(updated.result?.id).toBe(baseUser.id);
 
-    (dataRepository.getOneById as jest.Mock).mockResolvedValueOnce({
+    dataRepository.getOneById.mockResolvedValueOnce({
       ...baseUser,
       organization: undefined
     });
@@ -538,7 +671,10 @@ describe('user service metrics', () => {
     expect.hasAssertions();
     const { service } = setup();
     mockedGetAllUsers.mockResolvedValueOnce({
-      page: 1, size: 2, total: 2, result: [baseUser, { ...baseUser, roles: ['admin'] }]
+      page: 1,
+      size: 2,
+      total: 2,
+      result: [baseUser, { ...baseUser, roles: ['admin'] }]
     } as any);
 
     const response = await service.metrics({}, { metric: 'groupBy', field: 'roles' }, capabilities);
@@ -547,7 +683,10 @@ describe('user service metrics', () => {
     expect(response.result).toStrictEqual({
       metric: 'groupBy',
       field: 'roles',
-      buckets: [{ key: 'user', count: 1 }, { key: 'admin', count: 1 }]
+      buckets: [
+        { key: 'user', count: 1 },
+        { key: 'admin', count: 1 }
+      ]
     });
   });
 
@@ -555,7 +694,11 @@ describe('user service metrics', () => {
     expect.hasAssertions();
     const { service } = setup();
 
-    const notGroupable = await service.metrics({}, { metric: 'groupBy', field: 'username' }, capabilities);
+    const notGroupable = await service.metrics(
+      {},
+      { metric: 'groupBy', field: 'username' },
+      capabilities
+    );
     expect(notGroupable.error).toBeInstanceOf(ValidationError);
     expect(String(notGroupable.error?.message)).toContain('Accepted: roles.');
 
@@ -564,7 +707,7 @@ describe('user service metrics', () => {
     expect(missingField.error).not.toBeInstanceOf(ValidationError);
     expect(String(missingField.error?.message)).toContain('field is required');
 
-    mockedGetAllUsers.mockRejectedValueOnce('repository exploded' as never);
+    mockedGetAllUsers.mockRejectedValueOnce('repository exploded');
     const nonError = await service.metrics({}, { metric: 'count' }, capabilities);
     expect(nonError.error).toBe('repository exploded');
   });

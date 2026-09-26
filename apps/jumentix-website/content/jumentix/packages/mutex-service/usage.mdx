@@ -1,6 +1,6 @@
 ---
-title: "mutex-service usage"
-description: "Junior guide and playground for mutex locks."
+title: 'mutex-service usage'
+description: 'Junior guide and playground for mutex locks.'
 ---
 
 # @jumentix/mutex-service — usage guide
@@ -38,14 +38,14 @@ production — using the same KV port the rest of the stack already uses.
 
 ## Glossary
 
-| Term | Meaning |
-| --- | --- |
-| **Resource name** | Logical name of what you protect (e.g. `invoice-42`, `design-sync`). |
-| **Lock uuid** | Unique id for one lock attempt; stored as the KV value marker. |
-| **Previously locked** | `lock()` result when another holder already owns the resource. |
-| **Prefix** | Namespace for mutex keys; default `mutex:` (configurable via `IMutexServiceOptions`). |
-| **Critical section** | Code between successful `lock` and `unlock` — keep it short. |
-| **ServiceResponse** | `{ result?, error? }` — inspect `error` before trusting `result`. |
+| Term                  | Meaning                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| **Resource name**     | Logical name of what you protect (e.g. `invoice-42`, `design-sync`).                  |
+| **Lock uuid**         | Unique id for one lock attempt; stored as the KV value marker.                        |
+| **Previously locked** | `lock()` result when another holder already owns the resource.                        |
+| **Prefix**            | Namespace for mutex keys; default `mutex:` (configurable via `IMutexServiceOptions`). |
+| **Critical section**  | Code between successful `lock` and `unlock` — keep it short.                          |
+| **ServiceResponse**   | `{ result?, error? }` — inspect `error` before trusting `result`.                     |
 
 ## Steps
 
@@ -134,13 +134,13 @@ Use a dedicated prefix per service so lock keys never collide with cache keys.
 
 ### 6. Full surface — API map
 
-| Member | Returns | Notes |
-| --- | --- | --- |
-| `MutexService.compile(kv, options?)` | Singleton `MutexService` | Requires connected KV client |
-| `lock(resourceName, uuid)` | `ServiceResponse` with `{ locked, previouslyLocked }` | Does not block-wait; returns busy state |
-| `isLocked(resourceName, uuid)` | `ServiceResponse<boolean>` | Checks KV marker |
-| `unlock(resourceName, uuid)` | `ServiceResponse` | Idempotent delete of lock key |
-| `MutexService.reset()` | `void` | Test helper — clears singleton |
+| Member                               | Returns                                               | Notes                                   |
+| ------------------------------------ | ----------------------------------------------------- | --------------------------------------- |
+| `MutexService.compile(kv, options?)` | Singleton `MutexService`                              | Requires connected KV client            |
+| `lock(resourceName, uuid)`           | `ServiceResponse` with `{ locked, previouslyLocked }` | Does not block-wait; returns busy state |
+| `isLocked(resourceName, uuid)`       | `ServiceResponse<boolean>`                            | Checks KV marker                        |
+| `unlock(resourceName, uuid)`         | `ServiceResponse`                                     | Idempotent delete of lock key           |
+| `MutexService.reset()`               | `void`                                                | Test helper — clears singleton          |
 
 This package does **not** implement queueing or lease renewal — callers retry or
 back off when `locked: false`.
@@ -161,13 +161,13 @@ Map that mentally to `lock` / `unlock` with a resource name and uuid in real cod
 
 ## Common errors
 
-| Symptom | Cause | Fix | Verify success |
-| --- | --- | --- | --- |
-| `locked: false` every time | Same resource already locked | Wait or use another resource name; call `unlock` in prior path | Second attempt after unlock succeeds |
-| Lock never released | Missing `finally` / early return | Wrap body in `try/finally` with `unlock` | `isLocked` false after flow |
-| Stale lock after crash | Process died before `unlock` | TTL strategy outside this package or manual `unlock` with known uuid | Resource writable again |
-| `MutexService depends on KeyValueStorageClient` | Passed null KV client | Compile KV first | `MutexService.compile(kv)` succeeds |
-| Tests interfere | Singleton mutex + shared KV | `MutexService.reset()` between tests | Isolated lock outcomes per test |
+| Symptom                                         | Cause                            | Fix                                                                  | Verify success                       |
+| ----------------------------------------------- | -------------------------------- | -------------------------------------------------------------------- | ------------------------------------ |
+| `locked: false` every time                      | Same resource already locked     | Wait or use another resource name; call `unlock` in prior path       | Second attempt after unlock succeeds |
+| Lock never released                             | Missing `finally` / early return | Wrap body in `try/finally` with `unlock`                             | `isLocked` false after flow          |
+| Stale lock after crash                          | Process died before `unlock`     | TTL strategy outside this package or manual `unlock` with known uuid | Resource writable again              |
+| `MutexService depends on KeyValueStorageClient` | Passed null KV client            | Compile KV first                                                     | `MutexService.compile(kv)` succeeds  |
+| Tests interfere                                 | Singleton mutex + shared KV      | `MutexService.reset()` between tests                                 | Isolated lock outcomes per test      |
 
 ## Junior checklist (“I can …”)
 

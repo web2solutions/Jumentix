@@ -22,8 +22,10 @@ export const REST_API_ADAPTERS: Readonly<Record<string, () => Promise<unknown>>>
   express: () => import('@src/interface/HTTP/adapters/express/express'),
   fastify: () => import('@src/interface/HTTP/adapters/fastify/fastify'),
   restify: () => import('@src/interface/HTTP/adapters/restify/restify'),
-  'cloudflare-workers': () => import('@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers'),
-  'vercel-functions': () => import('@src/interface/HTTP/adapters/vercel-functions/vercel-functions'),
+  'cloudflare-workers': () =>
+    import('@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers'),
+  'vercel-functions': () =>
+    import('@src/interface/HTTP/adapters/vercel-functions/vercel-functions'),
   loopback: () => import('@src/interface/HTTP/adapters/loopback/loopback'),
   'sails-js': () => import('@src/interface/HTTP/adapters/sails-js/sails-js'),
   feathers: () => import('@src/interface/HTTP/adapters/feathers/feathers'),
@@ -51,8 +53,8 @@ export async function startRestApiAdapter(
   // silently in that case: no server started, and the caller told it succeeded.
   if (load === undefined) {
     throw new Error(
-      `No adapter registered for JUMENTIX_HTTP_FRAMEWORK "${framework}". `
-      + 'RuntimeEnvironment accepts it but REST_API_ADAPTERS has no entry.'
+      `No adapter registered for JUMENTIX_HTTP_FRAMEWORK "${framework}". ` +
+        'RuntimeEnvironment accepts it but REST_API_ADAPTERS has no entry.'
     );
   }
 
@@ -61,5 +63,9 @@ export async function startRestApiAdapter(
 
 /* istanbul ignore if */
 if (require.main === module) {
-  startRestApiAdapter();
+  // The process stays alive on the listening server, so startup is
+  // not awaited; failures stay unhandled rejections that exit non-zero.
+  startRestApiAdapter().catch((error: unknown) => {
+    throw error;
+  });
 }

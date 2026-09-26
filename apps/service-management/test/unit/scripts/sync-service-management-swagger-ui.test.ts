@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 import path from 'node:path';
 
 /**
@@ -12,18 +10,15 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
-const {
-  FILES,
-  SOURCE_DIR,
-  TARGET_DIR,
-  syncServiceManagementSwaggerUi
-} = require(path.join(repoRoot, 'apps/service-management/scripts/sync-service-management-swagger-ui.js'));
+const { FILES, SOURCE_DIR, TARGET_DIR, syncServiceManagementSwaggerUi } = require(
+  path.join(repoRoot, 'apps/service-management/scripts/sync-service-management-swagger-ui.js')
+);
 
 function createHarness(options: { missingFile?: string } = {}) {
   const { missingFile } = options;
   const logs: string[] = [];
   const errors: string[] = [];
-  const written: Array<{ target: string; contents: string }> = [];
+  const written: { target: string; contents: string }[] = [];
   const contents = new Map(FILES.map((file: string) => [file, `/* ${file} */\n`]));
   const harness = {
     root: '/repo',
@@ -45,7 +40,10 @@ function createHarness(options: { missingFile?: string } = {}) {
     }
   };
   return {
-    harness, logs, errors, written
+    harness,
+    logs,
+    errors,
+    written
   };
 }
 
@@ -68,16 +66,18 @@ describe('sync-service-management-swagger-ui (JUM-818)', () => {
     expect(errors.join('\n')).toContain('missing');
     // Files listed before the missing one were already copied; the failure is
     // reported, not rolled back.
-    expect(written.map((entry) => path.basename(entry.target)))
-      .toStrictEqual(['swagger-ui-bundle.js']);
+    expect(written.map((entry) => path.basename(entry.target))).toStrictEqual([
+      'swagger-ui-bundle.js'
+    ]);
   });
 
   it('copies every reviewed file from OASdoc into the vendor tree', () => {
     expect.hasAssertions();
     const { harness, logs, written } = createHarness();
     expect(syncServiceManagementSwaggerUi(harness)).toBe(0);
-    expect(written.map((entry) => path.basename(entry.target)).sort())
-      .toStrictEqual([...FILES].sort());
+    expect(written.map((entry) => path.basename(entry.target)).sort()).toStrictEqual(
+      [...FILES].sort()
+    );
     expect(written[0].contents).toContain('swagger-ui-bundle.js');
     expect(logs.join('\n')).toContain('swagger-ui synced');
   });
@@ -87,7 +87,7 @@ describe('sync-service-management-swagger-ui (JUM-818)', () => {
     const repoRootDir = path.resolve(repoRoot);
     expect(process.cwd()).toBe(repoRootDir);
     expect(syncServiceManagementSwaggerUi()).toBe(0);
-    const fs = require('fs');
+    const fs = require('node:fs');
     FILES.forEach((file: string) => {
       expect(fs.existsSync(path.join(repoRootDir, TARGET_DIR, file))).toBe(true);
     });

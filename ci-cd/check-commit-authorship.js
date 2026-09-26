@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-/* eslint-disable no-console */
 /**
  * Requirement 111 — only declared identities may author or commit here.
  *
@@ -26,9 +24,10 @@
  * it has lost the ability to verify anything.
  */
 
+const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
+
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
 const { gitBinary } = require('./lib/git-binary.js');
 
@@ -99,9 +98,9 @@ function parseDeclaration(contents) {
 
   if (!covered) {
     throw new Error(
-      `${DECLARATION_PATH} has no valid historyCutoff.commit.\n`
-        + `  Expected "${FULL_HISTORY}" to verify the entire history, or a 40-character SHA\n`
-        + '  to start after. Without one the scope is undefined.'
+      `${DECLARATION_PATH} has no valid historyCutoff.commit.\n` +
+        `  Expected "${FULL_HISTORY}" to verify the entire history, or a 40-character SHA\n` +
+        '  to start after. Without one the scope is undefined.'
     );
   }
 
@@ -151,12 +150,18 @@ function unauthorizedCommits(commits, allowed) {
   const violations = [];
 
   for (const commit of commits) {
-    const author = String(commit.authorEmail || '').trim().toLowerCase();
-    const committer = String(commit.committerEmail || '').trim().toLowerCase();
+    const author = String(commit.authorEmail || '')
+      .trim()
+      .toLowerCase();
+    const committer = String(commit.committerEmail || '')
+      .trim()
+      .toLowerCase();
 
     const roles = [];
-    if (!allowed.has(author)) roles.push({ role: 'author', name: commit.authorName, email: commit.authorEmail });
-    if (!allowed.has(committer)) roles.push({ role: 'committer', name: commit.committerName, email: commit.committerEmail });
+    if (!allowed.has(author))
+      roles.push({ role: 'author', name: commit.authorName, email: commit.authorEmail });
+    if (!allowed.has(committer))
+      roles.push({ role: 'committer', name: commit.committerName, email: commit.committerEmail });
 
     if (roles.length > 0) violations.push({ sha: commit.sha, roles });
   }
@@ -180,8 +185,8 @@ function unauthorizedCommits(commits, allowed) {
 function checkConfiguredIdentity(options = {}) {
   const root = options.root || process.cwd();
   const runGit = options.runGit || defaultRunGit;
-  const readFile = options.readFile
-    || ((relative) => fs.readFileSync(path.join(root, relative), 'utf8'));
+  const readFile =
+    options.readFile || ((relative) => fs.readFileSync(path.join(root, relative), 'utf8'));
 
   let declaration;
   try {
@@ -205,12 +210,12 @@ function checkConfiguredIdentity(options = {}) {
     return {
       ok: false,
       message:
-        'Identity check failed (Requirement 111):\n\n'
-        + `- git could not resolve the identity for this commit: ${error.message}\n`
-        + '  Requirement 111 §7 sets no global identity, so this is expected until you\n'
-        + '  configure one for this repository:\n\n'
-        + '    git config user.email "<a declared address>"\n'
-        + '    git config user.name "<your name>"'
+        'Identity check failed (Requirement 111):\n\n' +
+        `- git could not resolve the identity for this commit: ${error.message}\n` +
+        '  Requirement 111 §7 sets no global identity, so this is expected until you\n' +
+        '  configure one for this repository:\n\n' +
+        '    git config user.email "<a declared address>"\n' +
+        '    git config user.name "<your name>"'
     };
   }
 
@@ -223,15 +228,15 @@ function checkConfiguredIdentity(options = {}) {
     return {
       ok: false,
       message:
-        'Identity check failed (Requirement 111): this commit would be attributed to an '
-        + `undeclared identity.\n\n  ${undeclared.join('\n  ')}\n\n`
-        + `  Permitted identities are declared in ${DECLARATION_PATH}.\n`
-        + '  Set one for this repository before committing:\n\n'
-        + '    git config user.email "<a declared address>"\n'
-        + '    git config user.name "<your name>"\n\n'
-        + '  Blocked here rather than after the fact because commit metadata cannot be\n'
-        + '  retracted: once pushed, the address stays reachable on the forge even if the\n'
-        + '  history is later rewritten.'
+        'Identity check failed (Requirement 111): this commit would be attributed to an ' +
+        `undeclared identity.\n\n  ${undeclared.join('\n  ')}\n\n` +
+        `  Permitted identities are declared in ${DECLARATION_PATH}.\n` +
+        '  Set one for this repository before committing:\n\n' +
+        '    git config user.email "<a declared address>"\n' +
+        '    git config user.name "<your name>"\n\n' +
+        '  Blocked here rather than after the fact because commit metadata cannot be\n' +
+        '  retracted: once pushed, the address stays reachable on the forge even if the\n' +
+        '  history is later rewritten.'
     };
   }
 
@@ -241,8 +246,8 @@ function checkConfiguredIdentity(options = {}) {
 function run(options = {}) {
   const root = options.root || process.cwd();
   const runGit = options.runGit || defaultRunGit;
-  const readFile = options.readFile
-    || ((relative) => fs.readFileSync(path.join(root, relative), 'utf8'));
+  const readFile =
+    options.readFile || ((relative) => fs.readFileSync(path.join(root, relative), 'utf8'));
 
   let declaration;
   try {
@@ -261,11 +266,11 @@ function run(options = {}) {
     return {
       ok: false,
       message:
-        'Commit authorship check failed (Requirement 111):\n\n'
-        + `- Could not read history from the cutoff commit: ${error.message}\n`
-        + '  This check cannot verify anything without git, and reporting success in that\n'
-        + '  state would be a false green. If the cutoff commit is missing, fetch it:\n'
-        + '    git fetch origin --no-tags'
+        'Commit authorship check failed (Requirement 111):\n\n' +
+        `- Could not read history from the cutoff commit: ${error.message}\n` +
+        '  This check cannot verify anything without git, and reporting success in that\n' +
+        '  state would be a false green. If the cutoff commit is missing, fetch it:\n' +
+        '    git fetch origin --no-tags'
     };
   }
 
@@ -282,31 +287,30 @@ function run(options = {}) {
     return {
       ok: false,
       message:
-        `Commit authorship check failed (Requirement 111): `
-        + `${violations.length} commit(s) with an undeclared identity.\n\n`
-        + `${lines.join('\n')}\n\n`
-        + `  Every identity permitted here is declared in ${DECLARATION_PATH}.\n`
-        + '  If this is your own commit, your git identity is wrong for this repository:\n\n'
-        + '    git config user.email "<a declared address>"\n'
-        + '    git config user.name "<your name>"\n\n'
-        + '  and rewrite the commits already made — while they are still only on your\n'
-        + '  branch. Once they reach a shared branch the address cannot be taken back:\n'
-        + '  the forge keeps the old objects reachable by SHA even after a rewrite.\n\n'
-        + '    git rebase --exec "git commit --amend --no-edit --reset-author" <base>\n\n'
-        + '  If the identity is legitimate and simply not declared yet, add it to\n'
-        + `  ${DECLARATION_PATH} in the same change, so the addition is reviewed.`
+        `Commit authorship check failed (Requirement 111): ` +
+        `${violations.length} commit(s) with an undeclared identity.\n\n` +
+        `${lines.join('\n')}\n\n` +
+        `  Every identity permitted here is declared in ${DECLARATION_PATH}.\n` +
+        '  If this is your own commit, your git identity is wrong for this repository:\n\n' +
+        '    git config user.email "<a declared address>"\n' +
+        '    git config user.name "<your name>"\n\n' +
+        '  and rewrite the commits already made — while they are still only on your\n' +
+        '  branch. Once they reach a shared branch the address cannot be taken back:\n' +
+        '  the forge keeps the old objects reachable by SHA even after a rewrite.\n\n' +
+        '    git rebase --exec "git commit --amend --no-edit --reset-author" <base>\n\n' +
+        '  If the identity is legitimate and simply not declared yet, add it to\n' +
+        `  ${DECLARATION_PATH} in the same change, so the addition is reviewed.`
     };
   }
 
-  const scope = declaration.cutoff === FULL_HISTORY
-    ? 'in the entire history'
-    : 'since the declared cutoff';
+  const scope =
+    declaration.cutoff === FULL_HISTORY ? 'in the entire history' : 'since the declared cutoff';
 
   return {
     ok: true,
     message:
-      `Commit authorship check passed: ${commits.length} commit(s) ${scope}, `
-      + 'all by declared identities.'
+      `Commit authorship check passed: ${commits.length} commit(s) ${scope}, ` +
+      'all by declared identities.'
   };
 }
 
@@ -347,22 +351,23 @@ function main(argv = process.argv, io = console, options = {}) {
  */
 // `runMain` rather than the helper's `execute`: the option name is this
 // module's published contract and its suite injects through it.
-const runAsEntryPoint = ({ runMain = main, ...rest } = {}) => runWhenEntryPoint({
-  caller: module,
-  execute: runMain,
-  ...rest
-});
+const runAsEntryPoint = ({ runMain = main, ...rest } = {}) =>
+  runWhenEntryPoint({
+    caller: module,
+    execute: runMain,
+    ...rest
+  });
 
 runAsEntryPoint();
 
 module.exports = {
-  DECLARATION_PATH,
-  FULL_HISTORY,
   checkConfiguredIdentity,
   commitsToVerify,
+  DECLARATION_PATH,
+  FULL_HISTORY,
   main,
   parseDeclaration,
-  runAsEntryPoint,
   run,
+  runAsEntryPoint,
   unauthorizedCommits
 };

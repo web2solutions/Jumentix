@@ -1,8 +1,8 @@
-export * from './MongoMongooseRepository';
+export { default as MongoMongooseRepository } from './MongoMongooseRepository';
 export * from './SqlSequelizeRepository';
-export * from './DynamoDbRepository';
-export * from './CassandraRepository';
-export * from './FirebaseRepository';
-export * from './AuroraRepository';
-export * from './RdsRepository';
-export * from './OracleRepository';
+export { default as DynamoDbRepository } from './DynamoDbRepository';
+export { default as CassandraRepository } from './CassandraRepository';
+export { default as FirebaseRepository } from './FirebaseRepository';
+export { default as AuroraRepository } from './AuroraRepository';
+export { default as RdsRepository } from './RdsRepository';
+export { default as OracleRepository } from './OracleRepository';

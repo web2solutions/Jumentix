@@ -1,10 +1,10 @@
 import type { ICatalogRepository } from '@service-management-api/modules/Catalogs/service/ports/ICatalogRepository';
 
-export const deleteCatalogById = async (
+const deleteCatalogById = async (
   id: string,
   expectedVersion: number | undefined,
   catalogRepository: ICatalogRepository,
-  actor: string = ''
-): Promise<boolean> => {
-  return catalogRepository.delete(id, expectedVersion, actor);
-};
+  actor = ''
+): Promise<boolean> => catalogRepository.delete(id, expectedVersion, actor);
+
+export default deleteCatalogById;

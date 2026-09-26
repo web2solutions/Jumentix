@@ -6,13 +6,17 @@ import {
 describe('redisStreamsAdapter', () => {
   it('should enable redis streams adapter only when explicitly configured', () => {
     expect.hasAssertions();
-    expect(isRedisStreamsSocketIoEnabled({
-      JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'redis-streams'
-    } as unknown as NodeJS.ProcessEnv)).toBe(true);
+    expect(
+      isRedisStreamsSocketIoEnabled({
+        JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'redis-streams'
+      } as unknown as NodeJS.ProcessEnv)
+    ).toBe(true);
 
-    expect(isRedisStreamsSocketIoEnabled({
-      JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'none'
-    } as unknown as NodeJS.ProcessEnv)).toBe(false);
+    expect(
+      isRedisStreamsSocketIoEnabled({
+        JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: 'none'
+      } as unknown as NodeJS.ProcessEnv)
+    ).toBe(false);
   });
 
   it('should prefer websocket specific redis url when provided', () => {
@@ -71,7 +75,8 @@ describe('redisStreamsAdapter', () => {
 
   it('falls back to the loopback defaults when no redis variable is set', () => {
     expect.hasAssertions();
-    expect(buildRedisConnectionUrl({} as unknown as NodeJS.ProcessEnv))
-      .toBe('redis://127.0.0.1:6379/0');
+    expect(buildRedisConnectionUrl({} as unknown as NodeJS.ProcessEnv)).toBe(
+      'redis://127.0.0.1:6379/0'
+    );
   });
 });

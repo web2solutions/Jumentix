@@ -35,13 +35,14 @@ export interface IOsvVulnerability {
   id?: string;
   summary?: string;
   database_specific?: { severity?: string };
-  severity?: Array<{ type?: string; score?: string }>;
+  severity?: { type?: string; score?: string }[];
 }
 
 /** The seams that let the scanner be exercised without reaching the network. */
 export interface IEvaluateIo {
-  batch?: (queries: Array<{ package: { name: string; ecosystem: string }; version: string }>)
-  => Promise<{ results?: Array<{ vulns?: Array<{ id?: string }> }> }>;
+  batch?: (
+    queries: { package: { name: string; ecosystem: string }; version: string }[]
+  ) => Promise<{ results?: { vulns?: { id?: string }[] }[] }>;
   detail?: (id: string) => Promise<IOsvVulnerability>;
   now?: Date;
 }

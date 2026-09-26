@@ -1,42 +1,40 @@
-import type { CloudflareWorkersRequest, CloudflareWorkersResponse } from '@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers';
-import { sendErrorResponse } from '@src/interface/HTTP/adapters/cloudflare-workers/responses/sendErrorResponse';
+import sendErrorResponse from '@src/interface/HTTP/adapters/cloudflare-workers/responses/sendErrorResponse';
+import { UserPasswordUpdateRequestEvent } from '@src/modules/Users';
 
 import type {
-  IHandlerFactory,
-  IbaseHandler,
-  EndPointFactory
-} from '@src/interface/HTTP/ports';
+  CloudflareWorkersRequest,
+  CloudflareWorkersResponse
+} from '@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers';
+import type { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
+import type { RequestUpdatePassword, UserController } from '@src/modules/Users';
 
-import type { RequestUpdatePassword } from '@src/modules/Users';
-import { UserController, UserPasswordUpdateRequestEvent } from '@src/modules/Users';
+const updatePassword: EndPointFactory = ({
+  endPointConfig,
+  controller
+}: IHandlerFactory): IbaseHandler => ({
+  path: '/users/{id}/updatePassword',
+  method: 'put',
 
-const updatePassword: EndPointFactory = (
-  {
-    endPointConfig,
-    controller
-  }: IHandlerFactory
-): IbaseHandler => {
-  return {
-    path: '/users/{id}/updatePassword',
-    method: 'put',
-
-    async handler(req: CloudflareWorkersRequest, res: CloudflareWorkersResponse) {
-      try {
-        const params = req.params as Record<string, any>;
-        const { result, error } = await (controller! as UserController)
-          .updatePassword(new UserPasswordUpdateRequestEvent({
-            authorization: req.headers.authorization ?? '',
-            params,
-            input: req.body as RequestUpdatePassword,
-            schemaOAS: endPointConfig
-          }));
-        if (error) throw error;
-        return res.status(200).json(result);
-      } catch (error: any) {
-        return sendErrorResponse(error, res);
+  async handler(req: CloudflareWorkersRequest, res: CloudflareWorkersResponse) {
+    try {
+      const params = req.params as Record<string, any>;
+      if (!controller) {
+        throw new Error('The updatePassword endpoint requires a controller.');
       }
+      const { result, error } = await (controller as UserController).updatePassword(
+        new UserPasswordUpdateRequestEvent({
+          authorization: req.headers.authorization ?? '',
+          params,
+          input: req.body as RequestUpdatePassword,
+          schemaOAS: endPointConfig
+        })
+      );
+      if (error) throw error;
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return sendErrorResponse(error, res);
     }
-  };
-};
+  }
+});
 
 export default updatePassword;

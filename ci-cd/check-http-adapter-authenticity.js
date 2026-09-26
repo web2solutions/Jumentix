@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+/* eslint-disable no-console */
 /**
  * Requirement 108 — an HTTP adapter must integrate the framework it is named for.
  *
@@ -30,7 +30,13 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const adaptersDir = path.join(
-  root, 'apps', 'backend-template', 'src', 'interface', 'HTTP', 'adapters'
+  root,
+  'apps',
+  'backend-template',
+  'src',
+  'interface',
+  'HTTP',
+  'adapters'
 );
 
 /** Adapters whose named framework must be imported, used, and installed. */
@@ -133,10 +139,10 @@ for (const adapter of adapters) {
   const expected = REQUIRED_FRAMEWORK[adapter];
   if (!expected) {
     failures.push(
-      `Adapter "${adapter}" is not classified.\n`
-        + '  Add it to REQUIRED_FRAMEWORK with the module it must integrate, or to\n'
-        + '  PLATFORM_TARGETS if it is a handler-based target with no framework.\n'
-        + '  An unclassified adapter is how an empty one slips in unnoticed.'
+      `Adapter "${adapter}" is not classified.\n` +
+        '  Add it to REQUIRED_FRAMEWORK with the module it must integrate, or to\n' +
+        '  PLATFORM_TARGETS if it is a handler-based target with no framework.\n' +
+        '  An unclassified adapter is how an empty one slips in unnoticed.'
     );
     continue;
   }
@@ -148,8 +154,8 @@ for (const adapter of adapters) {
   const referenced = expected.filter(
     (name) => sources.includes(`'${name}'`) || sources.includes(`"${name}"`)
   );
-  const swallowedOnly = referenced.length > 0
-    && referenced.every((name) => isSwallowed(sources, name));
+  const swallowedOnly =
+    referenced.length > 0 && referenced.every((name) => isSwallowed(sources, name));
   const declared = expected.some((name) => isDeclared(name));
 
   const healthy = referenced.length > 0 && !swallowedOnly && declared;
@@ -157,9 +163,9 @@ for (const adapter of adapters) {
 
   if (healthy && gap) {
     failures.push(
-      `Adapter "${adapter}" is now healthy but is still listed as a known gap (${gap.issue}).\n`
-        + '  Remove it from KNOWN_GAPS. A registry that keeps fixed entries stops being a\n'
-        + '  record of outstanding work and becomes a permanent allowlist.'
+      `Adapter "${adapter}" is now healthy but is still listed as a known gap (${gap.issue}).\n` +
+        '  Remove it from KNOWN_GAPS. A registry that keeps fixed entries stops being a\n' +
+        '  record of outstanding work and becomes a permanent allowlist.'
     );
     continue;
   }
@@ -168,23 +174,23 @@ for (const adapter of adapters) {
 
   if (referenced.length === 0) {
     failures.push(
-      `Adapter "${adapter}" never references ${expected.join(' or ')}.\n`
-        + '  Requirement 108: an adapter named for a framework must integrate it, not\n'
-        + '  implement the HTTP port over Node\'s own `http`.'
+      `Adapter "${adapter}" never references ${expected.join(' or ')}.\n` +
+        '  Requirement 108: an adapter named for a framework must integrate it, not\n' +
+        "  implement the HTTP port over Node's own `http`."
     );
   } else if (swallowedOnly) {
     failures.push(
-      `Adapter "${adapter}" requires ${expected.join(' or ')} inside a try/catch and does\n`
-        + '  not use the result. That is the worst shape available: it satisfies every grep\n'
-        + '  and every skim while the adapter actually serves requests on Node\'s `http`.\n'
-        + '  Integrate the framework, or remove the adapter (Requirement 108).'
+      `Adapter "${adapter}" requires ${expected.join(' or ')} inside a try/catch and does\n` +
+        '  not use the result. That is the worst shape available: it satisfies every grep\n' +
+        "  and every skim while the adapter actually serves requests on Node's `http`.\n" +
+        '  Integrate the framework, or remove the adapter (Requirement 108).'
     );
   } else if (!declared) {
     failures.push(
-      `Adapter "${adapter}" integrates ${expected.join(' or ')} but no manifest declares it.\n`
-        + '  The code is correct and the adapter cannot run — the import resolves to nothing,\n'
-        + '  so `dev:${adapter}` fails with "Cannot find module".\n'
-        + '  Declare the dependency, or remove the adapter (Requirement 108 §2).'
+      `Adapter "${adapter}" integrates ${expected.join(' or ')} but no manifest declares it.\n` +
+        '  The code is correct and the adapter cannot run — the import resolves to nothing,\n' +
+        `  so \`dev:${adapter}\` fails with "Cannot find module".\n` +
+        '  Declare the dependency, or remove the adapter (Requirement 108 §2).'
     );
   }
 }
@@ -192,14 +198,16 @@ for (const adapter of adapters) {
 if (failures.length > 0) {
   console.error('HTTP adapter authenticity check failed (Requirement 108):\n');
   for (const failure of failures) console.error(`- ${failure}\n`);
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  const tracked = Object.keys(KNOWN_GAPS).length;
+  const verified = adapters.length - tracked - PLATFORM_TARGETS.size;
+  const issues = Object.values(KNOWN_GAPS)
+    .map((gap) => gap.issue)
+    .join(', ');
+
+  console.log(
+    `HTTP adapter authenticity check passed: ${verified} integrate their framework, ` +
+      `${PLATFORM_TARGETS.size} are platform targets, ${tracked} tracked gaps (${issues}).`
+  );
 }
-
-const tracked = Object.keys(KNOWN_GAPS).length;
-const verified = adapters.length - tracked - PLATFORM_TARGETS.size;
-const issues = Object.values(KNOWN_GAPS).map((gap) => gap.issue).join(', ');
-
-console.log(
-  `HTTP adapter authenticity check passed: ${verified} integrate their framework, `
-    + `${PLATFORM_TARGETS.size} are platform targets, ${tracked} tracked gaps (${issues}).`
-);

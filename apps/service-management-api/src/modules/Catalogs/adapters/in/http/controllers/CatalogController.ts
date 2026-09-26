@@ -1,40 +1,31 @@
-import type { IController, IControllerFactory } from '@src/interface/HTTP/ports';
-import { BaseController } from '@src/interface/HTTP/ports/BaseController';
-import { Security } from '@src/infra/security';
 import { _INFRA_NOT_IMPLEMENTED_ } from '@src/config/constants';
 import { ForbiddenError, ValidationError } from '@src/infra/exceptions';
-import {
-  validateRequestAgainstOAS
-} from '@src/interface/HTTP/validators';
-import { Authorize } from '@src/shared/decorators/guard/Authorize';
-
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import type {
-  IServiceResponse
-} from '@src/modules/port';
-import {
-  setFilter,
-  setPaging
-} from '@src/modules/port';
-import type {
-  ICatalog
-} from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
-import type { RequestCreateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestCreateCatalog';
-import type { RequestUpdateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestUpdateCatalog';
-import type { ICatalogUseCases } from '@service-management-api/modules/Catalogs/application/ports/ICatalogUseCases';
-import type {
-  ITenantAuthorizationDecision
-} from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+import Security from '@src/infra/security';
+import BaseController from '@src/interface/HTTP/ports/BaseController';
+import { validateRequestAgainstOAS } from '@src/interface/HTTP/validators';
+import { setFilter, setPaging } from '@src/modules/port';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
 import {
   EUserRole,
   hasSuperadminRole,
   normalizeRoles
 } from '@src/modules/Users/domain/security/Rbac';
+import Authorize from '@src/shared/decorators/guard/Authorize';
+
 import {
   decideCatalogAccess,
   resolveCatalogCollectionScope,
   resolveCatalogCreationOrganization
 } from '@service-management-api/modules/Catalogs/domain/security/CatalogAuthorizationPolicy';
+
+import type { IController, IControllerFactory } from '@src/interface/HTTP/ports';
+import type { IServiceResponse } from '@src/modules/port';
+import type { ITenantAuthorizationDecision } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+
+import type { ICatalogUseCases } from '@service-management-api/modules/Catalogs/application/ports/ICatalogUseCases';
+import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
+import type { RequestCreateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestCreateCatalog';
+import type { RequestUpdateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestUpdateCatalog';
 
 type CatalogControllerFactory = IControllerFactory & {
   catalogUseCases?: ICatalogUseCases;
@@ -47,7 +38,7 @@ type CatalogControllerFactory = IControllerFactory & {
  * payload is validated against the OAS operation, and the TENANT-RBAC
  * catalog policy decides organization scope before any use case runs.
  */
-export class CatalogController extends BaseController implements IController {
+class CatalogController extends BaseController implements IController {
   private readonly catalogUseCases: ICatalogUseCases;
 
   constructor(factory: CatalogControllerFactory) {
@@ -65,7 +56,6 @@ export class CatalogController extends BaseController implements IController {
     return ((event as any).authenticatedUser || {}) as Record<string, any>;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   private getActor(event: BaseDomainEvent): string {
     const authenticatedUser = this.getAuthenticatedUser(event);
     return (authenticatedUser.username || authenticatedUser.id || '') as string;
@@ -78,30 +68,22 @@ export class CatalogController extends BaseController implements IController {
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
   private throwIfCatalogScopeDenied(event: BaseDomainEvent, scope: string): void {
     const authenticatedUser = this.getAuthenticatedUser(event);
     const roles = normalizeRoles(authenticatedUser.roles || []);
     if (hasSuperadminRole(roles)) return;
     const scopesByRole: Record<string, string[]> = {
-      [EUserRole.admin]: [
-        'read_catalog',
-        'create_catalog',
-        'update_catalog',
-        'delete_catalog'
-      ],
-      [EUserRole.user]: [
-        'read_catalog',
-        'create_catalog',
-        'update_catalog'
-      ]
+      [EUserRole.admin]: ['read_catalog', 'create_catalog', 'update_catalog', 'delete_catalog'],
+      [EUserRole.user]: ['read_catalog', 'create_catalog', 'update_catalog']
     };
     const granted = new Set<string>();
     roles.forEach((role) => {
       (scopesByRole[role] || []).forEach((grantedScope) => granted.add(grantedScope));
     });
     if (!granted.has(scope)) {
-      throw new ForbiddenError(`Insufficient permission - missing Service Management scope ${scope}`);
+      throw new ForbiddenError(
+        `Insufficient permission - missing Service Management scope ${scope}`
+      );
     }
   }
 
@@ -120,20 +102,14 @@ export class CatalogController extends BaseController implements IController {
     const authenticatedUser = this.getAuthenticatedUser(event);
     const { result: targetCatalog, error } = await this.catalogUseCases.getOneById(catalogId);
     if (error || !targetCatalog) {
-      throw error || new ForbiddenError('Insufficient permission - target catalog not available');
+      throw error ?? new ForbiddenError('Insufficient permission - target catalog not available');
     }
     this.throwIfTenantAccessDenied(decideCatalogAccess(authenticatedUser, targetCatalog));
   }
 
   @Authorize()
-  public async create(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<ICatalog>> {
-    validateRequestAgainstOAS(
-      this.openApiSpecification,
-      event.schemaOAS,
-      event
-    );
+  public async create(event: BaseDomainEvent): Promise<IServiceResponse<ICatalog>> {
+    validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     this.throwIfCatalogScopeDenied(event, 'create_catalog');
     const requestCreateCatalog = event.input as RequestCreateCatalog;
     const authenticatedUser = this.getAuthenticatedUser(event);
@@ -151,14 +127,8 @@ export class CatalogController extends BaseController implements IController {
   }
 
   @Authorize()
-  public async update(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<ICatalog>> {
-    validateRequestAgainstOAS(
-      this.openApiSpecification,
-      event.schemaOAS,
-      event
-    );
+  public async update(event: BaseDomainEvent): Promise<IServiceResponse<ICatalog>> {
+    validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     this.throwIfCatalogScopeDenied(event, 'update_catalog');
     const requestUpdateCatalog = event.input as RequestUpdateCatalog;
     const catalogId = Security.xss(event.params.id);
@@ -172,14 +142,8 @@ export class CatalogController extends BaseController implements IController {
   }
 
   @Authorize()
-  public async delete(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<boolean>> {
-    validateRequestAgainstOAS(
-      this.openApiSpecification,
-      event.schemaOAS,
-      event
-    );
+  public async delete(event: BaseDomainEvent): Promise<IServiceResponse<boolean>> {
+    validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     this.throwIfCatalogScopeDenied(event, 'delete_catalog');
     const catalogId = Security.xss(event.params.id);
     await this.enforceCatalogReadScope(event, catalogId);
@@ -193,14 +157,8 @@ export class CatalogController extends BaseController implements IController {
   }
 
   @Authorize()
-  public async restore(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<ICatalog>> {
-    validateRequestAgainstOAS(
-      this.openApiSpecification,
-      event.schemaOAS,
-      event
-    );
+  public async restore(event: BaseDomainEvent): Promise<IServiceResponse<ICatalog>> {
+    validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     this.throwIfCatalogScopeDenied(event, 'update_catalog');
     const catalogId = Security.xss(event.params.id);
     await this.enforceCatalogReadScope(event, catalogId);
@@ -215,14 +173,8 @@ export class CatalogController extends BaseController implements IController {
   }
 
   @Authorize()
-  public async getOneById(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<ICatalog>> {
-    validateRequestAgainstOAS(
-      this.openApiSpecification,
-      event.schemaOAS,
-      event
-    );
+  public async getOneById(event: BaseDomainEvent): Promise<IServiceResponse<ICatalog>> {
+    validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     this.throwIfCatalogScopeDenied(event, 'read_catalog');
     const catalogId = Security.xss(event.params.id);
     await this.enforceCatalogReadScope(event, catalogId);
@@ -231,14 +183,8 @@ export class CatalogController extends BaseController implements IController {
   }
 
   @Authorize()
-  public async getAll(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<ICatalog[]>> {
-    validateRequestAgainstOAS(
-      this.openApiSpecification,
-      event.schemaOAS,
-      event
-    );
+  public async getAll(event: BaseDomainEvent): Promise<IServiceResponse<ICatalog[]>> {
+    validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     this.throwIfCatalogScopeDenied(event, 'read_catalog');
     const filters = setFilter(event);
     const authenticatedUser = this.getAuthenticatedUser(event);
@@ -258,3 +204,5 @@ export class CatalogController extends BaseController implements IController {
     return new CatalogController(factory);
   }
 }
+
+export default CatalogController;

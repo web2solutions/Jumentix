@@ -14,7 +14,7 @@
     "redis": "^6.2.1"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "test": "bun test --isolate test",
     "lint": "echo \"key-value-storage package lint pending\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",

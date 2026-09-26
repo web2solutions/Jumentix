@@ -1,8 +1,6 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
 
-import { buildCanaSchema, SCHEMA_META_ID, META_STORE } from '@/data/canaSchema';
+import { buildCanaSchema, META_STORE, SCHEMA_META_ID } from '@/data/canaSchema';
 import {
   bootCana,
   canaBootStatus,
@@ -52,10 +50,12 @@ describe('Cana boot lifecycle (JUM-802)', () => {
     expect.hasAssertions();
     const client = await openCana(DB_A);
     await client.table('users').put({ id: 'u-stale', firstName: 'Ana', username: 'ana' });
-    await client.table(META_STORE).put({ id: SCHEMA_META_ID, fingerprint: 'stale-fingerprint', version: 1 });
+    await client
+      .table(META_STORE)
+      .put({ id: SCHEMA_META_ID, fingerprint: 'stale-fingerprint', version: 1 });
     await closeCana();
     const reopened = await openCana(DB_A);
-    const meta = await reopened.table(META_STORE).get(SCHEMA_META_ID) as { fingerprint?: string };
+    const meta = (await reopened.table(META_STORE).get(SCHEMA_META_ID)) as { fingerprint?: string };
     expect(meta.fingerprint).not.toBe('stale-fingerprint');
     expect(await reopened.table('users').get('u-stale')).toBeUndefined();
   });

@@ -31,12 +31,7 @@ export default function validateRequestParams(
   const { parameters } = endPointConfig;
   if (!parameters) return true;
   for (const parameter of parameters) {
-    const {
-      name,
-      required,
-      schema = {},
-      in: location = 'path'
-    } = parameter;
+    const { name, required, schema = {}, in: location = 'path' } = parameter;
     let source = requestParams;
     if (location === 'query') {
       source = queryString;

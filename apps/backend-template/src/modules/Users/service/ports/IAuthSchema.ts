@@ -1,6 +1,6 @@
-import { EAuthSchemaType } from './EAuthSchemaType';
+import type EAuthSchemaType from './EAuthSchemaType';
 
 export interface IAuthSchema {
-  type: EAuthSchemaType
+  type: EAuthSchemaType;
   token: string;
 }

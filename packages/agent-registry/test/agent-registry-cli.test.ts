@@ -1,17 +1,12 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
-const {
-  isFirestoreUnavailable,
-  resolveRegistryEntrypoint,
-  shouldSkipCiRegistryCheck
-} = require('../bin/agent-registry-cli') as {
-  isFirestoreUnavailable: (error: unknown) => boolean;
-  resolveRegistryEntrypoint: (root?: string) => string;
-  shouldSkipCiRegistryCheck: (command: string, error: unknown) => boolean;
-};
-const agentRegistryCliFs = require('fs');
-const agentRegistryCliOs = require('os');
-const agentRegistryCliPath = require('path');
+const { isFirestoreUnavailable, resolveRegistryEntrypoint, shouldSkipCiRegistryCheck } =
+  require('../bin/agent-registry-cli') as {
+    isFirestoreUnavailable: (error: unknown) => boolean;
+    resolveRegistryEntrypoint: (root?: string) => string;
+    shouldSkipCiRegistryCheck: (command: string, error: unknown) => boolean;
+  };
+const agentRegistryCliFs = require('node:fs');
+const agentRegistryCliOs = require('node:os');
+const agentRegistryCliPath = require('node:path');
 
 describe('agent-registry-cli', () => {
   const originalCi = process.env.CI;
@@ -24,9 +19,9 @@ describe('agent-registry-cli', () => {
     expect.hasAssertions();
 
     const error = new Error(
-      '5 NOT_FOUND: The database (default) does not exist for project jumentix-service-registry '
-        + 'Please visit https://console.cloud.google.com/datastore/setup?project=jumentix-service-registry '
-        + 'to add a Cloud Datastore or Cloud Firestore database.'
+      '5 NOT_FOUND: The database (default) does not exist for project jumentix-service-registry ' +
+        'Please visit https://console.cloud.google.com/datastore/setup?project=jumentix-service-registry ' +
+        'to add a Cloud Datastore or Cloud Firestore database.'
     );
 
     expect(isFirestoreUnavailable(error)).toBe(true);
@@ -36,8 +31,8 @@ describe('agent-registry-cli', () => {
     expect.hasAssertions();
 
     const error = new Error(
-      '5 NOT_FOUND: The database (default) does not exist for project jumentix-service-registry '
-        + 'to add a Cloud Datastore or Cloud Firestore database.'
+      '5 NOT_FOUND: The database (default) does not exist for project jumentix-service-registry ' +
+        'to add a Cloud Datastore or Cloud Firestore database.'
     );
 
     process.env.CI = 'true';

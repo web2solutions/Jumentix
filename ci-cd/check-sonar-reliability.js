@@ -1,5 +1,4 @@
-#!/usr/bin/env bun
-
+/* eslint-disable no-console */
 const PROJECT_KEY = 'web2solutions_Jumentix';
 const REQUIRED_RELIABILITY_RATING = 1;
 const { isEntryPoint } = require('./lib/entry-point.js');
@@ -33,17 +32,22 @@ async function checkSonarReliability({ env = process.env, fetchFn = fetch } = {}
   const target = resolveAnalysisTarget(env);
   const targetLabel = target.pullRequest ? `PR #${target.pullRequest}` : target.branch;
   if (!token) throw new Error('SONAR_TOKEN is required to enforce SonarCloud reliability.');
-  if (!targetLabel) throw new Error('A SonarCloud branch or pull request is required to enforce reliability.');
+  if (!targetLabel)
+    throw new Error('A SonarCloud branch or pull request is required to enforce reliability.');
 
   const response = await fetchFn(buildMeasuresUrl(target, env.SONAR_HOST_URL), {
     headers: authHeader(token)
   });
   if (!response.ok) {
-    throw new Error(`SonarCloud reliability request failed: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `SonarCloud reliability request failed: ${response.status} ${response.statusText}`
+    );
   }
 
   const payload = await response.json();
-  const rating = payload.component?.measures?.find((measure) => measure.metric === 'reliability_rating')?.value;
+  const rating = payload.component?.measures?.find(
+    (measure) => measure.metric === 'reliability_rating'
+  )?.value;
   if (Number(rating) !== REQUIRED_RELIABILITY_RATING) {
     throw new Error(
       `SonarCloud reliability for ${targetLabel} is ${rating ?? 'unavailable'}; A (1) is required.`
@@ -61,11 +65,11 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
-  PROJECT_KEY,
-  REQUIRED_RELIABILITY_RATING,
   authHeader,
   buildMeasuresUrl,
   checkSonarReliability,
+  PROJECT_KEY,
+  REQUIRED_RELIABILITY_RATING,
   resolveAnalysisTarget,
   resolveBranch
 };

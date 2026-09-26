@@ -1,4 +1,5 @@
 import { render, screen, userEvent } from '@/test-utils';
+
 import { HexagonalArchitectureMap } from './HexagonalArchitectureMap';
 
 describe('HexagonalArchitectureMap', () => {
@@ -8,7 +9,7 @@ describe('HexagonalArchitectureMap', () => {
 
     expect(screen.getByTestId('hexagonal-architecture-map')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Backend-template hexagonal map',
+      'Backend-template hexagonal map'
     );
     expect(screen.getByText(/Web and desktop GUIs sit on the inbound/i)).toBeInTheDocument();
 
@@ -23,7 +24,7 @@ describe('HexagonalArchitectureMap', () => {
     render(<HexagonalArchitectureMap locale="pt-BR" />);
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Mapa hexagonal do backend-template',
+      'Mapa hexagonal do backend-template'
     );
     await userEvent.click(screen.getByRole('tab', { name: 'Domínio' }));
     expect(screen.getByText('modules/Users/domain/')).toBeInTheDocument();

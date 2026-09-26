@@ -1,14 +1,14 @@
-import {
-  beforeEach, describe, expect, it, mock
-} from 'bun:test';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { expireIfStaleSession, handleSdkEvent } from '@/contracts/sessionGuard';
 import { useAuthStore } from '@/stores/auth';
 
 const makeJwt = (expSeconds: number): string => {
-  const payload = Buffer.from(JSON.stringify({ id: 'u1', username: 'a@b.c', exp: expSeconds }))
-    .toString('base64url');
+  const payload = Buffer.from(
+    JSON.stringify({ id: 'u1', username: 'a@b.c', exp: expSeconds })
+  ).toString('base64url');
   return `x.${payload}.y`;
 };
 
@@ -48,8 +48,20 @@ describe('sessionGuard', () => {
 
   it('non-401 errors and successes never expire the session', () => {
     expect.assertions(2);
-    expect(handleSdkEvent({ type: 'request:error', status: 500, operationId: 'getAll' }, () => {}, () => {})).toBe(false);
-    expect(handleSdkEvent({ type: 'request:success', status: 200, operationId: 'getAll' }, () => {}, () => {})).toBe(false);
+    expect(
+      handleSdkEvent(
+        { type: 'request:error', status: 500, operationId: 'getAll' },
+        () => {},
+        () => {}
+      )
+    ).toBe(false);
+    expect(
+      handleSdkEvent(
+        { type: 'request:success', status: 200, operationId: 'getAll' },
+        () => {},
+        () => {}
+      )
+    ).toBe(false);
   });
 
   it('expireIfStaleSession expires a session whose JWT exp already passed', () => {

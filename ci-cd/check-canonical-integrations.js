@@ -30,17 +30,11 @@ const INTEGRATION_CONTRACTS = Object.freeze([
   // installed Bun tree and fails closed on incomplete or unavailable results.
   {
     file: 'packages/security-scanner/src/index.js',
-    markers: [
-      'api.osv.dev',
-      'ACCEPTED_RISK'
-    ]
+    markers: ['api.osv.dev', 'ACCEPTED_RISK']
   },
   {
     file: '.github/dependabot.yml',
-    markers: [
-      'package-ecosystem: npm',
-      'target-branch: dev'
-    ]
+    markers: ['package-ecosystem: npm', 'target-branch: dev']
   },
   {
     file: '.circleci/config.yml',
@@ -121,8 +115,8 @@ function run(rootDir = process.cwd()) {
   }
 
   console.log(
-    `[integrations] canonical repository contracts passed `
-    + `(${String(INTEGRATION_CONTRACTS.length)} files).`
+    `[integrations] canonical repository contracts passed ` +
+      `(${String(INTEGRATION_CONTRACTS.length)} files).`
   );
   return 0;
 }

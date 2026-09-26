@@ -1,12 +1,8 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
-const {
-  parseMarkdownRegistry,
-  unformat
-} = require('../bin/migrate-agent-registry-to-firestore') as {
-  parseMarkdownRegistry: (content: string) => Array<Record<string, unknown>>;
-  unformat: (value: unknown) => string;
-};
+const { parseMarkdownRegistry, unformat } =
+  require('../bin/migrate-agent-registry-to-firestore') as {
+    parseMarkdownRegistry: (content: string) => Record<string, unknown>[];
+    unformat: (value: unknown) => string;
+  };
 
 /**
  * The parser that corrupted the live registry (JUM-613).

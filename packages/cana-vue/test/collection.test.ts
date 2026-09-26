@@ -1,11 +1,12 @@
-import type { CanaChangeEvent } from '@jumentix/cana';
 import { applyCanaEventToRecords, connectCanaToPinia } from '../src';
 
-type Category = {
+import type { CanaChangeEvent } from '@jumentix/cana';
+
+interface Category {
   id: string;
   name: string;
   color: string;
-};
+}
 
 const event = (overrides: Partial<CanaChangeEvent<Category>>): CanaChangeEvent<Category> => ({
   type: 'created',
@@ -27,13 +28,17 @@ describe('applyCanaEventToRecords', () => {
       store: 'categories',
       getKey: (category) => category.id
     });
-    const updated = applyCanaEventToRecords(created, event({
-      type: 'updated',
-      record: { id: 'docs', name: 'Docs', color: '#0f766e' }
-    }), {
-      store: 'categories',
-      getKey: (category) => category.id
-    });
+    const updated = applyCanaEventToRecords(
+      created,
+      event({
+        type: 'updated',
+        record: { id: 'docs', name: 'Docs', color: '#0f766e' }
+      }),
+      {
+        store: 'categories',
+        getKey: (category) => category.id
+      }
+    );
 
     expect(updated).toStrictEqual([{ id: 'docs', name: 'Docs', color: '#0f766e' }]);
   });

@@ -1,7 +1,7 @@
 import type { IEventBus, IIntegrationEvent } from '@src/modules/port';
 
-export class InMemoryEventBus implements IEventBus {
-  private listeners: Record<string, Array<(event: IIntegrationEvent) => Promise<void> | void>> = {};
+class InMemoryEventBus implements IEventBus {
+  private listeners: Record<string, ((event: IIntegrationEvent) => Promise<void> | void)[]> = {};
 
   public async publish(event: IIntegrationEvent): Promise<void> {
     const eventListeners = this.listeners[event.name] || [];
@@ -22,3 +22,5 @@ export class InMemoryEventBus implements IEventBus {
     return new InMemoryEventBus();
   }
 }
+
+export default InMemoryEventBus;

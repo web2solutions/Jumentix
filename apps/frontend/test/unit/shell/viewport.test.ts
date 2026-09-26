@@ -1,6 +1,5 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 

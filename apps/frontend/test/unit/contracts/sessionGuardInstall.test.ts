@@ -1,33 +1,40 @@
-import {
-  afterEach, beforeEach, describe, expect, it, mock
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
-import { resetSharedApiClient, getSharedApiClient } from '@/contracts/apiClient';
+import { getSharedApiClient, resetSharedApiClient } from '@/contracts/apiClient';
 import { installSessionGuard } from '@/contracts/sessionGuard';
 import { useAuthStore } from '@/stores/auth';
-import { useProfileStore, type UserRecord } from '@/stores/profile';
+import { useProfileStore } from '@/stores/profile';
+
+import type { UserRecord } from '@/stores/profile';
 
 const recordFixture: UserRecord = {
   id: 'user-1',
   firstName: 'Abraham',
   username: 'me@mydomain.com',
   roles: ['admin'],
-  emails: [{
-    id: 'e1', type: 'work', email: 'me@mydomain.com', isPrimary: true
-  }],
+  emails: [
+    {
+      id: 'e1',
+      type: 'work',
+      email: 'me@mydomain.com',
+      isPrimary: true
+    }
+  ],
   documents: [],
   phones: []
 };
 
-const makeRouter = () => createRouter({
-  history: createMemoryHistory(),
-  routes: [
-    { path: '/login', component: { template: '<div />' }, meta: { public: true } },
-    { path: '/dashboard', component: { template: '<div />' } }
-  ]
-});
+const makeRouter = () =>
+  createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: '/login', component: { template: '<div />' }, meta: { public: true } },
+      { path: '/dashboard', component: { template: '<div />' } }
+    ]
+  });
 
 /** installSessionGuard (JUM-776): a 401 on any page expires and redirects. */
 describe('installSessionGuard (JUM-776)', () => {
@@ -52,16 +59,19 @@ describe('installSessionGuard (JUM-776)', () => {
     const router = makeRouter();
     await router.push('/dashboard');
     installSessionGuard(router);
-    globalThis.fetch = mock(() => Promise.resolve({
-      ok: false,
-      status: 401,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({}),
-      text: () => Promise.resolve('Unauthorized')
-    } as unknown as Response));
+    globalThis.fetch = mock(() =>
+      Promise.resolve({
+        ok: false,
+        status: 401,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve('Unauthorized')
+      } as unknown as Response)
+    );
 
-    await expect(getSharedApiClient().request({ operationId: 'getOneById', pathParams: { id: 'user-1' } }))
-      .rejects.toThrow();
+    await expect(
+      getSharedApiClient().request({ operationId: 'getOneById', pathParams: { id: 'user-1' } })
+    ).rejects.toThrow();
 
     const auth = useAuthStore();
     expect(auth.token).toBe('');
@@ -74,16 +84,19 @@ describe('installSessionGuard (JUM-776)', () => {
     const router = makeRouter();
     await router.push('/dashboard');
     installSessionGuard(router);
-    globalThis.fetch = mock(() => Promise.resolve({
-      ok: false,
-      status: 500,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({}),
-      text: () => Promise.resolve('boom')
-    } as unknown as Response));
+    globalThis.fetch = mock(() =>
+      Promise.resolve({
+        ok: false,
+        status: 500,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve('boom')
+      } as unknown as Response)
+    );
 
-    await expect(getSharedApiClient().request({ operationId: 'getOneById', pathParams: { id: 'user-1' } }))
-      .rejects.toThrow();
+    await expect(
+      getSharedApiClient().request({ operationId: 'getOneById', pathParams: { id: 'user-1' } })
+    ).rejects.toThrow();
 
     expect(useAuthStore().token).toBe('Bearer session-token');
     expect(router.currentRoute.value.path).toBe('/dashboard');
@@ -94,16 +107,19 @@ describe('installSessionGuard (JUM-776)', () => {
     const router = makeRouter();
     await router.push('/login');
     installSessionGuard(router);
-    globalThis.fetch = mock(() => Promise.resolve({
-      ok: false,
-      status: 401,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({}),
-      text: () => Promise.resolve('Unauthorized')
-    } as unknown as Response));
+    globalThis.fetch = mock(() =>
+      Promise.resolve({
+        ok: false,
+        status: 401,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve('Unauthorized')
+      } as unknown as Response)
+    );
 
-    await expect(getSharedApiClient().request({ operationId: 'getOneById', pathParams: { id: 'user-1' } }))
-      .rejects.toThrow();
+    await expect(
+      getSharedApiClient().request({ operationId: 'getOneById', pathParams: { id: 'user-1' } })
+    ).rejects.toThrow();
 
     expect(useAuthStore().token).toBe('');
     expect(router.currentRoute.value.path).toBe('/login');

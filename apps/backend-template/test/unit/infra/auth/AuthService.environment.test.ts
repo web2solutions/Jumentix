@@ -1,14 +1,14 @@
 import users from '@seed/users';
-
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
 import { UserDataRepository, UserService } from '@src/modules/Users';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
+import AuthService from '@src/modules/Users/service/AuthService';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
+
 import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
 
 /**
@@ -51,7 +51,9 @@ const userProvider = UserProviderLocal.compile(userService);
 /** Unset the given variables, returning the undo. */
 function withoutEnv(keys: string[]): () => void {
   const previous = keys.map((key) => [key, process.env[key]] as const);
-  keys.forEach((key) => { delete process.env[key]; });
+  keys.forEach((key) => {
+    delete process.env[key];
+  });
 
   return () => {
     previous.forEach(([key, value]) => {
@@ -64,7 +66,9 @@ function withoutEnv(keys: string[]): () => void {
 /** Set the given variables, returning the undo. */
 function withEnv(values: Record<string, string>): () => void {
   const previous = Object.keys(values).map((key) => [key, process.env[key]] as const);
-  Object.entries(values).forEach(([key, value]) => { process.env[key] = value; });
+  Object.entries(values).forEach(([key, value]) => {
+    process.env[key] = value;
+  });
 
   return () => {
     previous.forEach(([key, value]) => {
@@ -80,7 +84,7 @@ let authService: IAuthService;
 async function seedAccount(suffix: string): Promise<string> {
   const [user] = users;
   const username = `${user.username}-jum681-${suffix}`;
-  await userService.create({ ...user, username } as never);
+  await userService.create({ ...user, username });
   return username;
 }
 
@@ -193,10 +197,9 @@ describe('authService under a configured environment (JUM-681)', () => {
     // `user` is undefined here on purpose: this is the path a request takes when
     // the controller is guarded but the specification is not, and building the
     // audit payload must not throw before the refusal is raised.
-    expect(() => authService.throwIfUserHasNoAccessToResource(
-      undefined as never,
-      {}
-    )).toThrow('there is no security schema defined');
+    expect(() => authService.throwIfUserHasNoAccessToResource(undefined as never, {})).toThrow(
+      'there is no security schema defined'
+    );
   });
   it('falls back to the built-in thresholds when the environment sets none', async () => {
     expect.hasAssertions();
@@ -262,7 +265,7 @@ describe('authService under a configured environment (JUM-681)', () => {
     const bareToken = jwtService.generateToken({
       id: 'user-1',
       username: 'alice'
-    } as never);
+    });
 
     const result = await authService.logout(`Bearer ${bareToken}`);
     const withNoHeader = await authService.logout();
@@ -282,7 +285,10 @@ describe('authService under a configured environment (JUM-681)', () => {
     // route security block, and every declared scope present.
     const allowed = authService.throwIfUserHasNoAccessToResource(
       {
-        id: 'user-1', username: 'alice', roles: ['user'], organization: 'org-1'
+        id: 'user-1',
+        username: 'alice',
+        roles: ['user'],
+        organization: 'org-1'
       } as never,
       { security: [{ bearerAuth: [] }] }
     );
@@ -293,10 +299,11 @@ describe('authService under a configured environment (JUM-681)', () => {
   it('refuses a request whose user carries no roles at all', () => {
     expect.hasAssertions();
 
-    expect(() => authService.throwIfUserHasNoAccessToResource(
-      { id: 'user-1', username: 'alice' } as never,
-      { security: [{ bearerAuth: ['user'] }] }
-    )).toThrow('user.roles is missing');
+    expect(() =>
+      authService.throwIfUserHasNoAccessToResource({ id: 'user-1', username: 'alice' } as never, {
+        security: [{ bearerAuth: ['user'] }]
+      })
+    ).toThrow('user.roles is missing');
   });
 
   it('does not mask the failure when NODE_ENV is not set at all', async () => {

@@ -1,4 +1,10 @@
-import type { IServiceResponse, IPagingRequest } from '@src/modules/port';
+import type {
+  IMetricsCapabilities,
+  IMetricsQuery,
+  IMetricsResult
+} from '@jumentix/persistence-contracts';
+
+import type { IPagingRequest, IServiceResponse } from '@src/modules/port';
 import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
@@ -8,7 +14,6 @@ import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/Requ
 import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
 import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import type { IMetricsCapabilities, IMetricsQuery, IMetricsResult } from '@jumentix/persistence-contracts';
 
 export interface IOrganizationUseCases {
   create(data: RequestCreateOrganization): Promise<IServiceResponse<IOrganization>>;

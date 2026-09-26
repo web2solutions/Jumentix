@@ -5,6 +5,5 @@ export const CatalogIntegrationEventName = {
   Restored: 'catalogs.catalog.restored'
 } as const;
 
-export type CatalogIntegrationEventNameType = (
-  typeof CatalogIntegrationEventName
-)[keyof typeof CatalogIntegrationEventName];
+export type CatalogIntegrationEventNameType =
+  (typeof CatalogIntegrationEventName)[keyof typeof CatalogIntegrationEventName];

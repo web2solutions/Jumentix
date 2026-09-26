@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+
 import { compileMdx } from 'nextra/compile';
 import useSWR from 'swr';
 
@@ -66,7 +67,9 @@ export function useReleaseNotes() {
   }>('/api/github-releases', fetcher);
 
   useEffect(() => {
-    if (data && !isLoading && !error) {
+    if (!data || isLoading || error) return;
+
+    const fetchReleases = async () => {
       if (data.toString() === 'rate limit exceeded') {
         setError('Rate limit exceeded. Please try again later. Or check your API key.');
         return;
@@ -77,22 +80,20 @@ export function useReleaseNotes() {
         return;
       }
 
-      const fetchReleases = async () => {
-        const releases = await Promise.all(
-          data.releases.map(async (release) => ({
-            ...release,
-            created_at: new Date(release.created_at).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            }),
-            body: await compileMdx(release.body)
-          }))
-        );
-        setCompiledReleases(releases);
-      };
-      fetchReleases();
-    }
+      const releases = await Promise.all(
+        data.releases.map(async (release) => ({
+          ...release,
+          created_at: new Date(release.created_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          body: await compileMdx(release.body)
+        }))
+      );
+      setCompiledReleases(releases);
+    };
+    fetchReleases().catch(() => undefined);
   }, [data, isLoading, error]); // Add isLoading and error to the dependency array
 
   return { data: compiledReleases, error: error || swrError, isLoading } as const;

@@ -275,10 +275,11 @@ export class StorageDurability {
     const persistent = await this.currentPersistence();
     const { usageBytes, quotaBytes } = await this.currentUsage();
 
-    const nearQuota = usageBytes !== undefined
-      && quotaBytes !== undefined
-      && quotaBytes > 0
-      && usageBytes / quotaBytes >= this.nearQuotaRatio;
+    const nearQuota =
+      usageBytes !== undefined &&
+      quotaBytes !== undefined &&
+      quotaBytes > 0 &&
+      usageBytes / quotaBytes >= this.nearQuotaRatio;
 
     return {
       persistent,
@@ -318,6 +319,7 @@ export class StorageDurability {
  * browser-only reach happens in exactly one place.
  */
 export function browserStorageEnvironment(): StorageEnvironment {
+  // eslint-disable-next-line n/no-unsupported-features/node-builtins -- browser-global API in browser-targeted code; usage is guarded or browser-only by design
   const nav = typeof navigator === 'undefined' ? undefined : navigator;
   const storage = nav?.storage;
   const local = typeof localStorage === 'undefined' ? undefined : localStorage;
@@ -328,10 +330,10 @@ export function browserStorageEnvironment(): StorageEnvironment {
     persisted: storage?.persisted ? () => storage.persisted() : undefined,
     tombstone: local
       ? {
-        get: (key) => local.getItem(key),
-        set: (key, value) => local.setItem(key, value),
-        remove: (key) => local.removeItem(key)
-      }
+          get: (key) => local.getItem(key),
+          set: (key, value) => local.setItem(key, value),
+          remove: (key) => local.removeItem(key)
+        }
       : undefined
   };
 }

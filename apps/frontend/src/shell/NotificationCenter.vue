@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { CBadge, CDropdown, CDropdownHeader, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/vue';
+import {
+  CBadge,
+  CDropdown,
+  CDropdownHeader,
+  CDropdownItem,
+  CDropdownMenu,
+  CDropdownToggle
+} from '@coreui/vue';
 import { computed } from 'vue';
 
 import { useNotificationStore } from '@/stores/notifications';
@@ -7,11 +14,11 @@ import { useI18n } from '@/i18n';
 
 const { t } = useI18n();
 const notifications = useNotificationStore();
-const label = computed(() => (
+const label = computed(() =>
   notifications.unread > 0
     ? t('notifications.unread', { count: notifications.unread })
     : t('notifications.title')
-));
+);
 </script>
 
 <template>

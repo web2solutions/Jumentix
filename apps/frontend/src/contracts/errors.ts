@@ -39,9 +39,8 @@ export const formatApiError = (error: unknown): string => {
   }
 };
 
-export const isNotFoundError = (error: unknown): boolean => (
-  error instanceof Error && /REST request failed: 404(\s|$)/.test(error.message)
-);
+export const isNotFoundError = (error: unknown): boolean =>
+  error instanceof Error && /REST request failed: 404(\s|$)/.test(error.message);
 
 /** Status code of an SDK error, or undefined when it is not an HTTP failure. */
 export const apiErrorStatus = (error: unknown): number | undefined => {

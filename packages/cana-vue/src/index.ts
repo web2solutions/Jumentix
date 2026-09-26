@@ -1,32 +1,22 @@
-import {
-  onMounted,
-  onUnmounted,
-  ref,
-  shallowRef,
-  type Ref,
-  type ShallowRef
-} from 'vue';
-import type {
-  CanaChangeEvent,
-  CanaClient,
-  CanaQuery
-} from '@jumentix/cana';
-import {
-  applyCanaEventToRecords,
-  type CanaCollectionOptions,
-  type CanaRecordKeyReader
-} from './collection';
+import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
+
+import { applyCanaEventToRecords } from './collection';
+
+import type { CanaChangeEvent, CanaClient, CanaQuery } from '@jumentix/cana';
+import type { Ref, ShallowRef } from 'vue';
+
+import type { CanaCollectionOptions, CanaRecordKeyReader } from './collection';
 
 export type { CanaCollectionOptions, CanaRecordKeyReader };
 export { applyCanaEventToRecords };
 
 export type CanaVueStatus = 'idle' | 'loading' | 'ready' | 'error';
 
-export type UseCanaSubscriptionOptions = {
+export interface UseCanaSubscriptionOptions {
   enabled?: boolean;
   sinceCursor?: number;
   onError?: (error: unknown) => void;
-};
+}
 
 export function useCanaSubscription(
   client: Ref<CanaClient | null | undefined> | CanaClient | null | undefined,
@@ -35,11 +25,8 @@ export function useCanaSubscription(
 ): { stop: () => void } {
   let stopCurrent = () => {};
 
-  const currentClient = () => (
-    client && typeof client === 'object' && 'value' in client
-      ? client.value
-      : client
-  );
+  const currentClient = () =>
+    client && typeof client === 'object' && 'value' in client ? client.value : client;
 
   onMounted(() => {
     if (options.enabled === false) return;
@@ -68,7 +55,7 @@ export function useCanaSubscription(
   };
 }
 
-export type UseCanaLiveQueryOptions<TRecord> = {
+export interface UseCanaLiveQueryOptions<TRecord> {
   client: Ref<CanaClient | null | undefined> | CanaClient | null | undefined;
   store: string;
   query?: CanaQuery;
@@ -77,15 +64,15 @@ export type UseCanaLiveQueryOptions<TRecord> = {
   sort?: (a: TRecord, b: TRecord) => number;
   reloadOnEvent?: boolean;
   onError?: (error: unknown) => void;
-};
+}
 
-export type UseCanaLiveQueryResult<TRecord> = {
+export interface UseCanaLiveQueryResult<TRecord> {
   records: Ref<TRecord[]>;
   status: Ref<CanaVueStatus>;
   error: ShallowRef<unknown>;
   reload: () => Promise<TRecord[]>;
   stop: () => void;
-};
+}
 
 export function useCanaLiveQuery<TRecord>(
   options: UseCanaLiveQueryOptions<TRecord>
@@ -97,11 +84,10 @@ export function useCanaLiveQuery<TRecord>(
   let alive = true;
   const reloadOnEvent = options.reloadOnEvent ?? Boolean(options.query);
 
-  const currentClient = () => (
+  const currentClient = () =>
     options.client && typeof options.client === 'object' && 'value' in options.client
       ? options.client.value
-      : options.client
-  );
+      : options.client;
 
   const reload = async () => {
     const client = currentClient();
@@ -109,7 +95,7 @@ export function useCanaLiveQuery<TRecord>(
     status.value = 'loading';
     error.value = null;
     try {
-      const next = [...await client.table<TRecord>(options.store).query(options.query)];
+      const next = [...(await client.table<TRecord>(options.store).query(options.query))];
       if (options.sort) next.sort(options.sort);
       if (alive) {
         records.value = next;
@@ -163,12 +149,12 @@ export function useCanaLiveQuery<TRecord>(
   };
 }
 
-export type ConnectCanaToPiniaOptions = {
+export interface ConnectCanaToPiniaOptions {
   client: CanaClient;
   apply: (event: CanaChangeEvent) => void;
   sinceCursor?: number;
   onError?: (error: unknown) => void;
-};
+}
 
 export function connectCanaToPinia(options: ConnectCanaToPiniaOptions): {
   stop: () => void;
@@ -178,10 +164,13 @@ export function connectCanaToPinia(options: ConnectCanaToPiniaOptions): {
   let stop = () => {};
 
   try {
-    stop = options.client.subscribe((event) => {
-      options.apply(event);
-      lastCursor = event.cursor;
-    }, options.sinceCursor === undefined ? undefined : { sinceCursor: options.sinceCursor });
+    stop = options.client.subscribe(
+      (event) => {
+        options.apply(event);
+        lastCursor = event.cursor;
+      },
+      options.sinceCursor === undefined ? undefined : { sinceCursor: options.sinceCursor }
+    );
   } catch (error) {
     options.onError?.(error);
     throw error;

@@ -1,4 +1,4 @@
-import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type IKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
 
 import type { ICacheService } from './ICacheService';
 
@@ -11,7 +11,7 @@ interface ICacheServiceConfig {
   keyValueStorageClient: IKeyValueStorageClient;
 }
 
-export class CacheService implements ICacheService {
+class CacheService implements ICacheService {
   private readonly keyValueStorageClient: IKeyValueStorageClient;
 
   private constructor(config: ICacheServiceConfig) {
@@ -37,7 +37,7 @@ export class CacheService implements ICacheService {
   public async set<T = any>(key: string, value: T, ttlInSeconds?: number): Promise<void> {
     const envelope: ICacheEnvelope<T> = { value };
     if (ttlInSeconds && ttlInSeconds > 0) {
-      envelope.expiresAt = Date.now() + (ttlInSeconds * 1000);
+      envelope.expiresAt = Date.now() + ttlInSeconds * 1000;
     }
     await this.keyValueStorageClient.set(key, envelope);
   }
@@ -72,3 +72,5 @@ export class CacheService implements ICacheService {
     return new CacheService(config);
   }
 }
+
+export default CacheService;

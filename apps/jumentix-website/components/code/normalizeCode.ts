@@ -1,3 +1,5 @@
-export function trimTrailingBlankCodeLines(source: string): string {
+function trimTrailingBlankCodeLines(source: string): string {
   return source.replace(/(?:[ \t]*\r?\n)+[ \t]*$/u, '');
 }
+
+export default trimTrailingBlankCodeLines;

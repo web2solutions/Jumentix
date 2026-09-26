@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 function runCommand(command, args, cwd = process.cwd()) {
@@ -13,7 +14,8 @@ function runCommand(command, args, cwd = process.cwd()) {
 
 function readWorkspaceFolders(baseDir) {
   if (!fs.existsSync(baseDir)) return [];
-  return fs.readdirSync(baseDir)
+  return fs
+    .readdirSync(baseDir)
     .map((name) => path.join(baseDir, name))
     .filter((fullPath) => fs.statSync(fullPath).isDirectory());
 }
@@ -43,7 +45,9 @@ function dryRunApps(appsDir) {
     const hasBuild = typeof scripts.build === 'string' && scripts.build.trim().length > 0;
     const hasTest = typeof scripts.test === 'string' && scripts.test.trim().length > 0;
     if (!hasBuild || !hasTest) {
-      throw new Error(`App workspace ${pkg.name || appDir} is missing required build/test scripts for release readiness.`);
+      throw new Error(
+        `App workspace ${pkg.name || appDir} is missing required build/test scripts for release readiness.`
+      );
     }
     console.log(`[dry-run][app] ${pkg.name || appDir} -> build/test scripts present`);
   }

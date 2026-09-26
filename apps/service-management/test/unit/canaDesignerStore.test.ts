@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import path from 'node:path';
 
 /**
@@ -26,33 +25,31 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(__dirname, '../../../..');
 const {
-  IDesignerStore
-} = require('@jumentix/designer-core/store/IDesignerStore.js');
+  canaError,
+  createCanaDatabaseClient
+  // The REAL Cana module (jest maps `@jumentix/cana` to packages/cana/src).
+} = require('@jumentix/cana');
+const { default: IDesignerStore } = require('@jumentix/designer-core/store/IDesignerStore.js');
 
 const {
   CANA_BASELINE_KEY,
   CANA_DESIGNER_CLIENT_OPTIONS,
   CANA_STATE_KEY,
   CanaDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js'));
-const {
-  CANA_MODULE_SPECIFIER,
-  createDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'designerStoreFactory.js'));
-const {
-  canaError,
-  createCanaDatabaseClient
-  // The REAL Cana module (jest maps `@jumentix/cana` to packages/cana/src).
-  // eslint-disable-next-line import/no-unresolved
-} = require('@jumentix/cana');
+} = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js')
+);
+const { CANA_MODULE_SPECIFIER, createDesignerStore } = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'designerStoreFactory.js')
+);
 
-type StorageStateScript = {
+interface StorageStateScript {
   persistent?: boolean | 'unknown';
   usageBytes?: number;
   quotaBytes?: number;
   nearQuota?: boolean;
   evicted?: boolean;
-};
+}
 
 /**
  * Declared in-memory double of the Cana client contract the adapter consumes
@@ -75,10 +72,17 @@ function createCanaClientDouble(initial: Record<string, string> = {}) {
     openAttempts: 0
   };
 
+  // The double re-throws the scripted value verbatim — including non-Error
+  // values such as `0` — so the adapter's foreign-throw mapping is genuinely
+  // exercised; wrapping it in an Error here would fake the scenario.
+  const throwScripted = (value: unknown): never => {
+    throw value;
+  };
+
   const client = {
     async open() {
       script.openAttempts += 1;
-      if (script.openError !== undefined) throw script.openError;
+      if (script.openError !== undefined) throwScripted(script.openError);
       script.opened = true;
     },
     async close() {
@@ -88,7 +92,7 @@ function createCanaClientDouble(initial: Record<string, string> = {}) {
       return {
         name,
         async get(key: string) {
-          if (script.readError !== undefined) throw script.readError;
+          if (script.readError !== undefined) throwScripted(script.readError);
           return records.has(key) ? records.get(key) : undefined;
         }
       };
@@ -101,12 +105,12 @@ function createCanaClientDouble(initial: Record<string, string> = {}) {
       const scope = {
         table: () => ({
           async put(value: string, key: string) {
-            if (script.writeError !== undefined) throw script.writeError;
+            if (script.writeError !== undefined) throwScripted(script.writeError);
             records.set(key, value);
             return { outcome: 'committed', events: [] };
           },
           async delete(key: string) {
-            if (script.writeError !== undefined) throw script.writeError;
+            if (script.writeError !== undefined) throwScripted(script.writeError);
             records.delete(key);
             return { outcome: 'committed', events: [] };
           }
@@ -124,7 +128,10 @@ function createCanaClientDouble(initial: Record<string, string> = {}) {
     },
     async storageState() {
       return {
-        persistent: true, nearQuota: false, evicted: false, ...script.storageState
+        persistent: true,
+        nearQuota: false,
+        evicted: false,
+        ...script.storageState
       };
     }
   };
@@ -153,13 +160,13 @@ describe('cana designer store — port identity (JUM-483)', () => {
     const { client } = createCanaClientDouble();
     const store = new CanaDesignerStore({ client });
     expect(store).toBeInstanceOf(IDesignerStore);
-    await expect(store.probe()).resolves.toBeDefined();
-    await expect(store.load()).resolves.toBeDefined();
-    await expect(store.save({})).resolves.toBeDefined();
-    await expect(store.clear()).resolves.toBeDefined();
-    await expect(store.loadBaseline()).resolves.toBeDefined();
-    await expect(store.saveBaseline({})).resolves.toBeDefined();
-    await expect(store.clearBaseline()).resolves.toBeDefined();
+    await expect(store.probe() as Promise<unknown>).resolves.toBeDefined();
+    await expect(store.load() as Promise<unknown>).resolves.toBeDefined();
+    await expect(store.save({}) as Promise<unknown>).resolves.toBeDefined();
+    await expect(store.clear() as Promise<unknown>).resolves.toBeDefined();
+    await expect(store.loadBaseline() as Promise<unknown>).resolves.toBeDefined();
+    await expect(store.saveBaseline({}) as Promise<unknown>).resolves.toBeDefined();
+    await expect(store.clearBaseline() as Promise<unknown>).resolves.toBeDefined();
   });
 
   it('pins the Requirement 126 Contract 2 record keys and database shape', () => {
@@ -204,7 +211,11 @@ describe('cana designer store — happy path and wire format', () => {
     const snapshot = {
       domains: [
         {
-          id: 'domain-1', name: 'Billing', color: '#fff', context: {}, entities: []
+          id: 'domain-1',
+          name: 'Billing',
+          color: '#fff',
+          context: {},
+          entities: []
         }
       ],
       relationships: []
@@ -363,7 +374,11 @@ describe('cana designer store — quota and unknown outcomes, surfaced distinctl
     expect.hasAssertions();
     const { client, script } = createCanaClientDouble();
     script.storageState = {
-      persistent: false, nearQuota: true, usageBytes: 900, quotaBytes: 1000, evicted: false
+      persistent: false,
+      nearQuota: true,
+      usageBytes: 900,
+      quotaBytes: 1000,
+      evicted: false
     };
     const store = new CanaDesignerStore({ client });
     const probe = await store.probe();

@@ -1,10 +1,14 @@
-import type { IKeyValueStorageClient } from './contracts';
-import { InMemoryKeyValueStorageClient } from './InMemoryKeyValueStorageClient';
+import InMemoryKeyValueStorageClient from './InMemoryKeyValueStorageClient';
 import { RedisKeyValueStorageClient } from './RedisKeyValueStorageClient';
 
-const normalizeDriver = (value?: string): string => String(value || '').trim().toLowerCase();
+import type { IKeyValueStorageClient } from './contracts';
 
-export const compileKeyValueStorageClient = (
+const normalizeDriver = (value?: string): string =>
+  String(value || '')
+    .trim()
+    .toLowerCase();
+
+const compileKeyValueStorageClient = (
   driver = process.env.JUMENTIX_KEYVALUESTORAGE_DRIVER
 ): IKeyValueStorageClient => {
   const normalizedDriver = normalizeDriver(driver);
@@ -13,3 +17,5 @@ export const compileKeyValueStorageClient = (
   }
   return RedisKeyValueStorageClient.compile();
 };
+
+export default compileKeyValueStorageClient;

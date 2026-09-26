@@ -2,7 +2,7 @@
  * macOS desktop apps shipped by @gfazioli.
  */
 
-export const apps = [
+const apps = [
   {
     key: 'findergit',
     title: 'Findergit',
@@ -19,3 +19,5 @@ export const apps = [
     href: 'https://gfazioli.github.io/octoscope/'
   }
 ];
+
+export default apps;

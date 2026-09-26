@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: packages/cli-init/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # @jumentix/cli-init
 
 CLI geradora de fábrica do Jumentix (Requisito `037` v2).
@@ -50,12 +51,12 @@ com exclusões de `.agents`, `node_modules`, `coverage`, `dist`, `OASdoc`,
 `init --from` / `--preset` normalizam cada fonte aceita em um
 **GenerationPlan** antes de escrever arquivos:
 
-| Fonte | Flag | Loader |
-| --- | --- | --- |
-| Export JSON do designer | `--from=export.json` | `loadDesignerExportSource` |
-| OpenAPI 3.x YAML/JSON | `--from=spec.yml` | `loadOasSource` |
-| URL de catálogo | `--from=https://…` | `loadCatalogSource` |
-| Preset Users | `--preset=users` (padrão sem `--from`) | `loadPresetSource` |
+| Fonte                   | Flag                                   | Loader                     |
+| ----------------------- | -------------------------------------- | -------------------------- |
+| Export JSON do designer | `--from=export.json`                   | `loadDesignerExportSource` |
+| OpenAPI 3.x YAML/JSON   | `--from=spec.yml`                      | `loadOasSource`            |
+| URL de catálogo         | `--from=https://…`                     | `loadCatalogSource`        |
+| Preset Users            | `--preset=users` (padrão sem `--from`) | `loadPresetSource`         |
 
 O modo é inferido da arquitetura (um serviço → `monolith`) salvo `--mode`.
 Validação falha fechada com mensagens nomeadas (exit 1): sem serviço core;
@@ -118,11 +119,11 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 Execute dentro de um projeto gerado (exige `.jumentix/project.json`):
 
-| Comando | Efeito |
-| --- | --- |
+| Comando                                                  | Efeito                                                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `jumentix add domain <name> [--from …] [--service <id>]` | Injeta domínio hexagonal no Core (ou `--service`) e atualiza módulos do frontend se existir |
-| `jumentix add service <name> --domains a,b` | Cria `apps/<name>` em modo services/hybrid e move a posse dos domínios |
-| `jumentix add frontend [--offline]` | Adiciona `apps/frontend` a um projeto só-backend (mode → `hybrid`) |
+| `jumentix add service <name> --domains a,b`              | Cria `apps/<name>` em modo services/hybrid e move a posse dos domínios                      |
+| `jumentix add frontend [--offline]`                      | Adiciona `apps/frontend` a um projeto só-backend (mode → `hybrid`)                          |
 
 Drift do manifesto é recusado sem `--force`. Metadados ausentes saem com código `1`.
 
@@ -132,11 +133,11 @@ Drift do manifesto é recusado sem `--force`. Metadados ausentes saem com códig
 templates atual sobre o projeto gerado, usando hashes de
 `.jumentix/manifest.json` e blobs de baseline em `.jumentix/objects/<sha256>`:
 
-| Status | Significado |
-| --- | --- |
-| updated | Sem edição local → template, ou auto-merge limpo |
-| conflicted | Edições sobrepostas — marcadores de conflito no arquivo |
-| skipped | Sem mudança de template, ou só edições locais |
+| Status          | Significado                                                    |
+| --------------- | -------------------------------------------------------------- |
+| updated         | Sem edição local → template, ou auto-merge limpo               |
+| conflicted      | Edições sobrepostas — marcadores de conflito no arquivo        |
+| skipped         | Sem mudança de template, ou só edições locais                  |
 | added / removed | Novos caminhos / aposentados (arquivos aposentados permanecem) |
 
 `--dry-run` imprime o relatório sem gravar. Árvore git suja exige `--force`.
@@ -146,10 +147,10 @@ Ao aplicar, grava `.jumentix/upgrade-<version>.md`.
 
 `jumentix doctor` reporta saúde do ambiente e do projeto:
 
-| Área | Verificações |
-| --- | --- |
-| environment | versão do bun (obrigatório), node ≥20 se presente, docker |
-| project | `.jumentix/project.json` + mode, versão do template vs CLI, diretórios `apps/*` esperados, drift do manifesto |
+| Área        | Verificações                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------- |
+| environment | versão do bun (obrigatório), node ≥20 se presente, docker                                                     |
+| project     | `.jumentix/project.json` + mode, versão do template vs CLI, diretórios `apps/*` esperados, drift do manifesto |
 
 Saída `0` quando saudável, `1` para blockers de projeto, `2` para blockers de
 ambiente (por exemplo bun ausente).

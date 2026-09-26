@@ -1,94 +1,77 @@
-/* eslint-disable jest/prefer-expect-assertions */
 /* eslint-disable jest/max-expects */
 import {
-  throwIfNotFound,
-  throwIfValuesAreDifferent,
-  throwIfIsNotObject,
+  canNotBeEmpty,
   canNotWriteDirectly,
-  mustBeNumeric,
-  mustBePassword,
   mustBeArray,
   mustBeGreaterThanZero,
-  throwIfReadOnly,
+  mustBeNumeric,
+  mustBePassword,
   mustBePositiveNumber,
+  mustEndsAtLeastInMinutes,
+  throwIfIsNotObject,
+  throwIfNotFound,
   throwIfPreUpdateValidationFails,
-  canNotBeEmpty,
-  mustEndsAtLeastInMinutes
+  throwIfReadOnly,
+  throwIfValuesAreDifferent
 } from '@src/shared/validators';
 
 describe('domain validators', () => {
   it('throwIfNotFound must throw', async () => {
     expect.hasAssertions();
-    expect(
-      () => {
-        throwIfNotFound(false);
-      }
-    ).toThrow('Record not found');
+    expect(() => {
+      throwIfNotFound(false);
+    }).toThrow('Record not found');
   });
   it('throwIfValuesAreDifferent must throw', async () => {
     expect.hasAssertions();
-    expect(
-      () => {
-        throwIfValuesAreDifferent([1, 2]);
-      }
-    ).toThrow('The provided values are different');
+    expect(() => {
+      throwIfValuesAreDifferent([1, 2]);
+    }).toThrow('The provided values are different');
   });
   it('throwIfIsNotObject must throw with field name', async () => {
     expect.hasAssertions();
     const field = 'field name';
-    expect(
-      () => {
-        throwIfIsNotObject(field, []);
-      }
-    ).toThrow(`The property ${field} must be an object`);
+    expect(() => {
+      throwIfIsNotObject(field, []);
+    }).toThrow(`The property ${field} must be an object`);
   });
   it('throwIfIsNotObject must throw for primitive value', async () => {
     expect.hasAssertions();
     const field = 'field name';
-    expect(
-      () => {
-        throwIfIsNotObject(field, 'not-an-object' as any);
-      }
-    ).toThrow(`The property ${field} must be an object`);
+    expect(() => {
+      throwIfIsNotObject(field, 'not-an-object' as any);
+    }).toThrow(`The property ${field} must be an object`);
   });
   it('canNotWriteDirectly must throw with field name', async () => {
     expect.hasAssertions();
     const field = 'field name';
-    expect(
-      () => {
-        canNotWriteDirectly(field);
-      }
-    ).toThrow(`The property ${field} can not be directly changed`);
+    expect(() => {
+      canNotWriteDirectly(field);
+    }).toThrow(`The property ${field} can not be directly changed`);
   });
   it('mustBeNumeric must throw with field name', async () => {
     expect.hasAssertions();
     const field = 'field name';
     const value = 'bb';
-    expect(
-      () => {
-        mustBeNumeric(field, value as any);
-      }
-    ).toThrow(`${field} must be a number`);
+    expect(() => {
+      mustBeNumeric(field, value as any);
+    }).toThrow(`${field} must be a number`);
   });
   it('mustBePassword must be string', async () => {
     expect.hasAssertions();
     const field = 'password field';
     const value = 12345678;
-    expect(
-      () => {
-        mustBePassword(field, value as any);
-      }
-    ).toThrow(`${field} must be a string.`);
+    expect(() => {
+      mustBePassword(field, value as any);
+    }).toThrow(`${field} must be a string.`);
   });
   it('mustBePassword must have at least 8 chars', async () => {
     expect.hasAssertions();
     const field = 'password field';
     const value = '1234567';
-    expect(
-      () => {
-        mustBePassword(field, value as any);
-      }
-    ).toThrow(`${field} must have at least 8 chars.`);
+    expect(() => {
+      mustBePassword(field, value);
+    }).toThrow(`${field} must have at least 8 chars.`);
   });
   it('mustBePassword strict policy branches', async () => {
     expect.hasAssertions();
@@ -96,10 +79,18 @@ describe('domain validators', () => {
     const previous = process.env.JUMENTIX_STRICT_PASSWORD_POLICY;
     process.env.JUMENTIX_STRICT_PASSWORD_POLICY = 'yes';
     try {
-      expect(() => mustBePassword(field, 'lower123!')).toThrow(`${field} must include at least one uppercase letter.`);
-      expect(() => mustBePassword(field, 'UPPER123!')).toThrow(`${field} must include at least one lowercase letter.`);
-      expect(() => mustBePassword(field, 'Uppercase!')).toThrow(`${field} must include at least one number.`);
-      expect(() => mustBePassword(field, 'Upper1234')).toThrow(`${field} must include at least one symbol.`);
+      expect(() => mustBePassword(field, 'lower123!')).toThrow(
+        `${field} must include at least one uppercase letter.`
+      );
+      expect(() => mustBePassword(field, 'UPPER123!')).toThrow(
+        `${field} must include at least one lowercase letter.`
+      );
+      expect(() => mustBePassword(field, 'Uppercase!')).toThrow(
+        `${field} must include at least one number.`
+      );
+      expect(() => mustBePassword(field, 'Upper1234')).toThrow(
+        `${field} must include at least one symbol.`
+      );
       expect(() => mustBePassword(field, 'Upper123!')).not.toThrow();
     } finally {
       process.env.JUMENTIX_STRICT_PASSWORD_POLICY = previous;
@@ -109,123 +100,99 @@ describe('domain validators', () => {
     expect.hasAssertions();
     const field = 'password field';
     const value = '1234567';
-    expect(
-      () => {
-        mustBeArray(field, value as any);
-      }
-    ).toThrow(`${field} must be an array`);
+    expect(() => {
+      mustBeArray(field, value as any);
+    }).toThrow(`${field} must be an array`);
   });
   it('mustBeGreaterThanZero throw with field name', async () => {
     expect.hasAssertions();
     const field = 'fake field';
     const value = -1;
-    expect(
-      () => {
-        mustBeGreaterThanZero(field, value as any);
-      }
-    ).toThrow(`${field} must be greater than 0`);
+    expect(() => {
+      mustBeGreaterThanZero(field, value);
+    }).toThrow(`${field} must be greater than 0`);
   });
   it('mustBeGreaterThanZero throw must be a number', async () => {
     expect.hasAssertions();
     const field = 'fake field';
     const value = 'a';
-    expect(
-      () => {
-        mustBeGreaterThanZero(field, value as any);
-      }
-    ).toThrow(`${field} must be a number.`);
+    expect(() => {
+      mustBeGreaterThanZero(field, value as any);
+    }).toThrow(`${field} must be a number.`);
   });
 
   it('mustBePositiveNumber throw with field name', async () => {
     expect.hasAssertions();
     const field = 'fake field';
     const value = -1;
-    expect(
-      () => {
-        mustBePositiveNumber(field, value as any);
-      }
-    ).toThrow(`${field} must be a positive number`);
+    expect(() => {
+      mustBePositiveNumber(field, value);
+    }).toThrow(`${field} must be a positive number`);
   });
   it('mustBePositiveNumber throw must be a number', async () => {
     expect.hasAssertions();
     const field = 'fake field';
     const value = 'a';
-    expect(
-      () => {
-        mustBePositiveNumber(field, value as any);
-      }
-    ).toThrow(`${field} must be a number.`);
+    expect(() => {
+      mustBePositiveNumber(field, value as any);
+    }).toThrow(`${field} must be a number.`);
   });
 
   it('throwIfReadOnly must throw with field name', async () => {
     expect.hasAssertions();
     const field = 'field name';
-    expect(
-      () => {
-        throwIfReadOnly(field, true);
-      }
-    ).toThrow(`Can not write to ${field}. The model is read only`);
+    expect(() => {
+      throwIfReadOnly(field, true);
+    }).toThrow(`Can not write to ${field}. The model is read only`);
   });
 
   it('throwIfPreUpdateValidationFails', async () => {
     expect.hasAssertions();
     const id = '1';
-    expect(
-      () => {
-        throwIfPreUpdateValidationFails(id, { id: '2' });
-      }
-    ).toThrow('id and data.id must match');
+    expect(() => {
+      throwIfPreUpdateValidationFails(id, { id: '2' });
+    }).toThrow('id and data.id must match');
   });
 
   it('canNotBeEmpty string', async () => {
     expect.hasAssertions();
     const field = 'field name';
     const value = '';
-    expect(
-      () => {
-        canNotBeEmpty(field, value);
-      }
-    ).toThrow(`${field} can not be empty`);
+    expect(() => {
+      canNotBeEmpty(field, value);
+    }).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty null', async () => {
     expect.hasAssertions();
     const field = 'field name';
     const value = null;
-    expect(
-      () => {
-        canNotBeEmpty(field, value);
-      }
-    ).toThrow(`${field} can not be empty`);
+    expect(() => {
+      canNotBeEmpty(field, value);
+    }).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty undefined', async () => {
     expect.hasAssertions();
     const field = 'field name';
     const value = undefined;
-    expect(
-      () => {
-        canNotBeEmpty(field, value);
-      }
-    ).toThrow(`${field} can not be empty`);
+    expect(() => {
+      canNotBeEmpty(field, value);
+    }).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty []', async () => {
     expect.hasAssertions();
     const field = 'field name';
     const value: any = [];
-    expect(
-      () => {
-        canNotBeEmpty(field, value as any);
-      }
-    ).toThrow(`${field} can not be empty`);
+    expect(() => {
+      canNotBeEmpty(field, value);
+    }).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty {}', async () => {
     expect.hasAssertions();
     const field = 'field name';
     const value: any = {};
-    expect(
-      () => {
-        canNotBeEmpty(field, value as any);
-      }
-    ).toThrow(`${field} can not be empty`);
+    expect(() => {
+      canNotBeEmpty(field, value);
+    }).toThrow(`${field} can not be empty`);
   });
   it('canNotBeEmpty allows non-empty values', async () => {
     expect.hasAssertions();
@@ -250,22 +217,18 @@ describe('domain validators', () => {
     const twoHoursBefore = new Date();
     twoHoursBefore.setHours(twoHoursBefore.getHours() - 2);
     const minutesIntheFuture = 5;
-    expect(
-      () => {
-        mustEndsAtLeastInMinutes(twoHoursBefore, minutesIntheFuture);
-      }
-    ).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
+    expect(() => {
+      mustEndsAtLeastInMinutes(twoHoursBefore, minutesIntheFuture);
+    }).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
   });
   it('mustEndsAtLeastInMinutes must ends before 5 minutes - 10 minutes in the past', async () => {
     expect.hasAssertions();
-    const _10MinutesBefore = new Date();
-    _10MinutesBefore.setMinutes(_10MinutesBefore.getMinutes() - 10);
+    const tenMinutesBefore = new Date();
+    tenMinutesBefore.setMinutes(tenMinutesBefore.getMinutes() - 10);
     const minutesIntheFuture = 5;
-    expect(
-      () => {
-        mustEndsAtLeastInMinutes(_10MinutesBefore, minutesIntheFuture);
-      }
-    ).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
+    expect(() => {
+      mustEndsAtLeastInMinutes(tenMinutesBefore, minutesIntheFuture);
+    }).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
   });
   // eslint-disable-next-line jest/no-commented-out-tests
   /* it('mustEndsAtLeastInMinutes must ends before 5 minutes - 1 day in the past', async () => {
@@ -284,33 +247,27 @@ describe('domain validators', () => {
     const oneMonthPast = new Date();
     oneMonthPast.setMonth(oneMonthPast.getMonth() - 1);
     const minutesIntheFuture = 5;
-    expect(
-      () => {
-        mustEndsAtLeastInMinutes(oneMonthPast, minutesIntheFuture);
-      }
-    ).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
+    expect(() => {
+      mustEndsAtLeastInMinutes(oneMonthPast, minutesIntheFuture);
+    }).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
   });
   it('mustEndsAtLeastInMinutes must ends before 5 minutes - 10 year in the past', async () => {
     expect.hasAssertions();
-    const _10YearsBefore = new Date();
-    _10YearsBefore.setFullYear(_10YearsBefore.getFullYear() - 10);
+    const tenYearsBefore = new Date();
+    tenYearsBefore.setFullYear(tenYearsBefore.getFullYear() - 10);
     const minutesIntheFuture = 5;
-    expect(
-      () => {
-        mustEndsAtLeastInMinutes(_10YearsBefore, minutesIntheFuture);
-      }
-    ).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
+    expect(() => {
+      mustEndsAtLeastInMinutes(tenYearsBefore, minutesIntheFuture);
+    }).toThrow(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
   });
 
   it('mustEndsAtLeastInMinutes validates same-hour minute threshold', () => {
     expect.hasAssertions();
     jest.useFakeTimers().setSystemTime(new Date('2026-06-26T10:00:00.000Z'));
     try {
-      expect(
-        () => {
-          mustEndsAtLeastInMinutes(new Date('2026-06-26T10:03:00.000Z'), 5);
-        }
-      ).toThrow('Event must ends in at least 5 minutes in the future');
+      expect(() => {
+        mustEndsAtLeastInMinutes(new Date('2026-06-26T10:03:00.000Z'), 5);
+      }).toThrow('Event must ends in at least 5 minutes in the future');
     } finally {
       jest.useRealTimers();
     }

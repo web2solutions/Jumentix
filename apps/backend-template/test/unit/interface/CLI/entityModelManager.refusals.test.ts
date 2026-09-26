@@ -1,4 +1,5 @@
-import { entityModelManagerSubApplication } from '@src/interface/CLI/subapps/entityModelManager';
+import entityModelManagerSubApplication from '@src/interface/CLI/subapps/entityModelManager';
+
 import type { IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 /**
@@ -43,9 +44,13 @@ function scriptedContext(catalog: IWorkspaceCatalog, chooses: number[], asks: st
         askIndex += 1;
         return value;
       },
-      log: (message: string) => { logs.push(message); },
+      log: (message: string) => {
+        logs.push(message);
+      },
       loadCatalog: async () => catalog,
-      saveCatalog: async (next: IWorkspaceCatalog) => { saved.push(next); }
+      saveCatalog: async (next: IWorkspaceCatalog) => {
+        saved.push(next);
+      }
     }
   };
 }
@@ -58,27 +63,31 @@ const emptyCatalog = (): IWorkspaceCatalog => ({
 
 const catalogWithEntity = (): IWorkspaceCatalog => ({
   version: 1,
-  domains: [{
-    id: 'd1',
-    name: 'Billing',
-    description: 'invoices and payments',
-    boundedContext: '',
-    status: 'active',
-    tags: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z'
-  }],
-  entities: [{
-    id: 'e1',
-    name: 'Invoice',
-    domain: 'Billing',
-    kind: 'entity',
-    description: 'a customer invoice',
-    fields: [],
-    behaviors: [],
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z'
-  }]
+  domains: [
+    {
+      id: 'd1',
+      name: 'Billing',
+      description: 'invoices and payments',
+      boundedContext: '',
+      status: 'active',
+      tags: [],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z'
+    }
+  ],
+  entities: [
+    {
+      id: 'e1',
+      name: 'Invoice',
+      domain: 'Billing',
+      kind: 'entity',
+      description: 'a customer invoice',
+      fields: [],
+      behaviors: [],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z'
+    }
+  ]
 });
 
 describe('entity manager refusals (JUM-681)', () => {
@@ -87,7 +96,7 @@ describe('entity manager refusals (JUM-681)', () => {
 
     const run = scriptedContext(emptyCatalog(), [0, BACK], []);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('No entities/models registered.');
   });
@@ -97,7 +106,7 @@ describe('entity manager refusals (JUM-681)', () => {
 
     const run = scriptedContext(catalogWithEntity(), [1, BACK], ['nothing-like-this']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('No matching entities/models.');
   });
@@ -110,7 +119,7 @@ describe('entity manager refusals (JUM-681)', () => {
     // above, whose name and domain both contain "i".
     const run = scriptedContext(catalogWithEntity(), [1, BACK], ['billing']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('Found 1 item(s):');
   });
@@ -120,7 +129,7 @@ describe('entity manager refusals (JUM-681)', () => {
 
     const run = scriptedContext(catalogWithEntity(), [1, BACK], ['customer invoice']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('Found 1 item(s):');
   });
@@ -132,7 +141,7 @@ describe('entity manager refusals (JUM-681)', () => {
     // the CLI cannot select, delete or repair.
     const run = scriptedContext(emptyCatalog(), [2, BACK], ['']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('Name is required.');
     expect(run.saved).toHaveLength(0);
@@ -146,7 +155,7 @@ describe('entity manager refusals (JUM-681)', () => {
     // under "".
     const run = scriptedContext(emptyCatalog(), [2, 0, BACK], ['Invoice', '']);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('Domain is required.');
     expect(run.saved).toHaveLength(0);
@@ -159,9 +168,9 @@ describe('entity manager refusals (JUM-681)', () => {
     const remove = scriptedContext(emptyCatalog(), [4, BACK], []);
     const fields = scriptedContext(emptyCatalog(), [5, BACK], []);
 
-    await entityModelManagerSubApplication.run(update.context as never);
-    await entityModelManagerSubApplication.run(remove.context as never);
-    await entityModelManagerSubApplication.run(fields.context as never);
+    await entityModelManagerSubApplication.run(update.context);
+    await entityModelManagerSubApplication.run(remove.context);
+    await entityModelManagerSubApplication.run(fields.context);
 
     expect(update.logs.join('\n')).toContain('No entities');
     expect(remove.logs.join('\n')).toContain('No entities');
@@ -173,7 +182,7 @@ describe('entity manager refusals (JUM-681)', () => {
 
     const run = scriptedContext(catalogWithEntity(), [BACK], []);
 
-    await entityModelManagerSubApplication.run(run.context as never);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toStrictEqual([]);
     expect(run.saved).toHaveLength(0);

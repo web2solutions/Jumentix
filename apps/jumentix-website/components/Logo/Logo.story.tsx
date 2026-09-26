@@ -1,7 +1,7 @@
 import { Logo } from './Logo';
 
 export default {
-  title: 'Logo',
+  title: 'Logo'
 };
 
 export const Usage = () => <Logo />;

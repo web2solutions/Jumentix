@@ -1,6 +1,5 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import AppTaskbar from '@/components/AppTaskbar.vue';

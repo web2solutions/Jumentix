@@ -1,12 +1,12 @@
-import {
-  afterEach, beforeEach, describe, expect, it, mock
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
-import { useAuthStore } from '@/stores/auth';
-import { useProfileStore, type UserRecord } from '@/stores/profile';
-
 import { setLocale } from '@/i18n';
+import { useAuthStore } from '@/stores/auth';
+import { useProfileStore } from '@/stores/profile';
+
+import type { UserRecord } from '@/stores/profile';
 
 interface RecordedCall {
   url: string;
@@ -23,9 +23,14 @@ const recordFixture: UserRecord = {
   lastName: '',
   avatar: 'avatar.png',
   username: 'me@mydomain.com',
-  emails: [{
-    id: 'email-9', type: 'work', email: 'me@mydomain.com', isPrimary: true
-  }],
+  emails: [
+    {
+      id: 'email-9',
+      type: 'work',
+      email: 'me@mydomain.com',
+      isPrimary: true
+    }
+  ],
   documents: [],
   phones: []
 };
@@ -130,7 +135,11 @@ describe('profile store (JUM-761)', () => {
 
     expect(recorded[0].method).toBe('POST');
     expect(recorded[0].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/createEmail');
-    expect(recorded[0].body).toEqual({ email: 'other@mydomain.com', type: 'personal', isPrimary: false });
+    expect(recorded[0].body).toEqual({
+      email: 'other@mydomain.com',
+      type: 'personal',
+      isPrimary: false
+    });
     expect(recorded[1].method).toBe('GET');
   });
 
@@ -140,11 +149,15 @@ describe('profile store (JUM-761)', () => {
 
     await profile.updateEmail('email-9', { type: 'personal' });
     expect(recorded[0].method).toBe('PUT');
-    expect(recorded[0].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/updateEmail/email-9');
+    expect(recorded[0].url).toBe(
+      'http://localhost:3001/api/1.0.0/users/user-1/updateEmail/email-9'
+    );
 
     await profile.removeEmail('email-9');
     expect(recorded[2].method).toBe('DELETE');
-    expect(recorded[2].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/deleteEmail/email-9');
+    expect(recorded[2].url).toBe(
+      'http://localhost:3001/api/1.0.0/users/user-1/deleteEmail/email-9'
+    );
   });
 
   it('adds documents and phones through createDocument/createPhone', async () => {
@@ -156,7 +169,10 @@ describe('profile store (JUM-761)', () => {
     expect(recorded[0].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/createDocument');
 
     await profile.addPhone({
-      countryCode: '+55', localCode: '11', number: '98765-4321', isPrimary: true
+      countryCode: '+55',
+      localCode: '11',
+      number: '98765-4321',
+      isPrimary: true
     });
     expect(recorded[2].method).toBe('POST');
     expect(recorded[2].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/createPhone');
@@ -168,11 +184,15 @@ describe('profile store (JUM-761)', () => {
 
     await profile.removeDocument('doc-1');
     expect(recorded[0].method).toBe('DELETE');
-    expect(recorded[0].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/deleteDocument/doc-1');
+    expect(recorded[0].url).toBe(
+      'http://localhost:3001/api/1.0.0/users/user-1/deleteDocument/doc-1'
+    );
 
     await profile.removePhone('phone-1');
     expect(recorded[2].method).toBe('DELETE');
-    expect(recorded[2].url).toBe('http://localhost:3001/api/1.0.0/users/user-1/deletePhone/phone-1');
+    expect(recorded[2].url).toBe(
+      'http://localhost:3001/api/1.0.0/users/user-1/deletePhone/phone-1'
+    );
   });
 
   it('fails every action without an authenticated user id', async () => {

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+/* eslint-disable no-console */
 import { execSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -24,7 +24,8 @@ const run = async () => {
   for (const file of files) {
     const absolute = path.join(ROOT, file);
     const sourceDir = path.dirname(absolute);
-    let content = await fs.readFile(absolute, 'utf-8');
+    // eslint-disable-next-line no-await-in-loop -- files are rewritten one at a time so a failure leaves a deterministic, partially-applied tree
+    const content = await fs.readFile(absolute, 'utf-8');
 
     const next = content.replace(/\]\(([^)\s]+\.md(?:#[^)]+)?)\)/g, (match, rawTarget) => {
       const [targetPath, hash = ''] = rawTarget.split('#');
@@ -44,6 +45,7 @@ const run = async () => {
     });
 
     if (next !== content) {
+      // eslint-disable-next-line no-await-in-loop -- files are rewritten one at a time so a failure leaves a deterministic, partially-applied tree
       await fs.writeFile(absolute, next, 'utf-8');
       changed += 1;
     }
@@ -54,5 +56,5 @@ const run = async () => {
 
 run().catch((error) => {
   console.error('[pt-BR docs] erro ao ajustar links:', error.message);
-  process.exit(1);
+  process.exitCode = 1;
 });

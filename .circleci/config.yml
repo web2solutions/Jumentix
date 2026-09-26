@@ -365,6 +365,11 @@ jobs:
             source "$BASH_ENV"
             bun run frontend:test:coverage
       - run:
+          name: Produce config-eslint coverage for the patch report
+          command: |
+            source "$BASH_ENV"
+            bun run --cwd packages/config-eslint test:coverage
+      - run:
           name: Enforce patch coverage
           command: |
             source "$BASH_ENV"

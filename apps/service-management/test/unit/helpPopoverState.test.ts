@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 /*
  * JUM-770 — the process-help popover is tracked by process key outside the
  * DOM so it can be re-opened after every WebSocket-driven table rebuild.

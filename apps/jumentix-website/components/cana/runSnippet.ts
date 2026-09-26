@@ -1,9 +1,9 @@
 export type CanaRuntimeApi = Record<string, unknown>;
 
-export type SnippetRunResult = {
+export interface SnippetRunResult {
   result: unknown;
   logs: string[];
-};
+}
 
 type ConsoleMethod = (...args: unknown[]) => void;
 
@@ -48,7 +48,7 @@ export async function runCanaSnippet(
   };
 
   // Capture playground console output into the result panel.
-  /* eslint-disable no-console -- intentional console capture for playground UI */
+
   consoleRef.log = (...args: unknown[]) => {
     push(...args);
     originalLog(...args);
@@ -61,37 +61,35 @@ export async function runCanaSnippet(
     push(...args);
     originalWarn(...args);
   };
-  /* eslint-enable no-console */
 
   const source = `
-const cana = globalThis.__CANA_PLAYGROUND_API__;
-const dbName = globalThis.__CANA_PLAYGROUND_DB__;
+const cana = globalThis.CANA_PLAYGROUND_API;
+const dbName = globalThis.CANA_PLAYGROUND_DB;
 export default async function __canaPlaygroundMain() {
 ${code}
 }
 `;
   const blob = new Blob([source], { type: 'text/javascript' });
-  const blobUrl = URL.createObjectURL(blob);
+  const blobUrl = window.URL.createObjectURL(blob);
   const host = globalThis as typeof globalThis & {
-    __CANA_PLAYGROUND_API__?: CanaRuntimeApi;
-    __CANA_PLAYGROUND_DB__?: string;
+    CANA_PLAYGROUND_API?: CanaRuntimeApi;
+    CANA_PLAYGROUND_DB?: string;
   };
 
   try {
-    host.__CANA_PLAYGROUND_API__ = cana;
-    host.__CANA_PLAYGROUND_DB__ = dbName;
+    host.CANA_PLAYGROUND_API = cana;
+    host.CANA_PLAYGROUND_DB = dbName;
     const mod = await importBlobModule(blobUrl);
     const result = await mod.default();
     return { result, logs };
   } finally {
-    URL.revokeObjectURL(blobUrl);
-    delete host.__CANA_PLAYGROUND_API__;
-    delete host.__CANA_PLAYGROUND_DB__;
-    /* eslint-disable no-console -- restore captured console methods */
+    window.URL.revokeObjectURL(blobUrl);
+    delete host.CANA_PLAYGROUND_API;
+    delete host.CANA_PLAYGROUND_DB;
+
     consoleRef.log = originalLog;
     consoleRef.info = originalInfo;
     consoleRef.warn = originalWarn;
-    /* eslint-enable no-console */
   }
 }
 

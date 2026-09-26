@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -13,7 +12,9 @@ function run(directory: string): { code: number; output: string } {
     return {
       code: 0,
       output: execFileSync('bun', [path.join(directory, 'ci-cd', 'check-ci-provider.js')], {
-        cwd: directory, encoding: 'utf8', stdio: 'pipe'
+        cwd: directory,
+        encoding: 'utf8',
+        stdio: 'pipe'
       })
     };
   } catch (error) {
@@ -33,17 +34,50 @@ function fixture(change?: (directory: string) => void): string {
     path.join(repoRoot, 'ci-cd', 'build-workspace-packages.js'),
     path.join(directory, 'ci-cd', 'build-workspace-packages.js')
   );
-  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'run-unit-tests.js'), path.join(directory, 'ci-cd', 'run-unit-tests.js'));
-  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'), path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh'));
-  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'), path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh'));
-  fs.copyFileSync(path.join(repoRoot, 'ci-cd', 'wait-for-ci-services.sh'), path.join(directory, 'ci-cd', 'wait-for-ci-services.sh'));
-  fs.copyFileSync(path.join(repoRoot, '.github/workflows/ci.yml'), path.join(directory, '.github/workflows/ci.yml'));
-  fs.copyFileSync(path.join(repoRoot, '.github/workflows/pr-feedback.yml'), path.join(directory, '.github/workflows/pr-feedback.yml'));
-  fs.copyFileSync(path.join(repoRoot, '.github/workflows/sonar-reliability.yml'), path.join(directory, '.github/workflows/sonar-reliability.yml'));
-  fs.copyFileSync(path.join(repoRoot, '.github/workflows/browser-matrix.yml'), path.join(directory, '.github/workflows/browser-matrix.yml'));
-  fs.copyFileSync(path.join(repoRoot, '.circleci/config.yml'), path.join(directory, '.circleci/config.yml'));
-  fs.copyFileSync(path.join(repoRoot, '.husky/pre-commit'), path.join(directory, '.husky/pre-commit'));
-  fs.copyFileSync(path.join(repoRoot, 'sonar-project.properties'), path.join(directory, 'sonar-project.properties'));
+  fs.copyFileSync(
+    path.join(repoRoot, 'ci-cd', 'run-unit-tests.js'),
+    path.join(directory, 'ci-cd', 'run-unit-tests.js')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, 'ci-cd', 'ensure-local-ci-services.sh'),
+    path.join(directory, 'ci-cd', 'ensure-local-ci-services.sh')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, 'ci-cd', 'ensure-docker-runtime.sh'),
+    path.join(directory, 'ci-cd', 'ensure-docker-runtime.sh')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, 'ci-cd', 'wait-for-ci-services.sh'),
+    path.join(directory, 'ci-cd', 'wait-for-ci-services.sh')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, '.github/workflows/ci.yml'),
+    path.join(directory, '.github/workflows/ci.yml')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, '.github/workflows/pr-feedback.yml'),
+    path.join(directory, '.github/workflows/pr-feedback.yml')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, '.github/workflows/sonar-reliability.yml'),
+    path.join(directory, '.github/workflows/sonar-reliability.yml')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, '.github/workflows/browser-matrix.yml'),
+    path.join(directory, '.github/workflows/browser-matrix.yml')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, '.circleci/config.yml'),
+    path.join(directory, '.circleci/config.yml')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, '.husky/pre-commit'),
+    path.join(directory, '.husky/pre-commit')
+  );
+  fs.copyFileSync(
+    path.join(repoRoot, 'sonar-project.properties'),
+    path.join(directory, 'sonar-project.properties')
+  );
   fs.copyFileSync(path.join(repoRoot, 'package.json'), path.join(directory, 'package.json'));
   change?.(directory);
   return directory;
@@ -65,13 +99,17 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          '    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'\n    runs-on: ubuntu-latest\n    env:',
-          '    runs-on: ubuntu-latest\n    env:'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            "    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'\n    runs-on: ubuntu-latest\n    env:",
+            '    runs-on: ubuntu-latest\n    env:'
+          )
       );
     });
-    expect(run(directory).output).toContain('must gate branch-gate behind vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'');
+    expect(run(directory).output).toContain(
+      "must gate branch-gate behind vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'"
+    );
   }, 30000);
 
   it('fails when the standalone fallback workflows lose the reversible disable flag', () => {
@@ -81,19 +119,27 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/browser-matrix.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'\n', '')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace("    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'\n", '')
       );
     });
-    expect(run(browserMatrix).output).toContain('Browser matrix workflow is missing /vars\\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI');
+    expect(run(browserMatrix).output).toContain(
+      'Browser matrix workflow is missing /vars\\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI'
+    );
 
     const sonarReliability = fixture((root) => {
       const file = path.join(root, '.github/workflows/sonar-reliability.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == \'true\'\n', '')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace("    if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'\n", '')
       );
     });
-    expect(run(sonarReliability).output).toContain('Sonar reliability workflow is missing /vars\\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI');
+    expect(run(sonarReliability).output).toContain(
+      'Sonar reliability workflow is missing /vars\\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI'
+    );
   }, 30000);
 
   it('fails when the CircleCI force_full injection is removed', () => {
@@ -103,13 +149,15 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.circleci/config.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          '            if [ "<< pipeline.parameters.force_full >>" = "true" ]; then\n'
-            + '              echo \'export JUMENTIX_CI_FORCE_FULL=1\' >> "$BASH_ENV"\n'
-            + '              export JUMENTIX_CI_FORCE_FULL=1\n'
-            + '            fi\n',
-          ''
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            '            if [ "<< pipeline.parameters.force_full >>" = "true" ]; then\n' +
+              '              echo \'export JUMENTIX_CI_FORCE_FULL=1\' >> "$BASH_ENV"\n' +
+              '              export JUMENTIX_CI_FORCE_FULL=1\n' +
+              '            fi\n',
+            ''
+          )
       );
     });
     expect(run(directory).output).toContain('CircleCI CI is missing /JUMENTIX_CI_FORCE_FULL/');
@@ -120,7 +168,10 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.circleci/config.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('  browser-matrix:\n', '  browser-matrix-removed:\n'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('  browser-matrix:\n', '  browser-matrix-removed:\n')
+      );
     });
     expect(run(directory).output).toContain('CircleCI CI is missing /browser-matrix:');
   }, 30000);
@@ -132,7 +183,9 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.circleci/config.yml');
       fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('      - browser-matrix\n', ''));
     });
-    expect(run(directory).output).toContain('CircleCI workflows.ci.jobs must include browser-matrix');
+    expect(run(directory).output).toContain(
+      'CircleCI workflows.ci.jobs must include browser-matrix'
+    );
   }, 30000);
 
   it('fails when the repository-owned GitHub Actions workflow is absent', () => {
@@ -145,12 +198,19 @@ describe('check-ci-provider', () => {
   it('fails when the trusted PR feedback workflow is absent or checks out PR code', () => {
     expect.hasAssertions();
 
-    const missing = fixture((root) => fs.unlinkSync(path.join(root, '.github/workflows/pr-feedback.yml')));
+    const missing = fixture((root) =>
+      fs.unlinkSync(path.join(root, '.github/workflows/pr-feedback.yml'))
+    );
     expect(run(missing).output).toContain('Missing required trusted pull-request workflow');
 
     const untrusted = fixture((root) => {
       const file = path.join(root, '.github/workflows/pr-feedback.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('github.event.pull_request.base.sha', 'github.event.pull_request.head.sha'));
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, 'utf8')
+          .replace('github.event.pull_request.base.sha', 'github.event.pull_request.head.sha')
+      );
     });
     expect(run(untrusted).output).toContain('must execute only the trusted PR base revision');
   });
@@ -162,7 +222,9 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('Bootstrap trusted PR feedback checker', 'Bootstrap removed')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace('Bootstrap trusted PR feedback checker', 'Bootstrap removed')
       );
     });
     expect(run(directory).output).toContain('Bootstrap trusted PR feedback checker');
@@ -173,7 +235,10 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/sonar-reliability.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/SONAR_PULL_REQUEST:/g, 'SONAR_PULL_REQUEST_REMOVED:'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(/SONAR_PULL_REQUEST:/g, 'SONAR_PULL_REQUEST_REMOVED:')
+      );
     });
     expect(run(directory).output).toContain('SONAR_PULL_REQUEST');
   });
@@ -185,7 +250,12 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/sonar-reliability.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('-Dsonar.pullrequest.key="$SONAR_PULL_REQUEST"', '-Dsonar.pullrequest.key="removed"')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            '-Dsonar.pullrequest.key="$SONAR_PULL_REQUEST"',
+            '-Dsonar.pullrequest.key="removed"'
+          )
       );
     });
     expect(run(directory).output).toContain('sonar\\.pullrequest\\.key');
@@ -196,7 +266,10 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/sonar-reliability.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('pull_request:', 'pull_request_target:'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('pull_request:', 'pull_request_target:')
+      );
     });
     expect(run(directory).output).toContain('unprivileged pull_request workflow');
   });
@@ -204,18 +277,25 @@ describe('check-ci-provider', () => {
   it('fails when the required browser matrix is absent or can receive secrets', () => {
     expect.hasAssertions();
 
-    const missing = fixture((root) => fs.unlinkSync(path.join(root, '.github/workflows/browser-matrix.yml')));
+    const missing = fixture((root) =>
+      fs.unlinkSync(path.join(root, '.github/workflows/browser-matrix.yml'))
+    );
     expect(run(missing).output).toContain('Missing required browser matrix workflow');
 
     const privileged = fixture((root) => {
       const file = path.join(root, '.github/workflows/browser-matrix.yml');
-      fs.appendFileSync(file, `\nenv:\n  TOKEN: ${'${'}{ secrets.TOKEN }}\n`);
+      fs.appendFileSync(file, `\nenv:\n  TOKEN: \${{ secrets.TOKEN }}\n`);
     });
-    expect(run(privileged).output).toContain('must run untrusted PR code without privileged events or secrets');
+    expect(run(privileged).output).toContain(
+      'must run untrusted PR code without privileged events or secrets'
+    );
 
     const missingPathBootstrap = fixture((root) => {
       const file = path.join(root, '.github/workflows/browser-matrix.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('export PATH="$HOME/.bun/bin:$PATH"', ''));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('export PATH="$HOME/.bun/bin:$PATH"', '')
+      );
     });
     expect(run(missingPathBootstrap).output).toContain('export PATH');
   });
@@ -236,13 +316,17 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.circleci/config.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          '          command: ci-cd/wait-for-ci-services.sh',
-          '          command: ci-cd/ensure-local-ci-services.sh'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            '          command: ci-cd/wait-for-ci-services.sh',
+            '          command: ci-cd/ensure-local-ci-services.sh'
+          )
       );
     });
-    expect(run(directory).output).toContain('must not expose remote-Docker services through localhost');
+    expect(run(directory).output).toContain(
+      'must not expose remote-Docker services through localhost'
+    );
   });
 
   it('fails when CircleCI writes untrusted PR metadata to BASH_ENV with JSON quoting', () => {
@@ -252,7 +336,10 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.circleci/config.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('const shellQuote =', 'const quote =').replace(/shellQuote\(/g, 'quote(')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace('const shellQuote =', 'const quote =')
+          .replace(/shellQuote\(/g, 'quote(')
       );
     });
     expect(run(directory).output).toContain('const shellQuote');
@@ -263,7 +350,10 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.circleci/config.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('sudo apt-get install -y python3-venv', 'true'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('sudo apt-get install -y python3-venv', 'true')
+      );
     });
     expect(run(directory).output).toContain('python3-venv');
   });
@@ -273,7 +363,10 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('coverage:patch', 'coverage:removed'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('coverage:patch', 'coverage:removed')
+      );
     });
     expect(run(directory).output).toContain('coverage:patch');
   });
@@ -285,7 +378,9 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(/startsWith\(github\.head_ref, 'chore\/changelog-sync-'\) \|\|\n/g, '')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(/startsWith\(github\.head_ref, 'chore\/changelog-sync-'\) \|\|\n/g, '')
       );
     });
     expect(run(directory).output).toContain('chore\\/changelog-sync-');
@@ -298,10 +393,12 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch',
-          'bun run coverage:patch'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch',
+            'bun run coverage:patch'
+          )
       );
     });
     const { output } = run(directory);
@@ -316,10 +413,12 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          'JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch',
-          'bun run coverage:patch'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            'JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch',
+            'bun run coverage:patch'
+          )
       );
     });
 
@@ -332,7 +431,10 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('third-party-review:', 'third-party-review-removed:'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace('third-party-review:', 'third-party-review-removed:')
+      );
     });
     expect(run(directory).output).toContain('third-party-review');
   });
@@ -344,13 +446,17 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          '      - name: Build workspace package dependencies\n        run: bun run mono:build\n',
-          ''
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            '      - name: Build workspace package dependencies\n        run: bun run mono:build\n',
+            ''
+          )
       );
     });
-    expect(run(directory).output).toContain('Database matrix must build workspace package dependencies');
+    expect(run(directory).output).toContain(
+      'Database matrix must build workspace package dependencies'
+    );
   });
 
   it('fails when generated changelog synchronization is no longer main-only', () => {
@@ -360,13 +466,17 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          'github.event_name == \'push\' && github.ref_name == \'main\'',
-          'github.event_name == \'push\' && github.ref_name == \'dev\''
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            "github.event_name == 'push' && github.ref_name == 'main'",
+            "github.event_name == 'push' && github.ref_name == 'dev'"
+          )
       );
     });
-    expect(run(directory).output).toContain('github\\.event_name == \'push\' && github\\.ref_name == \'main\'');
+    expect(run(directory).output).toContain(
+      "github\\.event_name == 'push' && github\\.ref_name == 'main'"
+    );
   });
 
   it('fails when Bun installation can mask a failed download', () => {
@@ -376,10 +486,12 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          'curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install',
-          'curl -fsSL https://bun.sh/install | bash'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            'curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install',
+            'curl -fsSL https://bun.sh/install | bash'
+          )
       );
     });
     expect(run(directory).output).toContain('Bun installation must fail closed');
@@ -400,7 +512,12 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('runs-on: ubuntu-latest', 'runs-on: [self-hosted, jumentix]'));
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, 'utf8')
+          .replace('runs-on: ubuntu-latest', 'runs-on: [self-hosted, jumentix]')
+      );
     });
     expect(run(directory).output).toContain('GitHub-hosted ubuntu-latest runners');
   });
@@ -419,7 +536,10 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, 'package.json');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/website:deps:build/g, 'website:deps:removed'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(/website:deps:build/g, 'website:deps:removed')
+      );
     });
     expect(run(directory).output).toContain('website:deps:build');
   });
@@ -431,7 +551,9 @@ describe('check-ci-provider', () => {
       const file = path.join(root, 'package.json');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('bun run --filter @jumentix/shared-contracts build && ', '')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace('bun run --filter @jumentix/shared-contracts build && ', '')
       );
     });
     expect(run(directory).output).toContain('@jumentix\\/shared-contracts build');
@@ -444,10 +566,12 @@ describe('check-ci-provider', () => {
       const file = path.join(root, 'package.json');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          '"mono:build": "bun run workspace:build:packages"',
-          '"mono:build": "bun run mono:build:parallel"'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            '"mono:build": "bun run workspace:build:packages"',
+            '"mono:build": "bun run mono:build:parallel"'
+          )
       );
     });
     expect(run(directory).output).toContain('Monorepo build must delegate');
@@ -458,7 +582,12 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, 'package.json');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/workspace:build:packages/g, 'workspace:build:removed'));
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(/workspace:build:packages/g, 'workspace:build:removed')
+      );
     });
     expect(run(directory).output).toContain('workspace:build:packages');
   });
@@ -470,13 +599,17 @@ describe('check-ci-provider', () => {
       const file = path.join(root, 'package.json');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          '"mono:test": "bun run workspace:build:packages && bun run workspace:test"',
-          '"mono:test": "bun run workspace:test"'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            '"mono:test": "bun run workspace:build:packages && bun run workspace:test"',
+            '"mono:test": "bun run workspace:test"'
+          )
       );
     });
-    expect(run(directory).output).toContain('Monorepo tests must build workspace package dependencies');
+    expect(run(directory).output).toContain(
+      'Monorepo tests must build workspace package dependencies'
+    );
   });
 
   it('fails when unit tests stop resolving workspace packages from source', () => {
@@ -484,7 +617,12 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, 'ci-cd', 'run-unit-tests.js');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/--conditions=development/g, '--conditions=production'));
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(/--conditions=development/g, '--conditions=production')
+      );
     });
     expect(run(directory).output).toContain('--conditions=development');
   });
@@ -496,10 +634,12 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          /\|\|\n\s+\(startsWith\(github\.head_ref, 'codex\/release\/'\) && endsWith\(github\.head_ref, '-dev-main-signed-squash'\)\)/g,
-          ''
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            /\|\|\n\s+\(startsWith\(github\.head_ref, 'codex\/release\/'\) && endsWith\(github\.head_ref, '-dev-main-signed-squash'\)\)/g,
+            ''
+          )
       );
     });
     expect(run(directory).output).toContain('must guard coverage to main/dev/release contexts');
@@ -512,17 +652,21 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          '      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key\n'
-            + '      AAA_REDIS_HOST: 127.0.0.1',
-          '      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key\n'
-            + '      RUN_BROKER_INTEGRATION: \'1\'\n'
-            + '      RUN_REDIS_INTEGRATION: \'1\'\n'
-            + '      AAA_REDIS_HOST: 127.0.0.1'
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            '      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key\n' +
+              '      AAA_REDIS_HOST: 127.0.0.1',
+            '      AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key\n' +
+              "      RUN_BROKER_INTEGRATION: '1'\n" +
+              "      RUN_REDIS_INTEGRATION: '1'\n" +
+              '      AAA_REDIS_HOST: 127.0.0.1'
+          )
       );
     });
-    expect(run(directory).output).toContain('coverage job must keep real broker/Redis integration suites');
+    expect(run(directory).output).toContain(
+      'coverage job must keep real broker/Redis integration suites'
+    );
   });
 
   it('fails when frontend patch coverage runs before its workspace dependencies are built', () => {
@@ -532,10 +676,12 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          '      - name: Build workspace package dependencies for frontend coverage\n        run: bun run mono:build\n',
-          ''
-        )
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            '      - name: Build workspace package dependencies for frontend coverage\n        run: bun run mono:build\n',
+            ''
+          )
       );
     });
     expect(run(directory).output).toContain(
@@ -563,7 +709,9 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('sonar-scanner -Dsonar.scm.disabled=true', 'sonar-scanner')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace('sonar-scanner -Dsonar.scm.disabled=true', 'sonar-scanner')
       );
     });
     expect(run(directory).output).toContain('sonar-scanner -Dsonar\\.scm\\.disabled=true');
@@ -602,7 +750,9 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(/createCommitOnBranch/g, 'createUnsignedCommitOnBranch')
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(/createCommitOnBranch/g, 'createUnsignedCommitOnBranch')
       );
     });
     expect(run(directory).output).toContain('createCommitOnBranch');
@@ -615,7 +765,8 @@ describe('check-ci-provider', () => {
       const file = path.join(root, 'sonar-project.properties');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8')
+        fs
+          .readFileSync(file, 'utf8')
           .replace('sonar.sourceEncoding=UTF-8\n', '')
           .replace('**/*.png,', '')
       );

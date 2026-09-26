@@ -1,5 +1,6 @@
-import { render, screen } from '@/test-utils';
 import changelogEntries from '@/content/changelog.json';
+import { render, screen } from '@/test-utils';
+
 import { CommercialChangelogPage } from './ChangelogPage';
 
 describe('CommercialChangelogPage (JUM-718)', () => {
@@ -11,7 +12,9 @@ describe('CommercialChangelogPage (JUM-718)', () => {
     expect(screen.getByText('Jumentix changelog')).toBeInTheDocument();
     expect(screen.getAllByText(first.message).length).toBeGreaterThan(0);
     expect(screen.getByText(first.sha.slice(0, 8))).toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: 'View change on GitHub' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: 'View change on GitHub' }).length).toBeGreaterThan(
+      0
+    );
   });
 
   it('clamps out-of-range pages to the last page', () => {

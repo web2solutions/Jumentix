@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -32,10 +31,10 @@ const {
   resetPwaShell
 } = require(path.join(appRoot, 'src', 'pwa', 'pwaShell.js'));
 
-type Spy = {
+interface Spy {
   (...args: unknown[]): unknown;
   calls: unknown[][];
-};
+}
 
 const restoreGlobalProperty = (name: string, previous: PropertyDescriptor | undefined): void => {
   if (previous) {
@@ -55,7 +54,7 @@ function createSpy(impl?: (...args: unknown[]) => unknown): Spy {
   return spy;
 }
 
-type FakeElement = {
+interface FakeElement {
   id: string;
   className: string;
   textContent: string;
@@ -63,13 +62,13 @@ type FakeElement = {
   dataset: Record<string, string>;
   children: FakeElement[];
   parentNode: FakeElement | null;
-  listeners: Record<string, Array<() => void>>;
+  listeners: Record<string, (() => void)[]>;
   setAttribute: (name: string, value: string) => void;
   addEventListener: (type: string, handler: () => void) => void;
   appendChild: (child: FakeElement) => void;
   removeChild: (child: FakeElement) => void;
   click: () => void;
-};
+}
 
 function createFakeElement(): FakeElement {
   const element: FakeElement = {
@@ -113,7 +112,7 @@ function createFakeDocument() {
   const findById = (element: FakeElement, id: string): FakeElement | null => {
     if (element.id === id) return element;
     return element.children.reduce<FakeElement | null>(
-      (found, child) => found || findById(child, id),
+      (found, child) => found ?? findById(child, id),
       null
     );
   };
@@ -131,53 +130,53 @@ function bannerActions(banner: FakeElement): Map<string, FakeElement> {
 }
 
 function createFakeContainer(overrides: Record<string, unknown> = {}) {
-  const listeners = new Map<string, Array<() => void>>();
+  const listeners = new Map<string, (() => void)[]>();
   return {
     controller: null as object | null,
     register: createSpy(),
     getRegistrations: createSpy(async () => []),
     addEventListener: (type: string, handler: () => void) => {
-      const list = listeners.get(type) || [];
+      const list = listeners.get(type) ?? [];
       list.push(handler);
       listeners.set(type, list);
     },
     fire: (type: string) => {
-      (listeners.get(type) || []).forEach((handler) => handler());
+      (listeners.get(type) ?? []).forEach((handler) => handler());
     },
     ...overrides
   };
 }
 
 function createFakeInstallingWorker() {
-  const listeners = new Map<string, Array<() => void>>();
+  const listeners = new Map<string, (() => void)[]>();
   const worker = {
     state: 'installing',
     addEventListener: (type: string, handler: () => void) => {
-      const list = listeners.get(type) || [];
+      const list = listeners.get(type) ?? [];
       list.push(handler);
       listeners.set(type, list);
     },
     setState: (state: string) => {
       worker.state = state;
-      (listeners.get('statechange') || []).forEach((handler) => handler());
+      (listeners.get('statechange') ?? []).forEach((handler) => handler());
     }
   };
   return worker;
 }
 
 function createFakeRegistration(overrides: Record<string, unknown> = {}) {
-  const listeners = new Map<string, Array<() => void>>();
+  const listeners = new Map<string, (() => void)[]>();
   return {
     waiting: null as null | { postMessage: Spy },
     installing: null as null | ReturnType<typeof createFakeInstallingWorker>,
     unregister: createSpy(async () => true),
     addEventListener: (type: string, handler: () => void) => {
-      const list = listeners.get(type) || [];
+      const list = listeners.get(type) ?? [];
       list.push(handler);
       listeners.set(type, list);
     },
     fire: (type: string) => {
-      (listeners.get(type) || []).forEach((handler) => handler());
+      (listeners.get(type) ?? []).forEach((handler) => handler());
     },
     ...overrides
   };
@@ -202,7 +201,7 @@ function createFakeCacheStorage(initial: Record<string, string[]> = {}) {
     keys: createSpy(async () => [...stores.keys()]),
     delete: createSpy(async (name: unknown) => stores.delete(String(name))),
     match: createSpy(async (request: unknown) => {
-      const { url } = (request as { url: string });
+      const { url } = request as { url: string };
       let hit: unknown;
       stores.forEach((store) => {
         const found = store.get(url);
@@ -344,10 +343,16 @@ describe('pwa shell service worker (JUM-489)', () => {
 
   it('treats only same-origin non-API URLs as shell', () => {
     expect.hasAssertions();
-    expect(sw.isShellUrl(new URL('http://127.0.0.1:3200/script.js'), 'http://127.0.0.1:3200')).toBe(true);
+    expect(sw.isShellUrl(new URL('http://127.0.0.1:3200/script.js'), 'http://127.0.0.1:3200')).toBe(
+      true
+    );
     expect(sw.isShellUrl(new URL('http://127.0.0.1:3200/'), 'http://127.0.0.1:3200')).toBe(true);
-    expect(sw.isShellUrl(new URL('http://127.0.0.1:3200/api/runtime/env'), 'http://127.0.0.1:3200')).toBe(false);
-    expect(sw.isShellUrl(new URL('https://fonts.example.com/x.woff2'), 'http://127.0.0.1:3200')).toBe(false);
+    expect(
+      sw.isShellUrl(new URL('http://127.0.0.1:3200/api/runtime/env'), 'http://127.0.0.1:3200')
+    ).toBe(false);
+    expect(
+      sw.isShellUrl(new URL('https://fonts.example.com/x.woff2'), 'http://127.0.0.1:3200')
+    ).toBe(false);
   });
 
   it('installs by precaching every shell asset into the versioned cache', async () => {
@@ -658,7 +663,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
     const documentRef = createFakeDocument();
     const container = createFakeContainer();
     container.register = createSpy(async () => {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberate bare-string throw: registration failure must surface its string form
       throw 'plain string failure';
     });
 
@@ -833,7 +838,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
 
     const removed = await clearShellCaches(cacheStorage);
     expect(removed).toStrictEqual([`${PWA_SHELL_CACHE_PREFIX}0.1.0`]);
-    await expect(cacheStorage.keys()).resolves.toStrictEqual(['cana-database']);
+    await expect(cacheStorage.keys() as Promise<unknown>).resolves.toStrictEqual(['cana-database']);
 
     await resetPwaShell({
       serviceWorkerContainer: container,
@@ -854,7 +859,7 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
       cacheStorage,
       locationRef: undefined
     });
-    await expect(cacheStorage.keys()).resolves.toStrictEqual([]);
+    await expect(cacheStorage.keys() as Promise<unknown>).resolves.toStrictEqual([]);
   });
 
   it('reset action on the update banner unregisters, clears shell caches and reloads', async () => {
@@ -881,10 +886,12 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
     ) as unknown as FakeElement;
     (bannerActions(banner).get('reset') as FakeElement).click();
     // The reset runs async; let it settle before asserting.
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
 
     expect(unregister.calls).toHaveLength(1);
-    await expect(cacheStorage.keys()).resolves.toStrictEqual(['cana-database']);
+    await expect(cacheStorage.keys() as Promise<unknown>).resolves.toStrictEqual(['cana-database']);
     expect(locationRef.reload.calls).toHaveLength(1);
   });
 
@@ -907,7 +914,9 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
       registration
     ) as unknown as FakeElement;
     (bannerActions(banner).get('reset') as FakeElement).click();
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
 
     const errorBanner = documentRef.getElementById(UPDATE_BANNER_ID);
     expect(errorBanner).not.toBeNull();
@@ -935,9 +944,11 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
     });
     const errorBanner = documentRef.getElementById(UPDATE_BANNER_ID) as FakeElement;
     (bannerActions(errorBanner).get('reset') as FakeElement).click();
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     expect(locationRef.reload.calls).toHaveLength(1);
-    await expect(cacheStorage.keys()).resolves.toStrictEqual([]);
+    await expect(cacheStorage.keys() as Promise<unknown>).resolves.toStrictEqual([]);
 
     // Second failure: the error banner reappears with the failure message.
     locationRef.reload.calls = [];
@@ -955,7 +966,9 @@ describe('pwa shell registration and update flow (JUM-489)', () => {
     });
     const retryBanner = documentRef.getElementById(UPDATE_BANNER_ID) as FakeElement;
     (bannerActions(retryBanner).get('reset') as FakeElement).click();
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     expect(textOf(documentRef.getElementById(UPDATE_BANNER_ID))).toContain('Could not reset');
     expect(locationRef.reload.calls).toHaveLength(0);
   });
@@ -1011,7 +1024,7 @@ describe('pwa shell ambient dependencies (JUM-681)', () => {
     // caches and no location — which is every non-browser host, including the
     // build — every dependency resolves to `undefined` and the reset has to be
     // a no-op rather than a crash on `undefined.getRegistrations()`.
-    await expect(resetPwaShell(undefined as never)).resolves.toBeUndefined();
+    await expect(resetPwaShell(undefined as never) as Promise<unknown>).resolves.toBeUndefined();
   });
 
   it('reports the shell as unsupported when the runtime has no navigator', async () => {
@@ -1023,7 +1036,9 @@ describe('pwa shell ambient dependencies (JUM-681)', () => {
     const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
     delete (globalThis as Record<string, unknown>).navigator;
     try {
-      await expect(registerPwaShell()).resolves.toStrictEqual({ status: 'unsupported' });
+      await expect(registerPwaShell() as Promise<unknown>).resolves.toStrictEqual({
+        status: 'unsupported'
+      });
     } finally {
       restoreGlobalProperty('navigator', previousNavigator);
     }

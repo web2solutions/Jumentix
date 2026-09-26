@@ -1,21 +1,17 @@
-import {
-  computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref
-} from 'vue';
+import { computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref } from 'vue';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { apiErrorStatus, formatApiError } from '@/contracts/errors';
-import {
-  entityPrimaryKey,
-  fieldDescriptors,
-  listOperationForEntity,
-  type FieldDescriptor
-} from '@/contracts/formSchema';
-import { listCapabilities, type ListCapabilities, type ListQuery } from '@/contracts/listSchema';
+import { entityPrimaryKey, fieldDescriptors, listOperationForEntity } from '@/contracts/formSchema';
+import { listCapabilities } from '@/contracts/listSchema';
 import { isCanaOpen } from '@/data/db';
 import { listLocal, subscribeLocal } from '@/data/localRepository';
 import { localized, t } from '@/i18n';
-import { createEntityStore } from '@/stores/entityStore';
 import { useAuthStore } from '@/stores/auth';
+import createEntityStore from '@/stores/entityStore';
+
+import type { FieldDescriptor } from '@/contracts/formSchema';
+import type { ListCapabilities, ListQuery } from '@/contracts/listSchema';
 
 import type { XCrudAggregate, XCrudEntityConfig } from './xCrudTypes';
 
@@ -43,24 +39,27 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   const capabilities: ListCapabilities | undefined = listCapabilities(config.operations.list);
   const serverMode = capabilities !== undefined;
 
-  const rowId = config.rowId ?? ((row: Row) => {
-    const key = entityPrimaryKey(config.entity);
-    return String(row[key] ?? row.id ?? row._id ?? '');
-  });
+  const rowId =
+    config.rowId ??
+    ((row: Row) => {
+      const key = entityPrimaryKey(config.entity);
+      return String(row[key] ?? row.id ?? row._id ?? '');
+    });
 
   /** Entity display name in the active locale. */
   const title = computed(() => localized(config.title));
 
   // Descriptors drive grid columns, filters and forms (requirement 136).
-  const columns: FieldDescriptor[] = fieldDescriptors(config.entity)
-    .filter((d) => d.name !== 'password');
+  const columns: FieldDescriptor[] = fieldDescriptors(config.entity).filter(
+    (d) => d.name !== 'password'
+  );
   const createDescriptors = [
-    ...fieldDescriptors(config.schemas.create)
-      .filter((d) => d.name !== 'id' && !(config.createFields?.exclude ?? []).includes(d.name)),
+    ...fieldDescriptors(config.schemas.create).filter(
+      (d) => d.name !== 'id' && !(config.createFields?.exclude ?? []).includes(d.name)
+    ),
     ...(config.createFields?.extra ?? [])
   ];
-  const updateDescriptors = fieldDescriptors(config.schemas.update)
-    .filter((d) => d.name !== 'id');
+  const updateDescriptors = fieldDescriptors(config.schemas.update).filter((d) => d.name !== 'id');
 
   const rows = ref<Row[]>([]);
   const serverTotal = ref(0);
@@ -79,13 +78,13 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   const selected = ref<Set<string>>(new Set());
 
   /** Affordances the contract allows (server mode) or everything (memory mode). */
-  const canSort = (field: string): boolean => !serverMode || capabilities!.sortable.includes(field);
-  const canFilter = (field: string): boolean => !serverMode || field in capabilities!.filterable;
-  const canSearch = computed(() => !serverMode || capabilities!.searchable.length > 0);
+  const canSort = (field: string): boolean => !serverMode || capabilities.sortable.includes(field);
+  const canFilter = (field: string): boolean => !serverMode || field in capabilities.filterable;
+  const canSearch = computed(() => !serverMode || capabilities.searchable.length > 0);
 
-  const visibleColumns = computed<FieldDescriptor[]>(() => (
+  const visibleColumns = computed<FieldDescriptor[]>(() =>
     columns.filter((d) => !hiddenColumns.includes(d.name))
-  ));
+  );
 
   const toggleColumn = (name: string): void => {
     const index = hiddenColumns.indexOf(name);
@@ -134,9 +133,10 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   const serverQuery = (): ListQuery => ({
     page: page.value,
     size: pageSizeRef.value,
-    sort: sort.value && canSort(sort.value.field)
-      ? `${sort.value.field}:${sort.value.direction}`
-      : undefined,
+    sort:
+      sort.value && canSort(sort.value.field)
+        ? `${sort.value.field}:${sort.value.direction}`
+        : undefined,
     q: canSearch.value && search.value.trim() ? search.value.trim() : undefined,
     filter: wireFilters()
   });
@@ -157,9 +157,8 @@ export const useXCrud = (config: XCrudEntityConfig) => {
       const result = await store.list(serverQuery());
       serverTotal.value = result.total;
       if (config.pagination === 'scroll') {
-        scrollBuffer.value = page.value === 1
-          ? result.result
-          : [...scrollBuffer.value, ...result.result];
+        scrollBuffer.value =
+          page.value === 1 ? result.result : [...scrollBuffer.value, ...result.result];
         rows.value = scrollBuffer.value;
       } else {
         rows.value = result.result;
@@ -214,73 +213,85 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   const referenceLabels = reactive<Record<string, Record<string, string>>>({});
   const referenceFields = columns.filter((d) => d.relation?.entity);
   const loadReferences = async (): Promise<void> => {
-    await Promise.all(referenceFields.map(async (d) => {
-      const relation = d.relation!;
-      const operationId = listOperationForEntity(relation.entity);
-      if (!operationId) {
-        referenceLabels[d.name] = {};
-        return;
-      }
-      try {
-        const targetCapabilities = listCapabilities(operationId);
-        type Rows = Array<Record<string, unknown>>;
-        type ReferenceRows = { result?: Rows } | Rows;
-        let list: Rows = [];
-        if (isCanaOpen()) {
-          const localPage = await listLocal(relation.entity, {
-            page: 1,
-            size: targetCapabilities?.maxSize ?? 100
-          });
-          list = localPage.result;
-        } else {
-          const client = getSharedApiClient();
-          const response = await client.request<ReferenceRows>({
-            operationId,
-            query: targetCapabilities ? { page: 1, size: targetCapabilities.maxSize } : undefined,
-            headers: { Authorization: useAuthStore().token }
-          });
-          list = Array.isArray(response) ? response : (response.result ?? []);
+    await Promise.all(
+      referenceFields.map(async (d) => {
+        const { relation } = d;
+        if (!relation) return;
+        const operationId = listOperationForEntity(relation.entity);
+        if (!operationId) {
+          referenceLabels[d.name] = {};
+          return;
         }
-        const labelField = relation.display ?? 'name';
-        const match = relation.match || entityPrimaryKey(relation.entity);
-        referenceLabels[d.name] = Object.fromEntries(
-          list.map((row) => [String(row[match] ?? row.id), String(row[labelField] ?? row[match] ?? '')])
-        );
-      } catch {
-        referenceLabels[d.name] = {};
-      }
-    }));
+        try {
+          const targetCapabilities = listCapabilities(operationId);
+          type Rows = Record<string, unknown>[];
+          type ReferenceRows = { result?: Rows } | Rows;
+          let list: Rows = [];
+          if (isCanaOpen()) {
+            const localPage = await listLocal(relation.entity, {
+              page: 1,
+              size: targetCapabilities?.maxSize ?? 100
+            });
+            list = localPage.result;
+          } else {
+            const client = getSharedApiClient();
+            const response = await client.request<ReferenceRows>({
+              operationId,
+              query: targetCapabilities ? { page: 1, size: targetCapabilities.maxSize } : undefined,
+              headers: { Authorization: useAuthStore().token }
+            });
+            list = Array.isArray(response) ? response : (response.result ?? []);
+          }
+          const labelField = relation.display ?? 'name';
+          const match = relation.match || entityPrimaryKey(relation.entity);
+          referenceLabels[d.name] = Object.fromEntries(
+            list.map((row) => [
+              String(row[match] ?? row.id),
+              String(row[labelField] ?? row[match] ?? '')
+            ])
+          );
+        } catch {
+          referenceLabels[d.name] = {};
+        }
+      })
+    );
   };
 
   /** Label for a reference field value (falls back to the raw value). */
-  const referenceLabel = (field: string, value: unknown): string => (
-    referenceLabels[field]?.[String(value ?? '')] ?? String(value ?? '')
-  );
+  const referenceLabel = (field: string, value: unknown): string =>
+    referenceLabels[field]?.[String(value ?? '')] ?? String(value ?? '');
 
   // ---- memory mode: the same controls over the loaded list ----------------
 
   const matchesSearch = (row: Row, term: string): boolean => {
     if (!term) return true;
     const needle = term.toLowerCase();
-    return config.searchFields.some((field) => String(row[field] ?? '').toLowerCase().includes(needle));
+    return config.searchFields.some((field) =>
+      String(row[field] ?? '')
+        .toLowerCase()
+        .includes(needle)
+    );
   };
 
-  const matchesFilters = (row: Row): boolean => Object.entries(filters).every(([field, value]) => {
-    if (value === undefined || value === null || value === '') return true;
-    const cell = row[field];
-    if (Array.isArray(value)) {
-      // date range filter: [fromIso, toIso]
-      const [from, to] = value as [string?, string?];
-      const time = new Date(String(cell ?? '')).getTime();
-      if (Number.isNaN(time)) return false;
-      if (from && time < new Date(from).getTime()) return false;
-      if (to && time > new Date(`${to}T23:59:59.999Z`).getTime()) return false;
-      return true;
-    }
-    if (typeof value === 'boolean') return Boolean(cell) === value;
-    if (Array.isArray(cell)) return cell.some((entry) => String(entry) === String(value));
-    return String(cell ?? '').toLowerCase().includes(String(value).toLowerCase());
-  });
+  const matchesFilters = (row: Row): boolean =>
+    Object.entries(filters).every(([field, value]) => {
+      if (value === undefined || value === null || value === '') return true;
+      const cell = row[field];
+      if (Array.isArray(value)) {
+        // date range filter: [fromIso, toIso]
+        const [from, to] = value as [string?, string?];
+        const time = new Date(String(cell ?? '')).getTime();
+        if (Number.isNaN(time)) return false;
+        if (from && time < new Date(from).getTime()) return false;
+        if (to && time > new Date(`${to}T23:59:59.999Z`).getTime()) return false;
+        return true;
+      }
+      if (typeof value === 'boolean') return Boolean(cell) === value;
+      if (Array.isArray(cell)) return cell.some((entry) => String(entry) === String(value));
+      return String(cell ?? '')
+        .toLowerCase()
+        .includes(String(value).toLowerCase());
+    });
 
   const compareValues = (a: unknown, b: unknown): number => {
     if (typeof a === 'number' && typeof b === 'number') return a - b;
@@ -294,8 +305,9 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   /** Memory mode: filtered+sorted list. Server mode: the page as delivered. */
   const filteredRows = computed<Row[]>(() => {
     if (serverMode) return rows.value;
-    let result = rows.value
-      .filter((row) => matchesSearch(row, search.value) && matchesFilters(row));
+    let result = rows.value.filter(
+      (row) => matchesSearch(row, search.value) && matchesFilters(row)
+    );
     if (sort.value) {
       const { field, direction } = sort.value;
       result = [...result].sort(
@@ -308,18 +320,16 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   /** Records matching the current query across all pages. */
   const total = computed(() => (serverMode ? serverTotal.value : filteredRows.value.length));
 
-  const pageCount = computed(() => (
-    Math.max(1, Math.ceil(total.value / pageSizeRef.value))
-  ));
+  const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSizeRef.value)));
 
   const visibleRows = computed<Row[]>(() => {
     if (serverMode) return rows.value;
     return config.pagination === 'scroll'
       ? filteredRows.value.slice(0, page.value * pageSizeRef.value)
       : filteredRows.value.slice(
-        (page.value - 1) * pageSizeRef.value,
-        page.value * pageSizeRef.value
-      );
+          (page.value - 1) * pageSizeRef.value,
+          page.value * pageSizeRef.value
+        );
   });
   const hasMore = computed(() => page.value < pageCount.value);
 
@@ -331,10 +341,11 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     requery().catch(() => undefined);
   };
 
-  const allVisibleSelected = computed(() => (
-    visibleRows.value.length > 0
-    && visibleRows.value.every((row) => selected.value.has(rowId(row)))
-  ));
+  const allVisibleSelected = computed(
+    () =>
+      visibleRows.value.length > 0 &&
+      visibleRows.value.every((row) => selected.value.has(rowId(row)))
+  );
 
   const toggleSelectAllVisible = (): void => {
     const next = new Set(selected.value);
@@ -394,8 +405,11 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   };
 
   const setFilter = (field: string, value: unknown): void => {
-    const empty = value === undefined || value === null || value === ''
-      || (Array.isArray(value) && value.every((entry) => !entry));
+    const empty =
+      value === undefined ||
+      value === null ||
+      value === '' ||
+      (Array.isArray(value) && value.every((entry) => !entry));
     if (empty) {
       delete filters[field];
     } else {
@@ -437,20 +451,20 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     requeryDebounced();
   };
 
-  const submitCreate = (body: Row) => run(
-    () => store.create(config.beforeSubmit ? config.beforeSubmit(body, 'create') : body),
-    t('crud.created', { entity: title.value })
-  );
+  const submitCreate = (body: Row) =>
+    run(
+      () => store.create(config.beforeSubmit ? config.beforeSubmit(body, 'create') : body),
+      t('crud.created', { entity: title.value })
+    );
 
-  const submitUpdate = (id: string, body: Row) => run(
-    () => store.update(id, config.beforeSubmit ? config.beforeSubmit(body, 'update') : body),
-    t('crud.updated', { entity: title.value })
-  );
+  const submitUpdate = (id: string, body: Row) =>
+    run(
+      () => store.update(id, config.beforeSubmit ? config.beforeSubmit(body, 'update') : body),
+      t('crud.updated', { entity: title.value })
+    );
 
-  const submitDelete = (id: string) => run(
-    () => store.remove(id),
-    t('crud.removed', { entity: title.value })
-  );
+  const submitDelete = (id: string) =>
+    run(() => store.remove(id), t('crud.removed', { entity: title.value }));
 
   /** Inline cell commit: merges the edited scalar into the full row. */
   const submitInline = (id: string, field: string, value: unknown) => {
@@ -464,9 +478,9 @@ export const useXCrud = (config: XCrudEntityConfig) => {
    * (the widget says so), except `count` without `groupBy`, which is the
    * server `total` — the one number the envelope makes exact.
    */
-  const aggregateScope = computed<'all' | 'page'>(() => (
+  const aggregateScope = computed<'all' | 'page'>(() =>
     serverMode && !isCanaOpen() ? 'page' : 'all'
-  ));
+  );
 
   const aggregateValue = (aggregate: XCrudAggregate): number => {
     if (aggregate.op === 'count' && !aggregate.groupBy) {
@@ -477,7 +491,8 @@ export const useXCrud = (config: XCrudEntityConfig) => {
       .filter((value) => value !== undefined && value !== null);
     if (aggregate.op === 'count') {
       const { groupBy } = aggregate;
-      return new Set(rows.value.map((row) => String(row[groupBy!]))).size;
+      if (!groupBy) return 0;
+      return new Set(rows.value.map((row) => String(row[groupBy]))).size;
     }
     const numbers = values
       .map((value) => (Array.isArray(value) ? value.length : Number(value)))
@@ -490,16 +505,13 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   };
 
   /** True when the widget's number covers only the loaded page. */
-  const aggregateIsPartial = (aggregate: XCrudAggregate): boolean => (
-    serverMode
-    && !isCanaOpen()
-    && !(aggregate.op === 'count' && !aggregate.groupBy)
-    && serverTotal.value > rows.value.length
-  );
+  const aggregateIsPartial = (aggregate: XCrudAggregate): boolean =>
+    serverMode &&
+    !isCanaOpen() &&
+    !(aggregate.op === 'count' && !aggregate.groupBy) &&
+    serverTotal.value > rows.value.length;
 
-  const aggregateBreakdown = (
-    aggregate: XCrudAggregate
-  ): Array<{ label: string; value: number }> => {
+  const aggregateBreakdown = (aggregate: XCrudAggregate): { label: string; value: number }[] => {
     const { groupBy } = aggregate;
     if (!groupBy) return [];
     const buckets = new Map<string, number>();

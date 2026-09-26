@@ -1,6 +1,4 @@
-import {
-  _PASSWORD_MIN_LENGTH_
-} from '@src/config/constants';
+import { PASSWORD_MIN_LENGTH } from '@src/config/constants';
 import { DomainNotFoundError, DomainValidationError } from '@src/infra/exceptions';
 import { readProductEnv } from '@src/interface/runtime/RuntimeEnvironment';
 
@@ -18,10 +16,7 @@ export function throwIfValuesAreDifferent(values: any[]) {
 }
 
 export function throwIfIsNotObject(field: string, value: any) {
-  if (
-    (typeof value !== 'object')
-    || (typeof value === 'object' && Array.isArray(value))
-  ) {
+  if (typeof value !== 'object' || (typeof value === 'object' && Array.isArray(value))) {
     throw new DomainValidationError(`The property ${field} must be an object`);
   }
 }
@@ -38,17 +33,23 @@ export function mustBePassword(field: string, value: string) {
   if (typeof value !== 'string') {
     throw new DomainValidationError(`${field} must be a string.`);
   }
-  if (value.length < _PASSWORD_MIN_LENGTH_) {
+  if (value.length < PASSWORD_MIN_LENGTH) {
     throw new DomainValidationError(`${field} must have at least 8 chars.`);
   }
 
-  const strictPasswordPolicy = String(readProductEnv(process.env, 'JUMENTIX_STRICT_PASSWORD_POLICY') || '').toLowerCase() === 'yes';
+  const strictPasswordPolicy =
+    String(readProductEnv(process.env, 'JUMENTIX_STRICT_PASSWORD_POLICY') || '').toLowerCase() ===
+    'yes';
   if (!strictPasswordPolicy) return;
 
-  if (!/[A-Z]/.test(value)) throw new DomainValidationError(`${field} must include at least one uppercase letter.`);
-  if (!/[a-z]/.test(value)) throw new DomainValidationError(`${field} must include at least one lowercase letter.`);
-  if (!/[0-9]/.test(value)) throw new DomainValidationError(`${field} must include at least one number.`);
-  if (!/[^A-Za-z0-9]/.test(value)) throw new DomainValidationError(`${field} must include at least one symbol.`);
+  if (!/[A-Z]/.test(value))
+    throw new DomainValidationError(`${field} must include at least one uppercase letter.`);
+  if (!/[a-z]/.test(value))
+    throw new DomainValidationError(`${field} must include at least one lowercase letter.`);
+  if (!/[0-9]/.test(value))
+    throw new DomainValidationError(`${field} must include at least one number.`);
+  if (!/[^A-Za-z0-9]/.test(value))
+    throw new DomainValidationError(`${field} must include at least one symbol.`);
 }
 
 export function mustBeArray<T>(field: string, value: T[]) {
@@ -102,14 +103,16 @@ export function canNotBeEmpty(field: string, value: any) {
 
   if (typeof value === 'string') if (value === '') throw new DomainValidationError(msg);
 
-  if (typeof value === 'object' && (!Array.isArray(value))) {
+  if (typeof value === 'object' && !Array.isArray(value)) {
     if (Object.keys(value).length === 0) throw new DomainValidationError(msg);
-  } else if (typeof value === 'object' && (Array.isArray(value))) {
+  } else if (typeof value === 'object' && Array.isArray(value)) {
     if (value.length === 0) throw new DomainValidationError(msg);
   }
 }
 export function mustEndsAtLeastInMinutes(_eventDate: Date, minutesIntheFuture: number): void {
-  const error = new DomainValidationError(`Event must ends in at least ${minutesIntheFuture} minutes in the future`);
+  const error = new DomainValidationError(
+    `Event must ends in at least ${minutesIntheFuture} minutes in the future`
+  );
   const eventDate = new Date(_eventDate);
   const dateNow = new Date();
   const minimumFutureWindowMs = minutesIntheFuture * 60 * 1000;

@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
-import {
-  createClient
-} from 'redis';
+import { createClient } from 'redis';
+
+import BaseKeyValueStorageClient from './BaseKeyValueStorageClient';
+import ServiceResponse from './ServiceResponse';
 
 import type { IServiceResponse } from './contracts';
-import { ServiceResponse } from './ServiceResponse';
-import { BaseKeyValueStorageClient } from './BaseKeyValueStorageClient';
 
 let redisKeyValueStorageClient: BaseKeyValueStorageClient | undefined;
 
@@ -55,7 +54,9 @@ const resolveRedisConfig = (): Record<string, any> => {
        */
       reconnectStrategy: (retries: number): number | Error => {
         if (retries >= maxReconnectAttempts) {
-          return new Error(`Redis connection failed after ${maxReconnectAttempts} reconnect attempt(s).`);
+          return new Error(
+            `Redis connection failed after ${maxReconnectAttempts} reconnect attempt(s).`
+          );
         }
         return Math.min(2 ** retries * 100, 1000);
       }
@@ -166,9 +167,9 @@ export class RedisKeyValueStorageClient extends BaseKeyValueStorageClient {
 
   public static compile(): RedisKeyValueStorageClient {
     if (redisKeyValueStorageClient) {
-      return redisKeyValueStorageClient as RedisKeyValueStorageClient;
+      return redisKeyValueStorageClient;
     }
     redisKeyValueStorageClient = new RedisKeyValueStorageClient();
-    return redisKeyValueStorageClient as RedisKeyValueStorageClient;
+    return redisKeyValueStorageClient;
   }
 }

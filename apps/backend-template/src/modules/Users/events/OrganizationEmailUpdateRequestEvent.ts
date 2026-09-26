@@ -1,9 +1,10 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import type { IEventMessage } from '@src/modules/port/IEventMessage';
-import { canNotBeEmpty } from '@src/shared/validators';
 import { ComposeEventError } from '@src/infra/exceptions';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import { canNotBeEmpty } from '@src/shared/validators';
 
-export class OrganizationEmailUpdateRequestEvent extends BaseDomainEvent {
+import type { IEventMessage } from '@src/modules/port/IEventMessage';
+
+class OrganizationEmailUpdateRequestEvent extends BaseDomainEvent {
   constructor(message: IEventMessage) {
     super(message);
     try {
@@ -18,3 +19,5 @@ export class OrganizationEmailUpdateRequestEvent extends BaseDomainEvent {
     }
   }
 }
+
+export default OrganizationEmailUpdateRequestEvent;

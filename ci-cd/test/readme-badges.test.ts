@@ -37,11 +37,19 @@ describe('public README quality links', () => {
     expect.hasAssertions();
 
     for (const branch of ['dev', 'main']) {
-      expect(readme).toContain(`https://circleci.com/gh/web2solutions/Jumentix.svg?style=shield&branch=${branch}`);
+      expect(readme).toContain(
+        `https://circleci.com/gh/web2solutions/Jumentix.svg?style=shield&branch=${branch}`
+      );
       expect(readme).toContain(`https://circleci.com/gh/web2solutions/Jumentix/tree/${branch}`);
-      expect(readme).toContain(`https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graph/badge.svg`);
-      expect(readme).toContain(`https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graphs/tree.svg`);
-      expect(readme).toContain(`https://app.codecov.io/github/web2solutions/Jumentix/tree/${branch}`);
+      expect(readme).toContain(
+        `https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graph/badge.svg`
+      );
+      expect(readme).toContain(
+        `https://codecov.io/gh/web2solutions/Jumentix/branch/${branch}/graphs/tree.svg`
+      );
+      expect(readme).toContain(
+        `https://app.codecov.io/github/web2solutions/Jumentix/tree/${branch}`
+      );
     }
   });
 
@@ -61,10 +69,22 @@ describe('public README quality links', () => {
 
     const documents = [readme, ptReadme];
     expect({
-      branchDashboards: ['dev', 'main'].every((branch) => documents.every((document) => document.includes(`https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=${branch}`))),
-      devMetrics: ['alert_status', 'reliability_rating', 'coverage'].every((metric) => documents.every((document) => document.includes(`metricKeys%3D${metric}%26branch%3Ddev`))),
-      mainMetrics: ['alert_status', 'reliability_rating'].every((metric) => documents.every((document) => document.includes(`metric=${metric}&branch=main`))),
-      missingMainCoverage: documents.every((document) => !document.includes('metric=coverage&branch=main'))
+      branchDashboards: ['dev', 'main'].every((branch) =>
+        documents.every((document) =>
+          document.includes(
+            `https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=${branch}`
+          )
+        )
+      ),
+      devMetrics: ['alert_status', 'reliability_rating', 'coverage'].every((metric) =>
+        documents.every((document) => document.includes(`metricKeys%3D${metric}%26branch%3Ddev`))
+      ),
+      mainMetrics: ['alert_status', 'reliability_rating'].every((metric) =>
+        documents.every((document) => document.includes(`metric=${metric}&branch=main`))
+      ),
+      missingMainCoverage: documents.every(
+        (document) => !document.includes('metric=coverage&branch=main')
+      )
     }).toStrictEqual({
       branchDashboards: true,
       devMetrics: true,
@@ -90,7 +110,9 @@ describe('public README quality links', () => {
         usesCli: document.includes('bun x github:web2solutions/Jumentix#dev'),
         choosesDev: document.includes('--git-branch=dev'),
         choosesRest: document.includes('--service-type=rest'),
-        clonesRepository: document.includes('git clone https://github.com/web2solutions/Jumentix.git'),
+        clonesRepository: document.includes(
+          'git clone https://github.com/web2solutions/Jumentix.git'
+        ),
         startsWorkspace: document.includes('bun run dev:express')
       }).toStrictEqual({
         usesCli: true,
@@ -167,7 +189,12 @@ describe('public README quality links', () => {
   it('links to public documentation, contribution guidance, and the license', () => {
     expect.hasAssertions();
 
-    for (const heading of ['## Get Started', '## Guides and Documentation', '## Contributing', '## License']) {
+    for (const heading of [
+      '## Get Started',
+      '## Guides and Documentation',
+      '## Contributing',
+      '## License'
+    ]) {
       expect(readme).toContain(heading);
     }
     for (const file of [
@@ -184,9 +211,9 @@ describe('website realtime navigation metadata', () => {
   it('indexes the pt-BR realtime adapter pages shipped by the website', async () => {
     expect.hasAssertions();
 
-    const { default: ptBrRealtimeMeta } = await import(
+    const { default: ptBrRealtimeMeta } = (await import(
       path.join(repoRoot, 'apps/jumentix-website/content/pt-BR/jumentix/adapters/realtime/_meta')
-    ) as { default: Record<string, string> };
+    )) as { default: Record<string, string> };
 
     expect(ptBrRealtimeMeta).toStrictEqual({
       'grpc-api': 'API gRPC em tempo real',

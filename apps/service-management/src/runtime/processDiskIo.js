@@ -1,6 +1,6 @@
-/* eslint-disable no-console */
-const fs = require('fs');
-const { execFile } = require('child_process');
+const { execFile } = require('node:child_process');
+const fs = require('node:fs');
+
 const { readDarwinDiskIo: readDarwinDiskIoNative } = require('./darwinProcessDiskIo');
 
 const DEFAULT_TIMEOUT_MS = 80;
@@ -14,11 +14,13 @@ function toFiniteNumber(value, fallback = 0) {
 
 function parseLinuxIoText(text) {
   const fields = {};
-  String(text || '').split('\n').forEach((line) => {
-    const match = /^(\w+):\s+(\d+)\s*$/.exec(line.trim());
-    if (!match) return;
-    fields[match[1]] = toFiniteNumber(match[2]);
-  });
+  String(text || '')
+    .split('\n')
+    .forEach((line) => {
+      const match = /^(\w+):\s+(\d+)\s*$/.exec(line.trim());
+      if (!match) return;
+      fields[match[1]] = toFiniteNumber(match[2]);
+    });
   return {
     supported: true,
     platform: 'linux',
@@ -49,38 +51,43 @@ function readLinuxDiskIo(pid) {
 
 function execFileJson(command, args, timeoutMs) {
   return new Promise((resolve) => {
-    execFile(command, args, {
-      timeout: timeoutMs,
-      encoding: 'utf8',
-      windowsHide: true
-    }, (error, stdout, stderr) => {
-      if (error) {
-        resolve({
-          ok: false,
-          error: error.message || String(error),
-          code: error.code ? String(error.code) : 'EXEC_ERROR',
-          stderr: String(stderr || '')
-        });
-        return;
+    execFile(
+      command,
+      args,
+      {
+        timeout: timeoutMs,
+        encoding: 'utf8',
+        windowsHide: true
+      },
+      (error, stdout, stderr) => {
+        if (error) {
+          resolve({
+            ok: false,
+            error: error.message || String(error),
+            code: error.code ? String(error.code) : 'EXEC_ERROR',
+            stderr: String(stderr || '')
+          });
+          return;
+        }
+        try {
+          resolve({ ok: true, payload: JSON.parse(String(stdout || '{}')) });
+        } catch (parseError) {
+          resolve({
+            ok: false,
+            error: parseError instanceof Error ? parseError.message : String(parseError),
+            code: 'JSON_PARSE_ERROR',
+            stdout: String(stdout || '')
+          });
+        }
       }
-      try {
-        resolve({ ok: true, payload: JSON.parse(String(stdout || '{}')) });
-      } catch (parseError) {
-        resolve({
-          ok: false,
-          error: parseError instanceof Error ? parseError.message : String(parseError),
-          code: 'JSON_PARSE_ERROR',
-          stdout: String(stdout || '')
-        });
-      }
-    });
+    );
   });
 }
 
 function readDarwinDiskIo(pid) {
   const cached = darwinCache.get(pid);
   const now = Date.now();
-  if (cached && (now - cached.at) < DARWIN_CACHE_TTL_MS) {
+  if (cached && now - cached.at < DARWIN_CACHE_TTL_MS) {
     return { ...cached.value, collectedAt: new Date().toISOString() };
   }
   const value = readDarwinDiskIoNative(pid);
@@ -142,16 +149,18 @@ async function readProcessDiskIo(pid, options = {}) {
 
 async function attachProcessDiskIo(processes, options = {}) {
   const list = Array.isArray(processes) ? processes : [];
-  return Promise.all(list.map(async (processEntry) => {
-    const diskIo = await readProcessDiskIo(processEntry?.pid, options);
-    return { ...processEntry, diskIo };
-  }));
+  return Promise.all(
+    list.map(async (processEntry) => {
+      const diskIo = await readProcessDiskIo(processEntry?.pid, options);
+      return { ...processEntry, diskIo };
+    })
+  );
 }
 
 module.exports = {
   attachProcessDiskIo,
-  parseLinuxIoText,
-  readProcessDiskIo,
+  DARWIN_CACHE_TTL_MS,
   DEFAULT_TIMEOUT_MS,
-  DARWIN_CACHE_TTL_MS
+  parseLinuxIoText,
+  readProcessDiskIo
 };

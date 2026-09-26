@@ -24,7 +24,7 @@ export type MatrixCellId =
 
 export type CellStatus = 'passed' | 'failed' | 'skipped';
 
-export type MatrixCell = {
+export interface MatrixCell {
   id: MatrixCellId;
   /** Human-readable matrix coordinate. */
   label: string;
@@ -34,9 +34,9 @@ export type MatrixCell = {
   expectApps: string[];
   /** Requires Docker compose / HTTP smoke. */
   needsDocker: boolean;
-};
+}
 
-export type CellResult = {
+export interface CellResult {
   id: MatrixCellId;
   label: string;
   status: CellStatus;
@@ -45,15 +45,15 @@ export type CellResult = {
   failedCommand?: string;
   skipReason?: string;
   detail?: string;
-};
+}
 
-export type MatrixReport = {
+export interface MatrixReport {
   results: CellResult[];
   totalRuntimeMs: number;
   dockerEnabled: boolean;
   dockerAvailable: boolean;
   installEnabled: boolean;
-};
+}
 
 export const GENERATION_MATRIX: readonly MatrixCell[] = Object.freeze([
   {
@@ -92,11 +92,7 @@ export const GENERATION_MATRIX: readonly MatrixCell[] = Object.freeze([
       '--http=express',
       '--db=sqlite'
     ],
-    expectApps: [
-      'apps/core/package.json',
-      'apps/core/src/modules/Users',
-      '.jumentix/project.json'
-    ],
+    expectApps: ['apps/core/package.json', 'apps/core/src/modules/Users', '.jumentix/project.json'],
     needsDocker: false
   },
   {
@@ -110,22 +106,13 @@ export const GENERATION_MATRIX: readonly MatrixCell[] = Object.freeze([
       '--http=express',
       '--db=sqlite'
     ],
-    expectApps: [
-      'apps/core/package.json',
-      'apps/frontend/package.json',
-      '.jumentix/project.json'
-    ],
+    expectApps: ['apps/core/package.json', 'apps/frontend/package.json', '.jumentix/project.json'],
     needsDocker: false
   },
   {
     id: 'frontend-only',
     label: 'frontend-only',
-    initArgs: [
-      '--non-interactive',
-      '--preset=users',
-      '--mode=frontend',
-      '--offline'
-    ],
+    initArgs: ['--non-interactive', '--preset=users', '--mode=frontend', '--offline'],
     expectApps: ['apps/frontend/package.json', '.jumentix/project.json'],
     needsDocker: false
   },
@@ -141,11 +128,7 @@ export const GENERATION_MATRIX: readonly MatrixCell[] = Object.freeze([
       '--http=express',
       '--db=sqlite'
     ],
-    expectApps: [
-      'apps/core/package.json',
-      'apps/frontend/package.json',
-      '.jumentix/project.json'
-    ],
+    expectApps: ['apps/core/package.json', 'apps/frontend/package.json', '.jumentix/project.json'],
     needsDocker: false
   }
 ]);
@@ -169,10 +152,7 @@ export function isInstallEnabled(env: NodeJS.ProcessEnv = process.env): boolean 
  * available. The probe fails closed: an unresolved docker IS "not
  * available", which is the semantic this probe exists to report.
  */
-const DOCKER_CANDIDATES = Object.freeze([
-  '/usr/bin/docker',
-  '/usr/local/bin/docker'
-]);
+const DOCKER_CANDIDATES = Object.freeze(['/usr/bin/docker', '/usr/local/bin/docker']);
 
 export function resolveDockerBinary(
   candidates: readonly string[] = DOCKER_CANDIDATES,
@@ -217,7 +197,7 @@ function runCommand(
   };
 }
 
-export type RunMatrixOptions = {
+export interface RunMatrixOptions {
   packageRoot: string;
   env?: NodeJS.ProcessEnv;
   /** Override Docker probe (tests). */
@@ -227,7 +207,7 @@ export type RunMatrixOptions = {
   /** Keep tmp dirs on failure for debugging. */
   keepOnFailure?: boolean;
   log?: (message: string) => void;
-};
+}
 
 function scratchRoot(label: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), `cli-init-e2e-${label}-`));
@@ -243,9 +223,11 @@ function verifyExpectedApps(projectDir: string, expectApps: string[]): string | 
   return null;
 }
 
-function runDockerSmoke(
-  projectDir: string
-): { ok: boolean; failedCommand?: string; detail?: string } {
+function runDockerSmoke(projectDir: string): {
+  ok: boolean;
+  failedCommand?: string;
+  detail?: string;
+} {
   const composeFile = path.join(projectDir, 'docker-compose.yml');
   if (!fs.existsSync(composeFile)) {
     return {
@@ -270,9 +252,13 @@ function runDockerSmoke(
   }
 
   // Best-effort HTTP smoke against the generated backend default port.
-  const smoke = runCommand('curl', ['-fsS', '-o', '/dev/null', '-w', '%{http_code}', 'http://127.0.0.1:3000/'], {
-    cwd: projectDir
-  });
+  const smoke = runCommand(
+    'curl',
+    ['-fsS', '-o', '/dev/null', '-w', '%{http_code}', 'http://127.0.0.1:3000/'],
+    {
+      cwd: projectDir
+    }
+  );
   runCommand('docker', ['compose', '-f', composeFile, 'down', '--remove-orphans'], {
     cwd: projectDir
   });
@@ -291,10 +277,7 @@ function runDockerSmoke(
 /**
  * Run one matrix cell: CLI init → verify apps → optional install → optional Docker smoke.
  */
-export function runMatrixCell(
-  cell: MatrixCell,
-  options: RunMatrixOptions
-): CellResult {
+export function runMatrixCell(cell: MatrixCell, options: RunMatrixOptions): CellResult {
   const env = options.env || process.env;
   const log = options.log || (() => undefined);
   const started = Date.now();
@@ -309,9 +292,10 @@ export function runMatrixCell(
         skipReason: `${DOCKER_ENV}!=1 (heavy Docker cell gated for default bun test speed)`
       };
     }
-    const dockerOk = typeof options.dockerAvailable === 'boolean'
-      ? options.dockerAvailable
-      : probeDockerAvailable();
+    const dockerOk =
+      typeof options.dockerAvailable === 'boolean'
+        ? options.dockerAvailable
+        : probeDockerAvailable();
     if (!dockerOk) {
       return {
         id: cell.id,
@@ -414,8 +398,8 @@ export function runMatrixCell(
 export function formatMatrixReport(report: MatrixReport): string {
   const lines = [
     'cli-init generation e2e matrix (JUM-854)',
-    `dockerEnabled=${report.dockerEnabled} dockerAvailable=${report.dockerAvailable} `
-      + `installEnabled=${report.installEnabled} totalMs=${report.totalRuntimeMs}`,
+    `dockerEnabled=${report.dockerEnabled} dockerAvailable=${report.dockerAvailable} ` +
+      `installEnabled=${report.installEnabled} totalMs=${report.totalRuntimeMs}`,
     ''
   ];
   for (const cell of report.results) {
@@ -439,9 +423,8 @@ export function runGenerationMatrix(options: RunMatrixOptions): MatrixReport {
   const env = options.env || process.env;
   const cells = options.cells || GENERATION_MATRIX;
   const dockerEnabled = isDockerMatrixEnabled(env);
-  const dockerAvailable = typeof options.dockerAvailable === 'boolean'
-    ? options.dockerAvailable
-    : probeDockerAvailable();
+  const dockerAvailable =
+    typeof options.dockerAvailable === 'boolean' ? options.dockerAvailable : probeDockerAvailable();
   const installEnabled = isInstallEnabled(env);
   const started = Date.now();
   const results: CellResult[] = [];
@@ -470,8 +453,8 @@ export function assertMatrixAcceptable(report: MatrixReport): void {
   if (!required || required.status !== 'passed') {
     const failedCommand = required?.failedCommand || 'monolith-express-sqlite';
     throw new Error(
-      'Required cell monolith/express/sqlite did not pass '
-        + `(failedCommand=${failedCommand}): ${required?.detail || 'missing result'}`
+      'Required cell monolith/express/sqlite did not pass ' +
+        `(failedCommand=${failedCommand}): ${required?.detail || 'missing result'}`
     );
   }
 
@@ -502,8 +485,7 @@ export function assertMatrixAcceptable(report: MatrixReport): void {
   if (!report.dockerEnabled) {
     if (dockerCell.status !== 'skipped') {
       throw new Error(
-        'Docker cell must skip when CLI_INIT_E2E_DOCKER!=1 '
-          + `(got status=${dockerCell.status})`
+        `Docker cell must skip when CLI_INIT_E2E_DOCKER!=1 (got status=${dockerCell.status})`
       );
     }
     if (!/CLI_INIT_E2E_DOCKER/.test(dockerCell.skipReason || '')) {

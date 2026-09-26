@@ -1,17 +1,20 @@
 /* global describe, it, expect, beforeAll, afterAll */
-import { io as createSocketClient, Socket } from 'socket.io-client';
-import * as grpc from '@grpc/grpc-js';
-import * as protoLoader from '@grpc/proto-loader';
-import { WebSocketAPI } from '@src/interface/WebSocket/WebSocketAPI';
+import { credentials, loadPackageDefinition } from '@grpc/grpc-js';
+import { loadSync } from '@grpc/proto-loader';
+import { io as createSocketClient } from 'socket.io-client';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import InMemoryMessageMediator from '@src/infra/messages/InMemoryMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
 import { GrpcAPI } from '@src/interface/gRPC/gRPCAPI';
 import { resolveGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import { WebSocketAPI } from '@src/interface/WebSocket/WebSocketAPI';
 import { composeUsersAuthServices } from '@src/modules/Users';
-import { InMemoryMessageMediator } from '@src/infra/messages/InMemoryMessageMediator';
+
+import type { Socket } from 'socket.io-client';
 
 const databaseClient = InMemoryDbClient;
 const passwordCryptoService = PasswordCryptoService.compile();
@@ -30,24 +33,21 @@ const { authService } = composeUsersAuthServices({
 
 jest.setTimeout(30000);
 
-const emitWithAck = (
-  socket: Socket,
-  payload: Record<string, any>
-): Promise<any> => new Promise((resolve, reject) => {
-  socket.timeout(10000).emit(
-    'api:request',
-    payload,
-    (ackError: any, ackPayload: any) => (ackError ? reject(ackError) : resolve(ackPayload))
-  );
-});
-
-const grpcUnaryRequest = (client: any, payload: Record<string, any>): Promise<any> => (
+const emitWithAck = (socket: Socket, payload: Record<string, any>): Promise<any> =>
   new Promise((resolve, reject) => {
-    client.request(payload, (error: Error | null, response: any) => (
+    socket
+      .timeout(10000)
+      .emit('api:request', payload, (ackError: any, ackPayload: any) =>
+        ackError ? reject(ackError) : resolve(ackPayload)
+      );
+  });
+
+const grpcUnaryRequest = (client: any, payload: Record<string, any>): Promise<any> =>
+  new Promise((resolve, reject) => {
+    client.request(payload, (error: Error | null, response: any) =>
       error ? reject(error) : resolve(response)
-    ));
-  })
-);
+    );
+  });
 
 describe('realtime api smoke', () => {
   const wsPort = 33301;
@@ -94,16 +94,16 @@ describe('realtime api smoke', () => {
     });
 
     const protoFilePath = resolveGrpcProtoPath();
-    const packageDefinition = protoLoader.loadSync(protoFilePath, {
+    const packageDefinition = loadSync(protoFilePath, {
       longs: String,
       enums: String,
       defaults: true,
       oneofs: true
     });
-    const grpcObject = grpc.loadPackageDefinition(packageDefinition) as any;
+    const grpcObject = loadPackageDefinition(packageDefinition) as any;
     grpcClient = new grpcObject.realtime.AsyncApiGateway(
       `127.0.0.1:${grpcPort}`,
-      grpc.credentials.createInsecure()
+      credentials.createInsecure()
     );
   });
 
@@ -115,10 +115,10 @@ describe('realtime api smoke', () => {
 
   it('websocket and grpc servers both accept requests and reply envelopes', async () => {
     expect.hasAssertions();
-    const wsResponse = await emitWithAck(
-      wsClient,
-      { operationId: 'unknownOperation', metadata: { requestId: 'smoke-ws' } }
-    );
+    const wsResponse = await emitWithAck(wsClient, {
+      operationId: 'unknownOperation',
+      metadata: { requestId: 'smoke-ws' }
+    });
 
     const grpcResponse = await grpcUnaryRequest(grpcClient, {
       operationId: 'unknownOperation',

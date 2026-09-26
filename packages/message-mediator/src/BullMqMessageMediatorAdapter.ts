@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+
 import type {
   IIntegrationEvent,
   IMessage,
@@ -15,18 +16,18 @@ interface IBullMqMediatorOptions {
 }
 
 interface IRegisteredHandler {
-  handler: MessageHandler<any, any>;
+  handler: MessageHandler;
   options?: IMessageHandlerRegistrationOptions;
 }
 
-export class BullMqMessageMediatorAdapter implements IMessageMediator {
+class BullMqMessageMediatorAdapter implements IMessageMediator {
   private readonly defaultRequestQueue: string;
 
   private initialized = false;
 
   private readonly eventListeners: Record<
     string,
-    Array<(event: IIntegrationEvent) => Promise<void> | void>
+    ((event: IIntegrationEvent) => Promise<void> | void)[]
   > = {};
 
   private readonly handlersByContract: Record<string, IRegisteredHandler> = {};
@@ -105,7 +106,7 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
     options?: IMessageHandlerRegistrationOptions
   ): void {
     const registration: IRegisteredHandler = {
-      handler: handler as MessageHandler<any, any>,
+      handler: handler as MessageHandler,
       options
     };
     this.handlersByContract[contract] = registration;
@@ -213,22 +214,23 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
   }
 
   private async ensureQueueInfrastructure(queueName: string): Promise<void> {
-    if (!this.infrastructureReadyByName[queueName]) {
-      this.infrastructureReadyByName[queueName] = this.createQueueInfrastructure(queueName)
-        .catch((error) => {
-          delete this.infrastructureReadyByName[queueName];
-          throw error;
-        });
+    let ready = this.infrastructureReadyByName[queueName];
+    if (ready === undefined) {
+      ready = this.createQueueInfrastructure(queueName).catch((error) => {
+        delete this.infrastructureReadyByName[queueName];
+        throw error;
+      });
+      this.infrastructureReadyByName[queueName] = ready;
     }
 
-    await this.infrastructureReadyByName[queueName];
+    await ready;
   }
 
   private async createQueueInfrastructure(queueName: string): Promise<void> {
     let queue = this.queuesByName[queueName];
     let queueEvents = this.queueEventsByName[queueName];
     let worker = this.workersByName[queueName];
-    const created: Array<{ close: () => Promise<void> }> = [];
+    const created: { close: () => Promise<void> }[] = [];
 
     try {
       if (!queue) {
@@ -255,7 +257,7 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
         worker = new Worker(
           queueName,
           async (job: any) => {
-            const inputMessage = job.data.message as IMessage<any>;
+            const inputMessage = job.data.message as IMessage;
             const inputOptions = job.data.options as IMessageRequestOptions;
             return this.resolveRequest(inputMessage, inputOptions);
           },
@@ -301,7 +303,7 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
         contract: response.contract ?? message.contract,
         version: response.version ?? message.version,
         metadata: response.metadata ?? message.metadata
-      } as IMessageResponse<TResult>;
+      };
     } catch (error) {
       return {
         contract: message.contract,
@@ -319,9 +321,9 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
    */
   private static toWireError(error: unknown): Error {
     if (error instanceof Error) {
-      return { name: error.name, message: error.message } as Error;
+      return { name: error.name, message: error.message };
     }
-    return { name: 'Error', message: String(error) } as Error;
+    return { name: 'Error', message: String(error) };
   }
 
   private resolveHandler(
@@ -357,3 +359,5 @@ export class BullMqMessageMediatorAdapter implements IMessageMediator {
     }
   }
 }
+
+export default BullMqMessageMediatorAdapter;

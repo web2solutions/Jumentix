@@ -2,7 +2,7 @@ import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClien
 // import { IStore } from './IStore';
 
 export interface IRepoConfig {
-    limit?: number;
-    // store: IStore<T>;
-    databaseClient: IDatabaseClient;
-  }
+  limit?: number;
+  // store: IStore<T>;
+  databaseClient: IDatabaseClient;
+}

@@ -1,4 +1,5 @@
-import { domainManagerSubApplication } from '@src/interface/CLI/subapps/domainManager';
+import domainManagerSubApplication from '@src/interface/CLI/subapps/domainManager';
+
 import type { IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 describe('cli domain manager', () => {
@@ -35,16 +36,18 @@ describe('cli domain manager', () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: 'users domain',
-        boundedContext: 'identity',
-        status: 'active',
-        tags: ['core'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: 'users domain',
+          boundedContext: 'identity',
+          status: 'active',
+          tags: ['core'],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
       entities: []
     };
 
@@ -67,55 +70,61 @@ describe('cli domain manager', () => {
       ]
     );
 
-    await domainManagerSubApplication.run(context as any);
+    await domainManagerSubApplication.run(context);
 
     expect(saveCatalog).toHaveBeenCalledTimes(3);
     expect(catalog.domains).toHaveLength(1);
     expect(catalog.domains[0].name).toBe('Identity');
     expect(catalog.domains[0].status).toBe('deprecated');
-    expect(logs).toStrictEqual(expect.arrayContaining([
-      'Domain "Billing" created.',
-      'Domain "Identity" updated.',
-      'Domain removed.'
-    ]));
+    expect(logs).toStrictEqual(
+      expect.arrayContaining([
+        'Domain "Billing" created.',
+        'Domain "Identity" updated.',
+        'Domain removed.'
+      ])
+    );
   });
 
   it('blocks delete when domain has related entities and handles empty update', async () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
-      entities: [{
-        id: 'e1',
-        name: 'User',
-        domain: 'Users',
-        kind: 'aggregate',
-        description: '',
-        fields: [],
-        behaviors: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }]
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      entities: [
+        {
+          id: 'e1',
+          name: 'User',
+          domain: 'Users',
+          kind: 'aggregate',
+          description: '',
+          fields: [],
+          behaviors: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ]
     };
 
     const withEntity = createContext(catalog, [4, 0, 5], []);
-    await domainManagerSubApplication.run(withEntity.context as any);
+    await domainManagerSubApplication.run(withEntity.context);
 
-    expect(withEntity.saveCatalog).toHaveBeenCalledTimes(0);
+    expect(withEntity.saveCatalog).not.toHaveBeenCalled();
     expect(withEntity.logs.some((item) => item.includes('Remove or reassign'))).toBe(true);
 
     const emptyCatalog: IWorkspaceCatalog = { version: 1, domains: [], entities: [] };
     const emptyUpdate = createContext(emptyCatalog, [3, 5], []);
-    await domainManagerSubApplication.run(emptyUpdate.context as any);
+    await domainManagerSubApplication.run(emptyUpdate.context);
     expect(emptyUpdate.logs).toContain('No domains available.');
   });
 
@@ -123,48 +132,38 @@ describe('cli domain manager', () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: ['core'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: ['core'],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
       entities: []
     };
 
     const run = createContext(
       catalog,
       [1, 2, 2, 3, 0, 4, 0, 5],
-      [
-        'zzz',
-        '',
-        '',
-        '',
-        'unknown',
-        '',
-        'Users',
-        '',
-        '',
-        '',
-        '',
-        '',
-        'wrong-confirmation'
-      ]
+      ['zzz', '', '', '', 'unknown', '', 'Users', '', '', '', '', '', 'wrong-confirmation']
     );
 
-    await domainManagerSubApplication.run(run.context as any);
+    await domainManagerSubApplication.run(run.context);
 
-    expect(run.logs).toStrictEqual(expect.arrayContaining([
-      'No matching domains.',
-      'Domain name is required.',
-      'Domain "Users" already exists.',
-      'Domain name is required.',
-      'Delete cancelled.'
-    ]));
+    expect(run.logs).toStrictEqual(
+      expect.arrayContaining([
+        'No matching domains.',
+        'Domain name is required.',
+        'Domain "Users" already exists.',
+        'Domain name is required.',
+        'Delete cancelled.'
+      ])
+    );
   });
 
   it('covers empty list and delete with missing domain index', async () => {
@@ -172,38 +171,35 @@ describe('cli domain manager', () => {
     const emptyCatalog: IWorkspaceCatalog = { version: 1, domains: [], entities: [] };
     const run = createContext(emptyCatalog, [0, 4, 5], []);
 
-    await domainManagerSubApplication.run(run.context as any);
+    await domainManagerSubApplication.run(run.context);
 
-    expect(run.logs).toStrictEqual(expect.arrayContaining([
-      'No domains registered yet.',
-      'No domains available.'
-    ]));
+    expect(run.logs).toStrictEqual(
+      expect.arrayContaining(['No domains registered yet.', 'No domains available.'])
+    );
   });
 
   it('keeps update branch validation when edited name becomes empty', async () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: '',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
+      domains: [
+        {
+          id: 'd1',
+          name: '',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
       entities: []
     };
 
-    const run = createContext(
-      catalog,
-      [3, 0, 5],
-      ['', '', '', '', '']
-    );
+    const run = createContext(catalog, [3, 0, 5], ['', '', '', '', '']);
 
-    await domainManagerSubApplication.run(run.context as any);
+    await domainManagerSubApplication.run(run.context);
     expect(run.logs).toContain('Domain name is required.');
     expect(run.saveCatalog).not.toHaveBeenCalled();
   });

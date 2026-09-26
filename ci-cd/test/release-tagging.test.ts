@@ -1,11 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const {
-  extractChangelogSection
-} = require('../create-github-release.js');
-const {
-  packageTagName,
-  resolveCohort
-} = require('../publish-npm-cohort.js');
+const { extractChangelogSection } = require('../create-github-release.js');
+const { packageTagName, resolveCohort } = require('../publish-npm-cohort.js');
 
 describe('create-github-release helpers', () => {
   it('extracts the CHANGELOG section for an application tag', () => {

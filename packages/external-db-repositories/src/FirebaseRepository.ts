@@ -1,7 +1,8 @@
-import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
-export class FirebaseRepository extends BaseExternalDataRepository {
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+
+class FirebaseRepository extends BaseExternalDataRepository {
   private app: any | null = null;
 
   private firestore: any | null = null;
@@ -15,9 +16,8 @@ export class FirebaseRepository extends BaseExternalDataRepository {
 
   public async connect(): Promise<void> {
     const firebaseAdminModule = await this.loadModule('firebase-admin/app');
-    const initializeApp = (
-      firebaseAdminModule.initializeApp || firebaseAdminModule.default?.initializeApp
-    );
+    const initializeApp =
+      firebaseAdminModule.initializeApp || firebaseAdminModule.default?.initializeApp;
     const cert = firebaseAdminModule.cert || firebaseAdminModule.default?.cert;
 
     if (!initializeApp) {
@@ -61,3 +61,5 @@ export class FirebaseRepository extends BaseExternalDataRepository {
     return this.firestore;
   }
 }
+
+export default FirebaseRepository;

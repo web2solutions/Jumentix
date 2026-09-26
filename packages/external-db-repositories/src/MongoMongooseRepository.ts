@@ -1,7 +1,8 @@
-import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
-export class MongoMongooseRepository extends BaseExternalDataRepository {
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+
+class MongoMongooseRepository extends BaseExternalDataRepository {
   private mongooseModule: any | null = null;
 
   private connection: any | null = null;
@@ -17,7 +18,8 @@ export class MongoMongooseRepository extends BaseExternalDataRepository {
     this.mongooseModule = await this.loadModule('mongoose');
     const mongooseConnection = this.mongooseModule.default || this.mongooseModule;
 
-    const connectionUrl = this.options.connectionUrl || `mongodb://127.0.0.1:27017/${this.options.database || 'app'}`;
+    const connectionUrl =
+      this.options.connectionUrl || `mongodb://127.0.0.1:27017/${this.options.database || 'app'}`;
     await mongooseConnection.connect(connectionUrl, {
       maxPoolSize: this.getExtraOption<number>('maxPoolSize', 20),
       minPoolSize: this.getExtraOption<number>('minPoolSize', 0),
@@ -44,3 +46,5 @@ export class MongoMongooseRepository extends BaseExternalDataRepository {
     return this.connection;
   }
 }
+
+export default MongoMongooseRepository;

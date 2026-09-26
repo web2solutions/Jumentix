@@ -1,18 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { stringify as stringifyYaml } from 'yaml';
-import type { GenerationPlan, PlanService } from '../sources/types';
+
 import { injectDesignerDomains } from './domains';
 import { renderEnvDev } from './env';
 import { buildServicePackageJson } from './packageJson';
-import {
-  resolveBackendTemplateRoot,
-  sanitizePackageScope,
-  sanitizeServiceId
-} from './paths';
+import { resolveBackendTemplateRoot, sanitizePackageScope, sanitizeServiceId } from './paths';
 import { computeUnusedPaths, shouldKeepRelativePath } from './slice';
 
-export type GenerateBackendOptions = {
+import type { GenerationPlan, PlanService } from '../sources/types';
+
+export interface GenerateBackendOptions {
   plan: GenerationPlan;
   /** Workspace root (e.g. temp/out dir). Services land under `apps/<service>`. */
   outputDir: string;
@@ -25,20 +24,20 @@ export type GenerateBackendOptions = {
   /** Restrict generation to these service ids (default: all). */
   serviceIds?: string[];
   log?: (message?: string) => void;
-};
+}
 
-export type GeneratedServiceResult = {
+export interface GeneratedServiceResult {
   serviceId: string;
   packageName: string;
   root: string;
   droppedPaths: string[];
   injectedModules: string[];
-};
+}
 
-export type GenerateBackendResult = {
+export interface GenerateBackendResult {
   services: GeneratedServiceResult[];
   appsDir: string;
-};
+}
 
 function readCliVersion(packageRoot: string): string {
   try {
@@ -53,7 +52,11 @@ function readCliVersion(packageRoot: string): string {
 function copyTemplateSlice(
   templateRoot: string,
   destRoot: string,
-  slice: { http: PlanService['interfaces']['http']; realtime: PlanService['interfaces']['realtime']; db: PlanService['db'] }
+  slice: {
+    http: PlanService['interfaces']['http'];
+    realtime: PlanService['interfaces']['realtime'];
+    db: PlanService['db'];
+  }
 ): string[] {
   const dropped: string[] = [];
   const unused = new Set(computeUnusedPaths(slice));
@@ -125,11 +128,14 @@ function writeEnvDev(serviceRoot: string, service: PlanService): void {
   if (fs.existsSync(templateEnvPath)) {
     template = fs.readFileSync(templateEnvPath, 'utf8');
   }
-  const rendered = renderEnvDev({
-    http: service.interfaces.http,
-    realtime: service.interfaces.realtime,
-    db: service.db
-  }, template);
+  const rendered = renderEnvDev(
+    {
+      http: service.interfaces.http,
+      realtime: service.interfaces.realtime,
+      db: service.db
+    },
+    template
+  );
   fs.mkdirSync(path.dirname(templateEnvPath), { recursive: true });
   fs.writeFileSync(templateEnvPath, rendered, 'utf8');
 }
@@ -219,13 +225,7 @@ export async function generateBackendService(options: {
 export async function generateBackend(
   options: GenerateBackendOptions
 ): Promise<GenerateBackendResult> {
-  const {
-    plan,
-    outputDir,
-    projectName,
-    serviceIds,
-    log = () => undefined
-  } = options;
+  const { plan, outputDir, projectName, serviceIds, log = () => undefined } = options;
 
   const packageRoot = path.resolve(__dirname, '..', '..');
   const templateRoot = options.templateRoot || resolveBackendTemplateRoot(packageRoot);

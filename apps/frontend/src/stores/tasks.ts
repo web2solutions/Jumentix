@@ -1,5 +1,5 @@
-import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
+import { computed, ref } from 'vue';
 
 const STORAGE_KEY = 'jumentix-frontend-tasks';
 
@@ -72,9 +72,10 @@ export const useTaskStore = defineStore('tasks', () => {
   const hydrate = (): void => {
     const snapshot = readSnapshot();
     open.value = snapshot.open;
-    active.value = snapshot.active && snapshot.open.includes(snapshot.active)
-      ? snapshot.active
-      : (snapshot.open[0] ?? null);
+    active.value =
+      snapshot.active && snapshot.open.includes(snapshot.active)
+        ? snapshot.active
+        : (snapshot.open[0] ?? null);
   };
 
   const reset = (): void => {

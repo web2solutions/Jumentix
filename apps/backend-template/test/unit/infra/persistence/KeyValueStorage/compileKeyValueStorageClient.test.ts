@@ -1,8 +1,9 @@
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
 import {
   compileKeyValueStorageClient as compileFromPackage,
   InMemoryKeyValueStorageClient
 } from '@jumentix/key-value-storage';
+
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
 
 /**
  * `@src/infra/.../compileKeyValueStorageClient` is a single re-export line.

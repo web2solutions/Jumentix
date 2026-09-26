@@ -1,17 +1,17 @@
+/* eslint-disable no-console */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+
 import {
   assertNoCanaContentLeaks,
   isCanaPublishedSource,
   isCanaUsageGuideSource,
   toCanaConsumerMarkdown
 } from './cana-consumer-filter.mjs';
-import {
-  assertNoContentLeaks,
-  stripGitHubContentLinks
-} from './content-leaks.mjs';
+import { assertNoContentLeaks, stripGitHubContentLinks } from './content-leaks.mjs';
+
+const { process } = globalThis;
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, '..');
@@ -28,7 +28,6 @@ const publicRoot = path.join(appRoot, 'public');
 const assetsDirectoryName = 'docs-assets';
 const assetsRoot = path.join(publicRoot, assetsDirectoryName);
 
-
 /**
  * Public site package docs policy (fail-closed):
  * - Never auto-publish a package whose package.json has `"private": true`.
@@ -42,7 +41,7 @@ const NEVER_PUBLISH_PACKAGE_SLUGS = new Set([
   'config-ts',
   'agent-registry',
   'security-scanner',
-  'cli-init',
+  'cli-init'
 ]);
 
 const NESTED_PACKAGE_HUB_SLUGS = new Set([
@@ -50,7 +49,7 @@ const NESTED_PACKAGE_HUB_SLUGS = new Set([
   'designer-core',
   'key-value-storage',
   'mutex-service',
-  'message-mediator',
+  'message-mediator'
 ]);
 
 async function readPackagePrivateFlag(packageDir) {
@@ -74,13 +73,15 @@ async function shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug
   }
   const packageDir = path.dirname(englishSource);
   // Only apply private:true to package folders directly under packages/.
-  if (path.basename(path.dirname(packageDir)) === 'packages' || path.basename(sourceDir) === 'packages') {
+  if (
+    path.basename(path.dirname(packageDir)) === 'packages' ||
+    path.basename(sourceDir) === 'packages'
+  ) {
     const isPrivate = await readPackagePrivateFlag(packageDir);
     if (isPrivate) return true;
   }
   return false;
 }
-
 
 const localeConfig = {
   en: {
@@ -88,15 +89,15 @@ const localeConfig = {
     outputDir: path.join(contentRoot, 'jumentix'),
     sourceKey: 'source',
     titleKey: 'title',
-    descriptionKey: 'description',
+    descriptionKey: 'description'
   },
   'pt-BR': {
     basePath: '/docs/pt-BR/jumentix',
     outputDir: path.join(contentRoot, 'pt-BR', 'jumentix'),
     sourceKey: 'sourcePtBr',
     titleKey: 'titlePtBr',
-    descriptionKey: 'descriptionPtBr',
-  },
+    descriptionKey: 'descriptionPtBr'
+  }
 };
 
 const sectionTitles = {
@@ -105,24 +106,21 @@ const sectionTitles = {
     guides: 'Guides',
     adapters: 'Adapters',
     packages: 'Packages',
-    reference: 'Reference',
+    reference: 'Reference'
   },
   'pt-BR': {
     concepts: 'Conceitos',
     guides: 'Guias',
     adapters: 'Adaptadores',
     packages: 'Pacotes',
-    reference: 'Referência',
-  },
+    reference: 'Referência'
+  }
 };
 
 const normalizeLineEndings = (text) => text.replace(/\r\n/g, '\n');
-const escapeForSingleQuotedTs = (value) =>
-  value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+const escapeForSingleQuotedTs = (value) => value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 const toTsObjectKey = (key) =>
-  /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)
-    ? key
-    : `'${escapeForSingleQuotedTs(key)}'`;
+  /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key) ? key : `'${escapeForSingleQuotedTs(key)}'`;
 const slugify = (value) =>
   value
     .replace(/\.pt-BR$/i, '')
@@ -135,9 +133,7 @@ const inferTitle = (markdown, fallback) => {
   const heading = normalizeLineEndings(markdown)
     .split('\n')
     .find((line) => /^#\s+/.test(line));
-  return heading
-    ? heading.replace(/^#\s+/, '').replace(/[`*_]/g, '').trim()
-    : fallback;
+  return heading ? heading.replace(/^#\s+/, '').replace(/[`*_]/g, '').trim() : fallback;
 };
 
 const sanitizeDocBody = (markdown) => {
@@ -161,14 +157,18 @@ async function readJsonFile(filePath) {
 
 async function resolveMarkdownTarget(sourceFile, hrefPath) {
   const initialTarget = path.resolve(path.dirname(sourceFile), decodeURIComponent(hrefPath));
-  for (const candidate of [initialTarget, `${initialTarget}.md`, `${initialTarget}.mdx`]) {
-    try {
-      if ((await fs.stat(candidate)).isFile()) return candidate;
-    } catch {
-      // Continue through supported Markdown candidates.
-    }
-  }
-  return undefined;
+  const candidates = [initialTarget, `${initialTarget}.md`, `${initialTarget}.mdx`];
+  const isFile = await Promise.all(
+    candidates.map(async (candidate) => {
+      try {
+        return (await fs.stat(candidate)).isFile();
+      } catch {
+        return false;
+      }
+    })
+  );
+  const matchIndex = isFile.findIndex(Boolean);
+  return matchIndex === -1 ? undefined : candidates[matchIndex];
 }
 
 /**
@@ -221,36 +221,49 @@ async function copyDocumentationImages(markdown, sourceFile) {
   const imagePattern = /!\[([^\]]*)\]\(([^)\s]+)(\s+"[^"]*")?\)/g;
   const replacements = new Map();
 
+  // Dedupe before copying: one destination per unique href keeps concurrent
+  // copies from truncating each other.
+  const uniqueHrefs = [];
   for (const match of markdown.matchAll(imagePattern)) {
     const href = match[2];
-    if (replacements.has(href) || href.startsWith('/') || /^[a-z][a-z\d+.-]*:/i.test(href)) {
+    if (uniqueHrefs.includes(href) || href.startsWith('/') || /^[a-z][a-z\d+.-]*:/i.test(href)) {
       continue;
     }
-
-    const absoluteSource = path.resolve(path.dirname(sourceFile), decodeURIComponent(href));
-    const relativeToRepository = path.relative(monorepoRoot, absoluteSource);
-    // Fail closed on anything outside the monorepo: a published page must never
-    // reference a file the repository does not own.
-    if (relativeToRepository.startsWith('..') || path.isAbsolute(relativeToRepository)) {
-      throw new Error(`Documentation image ${href} in ${sourceFile} resolves outside the repository`);
-    }
-
-    try {
-      if (!(await fs.stat(absoluteSource)).isFile()) continue;
-    } catch {
-      throw new Error(`Documentation image ${href} in ${sourceFile} does not exist`);
-    }
-
-    const destination = path.join(assetsRoot, relativeToRepository);
-    await fs.mkdir(path.dirname(destination), { recursive: true });
-    await fs.copyFile(absoluteSource, destination);
-    replacements.set(href, `/${assetsDirectoryName}/${relativeToRepository.split(path.sep).join('/')}`);
+    uniqueHrefs.push(href);
   }
+
+  await Promise.all(
+    uniqueHrefs.map(async (href) => {
+      const absoluteSource = path.resolve(path.dirname(sourceFile), decodeURIComponent(href));
+      const relativeToRepository = path.relative(monorepoRoot, absoluteSource);
+      // Fail closed on anything outside the monorepo: a published page must never
+      // reference a file the repository does not own.
+      if (relativeToRepository.startsWith('..') || path.isAbsolute(relativeToRepository)) {
+        throw new Error(
+          `Documentation image ${href} in ${sourceFile} resolves outside the repository`
+        );
+      }
+
+      try {
+        if (!(await fs.stat(absoluteSource)).isFile()) return;
+      } catch {
+        throw new Error(`Documentation image ${href} in ${sourceFile} does not exist`);
+      }
+
+      const destination = path.join(assetsRoot, relativeToRepository);
+      await fs.mkdir(path.dirname(destination), { recursive: true });
+      await fs.copyFile(absoluteSource, destination);
+      replacements.set(
+        href,
+        `/${assetsDirectoryName}/${relativeToRepository.split(path.sep).join('/')}`
+      );
+    })
+  );
 
   if (replacements.size === 0) return markdown;
 
   return markdown.replace(imagePattern, (fullMatch, alt, href, title) =>
-    (replacements.has(href) ? `![${alt}](${replacements.get(href)}${title || ''})` : fullMatch)
+    replacements.has(href) ? `![${alt}](${replacements.get(href)}${title || ''})` : fullMatch
   );
 }
 
@@ -261,45 +274,57 @@ async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {
   const replacements = new Map();
   const labelOnly = new Map();
 
-  for (const match of sanitized.matchAll(linkPattern)) {
+  const matches = [...sanitized.matchAll(linkPattern)];
+
+  // Target resolution is read-only, so every candidate resolves up front.
+  const resolvedTargets = await Promise.all(
+    matches.map((match) => {
+      const href = match[2];
+      if (href.startsWith('#') || href.startsWith('/') || /^[a-z][a-z\d+.-]*:/i.test(href)) {
+        return undefined;
+      }
+      const hashIndex = href.indexOf('#');
+      const hrefPath = hashIndex === -1 ? href : href.slice(0, hashIndex);
+      return resolveMarkdownTarget(sourceFile, hrefPath);
+    })
+  );
+
+  matches.forEach((match, index) => {
     const href = match[2];
     const label = match[1];
     if (
-      replacements.has(href)
-      || labelOnly.has(href)
-      || href.startsWith('#')
-      || href.startsWith('/')
+      replacements.has(href) ||
+      labelOnly.has(href) ||
+      href.startsWith('#') ||
+      href.startsWith('/')
     ) {
-      continue;
+      return;
     }
 
     if (/^[a-z][a-z\d+.-]*:/i.test(href)) {
       if (/github\.com\/XpertMinds\/Jumentix/i.test(href)) {
-        throw new Error(
-          `Published docs cannot keep GitHub content link ${href} (${sourceFile})`
-        );
+        throw new Error(`Published docs cannot keep GitHub content link ${href} (${sourceFile})`);
       }
-      continue;
+      return;
     }
 
     const hashIndex = href.indexOf('#');
-    const hrefPath = hashIndex === -1 ? href : href.slice(0, hashIndex);
     const anchor = hashIndex === -1 ? '' : href.slice(hashIndex);
-    const target = await resolveMarkdownTarget(sourceFile, hrefPath);
+    const target = resolvedTargets[index];
     if (!target) {
       // Fail closed: do not invent GitHub URLs; keep the label for juniors.
       labelOnly.set(href, label);
-      continue;
+      return;
     }
     const publishedTarget = routesBySource.get(target);
     if (!publishedTarget) {
       // Fail closed: unpublished relative targets stay on-site as label text
       // until a content-sources entry publishes them.
       labelOnly.set(href, label);
-      continue;
+      return;
     }
     replacements.set(href, `${publishedTarget.route}${anchor}`);
-  }
+  });
 
   return sanitized.replace(linkPattern, (fullMatch, label, href) => {
     if (replacements.has(href)) return `[${label}](${replacements.get(href)})`;
@@ -309,16 +334,14 @@ async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {
 }
 
 async function listMarkdownFiles(directory) {
-  const files = [];
-  for (const item of await fs.readdir(directory, { withFileTypes: true })) {
-    const fullPath = path.join(directory, item.name);
-    if (item.isDirectory()) {
-      files.push(...(await listMarkdownFiles(fullPath)));
-    } else if (/\.md$/i.test(item.name)) {
-      files.push(fullPath);
-    }
-  }
-  return files.sort((a, b) => a.localeCompare(b));
+  const nested = await Promise.all(
+    (await fs.readdir(directory, { withFileTypes: true })).map(async (item) => {
+      const fullPath = path.join(directory, item.name);
+      if (item.isDirectory()) return listMarkdownFiles(fullPath);
+      return /\.md$/i.test(item.name) ? [fullPath] : [];
+    })
+  );
+  return nested.flat().sort((a, b) => a.localeCompare(b));
 }
 
 /**
@@ -339,7 +362,10 @@ function isLicense(sourceFile) {
 
 function collectionSlug(sourceDir, sourceFile) {
   const relative = path.relative(sourceDir, sourceFile).replaceAll('\\', '/');
-  const basename = path.basename(relative).replace(/\.pt-BR\.md$/i, '').replace(/\.md$/i, '');
+  const basename = path
+    .basename(relative)
+    .replace(/\.pt-BR\.md$/i, '')
+    .replace(/\.md$/i, '');
   if (basename.toLowerCase() === 'readme') {
     const parent = path.dirname(relative);
     return parent === '.' ? 'index' : slugify(parent);
@@ -349,9 +375,7 @@ function collectionSlug(sourceDir, sourceFile) {
 
 async function prepareRecords(config) {
   const records = [];
-  const explicitRoutes = new Set(
-    config.entries.map((entry) => `${entry.section}/${entry.slug}`)
-  );
+  const explicitRoutes = new Set(config.entries.map((entry) => `${entry.section}/${entry.slug}`));
 
   for (const entry of config.entries) {
     for (const [locale, localeSettings] of Object.entries(localeConfig)) {
@@ -362,54 +386,66 @@ async function prepareRecords(config) {
         slug: entry.slug,
         title: entry[localeSettings.titleKey],
         description: entry[localeSettings.descriptionKey],
-        source,
+        source
       });
     }
   }
 
-  for (const collection of config.collections) {
-    const sourceDir = path.resolve(appRoot, collection.sourceDir);
-    const files = await listMarkdownFiles(sourceDir);
-    const englishFiles = files.filter(
-      (file) => !/\.pt-BR\.md$/i.test(file) && !isLicense(file),
-    );
+  const collectionRecords = await Promise.all(
+    config.collections.map(async (collection) => {
+      const sourceDir = path.resolve(appRoot, collection.sourceDir);
+      const files = await listMarkdownFiles(sourceDir);
+      const englishFiles = files.filter((file) => !/\.pt-BR\.md$/i.test(file) && !isLicense(file));
 
-    for (const englishSource of englishFiles) {
-      const slug = collectionSlug(sourceDir, englishSource);
-      // Curated consumer pages are authoritative. A later collection walk over
-      // packages/ must not replace one with a terse package README.
-      if (explicitRoutes.has(`${collection.section}/${slug}`)) continue;
-      if (
-        collection.section === 'packages'
-        && await shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug)
-      ) {
-        continue;
-      }
+      const perSource = await Promise.all(
+        englishFiles.map(async (englishSource) => {
+          const slug = collectionSlug(sourceDir, englishSource);
+          // Curated consumer pages are authoritative. A later collection walk over
+          // packages/ must not replace one with a terse package README.
+          if (explicitRoutes.has(`${collection.section}/${slug}`)) return [];
+          if (
+            collection.section === 'packages' &&
+            (await shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug))
+          ) {
+            return [];
+          }
 
-      const portugueseSource = englishSource.replace(/\.md$/i, '.pt-BR.md');
-      try {
-        await fs.access(portugueseSource);
-      } catch {
-        throw new Error(`Missing Portuguese documentation pair: ${portugueseSource}`);
-      }
+          const portugueseSource = englishSource.replace(/\.md$/i, '.pt-BR.md');
+          try {
+            await fs.access(portugueseSource);
+          } catch {
+            throw new Error(`Missing Portuguese documentation pair: ${portugueseSource}`);
+          }
 
-      for (const [locale, source] of [['en', englishSource], ['pt-BR', portugueseSource]]) {
-        const markdown = await fs.readFile(source, 'utf8');
-        const fallbackTitle =
-          locale === 'pt-BR' ? collection.titlePtBr : collection.title;
-        records.push({
-          locale,
-          section: collection.section,
-          slug,
-          title: inferTitle(markdown, fallbackTitle),
-          description:
-            locale === 'pt-BR'
-              ? `Documentação de ${collection.titlePtBr}.`
-              : `${collection.title} documentation.`,
-          source,
-        });
-      }
-    }
+          return Promise.all(
+            [
+              ['en', englishSource],
+              ['pt-BR', portugueseSource]
+            ].map(async ([locale, source]) => {
+              const markdown = await fs.readFile(source, 'utf8');
+              const fallbackTitle = locale === 'pt-BR' ? collection.titlePtBr : collection.title;
+              return {
+                locale,
+                section: collection.section,
+                slug,
+                title: inferTitle(markdown, fallbackTitle),
+                description:
+                  locale === 'pt-BR'
+                    ? `Documentação de ${collection.titlePtBr}.`
+                    : `${collection.title} documentation.`,
+                source
+              };
+            })
+          );
+        })
+      );
+
+      return perSource.flat();
+    })
+  );
+
+  for (const recordsForCollection of collectionRecords) {
+    records.push(...recordsForCollection);
   }
 
   return records;
@@ -440,8 +476,9 @@ async function writeGeneratedDoc(record, routesBySource) {
     assertNoCanaContentLeaks(body, record.source);
   }
   assertNoContentLeaks(body, record.source);
-  const description = record.description
-    || (record.locale === 'pt-BR'
+  const description =
+    record.description ||
+    (record.locale === 'pt-BR'
       ? 'Documentação do framework Jumentix para adoção rápida.'
       : 'Jumentix framework documentation for fast adoption.');
   const content = `---
@@ -487,9 +524,11 @@ description: ${JSON.stringify(portuguese ? 'Portal técnico do Jumentix.' : 'Jum
 
 # ${portuguese ? 'Construa com o Jumentix' : 'Build with Jumentix'}
 
-${portuguese
+${
+  portuguese
     ? 'Use este portal para aprender os conceitos, construir aplicações, escolher adaptadores e operar os pacotes do Jumentix.'
-    : 'Use this portal to learn the concepts, build applications, choose adapters, and operate Jumentix packages.'}
+    : 'Use this portal to learn the concepts, build applications, choose adapters, and operate Jumentix packages.'
+}
 
 \`\`\`bash
 bun install
@@ -528,18 +567,25 @@ function sectionLandingContent(locale, section, records) {
   const directRecords = records.filter(
     (record) => record.section === section && record.slug !== 'index'
   );
-  const childSections = [...new Set(
-    records
-      .map((record) => record.section)
-      .filter((candidate) => candidate.startsWith(`${section}/`))
-      .map((candidate) => candidate.split('/').slice(0, section.split('/').length + 1).join('/'))
-  )];
+  const childSections = [
+    ...new Set(
+      records
+        .map((record) => record.section)
+        .filter((candidate) => candidate.startsWith(`${section}/`))
+        .map((candidate) =>
+          candidate
+            .split('/')
+            .slice(0, section.split('/').length + 1)
+            .join('/')
+        )
+    )
+  ];
   const links = [
     ...childSections.map((child) => ({
       title: sectionDisplayTitle(locale, child),
-      route: `${localeConfig[locale].basePath}/${child}`,
+      route: `${localeConfig[locale].basePath}/${child}`
     })),
-    ...directRecords.map((record) => ({ title: record.title, route: recordRoute(record) })),
+    ...directRecords.map((record) => ({ title: record.title, route: recordRoute(record) }))
   ];
 
   const juniorIntro = (() => {
@@ -579,15 +625,15 @@ ${links.map((link) => `- [${link.title}](${link.route})`).join('\n')}
 }
 
 async function writeNavigation(locale, records) {
-  const outputDir = localeConfig[locale].outputDir;
+  const { outputDir } = localeConfig[locale];
   await fs.writeFile(path.join(outputDir, 'index.mdx'), landingContent(locale, records), 'utf8');
 
   await writeMeta(outputDir, [
     { slug: 'index', title: locale === 'pt-BR' ? 'Início' : 'Start', display: 'hidden' },
     ...['concepts', 'guides', 'adapters', 'packages', 'reference'].map((slug) => ({
       slug,
-      title: sectionTitles[locale][slug],
-    })),
+      title: sectionTitles[locale][slug]
+    }))
   ]);
 
   const grouped = new Map();
@@ -603,82 +649,86 @@ async function writeNavigation(locale, records) {
     }
   }
 
-  for (const [section, sectionRecords] of grouped) {
-    const directory = path.join(outputDir, section);
-    if (!sectionRecords.some((record) => record.slug === 'index')) {
-      await fs.mkdir(directory, { recursive: true });
-      await fs.writeFile(
-        path.join(directory, 'index.mdx'),
-        sectionLandingContent(locale, section, records),
-        'utf8'
-      );
-    }
-    const childSlugs = [...new Set(
-      records
-        .map((record) => record.section)
-        .filter((candidate) => candidate.startsWith(`${section}/`))
-        .map((candidate) => candidate.split('/')[section.split('/').length])
-        .filter(Boolean)
-    )];
-
-    const childTitle = (slug) => {
-      const packageTitles = {
-        cana: '@jumentix/cana',
-        usage: locale === 'pt-BR' ? 'Guia de uso' : 'Usage guide',
-        'designer-core': '@jumentix/designer-core',
-        'key-value-storage': '@jumentix/key-value-storage',
-        'mutex-service': '@jumentix/mutex-service',
-        'message-mediator': '@jumentix/message-mediator'
-      };
-      if (packageTitles[slug]) return packageTitles[slug];
-      if (locale === 'pt-BR') {
-        return ({ http: 'HTTP', databases: 'Bancos de dados', realtime: 'Realtime' }[slug] ?? slug);
+  await Promise.all(
+    [...grouped].map(async ([section, sectionRecords]) => {
+      const directory = path.join(outputDir, section);
+      if (!sectionRecords.some((record) => record.slug === 'index')) {
+        await fs.mkdir(directory, { recursive: true });
+        await fs.writeFile(
+          path.join(directory, 'index.mdx'),
+          sectionLandingContent(locale, section, records),
+          'utf8'
+        );
       }
-      return ({ http: 'HTTP', databases: 'Databases', realtime: 'Realtime' }[slug] ?? slug);
-    };
-
-    if (sectionRecords.length > 0 || childSlugs.length > 0) {
-      const metaEntries = [
-        ...sectionRecords.map((record) => ({
-          slug: record.slug,
-          title: record.title,
-          display: record.slug === 'index' ? 'hidden' : undefined,
-        })),
-        ...childSlugs.map((slug) => ({
-          slug,
-          title: childTitle(slug),
-        })),
+      const childSlugs = [
+        ...new Set(
+          records
+            .map((record) => record.section)
+            .filter((candidate) => candidate.startsWith(`${section}/`))
+            .map((candidate) => candidate.split('/')[section.split('/').length])
+            .filter(Boolean)
+        )
       ];
-      if (section === 'packages/cana') {
-        const order = ['index', 'usage', 'react-context', 'react-redux', 'vue-pinia'];
-        metaEntries.sort((a, b) => {
-          const aIndex = order.indexOf(a.slug);
-          const bIndex = order.indexOf(b.slug);
-          if (aIndex === -1 && bIndex === -1) return 0;
-          if (aIndex === -1) return 1;
-          if (bIndex === -1) return -1;
-          return aIndex - bIndex;
-        });
-      }
-      // Prefer nested package folders ahead of flat package pages when titles collide.
-      const seen = new Set();
-      const deduped = metaEntries.filter((entry) => {
-        if (seen.has(entry.slug)) return false;
-        seen.add(entry.slug);
-        return true;
-      });
-      await writeMeta(directory, deduped);
-      continue;
-    }
 
-    await writeMeta(
-      directory,
-      childSlugs.map((slug) => ({
-        slug,
-        title: childTitle(slug),
-      }))
-    );
-  }
+      const childTitle = (slug) => {
+        const packageTitles = {
+          cana: '@jumentix/cana',
+          usage: locale === 'pt-BR' ? 'Guia de uso' : 'Usage guide',
+          'designer-core': '@jumentix/designer-core',
+          'key-value-storage': '@jumentix/key-value-storage',
+          'mutex-service': '@jumentix/mutex-service',
+          'message-mediator': '@jumentix/message-mediator'
+        };
+        if (packageTitles[slug]) return packageTitles[slug];
+        if (locale === 'pt-BR') {
+          return { http: 'HTTP', databases: 'Bancos de dados', realtime: 'Realtime' }[slug] ?? slug;
+        }
+        return { http: 'HTTP', databases: 'Databases', realtime: 'Realtime' }[slug] ?? slug;
+      };
+
+      if (sectionRecords.length > 0 || childSlugs.length > 0) {
+        const metaEntries = [
+          ...sectionRecords.map((record) => ({
+            slug: record.slug,
+            title: record.title,
+            display: record.slug === 'index' ? 'hidden' : undefined
+          })),
+          ...childSlugs.map((slug) => ({
+            slug,
+            title: childTitle(slug)
+          }))
+        ];
+        if (section === 'packages/cana') {
+          const order = ['index', 'usage', 'react-context', 'react-redux', 'vue-pinia'];
+          metaEntries.sort((a, b) => {
+            const aIndex = order.indexOf(a.slug);
+            const bIndex = order.indexOf(b.slug);
+            if (aIndex === -1 && bIndex === -1) return 0;
+            if (aIndex === -1) return 1;
+            if (bIndex === -1) return -1;
+            return aIndex - bIndex;
+          });
+        }
+        // Prefer nested package folders ahead of flat package pages when titles collide.
+        const seen = new Set();
+        const deduped = metaEntries.filter((entry) => {
+          if (seen.has(entry.slug)) return false;
+          seen.add(entry.slug);
+          return true;
+        });
+        await writeMeta(directory, deduped);
+        return;
+      }
+
+      await writeMeta(
+        directory,
+        childSlugs.map((slug) => ({
+          slug,
+          title: childTitle(slug)
+        }))
+      );
+    })
+  );
 }
 
 async function main() {
@@ -691,21 +741,29 @@ async function main() {
   await fs.rm(assetsRoot, { recursive: true, force: true });
   await fs.mkdir(assetsRoot, { recursive: true });
 
-  for (const settings of Object.values(localeConfig)) {
-    await fs.rm(settings.outputDir, { recursive: true, force: true });
-    await fs.mkdir(settings.outputDir, { recursive: true });
-  }
+  await Promise.all(
+    Object.values(localeConfig).map(async (settings) => {
+      await fs.rm(settings.outputDir, { recursive: true, force: true });
+      await fs.mkdir(settings.outputDir, { recursive: true });
+    })
+  );
 
   for (const record of records) {
+    // eslint-disable-next-line no-await-in-loop -- localized records can share one image asset destination; sequential writes avoid concurrent truncation
     await writeGeneratedDoc(record, routesBySource);
   }
 
-  for (const locale of Object.keys(localeConfig)) {
-    await writeNavigation(locale, records.filter((record) => record.locale === locale));
-  }
+  await Promise.all(
+    Object.keys(localeConfig).map((locale) =>
+      writeNavigation(
+        locale,
+        records.filter((record) => record.locale === locale)
+      )
+    )
+  );
 
   await writeMeta(path.join(contentRoot, 'pt-BR'), [
-    { slug: 'jumentix', title: 'Documentação Jumentix' },
+    { slug: 'jumentix', title: 'Documentação Jumentix' }
   ]);
 
   const { spawn } = await import('node:child_process');
@@ -727,5 +785,5 @@ async function main() {
 
 main().catch((error) => {
   console.error(error);
-  process.exit(1);
+  process.exitCode = 1;
 });

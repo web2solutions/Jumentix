@@ -1,5 +1,5 @@
 import { CommercialUseCasePage } from '@/components/commercial/CommercialPages';
 
-export default function RestApiUseCasePage() {
-  return <CommercialUseCasePage locale="en" name="rest-api" />;
-}
+const RestApiUseCasePage = () => <CommercialUseCasePage locale="en" name="rest-api" />;
+
+export default RestApiUseCasePage;

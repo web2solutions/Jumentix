@@ -26,11 +26,12 @@
  *    `storage.ts`.
  */
 
-import type { CanaSchema } from '../contracts';
 import { canaError, requestToPromise, translateError } from './errors';
 import { applySchema, assertSchema } from './schema';
+import { browserStorageEnvironment, StorageDurability } from './storage';
+
 import type { EvictionVerdict } from './storage';
-import { StorageDurability, browserStorageEnvironment } from './storage';
+import type { CanaSchema } from '../contracts';
 
 export interface OpenOptions {
   readonly name: string;
@@ -54,10 +55,11 @@ const DEFAULT_BLOCKED_TIMEOUT_MS = 10_000;
 function resolveFactory(explicit?: IDBFactory): IDBFactory {
   if (explicit) return explicit;
   if (typeof indexedDB !== 'undefined' && indexedDB) return indexedDB;
+  // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
   throw canaError(
     'Unavailable',
-    'No usable IndexedDB in this environment. Private browsing or an unsupported '
-      + 'browser — the client may open a localStorage fallback when that option is enabled.'
+    'No usable IndexedDB in this environment. Private browsing or an unsupported ' +
+      'browser — the client may open a localStorage fallback when that option is enabled.'
   );
 }
 
@@ -115,11 +117,12 @@ export async function openDatabase(options: OpenOptions): Promise<OpenResult> {
 
   const existingVersion = await currentVersion(factory, options.name);
   if (existingVersion !== undefined && existingVersion > options.schema.version) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError(
       'UpgradeFailed',
-      `Refusing to downgrade "${options.name}" from version ${existingVersion} to `
-        + `${options.schema.version}. A newer build of the application wrote this database; `
-        + 'downgrades are not attempted because they cannot be made safe.'
+      `Refusing to downgrade "${options.name}" from version ${existingVersion} to ` +
+        `${options.schema.version}. A newer build of the application wrote this database; ` +
+        'downgrades are not attempted because they cannot be made safe.'
     );
   }
 
@@ -134,11 +137,13 @@ export async function openDatabase(options: OpenOptions): Promise<OpenResult> {
     // settled check here would be unreachable. The settled guard lives in finish.
     const blockedTimer = setTimeout(() => {
       settled = true;
-      reject(canaError(
-        'UpgradeBlocked',
-        `Upgrading "${options.name}" is blocked by another open connection and did not `
-          + `clear within ${blockedTimeoutMs}ms. Another tab is holding the previous version.`
-      ));
+      reject(
+        canaError(
+          'UpgradeBlocked',
+          `Upgrading "${options.name}" is blocked by another open connection and did not ` +
+            `clear within ${blockedTimeoutMs}ms. Another tab is holding the previous version.`
+        )
+      );
     }, blockedTimeoutMs);
 
     const finish = (action: () => void) => {
@@ -175,20 +180,24 @@ export async function openDatabase(options: OpenOptions): Promise<OpenResult> {
       }
     };
 
-    request.onsuccess = () => finish(() => {
-      if (upgradeFailure !== undefined) {
-        request.result.close();
-        reject(translateError(upgradeFailure));
-        return;
-      }
-      resolve(request.result);
-    });
+    request.onsuccess = () =>
+      finish(() => {
+        if (upgradeFailure !== undefined) {
+          request.result.close();
+          reject(translateError(upgradeFailure));
+          return;
+        }
+        resolve(request.result);
+      });
 
-    request.onerror = () => finish(() => {
-      reject(upgradeFailure !== undefined
-        ? translateError(upgradeFailure)
-        : translateError(request.error, {}));
-    });
+    request.onerror = () =>
+      finish(() => {
+        reject(
+          upgradeFailure !== undefined
+            ? translateError(upgradeFailure)
+            : translateError(request.error, {})
+        );
+      });
 
     request.onblocked = () => {
       // Leave the timer running; this only tells us why we are waiting.
@@ -237,10 +246,9 @@ export async function deleteDatabase(
 
     const timer = setTimeout(() => {
       settled = true;
-      reject(canaError(
-        'UpgradeBlocked',
-        `Deleting "${name}" is blocked by another open connection.`
-      ));
+      reject(
+        canaError('UpgradeBlocked', `Deleting "${name}" is blocked by another open connection.`)
+      );
     }, blockedTimeoutMs);
 
     const finish = (action: () => void) => {

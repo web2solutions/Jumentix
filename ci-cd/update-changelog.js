@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const CHANGELOG_FILE = 'CHANGELOG.md';
 const RECORD_SEPARATOR = '\x1e';
@@ -30,12 +30,15 @@ function getRepoRoot() {
 }
 
 function getTags() {
-  const output = runGit([
-    'for-each-ref',
-    '--sort=-creatordate',
-    '--format=%(refname:short)%09%(creatordate:short)',
-    'refs/tags'
-  ], { allowFailure: true });
+  const output = runGit(
+    [
+      'for-each-ref',
+      '--sort=-creatordate',
+      '--format=%(refname:short)%09%(creatordate:short)',
+      'refs/tags'
+    ],
+    { allowFailure: true }
+  );
 
   if (!output) return [];
 
@@ -43,15 +46,18 @@ function getTags() {
   // must not create changelog sections (JUM-882 / Requirement 060).
   const APP_TAG_RE = /^v\d+\.\d+\.\d+$/;
 
-  return output.split('\n').map((line) => {
-    const [name, date] = line.split('\t');
-    const commit = runGit(['rev-list', '-n', '1', name]);
-    return {
-      name,
-      date,
-      commit
-    };
-  }).filter((tag) => APP_TAG_RE.test(tag.name));
+  return output
+    .split('\n')
+    .map((line) => {
+      const [name, date] = line.split('\t');
+      const commit = runGit(['rev-list', '-n', '1', name]);
+      return {
+        name,
+        date,
+        commit
+      };
+    })
+    .filter((tag) => APP_TAG_RE.test(tag.name));
 }
 
 function getCommitDate(ref) {
@@ -62,31 +68,36 @@ function getCommitDate(ref) {
 }
 
 function getCommits(range) {
-  const output = runGit([
-    'log',
-    `--pretty=format:%H${FIELD_SEPARATOR}%h${FIELD_SEPARATOR}%aI${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s${RECORD_SEPARATOR}`,
-    range
-  ], { allowFailure: true });
+  const output = runGit(
+    [
+      'log',
+      `--pretty=format:%H${FIELD_SEPARATOR}%h${FIELD_SEPARATOR}%aI${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s${RECORD_SEPARATOR}`,
+      range
+    ],
+    { allowFailure: true }
+  );
 
   if (!output) return [];
 
-  return output
-    .split(RECORD_SEPARATOR)
-    .filter(Boolean)
-    .map((record) => {
-      const [hash, shortHash, isoDate, author, subject] = record.split(FIELD_SEPARATOR);
-      const [date] = (isoDate || '').split('T');
-      return {
-        hash,
-        shortHash,
-        date,
-        author,
-        subject
-      };
-    })
-    // The synchronization PR itself is an implementation detail. Ignoring it
-    // makes the main-only job idempotent after that PR is merged.
-    .filter((commit) => !GENERATED_CHANGELOG_COMMIT.test(commit.subject));
+  return (
+    output
+      .split(RECORD_SEPARATOR)
+      .filter(Boolean)
+      .map((record) => {
+        const [hash, shortHash, isoDate, author, subject] = record.split(FIELD_SEPARATOR);
+        const [date] = (isoDate || '').split('T');
+        return {
+          hash,
+          shortHash,
+          date,
+          author,
+          subject
+        };
+      })
+      // The synchronization PR itself is an implementation detail. Ignoring it
+      // makes the main-only job idempotent after that PR is merged.
+      .filter((commit) => !GENERATED_CHANGELOG_COMMIT.test(commit.subject))
+  );
 }
 
 function formatCommit(commit) {
@@ -135,12 +146,10 @@ function generateChangelog() {
 }
 
 function getHeadCommitLine() {
-  const output = runGit([
-    'show',
-    '-s',
-    `--format=%aI${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s`,
-    'HEAD'
-  ], { allowFailure: true });
+  const output = runGit(
+    ['show', '-s', `--format=%aI${FIELD_SEPARATOR}%an${FIELD_SEPARATOR}%s`, 'HEAD'],
+    { allowFailure: true }
+  );
 
   if (!output) return '';
 
@@ -162,9 +171,7 @@ function main() {
   const root = getRepoRoot();
   const changelogPath = path.join(root, CHANGELOG_FILE);
   const generated = generateChangelog();
-  const current = fs.existsSync(changelogPath)
-    ? fs.readFileSync(changelogPath, 'utf8')
-    : '';
+  const current = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
 
   if (checkOnly) {
     const generatedPreviousHead = removeLineOnce(generated, getHeadCommitLine());
@@ -172,7 +179,8 @@ function main() {
     if (!isSynced) {
       console.error(`${CHANGELOG_FILE} is out of sync with Git history.`);
       console.error(`Run "bun run changelog:update" and commit the generated changes.`);
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
     console.log(`${CHANGELOG_FILE} is in sync with Git history.`);
     return;

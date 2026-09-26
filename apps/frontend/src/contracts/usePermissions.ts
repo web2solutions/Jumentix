@@ -4,7 +4,7 @@ import { can } from '@/contracts/rbac';
 import { useProfileStore } from '@/stores/profile';
 
 /** RBAC for OAS-driven UI (JUM-772): roles of the signed-in user + can(). */
-export const usePermissions = () => {
+const usePermissions = () => {
   const profile = useProfileStore();
   const roles = computed<string[]>(() => profile.record?.roles ?? []);
 
@@ -23,3 +23,5 @@ export const usePermissions = () => {
 
   return { roles, ensure, canOp };
 };
+
+export default usePermissions;

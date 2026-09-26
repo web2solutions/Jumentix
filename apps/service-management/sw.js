@@ -49,8 +49,6 @@
  * branch is what runs in the browser. Keep both paths in sync.
  */
 
-/* eslint-env serviceworker, node */
-
 const SHELL_VERSION = '0.9.54';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
@@ -157,9 +155,7 @@ function isShellUrl(url, scopeOrigin) {
  * time, not silently degrade the offline shell.
  */
 function handleInstall({ cacheStorage }) {
-  return cacheStorage
-    .open(SHELL_CACHE_NAME)
-    .then((cache) => cache.addAll(SHELL_ASSETS));
+  return cacheStorage.open(SHELL_CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS));
 }
 
 /**
@@ -171,11 +167,13 @@ function handleInstall({ cacheStorage }) {
 function handleActivate({ cacheStorage, workerClients }) {
   return cacheStorage
     .keys()
-    .then((names) => Promise.all(
-      names
-        .filter((name) => name.startsWith(SHELL_CACHE_PREFIX) && name !== SHELL_CACHE_NAME)
-        .map((name) => cacheStorage.delete(name))
-    ))
+    .then((names) =>
+      Promise.all(
+        names
+          .filter((name) => name.startsWith(SHELL_CACHE_PREFIX) && name !== SHELL_CACHE_NAME)
+          .map((name) => cacheStorage.delete(name))
+      )
+    )
     .then(() => workerClients.claim());
 }
 
@@ -187,22 +185,24 @@ function handleActivate({ cacheStorage, workerClients }) {
  */
 function handleFetchRequest({ request, cacheStorage, fetchImpl, scopeOrigin }) {
   const requestUrl = new URL(request.url);
-  const unavailable = () => new Response('Service Management shell asset unavailable', {
-    status: 503,
-    statusText: 'Service Unavailable',
-    headers: { 'content-type': 'text/plain; charset=utf-8' }
-  });
+  const unavailable = () =>
+    new Response('Service Management shell asset unavailable', {
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: { 'content-type': 'text/plain; charset=utf-8' }
+    });
   const safeFetch = (fetchRequest) => Promise.resolve().then(() => fetchImpl(fetchRequest));
   if (request.method !== 'GET' || !isShellUrl(requestUrl, scopeOrigin)) {
     return safeFetch(request).catch(unavailable);
   }
-  const networkFirst = requestUrl.search
-    || requestUrl.pathname.endsWith('.js')
-    || requestUrl.pathname.endsWith('.css');
+  const networkFirst =
+    requestUrl.search ||
+    requestUrl.pathname.endsWith('.js') ||
+    requestUrl.pathname.endsWith('.css');
   if (networkFirst) {
-    return safeFetch(request).catch(() => cacheStorage
-      .match(request, { ignoreSearch: true })
-      .then((cached) => cached || unavailable()));
+    return safeFetch(request).catch(() =>
+      cacheStorage.match(request, { ignoreSearch: true }).then((cached) => cached || unavailable())
+    );
   }
   return cacheStorage
     .match(request, { ignoreSearch: true })
@@ -222,18 +222,22 @@ function registerWithWorkerGlobal(workerGlobal) {
     event.waitUntil(handleInstall({ cacheStorage: workerGlobal.caches }));
   });
   workerGlobal.addEventListener('activate', (event) => {
-    event.waitUntil(handleActivate({
-      cacheStorage: workerGlobal.caches,
-      workerClients: workerGlobal.clients
-    }));
+    event.waitUntil(
+      handleActivate({
+        cacheStorage: workerGlobal.caches,
+        workerClients: workerGlobal.clients
+      })
+    );
   });
   workerGlobal.addEventListener('fetch', (event) => {
-    event.respondWith(handleFetchRequest({
-      request: event.request,
-      cacheStorage: workerGlobal.caches,
-      fetchImpl: (request) => workerGlobal.fetch(request),
-      scopeOrigin: new URL(workerGlobal.registration.scope).origin
-    }));
+    event.respondWith(
+      handleFetchRequest({
+        request: event.request,
+        cacheStorage: workerGlobal.caches,
+        fetchImpl: (request) => workerGlobal.fetch(request),
+        scopeOrigin: new URL(workerGlobal.registration.scope).origin
+      })
+    );
   });
   workerGlobal.addEventListener('message', (event) => {
     handleMessage({ data: event.data, skipWaiting: () => workerGlobal.skipWaiting() });
@@ -258,5 +262,5 @@ if (typeof module !== 'undefined' && module.exports) {
   // Node/Bun unit-test path: export the logic, register no listeners.
   module.exports = pwaShellServiceWorker;
 } else {
-  registerWithWorkerGlobal(self);
+  registerWithWorkerGlobal(globalThis);
 }

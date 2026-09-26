@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const ROOT = process.cwd();
@@ -39,9 +40,11 @@ const readImports = (content) => {
   return imports;
 };
 
-const hasUseCaseImport = (imports) => imports.some(
-  (importPath) => importPath.includes('/application/ports/') || importPath.includes('/application/use-cases/')
-);
+const hasUseCaseImport = (imports) =>
+  imports.some(
+    (importPath) =>
+      importPath.includes('/application/ports/') || importPath.includes('/application/use-cases/')
+  );
 
 function validateControllerFile(source, imports, relativePath) {
   const violations = [];
@@ -52,7 +55,9 @@ function validateControllerFile(source, imports, relativePath) {
     }
 
     if (importPath.includes('/service/') && !ALLOWED_SERVICE_IMPORT.test(importPath)) {
-      violations.push(`${relativePath}: controller must not import service implementation "${importPath}"`);
+      violations.push(
+        `${relativePath}: controller must not import service implementation "${importPath}"`
+      );
     }
   }
 
@@ -99,7 +104,8 @@ function run() {
   if (violations.length > 0) {
     console.error('Hexagonal boundary violations found:');
     violations.forEach((violation) => console.error(`- ${violation}`));
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log('Hexagonal boundary check passed.');
@@ -110,6 +116,6 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
-  validateControllerFile,
-  readImports
+  readImports,
+  validateControllerFile
 };

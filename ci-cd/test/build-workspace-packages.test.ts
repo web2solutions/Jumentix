@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -28,11 +26,11 @@ const {
 
 type CloseCallback = (exitCode: number) => void;
 
-type FakePackage = {
+interface FakePackage {
   name: string;
   dir: string;
   dependencies: string[];
-};
+}
 
 function pkg(name: string, dependencies: string[] = []): FakePackage {
   return { name, dir: path.join('/workspace/packages', name), dependencies };
@@ -52,11 +50,7 @@ function silentLogger() {
 }
 
 /** Fire the close callback a deferred spawn registered for `name`. */
-function finishBuild(
-  resolvers: Map<string, CloseCallback>,
-  name: string,
-  exitCode: number
-): void {
+function finishBuild(resolvers: Map<string, CloseCallback>, name: string, exitCode: number): void {
   const close = resolvers.get(name);
   if (!close) throw new Error(`no deferred spawn recorded for ${name}`);
   close(exitCode);
@@ -75,9 +69,10 @@ function deferredSpawn(order: string[], resolvers: Map<string, CloseCallback>) {
   };
 }
 
-const tick = () => new Promise((resolve) => {
-  setImmediate(resolve);
-});
+const tick = () =>
+  new Promise((resolve) => {
+    setImmediate(resolve);
+  });
 
 describe('build-workspace-packages (JUM-871)', () => {
   it('groups packages into topological levels', () => {
@@ -89,11 +84,7 @@ describe('build-workspace-packages (JUM-871)', () => {
       ['core', pkg('core', [])]
     ]);
 
-    expect(computeBuildLevels(packages)).toStrictEqual([
-      ['core'],
-      ['lib', 'web'],
-      ['app']
-    ]);
+    expect(computeBuildLevels(packages)).toStrictEqual([['core'], ['lib', 'web'], ['app']]);
   });
 
   it('ignores dependencies on packages outside the workspace', () => {
@@ -133,9 +124,11 @@ describe('build-workspace-packages (JUM-871)', () => {
       expect(packages.get('with-build').dir).toBe(path.join(root, 'packages', 'with-build'));
       // All three dependency fields are recorded; external filtering happens
       // at graph time.
-      expect(packages.get('with-build').dependencies).toStrictEqual(
-        ['external', 'peer', 'dev-dep']
-      );
+      expect(packages.get('with-build').dependencies).toStrictEqual([
+        'external',
+        'peer',
+        'dev-dep'
+      ]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
@@ -150,8 +143,11 @@ describe('build-workspace-packages (JUM-871)', () => {
     const packages = discoverWorkspacePackages({
       packagesDir: '/workspace/packages',
       readdir: () => entries,
-      readFile: jest.fn()
-        .mockImplementationOnce(() => { throw new Error('unreadable manifest'); })
+      readFile: jest
+        .fn()
+        .mockImplementationOnce(() => {
+          throw new Error('unreadable manifest');
+        })
         .mockReturnValueOnce(JSON.stringify({ name: 'working', scripts: { build: 'bun build' } }))
     });
 
@@ -166,9 +162,8 @@ describe('build-workspace-packages (JUM-871)', () => {
     ]);
     const { logger, errors } = silentLogger();
 
-    await expect(
-      buildWorkspacePackages({ packages, spawn: jest.fn(), logger })
-    ).rejects.toThrow(/cycle/i);
+    const build: Promise<number> = buildWorkspacePackages({ packages, spawn: jest.fn(), logger });
+    await expect(build).rejects.toThrow(/cycle/i);
     expect(() => computeBuildLevels(packages)).toThrow('a');
     expect(errors).toStrictEqual([]);
   });
@@ -194,7 +189,7 @@ describe('build-workspace-packages (JUM-871)', () => {
     const resolvers = new Map<string, CloseCallback>();
     const { logger } = silentLogger();
 
-    const run = buildWorkspacePackages({
+    const run: Promise<number> = buildWorkspacePackages({
       packages,
       spawn: deferredSpawn(order, resolvers),
       logger
@@ -230,7 +225,7 @@ describe('build-workspace-packages (JUM-871)', () => {
     const resolvers = new Map<string, CloseCallback>();
     const { logger, errors } = silentLogger();
 
-    const run = buildWorkspacePackages({
+    const run: Promise<number> = buildWorkspacePackages({
       packages,
       spawn: deferredSpawn(order, resolvers),
       logger
@@ -262,7 +257,7 @@ describe('build-workspace-packages (JUM-871)', () => {
     const resolvers = new Map<string, CloseCallback>();
     const { logger, logs } = silentLogger();
 
-    const run = buildWorkspacePackages({
+    const run: Promise<number> = buildWorkspacePackages({
       packages,
       spawn: deferredSpawn(order, resolvers),
       logger
@@ -280,9 +275,12 @@ describe('build-workspace-packages (JUM-871)', () => {
   it('fails closed when no buildable workspace package exists', async () => {
     expect.hasAssertions();
     const { logger, errors } = silentLogger();
-    await expect(
-      buildWorkspacePackages({ packages: new Map(), spawn: jest.fn(), logger })
-    ).resolves.toBe(1);
+    const build: Promise<number> = buildWorkspacePackages({
+      packages: new Map(),
+      spawn: jest.fn(),
+      logger
+    });
+    await expect(build).resolves.toBe(1);
     expect(errors.join('\n')).toContain('no workspace packages');
   });
 
@@ -290,51 +288,62 @@ describe('build-workspace-packages (JUM-871)', () => {
     expect.hasAssertions();
     const target = pkg('worker');
     const spawnError = () => ({
-      on: jest.fn()
-        .mockImplementationOnce((_event: string, callback: (error: Error) => void) => callback(new Error('spawn failed')))
+      on: jest
+        .fn()
+        .mockImplementationOnce((_event: string, callback: (error: Error) => void) =>
+          callback(new Error('spawn failed'))
+        )
         .mockReturnValueOnce(undefined)
     });
     const spawnCloseWithoutCode = () => ({
-      on: jest.fn()
+      on: jest
+        .fn()
         .mockReturnValueOnce(undefined)
         .mockImplementationOnce((_event: string, callback: (code: null) => void) => callback(null))
     });
 
-    await expect(spawnPackageBuild(target, {
+    const withSpawnError: Promise<number> = spawnPackageBuild(target, {
       spawn: spawnError
-    })).resolves.toBe(1);
-    await expect(spawnPackageBuild(target, {
+    });
+    await expect(withSpawnError).resolves.toBe(1);
+    const withoutExitCode: Promise<number> = spawnPackageBuild(target, {
       spawn: spawnCloseWithoutCode
-    })).resolves.toBe(1);
+    });
+    await expect(withoutExitCode).resolves.toBe(1);
   });
 
   it('reports rejected builds and binds the CLI dispatcher to the resulting status', async () => {
     expect.hasAssertions();
     const errors: string[] = [];
-    await expect(main({
+    const status: Promise<number> = main({
       execute: () => Promise.reject(new Error('broken build')),
       logger: { error: (line: string) => errors.push(line) }
-    })).resolves.toBe(1);
+    });
+    await expect(status).resolves.toBe(1);
     expect(errors.join('\n')).toContain('broken build');
 
     const entry = { id: 'entry' };
     const exits: number[] = [];
-    expect(runAsEntryPoint({
-      caller: entry,
-      entry,
-      exit: (code: number) => exits.push(code),
-      runMain: () => Promise.resolve(0)
-    })).toBe(true);
+    expect(
+      runAsEntryPoint({
+        caller: entry,
+        entry,
+        exit: (code: number) => exits.push(code),
+        runMain: () => Promise.resolve(0)
+      })
+    ).toBe(true);
     await tick();
     expect(exits).toStrictEqual([0]);
 
     const previousExitCode = process.exitCode;
     try {
-      expect(runAsEntryPoint({
-        caller: entry,
-        entry,
-        runMain: () => Promise.resolve(0)
-      })).toBe(true);
+      expect(
+        runAsEntryPoint({
+          caller: entry,
+          entry,
+          runMain: () => Promise.resolve(0)
+        })
+      ).toBe(true);
       await tick();
       expect(process.exitCode).toBe(0);
     } finally {

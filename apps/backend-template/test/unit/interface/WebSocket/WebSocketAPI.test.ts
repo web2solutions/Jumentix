@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jest/no-untyped-mock-factory */
 /* eslint-disable jest/prefer-spy-on */
 
 import { WebSocketAPI } from '@src/interface/WebSocket/WebSocketAPI';
@@ -20,6 +18,13 @@ jest.mock('socket.io', () => ({
   }
 }));
 
+const requireRegistered = <T>(handler: T | undefined, event: string): T => {
+  if (!handler) {
+    throw new Error(`Expected a ${event} handler to be registered.`);
+  }
+  return handler;
+};
+
 describe('websocket api', () => {
   const databaseClient = {
     connect: jest.fn().mockResolvedValue(undefined),
@@ -34,11 +39,9 @@ describe('websocket api', () => {
     jest.clearAllMocks();
     keyValueStorageClient.connect.mockClear();
     keyValueStorageClient.disconnect.mockClear();
-    httpMockState.listen = jest.fn((
-      port: number,
-      host: string,
-      callback: () => void
-    ) => callback());
+    httpMockState.listen = jest.fn((port: number, host: string, callback: () => void) =>
+      callback()
+    );
     httpMockState.closeServer = jest.fn((callback: () => void) => callback());
     httpMockState.createServer = jest.fn(() => ({
       listen: httpMockState.listen,
@@ -101,14 +104,20 @@ describe('websocket api', () => {
     const operationRequestHandler = handlers.get('api:login:request');
     expect(requestHandler).toBeDefined();
     expect(operationRequestHandler).toBeDefined();
-    await requestHandler!({
-      operationId: 'login',
-      input: { username: 'john' }
-    }, ack);
+    await requireRegistered(requestHandler, 'api:request')(
+      {
+        operationId: 'login',
+        input: { username: 'john' }
+      },
+      ack
+    );
 
-    await operationRequestHandler!({
-      input: { username: 'john' }
-    }, ack);
+    await requireRegistered(operationRequestHandler, 'api:login:request')(
+      {
+        input: { username: 'john' }
+      },
+      ack
+    );
 
     expect(emit).toHaveBeenCalledWith('api:response', expect.any(Object));
     expect(emit).toHaveBeenCalledWith('api:login:response', expect.any(Object));
@@ -134,8 +143,10 @@ describe('websocket api', () => {
     expect(keyValueStorageClient.connect).toHaveBeenCalledTimes(1);
     expect(keyValueStorageClient.disconnect).toHaveBeenCalledTimes(1);
     expect(httpMockState.listen).toHaveBeenCalledWith(3010, '127.0.0.1', expect.any(Function));
-    const bindSocketSpy = jest.spyOn(api as any, 'bindSocket').mockImplementation(() => undefined);
-    const onConnectionCall = ioMockState.on.mock.calls.find((call: any[]) => call[0] === 'connection');
+    const bindSocketSpy = jest.spyOn(api as any, 'bindSocket').mockReturnValue(undefined);
+    const onConnectionCall = ioMockState.on.mock.calls.find(
+      (call: any[]) => call[0] === 'connection'
+    );
     expect(onConnectionCall).toBeDefined();
     const socket = { on: jest.fn(), emit: jest.fn() };
     onConnectionCall[1](socket);

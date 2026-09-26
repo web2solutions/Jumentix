@@ -1,6 +1,6 @@
 ---
-title: "Errors and Responses Map"
-description: "Error contracts and interface response behavior."
+title: 'Errors and Responses Map'
+description: 'Error contracts and interface response behavior.'
 ---
 
 # Error Contracts and HTTP Error Responses
@@ -26,36 +26,36 @@ All domain/infra errors extend `BaseError` (`apps/backend-template/src/infra/exc
 
 Defined in `apps/backend-template/src/infra/exceptions/error.codes.ts`:
 
-| String Code | HTTP Status |
-|---|---|
-| `GENERIC.INVALID_INPUT` | `400` |
-| `GENERIC.NOT_FOUND` | `404` |
-| `GENERIC.UNAUTHORIZED` | `401` |
-| `GENERIC.FORBIDDEN` | `403` |
-| `GENERIC.CONFLICT` | `409` |
-| `GENERIC.RESOURCE_LOCKED` | `423` |
-| `GENERIC.NOT_IMPLEMENTED` | `501` |
-| `GENERIC.INTERNAL_SERVER_ERROR` | `500` |
+| String Code                     | HTTP Status |
+| ------------------------------- | ----------- |
+| `GENERIC.INVALID_INPUT`         | `400`       |
+| `GENERIC.NOT_FOUND`             | `404`       |
+| `GENERIC.UNAUTHORIZED`          | `401`       |
+| `GENERIC.FORBIDDEN`             | `403`       |
+| `GENERIC.CONFLICT`              | `409`       |
+| `GENERIC.RESOURCE_LOCKED`       | `423`       |
+| `GENERIC.NOT_IMPLEMENTED`       | `501`       |
+| `GENERIC.INTERNAL_SERVER_ERROR` | `500`       |
 
 Status mapping is resolved by `toHttpStatus(...)` in `apps/backend-template/src/shared/utils.ts`.
 
 ## 3) Error Class to Code Mapping
 
-| Error Class | Name | Code |
-|---|---|---|
-| `ValidationError` | `validation_error` | `GENERIC.INVALID_INPUT` |
-| `DomainValidationError` | `domain_validation_error` | `GENERIC.INVALID_INPUT` |
-| `ComposeEventError` | `event_invalid_message` | `GENERIC.INVALID_INPUT` |
-| `DatabasePagingError` | `database_paging_error` | `GENERIC.INVALID_INPUT` |
-| `UnauthorizedError` | `unauthorized` | `GENERIC.UNAUTHORIZED` |
-| `ForbiddenError` | `forbidden` | `GENERIC.FORBIDDEN` |
-| `NotFoundError` | `not_found` | `GENERIC.NOT_FOUND` |
-| `DomainNotFoundError` | `domain_not_found` | `GENERIC.NOT_FOUND` |
-| `DataBaseNotFoundError` | `database_not_found` | `GENERIC.NOT_FOUND` |
-| `ConflictError` | `database_duplicated` | `GENERIC.CONFLICT` |
-| `ResourceLockedError` | `locked_resource` | `GENERIC.RESOURCE_LOCKED` |
-| `NotImplemented` | `infrastructure_not_implemented` | `GENERIC.NOT_IMPLEMENTED` |
-| `InternalServerError` | `internal_server_error` | `GENERIC.INTERNAL_SERVER_ERROR` |
+| Error Class             | Name                             | Code                            |
+| ----------------------- | -------------------------------- | ------------------------------- |
+| `ValidationError`       | `validation_error`               | `GENERIC.INVALID_INPUT`         |
+| `DomainValidationError` | `domain_validation_error`        | `GENERIC.INVALID_INPUT`         |
+| `ComposeEventError`     | `event_invalid_message`          | `GENERIC.INVALID_INPUT`         |
+| `DatabasePagingError`   | `database_paging_error`          | `GENERIC.INVALID_INPUT`         |
+| `UnauthorizedError`     | `unauthorized`                   | `GENERIC.UNAUTHORIZED`          |
+| `ForbiddenError`        | `forbidden`                      | `GENERIC.FORBIDDEN`             |
+| `NotFoundError`         | `not_found`                      | `GENERIC.NOT_FOUND`             |
+| `DomainNotFoundError`   | `domain_not_found`               | `GENERIC.NOT_FOUND`             |
+| `DataBaseNotFoundError` | `database_not_found`             | `GENERIC.NOT_FOUND`             |
+| `ConflictError`         | `database_duplicated`            | `GENERIC.CONFLICT`              |
+| `ResourceLockedError`   | `locked_resource`                | `GENERIC.RESOURCE_LOCKED`       |
+| `NotImplemented`        | `infrastructure_not_implemented` | `GENERIC.NOT_IMPLEMENTED`       |
+| `InternalServerError`   | `internal_server_error`          | `GENERIC.INTERNAL_SERVER_ERROR` |
 
 ## 4) HTTP Error Response Shape
 
@@ -74,6 +74,7 @@ Current adapters serialize to the same payload shape:
 ```
 
 Sources:
+
 - Express/Fastify/Restify: `sendErrorResponse(...)`
 - Lambda adapters: `apps/backend-template/src/interface/HTTP/adapters/aws/lambda/responses/sendErrorResponse.ts`
 
@@ -146,5 +147,6 @@ gRPC (`AsyncApiResponse`):
 ```
 
 See transport-specific contract references:
+
 - `documentation/md/contracts/WEBSOCKET-REALTIME-CONTRACTS.md`
 - `documentation/md/contracts/GRPC-REALTIME-CONTRACTS.md`

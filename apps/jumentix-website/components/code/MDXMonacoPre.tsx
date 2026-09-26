@@ -1,12 +1,16 @@
 'use client';
 
-import { useMDXComponents as getDocsMDXComponents } from 'nextra-theme-docs';
-import type { ElementType, ReactNode } from 'react';
 import { isValidElement } from 'react';
-import type { MDXCodeBlockSource } from './MDXCodeSourceProvider';
+
+import { useMDXComponents as getDocsMDXComponents } from 'nextra-theme-docs';
+
 import { useMDXCodeSourceBlocks } from './MDXCodeSourceProvider';
 import { MonacoCodeBlock } from './MonacoCodeBlock';
-import { trimTrailingBlankCodeLines } from './normalizeCode';
+import trimTrailingBlankCodeLines from './normalizeCode';
+
+import type { ElementType, ReactNode } from 'react';
+
+import type { MDXCodeBlockSource } from './MDXCodeSourceProvider';
 
 function textFromNode(node: ReactNode): string {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
@@ -14,7 +18,9 @@ function textFromNode(node: ReactNode): string {
   if (Array.isArray(node)) return node.map(textFromNode).join('');
   if (isValidElement<{ children?: ReactNode }>(node)) return textFromNode(node.props.children);
   if (typeof (node as Iterable<ReactNode>)?.[Symbol.iterator] === 'function') {
-    return Array.from(node as Iterable<ReactNode>).map(textFromNode).join('');
+    return Array.from(node as Iterable<ReactNode>)
+      .map(textFromNode)
+      .join('');
   }
   return '';
 }
@@ -71,7 +77,8 @@ function findSourceBlock(
   );
   if (exactLanguageMatch) return exactLanguageMatch.value;
 
-  return sourceBlocks.find((block) => canonicalCodePrefix(block.value).startsWith(renderedPrefix))?.value;
+  return sourceBlocks.find((block) => canonicalCodePrefix(block.value).startsWith(renderedPrefix))
+    ?.value;
 }
 
 /**
@@ -101,13 +108,13 @@ export function isShellLanguage(language: string | undefined): boolean {
   return normalized !== undefined && SHELL_LANGUAGES.has(normalized);
 }
 
-type MDXPreProps = {
+interface MDXPreProps {
   children?: ReactNode;
   className?: string;
   /** Override the theme `pre` — tests inject their own; production resolves it below. */
   DefaultPre?: ElementType;
   [key: string]: unknown;
-};
+}
 
 /**
  * The theme's `pre`, resolved inside this client module.
@@ -119,7 +126,7 @@ type MDXPreProps = {
  */
 const THEME_PRE: ElementType = (getDocsMDXComponents() as { pre?: ElementType }).pre ?? 'pre';
 
-export function MDXMonacoPre({ DefaultPre = THEME_PRE, ...props }: MDXPreProps) {
+export const MDXMonacoPre = ({ DefaultPre = THEME_PRE, ...props }: MDXPreProps) => {
   const sourceBlocks = useMDXCodeSourceBlocks();
   const renderedCode = trimTrailingBlankCodeLines(textFromNode(props.children));
   // Nextra's syntax highlighter reports the fence language on the `pre` as
@@ -128,9 +135,9 @@ export function MDXMonacoPre({ DefaultPre = THEME_PRE, ...props }: MDXPreProps) 
   // at all — without it every fence arrived with no language and Monaco fell
   // back to TypeScript, which is why `bash` blocks were highlighted as TS.
   const language =
-    (typeof props['data-language'] === 'string' ? (props['data-language'] as string) : undefined)
-    ?? languageFromNode(props.children)
-    ?? languageFromClassName(props.className);
+    (typeof props['data-language'] === 'string' ? props['data-language'] : undefined) ??
+    languageFromNode(props.children) ??
+    languageFromClassName(props.className);
   const code = findSourceBlock(sourceBlocks, language, renderedCode) ?? renderedCode;
 
   if (isShellLanguage(language)) {
@@ -142,19 +149,14 @@ export function MDXMonacoPre({ DefaultPre = THEME_PRE, ...props }: MDXPreProps) 
   if (code.trim().length > 0) {
     return (
       <MonacoCodeBlock
-        value={code}
-        language={language}
         readOnly
-        minHeight={140}
         ariaLabel={`${language ?? 'code'} documentation example`}
+        language={language}
+        minHeight={140}
+        value={code}
       />
     );
   }
 
-  return (
-    <DefaultPre {...props}>
-      {props.children}
-    </DefaultPre>
-  );
-}
-
+  return <DefaultPre {...props}>{props.children}</DefaultPre>;
+};

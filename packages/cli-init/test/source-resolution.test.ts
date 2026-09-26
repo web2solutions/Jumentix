@@ -1,52 +1,51 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+
 import { parse as parseYaml } from 'yaml';
+
 import type { AddressInfo } from 'node:net';
 
 require('./ensure-built');
 
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 
-const {
-  resolveSources,
-  validateGenerationPlan,
-  SourceResolutionError,
-  SOURCE_MESSAGES,
-  loadOasSource,
-  loadDesignerExportSource,
-  loadCatalogSource,
-  loadPresetSource,
-  buildPlanFromOasDocument
-} = require('../dist/sources');
-
 const { main } = require('../dist/cli');
+const {
+  buildPlanFromOasDocument,
+  loadCatalogSource,
+  loadDesignerExportSource,
+  loadOasSource,
+  loadPresetSource,
+  resolveSources,
+  SOURCE_MESSAGES,
+  SourceResolutionError,
+  validateGenerationPlan
+} = require('../dist/sources');
 
 function fixture(...parts: string[]): string {
   return path.join(fixturesDir, ...parts);
 }
 
-type PlanEntity = {
+interface PlanEntity {
   name: string;
   primaryKey: string;
-  relations: Array<{ entity: string }>;
-};
+  relations: { entity: string }[];
+}
 
-type PlanDomain = {
+interface PlanDomain {
   id: string;
   entities: PlanEntity[];
-};
+}
 
 function entityNames(plan: { domains: PlanDomain[] }): string[] {
   return plan.domains.flatMap((domain) => domain.entities.map((entity) => entity.name));
 }
 
 function findEntity(plan: { domains: PlanDomain[] }, name: string): PlanEntity | undefined {
-  return plan.domains
-    .flatMap((domain) => domain.entities)
-    .find((entity) => entity.name === name);
+  return plan.domains.flatMap((domain) => domain.entities).find((entity) => entity.name === name);
 }
 
 describe('source resolution — users preset (JUM-846)', () => {
@@ -78,11 +77,15 @@ describe('source resolution — users preset (JUM-846)', () => {
 
   it('defaults to users preset when --from is omitted', async () => {
     expect.hasAssertions();
-    const plan = await loadPresetSource('users', {
-      http: 'express',
-      realtime: 'none',
-      db: 'sqlite'
-    }, fixture('users-oas.yml'));
+    const plan = await loadPresetSource(
+      'users',
+      {
+        http: 'express',
+        realtime: 'none',
+        db: 'sqlite'
+      },
+      fixture('users-oas.yml')
+    );
     expect(plan.services[0].id).toBe('core');
   });
 });
@@ -112,9 +115,7 @@ describe('source resolution — designer export (JUM-846)', () => {
     expect(plan.mode).toBe('monolith');
     expect(plan.services[0].kind).toBe('core');
     expect(plan.services[0].interfaces.realtime).toBe('websocket');
-    expect(entityNames(plan)).toStrictEqual(
-      expect.arrayContaining(['User', 'Organization'])
-    );
+    expect(entityNames(plan)).toStrictEqual(expect.arrayContaining(['User', 'Organization']));
   });
 
   it('designer export restores relationship edges on User', async () => {

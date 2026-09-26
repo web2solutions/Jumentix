@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { GenerationPlan, PlanDomain, PlanService } from '../sources/types';
+
 import { loadDesignerCore } from '../sources/planBuilder';
+
+import type { GenerationPlan, PlanDomain, PlanService } from '../sources/types';
 
 const USERS_DOMAIN_TOKENS = new Set(['users', 'user']);
 
@@ -15,10 +17,7 @@ export function isUsersDomain(domain: PlanDomain): boolean {
  * Domains owned by a service that should be codegen'd (Users stays from the
  * template seed — never overwritten by hexagonal boilerplate).
  */
-export function domainsForService(
-  plan: GenerationPlan,
-  service: PlanService
-): PlanDomain[] {
+export function domainsForService(plan: GenerationPlan, service: PlanService): PlanDomain[] {
   const owned = new Set(service.domains.map((id) => String(id)));
   return plan.domains.filter((domain) => {
     if (isUsersDomain(domain)) return false;
@@ -27,17 +26,17 @@ export function domainsForService(
   });
 }
 
-type DesignerEntity = {
+interface DesignerEntity {
   id: string;
   name: string;
-  fields: Array<{ name: string; pk?: boolean; type?: string }>;
-};
+  fields: { name: string; pk?: boolean; type?: string }[];
+}
 
-type DesignerDomain = {
+interface DesignerDomain {
   id: string;
   name: string;
   entities: DesignerEntity[];
-};
+}
 
 /**
  * Convert plan domains into the designer-state shape `buildHexagonalBundle`
@@ -53,18 +52,19 @@ export function planDomainsToDesignerState(domains: PlanDomain[]): {
         id: domain.id,
         name,
         entities: domain.entities.map((entity) => {
-          const properties = (entity.schema && typeof entity.schema === 'object'
-            && (entity.schema as { properties?: Record<string, unknown> }).properties)
-            || {};
+          const properties =
+            (entity.schema &&
+              typeof entity.schema === 'object' &&
+              (entity.schema as { properties?: Record<string, unknown> }).properties) ||
+            {};
           const fieldNames = Object.keys(properties);
-          const fields = (fieldNames.length
-            ? fieldNames
-            : [entity.primaryKey || 'id']
-          ).map((fieldName) => ({
-            name: fieldName,
-            pk: fieldName === entity.primaryKey,
-            type: 'string'
-          }));
+          const fields = (fieldNames.length ? fieldNames : [entity.primaryKey || 'id']).map(
+            (fieldName) => ({
+              name: fieldName,
+              pk: fieldName === entity.primaryKey,
+              type: 'string'
+            })
+          );
           return {
             id: entity.name,
             name: entity.name,
@@ -86,25 +86,25 @@ function toDomainToken(value: string): string {
   return token || 'Domain';
 }
 
-export type InjectedDomainResult = {
+export interface InjectedDomainResult {
   moduleNames: string[];
   filesWritten: string[];
-};
+}
 
-type HexBundle = {
-  modules: Array<{
+interface HexBundle {
+  modules: {
     module: string;
     path: string;
     files: Record<string, { path: string; content: string } | undefined>;
-    entities: Array<{
+    entities: {
       entity: string;
       files: Record<string, { path: string; content: string }>;
-    }>;
-  }>;
-};
+    }[];
+  }[];
+}
 
-function flattenBundleLocally(bundle: HexBundle): Array<{ path: string; content: string }> {
-  const files: Array<{ path: string; content: string }> = [];
+function flattenBundleLocally(bundle: HexBundle): { path: string; content: string }[] {
+  const files: { path: string; content: string }[] = [];
   for (const module of bundle.modules) {
     for (const role of Object.keys(module.files)) {
       const file = module.files[role];
@@ -125,17 +125,14 @@ function flattenBundleLocally(bundle: HexBundle): Array<{ path: string; content:
 export function renderCompositionRoot(generatedModuleTokens: string[]): string {
   const unique = [...new Set(generatedModuleTokens)].filter(Boolean);
   const imports = unique.map(
-    (token) => `import { compose${token}Services } from './${token}/composition/compose${token}Services';`
+    (token) =>
+      `import { compose${token}Services } from './${token}/composition/compose${token}Services';`
   );
-  const registerLines = unique.map(
-    (token) => `  ${token}: compose${token}Services()`
-  );
+  const registerLines = unique.map((token) => `  ${token}: compose${token}Services()`);
 
   const registryBody = [
     '  ...(users ? { Users: users } : {}),',
-    ...registerLines.map((line, index) => (
-      index < registerLines.length - 1 ? `${line},` : line
-    ))
+    ...registerLines.map((line, index) => (index < registerLines.length - 1 ? `${line},` : line))
   ];
 
   return [
@@ -144,7 +141,7 @@ export function renderCompositionRoot(generatedModuleTokens: string[]): string {
     ' * Core always includes Users + auth from the seed; designer domains are',
     ' * registered via their hexagonal compose<Domain>Services exports.',
     ' */',
-    'import { composeUsersAuthServices } from \'./Users/composition/composeUsersAuthServices\';',
+    "import { composeUsersAuthServices } from './Users/composition/composeUsersAuthServices';",
     ...imports,
     '',
     'export type GeneratedDomainRegistry = Record<string, unknown>;',
@@ -190,14 +187,16 @@ export async function injectDesignerDomains(options: {
 
   const designerCore = await loadDesignerCore();
   const state = planDomainsToDesignerState(targetDomains);
-  const oasDocument = plan.contracts.oasPerService[service.id]
-    || Object.values(plan.contracts.oasPerService)[0]
-    || {};
+  const oasDocument =
+    plan.contracts.oasPerService[service.id] ||
+    Object.values(plan.contracts.oasPerService)[0] ||
+    {};
 
-  const bundle = designerCore.buildHexagonalBundle(state, { oasDocument }) as HexBundle;
-  const flat = typeof designerCore.flattenBundleFiles === 'function'
-    ? designerCore.flattenBundleFiles(bundle)
-    : flattenBundleLocally(bundle);
+  const bundle = designerCore.buildHexagonalBundle(state, { oasDocument });
+  const flat =
+    typeof designerCore.flattenBundleFiles === 'function'
+      ? designerCore.flattenBundleFiles(bundle)
+      : flattenBundleLocally(bundle);
 
   for (const file of flat) {
     const absolute = path.join(serviceRoot, file.path);

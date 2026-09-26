@@ -5,7 +5,7 @@ import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
  * manage multiple organizations — the x-rbac matrix (OAS) grants create/delete
  * of organizations to superadmin only, and the kit hides those affordances.
  */
-export const organizationsCrudConfig: XCrudEntityConfig = {
+const organizationsCrudConfig: XCrudEntityConfig = {
   entity: 'Organization',
   title: { en: 'Organization', 'pt-BR': 'Organização' },
   schemas: { create: 'RequestCreateOrganization', update: 'RequestUpdateOrganization' },
@@ -21,7 +21,13 @@ export const organizationsCrudConfig: XCrudEntityConfig = {
   // Column labels come from the OAS `x-label` (JUM-780); no overrides needed here.
   createFields: { exclude: ['users'] },
   aggregates: [
-    { field: 'id', op: 'count', label: { en: 'Total organizations', 'pt-BR': 'Total de organizações' } },
+    {
+      field: 'id',
+      op: 'count',
+      label: { en: 'Total organizations', 'pt-BR': 'Total de organizações' }
+    },
     { field: 'users', op: 'sum', label: { en: 'Total members', 'pt-BR': 'Total de membros' } }
   ]
 };
+
+export default organizationsCrudConfig;

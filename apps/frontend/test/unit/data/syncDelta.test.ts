@@ -1,29 +1,29 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { resetSharedApiClient } from '@/contracts/apiClient';
 import { META_STORE, SESSION_META_ID } from '@/data/canaSchema';
-import {
-  closeCana, getCanaClient, isCanaOpen, openCana, wipeCanaDatabase
-} from '@/data/db';
+import { closeCana, getCanaClient, isCanaOpen, openCana, wipeCanaDatabase } from '@/data/db';
 import { getLocal } from '@/data/localRepository';
-import {
-  bindOnlineReplay, deltaSync, fullLoad, isSynced, runSessionSync
-} from '@/data/sync';
+import { bindOnlineReplay, deltaSync, fullLoad, isSynced, runSessionSync } from '@/data/sync';
 import { useAuthStore } from '@/stores/auth';
 
 const DB = 'jumentix-frontend-test-sync';
 
 const emptyPage = {
-  result: [], total: 0, page: 1, size: 100
+  result: [],
+  total: 0,
+  page: 1,
+  size: 100
 };
 
 const jsonResponse = (status: number, body: unknown) => ({
   ok: status >= 200 && status < 300,
   status,
-  headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) },
+  headers: {
+    get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null)
+  },
   json: async () => body,
   text: async () => JSON.stringify(body)
 });
@@ -71,10 +71,15 @@ describe('delta sync and session orchestration (JUM-805)', () => {
     expect.hasAssertions();
     const users = getCanaClient().table('users');
     await users.put({
-      id: 'user-old', firstName: 'Old', username: 'old@x.dev', updatedAt: '2026-01-01T00:00:00.000Z', _sync: 'synced'
+      id: 'user-old',
+      firstName: 'Old',
+      username: 'old@x.dev',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      _sync: 'synced'
     });
     await getCanaClient().table(META_STORE).put({
-      id: 'lastSync:users', lastSync: '2026-01-15T00:00:00.000Z'
+      id: 'lastSync:users',
+      lastSync: '2026-01-15T00:00:00.000Z'
     });
     const created = {
       id: 'user-new',
@@ -97,7 +102,10 @@ describe('delta sync and session orchestration (JUM-805)', () => {
       const href = String(input);
       if (href.includes('/users') && !href.includes('/users/user-')) {
         return jsonResponse(200, {
-          result: [created, tombstone], total: 2, page: 1, size: 100
+          result: [created, tombstone],
+          total: 2,
+          page: 1,
+          size: 100
         });
       }
       return jsonResponse(200, emptyPage);
@@ -118,14 +126,22 @@ describe('delta sync and session orchestration (JUM-805)', () => {
       if (href.includes('/organizations')) return jsonResponse(403, { message: 'forbidden' });
       if (href.includes('/users/user-1')) {
         return jsonResponse(200, {
-          id: 'user-1', firstName: 'Abraham', username: 'me@x.dev', emails: [{ id: 'e1', type: 'work', email: 'me@x.dev' }]
+          id: 'user-1',
+          firstName: 'Abraham',
+          username: 'me@x.dev',
+          emails: [{ id: 'e1', type: 'work', email: 'me@x.dev' }]
         });
       }
       if (href.includes('/users')) {
         return jsonResponse(200, {
-          result: [{
-            id: 'user-1', firstName: 'Abraham', username: 'me@x.dev', updatedAt: '2026-01-01T00:00:00.000Z'
-          }],
+          result: [
+            {
+              id: 'user-1',
+              firstName: 'Abraham',
+              username: 'me@x.dev',
+              updatedAt: '2026-01-01T00:00:00.000Z'
+            }
+          ],
           total: 1,
           page: 1,
           size: 100
@@ -148,9 +164,14 @@ describe('delta sync and session orchestration (JUM-805)', () => {
       if (href.includes('/users/user-1')) return jsonResponse(403, { message: 'forbidden' });
       if (href.includes('/users')) {
         return jsonResponse(200, {
-          result: [{
-            id: 'user-1', firstName: 'Abraham', username: 'me@x.dev', updatedAt: '2026-01-01T00:00:00.000Z'
-          }],
+          result: [
+            {
+              id: 'user-1',
+              firstName: 'Abraham',
+              username: 'me@x.dev',
+              updatedAt: '2026-01-01T00:00:00.000Z'
+            }
+          ],
           total: 1,
           page: 1,
           size: 100
@@ -173,9 +194,14 @@ describe('delta sync and session orchestration (JUM-805)', () => {
       if (href.includes('/users/user-1')) return jsonResponse(500, { message: 'boom' });
       if (href.includes('/users')) {
         return jsonResponse(200, {
-          result: [{
-            id: 'user-1', firstName: 'Abraham', username: 'me@x.dev', updatedAt: '2026-01-01T00:00:00.000Z'
-          }],
+          result: [
+            {
+              id: 'user-1',
+              firstName: 'Abraham',
+              username: 'me@x.dev',
+              updatedAt: '2026-01-01T00:00:00.000Z'
+            }
+          ],
           total: 1,
           page: 1,
           size: 100
@@ -191,7 +217,10 @@ describe('delta sync and session orchestration (JUM-805)', () => {
     expect.hasAssertions();
     const users = getCanaClient().table('users');
     await users.put({
-      id: 'stale', firstName: 'Stale', username: 'stale@x.dev', _sync: 'synced'
+      id: 'stale',
+      firstName: 'Stale',
+      username: 'stale@x.dev',
+      _sync: 'synced'
     });
     await getCanaClient().table(META_STORE).put({
       id: SESSION_META_ID,
@@ -203,9 +232,9 @@ describe('delta sync and session orchestration (JUM-805)', () => {
 
     await runSessionSync();
 
-    const session = await getCanaClient()
-      .table(META_STORE)
-      .get(SESSION_META_ID) as { username?: string };
+    const session = (await getCanaClient().table(META_STORE).get(SESSION_META_ID)) as {
+      username?: string;
+    };
     expect(session.username).toBe('eduardo@xpertminds.dev');
     expect(await getLocal('User', 'stale')).toBeUndefined();
     expect(await isSynced()).toBe(true);
@@ -220,7 +249,8 @@ describe('delta sync and session orchestration (JUM-805)', () => {
       lastSyncAt: '2026-01-01T00:00:00.000Z'
     });
     await getCanaClient().table(META_STORE).put({
-      id: 'lastSync:users', lastSync: '2026-01-01T00:00:00.000Z'
+      id: 'lastSync:users',
+      lastSync: '2026-01-01T00:00:00.000Z'
     });
     const urls: string[] = [];
     globalThis.fetch = (async (input: RequestInfo | URL) => {

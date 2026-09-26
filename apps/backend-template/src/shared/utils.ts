@@ -1,19 +1,20 @@
 import {
-  _VALIDATION_ERROR_NAME_,
-  _DOMAIN_VALIDATION_ERROR_NAME_,
-  _FORBIDDEN_ERROR_NAME_,
-  _NOT_FOUND_ERROR_NAME_,
-  _DOMAIN_NOT_FOUND_ERROR_NAME_,
-  _DATABASE_NOT_FOUND_ERROR_NAME_,
-  _DATABASE_CONFLICT_ERROR_NAME_,
-  _EVENT_INVALID_MESSAGE_,
-  _UNAUTHORIZED_ERROR_NAME_,
-  _INFRA_NOT_IMPLEMENTED_,
-  _DATABASE_PAGING_ERROR_,
-  _LOCKED_RESOURCE_ERROR_NAME_
-
+  DATABASE_CONFLICT_ERROR_NAME,
+  DATABASE_NOT_FOUND_ERROR_NAME,
+  DATABASE_PAGING_ERROR,
+  DOMAIN_NOT_FOUND_ERROR_NAME,
+  DOMAIN_VALIDATION_ERROR_NAME,
+  EVENT_INVALID_MESSAGE,
+  FORBIDDEN_ERROR_NAME,
+  INFRA_NOT_IMPLEMENTED,
+  LOCKED_RESOURCE_ERROR_NAME,
+  NOT_FOUND_ERROR_NAME,
+  UNAUTHORIZED_ERROR_NAME,
+  VALIDATION_ERROR_NAME
 } from '@src/config/constants';
-import { BaseError, EErrorNumberCodes, EErrorStringCodes } from '@src/infra/exceptions';
+import { EErrorNumberCodes } from '@src/infra/exceptions';
+
+import type { BaseError, EErrorStringCodes } from '@src/infra/exceptions';
 
 export function replaceVars(path: string): string {
   return path.toString().replace(/{/g, ':').replace(/}/g, '');
@@ -24,29 +25,29 @@ export function toHttpStatus(stringCode: EErrorStringCodes): number {
 }
 
 export function formatErrorMessage(error: BaseError) {
-  let message: string = '';
+  let message = '';
   if (
-    error.name === _VALIDATION_ERROR_NAME_
-    || error.name === _DOMAIN_VALIDATION_ERROR_NAME_
-    || error.name === _EVENT_INVALID_MESSAGE_
-    || error.name === _DATABASE_PAGING_ERROR_
+    error.name === VALIDATION_ERROR_NAME ||
+    error.name === DOMAIN_VALIDATION_ERROR_NAME ||
+    error.name === EVENT_INVALID_MESSAGE ||
+    error.name === DATABASE_PAGING_ERROR
   ) {
     message = `Bad Request - ${error.message}`;
-  } else if (error.name === _FORBIDDEN_ERROR_NAME_) {
+  } else if (error.name === FORBIDDEN_ERROR_NAME) {
     message = `Forbidden - ${error.message}`;
-  } else if (error.name === _UNAUTHORIZED_ERROR_NAME_) {
+  } else if (error.name === UNAUTHORIZED_ERROR_NAME) {
     message = `Unauthorized - ${error.message}`;
-  } else if (error.name === _LOCKED_RESOURCE_ERROR_NAME_) {
+  } else if (error.name === LOCKED_RESOURCE_ERROR_NAME) {
     message = `Locked - ${error.message}`;
   } else if (
-    error.name === _NOT_FOUND_ERROR_NAME_
-    || error.name === _DOMAIN_NOT_FOUND_ERROR_NAME_
-    || error.name === _DATABASE_NOT_FOUND_ERROR_NAME_
+    error.name === NOT_FOUND_ERROR_NAME ||
+    error.name === DOMAIN_NOT_FOUND_ERROR_NAME ||
+    error.name === DATABASE_NOT_FOUND_ERROR_NAME
   ) {
     message = `Not Found - ${error.message}`;
-  } else if (error.name === _DATABASE_CONFLICT_ERROR_NAME_) {
+  } else if (error.name === DATABASE_CONFLICT_ERROR_NAME) {
     message = `Conflict - ${error.message}`;
-  } else if (error.name === _INFRA_NOT_IMPLEMENTED_) {
+  } else if (error.name === INFRA_NOT_IMPLEMENTED) {
     message = `Not Implemented - ${error.message}`;
   }
 
@@ -54,7 +55,9 @@ export function formatErrorMessage(error: BaseError) {
 }
 
 export function isProductionEnv(env: NodeJS.ProcessEnv = process.env): boolean {
-  const nodeEnv = String(env.NODE_ENV || '').trim().toLowerCase();
+  const nodeEnv = String(env.NODE_ENV || '')
+    .trim()
+    .toLowerCase();
   return nodeEnv === 'prod' || nodeEnv === 'production';
 }
 

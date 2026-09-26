@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import path from 'node:path';
 
 /**
@@ -127,13 +126,13 @@ describe('resolveMappedSuitePaths', () => {
   it('does not run a suite twice when two requests overlap', () => {
     expect.hasAssertions();
 
-    const result = resolveMappedSuitePaths([
-      'apps/backend-template/test/integration/Express',
-      suites[0]
-    ], {
-      readTestMap: mapWith(suites),
-      listTestFiles: diskWith(suites.slice(0, 2))
-    });
+    const result = resolveMappedSuitePaths(
+      ['apps/backend-template/test/integration/Express', suites[0]],
+      {
+        readTestMap: mapWith(suites),
+        listTestFiles: diskWith(suites.slice(0, 2))
+      }
+    );
 
     expect(result.resolved).toStrictEqual(suites.slice(0, 2));
   });
@@ -164,7 +163,14 @@ describe('parseArgs', () => {
     expect.hasAssertions();
 
     const parsed = parseArgs([
-      'bun', 'run-suite.js', '--script-label', 'express', '--timeout', '15000', 'a/b', 'c/d'
+      'bun',
+      'run-suite.js',
+      '--script-label',
+      'express',
+      '--timeout',
+      '15000',
+      'a/b',
+      'c/d'
     ]);
 
     expect(parsed).toStrictEqual({ paths: ['a/b', 'c/d'], label: 'express', timeoutMs: 15000 });
@@ -186,25 +192,29 @@ describe('invalidSuitePaths', () => {
   it('accepts a plain repository-relative path', () => {
     expect.hasAssertions();
 
-    expect(invalidSuitePaths(['apps/backend-template/test/integration/Express'], '/repo'))
-      .toStrictEqual([]);
+    expect(
+      invalidSuitePaths(['apps/backend-template/test/integration/Express'], '/repo')
+    ).toStrictEqual([]);
   });
 });
 
 describe('mapPinsToNode', () => {
   const pinned = {
-    suites: [{
-      path: 'apps/backend-template/test/integration/Restify/a.test.ts',
-      runner: 'node',
-      reason: 'restify cannot load under bun'
-    }]
+    suites: [
+      {
+        path: 'apps/backend-template/test/integration/Restify/a.test.ts',
+        runner: 'node',
+        reason: 'restify cannot load under bun'
+      }
+    ]
   };
 
   it('reports a pin covering the requested directory', () => {
     expect.hasAssertions();
 
-    expect(mapPinsToNode(['apps/backend-template/test/integration/Restify'], () => pinned))
-      .toBe(true);
+    expect(mapPinsToNode(['apps/backend-template/test/integration/Restify'], () => pinned)).toBe(
+      true
+    );
   });
 
   /**
@@ -217,21 +227,27 @@ describe('mapPinsToNode', () => {
 
     const unreasoned = { suites: [{ ...pinned.suites[0], reason: undefined }] };
 
-    expect(mapPinsToNode(['apps/backend-template/test/integration/Restify'], () => unreasoned))
-      .toBe(false);
+    expect(
+      mapPinsToNode(['apps/backend-template/test/integration/Restify'], () => unreasoned)
+    ).toBe(false);
   });
 
   it('does not pin an unrelated path', () => {
     expect.hasAssertions();
 
-    expect(mapPinsToNode(['apps/backend-template/test/integration/Express'], () => pinned))
-      .toBe(false);
+    expect(mapPinsToNode(['apps/backend-template/test/integration/Express'], () => pinned)).toBe(
+      false
+    );
   });
 
   it('falls back to no pin when the map cannot be read', () => {
     expect.hasAssertions();
 
-    expect(mapPinsToNode(['anything'], () => { throw new Error('no map'); })).toBe(false);
+    expect(
+      mapPinsToNode(['anything'], () => {
+        throw new Error('no map');
+      })
+    ).toBe(false);
   });
 });
 
@@ -240,7 +256,7 @@ describe('runSuitePaths', () => {
 
   /** Records the spawn instead of performing it. */
   function recordingSpawn(status = 0) {
-    const calls: Array<{ command: string; args: string[] }> = [];
+    const calls: { command: string; args: string[] }[] = [];
     const spawn = (command: string, args: string[]) => {
       calls.push({ command, args });
       return { status };
@@ -280,7 +296,13 @@ describe('runSuitePaths', () => {
 
     expect(calls[0].command).toBe('bun');
     expect(calls[0].args).toStrictEqual(
-      expect.arrayContaining(['x', 'jest', '--runInBand', '--coverage=false', '--testTimeout=15000'])
+      expect.arrayContaining([
+        'x',
+        'jest',
+        '--runInBand',
+        '--coverage=false',
+        '--testTimeout=15000'
+      ])
     );
   });
 
@@ -318,14 +340,24 @@ describe('runSuitePaths', () => {
   it.each([
     ['no paths at all', [], {}],
     ['a path outside the repository', ['/etc/passwd'], {}],
-    ['a path matching no mapped suite', ['apps/nope'], {
-      resolveMappedSuitePaths: () => ({ resolved: [], unmatched: ['apps/nope'], unmapped: [] })
-    }],
-    ['a suite on disk that the map omits', ['apps/x'], {
-      resolveMappedSuitePaths: () => ({
-        resolved: ['apps/x/a.test.ts'], unmatched: [], unmapped: ['apps/x/b.test.ts']
-      })
-    }]
+    [
+      'a path matching no mapped suite',
+      ['apps/nope'],
+      {
+        resolveMappedSuitePaths: () => ({ resolved: [], unmatched: ['apps/nope'], unmapped: [] })
+      }
+    ],
+    [
+      'a suite on disk that the map omits',
+      ['apps/x'],
+      {
+        resolveMappedSuitePaths: () => ({
+          resolved: ['apps/x/a.test.ts'],
+          unmatched: [],
+          unmapped: ['apps/x/b.test.ts']
+        })
+      }
+    ]
   ])('refuses to run and spawns nothing for %s', (_label, paths, overrides) => {
     expect.hasAssertions();
 
@@ -385,7 +417,10 @@ describe('runAsEntryPoint', () => {
     const ran = runAsEntryPoint({
       caller: { id: 'imported' },
       entry: { id: 'something-else' },
-      run: (...args: unknown[]) => { runs.push(args); return 0; }
+      run: (...args: unknown[]) => {
+        runs.push(args);
+        return 0;
+      }
     });
 
     expect(ran).toBe(false);
@@ -439,8 +474,9 @@ describe('resolveGitBinary', () => {
   it('throws rather than falling back to PATH when no candidate exists', () => {
     expect.hasAssertions();
 
-    expect(() => resolveGitBinary(['/nowhere/git'], () => false))
-      .toThrow('Could not find git in a fixed system location');
+    expect(() => resolveGitBinary(['/nowhere/git'], () => false)).toThrow(
+      'Could not find git in a fixed system location'
+    );
   });
 
   it('resolves on this machine', () => {

@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-
 /**
  * Unit suite for the Service Configuration validation (JUM-544):
  *
@@ -14,21 +11,19 @@
  * Both are exercised as pure functions — no DOM, no store.
  */
 
-const { collectServiceConfigurationIssues } = require(
-  '@jumentix/designer-core/validation/serviceConfigurationValidation.js'
-);
 const {
   CLOUD_PROVIDERS,
-  RUN_MODES,
-  SERVICE_KINDS,
-  SERVICE_KIND_ACTIVE_PORTS,
-  RUN_MODE_PROVIDER_SUPPORT,
   getActivePortNames,
   getSupportedProviders,
-  isRunModeSupportedByProvider
-} = require(
-  '@jumentix/designer-core/model/deployCapabilityMatrix.js'
-);
+  isRunModeSupportedByProvider,
+  RUN_MODE_PROVIDER_SUPPORT,
+  RUN_MODES,
+  SERVICE_KIND_ACTIVE_PORTS,
+  SERVICE_KINDS
+} = require('@jumentix/designer-core/model/deployCapabilityMatrix.js');
+const {
+  default: collectServiceConfigurationIssues
+} = require('@jumentix/designer-core/validation/serviceConfigurationValidation.js');
 
 function createConfig(overrides: Record<string, unknown> = {}): any {
   return {
@@ -41,7 +36,7 @@ function createConfig(overrides: Record<string, unknown> = {}): any {
   };
 }
 
-function messages(issues: Array<{ message: string }>) {
+function messages(issues: { message: string }[]) {
   return issues.map((issue) => issue.message);
 }
 
@@ -49,9 +44,20 @@ describe('deploy capability matrix reader (JUM-544, shared with JUM-481)', () =>
   it('pins the Requirement 126 vocabularies', () => {
     expect.hasAssertions();
     expect(SERVICE_KINDS).toStrictEqual(['rest-api', 'websocket-rest-api', 'grpc-rest-api']);
-    expect(RUN_MODES).toStrictEqual(['dedicated-server', 'virtual-machine', 'container', 'functions']);
+    expect(RUN_MODES).toStrictEqual([
+      'dedicated-server',
+      'virtual-machine',
+      'container',
+      'functions'
+    ]);
     expect(CLOUD_PROVIDERS).toStrictEqual([
-      'aws', 'google', 'azure', 'vercel', 'cloudflare', 'docker', 'self-hosted'
+      'aws',
+      'google',
+      'azure',
+      'vercel',
+      'cloudflare',
+      'docker',
+      'self-hosted'
     ]);
   });
 
@@ -99,24 +105,38 @@ describe('service configuration validation (JUM-544)', () => {
 
   it('rejects ports outside 1-65535', () => {
     expect.hasAssertions();
-    expect(messages(collectServiceConfigurationIssues(createConfig({
-      ports: { rest: 0, websocket: 3001, grpc: 3002 }
-    })))).toStrictEqual([
-      'REST port must be an integer between 1 and 65535 (got "0").'
-    ]);
-    expect(messages(collectServiceConfigurationIssues(createConfig({
-      ports: { rest: 70000, websocket: 3001, grpc: 3002 }
-    })))).toStrictEqual([
-      'REST port must be an integer between 1 and 65535 (got "70000").'
-    ]);
+    expect(
+      messages(
+        collectServiceConfigurationIssues(
+          createConfig({
+            ports: { rest: 0, websocket: 3001, grpc: 3002 }
+          })
+        )
+      )
+    ).toStrictEqual(['REST port must be an integer between 1 and 65535 (got "0").']);
+    expect(
+      messages(
+        collectServiceConfigurationIssues(
+          createConfig({
+            ports: { rest: 70000, websocket: 3001, grpc: 3002 }
+          })
+        )
+      )
+    ).toStrictEqual(['REST port must be an integer between 1 and 65535 (got "70000").']);
   });
 
   it('rejects non-integer and missing ports', () => {
     expect.hasAssertions();
-    expect(messages(collectServiceConfigurationIssues(createConfig({
-      serviceKind: 'websocket-rest-api',
-      ports: { rest: 3000.5, websocket: null, grpc: 3002 }
-    })))).toStrictEqual([
+    expect(
+      messages(
+        collectServiceConfigurationIssues(
+          createConfig({
+            serviceKind: 'websocket-rest-api',
+            ports: { rest: 3000.5, websocket: null, grpc: 3002 }
+          })
+        )
+      )
+    ).toStrictEqual([
       'REST port must be an integer between 1 and 65535 (got "3000.5").',
       'WebSocket port must be an integer between 1 and 65535 (got "").'
     ]);
@@ -124,18 +144,28 @@ describe('service configuration validation (JUM-544)', () => {
 
   it('rejects colliding ports on the protocols the service kind binds', () => {
     expect.hasAssertions();
-    expect(messages(collectServiceConfigurationIssues(createConfig({
-      serviceKind: 'websocket-rest-api',
-      ports: { rest: 3001, websocket: 3001, grpc: 3002 }
-    })))).toStrictEqual([
+    expect(
+      messages(
+        collectServiceConfigurationIssues(
+          createConfig({
+            serviceKind: 'websocket-rest-api',
+            ports: { rest: 3001, websocket: 3001, grpc: 3002 }
+          })
+        )
+      )
+    ).toStrictEqual([
       'REST and WebSocket ports both use 3001 — each protocol needs a distinct port.'
     ]);
-    expect(messages(collectServiceConfigurationIssues(createConfig({
-      serviceKind: 'grpc-rest-api',
-      ports: { rest: 3000, websocket: 3001, grpc: 3000 }
-    })))).toStrictEqual([
-      'REST and gRPC ports both use 3000 — each protocol needs a distinct port.'
-    ]);
+    expect(
+      messages(
+        collectServiceConfigurationIssues(
+          createConfig({
+            serviceKind: 'grpc-rest-api',
+            ports: { rest: 3000, websocket: 3001, grpc: 3000 }
+          })
+        )
+      )
+    ).toStrictEqual(['REST and gRPC ports both use 3000 — each protocol needs a distinct port.']);
   });
 
   it('ignores collisions on ports the selected service kind does not use', () => {
@@ -149,29 +179,47 @@ describe('service configuration validation (JUM-544)', () => {
 
   it('rejects run-mode × provider combinations the Requirement 059 matrix has no target for', () => {
     expect.hasAssertions();
-    expect(messages(collectServiceConfigurationIssues(createConfig({
-      runMode: 'functions',
-      cloudProvider: 'self-hosted'
-    })))).toStrictEqual([
-      'Run mode "functions" cannot run on provider "self-hosted" — '
-      + 'the Requirement 059 deploy matrix supports it on: aws, vercel, cloudflare.'
+    expect(
+      messages(
+        collectServiceConfigurationIssues(
+          createConfig({
+            runMode: 'functions',
+            cloudProvider: 'self-hosted'
+          })
+        )
+      )
+    ).toStrictEqual([
+      'Run mode "functions" cannot run on provider "self-hosted" — ' +
+        'the Requirement 059 deploy matrix supports it on: aws, vercel, cloudflare.'
     ]);
-    expect(messages(collectServiceConfigurationIssues(createConfig({
-      runMode: 'dedicated-server',
-      cloudProvider: 'vercel'
-    })))).toStrictEqual([
-      'Run mode "dedicated-server" cannot run on provider "vercel" — '
-      + 'the Requirement 059 deploy matrix supports it on: self-hosted.'
+    expect(
+      messages(
+        collectServiceConfigurationIssues(
+          createConfig({
+            runMode: 'dedicated-server',
+            cloudProvider: 'vercel'
+          })
+        )
+      )
+    ).toStrictEqual([
+      'Run mode "dedicated-server" cannot run on provider "vercel" — ' +
+        'the Requirement 059 deploy matrix supports it on: self-hosted.'
     ]);
   });
 
   it('rejects values outside the Requirement 126 vocabularies', () => {
     expect.hasAssertions();
-    expect(messages(collectServiceConfigurationIssues(createConfig({
-      serviceKind: 'soap-api',
-      runMode: 'cluster',
-      cloudProvider: 'oracle'
-    })))).toStrictEqual([
+    expect(
+      messages(
+        collectServiceConfigurationIssues(
+          createConfig({
+            serviceKind: 'soap-api',
+            runMode: 'cluster',
+            cloudProvider: 'oracle'
+          })
+        )
+      )
+    ).toStrictEqual([
       'Service kind "soap-api" is not supported — choose one of: rest-api, websocket-rest-api, grpc-rest-api.',
       'Run mode "cluster" is not supported — choose one of: dedicated-server, virtual-machine, container, functions.',
       'Cloud provider "oracle" is not supported — choose one of: aws, google, azure, vercel, cloudflare, docker, self-hosted.'
@@ -180,22 +228,28 @@ describe('service configuration validation (JUM-544)', () => {
 
   it('reports issues in the export-gate severity shape (error, no entity)', () => {
     expect.hasAssertions();
-    const issues = collectServiceConfigurationIssues(createConfig({
-      runMode: 'functions',
-      cloudProvider: 'self-hosted'
-    }));
-    expect(issues.map((issue: { severity: string; entityId: string | null }) => [
-      issue.severity,
-      issue.entityId
-    ])).toStrictEqual([['error', null]]);
+    const issues = collectServiceConfigurationIssues(
+      createConfig({
+        runMode: 'functions',
+        cloudProvider: 'self-hosted'
+      })
+    );
+    expect(
+      issues.map((issue: { severity: string; entityId: string | null }) => [
+        issue.severity,
+        issue.entityId
+      ])
+    ).toStrictEqual([['error', null]]);
   });
 
   it('does not cross-validate an unknown run mode or provider against the matrix', () => {
     expect.hasAssertions();
-    const issues = collectServiceConfigurationIssues(createConfig({
-      runMode: 'cluster',
-      cloudProvider: 'oracle'
-    }));
+    const issues = collectServiceConfigurationIssues(
+      createConfig({
+        runMode: 'cluster',
+        cloudProvider: 'oracle'
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Run mode "cluster" is not supported — choose one of: dedicated-server, virtual-machine, container, functions.',
       'Cloud provider "oracle" is not supported — choose one of: aws, google, azure, vercel, cloudflare, docker, self-hosted.'
@@ -208,9 +262,15 @@ describe('nullish config fallbacks (JUM-493)', () => {
     expect.hasAssertions();
     const issues = collectServiceConfigurationIssues(null);
     const nullMessages = issues.map((issue: { message: string }) => issue.message);
-    expect(nullMessages.some((message: string) => message.includes('Service kind "" is not supported'))).toBe(true);
-    expect(nullMessages.some((message: string) => message.includes('Run mode "" is not supported'))).toBe(true);
-    expect(nullMessages.some((message: string) => message.includes('Cloud provider "" is not supported'))).toBe(true);
+    expect(
+      nullMessages.some((message: string) => message.includes('Service kind "" is not supported'))
+    ).toBe(true);
+    expect(
+      nullMessages.some((message: string) => message.includes('Run mode "" is not supported'))
+    ).toBe(true);
+    expect(
+      nullMessages.some((message: string) => message.includes('Cloud provider "" is not supported'))
+    ).toBe(true);
   });
 });
 

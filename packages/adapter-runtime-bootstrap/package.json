@@ -11,7 +11,7 @@
     "README.pt-BR.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint ./src --ext .ts",
     "test": "bun test --isolate test",
@@ -45,7 +45,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@jumentix/runtime-infra": "^0.1.0"
+    "@jumentix/runtime-infra": "workspace:*"
   },
   "devDependencies": {
     "@jumentix/runtime-infra": "workspace:*"

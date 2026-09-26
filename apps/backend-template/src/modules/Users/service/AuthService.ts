@@ -1,46 +1,39 @@
-/* eslint-disable no-console */
-/* eslint-disable no-shadow */
 /* eslint-disable class-methods-use-this */
-import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
-import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import type { IAuthSchema } from '@src/modules/Users/service/ports/IAuthSchema';
-import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
-import type { ITokenObject } from '@src/modules/Users/service/ports/ITokenObject';
-
-import type { IJwtService } from '@src/infra/jwt/IJwtService';
-import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
-import type { ISecurityAuditRepository } from '@src/infra/audit';
 import {
-  BaseError, ForbiddenError, ResourceLockedError, UnauthorizedError, ValidationError
+  ForbiddenError,
+  ResourceLockedError,
+  UnauthorizedError,
+  ValidationError
 } from '@src/infra/exceptions/';
 import { readProductEnv } from '@src/interface/runtime/RuntimeEnvironment';
-
-import { EEmailType, EmailValueObject } from '@src/modules/ddd/valueObjects';
+import { EEmailType } from '@src/modules/ddd/valueObjects';
+import { UUID } from '@src/modules/port/UUID';
 import {
   EUserRole,
   hasSuperadminRole,
   shouldRequireOrganization,
   userCanAccessScope
 } from '@src/modules/Users/domain/security/Rbac';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
 
+import type { ISecurityAuditRepository } from '@src/infra/audit';
+import type { BaseError } from '@src/infra/exceptions/';
+import type { IJwtService } from '@src/infra/jwt/IJwtService';
+import type IKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { EmailValueObject } from '@src/modules/ddd/valueObjects';
 import type { IServiceResponse } from '@src/modules/port';
-import type { IEventBus } from '@src/modules/port/IEventBus';
-import { UUID } from '@src/modules/port/UUID';
+import type IEventBus from '@src/modules/port/IEventBus';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { IAuthSchema } from '@src/modules/Users/service/ports/IAuthSchema';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { ITokenObject } from '@src/modules/Users/service/ports/ITokenObject';
+import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
 
-const tokenKeys = [
-  'id',
-  'username',
-  'firstName',
-  'avatar',
-  'organization',
-  'roles'
-];
+const tokenKeys = ['id', 'username', 'firstName', 'avatar', 'organization', 'roles'];
 
-export class AuthService implements IAuthService {
-  // eslint-disable-next-line no-useless-constructor
+class AuthService implements IAuthService {
   constructor(
     private readonly userProvider: IUserProvider,
     private readonly passwordCryptoService: IPasswordCryptoService,
@@ -61,7 +54,9 @@ export class AuthService implements IAuthService {
   }
 
   private get basicAuthEnabled(): boolean {
-    const rawValue = String(readProductEnv(process.env, 'JUMENTIX_ENABLE_BASIC_AUTH') || '').trim().toLowerCase();
+    const rawValue = String(readProductEnv(process.env, 'JUMENTIX_ENABLE_BASIC_AUTH') || '')
+      .trim()
+      .toLowerCase();
     if (!rawValue) return true;
     return rawValue === 'yes';
   }
@@ -78,17 +73,11 @@ export class AuthService implements IAuthService {
     return Number(readProductEnv(process.env, 'JUMENTIX_AUTH_LOCKOUT_SECONDS') || 900);
   }
 
-  private get revocationPrefix(): string {
-    return 'auth:revoked';
-  }
+  private readonly revocationPrefix: string = 'auth:revoked';
 
-  private get failuresPrefix(): string {
-    return 'auth:failures';
-  }
+  private readonly failuresPrefix: string = 'auth:failures';
 
-  private get lockPrefix(): string {
-    return 'auth:locked';
-  }
+  private readonly lockPrefix: string = 'auth:locked';
 
   private async getKeyWithExpiration<T = any>(key: string): Promise<T | null> {
     if (!this.keyValueStorageClient) return null;
@@ -109,7 +98,7 @@ export class AuthService implements IAuthService {
     if (!this.keyValueStorageClient) return;
     await this.keyValueStorageClient.set(key, {
       ...value,
-      expiresAt: Date.now() + (expiresInSeconds * 1000)
+      expiresAt: Date.now() + expiresInSeconds * 1000
     });
   }
 
@@ -125,11 +114,7 @@ export class AuthService implements IAuthService {
     const key = `${this.failuresPrefix}:${username}`;
     const current = await this.getKeyWithExpiration<{ count: number }>(key);
     const count = Number(current?.count || 0) + 1;
-    await this.setKeyWithExpiration(
-      key,
-      { count },
-      this.loginWindowSeconds
-    );
+    await this.setKeyWithExpiration(key, { count }, this.loginWindowSeconds);
     if (count >= this.maxLoginAttempts) {
       await this.setKeyWithExpiration(
         `${this.lockPrefix}:${username}`,
@@ -266,9 +251,9 @@ export class AuthService implements IAuthService {
 
   public async decodeToken(AuthorizationHeader: string): Promise<ITokenObject | null> {
     const authArray = AuthorizationHeader.split(' ');
-    const [schema, token] = authArray;
+    const [schema, token] = authArray as [EAuthSchemaType, string];
     if (schema === EAuthSchemaType.Bearer) {
-      const decoded = this.jwtService.decodeToken(token) || null;
+      const decoded = this.jwtService.decodeToken(token) ?? null;
       if (!decoded) return null;
       await this.assertTokenNotRevoked(decoded);
       return decoded;
@@ -292,9 +277,10 @@ export class AuthService implements IAuthService {
     schema: EAuthSchemaType
   ): Promise<IServiceResponse<IAuthorizationHeader>> {
     const serviceResponse: IServiceResponse<IAuthorizationHeader> = {};
-    const expectedSchema = this.basicAuthEnabled && schema === EAuthSchemaType.Basic
-      ? EAuthSchemaType.Basic
-      : EAuthSchemaType.Bearer;
+    const expectedSchema =
+      this.basicAuthEnabled && schema === EAuthSchemaType.Basic
+        ? EAuthSchemaType.Basic
+        : EAuthSchemaType.Bearer;
     try {
       await this.assertUserNotLocked(username);
       // mustBePassword('password', password); // this kind of validation is a security flag
@@ -323,8 +309,10 @@ export class AuthService implements IAuthService {
       } else {
         await this.markFailedLogin(username);
         await this.recordAuditEventAsync('users.auth.login.failed', { username }, 'failed');
-        if (String(process.env.NODE_ENV || '').toLowerCase() === 'prod'
-          || String(process.env.NODE_ENV || '').toLowerCase() === 'production') {
+        if (
+          String(process.env.NODE_ENV || '').toLowerCase() === 'prod' ||
+          String(process.env.NODE_ENV || '').toLowerCase() === 'production'
+        ) {
           serviceResponse.error = new UnauthorizedError('invalid credentials');
         } else {
           serviceResponse.error = error as BaseError;
@@ -344,23 +332,20 @@ export class AuthService implements IAuthService {
     return userFound;
   }
 
-  public async authorize(AuthorizationHeader: string = ''): Promise<ITokenObject> {
+  public async authorize(AuthorizationHeader = ''): Promise<ITokenObject> {
     const authArray = AuthorizationHeader.split(' ');
-    const [schema, token] = authArray;
+    const [schema, token] = authArray as [EAuthSchemaType, string];
     if (!token) {
       throw new UnauthorizedError('invalid token');
     }
-    if (
-      schema !== EAuthSchemaType.Basic
-      && schema !== EAuthSchemaType.Bearer
-    ) {
+    if (schema !== EAuthSchemaType.Basic && schema !== EAuthSchemaType.Bearer) {
       throw new UnauthorizedError('invalid schema');
     }
     if (schema === EAuthSchemaType.Basic && !this.basicAuthEnabled) {
       throw new UnauthorizedError('invalid schema');
     }
     const authRequest: IAuthSchema = {
-      type: schema as EAuthSchemaType,
+      type: schema,
       token
     };
 
@@ -385,7 +370,7 @@ export class AuthService implements IAuthService {
     return serviceResponse;
   }
 
-  public async logout(authorization: string = ''): Promise<IServiceResponse<boolean>> {
+  public async logout(authorization = ''): Promise<IServiceResponse<boolean>> {
     const serviceResponse: IServiceResponse<boolean> = {
       result: true
     };
@@ -408,10 +393,14 @@ export class AuthService implements IAuthService {
           remainingSeconds
         );
       }
-      await this.recordAuditEventAsync('users.auth.logout.success', {
-        userId: decodedToken.id,
-        username: decodedToken.username
-      }, 'success');
+      await this.recordAuditEventAsync(
+        'users.auth.logout.success',
+        {
+          userId: decodedToken.id,
+          username: decodedToken.username
+        },
+        'success'
+      );
     } catch (error) {
       await this.recordAuditEventAsync('users.auth.logout.failed', {}, 'failed');
       serviceResponse.error = error as BaseError;
@@ -421,7 +410,6 @@ export class AuthService implements IAuthService {
   }
 
   public async register(data: Record<string, any>): Promise<IServiceResponse<Record<string, any>>> {
-    // eslint-disable-next-line no-param-reassign
     const { roles: incomingRoles, organization, username } = data;
     let roles = incomingRoles;
     if (!roles || roles.length === 0) {
@@ -430,11 +418,13 @@ export class AuthService implements IAuthService {
     const record = {
       ...data,
       // set default email
-      emails: [{
-        email: username,
-        type: EEmailType.work,
-        isPrimary: true
-      } as EmailValueObject],
+      emails: [
+        {
+          email: username,
+          type: EEmailType.work,
+          isPrimary: true
+        } as EmailValueObject
+      ],
       roles
     };
     return this.userProvider.register(record);
@@ -451,12 +441,9 @@ export class AuthService implements IAuthService {
     return this.userProvider.delete(id);
   }
 
-  public throwIfUserHasNoAccessToResource(
-    user: IUser,
-    endPointConfig: Record<string, any>
-  ) {
+  public throwIfUserHasNoAccessToResource(user: IUser, endPointConfig: Record<string, any>) {
     const routePermission = endPointConfig?.security?.[0]
-      ? Object.values(endPointConfig.security[0])[0] as string[]
+      ? (Object.values(endPointConfig.security[0])[0] as string[])
       : [];
     const auditPayload = {
       userId: user?.id || '',
@@ -464,52 +451,82 @@ export class AuthService implements IAuthService {
       permissions: routePermission || []
     };
     if (!endPointConfig.security) {
-      this.recordAuditEvent('users.authz.scope.denied', {
-        ...auditPayload,
-        reason: 'missing_route_security'
-      }, 'denied');
-      throw new ValidationError('The route Controller is secured by guard rails but there is no security schema defined in the Open API specification file.invalid schema');
+      this.recordAuditEvent(
+        'users.authz.scope.denied',
+        {
+          ...auditPayload,
+          reason: 'missing_route_security'
+        },
+        'denied'
+      );
+      throw new ValidationError(
+        'The route Controller is secured by guard rails but there is no security schema defined in the Open API specification file.invalid schema'
+      );
     }
     const authName = Object.keys(endPointConfig.security[0])[0];
     // if end point has an auth schema
     if (authName) {
-      const routePermission: string[] = endPointConfig.security[0][authName];
+      const requiredPermissions: string[] = endPointConfig.security[0][authName];
       // if route has any required permission
       if (!user.roles) {
-        this.recordAuditEvent('users.authz.scope.denied', {
-          ...auditPayload,
-          reason: 'missing_user_roles'
-        }, 'denied');
+        this.recordAuditEvent(
+          'users.authz.scope.denied',
+          {
+            ...auditPayload,
+            reason: 'missing_user_roles'
+          },
+          'denied'
+        );
         throw new ForbiddenError('Insufficient permission - invalid user - user.roles is missing');
       }
       if (shouldRequireOrganization(user.roles) && !user.organization) {
-        this.recordAuditEvent('users.authz.scope.denied', {
-          ...auditPayload,
-          reason: 'missing_organization_for_role'
-        }, 'denied');
-        throw new ForbiddenError('Insufficient permission - organization is required for this user role');
+        this.recordAuditEvent(
+          'users.authz.scope.denied',
+          {
+            ...auditPayload,
+            reason: 'missing_organization_for_role'
+          },
+          'denied'
+        );
+        throw new ForbiddenError(
+          'Insufficient permission - organization is required for this user role'
+        );
       }
       if (hasSuperadminRole(user.roles)) {
-        this.recordAuditEvent('users.authz.scope.allowed', {
-          ...auditPayload,
-          reason: 'superadmin_bypass'
-        }, 'success');
+        this.recordAuditEvent(
+          'users.authz.scope.allowed',
+          {
+            ...auditPayload,
+            reason: 'superadmin_bypass'
+          },
+          'success'
+        );
         return true;
       }
-      if (routePermission.length > 0) {
-        for (const permission of routePermission) {
+      if (requiredPermissions.length > 0) {
+        for (const permission of requiredPermissions) {
           if (!userCanAccessScope(user.roles, permission)) {
-            this.recordAuditEvent('users.authz.scope.denied', {
-              ...auditPayload,
-              reason: `missing_scope_${permission}`
-            }, 'denied');
-            throw new ForbiddenError(`Insufficient permission - user must have the ${permission} role`);
+            this.recordAuditEvent(
+              'users.authz.scope.denied',
+              {
+                ...auditPayload,
+                reason: `missing_scope_${permission}`
+              },
+              'denied'
+            );
+            throw new ForbiddenError(
+              `Insufficient permission - user must have the ${permission} role`
+            );
           }
         }
-        this.recordAuditEvent('users.authz.scope.allowed', {
-          ...auditPayload,
-          reason: 'all_scopes_validated'
-        }, 'success');
+        this.recordAuditEvent(
+          'users.authz.scope.allowed',
+          {
+            ...auditPayload,
+            reason: 'all_scopes_validated'
+          },
+          'success'
+        );
       }
     }
     return true;
@@ -533,3 +550,5 @@ export class AuthService implements IAuthService {
     );
   }
 }
+
+export default AuthService;

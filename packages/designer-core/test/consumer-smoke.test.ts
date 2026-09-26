@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires, global-require */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+
 import { ensureDesignerCoreBuilt } from './helpers/build-artifact';
 
 /**
@@ -66,33 +66,47 @@ describe('designer-core consumer smoke (JUM-493)', () => {
     // under Jest the first-party JS transformer compiles it, under Bun it
     // loads as ESM.
     const result = runConsumerSmoke();
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const barrel = require(path.join(packageRoot, 'src', 'index.js')) as Record<string, unknown>;
 
-    expect(
-      Object.keys(barrel).sort((left, right) => left.localeCompare(right))
-    ).toStrictEqual(result.exports);
+    expect(Object.keys(barrel).sort((left, right) => left.localeCompare(right))).toStrictEqual(
+      result.exports
+    );
   });
 
   it('exports the core surface the issue names — model, validation, exporters, importers, schema-diff', () => {
     expect.hasAssertions();
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const barrel = require(path.join(packageRoot, 'src', 'index.js')) as Record<string, unknown>;
 
     const expected = [
       // model and normalizers
-      'normalizeStatePayload', 'createDesignerState', 'buildSampleModelPayload',
+      'normalizeStatePayload',
+      'createDesignerState',
+      'buildSampleModelPayload',
       // validation / model-check engine
-      'collectModelIssues', 'validateAsyncApi30Document', 'collectServiceConfigurationIssues',
-      'collectArchitectureIssues', 'normalizeArchitectureInput',
+      'collectModelIssues',
+      'validateAsyncApi30Document',
+      'collectServiceConfigurationIssues',
+      'collectArchitectureIssues',
+      'normalizeArchitectureInput',
       // exporters: JSON, Markdown, JSON Schema, AsyncAPI, bundle, package, OAS
-      'buildJsonExportDocument', 'buildMarkdownExport', 'buildJsonSchemaDocument',
-      'buildAsyncApiTransportDocument', 'buildBoilerplateBundleDocument',
-      'buildDomainPackageDocument', 'buildOasDocument', 'buildOasDocumentSet', 'filterOasDocumentForService',
+      'buildJsonExportDocument',
+      'buildMarkdownExport',
+      'buildJsonSchemaDocument',
+      'buildAsyncApiTransportDocument',
+      'buildBoilerplateBundleDocument',
+      'buildDomainPackageDocument',
+      'buildOasDocument',
+      'buildOasDocumentSet',
+      'filterOasDocumentForService',
       // importers: domain package, state file, OAS file
-      'buildDomainFromPackage', 'buildStateFromSuiteExport', 'buildDomainsFromOas',
+      'buildDomainFromPackage',
+      'buildStateFromSuiteExport',
+      'buildDomainsFromOas',
       // schema-diff / merge-preview engine
-      'buildPackageMerge', 'buildSameVersionConflictPreview',
+      'buildPackageMerge',
+      'buildSameVersionConflictPreview',
       // the store contract, as a type
       'IDesignerStore'
     ];

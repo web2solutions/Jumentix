@@ -1,5 +1,6 @@
-import type { Metadata } from 'next';
 import { ReleaseNotes } from '@/components/ReleaseNotes/ReleaseNotes';
+
+import type { Metadata } from 'next';
 
 /**
  * JUM-640 — the released versions of Jumentix.
@@ -16,9 +17,9 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Release Notes',
-  description: 'Released versions of Jumentix, read from the GitHub releases of the repository.',
+  description: 'Released versions of Jumentix, read from the GitHub releases of the repository.'
 };
 
-export default function ReleaseNotesPage() {
-  return <ReleaseNotes />;
-}
+const ReleaseNotesPage = () => <ReleaseNotes />;
+
+export default ReleaseNotesPage;

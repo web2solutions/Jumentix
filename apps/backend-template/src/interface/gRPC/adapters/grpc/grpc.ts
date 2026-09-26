@@ -1,16 +1,17 @@
+import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import compileMessageMediator from '@src/infra/messages/compileMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
 import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
-import { composeUsersAuthServices } from '@src/modules/Users';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
 import { GrpcAPI } from '@src/interface/gRPC/gRPCAPI';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
+import { composeUsersAuthServices } from '@src/modules/Users';
 
 export function shouldStartFallbackRestApi(env: NodeJS.ProcessEnv = process.env): boolean {
   return env.JUMENTIX_DISABLE_FALLBACK_REST !== 'true';
@@ -69,5 +70,9 @@ export async function startGrpcAdapter(): Promise<void> {
 
 /* istanbul ignore if */
 if (require.main === module) {
-  startGrpcAdapter();
+  // The process stays alive on the listening server, so startup is
+  // not awaited; failures stay unhandled rejections that exit non-zero.
+  startGrpcAdapter().catch((error: unknown) => {
+    throw error;
+  });
 }

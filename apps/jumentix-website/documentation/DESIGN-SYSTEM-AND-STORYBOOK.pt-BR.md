@@ -17,24 +17,24 @@ mantém identidade própria.
 
 ## Inventário de componentes
 
-| Componente | Responsabilidade |
-| --- | --- |
-| `BrandMark` | Identidade estável do produto e link inicial |
-| `ActionLink` | Ações primárias, secundárias, discretas e externas |
-| `StatusBadge` | Estados neutro, sucesso e atenção |
-| `SectionHeading` | Contexto, título e narrativa de apoio |
-| `FeatureGrid` | Resumos responsivos de capacidades |
-| `Callout` | Orientações informativas, de sucesso e de alerta |
-| `MetricStrip` | Métricas comparáveis de produto e engenharia |
-| `CapabilityTable` | Matriz compacta de implementações |
-| `CodeShowcase` | Abas de código acessíveis e ação de cópia |
-| `SearchField` | Controle estável de busca na documentação |
-| `Pagination` | Navegação anterior, próxima e numerada |
-| `LocaleSwitch` | Controle explícito de idioma EN/PT-BR |
-| `SiteHeader` | Navegação de produto e ação para o repositório |
-| `SiteFooter` | Navegação de produto, aprendizado e comunidade |
-| `DocsToolbar` | Busca, edição e idioma na documentação |
-| `ArchitectureFlow` | Diagramas responsivos de arquitetura e fluxo |
+| Componente         | Responsabilidade                                   |
+| ------------------ | -------------------------------------------------- |
+| `BrandMark`        | Identidade estável do produto e link inicial       |
+| `ActionLink`       | Ações primárias, secundárias, discretas e externas |
+| `StatusBadge`      | Estados neutro, sucesso e atenção                  |
+| `SectionHeading`   | Contexto, título e narrativa de apoio              |
+| `FeatureGrid`      | Resumos responsivos de capacidades                 |
+| `Callout`          | Orientações informativas, de sucesso e de alerta   |
+| `MetricStrip`      | Métricas comparáveis de produto e engenharia       |
+| `CapabilityTable`  | Matriz compacta de implementações                  |
+| `CodeShowcase`     | Abas de código acessíveis e ação de cópia          |
+| `SearchField`      | Controle estável de busca na documentação          |
+| `Pagination`       | Navegação anterior, próxima e numerada             |
+| `LocaleSwitch`     | Controle explícito de idioma EN/PT-BR              |
+| `SiteHeader`       | Navegação de produto e ação para o repositório     |
+| `SiteFooter`       | Navegação de produto, aprendizado e comunidade     |
+| `DocsToolbar`      | Busca, edição e idioma na documentação             |
+| `ArchitectureFlow` | Diagramas responsivos de arquitetura e fluxo       |
 
 O ponto de entrada público é `components/design-system/index.tsx`. Os estilos fundamentais estão
 divididos entre `tokens.css` e `DesignSystem.module.css`.

@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { randomUUID } from 'node:crypto';
+import http from 'node:http';
 
-import http from 'http';
-import { Server, Socket } from 'socket.io';
-import { randomUUID } from 'crypto';
+import { Server } from 'socket.io';
 
-import { _HTTP_PORT_ } from '@src/config/constants';
+import { HTTP_PORT } from '@src/config/constants';
+import { RealtimeAPIBase } from '@src/interface/Async/RealtimeAPIBase';
+
+import type { Socket } from 'socket.io';
+
 import type {
   IAsyncOperationRequest,
   IAsyncOperationResponse,
   IRealtimeAPIFactory
-} from '@src/interface/Async/RealtimeAPIBase';
-import {
-  RealtimeAPIBase
 } from '@src/interface/Async/RealtimeAPIBase';
 
 export interface IWebSocketAPIFactory extends IRealtimeAPIFactory {
@@ -44,7 +44,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
       frameworkName: 'socket-io'
     });
     this.host = config.host || '0.0.0.0';
-    this.port = config.port || Number(process.env.JUMENTIX_WEBSOCKET_PORT || (_HTTP_PORT_ + 1));
+    this.port = config.port || Number(process.env.JUMENTIX_WEBSOCKET_PORT || HTTP_PORT + 1);
     this.path = config.path || '/ws';
     this.configureSocketIo = config.configureSocketIo;
     this.cleanupSocketIo = config.cleanupSocketIo;
@@ -67,16 +67,17 @@ export class WebSocketAPI extends RealtimeAPIBase {
         const response = await this.handleOperationRequest({
           ...request,
           metadata: {
-            ...(request.metadata || {}),
+            ...(request.metadata ?? {}),
             requestId,
             clientId: socket.id
           }
         });
-        const responseChannel = response?.metadata?.channel || `api:${response.operationId}:response`;
+        const responseChannel =
+          response?.metadata?.channel || `api:${response.operationId}:response`;
         const responsePayload = {
           ...response,
           metadata: {
-            ...(response.metadata || {}),
+            ...(response.metadata ?? {}),
             requestId,
             clientId: socket.id,
             channel: responseChannel
@@ -101,7 +102,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
           const response = await this.handleOperationRequest({
             ...request,
             metadata: {
-              ...(request.metadata || {}),
+              ...(request.metadata ?? {}),
               requestId,
               clientId: socket.id
             },
@@ -111,7 +112,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
           const responsePayload = {
             ...response,
             metadata: {
-              ...(response.metadata || {}),
+              ...(response.metadata ?? {}),
               requestId,
               clientId: socket.id,
               channel: responseChannel
@@ -134,8 +135,9 @@ export class WebSocketAPI extends RealtimeAPIBase {
     }
     await this.databaseClient.connect();
 
-    this.httpServer = http.createServer();
-    this.io = new Server(this.httpServer, {
+    const httpServer = http.createServer();
+    this.httpServer = httpServer;
+    this.io = new Server(httpServer, {
       path: this.path,
       transports: ['websocket'],
       cors: {
@@ -151,7 +153,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
     });
 
     await new Promise<void>((resolve) => {
-      this.httpServer!.listen(this.port, this.host, () => {
+      httpServer.listen(this.port, this.host, () => {
         resolve();
       });
     });
@@ -163,7 +165,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
     if (!this.started) return;
 
     if (this.io) {
-      this.io.close();
+      await this.io.close();
       this.io = undefined;
     }
 
@@ -171,9 +173,10 @@ export class WebSocketAPI extends RealtimeAPIBase {
       await this.cleanupSocketIo();
     }
 
-    if (this.httpServer) {
+    const { httpServer } = this;
+    if (httpServer) {
       await new Promise<void>((resolve) => {
-        this.httpServer!.close(() => resolve());
+        httpServer.close(() => resolve());
       });
       this.httpServer = undefined;
     }

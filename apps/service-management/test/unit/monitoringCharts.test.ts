@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, import/first */
+import { clamp, colorForStatus } from '../../src/ui/monitoringCharts.js';
 
 jest.mock('d3', () => {
   const chain = () => {
@@ -15,14 +15,13 @@ jest.mock('d3', () => {
     scaleOrdinal: () => ({ domain: chain, range: chain }),
     max: (values: number[]) => Math.max(...values),
     min: (values: number[]) => Math.min(...values),
-    sum: (values: unknown[], accessor?: (entry: any) => number) => values.reduce(
-      (total: number, entry) => total + (accessor ? accessor(entry) : Number(entry) || 0),
-      0
-    )
+    sum: (values: unknown[], accessor?: (entry: any) => number) =>
+      values.reduce(
+        (total: number, entry) => total + (accessor ? accessor(entry) : Number(entry) || 0),
+        0
+      )
   };
 });
-
-import { clamp, colorForStatus } from '../../src/ui/monitoringCharts.js';
 
 describe('service-management monitoringCharts helpers', () => {
   it('clamps numeric ranges and maps PM2 status colors', () => {

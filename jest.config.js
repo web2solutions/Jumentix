@@ -15,23 +15,25 @@ const { WITHOUT_SUITE_YET } = require('./ci-cd/check-package-suites.js');
  * either direction.
  */
 const packagesWithoutSuites = Object.keys(WITHOUT_SUITE_YET);
-const packageCoverageIgnorePattern = packagesWithoutSuites.length > 0
-  ? [`<rootDir>/packages/(${packagesWithoutSuites.join('|')})/`]
-  : [];
+const packageCoverageIgnorePattern =
+  packagesWithoutSuites.length > 0
+    ? [`<rootDir>/packages/(${packagesWithoutSuites.join('|')})/`]
+    : [];
 
 const nodeMajor = Number(process.versions.node.split('.')[0]);
-const unsupportedRuntimeIgnorePatterns = nodeMajor > 22
-  ? [
-    '<rootDir>/apps/backend-template/test/integration/Restify/',
-    '<rootDir>/apps/backend-template/test/integration/mutex/redis.restify.test.ts'
-  ]
-  : [];
+const unsupportedRuntimeIgnorePatterns =
+  nodeMajor > 22
+    ? [
+        '<rootDir>/apps/backend-template/test/integration/Restify/',
+        '<rootDir>/apps/backend-template/test/integration/mutex/redis.restify.test.ts'
+      ]
+    : [];
 const redisIntegrationIgnorePatterns = process.env.RUN_REDIS_INTEGRATION
   ? []
   : [
-    '<rootDir>/apps/backend-template/test/integration/mutex/',
-    '<rootDir>/apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts'
-  ];
+      '<rootDir>/apps/backend-template/test/integration/mutex/',
+      '<rootDir>/apps/backend-template/test/integration/realtime/socketio.redis-streams.multi-instance.test.ts'
+    ];
 
 module.exports = {
   preset: 'ts-jest',
@@ -47,9 +49,7 @@ module.exports = {
     '^.+\\.tsx?$': ['ts-jest', {}],
     '^.+\\.m?js$': '<rootDir>/ci-cd/jest/javascript-transformer.js'
   },
-  transformIgnorePatterns: [
-    '<rootDir>/node_modules/(?!\\.bun/uuid@)'
-  ],
+  transformIgnorePatterns: ['<rootDir>/node_modules/(?!\\.bun/uuid@)'],
   verbose: true,
   detectOpenHandles: true,
   collectCoverage: true,
@@ -65,11 +65,16 @@ module.exports = {
     // root-only rule below cannot express that ('$1' would swallow the
     // subpath), so without this rule every deep import misses `src/`.
     '^@jumentix/([^/]+)/(.+)$': '<rootDir>/packages/$1/src/$2',
-    '@jumentix/(.*)$': '<rootDir>/packages/$1/src',
+    '@jumentix/(.*)$': '<rootDir>/packages/$1/src'
   },
   testPathIgnorePatterns: [
     ...unsupportedRuntimeIgnorePatterns,
-    ...redisIntegrationIgnorePatterns
+    ...redisIntegrationIgnorePatterns,
+    // config-eslint's contract suite is a bun-runner suite (test-map runner
+    // 'bun'): its dependency graph is ESM-only, which jest on Node 22 cannot
+    // require. Coverage for the package comes from its bun coverage run
+    // (coverage/config-eslint), merged by ci-cd/merge-coverage-reports.js.
+    '<rootDir>/packages/config-eslint/test/'
   ],
   // Entries are REGEXES, not globs: an unescaped leading dot matches any
   // character, so '.build' silently excluded every path containing '<x>build'
@@ -78,7 +83,12 @@ module.exports = {
   // Scope the dot-directories to the repo root and escape the dot. ('dist'
   // stays a bare substring on purpose: it also keeps node_modules build
   // output out of the haste crawl.)
-  modulePathIgnorePatterns: ['dist', '<rootDir>/\\.build', '<rootDir>/\\.serverless', '<rootDir>/\\.resources'],
+  modulePathIgnorePatterns: [
+    'dist',
+    '<rootDir>/\\.build',
+    '<rootDir>/\\.serverless',
+    '<rootDir>/\\.resources'
+  ],
   coveragePathIgnorePatterns: [
     // packages/ is excluded except cana/src, which this epic added with 293 tests.
     // Sonar reads this lcov, so an excluded path reports as 0% covered on new code
@@ -128,5 +138,5 @@ module.exports = {
       statements: 98
     }
   },
-  setupFiles: ["./ci-cd/loadEnvironment.js"],
+  setupFiles: ['./ci-cd/loadEnvironment.js']
 };

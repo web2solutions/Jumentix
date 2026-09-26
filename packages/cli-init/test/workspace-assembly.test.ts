@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -6,23 +6,22 @@ import path from 'node:path';
 
 require('./ensure-built');
 
+const { main } = require('../dist/cli');
 const {
   assembleWorkspace,
-  buildRootPackageJson,
-  buildGitignore,
   buildDockerCompose,
-  buildReadme,
-  buildProjectJson,
+  buildGitignore,
   buildManifestJson,
+  buildProjectJson,
+  buildReadme,
+  buildRootPackageJson,
   listGeneratedFiles,
-  sha256File,
+  needsRealtimeRedis,
   resolvePrimaryDb,
-  needsRealtimeRedis
+  sha256File
 } = require('../dist/generators');
-
-const { resolveSources } = require('../dist/sources');
-const { main } = require('../dist/cli');
 const { environmentWithoutRepositoryLocation } = require('../dist/legacy/bootstrap');
+const { resolveSources } = require('../dist/sources');
 
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 const packageRoot = path.join(__dirname, '..');
@@ -47,10 +46,10 @@ describe('workspace assembly — helpers (JUM-849)', () => {
       packageManager: 'bun@1.3.13',
       workspaces: ['apps/*'],
       scripts: {
-        dev: 'bun run --filter \'*\' dev',
-        test: 'bun run --filter \'*\' test',
-        lint: 'bun run --filter \'*\' lint',
-        build: 'bun run --filter \'*\' build'
+        dev: "bun run --filter '*' dev",
+        test: "bun run --filter '*' test",
+        lint: "bun run --filter '*' lint",
+        build: "bun run --filter '*' build"
       }
     });
   });
@@ -173,15 +172,9 @@ describe('workspace assembly — assembleWorkspace (JUM-849)', () => {
     const out = scratch('assemble');
     try {
       fs.mkdirSync(path.join(out, 'apps', 'core'), { recursive: true });
-      fs.writeFileSync(
-        path.join(out, 'apps', 'core', 'package.json'),
-        '{"name":"@demo/core"}\n'
-      );
+      fs.writeFileSync(path.join(out, 'apps', 'core', 'package.json'), '{"name":"@demo/core"}\n');
       fs.mkdirSync(path.join(out, '.jumentix'), { recursive: true });
-      fs.writeFileSync(
-        path.join(out, '.jumentix', 'service-profile.json'),
-        '{"retired":true}\n'
-      );
+      fs.writeFileSync(path.join(out, '.jumentix', 'service-profile.json'), '{"retired":true}\n');
 
       const result = await assembleWorkspace({
         outputDir: out,
@@ -222,7 +215,7 @@ describe('workspace assembly — assembleWorkspace (JUM-849)', () => {
       fs.mkdirSync(path.join(out, 'apps', 'core'), { recursive: true });
       fs.writeFileSync(path.join(out, 'apps', 'core', 'package.json'), '{"name":"@x/core"}\n');
 
-      const calls: Array<{ cmd: string; args: string[] }> = [];
+      const calls: { cmd: string; args: string[] }[] = [];
       const result = await assembleWorkspace({
         outputDir: out,
         projectName: 'demo',
@@ -281,11 +274,10 @@ describe('workspace assembly — assembleWorkspace (JUM-849)', () => {
       expect(result.gitInitialized).toBe(true);
       expect(fs.existsSync(path.join(out, '.git'))).toBe(true);
       const { spawnSync } = require('node:child_process');
-      const show = spawnSync(
-        'git',
-        ['-C', out, 'ls-tree', '-r', '--name-only', 'HEAD'],
-        { encoding: 'utf8', env: environmentWithoutRepositoryLocation() }
-      );
+      const show = spawnSync('git', ['-C', out, 'ls-tree', '-r', '--name-only', 'HEAD'], {
+        encoding: 'utf8',
+        env: environmentWithoutRepositoryLocation()
+      });
       expect(show.status).toBe(0);
       expect(show.stdout).toContain('.jumentix/manifest.json');
       expect(show.stdout).toContain('package.json');

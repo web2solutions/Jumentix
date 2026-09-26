@@ -18,12 +18,12 @@ tarefas de feature com adapters, testes e docs (EN + PT-BR).
 
 ## Posição hexagonal
 
-| Asset | Camada |
-| --- | --- |
-| `GUI/web/*`, `GUI/desktop/*` | Inbound / driving (clientes de apresentação) |
-| `interface/HTTP|WebSocket|gRPC|…` | Adapters inbound que as GUIs tipicamente chamam |
-| `modules/*/application` + `domain` | Núcleo — nunca importado pelo código de UI |
-| `infra/*` | Outbound — não usado diretamente pela GUI |
+| Asset                              | Camada                                       |
+| ---------------------------------- | -------------------------------------------- |
+| `GUI/web/*`, `GUI/desktop/*`       | Inbound / driving (clientes de apresentação) |
+| `interface/HTTP                    | WebSocket                                    | gRPC | …`  | Adapters inbound que as GUIs tipicamente chamam |
+| `modules/*/application` + `domain` | Núcleo — nunca importado pelo código de UI   |
+| `infra/*`                          | Outbound — não usado diretamente pela GUI    |
 
 Ordem de chamada:
 

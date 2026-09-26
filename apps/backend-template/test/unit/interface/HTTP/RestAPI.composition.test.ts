@@ -1,18 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, jest/max-expects */
+/* eslint-disable jest/max-expects */
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { JwtService } from '@src/infra/jwt/JwtService';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import { composeUsersAuthServices } from '@src/modules/Users';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
 
 /**
  * Constructor wiring that only exists when a spec directory does not.
@@ -27,7 +27,9 @@ import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemo
 const serverDouble = () => {
   const registered: any[] = [];
   const server = {
-    endPointRegister: jest.fn((endpoint: any) => { registered.push(endpoint); }),
+    endPointRegister: jest.fn((endpoint: any) => {
+      registered.push(endpoint);
+    }),
     start: jest.fn().mockResolvedValue(undefined),
     stop: jest.fn().mockResolvedValue(undefined)
   };
@@ -105,7 +107,7 @@ describe('restAPI composition with fixture spec directories', () => {
 
     // Tasks is not a module this template ships; the controller and handler
     // lookups are doubled so the wiring itself is what runs.
-    const controllerFactory = jest.fn().mockImplementation(() => ({}));
+    const controllerFactory = jest.fn().mockReturnValue({});
     const controllerSpy = jest
       .spyOn(RestAPI as any, 'getControllerModule')
       .mockReturnValue(controllerFactory);
@@ -118,10 +120,12 @@ describe('restAPI composition with fixture spec directories', () => {
     new RestAPI<any>(bareConfig(server));
 
     expect(registered.map((endpoint) => endpoint.path)).toContain('/api/1.0.0/tasks');
-    expect(controllerFactory).toHaveBeenCalledWith(expect.objectContaining({
-      userService: undefined,
-      authUseCases: undefined
-    }));
+    expect(controllerFactory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userService: undefined,
+        authUseCases: undefined
+      })
+    );
 
     handlerSpy.mockRestore();
     controllerSpy.mockRestore();
@@ -136,8 +140,9 @@ describe('restAPI composition with fixture spec directories', () => {
     const withoutDir = serverDouble();
     // eslint-disable-next-line no-new
     new RestAPI<any>(bareConfig(withoutDir.server));
-    expect(withoutDir.registered.map((endpoint) => endpoint.path))
-      .toContain('/docs/asyncapi/versions');
+    expect(withoutDir.registered.map((endpoint) => endpoint.path)).toContain(
+      '/docs/asyncapi/versions'
+    );
 
     process.chdir(cwd);
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -157,8 +162,9 @@ describe('restAPI composition with fixture spec directories', () => {
     const withFile = serverDouble();
     // eslint-disable-next-line no-new
     new RestAPI<any>(bareConfig(withFile.server));
-    expect(withFile.registered.map((endpoint) => endpoint.path))
-      .toContain('/docs/asyncapi/versions');
+    expect(withFile.registered.map((endpoint) => endpoint.path)).toContain(
+      '/docs/asyncapi/versions'
+    );
   });
 
   it('uses the message mediator as the event bus when both are configured', () => {
@@ -191,21 +197,25 @@ describe('restAPI composition with fixture spec directories', () => {
     const { server } = serverDouble();
     const api = new RestAPI<any>(bareConfig(server)) as any;
 
-    expect(() => api.composeUsersModule())
-      .toThrow('PasswordCryptoService is required to compose Users module.');
+    expect(() => api.composeUsersModule()).toThrow(
+      'PasswordCryptoService is required to compose Users module.'
+    );
 
     api.passwordCryptoService = PasswordCryptoService.compile();
-    expect(() => api.composeUsersModule())
-      .toThrow('MutexService is required to compose Users module.');
+    expect(() => api.composeUsersModule()).toThrow(
+      'MutexService is required to compose Users module.'
+    );
 
     api.mutexClient = MutexService.compile(InMemoryKeyValueStorageClient.compile());
-    expect(() => api.composeUsersModule())
-      .toThrow('AuthService with JwtService is required to compose Users module.');
+    expect(() => api.composeUsersModule()).toThrow(
+      'AuthService with JwtService is required to compose Users module.'
+    );
 
     // An auth service without a JWT service fails the same guard.
     api.authService = {};
-    expect(() => api.composeUsersModule())
-      .toThrow('AuthService with JwtService is required to compose Users module.');
+    expect(() => api.composeUsersModule()).toThrow(
+      'AuthService with JwtService is required to compose Users module.'
+    );
 
     const { authService } = composeUsersAuthServices({
       databaseClient: InMemoryDbClient,
@@ -235,11 +245,13 @@ describe('restAPI composition with fixture spec directories', () => {
     });
 
     const { server } = serverDouble();
-    const api = new RestAPI<any>(bareConfig(server, {
-      passwordCryptoService,
-      mutexService,
-      authService
-    }));
+    const api = new RestAPI<any>(
+      bareConfig(server, {
+        passwordCryptoService,
+        mutexService,
+        authService
+      })
+    );
 
     await api.start();
     expect((api as any).started).toBe(true);
@@ -264,10 +276,11 @@ describe('restAPI composition with fixture spec directories', () => {
     onSpy.mockRestore();
 
     const exitHandler = added.find(([event]) => event === 'exit')?.[1] as () => void;
-    const rejectionHandler = added.find(([event]) => event === 'unhandledRejection')?.[1] as
-      (error: unknown) => void;
-    expect(exitHandler).toBeDefined();
-    expect(rejectionHandler).toBeDefined();
+    const rejectionHandler = added.find(([event]) => event === 'unhandledRejection')?.[1] as (
+      error: unknown
+    ) => void;
+    expect(typeof exitHandler).toBe('function');
+    expect(typeof rejectionHandler).toBe('function');
 
     // Exiting the process stops the API instead of dropping connections.
     const stopSpy = jest.spyOn(api, 'stop').mockResolvedValue(undefined);
@@ -277,9 +290,7 @@ describe('restAPI composition with fixture spec directories', () => {
 
     // An unhandled rejection is reported and terminates the process loudly.
     const errorLog = jest.spyOn(console, 'error').mockImplementation();
-    const exitSpy = jest
-      .spyOn(process, 'exit')
-      .mockImplementation((() => undefined) as any);
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation((() => undefined) as any);
     const failure = new Error('unhandled kaboom');
     rejectionHandler(failure);
     expect(errorLog).toHaveBeenCalledWith(failure);

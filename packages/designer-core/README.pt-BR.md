@@ -66,8 +66,8 @@ import {
 } from '@jumentix/designer-core';
 
 const state = normalizeStatePayload(buildSampleModelPayload());
-const issues = collectModelIssues(state);           // valida
-const document = buildJsonExportDocument(state);    // exporta
+const issues = collectModelIssues(state); // valida
+const document = buildJsonExportDocument(state); // exporta
 const back = normalizeStatePayload(JSON.parse(JSON.stringify(document))); // reimporta
 ```
 
@@ -88,7 +88,7 @@ O pacote segue semver sobre sua **superfície de API pública** (o barrel
 - **major** — exportações removidas/renomeadas, parâmetros ou retornos
   estreitados.
 
-Os *contratos de dados* que o núcleo lê e escreve (o documento de exportação
+Os _contratos de dados_ que o núcleo lê e escreve (o documento de exportação
 full-suite, o documento de pacote de domínio) são versionados de forma
 independente dentro dos próprios payloads — essa política pertence ao
 [JUM-492](https://linear.app/jumentix/issue/JUM-492/feature-domain-package-versioning-with-semantic-conflict-resolution)

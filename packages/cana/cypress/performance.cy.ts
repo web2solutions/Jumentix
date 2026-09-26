@@ -1,5 +1,6 @@
-import type { CanaSchema } from '../src';
 import { createClient } from '../src';
+
+import type { CanaSchema } from '../src';
 
 /**
  * Query shape, asserted from the engine rather than from a clock (JUM-682).
@@ -23,26 +24,33 @@ import { createClient } from '../src';
  * conformance run (JUM-417).
  */
 
-interface Row { id: number; group: string; value: number }
+interface Row {
+  id: number;
+  group: string;
+  value: number;
+}
 
 const schema: CanaSchema = {
   version: 1,
-  stores: [{
-    name: 'rows',
-    keyPath: 'id',
-    indexes: [
-      { name: 'byGroup', keyPath: 'group' },
-      { name: 'byValue', keyPath: 'value' }
-    ]
-  }]
+  stores: [
+    {
+      name: 'rows',
+      keyPath: 'id',
+      indexes: [
+        { name: 'byGroup', keyPath: 'group' },
+        { name: 'byValue', keyPath: 'value' }
+      ]
+    }
+  ]
 };
 
 /** One row per id, spread across 100 groups so an index is selective. */
-const makeRows = (count: number): Row[] => Array.from({ length: count }, (_, index) => ({
-  id: index,
-  group: `g${index % 100}`,
-  value: index
-}));
+const makeRows = (count: number): Row[] =>
+  Array.from({ length: count }, (_, index) => ({
+    id: index,
+    group: `g${index % 100}`,
+    value: index
+  }));
 
 async function seeded(count: number) {
   const client = createClient({

@@ -1,12 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-const http = require('http');
-const { collectHostMetrics } = require('./src/runtime/hostMetrics');
+const fs = require('node:fs');
+const http = require('node:http');
+const path = require('node:path');
+
 const { attachAsyncContextMetrics } = require('./src/runtime/asyncContextScrape');
-const { attachProcessDiskIo } = require('./src/runtime/processDiskIo');
-const { createPm2WsHub } = require('./src/runtime/pm2WsHub');
-const { createPm2ActionRunner } = require('./src/runtime/pm2Lifecycle');
+const { collectHostMetrics } = require('./src/runtime/hostMetrics');
 const { withPm2DaemonLock } = require('./src/runtime/pm2DaemonLock');
+const { createPm2ActionRunner } = require('./src/runtime/pm2Lifecycle');
+const { createPm2WsHub } = require('./src/runtime/pm2WsHub');
+const { attachProcessDiskIo } = require('./src/runtime/processDiskIo');
 
 const rootDirectory = __dirname;
 const projectRoot = path.resolve(__dirname, '..');
@@ -86,7 +87,15 @@ const runtimeKeyEnums = {
   ],
   JUMENTIX_REALTIME_API: ['yes', 'no'],
   JUMENTIX_REALTIME_API_PROTOCOL: ['websocket', 'grpc'],
-  JUMENTIX_REALTIME_API_DATABASE_DRIVER: ['Mongo', 'PostgreSQL', 'MySQL', 'MS SQL', 'RDS', 'Aurora', 'Cassandra'],
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: [
+    'Mongo',
+    'PostgreSQL',
+    'MySQL',
+    'MS SQL',
+    'RDS',
+    'Aurora',
+    'Cassandra'
+  ],
   JUMENTIX_DATABASE_DRIVER: [
     'InMemory',
     'IndexedDB',
@@ -149,6 +158,7 @@ const ecosystemFileByRuntime = {
 if (!fs.existsSync(configDirectory)) {
   // eslint-disable-next-line no-console
   console.error(`Service Management config directory not found: ${configDirectory}`);
+  // eslint-disable-next-line n/no-process-exit -- startup bootstrap must abort non-zero before the server binds
   process.exit(1);
 }
 
@@ -221,8 +231,12 @@ const staticManifest = buildStaticManifest();
 // on-miss, anything else => boot-only).
 const staticManifestRefreshSetting = String(
   process.env.JUMENTIX_SERVICE_MANAGEMENT_STATIC_MANIFEST_REFRESH || ''
-).trim().toLowerCase();
-const nodeEnvironment = String(process.env.NODE_ENV || 'dev').trim().toLowerCase();
+)
+  .trim()
+  .toLowerCase();
+const nodeEnvironment = String(process.env.NODE_ENV || 'dev')
+  .trim()
+  .toLowerCase();
 const staticManifestRefreshEnabled = staticManifestRefreshSetting
   ? staticManifestRefreshSetting === 'on-miss'
   : nodeEnvironment === 'dev' || nodeEnvironment === 'development';
@@ -264,23 +278,27 @@ function findMonacoFile(urlPath) {
   return fs.existsSync(resolvedPath) ? resolvedPath : null;
 }
 
-function serveFile(response, filePath) {
-  fs.readFile(filePath, (error, content) => {
-    if (error) {
-      response.statusCode = error.code === 'ENOENT' ? 404 : 500;
-      response.end(error.code === 'ENOENT' ? 'Not Found' : 'Internal Server Error');
-      return;
-    }
+async function serveFile(response, filePath) {
+  try {
+    const content = await fs.promises.readFile(filePath);
     const extension = path.extname(filePath).toLowerCase();
-    response.setHeader('Content-Type', contentTypeByExtension[extension] || 'application/octet-stream');
+    response.setHeader(
+      'Content-Type',
+      contentTypeByExtension[extension] || 'application/octet-stream'
+    );
     response.statusCode = 200;
     response.end(content);
-  });
+  } catch (error) {
+    response.statusCode = error.code === 'ENOENT' ? 404 : 500;
+    response.end(error.code === 'ENOENT' ? 'Not Found' : 'Internal Server Error');
+  }
 }
 
 function normalizeEnvironment(runtime) {
   const fallback = process.env.NODE_ENV || 'dev';
-  const selected = String(runtime || fallback).trim().toLowerCase();
+  const selected = String(runtime || fallback)
+    .trim()
+    .toLowerCase();
   if (!envFileByRuntime[selected]) {
     const accepted = Object.keys(envFileByRuntime).join(', ');
     const error = new Error(`Unsupported environment "${selected}". Accepted values: ${accepted}`);
@@ -297,7 +315,9 @@ function normalizeEnvironment(runtime) {
 // has an ecosystem but no editable env file.
 function normalizeEcosystemEnvironment(runtime) {
   const fallback = process.env.NODE_ENV || 'dev';
-  const selected = String(runtime || fallback).trim().toLowerCase();
+  const selected = String(runtime || fallback)
+    .trim()
+    .toLowerCase();
   if (!ecosystemFileByRuntime[selected]) {
     const accepted = Object.keys(ecosystemFileByRuntime).join(', ');
     const error = new Error(`Unsupported environment "${selected}". Accepted values: ${accepted}`);
@@ -328,9 +348,8 @@ function parseEnvContent(envContent) {
     const key = line.slice(0, separatorIndex).trim();
     const rawValue = line.slice(separatorIndex + 1).trim();
     if (!key) return;
-    const value = rawValue.startsWith('"') && rawValue.endsWith('"')
-      ? rawValue.slice(1, -1)
-      : rawValue;
+    const value =
+      rawValue.startsWith('"') && rawValue.endsWith('"') ? rawValue.slice(1, -1) : rawValue;
     values[key] = value;
   });
   return values;
@@ -352,7 +371,7 @@ function validateWebsocketRedisUrl(value) {
   let parsed;
   try {
     parsed = new URL(value);
-  } catch (_error) {
+  } catch {
     return 'must be a valid redis:// URL';
   }
   if (parsed.protocol !== 'redis:' && parsed.protocol !== 'rediss:') {
@@ -420,7 +439,7 @@ function updateRuntimeEnv(runtime, values) {
   const updates = {};
   const validationErrors = [];
   editableRuntimeKeys.forEach((key) => {
-    if (Object.prototype.hasOwnProperty.call(values, key)) {
+    if (Object.hasOwn(values, key)) {
       const validationError = validateRuntimeValue(key, values[key]);
       if (validationError) {
         validationErrors.push(validationError);
@@ -484,15 +503,15 @@ function readPm2Ecosystem(runtime) {
   let ecosystem;
   try {
     delete require.cache[require.resolve(filePath)];
-    // eslint-disable-next-line global-require, import/no-dynamic-require
     ecosystem = require(filePath);
   } catch (error) {
     const loadError = new Error(
       `Could not load PM2 ecosystem file: ${filePath} (${error instanceof Error ? error.message : String(error)})`
     );
-    loadError.code = error instanceof Error && typeof error.code === 'string' && error.code
-      ? error.code
-      : 'ECOSYSTEM_LOAD_ERROR';
+    loadError.code =
+      error instanceof Error && typeof error.code === 'string' && error.code
+        ? error.code
+        : 'ECOSYSTEM_LOAD_ERROR';
     loadError.filePath = filePath;
     throw loadError;
   }
@@ -531,15 +550,18 @@ function normalizePm2Process(processEntry) {
   const startedAt = uptime > 0 ? new Date(uptime).toISOString() : '';
   const uptimeMs = uptime > 0 ? Math.max(0, Date.now() - uptime) : 0;
   const customMetrics = {};
-  const axmMonitor = pm2Env.axm_monitor && typeof pm2Env.axm_monitor === 'object'
-    ? pm2Env.axm_monitor
-    : {};
+  const axmMonitor =
+    pm2Env.axm_monitor && typeof pm2Env.axm_monitor === 'object' ? pm2Env.axm_monitor : {};
   Object.entries(axmMonitor).forEach(([key, metric]) => {
     const value = metric && typeof metric === 'object' && 'value' in metric ? metric.value : metric;
     customMetrics[key] = value;
   });
   const axmActions = Array.isArray(pm2Env.axm_actions)
-    ? pm2Env.axm_actions.map((action) => (action && typeof action === 'object' ? action.action_name || action.name : action)).filter(Boolean)
+    ? pm2Env.axm_actions
+        .map((action) =>
+          action && typeof action === 'object' ? action.action_name || action.name : action
+        )
+        .filter(Boolean)
     : [];
   return {
     name: String(processEntry?.name || pm2Env.name || ''),
@@ -560,9 +582,10 @@ function normalizePm2Process(processEntry) {
     watching: Boolean(pm2Env.watch),
     nodeVersion: String(pm2Env.node_version || ''),
     version: String(pm2Env.version || pm2Env.axm_options?.module_version || ''),
-    exitCode: pm2Env.exit_code === undefined || pm2Env.exit_code === null
-      ? null
-      : toFiniteNumber(pm2Env.exit_code, null),
+    exitCode:
+      pm2Env.exit_code === undefined || pm2Env.exit_code === null
+        ? null
+        : toFiniteNumber(pm2Env.exit_code, null),
     axmActions,
     customMetrics,
     asyncContext: null,
@@ -571,23 +594,29 @@ function normalizePm2Process(processEntry) {
       status: String(pm2Env.status || 'unknown'),
       pm_exec_path: String(pm2Env.pm_exec_path || ''),
       exec_interpreter: String(pm2Env.exec_interpreter || ''),
-      JUMENTIX_HTTP_PORT: pm2Env.JUMENTIX_HTTP_PORT
-        || (pm2Env.env && pm2Env.env.JUMENTIX_HTTP_PORT)
-        || undefined
+      JUMENTIX_HTTP_PORT:
+        pm2Env.JUMENTIX_HTTP_PORT || (pm2Env.env && pm2Env.env.JUMENTIX_HTTP_PORT) || undefined
     },
-    env: pm2Env.env && typeof pm2Env.env === 'object'
-      ? { JUMENTIX_HTTP_PORT: pm2Env.env.JUMENTIX_HTTP_PORT }
-      : {}
+    env:
+      pm2Env.env && typeof pm2Env.env === 'object'
+        ? { JUMENTIX_HTTP_PORT: pm2Env.env.JUMENTIX_HTTP_PORT }
+        : {}
   };
 }
 
 function summarizePm2Processes(processes) {
-  const statusCounts = processes.reduce((counts, processEntry) => {
-    counts[processEntry.status] = (counts[processEntry.status] || 0) + 1;
-    return counts;
+  const statusCounts = processes.reduce((acc, processEntry) => {
+    acc[processEntry.status] = (acc[processEntry.status] || 0) + 1;
+    return acc;
   }, {});
-  const totalCpuPercent = processes.reduce((total, processEntry) => total + processEntry.cpuPercent, 0);
-  const totalMemoryBytes = processes.reduce((total, processEntry) => total + processEntry.memoryBytes, 0);
+  const totalCpuPercent = processes.reduce(
+    (total, processEntry) => total + processEntry.cpuPercent,
+    0
+  );
+  const totalMemoryBytes = processes.reduce(
+    (total, processEntry) => total + processEntry.memoryBytes,
+    0
+  );
   return {
     processCount: processes.length,
     onlineCount: statusCounts.online || 0,
@@ -599,37 +628,45 @@ function summarizePm2Processes(processes) {
   };
 }
 
+function loadPm2Module() {
+  const pm2Module = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE || 'pm2';
+  return require(pm2Module);
+}
+
 function readPm2ProcessList() {
   // Serialized (pm2DaemonLock): the pm2 module is a singleton — a concurrent
   // disconnect would kill this RPC mid-flight (JUM-770).
-  return withPm2DaemonLock(() => new Promise((resolve, reject) => {
-    let pm2;
-    try {
-      pm2 = loadPm2Module();
-    } catch (error) {
-      reject(error);
-      return;
-    }
-    pm2.connect((connectError) => {
-      if (connectError) {
-        reject(connectError);
-        return;
-      }
-      pm2.list((listError, processList) => {
+  return withPm2DaemonLock(
+    () =>
+      new Promise((resolve, reject) => {
+        let pm2;
         try {
-          pm2.disconnect();
-        } catch (_disconnectError) {
-          // Disconnect best-effort: a failed disconnect must not hide the PM2
-          // list result, because the endpoint is read-only.
-        }
-        if (listError) {
-          reject(listError);
+          pm2 = loadPm2Module();
+        } catch (error) {
+          reject(error);
           return;
         }
-        resolve(Array.isArray(processList) ? processList : []);
-      });
-    });
-  }));
+        pm2.connect((connectError) => {
+          if (connectError) {
+            reject(connectError);
+            return;
+          }
+          pm2.list((listError, processList) => {
+            try {
+              pm2.disconnect();
+            } catch {
+              // Disconnect best-effort: a failed disconnect must not hide the PM2
+              // list result, because the endpoint is read-only.
+            }
+            if (listError) {
+              reject(listError);
+              return;
+            }
+            resolve(Array.isArray(processList) ? processList : []);
+          });
+        });
+      })
+  );
 }
 
 async function readPm2Metrics(runtime) {
@@ -638,14 +675,16 @@ async function readPm2Metrics(runtime) {
   const expectedNames = new Set((ecosystem.apps || []).map((app) => app.name).filter(Boolean));
   const processes = (await readPm2ProcessList()).map(normalizePm2Process);
   const processNames = new Set(processes.map((processEntry) => processEntry.name));
-  const missingExpected = [...expectedNames].filter((name) => !processNames.has(name)).sort((a, b) => a.localeCompare(b));
+  const missingExpected = [...expectedNames]
+    .filter((name) => !processNames.has(name))
+    .sort((a, b) => a.localeCompare(b));
   const summary = summarizePm2Processes(processes);
   const { processes: withAsyncContext, asyncContextActiveSum } = await attachAsyncContextMetrics(
     processes,
     { ecosystemApps: ecosystem.apps || [] }
   );
   const withDiskIo = await attachProcessDiskIo(withAsyncContext);
-  const host = await collectHostMetrics({
+  const hostMetrics = await collectHostMetrics({
     projectRoot: path.resolve(__dirname, '../..'),
     processRssSumBytes: summary.totalMemoryBytes,
     processCpuPercentSum: summary.totalCpuPercent
@@ -665,49 +704,54 @@ async function readPm2Metrics(runtime) {
       ...summary,
       asyncContextActiveSum
     },
-    host,
+    host: hostMetrics,
     processes: withDiskIo
   };
-}
-
-function loadPm2Module() {
-  const pm2Module = process.env.JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE || 'pm2';
-  // eslint-disable-next-line global-require, import/no-dynamic-require
-  return require(pm2Module);
 }
 
 function runPm2Method(methodName, ...args) {
   // Serialized (pm2DaemonLock): same singleton-client race as
   // readPm2ProcessList — an overlapping disconnect hangs the action (JUM-770).
-  return withPm2DaemonLock(() => new Promise((resolve, reject) => {
-    let pm2;
-    try {
-      pm2 = loadPm2Module();
-    } catch (error) {
-      reject(error);
-      return;
-    }
-    pm2.connect((connectError) => {
-      if (connectError) {
-        reject(connectError);
-        return;
-      }
-      const method = pm2[methodName];
-      if (typeof method !== 'function') {
-        try { pm2.disconnect(); } catch (_error) { /* ignore */ }
-        reject(new Error(`PM2 method not available: ${methodName}`));
-        return;
-      }
-      method.call(pm2, ...args, (error, result) => {
-        try { pm2.disconnect(); } catch (_error) { /* ignore */ }
-        if (error) {
+  return withPm2DaemonLock(
+    () =>
+      new Promise((resolve, reject) => {
+        let pm2;
+        try {
+          pm2 = loadPm2Module();
+        } catch (error) {
           reject(error);
           return;
         }
-        resolve(result);
-      });
-    });
-  }));
+        pm2.connect((connectError) => {
+          if (connectError) {
+            reject(connectError);
+            return;
+          }
+          const method = pm2[methodName];
+          if (typeof method !== 'function') {
+            try {
+              pm2.disconnect();
+            } catch {
+              /* ignore */
+            }
+            reject(new Error(`PM2 method not available: ${methodName}`));
+            return;
+          }
+          method.call(pm2, ...args, (error, result) => {
+            try {
+              pm2.disconnect();
+            } catch {
+              /* ignore */
+            }
+            if (error) {
+              reject(error);
+              return;
+            }
+            resolve(result);
+          });
+        });
+      })
+  );
 }
 
 // Lifecycle rules (start verification, service-manager self-guard, bulk
@@ -771,9 +815,7 @@ function writeInvalidPayload(response, error) {
 
 function writeEnvironmentFileFailure(response, error) {
   const code = error instanceof Error && error.code ? String(error.code) : 'ENV_IO_ERROR';
-  const filePath = error instanceof Error
-    ? (error.filePath || error.path || null)
-    : null;
+  const filePath = error instanceof Error ? error.filePath || error.path || null : null;
   writeJson(response, 500, {
     error: 'Environment file operation failed.',
     code,
@@ -786,9 +828,7 @@ function writeEnvironmentFileFailure(response, error) {
 // ecosystem surface so a broken pm2/ecosystem.*.cjs is identifiable (JUM-480).
 function writeEcosystemFileFailure(response, error) {
   const code = error instanceof Error && error.code ? String(error.code) : 'ECOSYSTEM_IO_ERROR';
-  const filePath = error instanceof Error
-    ? (error.filePath || error.path || null)
-    : null;
+  const filePath = error instanceof Error ? error.filePath || error.path || null : null;
   writeJson(response, 500, {
     error: 'PM2 ecosystem file operation failed.',
     code,
@@ -825,7 +865,9 @@ function isAuthorized(request) {
 function logMutation(environment, changedKeys) {
   const timestamp = new Date().toISOString();
   // eslint-disable-next-line no-console
-  console.log(`[${timestamp}] /api/runtime/env mutation: environment=${environment} keys=${changedKeys.join(',')}`);
+  console.log(
+    `[${timestamp}] /api/runtime/env mutation: environment=${environment} keys=${changedKeys.join(',')}`
+  );
 }
 
 /**
@@ -841,8 +883,9 @@ function logMutation(environment, changedKeys) {
  * `index.html` unless `NODE_ENV` is dev/development. Setting
  * `JUMENTIX_SERVICE_MANAGEMENT_LIVE_RELOAD=0` turns it off there too.
  */
-const liveReloadEnabled = (nodeEnvironment === 'dev' || nodeEnvironment === 'development')
-  && String(process.env.JUMENTIX_SERVICE_MANAGEMENT_LIVE_RELOAD || '').trim() !== '0';
+const liveReloadEnabled =
+  (nodeEnvironment === 'dev' || nodeEnvironment === 'development') &&
+  String(process.env.JUMENTIX_SERVICE_MANAGEMENT_LIVE_RELOAD || '').trim() !== '0';
 const liveReloadPath = '/dev/live-reload';
 const liveReloadClients = new Set();
 const liveReloadSnippet = `<script>
@@ -921,7 +964,7 @@ function withLiveReloadSnippet(content) {
     : `${html}${liveReloadSnippet}`;
 }
 
-const server = http.createServer((request, response) => {
+const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url || '/', `http://${host}:${port}`);
   if (liveReloadEnabled && request.method === 'GET' && requestUrl.pathname === liveReloadPath) {
     openLiveReloadStream(request, response);
@@ -929,7 +972,8 @@ const server = http.createServer((request, response) => {
   }
   if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/env') {
     try {
-      const environment = requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
+      const environment =
+        requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
       const payload = readRuntimeEnv(environment);
       writeJson(response, 200, payload);
     } catch (error) {
@@ -944,7 +988,8 @@ const server = http.createServer((request, response) => {
 
   if (request.method === 'GET' && requestUrl.pathname === '/api/runtime/pm2-ecosystem') {
     try {
-      const environment = requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
+      const environment =
+        requestUrl.searchParams.get('environment') || process.env.NODE_ENV || 'dev';
       const payload = readPm2Ecosystem(environment);
       writeJson(response, 200, payload);
     } catch (error) {
@@ -1048,27 +1093,28 @@ const server = http.createServer((request, response) => {
     return;
   }
 
-  fs.readFile(filePath, (error, content) => {
-    if (error) {
-      if (error.code === 'ENOENT') {
-        response.statusCode = 404;
-        response.end('Not Found');
-        return;
-      }
-      response.statusCode = 500;
-      response.end('Internal Server Error');
-      return;
-    }
-
+  try {
+    const content = await fs.promises.readFile(filePath);
     const extension = path.extname(filePath).toLowerCase();
-    response.setHeader('Content-Type', contentTypeByExtension[extension] || 'application/octet-stream');
+    response.setHeader(
+      'Content-Type',
+      contentTypeByExtension[extension] || 'application/octet-stream'
+    );
     response.statusCode = 200;
     if (liveReloadEnabled && relativePath === 'index.html') {
       response.end(withLiveReloadSnippet(content));
       return;
     }
     response.end(content);
-  });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      response.statusCode = 404;
+      response.end('Not Found');
+      return;
+    }
+    response.statusCode = 500;
+    response.end('Internal Server Error');
+  }
 });
 
 server.listen(port, host, () => {

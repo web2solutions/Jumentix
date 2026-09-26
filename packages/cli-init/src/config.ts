@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export type InitConfig = {
+export interface InitConfig {
   mode?: 'monolith' | 'services' | 'hybrid' | 'frontend';
   from?: string;
   preset?: 'users';
@@ -14,7 +14,7 @@ export type InitConfig = {
   install?: boolean;
   projectName?: string;
   nonInteractive?: boolean;
-};
+}
 
 export function readInitConfig(filePath: string): InitConfig {
   const absolute = path.isAbsolute(filePath) ? filePath : path.resolve(process.cwd(), filePath);

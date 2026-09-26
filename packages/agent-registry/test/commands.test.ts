@@ -1,19 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'node:fs';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
 
 // Through the package entry point rather than the modules: that is the surface
 // consumers get, and a barrel that dropped a re-export would otherwise pass
 // every test in this file.
 import {
-  registerAgent,
-  heartbeat,
   assignTask,
+  checkSnapshot,
   completeTask,
-  syncSnapshot,
-  checkSnapshot
+  heartbeat,
+  registerAgent,
+  syncSnapshot
 } from '../src';
+
 import type { AgentRecord } from '../src';
 
 /**
@@ -38,9 +38,9 @@ const mockFirestore = {
       }
     }),
     get: async () => ({
-      docs: Array.from(
-        mockFirestore.agents.entries() as Iterable<[string, AgentRecord]>
-      ).map(([id, agent]) => ({ id, data: () => agent }))
+      docs: Array.from(mockFirestore.agents.entries() as Iterable<[string, AgentRecord]>).map(
+        ([id, agent]) => ({ id, data: () => agent })
+      )
     })
   })
 } as any;
@@ -89,7 +89,10 @@ describe('agent-registry commands', () => {
   beforeEach(() => {
     clearAgents();
     snapshotDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-registry-test-'));
-    process.env.JUMENTIX_AGENT_REGISTRY_SNAPSHOT_PATH = path.join(snapshotDir, 'registry-snapshot.json');
+    process.env.JUMENTIX_AGENT_REGISTRY_SNAPSHOT_PATH = path.join(
+      snapshotDir,
+      'registry-snapshot.json'
+    );
   });
 
   afterEach(() => {
@@ -180,27 +183,37 @@ describe('agent-registry commands', () => {
 
   it('mirrors presence to RTDB after heartbeat when rtdb is provided', async () => {
     expect.hasAssertions();
-    seedAgent(buildAgent({
-      agent_id: 'presence-agent',
-      active_epic: 'epic-a',
-      assigned_task: 'JUM-1',
-      status: 'busy'
-    }));
+    seedAgent(
+      buildAgent({
+        agent_id: 'presence-agent',
+        active_epic: 'epic-a',
+        assigned_task: 'JUM-1',
+        status: 'busy'
+      })
+    );
     const presenceWrites: unknown[] = [];
     const rtdb = {
       ref: (rtdbPath = '') => ({
         set: async (value: unknown) => {
           presenceWrites.push({ path: rtdbPath, value });
         },
-        child: () => { throw new Error('unused'); },
+        child: () => {
+          throw new Error('unused');
+        },
         push: () => ({ key: 'x', set: async () => undefined }),
         update: async () => undefined,
         once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
         on: () => () => undefined,
         off: () => undefined,
-        orderByChild: function orderByChild() { return this; },
-        orderByKey: function orderByKey() { return this; },
-        limitToLast: function limitToLast() { return this; }
+        orderByChild: function orderByChild() {
+          return this;
+        },
+        orderByKey: function orderByKey() {
+          return this;
+        },
+        limitToLast: function limitToLast() {
+          return this;
+        }
       })
     } as any;
 
@@ -223,16 +236,26 @@ describe('agent-registry commands', () => {
     seedAgent(buildAgent({ agent_id: 'presence-fail-agent' }));
     const rtdb = {
       ref: () => ({
-        set: async () => { throw new Error('offline'); },
-        child: () => { throw new Error('unused'); },
+        set: async () => {
+          throw new Error('offline');
+        },
+        child: () => {
+          throw new Error('unused');
+        },
         push: () => ({ key: 'x', set: async () => undefined }),
         update: async () => undefined,
         once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
         on: () => () => undefined,
         off: () => undefined,
-        orderByChild: function orderByChild() { return this; },
-        orderByKey: function orderByKey() { return this; },
-        limitToLast: function limitToLast() { return this; }
+        orderByChild: function orderByChild() {
+          return this;
+        },
+        orderByKey: function orderByKey() {
+          return this;
+        },
+        limitToLast: function limitToLast() {
+          return this;
+        }
       })
     } as any;
 
@@ -243,9 +266,9 @@ describe('agent-registry commands', () => {
 
   it('rejects heartbeat for unregistered agent', async () => {
     expect.hasAssertions();
-    await expect(
-      heartbeat(mockFirestore, { agent_id: 'missing-agent' })
-    ).rejects.toThrow('not registered');
+    await expect(heartbeat(mockFirestore, { agent_id: 'missing-agent' })).rejects.toThrow(
+      'not registered'
+    );
   });
 
   it('assigns task and marks agent busy', async () => {
@@ -266,21 +289,25 @@ describe('agent-registry commands', () => {
   it('rejects assignment for an unregistered agent', async () => {
     expect.hasAssertions();
 
-    await expect(assignTask(mockFirestore, {
-      agent_id: 'missing-assign-agent',
-      assigned_task: 'https://linear.app/task/123',
-      active_epic: 'https://linear.app/epic/456'
-    })).rejects.toThrow('not registered');
+    await expect(
+      assignTask(mockFirestore, {
+        agent_id: 'missing-assign-agent',
+        assigned_task: 'https://linear.app/task/123',
+        active_epic: 'https://linear.app/epic/456'
+      })
+    ).rejects.toThrow('not registered');
   });
 
   it('completes task and clears assignment', async () => {
     expect.hasAssertions();
-    seedAgent(buildAgent({
-      agent_id: 'complete-agent',
-      status: 'busy',
-      assigned_task: 'https://linear.app/task/123',
-      active_epic: 'https://linear.app/epic/456'
-    }));
+    seedAgent(
+      buildAgent({
+        agent_id: 'complete-agent',
+        status: 'busy',
+        assigned_task: 'https://linear.app/task/123',
+        active_epic: 'https://linear.app/epic/456'
+      })
+    );
 
     const result = await completeTask(mockFirestore, {
       agent_id: 'complete-agent',
@@ -295,10 +322,12 @@ describe('agent-registry commands', () => {
   it('rejects completion for an unregistered agent', async () => {
     expect.hasAssertions();
 
-    await expect(completeTask(mockFirestore, {
-      agent_id: 'missing-complete-agent',
-      status: 'available'
-    })).rejects.toThrow('not registered');
+    await expect(
+      completeTask(mockFirestore, {
+        agent_id: 'missing-complete-agent',
+        status: 'available'
+      })
+    ).rejects.toThrow('not registered');
   });
 
   it('syncs snapshot to local file', async () => {

@@ -1,8 +1,8 @@
 import {
-  RedisKeyValueStorageClient,
-  ServiceResponse,
   compileKeyValueStorageClient,
-  resetRedisKeyValueStorageClientForTests
+  RedisKeyValueStorageClient,
+  resetRedisKeyValueStorageClientForTests,
+  ServiceResponse
 } from '../../src';
 
 /**

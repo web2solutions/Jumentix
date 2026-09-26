@@ -1,14 +1,15 @@
-import type { CanaChangeEvent } from '@jumentix/cana';
 import { applyCanaEventToRecords } from '../src';
 import { connectCanaToRedux } from '../src/redux';
 
-type Task = {
+import type { CanaChangeEvent } from '@jumentix/cana';
+
+interface Task {
   id: string;
   title: string;
   categoryId: string;
   completed: boolean;
   updatedAt: number;
-};
+}
 
 const event = (overrides: Partial<CanaChangeEvent<Task>>): CanaChangeEvent<Task> => ({
   type: 'created',
@@ -29,9 +30,7 @@ const event = (overrides: Partial<CanaChangeEvent<Task>>): CanaChangeEvent<Task>
 });
 
 const reduxActionsForEvent = (entry: CanaChangeEvent<unknown>): unknown => {
-  const mapped = new Map<number, unknown>([
-    [8, [{ type: 'first' }, { type: 'second' }]]
-  ]);
+  const mapped = new Map<number, unknown>([[8, [{ type: 'first' }, { type: 'second' }]]]);
 
   return mapped.get(entry.cursor) ?? { type: 'cana/eventCommitted', payload: entry };
 };
@@ -44,13 +43,17 @@ describe('applyCanaEventToRecords', () => {
       store: 'tasks',
       getKey: (task) => task.id
     });
-    const updated = applyCanaEventToRecords(created, event({
-      type: 'updated',
-      record: { ...created[0], title: 'Publish tutorial', updatedAt: 2 }
-    }), {
-      store: 'tasks',
-      getKey: (task) => task.id
-    });
+    const updated = applyCanaEventToRecords(
+      created,
+      event({
+        type: 'updated',
+        record: { ...created[0], title: 'Publish tutorial', updatedAt: 2 }
+      }),
+      {
+        store: 'tasks',
+        getKey: (task) => task.id
+      }
+    );
 
     expect(updated).toHaveLength(1);
     expect(updated[0].title).toBe('Publish tutorial');
@@ -76,13 +79,21 @@ describe('applyCanaEventToRecords', () => {
       }
     ];
 
-    expect(applyCanaEventToRecords(records, event({ type: 'deleted', key: 't1', record: undefined }), {
-      store: 'tasks',
-      getKey: (task) => task.id
-    })).toStrictEqual([records[1]]);
-    expect(applyCanaEventToRecords(records, event({ type: 'cleared', key: undefined, record: undefined }), {
-      store: 'tasks'
-    })).toStrictEqual([]);
+    expect(
+      applyCanaEventToRecords(records, event({ type: 'deleted', key: 't1', record: undefined }), {
+        store: 'tasks',
+        getKey: (task) => task.id
+      })
+    ).toStrictEqual([records[1]]);
+    expect(
+      applyCanaEventToRecords(
+        records,
+        event({ type: 'cleared', key: undefined, record: undefined }),
+        {
+          store: 'tasks'
+        }
+      )
+    ).toStrictEqual([]);
   });
 });
 
@@ -139,12 +150,18 @@ describe('connectCanaToRedux', () => {
 
     const subscribeError = new Error('subscribe refused');
     const onError = jest.fn();
-    expect(() => connectCanaToRedux({
-      client: { subscribe: () => { throw subscribeError; } } as never,
-      dispatch: jest.fn(),
-      mapEvent: jest.fn(),
-      onError
-    })).toThrow('subscribe refused');
+    expect(() =>
+      connectCanaToRedux({
+        client: {
+          subscribe: () => {
+            throw subscribeError;
+          }
+        } as never,
+        dispatch: jest.fn(),
+        mapEvent: jest.fn(),
+        onError
+      })
+    ).toThrow('subscribe refused');
     expect(onError).toHaveBeenCalledWith(subscribeError);
   });
 });

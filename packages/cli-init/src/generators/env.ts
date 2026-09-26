@@ -35,32 +35,26 @@ export function mapRealtimeToEnv(realtime: RealtimeInterface): {
   };
 }
 
-export type EnvRenderInput = {
+export interface EnvRenderInput {
   http: HttpInterface;
   realtime: RealtimeInterface;
   db: DbChoice;
   databaseName?: string;
-};
+}
 
 /**
  * Render a `.env.dev` body from plan interfaces/db, starting from the seed
  * template content when provided.
  */
-export function renderEnvDev(
-  input: EnvRenderInput,
-  templateContent = ''
-): string {
+export function renderEnvDev(input: EnvRenderInput, templateContent = ''): string {
   const driver = mapDbChoiceToDriver(input.db);
   const realtime = mapRealtimeToEnv(input.realtime);
   const databaseName = input.databaseName || 'jumentix';
 
-  const replacements: Array<[RegExp, string]> = [
+  const replacements: [RegExp, string][] = [
     [/^JUMENTIX_HTTP_FRAMEWORK=.*$/m, `JUMENTIX_HTTP_FRAMEWORK=${input.http}`],
     [/^JUMENTIX_REALTIME_API=.*$/m, `JUMENTIX_REALTIME_API=${realtime.enabled}`],
-    [
-      /^JUMENTIX_REALTIME_API_PROTOCOL=.*$/m,
-      `JUMENTIX_REALTIME_API_PROTOCOL=${realtime.protocol}`
-    ],
+    [/^JUMENTIX_REALTIME_API_PROTOCOL=.*$/m, `JUMENTIX_REALTIME_API_PROTOCOL=${realtime.protocol}`],
     [/^JUMENTIX_DATABASE_DRIVER=.*$/m, `JUMENTIX_DATABASE_DRIVER=${driver}`],
     [/^JUMENTIX_DATABASE_NAME=.*$/m, `JUMENTIX_DATABASE_NAME=${databaseName}`]
   ];

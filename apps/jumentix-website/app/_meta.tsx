@@ -1,37 +1,37 @@
 export default {
   index: {
-    display: 'hidden',
+    display: 'hidden'
   },
   product: {
     title: 'Product',
-    type: 'page',
+    type: 'page'
   },
   'use-cases': {
     title: 'Use Cases',
-    type: 'page',
+    type: 'page'
   },
   architecture: {
     title: 'Architecture',
-    type: 'page',
+    type: 'page'
   },
   integrations: {
     title: 'Integrations',
-    type: 'page',
+    type: 'page'
   },
   'security-compliance': {
     title: 'Security',
-    type: 'page',
+    type: 'page'
   },
   docs: {
     type: 'page',
-    title: 'Documentation',
+    title: 'Documentation'
   },
   'pricing-or-engagement': {
     title: 'Engagement',
-    type: 'page',
+    type: 'page'
   },
   contact: {
     type: 'page',
-    title: 'Contact',
-  },
+    title: 'Contact'
+  }
 };

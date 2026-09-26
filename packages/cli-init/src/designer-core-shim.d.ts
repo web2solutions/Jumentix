@@ -30,25 +30,25 @@ declare module '@jumentix/designer-core' {
       asyncApiDocument?: Record<string, unknown>;
     }
   ): {
-    modules: Array<{
+    modules: {
       module: string;
       path: string;
       files: Record<string, { path: string; content: string } | undefined>;
-      entities: Array<{
+      entities: {
         entity: string;
         files: Record<string, { path: string; content: string }>;
-      }>;
-    }>;
+      }[];
+    }[];
   };
   export function flattenBundleFiles(bundle: {
-    modules: Array<{
+    modules: {
       module: string;
       path: string;
       files: Record<string, { path: string; content: string } | undefined>;
-      entities: Array<{
+      entities: {
         entity: string;
         files: Record<string, { path: string; content: string }>;
-      }>;
-    }>;
-  }): Array<{ path: string; content: string }>;
+      }[];
+    }[];
+  }): { path: string; content: string }[];
 }

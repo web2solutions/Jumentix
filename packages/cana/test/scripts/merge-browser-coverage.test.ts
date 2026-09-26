@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
+import path from 'node:path';
 
 /**
  * The browser-matrix merge must be a union, never a sum of files and never a
@@ -17,12 +16,9 @@ import os from 'node:os';
  */
 
 const repoRoot = path.resolve(__dirname, '../../../..');
-const {
-  parseLcov,
-  serializeRecords,
-  mergeEngineReports,
-  engineLcovPath
-} = require(path.join(repoRoot, 'packages/cana/scripts/merge-browser-coverage.js'));
+const { parseLcov, serializeRecords, mergeEngineReports, engineLcovPath } = require(
+  path.join(repoRoot, 'packages/cana/scripts/merge-browser-coverage.js')
+);
 
 interface DaLine {
   line: number;
@@ -94,8 +90,14 @@ function writeEngine(
 describe('merge-browser-coverage', () => {
   it('unions DA counters across engines so a line hit anywhere is covered', () => {
     expect.hasAssertions();
-    const chrome = [{ line: 5, hits: 4 }, { line: 6, hits: 0 }];
-    const webkit = [{ line: 5, hits: 0 }, { line: 6, hits: 2 }];
+    const chrome = [
+      { line: 5, hits: 4 },
+      { line: 6, hits: 0 }
+    ];
+    const webkit = [
+      { line: 5, hits: 0 },
+      { line: 6, hits: 2 }
+    ];
 
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cana-merge-'));
     fs.mkdirSync(path.join(root, 'coverage', 'browser'), { recursive: true });
@@ -151,7 +153,9 @@ describe('merge-browser-coverage', () => {
     expect(result.output).toBe(path.join(root, 'coverage', 'browser', 'lcov.info'));
     expect(fs.readFileSync(result.output, 'utf8')).toBe(lcov);
     expect(
-      JSON.parse(fs.readFileSync(path.join(root, 'coverage', 'browser', 'coverage-final.json'), 'utf8'))
+      JSON.parse(
+        fs.readFileSync(path.join(root, 'coverage', 'browser', 'coverage-final.json'), 'utf8')
+      )
     ).toStrictEqual(json);
   });
 
@@ -171,7 +175,9 @@ describe('merge-browser-coverage', () => {
     process.chdir(root);
     let result;
     try {
-      const { artifactInputs } = require(path.join(repoRoot, 'packages/cana/scripts/merge-browser-coverage.js'));
+      const { artifactInputs } = require(
+        path.join(repoRoot, 'packages/cana/scripts/merge-browser-coverage.js')
+      );
       result = mergeEngineReports(root, artifactInputs('coverage'));
     } finally {
       process.chdir(previousCwd);
@@ -180,7 +186,9 @@ describe('merge-browser-coverage', () => {
     expect(result).toMatchObject({ ok: true, merged: false, engines: ['chrome'] });
     expect(fs.readFileSync(path.join(root, 'coverage', 'browser', 'lcov.info'), 'utf8')).toBe(lcov);
     expect(
-      JSON.parse(fs.readFileSync(path.join(root, 'coverage', 'browser', 'coverage-final.json'), 'utf8'))
+      JSON.parse(
+        fs.readFileSync(path.join(root, 'coverage', 'browser', 'coverage-final.json'), 'utf8')
+      )
     ).toStrictEqual(json);
   });
 
@@ -191,8 +199,14 @@ describe('merge-browser-coverage', () => {
     // gate grades whichever engine ran last instead of the matrix (JUM-417).
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cana-merge-json-'));
     const file = '/repo/packages/cana/src/core/storage.ts';
-    const chromeJson = istanbulJsonFor(file, [{ line: 5, hits: 4 }, { line: 6, hits: 0 }]);
-    const webkitJson = istanbulJsonFor(file, [{ line: 5, hits: 0 }, { line: 6, hits: 2 }]);
+    const chromeJson = istanbulJsonFor(file, [
+      { line: 5, hits: 4 },
+      { line: 6, hits: 0 }
+    ]);
+    const webkitJson = istanbulJsonFor(file, [
+      { line: 5, hits: 0 },
+      { line: 6, hits: 2 }
+    ]);
     writeEngine(root, 'chrome', lcovFor([{ line: 5, hits: 4 }]), chromeJson);
     writeEngine(root, 'webkit', lcovFor([{ line: 6, hits: 2 }]), webkitJson);
 
@@ -229,7 +243,10 @@ describe('merge-browser-coverage', () => {
 
   it('round-trips records so a re-serialized single file keeps its counters', () => {
     expect.hasAssertions();
-    const source = lcovFor([{ line: 9, hits: 7 }, { line: 11, hits: 0 }]);
+    const source = lcovFor([
+      { line: 9, hits: 7 },
+      { line: 11, hits: 0 }
+    ]);
     const out = serializeRecords(parseLcov(source));
     expect(out).toStrictEqual(expect.stringContaining('DA:9,7'));
     expect(out).toStrictEqual(expect.stringContaining('DA:11,0'));
@@ -239,7 +256,11 @@ describe('merge-browser-coverage', () => {
 
   it('keeps the chrome engine on the historical coverage/browser path', () => {
     expect.hasAssertions();
-    expect(engineLcovPath('/r/coverage', 'chrome')).toBe(path.join('/r/coverage', 'browser', 'lcov.info'));
-    expect(engineLcovPath('/r/coverage', 'webkit')).toBe(path.join('/r/coverage', 'browser-webkit', 'lcov.info'));
+    expect(engineLcovPath('/r/coverage', 'chrome')).toBe(
+      path.join('/r/coverage', 'browser', 'lcov.info')
+    );
+    expect(engineLcovPath('/r/coverage', 'webkit')).toBe(
+      path.join('/r/coverage', 'browser-webkit', 'lcov.info')
+    );
   });
 });

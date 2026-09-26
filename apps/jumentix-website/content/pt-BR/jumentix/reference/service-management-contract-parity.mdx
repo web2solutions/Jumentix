@@ -1,6 +1,6 @@
 ---
-title: "Paridade de Contrato do Service Management"
-description: "O que cada exportação garante: OAS 3.1, AsyncAPI, proto, bundle de codegen e fidelidade de ida e volta."
+title: 'Paridade de Contrato do Service Management'
+description: 'O que cada exportação garante: OAS 3.1, AsyncAPI, proto, bundle de codegen e fidelidade de ida e volta.'
 ---
 
 # Garantias de paridade de contratos do Service Management
@@ -178,7 +178,7 @@ esperadas.
   `serviceConfiguration` e `deployments` fazem ida e volta com deep-equal, e
   a exportação é idempotente. A fronteira é documentada e assertada: seleções
   e `idCounter` não fazem parte do documento e são recomputados na
-  importação, e `runtimeEnvironment` atravessa apenas como a *seleção* de
+  importação, e `runtimeEnvironment` atravessa apenas como a _seleção_ de
   ambiente (veja a seção JUM-547 abaixo). Documentos anteriores ao JUM-547,
   só de domínio (`{ domains, relationships, view }`, sem `kind`/`version`),
   importam normalmente com as seções ausentes preenchidas com padrões; um
@@ -318,7 +318,7 @@ um espelho no lado do designer da implementação do domínio Users (`Rbac.ts`,
 real, registrada aqui em vez de corrigida silenciosamente:
 
 - **O designer persistia `tenantScoped` como um flag livre por regra; o
-  runtime não tem esse controle.** O escopo de tenant no runtime é *derivado*
+  runtime não tem esse controle.** O escopo de tenant no runtime é _derivado_
   do conjunto de papéis (`shouldRequireOrganization`: papéis normalizados
   `admin`/`user` restringem o principal à sua organização; `superadmin` e
   escopos diretos legados mantêm uma fronteira global). Um valor

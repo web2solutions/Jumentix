@@ -1,15 +1,13 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { InitConfig } from '../config';
+
 import { writeInitConfig } from '../config';
-import { runCommand } from '../legacy/bootstrap';
-import type {
-  DbChoice,
-  GenerationPlan,
-  RealtimeInterface
-} from '../sources/types';
 import { sanitizePackageScope } from './paths';
+import { runCommand } from '../legacy/bootstrap';
+
+import type { InitConfig } from '../config';
+import type { DbChoice, GenerationPlan } from '../sources/types';
 
 const MANIFEST_SKIP_DIRS = new Set([
   'node_modules',
@@ -39,7 +37,7 @@ export type WorkspaceAnswers = InitConfig & {
   mode: NonNullable<InitConfig['mode']>;
 };
 
-export type AssembleWorkspaceOptions = {
+export interface AssembleWorkspaceOptions {
   outputDir: string;
   projectName: string;
   plan: GenerationPlan;
@@ -55,9 +53,9 @@ export type AssembleWorkspaceOptions = {
   /** Fixed timestamps for deterministic tests. */
   now?: Date;
   log?: (message?: string) => void;
-};
+}
 
-export type AssembleWorkspaceResult = {
+export interface AssembleWorkspaceResult {
   rootPackageJson: string;
   gitignore: string;
   dockerCompose: string;
@@ -69,12 +67,12 @@ export type AssembleWorkspaceResult = {
   gitInitialized: boolean;
   installed: boolean;
   fileCount: number;
-};
+}
 
-type TemplatesManifest = {
+interface TemplatesManifest {
   sourceCommit?: string;
   schemaVersion?: number;
-};
+}
 
 function readCliVersion(packageRoot: string): string {
   try {
@@ -113,9 +111,7 @@ export function resolvePrimaryDb(plan: GenerationPlan): DbChoice {
  * True when any service enables a realtime interface (needs Redis).
  */
 export function needsRealtimeRedis(plan: GenerationPlan): boolean {
-  return plan.services.some(
-    (service) => (service.interfaces.realtime as RealtimeInterface) !== 'none'
-  );
+  return plan.services.some((service) => service.interfaces.realtime !== 'none');
 }
 
 /**
@@ -181,10 +177,10 @@ export function buildRootPackageJson(projectName: string): Record<string, unknow
     packageManager: 'bun@1.3.13',
     workspaces: ['apps/*'],
     scripts: {
-      dev: 'bun run --filter \'*\' dev',
-      test: 'bun run --filter \'*\' test',
-      lint: 'bun run --filter \'*\' lint',
-      build: 'bun run --filter \'*\' build'
+      dev: "bun run --filter '*' dev",
+      test: "bun run --filter '*' test",
+      lint: "bun run --filter '*' lint",
+      build: "bun run --filter '*' build"
     }
   };
 }
@@ -308,16 +304,8 @@ export function buildReadme(input: {
     '```',
     '',
     ...(infraSteps.length > 0
-      ? [
-        ...infraSteps,
-        '',
-        `${installStep}. Run the workspace:`,
-        ''
-      ]
-      : [
-        `${installStep}. Run the workspace:`,
-        ''
-      ]),
+      ? [...infraSteps, '', `${installStep}. Run the workspace:`, '']
+      : [`${installStep}. Run the workspace:`, '']),
     '```bash',
     'bun run dev',
     '```',
@@ -473,10 +461,7 @@ function removeRetiredServiceProfile(outputDir: string): void {
   }
 }
 
-function initGitRepo(
-  outputDir: string,
-  execute: typeof runCommand
-): void {
+function initGitRepo(outputDir: string, execute: typeof runCommand): void {
   execute('git', ['init', '-b', 'main'], outputDir);
   execute('git', ['add', '-A'], outputDir);
   execute(
@@ -518,9 +503,7 @@ export async function assembleWorkspace(
   const db = resolvePrimaryDb(plan);
   const includeRedis = needsRealtimeRedis(plan);
   const hasBackend = plan.mode !== 'frontend' && plan.services.length > 0;
-  const hasFrontend = Boolean(
-    plan.frontend || plan.mode === 'hybrid' || plan.mode === 'frontend'
-  );
+  const hasFrontend = Boolean(plan.frontend) || plan.mode === 'hybrid' || plan.mode === 'frontend';
   const timestamp = now.toISOString();
 
   fs.mkdirSync(outputDir, { recursive: true });
@@ -533,11 +516,7 @@ export async function assembleWorkspace(
   fs.writeFileSync(gitignorePath, buildGitignore(), 'utf8');
 
   const composePath = path.join(outputDir, 'docker-compose.yml');
-  fs.writeFileSync(
-    composePath,
-    buildDockerCompose(db, includeRedis, packageRoot),
-    'utf8'
-  );
+  fs.writeFileSync(composePath, buildDockerCompose(db, includeRedis, packageRoot), 'utf8');
 
   const readmePath = path.join(outputDir, 'README.md');
   fs.writeFileSync(

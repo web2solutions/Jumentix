@@ -20,7 +20,7 @@
  * @param {Object} options
  * @param {Document} options.documentRef - the document to render into.
  */
-export function createContextMenu({ documentRef }) {
+function createContextMenu({ documentRef }) {
   let menuEl = null;
 
   function close() {
@@ -98,3 +98,5 @@ export function createContextMenu({ documentRef }) {
 
   return { open, close };
 }
+
+export default createContextMenu;

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 /**
  * Generation e2e matrix suite (JUM-854).
  *
@@ -11,10 +11,10 @@ import path from 'node:path';
 require('../ensure-built');
 
 const {
-  GENERATION_MATRIX,
-  runGenerationMatrix,
   assertMatrixAcceptable,
-  formatMatrixReport
+  formatMatrixReport,
+  GENERATION_MATRIX,
+  runGenerationMatrix
 } = require('./run-generation-matrix');
 
 const packageRoot = path.join(__dirname, '..', '..');

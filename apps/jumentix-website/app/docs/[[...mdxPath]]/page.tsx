@@ -1,4 +1,5 @@
 import { generateStaticParamsFor, importPage } from 'nextra/pages';
+
 import { MDXCodeSourceProvider } from '@/components/code/MDXCodeSourceProvider';
 import { DocsJsonLd } from '@/components/seo/DocsJsonLd';
 import { useMDXComponents as getMDXComponents } from '@/mdx-components';
@@ -17,7 +18,7 @@ const legacyAliases: Record<string, string[]> = {
   'saas-monolith-guide': ['guides', 'saas-monolith'],
   'saas-microservices-guide': ['guides', 'saas-microservices'],
   'security-pci': ['reference', 'security-compliance'],
-  'runtime-contracts': ['reference', 'runtime-contracts'],
+  'runtime-contracts': ['reference', 'runtime-contracts']
 };
 
 function getCandidates(mdxPath: MdxPath): string[][] {
@@ -52,6 +53,7 @@ async function loadPageWithFallback(mdxPath: MdxPath) {
   let lastError: unknown;
   for (const candidate of getCandidates(mdxPath)) {
     try {
+      // eslint-disable-next-line no-await-in-loop -- fallback chain: each candidate import must fail before the next one is tried
       return await importPage(candidate);
     } catch (error) {
       lastError = error;
@@ -90,8 +92,9 @@ export async function generateMetadata(props: any) {
   };
 }
 
-export default async function Page(props: any) {
-  const params = await props.params;
+const Page = async (props: any) => {
+  const { params: pageParams } = props;
+  const params = await pageParams;
   const result = await loadPageWithFallback(params?.mdxPath);
   const { default: MDXContent, toc, metadata, sourceCode } = result;
 
@@ -100,15 +103,17 @@ export default async function Page(props: any) {
   const segments: string[] = Array.isArray(params?.mdxPath) ? params.mdxPath : ['jumentix'];
 
   return (
-    <Wrapper toc={customToc} metadata={metadata} sourceCode={sourceCode}>
+    <Wrapper metadata={metadata} sourceCode={sourceCode} toc={customToc}>
       <MDXCodeSourceProvider sourceCode={sourceCode}>
         <DocsJsonLd
-          title={String((metadata as any)?.title ?? 'Jumentix Docs')}
           description={String((metadata as any)?.description ?? 'Jumentix framework documentation')}
           pathSegments={segments}
+          title={String((metadata as any)?.title ?? 'Jumentix Docs')}
         />
         <MDXContent {...props} params={params} />
       </MDXCodeSourceProvider>
     </Wrapper>
   );
-}
+};
+
+export default Page;

@@ -1,9 +1,8 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
-import { registerSW } from '@/data/pwa';
+import registerSW from '@/data/pwa';
 import { useNotificationStore } from '@/stores/notifications';
 
 type Listener = () => void;
@@ -33,7 +32,10 @@ const makeRegistration = () => {
     }
   };
   return {
-    listeners, workerListeners, worker, registration
+    listeners,
+    workerListeners,
+    worker,
+    registration
   };
 };
 

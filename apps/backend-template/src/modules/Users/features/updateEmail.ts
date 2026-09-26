@@ -1,10 +1,8 @@
-import type {
-  IUser
-} from '@src/modules/Users/domain/Entity/IUser';
-import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
 
-export const updateEmail = async (
+const updateEmail = async (
   userId: string,
   documentId: string,
   payload: RequestUpdateEmail,
@@ -13,3 +11,5 @@ export const updateEmail = async (
   const model = await userDataRepository.updateEmail(userId, documentId, payload);
   return model.serialize();
 };
+
+export default updateEmail;

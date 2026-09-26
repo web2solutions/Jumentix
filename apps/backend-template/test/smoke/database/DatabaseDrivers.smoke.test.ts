@@ -1,6 +1,6 @@
-/* eslint-disable jest/prefer-expect-assertions */
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { compileDatabaseClientByDriver } from '@src/infra/persistence/compileDatabaseClient';
 
 interface IDriverSmokeCase {
@@ -28,14 +28,10 @@ const APP_ROOT = path.join(__dirname, '../../..');
 const composeDefault = (composeFile: string, envName: string): string => {
   const contents = fs.readFileSync(path.join(APP_ROOT, composeFile), 'utf8');
   // Prefer JUMENTIX_*; optional nested AAA_* fallback; capture terminal literal default.
-  const pattern = new RegExp(
-    `\\$\\{${envName}:-(?:\\$\\{[A-Z0-9_]+:-)?([^}]+)\\}+`
-  );
+  const pattern = new RegExp(`\\$\\{${envName}:-(?:\\$\\{[A-Z0-9_]+:-)?([^}]+)\\}+`);
   const match = pattern.exec(contents);
   if (!match) {
-    throw new Error(
-      `Could not read \${${envName}:-…} default from ${composeFile}`
-    );
+    throw new Error(`Could not read \${${envName}:-…} default from ${composeFile}`);
   }
   return match[1];
 };
@@ -53,21 +49,24 @@ const smokeCases: IDriverSmokeCase[] = [
   {
     driver: 'Mongo',
     env: {
-      JUMENTIX_DATABASE_CONNECTION_URL: process.env.JUMENTIX_DATABASE_CONNECTION_URL || 'mongodb://127.0.0.1:27017/jumentix'
+      JUMENTIX_DATABASE_CONNECTION_URL:
+        process.env.JUMENTIX_DATABASE_CONNECTION_URL || 'mongodb://127.0.0.1:27017/jumentix'
     }
   },
   {
     driver: 'PostgreSQL',
     env: {
-      JUMENTIX_DATABASE_CONNECTION_URL: process.env.JUMENTIX_DATABASE_CONNECTION_URL
-        || `postgres://aaa:${composeDefault('docker-compose-postgresql.yml', 'JUMENTIX_POSTGRES_PASSWORD')}@127.0.0.1:5432/aaa`
+      JUMENTIX_DATABASE_CONNECTION_URL:
+        process.env.JUMENTIX_DATABASE_CONNECTION_URL ||
+        `postgres://aaa:${composeDefault('docker-compose-postgresql.yml', 'JUMENTIX_POSTGRES_PASSWORD')}@127.0.0.1:5432/aaa`
     }
   },
   {
     driver: 'MySQL',
     env: {
-      JUMENTIX_DATABASE_CONNECTION_URL: process.env.JUMENTIX_DATABASE_CONNECTION_URL
-        || `mysql://aaa:${composeDefault('docker-compose-mysql.yml', 'JUMENTIX_MYSQL_PASSWORD')}@127.0.0.1:3306/aaa`
+      JUMENTIX_DATABASE_CONNECTION_URL:
+        process.env.JUMENTIX_DATABASE_CONNECTION_URL ||
+        `mysql://aaa:${composeDefault('docker-compose-mysql.yml', 'JUMENTIX_MYSQL_PASSWORD')}@127.0.0.1:3306/aaa`
     }
   },
   {
@@ -76,21 +75,24 @@ const smokeCases: IDriverSmokeCase[] = [
       // `localhost`, not `127.0.0.1`: tedious refuses to use an IP address as the
       // TLS ServerName and fails the connection before it is attempted, whatever
       // `encrypt` says.
-      JUMENTIX_DATABASE_CONNECTION_URL: process.env.JUMENTIX_DATABASE_CONNECTION_URL
-        || `mssql://sa:${composeDefault('docker-compose-mssql.yml', 'JUMENTIX_MSSQL_SA_PASSWORD')}@localhost:1433/master?encrypt=false&trustServerCertificate=true`
+      JUMENTIX_DATABASE_CONNECTION_URL:
+        process.env.JUMENTIX_DATABASE_CONNECTION_URL ||
+        `mssql://sa:${composeDefault('docker-compose-mssql.yml', 'JUMENTIX_MSSQL_SA_PASSWORD')}@localhost:1433/master?encrypt=false&trustServerCertificate=true`
     }
   },
   {
     driver: 'Oracle',
     env: {
-      JUMENTIX_DATABASE_CONNECTION_URL: process.env.JUMENTIX_DATABASE_CONNECTION_URL
-        || `oracle://aaa:${composeDefault('docker-compose-oracle.yml', 'JUMENTIX_ORACLE_APP_USER_PASSWORD')}@127.0.0.1:1521/FREEPDB1`
+      JUMENTIX_DATABASE_CONNECTION_URL:
+        process.env.JUMENTIX_DATABASE_CONNECTION_URL ||
+        `oracle://aaa:${composeDefault('docker-compose-oracle.yml', 'JUMENTIX_ORACLE_APP_USER_PASSWORD')}@127.0.0.1:1521/FREEPDB1`
     }
   },
   {
     driver: 'SQLite',
     env: {
-      JUMENTIX_DATABASE_CONNECTION_URL: process.env.JUMENTIX_DATABASE_CONNECTION_URL || 'sqlite::memory:'
+      JUMENTIX_DATABASE_CONNECTION_URL:
+        process.env.JUMENTIX_DATABASE_CONNECTION_URL || 'sqlite::memory:'
     }
   },
   {
@@ -103,8 +105,10 @@ const smokeCases: IDriverSmokeCase[] = [
   {
     driver: 'Cassandra',
     env: {
-      JUMENTIX_DATABASE_CASSANDRA_CONTACT_POINTS: process.env.JUMENTIX_DATABASE_CASSANDRA_CONTACT_POINTS || '127.0.0.1',
-      JUMENTIX_DATABASE_CASSANDRA_DATACENTER: process.env.JUMENTIX_DATABASE_CASSANDRA_DATACENTER || 'datacenter1'
+      JUMENTIX_DATABASE_CASSANDRA_CONTACT_POINTS:
+        process.env.JUMENTIX_DATABASE_CASSANDRA_CONTACT_POINTS || '127.0.0.1',
+      JUMENTIX_DATABASE_CASSANDRA_DATACENTER:
+        process.env.JUMENTIX_DATABASE_CASSANDRA_DATACENTER || 'datacenter1'
     }
   },
   {
@@ -116,32 +120,34 @@ const smokeCases: IDriverSmokeCase[] = [
   {
     driver: 'Aurora',
     env: {
-      JUMENTIX_DATABASE_CONNECTION_URL: process.env.JUMENTIX_DATABASE_CONNECTION_URL
-        || `postgres://aaa:${composeDefault('docker-compose-aurora.yml', 'JUMENTIX_POSTGRES_PASSWORD')}@127.0.0.1:5433/aaa`
+      JUMENTIX_DATABASE_CONNECTION_URL:
+        process.env.JUMENTIX_DATABASE_CONNECTION_URL ||
+        `postgres://aaa:${composeDefault('docker-compose-aurora.yml', 'JUMENTIX_POSTGRES_PASSWORD')}@127.0.0.1:5433/aaa`
     }
   },
   {
     driver: 'RDS',
     env: {
-      JUMENTIX_DATABASE_CONNECTION_URL: process.env.JUMENTIX_DATABASE_CONNECTION_URL
-        || `postgres://aaa:${composeDefault('docker-compose-rds.yml', 'JUMENTIX_POSTGRES_PASSWORD')}@127.0.0.1:5434/aaa`,
+      JUMENTIX_DATABASE_CONNECTION_URL:
+        process.env.JUMENTIX_DATABASE_CONNECTION_URL ||
+        `postgres://aaa:${composeDefault('docker-compose-rds.yml', 'JUMENTIX_POSTGRES_PASSWORD')}@127.0.0.1:5434/aaa`,
       JUMENTIX_DATABASE_DIALECT: process.env.JUMENTIX_DATABASE_DIALECT || 'postgres'
-
     }
   }
 ];
-const selectedCases = smokeDriverFilter.length === 0
-  ? smokeCases
-  : smokeCases.filter((item) => smokeDriverFilter.includes(item.driver.toLowerCase()));
+const selectedCases =
+  smokeDriverFilter.length === 0
+    ? smokeCases
+    : smokeCases.filter((item) => smokeDriverFilter.includes(item.driver.toLowerCase()));
 
 /** The message an unknown thrown value carries, if it carries one. */
-const describeError = (error: unknown): string => (
-  error instanceof Error ? error.message : String(error)
-);
+const describeError = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
 
-const wait = (ms: number): Promise<void> => new Promise((resolve) => {
-  setTimeout(resolve, ms);
-});
+const wait = (ms: number): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 const connectWithRetry = async (
   connectFn: () => Promise<void>,
@@ -157,9 +163,7 @@ const connectWithRetry = async (
   }
 };
 
-const getRetryConfig = (
-  driver: string
-): { attempts: number; delayMs: number } => {
+const getRetryConfig = (driver: string): { attempts: number; delayMs: number } => {
   if (driver === 'Cassandra') {
     return { attempts: 60, delayMs: 2000 };
   }

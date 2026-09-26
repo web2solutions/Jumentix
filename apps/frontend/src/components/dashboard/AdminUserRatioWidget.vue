@@ -4,7 +4,7 @@ import { CSpinner } from '@coreui/vue';
 
 import { can } from '@/contracts/rbac';
 import { formatApiError } from '@/contracts/errors';
-import { usePermissions } from '@/contracts/usePermissions';
+import usePermissions from '@/contracts/usePermissions';
 import { useI18n } from '@/i18n';
 import { useProfileStore } from '@/stores/profile';
 
@@ -57,9 +57,7 @@ onMounted(async () => {
       <div class="small text-danger">{{ error }}</div>
     </template>
     <template v-else>
-      <div class="fs-4 fw-semibold" data-ratio>
-        {{ adminCount }} / {{ userCount }}
-      </div>
+      <div class="fs-4 fw-semibold" data-ratio>{{ adminCount }} / {{ userCount }}</div>
       <div class="small text-body-secondary">{{ t('dashboard.adminUserRatioHint') }}</div>
     </template>
   </div>

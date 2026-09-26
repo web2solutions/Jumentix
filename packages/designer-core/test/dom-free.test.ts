@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import ts from 'typescript';
+
 import { builtModuleList, ensureDesignerCoreBuilt } from './helpers/build-artifact';
 
 /**
@@ -54,8 +56,8 @@ const EXCLUDED_MODULE_MARKERS = [
 ];
 
 /** Whether a module specifier is relative — resolvable inside the artifact. */
-const isRelativeSpecifier = (specifier: string): boolean => specifier.startsWith('./')
-  || specifier.startsWith('../');
+const isRelativeSpecifier = (specifier: string): boolean =>
+  specifier.startsWith('./') || specifier.startsWith('../');
 
 /** Whether `name` is declared anywhere between `node` and the module root. */
 function isLocallyBound(node: ts.Node, name: string): boolean {
@@ -83,15 +85,20 @@ function isLocallyBound(node: ts.Node, name: string): boolean {
   let current: ts.Node | undefined = node.parent;
   while (current) {
     if (ts.isSourceFile(current)) return current.statements.some(declares);
-    if (ts.isFunctionDeclaration(current)
-      || ts.isFunctionExpression(current)
-      || ts.isArrowFunction(current)
-      || ts.isMethodDeclaration(current)
-      || ts.isConstructorDeclaration(current)
-      || ts.isGetAccessorDeclaration(current)
-      || ts.isSetAccessorDeclaration(current)) {
-      if (current.parameters.some((parameter) => ts.isIdentifier(parameter.name)
-        && parameter.name.text === name)) {
+    if (
+      ts.isFunctionDeclaration(current) ||
+      ts.isFunctionExpression(current) ||
+      ts.isArrowFunction(current) ||
+      ts.isMethodDeclaration(current) ||
+      ts.isConstructorDeclaration(current) ||
+      ts.isGetAccessorDeclaration(current) ||
+      ts.isSetAccessorDeclaration(current)
+    ) {
+      if (
+        current.parameters.some(
+          (parameter) => ts.isIdentifier(parameter.name) && parameter.name.text === name
+        )
+      ) {
         return true;
       }
       const functionName = (current as { name?: ts.Node }).name;
@@ -134,7 +141,9 @@ function collectDomReferences(file: string): string[] {
     if (ts.isIdentifier(node) && FORBIDDEN_GLOBALS.has(node.text) && isGlobalRead(node)) {
       if (!isLocallyBound(node, node.text)) {
         const { line, character } = ts.getLineAndCharacterOfPosition(source, node.getStart(source));
-        hits.push(`${path.basename(file)}:${line + 1}:${character + 1} references global \`${node.text}\``);
+        hits.push(
+          `${path.basename(file)}:${line + 1}:${character + 1} references global \`${node.text}\``
+        );
       }
     }
     ts.forEachChild(node, visit);
@@ -149,9 +158,11 @@ function collectModuleSpecifiers(file: string): string[] {
   const specifiers: string[] = [];
 
   const visit = (node: ts.Node): void => {
-    if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node))
-      && node.moduleSpecifier
-      && ts.isStringLiteral(node.moduleSpecifier)) {
+    if (
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
       specifiers.push(node.moduleSpecifier.text);
     }
     ts.forEachChild(node, visit);
@@ -168,7 +179,9 @@ describe('designer-core is framework-free (JUM-493)', () => {
   it('references no DOM global anywhere in the built artifact', () => {
     expect.hasAssertions();
     const modules = [...builtModuleList(packageRoot), 'index.js'];
-    const hits = modules.flatMap((rel) => collectDomReferences(path.join(packageRoot, 'dist', rel)));
+    const hits = modules.flatMap((rel) =>
+      collectDomReferences(path.join(packageRoot, 'dist', rel))
+    );
 
     // The assertion message IS the audit trail: a hit names the file, the
     // position and the global, so a violation fails saying exactly which

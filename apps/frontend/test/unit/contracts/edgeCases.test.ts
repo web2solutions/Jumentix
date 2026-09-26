@@ -9,19 +9,38 @@ import {
   maskSsn,
   phoneMaskCap
 } from '@/contracts/validation';
-
 import { setLocale } from '@/i18n';
 
+import must from '../support';
+
 const emailDescriptors = fieldDescriptors('RequestCreateEmail');
-const emailField = emailDescriptors.find((d) => d.name === 'email')!;
+const emailField = must(
+  emailDescriptors.find((d) => d.name === 'email'),
+  'RequestCreateEmail.email'
+);
 const phoneDescriptors = fieldDescriptors('RequestCreatePhone');
-const countryCodeField = phoneDescriptors.find((d) => d.name === 'countryCode')!;
-const localCodeField = phoneDescriptors.find((d) => d.name === 'localCode')!;
+const countryCodeField = must(
+  phoneDescriptors.find((d) => d.name === 'countryCode'),
+  'RequestCreatePhone.countryCode'
+);
+const localCodeField = must(
+  phoneDescriptors.find((d) => d.name === 'localCode'),
+  'RequestCreatePhone.localCode'
+);
 const updateUserDescriptors = fieldDescriptors('RequestUpdateUser');
-const organizationField = updateUserDescriptors.find((d) => d.name === 'organization')!;
-const avatarField = updateUserDescriptors.find((d) => d.name === 'avatar')!;
+const organizationField = must(
+  updateUserDescriptors.find((d) => d.name === 'organization'),
+  'RequestUpdateUser.organization'
+);
+const avatarField = must(
+  updateUserDescriptors.find((d) => d.name === 'avatar'),
+  'RequestUpdateUser.avatar'
+);
 const documentDescriptors = fieldDescriptors('RequestCreateDocument');
-const countryIssueField = documentDescriptors.find((d) => d.name === 'countryIssue')!;
+const countryIssueField = must(
+  documentDescriptors.find((d) => d.name === 'countryIssue'),
+  'RequestCreateDocument.countryIssue'
+);
 
 setLocale('pt-BR');
 
@@ -116,6 +135,8 @@ describe('x-hide hides contract fields from OAS-driven forms (JUM-769)', () => {
     expect(names).toContain('password');
     expect(names).not.toContain('schemaType'); // x-hide: true in the OAS
     // The hidden field is optional and defaulted server-side: login validates without it.
-    expect(validateAll(loginDescriptors, { username: 'a@b.co', password: 'x'.repeat(8) })).toBeNull();
+    expect(
+      validateAll(loginDescriptors, { username: 'a@b.co', password: 'x'.repeat(8) })
+    ).toBeNull();
   });
 });

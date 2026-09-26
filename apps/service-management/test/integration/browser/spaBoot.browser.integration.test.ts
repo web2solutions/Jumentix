@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test */
+/* eslint-disable jest/no-conditional-in-test */
 /* eslint-disable no-await-in-loop, jest/max-expects */
 /*
  * JUM-466 — SPA boot and export-gate assertions, run in a REAL browser
@@ -13,18 +13,22 @@
  *    the same model releases the export — proving the gate, not a broken
  *    exporter, did the blocking.
  */
-import { webkit } from 'playwright-webkit';
-import type { Browser } from 'playwright-webkit';
 import fs from 'node:fs';
+
+import { webkit } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  clickInPanels,
+  createTempConfigDir,
   envFileContent,
   startServer,
-  clickInPanels,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const TABS = [
@@ -78,6 +82,13 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
   beforeAll(async () => {
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
@@ -96,7 +107,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
 
   it('boots the SPA and renders all eight tabs without console errors', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     const consoleErrors: string[] = [];
     page.on('console', (message) => {
@@ -121,58 +132,69 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
 
   it('exports edits made in the Code Workspace boilerplate files', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
     await page.click('#quick-add-domain-btn');
     await page.click('#quick-add-entity-btn');
     await page.click('#tab-code-workspace-btn');
-    await page.waitForSelector('#code-workspace-file-list button[data-file-path]', { state: 'attached' });
+    await page.waitForSelector('#code-workspace-file-list button[data-file-path]', {
+      state: 'attached'
+    });
 
     const activePath = await page.$eval(
       '.code-editor-tab.active[data-file-path]',
       (el) => (el as HTMLElement).dataset.filePath || ''
     );
     expect(activePath).toBeTruthy();
-    const editedContent = '// edited in the code workspace\nexport const jumentixWorkspaceEdit = true;\n';
-    await page.evaluate(({ content, path: filePath }) => {
-      const editor = document.querySelector<HTMLTextAreaElement>('#code-workspace-editor');
-      if (!editor) throw new Error('Code Workspace fallback editor not found');
-      editor.value = content;
-      editor.dispatchEvent(new InputEvent('input', {
-        bubbles: true,
-        data: content,
-        inputType: 'insertText'
-      }));
+    const editedContent =
+      '// edited in the code workspace\nexport const jumentixWorkspaceEdit = true;\n';
+    await page.evaluate(
+      ({ content, path: filePath }) => {
+        const editor = document.querySelector<HTMLTextAreaElement>('#code-workspace-editor');
+        if (!editor) throw new Error('Code Workspace fallback editor not found');
+        editor.value = content;
+        editor.dispatchEvent(
+          new InputEvent('input', {
+            bubbles: true,
+            data: content,
+            inputType: 'insertText'
+          })
+        );
 
-      const { monaco } = window as Window & {
-        monaco?: {
-          editor?: {
-            getModels?: () => Array<{
-              getValue: () => string;
-              setValue: (value: string) => void;
-              uri: { toString: () => string };
-            }>;
+        const { monaco } = window as Window & {
+          monaco?: {
+            editor?: {
+              getModels?: () => {
+                getValue: () => string;
+                setValue: (value: string) => void;
+                uri: { toString: () => string };
+              }[];
+            };
           };
         };
-      };
-      const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
-      const modelUri = `file:///jumentix-generated/${encodedPath}`;
-      const model = monaco?.editor?.getModels?.().find(
-        (candidate) => candidate.uri.toString() === modelUri
-      );
-      if (model && model.getValue() !== content) model.setValue(content);
-    }, { content: editedContent, path: activePath });
-    await page.waitForFunction(() => {
-      return document.querySelector('#code-workspace-active-state')?.textContent?.trim() === 'edited';
-    }, undefined, { timeout: 10000 });
+        const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
+        const modelUri = `file:///jumentix-generated/${encodedPath}`;
+        const model = monaco?.editor
+          ?.getModels?.()
+          .find((candidate) => candidate.uri.toString() === modelUri);
+        if (model && model.getValue() !== content) model.setValue(content);
+      },
+      { content: editedContent, path: activePath }
+    );
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#code-workspace-active-state')?.textContent?.trim() === 'edited',
+      undefined,
+      { timeout: 10000 }
+    );
     await page.click('#tab-domain-designer-btn');
     const [download] = await Promise.all([
       page.waitForEvent('download'),
       clickInPanels(page, '#export-boilerplate-bundle-btn')
     ]);
     const filePath = await download.path();
-    const exportedBundle = JSON.parse(fs.readFileSync(filePath!, 'utf8'));
+    const exportedBundle = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     const exportedFiles = exportedBundle.modules.flatMap((module: any) => [
       ...Object.values(module.files),
       ...module.entities.flatMap((entity: any) => Object.values(entity.files))
@@ -187,7 +209,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     expect.hasAssertions();
 
     // Clean seeded model: the gate passes and the export must fire.
-    const cleanContext = await browser!.newContext();
+    const cleanContext = await launchedBrowser().newContext();
     const cleanPage = await cleanContext.newPage();
     await cleanPage.goto(baseUrl, { waitUntil: 'load' });
     // The panels are an overlay now, closed by default (JUM-737): a suite that
@@ -200,7 +222,7 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     await cleanContext.close();
 
     // Broken model: the gate refuses the export and surfaces the issues.
-    const brokenContext = await browser!.newContext();
+    const brokenContext = await launchedBrowser().newContext();
     await brokenContext.addInitScript(
       (data: { key: string; snapshot: unknown }) => {
         window.localStorage.setItem(data.key, JSON.stringify(data.snapshot));
@@ -218,9 +240,11 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     const backupDownload = await backupDownloadPromise;
     expect(backupDownload.suggestedFilename()).toMatch(/^service-management-v1-backup-.*\.json$/);
     await clickInPanels(page, '#run-model-check-btn');
-    await page.waitForFunction(() => {
-      return document.querySelector('#model-check-list')?.textContent?.includes('[ERROR]');
-    }, undefined, { timeout: 10000 });
+    await page.waitForFunction(
+      () => document.querySelector('#model-check-list')?.textContent?.includes('[ERROR]'),
+      undefined,
+      { timeout: 10000 }
+    );
 
     let downloadFired = false;
     page.on('download', () => {

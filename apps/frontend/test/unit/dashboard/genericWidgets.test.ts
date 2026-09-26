@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 
-import { genericWidgetsForModule } from '@/components/dashboard/genericWidgets';
+import genericWidgetsForModule from '@/components/dashboard/genericWidgets';
 import { metricsSpecForListOperation } from '@/contracts/metricsSchema';
-import { usersCrudConfig } from '@/features/users/usersCrudConfig';
-import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
-import { usersModule } from '@/modules/users';
+import organizationsCrudConfig from '@/features/organizations/organizationsCrudConfig';
+import usersCrudConfig from '@/features/users/usersCrudConfig';
+import usersModule from '@/modules/users';
 
 describe('generic dashboard widgets (JUM-812)', () => {
   it('derives count, groupBy, series and fan-out widgets from the bundled OAS', () => {

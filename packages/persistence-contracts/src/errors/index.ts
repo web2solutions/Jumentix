@@ -1,6 +1,6 @@
 export * from './codes';
-export * from './PersistenceError';
-export * from './ConflictError';
-export * from './DataBaseNotFoundError';
-export * from './DatabasePagingError';
+export { default as PersistenceError } from './PersistenceError';
+export { default as ConflictError } from './ConflictError';
+export { default as DataBaseNotFoundError } from './DataBaseNotFoundError';
+export { default as DatabasePagingError } from './DatabasePagingError';
 export * from './correlation';

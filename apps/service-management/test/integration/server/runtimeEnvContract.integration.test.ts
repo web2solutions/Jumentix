@@ -1,7 +1,5 @@
 /* eslint-disable
-  jest/prefer-expect-assertions,
   jest/no-conditional-in-test,
-  jest/no-conditional-expect,
   jest/max-expects
 */
 /*
@@ -21,9 +19,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  createTempConfigDir,
   envFileContent,
   firstNonLoopbackAddress,
   pinnedDefaultConfigDir,
@@ -34,6 +33,7 @@ import {
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
 import type { RuntimeEnvPayload, StartedServer } from '../../helpers/serverHarness';
 
 // Requirement 126 §3: accepted environments and their file mapping.
@@ -140,12 +140,10 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
     const expectedByFile = { ...INITIAL_MARKERS };
     for (const { requested, fileName } of ACCEPTED_ENVIRONMENTS) {
       // eslint-disable-next-line no-await-in-loop
-      const res = await requestJson<RuntimeEnvPayload>(
-        server.port,
-        'POST',
-        '/api/runtime/env',
-        { environment: requested, values: { JUMENTIX_HTTP_FRAMEWORK: POST_VALUES[requested] } }
-      );
+      const res = await requestJson<RuntimeEnvPayload>(server.port, 'POST', '/api/runtime/env', {
+        environment: requested,
+        values: { JUMENTIX_HTTP_FRAMEWORK: POST_VALUES[requested] }
+      });
       expect(res.status).toBe(200);
       expect(res.body.environment).toBe(requested);
       expect(res.body.fileName).toBe(fileName);
@@ -201,12 +199,7 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
     server = await startServer(tempDir);
     await waitForServer(server.port);
 
-    const res = await requestRaw(
-      server.port,
-      'POST',
-      '/api/runtime/env',
-      '{ this is not json'
-    );
+    const res = await requestRaw(server.port, 'POST', '/api/runtime/env', '{ this is not json');
     expect(res.status).toBe(400);
     const parsed = JSON.parse(res.rawBody);
     expect(parsed.error).toBe('Invalid payload.');
@@ -274,12 +267,9 @@ describe('serviceManagement runtime env contract (JUM-466)', () => {
     const read = await requestJson<RuntimeEnvPayload>(server.port, 'GET', '/api/runtime/env');
     expect(read.status).toBe(200);
 
-    const missing = await requestJson<{ error: string }>(
-      server.port,
-      'POST',
-      '/api/runtime/env',
-      { values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' } }
-    );
+    const missing = await requestJson<{ error: string }>(server.port, 'POST', '/api/runtime/env', {
+      values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' }
+    });
     expect(missing.status).toBe(401);
     expect(missing.body.error).toBe('Unauthorized.');
 

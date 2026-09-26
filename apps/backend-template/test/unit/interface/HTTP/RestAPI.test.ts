@@ -1,21 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, jest/max-expects */
+/* eslint-disable jest/max-expects */
 
-import { DataBaseNotFoundError } from '@src/infra/exceptions';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { composeUsersAuthServices } from '@src/modules/Users';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import { TOMBSTONE_PURGE_TTL_DAYS } from '@jumentix/persistence-contracts';
 
 import seedOrganizations_ from '@seed/organizations';
 import seedUsers_, { seedUserIds } from '@seed/users';
-import { entityIdLedger } from '@src/infra/persistence/InMemoryDatabase/idReservationLedger';
-import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
-import { TOMBSTONE_PURGE_TTL_DAYS } from '@jumentix/persistence-contracts';
+import { DataBaseNotFoundError } from '@src/infra/exceptions';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import entityIdLedger from '@src/infra/persistence/InMemoryDatabase/idReservationLedger';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryRelationalStore from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { composeUsersAuthServices } from '@src/modules/Users';
 
 /**
  * The REST runtime wired against the real OAS and AsyncAPI specs.
@@ -28,11 +28,11 @@ import { TOMBSTONE_PURGE_TTL_DAYS } from '@jumentix/persistence-contracts';
  * operator which service the composition is missing.
  */
 
-type FakeServer = {
+interface FakeServer {
   endPointRegister: jest.Mock;
   start: jest.Mock;
   stop: jest.Mock;
-};
+}
 
 const buildServices = () => {
   const passwordCryptoService = PasswordCryptoService.compile();
@@ -56,7 +56,9 @@ const buildServices = () => {
 const buildApi = (overrides: Record<string, any> = {}) => {
   const registered: any[] = [];
   const server: FakeServer = {
-    endPointRegister: jest.fn((endpoint: any) => { registered.push(endpoint); }),
+    endPointRegister: jest.fn((endpoint: any) => {
+      registered.push(endpoint);
+    }),
     start: jest.fn().mockResolvedValue(undefined),
     stop: jest.fn().mockResolvedValue(undefined)
   };
@@ -107,10 +109,12 @@ describe('restAPI endpoint wiring against the real specs', () => {
     const metricsRes = responseFor();
     metrics.handler({}, metricsRes);
     expect(metricsRes.status).toHaveBeenCalledWith(200);
-    expect(metricsRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      enteredTotal: expect.any(Number),
-      active: expect.any(Number)
-    }));
+    expect(metricsRes.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enteredTotal: expect.any(Number),
+        active: expect.any(Number)
+      })
+    );
 
     const versions = registered.find((endpoint) => endpoint.path === '/docs/asyncapi/versions');
     const versionsRes = responseFor();
@@ -145,11 +149,13 @@ describe('restAPI endpoint wiring against the real specs', () => {
     expect(handler.method).toBe('post');
     expect(handler.path).toBe('/auth/login');
 
-    expect(() => (api as any).getHandlerFactory({
-      moduleName: 'Users',
-      operationId: 'no-such-operation',
-      endPointConfig: { operationId: 'no-such-operation' }
-    })).toThrow(
+    expect(() =>
+      (api as any).getHandlerFactory({
+        moduleName: 'Users',
+        operationId: 'no-such-operation',
+        endPointConfig: { operationId: 'no-such-operation' }
+      })
+    ).toThrow(
       'Handler not found for module Users, operation no-such-operation, framework express.'
     );
   });
@@ -159,8 +165,9 @@ describe('restAPI endpoint wiring against the real specs', () => {
 
     // The controllers barrel loads fine but holds no controller under its own
     // name — a refactor that renames the export reads exactly like this.
-    expect(() => (RestAPI as any).getControllerModule('Users', 'index'))
-      .toThrow('Controller index not found for module Users.');
+    expect(() => (RestAPI as any).getControllerModule('Users', 'index')).toThrow(
+      'Controller index not found for module Users.'
+    );
   });
 });
 
@@ -195,8 +202,9 @@ describe('restAPI lifecycle with the real composition', () => {
     // A second pass finds each organization already present and returns the
     // stored records instead of creating duplicates.
     const again = await api.seedOrganizations();
-    expect(again.map((org: any) => org.id).sort())
-      .toStrictEqual(organizations.map((org: any) => org.id).sort());
+    expect(again.map((org: any) => org.id).sort()).toStrictEqual(
+      organizations.map((org: any) => org.id).sort()
+    );
 
     await api.seedData();
     const reseeded = await api.seedUsers();
@@ -208,36 +216,35 @@ describe('restAPI lifecycle with the real composition', () => {
   });
 });
 
-const missingRecordDb = () => ({
-  stores: {
-    Organization: {
-      getOneById: jest.fn().mockRejectedValue(new DataBaseNotFoundError('Record not found'))
+const missingRecordDb = () =>
+  ({
+    stores: {
+      Organization: {
+        getOneById: jest.fn().mockRejectedValue(new DataBaseNotFoundError('Record not found'))
+      },
+      User: {
+        getOneById: jest.fn().mockRejectedValue(new DataBaseNotFoundError('Record not found'))
+      }
     },
-    User: {
-      getOneById: jest.fn().mockRejectedValue(new DataBaseNotFoundError('Record not found'))
-    }
-  },
-  connect: jest.fn(),
-  disconnect: jest.fn()
-}) as any;
+    connect: jest.fn(),
+    disconnect: jest.fn()
+  }) as any;
 
-const noTombstoneDb = () => ({
-  stores: {
-    Organization: { getOneById: jest.fn().mockResolvedValue(undefined) },
-    User: { getOneById: jest.fn().mockResolvedValue(undefined) }
-  },
-  connect: jest.fn(),
-  disconnect: jest.fn()
-}) as any;
+const noTombstoneDb = () =>
+  ({
+    stores: {
+      Organization: { getOneById: jest.fn().mockResolvedValue(undefined) },
+      User: { getOneById: jest.fn().mockResolvedValue(undefined) }
+    },
+    connect: jest.fn(),
+    disconnect: jest.fn()
+  }) as any;
 
 /**
  * A store double with soft-delete semantics, wired to a use-case double that
  * reads the same record — the tombstone contract without a shared singleton.
  */
-const softDeleteDb = (
-  storeName: 'Organization' | 'User',
-  records: Array<Record<string, any>>
-) => {
+const softDeleteDb = (storeName: 'Organization' | 'User', records: Record<string, any>[]) => {
   const state = { records: new Map(records.map((record) => [record.id, record])) };
   const store = {
     getOneById: jest.fn(async (id: string, options?: { includeDeleted?: boolean }) => {
@@ -269,7 +276,10 @@ const softDeleteDb = (
     disconnect: jest.fn()
   };
   return {
-    databaseClient, store, useCases, state
+    databaseClient,
+    store,
+    useCases,
+    state
   };
 };
 
@@ -281,9 +291,7 @@ describe('restAPI seed tombstone restore (JUM-787)', () => {
       ...org,
       deletedAt: '2026-01-01T00:00:00.000Z'
     }));
-    const {
-      databaseClient, store, useCases, state
-    } = softDeleteDb('Organization', tombstoned);
+    const { databaseClient, store, useCases, state } = softDeleteDb('Organization', tombstoned);
     const { api } = buildApi({ databaseClient });
     (api as any).usersComposition = { organizationUseCases: useCases };
 
@@ -291,8 +299,9 @@ describe('restAPI seed tombstone restore (JUM-787)', () => {
     // clash on the reserved ids. The seed restores the tombstones in place.
     const seeded = await api.seedOrganizations();
 
-    expect(seeded.map((org: any) => org.id).sort())
-      .toStrictEqual(seedOrganizations_.map((org: any) => org.id).sort());
+    expect(seeded.map((org: any) => org.id).sort()).toStrictEqual(
+      seedOrganizations_.map((org: any) => org.id).sort()
+    );
     for (const record of state.records.values()) {
       expect(record.deletedAt).toBeNull();
     }
@@ -310,9 +319,7 @@ describe('restAPI seed tombstone restore (JUM-787)', () => {
       ...user,
       deletedAt: '2026-01-01T00:00:00.000Z'
     }));
-    const {
-      databaseClient, store, useCases, state
-    } = softDeleteDb('User', tombstoned);
+    const { databaseClient, store, useCases, state } = softDeleteDb('User', tombstoned);
     const { api } = buildApi({ databaseClient });
     (api as any).usersComposition = {
       organizationUseCases: {
@@ -324,8 +331,9 @@ describe('restAPI seed tombstone restore (JUM-787)', () => {
 
     const seeded = await api.seedUsers();
 
-    expect(seeded.map((user: any) => user.id).sort())
-      .toStrictEqual(seedUsers_.map((user: any) => user.id).sort());
+    expect(seeded.map((user: any) => user.id).sort()).toStrictEqual(
+      seedUsers_.map((user: any) => user.id).sort()
+    );
     for (const record of state.records.values()) {
       expect(record.deletedAt).toBeNull();
     }
@@ -507,17 +515,20 @@ describe('restAPI tombstone purge endpoint (JUM-804)', () => {
     const viaSocket = responseFor();
     await endpoint.handler({ socket: { remoteAddress: '::1' } }, viaSocket);
     expect(viaSocket.status).toHaveBeenCalledWith(200);
-    expect(viaSocket.json).toHaveBeenCalledWith(expect.objectContaining({
-      dryRun: true,
-      events: [],
-      skippedTooYoung: 1
-    }));
+    expect(viaSocket.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dryRun: true,
+        events: [],
+        skippedTooYoung: 1
+      })
+    );
 
     const ipv4 = responseFor();
     await endpoint.handler({ ip: '127.0.0.1', body: {} }, ipv4);
     expect(ipv4.status).toHaveBeenCalledWith(200);
-    await expect(userStore.getOneById('purge-u1', { includeDeleted: true }))
-      .resolves.toMatchObject({ id: 'purge-u1' });
+    await expect(userStore.getOneById('purge-u1', { includeDeleted: true })).resolves.toMatchObject(
+      { id: 'purge-u1' }
+    );
   });
 
   it('commits the purge for a loopback caller and drops the rows', async () => {
@@ -540,10 +551,13 @@ describe('restAPI tombstone purge endpoint (JUM-804)', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     const report = res.json.mock.calls[0][0];
     expect(report.dryRun).toBe(false);
-    expect(report.events.map((event: any) => `${event.entity}:${event.id}`).sort())
-      .toStrictEqual(['Organization:purge-o2', 'User:purge-u2']);
-    await expect(userStore.getOneById('purge-u2', { includeDeleted: true }))
-      .rejects.toThrow('Record not found');
+    expect(report.events.map((event: any) => `${event.entity}:${event.id}`).sort()).toStrictEqual([
+      'Organization:purge-o2',
+      'User:purge-u2'
+    ]);
+    await expect(userStore.getOneById('purge-u2', { includeDeleted: true })).rejects.toThrow(
+      'Record not found'
+    );
     expect(entityIdLedger.has('User', 'purge-u2')).toBe(true);
     expect(entityIdLedger.has('Organization', 'purge-o2')).toBe(true);
   });

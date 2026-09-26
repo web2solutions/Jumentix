@@ -1,6 +1,6 @@
 import type { IServiceResponse } from './contracts';
 
-export class ServiceResponse<T = any> implements IServiceResponse<T> {
+class ServiceResponse<T = any> implements IServiceResponse<T> {
   public result?: T;
 
   public error?: Error | Record<string, any>;
@@ -10,3 +10,5 @@ export class ServiceResponse<T = any> implements IServiceResponse<T> {
     this.error = payload.error;
   }
 }
+
+export default ServiceResponse;

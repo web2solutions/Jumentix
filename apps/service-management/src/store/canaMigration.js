@@ -69,7 +69,7 @@ function errorReason(error) {
 function resolveDefaultStorage() {
   try {
     return typeof globalThis !== 'undefined' ? globalThis.localStorage : undefined;
-  } catch (_) {
+  } catch {
     return undefined;
   }
 }
@@ -92,14 +92,14 @@ function readMarker(storage) {
   let raw;
   try {
     raw = storage.getItem(CANA_MIGRATION_MARKER_KEY);
-  } catch (_) {
+  } catch {
     return undefined;
   }
   if (!raw) return undefined;
   try {
     const marker = JSON.parse(raw);
     return marker && marker.status === 'verified' ? marker : undefined;
-  } catch (_) {
+  } catch {
     return undefined;
   }
 }
@@ -108,7 +108,7 @@ function writeMarker(storage, marker) {
   try {
     storage.setItem(CANA_MIGRATION_MARKER_KEY, JSON.stringify(marker));
     return true;
-  } catch (_) {
+  } catch {
     // A marker that cannot be written only means the migration re-runs next
     // boot — idempotent by construction, so this is safe to swallow.
     return false;
@@ -127,13 +127,11 @@ async function writeMigrationRecord(store, record) {
     if (typeof store.ensureOpen !== 'function') return false;
     const open = await store.ensureOpen();
     if (!open.ok || !store.client || typeof store.client.transaction !== 'function') return false;
-    const tx = await store.client.transaction(
-      'readwrite',
-      [store.storeName],
-      (scope) => scope.table(store.storeName).put(JSON.stringify(record), CANA_MIGRATION_RECORD_KEY)
+    const tx = await store.client.transaction('readwrite', [store.storeName], (scope) =>
+      scope.table(store.storeName).put(JSON.stringify(record), CANA_MIGRATION_RECORD_KEY)
     );
     return Boolean(tx && tx.outcome === 'committed');
-  } catch (_) {
+  } catch {
     return false;
   }
 }
@@ -162,7 +160,8 @@ export async function migrateLocalStorageToCana({
   now = () => new Date()
 } = {}) {
   const backend = storage !== undefined ? storage : resolveDefaultStorage();
-  if (!backend) return { status: 'no-source', reason: 'localStorage is not accessible in this context.' };
+  if (!backend)
+    return { status: 'no-source', reason: 'localStorage is not accessible in this context.' };
 
   const marker = readMarker(backend);
   if (marker) {
@@ -173,7 +172,7 @@ export async function migrateLocalStorageToCana({
       try {
         backend.removeItem(stateKey);
         backend.removeItem(baselineKey);
-      } catch (_) {
+      } catch {
         // Removal is housekeeping; a throwing backend must not break boot.
       }
       return { status: 'already-migrated', sourceRetained: false, migratedAt: marker.migratedAt };
@@ -197,8 +196,9 @@ export async function migrateLocalStorageToCana({
     // still recover it manually. Surfaced as a declared failure, not silence.
     return {
       status: 'failed',
-      reason: `corrupt-source: the stored payload under "${stateKey}" is not readable JSON (${errorReason(error)}); `
-        + 'it was left untouched for manual recovery.'
+      reason:
+        `corrupt-source: the stored payload under "${stateKey}" is not readable JSON (${errorReason(error)}); ` +
+        'it was left untouched for manual recovery.'
     };
   }
 
@@ -211,8 +211,9 @@ export async function migrateLocalStorageToCana({
   if (saveResult.status !== 'persisted') {
     return {
       status: 'failed',
-      reason: `save-failed: the payload could not be written to Cana (${saveResult.reason || saveResult.status}); `
-        + 'the localStorage source was left untouched and the migration will retry on the next launch.'
+      reason:
+        `save-failed: the payload could not be written to Cana (${saveResult.reason || saveResult.status}); ` +
+        'the localStorage source was left untouched and the migration will retry on the next launch.'
     };
   }
 
@@ -224,23 +225,25 @@ export async function migrateLocalStorageToCana({
   let rawBaseline;
   try {
     rawBaseline = backend.getItem(baselineKey);
-  } catch (_) {
+  } catch {
     rawBaseline = null;
   }
   if (rawBaseline !== null) {
     try {
       baselinePayload = JSON.parse(rawBaseline);
     } catch (error) {
-      baselineNote = `baseline-lost: the stored baseline is not readable JSON (${errorReason(error)}); `
-        + 'the state payload migrated without it.';
+      baselineNote =
+        `baseline-lost: the stored baseline is not readable JSON (${errorReason(error)}); ` +
+        'the state payload migrated without it.';
     }
     if (baselinePayload !== undefined) {
       const baselineSave = await store.saveBaseline(baselinePayload);
       if (baselineSave.status !== 'persisted') {
         return {
           status: 'failed',
-          reason: `save-failed: the baseline could not be written to Cana (${baselineSave.reason || baselineSave.status}); `
-            + 'the localStorage source was left untouched and the migration will retry on the next launch.'
+          reason:
+            `save-failed: the baseline could not be written to Cana (${baselineSave.reason || baselineSave.status}); ` +
+            'the localStorage source was left untouched and the migration will retry on the next launch.'
         };
       }
       baselineMigrated = true;
@@ -252,19 +255,23 @@ export async function migrateLocalStorageToCana({
   if (readBack.status !== 'ok' || canonicalJson(readBack.payload) !== canonicalJson(payload)) {
     return {
       status: 'failed',
-      reason: `verification-mismatch: the payload read back from Cana does not match the source `
-        + `(load status ${readBack.status}${readBack.reason ? `, ${readBack.reason}` : ''}); `
-        + 'the localStorage source was left untouched and the migration will retry on the next launch.'
+      reason:
+        `verification-mismatch: the payload read back from Cana does not match the source ` +
+        `(load status ${readBack.status}${readBack.reason ? `, ${readBack.reason}` : ''}); ` +
+        'the localStorage source was left untouched and the migration will retry on the next launch.'
     };
   }
   if (baselineMigrated) {
     const baselineReadBack = await store.loadBaseline();
-    if (baselineReadBack.status !== 'ok'
-      || canonicalJson(baselineReadBack.payload) !== canonicalJson(baselinePayload)) {
+    if (
+      baselineReadBack.status !== 'ok' ||
+      canonicalJson(baselineReadBack.payload) !== canonicalJson(baselinePayload)
+    ) {
       return {
         status: 'failed',
-        reason: 'verification-mismatch: the baseline read back from Cana does not match the source; '
-          + 'the localStorage source was left untouched and the migration will retry on the next launch.'
+        reason:
+          'verification-mismatch: the baseline read back from Cana does not match the source; ' +
+          'the localStorage source was left untouched and the migration will retry on the next launch.'
       };
     }
   }
@@ -320,34 +327,41 @@ export async function migrateLocalStorageToCana({
  * @param {string} [options.probeReason] - the port's diagnostic reason.
  * @returns {{kind: string, severity: 'error'|'info', message: ?string}}
  */
-export function describeDesignerStorageEnvironment({ indexedDbPresent, probeStatus, probeReason } = {}) {
+export function describeDesignerStorageEnvironment({
+  indexedDbPresent,
+  probeStatus,
+  probeReason
+} = {}) {
   if (indexedDbPresent === false) {
     return {
       kind: 'unsupported-environment',
       severity: 'error',
-      message: 'This browser provides no usable IndexedDB storage. The Service Management designer '
-        + 'depends on it for persistence, so this environment is unsupported: you can explore the '
-        + 'designer, but nothing you build here can be saved.'
+      message:
+        'This browser provides no usable IndexedDB storage. The Service Management designer ' +
+        'depends on it for persistence, so this environment is unsupported: you can explore the ' +
+        'designer, but nothing you build here can be saved.'
     };
   }
   if (probeStatus === 'unavailable') {
     return {
       kind: 'non-persisting-session',
       severity: 'error',
-      message: 'Persistent storage is unavailable in this browsing context (private/incognito mode, '
-        + 'blocked storage, or storage not yet wired into this host). The designer cannot save your '
-        + 'work: anything you build in this session will be lost when it ends.'
-        + (probeReason ? ` Cause: ${probeReason}` : '')
+      message:
+        `Persistent storage is unavailable in this browsing context (private/incognito mode, ` +
+        `blocked storage, or storage not yet wired into this host). The designer cannot save your ` +
+        `work: anything you build in this session will be lost when it ends.${
+          probeReason ? ` Cause: ${probeReason}` : ''
+        }`
     };
   }
   if (probeStatus === 'lost') {
     return {
       kind: 'data-lost',
       severity: 'error',
-      message: 'Previously saved designer data is no longer readable (storage eviction or corruption) '
-        + 'and there is no fallback store. A fresh template was loaded instead; your only recourse is '
-        + 'a backup/export made earlier.'
-        + (probeReason ? ` Cause: ${probeReason}` : '')
+      message:
+        `Previously saved designer data is no longer readable (storage eviction or corruption) ` +
+        `and there is no fallback store. A fresh template was loaded instead; your only recourse is ` +
+        `a backup/export made earlier.${probeReason ? ` Cause: ${probeReason}` : ''}`
     };
   }
   if (probeStatus === 'available' && probeReason) {
@@ -385,7 +399,7 @@ export function readRetainedMigrationSource({ storage, now = () => new Date() } 
   let present = false;
   try {
     present = backend.getItem(CANA_MIGRATION_SOURCE_STATE_KEY) !== null;
-  } catch (_) {
+  } catch {
     present = false;
   }
   return present
@@ -411,19 +425,19 @@ export function readRetainedMigrationSource({ storage, now = () => new Date() } 
  * @returns {{kind: string, severity: 'error', message: string}}
  */
 export function describeLoadTimeDataLoss({ reason, retainedSource } = {}) {
-  const recourse = retainedSource && retainedSource.retained
-    ? ` The pre-migration copy of your design is still retained, unused, in this browser's local `
-      + `storage under "${CANA_MIGRATION_SOURCE_STATE_KEY}" until ${retainedSource.retainedUntil} — `
-      + 'copy it out before then and restore it with Import JSON; an earlier export or migration '
-      + 'backup works too.'
-    : ' Your recourse is a backup/export made earlier — restore it with Import JSON.';
+  const recourse =
+    retainedSource && retainedSource.retained
+      ? ` The pre-migration copy of your design is still retained, unused, in this browser's local ` +
+        `storage under "${CANA_MIGRATION_SOURCE_STATE_KEY}" until ${retainedSource.retainedUntil} — ` +
+        'copy it out before then and restore it with Import JSON; an earlier export or migration ' +
+        'backup works too.'
+      : ' Your recourse is a backup/export made earlier — restore it with Import JSON.';
   return {
     kind: 'data-lost',
     severity: 'error',
-    message: 'Your previously saved design could not be loaded: the stored data is corrupted and '
-      + 'there is no fallback store, so a fresh template was loaded instead and the saved model '
-      + 'was lost.'
-      + recourse
-      + (reason ? ` Cause: ${reason}` : '')
+    message:
+      `Your previously saved design could not be loaded: the stored data is corrupted and ` +
+      `there is no fallback store, so a fresh template was loaded instead and the saved model ` +
+      `was lost.${recourse}${reason ? ` Cause: ${reason}` : ''}`
   };
 }

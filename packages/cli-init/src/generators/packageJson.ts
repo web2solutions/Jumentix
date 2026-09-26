@@ -1,5 +1,6 @@
-import type { DbChoice, HttpInterface, RealtimeInterface } from '../sources/types';
 import { sanitizePackageScope, sanitizeServiceId } from './paths';
+
+import type { DbChoice, HttpInterface, RealtimeInterface } from '../sources/types';
 
 export const JUMENTIX_RUNTIME_DEPS = Object.freeze([
   '@jumentix/adapter-runtime-bootstrap',
@@ -15,7 +16,7 @@ export const JUMENTIX_RUNTIME_DEPS = Object.freeze([
   '@jumentix/shared-contracts'
 ]);
 
-export type PackageJsonInput = {
+export interface PackageJsonInput {
   projectName: string;
   serviceId: string;
   /** CLI / pin version for `@jumentix/*` dependencies. */
@@ -23,7 +24,7 @@ export type PackageJsonInput = {
   http: HttpInterface;
   realtime: RealtimeInterface;
   db: DbChoice;
-};
+}
 
 /**
  * Build a standalone `package.json` for a generated backend service.

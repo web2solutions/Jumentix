@@ -25,7 +25,7 @@ import { currentCorrelationId } from './correlation';
  * id through an injected resolver rather than by importing the application's
  * `Context`.
  */
-export abstract class PersistenceError extends Error {
+abstract class PersistenceError extends Error {
   abstract readonly code: string;
 
   abstract readonly name: string;
@@ -59,7 +59,7 @@ export abstract class PersistenceError extends Error {
     correlationId: string;
     cause: string;
     metadata: unknown;
-    } {
+  } {
     return {
       message: this.message,
       code: this.code,
@@ -70,3 +70,5 @@ export abstract class PersistenceError extends Error {
     };
   }
 }
+
+export default PersistenceError;

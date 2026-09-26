@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/max-expects, jest/no-conditional-in-test */
 import path from 'node:path';
 
@@ -13,7 +12,9 @@ import path from 'node:path';
  * browser integration suite; the arithmetic is pinned here.
  */
 const repoRoot = path.resolve(__dirname, '../../../..');
-const model = require(path.join(repoRoot, 'packages', 'designer-core', 'src', 'model', 'modelQueries.js'));
+const model = require(
+  path.join(repoRoot, 'packages', 'designer-core', 'src', 'model', 'modelQueries.js')
+);
 const { normalizeNote, normalizeDomainInput } = require(
   path.join(repoRoot, 'packages', 'designer-core', 'src', 'state', 'designerState.js')
 );
@@ -26,26 +27,26 @@ const entity = (id: string, name: string, x: number, y: number, fields: string[]
   fields: fields.map((fieldName) => ({ name: fieldName, type: 'string' }))
 });
 
-const domains = () => [{
-  id: 'domain-1',
-  name: 'Billing',
-  x: 100,
-  y: 100,
-  entities: [
-    entity('e1', 'Invoice', 20, 20, ['id', 'total']),
-    entity('e2', 'Payment', 320, 20, ['id', 'invoiceId'])
-  ]
-}];
+const domains = () => [
+  {
+    id: 'domain-1',
+    name: 'Billing',
+    x: 100,
+    y: 100,
+    entities: [
+      entity('e1', 'Invoice', 20, 20, ['id', 'total']),
+      entity('e2', 'Payment', 320, 20, ['id', 'invoiceId'])
+    ]
+  }
+];
 
 describe('model search (JUM-729 follow-up)', () => {
   it('finds domains, entities and fields, in reading order', () => {
     expect.hasAssertions();
 
-    expect(model.searchModel(domains(), 'invoice').map((hit: { label: string }) => hit.label))
-      .toStrictEqual([
-        'Billing / Invoice',
-        'Billing / Payment.invoiceId: string'
-      ]);
+    expect(
+      model.searchModel(domains(), 'invoice').map((hit: { label: string }) => hit.label)
+    ).toStrictEqual(['Billing / Invoice', 'Billing / Payment.invoiceId: string']);
   });
 
   it('matches a field by its type as well as its name', () => {
@@ -53,15 +54,23 @@ describe('model search (JUM-729 follow-up)', () => {
 
     // "which entities carry a uuid?" is a question about the model, and the
     // answer is not in any name.
-    const withUuid = [{
-      id: 'd',
-      name: 'D',
-      x: 0,
-      y: 0,
-      entities: [{
-        id: 'e', name: 'E', x: 0, y: 0, fields: [{ name: 'ref', type: 'uuid' }]
-      }]
-    }];
+    const withUuid = [
+      {
+        id: 'd',
+        name: 'D',
+        x: 0,
+        y: 0,
+        entities: [
+          {
+            id: 'e',
+            name: 'E',
+            x: 0,
+            y: 0,
+            fields: [{ name: 'ref', type: 'uuid' }]
+          }
+        ]
+      }
+    ];
 
     expect(model.searchModel(withUuid, 'uuid')).toHaveLength(1);
   });
@@ -83,7 +92,10 @@ describe('rubber-band selection (JUM-729 follow-up)', () => {
     const hits = model.entitiesInMarquee(
       domains(),
       {
-        x1: 90, y1: 90, x2: 130, y2: 400
+        x1: 90,
+        y1: 90,
+        x2: 130,
+        y2: 400
       },
       false,
       false
@@ -99,9 +111,19 @@ describe('rubber-band selection (JUM-729 follow-up)', () => {
     // not silently pick them up.
     const collapsed = domains().map((domain) => ({ ...domain, collapsed: true }));
 
-    expect(model.entitiesInMarquee(collapsed, {
-      x1: 0, y1: 0, x2: 3000, y2: 3000
-    }, false, false)).toStrictEqual([]);
+    expect(
+      model.entitiesInMarquee(
+        collapsed,
+        {
+          x1: 0,
+          y1: 0,
+          x2: 3000,
+          y2: 3000
+        },
+        false,
+        false
+      )
+    ).toStrictEqual([]);
   });
 });
 
@@ -193,13 +215,19 @@ describe('export bounds (JUM-729 follow-up)', () => {
     );
 
     expect(modelBounds({ domains: [], notes: [] })).toStrictEqual({
-      x: 0, y: 0, width: 800, height: 600
+      x: 0,
+      y: 0,
+      width: 800,
+      height: 600
     });
   });
 });
 
 describe('pNG canvas export (JUM-736 release coverage)', () => {
-  type CanvasCall = { method: string; args: unknown[] };
+  interface CanvasCall {
+    method: string;
+    args: unknown[];
+  }
 
   function createCanvasHarness() {
     const calls: CanvasCall[] = [];
@@ -230,7 +258,9 @@ describe('pNG canvas export (JUM-736 release coverage)', () => {
   }
 
   function loadCanvasImage() {
-    return require(path.join(repoRoot, 'apps', 'service-management', 'src', 'ui', 'canvasImage.js'));
+    return require(
+      path.join(repoRoot, 'apps', 'service-management', 'src', 'ui', 'canvasImage.js')
+    );
   }
 
   it('draws domains, entities, fields, notes and routed relationships', () => {
@@ -247,38 +277,49 @@ describe('pNG canvas export (JUM-736 release coverage)', () => {
     };
     const state = {
       view: { compactEntities: false },
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        color: '#22c55e',
-        x: 100,
-        y: 80,
-        entities: [
-          {
-            id: 'entity-1',
-            name: 'Invoice',
-            x: 20,
-            y: 45,
-            meta: { aggregateRoot: true },
-            fields: [
-              {
-                name: 'id', type: 'uuid', pk: true, required: true, unique: true
-              },
-              { name: 'total', type: 'number', nullable: true }
-            ]
-          },
-          {
-            id: 'entity-2',
-            name: 'Payment',
-            x: 390,
-            y: 45,
-            fields: [{ name: 'invoiceId', type: 'uuid', fk: true }]
-          }
-        ]
-      }],
-      notes: [{
-        x: 620, y: 320, color: '#fef3c7', text: 'release note\nkeeps export readable'
-      }],
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          color: '#22c55e',
+          x: 100,
+          y: 80,
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'Invoice',
+              x: 20,
+              y: 45,
+              meta: { aggregateRoot: true },
+              fields: [
+                {
+                  name: 'id',
+                  type: 'uuid',
+                  pk: true,
+                  required: true,
+                  unique: true
+                },
+                { name: 'total', type: 'number', nullable: true }
+              ]
+            },
+            {
+              id: 'entity-2',
+              name: 'Payment',
+              x: 390,
+              y: 45,
+              fields: [{ name: 'invoiceId', type: 'uuid', fk: true }]
+            }
+          ]
+        }
+      ],
+      notes: [
+        {
+          x: 620,
+          y: 320,
+          color: '#fef3c7',
+          text: 'release note\nkeeps export readable'
+        }
+      ],
       relationships: [relationship]
     };
 
@@ -287,9 +328,7 @@ describe('pNG canvas export (JUM-736 release coverage)', () => {
       state,
       (candidate: unknown, end: string) => {
         expect(candidate).toBe(relationship);
-        return end === 'from'
-          ? { x: 460, y: 150 }
-          : { x: 690, y: 150 };
+        return end === 'from' ? { x: 460, y: 150 } : { x: 690, y: 150 };
       },
       { scale: 1, background: '#111827' }
     );
@@ -325,18 +364,30 @@ describe('pNG canvas export (JUM-736 release coverage)', () => {
           x: 0,
           y: 0,
           collapsed: true,
-          entities: [{
-            id: 'hidden-entity', name: 'MustNotDraw', x: 10, y: 10, fields: [{ name: 'secret' }]
-          }]
+          entities: [
+            {
+              id: 'hidden-entity',
+              name: 'MustNotDraw',
+              x: 10,
+              y: 10,
+              fields: [{ name: 'secret' }]
+            }
+          ]
         },
         {
           id: 'visible',
           name: 'Visible',
           x: 480,
           y: 0,
-          entities: [{
-            id: 'visible-entity', name: 'SummaryOnly', x: 10, y: 45, fields: [{ name: 'id' }]
-          }]
+          entities: [
+            {
+              id: 'visible-entity',
+              name: 'SummaryOnly',
+              x: 10,
+              y: 45,
+              fields: [{ name: 'id' }]
+            }
+          ]
         }
       ],
       relationships: [{ id: 'missing-endpoint' }],
@@ -346,9 +397,18 @@ describe('pNG canvas export (JUM-736 release coverage)', () => {
     drawModel(canvas, state, () => null);
 
     expect(context.fillText).toHaveBeenCalledWith('Hidden', 10, 22);
-    expect(context.fillText).not.toHaveBeenCalledWith('MustNotDraw', expect.any(Number), expect.any(Number));
+    expect(context.fillText).not.toHaveBeenCalledWith(
+      'MustNotDraw',
+      expect.any(Number),
+      expect.any(Number)
+    );
     expect(context.fillText).toHaveBeenCalledWith('SummaryOnly', 498, 65);
-    expect(context.fillText).not.toHaveBeenCalledWith('id: string', expect.any(Number), expect.any(Number), expect.any(Number));
+    expect(context.fillText).not.toHaveBeenCalledWith(
+      'id: string',
+      expect.any(Number),
+      expect.any(Number),
+      expect.any(Number)
+    );
     expect(context.bezierCurveTo).not.toHaveBeenCalled();
   });
 
@@ -360,19 +420,27 @@ describe('pNG canvas export (JUM-736 release coverage)', () => {
     drawModel(
       canvas,
       {
-        domains: [{
-          id: 'domain-1',
-          name: 'Single',
-          x: 20,
-          y: 20,
-          entities: [{
-            id: 'entity-1', name: 'One', x: 12, y: 45
-          }]
-        }],
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Single',
+            x: 20,
+            y: 20,
+            entities: [
+              {
+                id: 'entity-1',
+                name: 'One',
+                x: 12,
+                y: 45
+              }
+            ]
+          }
+        ],
         notes: [{ x: 360, y: 40 }],
         relationships: [{ id: 'rel-1' }]
       },
-      (_relationship: unknown, end: string) => (end === 'from' ? { x: 60, y: 90 } : { x: 160, y: 130 })
+      (_relationship: unknown, end: string) =>
+        end === 'from' ? { x: 60, y: 90 } : { x: 160, y: 130 }
     );
 
     expect(context.fillText).toHaveBeenCalledWith('1 entity', expect.any(Number), 42);
@@ -389,9 +457,14 @@ describe('pNG canvas export (JUM-736 release coverage)', () => {
     drawModel(
       canvas,
       {
-        domains: [{
-          id: 'empty-domain', name: 'Empty', x: 16, y: 24
-        }],
+        domains: [
+          {
+            id: 'empty-domain',
+            name: 'Empty',
+            x: 16,
+            y: 24
+          }
+        ],
         // Relationships and notes are intentionally omitted. The PNG export is
         // also used while a model is being assembled and must be able to render
         // that half-shaped state rather than throwing or drawing phantom rows.

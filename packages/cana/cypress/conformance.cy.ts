@@ -103,9 +103,8 @@ describe('cana conformance harness', () => {
 describe('cana conformance browser-only checks', () => {
   /** Hoisted so the predicate is not a branch inside a test body. */
   const isTerminal = (status: string) => ['passed', 'failed'].includes(status);
-  const isFailureWithoutDetail = (r: { status: string; detail?: string }) => (
-    r.status === 'failed' && !r.detail
-  );
+  const isFailureWithoutDetail = (r: { status: string; detail?: string }) =>
+    r.status === 'failed' && !r.detail;
 
   it('executes them when the environment claims to be a browser', async () => {
     const report = await runConformance({
@@ -129,9 +128,11 @@ describe('cana conformance browser-only checks', () => {
       realBrowser: true
     });
 
-    const statuses = [...new Set(
-      report.results.filter((result) => result.browserOnly).map((result) => result.status)
-    )].sort();
+    const statuses = [
+      ...new Set(
+        report.results.filter((result) => result.browserOnly).map((result) => result.status)
+      )
+    ].sort();
 
     expect(statuses.every(isTerminal)).to.equal(true);
   });

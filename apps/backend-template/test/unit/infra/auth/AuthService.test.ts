@@ -1,21 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable jest/valid-expect */
+
 /* global  describe, it, expect */
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
 import users from '@seed/users';
-
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
 import { UserDataRepository, UserService } from '@src/modules/Users';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
+import AuthService from '@src/modules/Users/service/AuthService';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
 import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import { JwtService } from '@src/infra/jwt/JwtService';
 
 const databaseClient = InMemoryDbClient;
 const keyValueStorageClient = InMemoryKeyValueStorageClient.compile();
@@ -43,14 +42,17 @@ let createdUser2AuthorizationHeader: any;
 
 let authService: IAuthService;
 
+const requireAuthResult = <T>(result: T | undefined): T => {
+  if (!result) {
+    throw new Error('Expected authenticate to return a result.');
+  }
+  return result;
+};
+
 describe('unit test suite for AuthService', () => {
   beforeAll(async () => {
     await keyValueStorageClient.connect();
-    authService = AuthService.compile(
-      userProvider,
-      passwordCryptoService,
-      jwtService
-    );
+    authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
   });
   describe('user authentication and authorization', () => {
     beforeAll(async () => {
@@ -68,9 +70,11 @@ describe('unit test suite for AuthService', () => {
             user0.password,
             EAuthSchemaType.Basic
           );
-          const { Authorization } = result!;
+          const { Authorization } = requireAuthResult(result);
           // console.log(Authorization);
-          const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString('base64');
+          const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString(
+            'base64'
+          );
           const [schema, token] = Authorization.split(' ');
           expect(schema).toBe(EAuthSchemaType.Basic);
           expect(rawToken).toBe(token);
@@ -84,9 +88,9 @@ describe('unit test suite for AuthService', () => {
             EAuthSchemaType.Basic
           );
 
-          expect(error!.message).toBe('user not found');
+          expect(error?.message).toBe('user not found');
         });
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authenticate with Basic auth schema with valid username and wrong password - return error - password does not matches', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
@@ -96,9 +100,9 @@ describe('unit test suite for AuthService', () => {
             EAuthSchemaType.Basic
           );
 
-          expect(error!.message).toBe('password does not matches');
+          expect(error?.message).toBe('password does not matches');
         });
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authenticate with Basic auth schema with valid username and invalid password -  return error - invalid password', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
@@ -107,7 +111,7 @@ describe('unit test suite for AuthService', () => {
             '1234567',
             EAuthSchemaType.Basic
           );
-          expect(error!.message).toBe('password does not matches');
+          expect(error?.message).toBe('password does not matches');
         });
       });
       // ==>>>
@@ -119,7 +123,7 @@ describe('unit test suite for AuthService', () => {
             user0.password,
             EAuthSchemaType.Basic
           );
-          const { Authorization } = result!;
+          const { Authorization } = requireAuthResult(result);
           createdUser1AuthorizationHeader = Authorization;
         });
         it('must authorize with a valid Basic token', async () => {
@@ -129,33 +133,47 @@ describe('unit test suite for AuthService', () => {
           expect(authorized).toBeTruthy();
           expect(authorized.username).toBe(user0.username);
         });
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authorize with a valid Basic token having wrong password - return error invalid password', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
-          const rawToken = Buffer.from(`${user0.username}:${user0.password}_`, 'utf8').toString('base64');
-          await expect(authService.authorize(`Basic ${rawToken}`)).rejects.toThrow('invalid password');
+          const rawToken = Buffer.from(`${user0.username}:${user0.password}_`, 'utf8').toString(
+            'base64'
+          );
+          await expect(authService.authorize(`Basic ${rawToken}`)).rejects.toThrow(
+            'invalid password'
+          );
         });
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authorize with a valid Basic token having wrong username - return error user not found', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
-          const rawToken = Buffer.from(`${user0.username}_:${user0.password}`, 'utf8').toString('base64');
-          await expect(authService.authorize(`Basic ${rawToken}`)).rejects.toThrow('user not found');
+          const rawToken = Buffer.from(`${user0.username}_:${user0.password}`, 'utf8').toString(
+            'base64'
+          );
+          await expect(authService.authorize(`Basic ${rawToken}`)).rejects.toThrow(
+            'user not found'
+          );
         });
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authorize with a invalid auth schema - return error invalid schema', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
-          const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString('base64');
-          await expect(authService.authorize(`InvalidSchemaName ${rawToken}`)).rejects.toThrow('invalid schema');
+          const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString(
+            'base64'
+          );
+          await expect(authService.authorize(`InvalidSchemaName ${rawToken}`)).rejects.toThrow(
+            'invalid schema'
+          );
         });
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authorize with a invalid token - return error invalid token', async () => {
           expect.hasAssertions();
           const [user0] = [...users];
-          const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString('base64');
-          await expect(authService.authorize(`${rawToken}`)).rejects.toThrow('invalid token');
+          const rawToken = Buffer.from(`${user0.username}:${user0.password}`, 'utf8').toString(
+            'base64'
+          );
+          await expect(authService.authorize(rawToken)).rejects.toThrow('invalid token');
         });
       });
       // ==>>>
@@ -166,11 +184,7 @@ describe('unit test suite for AuthService', () => {
       beforeAll(async () => {
         const { result, error } = await userService.create(users[1]);
         createdUser1 = result;
-        authService = AuthService.compile(
-          userProvider,
-          passwordCryptoService,
-          jwtService
-        );
+        authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
       });
       describe('authentication', () => {
         it('must authenticate with Bearer auth schema with valid username and password - success', async () => {
@@ -181,12 +195,12 @@ describe('unit test suite for AuthService', () => {
             user1.password,
             EAuthSchemaType.Bearer
           );
-          const { Authorization } = result!;
+          const { Authorization } = requireAuthResult(result);
           // console.log(Authorization);
           const [schema, token] = Authorization.split(' ');
           expect(schema).toBe(EAuthSchemaType.Bearer);
           const decoded = await jwtService.decodeToken(token);
-          expect(decoded!.username).toBe(user1.username);
+          expect(decoded?.username).toBe(user1.username);
         });
         it('must not authenticate with Bearer auth schema with invalid username - return error - user not found', async () => {
           expect.hasAssertions();
@@ -196,9 +210,9 @@ describe('unit test suite for AuthService', () => {
             user1.password,
             EAuthSchemaType.Bearer
           );
-          expect(error!.message).toBe('user not found');
+          expect(error?.message).toBe('user not found');
         });
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authenticate with Bearer auth schema with valid username and wrong password - return error - password does not matches', async () => {
           expect.hasAssertions();
           const [user0, user1] = [...users];
@@ -207,9 +221,9 @@ describe('unit test suite for AuthService', () => {
             'fake_password',
             EAuthSchemaType.Bearer
           );
-          expect(error!.message).toBe('password does not matches');
+          expect(error?.message).toBe('password does not matches');
         });
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authenticate with Bearer auth schema with valid username and 7 chars password - return error - password must have at least 8 chars.', async () => {
           expect.hasAssertions();
           const [user0, user1] = [...users];
@@ -218,7 +232,7 @@ describe('unit test suite for AuthService', () => {
             '1234567',
             EAuthSchemaType.Bearer
           );
-          expect(error!.message).toBe('password does not matches');
+          expect(error?.message).toBe('password does not matches');
         });
       });
 
@@ -230,7 +244,7 @@ describe('unit test suite for AuthService', () => {
             user1.password,
             EAuthSchemaType.Bearer
           );
-          const { Authorization } = result!;
+          const { Authorization } = requireAuthResult(result);
           createdUser2AuthorizationHeader = Authorization;
         });
         it('must authorize with a valid Bearer token', async () => {
@@ -244,16 +258,20 @@ describe('unit test suite for AuthService', () => {
           expect.hasAssertions();
           const [user0, user1] = [...users];
           const jwtService2 = new JwtService('fakesecret');
-          const token = await jwtService2.generateToken(user1);
+          const token = jwtService2.generateToken(user1);
           await expect(authService.authorize(`Bearer ${token}`)).rejects.toThrow('invalid token');
         });
         // jwtService.generateToken(userFound);
-        // eslint-disable-next-line jest/prefer-expect-assertions
+
         it('must not authorize with a valid Bearer token - return error invalid token', async () => {
           expect.hasAssertions();
           const [user0, user1] = [...users];
-          const rawToken = Buffer.from(`${user1.username}:${user1.password}`, 'utf8').toString('base64');
-          await expect(authService.authorize(`Bearer ${rawToken}`)).rejects.toThrow('invalid token');
+          const rawToken = Buffer.from(`${user1.username}:${user1.password}`, 'utf8').toString(
+            'base64'
+          );
+          await expect(authService.authorize(`Bearer ${rawToken}`)).rejects.toThrow(
+            'invalid token'
+          );
         });
       });
       // ==>>>
@@ -272,8 +290,8 @@ describe('unit test suite for AuthService', () => {
       // delete (user2 as any).password;
       const { result, error } = await authService.register(user2);
       // console.log({ result, error });
-      expect(result!.firstName).toBe(user2.firstName);
-      expect(result!.username).toBe(user2.username);
+      expect(result?.firstName).toBe(user2.firstName);
+      expect(result?.username).toBe(user2.username);
     });
     it('must not register with undefined password', async () => {
       expect.hasAssertions();
@@ -308,10 +326,13 @@ describe('unit test suite for AuthService', () => {
     it('must update with valid data', async () => {
       expect.hasAssertions();
       // delete (user2 as any).password;
-      const { result, error } = await authService.updateUser(user0.id, { ...user0, firstName: 'james' });
+      const { result, error } = await authService.updateUser(user0.id, {
+        ...user0,
+        firstName: 'james'
+      });
       // console.log({ result, error });
-      expect(result!.firstName).toBe('james');
-      expect(result!.username).toBe(user0.username);
+      expect(result?.firstName).toBe('james');
+      expect(result?.username).toBe(user0.username);
       expect(error).toBeUndefined();
     });
     it('must NOT update with empty username', async () => {
@@ -336,28 +357,31 @@ describe('unit test suite for AuthService', () => {
     beforeAll(async () => {
       const deleteUserPayloads = [user1, user2, user3].map((user, index) => {
         const username = `delete-user-${index + 1}@xpertminds.dev`;
-        const { id: _seedId, ...rest } = user;
+        const { id, ...rest } = user;
         return {
           ...rest,
           username,
           password: `delete_user_${index + 1}_password`,
-          emails: [{
-            ...user.emails[0],
-            email: username
-          }]
+          emails: [
+            {
+              ...user.emails[0],
+              email: username
+            }
+          ]
         };
       });
-      const [
-        createUser1,
-        createUser2,
-        createUser3
-      ] = await Promise.all(deleteUserPayloads.map((user) => userService.create(user)));
+      const [createUser1, createUser2, createUser3] = await Promise.all(
+        deleteUserPayloads.map((user) => userService.create(user))
+      );
       if (createUser1.error) throw createUser1.error;
       if (createUser2.error) throw createUser2.error;
       if (createUser3.error) throw createUser3.error;
-      user1 = createUser1.result!;
-      user2 = createUser2.result!;
-      user3 = createUser3.result!;
+      if (!createUser1.result) throw new Error('Expected create to return a result for user1.');
+      if (!createUser2.result) throw new Error('Expected create to return a result for user2.');
+      if (!createUser3.result) throw new Error('Expected create to return a result for user3.');
+      user1 = createUser1.result;
+      user2 = createUser2.result;
+      user3 = createUser3.result;
     });
     it('must delete user1', async () => {
       expect.hasAssertions();

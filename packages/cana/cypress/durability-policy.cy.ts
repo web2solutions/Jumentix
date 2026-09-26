@@ -1,9 +1,6 @@
+import { assessDurability, DEFAULT_DURABILITY_POLICY, requiresUserAttention } from '../src';
+
 import type { CanaStorageState } from '../src';
-import {
-  DEFAULT_DURABILITY_POLICY,
-  assessDurability,
-  requiresUserAttention
-} from '../src';
 
 /**
  * The policy is pure, so it is tested directly rather than through a database.
@@ -42,10 +39,10 @@ describe('cana durability policy', () => {
   });
 
   it('reports granted persistence as durable, with nothing to do', () => {
-    const assessment = assessDurability(
-      state({ persistent: true }),
-      { evicted: false, reason: 'existing-data' }
-    );
+    const assessment = assessDurability(state({ persistent: true }), {
+      evicted: false,
+      reason: 'existing-data'
+    });
 
     expect(assessment.level).to.equal('durable');
     expect(assessment.advice).to.deep.equal([]);
@@ -56,7 +53,10 @@ describe('cana durability policy', () => {
     // neighbour throws it away.
     const assessment = assessDurability(
       state({
-        persistent: true, nearQuota: true, usageBytes: 90, quotaBytes: 100
+        persistent: true,
+        nearQuota: true,
+        usageBytes: 90,
+        quotaBytes: 100
       })
     );
 
@@ -76,10 +76,10 @@ describe('cana durability policy', () => {
   it('reports eviction as loss and says the app must not look like a fresh install', () => {
     // The JUM-560 failure mode: an evicted database and a new one both open
     // empty, and showing the second is how a user loses work without being told.
-    const assessment = assessDurability(
-      state({ evicted: true }),
-      { evicted: true, reason: 'evicted-database-absent' }
-    );
+    const assessment = assessDurability(state({ evicted: true }), {
+      evicted: true,
+      reason: 'evicted-database-absent'
+    });
 
     expect(assessment.level).to.equal('lost');
     expect(assessment.advice.join(' ')).to.include('fresh install');
@@ -89,10 +89,10 @@ describe('cana durability policy', () => {
   it('surfaces undetectable eviction rather than reporting "not evicted"', () => {
     // Without a tombstone the engine cannot ever tell a wipe from a first run.
     // Saying "not evicted" would be a claim it has no basis for.
-    const assessment = assessDurability(
-      state({ persistent: false }),
-      { evicted: false, reason: 'undetectable-no-tombstone' }
-    );
+    const assessment = assessDurability(state({ persistent: false }), {
+      evicted: false,
+      reason: 'undetectable-no-tombstone'
+    });
 
     expect(assessment.evictionDetectable).to.equal(false);
     expect(assessment.advice.join(' ')).to.include('indistinguishable from a first run');
@@ -101,10 +101,10 @@ describe('cana durability policy', () => {
   it('flags undetectable eviction even when storage is durable', () => {
     // Persistence and detectability are independent: a granted-persistent origin
     // with no tombstone is still blind if a wipe happens anyway.
-    const assessment = assessDurability(
-      state({ persistent: true }),
-      { evicted: false, reason: 'undetectable-no-tombstone' }
-    );
+    const assessment = assessDurability(state({ persistent: true }), {
+      evicted: false,
+      reason: 'undetectable-no-tombstone'
+    });
 
     expect(assessment.level).to.equal('durable');
     expect(assessment.evictionDetectable).to.equal(false);

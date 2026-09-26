@@ -1,6 +1,7 @@
 import { render, screen } from '@/test-utils';
-import { CANA_FRAMEWORK_EXAMPLES, getCanaFrameworkExample } from './catalog';
+
 import { CanaFrameworkPlayground } from './CanaFrameworkPlayground';
+import { CANA_FRAMEWORK_EXAMPLES, getCanaFrameworkExample } from './catalog';
 
 describe('Cana framework playground catalog', () => {
   it('covers the requested framework examples', () => {
@@ -22,7 +23,9 @@ describe('Cana framework playground catalog', () => {
 
       expect(example.files.length).toBeGreaterThanOrEqual(8);
       expect(example.files.some((file) => file.path.endsWith('cana.ts'))).toBe(true);
-      expect(example.files.some((file) => file.path === 'src/App.tsx' || file.path === 'src/App.vue')).toBe(true);
+      expect(
+        example.files.some((file) => file.path === 'src/App.tsx' || file.path === 'src/App.vue')
+      ).toBe(true);
       expect(example.files.some((file) => file.path === 'src/vite-env.d.ts')).toBe(true);
       expect(example.download?.href).toMatch(/^\/downloads\/cana\/.+\.zip$/);
       expect(sources).toContain('createClient');
@@ -47,10 +50,15 @@ describe('CanaFrameworkPlayground', () => {
     expect.hasAssertions();
     render(<CanaFrameworkPlayground id="react-context-basic" />);
     expect(screen.getByTestId('cana-framework-playground-react-context-basic')).toBeInTheDocument();
-    expect(screen.getByTestId('cana-framework-playground-react-context-basic-run')).toBeInTheDocument();
-    expect(screen.getByTestId('cana-framework-playground-react-context-basic-reset')).toBeInTheDocument();
-    expect(screen.getByTestId('cana-framework-playground-react-context-basic-preview'))
-      .toHaveClass('cana-framework-preview');
+    expect(
+      screen.getByTestId('cana-framework-playground-react-context-basic-run')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('cana-framework-playground-react-context-basic-reset')
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('cana-framework-playground-react-context-basic-preview')).toHaveClass(
+      'cana-framework-preview'
+    );
     expect(screen.getByText('React Context: Category and Task tables')).toBeInTheDocument();
     expect(screen.getAllByText(/TasksProvider.tsx/).length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: /download app/i })).toHaveAttribute(
@@ -58,7 +66,9 @@ describe('CanaFrameworkPlayground', () => {
       '/downloads/cana/cana-react-context.zip'
     );
 
-    const agentMarkdown = screen.getByTestId('cana-framework-playground-react-context-basic-agent-markdown');
+    const agentMarkdown = screen.getByTestId(
+      'cana-framework-playground-react-context-basic-agent-markdown'
+    );
     expect(agentMarkdown).not.toBeVisible();
     expect(agentMarkdown).toHaveAttribute('data-agent-markdown', 'cana-framework-full-app');
     expect(agentMarkdown).toHaveTextContent('#### src/App.tsx');

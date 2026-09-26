@@ -1,6 +1,6 @@
 import { ConflictError, DataBaseNotFoundError } from '@src/infra/exceptions';
-import { ExternalStoreProxy } from '@src/infra/persistence/external/ExternalStoreProxy';
 import { BaseExternalDataRepository } from '@src/infra/persistence/external/BaseExternalDataRepository';
+import { ExternalStoreProxy } from '@src/infra/persistence/external/ExternalStoreProxy';
 
 class FakeConnector extends BaseExternalDataRepository {
   private readonly client: any;
@@ -61,9 +61,9 @@ const createSqlClient = () => {
       return { get: () => row };
     }),
     findOne: jest.fn(async ({ where }: any) => {
-      const entry = [...rows.values()].find((row) => (
+      const entry = [...rows.values()].find((row) =>
         Object.entries(where).every(([key, value]) => row[key] === value)
-      ));
+      );
       if (!entry) return null;
       return {
         get: (key?: string) => (key ? entry[key] : entry)
@@ -291,7 +291,7 @@ const createDynamoClientDescribeFails = () => ({
 
 const createOracleObjectRowsConnection = () => ({
   execute: jest.fn(async (query: string) => {
-    const handlers: Array<{ match: (q: string) => boolean; result: () => any }> = [
+    const handlers: { match: (q: string) => boolean; result: () => any }[] = [
       {
         match: (q) => q.startsWith('CREATE TABLE'),
         result: () => {
@@ -301,7 +301,9 @@ const createOracleObjectRowsConnection = () => ({
       },
       {
         match: (q) => q.startsWith('SELECT payload FROM USERS'),
-        result: () => ({ rows: [{ payload: JSON.stringify({ id: 'u1', username: 'john' }) }, { payload: null }] })
+        result: () => ({
+          rows: [{ payload: JSON.stringify({ id: 'u1', username: 'john' }) }, { payload: null }]
+        })
       }
     ];
     const matched = handlers.find((entry) => entry.match(query));
@@ -346,10 +348,7 @@ const createDynamoClientWithNullScanRows = () => ({
     const handlers: Record<string, () => any> = {
       DescribeTableCommand: () => ({}),
       ScanCommand: () => ({
-        Items: [
-          { id: { S: 'u1' } },
-          { payload_json: { S: JSON.stringify({ id: 'u2' }) } }
-        ]
+        Items: [{ id: { S: 'u1' } }, { payload_json: { S: JSON.stringify({ id: 'u2' }) } }]
       })
     };
     const handler = handlers[command.constructor.name];
@@ -364,11 +363,13 @@ describe('external store proxy', () => {
     const store = new ExternalStoreProxy<any>('Mongo', 'User', connector);
 
     await store.create('u1', { id: 'u1', username: 'john', organization: 'org-1' });
-    await expect(store.create('u2', {
-      id: 'u2',
-      username: 'JOHN',
-      organization: 'org-2'
-    })).rejects.toThrow(ConflictError);
+    await expect(
+      store.create('u2', {
+        id: 'u2',
+        username: 'JOHN',
+        organization: 'org-2'
+      })
+    ).rejects.toThrow(ConflictError);
 
     const one = await store.getOneById('u1');
     expect(one.username).toBe('john');
@@ -394,11 +395,13 @@ describe('external store proxy', () => {
     const store = new ExternalStoreProxy<any>('PostgreSQL', 'Organization', connector);
 
     await store.create('o1', { id: 'o1', name: 'Org One', users: [] });
-    await expect(store.create('o2', {
-      id: 'o2',
-      name: 'org one',
-      users: []
-    })).rejects.toThrow(ConflictError);
+    await expect(
+      store.create('o2', {
+        id: 'o2',
+        name: 'org one',
+        users: []
+      })
+    ).rejects.toThrow(ConflictError);
 
     const byName = await store.getByName('Org One');
     expect(byName.id).toBe('o1');
@@ -419,10 +422,16 @@ describe('external store proxy', () => {
     await expect(store.getAll({}, { page: 1, size: 10 })).rejects.toThrow(
       'is not supported by ExternalStoreProxy yet'
     );
-    await expect(store.create('u1', { id: 'u1' })).rejects.toThrow('is not supported by ExternalStoreProxy yet');
-    await expect(store.update('u1', { id: 'u1' })).rejects.toThrow('is not supported by ExternalStoreProxy yet');
+    await expect(store.create('u1', { id: 'u1' })).rejects.toThrow(
+      'is not supported by ExternalStoreProxy yet'
+    );
+    await expect(store.update('u1', { id: 'u1' })).rejects.toThrow(
+      'is not supported by ExternalStoreProxy yet'
+    );
     await expect(store.delete('u1')).rejects.toThrow('is not supported by ExternalStoreProxy yet');
-    await expect(store.getOneById('u1')).rejects.toThrow('is not supported by ExternalStoreProxy yet');
+    await expect(store.getOneById('u1')).rejects.toThrow(
+      'is not supported by ExternalStoreProxy yet'
+    );
   });
 
   it('handles dynamodb create/read/update/delete/getAll', async () => {
@@ -486,61 +495,108 @@ describe('external store proxy', () => {
     const connector = new FakeConnector(createMongoClient(), 'mongoose-mongo');
     const store = new ExternalStoreProxy<any>('Mongo', 'User', connector);
     await store.create('u1', { id: 'u1', username: 'john' });
-    await expect(store.getAll({}, { page: 0, size: 10 })).rejects.toThrow('page must be greater than 0');
+    await expect(store.getAll({}, { page: 0, size: 10 })).rejects.toThrow(
+      'page must be greater than 0'
+    );
     await expect(store.getAll({}, { page: 2, size: 1 })).rejects.toThrow(
       'page number must be smaller than the number of total pages'
     );
     await expect(store.getByName('missing')).rejects.toThrow(DataBaseNotFoundError);
-    await expect(new ExternalStoreProxy<any>('Mongo', 'NoUniqueEntity', connector).getByName('x'))
-      .rejects.toThrow(DataBaseNotFoundError);
+    await expect(
+      new ExternalStoreProxy<any>('Mongo', 'NoUniqueEntity', connector).getByName('x')
+    ).rejects.toThrow(DataBaseNotFoundError);
   });
 
   it('covers disconnected client errors for mongo/sql/dynamo', async () => {
     expect.assertions(3);
-    await expect(new ExternalStoreProxy<any>('Mongo', 'User', new FakeConnector({}, 'mongo')).getAll({}, { page: 1, size: 1 }))
-      .rejects.toThrow('Mongo client is not connected');
-    await expect(new ExternalStoreProxy<any>('PostgreSQL', 'User', new FakeConnector({}, 'sequelize')).getAll({}, { page: 1, size: 1 }))
-      .rejects.toThrow('SQL client is not connected');
-    await expect(new ExternalStoreProxy<any>('DynamoDB', 'User', new FakeConnector({}, 'dynamodb')).getAll({}, { page: 1, size: 1 }))
-      .rejects.toThrow('DynamoDB client is not connected');
+    await expect(
+      new ExternalStoreProxy<any>('Mongo', 'User', new FakeConnector({}, 'mongo')).getAll(
+        {},
+        { page: 1, size: 1 }
+      )
+    ).rejects.toThrow('Mongo client is not connected');
+    await expect(
+      new ExternalStoreProxy<any>('PostgreSQL', 'User', new FakeConnector({}, 'sequelize')).getAll(
+        {},
+        { page: 1, size: 1 }
+      )
+    ).rejects.toThrow('SQL client is not connected');
+    await expect(
+      new ExternalStoreProxy<any>('DynamoDB', 'User', new FakeConnector({}, 'dynamodb')).getAll(
+        {},
+        { page: 1, size: 1 }
+      )
+    ).rejects.toThrow('DynamoDB client is not connected');
   });
 
   it('covers disconnected client errors for cassandra/firebase/oracle', async () => {
     expect.assertions(3);
-    await expect(new ExternalStoreProxy<any>('Cassandra', 'User', new FakeConnector({}, 'cassandra')).getAll({}, { page: 1, size: 1 }))
-      .rejects.toThrow('Cassandra client is not connected');
-    await expect(new ExternalStoreProxy<any>('Firebase', 'User', new FakeConnector({}, 'firebase')).getAll({}, { page: 1, size: 1 }))
-      .rejects.toThrow('Firebase client is not connected');
-    await expect(new ExternalStoreProxy<any>('Oracle', 'User', new FakeConnector({}, 'oracle')).getAll({}, { page: 1, size: 1 }))
-      .rejects.toThrow('Oracle client is not connected');
+    await expect(
+      new ExternalStoreProxy<any>('Cassandra', 'User', new FakeConnector({}, 'cassandra')).getAll(
+        {},
+        { page: 1, size: 1 }
+      )
+    ).rejects.toThrow('Cassandra client is not connected');
+    await expect(
+      new ExternalStoreProxy<any>('Firebase', 'User', new FakeConnector({}, 'firebase')).getAll(
+        {},
+        { page: 1, size: 1 }
+      )
+    ).rejects.toThrow('Firebase client is not connected');
+    await expect(
+      new ExternalStoreProxy<any>('Oracle', 'User', new FakeConnector({}, 'oracle')).getAll(
+        {},
+        { page: 1, size: 1 }
+      )
+    ).rejects.toThrow('Oracle client is not connected');
   });
 
   it('covers dynamodb ensure table creation and duplicate id branch', async () => {
     expect.assertions(4);
     const { client } = createDynamoMissingTableClient();
-    const store = new ExternalStoreProxy<any>('DynamoDB', 'User', new FakeConnector(client, 'dynamodb'));
+    const store = new ExternalStoreProxy<any>(
+      'DynamoDB',
+      'User',
+      new FakeConnector(client, 'dynamodb')
+    );
     await store.create('u1', { id: 'u1', username: 'john' });
-    await expect(store.create('u1', { id: 'u1', username: 'john2' })).rejects.toThrow(ConflictError);
+    await expect(store.create('u1', { id: 'u1', username: 'john2' })).rejects.toThrow(
+      ConflictError
+    );
     await expect(store.create('u2', { id: 'u2', username: 'JOHN' })).rejects.toThrow(ConflictError);
-    const createTableCalls = client.send.mock.calls.filter(([cmd]: any[]) => cmd.constructor.name === 'CreateTableCommand');
+    const createTableCalls = client.send.mock.calls.filter(
+      ([cmd]: any[]) => cmd.constructor.name === 'CreateTableCommand'
+    );
     expect(createTableCalls.length).toBeGreaterThan(0);
     await expect(store.delete('missing')).resolves.toBe(false);
   });
 
   it('covers cassandra and firebase not-found/false-delete branches', async () => {
     expect.assertions(4);
-    const cassandraStore = new ExternalStoreProxy<any>('Cassandra', 'User', new FakeConnector(createCassandraClient(), 'cassandra'));
+    const cassandraStore = new ExternalStoreProxy<any>(
+      'Cassandra',
+      'User',
+      new FakeConnector(createCassandraClient(), 'cassandra')
+    );
     await expect(cassandraStore.getOneById('missing')).rejects.toThrow(DataBaseNotFoundError);
     await expect(cassandraStore.delete('missing')).resolves.toBe(false);
 
-    const firebaseStore = new ExternalStoreProxy<any>('Firebase', 'User', new FakeConnector(createFirebaseClient(), 'firebase'));
+    const firebaseStore = new ExternalStoreProxy<any>(
+      'Firebase',
+      'User',
+      new FakeConnector(createFirebaseClient(), 'firebase')
+    );
     await expect(firebaseStore.getOneById('missing')).rejects.toThrow(DataBaseNotFoundError);
     await expect(firebaseStore.delete('missing')).resolves.toBe(false);
   });
 
   it('covers oracle not-found/false-delete branches', async () => {
     expect.assertions(2);
-    const oracleStore = new ExternalStoreProxy<any>('Oracle', 'User', new FakeConnector(createOracleClient(), 'oracle'));
+    const oracleStore = new ExternalStoreProxy<any>(
+      'Oracle',
+      'User',
+      new FakeConnector(createOracleClient(), 'oracle')
+    );
     await expect(oracleStore.getOneById('missing')).rejects.toThrow(DataBaseNotFoundError);
     await expect(oracleStore.delete('missing')).resolves.toBe(false);
   });
@@ -550,23 +606,37 @@ describe('external store proxy', () => {
     const proxyClass = ExternalStoreProxy as any;
     expect(proxyClass.parsePayload(null)).toBeNull();
     expect(proxyClass.parsePayload({ payload: { id: 'u1' } })).toStrictEqual({ id: 'u1' });
-    expect(proxyClass.parsePayload({ payload_json: JSON.stringify({ id: 'u2' }) })).toStrictEqual({ id: 'u2' });
-    expect(proxyClass.parsePayload({ payload: JSON.stringify({ id: 'u3' }) })).toStrictEqual({ id: 'u3' });
+    expect(proxyClass.parsePayload({ payload_json: JSON.stringify({ id: 'u2' }) })).toStrictEqual({
+      id: 'u2'
+    });
+    expect(proxyClass.parsePayload({ payload: JSON.stringify({ id: 'u3' }) })).toStrictEqual({
+      id: 'u3'
+    });
     expect(proxyClass.parsePayload({ id: 'u4' })).toStrictEqual({ id: 'u4' });
   });
 
   it('covers sql duplicate-id and not-found branches', async () => {
     expect.assertions(3);
-    const store = new ExternalStoreProxy<any>('PostgreSQL', 'User', new FakeConnector(createSqlClient(), 'sequelize'));
+    const store = new ExternalStoreProxy<any>(
+      'PostgreSQL',
+      'User',
+      new FakeConnector(createSqlClient(), 'sequelize')
+    );
     await store.create('u1', { id: 'u1', username: 'john' });
     await expect(store.create('u1', { id: 'u1', username: 'john' })).rejects.toThrow(ConflictError);
-    await expect(store.update('missing', { username: 'new' })).rejects.toThrow(DataBaseNotFoundError);
+    await expect(store.update('missing', { username: 'new' })).rejects.toThrow(
+      DataBaseNotFoundError
+    );
     await expect(store.getOneById('missing')).rejects.toThrow(DataBaseNotFoundError);
   });
 
   it('covers sql raw-row fallback without payload', async () => {
     expect.assertions(1);
-    const store = new ExternalStoreProxy<any>('PostgreSQL', 'User', new FakeConnector(createSqlClientWithoutPayload(), 'sequelize'));
+    const store = new ExternalStoreProxy<any>(
+      'PostgreSQL',
+      'User',
+      new FakeConnector(createSqlClientWithoutPayload(), 'sequelize')
+    );
     await store.create('u1', { id: 'u1', username: 'john' });
     await expect(store.getOneById('u1')).resolves.toStrictEqual({ id: 'u1', username: 'john' });
   });
@@ -578,15 +648,18 @@ describe('external store proxy', () => {
       'User',
       new FakeConnector(createMongoClient(), 'mongo')
     );
-    await expect(mongoStore.update('missing', { username: 'john' })).rejects.toThrow(DataBaseNotFoundError);
+    await expect(mongoStore.update('missing', { username: 'john' })).rejects.toThrow(
+      DataBaseNotFoundError
+    );
 
     const dynamoStore = new ExternalStoreProxy<any>(
       'DynamoDB',
       'User',
       new FakeConnector(createDynamoClientWithNullScanRows(), 'dynamodb')
     );
-    await expect(dynamoStore.getAll({}, { page: 1, size: 10 }))
-      .resolves.toMatchObject({ total: 1 });
+    await expect(dynamoStore.getAll({}, { page: 1, size: 10 })).resolves.toMatchObject({
+      total: 1
+    });
   });
 
   it('covers unique conflicts for cassandra/firebase/oracle and oracle table-existing branch', async () => {
@@ -597,7 +670,9 @@ describe('external store proxy', () => {
       new FakeConnector(createCassandraClient(), 'cassandra')
     );
     await cassandraStore.create('u1', { id: 'u1', username: 'john' });
-    await expect(cassandraStore.create('u2', { id: 'u2', username: 'JOHN' })).rejects.toThrow(ConflictError);
+    await expect(cassandraStore.create('u2', { id: 'u2', username: 'JOHN' })).rejects.toThrow(
+      ConflictError
+    );
 
     const firebaseStore = new ExternalStoreProxy<any>(
       'Firebase',
@@ -605,7 +680,9 @@ describe('external store proxy', () => {
       new FakeConnector(createFirebaseClient(), 'firebase')
     );
     await firebaseStore.create('u1', { id: 'u1', username: 'john' });
-    await expect(firebaseStore.create('u2', { id: 'u2', username: 'JOHN' })).rejects.toThrow(ConflictError);
+    await expect(firebaseStore.create('u2', { id: 'u2', username: 'JOHN' })).rejects.toThrow(
+      ConflictError
+    );
 
     const oracleStore = new ExternalStoreProxy<any>(
       'Oracle',
@@ -613,15 +690,18 @@ describe('external store proxy', () => {
       new FakeConnector(createOracleClient(), 'oracle')
     );
     await oracleStore.create('u1', { id: 'u1', username: 'john' });
-    await expect(oracleStore.create('u2', { id: 'u2', username: 'JOHN' })).rejects.toThrow(ConflictError);
+    await expect(oracleStore.create('u2', { id: 'u2', username: 'JOHN' })).rejects.toThrow(
+      ConflictError
+    );
 
     const oracleExistingTable = new ExternalStoreProxy<any>(
       'Oracle',
       'User',
       new FakeConnector(createOracleClientTableAlreadyExists(), 'oracle')
     );
-    await expect(oracleExistingTable.getAll({}, { page: 1, size: 10 }))
-      .resolves.toMatchObject({ total: 0 });
+    await expect(oracleExistingTable.getAll({}, { page: 1, size: 10 })).resolves.toMatchObject({
+      total: 0
+    });
   });
 
   it('rethrows oracle table creation errors when they are not ORA-00955', async () => {
@@ -636,21 +716,53 @@ describe('external store proxy', () => {
 
   it('covers internal unique validators conflict branches directly', async () => {
     expect.assertions(4);
-    const dynamoStore: any = new ExternalStoreProxy<any>('DynamoDB', 'User', new FakeConnector({}, 'dynamodb'));
-    jest.spyOn(dynamoStore, 'dynamoGetAllRaw' as any).mockResolvedValue([{ id: 'u2', username: 'john' }]);
-    await expect(dynamoStore.validateDynamoUnique('u1', { username: 'JOHN' })).rejects.toThrow(ConflictError);
+    const dynamoStore: any = new ExternalStoreProxy<any>(
+      'DynamoDB',
+      'User',
+      new FakeConnector({}, 'dynamodb')
+    );
+    jest
+      .spyOn(dynamoStore, 'dynamoGetAllRaw' as any)
+      .mockResolvedValue([{ id: 'u2', username: 'john' }]);
+    await expect(
+      dynamoStore.validateDynamoUnique('u1', { username: 'JOHN' }) as Promise<void>
+    ).rejects.toThrow(ConflictError);
 
-    const cassandraStore: any = new ExternalStoreProxy<any>('Cassandra', 'User', new FakeConnector({}, 'cassandra'));
-    jest.spyOn(cassandraStore, 'cassandraGetAllRaw' as any).mockResolvedValue([{ id: 'u2', username: 'john' }]);
-    await expect(cassandraStore.validateCassandraUnique('u1', { username: 'JOHN' })).rejects.toThrow(ConflictError);
+    const cassandraStore: any = new ExternalStoreProxy<any>(
+      'Cassandra',
+      'User',
+      new FakeConnector({}, 'cassandra')
+    );
+    jest
+      .spyOn(cassandraStore, 'cassandraGetAllRaw' as any)
+      .mockResolvedValue([{ id: 'u2', username: 'john' }]);
+    await expect(
+      cassandraStore.validateCassandraUnique('u1', { username: 'JOHN' }) as Promise<void>
+    ).rejects.toThrow(ConflictError);
 
-    const firebaseStore: any = new ExternalStoreProxy<any>('Firebase', 'User', new FakeConnector({}, 'firebase'));
-    jest.spyOn(firebaseStore, 'firebaseGetAllRaw' as any).mockResolvedValue([{ id: 'u2', username: 'john' }]);
-    await expect(firebaseStore.validateFirebaseUnique('u1', { username: 'JOHN' })).rejects.toThrow(ConflictError);
+    const firebaseStore: any = new ExternalStoreProxy<any>(
+      'Firebase',
+      'User',
+      new FakeConnector({}, 'firebase')
+    );
+    jest
+      .spyOn(firebaseStore, 'firebaseGetAllRaw' as any)
+      .mockResolvedValue([{ id: 'u2', username: 'john' }]);
+    await expect(
+      firebaseStore.validateFirebaseUnique('u1', { username: 'JOHN' }) as Promise<void>
+    ).rejects.toThrow(ConflictError);
 
-    const oracleStore: any = new ExternalStoreProxy<any>('Oracle', 'User', new FakeConnector({}, 'oracle'));
-    jest.spyOn(oracleStore, 'oracleGetAllRaw' as any).mockResolvedValue([{ id: 'u2', username: 'john' }]);
-    await expect(oracleStore.validateOracleUnique('u1', { username: 'JOHN' })).rejects.toThrow(ConflictError);
+    const oracleStore: any = new ExternalStoreProxy<any>(
+      'Oracle',
+      'User',
+      new FakeConnector({}, 'oracle')
+    );
+    jest
+      .spyOn(oracleStore, 'oracleGetAllRaw' as any)
+      .mockResolvedValue([{ id: 'u2', username: 'john' }]);
+    await expect(
+      oracleStore.validateOracleUnique('u1', { username: 'JOHN' }) as Promise<void>
+    ).rejects.toThrow(ConflictError);
   });
 
   it('covers dynamo helper branches for null attributes and table ensure fallback', async () => {
@@ -661,16 +773,25 @@ describe('external store proxy', () => {
     expect(item.name).toStrictEqual({ NULL: true });
 
     const failingClient = createDynamoClientDescribeFails();
-    const store: any = new ExternalStoreProxy<any>('DynamoDB', 'User', new FakeConnector(failingClient, 'dynamodb'));
-    await expect(store.ensureDynamoTable()).rejects.toThrow('boom');
+    const store: any = new ExternalStoreProxy<any>(
+      'DynamoDB',
+      'User',
+      new FakeConnector(failingClient, 'dynamodb')
+    );
+    await expect(store.ensureDynamoTable() as Promise<void>).rejects.toThrow('boom');
   });
 
   it('covers oracle and sql branch paths for object rows, cached model and no-unique model lookup', async () => {
     expect.assertions(3);
     const oracleConnection = createOracleObjectRowsConnection();
-    const oracleStore = new ExternalStoreProxy<any>('Oracle', 'User', new FakeConnector(oracleConnection, 'oracle'));
-    await expect(oracleStore.getAll({}, { page: 1, size: 10 }))
-      .resolves.toMatchObject({ total: 1 });
+    const oracleStore = new ExternalStoreProxy<any>(
+      'Oracle',
+      'User',
+      new FakeConnector(oracleConnection, 'oracle')
+    );
+    await expect(oracleStore.getAll({}, { page: 1, size: 10 })).resolves.toMatchObject({
+      total: 1
+    });
 
     const model = {
       sync: jest.fn().mockResolvedValue(undefined),
@@ -686,8 +807,14 @@ describe('external store proxy', () => {
       define: jest.fn().mockReturnValue(model),
       Sequelize: { DataTypes: {} }
     };
-    const sqlStore: any = new ExternalStoreProxy<any>('PostgreSQL', 'User', new FakeConnector(sequelize, 'sequelize'));
-    await expect(sqlStore.getSqlModel()).resolves.toBe(model);
-    await expect(sqlStore.validateSqlUnique(model, 'u1', { username: 'john' })).resolves.toBeUndefined();
+    const sqlStore: any = new ExternalStoreProxy<any>(
+      'PostgreSQL',
+      'User',
+      new FakeConnector(sequelize, 'sequelize')
+    );
+    await expect(sqlStore.getSqlModel() as Promise<unknown>).resolves.toBe(model);
+    await expect(
+      sqlStore.validateSqlUnique(model, 'u1', { username: 'john' }) as Promise<void>
+    ).resolves.toBeUndefined();
   });
 });

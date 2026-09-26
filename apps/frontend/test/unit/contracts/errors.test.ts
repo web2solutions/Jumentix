@@ -1,20 +1,21 @@
 import { describe, expect, it } from 'bun:test';
 
 import { formatApiError, isNotFoundError } from '@/contracts/errors';
-
 import { setLocale } from '@/i18n';
 
-const apiError = (status: number, body: unknown) => (
-  new Error(`REST request failed: ${status} ${typeof body === 'string' ? body : JSON.stringify(body)}`)
-);
+const apiError = (status: number, body: unknown) =>
+  new Error(
+    `REST request failed: ${status} ${typeof body === 'string' ? body : JSON.stringify(body)}`
+  );
 
 setLocale('pt-BR');
 
 describe('formatApiError (JUM-765)', () => {
   it('keeps the backend message on 400', () => {
     expect.assertions(1);
-    expect(formatApiError(apiError(400, { message: 'username can not be empty' })))
-      .toBe('username can not be empty');
+    expect(formatApiError(apiError(400, { message: 'username can not be empty' }))).toBe(
+      'username can not be empty'
+    );
   });
 
   it('maps 401 to an expired-session message', () => {
@@ -29,12 +30,16 @@ describe('formatApiError (JUM-765)', () => {
 
   it('maps 404 to a not-found message', () => {
     expect.assertions(1);
-    expect(formatApiError(apiError(404, {}))).toBe('Registro não encontrado — a lista foi atualizada.');
+    expect(formatApiError(apiError(404, {}))).toBe(
+      'Registro não encontrado — a lista foi atualizada.'
+    );
   });
 
   it('maps 5xx to a server-error message', () => {
     expect.assertions(1);
-    expect(formatApiError(apiError(500, { message: '' }))).toBe('Erro interno do servidor — tente novamente em instantes.');
+    expect(formatApiError(apiError(500, { message: '' }))).toBe(
+      'Erro interno do servidor — tente novamente em instantes.'
+    );
   });
 
   it('detects 404 errors for the benign-delete path', () => {
@@ -56,7 +61,9 @@ describe('formatApiError (JUM-765)', () => {
 
   it('keeps the backend message on 409 conflicts', () => {
     expect.assertions(2);
-    expect(formatApiError(apiError(409, { message: 'username already exists' }))).toBe('username already exists');
+    expect(formatApiError(apiError(409, { message: 'username already exists' }))).toBe(
+      'username already exists'
+    );
     expect(formatApiError(apiError(409, {}))).toBe('Conflito com o estado atual do registro.');
   });
 

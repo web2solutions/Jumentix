@@ -1,7 +1,7 @@
 import type { Component } from 'vue';
 
-import type { MetricsInterval, MetricsKind } from '@/contracts/metricsSchema';
 import type { XCrudText } from '@/components/x-crud/xCrudTypes';
+import type { MetricsInterval, MetricsKind } from '@/contracts/metricsSchema';
 
 export type DashboardWidgetSize = 'sm' | 'md' | 'lg';
 

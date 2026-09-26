@@ -1,10 +1,6 @@
+import { createClient, OPERATION_LEDGER_STORE, pruneLedger, withLedgerStore } from '../src';
+
 import type { CanaSchema } from '../src';
-import {
-  OPERATION_LEDGER_STORE,
-  createClient,
-  pruneLedger,
-  withLedgerStore
-} from '../src';
 
 /**
  * The ledger's whole claim is that the operation id and the data commit or roll
@@ -12,7 +8,10 @@ import {
  * IndexedDB — the atomicity being relied on is the store's, not the engine's.
  */
 
-interface Design { id: number; name: string }
+interface Design {
+  id: number;
+  name: string;
+}
 
 const schema: CanaSchema = {
   version: 1,
@@ -21,7 +20,10 @@ const schema: CanaSchema = {
 
 async function ledgeredClient(factory = indexedDB) {
   const client = createClient({
-    name: 'designer', schema, factory, operationLedger: true
+    name: 'designer',
+    schema,
+    factory,
+    operationLedger: true
   });
   await client.open();
   return client;
@@ -55,7 +57,9 @@ describe('cana operation ledger', () => {
     const client = createClient({ name: 'designer', schema });
     await client.open();
 
-    const failure = await client.table(OPERATION_LEDGER_STORE).count()
+    const failure = await client
+      .table(OPERATION_LEDGER_STORE)
+      .count()
       .catch((error: unknown) => error);
 
     expect(failure).to.not.equal(undefined);
@@ -76,10 +80,12 @@ describe('cana operation ledger', () => {
     // confidently skip a write that was actually lost.
     const client = await ledgeredClient();
 
-    await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add({ id: 1, name: 'a' });
-      scope.abort();
-    }).catch(() => undefined);
+    await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add({ id: 1, name: 'a' });
+        scope.abort();
+      })
+      .catch(() => undefined);
 
     expect(await ledgerIds(client)).to.deep.equal([]);
     expect(await client.table<Design>('designs').count()).to.equal(0);
@@ -93,10 +99,12 @@ describe('cana operation ledger', () => {
     const client = await ledgeredClient();
 
     await client.table<Design>('designs').add({ id: 1, name: 'kept' });
-    await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add({ id: 2, name: 'discarded' });
-      scope.abort();
-    }).catch(() => undefined);
+    await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add({ id: 2, name: 'discarded' });
+        scope.abort();
+      })
+      .catch(() => undefined);
 
     expect(await ledgerIds(client)).to.have.lengthOf(1);
     expect(await client.table<Design>('designs').count()).to.equal(1);
@@ -157,7 +165,7 @@ describe('cana write resolution', () => {
     // "rolled-back" would tell a caller to safely retry a write that already
     // landed.
     const client = await ledgeredClient();
-    const longAgo = Date.now() - (48 * 60 * 60 * 1000);
+    const longAgo = Date.now() - 48 * 60 * 60 * 1000;
 
     expect(await client.resolveWrite('ancient:1', longAgo)).to.equal('unresolvable');
     await client.close();
@@ -184,7 +192,7 @@ describe('cana ledger pruning', () => {
     // which is why the assertions below name ids rather than count rows.
     const ledger = client.table<{ id: string; at: number }>(OPERATION_LEDGER_STORE);
     const [existing] = await ledger.query();
-    await ledger.put({ ...existing, id: 'old:1', at: Date.now() - (48 * 60 * 60 * 1000) });
+    await ledger.put({ ...existing, id: 'old:1', at: Date.now() - 48 * 60 * 60 * 1000 });
 
     expect(await ledgerIds(client)).to.include('old:1');
 

@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+const rootPackage = require('../../package.json');
 const {
   DEFAULT_INTEGRATION_TIMEOUT_MS,
+  executeIntegrationScript,
   INTEGRATION_SCRIPTS,
   INTEGRATION_TIMEOUT_OVERRIDES_MS,
-  executeIntegrationScript,
   runIntegrationTests,
   validateIntegrationManifest
 } = require('../run-integration-tests');
-const rootPackage = require('../../package.json');
 
 describe('run-integration-tests', () => {
   it('covers every supported integration runtime, including Lambda', () => {
@@ -49,17 +48,18 @@ describe('run-integration-tests', () => {
     // Both spellings are rejected for the other two, so migrating back would not
     // quietly reintroduce headroom where the point is that there is none.
     expect(rootPackage.scripts['test:integration:restify']).toContain('--timeout 15000');
-    expect(rootPackage.scripts['test:integration:express']).not.toMatch(/--(testTimeout|timeout)\b/);
-    expect(rootPackage.scripts['test:integration:fastify']).not.toMatch(/--(testTimeout|timeout)\b/);
+    expect(rootPackage.scripts['test:integration:express']).not.toMatch(
+      /--(testTimeout|timeout)\b/
+    );
+    expect(rootPackage.scripts['test:integration:fastify']).not.toMatch(
+      /--(testTimeout|timeout)\b/
+    );
   });
 
   it('runs every target and aggregates failures instead of stopping early', () => {
     expect.hasAssertions();
     const scripts = ['first', 'failing', 'last'];
-    const execute = jest.fn()
-      .mockReturnValueOnce(0)
-      .mockReturnValueOnce(2)
-      .mockReturnValueOnce(0);
+    const execute = jest.fn().mockReturnValueOnce(0).mockReturnValueOnce(2).mockReturnValueOnce(0);
     const logger = {
       log: jest.fn(),
       error: jest.fn()
@@ -67,11 +67,7 @@ describe('run-integration-tests', () => {
 
     const failures = runIntegrationTests({ scripts, execute, logger });
 
-    expect(execute.mock.calls).toStrictEqual([
-      ['first'],
-      ['failing'],
-      ['last']
-    ]);
+    expect(execute.mock.calls).toStrictEqual([['first'], ['failing'], ['last']]);
     expect(failures).toStrictEqual([{ scriptName: 'failing', status: 2 }]);
     expect(logger.error).toHaveBeenCalledWith('- failing (exit 2)');
   });
@@ -83,10 +79,12 @@ describe('run-integration-tests', () => {
       error: { code: 'ETIMEDOUT' }
     });
 
-    expect(executeIntegrationScript('slow-target', {
-      spawn,
-      timeoutMs: 1_000
-    })).toBe(124);
+    expect(
+      executeIntegrationScript('slow-target', {
+        spawn,
+        timeoutMs: 1_000
+      })
+    ).toBe(124);
     expect(spawn).toHaveBeenCalledWith('bun', ['run', 'slow-target'], {
       stdio: 'inherit',
       env: expect.objectContaining({ CI: 'true' }),
@@ -102,21 +100,21 @@ describe('run-integration-tests', () => {
     });
   });
 
-  it.each([
-    'test:integration:express',
-    'test:integration:fastify'
-  ])('gives the complete %s HTTP suite deterministic process headroom', (scriptName) => {
-    expect.hasAssertions();
-    const spawn = jest.fn().mockReturnValue({ status: 0 });
+  it.each(['test:integration:express', 'test:integration:fastify'])(
+    'gives the complete %s HTTP suite deterministic process headroom',
+    (scriptName) => {
+      expect.hasAssertions();
+      const spawn = jest.fn().mockReturnValue({ status: 0 });
 
-    expect(executeIntegrationScript(scriptName, { spawn })).toBe(0);
-    expect(spawn).toHaveBeenCalledWith('bun', ['run', scriptName], {
-      stdio: 'inherit',
-      env: expect.objectContaining({ CI: 'true' }),
-      timeout: 300_000,
-      killSignal: 'SIGTERM'
-    });
-  });
+      expect(executeIntegrationScript(scriptName, { spawn })).toBe(0);
+      expect(spawn).toHaveBeenCalledWith('bun', ['run', scriptName], {
+        stdio: 'inherit',
+        env: expect.objectContaining({ CI: 'true' }),
+        timeout: 300_000,
+        killSignal: 'SIGTERM'
+      });
+    }
+  );
 
   it('gives only complete Restify extra finite process headroom under extreme load', () => {
     expect.hasAssertions();
@@ -146,15 +144,16 @@ describe('run-integration-tests', () => {
 
   it('fails closed when the required target manifest is empty or duplicated', () => {
     expect.hasAssertions();
-    expect(() => validateIntegrationManifest([]))
-      .toThrow('at least one required target');
-    expect(() => validateIntegrationManifest(['same', 'same']))
-      .toThrow('duplicate required targets');
+    expect(() => validateIntegrationManifest([])).toThrow('at least one required target');
+    expect(() => validateIntegrationManifest(['same', 'same'])).toThrow(
+      'duplicate required targets'
+    );
   });
 
   it('reports unexpected target crashes and continues with remaining targets', () => {
     expect.hasAssertions();
-    const execute = jest.fn()
+    const execute = jest
+      .fn()
       .mockImplementationOnce(() => {
         throw new Error('boom');
       })

@@ -13,30 +13,42 @@ function queueDouble() {
     enqueue: jest.fn(),
     pending: jest.fn(),
     replay: jest.fn().mockResolvedValue({
-      replayed: [], retried: [], abandoned: [], skipped: []
+      replayed: [],
+      retried: [],
+      abandoned: [],
+      skipped: []
     })
   };
 }
 
 /** A controllable interval, so the tests measure behaviour rather than wait. */
 function fakeTimers() {
-  const ticks: Array<() => void> = [];
+  const ticks: (() => void)[] = [];
   return {
     ticks,
     setIntervalFn: ((handler: () => void) => {
       ticks.push(handler);
       return { unref: () => undefined } as unknown as ReturnType<typeof setInterval>;
     }) as unknown as typeof setInterval,
-    clearIntervalFn: (() => { ticks.length = 0; }) as unknown as typeof clearInterval,
-    fire() { ticks.forEach((handler) => handler()); }
+    clearIntervalFn: (() => {
+      ticks.length = 0;
+    }) as unknown as typeof clearInterval,
+    fire() {
+      ticks.forEach((handler) => handler());
+    }
   };
 }
 
 function queueWithOnePending() {
   const queue = new DeadLetterQueue();
-  return queue.enqueue({
-    entityName: 'User', resourceId: 'user-1', operation: 'update', payload: { firstName: 'Ada' }
-  }).then(() => queue);
+  return queue
+    .enqueue({
+      entityName: 'User',
+      resourceId: 'user-1',
+      operation: 'update',
+      payload: { firstName: 'Ada' }
+    })
+    .then(() => queue);
 }
 
 describe('deadLetterReplayWorker (JUM-53)', () => {
@@ -47,7 +59,11 @@ describe('deadLetterReplayWorker (JUM-53)', () => {
     const applied: string[] = [];
     const worker = new DeadLetterReplayWorker({
       queue,
-      handlers: { update: async (record) => { applied.push(record.resourceId); } }
+      handlers: {
+        update: async (record) => {
+          applied.push(record.resourceId);
+        }
+      }
     });
 
     const report = await worker.tick();
@@ -64,11 +80,18 @@ describe('deadLetterReplayWorker (JUM-53)', () => {
     // twice concurrently — the duplicate write this design exists to avoid.
     const queue = await queueWithOnePending();
     let release: () => void = () => undefined;
-    const blocked = new Promise<void>((resolve) => { release = resolve; });
+    const blocked = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     let calls = 0;
     const worker = new DeadLetterReplayWorker({
       queue,
-      handlers: { update: async () => { calls += 1; await blocked; } }
+      handlers: {
+        update: async () => {
+          calls += 1;
+          await blocked;
+        }
+      }
     });
 
     const first = worker.tick();
@@ -92,11 +115,12 @@ describe('deadLetterReplayWorker (JUM-53)', () => {
     // first error is indistinguishable from one never started.
     const failures: unknown[] = [];
     const queue = queueDouble();
-    queue.replay
-      .mockRejectedValueOnce(new Error('redis unreachable'))
-      .mockResolvedValueOnce({
-        replayed: ['dlq-1'], retried: [], abandoned: [], skipped: []
-      });
+    queue.replay.mockRejectedValueOnce(new Error('redis unreachable')).mockResolvedValueOnce({
+      replayed: ['dlq-1'],
+      retried: [],
+      abandoned: [],
+      skipped: []
+    });
     const worker = new DeadLetterReplayWorker({
       queue: queue as never,
       handlers: { update: async () => undefined },
@@ -167,14 +191,24 @@ describe('deadLetterReplayWorker (JUM-53)', () => {
 
     // A worker with no handlers skips every record and reports success, which
     // reads exactly like a working one.
-    expect(() => new DeadLetterReplayWorker({ queue: {} as never, handlers: {} }))
-      .toThrow('at least one handler');
-    expect(() => new DeadLetterReplayWorker({
-      queue: undefined as never, handlers: { a: async () => undefined }
-    })).toThrow('requires a queue');
-    expect(() => new DeadLetterReplayWorker({
-      queue: {} as never, handlers: { a: async () => undefined }, intervalMs: 0
-    })).toThrow('positive intervalMs');
+    expect(() => new DeadLetterReplayWorker({ queue: {} as never, handlers: {} })).toThrow(
+      'at least one handler'
+    );
+    expect(
+      () =>
+        new DeadLetterReplayWorker({
+          queue: undefined as never,
+          handlers: { a: async () => undefined }
+        })
+    ).toThrow('requires a queue');
+    expect(
+      () =>
+        new DeadLetterReplayWorker({
+          queue: {} as never,
+          handlers: { a: async () => undefined },
+          intervalMs: 0
+        })
+    ).toThrow('positive intervalMs');
   });
 
   it('stopping before ever starting is a no-op, not an error', () => {
@@ -214,7 +248,10 @@ describe('deadLetterReplayWorker (JUM-53)', () => {
       handlers: { update: async () => undefined },
       setIntervalFn: timers.setIntervalFn,
       clearIntervalFn: timers.clearIntervalFn,
-      onError: () => { reports += 1; throw new Error('reporter down'); }
+      onError: () => {
+        reports += 1;
+        throw new Error('reporter down');
+      }
     });
 
     worker.start();
@@ -230,7 +267,10 @@ describe('deadLetterReplayWorker (JUM-53)', () => {
 
     // The failed reporter did not wedge the drain latch: the next tick runs.
     queue.replay.mockResolvedValue({
-      replayed: ['dlq-9'], retried: [], abandoned: [], skipped: []
+      replayed: ['dlq-9'],
+      retried: [],
+      abandoned: [],
+      skipped: []
     });
     timers.fire();
     await Promise.resolve();

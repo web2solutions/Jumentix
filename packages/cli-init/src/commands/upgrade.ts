@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
 import {
   assembleWorkspace,
   buildManifestJson,
@@ -14,19 +15,19 @@ import {
   sha256File,
   writeBaselineObjects
 } from '../generators';
-import type { GenerationPlan } from '../sources';
 import {
   formatUpgradeReportMarkdown,
   planFileUpgrade,
-  summarizeResults,
-  type UpgradeFileResult,
-  type UpgradeReport
+  summarizeResults
 } from '../upgrade/threeWay';
+
+import type { GenerationPlan } from '../sources';
+import type { UpgradeFileResult, UpgradeReport } from '../upgrade/threeWay';
 
 const PROJECT_META = '.jumentix/project.json';
 const MANIFEST_META = '.jumentix/manifest.json';
 
-type ProjectDocument = {
+interface ProjectDocument {
   schemaVersion: number;
   cliVersion: string;
   template: { version: number; commit: string };
@@ -34,13 +35,13 @@ type ProjectDocument = {
   plan: GenerationPlan;
   createdAt: string;
   updatedAt: string;
-};
+}
 
-type ManifestDocument = {
+interface ManifestDocument {
   schemaVersion: number;
   generatedAt: string;
   files: Record<string, { sha256: string }>;
-};
+}
 
 export function printUpgradeHelp(log: (message?: string) => void = console.log): void {
   log(`
@@ -84,8 +85,8 @@ function loadProjectDocument(rootDir: string): ProjectDocument {
   const projectPath = path.join(rootDir, ...PROJECT_META.split('/'));
   if (!fs.existsSync(projectPath)) {
     throw new Error(
-      `Missing ${PROJECT_META}. Run this command inside a project created by `
-      + '`jumentix init` (or pass the project directory as cwd).'
+      `Missing ${PROJECT_META}. Run this command inside a project created by ` +
+        '`jumentix init` (or pass the project directory as cwd).'
     );
   }
   return JSON.parse(fs.readFileSync(projectPath, 'utf8')) as ProjectDocument;
@@ -95,8 +96,8 @@ function loadManifestDocument(rootDir: string): ManifestDocument {
   const manifestPath = path.join(rootDir, ...MANIFEST_META.split('/'));
   if (!fs.existsSync(manifestPath)) {
     throw new Error(
-      `Missing ${MANIFEST_META}. Re-run \`jumentix init\` or restore the `
-      + 'generated-file hash manifest before upgrading.'
+      `Missing ${MANIFEST_META}. Re-run \`jumentix init\` or restore the ` +
+        'generated-file hash manifest before upgrading.'
     );
   }
   return JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as ManifestDocument;
@@ -152,18 +153,12 @@ async function regenerateIncoming(options: {
   packageRoot: string;
   log: (message?: string) => void;
 }): Promise<Record<string, string>> {
-  const {
-    plan,
-    projectName,
-    packageRoot,
-    log
-  } = options;
+  const { plan, projectName, packageRoot, log } = options;
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'jumentix-upgrade-'));
   try {
     const hasBackend = plan.mode !== 'frontend' && plan.services.length > 0;
-    const hasFrontend = Boolean(
-      plan.frontend || plan.mode === 'hybrid' || plan.mode === 'frontend'
-    );
+    const hasFrontend =
+      Boolean(plan.frontend) || plan.mode === 'hybrid' || plan.mode === 'frontend';
     if (hasBackend) {
       await generateBackend({
         plan,
@@ -254,8 +249,8 @@ export async function runUpgrade(options: {
 
   if (!force && isGitWorkingTreeDirty(rootDir)) {
     log(
-      'Refusing to upgrade: git working tree is dirty. '
-      + 'Commit or stash changes, or pass --force.'
+      'Refusing to upgrade: git working tree is dirty. ' +
+        'Commit or stash changes, or pass --force.'
     );
     return 1;
   }
@@ -263,23 +258,21 @@ export async function runUpgrade(options: {
   const projectName = path.basename(rootDir);
   let incoming: Record<string, string>;
   try {
-    incoming = incomingFiles
-      || await regenerateIncoming({
+    incoming =
+      incomingFiles ??
+      (await regenerateIncoming({
         plan: project.plan,
         projectName,
         packageRoot,
         log
-      });
+      }));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     log(`\nError: failed to build incoming template tree: ${message}`);
     return 1;
   }
 
-  const paths = new Set([
-    ...Object.keys(manifest.files || {}),
-    ...Object.keys(incoming)
-  ]);
+  const paths = new Set([...Object.keys(manifest.files || {}), ...Object.keys(incoming)]);
 
   const results: UpgradeFileResult[] = [];
   for (const rel of [...paths].sort((left, right) => left.localeCompare(right))) {
@@ -287,18 +280,18 @@ export async function runUpgrade(options: {
       const baseHash = manifest.files?.[rel]?.sha256;
       const absolute = path.join(rootDir, ...rel.split('/'));
       const oursContent = readTextIfExists(absolute);
-      const theirsContent = Object.prototype.hasOwnProperty.call(incoming, rel)
-        ? incoming[rel]
-        : null;
+      const theirsContent = Object.hasOwn(incoming, rel) ? incoming[rel] : null;
       const baseContent = baseHash ? readBaselineObject(rootDir, baseHash) : null;
 
-      results.push(planFileUpgrade({
-        relPath: rel,
-        baseHash,
-        baseContent,
-        oursContent,
-        theirsContent
-      }));
+      results.push(
+        planFileUpgrade({
+          relPath: rel,
+          baseHash,
+          baseContent,
+          oursContent,
+          theirsContent
+        })
+      );
     }
   }
 
@@ -348,8 +341,8 @@ export async function runUpgrade(options: {
   writeBaselineObjects(rootDir, nextManifest.files);
 
   log(
-    `Upgrade applied (${report.updated.length} updated, `
-    + `${report.conflicted.length} conflicted, ${report.added.length} added).`
+    `Upgrade applied (${report.updated.length} updated, ` +
+      `${report.conflicted.length} conflicted, ${report.added.length} added).`
   );
   return report.conflicted.length > 0 ? 1 : 0;
 }

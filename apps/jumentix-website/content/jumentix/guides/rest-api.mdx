@@ -1,6 +1,6 @@
 ---
-title: "Create a REST API"
-description: "Build contract-first REST APIs with Jumentix."
+title: 'Create a REST API'
+description: 'Build contract-first REST APIs with Jumentix.'
 ---
 
 # Creating REST API with Jumentix
@@ -26,27 +26,27 @@ guide gives you a repeatable path from env profile → running server → green 
 
 ## Prerequisites
 
-| Item | Required | Notes |
-| --- | --- | --- |
-| Bun 1.3.13+ | Yes | See [Getting started](/docs/jumentix/concepts/getting-started) |
-| Completed getting-started | Recommended | Mental model + Cana playground |
-| Backend template scaffold | Yes | Use the monorepo `apps/backend-template` or your internal bootstrap flow |
-| Service Management (optional) | For design-first teams | Domain Designer generates entities aligned with OpenAPI |
+| Item                          | Required               | Notes                                                                    |
+| ----------------------------- | ---------------------- | ------------------------------------------------------------------------ |
+| Bun 1.3.13+                   | Yes                    | See [Getting started](/docs/jumentix/concepts/getting-started)           |
+| Completed getting-started     | Recommended            | Mental model + Cana playground                                           |
+| Backend template scaffold     | Yes                    | Use the monorepo `apps/backend-template` or your internal bootstrap flow |
+| Service Management (optional) | For design-first teams | Domain Designer generates entities aligned with OpenAPI                  |
 
 **Environment file:** `apps/backend-template/src/config/.env.dev` (or your scaffold’s equivalent).
 
 ## Glossary
 
-| Term | Meaning on this page |
-| --- | --- |
-| **REST** | HTTP API using verbs (GET, POST, …) and JSON payloads. |
-| **OpenAPI** | Spec at `spec/1.0.0.yml` describing paths, schemas, and operationIds. |
-| **Runtime profile** | Env vars (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`) selecting adapters. |
-| **Controller** | Interface-layer class mapping HTTP requests to use-case calls. |
-| **Use case** | Application service implementing one business operation. |
-| **Repository port** | Interface for persistence; implemented by a database adapter. |
-| **HTTP adapter** | Express/Fastify/etc. module mounting routes from OpenAPI operationIds. |
-| **oas:check-routes** | Script verifying every OpenAPI path resolves to a registered handler. |
+| Term                 | Meaning on this page                                                              |
+| -------------------- | --------------------------------------------------------------------------------- |
+| **REST**             | HTTP API using verbs (GET, POST, …) and JSON payloads.                            |
+| **OpenAPI**          | Spec at `spec/1.0.0.yml` describing paths, schemas, and operationIds.             |
+| **Runtime profile**  | Env vars (`JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`) selecting adapters. |
+| **Controller**       | Interface-layer class mapping HTTP requests to use-case calls.                    |
+| **Use case**         | Application service implementing one business operation.                          |
+| **Repository port**  | Interface for persistence; implemented by a database adapter.                     |
+| **HTTP adapter**     | Express/Fastify/etc. module mounting routes from OpenAPI operationIds.            |
+| **oas:check-routes** | Script verifying every OpenAPI path resolves to a registered handler.             |
 
 ## Numbered steps
 
@@ -168,14 +168,14 @@ Try the mocked REST client — **Run** should return a successful `/health` resp
 
 ## Common errors
 
-| Symptom | Likely cause | Fix | Verify success |
-| --- | --- | --- | --- |
-| PM2 process exits immediately | Invalid env file path or missing secret | Confirm `--env-file=./apps/backend-template/src/config/.env.dev` | `bun run dev:http` stays online |
-| `oas:check-routes` fails | OpenAPI path has no handler | Add handler + controller method; rerun check | Script exits 0 |
-| 404 on documented route | Wrong HTTP framework adapter loaded | Match `JUMENTIX_HTTP_FRAMEWORK` to wired module | curl returns 200 |
-| Integration test timeout | Server not running or wrong port | Start dev profile before integration suite | `test:integration:express` green |
-| Browser client cannot load YAML | `fs.readFile` in bundle | Inject parsed OpenAPI object (playground pattern) | Mock client works in browser |
-| Domain imports Express | Layer violation | Move HTTP code to adapter/handler layer | `arch:check-boundaries` passes |
+| Symptom                         | Likely cause                            | Fix                                                              | Verify success                   |
+| ------------------------------- | --------------------------------------- | ---------------------------------------------------------------- | -------------------------------- |
+| PM2 process exits immediately   | Invalid env file path or missing secret | Confirm `--env-file=./apps/backend-template/src/config/.env.dev` | `bun run dev:http` stays online  |
+| `oas:check-routes` fails        | OpenAPI path has no handler             | Add handler + controller method; rerun check                     | Script exits 0                   |
+| 404 on documented route         | Wrong HTTP framework adapter loaded     | Match `JUMENTIX_HTTP_FRAMEWORK` to wired module                  | curl returns 200                 |
+| Integration test timeout        | Server not running or wrong port        | Start dev profile before integration suite                       | `test:integration:express` green |
+| Browser client cannot load YAML | `fs.readFile` in bundle                 | Inject parsed OpenAPI object (playground pattern)                | Mock client works in browser     |
+| Domain imports Express          | Layer violation                         | Move HTTP code to adapter/handler layer                          | `arch:check-boundaries` passes   |
 
 ## Junior checklist (“I can …”)
 

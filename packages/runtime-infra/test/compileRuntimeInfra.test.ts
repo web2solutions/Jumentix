@@ -1,4 +1,5 @@
 import { compileRuntimeInfra } from '../src/compileRuntimeInfra';
+
 import type { IRuntimeInfraCompilers } from '../src/compileRuntimeInfra';
 
 /**
@@ -23,9 +24,15 @@ import type { IRuntimeInfraCompilers } from '../src/compileRuntimeInfra';
  */
 const env = (over: Record<string, string> = {}) => over as NodeJS.ProcessEnv;
 
-type Client = { id: string };
-type Storage = { id: string };
-type Mutex = { storage: Storage };
+interface Client {
+  id: string;
+}
+interface Storage {
+  id: string;
+}
+interface Mutex {
+  storage: Storage;
+}
 
 /** Compilers that record what they were handed. */
 function recordingCompilers(over: Partial<IRuntimeInfraCompilers<Client, Storage, Mutex>> = {}) {

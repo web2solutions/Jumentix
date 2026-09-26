@@ -1,4 +1,5 @@
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+
 import type { IPasswordHasher } from '@src/infra/security/IPasswordCryptoService';
 
 /**
@@ -58,33 +59,39 @@ describe('password crypto service', () => {
 
   it('rejects when the hasher fails to generate a salt', async () => {
     expect.hasAssertions();
-    const service = new PasswordCryptoService(hasherWith({
-      genSalt: async () => {
-        throw new Error('salt-failed');
-      }
-    }));
+    const service = new PasswordCryptoService(
+      hasherWith({
+        genSalt: async () => {
+          throw new Error('salt-failed');
+        }
+      })
+    );
 
     await expect(service.hash('12345678')).rejects.toThrow('salt-failed');
   });
 
   it('rejects when the hasher fails to hash', async () => {
     expect.hasAssertions();
-    const service = new PasswordCryptoService(hasherWith({
-      hash: async () => {
-        throw new Error('hash-failed');
-      }
-    }));
+    const service = new PasswordCryptoService(
+      hasherWith({
+        hash: async () => {
+          throw new Error('hash-failed');
+        }
+      })
+    );
 
     await expect(service.hash('12345678')).rejects.toThrow('hash-failed');
   });
 
   it('rejects when the hasher fails to compare', async () => {
     expect.hasAssertions();
-    const service = new PasswordCryptoService(hasherWith({
-      compare: async () => {
-        throw new Error('compare-failed');
-      }
-    }));
+    const service = new PasswordCryptoService(
+      hasherWith({
+        compare: async () => {
+          throw new Error('compare-failed');
+        }
+      })
+    );
 
     await expect(service.compare('12345678', 'hash')).rejects.toThrow('compare-failed');
   });
@@ -93,10 +100,12 @@ describe('password crypto service', () => {
     expect.hasAssertions();
     // The success path through the injected seam, so the wrapper is shown to
     // pass values through rather than only to propagate errors.
-    const service = new PasswordCryptoService(hasherWith({
-      genSalt: async () => 'the-salt',
-      hash: async (_password, salt) => `hashed-with-${salt}`
-    }));
+    const service = new PasswordCryptoService(
+      hasherWith({
+        genSalt: async () => 'the-salt',
+        hash: async (_password, salt) => `hashed-with-${salt}`
+      })
+    );
 
     await expect(service.hash('12345678')).resolves.toStrictEqual({
       hash: 'hashed-with-the-salt',
@@ -115,32 +124,40 @@ describe('password crypto service', () => {
   it('rejects when the hasher reports neither a salt nor an error', async () => {
     expect.hasAssertions();
 
-    const service = new PasswordCryptoService(hasherWith({
-      genSalt: async () => undefined as unknown as string
-    }));
+    const service = new PasswordCryptoService(
+      hasherWith({
+        genSalt: async () => undefined as unknown as string
+      })
+    );
 
-    await expect(service.hash('12345678'))
-      .rejects.toThrow('password hasher returned no salt and no error');
+    await expect(service.hash('12345678')).rejects.toThrow(
+      'password hasher returned no salt and no error'
+    );
   });
 
   it('rejects when the hasher reports neither a hash nor an error', async () => {
     expect.hasAssertions();
 
-    const service = new PasswordCryptoService(hasherWith({
-      hash: async () => undefined as unknown as string
-    }));
+    const service = new PasswordCryptoService(
+      hasherWith({
+        hash: async () => undefined as unknown as string
+      })
+    );
 
-    await expect(service.hash('12345678'))
-      .rejects.toThrow('password hasher returned no hash and no error');
+    await expect(service.hash('12345678')).rejects.toThrow(
+      'password hasher returned no hash and no error'
+    );
   });
 
   it('treats a compare that resolves nothing as a non-match', async () => {
     expect.hasAssertions();
     // The `?? false` guard: an undefined result must not leak through as a
     // truthy "match" to a caller testing the resolved value.
-    const service = new PasswordCryptoService(hasherWith({
-      compare: async () => undefined as unknown as boolean
-    }));
+    const service = new PasswordCryptoService(
+      hasherWith({
+        compare: async () => undefined as unknown as boolean
+      })
+    );
 
     await expect(service.compare('12345678', 'hash')).resolves.toBe(false);
   });

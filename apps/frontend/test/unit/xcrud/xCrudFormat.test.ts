@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
-  badgeColorFor, formatCellValue, isInlineEditable, isScalarArray, pageWindow, shortId
+  badgeColorFor,
+  formatCellValue,
+  isInlineEditable,
+  isScalarArray,
+  pageWindow,
+  shortId
 } from '@/components/x-crud/xCrudFormat';
-
 /** JUM-772 redesign: grid formatters (X-SYNTH/Smart Table visual language). */
 import { setLocale } from '@/i18n';
 
@@ -21,8 +25,9 @@ describe('xCrudFormat helpers', () => {
     expect.assertions(3);
     expect(badgeColorFor('Active')).toBe(badgeColorFor('Active'));
     expect(badgeColorFor('Active')).not.toBe('');
-    expect(['primary', 'success', 'info', 'warning', 'danger', 'secondary'])
-      .toContain(badgeColorFor('whatever'));
+    expect(['primary', 'success', 'info', 'warning', 'danger', 'secondary']).toContain(
+      badgeColorFor('whatever')
+    );
   });
 
   it('pageWindow renders the x–y de N counter', () => {
@@ -36,11 +41,23 @@ describe('xCrudFormat helpers', () => {
   it('formatCellValue keeps grid semantics (arrays, booleans, currency, dates)', () => {
     expect.assertions(5);
     expect(formatCellValue({ name: 'emails', type: 'array', required: false }, [1, 2])).toBe('2');
-    expect(formatCellValue({ name: 'isPrimary', type: 'boolean', required: false }, true)).toBe('✓');
-    expect(formatCellValue({
-      name: 'price', type: 'number', format: 'currency', required: false
-    }, 45500)).toContain('45.500');
-    expect(formatCellValue({ name: 'password', type: 'string', required: false }, 'secret')).toBe('••••••••');
+    expect(formatCellValue({ name: 'isPrimary', type: 'boolean', required: false }, true)).toBe(
+      '✓'
+    );
+    expect(
+      formatCellValue(
+        {
+          name: 'price',
+          type: 'number',
+          format: 'currency',
+          required: false
+        },
+        45500
+      )
+    ).toContain('45.500');
+    expect(formatCellValue({ name: 'password', type: 'string', required: false }, 'secret')).toBe(
+      '••••••••'
+    );
     expect(formatCellValue({ name: 'name', type: 'string', required: false }, null)).toBe('—');
   });
 });
@@ -48,27 +65,47 @@ describe('xCrudFormat helpers', () => {
 describe('xCrudFormat numbers, dates and inline editing', () => {
   it('formats percent and plain numbers in the active locale', () => {
     expect.assertions(2);
-    expect(formatCellValue({
-      name: 'rate', type: 'number', format: 'percent', required: false
-    }, 12.5)).toBe('12.5%');
-    expect(formatCellValue({ name: 'amount', type: 'integer', required: false }, 1234567)).toContain('1.234.567');
+    expect(
+      formatCellValue(
+        {
+          name: 'rate',
+          type: 'number',
+          format: 'percent',
+          required: false
+        },
+        12.5
+      )
+    ).toBe('12.5%');
+    expect(
+      formatCellValue({ name: 'amount', type: 'integer', required: false }, 1234567)
+    ).toContain('1.234.567');
   });
 
   it('formats timestamps in the locale and falls back on unparsable dates', () => {
     expect.assertions(3);
-    const formatted = formatCellValue({ name: 'createdAt', type: 'string', required: false }, '2026-01-05T10:00:00.000Z');
+    const formatted = formatCellValue(
+      { name: 'createdAt', type: 'string', required: false },
+      '2026-01-05T10:00:00.000Z'
+    );
     expect(formatted).not.toBe('2026-01-05T10:00:00.000Z');
     expect(formatted).toContain('2026');
-    expect(formatCellValue({ name: 'updatedAt', type: 'string', required: false }, 'not-a-date')).toBe('not-a-date');
+    expect(
+      formatCellValue({ name: 'updatedAt', type: 'string', required: false }, 'not-a-date')
+    ).toBe('not-a-date');
   });
 
   it('gates inline editing to scalar, non-system fields', () => {
     expect.assertions(4);
     expect(isInlineEditable({ name: 'firstName', type: 'string', required: false })).toBe(true);
     expect(isInlineEditable({ name: 'emails', type: 'array', required: false })).toBe(false);
-    expect(isInlineEditable({
-      name: 'secret', type: 'string', format: 'password', required: false
-    })).toBe(false);
+    expect(
+      isInlineEditable({
+        name: 'secret',
+        type: 'string',
+        format: 'password',
+        required: false
+      })
+    ).toBe(false);
     expect(isInlineEditable({ name: 'id', type: 'string', required: true })).toBe(false);
   });
 

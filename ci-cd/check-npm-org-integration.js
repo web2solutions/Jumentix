@@ -1,8 +1,8 @@
-#!/usr/bin/env node
 /* eslint-disable no-console */
+const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const NPM_SCOPE = 'jumentix';
@@ -44,7 +44,12 @@ function resolveNpmCommand({
   }
   const bundled = path.join(
     path.dirname(execPath),
-    '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'
+    '..',
+    'lib',
+    'node_modules',
+    'npm',
+    'bin',
+    'npm-cli.js'
   );
   if (exists(bundled)) {
     return { command: execPath, argsPrefix: [bundled] };
@@ -55,12 +60,12 @@ function resolveNpmCommand({
     }
   }
   throw new Error(
-    'Could not resolve the npm CLI to an absolute path '
-      + `(looked next to ${execPath} and in: ${NPM_INSTALL_CANDIDATES.join(', ')}).\n`
-      + '  This check resolves npm without PATH on purpose: a writable PATH entry\n'
-      + '  can shadow the real CLI and this check trusts what npm tells it about\n'
-      + '  authentication. Run it through an npm script (npm_execpath) or add the\n'
-      + '  npm-cli.js location to NPM_INSTALL_CANDIDATES in ci-cd/check-npm-org-integration.js.'
+    'Could not resolve the npm CLI to an absolute path ' +
+      `(looked next to ${execPath} and in: ${NPM_INSTALL_CANDIDATES.join(', ')}).\n` +
+      '  This check resolves npm without PATH on purpose: a writable PATH entry\n' +
+      '  can shadow the real CLI and this check trusts what npm tells it about\n' +
+      '  authentication. Run it through an npm script (npm_execpath) or add the\n' +
+      '  npm-cli.js location to NPM_INSTALL_CANDIDATES in ci-cd/check-npm-org-integration.js.'
   );
 }
 
@@ -71,7 +76,12 @@ function run(args, resolverOptions) {
   if (env.NPM_CI_CD) env.NODE_AUTH_TOKEN = env.NPM_CI_CD;
   else if (env.NPM_JUMENTIX_CI_CD) env.NODE_AUTH_TOKEN = env.NPM_JUMENTIX_CI_CD;
   const npm = resolveNpmCommand(resolverOptions);
-  return execFileSync(npm.command, [...npm.argsPrefix, ...args], { env, stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim();
+  return execFileSync(npm.command, [...npm.argsPrefix, ...args], {
+    env,
+    stdio: ['ignore', 'pipe', 'pipe']
+  })
+    .toString()
+    .trim();
 }
 
 /**
@@ -110,7 +120,7 @@ function checkNpmOrgAccess(runCommand = run) {
 
 function fail(message) {
   console.error(message);
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 function main() {
@@ -125,9 +135,9 @@ function main() {
 }
 
 module.exports = {
+  checkNpmOrgAccess,
   NPM_INSTALL_CANDIDATES,
   NPM_SCOPE,
-  checkNpmOrgAccess,
   resolveNpmCommand,
   run
 };

@@ -8,8 +8,9 @@ import {
   resolveSchema
 } from '@/contracts/formSchema';
 import { collectBody, validateAll, validateField } from '@/contracts/oasForm';
-
 import { setLocale } from '@/i18n';
+
+import must from '../support';
 
 setLocale('pt-BR');
 
@@ -56,10 +57,9 @@ describe('formSchema runtime engine (JUM-766)', () => {
     const properties = Object.entries(schema.properties ?? {});
     const renamed = {
       ...schema,
-      properties: Object.fromEntries(properties.map(([name, def]) => [
-        name === 'username' ? 'login' : name,
-        def
-      ]))
+      properties: Object.fromEntries(
+        properties.map(([name, def]) => [name === 'username' ? 'login' : name, def])
+      )
     };
     const names = Object.keys(renamed.properties);
     expect(names).toContain('login');
@@ -80,14 +80,17 @@ describe('oasForm collect/validate (JUM-766)', () => {
 
   it('validateAll enforces minLength from the OAS', () => {
     expect.assertions(1);
-    expect(validateAll(descriptors, { username: 'me@mydomain.com', password: 'x' }))
-      .toBe('Senha precisa de ao menos 2 caracteres.');
+    expect(validateAll(descriptors, { username: 'me@mydomain.com', password: 'x' })).toBe(
+      'Senha precisa de ao menos 2 caracteres.'
+    );
   });
 
   it('validateField enforces enum membership', () => {
     expect.assertions(1);
     const type = fieldDescriptors('RequestCreateDocument').find((d) => d.name === 'type');
-    expect(validateField(type!, 'RG3')).toBe('Tipo deve ser um de: CPF, RG, SSN, passport.');
+    expect(validateField(must(type, 'RequestCreateDocument.type'), 'RG3')).toBe(
+      'Tipo deve ser um de: CPF, RG, SSN, passport.'
+    );
   });
 
   it('validateAll enforces the register password minimum from the OAS', () => {
@@ -99,11 +102,13 @@ describe('oasForm collect/validate (JUM-766)', () => {
       password: 'short'
     });
     expect(invalid).toBe('Senha precisa de ao menos 8 caracteres.');
-    expect(validateAll(registerDescriptors, {
-      firstName: 'A',
-      username: 'a@b.c',
-      password: 'StrongPass#1'
-    })).toBeNull();
+    expect(
+      validateAll(registerDescriptors, {
+        firstName: 'A',
+        username: 'a@b.c',
+        password: 'StrongPass#1'
+      })
+    ).toBeNull();
   });
 
   it('validateAll reports required fields first', () => {

@@ -1,6 +1,8 @@
 import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 
+const { process } = globalThis;
+
 const sitePort = Number(process.env.JUMENTIX_WEBSITE_PORT ?? '3010');
 const baseUrl = `http://127.0.0.1:${sitePort}`;
 const bunCommand = process.platform === 'win32' ? 'bun.exe' : 'bun';
@@ -72,25 +74,31 @@ const extractInternalPaths = (body) => {
 
 const assertInternalLinks = async (sourcePaths) => {
   const discovered = new Set();
-  for (const sourcePath of sourcePaths) {
-    const response = await fetch(`${baseUrl}${sourcePath}`, {
-      signal: AbortSignal.timeout(15_000),
-      headers: { Accept: 'text/html' }
-    });
-    const body = await response.text();
+  const bodies = await Promise.all(
+    sourcePaths.map(async (sourcePath) => {
+      const response = await fetch(`${baseUrl}${sourcePath}`, {
+        signal: AbortSignal.timeout(15_000),
+        headers: { Accept: 'text/html' }
+      });
+      return response.text();
+    })
+  );
+  for (const body of bodies) {
     for (const path of extractInternalPaths(body)) discovered.add(path);
   }
 
-  for (const path of discovered) {
-    const response = await fetch(`${baseUrl}${path}`, {
-      signal: AbortSignal.timeout(15_000),
-      redirect: 'follow',
-      headers: { Accept: 'text/html,application/json' }
-    });
-    if (response.status >= 400) {
-      throw new Error(`Internal link ${path} returned ${response.status}`);
-    }
-  }
+  await Promise.all(
+    [...discovered].map(async (path) => {
+      const response = await fetch(`${baseUrl}${path}`, {
+        signal: AbortSignal.timeout(15_000),
+        redirect: 'follow',
+        headers: { Accept: 'text/html,application/json' }
+      });
+      if (response.status >= 400) {
+        throw new Error(`Internal link ${path} returned ${response.status}`);
+      }
+    })
+  );
 };
 
 const waitForServer = async () => {
@@ -99,6 +107,7 @@ const waitForServer = async () => {
 
   while (Date.now() < deadline) {
     try {
+      // eslint-disable-next-line no-await-in-loop -- readiness polling: each probe must finish before the next one starts
       await assertRoute({
         path: '/',
         expectedStatus: 200,
@@ -107,11 +116,14 @@ const waitForServer = async () => {
       return;
     } catch (error) {
       errors.push(error instanceof Error ? error.message : String(error));
+      // eslint-disable-next-line no-await-in-loop -- polling interval: the delay between probes is the point of the loop
       await delay(1000);
     }
   }
 
-  throw new Error(`Website did not become ready on ${baseUrl}. Last errors: ${errors.slice(-3).join(' | ')}`);
+  throw new Error(
+    `Website did not become ready on ${baseUrl}. Last errors: ${errors.slice(-3).join(' | ')}`
+  );
 };
 
 const smokeRoutes = async () => {
@@ -139,7 +151,7 @@ const smokeRoutes = async () => {
     ['/community', ['Build the factory with us', 'Every contribution']],
     ['/roadmap', ['A public path', 'Monorepo consolidation']],
     ['/contact', ['Bring your architecture challenge', 'GitHub Discussions']],
-    ['/pricing-or-engagement', ['Open source foundation', 'Product pilot']],
+    ['/pricing-or-engagement', ['Open source foundation', 'Product pilot']]
   ];
   const portugueseRoutes = [
     ['/pt-BR', ['Fábrica de software open source', 'Domain Designer']],
@@ -156,15 +168,25 @@ const smokeRoutes = async () => {
     ['/pt-BR/community', ['Construa a fábrica conosco', 'Toda contribuição']],
     ['/pt-BR/roadmap', ['Um caminho público', 'Consolidação do monorepo']],
     ['/pt-BR/contact', ['Traga seu desafio', 'GitHub Discussions']],
-    ['/pt-BR/pricing-or-engagement', ['Fundação open source', 'Piloto de produto']],
+    ['/pt-BR/pricing-or-engagement', ['Fundação open source', 'Piloto de produto']]
   ];
 
-  for (const [path, includes] of [...englishRoutes, ...portugueseRoutes]) {
-    await assertRoute({ path, includes, excludes: invalidMarkers });
-  }
+  await Promise.all(
+    [...englishRoutes, ...portugueseRoutes].map(([path, includes]) =>
+      assertRoute({ path, includes, excludes: invalidMarkers })
+    )
+  );
 
-  await assertRoute({ path: '/changelog?page=1', includes: ['Jumentix changelog'], excludes: invalidMarkers });
-  await assertRoute({ path: '/pt-BR/changelog?page=1', includes: ['Changelog do Jumentix'], excludes: invalidMarkers });
+  await assertRoute({
+    path: '/changelog?page=1',
+    includes: ['Jumentix changelog'],
+    excludes: invalidMarkers
+  });
+  await assertRoute({
+    path: '/pt-BR/changelog?page=1',
+    includes: ['Changelog do Jumentix'],
+    excludes: invalidMarkers
+  });
   await assertRoute({
     path: '/docs/jumentix',
     includes: ['Build with Jumentix', 'Jumentix Docs'],
@@ -195,21 +217,35 @@ const smokeRoutes = async () => {
     ['/docs/jumentix/adapters/databases/mongodb', ['MongoDB', 'Jumentix Docs']],
     ['/docs/jumentix/packages/message-mediator', ['@jumentix/message-mediator', 'Jumentix Docs']],
     ['/docs/jumentix/packages/cana/usage', ['Cana usage guide', 'Choose the next step']],
-    ['/docs/jumentix/packages/cana/usage/workers-testing', ['Workers and testing', 'Worker request flow']],
+    [
+      '/docs/jumentix/packages/cana/usage/workers-testing',
+      ['Workers and testing', 'Worker request flow']
+    ],
     ['/docs/jumentix/reference/runtime-contracts', ['Runtime', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix', ['Construa com o Jumentix', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix/concepts', ['Conceitos', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix/guides/rest-api', ['Criando API REST com Jumentix', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix/adapters', ['Adaptadores', 'Jumentix Docs']],
     ['/docs/pt-BR/jumentix/adapters/http/express', ['Express', 'Jumentix Docs']],
-    ['/docs/pt-BR/jumentix/packages/message-mediator', ['@jumentix/message-mediator', 'Jumentix Docs']],
-    ['/docs/pt-BR/jumentix/packages/cana/usage', ['Guia de uso do Cana', 'Escolha o próximo passo']],
-    ['/docs/pt-BR/jumentix/packages/cana/usage/workers-testing', ['Workers e testes', 'Fluxo de requisição do worker']],
+    [
+      '/docs/pt-BR/jumentix/packages/message-mediator',
+      ['@jumentix/message-mediator', 'Jumentix Docs']
+    ],
+    [
+      '/docs/pt-BR/jumentix/packages/cana/usage',
+      ['Guia de uso do Cana', 'Escolha o próximo passo']
+    ],
+    [
+      '/docs/pt-BR/jumentix/packages/cana/usage/workers-testing',
+      ['Workers e testes', 'Fluxo de requisição do worker']
+    ]
   ];
 
-  for (const [path, includes] of canonicalDocumentationRoutes) {
-    await assertRoute({ path, includes, excludes: invalidMarkers });
-  }
+  await Promise.all(
+    canonicalDocumentationRoutes.map(([path, includes]) =>
+      assertRoute({ path, includes, excludes: invalidMarkers })
+    )
+  );
   await assertRoute({ path: '/api/version', expectedStatus: 200 });
   await assertRoute({
     path: '/api/github-releases',
@@ -222,7 +258,7 @@ const smokeRoutes = async () => {
     ...portugueseRoutes.map(([path]) => path),
     '/docs/jumentix',
     '/docs/pt-BR/jumentix',
-    ...canonicalDocumentationRoutes.map(([path]) => path),
+    ...canonicalDocumentationRoutes.map(([path]) => path)
   ]);
 };
 
@@ -245,7 +281,10 @@ const run = async () => {
 };
 
 run().catch((error) => {
-  // eslint-disable-next-line no-console
-  console.error('[website prepublish checks] failed:', error instanceof Error ? error.message : error);
-  process.exit(1);
+  // eslint-disable-next-line no-console -- CLI entry point: the failure message is the report
+  console.error(
+    '[website prepublish checks] failed:',
+    error instanceof Error ? error.message : error
+  );
+  process.exitCode = 1;
 });

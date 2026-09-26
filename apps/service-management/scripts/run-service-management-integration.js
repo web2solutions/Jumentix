@@ -1,7 +1,7 @@
-/* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const CANDIDATE_TEST_DIRS = [
@@ -54,12 +54,18 @@ function runServiceManagementIntegration(options = {}) {
 
   const testFiles = testDirs.flatMap((testDir) => discover(path.join(root, testDir)));
   if (testFiles.length === 0) {
-    logger.error(`[ci] service-management integration: no test files discovered in ${testDirs.join(', ')}.`);
-    logger.error('[ci] failing closed: a smoke suite that runs nothing is a false green (JUM-557).');
+    logger.error(
+      `[ci] service-management integration: no test files discovered in ${testDirs.join(', ')}.`
+    );
+    logger.error(
+      '[ci] failing closed: a smoke suite that runs nothing is a false green (JUM-557).'
+    );
     return 1;
   }
 
-  logger.log(`[ci] service-management integration: ${String(testFiles.length)} test file(s) discovered.`);
+  logger.log(
+    `[ci] service-management integration: ${String(testFiles.length)} test file(s) discovered.`
+  );
 
   const result = spawn('jest', [...testDirs, '--runInBand', '--coverage=false'], {
     stdio: 'inherit',
@@ -74,7 +80,7 @@ function runServiceManagementIntegration(options = {}) {
     }
   });
 
-  return result.status === 0 ? 0 : (result.status || 1);
+  return result.status === 0 ? 0 : result.status || 1;
 }
 
 if (isEntryPoint(module)) {
@@ -83,7 +89,7 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   CANDIDATE_TEST_DIRS,
-  TEST_FILE_PATTERN,
   discoverTestFiles,
-  runServiceManagementIntegration
+  runServiceManagementIntegration,
+  TEST_FILE_PATTERN
 };

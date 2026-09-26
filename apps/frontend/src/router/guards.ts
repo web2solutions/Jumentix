@@ -1,11 +1,11 @@
-import type { RouteLocationNormalized } from 'vue-router';
-
-import { expireIfStaleSession } from '@/contracts/sessionGuard';
 import { can } from '@/contracts/rbac';
+import { expireIfStaleSession } from '@/contracts/sessionGuard';
 import { isCanaOpen } from '@/data/db';
 import { findModule } from '@/modules/manifest';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
+
+import type { RouteLocationNormalized } from 'vue-router';
 
 /** Returns the redirect target for a route, or null when it is allowed. */
 export const requireAuthRedirect = (to: RouteLocationNormalized): string | null => {
@@ -20,9 +20,7 @@ export const requireAuthRedirect = (to: RouteLocationNormalized): string | null 
 };
 
 /** Shell stays unreachable until the first full load (or delta) finishes. */
-export const requireSyncRedirect = async (
-  to: RouteLocationNormalized
-): Promise<string | null> => {
+export const requireSyncRedirect = async (to: RouteLocationNormalized): Promise<string | null> => {
   if (to.meta.public === true) return null;
   const auth = useAuthStore();
   if (!auth.isAuthenticated()) return null;
@@ -49,9 +47,7 @@ const operationIdFor = (to: RouteLocationNormalized): string | undefined => {
  * operation's OAS security scopes. Roles come from the profile record (loaded
  * once). The backend enforces the same scopes — this is UX, not security.
  */
-export const requireScopeRedirect = async (
-  to: RouteLocationNormalized
-): Promise<string | null> => {
+export const requireScopeRedirect = async (to: RouteLocationNormalized): Promise<string | null> => {
   const operationId = operationIdFor(to);
   if (!operationId) return null;
   const profile = useProfileStore();

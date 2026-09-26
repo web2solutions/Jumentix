@@ -1,6 +1,5 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+
 import { defineComponent } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
@@ -8,9 +7,7 @@ import ModuleLayout from '@/components/ModuleLayout.vue';
 import '@/modules/index';
 
 import { backend } from './fixtures';
-import {
-  flush, freshSession, mockFetch, mountWithShell
-} from './support';
+import { flush, freshSession, mockFetch, mountWithShell } from './support';
 
 describe('ModuleLayout (JUM-797)', () => {
   afterEach(() => {
@@ -62,7 +59,9 @@ describe('keep-alive module panes (JUM-796)', () => {
     await wrapper.find('[data-pane="users"]').setValue('still-here');
     await wrapper.find('[data-to-orgs]').trigger('click');
     await wrapper.find('[data-to-users]').trigger('click');
-    expect((wrapper.find('[data-pane="users"]').element as HTMLInputElement).value).toBe('still-here');
+    expect((wrapper.find('[data-pane="users"]').element as HTMLInputElement).value).toBe(
+      'still-here'
+    );
     wrapper.unmount();
   });
 });

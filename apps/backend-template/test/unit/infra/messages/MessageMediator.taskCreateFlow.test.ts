@@ -1,6 +1,6 @@
-import { InMemoryMessageMediator } from '@src/infra/messages/InMemoryMessageMediator';
-import { registerUserMessageHandlers } from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
-import { UserMessageContracts } from '@src/modules/Users/events/contracts/UserMessageContracts';
+import InMemoryMessageMediator from '@src/infra/messages/InMemoryMessageMediator';
+import UserMessageContracts from '@src/modules/Users/events/contracts/UserMessageContracts';
+import registerUserMessageHandlers from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
 
 describe('message mediator request/response flow for task creation', () => {
   it('authorizes a create-task request via user domain contract without direct coupling', async () => {
@@ -15,7 +15,7 @@ describe('message mediator request/response flow for task creation', () => {
       }),
       throwIfUserHasNoAccessToResource: jest.fn()
     };
-    registerUserMessageHandlers(mediator as any, authService as any);
+    registerUserMessageHandlers(mediator, authService as any);
 
     const createTaskEndpoint = async (authorization: string, input: { title: string }) => {
       const access = await mediator.request({
@@ -28,7 +28,7 @@ describe('message mediator request/response flow for task creation', () => {
 
       return {
         id: 't1',
-        ownerId: (access.result as any).id,
+        ownerId: access.result.id,
         title: input.title
       };
     };

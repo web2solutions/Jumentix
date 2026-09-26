@@ -1,9 +1,9 @@
-/* eslint-disable no-continue, no-void, prefer-destructuring */
-export type GlobalFlags = {
+/* eslint-disable no-void */
+export interface GlobalFlags {
   help: boolean;
   nonInteractive: boolean;
   configPath: string;
-};
+}
 
 export type InitFlags = GlobalFlags & {
   dir: string;
@@ -32,13 +32,13 @@ export type InitFlags = GlobalFlags & {
   legacyInvocation: boolean;
 };
 
-export type ParsedCli = {
+export interface ParsedCli {
   command: 'init' | 'add' | 'upgrade' | 'doctor' | 'help' | '';
   subcommand: string;
   positional: string[];
   init: InitFlags;
   dryRun: boolean;
-};
+}
 
 function takeValue(raw: string, prefix: string): string {
   return raw.slice(prefix.length);
@@ -95,8 +95,10 @@ export function parseArgv(argv: string[]): ParsedCli {
     for (const raw of argv) {
       if (raw === '--help' || raw === '-h') init.help = true;
       else if (raw === '--non-interactive') init.nonInteractive = true;
-      else if (raw.startsWith('--service-type=')) init.serviceType = takeValue(raw, '--service-type=');
-      else if (raw.startsWith('--project-name=')) init.projectName = takeValue(raw, '--project-name=');
+      else if (raw.startsWith('--service-type='))
+        init.serviceType = takeValue(raw, '--service-type=');
+      else if (raw.startsWith('--project-name='))
+        init.projectName = takeValue(raw, '--project-name=');
       else if (raw.startsWith('--git-branch=')) init.gitBranch = takeValue(raw, '--git-branch=');
       else if (raw.startsWith('--install-deps=')) {
         init.installDeps = parseBooleanToken(takeValue(raw, '--install-deps='));
@@ -114,7 +116,13 @@ export function parseArgv(argv: string[]): ParsedCli {
   let command: ParsedCli['command'] = '';
   if (argv[0] && !argv[0].startsWith('-')) {
     const token = argv[0];
-    if (token === 'init' || token === 'add' || token === 'upgrade' || token === 'doctor' || token === 'help') {
+    if (
+      token === 'init' ||
+      token === 'add' ||
+      token === 'upgrade' ||
+      token === 'doctor' ||
+      token === 'help'
+    ) {
       command = token;
       index = 1;
     }
@@ -232,10 +240,11 @@ export function parseArgv(argv: string[]): ParsedCli {
   }
 
   if (command === 'init' && positional[0]) {
-    init.dir = positional[0];
+    const [dir] = positional;
+    init.dir = dir;
   }
 
-  const subcommand = command === 'add' ? (positional[0] || '') : '';
+  const subcommand = command === 'add' ? positional[0] || '' : '';
 
   return {
     command,

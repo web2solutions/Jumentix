@@ -1,12 +1,11 @@
-#!/usr/bin/env bun
-/* eslint-disable no-console */
 /**
  * Standalone contract-test gate (JUM-440): OAS route resolution + serverless handlers.
  * Populates the contracts layer as a first-class gate cell.
  */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const CONTRACT_CHECKS = Object.freeze([

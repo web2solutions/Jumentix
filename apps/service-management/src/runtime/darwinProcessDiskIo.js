@@ -16,7 +16,6 @@ function loadLibproc() {
   if (libprocBindings) return libprocBindings;
   if (libprocLoadError) throw libprocLoadError;
   try {
-    // eslint-disable-next-line global-require, import/no-unresolved
     const { dlopen, FFIType } = require('bun:ffi');
     const lib = dlopen('/usr/lib/libproc.dylib', {
       proc_pid_rusage: {
@@ -51,6 +50,7 @@ function readDarwinDiskIo(pid) {
   try {
     const symbols = loadLibproc();
     const buffer = Buffer.alloc(RUSAGE_INFO_V2_SIZE);
+    // eslint-disable-next-line no-bitwise -- `| 0` coerces the pid to the int32 the FFI signature declares
     const result = symbols.proc_pid_rusage(pid | 0, RUSAGE_INFO_V2, buffer);
     if (result !== 0) {
       return {
@@ -70,8 +70,8 @@ function readDarwinDiskIo(pid) {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    const unavailable = /Cannot find module ['"]bun:ffi['"]|bun:ffi/i.test(message)
-      || message.includes('dlopen');
+    const unavailable =
+      /Cannot find module ['"]bun:ffi['"]|bun:ffi/i.test(message) || message.includes('dlopen');
     return {
       supported: !unavailable,
       platform: 'darwin',
@@ -83,8 +83,8 @@ function readDarwinDiskIo(pid) {
 }
 
 module.exports = {
-  readDarwinDiskIo,
-  RUSAGE_INFO_V2_SIZE,
   OFFSET_DISKIO_BYTESREAD,
-  OFFSET_DISKIO_BYTESWRITTEN
+  OFFSET_DISKIO_BYTESWRITTEN,
+  readDarwinDiskIo,
+  RUSAGE_INFO_V2_SIZE
 };

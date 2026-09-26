@@ -1,6 +1,6 @@
-/* eslint-disable jest/no-untyped-mock-factory */
-import cluster from 'cluster';
-import { Server } from 'socket.io';
+import cluster from 'node:cluster';
+
+import type { Server } from 'socket.io';
 
 const setupPrimaryMock = jest.fn();
 const createAdapterMock = jest.fn();
@@ -18,14 +18,13 @@ describe('clusterAdapter lifecycle', () => {
 
   it('sets up cluster primary process serialization and adapter bridge', async () => {
     expect.hasAssertions();
-    const setupPrimarySpy = jest.spyOn(cluster, 'setupPrimary').mockImplementation(() => undefined as any);
-    const fakeIo = { adapter: jest.fn() } as unknown as Server;
+    const setupPrimarySpy = jest.spyOn(cluster, 'setupPrimary').mockReturnValue(undefined);
+    const adapterFn = jest.fn();
+    const fakeIo = { adapter: adapterFn } as unknown as Server;
     const fakeAdapter = jest.fn();
     createAdapterMock.mockReturnValue(fakeAdapter);
-    const {
-      setupSocketIoClusterPrimary,
-      createClusterSocketIoAdapter
-    } = await import('@src/interface/WebSocket/adapters/socket-io/clusterAdapter');
+    const { setupSocketIoClusterPrimary, createClusterSocketIoAdapter } =
+      await import('@src/interface/WebSocket/adapters/socket-io/clusterAdapter');
 
     setupSocketIoClusterPrimary();
     const adapter = createClusterSocketIoAdapter();
@@ -35,7 +34,7 @@ describe('clusterAdapter lifecycle', () => {
     expect(setupPrimaryMock).toHaveBeenCalledTimes(1);
     expect(setupPrimarySpy).toHaveBeenCalledWith({ serialization: 'advanced' });
     expect(createAdapterMock).toHaveBeenCalledTimes(1);
-    expect((fakeIo.adapter as any)).toHaveBeenCalledWith(fakeAdapter);
+    expect(adapterFn).toHaveBeenCalledWith(fakeAdapter);
     setupPrimarySpy.mockRestore();
   });
 });

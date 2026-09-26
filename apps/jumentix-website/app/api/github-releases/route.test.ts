@@ -1,4 +1,6 @@
-import releases from '@/content/releases.json';
+import releases from '../../../content/releases.json';
+
+import type { GET as GetHandler } from './route';
 
 // jsdom has no web Response global; the route handler only needs
 // Response.json + status/body, so stub the minimal contract before import.
@@ -25,13 +27,13 @@ class ResponseStub {
 }
 globalThis.Response = ResponseStub as unknown as typeof Response;
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-const { GET } = require('./route') as typeof import('./route');
+const { GET } = require('./route') as { GET: GetHandler };
 
 // the handler only reads headers, so a plain stub replaces the Request global
-const stubRequest = (userAgent?: string) => ({
-  headers: { get: (name: string) => (name === 'user-agent' ? (userAgent ?? null) : null) }
-}) as unknown as Request;
+const stubRequest = (userAgent?: string) =>
+  ({
+    headers: { get: (name: string) => (name === 'user-agent' ? (userAgent ?? null) : null) }
+  }) as unknown as Request;
 
 describe('/api/github-releases (JUM-719)', () => {
   it('serves the bundled release snapshot without any GitHub API call', async () => {

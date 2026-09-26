@@ -13,10 +13,11 @@
  */
 import type { HTMLAttributes } from 'react';
 
-function ThemePre(props: HTMLAttributes<HTMLPreElement>) {
-  return <pre data-nextra-theme-pre="" {...props} />;
-}
+const ThemePre = (props: HTMLAttributes<HTMLPreElement>) => (
+  <pre data-nextra-theme-pre="" {...props} />
+);
 
+// eslint-disable-next-line import-x/prefer-default-export -- mock mirrors the named-export contract of nextra-theme-docs for jest.mock
 export function useMDXComponents(components?: Record<string, unknown>) {
   return { pre: ThemePre, ...components };
 }

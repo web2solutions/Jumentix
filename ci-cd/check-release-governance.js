@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const SEMVER_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
@@ -13,7 +14,8 @@ function readJson(filePath) {
 function getWorkspacePackageDirs(rootDir) {
   const packagesDir = path.join(rootDir, 'packages');
   if (!fs.existsSync(packagesDir)) return [];
-  return fs.readdirSync(packagesDir)
+  return fs
+    .readdirSync(packagesDir)
     .map((name) => path.join(packagesDir, name))
     .filter((fullPath) => fs.statSync(fullPath).isDirectory());
 }
@@ -21,7 +23,8 @@ function getWorkspacePackageDirs(rootDir) {
 function getWorkspaceAppDirs(rootDir) {
   const appsDir = path.join(rootDir, 'apps');
   if (!fs.existsSync(appsDir)) return [];
-  return fs.readdirSync(appsDir)
+  return fs
+    .readdirSync(appsDir)
     .map((name) => path.join(appsDir, name))
     .filter((fullPath) => fs.statSync(fullPath).isDirectory());
 }
@@ -42,11 +45,15 @@ function validateReleasePolicy(releasePolicy, rootPackageJson) {
   }
 
   if (!SEMVER_RE.test(String(releasePolicy.appLockedVersion || ''))) {
-    failures.push(`[release-policy] appLockedVersion must be a valid semver, got: ${String(releasePolicy.appLockedVersion || '')}`);
+    failures.push(
+      `[release-policy] appLockedVersion must be a valid semver, got: ${String(releasePolicy.appLockedVersion || '')}`
+    );
   }
 
   if (releasePolicy.appLockedVersion !== rootPackageJson.version) {
-    failures.push(`[release-policy] appLockedVersion must match root package version (${rootPackageJson.version})`);
+    failures.push(
+      `[release-policy] appLockedVersion must match root package version (${rootPackageJson.version})`
+    );
   }
 
   return failures;
@@ -104,7 +111,9 @@ function validateAppReleaseMetadata(pkg, appDir, releasePolicy) {
   }
 
   if (String(pkg.version || '') !== String(releasePolicy.appLockedVersion || '')) {
-    failures.push(`[${appName}] app version must match release-policy appLockedVersion (${releasePolicy.appLockedVersion})`);
+    failures.push(
+      `[${appName}] app version must match release-policy appLockedVersion (${releasePolicy.appLockedVersion})`
+    );
   }
 
   return failures;
@@ -137,7 +146,8 @@ function run() {
     for (const failure of failures) {
       console.error(failure);
     }
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log('Release governance check passed.');
@@ -148,8 +158,8 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
-  validateReleasePolicy,
-  validateRootReleaseScripts,
+  validateAppReleaseMetadata,
   validatePackageReleaseMetadata,
-  validateAppReleaseMetadata
+  validateReleasePolicy,
+  validateRootReleaseScripts
 };

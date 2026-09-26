@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, camelcase */
 import {
   busStatus,
   presenceFromAgent,
@@ -6,6 +5,7 @@ import {
   upsertPresence,
   watchBus
 } from '../src/bus-commands';
+
 import type { AgentBusEvent, AgentRecord, RtdbLike } from '../src/types';
 
 function buildAgent(overrides: Partial<AgentRecord> = {}): AgentRecord {
@@ -43,9 +43,7 @@ function createMockRtdb() {
 
   function childPaths(prefix: string): string[] {
     const root = normalize(prefix);
-    return Array.from(store.keys()).filter((key) => (
-      key === root || key.startsWith(`${root}/`)
-    ));
+    return Array.from(store.keys()).filter((key) => key === root || key.startsWith(`${root}/`));
   }
 
   function makeRef(path: string): any {
@@ -79,7 +77,7 @@ function createMockRtdb() {
         };
       },
       update: async (value: Record<string, unknown>) => {
-        store.set(full, { ...(store.get(full) as object || {}), ...value });
+        store.set(full, { ...((store.get(full) as object) || {}), ...value });
       },
       once: async () => {
         const children = childPaths(full)
@@ -106,12 +104,16 @@ function createMockRtdb() {
       },
       on: (eventType: string, callback: (snap: any) => void) => {
         if (eventType !== 'child_added') return callback;
-        if (!listeners.has(full)) listeners.set(full, new Set());
-        listeners.get(full)!.add(callback);
+        let fullListeners = listeners.get(full);
+        if (!fullListeners) {
+          fullListeners = new Set();
+          listeners.set(full, fullListeners);
+        }
+        fullListeners.add(callback);
         // Replay existing children.
         for (const key of childPaths(full)) {
-          const isDirectChild = key !== full
-            && key.split('/').length === full.split('/').length + 1;
+          const isDirectChild =
+            key !== full && key.split('/').length === full.split('/').length + 1;
           if (isDirectChild) {
             const childKey = key.slice(full.length + 1);
             callback({ key: childKey, val: () => store.get(key) });
@@ -159,9 +161,11 @@ describe('agent-bus commands', () => {
     const agent = buildAgent();
     await upsertPresence(rtdb, presenceFromAgent(agent));
 
-    const presenceKey = Array.from(store.keys()).find((key) => key.startsWith('agent-bus/presence/'));
-    expect(presenceKey).toBeTruthy();
-    expect(store.get(presenceKey!)).toMatchObject({ agentId: 'test-agent-001', taskId: 'JUM-615' });
+    const presenceEntry = Array.from(store.entries()).find(([key]) =>
+      key.startsWith('agent-bus/presence/')
+    );
+    expect(presenceEntry).toBeTruthy();
+    expect(presenceEntry?.[1]).toMatchObject({ agentId: 'test-agent-001', taskId: 'JUM-615' });
 
     const published = await publishProgress(rtdb, {
       agentId: agent.agent_id,
@@ -173,12 +177,14 @@ describe('agent-bus commands', () => {
       ts: '2026-08-09T12:00:00.000Z'
     });
 
-    expect(published).toStrictEqual(expect.objectContaining({
-      kind: 'progress',
-      summary: 'fallback wired',
-      pushId: expect.stringMatching(/^push-/),
-      ttlHint: expect.any(String)
-    }));
+    expect(published).toStrictEqual(
+      expect.objectContaining({
+        kind: 'progress',
+        summary: 'fallback wired',
+        pushId: expect.stringMatching(/^push-/),
+        ttlHint: expect.any(String)
+      })
+    );
   });
 
   it('fills default timestamps and validates positive TTL values', async () => {
@@ -196,61 +202,78 @@ describe('agent-bus commands', () => {
 
     expect(published.ts).toBe('2026-08-10T12:00:00.000Z');
     expect(published.ttlHint).toBe('2026-08-24T12:00:00.000Z');
-    await expect(publishProgress(rtdb, {
-      agentId: 'a',
-      epicId: 'epic-a',
-      taskId: 'JUM-1',
-      kind: 'progress',
-      summary: 'bad ttl',
-      ttlDays: 0
-    })).rejects.toThrow('ttlDays');
+    await expect(
+      publishProgress(rtdb, {
+        agentId: 'a',
+        epicId: 'epic-a',
+        taskId: 'JUM-1',
+        kind: 'progress',
+        summary: 'bad ttl',
+        ttlDays: 0
+      })
+    ).rejects.toThrow('ttlDays');
     jest.useRealTimers();
   });
 
   it('rejects invalid publish kinds and empty fields', async () => {
     expect.hasAssertions();
     const { rtdb } = createMockRtdb();
-    await expect(publishProgress(rtdb, {
-      agentId: 'a',
-      epicId: 'e',
-      taskId: 't',
-      kind: 'nope' as any,
-      summary: 'x'
-    })).rejects.toThrow('kind');
+    await expect(
+      publishProgress(rtdb, {
+        agentId: 'a',
+        epicId: 'e',
+        taskId: 't',
+        kind: 'nope' as any,
+        summary: 'x'
+      })
+    ).rejects.toThrow('kind');
 
-    await expect(publishProgress(rtdb, {
-      agentId: '',
-      epicId: 'e',
-      taskId: 't',
-      kind: 'progress',
-      summary: 'x'
-    })).rejects.toThrow('agentId');
+    await expect(
+      publishProgress(rtdb, {
+        agentId: '',
+        epicId: 'e',
+        taskId: 't',
+        kind: 'progress',
+        summary: 'x'
+      })
+    ).rejects.toThrow('agentId');
   });
 
   it('fails closed when RTDB push cannot allocate an event key', async () => {
     expect.hasAssertions();
     const rtdb: RtdbLike = {
-      ref: () => ({
-        set: async () => undefined,
-        child: () => { throw new Error('unused'); },
-        push: () => ({ key: null, set: async () => undefined }),
-        update: async () => undefined,
-        once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
-        on: () => () => undefined,
-        off: () => undefined,
-        orderByChild: function orderByChild() { return this; },
-        orderByKey: function orderByKey() { return this; },
-        limitToLast: function limitToLast() { return this; }
-      }) as any
+      ref: () =>
+        ({
+          set: async () => undefined,
+          child: () => {
+            throw new Error('unused');
+          },
+          push: () => ({ key: null, set: async () => undefined }),
+          update: async () => undefined,
+          once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
+          on: () => () => undefined,
+          off: () => undefined,
+          orderByChild: function orderByChild() {
+            return this;
+          },
+          orderByKey: function orderByKey() {
+            return this;
+          },
+          limitToLast: function limitToLast() {
+            return this;
+          }
+        }) as any
     };
 
-    await expect(publishProgress(rtdb, {
-      agentId: 'a',
-      epicId: 'epic-a',
-      taskId: 'JUM-1',
-      kind: 'progress',
-      summary: 'cannot publish'
-    })).rejects.toThrow('RTDB progress publish failed');
+    await expect(
+      publishProgress(rtdb, {
+        agentId: 'a',
+        epicId: 'epic-a',
+        taskId: 'JUM-1',
+        kind: 'progress',
+        summary: 'cannot publish'
+      })
+    ).rejects.toThrow('RTDB progress publish failed');
   });
 
   it('watches events and filters by since', async () => {
@@ -261,7 +284,9 @@ describe('agent-bus commands', () => {
     const unsub = watchBus(rtdb, {
       epicId: 'epic-a',
       since: '2026-08-09T12:00:00.000Z',
-      onEvent: (event) => { seen.push(event); }
+      onEvent: (event) => {
+        seen.push(event);
+      }
     });
 
     await publishProgress(rtdb, {
@@ -288,15 +313,25 @@ describe('agent-bus commands', () => {
   it('returns status with presence and recent events for an epic', async () => {
     expect.hasAssertions();
     const { rtdb } = createMockRtdb();
-    await upsertPresence(rtdb, presenceFromAgent(buildAgent({
-      active_epic: 'epic-a',
-      assigned_task: 'JUM-1'
-    })));
-    await upsertPresence(rtdb, presenceFromAgent(buildAgent({
-      agent_id: 'other',
-      active_epic: 'epic-b',
-      assigned_task: 'JUM-2'
-    })));
+    await upsertPresence(
+      rtdb,
+      presenceFromAgent(
+        buildAgent({
+          active_epic: 'epic-a',
+          assigned_task: 'JUM-1'
+        })
+      )
+    );
+    await upsertPresence(
+      rtdb,
+      presenceFromAgent(
+        buildAgent({
+          agent_id: 'other',
+          active_epic: 'epic-b',
+          assigned_task: 'JUM-2'
+        })
+      )
+    );
     await publishProgress(rtdb, {
       agentId: 'test-agent-001',
       epicId: 'epic-a',
@@ -323,12 +358,20 @@ describe('agent-bus commands', () => {
     // Push keys carry the server clock and are indexed by default.
     const ordering: string[] = [];
     const query = {
-      orderByChild: (path: string) => { ordering.push(`orderByChild:${path}`); return query; },
-      orderByKey: () => { ordering.push('orderByKey'); return query; },
+      orderByChild: (path: string) => {
+        ordering.push(`orderByChild:${path}`);
+        return query;
+      },
+      orderByKey: () => {
+        ordering.push('orderByKey');
+        return query;
+      },
       limitToLast: () => query,
       once: async () => ({ forEach: () => undefined }),
       set: async () => undefined,
-      child: () => { throw new Error('unused'); },
+      child: () => {
+        throw new Error('unused');
+      },
       push: () => ({ key: 'push-1', set: async () => undefined }),
       update: async () => undefined,
       on: () => () => undefined,
@@ -345,18 +388,29 @@ describe('agent-bus commands', () => {
   it('fails closed when RTDB status reads fail', async () => {
     expect.hasAssertions();
     const rtdb: RtdbLike = {
-      ref: () => ({
-        set: async () => undefined,
-        child: () => { throw new Error('unused'); },
-        push: () => ({ key: 'push-1', set: async () => undefined }),
-        update: async () => undefined,
-        once: async () => { throw new Error('offline'); },
-        on: () => () => undefined,
-        off: () => undefined,
-        orderByChild: function orderByChild() { return this; },
-        orderByKey: function orderByKey() { return this; },
-        limitToLast: function limitToLast() { return this; }
-      }) as any
+      ref: () =>
+        ({
+          set: async () => undefined,
+          child: () => {
+            throw new Error('unused');
+          },
+          push: () => ({ key: 'push-1', set: async () => undefined }),
+          update: async () => undefined,
+          once: async () => {
+            throw new Error('offline');
+          },
+          on: () => () => undefined,
+          off: () => undefined,
+          orderByChild: function orderByChild() {
+            return this;
+          },
+          orderByKey: function orderByKey() {
+            return this;
+          },
+          limitToLast: function limitToLast() {
+            return this;
+          }
+        }) as any
     };
 
     await expect(busStatus(rtdb, 'epic-a')).rejects.toThrow('RTDB bus status failed: offline');
@@ -365,22 +419,34 @@ describe('agent-bus commands', () => {
   it('fails closed when RTDB set throws', async () => {
     expect.hasAssertions();
     const rtdb: RtdbLike = {
-      ref: () => ({
-        set: async () => { throw new Error('permission denied'); },
-        child: () => { throw new Error('unused'); },
-        push: () => ({ key: null, set: async () => undefined }),
-        update: async () => undefined,
-        once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
-        on: () => () => undefined,
-        off: () => undefined,
-        orderByChild: function orderByChild() { return this; },
-        orderByKey: function orderByKey() { return this; },
-        limitToLast: function limitToLast() { return this; }
-      }) as any
+      ref: () =>
+        ({
+          set: async () => {
+            throw new Error('permission denied');
+          },
+          child: () => {
+            throw new Error('unused');
+          },
+          push: () => ({ key: null, set: async () => undefined }),
+          update: async () => undefined,
+          once: async () => ({ key: null, val: () => null, forEach: () => undefined }),
+          on: () => () => undefined,
+          off: () => undefined,
+          orderByChild: function orderByChild() {
+            return this;
+          },
+          orderByKey: function orderByKey() {
+            return this;
+          },
+          limitToLast: function limitToLast() {
+            return this;
+          }
+        }) as any
     };
 
-    await expect(upsertPresence(rtdb, presenceFromAgent(buildAgent())))
-      .rejects.toThrow('RTDB presence upsert failed');
+    await expect(upsertPresence(rtdb, presenceFromAgent(buildAgent()))).rejects.toThrow(
+      'RTDB presence upsert failed'
+    );
   });
 });
 
@@ -399,28 +465,48 @@ describe('agent-bus commands', () => {
  */
 function refusingRtdb(rejection: unknown): RtdbLike {
   return {
-    ref: () => ({
-      set: async () => { throw rejection; },
-      child: () => { throw rejection; },
-      push: () => ({ key: 'push-1', set: async () => { throw rejection; } }),
-      update: async () => undefined,
-      once: async () => { throw rejection; },
-      on: () => () => undefined,
-      off: () => undefined,
-      orderByChild: function orderByChild() { return this; },
-      orderByKey: function orderByKey() { return this; },
-      limitToLast: function limitToLast() { return this; }
-    }) as any
+    ref: () =>
+      ({
+        set: async () => {
+          throw rejection;
+        },
+        child: () => {
+          throw rejection;
+        },
+        push: () => ({
+          key: 'push-1',
+          set: async () => {
+            throw rejection;
+          }
+        }),
+        update: async () => undefined,
+        once: async () => {
+          throw rejection;
+        },
+        on: () => () => undefined,
+        off: () => undefined,
+        orderByChild: function orderByChild() {
+          return this;
+        },
+        orderByKey: function orderByKey() {
+          return this;
+        },
+        limitToLast: function limitToLast() {
+          return this;
+        }
+      }) as any
   };
 }
 
 /** A snapshot that yields the given children to `forEach`. */
-function snapshotOf(children: Array<{ key: string | null; value: unknown }>) {
+function snapshotOf(children: { key: string | null; value: unknown }[]) {
   return {
     key: null,
     val: () => null,
     forEach: (visit: (child: { key: string | null; val(): unknown }) => boolean) => {
-      children.forEach((child) => { visit({ key: child.key, val: () => child.value }); });
+      children.forEach((child) => {
+        visit({ key: child.key, val: () => child.value });
+      });
     }
   };
 }
@@ -428,23 +514,33 @@ function snapshotOf(children: Array<{ key: string | null; value: unknown }>) {
 /** An RTDB whose reads answer with fixed snapshots. */
 function readingRtdb(
   presenceChildren: unknown[],
-  eventChildren: Array<{ key: string | null; value: unknown }>
+  eventChildren: { key: string | null; value: unknown }[]
 ): RtdbLike {
   return {
-    ref: (path: string) => ({
-      set: async () => undefined,
-      child: () => { throw new Error('unused'); },
-      push: () => ({ key: 'push-1', set: async () => undefined }),
-      update: async () => undefined,
-      once: async () => (path.endsWith('/presence')
-        ? snapshotOf(presenceChildren.map((value) => ({ key: 'agent', value })))
-        : snapshotOf(eventChildren)),
-      on: () => () => undefined,
-      off: () => undefined,
-      orderByChild: function orderByChild() { return this; },
-      orderByKey: function orderByKey() { return this; },
-      limitToLast: function limitToLast() { return this; }
-    }) as any
+    ref: (path: string) =>
+      ({
+        set: async () => undefined,
+        child: () => {
+          throw new Error('unused');
+        },
+        push: () => ({ key: 'push-1', set: async () => undefined }),
+        update: async () => undefined,
+        once: async () =>
+          path.endsWith('/presence')
+            ? snapshotOf(presenceChildren.map((value) => ({ key: 'agent', value })))
+            : snapshotOf(eventChildren),
+        on: () => () => undefined,
+        off: () => undefined,
+        orderByChild: function orderByChild() {
+          return this;
+        },
+        orderByKey: function orderByKey() {
+          return this;
+        },
+        limitToLast: function limitToLast() {
+          return this;
+        }
+      }) as any
   };
 }
 
@@ -474,12 +570,15 @@ describe('agent bus refusals (JUM-681)', () => {
 
     // Firebase rejects with plain objects in some paths; `String(error)` on one
     // is "[object Object]", which is the message an operator would be handed.
-    await expect(upsertPresence(refusingRtdb('permission denied'), presenceFromAgent(buildAgent())))
-      .rejects.toThrow('RTDB presence upsert failed: permission denied');
-    await expect(publishProgress(refusingRtdb('quota'), event() as any))
-      .rejects.toThrow('RTDB progress publish failed: quota');
-    await expect(busStatus(refusingRtdb('offline'), 'epic-a'))
-      .rejects.toThrow('RTDB bus status failed: offline');
+    await expect(
+      upsertPresence(refusingRtdb('permission denied'), presenceFromAgent(buildAgent()))
+    ).rejects.toThrow('RTDB presence upsert failed: permission denied');
+    await expect(publishProgress(refusingRtdb('quota'), event() as any)).rejects.toThrow(
+      'RTDB progress publish failed: quota'
+    );
+    await expect(busStatus(refusingRtdb('offline'), 'epic-a')).rejects.toThrow(
+      'RTDB bus status failed: offline'
+    );
   });
 
   it('skips presence records that are not presence records', async () => {
@@ -487,14 +586,22 @@ describe('agent bus refusals (JUM-681)', () => {
 
     // A record from an older agent, a null left by a partial delete, a scalar
     // written by hand in the console: none of them may enter the report.
-    const rtdb = readingRtdb([null, 'a string', { agentId: 'agent-2' }, {
-      agentId: 'agent-1',
-      status: 'busy',
-      epicId: 'epic-a',
-      taskId: 'JUM-1',
-      machineId: 'machine-1',
-      updatedAt: '2026-08-14T00:00:00.000Z'
-    }], []);
+    const rtdb = readingRtdb(
+      [
+        null,
+        'a string',
+        { agentId: 'agent-2' },
+        {
+          agentId: 'agent-1',
+          status: 'busy',
+          epicId: 'epic-a',
+          taskId: 'JUM-1',
+          machineId: 'machine-1',
+          updatedAt: '2026-08-14T00:00:00.000Z'
+        }
+      ],
+      []
+    );
 
     const status = await busStatus(rtdb, 'epic-a');
 
@@ -505,11 +612,14 @@ describe('agent bus refusals (JUM-681)', () => {
   it('skips events that are not events, and names a push with no key', async () => {
     expect.hasAssertions();
 
-    const rtdb = readingRtdb([], [
-      { key: 'e1', value: null },
-      { key: 'e2', value: { agentId: 'agent-1' } },
-      { key: null, value: event() }
-    ]);
+    const rtdb = readingRtdb(
+      [],
+      [
+        { key: 'e1', value: null },
+        { key: 'e2', value: { agentId: 'agent-1' } },
+        { key: null, value: event() }
+      ]
+    );
 
     const status = await busStatus(rtdb, 'epic-a');
 
@@ -520,27 +630,41 @@ describe('agent bus refusals (JUM-681)', () => {
   it('delivers only the events a watcher has not already seen', () => {
     expect.hasAssertions();
 
-    const delivered: Array<{ pushId: string }> = [];
+    const delivered: { pushId: string }[] = [];
     let handler: ((snapshot: { key: string | null; val(): unknown }) => void) | undefined;
     const rtdb: RtdbLike = {
-      ref: () => ({
-        set: async () => undefined,
-        child: () => { throw new Error('unused'); },
-        push: () => ({ key: 'push-1', set: async () => undefined }),
-        update: async () => undefined,
-        once: async () => snapshotOf([]),
-        on: (_event: string, next: (snapshot: any) => void) => { handler = next; return next; },
-        off: () => undefined,
-        orderByChild: function orderByChild() { return this; },
-        orderByKey: function orderByKey() { return this; },
-        limitToLast: function limitToLast() { return this; }
-      }) as any
+      ref: () =>
+        ({
+          set: async () => undefined,
+          child: () => {
+            throw new Error('unused');
+          },
+          push: () => ({ key: 'push-1', set: async () => undefined }),
+          update: async () => undefined,
+          once: async () => snapshotOf([]),
+          on: (_event: string, next: (snapshot: any) => void) => {
+            handler = next;
+            return next;
+          },
+          off: () => undefined,
+          orderByChild: function orderByChild() {
+            return this;
+          },
+          orderByKey: function orderByKey() {
+            return this;
+          },
+          limitToLast: function limitToLast() {
+            return this;
+          }
+        }) as any
     };
 
     const stop = watchBus(rtdb, {
       epicId: 'epic-a',
       since: '2026-08-14T00:00:00.000Z',
-      onEvent: (_value: AgentBusEvent, pushId: string) => { delivered.push({ pushId }); }
+      onEvent: (_value: AgentBusEvent, pushId: string) => {
+        delivered.push({ pushId });
+      }
     });
 
     handler?.({ key: 'e0', val: () => 'not an event' });
@@ -558,23 +682,37 @@ describe('agent bus refusals (JUM-681)', () => {
     const delivered: string[] = [];
     let handler: ((snapshot: { key: string | null; val(): unknown }) => void) | undefined;
     const rtdb: RtdbLike = {
-      ref: () => ({
-        set: async () => undefined,
-        child: () => { throw new Error('unused'); },
-        push: () => ({ key: 'push-1', set: async () => undefined }),
-        update: async () => undefined,
-        once: async () => snapshotOf([]),
-        on: (_event: string, next: (snapshot: any) => void) => { handler = next; return next; },
-        off: () => undefined,
-        orderByChild: function orderByChild() { return this; },
-        orderByKey: function orderByKey() { return this; },
-        limitToLast: function limitToLast() { return this; }
-      }) as any
+      ref: () =>
+        ({
+          set: async () => undefined,
+          child: () => {
+            throw new Error('unused');
+          },
+          push: () => ({ key: 'push-1', set: async () => undefined }),
+          update: async () => undefined,
+          once: async () => snapshotOf([]),
+          on: (_event: string, next: (snapshot: any) => void) => {
+            handler = next;
+            return next;
+          },
+          off: () => undefined,
+          orderByChild: function orderByChild() {
+            return this;
+          },
+          orderByKey: function orderByKey() {
+            return this;
+          },
+          limitToLast: function limitToLast() {
+            return this;
+          }
+        }) as any
     };
 
     watchBus(rtdb, {
       epicId: 'epic-a',
-      onEvent: (_value: AgentBusEvent, pushId: string) => { delivered.push(pushId); }
+      onEvent: (_value: AgentBusEvent, pushId: string) => {
+        delivered.push(pushId);
+      }
     });
 
     handler?.({ key: 'e1', val: () => event({ ts: '2020-01-01T00:00:00.000Z' }) });

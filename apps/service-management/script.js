@@ -30,50 +30,13 @@
  */
 
 import {
-  DOMAIN_COLORS,
-  DOMAIN_HEADER_HEIGHT,
-  DOMAIN_MIN_HEIGHT,
-  DOMAIN_MIN_WIDTH,
-  ENTITY_WIDTH,
-  FIELD_TYPES,
-  createDesignerState,
-  defaultFields,
-  normalizeContractInput,
-  normalizeDeploymentInput,
-  normalizeField,
-  normalizeOptionalNumber,
-  normalizeRbacPolicyInput,
-  parseCommaSeparated,
-  parseEnumValues
-} from '@jumentix/designer-core/state/designerState.js';
-import { createDesignerSync } from './src/state/designerSync.js';
+  flattenBundleFiles,
+  renderBundlePreview
+} from '@jumentix/designer-core/codegen/hexagonalCodegen.js';
 import {
-  deriveTenantScoped,
-  validateRbacRule
-} from '@jumentix/designer-core/model/rbacContract.js';
-import { createDesignerStore } from './src/store/designerStoreFactory.js';
-import {
-  CANA_MIGRATION_SOURCE_RETENTION_DAYS,
-  describeDesignerStorageEnvironment,
-  describeLoadTimeDataLoss,
-  migrateLocalStorageToCana,
-  readRetainedMigrationSource
-} from './src/store/canaMigration.js';
-import * as model from '@jumentix/designer-core/model/modelQueries.js';
-import { isPm2ManagedDeployTarget } from '@jumentix/designer-core/model/deployCapabilityMatrix.js';
-import { buildSampleModelPayload } from '@jumentix/designer-core/model/sampleModel.js';
-import { collectModelIssues } from '@jumentix/designer-core/validation/modelValidation.js';
-import { collectServiceConfigurationIssues } from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
-import { collectDeployTargetIssues } from '@jumentix/designer-core/validation/deployTargetValidation.js';
-import {
-  collectDeployTargetFieldIssues,
-  deployTargetFieldHint,
-  duplicateDeployTargetName
-} from '@jumentix/designer-core/validation/deployTargetLifecycleValidation.js';
-import {
-  normalizeInterfaceAdapterInput,
-  upsertInterfaceAdapter
-} from '@jumentix/designer-core/validation/interfaceAdapterValidation.js';
+  buildAsyncApiFileSet,
+  buildGrpcProto
+} from '@jumentix/designer-core/exporters/asyncApiExporters.js';
 import {
   buildBoilerplateBundleDocument,
   buildDomainPackageDocument,
@@ -83,29 +46,85 @@ import {
   buildOasDocument
 } from '@jumentix/designer-core/exporters/designerExporters.js';
 import {
-  buildAsyncApiFileSet,
-  buildGrpcProto
-} from '@jumentix/designer-core/exporters/asyncApiExporters.js';
-import {
   buildDomainFromPackage,
   buildDomainsFromOas,
   buildStateFromSuiteExport
 } from '@jumentix/designer-core/importers/designerImporters.js';
+import { isPm2ManagedDeployTarget } from '@jumentix/designer-core/model/deployCapabilityMatrix.js';
 import {
-  flattenBundleFiles,
-  renderBundlePreview
-} from '@jumentix/designer-core/codegen/hexagonalCodegen.js';
-import { createTabs } from './src/ui/tabs.js';
-import { createSidebarGroups } from './src/ui/sidebarGroups.js';
-import { createContextMenu } from './src/ui/contextMenu.js';
+  buildEntityRequestExample,
+  buildEntityResponseExample,
+  buildRelationshipName as modelBuildRelationshipName,
+  clampEntityPosition,
+  entityHeight,
+  findEntity as modelFindEntity,
+  findEntityByName as modelFindEntityByName,
+  getEntityRbacPolicy as modelGetEntityRbacPolicy,
+  isDomainNameTaken as modelIsDomainNameTaken,
+  isEntityNameTaken as modelIsEntityNameTaken,
+  isFieldNameTaken as modelIsFieldNameTaken,
+  normalizedName as modelNormalizedName,
+  searchModel,
+  snapCoordinate as modelSnapCoordinate,
+  toPathToken as modelToPathToken,
+  toSchemaName,
+  uniqueStrings as modelUniqueStrings
+} from '@jumentix/designer-core/model/modelQueries.js';
+import {
+  deriveTenantScoped,
+  validateRbacRule
+} from '@jumentix/designer-core/model/rbacContract.js';
+import { buildSampleModelPayload } from '@jumentix/designer-core/model/sampleModel.js';
+import {
+  createDesignerState,
+  defaultFields,
+  DOMAIN_COLORS,
+  DOMAIN_HEADER_HEIGHT,
+  DOMAIN_MIN_HEIGHT,
+  DOMAIN_MIN_WIDTH,
+  ENTITY_WIDTH,
+  FIELD_TYPES,
+  normalizeContractInput,
+  normalizeDeploymentInput,
+  normalizeField,
+  normalizeOptionalNumber,
+  normalizeRbacPolicyInput,
+  parseCommaSeparated,
+  parseEnumValues
+} from '@jumentix/designer-core/state/designerState.js';
+import {
+  collectDeployTargetFieldIssues,
+  deployTargetFieldHint,
+  duplicateDeployTargetName
+} from '@jumentix/designer-core/validation/deployTargetLifecycleValidation.js';
+import collectDeployTargetIssues from '@jumentix/designer-core/validation/deployTargetValidation.js';
+import {
+  normalizeInterfaceAdapterInput,
+  upsertInterfaceAdapter
+} from '@jumentix/designer-core/validation/interfaceAdapterValidation.js';
+import collectModelIssues from '@jumentix/designer-core/validation/modelValidation.js';
+import collectServiceConfigurationIssues from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
+
+import { createDesignerSync } from './src/state/designerSync.js';
+import {
+  CANA_MIGRATION_SOURCE_RETENTION_DAYS,
+  describeDesignerStorageEnvironment,
+  describeLoadTimeDataLoss,
+  migrateLocalStorageToCana,
+  readRetainedMigrationSource
+} from './src/store/canaMigration.js';
+import { createDesignerStore } from './src/store/designerStoreFactory.js';
+import createArchitectureCanvas from './src/ui/architectureCanvas.js';
+import createCanvas from './src/ui/canvas.js';
 import { drawModel } from './src/ui/canvasImage.js';
-import { createCanvas } from './src/ui/canvas.js';
-import { createArchitectureCanvas } from './src/ui/architectureCanvas.js';
-import { createSwaggerTab } from './src/ui/swaggerTab.js';
-import { createInspectors } from './src/ui/inspectors.js';
-import { createMonitoringController } from './src/ui/monitoringApp.js';
-import { createRenderGuard, stableSerialize } from './src/ui/renderGuard.js';
+import createContextMenu from './src/ui/contextMenu.js';
 import { installControlHelp } from './src/ui/controlHelp.js';
+import createInspectors from './src/ui/inspectors.js';
+import createMonitoringController from './src/ui/monitoringApp.js';
+import { createRenderGuard, stableSerialize } from './src/ui/renderGuard.js';
+import createSidebarGroups from './src/ui/sidebarGroups.js';
+import { createSwaggerTab } from './src/ui/swaggerTab.js';
+import createTabs from './src/ui/tabs.js';
 
 const CANVAS_ORIGIN_X = 3200;
 const CANVAS_ORIGIN_Y = 2200;
@@ -124,11 +143,45 @@ const RUNTIME_ENV_EDITABLE_DEFAULTS = {
   JUMENTIX_WEBSOCKET_REDIS_URL: ''
 };
 const RUNTIME_ENV_ENUM_OPTIONS = {
-  JUMENTIX_HTTP_FRAMEWORK: ['express', 'fastify', 'restify', 'cloudflare-workers', 'vercel-functions', 'loopback', 'sails-js', 'feathers', 'derby-js', 'adonis-js', 'total-js'],
+  JUMENTIX_HTTP_FRAMEWORK: [
+    'express',
+    'fastify',
+    'restify',
+    'cloudflare-workers',
+    'vercel-functions',
+    'loopback',
+    'sails-js',
+    'feathers',
+    'derby-js',
+    'adonis-js',
+    'total-js'
+  ],
   JUMENTIX_REALTIME_API: ['no', 'yes'],
   JUMENTIX_REALTIME_API_PROTOCOL: ['websocket', 'grpc'],
-  JUMENTIX_REALTIME_API_DATABASE_DRIVER: ['Mongo', 'PostgreSQL', 'MySQL', 'MS SQL', 'RDS', 'Aurora', 'Cassandra'],
-  JUMENTIX_DATABASE_DRIVER: ['InMemory', 'IndexedDB', 'Mongo', 'PostgreSQL', 'MySQL', 'MSSQL', 'Oracle', 'SQLite', 'DynamoDB', 'Cassandra', 'Firebase', 'Aurora', 'RDS'],
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER: [
+    'Mongo',
+    'PostgreSQL',
+    'MySQL',
+    'MS SQL',
+    'RDS',
+    'Aurora',
+    'Cassandra'
+  ],
+  JUMENTIX_DATABASE_DRIVER: [
+    'InMemory',
+    'IndexedDB',
+    'Mongo',
+    'PostgreSQL',
+    'MySQL',
+    'MSSQL',
+    'Oracle',
+    'SQLite',
+    'DynamoDB',
+    'Cassandra',
+    'Firebase',
+    'Aurora',
+    'RDS'
+  ],
   JUMENTIX_KEYVALUESTORAGE_DRIVER: ['redis', 'inmemory'],
   JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: ['inmemory', 'rabbitmq', 'bullmq'],
   JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER: ['', 'cluster', 'redis-streams']
@@ -136,9 +189,11 @@ const RUNTIME_ENV_ENUM_OPTIONS = {
 // Per-key context hints (JUM-461): enough context for the two driver keys and
 // the canonical-spelling rule to be legible without prior knowledge.
 const RUNTIME_ENV_FIELD_HINTS = {
-  JUMENTIX_HTTP_FRAMEWORK: 'Canonical spellings only: derby-js and sails-js (the backend rejects the derby/sails aliases).',
+  JUMENTIX_HTTP_FRAMEWORK:
+    'Canonical spellings only: derby-js and sails-js (the backend rejects the derby/sails aliases).',
   JUMENTIX_DATABASE_DRIVER: 'Main application database (REST API persistence).',
-  JUMENTIX_REALTIME_API_DATABASE_DRIVER: 'Realtime API (WebSocket/gRPC) database only - does not change the main application database.'
+  JUMENTIX_REALTIME_API_DATABASE_DRIVER:
+    'Realtime API (WebSocket/gRPC) database only - does not change the main application database.'
 };
 
 let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
@@ -167,7 +222,10 @@ const designerState = createDesignerState({
     if (designerSync) {
       designerSync.reportSaveOutcome(saveResult, attemptedPayload);
     } else if (saveResult && saveResult.status !== 'persisted') {
-      showStatus(`A save could not be confirmed (${saveResult.reason || 'unknown outcome'}).`, 'error');
+      showStatus(
+        `A save could not be confirmed (${saveResult.reason || 'unknown outcome'}).`,
+        'error'
+      );
     }
   }
 });
@@ -518,6 +576,13 @@ const monitoringController = createMonitoringController(dom, {
   },
   persist: () => saveState()
 });
+const architectureCanvas = createArchitectureCanvas({
+  dom,
+  state,
+  actions: { withPersist, render, saveState }
+});
+const swaggerTab = createSwaggerTab({ dom, state });
+
 const tabs = createTabs({
   dom,
   state,
@@ -567,15 +632,10 @@ const canvas = createCanvas({
     deleteRelationship,
     // Injected rather than called directly so the canvas module keeps no
     // reference to `window`, which is what lets it be unit-tested.
+    // eslint-disable-next-line no-alert -- native confirm is the injected confirmation UX of this no-framework runtime
     confirmAction: (message) => window.confirm(message)
   }
 });
-const architectureCanvas = createArchitectureCanvas({
-  dom,
-  state,
-  actions: { withPersist, render, saveState }
-});
-const swaggerTab = createSwaggerTab({ dom, state });
 
 let codeWorkspaceMonacoEditor = null;
 let codeWorkspaceMonacoSubscription = null;
@@ -610,47 +670,53 @@ const inspectors = createInspectors({
 // the monolith's call signatures (state closed over here, as before) so the
 // retained orchestration below reads exactly as it did pre-refactor.
 function normalizedName(value) {
-  return model.normalizedName(value);
+  return modelNormalizedName(value);
 }
 
 function isDomainNameTaken(name, ignoredDomainId = null) {
-  return model.isDomainNameTaken(state.domains, name, ignoredDomainId);
+  return modelIsDomainNameTaken(state.domains, name, ignoredDomainId);
 }
 
 function isEntityNameTaken(domain, name, ignoredEntityId = null) {
-  return model.isEntityNameTaken(domain, name, ignoredEntityId);
+  return modelIsEntityNameTaken(domain, name, ignoredEntityId);
 }
 
 function isFieldNameTaken(entity, name, ignoredFieldName = null) {
-  return model.isFieldNameTaken(entity, name, ignoredFieldName);
+  return modelIsFieldNameTaken(entity, name, ignoredFieldName);
 }
 
 function uniqueStrings(values) {
-  return model.uniqueStrings(values);
+  return modelUniqueStrings(values);
 }
 
 function findEntity(entityId) {
-  return model.findEntity(state.domains, entityId);
+  return modelFindEntity(state.domains, entityId);
 }
 
 function findEntityByName(name) {
-  return model.findEntityByName(state.domains, name);
+  return modelFindEntityByName(state.domains, name);
 }
 
 function buildRelationshipName(fromEntityId, toEntityId, fromCardinality, toCardinality) {
-  return model.buildRelationshipName(state.domains, fromEntityId, toEntityId, fromCardinality, toCardinality);
+  return modelBuildRelationshipName(
+    state.domains,
+    fromEntityId,
+    toEntityId,
+    fromCardinality,
+    toCardinality
+  );
 }
 
 function getEntityRbacPolicy(entity) {
-  return model.getEntityRbacPolicy(entity);
+  return modelGetEntityRbacPolicy(entity);
 }
 
 function toPathToken(value) {
-  return model.toPathToken(value);
+  return modelToPathToken(value);
 }
 
 function snapCoordinate(value) {
-  return model.snapCoordinate(state.view.snapToGrid, value);
+  return modelSnapCoordinate(state.view.snapToGrid, value);
 }
 
 function renderRuntimeEnvFields(runtimeValues) {
@@ -719,11 +785,15 @@ function renderRuntimeEnvironment() {
     dom.runtimeEnvTargetFile.textContent = `Editing target: ${fileName} (environment "${environment}")`;
   }
   if (dom.runtimeEnvPreview) {
-    dom.runtimeEnvPreview.textContent = JSON.stringify({
-      environment,
-      fileName,
-      values: runtimeValues
-    }, null, 2);
+    dom.runtimeEnvPreview.textContent = JSON.stringify(
+      {
+        environment,
+        fileName,
+        values: runtimeValues
+      },
+      null,
+      2
+    );
   }
 }
 
@@ -761,7 +831,11 @@ function renderPreservingInteraction() {
   const activeId = active && active.id ? active.id : null;
   const isTextInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
   const pending = isTextInput
-    ? { value: active.value, selectionStart: active.selectionStart, selectionEnd: active.selectionEnd }
+    ? {
+        value: active.value,
+        selectionStart: active.selectionStart,
+        selectionEnd: active.selectionEnd
+      }
     : null;
   const scrollLeft = dom.canvas ? dom.canvas.scrollLeft : 0;
   const scrollTop = dom.canvas ? dom.canvas.scrollTop : 0;
@@ -777,7 +851,7 @@ function renderPreservingInteraction() {
     element.value = pending.value;
     try {
       element.setSelectionRange(pending.selectionStart, pending.selectionEnd);
-    } catch (_) {
+    } catch {
       // Some input types (number, color) reject setSelectionRange; the value
       // and focus are still preserved.
     }
@@ -800,7 +874,7 @@ async function runtimeEnvApiError(response, fallback) {
   let payload = null;
   try {
     payload = await response.json();
-  } catch (_) {
+  } catch {
     payload = null;
   }
   if (!payload || typeof payload !== 'object') return new Error(fallback);
@@ -986,10 +1060,12 @@ function addDomain(name, options = {}) {
 }
 
 function boxesOverlap(box, other) {
-  return box.left < other.right
-    && box.right > other.left
-    && box.top < other.bottom
-    && box.bottom > other.top;
+  return (
+    box.left < other.right &&
+    box.right > other.left &&
+    box.top < other.bottom &&
+    box.bottom > other.top
+  );
 }
 
 function findAvailableEntityPosition(domain, entityDraft) {
@@ -997,7 +1073,7 @@ function findAvailableEntityPosition(domain, entityDraft) {
   const gapX = 28;
   const gapY = 26;
   const boxWidth = ENTITY_WIDTH;
-  const boxHeight = model.entityHeight(entityDraft, false, false);
+  const boxHeight = entityHeight(entityDraft, false, false);
   const domainWidth = Math.max(DOMAIN_MIN_WIDTH, Number(domain.width) || DOMAIN_MIN_WIDTH);
   const domainHeight = Math.max(DOMAIN_MIN_HEIGHT, Number(domain.height) || DOMAIN_MIN_HEIGHT);
   const maxX = Math.max(padding, domainWidth - boxWidth - padding);
@@ -1006,7 +1082,7 @@ function findAvailableEntityPosition(domain, entityDraft) {
     left: Number(entity.x) || 0,
     top: Number(entity.y) || 0,
     right: (Number(entity.x) || 0) + ENTITY_WIDTH,
-    bottom: (Number(entity.y) || 0) + model.entityHeight(entity, false, false)
+    bottom: (Number(entity.y) || 0) + entityHeight(entity, false, false)
   }));
   for (let y = DOMAIN_HEADER_HEIGHT + padding; y <= maxY; y += boxHeight + gapY) {
     for (let x = padding; x <= maxX; x += boxWidth + gapX) {
@@ -1018,7 +1094,10 @@ function findAvailableEntityPosition(domain, entityDraft) {
   }
   return {
     x: padding,
-    y: Math.min(maxY, DOMAIN_HEADER_HEIGHT + padding + occupied.length * Math.round((boxHeight + gapY) / 2))
+    y: Math.min(
+      maxY,
+      DOMAIN_HEADER_HEIGHT + padding + occupied.length * Math.round((boxHeight + gapY) / 2)
+    )
   };
 }
 
@@ -1029,10 +1108,13 @@ function addEntity(domainId, name, options = {}) {
     showStatus(`Entity "${name}" already exists in ${domain.name}.`);
     return null;
   }
-  const fields = (options.fields || defaultFields()).map((field, fieldIndex) => normalizeField(field, fieldIndex));
-  const position = options.x !== undefined || options.y !== undefined
-    ? { x: options.x ?? 24, y: options.y ?? DOMAIN_HEADER_HEIGHT + 24 }
-    : findAvailableEntityPosition(domain, { fields });
+  const fields = (options.fields || defaultFields()).map((field, fieldIndex) =>
+    normalizeField(field, fieldIndex)
+  );
+  const position =
+    options.x !== undefined || options.y !== undefined
+      ? { x: options.x ?? 24, y: options.y ?? DOMAIN_HEADER_HEIGHT + 24 }
+      : findAvailableEntityPosition(domain, { fields });
   const entity = {
     id: nextId('entity'),
     name,
@@ -1072,7 +1154,9 @@ function deleteEntity(entityId) {
   );
   if (state.selectedEntityId === entityId) state.selectedEntityId = null;
   if (state.selectedRelationshipId) {
-    const stillExists = state.relationships.some((relationship) => relationship.id === state.selectedRelationshipId);
+    const stillExists = state.relationships.some(
+      (relationship) => relationship.id === state.selectedRelationshipId
+    );
     if (!stillExists) state.selectedRelationshipId = null;
   }
 }
@@ -1088,7 +1172,9 @@ function deleteDomain(domainId) {
   if (state.selectedDomainId === domainId) state.selectedDomainId = state.domains[0]?.id || null;
   if (state.selectedEntityId && ids.has(state.selectedEntityId)) state.selectedEntityId = null;
   if (state.selectedRelationshipId) {
-    const stillExists = state.relationships.some((relationship) => relationship.id === state.selectedRelationshipId);
+    const stillExists = state.relationships.some(
+      (relationship) => relationship.id === state.selectedRelationshipId
+    );
     if (!stillExists) state.selectedRelationshipId = null;
   }
 }
@@ -1123,17 +1209,22 @@ function addFieldToSelectedEntity() {
     return;
   }
   withPersist(() => {
-    found.entity.fields.push(normalizeField({
-      name,
-      type: dom.fieldTypeSelect.value,
-      format: dom.fieldFormatSelect.value,
-      enumValues: parseEnumValues(dom.fieldEnumInput.value),
-      required: dom.fieldRequiredCheck.checked,
-      pk: dom.fieldPkCheck.checked,
-      fk: dom.fieldFkCheck.checked,
-      unique: dom.fieldUniqueCheck.checked,
-      nullable: dom.fieldNullableCheck.checked
-    }, found.entity.fields.length));
+    found.entity.fields.push(
+      normalizeField(
+        {
+          name,
+          type: dom.fieldTypeSelect.value,
+          format: dom.fieldFormatSelect.value,
+          enumValues: parseEnumValues(dom.fieldEnumInput.value),
+          required: dom.fieldRequiredCheck.checked,
+          pk: dom.fieldPkCheck.checked,
+          fk: dom.fieldFkCheck.checked,
+          unique: dom.fieldUniqueCheck.checked,
+          nullable: dom.fieldNullableCheck.checked
+        },
+        found.entity.fields.length
+      )
+    );
     dom.fieldNameInput.value = '';
     dom.fieldFormatSelect.value = '';
     dom.fieldEnumInput.value = '';
@@ -1152,9 +1243,7 @@ function applyFieldTemplateToSelectedEntity() {
   const template = dom.fieldTemplateSelect.value;
   if (!template) return;
   const templates = {
-    tenant: [
-      { name: 'organizationId', type: 'uuid', required: true, fk: true, indexed: true }
-    ],
+    tenant: [{ name: 'organizationId', type: 'uuid', required: true, fk: true, indexed: true }],
     audit: [
       { name: 'createdBy', type: 'uuid', required: true, fk: true, indexed: true },
       { name: 'updatedBy', type: 'uuid', required: true, fk: true, indexed: true }
@@ -1164,8 +1253,20 @@ function applyFieldTemplateToSelectedEntity() {
       { name: 'deletedAt', type: 'datetime', required: false, nullable: true }
     ],
     contact: [
-      { name: 'emails', type: 'array', required: false, itemsType: 'string', description: 'Collection of e-mails' },
-      { name: 'phones', type: 'array', required: false, itemsType: 'string', description: 'Collection of phones' }
+      {
+        name: 'emails',
+        type: 'array',
+        required: false,
+        itemsType: 'string',
+        description: 'Collection of e-mails'
+      },
+      {
+        name: 'phones',
+        type: 'array',
+        required: false,
+        itemsType: 'string',
+        description: 'Collection of phones'
+      }
     ]
   };
   const items = templates[template];
@@ -1173,18 +1274,23 @@ function applyFieldTemplateToSelectedEntity() {
   withPersist(() => {
     items.forEach((candidate) => {
       if (isFieldNameTaken(found.entity, candidate.name)) return;
-      found.entity.fields.push(normalizeField({
-        name: candidate.name,
-        type: candidate.type || 'string',
-        required: Boolean(candidate.required),
-        pk: false,
-        fk: Boolean(candidate.fk),
-        unique: false,
-        indexed: Boolean(candidate.indexed),
-        nullable: Boolean(candidate.nullable),
-        itemsType: candidate.itemsType || '',
-        description: candidate.description || ''
-      }, found.entity.fields.length));
+      found.entity.fields.push(
+        normalizeField(
+          {
+            name: candidate.name,
+            type: candidate.type || 'string',
+            required: Boolean(candidate.required),
+            pk: false,
+            fk: Boolean(candidate.fk),
+            unique: false,
+            indexed: Boolean(candidate.indexed),
+            nullable: Boolean(candidate.nullable),
+            itemsType: candidate.itemsType || '',
+            description: candidate.description || ''
+          },
+          found.entity.fields.length
+        )
+      );
     });
     render();
   });
@@ -1207,7 +1313,8 @@ function updateField(entityId, fieldName, nextPartial) {
   }
   withPersist(() => {
     target.name = nextName;
-    if ('type' in nextPartial && FIELD_TYPES.includes(nextPartial.type)) target.type = nextPartial.type;
+    if ('type' in nextPartial && FIELD_TYPES.includes(nextPartial.type))
+      target.type = nextPartial.type;
     if ('required' in nextPartial) target.required = Boolean(nextPartial.required);
     if ('pk' in nextPartial) target.pk = Boolean(nextPartial.pk);
     if ('fk' in nextPartial) target.fk = Boolean(nextPartial.fk);
@@ -1215,11 +1322,14 @@ function updateField(entityId, fieldName, nextPartial) {
     if ('indexed' in nextPartial) target.indexed = Boolean(nextPartial.indexed);
     if ('nullable' in nextPartial) target.nullable = Boolean(nextPartial.nullable);
     if ('format' in nextPartial) target.format = String(nextPartial.format || '').trim();
-    if ('description' in nextPartial) target.description = String(nextPartial.description || '').trim();
+    if ('description' in nextPartial)
+      target.description = String(nextPartial.description || '').trim();
     if ('enumValues' in nextPartial) target.enumValues = parseEnumValues(nextPartial.enumValues);
     if ('pattern' in nextPartial) target.pattern = String(nextPartial.pattern || '').trim();
-    if ('minLength' in nextPartial) target.minLength = normalizeOptionalNumber(nextPartial.minLength);
-    if ('maxLength' in nextPartial) target.maxLength = normalizeOptionalNumber(nextPartial.maxLength);
+    if ('minLength' in nextPartial)
+      target.minLength = normalizeOptionalNumber(nextPartial.minLength);
+    if ('maxLength' in nextPartial)
+      target.maxLength = normalizeOptionalNumber(nextPartial.maxLength);
     if ('minimum' in nextPartial) target.minimum = normalizeOptionalNumber(nextPartial.minimum);
     if ('maximum' in nextPartial) target.maximum = normalizeOptionalNumber(nextPartial.maximum);
     if ('itemsType' in nextPartial) {
@@ -1250,19 +1360,29 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
       const to = findEntity(toEntityId);
       if (!from || !to) return;
       const junctionName = `${from.entity.name}${to.entity.name}`;
-      const junction = addEntity(
-        from.domain.id,
-        junctionName,
-        {
-          x: Math.max(10, Math.min(300, (from.entity.x + to.entity.x) / 2)),
-          y: Math.max(10, Math.min(190, (from.entity.y + to.entity.y) / 2)),
-          fields: [
-            ...defaultFields(),
-            { name: `${from.entity.name.toLowerCase()}Id`, type: 'uuid', required: true, pk: false, fk: true, unique: false },
-            { name: `${to.entity.name.toLowerCase()}Id`, type: 'uuid', required: true, pk: false, fk: true, unique: false }
-          ]
-        }
-      );
+      const junction = addEntity(from.domain.id, junctionName, {
+        x: Math.max(10, Math.min(300, (from.entity.x + to.entity.x) / 2)),
+        y: Math.max(10, Math.min(190, (from.entity.y + to.entity.y) / 2)),
+        fields: [
+          ...defaultFields(),
+          {
+            name: `${from.entity.name.toLowerCase()}Id`,
+            type: 'uuid',
+            required: true,
+            pk: false,
+            fk: true,
+            unique: false
+          },
+          {
+            name: `${to.entity.name.toLowerCase()}Id`,
+            type: 'uuid',
+            required: true,
+            pk: false,
+            fk: true,
+            unique: false
+          }
+        ]
+      });
       const relA = {
         id: nextId('rel'),
         fromEntityId: junction.id,
@@ -1281,7 +1401,7 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
       const relB = {
         id: nextId('rel'),
         fromEntityId: junction.id,
-        toEntityId: toEntityId,
+        toEntityId,
         name: `${junctionName} -> ${to.entity.name}`,
         fromCardinality: 'N',
         toCardinality: '1',
@@ -1300,11 +1420,11 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
       return;
     }
 
-    const exists = state.relationships.some((relationship) => (
-      relationship.fromEntityId === fromEntityId && relationship.toEntityId === toEntityId
-    ) || (
-      relationship.fromEntityId === toEntityId && relationship.toEntityId === fromEntityId
-    ));
+    const exists = state.relationships.some(
+      (relationship) =>
+        (relationship.fromEntityId === fromEntityId && relationship.toEntityId === toEntityId) ||
+        (relationship.fromEntityId === toEntityId && relationship.toEntityId === fromEntityId)
+    );
     if (exists) {
       showStatus('A relationship between these entities already exists.');
       return;
@@ -1371,30 +1491,43 @@ function addRelationshipFromAnchor(fromEntityId, toEntityId, toSide, fields = {}
 }
 
 function ensureForeignKeyField(entity, referencedEntityName) {
-  const fkName = `${String(referencedEntityName || '').trim().toLowerCase()}Id`;
+  const fkName = `${String(referencedEntityName || '')
+    .trim()
+    .toLowerCase()}Id`;
   if (!fkName || fkName === 'id') return;
-  const exists = entity.fields.some((field) => normalizedName(field.name) === normalizedName(fkName));
+  const exists = entity.fields.some(
+    (field) => normalizedName(field.name) === normalizedName(fkName)
+  );
   if (exists) return;
-  entity.fields.push(normalizeField({
-    name: fkName,
-    type: 'uuid',
-    required: true,
-    pk: false,
-    fk: true,
-    unique: false
-  }, entity.fields.length));
+  entity.fields.push(
+    normalizeField(
+      {
+        name: fkName,
+        type: 'uuid',
+        required: true,
+        pk: false,
+        fk: true,
+        unique: false
+      },
+      entity.fields.length
+    )
+  );
 }
 
 function deleteRelationship(relationshipId) {
   withPersist(() => {
-    state.relationships = state.relationships.filter((relationship) => relationship.id !== relationshipId);
+    state.relationships = state.relationships.filter(
+      (relationship) => relationship.id !== relationshipId
+    );
     if (state.selectedRelationshipId === relationshipId) state.selectedRelationshipId = null;
     render();
   });
 }
 
 function saveSelectedRelationship() {
-  const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
+  const relationship = state.relationships.find(
+    (candidate) => candidate.id === state.selectedRelationshipId
+  );
   if (!relationship) {
     showStatus('Select a relationship first.');
     return;
@@ -1425,21 +1558,27 @@ function saveSelectedRelationship() {
   withPersist(() => {
     relationship.fromEntityId = fromEntityId;
     relationship.toEntityId = toEntityId;
-    relationship.name = dom.relationshipNameInput.value.trim()
-      || buildRelationshipName(fromEntityId, toEntityId, fromCardinality, toCardinality);
+    relationship.name =
+      dom.relationshipNameInput.value.trim() ||
+      buildRelationshipName(fromEntityId, toEntityId, fromCardinality, toCardinality);
     relationship.fromCardinality = fromCardinality;
     relationship.toCardinality = toCardinality;
-    relationship.labelOffsetX = normalizeOptionalNumber(dom.relationshipLabelOffsetXInput.value) ?? 0;
-    relationship.labelOffsetY = normalizeOptionalNumber(dom.relationshipLabelOffsetYInput.value) ?? 0;
+    relationship.labelOffsetX =
+      normalizeOptionalNumber(dom.relationshipLabelOffsetXInput.value) ?? 0;
+    relationship.labelOffsetY =
+      normalizeOptionalNumber(dom.relationshipLabelOffsetYInput.value) ?? 0;
     relationship.bendX = normalizeOptionalNumber(dom.relationshipBendXInput.value);
     relationship.bendY = normalizeOptionalNumber(dom.relationshipBendYInput.value);
-    relationship.anchorBehavior = dom.relationshipAnchorBehaviorSelect.value === 'center' ? 'center' : 'auto';
+    relationship.anchorBehavior =
+      dom.relationshipAnchorBehaviorSelect.value === 'center' ? 'center' : 'auto';
     render();
   });
 }
 
 function reverseSelectedRelationship() {
-  const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
+  const relationship = state.relationships.find(
+    (candidate) => candidate.id === state.selectedRelationshipId
+  );
   if (!relationship) {
     showStatus('Select a relationship first.');
     return;
@@ -1488,12 +1627,7 @@ function handleEntityRelationshipPick(entityId) {
   }
   const fromId = interaction.relationshipPickFromEntityId;
   const toId = entityId;
-  addRelationship(
-    fromId,
-    toId,
-    dom.fromCardSelect.value,
-    dom.toCardSelect.value
-  );
+  addRelationship(fromId, toId, dom.fromCardSelect.value, dom.toCardSelect.value);
   setRelationshipPickMode(false);
 }
 
@@ -1527,8 +1661,12 @@ function saveSelectedDomainContext() {
       upstreamDependencies: parseCommaSeparated(dom.domainUpstreamInput.value),
       downstreamDependencies: parseCommaSeparated(dom.domainDownstreamInput.value),
       integrationChannel: String(dom.domainIntegrationChannelInput.value || '').trim(),
-      packageDependencies: uniqueStrings(parseCommaSeparated(dom.domainPackageDependenciesInput.value)),
-      sharedValueObjects: uniqueStrings(parseCommaSeparated(dom.domainSharedValueObjectsInput.value))
+      packageDependencies: uniqueStrings(
+        parseCommaSeparated(dom.domainPackageDependenciesInput.value)
+      ),
+      sharedValueObjects: uniqueStrings(
+        parseCommaSeparated(dom.domainSharedValueObjectsInput.value)
+      )
     };
     inspectors.renderStatus();
   });
@@ -1618,14 +1756,19 @@ function addSelectedEntityContract() {
   withPersist(() => {
     if (!found.entity.meta) found.entity.meta = {};
     if (!Array.isArray(found.entity.meta.contracts)) found.entity.meta.contracts = [];
-    found.entity.meta.contracts.push(normalizeContractInput({
-      id: nextId('contract'),
-      name,
-      type,
-      channel,
-      version,
-      payloadSchema: {}
-    }, found.entity.meta.contracts.length));
+    found.entity.meta.contracts.push(
+      normalizeContractInput(
+        {
+          id: nextId('contract'),
+          name,
+          type,
+          channel,
+          version,
+          payloadSchema: {}
+        },
+        found.entity.meta.contracts.length
+      )
+    );
     dom.entityContractNameInput.value = '';
     dom.entityContractChannelInput.value = '';
     dom.entityContractVersionInput.value = '1.0.0';
@@ -1670,7 +1813,9 @@ function duplicateSelectedEntity() {
   }
   withPersist(() => {
     const clonedFields = JSON.parse(JSON.stringify(found.entity.fields || []));
-    const clonedMeta = JSON.parse(JSON.stringify(found.entity.meta || { aggregateRoot: false, invariants: [] }));
+    const clonedMeta = JSON.parse(
+      JSON.stringify(found.entity.meta || { aggregateRoot: false, invariants: [] })
+    );
     addEntity(found.domain.id, candidateName, {
       x: Math.min(320, found.entity.x + 22),
       y: Math.min(180, found.entity.y + 22),
@@ -1722,6 +1867,7 @@ function editFieldMetadata(entityId, fieldName) {
     maximum: field.maximum,
     itemsType: field.itemsType || ''
   };
+  // eslint-disable-next-line no-alert -- native prompt collects the free-text input in this no-framework runtime
   const raw = window.prompt(
     `Edit OpenAPI field metadata for "${field.name}" as JSON.`,
     JSON.stringify(draft, null, 2)
@@ -1741,7 +1887,7 @@ function editFieldMetadata(entityId, fieldName) {
       maximum: normalizeOptionalNumber(parsed.maximum),
       itemsType: FIELD_TYPES.includes(parsed.itemsType) ? parsed.itemsType : ''
     });
-  } catch (error) {
+  } catch {
     showStatus('Invalid JSON metadata payload.');
   }
 }
@@ -1761,7 +1907,9 @@ async function loadSchemaBaseline() {
 async function runSchemaDiff() {
   const baseline = await loadSchemaBaseline();
   if (!baseline) {
-    inspectors.renderSchemaDiffResults([{ severity: 'warn', message: 'No baseline found. Save baseline first.' }]);
+    inspectors.renderSchemaDiffResults([
+      { severity: 'warn', message: 'No baseline found. Save baseline first.' }
+    ]);
     return;
   }
   const current = buildModelSnapshot();
@@ -1771,12 +1919,18 @@ async function runSchemaDiff() {
 
   current.domains.forEach((domain) => {
     if (!baseDomainsById.has(domain.id)) {
-      changes.push({ severity: 'info', message: `Create table/collection for domain "${domain.name}".` });
+      changes.push({
+        severity: 'info',
+        message: `Create table/collection for domain "${domain.name}".`
+      });
     }
   });
   (baseline.domains || []).forEach((domain) => {
     if (!currentDomainsById.has(domain.id)) {
-      changes.push({ severity: 'warn', message: `Drop domain "${domain.name}" scope and related entities.` });
+      changes.push({
+        severity: 'warn',
+        message: `Drop domain "${domain.name}" scope and related entities.`
+      });
     }
   });
 
@@ -1795,40 +1949,70 @@ async function runSchemaDiff() {
       return;
     }
     const baseEntity = baseEntities.get(entityId).entity;
-    const baseFieldsByName = new Map((baseEntity.fields || []).map((field) => [normalizedName(field.name), field]));
-    const currentFieldsByName = new Map((entity.fields || []).map((field) => [normalizedName(field.name), field]));
+    const baseFieldsByName = new Map(
+      (baseEntity.fields || []).map((field) => [normalizedName(field.name), field])
+    );
+    const currentFieldsByName = new Map(
+      (entity.fields || []).map((field) => [normalizedName(field.name), field])
+    );
 
     entity.fields.forEach((field) => {
       if (!baseFieldsByName.has(normalizedName(field.name))) {
-        changes.push({ severity: 'info', message: `Add field "${domain.name}/${entity.name}.${field.name}" (${field.type}).` });
+        changes.push({
+          severity: 'info',
+          message: `Add field "${domain.name}/${entity.name}.${field.name}" (${field.type}).`
+        });
       }
     });
     (baseEntity.fields || []).forEach((field) => {
       if (!currentFieldsByName.has(normalizedName(field.name))) {
-        changes.push({ severity: 'warn', message: `Remove field "${domain.name}/${entity.name}.${field.name}".` });
+        changes.push({
+          severity: 'warn',
+          message: `Remove field "${domain.name}/${entity.name}.${field.name}".`
+        });
       }
     });
     entity.fields.forEach((field) => {
       const previous = baseFieldsByName.get(normalizedName(field.name));
       if (!previous) return;
       if (previous.type !== field.type) {
-        changes.push({ severity: 'warn', message: `Alter type of "${domain.name}/${entity.name}.${field.name}" from ${previous.type} to ${field.type}.` });
+        changes.push({
+          severity: 'warn',
+          message: `Alter type of "${domain.name}/${entity.name}.${field.name}" from ${previous.type} to ${field.type}.`
+        });
       }
       if (Boolean(previous.required) !== Boolean(field.required)) {
-        changes.push({ severity: 'warn', message: `Change required flag on "${domain.name}/${entity.name}.${field.name}" to ${field.required}.` });
+        changes.push({
+          severity: 'warn',
+          message: `Change required flag on "${domain.name}/${entity.name}.${field.name}" to ${field.required}.`
+        });
       }
     });
 
-    const baseContracts = new Set(((baseEntity.meta?.contracts || [])).map((contract) => `${contract.type}|${contract.name}|${contract.version}`));
-    const currentContracts = new Set(((entity.meta?.contracts || [])).map((contract) => `${contract.type}|${contract.name}|${contract.version}`));
+    const baseContracts = new Set(
+      (baseEntity.meta?.contracts || []).map(
+        (contract) => `${contract.type}|${contract.name}|${contract.version}`
+      )
+    );
+    const currentContracts = new Set(
+      (entity.meta?.contracts || []).map(
+        (contract) => `${contract.type}|${contract.name}|${contract.version}`
+      )
+    );
     currentContracts.forEach((key) => {
       if (!baseContracts.has(key)) {
-        changes.push({ severity: 'info', message: `Add message contract "${domain.name}/${entity.name}" -> ${key}.` });
+        changes.push({
+          severity: 'info',
+          message: `Add message contract "${domain.name}/${entity.name}" -> ${key}.`
+        });
       }
     });
     baseContracts.forEach((key) => {
       if (!currentContracts.has(key)) {
-        changes.push({ severity: 'warn', message: `Remove message contract "${domain.name}/${entity.name}" -> ${key}.` });
+        changes.push({
+          severity: 'warn',
+          message: `Remove message contract "${domain.name}/${entity.name}" -> ${key}.`
+        });
       }
     });
   });
@@ -1839,13 +2023,22 @@ async function runSchemaDiff() {
     }
   });
 
-  const baseRels = new Set((baseline.relationships || []).map((rel) => `${rel.fromEntityId}|${rel.toEntityId}|${rel.fromCardinality}|${rel.toCardinality}`));
-  const currentRels = new Set((current.relationships || []).map((rel) => `${rel.fromEntityId}|${rel.toEntityId}|${rel.fromCardinality}|${rel.toCardinality}`));
+  const baseRels = new Set(
+    (baseline.relationships || []).map(
+      (rel) => `${rel.fromEntityId}|${rel.toEntityId}|${rel.fromCardinality}|${rel.toCardinality}`
+    )
+  );
+  const currentRels = new Set(
+    (current.relationships || []).map(
+      (rel) => `${rel.fromEntityId}|${rel.toEntityId}|${rel.fromCardinality}|${rel.toCardinality}`
+    )
+  );
   currentRels.forEach((key) => {
     if (!baseRels.has(key)) changes.push({ severity: 'info', message: `Add relationship ${key}.` });
   });
   baseRels.forEach((key) => {
-    if (!currentRels.has(key)) changes.push({ severity: 'warn', message: `Remove relationship ${key}.` });
+    if (!currentRels.has(key))
+      changes.push({ severity: 'warn', message: `Remove relationship ${key}.` });
   });
 
   if (!changes.length) {
@@ -1871,7 +2064,9 @@ function canExportModel() {
   const criticalCount = issues.filter((issue) => issue.severity === 'error').length;
   if (criticalCount === 0) return true;
   inspectors.renderModelCheckResults(issues);
-  showStatus(`Export blocked: ${criticalCount} critical model issue(s). Run "Validate Model" and fix errors before exporting.`);
+  showStatus(
+    `Export blocked: ${criticalCount} critical model issue(s). Run "Validate Model" and fix errors before exporting.`
+  );
   return false;
 }
 
@@ -1892,7 +2087,11 @@ function downloadTextFile(fileName, content, mimeType) {
 
 function exportAsJson() {
   if (!canExportModel()) return;
-  downloadTextFile('domain-designer.json', JSON.stringify(buildJsonExportDocument(state), null, 2), 'application/json');
+  downloadTextFile(
+    'domain-designer.json',
+    JSON.stringify(buildJsonExportDocument(state), null, 2),
+    'application/json'
+  );
 }
 
 function exportAsMarkdown() {
@@ -1902,7 +2101,11 @@ function exportAsMarkdown() {
 
 function exportAsJsonSchema() {
   if (!canExportModel()) return;
-  downloadTextFile('domain-designer-json-schema.json', JSON.stringify(buildJsonSchemaDocument(state), null, 2), 'application/json');
+  downloadTextFile(
+    'domain-designer-json-schema.json',
+    JSON.stringify(buildJsonSchemaDocument(state), null, 2),
+    'application/json'
+  );
 }
 
 function exportAsAsyncApi() {
@@ -1920,7 +2123,11 @@ function exportAsProto() {
 function exportBoilerplateBundle() {
   if (!canExportModel()) return;
   flushActiveCodeWorkspaceEditor();
-  downloadTextFile('domain-designer-boilerplate-bundle.json', JSON.stringify(buildBoilerplateBundleDocument(state), null, 2), 'application/json');
+  downloadTextFile(
+    'domain-designer-boilerplate-bundle.json',
+    JSON.stringify(buildBoilerplateBundleDocument(state), null, 2),
+    'application/json'
+  );
 }
 
 function exportAsPackage() {
@@ -1940,7 +2147,11 @@ function exportAsPackage() {
 
 function exportAsOas() {
   if (!canExportModel()) return;
-  downloadTextFile('domain-designer-oas-3.1.json', JSON.stringify(buildOasDocument(state), null, 2), 'application/json');
+  downloadTextFile(
+    'domain-designer-oas-3.1.json',
+    JSON.stringify(buildOasDocument(state), null, 2),
+    'application/json'
+  );
 }
 
 // Import glue: FileReader + persist/selection/history around the pure
@@ -1952,7 +2163,9 @@ function exportAsOas() {
 // core) owns the versioning, dependency-graph and conflict policies; this
 // glue only renders outcomes — never window.alert.
 function packageImportFailureMessage(result) {
-  const packageLabel = result.package ? `'${result.package.name}@${result.package.version}'` : 'package';
+  const packageLabel = result.package
+    ? `'${result.package.name}@${result.package.version}'`
+    : 'package';
   if (result.reason === 'wrong-document-kind') {
     return `This file is a '${String(result.kind)}' document, not a domain package — use the matching import.`;
   }
@@ -1993,7 +2206,10 @@ function importDomainPackage(file) {
       if (result.noop) {
         // Idempotent re-import (JUM-492): same package, same version, same
         // content — importing twice changes nothing, proven by test.
-        showStatus(`Package '${result.package.name}@${result.package.version}' is already imported and unchanged — nothing to do.`, 'info');
+        showStatus(
+          `Package '${result.package.name}@${result.package.version}' is already imported and unchanged — nothing to do.`,
+          'info'
+        );
         return;
       }
       if (result.merged) {
@@ -2005,13 +2221,17 @@ function importDomainPackage(file) {
           inspectors.renderSchemaDiffResults(result.preview);
         }
         if (result.requiresDecision > 0) {
+          // eslint-disable-next-line no-alert -- native confirm guards the destructive action in this no-framework runtime
           const accepted = window.confirm(
-            `Merge package '${result.package.name}' ${result.fromVersion} -> ${result.package.version}: `
-            + `${result.autoCount} change(s) apply automatically; ${result.requiresDecision} aspect(s) require a decision `
-            + '(the existing designer content is kept for them — see the schema-diff panel). Apply the merge?'
+            `Merge package '${result.package.name}' ${result.fromVersion} -> ${result.package.version}: ` +
+              `${result.autoCount} change(s) apply automatically; ${result.requiresDecision} aspect(s) require a decision ` +
+              '(the existing designer content is kept for them — see the schema-diff panel). Apply the merge?'
           );
           if (!accepted) {
-            showStatus(`Merge of package '${result.package.name}@${result.package.version}' cancelled — nothing was changed.`, 'info');
+            showStatus(
+              `Merge of package '${result.package.name}@${result.package.version}' cancelled — nothing was changed.`,
+              'info'
+            );
             return;
           }
         }
@@ -2025,9 +2245,10 @@ function importDomainPackage(file) {
           recomputeIdCounter();
           render();
         });
-        const decisionNote = result.requiresDecision > 0
-          ? `; ${result.requiresDecision} aspect(s) kept the existing content (listed in the schema-diff panel)`
-          : '';
+        const decisionNote =
+          result.requiresDecision > 0
+            ? `; ${result.requiresDecision} aspect(s) kept the existing content (listed in the schema-diff panel)`
+            : '';
         showStatus(
           `Package '${result.package.name}' merged ${result.fromVersion} -> ${result.package.version}: ${result.autoCount} change(s) applied${decisionNote}.`,
           'info'
@@ -2047,7 +2268,7 @@ function importDomainPackage(file) {
       if (Array.isArray(result.warnings) && result.warnings.length) {
         showStatus(result.warnings.join(' '), 'error');
       }
-    } catch (_) {
+    } catch {
       showStatus('Could not parse package JSON.');
     }
   };
@@ -2081,25 +2302,28 @@ function importStateFromFile(file) {
         return;
       }
       const normalized = result.state;
-      withPersist(() => {
-        state.domains = normalized.domains;
-        state.relationships = normalized.relationships;
-        state.selectedDomainId = normalized.selectedDomainId;
-        state.selectedEntityId = normalized.selectedEntityId;
-        state.selectedRelationshipId = normalized.selectedRelationshipId;
-        state.interfaces = normalized.interfaces;
-        state.serviceConfiguration = normalized.serviceConfiguration;
-        state.runtimeEnvironment = normalized.runtimeEnvironment;
-        state.deployments = normalized.deployments;
-        state.view = normalized.view;
-        state.idCounter = normalized.idCounter;
-        recomputeIdCounter();
-        render();
-      }, { recordHistory: false });
+      withPersist(
+        () => {
+          state.domains = normalized.domains;
+          state.relationships = normalized.relationships;
+          state.selectedDomainId = normalized.selectedDomainId;
+          state.selectedEntityId = normalized.selectedEntityId;
+          state.selectedRelationshipId = normalized.selectedRelationshipId;
+          state.interfaces = normalized.interfaces;
+          state.serviceConfiguration = normalized.serviceConfiguration;
+          state.runtimeEnvironment = normalized.runtimeEnvironment;
+          state.deployments = normalized.deployments;
+          state.view = normalized.view;
+          state.idCounter = normalized.idCounter;
+          recomputeIdCounter();
+          render();
+        },
+        { recordHistory: false }
+      );
       history.past = [];
       history.future = [];
       saveState();
-    } catch (error) {
+    } catch {
       showStatus('Could not parse JSON file.');
     }
   };
@@ -2113,37 +2337,42 @@ function importStateFromOasFile(file) {
       const parsed = JSON.parse(String(reader.result));
       const result = buildDomainsFromOas(parsed);
       if (!result.ok) {
-        showStatus(result.reason === 'invalid-oas'
-          ? 'Invalid OAS file: components.schemas not found.'
-          : 'No schemas found to import.');
+        showStatus(
+          result.reason === 'invalid-oas'
+            ? 'Invalid OAS file: components.schemas not found.'
+            : 'No schemas found to import.'
+        );
         return;
       }
       const nextDomains = result.domains;
-      withPersist(() => {
-        state.domains = nextDomains;
-        // JUM-478: relationships cross the OAS boundary via `x-relations`
-        // (endpoints re-keyed to the freshly imported entities).
-        state.relationships = result.relationships || [];
-        if (result.architecture) state.architecture = result.architecture;
-        state.selectedDomainId = nextDomains[0]?.id || null;
-        state.selectedEntityId = null;
-        state.selectedRelationshipId = null;
-        state.view = {
-          zoom: 1,
-          compactEntities: false,
-          snapToGrid: true,
-          edgeStyle: 'curved',
-          modelCheckMinSeverity: 'info',
-          exportBlockCritical: true,
-          largeCanvasMode: false
-        };
-        recomputeIdCounter();
-        render();
-      }, { recordHistory: false });
+      withPersist(
+        () => {
+          state.domains = nextDomains;
+          // JUM-478: relationships cross the OAS boundary via `x-relations`
+          // (endpoints re-keyed to the freshly imported entities).
+          state.relationships = result.relationships || [];
+          if (result.architecture) state.architecture = result.architecture;
+          state.selectedDomainId = nextDomains[0]?.id || null;
+          state.selectedEntityId = null;
+          state.selectedRelationshipId = null;
+          state.view = {
+            zoom: 1,
+            compactEntities: false,
+            snapToGrid: true,
+            edgeStyle: 'curved',
+            modelCheckMinSeverity: 'info',
+            exportBlockCritical: true,
+            largeCanvasMode: false
+          };
+          recomputeIdCounter();
+          render();
+        },
+        { recordHistory: false }
+      );
       history.past = [];
       history.future = [];
       saveState();
-    } catch (error) {
+    } catch {
       showStatus('Could not parse OAS JSON file.');
     }
   };
@@ -2175,9 +2404,13 @@ function ensureCodeWorkspaceState() {
     state.codeWorkspace.activePath = '';
   }
   if (!Array.isArray(state.codeWorkspace.openPaths)) {
-    state.codeWorkspace.openPaths = state.codeWorkspace.activePath ? [state.codeWorkspace.activePath] : [];
+    state.codeWorkspace.openPaths = state.codeWorkspace.activePath
+      ? [state.codeWorkspace.activePath]
+      : [];
   }
-  state.codeWorkspace.openPaths = [...new Set(state.codeWorkspace.openPaths.filter((path) => typeof path === 'string' && path))];
+  state.codeWorkspace.openPaths = [
+    ...new Set(state.codeWorkspace.openPaths.filter((path) => typeof path === 'string' && path))
+  ];
   state.codeWorkspace.activeClosed = state.codeWorkspace.activeClosed === true;
   return state.codeWorkspace;
 }
@@ -2215,17 +2448,23 @@ function reconcileCodeWorkspaceFiles({ forceGenerated = false } = {}) {
       return;
     }
 
-    const content = String(existing.content ?? existing.generatedContent ?? generatedFile.generatedContent);
+    const content = String(
+      existing.content ?? existing.generatedContent ?? generatedFile.generatedContent
+    );
     const previousGenerated = String(existing.generatedContent ?? existing.baseContent ?? '');
     const generatorChanged = previousGenerated !== generatedFile.generatedContent;
-    const userEdited = content !== previousGenerated || ['edited', 'stale'].includes(existing.state);
-    const nextState = generatorChanged && userEdited
-      ? 'stale'
-      : !userEdited || content === generatedFile.generatedContent
-        ? 'generated'
-        : existing.state === 'stale'
-          ? 'stale'
-          : 'edited';
+    const userEdited =
+      content !== previousGenerated || ['edited', 'stale'].includes(existing.state);
+    let nextState;
+    if (generatorChanged && userEdited) {
+      nextState = 'stale';
+    } else if (!userEdited || content === generatedFile.generatedContent) {
+      nextState = 'generated';
+    } else if (existing.state === 'stale') {
+      nextState = 'stale';
+    } else {
+      nextState = 'edited';
+    }
 
     nextFiles[generatedFile.path] = {
       path: generatedFile.path,
@@ -2250,7 +2489,10 @@ function reconcileCodeWorkspaceFiles({ forceGenerated = false } = {}) {
 
   workspace.files = nextFiles;
   workspace.openPaths = workspace.openPaths.filter((path) => workspace.files[path]);
-  if ((!workspace.activePath || !workspace.files[workspace.activePath]) && !workspace.activeClosed) {
+  if (
+    (!workspace.activePath || !workspace.files[workspace.activePath]) &&
+    !workspace.activeClosed
+  ) {
     workspace.activePath = generatedFiles[0]?.path || Object.keys(workspace.files)[0] || '';
   }
   if (workspace.activePath && !workspace.openPaths.includes(workspace.activePath)) {
@@ -2270,10 +2512,10 @@ function flushActiveCodeWorkspaceEditor() {
   if (!file) return;
 
   if (codeWorkspaceMonacoEditor?.getModel) {
-    const model = codeWorkspaceMonacoEditor.getModel();
+    const editorModel = codeWorkspaceMonacoEditor.getModel();
     const activeUri = codeWorkspaceMonacoUri(file.path).toString();
-    if (model?.uri?.toString() === activeUri) {
-      updateActiveCodeWorkspaceFileContent(model.getValue());
+    if (editorModel?.uri?.toString() === activeUri) {
+      updateActiveCodeWorkspaceFileContent(editorModel.getValue());
       return;
     }
   }
@@ -2306,14 +2548,16 @@ function codeWorkspaceFileKind(path) {
 
 function codeWorkspaceLanguageLabel(path) {
   const language = codeWorkspaceFileLanguage(path);
-  return {
-    json: 'JSON',
-    typescript: 'TypeScript',
-    javascript: 'JavaScript',
-    markdown: 'Markdown',
-    yaml: 'YAML',
-    plaintext: 'Plain Text'
-  }[language] || 'Plain Text';
+  return (
+    {
+      json: 'JSON',
+      typescript: 'TypeScript',
+      javascript: 'JavaScript',
+      markdown: 'Markdown',
+      yaml: 'YAML',
+      plaintext: 'Plain Text'
+    }[language] || 'Plain Text'
+  );
 }
 
 function codeWorkspaceBreadcrumbLabel(path) {
@@ -2322,20 +2566,25 @@ function codeWorkspaceBreadcrumbLabel(path) {
 
 function normalizeCodeWorkspacePath(path) {
   const stack = [];
-  String(path || '').split('/').forEach((part) => {
-    if (!part || part === '.') return;
-    if (part === '..') {
-      stack.pop();
-      return;
-    }
-    stack.push(part);
-  });
+  String(path || '')
+    .split('/')
+    .forEach((part) => {
+      if (!part || part === '.') return;
+      if (part === '..') {
+        stack.pop();
+        return;
+      }
+      stack.push(part);
+    });
   return stack.join('/');
 }
 
 function resolveCodeWorkspaceImportPath(fromPath, specifier) {
   if (!specifier || !specifier.startsWith('.')) return '';
-  const directory = String(fromPath || '').split('/').slice(0, -1).join('/');
+  const directory = String(fromPath || '')
+    .split('/')
+    .slice(0, -1)
+    .join('/');
   return normalizeCodeWorkspacePath(`${directory}/${specifier}`);
 }
 
@@ -2402,7 +2651,8 @@ function closeCodeWorkspaceTab(path = ensureCodeWorkspaceState().activePath) {
   workspace.openPaths = workspace.openPaths.filter((openPath) => openPath !== closedPath);
   if (workspace.activePath === closedPath) {
     const fallbackIndex = Math.min(Math.max(closedIndex, 0), workspace.openPaths.length - 1);
-    workspace.activePath = workspace.openPaths[fallbackIndex] || workspace.openPaths[fallbackIndex - 1] || '';
+    workspace.activePath =
+      workspace.openPaths[fallbackIndex] || workspace.openPaths[fallbackIndex - 1] || '';
   }
   workspace.activeClosed = !workspace.activePath;
   saveState();
@@ -2416,8 +2666,9 @@ function closeActiveCodeWorkspaceTab() {
 
 function openCodeWorkspaceImport(specifier, fromPath = ensureCodeWorkspaceState().activePath) {
   const workspace = ensureCodeWorkspaceState();
-  const targetPath = codeWorkspaceImportCandidates(fromPath, specifier)
-    .find((candidate) => workspace.files[candidate]);
+  const targetPath = codeWorkspaceImportCandidates(fromPath, specifier).find(
+    (candidate) => workspace.files[candidate]
+  );
   if (!targetPath) {
     setCodeWorkspaceStatus(`Import target not found in generated workspace: ${specifier}`);
     return false;
@@ -2459,7 +2710,9 @@ function renderCodeWorkspaceTreeNode(node, container, depth = 0) {
         button.dataset.filePath = child.file.path;
         button.classList.toggle('active', child.file.path === state.codeWorkspace.activePath);
         button.innerHTML = `<span class="code-file-icon"></span><span class="code-file-name"></span><span class="code-file-state">${child.file.state}</span>`;
-        button.querySelector('.code-file-icon').textContent = codeWorkspaceFileKind(child.file.path);
+        button.querySelector('.code-file-icon').textContent = codeWorkspaceFileKind(
+          child.file.path
+        );
         button.querySelector('.code-file-name').textContent = child.name;
         button.onclick = () => {
           openCodeWorkspaceFile(child.file.path, 'Editing');
@@ -2469,7 +2722,8 @@ function renderCodeWorkspaceTreeNode(node, container, depth = 0) {
         button.className = 'code-folder-item';
         button.dataset.folderPath = child.path;
         button.setAttribute('aria-expanded', String(!isCollapsed));
-        button.innerHTML = '<span class="code-folder-chevron"></span><span class="code-file-icon">DIR</span><span class="code-file-name"></span>';
+        button.innerHTML =
+          '<span class="code-folder-chevron"></span><span class="code-file-icon">DIR</span><span class="code-file-name"></span>';
         button.querySelector('.code-folder-chevron').textContent = isCollapsed ? '>' : 'v';
         button.querySelector('.code-file-name').textContent = child.name;
         button.onclick = () => {
@@ -2493,9 +2747,7 @@ function setCodeWorkspaceStatus(message) {
 function renderCodeWorkspaceOpenTabs(activeFile) {
   if (!dom.codeWorkspaceOpenTabs) return;
   const workspace = ensureCodeWorkspaceState();
-  const openFiles = workspace.openPaths
-    .map((path) => workspace.files[path])
-    .filter(Boolean);
+  const openFiles = workspace.openPaths.map((path) => workspace.files[path]).filter(Boolean);
   dom.codeWorkspaceOpenTabs.innerHTML = '';
   if (!openFiles.length) {
     const closedTab = document.createElement('div');
@@ -2543,8 +2795,12 @@ function renderCodeWorkspaceOpenTabs(activeFile) {
 
 function updateCodeWorkspaceChrome() {
   const workspace = ensureCodeWorkspaceState();
-  const files = Object.values(workspace.files).sort((left, right) => left.path.localeCompare(right.path));
-  const query = String(dom.codeWorkspaceSearchInput?.value || '').trim().toLowerCase();
+  const files = Object.values(workspace.files).sort((left, right) =>
+    left.path.localeCompare(right.path)
+  );
+  const query = String(dom.codeWorkspaceSearchInput?.value || '')
+    .trim()
+    .toLowerCase();
   const visibleFiles = query
     ? files.filter((file) => file.path.toLowerCase().includes(query))
     : files;
@@ -2553,9 +2809,11 @@ function updateCodeWorkspaceChrome() {
   if (dom.codeWorkspaceSummary) {
     dom.codeWorkspaceSummary.textContent = `${files.length} files | ${editedCount} edited | ${staleCount} conflict${staleCount === 1 ? '' : 's'}`;
   }
-  if (dom.codeWorkspaceFileCount) dom.codeWorkspaceFileCount.textContent = `${files.length} file${files.length === 1 ? '' : 's'}`;
+  if (dom.codeWorkspaceFileCount)
+    dom.codeWorkspaceFileCount.textContent = `${files.length} file${files.length === 1 ? '' : 's'}`;
   if (dom.codeWorkspaceEditCount) dom.codeWorkspaceEditCount.textContent = `${editedCount} edited`;
-  if (dom.codeWorkspaceConflictCount) dom.codeWorkspaceConflictCount.textContent = `${staleCount} conflict${staleCount === 1 ? '' : 's'}`;
+  if (dom.codeWorkspaceConflictCount)
+    dom.codeWorkspaceConflictCount.textContent = `${staleCount} conflict${staleCount === 1 ? '' : 's'}`;
   if (!dom.codeWorkspaceFileList) return;
   dom.codeWorkspaceFileList.innerHTML = '';
   renderCodeWorkspaceTreeNode(buildCodeWorkspaceTree(visibleFiles), dom.codeWorkspaceFileList);
@@ -2578,12 +2836,14 @@ function syncCodeWorkspaceEditor(file) {
 
 function renderCodeWorkspace({ skipEditorSync = false } = {}) {
   if (skipEditorSync) flushActiveCodeWorkspaceEditor();
-  const workspace = reconcileCodeWorkspaceFiles();
+  reconcileCodeWorkspaceFiles();
   const file = getActiveCodeWorkspaceFile();
   updateCodeWorkspaceChrome();
   renderCodeWorkspaceOpenTabs(file);
-  if (dom.codeWorkspaceBreadcrumbs) dom.codeWorkspaceBreadcrumbs.textContent = codeWorkspaceBreadcrumbLabel(file?.path || '');
-  if (dom.codeWorkspaceLanguage) dom.codeWorkspaceLanguage.textContent = codeWorkspaceLanguageLabel(file?.path || '');
+  if (dom.codeWorkspaceBreadcrumbs)
+    dom.codeWorkspaceBreadcrumbs.textContent = codeWorkspaceBreadcrumbLabel(file?.path || '');
+  if (dom.codeWorkspaceLanguage)
+    dom.codeWorkspaceLanguage.textContent = codeWorkspaceLanguageLabel(file?.path || '');
   if (dom.codeWorkspaceActiveState) {
     dom.codeWorkspaceActiveState.textContent = file?.state || 'closed';
     dom.codeWorkspaceActiveState.dataset.state = file?.state || 'closed';
@@ -2591,10 +2851,14 @@ function renderCodeWorkspace({ skipEditorSync = false } = {}) {
   const hasConflict = file?.state === 'stale';
   if (dom.codeWorkspaceConflictPanel) dom.codeWorkspaceConflictPanel.hidden = !hasConflict;
   if (dom.codeWorkspaceUserVersion) dom.codeWorkspaceUserVersion.textContent = file?.content || '';
-  if (dom.codeWorkspaceGeneratedVersion) dom.codeWorkspaceGeneratedVersion.textContent = file?.generatedContent || '';
-  if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.disabled = !file || file.state === 'generated';
+  if (dom.codeWorkspaceGeneratedVersion)
+    dom.codeWorkspaceGeneratedVersion.textContent = file?.generatedContent || '';
+  if (dom.codeWorkspaceKeepMineBtn)
+    dom.codeWorkspaceKeepMineBtn.disabled = !file || file.state === 'generated';
   if (dom.codeWorkspaceTakeGeneratedBtn) dom.codeWorkspaceTakeGeneratedBtn.disabled = !file;
-  setCodeWorkspaceStatus(file ? `Editing ${file.path}` : 'No file open. Select a file from Explorer.');
+  setCodeWorkspaceStatus(
+    file ? `Editing ${file.path}` : 'No file open. Select a file from Explorer.'
+  );
   if (!skipEditorSync) syncCodeWorkspaceEditor(file);
 }
 
@@ -2616,7 +2880,8 @@ function updateActiveCodeWorkspaceFileContent(content) {
     dom.codeWorkspaceActiveState.textContent = file.state;
     dom.codeWorkspaceActiveState.dataset.state = file.state;
   }
-  if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.disabled = file.state === 'generated';
+  if (dom.codeWorkspaceKeepMineBtn)
+    dom.codeWorkspaceKeepMineBtn.disabled = file.state === 'generated';
 }
 
 function keepActiveCodeWorkspaceFile() {
@@ -2646,8 +2911,9 @@ function regenerateCodeWorkspace() {
   flushActiveCodeWorkspaceEditor();
   renderCodeWorkspace();
   saveState();
-  const staleCount = Object.values(ensureCodeWorkspaceState().files)
-    .filter((file) => file.state === 'stale').length;
+  const staleCount = Object.values(ensureCodeWorkspaceState().files).filter(
+    (file) => file.state === 'stale'
+  ).length;
   showStatus(
     staleCount > 0
       ? `${staleCount} generated file conflict${staleCount === 1 ? '' : 's'} need review.`
@@ -2657,16 +2923,18 @@ function regenerateCodeWorkspace() {
 }
 
 function codeWorkspaceMonacoUri(path) {
-  const safePath = String(path || 'preview.txt').split('/').map(encodeURIComponent).join('/');
+  const safePath = String(path || 'preview.txt')
+    .split('/')
+    .map(encodeURIComponent)
+    .join('/');
   return window.monaco.Uri.parse(`file:///jumentix-generated/${safePath}`);
 }
 
 function configureCodeWorkspaceMonaco() {
   if (codeWorkspaceMonacoConfigured || !window.monaco?.languages?.typescript) return;
-  const typescript = window.monaco.languages.typescript;
-  const moduleResolution = typescript.ModuleResolutionKind?.NodeJs
-    ?? typescript.ModuleResolutionKind?.Node10
-    ?? 2;
+  const { typescript } = window.monaco.languages;
+  const moduleResolution =
+    typescript.ModuleResolutionKind?.NodeJs ?? typescript.ModuleResolutionKind?.Node10 ?? 2;
   typescript.typescriptDefaults.setCompilerOptions({
     allowNonTsExtensions: true,
     allowSyntheticDefaultImports: true,
@@ -2700,18 +2968,18 @@ function syncCodeWorkspaceMonacoModels() {
     const uriText = uri.toString();
     liveUris.add(uriText);
     const language = codeWorkspaceFileLanguage(file.path);
-    let model = window.monaco.editor.getModel(uri);
-    if (!model) {
-      model = window.monaco.editor.createModel(file.content || '', language, uri);
-    } else if (model.getValue() !== (file.content || '')) {
-      model.setValue(file.content || '');
+    let editorModel = window.monaco.editor.getModel(uri);
+    if (!editorModel) {
+      editorModel = window.monaco.editor.createModel(file.content || '', language, uri);
+    } else if (editorModel.getValue() !== (file.content || '')) {
+      editorModel.setValue(file.content || '');
     }
-    window.monaco.editor.setModelLanguage(model, language);
+    window.monaco.editor.setModelLanguage(editorModel, language);
   });
-  window.monaco.editor.getModels().forEach((model) => {
-    const uriText = model.uri.toString();
+  window.monaco.editor.getModels().forEach((editorModel) => {
+    const uriText = editorModel.uri.toString();
     if (uriText.startsWith(workspaceUriPrefix) && !liveUris.has(uriText)) {
-      model.dispose();
+      editorModel.dispose();
     }
   });
 }
@@ -2762,7 +3030,7 @@ async function ensureMonacoLoader() {
   if (window.require?.config) return true;
   try {
     await loadExternalScript('/vendor/requirejs/require.js');
-  } catch (_error) {
+  } catch {
     return false;
   }
   return Boolean(window.require?.config);
@@ -2773,68 +3041,77 @@ function ensureMonacoWorkspaceEditor() {
     return codeWorkspaceMonacoLoadPromise || Promise.resolve(codeWorkspaceMonacoEditor);
   }
   if (window.JUMENTIX_DISABLE_MONACO === true) return Promise.resolve(null);
-  codeWorkspaceMonacoLoadPromise = ensureMonacoLoader().then((hasLoader) => new Promise((resolve) => {
-    if (!hasLoader || !window.require) {
-      dom.monacoWorkspaceEditor.hidden = true;
-      resolve(null);
-      return;
-    }
-    try {
-      window.require.config({ paths: { vs: '/vendor/monaco/min/vs' } });
-      window.require(['vs/editor/editor.main'], () => {
-        dom.monacoWorkspaceEditor.hidden = true;
-        if (!window.monaco?.editor) {
+  codeWorkspaceMonacoLoadPromise = ensureMonacoLoader().then(
+    (hasLoader) =>
+      new Promise((resolve) => {
+        if (!hasLoader || !window.require) {
+          dom.monacoWorkspaceEditor.hidden = true;
           resolve(null);
           return;
         }
-        if (dom.codeWorkspaceEditor) dom.codeWorkspaceEditor.hidden = true;
-        dom.monacoWorkspaceEditor.hidden = false;
-        codeWorkspaceMonacoEditor = window.monaco.editor.create(dom.monacoWorkspaceEditor, {
-          value: '',
-          language: 'typescript',
-          automaticLayout: true,
-          bracketPairColorization: { enabled: true },
-          cursorBlinking: 'smooth',
-          cursorSmoothCaretAnimation: 'on',
-          folding: true,
-          fontLigatures: false,
-          fontSize: 12,
-          lineDecorationsWidth: 12,
-          lineNumbersMinChars: 3,
-          minimap: { enabled: true, renderCharacters: false, scale: 1 },
-          padding: { top: 12, bottom: 12 },
-          renderWhitespace: 'selection',
-          roundedSelection: false,
-          scrollBeyondLastLine: false,
-          smoothScrolling: true,
-          tabSize: 2,
-          theme: 'vs-dark'
-        });
-        if (codeWorkspaceMonacoSubscription) codeWorkspaceMonacoSubscription.dispose();
-        codeWorkspaceMonacoSubscription = codeWorkspaceMonacoEditor.onDidChangeModelContent(() => {
-          if (suppressCodeWorkspaceEditorChange) return;
-          updateActiveCodeWorkspaceFileContent(codeWorkspaceMonacoEditor.getValue());
-        });
-        codeWorkspaceMonacoEditor.onMouseDown((event) => {
-          const position = event.target?.position;
-          const editorModel = codeWorkspaceMonacoEditor?.getModel();
-          if (!position || !editorModel) return;
-          const line = editorModel.getLineContent(position.lineNumber);
-          const specifier = importSpecifierAtCodePosition(line, position.column);
-          if (!specifier) return;
-          openCodeWorkspaceImport(specifier, getActiveCodeWorkspaceFile()?.path);
-        });
-        syncMonacoWorkspaceEditor(getActiveCodeWorkspaceFile());
-        resolve(codeWorkspaceMonacoEditor);
-      }, () => {
-        dom.monacoWorkspaceEditor.hidden = true;
-        resolve(null);
-      });
-    } catch (_error) {
-      dom.monacoWorkspaceEditor.hidden = true;
-      resolve(null);
-    }
-  }));
+        try {
+          window.require.config({ paths: { vs: '/vendor/monaco/min/vs' } });
+          window.require(
+            ['vs/editor/editor.main'],
+            () => {
+              dom.monacoWorkspaceEditor.hidden = true;
+              if (!window.monaco?.editor) {
+                resolve(null);
+                return;
+              }
+              if (dom.codeWorkspaceEditor) dom.codeWorkspaceEditor.hidden = true;
+              dom.monacoWorkspaceEditor.hidden = false;
+              codeWorkspaceMonacoEditor = window.monaco.editor.create(dom.monacoWorkspaceEditor, {
+                value: '',
+                language: 'typescript',
+                automaticLayout: true,
+                bracketPairColorization: { enabled: true },
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+                folding: true,
+                fontLigatures: false,
+                fontSize: 12,
+                lineDecorationsWidth: 12,
+                lineNumbersMinChars: 3,
+                minimap: { enabled: true, renderCharacters: false, scale: 1 },
+                padding: { top: 12, bottom: 12 },
+                renderWhitespace: 'selection',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                smoothScrolling: true,
+                tabSize: 2,
+                theme: 'vs-dark'
+              });
+              if (codeWorkspaceMonacoSubscription) codeWorkspaceMonacoSubscription.dispose();
+              codeWorkspaceMonacoSubscription = codeWorkspaceMonacoEditor.onDidChangeModelContent(
+                () => {
+                  if (suppressCodeWorkspaceEditorChange) return;
+                  updateActiveCodeWorkspaceFileContent(codeWorkspaceMonacoEditor.getValue());
+                }
+              );
+              codeWorkspaceMonacoEditor.onMouseDown((event) => {
+                const position = event.target?.position;
+                const editorModel = codeWorkspaceMonacoEditor?.getModel();
+                if (!position || !editorModel) return;
+                const line = editorModel.getLineContent(position.lineNumber);
+                const specifier = importSpecifierAtCodePosition(line, position.column);
+                if (!specifier) return;
+                openCodeWorkspaceImport(specifier, getActiveCodeWorkspaceFile()?.path);
+              });
+              syncMonacoWorkspaceEditor(getActiveCodeWorkspaceFile());
+              resolve(codeWorkspaceMonacoEditor);
+            },
+            () => {
+              dom.monacoWorkspaceEditor.hidden = true;
+              resolve(null);
+            }
+          );
+        } catch {
+          dom.monacoWorkspaceEditor.hidden = true;
+          resolve(null);
+        }
+      })
+  );
   return codeWorkspaceMonacoLoadPromise;
 }
 
@@ -2848,10 +3125,10 @@ function generateExamplesPreview() {
     return;
   }
   const chunks = targets.map(({ domain, entity }) => {
-    const schemaName = model.toSchemaName(domain.name, entity.name);
-    const requestCreate = model.buildEntityRequestExample(entity, 'create');
-    const requestUpdate = model.buildEntityRequestExample(entity, 'update');
-    const response = model.buildEntityResponseExample(entity);
+    const schemaName = toSchemaName(domain.name, entity.name);
+    const requestCreate = buildEntityRequestExample(entity, 'create');
+    const requestUpdate = buildEntityRequestExample(entity, 'update');
+    const response = buildEntityResponseExample(entity);
     return [
       `// ${domain.name}/${entity.name}`,
       `// create${schemaName} request`,
@@ -2862,7 +3139,9 @@ function generateExamplesPreview() {
       JSON.stringify(response, null, 2)
     ].join('\n');
   });
-  dom.examplesPreviewOutput.textContent = chunks.join('\n\n/* ---------------------------------------- */\n\n');
+  dom.examplesPreviewOutput.textContent = chunks.join(
+    '\n\n/* ---------------------------------------- */\n\n'
+  );
 }
 
 // JUM-548: the first-run state is intentionally EMPTY — no domains, no
@@ -2891,16 +3170,20 @@ function seed() {
 }
 
 function repairLegacySampleDiagramLayout() {
-  const sampleDomain = state.domains.find((domain) => domain.id === 'sample-domain-users')
-    || state.domains.find((domain) => (
-      String(domain.name || '').toLowerCase() === 'users'
-      && (domain.entities || []).some((entity) => entity.id === 'sample-entity-user')
-    ));
+  const sampleDomain =
+    state.domains.find((domain) => domain.id === 'sample-domain-users') ||
+    state.domains.find(
+      (domain) =>
+        String(domain.name || '').toLowerCase() === 'users' &&
+        (domain.entities || []).some((entity) => entity.id === 'sample-entity-user')
+    );
   if (!sampleDomain) return false;
   let repaired = false;
   const samplePayload = buildSampleModelPayload();
-  const sampleTasksDomain = samplePayload.domains.find((domain) => domain.id === 'sample-domain-tasks');
-  const sampleTaskRelationships = samplePayload.relationships.filter((relationship) => (
+  const sampleTasksDomain = samplePayload.domains.find(
+    (domain) => domain.id === 'sample-domain-tasks'
+  );
+  const sampleTaskRelationships = samplePayload.relationships.filter((relationship) =>
     [
       'sample-rel-project-organization',
       'sample-rel-task-project',
@@ -2908,14 +3191,17 @@ function repairLegacySampleDiagramLayout() {
       'sample-rel-comment-task',
       'sample-rel-comment-author'
     ].includes(relationship.id)
-  ));
-  const hasOnlySampleDomains = state.domains.every((domain) => String(domain.id || '').startsWith('sample-'));
-  const isIsolatedLegacySample = state.domains.length === 1
-    && (sampleDomain.entities || []).some((entity) => entity.id === 'sample-entity-user');
+  );
+  const hasOnlySampleDomains = state.domains.every((domain) =>
+    String(domain.id || '').startsWith('sample-')
+  );
+  const isIsolatedLegacySample =
+    state.domains.length === 1 &&
+    (sampleDomain.entities || []).some((entity) => entity.id === 'sample-entity-user');
   if (
-    sampleTasksDomain
-    && (hasOnlySampleDomains || isIsolatedLegacySample)
-    && !state.domains.some((domain) => domain.id === sampleTasksDomain.id)
+    sampleTasksDomain &&
+    (hasOnlySampleDomains || isIsolatedLegacySample) &&
+    !state.domains.some((domain) => domain.id === sampleTasksDomain.id)
   ) {
     state.domains.push(JSON.parse(JSON.stringify(sampleTasksDomain)));
     const relationshipIds = new Set(state.relationships.map((relationship) => relationship.id));
@@ -2941,17 +3227,20 @@ function repairLegacySampleDiagramLayout() {
     'sample-entity-phone': { x: 390, y: 380 },
     'sample-entity-contact-point': { x: 220, y: 650 }
   };
-  const allSampleEntitiesPresent = Object.keys(legacyPositions)
-    .every((entityId) => entitiesById.has(entityId));
+  const allSampleEntitiesPresent = Object.keys(legacyPositions).every((entityId) =>
+    entitiesById.has(entityId)
+  );
   if (!allSampleEntitiesPresent) return repaired;
   const stillLegacy = Object.entries(legacyPositions).every(([entityId, position]) => {
     const entity = entitiesById.get(entityId);
     return entity.x === position.x && entity.y === position.y;
   });
-  const legacyDomainBox = (!Number.isFinite(sampleDomain.width) || sampleDomain.width <= 540)
-    && (!Number.isFinite(sampleDomain.height) || sampleDomain.height <= 430);
-  const crampedNewLayout = sampleDomain.height < 900
-    || Object.entries(nextPositions).some(([entityId, position]) => {
+  const legacyDomainBox =
+    (!Number.isFinite(sampleDomain.width) || sampleDomain.width <= 540) &&
+    (!Number.isFinite(sampleDomain.height) || sampleDomain.height <= 430);
+  const crampedNewLayout =
+    sampleDomain.height < 900 ||
+    Object.entries(nextPositions).some(([entityId, position]) => {
       const entity = entitiesById.get(entityId);
       return entity.x !== position.x || entity.y !== position.y;
     });
@@ -2965,15 +3254,18 @@ function repairLegacySampleDiagramLayout() {
   }
   const taskDomain = state.domains.find((domain) => domain.id === 'sample-domain-tasks');
   if (taskDomain) {
-    const taskEntitiesById = new Map((taskDomain.entities || []).map((entity) => [entity.id, entity]));
+    const taskEntitiesById = new Map(
+      (taskDomain.entities || []).map((entity) => [entity.id, entity])
+    );
     const taskPositions = [
       ['sample-entity-project', { x: 24, y: 74 }],
       ['sample-entity-task', { x: 390, y: 74 }],
       ['sample-entity-comment', { x: 390, y: 318 }]
     ];
-    const taskNeedsRepair = taskDomain.width < 780
-      || taskDomain.x < 920
-      || taskPositions.some(([entityId, position]) => {
+    const taskNeedsRepair =
+      taskDomain.width < 780 ||
+      taskDomain.x < 920 ||
+      taskPositions.some(([entityId, position]) => {
         const entity = taskEntitiesById.get(entityId);
         return entity && (entity.x !== position.x || entity.y !== position.y);
       });
@@ -3002,6 +3294,7 @@ function repairLegacySampleDiagramLayout() {
  */
 function loadSampleModel() {
   if (state.domains.length) {
+    // eslint-disable-next-line no-alert -- native confirm guards the destructive action in this no-framework runtime
     const confirmed = window.confirm(
       'Load the sample model? This replaces the current domains and relationships (Undo restores them).'
     );
@@ -3029,9 +3322,9 @@ function loadSampleModel() {
     render();
   });
   showStatus(
-    'Sample model loaded: the "Users" and "Tasks" domains (marked "sample" in the domain list) demonstrate '
-    + 'field-level relationships, per-entity RBAC, a message contract and OAS composition. It passes the export '
-    + 'gate — try "Validate Model", export it, then delete the sample and start your own model.',
+    'Sample model loaded: the "Users" and "Tasks" domains (marked "sample" in the domain list) demonstrate ' +
+      'field-level relationships, per-entity RBAC, a message contract and OAS composition. It passes the export ' +
+      'gate — try "Validate Model", export it, then delete the sample and start your own model.',
     'info'
   );
 }
@@ -3064,13 +3357,15 @@ function renderEmptyStates() {
 // tab), the interaction flags, undo/redo depth and the PM2 preview. Anything
 // mutating outside these inputs must call designerRenderGuard.invalidate() —
 // when in doubt, mark dirty.
-const designerRenderGuard = createRenderGuard(() => stableSerialize({
-  state,
-  interaction,
-  undoDepth: history.past.length,
-  redoDepth: history.future.length,
-  pm2EcosystemPreview
-}));
+const designerRenderGuard = createRenderGuard(() =>
+  stableSerialize({
+    state,
+    interaction,
+    undoDepth: history.past.length,
+    redoDepth: history.future.length,
+    pm2EcosystemPreview
+  })
+);
 
 function render() {
   if (!designerRenderGuard.shouldRender()) return;
@@ -3171,15 +3466,18 @@ function submitDeployTargetForm() {
     return;
   }
   const editingIndex = interaction.editingDeploymentIndex;
-  withPersist(() => {
-    if (editingIndex === null || !state.deployments[editingIndex]) {
-      state.deployments.push(candidate);
-    } else {
-      state.deployments.splice(editingIndex, 1, candidate);
-    }
-    clearDeployTargetForm();
-    inspectors.renderDeployments();
-  }, { recordHistory: false });
+  withPersist(
+    () => {
+      if (editingIndex === null || !state.deployments[editingIndex]) {
+        state.deployments.push(candidate);
+      } else {
+        state.deployments.splice(editingIndex, 1, candidate);
+      }
+      clearDeployTargetForm();
+      inspectors.renderDeployments();
+    },
+    { recordHistory: false }
+  );
   if (editingIndex !== null) {
     showStatus(`Deploy target "${candidate.name}" updated.`, 'info');
   }
@@ -3192,9 +3490,12 @@ function editDeployment(index) {
   dom.deployNameInput.value = target.name || '';
   dom.deployTypeSelect.value = target.deployTarget || '';
   if (dom.deployServiceTypeSelect) dom.deployServiceTypeSelect.value = target.serviceType || '';
-  if (dom.deployRuntimeProtocolSelect) dom.deployRuntimeProtocolSelect.value = target.runtimeProtocol || '';
-  if (dom.deployDatabaseDriverSelect) dom.deployDatabaseDriverSelect.value = target.databaseDriver || '';
-  if (dom.deployKeyvalueDriverSelect) dom.deployKeyvalueDriverSelect.value = target.keyValueDriver || '';
+  if (dom.deployRuntimeProtocolSelect)
+    dom.deployRuntimeProtocolSelect.value = target.runtimeProtocol || '';
+  if (dom.deployDatabaseDriverSelect)
+    dom.deployDatabaseDriverSelect.value = target.databaseDriver || '';
+  if (dom.deployKeyvalueDriverSelect)
+    dom.deployKeyvalueDriverSelect.value = target.keyValueDriver || '';
   if (dom.deployPm2ProfileSelect) dom.deployPm2ProfileSelect.value = target.pm2Profile || '';
   dom.deployRegionInput.value = target.region || '';
   dom.deployRuntimeInput.value = target.runtime || '';
@@ -3213,16 +3514,22 @@ function duplicateDeployment(index) {
   const source = state.deployments[index];
   if (!source) return;
   const copy = normalizeDeploymentInput(JSON.parse(JSON.stringify(source)));
-  copy.name = duplicateDeployTargetName(source.name, state.deployments.map((entry) => entry.name));
+  copy.name = duplicateDeployTargetName(
+    source.name,
+    state.deployments.map((entry) => entry.name)
+  );
   // Inserting before the edited entry shifts its index; keep the edit pointed
   // at the same target.
   if (interaction.editingDeploymentIndex !== null && interaction.editingDeploymentIndex > index) {
     interaction.editingDeploymentIndex += 1;
   }
-  withPersist(() => {
-    state.deployments.splice(index + 1, 0, copy);
-    inspectors.renderDeployments();
-  }, { recordHistory: false });
+  withPersist(
+    () => {
+      state.deployments.splice(index + 1, 0, copy);
+      inspectors.renderDeployments();
+    },
+    { recordHistory: false }
+  );
   showStatus(`Duplicated "${source.name}" as "${copy.name}".`, 'info');
 }
 
@@ -3245,11 +3552,16 @@ function setActiveDesignerTab(tab) {
 }
 
 function wireEvents() {
-  if (dom.tabArchitectureBtn) dom.tabArchitectureBtn.onclick = () => setActiveDesignerTab('architecture');
-  if (dom.tabDomainDesignerBtn) dom.tabDomainDesignerBtn.onclick = () => setActiveDesignerTab('domain-designer');
-  if (dom.tabInterfaceDesignerBtn) dom.tabInterfaceDesignerBtn.onclick = () => setActiveDesignerTab('interface-designer');
-  if (dom.tabServiceConfigBtn) dom.tabServiceConfigBtn.onclick = () => setActiveDesignerTab('service-config');
-  if (dom.tabDeployManagementBtn) dom.tabDeployManagementBtn.onclick = () => setActiveDesignerTab('deploy-management');
+  if (dom.tabArchitectureBtn)
+    dom.tabArchitectureBtn.onclick = () => setActiveDesignerTab('architecture');
+  if (dom.tabDomainDesignerBtn)
+    dom.tabDomainDesignerBtn.onclick = () => setActiveDesignerTab('domain-designer');
+  if (dom.tabInterfaceDesignerBtn)
+    dom.tabInterfaceDesignerBtn.onclick = () => setActiveDesignerTab('interface-designer');
+  if (dom.tabServiceConfigBtn)
+    dom.tabServiceConfigBtn.onclick = () => setActiveDesignerTab('service-config');
+  if (dom.tabDeployManagementBtn)
+    dom.tabDeployManagementBtn.onclick = () => setActiveDesignerTab('deploy-management');
   if (dom.tabMonitoringBtn) {
     dom.tabMonitoringBtn.onclick = () => setActiveDesignerTab('monitoring');
   }
@@ -3265,19 +3577,25 @@ function wireEvents() {
   }
 
   if (dom.codeWorkspaceEditor) {
-    dom.codeWorkspaceEditor.oninput = () => updateActiveCodeWorkspaceFileContent(dom.codeWorkspaceEditor.value);
+    dom.codeWorkspaceEditor.oninput = () =>
+      updateActiveCodeWorkspaceFileContent(dom.codeWorkspaceEditor.value);
   }
   if (dom.codeWorkspaceSearchInput) {
     dom.codeWorkspaceSearchInput.oninput = () => renderCodeWorkspace({ skipEditorSync: true });
   }
-  if (dom.codeWorkspaceRegenerateBtn) dom.codeWorkspaceRegenerateBtn.onclick = regenerateCodeWorkspace;
-  if (dom.codeWorkspaceKeepMineBtn) dom.codeWorkspaceKeepMineBtn.onclick = keepActiveCodeWorkspaceFile;
-  if (dom.codeWorkspaceTakeGeneratedBtn) dom.codeWorkspaceTakeGeneratedBtn.onclick = takeGeneratedCodeWorkspaceFile;
-  if (dom.codeWorkspaceCloseTabBtn) dom.codeWorkspaceCloseTabBtn.onclick = closeActiveCodeWorkspaceTab;
+  if (dom.codeWorkspaceRegenerateBtn)
+    dom.codeWorkspaceRegenerateBtn.onclick = regenerateCodeWorkspace;
+  if (dom.codeWorkspaceKeepMineBtn)
+    dom.codeWorkspaceKeepMineBtn.onclick = keepActiveCodeWorkspaceFile;
+  if (dom.codeWorkspaceTakeGeneratedBtn)
+    dom.codeWorkspaceTakeGeneratedBtn.onclick = takeGeneratedCodeWorkspaceFile;
+  if (dom.codeWorkspaceCloseTabBtn)
+    dom.codeWorkspaceCloseTabBtn.onclick = closeActiveCodeWorkspaceTab;
   monitoringController.wire();
 
   if (dom.interfaceTypeSelect) {
-    dom.interfaceTypeSelect.onchange = () => inspectors.renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
+    dom.interfaceTypeSelect.onchange = () =>
+      inspectors.renderInterfaceFrameworkOptions(dom.interfaceTypeSelect.value);
   }
 
   if (dom.addInterfaceAdapterBtn) {
@@ -3338,10 +3656,13 @@ function wireEvents() {
         inspectors.renderServiceConfigStatus(issues);
         return;
       }
-      withPersist(() => {
-        state.serviceConfiguration = candidate;
-        inspectors.renderServiceConfiguration();
-      }, { recordHistory: false });
+      withPersist(
+        () => {
+          state.serviceConfiguration = candidate;
+          inspectors.renderServiceConfiguration();
+        },
+        { recordHistory: false }
+      );
     };
   }
 
@@ -3350,9 +3671,14 @@ function wireEvents() {
       const environment = dom.runtimeEnvSelect?.value || 'dev';
       try {
         await loadRuntimeEnvironment(environment);
-        showRuntimeEnvStatus(`Environment "${environment}" loaded from ${state.runtimeEnvironment?.fileName || 'env file'}.`, 'info');
+        showRuntimeEnvStatus(
+          `Environment "${environment}" loaded from ${state.runtimeEnvironment?.fileName || 'env file'}.`,
+          'info'
+        );
       } catch (error) {
-        showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not load runtime environment.'}`);
+        showRuntimeEnvStatus(
+          `Environment "${environment}": ${error instanceof Error ? error.message : 'Could not load runtime environment.'}`
+        );
       }
     };
   }
@@ -3362,9 +3688,14 @@ function wireEvents() {
       const environment = dom.runtimeEnvSelect?.value || 'dev';
       try {
         await saveRuntimeEnvironment();
-        showRuntimeEnvStatus(`Environment "${environment}" saved to ${state.runtimeEnvironment?.fileName || 'env file'}.`, 'info');
+        showRuntimeEnvStatus(
+          `Environment "${environment}" saved to ${state.runtimeEnvironment?.fileName || 'env file'}.`,
+          'info'
+        );
       } catch (error) {
-        showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not save runtime environment.'}`);
+        showRuntimeEnvStatus(
+          `Environment "${environment}": ${error instanceof Error ? error.message : 'Could not save runtime environment.'}`
+        );
       }
     };
   }
@@ -3372,10 +3703,11 @@ function wireEvents() {
   if (dom.runtimeEnvSelect) {
     dom.runtimeEnvSelect.onchange = () => {
       const environment = dom.runtimeEnvSelect.value;
-      loadRuntimeEnvironment(environment)
-        .catch((error) => {
-          showRuntimeEnvStatus(`Environment "${environment}": ${error instanceof Error ? error.message : 'Could not load runtime environment.'}`);
-        });
+      loadRuntimeEnvironment(environment).catch((error) => {
+        showRuntimeEnvStatus(
+          `Environment "${environment}": ${error instanceof Error ? error.message : 'Could not load runtime environment.'}`
+        );
+      });
     };
   }
 
@@ -3453,6 +3785,7 @@ function wireEvents() {
   dom.renameDomainBtn.onclick = () => {
     const selected = getSelectedDomain();
     if (!selected) return;
+    // eslint-disable-next-line no-alert -- native prompt collects the new domain name in this no-framework runtime
     const next = window.prompt('Rename domain', selected.name);
     if (!next || !next.trim()) return;
     if (isDomainNameTaken(next.trim(), selected.id)) {
@@ -3470,6 +3803,7 @@ function wireEvents() {
   dom.deleteDomainBtn.onclick = () => {
     const selected = getSelectedDomain();
     if (!selected) return;
+    // eslint-disable-next-line no-alert -- native confirm guards the destructive action in this no-framework runtime
     if (!window.confirm(`Delete domain "${selected.name}" and all entities?`)) return;
     const deletedName = selected.name;
     withPersist(() => {
@@ -3481,7 +3815,10 @@ function wireEvents() {
 
   dom.addEntityBtn.onclick = () => {
     const selected = getSelectedDomain();
-    if (!selected) return showStatus('Select a domain first.');
+    if (!selected) {
+      showStatus('Select a domain first.');
+      return;
+    }
     const value = dom.entityNameInput.value.trim();
     if (!value) {
       showStatus('Type an entity name before adding.');
@@ -3511,13 +3848,27 @@ function wireEvents() {
         ensureForeignKeyField(found.entity, 'owner');
       }
       if (template === 'eventSourced') {
-        const hasVersion = found.entity.fields.some((field) => normalizedName(field.name) === 'version');
-        if (!hasVersion) found.entity.fields.push(normalizeField({ name: 'version', type: 'integer', required: true }, found.entity.fields.length));
+        const hasVersion = found.entity.fields.some(
+          (field) => normalizedName(field.name) === 'version'
+        );
+        if (!hasVersion)
+          found.entity.fields.push(
+            normalizeField(
+              { name: 'version', type: 'integer', required: true },
+              found.entity.fields.length
+            )
+          );
         found.entity.meta.aggregateRoot = true;
       }
       if (template === 'referenceData') {
         const hasCode = found.entity.fields.some((field) => normalizedName(field.name) === 'code');
-        if (!hasCode) found.entity.fields.push(normalizeField({ name: 'code', type: 'string', required: true, unique: true }, found.entity.fields.length));
+        if (!hasCode)
+          found.entity.fields.push(
+            normalizeField(
+              { name: 'code', type: 'string', required: true, unique: true },
+              found.entity.fields.length
+            )
+          );
       }
       if (template === 'tenantOwned') {
         ensureForeignKeyField(found.entity, 'tenant');
@@ -3540,6 +3891,7 @@ function wireEvents() {
   dom.deleteEntityBtn.onclick = () => {
     const found = findEntity(state.selectedEntityId);
     if (!found) return;
+    // eslint-disable-next-line no-alert -- native confirm guards the destructive action in this no-framework runtime
     if (!window.confirm(`Delete entity "${found.entity.name}" and related links?`)) return;
     const deletedName = found.entity.name;
     withPersist(() => {
@@ -3573,15 +3925,17 @@ function wireEvents() {
   };
   // The tenant-scope checkbox is read-only and previews the value derived
   // from the currently checked roles (JUM-477).
-  [dom.entityRbacSuperadminCheck, dom.entityRbacAdminCheck, dom.entityRbacUserCheck].forEach((check) => {
-    check.onchange = () => {
-      const roles = [];
-      if (dom.entityRbacSuperadminCheck.checked) roles.push('superadmin');
-      if (dom.entityRbacAdminCheck.checked) roles.push('admin');
-      if (dom.entityRbacUserCheck.checked) roles.push('user');
-      dom.entityRbacTenantCheck.checked = deriveTenantScoped(roles);
-    };
-  });
+  [dom.entityRbacSuperadminCheck, dom.entityRbacAdminCheck, dom.entityRbacUserCheck].forEach(
+    (check) => {
+      check.onchange = () => {
+        const roles = [];
+        if (dom.entityRbacSuperadminCheck.checked) roles.push('superadmin');
+        if (dom.entityRbacAdminCheck.checked) roles.push('admin');
+        if (dom.entityRbacUserCheck.checked) roles.push('user');
+        dom.entityRbacTenantCheck.checked = deriveTenantScoped(roles);
+      };
+    }
+  );
   dom.addEntityContractBtn.onclick = addSelectedEntityContract;
   dom.saveEntityOasCompositionBtn.onclick = saveSelectedEntityOasComposition;
   dom.entityRenameInput.onkeydown = (event) => {
@@ -3626,30 +3980,31 @@ function wireEvents() {
    * JointJS demo's "Add table" behaves and what makes a first domain one
    * click away.
    */
-  if (dom.quickAddDomainBtn) dom.quickAddDomainBtn.onclick = () => {
-    const name = nextAvailableName('Domain', (candidate) => isDomainNameTaken(candidate));
-    withPersist(() => {
-      const created = addDomain(name);
-      state.selectedDomainId = created.id;
-      render();
-    });
-    showStatus(`Domain "${name}" added. Rename it on the canvas.`, 'info');
-  };
+  if (dom.quickAddDomainBtn)
+    dom.quickAddDomainBtn.onclick = () => {
+      const name = nextAvailableName('Domain', (candidate) => isDomainNameTaken(candidate));
+      withPersist(() => {
+        const created = addDomain(name);
+        state.selectedDomainId = created.id;
+        render();
+      });
+      showStatus(`Domain "${name}" added. Rename it on the canvas.`, 'info');
+    };
 
-  if (dom.quickAddEntityBtn) dom.quickAddEntityBtn.onclick = () => {
-    const selected = getSelectedDomain();
-    if (!selected) return showStatus('Select a domain first.');
-    const name = nextAvailableName(
-      'Entity',
-      (candidate) => isEntityNameTaken(selected, candidate)
-    );
-    withPersist(() => {
-      const created = addEntity(selected.id, name);
-      state.selectedEntityId = created.id;
-      render();
-    });
-    return showStatus(`Entity "${name}" added to ${selected.name}.`, 'info');
-  };
+  if (dom.quickAddEntityBtn)
+    dom.quickAddEntityBtn.onclick = () => {
+      const selected = getSelectedDomain();
+      if (!selected) return showStatus('Select a domain first.');
+      const name = nextAvailableName('Entity', (candidate) =>
+        isEntityNameTaken(selected, candidate)
+      );
+      withPersist(() => {
+        const created = addEntity(selected.id, name);
+        state.selectedEntityId = created.id;
+        render();
+      });
+      return showStatus(`Entity "${name}" added to ${selected.name}.`, 'info');
+    };
 
   if (dom.quickUndoBtn) dom.quickUndoBtn.onclick = undo;
   if (dom.quickRedoBtn) dom.quickRedoBtn.onclick = redo;
@@ -3667,7 +4022,7 @@ function wireEvents() {
   const renderSearchResults = () => {
     if (!dom.modelSearchInput || !dom.modelSearchResults) return;
     const query = dom.modelSearchInput.value;
-    const results = model.searchModel(state.domains, query).slice(0, 12);
+    const results = searchModel(state.domains, query).slice(0, 12);
     dom.modelSearchResults.innerHTML = '';
     dom.modelSearchResults.hidden = results.length === 0;
     results.forEach((result) => {
@@ -3689,48 +4044,64 @@ function wireEvents() {
     });
   };
   if (dom.modelSearchInput) dom.modelSearchInput.oninput = renderSearchResults;
-  if (dom.modelSearchInput) dom.modelSearchInput.onkeydown = (event) => {
-    if (event.key !== 'Escape') return;
-    dom.modelSearchInput.value = '';
-    dom.modelSearchResults.hidden = true;
-    dom.modelSearchInput.blur();
-  };
+  if (dom.modelSearchInput)
+    dom.modelSearchInput.onkeydown = (event) => {
+      if (event.key !== 'Escape') return;
+      dom.modelSearchInput.value = '';
+      dom.modelSearchResults.hidden = true;
+      dom.modelSearchInput.blur();
+    };
   dom.zoomInBtn.onclick = () => canvas.zoomBy(0.1);
   dom.zoomOutBtn.onclick = () => canvas.zoomBy(-0.1);
   dom.edgeStyleSelect.onchange = () => {
-    const value = dom.edgeStyleSelect.value;
+    const { value } = dom.edgeStyleSelect;
     if (!['curved', 'orthogonal'].includes(value)) return;
-    withPersist(() => {
-      state.view.edgeStyle = value;
-      render();
-    }, { recordHistory: false });
+    withPersist(
+      () => {
+        state.view.edgeStyle = value;
+        render();
+      },
+      { recordHistory: false }
+    );
   };
   dom.toggleCompactViewBtn.onclick = canvas.toggleCompactView;
   dom.toggleSnapBtn.onclick = () => {
-    withPersist(() => {
-      state.view.snapToGrid = !state.view.snapToGrid;
-      canvas.renderView();
-    }, { recordHistory: false });
+    withPersist(
+      () => {
+        state.view.snapToGrid = !state.view.snapToGrid;
+        canvas.renderView();
+      },
+      { recordHistory: false }
+    );
   };
   dom.toggleLargeCanvasBtn.onclick = () => {
-    withPersist(() => {
-      state.view.largeCanvasMode = !state.view.largeCanvasMode;
-      if (state.view.largeCanvasMode) state.view.compactEntities = true;
-      render();
-    }, { recordHistory: false });
+    withPersist(
+      () => {
+        state.view.largeCanvasMode = !state.view.largeCanvasMode;
+        if (state.view.largeCanvasMode) state.view.compactEntities = true;
+        render();
+      },
+      { recordHistory: false }
+    );
   };
   dom.runModelCheckBtn.onclick = runModelChecks;
   dom.modelCheckMinSeveritySelect.onchange = () => {
-    withPersist(() => {
-      state.view.modelCheckMinSeverity = dom.modelCheckMinSeveritySelect.value;
-      inspectors.renderModelCheckResults(collectModelIssues(state));
-    }, { recordHistory: false });
+    withPersist(
+      () => {
+        state.view.modelCheckMinSeverity = dom.modelCheckMinSeveritySelect.value;
+        inspectors.renderModelCheckResults(collectModelIssues(state));
+      },
+      { recordHistory: false }
+    );
   };
   dom.exportBlockCriticalCheck.onchange = () => {
-    withPersist(() => {
-      state.view.exportBlockCritical = Boolean(dom.exportBlockCriticalCheck.checked);
-      canvas.renderView();
-    }, { recordHistory: false });
+    withPersist(
+      () => {
+        state.view.exportBlockCritical = Boolean(dom.exportBlockCriticalCheck.checked);
+        canvas.renderView();
+      },
+      { recordHistory: false }
+    );
   };
   dom.saveBaselineBtn.onclick = saveSchemaBaseline;
   dom.runSchemaDiffBtn.onclick = runSchemaDiff;
@@ -3787,6 +4158,7 @@ function wireEvents() {
   if (dom.loadSampleEmptyBtn) dom.loadSampleEmptyBtn.onclick = () => loadSampleModel();
 
   dom.resetCanvasBtn.onclick = () => {
+    // eslint-disable-next-line no-alert -- native confirm guards the destructive action in this no-framework runtime
     if (!window.confirm('Reset canvas? All domains and relationships will be cleared.')) return;
     withPersist(() => {
       seed();
@@ -3892,7 +4264,11 @@ function wireEvents() {
       canvas.toggleCompactView();
       return;
     }
-    if (!editingInput && ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) && state.selectedEntityId) {
+    if (
+      !editingInput &&
+      ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) &&
+      state.selectedEntityId
+    ) {
       const found = findEntity(state.selectedEntityId);
       if (!found) return;
       const step = event.shiftKey ? 16 : 8;
@@ -3905,7 +4281,7 @@ function wireEvents() {
         if (key === 'arrowright') nextX = snapCoordinate(found.entity.x + step);
         if (key === 'arrowup') nextY = snapCoordinate(found.entity.y - step);
         if (key === 'arrowdown') nextY = snapCoordinate(found.entity.y + step);
-        const clamped = model.clampEntityPosition(found.domain, nextX, nextY);
+        const clamped = clampEntityPosition(found.domain, nextX, nextY);
         found.entity.x = clamped.x;
         found.entity.y = clamped.y;
         render();
@@ -3923,6 +4299,7 @@ function wireEvents() {
       if (editingInput) return;
       const found = findEntity(state.selectedEntityId);
       if (!found) return;
+      // eslint-disable-next-line no-alert -- native confirm guards the destructive action in this no-framework runtime
       const ok = window.confirm(`Delete entity "${found.entity.name}" and related links?`);
       if (!ok) return;
       event.preventDefault();
@@ -3999,9 +4376,9 @@ async function boot() {
   });
   if (migration.status === 'migrated') {
     showStatus(
-      'Your saved design was moved to the new persistent store and verified. '
-      + `A backup was downloaded as ${migration.backupFileName}; the previous copy stays, unused, `
-      + `for ${CANA_MIGRATION_SOURCE_RETENTION_DAYS} days as a manual recovery path.`,
+      'Your saved design was moved to the new persistent store and verified. ' +
+        `A backup was downloaded as ${migration.backupFileName}; the previous copy stays, unused, ` +
+        `for ${CANA_MIGRATION_SOURCE_RETENTION_DAYS} days as a manual recovery path.`,
       'info'
     );
   } else if (migration.status === 'failed') {
@@ -4035,7 +4412,10 @@ async function boot() {
   // states above; 'ok'/'empty' announce nothing.
   const loadOutcome = await loadState();
   if (repairLegacySampleDiagramLayout()) saveState();
-  if ((loadOutcome.status === 'lost' || loadOutcome.status === 'recovered') && !probeDeclaredDataLoss) {
+  if (
+    (loadOutcome.status === 'lost' || loadOutcome.status === 'recovered') &&
+    !probeDeclaredDataLoss
+  ) {
     const announcement = describeLoadTimeDataLoss({
       reason: loadOutcome.reason,
       retainedSource: readRetainedMigrationSource()
@@ -4056,7 +4436,10 @@ async function boot() {
     notify: showStatus
   });
   designerSync.start().catch((error) => {
-    showStatus(`Multi-tab sync could not start: ${error instanceof Error ? error.message : String(error)}`, 'error');
+    showStatus(
+      `Multi-tab sync could not start: ${error instanceof Error ? error.message : String(error)}`,
+      'error'
+    );
   });
   // A backgrounded tab can miss channel messages (frozen pages queue nothing);
   // on return it catches up by document read-back — no loss, no duplication.
@@ -4077,18 +4460,20 @@ async function boot() {
     }
   });
 
-  loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev')
-    .catch((error) => {
-      renderRuntimeEnvironment();
-      // Boot-time load failure is not silent (JUM-543): the panel's inline
-      // status line carries the cause the API returned.
-      showRuntimeEnvStatus(error instanceof Error ? error.message : 'Could not load runtime environment.');
-    });
+  loadRuntimeEnvironment(state.runtimeEnvironment?.environment || 'dev').catch((error) => {
+    renderRuntimeEnvironment();
+    // Boot-time load failure is not silent (JUM-543): the panel's inline
+    // status line carries the cause the API returned.
+    showRuntimeEnvStatus(
+      error instanceof Error ? error.message : 'Could not load runtime environment.'
+    );
+  });
   // Boot-time PM2 preview load (JUM-480): the runtime profile pane reads the
   // real ecosystem of the selected preview environment; a failure lands in
   // the pane and its status line, never silently.
-  loadPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev')
-    .catch((error) => failPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev', error));
+  loadPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev').catch((error) =>
+    failPm2EcosystemPreview(dom.pm2PreviewEnvironmentSelect?.value || 'dev', error)
+  );
   if (state.activeTab === 'monitoring') {
     monitoringController.start();
   }

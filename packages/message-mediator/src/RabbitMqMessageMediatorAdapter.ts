@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+
 import type {
   IIntegrationEvent,
   IMessage,
@@ -17,11 +18,11 @@ interface IRabbitMqMediatorOptions {
 }
 
 interface IRegisteredHandler {
-  handler: MessageHandler<any, any>;
+  handler: MessageHandler;
   options?: IMessageHandlerRegistrationOptions;
 }
 
-export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
+class RabbitMqMessageMediatorAdapter implements IMessageMediator {
   private readonly exchangeName: string;
 
   private readonly defaultRequestQueue: string;
@@ -38,7 +39,7 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
 
   private readonly eventListeners: Record<
     string,
-    Array<(event: IIntegrationEvent) => Promise<void> | void>
+    ((event: IIntegrationEvent) => Promise<void> | void)[]
   > = {};
 
   private readonly handlersByContract: Record<string, IRegisteredHandler> = {};
@@ -50,7 +51,7 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
   private readonly pendingRequests: Map<
     string,
     {
-      resolve: (value: IMessageResponse<any>) => void;
+      resolve: (value: IMessageResponse) => void;
 
       timeoutHandle: NodeJS.Timeout;
     }
@@ -75,7 +76,10 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
     await this.channel.assertExchange(this.exchangeName, 'topic', { durable: true });
     await this.channel.assertQueue(this.defaultRequestQueue, { durable: true });
 
-    const replyQueueResult = await this.channel.assertQueue('', { exclusive: true, autoDelete: true });
+    const replyQueueResult = await this.channel.assertQueue('', {
+      exclusive: true,
+      autoDelete: true
+    });
     this.replyQueue = replyQueueResult.queue;
 
     await this.channel.consume(
@@ -99,9 +103,11 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
 
         clearTimeout(pending.timeoutHandle);
         this.pendingRequests.delete(correlationId);
-        pending.resolve(RabbitMqMessageMediatorAdapter.parseMessage(msg.content, {
-          contract: 'unknown.contract'
-        }));
+        pending.resolve(
+          RabbitMqMessageMediatorAdapter.parseMessage(msg.content, {
+            contract: 'unknown.contract'
+          })
+        );
         this.channel.ack(msg);
       },
       { noAck: false }
@@ -125,11 +131,9 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
         });
 
         if (msg.properties?.replyTo) {
-          this.channel.sendToQueue(
-            msg.properties.replyTo,
-            Buffer.from(JSON.stringify(response)),
-            { correlationId: msg.properties.correlationId }
-          );
+          this.channel.sendToQueue(msg.properties.replyTo, Buffer.from(JSON.stringify(response)), {
+            correlationId: msg.properties.correlationId
+          });
         }
 
         this.channel.ack(msg);
@@ -153,12 +157,9 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
     await this.ensureConnected();
     const listeners = this.eventListeners[event.name] || [];
     await Promise.all(listeners.map(async (listener) => listener(event)));
-    this.channel.publish(
-      this.exchangeName,
-      event.name,
-      Buffer.from(JSON.stringify(event)),
-      { persistent: true }
-    );
+    this.channel.publish(this.exchangeName, event.name, Buffer.from(JSON.stringify(event)), {
+      persistent: true
+    });
   }
 
   public subscribe(
@@ -177,7 +178,7 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
     options?: IMessageHandlerRegistrationOptions
   ): void {
     const registration: IRegisteredHandler = {
-      handler: handler as MessageHandler<any, any>,
+      handler: handler as MessageHandler,
       options
     };
     this.handlersByContract[contract] = registration;
@@ -212,31 +213,27 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
       }, timeoutMs);
 
       this.pendingRequests.set(correlationId, {
-        resolve: resolve as (value: IMessageResponse<any>) => void,
+        resolve: resolve as (value: IMessageResponse) => void,
         timeoutHandle
       });
 
-      this.channel.sendToQueue(
-        queueName,
-        Buffer.from(JSON.stringify(message)),
-        {
-          correlationId,
-          replyTo: this.replyQueue,
-          contentType: 'application/json',
-          persistent: true,
-          headers: {
-            ...message.metadata?.headers,
-            routeKey
-          }
+      this.channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
+        correlationId,
+        replyTo: this.replyQueue,
+        contentType: 'application/json',
+        persistent: true,
+        headers: {
+          ...message.metadata?.headers,
+          routeKey
         }
-      );
+      });
     });
 
     if (!brokerResponse.error) {
       return brokerResponse;
     }
 
-    return this.resolveRequest(message, options) as Promise<IMessageResponse<TResult>>;
+    return this.resolveRequest(message, options);
   }
 
   private async resolveRequest<TPayload = any, TResult = any>(
@@ -262,7 +259,7 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
         contract: response.contract ?? message.contract,
         version: response.version ?? message.version,
         metadata: response.metadata ?? message.metadata
-      } as IMessageResponse<TResult>;
+      };
     } catch (error) {
       return {
         contract: message.contract,
@@ -279,9 +276,9 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
    */
   private static toWireError(error: unknown): Error {
     if (error instanceof Error) {
-      return { name: error.name, message: error.message } as Error;
+      return { name: error.name, message: error.message };
     }
-    return { name: 'Error', message: String(error) } as Error;
+    return { name: 'Error', message: String(error) };
   }
 
   private resolveHandler(
@@ -328,3 +325,5 @@ export class RabbitMqMessageMediatorAdapter implements IMessageMediator {
     }
   }
 }
+
+export default RabbitMqMessageMediatorAdapter;

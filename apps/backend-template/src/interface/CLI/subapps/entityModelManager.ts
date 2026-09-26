@@ -1,7 +1,16 @@
 /* eslint-disable no-await-in-loop */
-/* eslint-disable no-constant-condition */
-/* eslint-disable no-continue */
+
 import { randomUUID } from 'node:crypto';
+
+import {
+  mapDataEntityToOpenApiSchema,
+  OPEN_API_31_ALLOWED_TYPES,
+  OPEN_API_31_FORMATS_BY_TYPE,
+  OPEN_API_31_VALIDATIONS_BY_TYPE,
+  throwIfDataEntityIsNotOpenApi31Compliant,
+  validateValueAgainstOpenApiSchema
+} from '@src/shared/openapi/OpenApi31DataEntity';
+
 import type {
   IEntityDefinition,
   IFieldDefinition,
@@ -9,14 +18,6 @@ import type {
   ISubApplicationContext,
   IWorkspaceCatalog
 } from '@src/interface/CLI/types';
-import {
-  OPEN_API_31_ALLOWED_TYPES,
-  OPEN_API_31_FORMATS_BY_TYPE,
-  OPEN_API_31_VALIDATIONS_BY_TYPE,
-  mapDataEntityToOpenApiSchema,
-  validateValueAgainstOpenApiSchema,
-  throwIfDataEntityIsNotOpenApi31Compliant
-} from '@src/shared/openapi/OpenApi31DataEntity';
 
 const printEntity = (context: ISubApplicationContext, item: IEntityDefinition): void => {
   context.log(
@@ -51,7 +52,7 @@ const printGeneratedOpenApiSchema = (
   const schema = mapDataEntityToOpenApiSchema({
     name: entity.name,
     fields: entity.fields
-  } as any);
+  });
   context.log(JSON.stringify(schema, null, 2));
 };
 
@@ -82,7 +83,7 @@ const askFieldDefinition = async (
   }
 
   const typeOptions = OPEN_API_31_ALLOWED_TYPES;
-  const initialType = (initial?.type && typeOptions.includes(initial.type)) ? initial.type : 'string';
+  const initialType = initial?.type && typeOptions.includes(initial.type) ? initial.type : 'string';
   const typeIndex = await context.choose(
     `Field type (${initialType})`,
     typeOptions.map((entry) => `${entry}${entry === initialType ? ' (current)' : ''}`)
@@ -96,7 +97,8 @@ const askFieldDefinition = async (
   const requiredRaw = await context.ask(`Required? y|n (${requiredLabel}): `);
 
   const allowedFormats = OPEN_API_31_FORMATS_BY_TYPE[type];
-  const initialFormat = initial?.format && allowedFormats.includes(initial.format) ? initial.format : 'none';
+  const initialFormat =
+    initial?.format && allowedFormats.includes(initial.format) ? initial.format : 'none';
   const formatIndex = await context.choose(
     `Format (${initialFormat})`,
     allowedFormats.map((entry) => `${entry}${entry === initialFormat ? ' (current)' : ''}`)
@@ -111,18 +113,12 @@ const askFieldDefinition = async (
   const validationOptions = OPEN_API_31_VALIDATIONS_BY_TYPE[type];
 
   while (true) {
-    const option = await context.choose('Validation rules', [
-      'Add validation',
-      'Finish'
-    ]);
+    const option = await context.choose('Validation rules', ['Add validation', 'Finish']);
     if (option === 1) {
       break;
     }
 
-    const keywordIndex = await context.choose(
-      'Choose validation keyword',
-      validationOptions
-    );
+    const keywordIndex = await context.choose('Choose validation keyword', validationOptions);
     const keyword = validationOptions[keywordIndex];
     const value = await context.ask(`Value for ${keyword}: `);
     if (!value) {
@@ -132,9 +128,8 @@ const askFieldDefinition = async (
     selectedValidations.push(`${keyword}:${value}`);
   }
 
-  const validations = selectedValidations.length > 0
-    ? selectedValidations
-    : [...(initial?.validations || [])];
+  const validations =
+    selectedValidations.length > 0 ? selectedValidations : [...(initial?.validations ?? [])];
 
   return {
     name: name || initial?.name || '',
@@ -161,15 +156,14 @@ const searchEntities = async (
   catalog: IWorkspaceCatalog
 ): Promise<void> => {
   const term = (await context.ask('Search term: ')).toLowerCase();
-  const results = catalog.entities.filter((item) => {
-    return (
-      item.name.toLowerCase().includes(term)
-      || item.domain.toLowerCase().includes(term)
-      || item.kind.toLowerCase().includes(term)
-      || (item.description || '').toLowerCase().includes(term)
-      || item.fields.some((field) => field.name.toLowerCase().includes(term))
-    );
-  });
+  const results = catalog.entities.filter(
+    (item) =>
+      item.name.toLowerCase().includes(term) ||
+      item.domain.toLowerCase().includes(term) ||
+      item.kind.toLowerCase().includes(term) ||
+      (item.description || '').toLowerCase().includes(term) ||
+      item.fields.some((field) => field.name.toLowerCase().includes(term))
+  );
 
   if (results.length === 0) {
     context.log('No matching entities/models.');
@@ -207,7 +201,9 @@ const createEntity = async (context: ISubApplicationContext): Promise<void> => {
   }
 
   const kindIndex = await context.choose('Kind', ['entity', 'valueObject', 'aggregate', 'model']);
-  const kind = ['entity', 'valueObject', 'aggregate', 'model'][kindIndex] as IEntityDefinition['kind'];
+  const kind = ['entity', 'valueObject', 'aggregate', 'model'][
+    kindIndex
+  ] as IEntityDefinition['kind'];
   const domain = await chooseDomainName(context, catalog);
   if (!domain) {
     context.log('Domain is required.');
@@ -240,7 +236,10 @@ const createEntity = async (context: ISubApplicationContext): Promise<void> => {
   }
 
   const behaviorsRaw = await context.ask('Behaviors comma-separated (optional): ');
-  item.behaviors = behaviorsRaw.split(',').map((entry) => entry.trim()).filter(Boolean);
+  item.behaviors = behaviorsRaw
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 
   throwIfDataEntityIsNotOpenApi31Compliant({
     name: item.name,
@@ -262,10 +261,14 @@ const updateEntity = async (context: ISubApplicationContext): Promise<void> => {
   const target = catalog.entities[index];
   const name = await context.ask(`Name (${target.name}): `);
   const kindIndex = await context.choose('Kind', ['entity', 'valueObject', 'aggregate', 'model']);
-  const kind = ['entity', 'valueObject', 'aggregate', 'model'][kindIndex] as IEntityDefinition['kind'];
+  const kind = ['entity', 'valueObject', 'aggregate', 'model'][
+    kindIndex
+  ] as IEntityDefinition['kind'];
   const domain = await chooseDomainName(context, catalog, target.domain);
   const description = await context.ask(`Description (${target.description || ''}): `);
-  const behaviorsRaw = await context.ask(`Behaviors comma-separated (${target.behaviors.join(',')}): `);
+  const behaviorsRaw = await context.ask(
+    `Behaviors comma-separated (${target.behaviors.join(',')}): `
+  );
 
   catalog.entities[index] = {
     ...target,
@@ -425,7 +428,7 @@ const manageFields = async (context: ISubApplicationContext): Promise<void> => {
         const schema = mapDataEntityToOpenApiSchema({
           name: target.name,
           fields: target.fields
-        } as any);
+        });
         validateValueAgainstOpenApiSchema(parsed, schema, { components: { schemas: {} } });
         context.log('Payload is valid against generated OpenAPI schema.');
       } catch (error) {
@@ -437,7 +440,7 @@ const manageFields = async (context: ISubApplicationContext): Promise<void> => {
   }
 };
 
-export const entityModelManagerSubApplication: ISubApplication = {
+const entityModelManagerSubApplication: ISubApplication = {
   id: 'entities-models-crud',
   title: 'Data Entities and Models CRUD (list/search/create/update/delete/manage fields)',
   run: async (context) => {
@@ -470,3 +473,5 @@ export const entityModelManagerSubApplication: ISubApplication = {
     }
   }
 };
+
+export default entityModelManagerSubApplication;

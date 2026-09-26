@@ -1,11 +1,15 @@
 /* eslint-disable no-await-in-loop */
-/* eslint-disable no-constant-condition */
-/* eslint-disable no-continue */
-import { Prompt } from '@src/interface/CLI/core/prompt';
-import { getCatalogFilePath, loadCatalog, saveCatalog } from '@src/interface/CLI/core/catalogStorage';
+
+import {
+  getCatalogFilePath,
+  loadCatalog,
+  saveCatalog
+} from '@src/interface/CLI/core/catalogStorage';
+import Prompt from '@src/interface/CLI/core/prompt';
+import domainManagerSubApplication from '@src/interface/CLI/subapps/domainManager';
+import entityModelManagerSubApplication from '@src/interface/CLI/subapps/entityModelManager';
+
 import type { ISubApplication, ISubApplicationContext } from '@src/interface/CLI/types';
-import { domainManagerSubApplication } from '@src/interface/CLI/subapps/domainManager';
-import { entityModelManagerSubApplication } from '@src/interface/CLI/subapps/entityModelManager';
 
 const subApplications: ISubApplication[] = [
   domainManagerSubApplication,
@@ -23,7 +27,7 @@ const buildContext = (prompt: Prompt): ISubApplicationContext => ({
   saveCatalog
 });
 
-export const runCli = async (
+const runCli = async (
   prompt = new Prompt(),
   registeredSubApplications: ISubApplication[] = subApplications
 ): Promise<void> => {
@@ -62,6 +66,8 @@ export const runCli = async (
     prompt.close();
   }
 };
+
+export default runCli;
 
 /* istanbul ignore next */
 if (require.main === module) {

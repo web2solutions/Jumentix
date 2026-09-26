@@ -1,15 +1,13 @@
 import readline from 'node:readline';
+
 import type { Readable, Writable } from 'node:stream';
 
-export type Prompt = {
+export interface Prompt {
   ask: (question: string) => Promise<string>;
   confirm: (question: string, defaultYes?: boolean) => Promise<boolean>;
-  select: <T extends string>(
-    question: string,
-    choices: Array<{ id: T; label: string }>
-  ) => Promise<T>;
+  select: <T extends string>(question: string, choices: { id: T; label: string }[]) => Promise<T>;
   close: () => void;
-};
+}
 
 /**
  * readline over injectable streams — no heavy TUI dependency (Req 037 / JUM-844).
@@ -23,12 +21,13 @@ export function createPrompt({
 } = {}): Prompt {
   const rl = readline.createInterface({
     input: input as any,
-    output: output as any
+    output
   });
 
-  const ask = (question: string): Promise<string> => new Promise((resolve) => {
-    rl.question(question, (answer) => resolve(String(answer || '').trim()));
-  });
+  const ask = (question: string): Promise<string> =>
+    new Promise((resolve) => {
+      rl.question(question, (answer) => resolve(String(answer || '').trim()));
+    });
 
   const confirm = async (question: string, defaultYes = true): Promise<boolean> => {
     const hint = defaultYes ? 'Y/n' : 'y/N';
@@ -39,7 +38,7 @@ export function createPrompt({
 
   const select = async <T extends string>(
     question: string,
-    choices: Array<{ id: T; label: string }>
+    choices: { id: T; label: string }[]
   ): Promise<T> => {
     if (choices.length === 0) {
       throw new Error('select requires at least one choice.');

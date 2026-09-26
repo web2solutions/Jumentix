@@ -7,15 +7,16 @@
 /* eslint-disable max-classes-per-file */
 import net from 'node:net';
 
-import type { IServiceResponse } from '../src';
 import {
   BaseKeyValueStorageClient,
+  compileKeyValueStorageClient,
   InMemoryKeyValueStorageClient,
   RedisKeyValueStorageClient,
-  ServiceResponse,
-  compileKeyValueStorageClient,
-  resetRedisKeyValueStorageClientForTests
+  resetRedisKeyValueStorageClientForTests,
+  ServiceResponse
 } from '../src';
+
+import type { IServiceResponse } from '../src';
 
 /**
  * Requirement 112 — this package owns its suite.
@@ -93,8 +94,9 @@ describe('the service response', () => {
   it('carries a result', () => {
     expect.hasAssertions();
 
-    expect(new ServiceResponse({ result: { connected: true } }).result)
-      .toStrictEqual({ connected: true });
+    expect(new ServiceResponse({ result: { connected: true } }).result).toStrictEqual({
+      connected: true
+    });
   });
 
   it('carries an error', () => {
@@ -176,8 +178,9 @@ describe('the base client', () => {
 
     const client = new TestKeyValueStorageClient();
 
-    await expect(client.connect()).resolves
-      .toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+    await expect(client.connect()).resolves.toStrictEqual(
+      new ServiceResponse({ result: { connected: true } })
+    );
     expect(client.connected).toBe(true);
   });
 
@@ -187,8 +190,9 @@ describe('the base client', () => {
     const client = new TestKeyValueStorageClient();
     await client.connect();
 
-    await expect(client.disconnect()).resolves
-      .toStrictEqual(new ServiceResponse({ result: { connected: false } }));
+    await expect(client.disconnect()).resolves.toStrictEqual(
+      new ServiceResponse({ result: { connected: false } })
+    );
     expect(client.connected).toBe(false);
   });
 });
@@ -241,12 +245,14 @@ describe('the in-memory client', () => {
   it('tracks its connection state', async () => {
     expect.hasAssertions();
 
-    await expect(client.connect()).resolves
-      .toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+    await expect(client.connect()).resolves.toStrictEqual(
+      new ServiceResponse({ result: { connected: true } })
+    );
     expect(client.connected).toBe(true);
 
-    await expect(client.disconnect()).resolves
-      .toStrictEqual(new ServiceResponse({ result: { connected: false } }));
+    await expect(client.disconnect()).resolves.toStrictEqual(
+      new ServiceResponse({ result: { connected: false } })
+    );
     expect(client.connected).toBe(false);
   });
 
@@ -314,18 +320,18 @@ describe('the in-memory client when its storage throws', () => {
     ['get', () => client.get('key')],
     ['del', () => client.del('key')],
     ['set', () => client.set('key', 'value')]
-  ])('reports the failure from %s rather than throwing it', async (
-    _operation: string,
-    call: () => Promise<IServiceResponse>
-  ) => {
-    expect.hasAssertions();
+  ])(
+    'reports the failure from %s rather than throwing it',
+    async (_operation: string, call: () => Promise<IServiceResponse>) => {
+      expect.hasAssertions();
 
-    const response = await call();
+      const response = await call();
 
-    // The error is reported, and no result is invented alongside it.
-    expect(response.error).toStrictEqual(new Error('storage failure'));
-    expect(response.result).toBeUndefined();
-  });
+      // The error is reported, and no result is invented alongside it.
+      expect(response.error).toStrictEqual(new Error('storage failure'));
+      expect(response.result).toBeUndefined();
+    }
+  );
 });
 
 describe('choosing a driver', () => {
@@ -356,10 +362,8 @@ describe('choosing a driver', () => {
   it('reads the driver from the environment when given none', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      'JUMENTIX_KEYVALUESTORAGE_DRIVER',
-      'memory',
-      () => compileKeyValueStorageClient()
+    const client = await withEnvironment('JUMENTIX_KEYVALUESTORAGE_DRIVER', 'memory', () =>
+      compileKeyValueStorageClient()
     );
 
     expect(client).toBe(InMemoryKeyValueStorageClient.compile());
@@ -368,10 +372,8 @@ describe('choosing a driver', () => {
   it('falls back to Redis when the environment names no driver', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      'JUMENTIX_KEYVALUESTORAGE_DRIVER',
-      undefined,
-      () => compileKeyValueStorageClient()
+    const client = await withEnvironment('JUMENTIX_KEYVALUESTORAGE_DRIVER', undefined, () =>
+      compileKeyValueStorageClient()
     );
 
     expect(client).toBe(RedisKeyValueStorageClient.compile());
@@ -441,10 +443,8 @@ describe('the Redis client', () => {
   it('defaults the port to 6379 when the environment names none', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      'JUMENTIX_REDIS_PORT',
-      undefined,
-      () => RedisKeyValueStorageClient.create()
+    const client = await withEnvironment('JUMENTIX_REDIS_PORT', undefined, () =>
+      RedisKeyValueStorageClient.create()
     );
 
     expect((client.client.options.socket as any).port).toBe(6379);
@@ -453,13 +453,16 @@ describe('the Redis client', () => {
   it('reads the timeout and reconnect budget from the environment', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironmentVars({
-      JUMENTIX_REDIS_HOST: 'localhost',
-      JUMENTIX_REDIS_PORT: '6380',
-      JUMENTIX_REDIS_DB: '2',
-      JUMENTIX_REDIS_CONNECT_TIMEOUT_MS: '750',
-      JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '5'
-    }, () => RedisKeyValueStorageClient.create());
+    const client = await withEnvironmentVars(
+      {
+        JUMENTIX_REDIS_HOST: 'localhost',
+        JUMENTIX_REDIS_PORT: '6380',
+        JUMENTIX_REDIS_DB: '2',
+        JUMENTIX_REDIS_CONNECT_TIMEOUT_MS: '750',
+        JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '5'
+      },
+      () => RedisKeyValueStorageClient.create()
+    );
     const socket = client.client.options.socket as any;
 
     expect(socket.host).toBe('localhost');
@@ -471,13 +474,16 @@ describe('the Redis client', () => {
   it('passes optional authentication settings and malformed port fallbacks to Redis', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironmentVars({
-      JUMENTIX_REDIS_HOST: '',
-      JUMENTIX_REDIS_PORT: 'not-a-port',
-      JUMENTIX_REDIS_USERNAME: 'service-user',
-      JUMENTIX_REDIS_PASSWORD: 'service-secret',
-      JUMENTIX_REDIS_DB: '3'
-    }, () => RedisKeyValueStorageClient.create());
+    const client = await withEnvironmentVars(
+      {
+        JUMENTIX_REDIS_HOST: '',
+        JUMENTIX_REDIS_PORT: 'not-a-port',
+        JUMENTIX_REDIS_USERNAME: 'service-user',
+        JUMENTIX_REDIS_PASSWORD: 'service-secret',
+        JUMENTIX_REDIS_DB: '3'
+      },
+      () => RedisKeyValueStorageClient.create()
+    );
     const socket = client.client.options.socket as any;
 
     expect(socket.host).toBe('127.0.0.1');
@@ -490,10 +496,13 @@ describe('the Redis client', () => {
   it('falls back to the defaults when the timeout environment is malformed', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironmentVars({
-      JUMENTIX_REDIS_CONNECT_TIMEOUT_MS: 'not-a-number',
-      JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '0'
-    }, () => RedisKeyValueStorageClient.create());
+    const client = await withEnvironmentVars(
+      {
+        JUMENTIX_REDIS_CONNECT_TIMEOUT_MS: 'not-a-number',
+        JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '0'
+      },
+      () => RedisKeyValueStorageClient.create()
+    );
 
     expect((client.client.options.socket as any).connectTimeout).toBe(5000);
   });
@@ -501,10 +510,13 @@ describe('the Redis client', () => {
   it('returns capped retry delays before the configured reconnect ceiling', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironmentVars({
-      JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '5'
-    }, () => RedisKeyValueStorageClient.create());
-    const { reconnectStrategy } = (client.client.options.socket as any);
+    const client = await withEnvironmentVars(
+      {
+        JUMENTIX_REDIS_MAX_RECONNECT_ATTEMPTS: '5'
+      },
+      () => RedisKeyValueStorageClient.create()
+    );
+    const { reconnectStrategy } = client.client.options.socket as any;
 
     expect(reconnectStrategy(0)).toBe(100);
     expect(reconnectStrategy(4)).toBe(1000);
@@ -513,9 +525,8 @@ describe('the Redis client', () => {
   it('reports a connection failure within a bounded time against an unreachable port', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironmentVars(
-      UNREACHABLE_REDIS_ENV,
-      () => RedisKeyValueStorageClient.create()
+    const client = await withEnvironmentVars(UNREACHABLE_REDIS_ENV, () =>
+      RedisKeyValueStorageClient.create()
     );
     const startedAt = Date.now();
 
@@ -530,31 +541,32 @@ describe('the Redis client', () => {
     ['get', (client: RedisKeyValueStorageClient) => client.get('key')],
     ['del', (client: RedisKeyValueStorageClient) => client.del('key')],
     ['set', (client: RedisKeyValueStorageClient) => client.set('key', 'value')]
-  ])('reports %s failing fast against an unreachable port rather than hanging', async (
-    _operation: string,
-    call: (client: RedisKeyValueStorageClient) => Promise<IServiceResponse>
-  ) => {
-    expect.hasAssertions();
+  ])(
+    'reports %s failing fast against an unreachable port rather than hanging',
+    async (
+      _operation: string,
+      call: (client: RedisKeyValueStorageClient) => Promise<IServiceResponse>
+    ) => {
+      expect.hasAssertions();
 
-    const client = await withEnvironmentVars(
-      UNREACHABLE_REDIS_ENV,
-      () => RedisKeyValueStorageClient.create()
-    );
-    const startedAt = Date.now();
+      const client = await withEnvironmentVars(UNREACHABLE_REDIS_ENV, () =>
+        RedisKeyValueStorageClient.create()
+      );
+      const startedAt = Date.now();
 
-    const response = await call(client);
+      const response = await call(client);
 
-    expect(Date.now() - startedAt).toBeLessThan(2000);
-    expect(response.error).toBeInstanceOf(Error);
-    expect(response.result).toBeUndefined();
-  });
+      expect(Date.now() - startedAt).toBeLessThan(2000);
+      expect(response.error).toBeInstanceOf(Error);
+      expect(response.result).toBeUndefined();
+    }
+  );
 
   it('reports an error from disconnect when the client was never connected', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironmentVars(
-      UNREACHABLE_REDIS_ENV,
-      () => RedisKeyValueStorageClient.create()
+    const client = await withEnvironmentVars(UNREACHABLE_REDIS_ENV, () =>
+      RedisKeyValueStorageClient.create()
     );
 
     const response = await client.disconnect();
@@ -619,15 +631,14 @@ function fakeRedisServer(initial: Record<string, string> = {}) {
         const key = args[0];
         if (refusing && ['GET', 'SET', 'DEL'].includes(name.toUpperCase())) {
           socket.write('-ERR storage failure\r\n');
-          // eslint-disable-next-line no-continue
           continue;
         }
         switch (name.toUpperCase()) {
           case 'GET': {
             const value = data.get(key);
-            socket.write(value === undefined
-              ? '$-1\r\n'
-              : `$${Buffer.byteLength(value)}\r\n${value}\r\n`);
+            socket.write(
+              value === undefined ? '$-1\r\n' : `$${Buffer.byteLength(value)}\r\n${value}\r\n`
+            );
             break;
           }
           case 'SET':
@@ -657,29 +668,35 @@ function fakeRedisServer(initial: Record<string, string> = {}) {
 
   return {
     data,
-    refuse: () => { refusing = true; },
-    listen: () => new Promise<number>((resolve) => {
-      server.listen(0, '127.0.0.1', () => {
-        resolve((server.address() as net.AddressInfo).port);
-      });
-    }),
+    refuse: () => {
+      refusing = true;
+    },
+    listen: () =>
+      new Promise<number>((resolve) => {
+        server.listen(0, '127.0.0.1', () => {
+          resolve((server.address() as net.AddressInfo).port);
+        });
+      }),
     close: async () => {
       sockets.forEach((socket) => socket.destroy());
-      await new Promise<void>((resolve) => { server.close(() => resolve()); });
+      await new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      });
     }
   };
 }
 
 describe('the Redis client against an in-process RESP server', () => {
-  const connectTo = (port: number) => RedisKeyValueStorageClient.create({
-    socket: {
-      host: '127.0.0.1',
-      port,
-      connectTimeout: 1000,
-      reconnectStrategy: () => new Error('no reconnects in this suite')
-    },
-    database: 0
-  });
+  const connectTo = (port: number) =>
+    RedisKeyValueStorageClient.create({
+      socket: {
+        host: '127.0.0.1',
+        port,
+        connectTimeout: 1000,
+        reconnectStrategy: () => new Error('no reconnects in this suite')
+      },
+      database: 0
+    });
 
   it('connects and tracks its state, and reconnecting is a no-op', async () => {
     expect.hasAssertions();
@@ -696,8 +713,9 @@ describe('the Redis client against an in-process RESP server', () => {
       expect(client.connected).toBe(true);
 
       // Connecting a live client again must be a no-op, not a second socket.
-      await expect(client.connect()).resolves
-        .toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+      await expect(client.connect()).resolves.toStrictEqual(
+        new ServiceResponse({ result: { connected: true } })
+      );
     } finally {
       await client.disconnect();
       await server.close();
@@ -717,10 +735,12 @@ describe('the Redis client against an in-process RESP server', () => {
       // the namespaced key.
       expect([...server.data.keys()]).toStrictEqual([`${client.prefix}:round-trip`]);
 
-      await expect(client.get('round-trip')).resolves
-        .toStrictEqual(new ServiceResponse({ result: 'stored' }));
-      await expect(client.get('never-written')).resolves
-        .toStrictEqual(new ServiceResponse({ result: null }));
+      await expect(client.get('round-trip')).resolves.toStrictEqual(
+        new ServiceResponse({ result: 'stored' })
+      );
+      await expect(client.get('never-written')).resolves.toStrictEqual(
+        new ServiceResponse({ result: null })
+      );
     } finally {
       await client.disconnect();
       await server.close();
@@ -734,12 +754,15 @@ describe('the Redis client against an in-process RESP server', () => {
     const port = await server.listen();
     const client = connectTo(port);
     try {
-      await expect(client.del('to-delete')).resolves
-        .toStrictEqual(new ServiceResponse({ result: 1 }));
-      await expect(client.del('to-delete')).resolves
-        .toStrictEqual(new ServiceResponse({ result: 0 }));
-      await expect(client.get('to-delete')).resolves
-        .toStrictEqual(new ServiceResponse({ result: null }));
+      await expect(client.del('to-delete')).resolves.toStrictEqual(
+        new ServiceResponse({ result: 1 })
+      );
+      await expect(client.del('to-delete')).resolves.toStrictEqual(
+        new ServiceResponse({ result: 0 })
+      );
+      await expect(client.get('to-delete')).resolves.toStrictEqual(
+        new ServiceResponse({ result: null })
+      );
     } finally {
       await client.disconnect();
       await server.close();
@@ -753,8 +776,9 @@ describe('the Redis client against an in-process RESP server', () => {
     const port = await server.listen();
     const client = connectTo(port);
     try {
-      await expect(client.connect()).resolves
-        .toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+      await expect(client.connect()).resolves.toStrictEqual(
+        new ServiceResponse({ result: { connected: true } })
+      );
 
       const disconnection = await client.disconnect();
       expect(disconnection).toStrictEqual(new ServiceResponse({ result: { connected: false } }));
@@ -794,8 +818,9 @@ describe('the Redis client when the server refuses commands', () => {
       database: 0
     });
     try {
-      await expect(client.connect()).resolves
-        .toStrictEqual(new ServiceResponse({ result: { connected: true } }));
+      await expect(client.connect()).resolves.toStrictEqual(
+        new ServiceResponse({ result: { connected: true } })
+      );
 
       server.refuse();
 

@@ -1,5 +1,5 @@
 import { CommercialUseCasePage } from '@/components/commercial/CommercialPages';
 
-export default function SaasMonolithUseCasePage() {
-  return <CommercialUseCasePage locale="en" name="saas-monolith" />;
-}
+const SaasMonolithUseCasePage = () => <CommercialUseCasePage locale="en" name="saas-monolith" />;
+
+export default SaasMonolithUseCasePage;

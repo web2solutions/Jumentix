@@ -1,58 +1,58 @@
 export { main, printRootHelp, runAsCli } from './cli';
-export { parseArgv, looksLikeLegacyInvocation, mapLegacyServiceTypeToMode } from './args';
+export { looksLikeLegacyInvocation, mapLegacyServiceTypeToMode, parseArgv } from './args';
 export { createPrompt } from './prompt';
 export { readInitConfig, writeInitConfig } from './config';
 export {
-  resolveSources,
-  printPlanSummary,
-  validateGenerationPlan,
-  SourceResolutionError,
-  SOURCE_MESSAGES,
-  loadOasSource,
-  loadDesignerExportSource,
   loadCatalogSource,
-  loadPresetSource
+  loadDesignerExportSource,
+  loadOasSource,
+  loadPresetSource,
+  printPlanSummary,
+  resolveSources,
+  SOURCE_MESSAGES,
+  SourceResolutionError,
+  validateGenerationPlan
 } from './sources';
 export type {
-  GenerationPlan,
   GenerationMode,
-  PlanService,
+  GenerationPlan,
   PlanDomain,
   PlanEntity,
+  PlanService,
   SourceResolveOptions
 } from './sources';
 export {
+  assembleWorkspace,
+  bakeMergedOas,
+  buildDockerCompose,
+  buildManifestJson,
+  buildRootPackageJson,
+  buildServicePackageJson,
+  computeUnusedPaths,
+  domainsForService,
   generateBackend,
   generateBackendService,
   generateFrontend,
-  bakeMergedOas,
-  writeFrontendEnv,
-  resolveEntityOperations,
-  mergeServiceOas,
-  renderEnvDev,
-  mapDbChoiceToDriver,
-  computeUnusedPaths,
-  shouldKeepRelativePath,
-  buildServicePackageJson,
-  domainsForService,
-  renderCompositionRoot,
-  assembleWorkspace,
-  buildRootPackageJson,
-  buildDockerCompose,
-  buildManifestJson,
   listGeneratedFiles,
+  mapDbChoiceToDriver,
+  mergeServiceOas,
+  needsRealtimeRedis,
+  renderCompositionRoot,
+  renderEnvDev,
+  resolveEntityOperations,
   resolvePrimaryDb,
-  needsRealtimeRedis
+  shouldKeepRelativePath,
+  writeFrontendEnv
 } from './generators';
 export type {
+  AssembleWorkspaceOptions,
+  AssembleWorkspaceResult,
+  EnvRenderInput,
   GenerateBackendOptions,
   GenerateBackendResult,
   GeneratedServiceResult,
   GenerateFrontendOptions,
   GenerateFrontendResult,
-  EnvRenderInput,
   SlicePlan,
-  AssembleWorkspaceOptions,
-  AssembleWorkspaceResult,
   WorkspaceAnswers
 } from './generators';

@@ -1,9 +1,10 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import type { IEventMessage } from '@src/modules/port/IEventMessage';
-import { canNotBeEmpty } from '@src/shared/validators';
 import { ComposeEventError } from '@src/infra/exceptions';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import { canNotBeEmpty } from '@src/shared/validators';
 
-export class CatalogGetOneRequestEvent extends BaseDomainEvent {
+import type { IEventMessage } from '@src/modules/port/IEventMessage';
+
+class CatalogGetOneRequestEvent extends BaseDomainEvent {
   constructor(message: IEventMessage) {
     super(message);
     this.entity = 'Catalog';
@@ -16,3 +17,5 @@ export class CatalogGetOneRequestEvent extends BaseDomainEvent {
     }
   }
 }
+
+export default CatalogGetOneRequestEvent;

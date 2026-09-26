@@ -1,6 +1,6 @@
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
 import { EUserRole } from '@src/modules/Users/domain/security/Rbac';
+import AuthService from '@src/modules/Users/service/AuthService';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
 
 describe('auth service security audit integration', () => {
   const setup = () => {
@@ -29,9 +29,9 @@ describe('auth service security audit integration', () => {
     const securityAuditRepository = { record: jest.fn().mockResolvedValue(undefined) };
 
     const service = new AuthService(
-      userProvider as any,
-      passwordCryptoService as any,
-      jwtService as any,
+      userProvider,
+      passwordCryptoService,
+      jwtService,
       undefined,
       eventBus as any,
       securityAuditRepository as any
@@ -50,10 +50,12 @@ describe('auth service security audit integration', () => {
     const { service, securityAuditRepository } = setup();
     const response = await service.authenticate('john', 'secret', EAuthSchemaType.Bearer);
     expect(response.result?.Authorization).toContain('Bearer ');
-    expect(securityAuditRepository.record).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'users.auth.login.success',
-      outcome: 'success'
-    }));
+    expect(securityAuditRepository.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'users.auth.login.success',
+        outcome: 'success'
+      })
+    );
   });
 
   it('records login failure in audit sink', async () => {
@@ -62,25 +64,29 @@ describe('auth service security audit integration', () => {
     passwordCryptoService.compare.mockResolvedValueOnce(false);
     const response = await service.authenticate('john', 'invalid', EAuthSchemaType.Bearer);
     expect(response.error?.message).toBe('password does not matches');
-    expect(securityAuditRepository.record).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'users.auth.login.failed',
-      outcome: 'failed'
-    }));
+    expect(securityAuditRepository.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'users.auth.login.failed',
+        outcome: 'failed'
+      })
+    );
   });
 
   it('records privileged scope deny and allow events', async () => {
     expect.assertions(3);
     const { service, securityAuditRepository } = setup();
-    expect(() => service.throwIfUserHasNoAccessToResource(
-      {
-        id: 'u1',
-        username: 'john',
-        firstName: 'John',
-        organization: 'org-1',
-        roles: [EUserRole.admin]
-      } as any,
-      { security: [{ bearerAuth: ['delete_organization'] }] } as any
-    )).toThrow('Insufficient permission - user must have the delete_organization role');
+    expect(() =>
+      service.throwIfUserHasNoAccessToResource(
+        {
+          id: 'u1',
+          username: 'john',
+          firstName: 'John',
+          organization: 'org-1',
+          roles: [EUserRole.admin]
+        } as any,
+        { security: [{ bearerAuth: ['delete_organization'] }] } as any
+      )
+    ).toThrow('Insufficient permission - user must have the delete_organization role');
 
     service.throwIfUserHasNoAccessToResource(
       {
@@ -93,7 +99,9 @@ describe('auth service security audit integration', () => {
       { security: [{ bearerAuth: ['read_user'] }] } as any
     );
 
-    await new Promise((resolve) => { setImmediate(resolve); });
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
 
     const names = securityAuditRepository.record.mock.calls.map((call: any[]) => call[0]?.name);
     expect(names).toContain('users.authz.scope.denied');
@@ -133,58 +141,69 @@ describe('auth service security audit integration', () => {
       expect.hasAssertions();
       const { service } = failingAudit();
 
-      expect(() => service.throwIfUserHasNoAccessToResource(
-        admin as any,
-        { security: [{ bearerAuth: ['delete_organization'] }] } as any
-      )).toThrow('Insufficient permission - user must have the delete_organization role');
+      expect(() =>
+        service.throwIfUserHasNoAccessToResource(
+          admin as any,
+          { security: [{ bearerAuth: ['delete_organization'] }] } as any
+        )
+      ).toThrow('Insufficient permission - user must have the delete_organization role');
     });
 
     it('still allows a satisfied scope', () => {
       expect.hasAssertions();
       const { service } = failingAudit();
 
-      expect(service.throwIfUserHasNoAccessToResource(
-        admin as any,
-        { security: [{ bearerAuth: ['read_user'] }] } as any
-      )).toBe(true);
+      expect(
+        service.throwIfUserHasNoAccessToResource(
+          admin as any,
+          { security: [{ bearerAuth: ['read_user'] }] } as any
+        )
+      ).toBe(true);
     });
 
     it('still rejects a route with no security schema', () => {
       expect.hasAssertions();
       const { service } = failingAudit();
 
-      expect(() => service.throwIfUserHasNoAccessToResource(admin as any, {} as any))
-        .toThrow('there is no security schema defined');
+      expect(() => service.throwIfUserHasNoAccessToResource(admin as any, {} as any)).toThrow(
+        'there is no security schema defined'
+      );
     });
 
     it('still rejects a user with no roles', () => {
       expect.hasAssertions();
       const { service } = failingAudit();
 
-      expect(() => service.throwIfUserHasNoAccessToResource(
-        { ...admin, roles: undefined } as any,
-        { security: [{ bearerAuth: ['read_user'] }] } as any
-      )).toThrow('user.roles is missing');
+      expect(() =>
+        service.throwIfUserHasNoAccessToResource(
+          { ...admin, roles: undefined } as any,
+          { security: [{ bearerAuth: ['read_user'] }] } as any
+        )
+      ).toThrow('user.roles is missing');
     });
 
     it('still rejects a role that requires an organization when none is set', () => {
       expect.hasAssertions();
       const { service } = failingAudit();
 
-      expect(() => service.throwIfUserHasNoAccessToResource(
-        { ...admin, organization: undefined } as any,
-        { security: [{ bearerAuth: ['read_user'] }] } as any
-      )).toThrow('organization is required for this user role');
+      expect(() =>
+        service.throwIfUserHasNoAccessToResource(
+          { ...admin, organization: undefined } as any,
+          { security: [{ bearerAuth: ['read_user'] }] } as any
+        )
+      ).toThrow('organization is required for this user role');
     });
 
     it('still lets a superadmin through', () => {
       expect.hasAssertions();
       const { service } = failingAudit();
 
-      expect(service.throwIfUserHasNoAccessToResource(
-        { ...admin, roles: [EUserRole.superadmin] } as any,
-        { security: [{ bearerAuth: ['delete_organization'] }] } as any
-      )).toBe(true);
+      expect(
+        service.throwIfUserHasNoAccessToResource(
+          { ...admin, roles: [EUserRole.superadmin] } as any,
+          { security: [{ bearerAuth: ['delete_organization'] }] } as any
+        )
+      ).toBe(true);
     });
 
     it('attempted to record the event even though the sink rejected', async () => {

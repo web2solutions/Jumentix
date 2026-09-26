@@ -37,7 +37,9 @@ function normalizeVolatileOptions(rules: Record<string, unknown>): Record<string
   return Object.fromEntries(
     Object.entries(rules).map(([ruleId, config]) => [
       ruleId,
-      VOLATILE_RULE_OPTIONS.has(ruleId) && Array.isArray(config) ? [config[0], 'normalized'] : config
+      VOLATILE_RULE_OPTIONS.has(ruleId) && Array.isArray(config)
+        ? [config[0], 'normalized']
+        : config
     ])
   );
 }
@@ -69,18 +71,98 @@ async function effectiveRules(config: unknown[], file: string): Promise<Record<s
  */
 describe('effective-config snapshots', () => {
   const cases: [string, () => unknown[], string][] = [
-    ['base', () => [...base({ packageDirs: [FIXTURES] }), ...stylistic()], 'base/positive.fixture.js'],
-    ['baseStrict', () => [...baseStrict({ packageDirs: [FIXTURES] }), ...stylistic()], 'base/positive.fixture.js'],
-    ['typescript', () => [...base({ packageDirs: [FIXTURES] }), ...typescript({ tsconfigRootDir: FIXTURES, untypedFiles: ['typescript/**'] }), ...stylistic()], 'typescript/positive.fixture.ts'],
-    ['typescriptStrict', () => [...base({ packageDirs: [FIXTURES] }), ...typescriptStrict({ tsconfigRootDir: FIXTURES, untypedFiles: ['typescript/**'] }), ...stylistic()], 'typescript/positive.fixture.ts'],
-    ['node', () => [...base({ packageDirs: [FIXTURES] }), ...node(), ...stylistic()], 'node/positive.fixture.js'],
-    ['nodeStrict', () => [...base({ packageDirs: [FIXTURES] }), ...nodeStrict(), ...stylistic()], 'node/positive.fixture.js'],
-    ['vue', () => [...base({ packageDirs: [FIXTURES] }), ...vue(), ...stylistic()], 'vue/positive.fixture.vue'],
-    ['vueStrict', () => [...base({ packageDirs: [FIXTURES] }), ...vueStrict({ tsconfigRootDir: FIXTURES }), ...stylistic()], 'vue/positive.fixture.vue'],
-    ['reactNextA11y', () => [...base({ packageDirs: [FIXTURES] }), ...typescript({ tsconfigRootDir: FIXTURES, untypedFiles: ['react/**'] }), ...reactNextA11y(), ...stylistic()], 'react/positive.fixture.tsx'],
-    ['reactNextA11yStrict', () => [...base({ packageDirs: [FIXTURES] }), ...typescript({ tsconfigRootDir: FIXTURES, untypedFiles: ['react/**'] }), ...reactNextA11yStrict(), ...stylistic()], 'react/positive.fixture.tsx'],
-    ['test', () => [...base({ packageDirs: [FIXTURES] }), ...typescript({ tsconfigRootDir: FIXTURES, untypedFiles: ['jest/**'] }), ...testProfile({ restifyAllowList: false, untypedFiles: ['jest/**'] }), ...stylistic()], 'jest/test/positive.fixture.ts'],
-    ['testStrict', () => [...base({ packageDirs: [FIXTURES] }), ...typescriptStrict({ tsconfigRootDir: FIXTURES, untypedFiles: ['jest/**'] }), ...testStrict({ restifyAllowList: false, untypedFiles: ['jest/**'] }), ...stylistic()], 'jest/test/positive.fixture.ts']
+    [
+      'base',
+      () => [...base({ packageDirs: [FIXTURES] }), ...stylistic()],
+      'base/positive.fixture.js'
+    ],
+    [
+      'baseStrict',
+      () => [...baseStrict({ packageDirs: [FIXTURES] }), ...stylistic()],
+      'base/positive.fixture.js'
+    ],
+    [
+      'typescript',
+      () => [
+        ...base({ packageDirs: [FIXTURES] }),
+        ...typescript({ tsconfigRootDir: FIXTURES, untypedFiles: ['typescript/**'] }),
+        ...stylistic()
+      ],
+      'typescript/positive.fixture.ts'
+    ],
+    [
+      'typescriptStrict',
+      () => [
+        ...base({ packageDirs: [FIXTURES] }),
+        ...typescriptStrict({ tsconfigRootDir: FIXTURES, untypedFiles: ['typescript/**'] }),
+        ...stylistic()
+      ],
+      'typescript/positive.fixture.ts'
+    ],
+    [
+      'node',
+      () => [...base({ packageDirs: [FIXTURES] }), ...node(), ...stylistic()],
+      'node/positive.fixture.mjs'
+    ],
+    [
+      'nodeStrict',
+      () => [...base({ packageDirs: [FIXTURES] }), ...nodeStrict(), ...stylistic()],
+      'node/positive.fixture.mjs'
+    ],
+    [
+      'vue',
+      () => [...base({ packageDirs: [FIXTURES] }), ...vue(), ...stylistic()],
+      'vue/positive.fixture.vue'
+    ],
+    [
+      'vueStrict',
+      () => [
+        ...base({ packageDirs: [FIXTURES] }),
+        ...vueStrict({ tsconfigRootDir: FIXTURES }),
+        ...stylistic()
+      ],
+      'vue/positive.fixture.vue'
+    ],
+    [
+      'reactNextA11y',
+      () => [
+        ...base({ packageDirs: [FIXTURES] }),
+        ...typescript({ tsconfigRootDir: FIXTURES, untypedFiles: ['react/**'] }),
+        ...reactNextA11y(),
+        ...stylistic()
+      ],
+      'react/positive.fixture.tsx'
+    ],
+    [
+      'reactNextA11yStrict',
+      () => [
+        ...base({ packageDirs: [FIXTURES] }),
+        ...typescript({ tsconfigRootDir: FIXTURES, untypedFiles: ['react/**'] }),
+        ...reactNextA11yStrict(),
+        ...stylistic()
+      ],
+      'react/positive.fixture.tsx'
+    ],
+    [
+      'test',
+      () => [
+        ...base({ packageDirs: [FIXTURES] }),
+        ...typescript({ tsconfigRootDir: FIXTURES, untypedFiles: ['jest/**'] }),
+        ...testProfile({ restifyAllowList: false, untypedFiles: ['jest/**'] }),
+        ...stylistic()
+      ],
+      'jest/test/positive.fixture.ts'
+    ],
+    [
+      'testStrict',
+      () => [
+        ...base({ packageDirs: [FIXTURES] }),
+        ...typescriptStrict({ tsconfigRootDir: FIXTURES, untypedFiles: ['jest/**'] }),
+        ...testStrict({ restifyAllowList: false, untypedFiles: ['jest/**'] }),
+        ...stylistic()
+      ],
+      'jest/test/positive.fixture.ts'
+    ]
   ];
 
   const snapshotsDir = join(__dirname, 'snapshots');

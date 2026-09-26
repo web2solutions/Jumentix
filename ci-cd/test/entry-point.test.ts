@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 /**
  * The entry-point check every `ci-cd` guard uses to decide whether to run.
  *

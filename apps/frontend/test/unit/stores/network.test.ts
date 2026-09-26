@@ -1,6 +1,5 @@
-import {
-  beforeEach, describe, expect, it
-} from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { resetSharedApiClient } from '@/contracts/apiClient';
@@ -18,14 +17,20 @@ describe('network store fed by SDK events (JUM-765)', () => {
     network.start();
 
     const original = globalThis.fetch;
-    globalThis.fetch = (() => Promise.resolve(new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: { 'content-type': 'application/json' }
-    }))) as unknown as typeof fetch;
+    globalThis.fetch = (() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )) as unknown as typeof fetch;
 
     const { getSharedApiClient } = await import('@/contracts/apiClient');
     try {
-      await getSharedApiClient().request({ operationId: 'login', body: { username: 'a@b.c', password: 'x' } });
+      await getSharedApiClient().request({
+        operationId: 'login',
+        body: { username: 'a@b.c', password: 'x' }
+      });
     } finally {
       globalThis.fetch = original;
     }
@@ -43,11 +48,14 @@ describe('network store fed by SDK events (JUM-765)', () => {
     network.start();
 
     const original = globalThis.fetch;
-    globalThis.fetch = (() => Promise.resolve(new Response('nope', { status: 401 }))) as unknown as typeof fetch;
+    globalThis.fetch = (() =>
+      Promise.resolve(new Response('nope', { status: 401 }))) as unknown as typeof fetch;
 
     const { getSharedApiClient } = await import('@/contracts/apiClient');
     try {
-      await getSharedApiClient().request({ operationId: 'login', body: { username: 'a@b.c', password: 'x' } }).catch(() => undefined);
+      await getSharedApiClient()
+        .request({ operationId: 'login', body: { username: 'a@b.c', password: 'x' } })
+        .catch(() => undefined);
     } finally {
       globalThis.fetch = original;
     }
@@ -63,14 +71,20 @@ describe('network store fed by SDK events (JUM-765)', () => {
     network.stop();
 
     const original = globalThis.fetch;
-    globalThis.fetch = (() => Promise.resolve(new Response('{}', {
-      status: 200,
-      headers: { 'content-type': 'application/json' }
-    }))) as unknown as typeof fetch;
+    globalThis.fetch = (() =>
+      Promise.resolve(
+        new Response('{}', {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )) as unknown as typeof fetch;
 
     const { getSharedApiClient } = await import('@/contracts/apiClient');
     try {
-      await getSharedApiClient().request({ operationId: 'login', body: { username: 'a@b.c', password: 'x' } });
+      await getSharedApiClient().request({
+        operationId: 'login',
+        body: { username: 'a@b.c', password: 'x' }
+      });
     } finally {
       globalThis.fetch = original;
     }

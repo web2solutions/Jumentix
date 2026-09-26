@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const MINIMUM_GLOBAL_THRESHOLDS = {
   // JUM-681: 98 across the board, set by the requirement owner. The exception
@@ -21,7 +21,6 @@ const MINIMUM_GLOBAL_THRESHOLDS = {
  * `ci-cd/check-coverage-thresholds.js` owns the exception register
  * (Requirement 110); this reads it.
  */
-// eslint-disable-next-line import/no-dynamic-require, global-require
 const { ACCEPTED_BELOW_THRESHOLD } = require('./check-coverage-thresholds');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
@@ -34,7 +33,6 @@ const PACKAGE_TEST_PLACEHOLDER_ALLOWLIST = new Set([
 function readRootJestConfig(rootDir) {
   const jestPath = path.join(rootDir, 'jest.config.js');
   if (!fs.existsSync(jestPath)) return null;
-  // eslint-disable-next-line import/no-dynamic-require, global-require
   return require(jestPath);
 }
 
@@ -112,7 +110,8 @@ function run() {
   if (failures.length > 0) {
     console.error('Workspace coverage policy violations found:');
     failures.forEach((failure) => console.error(`- ${failure}`));
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log('Workspace coverage policy check passed.');

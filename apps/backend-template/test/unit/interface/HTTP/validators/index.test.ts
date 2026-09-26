@@ -45,31 +45,37 @@ describe('http validators', () => {
     expect(getSchema(spec, content)?.required).toStrictEqual(['firstName']);
     expect(getSchema({} as any, content)).toBeUndefined();
 
-    expect(getSchema(spec, {
-      'application/json': {
-        schema: {
-          type: 'object',
-          required: ['name'],
-          properties: { name: { type: 'string' } }
+    expect(
+      getSchema(spec, {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['name'],
+            properties: { name: { type: 'string' } }
+          }
         }
-      }
-    })?.required).toStrictEqual(['name']);
+      })?.required
+    ).toStrictEqual(['name']);
 
-    expect(getSchema(spec, {
-      'application/json': {
-        schema: {
-          $ref: 'components/schemas/RequestCreateUser'
+    expect(
+      getSchema(spec, {
+        'application/json': {
+          schema: {
+            $ref: 'components/schemas/RequestCreateUser'
+          }
         }
-      }
-    })).toBeUndefined();
+      })
+    ).toBeUndefined();
 
-    expect(getSchema(spec, {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/RequestCreateUser/properties/firstName/type'
+    expect(
+      getSchema(spec, {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/RequestCreateUser/properties/firstName/type'
+          }
         }
-      }
-    })).toBe('string');
+      })
+    ).toBe('string');
   });
 
   it('returns undefined when content or schema are missing', () => {
@@ -91,13 +97,15 @@ describe('http validators', () => {
         }
       }
     } as any;
-    expect(getSchema(spec, {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/RequestCreateUser/properties/firstName/type/value'
+    expect(
+      getSchema(spec, {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/RequestCreateUser/properties/firstName/type/value'
+          }
         }
-      }
-    })).toBeUndefined();
+      })
+    ).toBeUndefined();
   });
 
   it('validates payload against endpoint request body schema', () => {
@@ -154,8 +162,9 @@ describe('http validators', () => {
     };
 
     expect(throwIfOASInputValidationFails(spec, endPointConfig, { nickname: 'johnny' })).toBe(true);
-    expect(() => throwIfOASInputValidationFails(spec, endPointConfig, { unknown: true }))
-      .toThrow(ValidationError);
+    expect(() => throwIfOASInputValidationFails(spec, endPointConfig, { unknown: true })).toThrow(
+      ValidationError
+    );
   });
 
   it('validates payload format/type rules from schema', () => {
@@ -187,31 +196,43 @@ describe('http validators', () => {
       }
     };
 
-    expect(() => throwIfOASInputValidationFails(spec, endPointConfig, {
-      username: 'john@example.com',
-      age: 18
-    })).not.toThrow();
+    expect(() =>
+      throwIfOASInputValidationFails(spec, endPointConfig, {
+        username: 'john@example.com',
+        age: 18
+      })
+    ).not.toThrow();
 
-    expect(() => throwIfOASInputValidationFails(spec, endPointConfig, {
-      username: 'not-an-email',
-      age: 18
-    })).toThrow(ValidationError);
+    expect(() =>
+      throwIfOASInputValidationFails(spec, endPointConfig, {
+        username: 'not-an-email',
+        age: 18
+      })
+    ).toThrow(ValidationError);
 
-    expect(() => throwIfOASInputValidationFails(spec, endPointConfig, {
-      username: 'john@example.com',
-      age: 10
-    })).toThrow(ValidationError);
+    expect(() =>
+      throwIfOASInputValidationFails(spec, endPointConfig, {
+        username: 'john@example.com',
+        age: 10
+      })
+    ).toThrow(ValidationError);
 
     expect(() => throwIfOASInputValidationFails(spec, endPointConfig, undefined)).toThrow(
       'Request body is required by OpenAPI schema.'
     );
 
-    expect(throwIfOASInputValidationFails(spec, {
-      requestBody: {
-        required: false,
-        content: endPointConfig.requestBody.content
-      }
-    }, null)).toBe(true);
+    expect(
+      throwIfOASInputValidationFails(
+        spec,
+        {
+          requestBody: {
+            required: false,
+            content: endPointConfig.requestBody.content
+          }
+        },
+        null
+      )
+    ).toBe(true);
   });
 
   it('preserves stable public validation messages and ordering', () => {
@@ -242,30 +263,46 @@ describe('http validators', () => {
       }
     };
 
-    expect(() => throwIfOASInputValidationFails(spec, {
-      operationId: 'create',
-      requestBody
-    }, { invalidFieldName: true })).toThrow(
-      'The property invalidFieldName from input payload does not exist.'
-    );
-    expect(() => throwIfOASInputValidationFails(spec, {
-      operationId: 'create',
-      requestBody
-    }, { firstName: 'John', password: '', type: 'work' })).toThrow(
-      'password must have at least 8 chars.'
-    );
-    expect(() => throwIfOASInputValidationFails(spec, {
-      operationId: 'updatePassword',
-      requestBody
-    }, { firstName: 'John', password: '', type: 'work' })).toThrow(
-      'password can not be empty'
-    );
-    expect(() => throwIfOASInputValidationFails(spec, {
-      operationId: 'create',
-      requestBody
-    }, { firstName: 'John', password: 'password', type: '' })).toThrow(
-      'type can not be empty'
-    );
+    expect(() =>
+      throwIfOASInputValidationFails(
+        spec,
+        {
+          operationId: 'create',
+          requestBody
+        },
+        { invalidFieldName: true }
+      )
+    ).toThrow('The property invalidFieldName from input payload does not exist.');
+    expect(() =>
+      throwIfOASInputValidationFails(
+        spec,
+        {
+          operationId: 'create',
+          requestBody
+        },
+        { firstName: 'John', password: '', type: 'work' }
+      )
+    ).toThrow('password must have at least 8 chars.');
+    expect(() =>
+      throwIfOASInputValidationFails(
+        spec,
+        {
+          operationId: 'updatePassword',
+          requestBody
+        },
+        { firstName: 'John', password: '', type: 'work' }
+      )
+    ).toThrow('password can not be empty');
+    expect(() =>
+      throwIfOASInputValidationFails(
+        spec,
+        {
+          operationId: 'create',
+          requestBody
+        },
+        { firstName: 'John', password: 'password', type: '' }
+      )
+    ).toThrow('type can not be empty');
   });
 
   it('allows server-managed timestamps in update round trips', () => {
@@ -297,16 +334,20 @@ describe('http validators', () => {
       }
     };
 
-    expect(throwIfOASInputValidationFails(spec, endPointConfig, {
-      firstName: 'John',
-      createdAt: '2026-07-25T00:00:00.000Z',
-      updatedAt: '2026-07-25T00:00:00.000Z',
-      deletedAt: null
-    })).toBe(true);
-    expect(() => throwIfOASInputValidationFails(spec, endPointConfig, {
-      firstName: 'John',
-      unexpected: true
-    })).toThrow('The property unexpected from input payload does not exist.');
+    expect(
+      throwIfOASInputValidationFails(spec, endPointConfig, {
+        firstName: 'John',
+        createdAt: '2026-07-25T00:00:00.000Z',
+        updatedAt: '2026-07-25T00:00:00.000Z',
+        deletedAt: null
+      })
+    ).toBe(true);
+    expect(() =>
+      throwIfOASInputValidationFails(spec, endPointConfig, {
+        firstName: 'John',
+        unexpected: true
+      })
+    ).toThrow('The property unexpected from input payload does not exist.');
   });
 
   it('validates request path params', () => {
@@ -324,12 +365,14 @@ describe('http validators', () => {
   it('validates request query params against schema', () => {
     expect.hasAssertions();
     const endPointConfig = {
-      parameters: [{
-        name: 'page',
-        in: 'query',
-        required: false,
-        schema: { type: 'integer', minimum: 1 }
-      }]
+      parameters: [
+        {
+          name: 'page',
+          in: 'query',
+          required: false,
+          schema: { type: 'integer', minimum: 1 }
+        }
+      ]
     };
 
     expect(validateRequestParams(endPointConfig, {}, { page: 1 })).toBe(true);
@@ -337,14 +380,18 @@ describe('http validators', () => {
     expect(() => validateRequestParams(endPointConfig, {}, { page: 'x' })).toThrow(ValidationError);
 
     const headerConfig = {
-      parameters: [{
-        name: 'x-tenant-id',
-        in: 'header',
-        required: true,
-        schema: { type: 'string', minLength: 1 }
-      }]
+      parameters: [
+        {
+          name: 'x-tenant-id',
+          in: 'header',
+          required: true,
+          schema: { type: 'string', minLength: 1 }
+        }
+      ]
     };
-    expect(() => validateRequestParams(headerConfig, {}, {}, { 'x-tenant-id': '' })).toThrow(ValidationError);
+    expect(() => validateRequestParams(headerConfig, {}, {}, { 'x-tenant-id': '' })).toThrow(
+      ValidationError
+    );
     expect(validateRequestParams(headerConfig, {}, {}, { 'x-tenant-id': 'tenant-1' })).toBe(true);
   });
 
@@ -362,12 +409,14 @@ describe('http validators', () => {
       }
     } as any;
     const endPointConfig = {
-      parameters: [{
-        name: 'id',
-        in: 'path',
-        required: true,
-        schema: { type: 'string', minLength: 1 }
-      }],
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          schema: { type: 'string', minLength: 1 }
+        }
+      ],
       requestBody: {
         required: true,
         content: {
@@ -380,16 +429,20 @@ describe('http validators', () => {
       }
     };
 
-    expect(validateRequestAgainstOAS(spec, endPointConfig, {
-      params: { id: '1' },
-      input: { firstName: 'John' },
-      authorization: 'Bearer token'
-    })).toBe(true);
+    expect(
+      validateRequestAgainstOAS(spec, endPointConfig, {
+        params: { id: '1' },
+        input: { firstName: 'John' },
+        authorization: 'Bearer token'
+      })
+    ).toBe(true);
 
-    expect(() => validateRequestAgainstOAS(spec, endPointConfig, {
-      params: { id: '' },
-      input: { firstName: 'John' }
-    })).toThrow(ValidationError);
+    expect(() =>
+      validateRequestAgainstOAS(spec, endPointConfig, {
+        params: { id: '' },
+        input: { firstName: 'John' }
+      })
+    ).toThrow(ValidationError);
   });
 
   it('validates a minimal request that carries no params, query or authorization', () => {
@@ -397,9 +450,15 @@ describe('http validators', () => {
     const spec = { components: { schemas: {} } } as any;
 
     expect(validateRequestAgainstOAS(spec, {}, {})).toBe(true);
-    expect(validateRequestAgainstOAS(spec, {}, {
-      input: { anything: true }
-    })).toBe(true);
+    expect(
+      validateRequestAgainstOAS(
+        spec,
+        {},
+        {
+          input: { anything: true }
+        }
+      )
+    ).toBe(true);
   });
 });
 
@@ -431,7 +490,9 @@ describe('validateRequestParams query coercion (JUM-777)', () => {
 
   it('coerces numeric and boolean query strings before validating their schema', () => {
     expect.hasAssertions();
-    expect(validateRequestParams(endPoint, {}, { page: '2', size: '30', active: 'true' })).toBe(true);
+    expect(validateRequestParams(endPoint, {}, { page: '2', size: '30', active: 'true' })).toBe(
+      true
+    );
     expect(validateRequestParams(endPoint, {}, { page: 1 })).toBe(true);
   });
 
@@ -454,7 +515,7 @@ describe('http validators barrel', () => {
     'validateRequestAgainstOAS'
   ])('re-exports %s as a callable', async (name) => {
     expect.hasAssertions();
-    const barrel = await import('@src/interface/HTTP/validators') as Record<string, unknown>;
+    const barrel = (await import('@src/interface/HTTP/validators')) as Record<string, unknown>;
 
     expect(typeof barrel[name]).toBe('function');
   });

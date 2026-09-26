@@ -1,13 +1,7 @@
-import {
-  chmodSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync
-} from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
 
 const ROOT = process.cwd();
 const SCRIPT = join(ROOT, 'ci-cd/start-compose-service.sh');

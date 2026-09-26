@@ -1,23 +1,27 @@
 import { render, screen } from '@/test-utils';
-import { CommercialPage, CommercialUseCasePage } from '../commercial/CommercialPages';
+
+import { CommercialPage, CommercialUseCasePage } from './CommercialPages';
 import {
-  BrandMark,
   ActionLink,
-  SiteHeader,
-  SiteFooter,
-  Pagination,
-  LocaleSwitch,
-  DocsToolbar,
   ArchitectureFlow,
+  BrandMark,
+  DocsToolbar,
+  LocaleSwitch,
+  Pagination,
+  SiteFooter,
+  SiteHeader
 } from '../design-system';
 
-const INVALID_LINK_PATTERNS = [
-  /href="\s*javascript:/i,
-  /href="\s*#\s*"/,
-  /href="\s*$/,
-];
+const INVALID_LINK_PATTERNS = [/href="\s*javascript:/i, /href="\s*#\s*"/, /href="\s*$/];
 
-const EXTERNAL_DOMAINS = ['github.com', 'vercel.com', 'mantine.dev', 'tabler.io', 'bun.sh', 'pm2.keymetrics.io'];
+const EXTERNAL_DOMAINS = [
+  'github.com',
+  'vercel.com',
+  'mantine.dev',
+  'tabler.io',
+  'bun.sh',
+  'pm2.keymetrics.io'
+];
 
 /**
  * True when `href` is an absolute URL whose host is one of the known external
@@ -36,9 +40,7 @@ function isKnownExternalUrl(href: string): boolean {
 
 function extractInternalLinks(html: string): string[] {
   const links: string[] = [];
-  const hrefRegex = /href="([^"]+)"/g;
-  let match;
-  while ((match = hrefRegex.exec(html)) !== null) {
+  for (const match of html.matchAll(/href="([^"]+)"/g)) {
     const href = match[1];
     if (!href) continue;
     if (href.startsWith('http://') || href.startsWith('https://')) {
@@ -63,7 +65,7 @@ function hasInvalidPattern(href: string): string | null {
 }
 
 describe('Link quality', () => {
-  const pages: Array<Parameters<typeof CommercialPage>[0]['page']> = [
+  const pages: Parameters<typeof CommercialPage>[0]['page'][] = [
     'home',
     'product',
     'use-cases',
@@ -73,23 +75,23 @@ describe('Link quality', () => {
     'engagement',
     'contact',
     'community',
-    'roadmap',
+    'roadmap'
   ];
 
-  const useCases: Array<Parameters<typeof CommercialUseCasePage>[0]['name']> = [
+  const useCases: Parameters<typeof CommercialUseCasePage>[0]['name'][] = [
     'rest-api',
     'realtime-api',
     'saas-monolith',
     'saas-microservices',
-    'spa-pwa',
+    'spa-pwa'
   ];
 
-  const locales: Array<'en' | 'pt-BR'> = ['en', 'pt-BR'];
+  const locales: ('en' | 'pt-BR')[] = ['en', 'pt-BR'];
 
   describe.each(pages)('%s page', (page) => {
     describe.each(locales)('%s locale', (locale) => {
       it('has no invalid link patterns', () => {
-    expect.hasAssertions();
+        expect.hasAssertions();
         render(<CommercialPage locale={locale} page={page} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
@@ -98,12 +100,11 @@ describe('Link quality', () => {
         // links — `contact` is one — never entered the loop, so the test
         // asserted nothing and passed. The declaration above turned that from
         // a silent pass into a failure; this is the fix.
-        expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null))
-          .toStrictEqual([]);
+        expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null)).toStrictEqual([]);
       });
 
       it('all internal links start with /', () => {
-    expect.hasAssertions();
+        expect.hasAssertions();
         render(<CommercialPage locale={locale} page={page} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
@@ -112,7 +113,7 @@ describe('Link quality', () => {
       });
 
       it('has no duplicate internal hrefs in same page (excluding known duplicates)', () => {
-    expect.hasAssertions();
+        expect.hasAssertions();
         render(<CommercialPage locale={locale} page={page} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
@@ -137,7 +138,7 @@ describe('Link quality', () => {
   describe.each(useCases)('%s use case page', (name) => {
     describe.each(locales)('%s locale', (locale) => {
       it('has no invalid link patterns', () => {
-    expect.hasAssertions();
+        expect.hasAssertions();
         render(<CommercialUseCasePage locale={locale} name={name} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
@@ -146,12 +147,11 @@ describe('Link quality', () => {
         // links — `contact` is one — never entered the loop, so the test
         // asserted nothing and passed. The declaration above turned that from
         // a silent pass into a failure; this is the fix.
-        expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null))
-          .toStrictEqual([]);
+        expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null)).toStrictEqual([]);
       });
 
       it('all internal links start with /', () => {
-    expect.hasAssertions();
+        expect.hasAssertions();
         render(<CommercialUseCasePage locale={locale} name={name} />);
         const html = screen.getByRole('main').innerHTML;
         const internalLinks = extractInternalLinks(html);
@@ -163,43 +163,51 @@ describe('Link quality', () => {
 
   describe('Design System components', () => {
     it('BrandMark has valid href', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<BrandMark />);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/');
     });
 
     it('BrandMark with custom href', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<BrandMark href="/custom" />);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/custom');
     });
 
     it('ActionLink has valid href', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<ActionLink href="/test">Test</ActionLink>);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/test');
     });
 
     it('ActionLink external has valid href', () => {
-    expect.hasAssertions();
-      render(<ActionLink href="https://github.com/web2solutions/Jumentix" external>GitHub</ActionLink>);
+      expect.hasAssertions();
+      render(
+        <ActionLink external href="https://github.com/web2solutions/Jumentix">
+          GitHub
+        </ActionLink>
+      );
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', 'https://github.com/web2solutions/Jumentix');
     });
 
     it('ActionLink quiet variant has valid href', () => {
-    expect.hasAssertions();
-      render(<ActionLink href="/docs" variant="quiet">Docs</ActionLink>);
+      expect.hasAssertions();
+      render(
+        <ActionLink href="/docs" variant="quiet">
+          Docs
+        </ActionLink>
+      );
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/docs');
     });
 
     it('SiteHeader has valid internal links (EN)', () => {
-    expect.hasAssertions();
-      render(<SiteHeader locale="en" currentPath="/" />);
+      expect.hasAssertions();
+      render(<SiteHeader currentPath="/" locale="en" />);
       const navLinks = screen.getAllByRole('link');
       for (const link of navLinks) {
         const href = link.getAttribute('href');
@@ -209,8 +217,8 @@ describe('Link quality', () => {
     });
 
     it('SiteHeader has valid internal links (PT-BR)', () => {
-    expect.hasAssertions();
-      render(<SiteHeader locale="pt-BR" currentPath="/produto" />);
+      expect.hasAssertions();
+      render(<SiteHeader currentPath="/produto" locale="pt-BR" />);
       const navLinks = screen.getAllByRole('link');
       for (const link of navLinks) {
         const href = link.getAttribute('href');
@@ -220,7 +228,7 @@ describe('Link quality', () => {
     });
 
     it('SiteFooter has valid internal links (EN)', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<SiteFooter locale="en" />);
       const links = screen.getAllByRole('link');
       for (const link of links) {
@@ -231,7 +239,7 @@ describe('Link quality', () => {
     });
 
     it('SiteFooter has valid internal links (PT-BR)', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<SiteFooter locale="pt-BR" />);
       const links = screen.getAllByRole('link');
       for (const link of links) {
@@ -242,8 +250,8 @@ describe('Link quality', () => {
     });
 
     it('Pagination links have valid hrefs', () => {
-    expect.hasAssertions();
-      render(<Pagination current={2} total={5} hrefBase="/test" />);
+      expect.hasAssertions();
+      render(<Pagination current={2} hrefBase="/test" total={5} />);
       const links = screen.getAllByRole('link');
       for (const link of links) {
         const href = link.getAttribute('href');
@@ -252,14 +260,14 @@ describe('Link quality', () => {
     });
 
     it('LocaleSwitch link has valid href', () => {
-    expect.hasAssertions();
-      render(<LocaleSwitch locale="EN" href="/pt-BR" />);
+      expect.hasAssertions();
+      render(<LocaleSwitch href="/pt-BR" locale="EN" />);
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/pt-BR');
     });
 
     it('DocsToolbar has valid links', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<DocsToolbar />);
       const links = screen.getAllByRole('link');
       for (const link of links) {
@@ -270,15 +278,14 @@ describe('Link quality', () => {
     });
 
     it('ArchitectureFlow has no invalid link patterns', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<ArchitectureFlow steps={[{ title: 'Step 1', description: 'Desc 1' }]} />);
       const container = screen.getByLabelText('Architecture flow');
       const html = container.innerHTML;
       const internalLinks = extractInternalLinks(html);
 
       // JUM-677: a set, not a loop — see the commercial suite.
-      expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null))
-        .toStrictEqual([]);
+      expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null)).toStrictEqual([]);
     });
   });
 });

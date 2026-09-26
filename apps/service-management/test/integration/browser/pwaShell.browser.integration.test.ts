@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires, no-await-in-loop */
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable jest/no-conditional-in-test, jest/max-expects */
 /*
  * JUM-489 — PWA shell contract, run against the REAL server and (for the
  * behavioural half) in a REAL browser (Playwright WebKit, the engine this
@@ -24,14 +24,15 @@
  * restores the original content, the same discipline as the JUM-463
  * late-file smoke in staticServing.integration.test.ts.
  */
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+
 import { webkit } from 'playwright-webkit';
-import type { Browser } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  createTempConfigDir,
   envFileContent,
   requestRaw,
   startServer,
@@ -39,6 +40,9 @@ import {
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const serviceWorker = require(path.join(staticRoot, 'sw.js'));
@@ -69,15 +73,33 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
+  const runningServer = (): StartedServer => {
+    if (!server) {
+      throw new Error('server was not started by beforeAll');
+    }
+    return server;
+  };
+
   beforeAll(async () => {
     // The precache list includes the vendored Cana bundle (JUM-484): it is
     // gitignored and generated, so regenerate it before booting — the
     // precache-agreement test requests every entry against the real server,
     // and a missing bundle must fail the suite, not quietly 404.
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], {
-      cwd: process.cwd(),
-      stdio: 'inherit'
-    });
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-cana-bundle.js'],
+      {
+        cwd: process.cwd(),
+        stdio: 'inherit'
+      }
+    );
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
     await waitForServer(server.port);
@@ -96,7 +118,7 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
   it('serves the manifest and the classic worker with their content types', async () => {
     expect.hasAssertions();
 
-    const manifest = await requestRaw(server!.port, 'GET', '/manifest.webmanifest');
+    const manifest = await requestRaw(runningServer().port, 'GET', '/manifest.webmanifest');
     expect(manifest.status).toBe(200);
     expect(manifest.headers['content-type']).toContain('application/manifest+json');
     const parsed = JSON.parse(manifest.rawBody) as {
@@ -105,7 +127,7 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
       start_url: string;
       display: string;
       theme_color: string;
-      icons: Array<{ src: string; sizes: string; type: string }>;
+      icons: { src: string; sizes: string; type: string }[];
     };
     expect(parsed.name).toBeTruthy();
     expect(parsed.short_name).toBeTruthy();
@@ -115,7 +137,7 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
     expect(parsed.icons.some((icon) => icon.sizes === '192x192')).toBe(true);
     expect(parsed.icons.some((icon) => icon.sizes === '512x512')).toBe(true);
 
-    const worker = await requestRaw(server!.port, 'GET', '/sw.js');
+    const worker = await requestRaw(runningServer().port, 'GET', '/sw.js');
     expect(worker.status).toBe(200);
     expect(worker.headers['content-type']).toContain('javascript');
   });
@@ -126,14 +148,14 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
     expect(assets.length).toBeGreaterThan(10);
     for (const asset of assets) {
       const urlPath = asset === './' ? '/' : `/${asset.replace('./', '')}`;
-      const res = await requestRaw(server!.port, 'GET', urlPath);
+      const res = await requestRaw(runningServer().port, 'GET', urlPath);
       expect(`${urlPath} -> ${String(res.status)}`).toBe(`${urlPath} -> 200`);
     }
   });
 
   it('registers the worker and precaches the shell under the versioned cache name', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     try {
       await page.goto(baseUrl, { waitUntil: 'load' });
@@ -155,7 +177,7 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
 
   it('loads the shell with the network disabled (app-shell cache only)', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     try {
       await page.goto(baseUrl, { waitUntil: 'load' });
@@ -180,7 +202,9 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
 
       // The shell is fully interactive offline: tab switching is pure shell JS.
       await page.click('#tab-service-config-btn');
-      const configActive = await page.$eval('#tab-service-config', (el) => el.classList.contains('active'));
+      const configActive = await page.$eval('#tab-service-config', (el) =>
+        el.classList.contains('active')
+      );
       expect(configActive).toBe(true);
     } finally {
       await context.close();
@@ -195,7 +219,7 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
 
   it('delivers a shipped update through the prompt — no silent swap — and cleans stale caches', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     let originalWorkerSource: string | null = null;
     try {
@@ -212,8 +236,9 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
 
       // Ship an update: sw.js on disk now carries a new SHELL_VERSION.
       originalWorkerSource = bumpServiceWorkerVersionOnDisk();
-      await page.evaluate(() => navigator.serviceWorker.getRegistration()
-        .then((registration) => registration?.update()));
+      await page.evaluate(() =>
+        navigator.serviceWorker.getRegistration().then((registration) => registration?.update())
+      );
 
       // The update flow must surface the prompt instead of swapping silently.
       await page.waitForSelector('#pwa-update-banner', { state: 'visible', timeout: 30000 });

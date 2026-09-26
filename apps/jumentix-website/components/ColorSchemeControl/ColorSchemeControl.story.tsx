@@ -1,7 +1,7 @@
 import { ColorSchemeControl } from './ColorSchemeControl';
 
 export default {
-  title: 'ColorSchemeControl',
+  title: 'ColorSchemeControl'
 };
 
 export const Usage = () => <ColorSchemeControl />;

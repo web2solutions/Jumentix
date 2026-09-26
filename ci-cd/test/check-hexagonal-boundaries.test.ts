@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const {
-  validateControllerFile,
-  readImports: readHexImports
+  readImports: readHexImports,
+  validateControllerFile
 } = require('../check-hexagonal-boundaries');
 
 describe('check-hexagonal-boundaries', () => {

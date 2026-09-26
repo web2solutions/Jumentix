@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import path from 'node:path';
 
 /**
@@ -13,19 +12,20 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
-const {
-  VENDORED_FILE,
-  syncServiceManagementD3
-} = require(path.join(repoRoot, 'apps/service-management/scripts/sync-service-management-d3.js'));
+const { VENDORED_FILE, syncServiceManagementD3 } = require(
+  path.join(repoRoot, 'apps/service-management/scripts/sync-service-management-d3.js')
+);
 
 const DIST_FILE = path.join('apps', 'service-management', 'vendor', 'd3', '.build.mjs');
 
-function createHarness(options: {
-  sourceEntry?: string | null;
-  buildStatus?: number | null;
-  distExists?: boolean;
-  artifact?: string;
-} = {}) {
+function createHarness(
+  options: {
+    sourceEntry?: string | null;
+    buildStatus?: number | null;
+    distExists?: boolean;
+    artifact?: string;
+  } = {}
+) {
   const {
     sourceEntry = '/repo/node_modules/d3/src/index.js',
     buildStatus = 0,
@@ -34,8 +34,8 @@ function createHarness(options: {
   } = options;
   const logs: string[] = [];
   const errors: string[] = [];
-  const written: Array<{ target: string; contents: string }> = [];
-  const spawnCalls: Array<{ command: string; args: string[] }> = [];
+  const written: { target: string; contents: string }[] = [];
+  const spawnCalls: { command: string; args: string[] }[] = [];
   const harness = {
     root: '/repo',
     sourceEntry,
@@ -49,14 +49,20 @@ function createHarness(options: {
       return { status: buildStatus };
     },
     readFile: () => artifact,
-    writeFile: (target: string, contents: string) => { written.push({ target, contents }); },
+    writeFile: (target: string, contents: string) => {
+      written.push({ target, contents });
+    },
     logger: {
       log: (line: string) => logs.push(String(line)),
       error: (line: string) => errors.push(String(line))
     }
   };
   return {
-    harness, logs, errors, written, spawnCalls
+    harness,
+    logs,
+    errors,
+    written,
+    spawnCalls
   };
 }
 
@@ -110,9 +116,7 @@ describe('sync-service-management-d3', () => {
 
   it('accepts an artifact that carries the generic scale export and vendors it', () => {
     expect.hasAssertions();
-    const {
-      harness, logs, written, spawnCalls
-    } = createHarness({
+    const { harness, logs, written, spawnCalls } = createHarness({
       artifact: 'export function scale() {}\n'
     });
     expect(syncServiceManagementD3(harness)).toBe(0);
@@ -133,7 +137,7 @@ describe('sync-service-management-d3', () => {
     // bun build + vendor copy the CI script performs, targeted at the
     // gitignored vendor directory.
     expect(syncServiceManagementD3()).toBe(0);
-    const fs = require('fs');
+    const fs = require('node:fs');
     const vendored = fs.readFileSync(path.join(repoRootDir, VENDORED_FILE), 'utf8');
     expect(vendored).toContain('do not edit');
     expect(vendored).toContain('scaleLinear');

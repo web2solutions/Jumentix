@@ -1,11 +1,14 @@
-import type { Socket } from 'socket.io-client';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
 // Through the package entry point, not the module: that is the surface
 // consumers get, and a barrel that forgot a re-export would otherwise pass
 // every test in this file.
-import { WebSocketApiClient, loadSpecs } from '../src';
+import { loadSpecs, WebSocketApiClient } from '../src';
+
+import type { Socket } from 'socket.io-client';
+
 import type { IWebSocketApiResponse } from '../src';
 
 /**
@@ -24,7 +27,7 @@ import type { IWebSocketApiResponse } from '../src';
 
 /** A socket double that captures the emit and replies on demand. */
 function socketDouble(over: Partial<{ connected: boolean }> = {}) {
-  const emits: Array<{ event: string; payload: unknown }> = [];
+  const emits: { event: string; payload: unknown }[] = [];
   const timeouts: number[] = [];
   let reply: IWebSocketApiResponse | undefined;
   let disconnected = 0;
@@ -52,7 +55,9 @@ function socketDouble(over: Partial<{ connected: boolean }> = {}) {
     emits,
     timeouts,
     disconnectCount: () => disconnected,
-    answerWith: (response: IWebSocketApiResponse | undefined) => { reply = response; }
+    answerWith: (response: IWebSocketApiResponse | undefined) => {
+      reply = response;
+    }
   };
 }
 
@@ -98,8 +103,7 @@ describe('loadSpecs', () => {
     // An isolated directory under the OS temp root has no `spec/asyncapi`
     // anywhere above it, so the default walk-up finds nothing.
     const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'ws-sdk-spec-'));
-    expect(() => loadSpecs(undefined, isolated))
-      .toThrow(/1\.0\.0\.websocket\.yml/);
+    expect(() => loadSpecs(undefined, isolated)).toThrow(/1\.0\.0\.websocket\.yml/);
   });
 });
 
@@ -253,8 +257,9 @@ describe('request', () => {
     double.answerWith(undefined);
     const { subject } = client(double);
 
-    await expect(subject.request({ operationId: 'listUsers' }))
-      .rejects.toThrow('WebSocket timeout/no response');
+    await expect(subject.request({ operationId: 'listUsers' })).rejects.toThrow(
+      'WebSocket timeout/no response'
+    );
   });
 
   it('rejects with the error the server reported', async () => {
@@ -279,8 +284,9 @@ describe('request', () => {
     double.answerWith({ ok: false, operationId: 'listUsers' });
     const { subject } = client(double);
 
-    await expect(subject.request({ operationId: 'listUsers' }))
-      .rejects.toThrow('WebSocket operation failed');
+    await expect(subject.request({ operationId: 'listUsers' })).rejects.toThrow(
+      'WebSocket operation failed'
+    );
   });
 
   it('applies a timeout to the emit', async () => {

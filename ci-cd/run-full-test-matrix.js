@@ -1,7 +1,7 @@
-/* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 const FULL_TEST_MATRIX = Object.freeze([
@@ -54,7 +54,7 @@ function validateMatrixManifest(cells, availableScripts) {
     if (scripts.has(script)) {
       throw new Error(`Duplicate full-matrix script: ${script}`);
     }
-    if (!Object.prototype.hasOwnProperty.call(availableScripts, script)) {
+    if (!Object.hasOwn(availableScripts, script)) {
       throw new Error(`Full-matrix script is missing from package.json: ${script}`);
     }
 
@@ -67,7 +67,12 @@ function resolveMatrixCells(cells, env = process.env) {
   const rawSkipped = String(env.JUMENTIX_FULL_MATRIX_SKIP_CELLS || '').trim();
   if (!rawSkipped) return cells;
 
-  const skipped = new Set(rawSkipped.split(',').map((id) => id.trim()).filter(Boolean));
+  const skipped = new Set(
+    rawSkipped
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
+  );
   const knownIds = new Set(cells.map((cell) => cell.id));
   const unknown = [...skipped].filter((id) => !knownIds.has(id));
   if (unknown.length > 0) {
@@ -110,9 +115,7 @@ function runFullTestMatrix(options = {}) {
     let status = 1;
     try {
       const executionStatus = execute(cell);
-      status = Number.isInteger(executionStatus) && executionStatus >= 0
-        ? executionStatus
-        : 1;
+      status = Number.isInteger(executionStatus) && executionStatus >= 0 ? executionStatus : 1;
     } catch (error) {
       logger.error(`[ci] full-matrix cell crashed: ${cell.id}`);
       logger.error(error);
@@ -178,8 +181,8 @@ function runAsEntryPoint(options = {}) {
 runAsEntryPoint();
 
 module.exports = {
-  FULL_TEST_MATRIX,
   executeMatrixCell,
+  FULL_TEST_MATRIX,
   resolveMatrixCells,
   runAsEntryPoint,
   runFullTestMatrix,

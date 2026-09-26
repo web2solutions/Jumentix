@@ -1,17 +1,19 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const gateFs = require('fs');
-const gatePath = require('path');
+const gateFs = require('node:fs');
+const gatePath = require('node:path');
+
 const {
   FULL_MATRIX_QUALITY_GATE,
-  TASK_QUALITY_GATE,
-  UNIT_QUALITY_GATE,
   resolvePullRequestFlag,
   resolveTargetBranch,
   runBranchQualityGate,
-  selectQualityGate
+  selectQualityGate,
+  TASK_QUALITY_GATE,
+  UNIT_QUALITY_GATE
 } = require('../run-branch-quality-gate');
 
-type GateStep = { id: string };
+interface GateStep {
+  id: string;
+}
 
 /**
  * An `execute` that fails one named step and passes the rest.
@@ -35,8 +37,8 @@ function executeCrashing(crashingId: string) {
   return jest.fn((step: GateStep) => (behaviour[step.id] ?? pass)());
 }
 
-const stepIds = (execute: { mock: { calls: Array<[GateStep]> } }) => execute
-  .mock.calls.map(([step]) => step.id);
+const stepIds = (execute: { mock: { calls: [GateStep][] } }) =>
+  execute.mock.calls.map(([step]) => step.id);
 
 function runLocalBranchQualityGate(options: Record<string, unknown>) {
   return runBranchQualityGate({
@@ -98,16 +100,32 @@ describe('run-branch-quality-gate', () => {
     const execute = jest.fn().mockReturnValue(0);
     const logger = { log: jest.fn(), error: jest.fn() };
     const taskEvidence = runLocalBranchQualityGate({
-      targetBranch: 'codex/ci/191-example', isPullRequest: false, execute, logger, resultFile: ''
+      targetBranch: 'codex/ci/191-example',
+      isPullRequest: false,
+      execute,
+      logger,
+      resultFile: ''
     });
     const devEvidence = runLocalBranchQualityGate({
-      targetBranch: 'dev', isPullRequest: false, execute, logger, resultFile: ''
+      targetBranch: 'dev',
+      isPullRequest: false,
+      execute,
+      logger,
+      resultFile: ''
     });
     const mainEvidence = runLocalBranchQualityGate({
-      targetBranch: 'main', isPullRequest: false, execute, logger, resultFile: ''
+      targetBranch: 'main',
+      isPullRequest: false,
+      execute,
+      logger,
+      resultFile: ''
     });
     const devPrEvidence = runLocalBranchQualityGate({
-      targetBranch: 'dev', isPullRequest: true, execute, logger, resultFile: ''
+      targetBranch: 'dev',
+      isPullRequest: true,
+      execute,
+      logger,
+      resultFile: ''
     });
 
     // Lint runs ahead of the two gates that do not contain it, and not ahead of
@@ -115,10 +133,33 @@ describe('run-branch-quality-gate', () => {
     // integrity, workspace boundaries, and build:dev run ahead of all three,
     // including the strict matrix path used by release/main (JUM-683 / JUM-786).
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes',
-      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'unit',
-      'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'full-matrix',
-      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes'
+      'lint',
+      'test-integrity',
+      'current-governance-docs',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'task-changes',
+      'lint',
+      'test-integrity',
+      'current-governance-docs',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'unit',
+      'test-integrity',
+      'current-governance-docs',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'full-matrix',
+      'lint',
+      'test-integrity',
+      'current-governance-docs',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'task-changes'
     ]);
     const lintPassed = [
       { id: 'lint', script: 'lint', status: 0 },
@@ -228,7 +269,13 @@ describe('run-branch-quality-gate', () => {
       script: 'ci:gate:task'
     });
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes'
+      'lint',
+      'test-integrity',
+      'current-governance-docs',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'task-changes'
     ]);
   });
 

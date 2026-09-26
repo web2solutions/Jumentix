@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Requirement 137 — workspace suite and tooling ownership placement.
@@ -12,12 +11,11 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
-const { listTestFiles, suiteRoots, byPath } = require('./lib/mapped-suites.js');
+const { byPath, listTestFiles, suiteRoots } = require('./lib/mapped-suites.js');
 
 const ALLOWLIST_PATH = 'ci-cd/ownership-placement-allowlist.json';
-
-const SKIP_DIRS = Object.freeze(['node_modules', 'dist', '.build', 'coverage', '.git']);
 
 /** Apps that compose backend-template via `@src` by design (Req 137 §3). */
 const SRC_COMPOSITION_HOMES = Object.freeze([
@@ -68,7 +66,10 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === '--changed') {
       const next = argv[i + 1] || '';
-      out.changed = next.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
+      out.changed = next
+        .split(/[\n,]/)
+        .map((s) => s.trim())
+        .filter(Boolean);
       i += 1;
     } else if (arg === '--write-allowlist') {
       out.writeAllowlist = true;
@@ -78,15 +79,6 @@ function parseArgs(argv) {
     }
   }
   return out;
-}
-
-function listFiles(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    if (SKIP_DIRS.includes(entry.name)) return [];
-    const full = path.join(dir, entry.name);
-    return entry.isDirectory() ? listFiles(full) : [full];
-  });
 }
 
 function discoverWorkspaces(root) {
@@ -138,10 +130,7 @@ function stripComments(source) {
 
 function isConfigOnlyBackendTemplatePin(contents) {
   const refs = contents.match(/apps\/backend-template\/[^'"`\s)]+/g) || [];
-  return (
-    refs.length > 0
-    && refs.every((ref) => ref.startsWith('apps/backend-template/src/config'))
-  );
+  return refs.length > 0 && refs.every((ref) => ref.startsWith('apps/backend-template/src/config'));
 }
 
 function addImportishWorkspaceHits(asserted, contents, home, workspaces) {
@@ -149,34 +138,35 @@ function addImportishWorkspaceHits(asserted, contents, home, workspaces) {
   for (const ws of workspaces) {
     if (ws === home) continue;
     if (
-      home === 'apps/service-management'
-      && ws === 'apps/backend-template'
-      && isConfigOnlyBackendTemplatePin(contents)
+      home === 'apps/service-management' &&
+      ws === 'apps/backend-template' &&
+      isConfigOnlyBackendTemplatePin(contents)
     ) {
       continue;
     }
     // Only count a direct quoted specifier after require/from/jest.mock —
     // not an indirect path.join(repoRoot, 'ci-cd', …) composition.
-    const hit = lines.some((line) => (
-      line.includes(`require('${ws}'`)
-      || line.includes(`require('${ws}/`)
-      || line.includes(`require("${ws}"`)
-      || line.includes(`require("${ws}/`)
-      || line.includes(`require(\`${ws}\``)
-      || line.includes(`require(\`${ws}/`)
-      || line.includes(`from '${ws}'`)
-      || line.includes(`from '${ws}/`)
-      || line.includes(`from "${ws}"`)
-      || line.includes(`from "${ws}/`)
-      || line.includes(`from \`${ws}\``)
-      || line.includes(`from \`${ws}/`)
-      || line.includes(`jest.mock('${ws}'`)
-      || line.includes(`jest.mock('${ws}/`)
-      || line.includes(`jest.mock("${ws}"`)
-      || line.includes(`jest.mock("${ws}/`)
-      || line.includes(`jest.mock(\`${ws}\``)
-      || line.includes(`jest.mock(\`${ws}/`)
-    ));
+    const hit = lines.some(
+      (line) =>
+        line.includes(`require('${ws}'`) ||
+        line.includes(`require('${ws}/`) ||
+        line.includes(`require("${ws}"`) ||
+        line.includes(`require("${ws}/`) ||
+        line.includes(`require(\`${ws}\``) ||
+        line.includes(`require(\`${ws}/`) ||
+        line.includes(`from '${ws}'`) ||
+        line.includes(`from '${ws}/`) ||
+        line.includes(`from "${ws}"`) ||
+        line.includes(`from "${ws}/`) ||
+        line.includes(`from \`${ws}\``) ||
+        line.includes(`from \`${ws}/`) ||
+        line.includes(`jest.mock('${ws}'`) ||
+        line.includes(`jest.mock('${ws}/`) ||
+        line.includes(`jest.mock("${ws}"`) ||
+        line.includes(`jest.mock("${ws}/`) ||
+        line.includes(`jest.mock(\`${ws}\``) ||
+        line.includes(`jest.mock(\`${ws}/`)
+    );
     if (hit) asserted.add(ws);
   }
 }
@@ -192,8 +182,10 @@ function addDeepPackageHits(asserted, contents) {
 }
 
 function lineUsesSrcAlias(line) {
-  return /(?:from\s+|require\(|jest\.mock\()/.test(line)
-    && (line.includes("'@src/") || line.includes('"@src/'));
+  return (
+    /(?:from\s+|require\(|jest\.mock\()/.test(line) &&
+    (line.includes("'@src/") || line.includes('"@src/'))
+  );
 }
 
 function addSrcAliasHits(asserted, contents, home) {
@@ -262,9 +254,7 @@ function validateAllowlistShape(entries) {
 function collectSuites(root) {
   const roots = suiteRoots(root);
   const allRoots = [...new Set([...roots, 'ci-cd/test'])];
-  return allRoots
-    .flatMap((relRoot) => listTestFiles(path.join(root, relRoot), root))
-    .sort(byPath);
+  return allRoots.flatMap((relRoot) => listTestFiles(path.join(root, relRoot), root)).sort(byPath);
 }
 
 function pushForeignAssertions(violations, suite, home, asserted, allowKeys) {
@@ -331,9 +321,7 @@ function findViolations(root, options = {}) {
   const allowlist = options.allowlist || loadAllowlist(root);
   const shapeFailures = validateAllowlistShape(allowlist);
   const suites = collectSuites(root);
-  const allowKeys = new Set(
-    allowlist.map((e) => `${e.suite}::${e.assertsWorkspace}`)
-  );
+  const allowKeys = new Set(allowlist.map((e) => `${e.suite}::${e.assertsWorkspace}`));
 
   const violations = [
     ...collectSuiteViolations(root, suites, allowKeys, workspaces, options.changed),
@@ -371,10 +359,7 @@ function writeAllowlistSnapshot(root, violations) {
     unique.push(e);
   }
   unique.sort((a, b) => byPath(a.suite, b.suite) || byPath(a.assertsWorkspace, b.assertsWorkspace));
-  fs.writeFileSync(
-    safeJoin(root, ALLOWLIST_PATH),
-    `${JSON.stringify(unique, null, 2)}\n`
-  );
+  fs.writeFileSync(safeJoin(root, ALLOWLIST_PATH), `${JSON.stringify(unique, null, 2)}\n`);
   console.log(`[ownership] wrote ${unique.length} allow-list entries to ${ALLOWLIST_PATH}`);
 }
 
@@ -417,7 +402,6 @@ runWhenEntryPoint({ caller: module, execute: main });
 
 module.exports = {
   ALLOWLIST_PATH,
-  SRC_COMPOSITION_HOMES,
   collectSuites,
   findViolations,
   inferAssertedWorkspaces,
@@ -427,6 +411,7 @@ module.exports = {
   resolveRepoRoot,
   run,
   safeJoin,
+  SRC_COMPOSITION_HOMES,
   stripComments,
   suiteHome
 };

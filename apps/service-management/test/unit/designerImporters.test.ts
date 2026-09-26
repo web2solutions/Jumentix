@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 
 /**
  * Unit suite for the import mappers extracted from
@@ -12,42 +11,61 @@
  * on.
  */
 
-const { buildDomainFromPackage, buildDomainsFromOas } = require(
-  '@jumentix/designer-core/importers/designerImporters.js'
-);
-const { buildOasDocument } = require(
-  '@jumentix/designer-core/exporters/designerExporters.js'
-);
-const { normalizeStatePayload, getDefaultRbacPolicy } = require(
-  '@jumentix/designer-core/state/designerState.js'
-);
+const { buildOasDocument } = require('@jumentix/designer-core/exporters/designerExporters.js');
+const {
+  buildDomainFromPackage,
+  buildDomainsFromOas
+} = require('@jumentix/designer-core/importers/designerImporters.js');
+const {
+  getDefaultRbacPolicy,
+  normalizeStatePayload
+} = require('@jumentix/designer-core/state/designerState.js');
 
 describe('designer importers (JUM-469)', () => {
   describe('buildDomainFromPackage', () => {
     it('rejects documents without a domain entity list', () => {
       expect.hasAssertions();
-      expect(buildDomainFromPackage(null, [])).toStrictEqual({ ok: false, reason: 'invalid-package' });
-      expect(buildDomainFromPackage({}, [])).toStrictEqual({ ok: false, reason: 'invalid-package' });
-      expect(buildDomainFromPackage({ domain: { name: 'X' } }, [])).toStrictEqual({ ok: false, reason: 'invalid-package' });
+      expect(buildDomainFromPackage(null, [])).toStrictEqual({
+        ok: false,
+        reason: 'invalid-package'
+      });
+      expect(buildDomainFromPackage({}, [])).toStrictEqual({
+        ok: false,
+        reason: 'invalid-package'
+      });
+      expect(buildDomainFromPackage({ domain: { name: 'X' } }, [])).toStrictEqual({
+        ok: false,
+        reason: 'invalid-package'
+      });
     });
 
     it('normalizes a valid package into a positioned domain', () => {
       expect.hasAssertions();
-      const result = buildDomainFromPackage({
-        domain: {
-          name: 'Catalog',
-          entities: [{
-            name: 'Product',
-            fields: [{
-              name: 'id', type: 'uuid', pk: true, required: true
-            }]
-          }],
-          context: {
-            packageDependencies: ['shared', 'shared', 'kernel'],
-            sharedValueObjects: ['money', 'money']
+      const result = buildDomainFromPackage(
+        {
+          domain: {
+            name: 'Catalog',
+            entities: [
+              {
+                name: 'Product',
+                fields: [
+                  {
+                    name: 'id',
+                    type: 'uuid',
+                    pk: true,
+                    required: true
+                  }
+                ]
+              }
+            ],
+            context: {
+              packageDependencies: ['shared', 'shared', 'kernel'],
+              sharedValueObjects: ['money', 'money']
+            }
           }
-        }
-      }, []);
+        },
+        []
+      );
       expect(result.ok).toBe(true);
       expect(result.domain.name).toBe('Catalog');
       expect(result.domain.color).toBe('#60a5fa');
@@ -62,15 +80,24 @@ describe('designer importers (JUM-469)', () => {
       expect.hasAssertions();
       const existing = [
         {
-          id: 'd1', name: 'Catalog', context: {}, entities: []
+          id: 'd1',
+          name: 'Catalog',
+          context: {},
+          entities: []
         },
         {
-          id: 'd2', name: 'Catalog_2', context: {}, entities: []
+          id: 'd2',
+          name: 'Catalog_2',
+          context: {},
+          entities: []
         }
       ];
-      const result = buildDomainFromPackage({
-        domain: { name: 'Catalog', entities: [] }
-      }, existing);
+      const result = buildDomainFromPackage(
+        {
+          domain: { name: 'Catalog', entities: [] }
+        },
+        existing
+      );
       expect(result.ok).toBe(true);
       expect(result.domain.name).toBe('Catalog_3');
     });
@@ -86,13 +113,16 @@ describe('designer importers (JUM-469)', () => {
           entities: []
         }
       ];
-      const result = buildDomainFromPackage({
-        domain: {
-          name: 'Catalog',
-          entities: [],
-          context: { packageDependencies: ['shared', 'new-dep', 'new-dep'] }
-        }
-      }, existing);
+      const result = buildDomainFromPackage(
+        {
+          domain: {
+            name: 'Catalog',
+            entities: [],
+            context: { packageDependencies: ['shared', 'new-dep', 'new-dep'] }
+          }
+        },
+        existing
+      );
       expect(result.domain.context.packageDependencies).toStrictEqual(['shared', 'new-dep']);
     });
 
@@ -105,17 +135,20 @@ describe('designer importers (JUM-469)', () => {
           entities: [{ id: 'entity-1', name: 'Product' }]
         }
       ];
-      const result = buildDomainFromPackage({
-        domain: {
-          id: 'domain-1',
-          name: 'Catalog',
-          entities: [
-            { id: 'entity-1', name: 'Product', fields: [] },
-            { id: 'entity-9', name: 'Price', fields: [] },
-            { id: 'entity-9', name: 'PriceCopy', fields: [] }
-          ]
-        }
-      }, existing);
+      const result = buildDomainFromPackage(
+        {
+          domain: {
+            id: 'domain-1',
+            name: 'Catalog',
+            entities: [
+              { id: 'entity-1', name: 'Product', fields: [] },
+              { id: 'entity-9', name: 'Price', fields: [] },
+              { id: 'entity-9', name: 'PriceCopy', fields: [] }
+            ]
+          }
+        },
+        existing
+      );
       expect(result.ok).toBe(true);
       // Colliding ids are recomputed...
       expect(result.domain.id).not.toBe('domain-1');
@@ -141,13 +174,16 @@ describe('designer importers (JUM-469)', () => {
 
     it('normalizes null context package collections and sparse entity meta', () => {
       expect.hasAssertions();
-      const result = buildDomainFromPackage({
-        domain: {
-          name: 'Sparse',
-          context: { packageDependencies: null, sharedValueObjects: null },
-          entities: [{ name: 'Entry', fields: [], meta: null }]
-        }
-      }, []);
+      const result = buildDomainFromPackage(
+        {
+          domain: {
+            name: 'Sparse',
+            context: { packageDependencies: null, sharedValueObjects: null },
+            entities: [{ name: 'Entry', fields: [], meta: null }]
+          }
+        },
+        []
+      );
 
       expect(result.ok).toBe(true);
       expect(result.domain.context.packageDependencies).toStrictEqual([]);
@@ -164,14 +200,22 @@ describe('designer importers (JUM-469)', () => {
       expect.hasAssertions();
       expect(buildDomainsFromOas(null)).toStrictEqual({ ok: false, reason: 'invalid-oas' });
       expect(buildDomainsFromOas({})).toStrictEqual({ ok: false, reason: 'invalid-oas' });
-      expect(buildDomainsFromOas({ components: { schemas: 'nope' } })).toStrictEqual({ ok: false, reason: 'invalid-oas' });
+      expect(buildDomainsFromOas({ components: { schemas: 'nope' } })).toStrictEqual({
+        ok: false,
+        reason: 'invalid-oas'
+      });
     });
 
     it('rejects documents whose schemas hold no usable entry', () => {
       expect.hasAssertions();
-      expect(buildDomainsFromOas({ components: { schemas: {} } })).toStrictEqual({ ok: false, reason: 'no-schemas' });
-      expect(buildDomainsFromOas({ components: { schemas: { Broken: null } } }))
-        .toStrictEqual({ ok: false, reason: 'no-schemas' });
+      expect(buildDomainsFromOas({ components: { schemas: {} } })).toStrictEqual({
+        ok: false,
+        reason: 'no-schemas'
+      });
+      expect(buildDomainsFromOas({ components: { schemas: { Broken: null } } })).toStrictEqual({
+        ok: false,
+        reason: 'no-schemas'
+      });
     });
 
     it('groups schemas by x-domain and maps fields back through fromOasType', () => {
@@ -195,7 +239,12 @@ describe('designer importers (JUM-469)', () => {
                 tags: { type: 'array', items: { type: 'string', format: 'uuid' }, nullable: true },
                 meta: { type: 'object' },
                 status: {
-                  type: 'string', enum: ['open'], pattern: '^[a-z]+$', minLength: 2, maxLength: 6, description: 'State'
+                  type: 'string',
+                  enum: ['open'],
+                  pattern: '^[a-z]+$',
+                  minLength: 2,
+                  maxLength: 6,
+                  description: 'State'
                 }
               }
             },
@@ -225,13 +274,24 @@ describe('designer importers (JUM-469)', () => {
         invoice.fields.map((field: { name: string }) => [field.name, field])
       );
       expect(byName.id).toMatchObject({
-        type: 'uuid', required: true, pk: true, unique: true, fk: false
+        type: 'uuid',
+        required: true,
+        pk: true,
+        unique: true,
+        fk: false
       });
       expect(byName.organizationId).toMatchObject({
-        type: 'uuid', required: false, pk: false, fk: true, unique: false
+        type: 'uuid',
+        required: false,
+        pk: false,
+        fk: true,
+        unique: false
       });
       expect(byName.total).toMatchObject({
-        type: 'number', required: true, minimum: 0, maximum: 10
+        type: 'number',
+        required: true,
+        minimum: 0,
+        maximum: 10
       });
       expect(byName.day.type).toBe('date');
       expect(byName.at.type).toBe('datetime');
@@ -251,8 +311,11 @@ describe('designer importers (JUM-469)', () => {
       // Empty properties fall back to the default id/createdAt/updatedAt fields.
       const receipt = billing.entities[1];
       expect([receipt.x, receipt.y]).toStrictEqual([220, 14]);
-      expect(receipt.fields.map((field: { name: string }) => field.name))
-        .toStrictEqual(['id', 'createdAt', 'updatedAt']);
+      expect(receipt.fields.map((field: { name: string }) => field.name)).toStrictEqual([
+        'id',
+        'createdAt',
+        'updatedAt'
+      ]);
 
       // Without x-domain/x-entity the schema key and the Imported domain are used.
       expect(imported.name).toBe('Imported');
@@ -279,7 +342,10 @@ describe('designer importers (JUM-469)', () => {
       expect(result.ok).toBe(true);
       expect(result.domains[0].name).toBe('Imported');
       expect(result.domains[0].entities[0].name).toBe('Legacy');
-      expect(result.domains[0].entities[0].fields[0]).toMatchObject({ name: 'ghost', type: 'string' });
+      expect(result.domains[0].entities[0].fields[0]).toMatchObject({
+        name: 'ghost',
+        type: 'string'
+      });
     });
 
     it('treats composition-only schemas as object contracts', () => {
@@ -315,8 +381,9 @@ describe('designer importers (JUM-469)', () => {
       });
 
       expect(result.ok).toBe(true);
-      expect(result.domains[0].entities.map((entity: { name: string }) => entity.name))
-        .toStrictEqual(['OneShape', 'AllShape', 'WithProps']);
+      expect(
+        result.domains[0].entities.map((entity: { name: string }) => entity.name)
+      ).toStrictEqual(['OneShape', 'AllShape', 'WithProps']);
     });
 
     it('normalizes the JUM-478 entity meta extension set back into meta', () => {
@@ -331,9 +398,15 @@ describe('designer importers (JUM-469)', () => {
               'x-aggregate-root': true,
               'x-invariants': ['total must be positive'],
               'x-rbac': { list: { roles: ['superadmin'] } },
-              'x-message-contracts': [{
-                id: 'contract-1', name: 'issued', type: 'event', channel: 'billing.issued', version: '1.0.0'
-              }],
+              'x-message-contracts': [
+                {
+                  id: 'contract-1',
+                  name: 'issued',
+                  type: 'event',
+                  channel: 'billing.issued',
+                  version: '1.0.0'
+                }
+              ],
               oneOf: [{ $ref: '#/components/schemas/Base' }, { $ref: 'common.yaml#Money' }],
               'x-external-refs': ['common.yaml#Money'],
               discriminator: { propertyName: 'kind' },
@@ -364,14 +437,16 @@ describe('designer importers (JUM-469)', () => {
           update: { roles: ['superadmin', 'admin'], tenantScoped: true },
           delete: { roles: ['superadmin', 'admin'], tenantScoped: true }
         },
-        contracts: [{
-          id: 'contract-1',
-          name: 'issued',
-          type: 'event',
-          channel: 'billing.issued',
-          version: '1.0.0',
-          payloadSchema: {}
-        }],
+        contracts: [
+          {
+            id: 'contract-1',
+            name: 'issued',
+            type: 'event',
+            channel: 'billing.issued',
+            version: '1.0.0',
+            payloadSchema: {}
+          }
+        ],
         oasComposition: {
           mode: 'oneOf',
           // Local refs strip the prefix; anything else crosses verbatim.
@@ -394,7 +469,10 @@ describe('designer importers (JUM-469)', () => {
         rbac: getDefaultRbacPolicy(),
         contracts: [],
         oasComposition: {
-          mode: '', refs: [], externalRefs: [], discriminator: ''
+          mode: '',
+          refs: [],
+          externalRefs: [],
+          discriminator: ''
         }
       });
     });
@@ -405,10 +483,16 @@ describe('designer importers (JUM-469)', () => {
         components: {
           schemas: {
             Billing_Invoice: {
-              type: 'object', 'x-domain': 'Billing', 'x-entity': 'Invoice', properties: { id: { type: 'string' } }
+              type: 'object',
+              'x-domain': 'Billing',
+              'x-entity': 'Invoice',
+              properties: { id: { type: 'string' } }
             },
             Catalog_Product: {
-              type: 'object', 'x-domain': 'Catalog', 'x-entity': 'Product', properties: { id: { type: 'string' } }
+              type: 'object',
+              'x-domain': 'Catalog',
+              'x-entity': 'Product',
+              properties: { id: { type: 'string' } }
             }
           }
         },
@@ -420,7 +504,11 @@ describe('designer importers (JUM-469)', () => {
             fromCardinality: '1',
             toCardinality: 'N'
           },
-          { name: 'ghost', fromSchema: 'Billing_Invoice', toSchema: 'RequestCreateBilling_Invoice' },
+          {
+            name: 'ghost',
+            fromSchema: 'Billing_Invoice',
+            toSchema: 'RequestCreateBilling_Invoice'
+          },
           { fromSchema: null, toSchema: 'Catalog_Product' }
         ]
       });
@@ -460,35 +548,54 @@ describe('designer importers (JUM-469)', () => {
       });
       expect(result.ok).toBe(true);
       // Only the entity contract survives; every port-object convention is skipped.
-      expect(result.domains[0].entities.map((entity: { name: string }) => entity.name))
-        .toStrictEqual(['User']);
+      expect(
+        result.domains[0].entities.map((entity: { name: string }) => entity.name)
+      ).toStrictEqual(['User']);
     });
 
     it('round-trips an exported OAS document back to equivalent fields', () => {
       expect.hasAssertions();
       const state = normalizeStatePayload({
-        domains: [{
-          id: 'domain-1',
-          name: 'Billing',
-          entities: [{
-            id: 'entity-1',
-            name: 'Invoice',
-            fields: [
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
               {
-                name: 'id', type: 'uuid', required: true, pk: true, unique: true
-              },
-              {
-                name: 'total', type: 'number', required: true, minimum: 0, maximum: 10
-              },
-              {
-                name: 'tags', type: 'array', itemsType: 'string', nullable: true
-              },
-              {
-                name: 'status', type: 'string', enum: ['open', 'paid'], pattern: '^[a-z]+$'
+                id: 'entity-1',
+                name: 'Invoice',
+                fields: [
+                  {
+                    name: 'id',
+                    type: 'uuid',
+                    required: true,
+                    pk: true,
+                    unique: true
+                  },
+                  {
+                    name: 'total',
+                    type: 'number',
+                    required: true,
+                    minimum: 0,
+                    maximum: 10
+                  },
+                  {
+                    name: 'tags',
+                    type: 'array',
+                    itemsType: 'string',
+                    nullable: true
+                  },
+                  {
+                    name: 'status',
+                    type: 'string',
+                    enum: ['open', 'paid'],
+                    pattern: '^[a-z]+$'
+                  }
+                ]
               }
             ]
-          }]
-        }],
+          }
+        ],
         relationships: []
       });
       const oas = buildOasDocument(state);
@@ -516,7 +623,7 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
     name: string,
     version: string,
     domain: Record<string, unknown>,
-    dependencies: Array<Record<string, string>> = []
+    dependencies: Record<string, string>[] = []
   ) => ({
     kind: 'domain-package',
     version: '2.0.0',
@@ -528,7 +635,7 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
   const installedDomain = (name: string, version: string, dependencies: string[] = []) => ({
     id: `domain-${name}`,
     name: `Domain_${name}`,
-    entities: [] as Array<Record<string, unknown>>,
+    entities: [] as Record<string, unknown>[],
     context: {
       packageName: name,
       packageVersion: version,
@@ -576,7 +683,9 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
       existing
     );
     expect(result.ok).toBe(true);
-    expect(result.warnings.some((warning: string) => warning.includes('Dependency cycle reported'))).toBe(true);
+    expect(
+      result.warnings.some((warning: string) => warning.includes('Dependency cycle reported'))
+    ).toBe(true);
   });
 
   it('merges a newer version of an installed package, stamping appended entities through the importer callback', () => {
@@ -584,15 +693,22 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
     const userEntity = {
       id: 'entity-user',
       name: 'User',
-      fields: [{
-        name: 'id', type: 'uuid', pk: true, required: true
-      }],
+      fields: [
+        {
+          name: 'id',
+          type: 'uuid',
+          pk: true,
+          required: true
+        }
+      ],
       meta: {}
     };
-    const existing = [{
-      ...installedDomain('p', '1.0.0'),
-      entities: [userEntity]
-    }];
+    const existing = [
+      {
+        ...installedDomain('p', '1.0.0'),
+        entities: [userEntity]
+      }
+    ];
     const result = buildDomainFromPackage(
       packageDocument('p', '1.1.0', {
         name: 'Domain_p',
@@ -600,15 +716,25 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
           {
             id: 'entity-user',
             name: 'User',
-            fields: [{
-              name: 'id', type: 'uuid', pk: true, required: true
-            }]
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                pk: true,
+                required: true
+              }
+            ]
           },
           {
             name: 'Order',
-            fields: [{
-              name: 'id', type: 'uuid', pk: true, required: true
-            }]
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                pk: true,
+                required: true
+              }
+            ]
           }
         ]
       }),
@@ -616,10 +742,14 @@ describe('package identity, graph warnings and importer-level merge (JUM-493)', 
     );
     expect(result.ok).toBe(true);
     expect(result.merged).toBe(true);
-    const order = result.domain.entities.find((entity: { name: string }) => entity.name === 'Order');
+    const order = result.domain.entities.find(
+      (entity: { name: string }) => entity.name === 'Order'
+    );
     expect(order).toBeDefined();
     expect(order.meta.provenance).toStrictEqual({ package: 'p', version: '1.1.0' });
-    expect(result.preview.some((item: { message: string }) => item.message.includes('Order'))).toBe(true);
+    expect(result.preview.some((item: { message: string }) => item.message.includes('Order'))).toBe(
+      true
+    );
   });
 });
 
@@ -641,7 +771,10 @@ describe('oAS composition and relation fallbacks (JUM-493)', () => {
       },
       'x-relations': [
         {
-          fromSchema: 'Billing_Invoice', toSchema: 'Billing_Receipt', fromCardinality: '1', toCardinality: 'N'
+          fromSchema: 'Billing_Invoice',
+          toSchema: 'Billing_Receipt',
+          fromCardinality: '1',
+          toCardinality: 'N'
         }
       ]
     });
@@ -674,9 +807,12 @@ describe('designer importer fallbacks (JUM-721)', () => {
   it('imports a package whose domain carries no context at all', () => {
     expect.hasAssertions();
 
-    const result = buildDomainFromPackage({
-      domain: { name: 'Legacy', entities: [{ name: 'Order', fields: [] }] }
-    }, []);
+    const result = buildDomainFromPackage(
+      {
+        domain: { name: 'Legacy', entities: [{ name: 'Order', fields: [] }] }
+      },
+      []
+    );
 
     expect(result.ok).toBe(true);
     expect(result.domain.context.packageDependencies).toStrictEqual([]);
@@ -688,10 +824,13 @@ describe('designer importer fallbacks (JUM-721)', () => {
 
     // Provenance is what the dependency graph is derived from. An entity whose
     // `meta` was absent must gain one rather than lose the stamp.
-    const result = buildDomainFromPackage({
-      package: { name: '@acme/orders', version: '1.2.3' },
-      domain: { name: 'Orders', entities: [{ name: 'Order', fields: [] }] }
-    }, []);
+    const result = buildDomainFromPackage(
+      {
+        package: { name: '@acme/orders', version: '1.2.3' },
+        domain: { name: 'Orders', entities: [{ name: 'Order', fields: [] }] }
+      },
+      []
+    );
 
     expect(result.ok).toBe(true);
     expect(result.domain.entities[0].meta.provenance).toMatchObject({
@@ -720,8 +859,9 @@ describe('designer importer fallbacks (JUM-721)', () => {
     const result = buildDomainsFromOas(document);
 
     expect(result.ok).toBe(true);
-    expect(result.domains[0].entities.map((entity: { name: string }) => entity.name))
-      .toStrictEqual(expect.arrayContaining(['Composed', 'Alternative']));
+    expect(result.domains[0].entities.map((entity: { name: string }) => entity.name)).toStrictEqual(
+      expect.arrayContaining(['Composed', 'Alternative'])
+    );
   });
 });
 
@@ -740,17 +880,20 @@ describe('buildDomainFromPackage id collision retry (JUM-617/JUM-821)', () => {
     // second candidate (draw 0.25) is free.
     const collidingCandidate = `domain-import-1-${(0.5).toString(36).slice(2, 8)}`;
     const free = `domain-import-1-${(0.25).toString(36).slice(2, 8)}`;
-    const randomSpy = jest.spyOn(Math, 'random')
-      .mockReturnValueOnce(0.5)
-      .mockReturnValue(0.25);
+    const randomSpy = jest.spyOn(Math, 'random').mockReturnValueOnce(0.5).mockReturnValue(0.25);
     try {
-      const result = buildDomainFromPackage({
-        domain: { id: 'installed-domain', name: 'Catalog', entities: [] }
-      }, [{
-        id: 'installed-domain',
-        name: 'Installed',
-        entities: [{ id: collidingCandidate }]
-      }]);
+      const result = buildDomainFromPackage(
+        {
+          domain: { id: 'installed-domain', name: 'Catalog', entities: [] }
+        },
+        [
+          {
+            id: 'installed-domain',
+            name: 'Installed',
+            entities: [{ id: collidingCandidate }]
+          }
+        ]
+      );
 
       expect(result.ok).toBe(true);
       expect(result.domain.id).toBe(free);

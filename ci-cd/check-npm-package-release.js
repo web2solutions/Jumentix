@@ -1,13 +1,12 @@
-#!/usr/bin/env node
 /* eslint-disable no-console */
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const ROOT = path.resolve(__dirname, '..');
-const PACKAGES_DIR = path.join(ROOT, 'packages');
 const REQUIRED_TOP_LEVEL_FILES = new Set(['package.json', 'README.md', 'LICENSE.md']);
 const PUBLIC_PACKAGE_NAMES = [
   '@jumentix/cana',
@@ -63,7 +62,8 @@ function run(command, args, cwd, options = {}) {
 }
 
 function discoverPublishablePackages(root = ROOT) {
-  const packageManifests = fs.readdirSync(path.join(root, 'packages'), { withFileTypes: true })
+  const packageManifests = fs
+    .readdirSync(path.join(root, 'packages'), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => path.join(root, 'packages', entry.name))
     .map((directory) => ({
@@ -71,12 +71,18 @@ function discoverPublishablePackages(root = ROOT) {
       manifest: JSON.parse(fs.readFileSync(path.join(directory, 'package.json'), 'utf8'))
     }));
   const unexpected = packageManifests
-    .filter(({ manifest }) => manifest.private !== true && !PUBLIC_PACKAGE_NAMES.includes(manifest.name))
+    .filter(
+      ({ manifest }) => manifest.private !== true && !PUBLIC_PACKAGE_NAMES.includes(manifest.name)
+    )
     .map(({ manifest }) => manifest.name);
   if (unexpected.length > 0) {
-    throw new Error(`Unexpected public npm packages: ${unexpected.join(', ')}. Update the release cohort policy first.`);
+    throw new Error(
+      `Unexpected public npm packages: ${unexpected.join(', ')}. Update the release cohort policy first.`
+    );
   }
-  const directories = new Map(packageManifests.map(({ directory, manifest }) => [manifest.name, directory]));
+  const directories = new Map(
+    packageManifests.map(({ directory, manifest }) => [manifest.name, directory])
+  );
   const missing = PUBLIC_PACKAGE_NAMES.filter((name) => !directories.has(name));
   if (missing.length > 0) throw new Error(`Missing public npm packages: ${missing.join(', ')}.`);
   return PUBLIC_PACKAGE_NAMES.map((name) => directories.get(name));
@@ -84,16 +90,27 @@ function discoverPublishablePackages(root = ROOT) {
 
 function validateManifest(manifest, directory) {
   const failures = [];
-  if (!PUBLIC_PACKAGE_NAMES.includes(manifest.name)) failures.push('is not approved for the public release cohort');
+  if (!PUBLIC_PACKAGE_NAMES.includes(manifest.name))
+    failures.push('is not approved for the public release cohort');
   if (!manifest.name?.startsWith('@jumentix/')) failures.push('must use the @jumentix scope');
   if (manifest.private === true) failures.push('must not be private');
-  if (manifest.publishConfig?.access !== 'public') failures.push('must set publishConfig.access to public');
-  if (!manifest.repository?.url?.includes('github.com/web2solutions/Jumentix')) failures.push('must declare the canonical repository');
-  if (manifest.repository?.directory !== path.relative(ROOT, directory)) failures.push('must declare its repository directory');
-  if (!manifest.homepage || !manifest.bugs?.url) failures.push('must declare homepage and issue tracker');
+  if (manifest.publishConfig?.access !== 'public')
+    failures.push('must set publishConfig.access to public');
+  if (!manifest.repository?.url?.includes('github.com/web2solutions/Jumentix'))
+    failures.push('must declare the canonical repository');
+  if (manifest.repository?.directory !== path.relative(ROOT, directory))
+    failures.push('must declare its repository directory');
+  if (!manifest.homepage || !manifest.bugs?.url)
+    failures.push('must declare homepage and issue tracker');
   if (manifest.license !== 'MIT') failures.push('must declare the MIT license');
-  if (!Array.isArray(manifest.files) || !manifest.files.includes('dist')) failures.push('must whitelist dist');
-  if (!manifest.scripts?.build || !manifest.scripts?.clean || !manifest.scripts?.prepublishOnly?.includes('bun run')) failures.push('must clean and build through Bun before publishing');
+  if (!Array.isArray(manifest.files) || !manifest.files.includes('dist'))
+    failures.push('must whitelist dist');
+  if (
+    !manifest.scripts?.build ||
+    !manifest.scripts?.clean ||
+    !manifest.scripts?.prepublishOnly?.includes('bun run')
+  )
+    failures.push('must clean and build through Bun before publishing');
   return failures;
 }
 
@@ -112,7 +129,8 @@ function assertTarballContents(manifest, packument) {
     throw new Error(`${manifest.name} tarball is missing required public artifacts`);
   }
   const forbidden = files.filter((file) => isForbiddenTarballPath(file));
-  if (forbidden.length > 0) throw new Error(`${manifest.name} tarball contains forbidden files: ${forbidden.join(', ')}`);
+  if (forbidden.length > 0)
+    throw new Error(`${manifest.name} tarball contains forbidden files: ${forbidden.join(', ')}`);
 }
 
 function buildAndPack(directory, tarballsDirectory) {
@@ -124,7 +142,11 @@ function buildAndPack(directory, tarballsDirectory) {
   run('bun', ['run', 'build'], directory, { stdio: 'inherit' });
   // bun pm pack rewrites workspace:* ranges to concrete versions in the packed
   // package.json; npm pack leaves workspace: protocol intact and breaks consumer install.
-  const output = run('bun', ['pm', 'pack', '--destination', tarballsDirectory, '--quiet'], directory);
+  const output = run(
+    'bun',
+    ['pm', 'pack', '--destination', tarballsDirectory, '--quiet'],
+    directory
+  );
   const packedLine = output
     .split('\n')
     .map((line) => line.trim())
@@ -146,7 +168,9 @@ function buildAndPack(directory, tarballsDirectory) {
     .map((entry) => entry.replace(/^package\//, ''));
   const packument = {
     filename: packedName,
-    files: listing.filter((entry) => entry && entry !== '.').map((entryPath) => ({ path: entryPath }))
+    files: listing
+      .filter((entry) => entry && entry !== '.')
+      .map((entryPath) => ({ path: entryPath }))
   };
   assertTarballContents(manifest, packument);
   // Fail closed if a packed dependency still carries the workspace protocol.
@@ -169,10 +193,29 @@ function buildAndPack(directory, tarballsDirectory) {
 }
 
 function smokeInstall(packages, consumerDirectory) {
-  fs.writeFileSync(path.join(consumerDirectory, 'package.json'), '{"private":true,"type":"module"}\n');
-  run('npm', ['install', '--ignore-scripts', '--no-package-lock', ...packages.map((entry) => entry.tarball)], consumerDirectory, { stdio: 'inherit' });
-  const imports = packages.flatMap((entry) => SMOKE_IMPORTS[entry.manifest.name] || [entry.manifest.name]);
-  run('node', ['--input-type=module', '--eval', `await Promise.all(${JSON.stringify(imports)}.map((specifier) => import(specifier)));`], consumerDirectory, { stdio: 'inherit' });
+  fs.writeFileSync(
+    path.join(consumerDirectory, 'package.json'),
+    '{"private":true,"type":"module"}\n'
+  );
+  run(
+    'npm',
+    ['install', '--ignore-scripts', '--no-package-lock', ...packages.map((entry) => entry.tarball)],
+    consumerDirectory,
+    { stdio: 'inherit' }
+  );
+  const imports = packages.flatMap(
+    (entry) => SMOKE_IMPORTS[entry.manifest.name] || [entry.manifest.name]
+  );
+  run(
+    'node',
+    [
+      '--input-type=module',
+      '--eval',
+      `await Promise.all(${JSON.stringify(imports)}.map((specifier) => import(specifier)));`
+    ],
+    consumerDirectory,
+    { stdio: 'inherit' }
+  );
 }
 
 function runReleaseCheck() {
@@ -182,9 +225,13 @@ function runReleaseCheck() {
     const consumerDirectory = path.join(temporaryDirectory, 'consumer');
     fs.mkdirSync(tarballsDirectory);
     fs.mkdirSync(consumerDirectory);
-    const packages = discoverPublishablePackages().map((directory) => buildAndPack(directory, tarballsDirectory));
+    const packages = discoverPublishablePackages().map((directory) =>
+      buildAndPack(directory, tarballsDirectory)
+    );
     smokeInstall(packages, consumerDirectory);
-    console.log(`[npm-release] verified ${packages.length} public package tarballs in an external consumer.`);
+    console.log(
+      `[npm-release] verified ${packages.length} public package tarballs in an external consumer.`
+    );
   } finally {
     fs.rmSync(temporaryDirectory, { recursive: true, force: true });
   }
@@ -193,10 +240,10 @@ function runReleaseCheck() {
 if (isEntryPoint(module)) runReleaseCheck();
 
 module.exports = {
-  PUBLIC_PACKAGE_NAMES,
-  discoverPublishablePackages,
-  validateManifest,
   assertTarballContents,
+  discoverPublishablePackages,
   isForbiddenTarballPath,
-  runReleaseCheck
+  PUBLIC_PACKAGE_NAMES,
+  runReleaseCheck,
+  validateManifest
 };

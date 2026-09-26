@@ -1,6 +1,7 @@
 import { useMDXComponents as getDocsMDXComponents } from 'nextra-theme-docs';
-import { CanaFrameworkPlayground } from './components/cana-framework/CanaFrameworkPlayground';
+
 import { CanaPlayground } from './components/cana/CanaPlayground';
+import { CanaFrameworkPlayground } from './components/cana-framework/CanaFrameworkPlayground';
 import { MDXMonacoPre } from './components/code/MDXMonacoPre';
 import { createMDXSourceBlockquote } from './components/code/MDXSourceBlockquote';
 import { DocsPlayground } from './components/docs-playground/DocsPlayground';

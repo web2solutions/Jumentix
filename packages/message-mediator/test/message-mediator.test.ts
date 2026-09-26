@@ -1,9 +1,10 @@
 import {
   BullMqMessageMediatorAdapter,
+  compileMessageMediator,
   InMemoryMessageMediatorAdapter,
-  RabbitMqMessageMediatorAdapter,
-  compileMessageMediator
+  RabbitMqMessageMediatorAdapter
 } from '../src';
+
 import type { IIntegrationEvent, IMessage, IMessageResponse } from '../src';
 
 /**
@@ -27,10 +28,12 @@ const message = (over: Partial<IMessage> = {}): IMessage => ({
   ...over
 });
 
-const answering = (result: unknown = { ok: true }) => async (): Promise<IMessageResponse> => ({
-  contract: 'orders.create',
-  result
-});
+const answering =
+  (result: unknown = { ok: true }) =>
+  async (): Promise<IMessageResponse> => ({
+    contract: 'orders.create',
+    result
+  });
 
 /** Runs `body` with the environment applied, and puts it back afterwards. */
 async function withEnvironment<T>(
@@ -38,7 +41,8 @@ async function withEnvironment<T>(
   body: () => T | Promise<T>
 ): Promise<T> {
   const previous = Object.keys(values).map((name): [string, string | undefined] => [
-    name, process.env[name]
+    name,
+    process.env[name]
   ]);
 
   for (const [name, value] of Object.entries(values)) {
@@ -63,11 +67,17 @@ describe('publishing events', () => {
     const mediator = new InMemoryMessageMediatorAdapter();
     const seen: string[] = [];
 
-    mediator.subscribe('order.created', () => { seen.push('first'); });
-    mediator.subscribe('order.created', () => { seen.push('second'); });
+    mediator.subscribe('order.created', () => {
+      seen.push('first');
+    });
+    mediator.subscribe('order.created', () => {
+      seen.push('second');
+    });
 
     await mediator.publish({
-      name: 'order.created', payload: {}, occurredAt: '2026-01-01T00:00:00.000Z'
+      name: 'order.created',
+      payload: {},
+      occurredAt: '2026-01-01T00:00:00.000Z'
     });
 
     expect(seen).toStrictEqual(['first', 'second']);
@@ -79,10 +89,14 @@ describe('publishing events', () => {
     const mediator = new InMemoryMessageMediatorAdapter();
     let other = 0;
 
-    mediator.subscribe('order.shipped', () => { other += 1; });
+    mediator.subscribe('order.shipped', () => {
+      other += 1;
+    });
 
     await mediator.publish({
-      name: 'order.created', payload: {}, occurredAt: '2026-01-01T00:00:00.000Z'
+      name: 'order.created',
+      payload: {},
+      occurredAt: '2026-01-01T00:00:00.000Z'
     });
 
     expect(other).toBe(0);
@@ -95,9 +109,13 @@ describe('publishing events', () => {
 
     // An event with no subscribers is normal, not an error: publishers are not
     // supposed to know who is listening.
-    await expect(mediator.publish({
-      name: 'nobody.listening', payload: {}, occurredAt: '2026-01-01T00:00:00.000Z'
-    })).resolves.toBeUndefined();
+    await expect(
+      mediator.publish({
+        name: 'nobody.listening',
+        payload: {},
+        occurredAt: '2026-01-01T00:00:00.000Z'
+      })
+    ).resolves.toBeUndefined();
   });
 
   it('passes the whole event through', async () => {
@@ -112,7 +130,9 @@ describe('publishing events', () => {
       metadata: { correlationId: 'c-1' }
     };
 
-    mediator.subscribe('order.created', (delivered) => { received.push(delivered); });
+    mediator.subscribe('order.created', (delivered) => {
+      received.push(delivered);
+    });
     await mediator.publish(event);
 
     expect(received).toStrictEqual([event]);
@@ -135,7 +155,9 @@ describe('publishing events', () => {
     // is blocked, and only becomes true once the publish resolves. A sleep
     // could only ever show that 10ms had passed.
     let releaseSubscriber: () => void = () => undefined;
-    const subscriberWork = new Promise<void>((resolve) => { releaseSubscriber = resolve; });
+    const subscriberWork = new Promise<void>((resolve) => {
+      releaseSubscriber = resolve;
+    });
 
     mediator.subscribe('order.created', async () => {
       await subscriberWork;
@@ -143,7 +165,9 @@ describe('publishing events', () => {
     });
 
     const publishing = mediator.publish({
-      name: 'order.created', payload: {}, occurredAt: '2026-01-01T00:00:00.000Z'
+      name: 'order.created',
+      payload: {},
+      occurredAt: '2026-01-01T00:00:00.000Z'
     });
 
     expect(done).toBe(false);
@@ -165,11 +189,17 @@ describe('publishing events', () => {
 
     const mediator = new InMemoryMessageMediatorAdapter();
 
-    mediator.subscribe('order.created', () => { throw new Error('listener failed'); });
+    mediator.subscribe('order.created', () => {
+      throw new Error('listener failed');
+    });
 
-    await expect(mediator.publish({
-      name: 'order.created', payload: {}, occurredAt: '2026-01-01T00:00:00.000Z'
-    })).rejects.toThrow('listener failed');
+    await expect(
+      mediator.publish({
+        name: 'order.created',
+        payload: {},
+        occurredAt: '2026-01-01T00:00:00.000Z'
+      })
+    ).rejects.toThrow('listener failed');
   });
 });
 
@@ -214,29 +244,40 @@ describe('bullMQ queue infrastructure readiness', () => {
         addedOptions.push(jobOptions);
         return { waitUntilFinished: finish };
       };
-      this.close = async () => { closed.push(`queue:${this.name}`); };
+      this.close = async () => {
+        closed.push(`queue:${this.name}`);
+      };
     }
 
-    function QueueEvents(this: {
-      name: string;
-      waitUntilReady: () => Promise<void>;
-      close: () => Promise<void>;
-    }, name: string) {
+    function QueueEvents(
+      this: {
+        name: string;
+        waitUntilReady: () => Promise<void>;
+        close: () => Promise<void>;
+      },
+      name: string
+    ) {
       this.name = name;
       ensureQueue(name);
       this.waitUntilReady = async () => {
         waitsByName[this.name].events += 1;
         await mutableReadinessByName[this.name].events;
       };
-      this.close = async () => { closed.push(`events:${this.name}`); };
+      this.close = async () => {
+        closed.push(`events:${this.name}`);
+      };
     }
 
-    function Worker(this: {
-      name: string;
-      processor: (job: unknown) => Promise<unknown>;
-      waitUntilReady: () => Promise<void>;
-      close: () => Promise<void>;
-    }, name: string, processor: (job: unknown) => Promise<unknown>) {
+    function Worker(
+      this: {
+        name: string;
+        processor: (job: unknown) => Promise<unknown>;
+        waitUntilReady: () => Promise<void>;
+        close: () => Promise<void>;
+      },
+      name: string,
+      processor: (job: unknown) => Promise<unknown>
+    ) {
       this.name = name;
       this.processor = processor;
       ensureQueue(name);
@@ -244,7 +285,9 @@ describe('bullMQ queue infrastructure readiness', () => {
         waitsByName[this.name].worker += 1;
         await mutableReadinessByName[this.name].worker;
       };
-      this.close = async () => { closed.push(`worker:${this.name}`); };
+      this.close = async () => {
+        closed.push(`worker:${this.name}`);
+      };
     }
 
     return {
@@ -264,10 +307,7 @@ describe('bullMQ queue infrastructure readiness', () => {
    * The integration suite proved the behaviour against a real Redis; these two
    * hold the invariants in place without one. Both failed before the fix.
    */
-  const withHarness = async (
-    harness: { module: unknown },
-    body: () => Promise<void>
-  ) => {
+  const withHarness = async (harness: { module: unknown }, body: () => Promise<void>) => {
     const original = BullMqMessageMediatorAdapter.importBullMq;
     BullMqMessageMediatorAdapter.importBullMq = async () => harness.module;
     try {
@@ -329,14 +369,17 @@ describe('bullMQ queue infrastructure readiness', () => {
         timeoutMs: 20000
       });
 
-      expect((response.error as Error).message)
-        .toBe('Message request failed: Missing key for job bull:q:1. isFinished');
+      expect((response.error as Error).message).toBe(
+        'Message request failed: Missing key for job bull:q:1. isFinished'
+      );
 
       await mediator.disconnect();
     });
 
     const timedOut = createBullMqHarness({}, async () => {
-      throw new Error('Job wait x timed out before finishing, no finish notification arrived after 20000ms (id=1)');
+      throw new Error(
+        'Job wait x timed out before finishing, no finish notification arrived after 20000ms (id=1)'
+      );
     });
 
     await withHarness(timedOut, async () => {
@@ -385,7 +428,9 @@ describe('bullMQ queue infrastructure readiness', () => {
       });
 
       eventsReady.resolve();
-      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
 
       expect({ added: harness.added, waits: harness.waitsByName[queueName] }).toStrictEqual({
         added: [],
@@ -431,10 +476,7 @@ describe('bullMQ queue infrastructure readiness', () => {
       eventsReady.reject(new Error('queue-events-not-ready'));
 
       await expect(first).rejects.toThrow('queue-events-not-ready');
-      expect(harness.closed).toStrictEqual([
-        `queue:${queueName}`,
-        `events:${queueName}`
-      ]);
+      expect(harness.closed).toStrictEqual([`queue:${queueName}`, `events:${queueName}`]);
 
       harness.closed.length = 0;
       harness.waitsByName[queueName] = { events: 0, worker: 0 };
@@ -443,8 +485,9 @@ describe('bullMQ queue infrastructure readiness', () => {
         worker: Promise.resolve()
       };
 
-      await expect(mediator.request(message(), { queueName, timeoutMs: 20000 }))
-        .resolves.toMatchObject({ result: 'ok' });
+      await expect(
+        mediator.request(message(), { queueName, timeoutMs: 20000 })
+      ).resolves.toMatchObject({ result: 'ok' });
 
       await mediator.disconnect();
     } finally {
@@ -482,11 +525,9 @@ describe('bullMQ queue infrastructure readiness', () => {
       workerReady.resolve();
 
       await expect(Promise.all([request, disconnect])).resolves.toBeDefined();
-      expect(harness.closed).toStrictEqual(expect.arrayContaining([
-        `queue:${queueName}`,
-        `events:${queueName}`,
-        `worker:${queueName}`
-      ]));
+      expect(harness.closed).toStrictEqual(
+        expect.arrayContaining([`queue:${queueName}`, `events:${queueName}`, `worker:${queueName}`])
+      );
     } finally {
       BullMqMessageMediatorAdapter.importBullMq = original;
     }
@@ -534,8 +575,9 @@ describe('routing a request to a handler', () => {
       routeKey: 'priority'
     });
 
-    await expect(mediator.request(message(), { routeKey: 'priority' }))
-      .resolves.toMatchObject({ result: 'by-route' });
+    await expect(mediator.request(message(), { routeKey: 'priority' })).resolves.toMatchObject({
+      result: 'by-route'
+    });
   });
 
   it('prefers a handler matched by queue name', async () => {
@@ -547,8 +589,9 @@ describe('routing a request to a handler', () => {
       queueName: 'batch'
     });
 
-    await expect(mediator.request(message(), { queueName: 'batch' }))
-      .resolves.toMatchObject({ result: 'by-queue' });
+    await expect(mediator.request(message(), { queueName: 'batch' })).resolves.toMatchObject({
+      result: 'by-queue'
+    });
   });
 
   it('prefers the route key over the queue name', async () => {
@@ -559,8 +602,9 @@ describe('routing a request to a handler', () => {
     mediator.registerHandler('b', answering('by-queue'), { queueName: 'batch' });
     mediator.registerHandler('orders.create', answering('by-contract'));
 
-    await expect(mediator.request(message(), { routeKey: 'priority', queueName: 'batch' }))
-      .resolves.toMatchObject({ result: 'by-route' });
+    await expect(
+      mediator.request(message(), { routeKey: 'priority', queueName: 'batch' })
+    ).resolves.toMatchObject({ result: 'by-route' });
   });
 
   it('falls back to the contract when the route key matches nothing', async () => {
@@ -569,8 +613,9 @@ describe('routing a request to a handler', () => {
     const mediator = new InMemoryMessageMediatorAdapter();
     mediator.registerHandler('orders.create', answering('by-contract'));
 
-    await expect(mediator.request(message(), { routeKey: 'no-such-route' }))
-      .resolves.toMatchObject({ result: 'by-contract' });
+    await expect(mediator.request(message(), { routeKey: 'no-such-route' })).resolves.toMatchObject(
+      { result: 'by-contract' }
+    );
   });
 
   it('falls back to the contract when the queue name matches nothing', async () => {
@@ -579,8 +624,9 @@ describe('routing a request to a handler', () => {
     const mediator = new InMemoryMessageMediatorAdapter();
     mediator.registerHandler('orders.create', answering('by-contract'));
 
-    await expect(mediator.request(message(), { queueName: 'no-such-queue' }))
-      .resolves.toMatchObject({ result: 'by-contract' });
+    await expect(
+      mediator.request(message(), { queueName: 'no-such-queue' })
+    ).resolves.toMatchObject({ result: 'by-contract' });
   });
 
   it('registers a handler under all three keys at once', async () => {
@@ -592,12 +638,13 @@ describe('routing a request to a handler', () => {
       queueName: 'batch'
     });
 
-    await expect(mediator.request(message(), { routeKey: 'priority' }))
-      .resolves.toMatchObject({ result: 'the-one' });
-    await expect(mediator.request(message(), { queueName: 'batch' }))
-      .resolves.toMatchObject({ result: 'the-one' });
-    await expect(mediator.request(message()))
-      .resolves.toMatchObject({ result: 'the-one' });
+    await expect(mediator.request(message(), { routeKey: 'priority' })).resolves.toMatchObject({
+      result: 'the-one'
+    });
+    await expect(mediator.request(message(), { queueName: 'batch' })).resolves.toMatchObject({
+      result: 'the-one'
+    });
+    await expect(mediator.request(message())).resolves.toMatchObject({ result: 'the-one' });
   });
 
   it('replaces a handler registered twice for the same contract', async () => {
@@ -651,7 +698,9 @@ describe('when a request cannot be served', () => {
     expect.hasAssertions();
 
     const mediator = new InMemoryMessageMediatorAdapter();
-    mediator.registerHandler('orders.create', () => { throw new Error('handler failed'); });
+    mediator.registerHandler('orders.create', () => {
+      throw new Error('handler failed');
+    });
 
     const response = await mediator.request(message());
 
@@ -667,8 +716,9 @@ describe('when a request cannot be served', () => {
       throw new Error('handler rejected');
     });
 
-    await expect(mediator.request(message()))
-      .resolves.toMatchObject({ error: new Error('handler rejected') });
+    await expect(mediator.request(message())).resolves.toMatchObject({
+      error: new Error('handler rejected')
+    });
   });
 });
 
@@ -716,7 +766,8 @@ describe('the response the caller gets back', () => {
 
     const mediator = new InMemoryMessageMediatorAdapter();
     mediator.registerHandler('orders.create', () => ({
-      contract: 'orders.create', result: 'sync'
+      contract: 'orders.create',
+      result: 'sync'
     }));
 
     await expect(mediator.request(message())).resolves.toMatchObject({ result: 'sync' });
@@ -746,8 +797,9 @@ describe('request timeouts', () => {
     const mediator = new InMemoryMessageMediatorAdapter();
     mediator.registerHandler('orders.create', answering('in-time'));
 
-    await expect(mediator.request(message(), { timeoutMs: 1000 }))
-      .resolves.toMatchObject({ result: 'in-time' });
+    await expect(mediator.request(message(), { timeoutMs: 1000 })).resolves.toMatchObject({
+      result: 'in-time'
+    });
   });
 
   /**
@@ -755,42 +807,48 @@ describe('request timeouts', () => {
    * waits for a slow handler and one that leaves a pending timer behind for
    * every request it ever served.
    */
-  it.each([[undefined], [0], [-1]])('waits indefinitely when the timeout is %p', async (
-    timeoutMs: number | undefined
-  ) => {
-    expect.hasAssertions();
+  it.each([[undefined], [0], [-1]])(
+    'waits indefinitely when the timeout is %p',
+    async (timeoutMs: number | undefined) => {
+      expect.hasAssertions();
 
-    const mediator = new InMemoryMessageMediatorAdapter();
-    // JUM-679: held open rather than slept through. "Waits indefinitely" is
-    // shown by the request still being pending while the handler is blocked —
-    // a 30ms sleep only showed that it waited 30ms, which every timeout does.
-    let releaseHandler: () => void = () => undefined;
-    const handlerWork = new Promise<void>((resolve) => { releaseHandler = resolve; });
-    mediator.registerHandler('orders.create', async () => {
-      await handlerWork;
-      return { contract: 'orders.create', result: 'slow but fine' };
-    });
+      const mediator = new InMemoryMessageMediatorAdapter();
+      // JUM-679: held open rather than slept through. "Waits indefinitely" is
+      // shown by the request still being pending while the handler is blocked —
+      // a 30ms sleep only showed that it waited 30ms, which every timeout does.
+      let releaseHandler: () => void = () => undefined;
+      const handlerWork = new Promise<void>((resolve) => {
+        releaseHandler = resolve;
+      });
+      mediator.registerHandler('orders.create', async () => {
+        await handlerWork;
+        return { contract: 'orders.create', result: 'slow but fine' };
+      });
 
-    const pending = mediator.request(message(), { timeoutMs });
-    let settled = false;
-    pending.then(() => { settled = true; }).catch(() => undefined);
-    await Promise.resolve();
+      const pending = mediator.request(message(), { timeoutMs });
+      let settled = false;
+      pending
+        .then(() => {
+          settled = true;
+        })
+        .catch(() => undefined);
+      await Promise.resolve();
 
-    expect(settled).toBe(false);
+      expect(settled).toBe(false);
 
-    releaseHandler();
+      releaseHandler();
 
-    await expect(pending).resolves.toMatchObject({ result: 'slow but fine' });
-  });
+      await expect(pending).resolves.toMatchObject({ result: 'slow but fine' });
+    }
+  );
 });
 
 describe('compiling a mediator', () => {
   it('builds the in-memory adapter by default', async () => {
     expect.hasAssertions();
 
-    const mediator = await withEnvironment(
-      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: undefined },
-      () => compileMessageMediator()
+    const mediator = await withEnvironment({ JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: undefined }, () =>
+      compileMessageMediator()
     );
 
     expect(mediator).toBeInstanceOf(InMemoryMessageMediatorAdapter);
@@ -801,9 +859,8 @@ describe('compiling a mediator', () => {
     async (adapter: string) => {
       expect.hasAssertions();
 
-      const mediator = await withEnvironment(
-        { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter },
-        () => compileMessageMediator()
+      const mediator = await withEnvironment({ JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter }, () =>
+        compileMessageMediator()
       );
 
       expect(mediator).toBeInstanceOf(InMemoryMessageMediatorAdapter);
@@ -813,13 +870,11 @@ describe('compiling a mediator', () => {
   it('hands out a fresh in-memory mediator each time', async () => {
     expect.hasAssertions();
 
-    const first = await withEnvironment(
-      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory' },
-      () => compileMessageMediator()
+    const first = await withEnvironment({ JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory' }, () =>
+      compileMessageMediator()
     );
-    const second = await withEnvironment(
-      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory' },
-      () => compileMessageMediator()
+    const second = await withEnvironment({ JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'inmemory' }, () =>
+      compileMessageMediator()
     );
 
     // Not a singleton: two applications in one process must not share a
@@ -827,18 +882,22 @@ describe('compiling a mediator', () => {
     expect(first).not.toBe(second);
   });
 
-  it.each(['rabbitmq', 'rabbit', 'RabbitMQ'])('builds the RabbitMQ adapter for %p', async (
-    adapter: string
-  ) => {
-    expect.hasAssertions();
+  it.each(['rabbitmq', 'rabbit', 'RabbitMQ'])(
+    'builds the RabbitMQ adapter for %p',
+    async (adapter: string) => {
+      expect.hasAssertions();
 
-    const mediator = await withEnvironment(
-      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter, JUMENTIX_RABBITMQ_URL: 'amqp://127.0.0.1:5672' },
-      () => compileMessageMediator()
-    );
+      const mediator = await withEnvironment(
+        {
+          JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter,
+          JUMENTIX_RABBITMQ_URL: 'amqp://127.0.0.1:5672'
+        },
+        () => compileMessageMediator()
+      );
 
-    expect(mediator).toBeInstanceOf(RabbitMqMessageMediatorAdapter);
-  });
+      expect(mediator).toBeInstanceOf(RabbitMqMessageMediatorAdapter);
+    }
+  );
 
   /**
    * RabbitMQ with no URL must fail at startup rather than at the first message.
@@ -848,24 +907,28 @@ describe('compiling a mediator', () => {
   it('refuses to build the RabbitMQ adapter with no url', async () => {
     expect.hasAssertions();
 
-    await expect(withEnvironment(
-      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'rabbitmq', JUMENTIX_RABBITMQ_URL: undefined },
-      () => compileMessageMediator()
-    )).rejects.toThrow('JUMENTIX_RABBITMQ_URL is required when JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq');
-  });
-
-  it.each(['bullmq', 'bull', 'BullMQ'])('builds the BullMQ adapter for %p', async (
-    adapter: string
-  ) => {
-    expect.hasAssertions();
-
-    const mediator = await withEnvironment(
-      { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter },
-      () => compileMessageMediator()
+    await expect(
+      withEnvironment(
+        { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'rabbitmq', JUMENTIX_RABBITMQ_URL: undefined },
+        () => compileMessageMediator()
+      )
+    ).rejects.toThrow(
+      'JUMENTIX_RABBITMQ_URL is required when JUMENTIX_MESSAGE_MEDIATOR_ADAPTER=rabbitmq'
     );
-
-    expect(mediator).toBeInstanceOf(BullMqMessageMediatorAdapter);
   });
+
+  it.each(['bullmq', 'bull', 'BullMQ'])(
+    'builds the BullMQ adapter for %p',
+    async (adapter: string) => {
+      expect.hasAssertions();
+
+      const mediator = await withEnvironment({ JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: adapter }, () =>
+        compileMessageMediator()
+      );
+
+      expect(mediator).toBeInstanceOf(BullMqMessageMediatorAdapter);
+    }
+  );
 });
 
 /**
@@ -879,27 +942,39 @@ describe('compiling a mediator', () => {
  * services up (Req 110 / 118) — not excluded by an istanbul ignore.
  */
 describe('broker configuration', () => {
-  const optionsOf = (mediator: unknown) => (mediator as unknown as {
-    options: {
-      url?: string;
-      exchangeName?: string;
-      defaultRequestQueue?: string;
-      prefetch?: number;
-      connection?: {
-        host?: string; port?: number; username?: string; password?: string; db?: number;
-      };
-    };
-  }).options;
+  const optionsOf = (mediator: unknown) =>
+    (
+      mediator as unknown as {
+        options: {
+          url?: string;
+          exchangeName?: string;
+          defaultRequestQueue?: string;
+          prefetch?: number;
+          connection?: {
+            host?: string;
+            port?: number;
+            username?: string;
+            password?: string;
+            db?: number;
+          };
+        };
+      }
+    ).options;
 
-  const rabbit = (env: Record<string, string | undefined>) => withEnvironment(
-    { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'rabbitmq', JUMENTIX_RABBITMQ_URL: 'amqp://127.0.0.1:5672', ...env },
-    () => compileMessageMediator()
-  );
+  const rabbit = (env: Record<string, string | undefined>) =>
+    withEnvironment(
+      {
+        JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'rabbitmq',
+        JUMENTIX_RABBITMQ_URL: 'amqp://127.0.0.1:5672',
+        ...env
+      },
+      () => compileMessageMediator()
+    );
 
-  const bull = (env: Record<string, string | undefined>) => withEnvironment(
-    { JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'bullmq', ...env },
-    () => compileMessageMediator()
-  );
+  const bull = (env: Record<string, string | undefined>) =>
+    withEnvironment({ JUMENTIX_MESSAGE_MEDIATOR_ADAPTER: 'bullmq', ...env }, () =>
+      compileMessageMediator()
+    );
 
   it('passes the RabbitMQ url, exchange and queue through', async () => {
     expect.hasAssertions();
@@ -952,7 +1027,11 @@ describe('broker configuration', () => {
 
     expect(optionsOf(mediator)).toMatchObject({
       connection: {
-        host: 'redis.internal', port: 6380, username: 'worker', password: 'secret', db: 3
+        host: 'redis.internal',
+        port: 6380,
+        username: 'worker',
+        password: 'secret',
+        db: 3
       },
       defaultRequestQueue: 'jobs'
     });
@@ -976,7 +1055,9 @@ describe('broker configuration', () => {
     });
 
     expect(optionsOf(mediator).connection).toMatchObject({
-      host: 'shared.internal', port: 6381, password: 'shared-secret'
+      host: 'shared.internal',
+      port: 6381,
+      password: 'shared-secret'
     });
   });
 
@@ -991,7 +1072,8 @@ describe('broker configuration', () => {
     });
 
     expect(optionsOf(mediator).connection).toMatchObject({
-      host: 'bull.internal', port: 6390
+      host: 'bull.internal',
+      port: 6390
     });
   });
 

@@ -1,13 +1,10 @@
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import {
-  resolveGrpcProtoPath as resolveServerGrpcProtoPath
-} from '@src/interface/gRPC/resolveGrpcProtoPath';
-import {
-  resolveGrpcProtoPath as resolveSdkGrpcProtoPath
-} from '@jumentix/sdk-grpc-client';
+import { resolveGrpcProtoPath as resolveSdkGrpcProtoPath } from '@jumentix/sdk-grpc-client';
+
+import { resolveGrpcProtoPath as resolveServerGrpcProtoPath } from '@src/interface/gRPC/resolveGrpcProtoPath';
 
 describe('grpc proto path resolution', () => {
   const temporaryDirectories: string[] = [];
@@ -27,9 +24,7 @@ describe('grpc proto path resolution', () => {
   it('resolves the repository-owned proto from source and compiled module locations', () => {
     expect.hasAssertions();
     const canonicalPath = path.resolve('spec/asyncapi/async-api.proto');
-    const compiledModuleDirectory = path.resolve(
-      '.build/apps/backend-template/src/interface/gRPC'
-    );
+    const compiledModuleDirectory = path.resolve('.build/apps/backend-template/src/interface/gRPC');
 
     expect(resolveServerGrpcProtoPath()).toBe(canonicalPath);
     expect(resolveServerGrpcProtoPath(canonicalPath)).toBe(canonicalPath);

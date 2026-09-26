@@ -8,9 +8,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { discoverRoutes } from './discover-routes.mjs';
+
+import discoverRoutes from './discover-routes.mjs';
 
 const websiteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+const collectPageFiles = (dir) =>
+  fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const absolute = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name.startsWith('_') || entry.name.startsWith('.')) return [];
+      return collectPageFiles(absolute);
+    }
+    return /^page\.(tsx|jsx|mdx)$/.test(entry.name) ? [absolute] : [];
+  });
 
 describe('website route discovery (JUM-158)', () => {
   const routes = discoverRoutes();
@@ -37,7 +48,7 @@ describe('website route discovery (JUM-158)', () => {
 
     // `/docs/[[...mdxPath]]` is a pattern. Visiting it proves nothing, and a
     // sweep that "passes" on one is measuring the 404 page.
-    const patterns = routes.filter((route) => route.includes('[') || route.includes(']'));
+    const patterns = routes.filter((route) => /[[\]]/.test(route));
 
     expect(patterns).toStrictEqual([]);
   });
@@ -57,19 +68,7 @@ describe('website route discovery (JUM-158)', () => {
 
     // Compared against the tree rather than a list: a page added without a
     // route here is exactly the drift this test exists to catch.
-    const pageFiles = [];
-    const walk = (dir) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const absolute = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          if (entry.name.startsWith('_') || entry.name.startsWith('.')) continue;
-          walk(absolute);
-        } else if (/^page\.(tsx|jsx|mdx)$/.test(entry.name)) {
-          pageFiles.push(absolute);
-        }
-      }
-    };
-    walk(path.join(websiteRoot, 'app'));
+    const pageFiles = collectPageFiles(path.join(websiteRoot, 'app'));
 
     const routableStatic = pageFiles.filter(
       (file) => !path.relative(path.join(websiteRoot, 'app'), file).includes('[')

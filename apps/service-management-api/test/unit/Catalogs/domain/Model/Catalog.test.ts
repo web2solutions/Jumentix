@@ -1,5 +1,5 @@
 /* eslint-disable jest/max-expects */
-import { Catalog } from '@service-management-api/modules/Catalogs/domain/Model/Catalog';
+import Catalog from '@service-management-api/modules/Catalogs/domain/Model/Catalog';
 
 /**
  * Unit suite for the shared-catalog aggregate (JUM-491). The model owns the
@@ -25,14 +25,16 @@ describe('catalog domain model', () => {
 
   it('rejects an empty name', () => {
     expect.hasAssertions();
-    expect(() => new Catalog({ organization: 'org-1', name: '', design: {} }))
-      .toThrow('name can not be empty');
+    expect(() => new Catalog({ organization: 'org-1', name: '', design: {} })).toThrow(
+      'name can not be empty'
+    );
   });
 
   it('rejects an empty organization', () => {
     expect.hasAssertions();
-    expect(() => new Catalog({ organization: '', name: 'Billing', design: {} }))
-      .toThrow('organization can not be empty');
+    expect(() => new Catalog({ organization: '', name: 'Billing', design: {} })).toThrow(
+      'organization can not be empty'
+    );
   });
 
   it('bumpVersion increments the token and stamps the actor', () => {
@@ -93,7 +95,9 @@ describe('catalog domain model', () => {
   it('rejects renaming to an empty name', () => {
     expect.hasAssertions();
     const catalog = new Catalog({ organization: 'org-1', name: 'Billing', design: {} });
-    expect(() => { catalog.name = ''; }).toThrow('name can not be empty');
+    expect(() => {
+      catalog.name = '';
+    }).toThrow('name can not be empty');
   });
 
   it('accepts a null tombstone through the inherited BaseModel setter', () => {

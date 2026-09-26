@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Flake quarantine helper (JUM-499).
@@ -8,8 +7,9 @@
  *   bun ci-cd/quarantine-flake.js --path <suite> --reason "<text>" [--issue JUM-123]
  *   LINEAR_API_KEY / ../.linear used when --issue omitted and --create-issue is set.
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 // JUM-627: one copy of the credential reader and the transport, shared with
 // check-pr-governance.js.
@@ -19,17 +19,29 @@ function parseArgs(argv) {
   const out = { createIssue: false };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === '--path') out.path = argv[++i];
-    else if (arg === '--reason') out.reason = argv[++i];
-    else if (arg === '--issue') out.issue = argv[++i];
-    else if (arg === '--create-issue') out.createIssue = true;
-    else if (arg === '--project') out.project = argv[++i];
+    if (arg === '--path') {
+      i += 1;
+      out.path = argv[i];
+    } else if (arg === '--reason') {
+      i += 1;
+      out.reason = argv[i];
+    } else if (arg === '--issue') {
+      i += 1;
+      out.issue = argv[i];
+    } else if (arg === '--create-issue') out.createIssue = true;
+    else if (arg === '--project') {
+      i += 1;
+      out.project = argv[i];
+    }
   }
   return out;
 }
 
 async function createLinearIssue(apiKey, { title, description, projectId }) {
-  const teamData = await linearRequest(apiKey, 'query { teams(filter: { key: { eq: "JUM" } }) { nodes { id } } }');
+  const teamData = await linearRequest(
+    apiKey,
+    'query { teams(filter: { key: { eq: "JUM" } }) { nodes { id } } }'
+  );
   const teamId = teamData.teams.nodes[0]?.id;
   if (!teamId) throw new Error('JUM team not found');
   const data = await linearRequest(
@@ -53,15 +65,18 @@ async function main() {
   const root = path.resolve(__dirname, '..');
   const args = parseArgs(process.argv);
   if (!args.path || !args.reason) {
-    console.error('Usage: bun ci-cd/quarantine-flake.js --path <suite> --reason "<text>" [--issue JUM-n|--create-issue]');
-    process.exit(1);
+    console.error(
+      'Usage: bun ci-cd/quarantine-flake.js --path <suite> --reason "<text>" [--issue JUM-n|--create-issue]'
+    );
+    process.exitCode = 1;
+    return;
   }
 
   const manifestPath = path.join(root, 'test-map.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   manifest.quarantine = Array.isArray(manifest.quarantine) ? manifest.quarantine : [];
 
-  let issue = args.issue;
+  let { issue } = args;
   if (!issue && args.createIssue) {
     const apiKey = readLinearKey(root);
     if (!apiKey) throw new Error('Missing Linear API key for --create-issue');
@@ -100,7 +115,7 @@ async function main() {
 if (isEntryPoint(module)) {
   main().catch((error) => {
     console.error('[quarantine]', error.message || error);
-    process.exit(1);
+    process.exitCode = 1;
   });
 }
 

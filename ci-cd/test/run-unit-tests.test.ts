@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import path from 'node:path';
 
 /**
@@ -31,7 +30,10 @@ const manifest = {
   suites: [
     { path: 'apps/a/test/unit/plain.test.ts', type: 'unit', runner: 'bun' },
     {
-      path: 'apps/a/test/unit/pinned.test.ts', type: 'unit', runner: 'node', reason: 'why'
+      path: 'apps/a/test/unit/pinned.test.ts',
+      type: 'unit',
+      runner: 'node',
+      reason: 'why'
     },
     { path: 'apps/a/test/unit/flaky.test.ts', type: 'unit', runner: 'bun' },
     { path: 'apps/a/test/integration/x.test.ts', type: 'integration', runner: 'bun' }
@@ -163,9 +165,9 @@ describe('runBunUnit', () => {
     });
 
     expect(status).toBe(0);
-    expect(calls).toStrictEqual([[
-      'bun', 'test', '--conditions=development', '--isolate', 'apps/a/test/unit/plain.test.ts'
-    ]]);
+    expect(calls).toStrictEqual([
+      ['bun', 'test', '--conditions=development', '--isolate', 'apps/a/test/unit/plain.test.ts']
+    ]);
   });
 });
 
@@ -204,11 +206,17 @@ describe('runUnitTests', () => {
    */
   /** The three runners, replaced so the assertion is about how they compose. */
   function wiring(statuses: { bun?: number; node?: number; reportOnly?: number } = {}) {
-    const ran: Record<string, string[]> = {};
+    const ran: Record<string, string[] | undefined> = {};
     return {
       ran,
-      runBunUnit: (suites: string[]) => { ran.bun = suites; return statuses.bun ?? 0; },
-      runNodeUnit: (suites: string[]) => { ran.node = suites; return statuses.node ?? 0; },
+      runBunUnit: (suites: string[]) => {
+        ran.bun = suites;
+        return statuses.bun ?? 0;
+      },
+      runNodeUnit: (suites: string[]) => {
+        ran.node = suites;
+        return statuses.node ?? 0;
+      },
       runReportOnlyUnit: (suites: string[]) => {
         ran.reportOnly = suites;
         return statuses.reportOnly ?? 0;
@@ -221,7 +229,10 @@ describe('runUnitTests', () => {
 
     const wired = wiring({ reportOnly: 1 });
     const status = runUnitTests({
-      manifest, env: ciNode, root: repoRoot, ...wired
+      manifest,
+      env: ciNode,
+      root: repoRoot,
+      ...wired
     });
 
     expect(status).toBe(0);
@@ -232,10 +243,14 @@ describe('runUnitTests', () => {
   it('still fails when a gating suite fails', () => {
     expect.hasAssertions();
 
-    expect(runUnitTests({
-      manifest, env: ciNode, root: repoRoot, ...wiring({ node: 1 })
-    }))
-      .toBe(1);
+    expect(
+      runUnitTests({
+        manifest,
+        env: ciNode,
+        root: repoRoot,
+        ...wiring({ node: 1 })
+      })
+    ).toBe(1);
   });
 
   it('stops at the bun partition rather than reporting a later status', () => {
@@ -243,9 +258,14 @@ describe('runUnitTests', () => {
 
     const wired = wiring({ bun: 1 });
 
-    expect(runUnitTests({
-      manifest, env: ciNode, root: repoRoot, ...wired
-    })).toBe(1);
+    expect(
+      runUnitTests({
+        manifest,
+        env: ciNode,
+        root: repoRoot,
+        ...wired
+      })
+    ).toBe(1);
     // A failing bun run short-circuits: the node partition never ran, so its
     // status cannot mask the failure.
     expect(wired.ran.node).toBeUndefined();

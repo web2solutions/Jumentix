@@ -1,6 +1,7 @@
 import { plugin } from 'bun';
-import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc';
 import { readFileSync } from 'node:fs';
+
+import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc';
 
 /**
  * Loads `.vue` single-file components under bun:test (JUM-776). Bun has no

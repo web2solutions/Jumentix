@@ -5,7 +5,7 @@ import NotificationCenter from '@/shell/NotificationCenter.vue';
 import OnlineOfflineWidget from '@/shell/OnlineOfflineWidget.vue';
 import { registerToolbarWidget } from '@/shell/toolbarWidgets';
 
-export const registerShellToolbarWidgets = (): void => {
+const registerShellToolbarWidgets = (): void => {
   registerToolbarWidget({
     id: 'notifications',
     component: NotificationCenter,
@@ -37,3 +37,5 @@ export const registerShellToolbarWidgets = (): void => {
     order: 30
   });
 };
+
+export default registerShellToolbarWidgets;

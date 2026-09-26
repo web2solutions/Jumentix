@@ -1,28 +1,24 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 // Imported rather than required: an import makes this a module. Without one,
 // TypeScript treats the file as a global script and these two names collide with
 // the same declarations in check-workspace-boundaries.test.ts — a TS2451 that
 // surfaces only when both files are in one program, so it passes file-by-file
 // and fails the CI gate, which compiles the whole set.
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const {
-  assertAcyclic,
-  outwardClosure,
-  readTestMap,
-  validateTestMap
-} = require('../lib/test-map');
-const { createLayerAwarePlan, matchGlob, resolveAlias } = require('../lib/layer-resolver');
 const { buildGateEvidence, validateGateEvidence } = require('../lib/gate-evidence');
+const { createLayerAwarePlan, matchGlob, resolveAlias } = require('../lib/layer-resolver');
+const { assertAcyclic, outwardClosure, readTestMap, validateTestMap } = require('../lib/test-map');
 
 describe('hexagonal test pyramid libraries', () => {
   const manifest = {
     schemaVersion: 1,
     layers: {
       domain: { dependsOn: [], sourceGlobs: ['apps/backend-template/src/modules/*/domain/**'] },
-      application: { dependsOn: ['domain'], sourceGlobs: ['apps/backend-template/src/modules/*/application/**'] },
+      application: {
+        dependsOn: ['domain'],
+        sourceGlobs: ['apps/backend-template/src/modules/*/application/**']
+      },
       tooling: { dependsOn: [], sourceGlobs: ['ci-cd/**'], kind: 'non-hexagonal' }
     },
     suites: [
@@ -50,22 +46,27 @@ describe('hexagonal test pyramid libraries', () => {
 
   it('rejects cyclic dependsOn graphs', () => {
     expect.hasAssertions();
-    expect(() => assertAcyclic({
-      layers: {
-        a: { dependsOn: ['b'] },
-        b: { dependsOn: ['a'] }
-      }
-    })).toThrow(/cycle/i);
+    expect(() =>
+      assertAcyclic({
+        layers: {
+          a: { dependsOn: ['b'] },
+          b: { dependsOn: ['a'] }
+        }
+      })
+    ).toThrow(/cycle/i);
   });
 
   it('resolves path aliases used by the dependency graph', () => {
     expect.hasAssertions();
-    expect(resolveAlias('@src/modules/Users/domain/Model/User', manifest.pathAliases))
-      .toBe('apps/backend-template/src/modules/Users/domain/Model/User');
-    expect(matchGlob(
-      'apps/backend-template/src/modules/Users/domain/Model/User.ts',
-      'apps/backend-template/src/modules/*/domain/**'
-    )).toBe(true);
+    expect(resolveAlias('@src/modules/Users/domain/Model/User', manifest.pathAliases)).toBe(
+      'apps/backend-template/src/modules/Users/domain/Model/User'
+    );
+    expect(
+      matchGlob(
+        'apps/backend-template/src/modules/Users/domain/Model/User.ts',
+        'apps/backend-template/src/modules/*/domain/**'
+      )
+    ).toBe(true);
   });
 
   it('builds a layer-aware plan for a domain source change', () => {
@@ -75,9 +76,7 @@ describe('hexagonal test pyramid libraries', () => {
       {
         manifest,
         root: path.resolve(__dirname, '../..'),
-        graph: new Map([
-          ['apps/backend-template/src/modules/Users/domain/Model/User.ts', []]
-        ])
+        graph: new Map([['apps/backend-template/src/modules/Users/domain/Model/User.ts', []]])
       }
     );
     expect(plan.type).toBe('layer-aware');
@@ -98,7 +97,9 @@ describe('hexagonal test pyramid libraries', () => {
         selectedLayers: ['domain'],
         notRunLayers: ['tooling'],
         reasons: {},
-        suites: [{ path: 'apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts' }],
+        suites: [
+          { path: 'apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts' }
+        ],
         unitSuites: ['apps/backend-template/test/unit/modules/Users/domain/Model/User.test.ts'],
         integrationScripts: []
       },
@@ -121,8 +122,8 @@ describe('hexagonal test pyramid libraries', () => {
 
   it('resolves local Bun vs CI Node runtimes (Req 106)', () => {
     expect.hasAssertions();
-    // eslint-disable-next-line global-require
-    const { resolveTestRuntime, effectiveRunner } = require('../lib/test-runtime');
+
+    const { effectiveRunner, resolveTestRuntime } = require('../lib/test-runtime');
     expect(resolveTestRuntime({})).toBe('bun');
     expect(resolveTestRuntime({ CI: 'true' })).toBe('node');
     expect(resolveTestRuntime({ JUMENTIX_TEST_RUNTIME: 'node' })).toBe('node');
@@ -209,11 +210,12 @@ describe('service-management selection (JUM-472)', () => {
     sourceRoots: []
   };
 
-  const planFor = (files: string[]) => createLayerAwarePlan(files, {
-    manifest: smManifest,
-    root: path.resolve(__dirname, '../..'),
-    graph: new Map()
-  });
+  const planFor = (files: string[]) =>
+    createLayerAwarePlan(files, {
+      manifest: smManifest,
+      root: path.resolve(__dirname, '../..'),
+      graph: new Map()
+    });
 
   it('selects exactly the designer suites for a designer SPA change', () => {
     expect.hasAssertions();
@@ -263,11 +265,13 @@ describe('service-management selection (JUM-472)', () => {
     // arrayContaining is the point: a contract-shape change selects the whole
     // dependent pyramid; the claim here is that the SM layers are inside it.
     // eslint-disable-next-line jest/prefer-strict-equal -- asymmetric matcher, see above
-    expect(plan.selectedLayers).toEqual(expect.arrayContaining([
-      'contracts',
-      'service-management/server',
-      'service-management/designer'
-    ]));
+    expect(plan.selectedLayers).toEqual(
+      expect.arrayContaining([
+        'contracts',
+        'service-management/server',
+        'service-management/designer'
+      ])
+    );
     expect(plan.integrationScripts).toContain('test:integration:service-management');
   });
 });
@@ -288,11 +292,12 @@ describe('service-management selection (JUM-472)', () => {
 describe('browser-harness selection (JUM-622, JUM-623)', () => {
   const repoRoot = path.resolve(__dirname, '../..');
   const realManifest = readTestMap(path.join(repoRoot, 'test-map.json'));
-  const planFor = (files: string[]) => createLayerAwarePlan(files, {
-    manifest: realManifest,
-    root: repoRoot,
-    graph: new Map()
-  });
+  const planFor = (files: string[]) =>
+    createLayerAwarePlan(files, {
+      manifest: realManifest,
+      root: repoRoot,
+      graph: new Map()
+    });
 
   it('registers every cypress spec that exists on disk', () => {
     expect.hasAssertions();
@@ -301,7 +306,8 @@ describe('browser-harness selection (JUM-622, JUM-623)', () => {
       .filter((suite: { layer: string }) => suite.layer === 'browser-harness')
       .map((suite: { path: string }) => suite.path)
       .sort();
-    const onDisk = fs.readdirSync(path.join(repoRoot, 'packages/cana/cypress'))
+    const onDisk = fs
+      .readdirSync(path.join(repoRoot, 'packages/cana/cypress'))
       .filter((name) => name.endsWith('.cy.ts'))
       .map((name) => `packages/cana/cypress/${name}`)
       .sort();
@@ -428,9 +434,8 @@ describe('requirement 110 runner rules', () => {
   });
 
   /** A node pin with no stated reason. Hoisted so the predicate is not a branch in a test body. */
-  const isUnexplainedNodePin = (suite: { runner: string; reason?: string }) => (
-    suite.runner === 'node' && !suite.reason
-  );
+  const isUnexplainedNodePin = (suite: { runner: string; reason?: string }) =>
+    suite.runner === 'node' && !suite.reason;
 
   it('gives every node-pinned suite a reason', () => {
     expect.hasAssertions();
@@ -440,9 +445,7 @@ describe('requirement 110 runner rules', () => {
       fs.readFileSync(path.join(repoRootFor110, 'test-map.json'), 'utf8')
     ) as { suites: { path: string; runner: string; reason?: string }[] };
 
-    const unexplained = manifest.suites
-      .filter(isUnexplainedNodePin)
-      .map((suite) => suite.path);
+    const unexplained = manifest.suites.filter(isUnexplainedNodePin).map((suite) => suite.path);
 
     expect(unexplained).toStrictEqual([]);
   });
@@ -451,11 +454,12 @@ describe('requirement 110 runner rules', () => {
 describe('interface GUI placeholder docs do not select interface/runtime (JUM-757)', () => {
   const repoRoot = path.resolve(__dirname, '../..');
   const realManifest = readTestMap(path.join(repoRoot, 'test-map.json'));
-  const planFor = (files: string[]) => createLayerAwarePlan(files, {
-    manifest: realManifest,
-    root: repoRoot,
-    graph: new Map()
-  });
+  const planFor = (files: string[]) =>
+    createLayerAwarePlan(files, {
+      manifest: realManifest,
+      root: repoRoot,
+      graph: new Map()
+    });
 
   it('keeps README-only GUI placeholders out of the interface/runtime blast radius', () => {
     expect.hasAssertions();

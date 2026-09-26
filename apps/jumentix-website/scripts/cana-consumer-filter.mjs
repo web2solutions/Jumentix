@@ -18,8 +18,8 @@ export function isCanaUsageGuideSource(sourceFile) {
 export function isCanaPublishedSource(sourceFile) {
   const base = sourceFile.replace(/\\/g, '/');
   return (
-    /\/CANA-USAGE(?:-[A-Z-]+)?(\.pt-BR)?\.md$/i.test(base)
-    || /\/packages\/cana\/README(\.pt-BR)?\.md$/i.test(base)
+    /\/CANA-USAGE(?:-[A-Z-]+)?(\.pt-BR)?\.md$/i.test(base) ||
+    /\/packages\/cana\/README(\.pt-BR)?\.md$/i.test(base)
   );
 }
 
@@ -33,9 +33,7 @@ export function toCanaConsumerMarkdown(markdown, { locale = 'en' } = {}) {
   // Remove design-rationale pointers from the intro.
   out = out.replace(
     /For the design rationale behind these behaviours, see\n\[[^\]]+\]\([^)]+\)\. This document is about\nusing it\. Portuguese: \[[^\]]+\]\([^)]+\)\.\n\n/m,
-    locale === 'pt-BR'
-      ? ''
-      : 'This guide is about using `@jumentix/cana` in your application.\n\n'
+    locale === 'pt-BR' ? '' : 'This guide is about using `@jumentix/cana` in your application.\n\n'
   );
   out = out.replace(
     /Para a fundamentação de projeto por trás desses comportamentos, veja\n\[[^\]]+\]\([^)]+\)\. Este\ndocumento é sobre usar\. Inglês: \[[^\]]+\]\([^)]+\)\.\n\n/m,
@@ -68,8 +66,8 @@ export function assertNoCanaContentLeaks(markdown, sourceLabel) {
   const githubLeak = /https?:\/\/github\.com\/XpertMinds\/Jumentix\b/i.test(markdown);
   if (githubLeak) {
     throw new Error(
-      `Cana consumer docs leak GitHub content links (${sourceLabel}). `
-      + 'Publish in-site routes only.'
+      `Cana consumer docs leak GitHub content links (${sourceLabel}). ` +
+        'Publish in-site routes only.'
     );
   }
   for (const name of INTERNAL_DOC_NAMES) {

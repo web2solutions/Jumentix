@@ -1,49 +1,57 @@
 import { ComposeEventError } from '@src/infra/exceptions';
+import LoginRequestEvent from '@src/modules/Users/events/LoginRequestEvent';
+import LogoutRequestEvent from '@src/modules/Users/events/LogoutRequestEvent';
+import OrganizationAddressCreateRequestEvent from '@src/modules/Users/events/OrganizationAddressCreateRequestEvent';
+import OrganizationAddressDeleteRequestEvent from '@src/modules/Users/events/OrganizationAddressDeleteRequestEvent';
+import OrganizationAddressUpdateRequestEvent from '@src/modules/Users/events/OrganizationAddressUpdateRequestEvent';
+import OrganizationCreateRequestEvent from '@src/modules/Users/events/OrganizationCreateRequestEvent';
+import OrganizationDeleteRequestEvent from '@src/modules/Users/events/OrganizationDeleteRequestEvent';
+import OrganizationEmailCreateRequestEvent from '@src/modules/Users/events/OrganizationEmailCreateRequestEvent';
+import OrganizationEmailDeleteRequestEvent from '@src/modules/Users/events/OrganizationEmailDeleteRequestEvent';
+import OrganizationEmailUpdateRequestEvent from '@src/modules/Users/events/OrganizationEmailUpdateRequestEvent';
+import OrganizationGetAllRequestEvent from '@src/modules/Users/events/OrganizationGetAllRequestEvent';
+import OrganizationGetOneRequestEvent from '@src/modules/Users/events/OrganizationGetOneRequestEvent';
+import OrganizationPhoneCreateRequestEvent from '@src/modules/Users/events/OrganizationPhoneCreateRequestEvent';
+import OrganizationPhoneDeleteRequestEvent from '@src/modules/Users/events/OrganizationPhoneDeleteRequestEvent';
+import OrganizationPhoneUpdateRequestEvent from '@src/modules/Users/events/OrganizationPhoneUpdateRequestEvent';
+import OrganizationUpdateRequestEvent from '@src/modules/Users/events/OrganizationUpdateRequestEvent';
+import RegisterRequestEvent from '@src/modules/Users/events/RegisterRequestEvent';
+import UpdatePasswordRequestEvent from '@src/modules/Users/events/UpdatePasswordRequestEvent';
+import UserCreateRequestEvent from '@src/modules/Users/events/UserCreateRequestEvent';
+import UserDeleteRequestEvent from '@src/modules/Users/events/UserDeleteRequestEvent';
+import UserDocumentCreateRequestEvent from '@src/modules/Users/events/UserDocumentCreateRequestEvent';
+import UserDocumentDeleteRequestEvent from '@src/modules/Users/events/UserDocumentDeleteRequestEvent';
+import UserDocumentUpdateRequestEvent from '@src/modules/Users/events/UserDocumentUpdateRequestEvent';
+import UserEmailCreateRequestEvent from '@src/modules/Users/events/UserEmailCreateRequestEvent';
+import UserEmailDeleteRequestEvent from '@src/modules/Users/events/UserEmailDeleteRequestEvent';
+import UserEmailUpdateRequestEvent from '@src/modules/Users/events/UserEmailUpdateRequestEvent';
+import UserGetAllRequestEvent from '@src/modules/Users/events/UserGetAllRequestEvent';
+import UserGetOneRequestEvent from '@src/modules/Users/events/UserGetOneRequestEvent';
+import UserPasswordUpdateRequestEvent from '@src/modules/Users/events/UserPasswordUpdateRequestEvent';
+import UserPhoneCreateRequestEvent from '@src/modules/Users/events/UserPhoneCreateRequestEvent';
+import UserPhoneDeleteRequestEvent from '@src/modules/Users/events/UserPhoneDeleteRequestEvent';
+import UserPhoneUpdateRequestEvent from '@src/modules/Users/events/UserPhoneUpdateRequestEvent';
+import UserUpdateRequestEvent from '@src/modules/Users/events/UserUpdateRequestEvent';
+
 import type { IEventMessage } from '@src/modules/port/IEventMessage';
-import { LoginRequestEvent } from '@src/modules/Users/events/LoginRequestEvent';
-import { LogoutRequestEvent } from '@src/modules/Users/events/LogoutRequestEvent';
-import { RegisterRequestEvent } from '@src/modules/Users/events/RegisterRequestEvent';
-import { UpdatePasswordRequestEvent } from '@src/modules/Users/events/UpdatePasswordRequestEvent';
-import { UserCreateRequestEvent } from '@src/modules/Users/events/UserCreateRequestEvent';
-import { UserDeleteRequestEvent } from '@src/modules/Users/events/UserDeleteRequestEvent';
-import { UserDocumentCreateRequestEvent } from '@src/modules/Users/events/UserDocumentCreateRequestEvent';
-import { UserDocumentDeleteRequestEvent } from '@src/modules/Users/events/UserDocumentDeleteRequestEvent';
-import { UserDocumentUpdateRequestEvent } from '@src/modules/Users/events/UserDocumentUpdateRequestEvent';
-import { UserEmailCreateRequestEvent } from '@src/modules/Users/events/UserEmailCreateRequestEvent';
-import { UserEmailDeleteRequestEvent } from '@src/modules/Users/events/UserEmailDeleteRequestEvent';
-import { UserEmailUpdateRequestEvent } from '@src/modules/Users/events/UserEmailUpdateRequestEvent';
-import { UserGetAllRequestEvent } from '@src/modules/Users/events/UserGetAllRequestEvent';
-import { UserGetOneRequestEvent } from '@src/modules/Users/events/UserGetOneRequestEvent';
-import { UserPasswordUpdateRequestEvent } from '@src/modules/Users/events/UserPasswordUpdateRequestEvent';
-import { UserPhoneCreateRequestEvent } from '@src/modules/Users/events/UserPhoneCreateRequestEvent';
-import { UserPhoneDeleteRequestEvent } from '@src/modules/Users/events/UserPhoneDeleteRequestEvent';
-import { UserPhoneUpdateRequestEvent } from '@src/modules/Users/events/UserPhoneUpdateRequestEvent';
-import { UserUpdateRequestEvent } from '@src/modules/Users/events/UserUpdateRequestEvent';
-import { OrganizationCreateRequestEvent } from '@src/modules/Users/events/OrganizationCreateRequestEvent';
-import { OrganizationDeleteRequestEvent } from '@src/modules/Users/events/OrganizationDeleteRequestEvent';
-import { OrganizationGetAllRequestEvent } from '@src/modules/Users/events/OrganizationGetAllRequestEvent';
-import { OrganizationGetOneRequestEvent } from '@src/modules/Users/events/OrganizationGetOneRequestEvent';
-import { OrganizationUpdateRequestEvent } from '@src/modules/Users/events/OrganizationUpdateRequestEvent';
-import { OrganizationAddressCreateRequestEvent } from '@src/modules/Users/events/OrganizationAddressCreateRequestEvent';
-import { OrganizationAddressUpdateRequestEvent } from '@src/modules/Users/events/OrganizationAddressUpdateRequestEvent';
-import { OrganizationAddressDeleteRequestEvent } from '@src/modules/Users/events/OrganizationAddressDeleteRequestEvent';
-import { OrganizationPhoneCreateRequestEvent } from '@src/modules/Users/events/OrganizationPhoneCreateRequestEvent';
-import { OrganizationPhoneUpdateRequestEvent } from '@src/modules/Users/events/OrganizationPhoneUpdateRequestEvent';
-import { OrganizationPhoneDeleteRequestEvent } from '@src/modules/Users/events/OrganizationPhoneDeleteRequestEvent';
-import { OrganizationEmailCreateRequestEvent } from '@src/modules/Users/events/OrganizationEmailCreateRequestEvent';
-import { OrganizationEmailUpdateRequestEvent } from '@src/modules/Users/events/OrganizationEmailUpdateRequestEvent';
-import { OrganizationEmailDeleteRequestEvent } from '@src/modules/Users/events/OrganizationEmailDeleteRequestEvent';
 
 const validMessage = (): IEventMessage => ({
   authorization: 'Bearer token',
   input: { firstName: 'John' },
   params: {
-    id: 'u1', emailId: 'e1', phoneId: 'p1', documentId: 'd1', addressId: 'a1'
+    id: 'u1',
+    emailId: 'e1',
+    phoneId: 'p1',
+    documentId: 'd1',
+    addressId: 'a1'
   },
   queryString: { page: '1' },
   schemaOAS: { operationId: 'usersCreate' },
   metadata: {
-    correlationId: 'c1', causationId: 'c0', timestamp: Date.now(), userId: 'u1'
+    correlationId: 'c1',
+    causationId: 'c0',
+    timestamp: Date.now(),
+    userId: 'u1'
   }
 });
 
@@ -88,16 +96,20 @@ describe('users request events', () => {
     ];
 
     for (const event of events) {
-      expect(event.entity).toBeDefined();
-      expect(event.action).toBeDefined();
+      expect(typeof event.entity).toBe('string');
+      expect(typeof event.action).toBe('string');
     }
   });
 
   it('throws ComposeEventError when required fields are missing', () => {
     expect.hasAssertions();
     expect(() => new UserCreateRequestEvent({} as IEventMessage)).toThrow(ComposeEventError);
-    expect(() => new UserUpdateRequestEvent({ authorization: 'Bearer token' } as IEventMessage)).toThrow(ComposeEventError);
-    expect(() => new UserGetAllRequestEvent({ authorization: 'Bearer token' } as IEventMessage)).toThrow(ComposeEventError);
+    expect(
+      () => new UserUpdateRequestEvent({ authorization: 'Bearer token' } as IEventMessage)
+    ).toThrow(ComposeEventError);
+    expect(
+      () => new UserGetAllRequestEvent({ authorization: 'Bearer token' } as IEventMessage)
+    ).toThrow(ComposeEventError);
 
     const eventCtors = [
       LoginRequestEvent,
@@ -133,7 +145,9 @@ describe('users request events', () => {
     ];
 
     for (const EventCtor of eventCtors) {
-      expect(() => new EventCtor({ authorization: 'Bearer token' } as IEventMessage)).toThrow(ComposeEventError);
+      expect(() => new EventCtor({ authorization: 'Bearer token' } as IEventMessage)).toThrow(
+        ComposeEventError
+      );
     }
   });
 });

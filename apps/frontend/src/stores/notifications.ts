@@ -22,9 +22,10 @@ export const useNotificationStore = defineStore('notifications', () => {
   const push = (input: Omit<AppNotification, 'id' | 'createdAt' | 'read'>): AppNotification => {
     const notification: AppNotification = {
       ...input,
-      id: typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `n-${Date.now()}`,
+      id:
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `n-${Date.now()}`,
       createdAt: new Date().toISOString(),
       read: false
     };
@@ -38,19 +39,18 @@ export const useNotificationStore = defineStore('notifications', () => {
     kind: string;
     message: string;
     reopen?: Record<string, unknown>;
-  }): AppNotification => push({
-    kind: 'reject',
-    title: input.entity,
-    message: input.message,
-    entity: input.entity,
-    key: input.key,
-    reopen: input.reopen
-  });
+  }): AppNotification =>
+    push({
+      kind: 'reject',
+      title: input.entity,
+      message: input.message,
+      entity: input.entity,
+      key: input.key,
+      reopen: input.reopen
+    });
 
   const markRead = (id: string): void => {
-    items.value = items.value.map((item) => (
-      item.id === id ? { ...item, read: true } : item
-    ));
+    items.value = items.value.map((item) => (item.id === id ? { ...item, read: true } : item));
   };
 
   const markAllRead = (): void => {
@@ -70,6 +70,14 @@ export const useNotificationStore = defineStore('notifications', () => {
   };
 
   return {
-    items, unread, reopenTarget, push, reject, markRead, markAllRead, takeReopen, clearReopen
+    items,
+    unread,
+    reopenTarget,
+    push,
+    reject,
+    markRead,
+    markAllRead,
+    takeReopen,
+    clearReopen
   };
 });

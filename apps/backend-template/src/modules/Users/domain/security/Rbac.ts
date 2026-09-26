@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-shadow
 export enum EUserRole {
   superadmin = 'superadmin',
   admin = 'admin',
@@ -39,24 +38,19 @@ export const ROLE_SCOPE_MATRIX: Record<EUserRole, string[]> = {
     'read_organization',
     'update_organization'
   ],
-  [EUserRole.user]: [
-    'access_allow',
-    'read_user'
-  ]
+  [EUserRole.user]: ['access_allow', 'read_user']
 };
 
-const isNormalizedRole = (role: string): role is EUserRole => {
-  return Object.values(EUserRole).includes(role as EUserRole);
-};
+const isNormalizedRole = (role: string): role is EUserRole =>
+  Object.values(EUserRole).includes(role as EUserRole);
 
 export const normalizeRoles = (roles: string[] = []): string[] => {
   if (roles.length === 0) return [];
   return [...new Set(roles)];
 };
 
-export const hasSuperadminRole = (roles: string[] = []): boolean => {
-  return normalizeRoles(roles).includes(EUserRole.superadmin);
-};
+export const hasSuperadminRole = (roles: string[] = []): boolean =>
+  normalizeRoles(roles).includes(EUserRole.superadmin);
 
 export const shouldRequireOrganization = (roles: string[] = []): boolean => {
   const normalized = normalizeRoles(roles);

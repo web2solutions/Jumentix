@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const {
   bumpSemver,
   classifySubject,
@@ -60,10 +59,7 @@ describe('next-version', () => {
     expect.hasAssertions();
     const result = computeNextVersion({
       baseVersion: '0.0.2',
-      subjects: [
-        '[JUM-1][Feature] first',
-        '[JUM-2][Fix] second'
-      ],
+      subjects: ['[JUM-1][Feature] first', '[JUM-2][Fix] second'],
       lastAppTag: null
     });
     expect(result.action).toBe('bump');

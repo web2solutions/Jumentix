@@ -66,7 +66,10 @@ export const mantineComponentsDataDisplay: MantineComponentLink[] = [
     newWindow: true
   },
   {
-    key: 'led', title: 'LED', href: 'https://gfazioli.github.io/mantine-led', newWindow: true
+    key: 'led',
+    title: 'LED',
+    href: 'https://gfazioli.github.io/mantine-led',
+    newWindow: true
   },
   {
     key: 'list-view-table',
@@ -135,7 +138,10 @@ export const mantineComponentsEffectsAnimations: MantineComponentLink[] = [
     newWindow: true
   },
   {
-    key: 'flip', title: 'Flip', href: 'https://gfazioli.github.io/mantine-flip', newWindow: true
+    key: 'flip',
+    title: 'Flip',
+    href: 'https://gfazioli.github.io/mantine-flip',
+    newWindow: true
   },
   {
     key: 'marquee',
@@ -144,7 +150,10 @@ export const mantineComponentsEffectsAnimations: MantineComponentLink[] = [
     newWindow: true
   },
   {
-    key: 'mask', title: 'Mask', href: 'https://gfazioli.github.io/mantine-mask', newWindow: true
+    key: 'mask',
+    title: 'Mask',
+    href: 'https://gfazioli.github.io/mantine-mask',
+    newWindow: true
   },
   {
     key: 'parallax',

@@ -105,11 +105,12 @@ export function assessDurability(
     return {
       level: 'lost',
       evictionDetectable,
-      summary: 'The browser deleted this database to reclaim space. Local data written before '
-        + 'now is gone and cannot be recovered from the browser.',
+      summary:
+        'The browser deleted this database to reclaim space. Local data written before ' +
+        'now is gone and cannot be recovered from the browser.',
       advice: [
-        'Tell the user their local data was cleared by the browser, rather than showing an '
-          + 'empty app that looks like a fresh install.',
+        'Tell the user their local data was cleared by the browser, rather than showing an ' +
+          'empty app that looks like a fresh install.',
         'Re-sync from the server if there is one; otherwise the loss is final.',
         'Request persistent storage before writing again.'
       ]
@@ -120,8 +121,9 @@ export function assessDurability(
     return {
       level: 'at-risk',
       evictionDetectable,
-      summary: `${usageSummary(state)
-      } At this level the browser may evict the database without warning.`,
+      summary: `${usageSummary(
+        state
+      )} At this level the browser may evict the database without warning.`,
       advice: [
         'Free space: remove cached or derived records that can be rebuilt.',
         'Export anything the user cannot afford to lose.',
@@ -136,8 +138,9 @@ export function assessDurability(
     return {
       level: 'durable',
       evictionDetectable,
-      summary: 'The browser granted persistent storage: this database will not be evicted '
-        + 'automatically under storage pressure.',
+      summary:
+        'The browser granted persistent storage: this database will not be evicted ' +
+        'automatically under storage pressure.',
       advice: evictionDetectable
         ? []
         : ['Eviction cannot be detected for this origin, so a wipe would look like a first run.']
@@ -147,9 +150,10 @@ export function assessDurability(
   // Covers both `false` and `'unknown'`, and says which — because "the browser
   // refused" and "we cannot tell" call for different messages, even though
   // neither is a durability guarantee.
-  const reason = state.persistent === false
-    ? 'The browser did not grant persistent storage'
-    : 'Persistent storage could not be confirmed in this browser';
+  const reason =
+    state.persistent === false
+      ? 'The browser did not grant persistent storage'
+      : 'Persistent storage could not be confirmed in this browser';
 
   return {
     level: 'best-effort',
@@ -161,8 +165,10 @@ export function assessDurability(
         : ['Do not report local data as durable — there is no evidence that it is.']),
       ...(evictionDetectable
         ? []
-        : ['Eviction is undetectable for this origin: a wipe would be indistinguishable from a '
-          + 'first run, so the app cannot tell the user what happened.'])
+        : [
+            'Eviction is undetectable for this origin: a wipe would be indistinguishable from a ' +
+              'first run, so the app cannot tell the user what happened.'
+          ])
     ]
   };
 }

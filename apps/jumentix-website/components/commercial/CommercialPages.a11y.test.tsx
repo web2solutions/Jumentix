@@ -1,16 +1,15 @@
-import { render, screen } from '@/test-utils';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import {
-  CommercialPage,
-  CommercialUseCasePage,
-} from '../commercial/CommercialPages';
+
+import { render } from '@/test-utils';
+
+import { CommercialPage, CommercialUseCasePage } from './CommercialPages';
 
 expect.extend(toHaveNoViolations);
 
 const axeConfig = {
   rules: {
-    'heading-order': { enabled: false },
-  },
+    'heading-order': { enabled: false }
+  }
 };
 
 describe('Commercial pages a11y', () => {
@@ -20,7 +19,7 @@ describe('Commercial pages a11y', () => {
     expect(results).toHaveNoViolations();
   };
 
-  const pages: Array<Parameters<typeof CommercialPage>[0]['page']> = [
+  const pages: Parameters<typeof CommercialPage>[0]['page'][] = [
     'home',
     'product',
     'use-cases',
@@ -30,38 +29,38 @@ describe('Commercial pages a11y', () => {
     'engagement',
     'contact',
     'community',
-    'roadmap',
+    'roadmap'
   ];
 
   describe.each(pages)('%s page', (page) => {
     it(`has no a11y violations (EN)`, async () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       await testA11y(<CommercialPage locale="en" page={page} />);
     });
 
     it(`has no a11y violations (PT-BR)`, async () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       await testA11y(<CommercialPage locale="pt-BR" page={page} />);
     });
   });
 
   describe('CommercialUseCasePage', () => {
-    const useCases: Array<Parameters<typeof CommercialUseCasePage>[0]['name']> = [
+    const useCases: Parameters<typeof CommercialUseCasePage>[0]['name'][] = [
       'rest-api',
       'realtime-api',
       'saas-monolith',
       'saas-microservices',
-      'spa-pwa',
+      'spa-pwa'
     ];
 
     describe.each(useCases)('%s', (name) => {
       it(`has no a11y violations (EN)`, async () => {
-    expect.hasAssertions();
+        expect.hasAssertions();
         await testA11y(<CommercialUseCasePage locale="en" name={name} />);
       });
 
       it(`has no a11y violations (PT-BR)`, async () => {
-    expect.hasAssertions();
+        expect.hasAssertions();
         await testA11y(<CommercialUseCasePage locale="pt-BR" name={name} />);
       });
     });

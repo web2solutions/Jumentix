@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/backend-template/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # @jumentix/backend-template
 
 Destino do aplicativo Workspace para migração de modelo de back-end.

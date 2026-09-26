@@ -1,6 +1,6 @@
 ---
-title: "Guia de uso do Cana"
-description: "Hub do guia de API do consumidor para @jumentix/cana com subpáginas focadas."
+title: 'Guia de uso do Cana'
+description: 'Hub do guia de API do consumidor para @jumentix/cana com subpáginas focadas.'
 ---
 
 # Cana — Guia de uso
@@ -41,10 +41,10 @@ menores para cada assunto mostrar código completo sem virar uma parede única.
 
 Todas as páginas usam o mesmo sistema simples de tarefas. Existem duas stores:
 
-| Store | Propósito | Campos principais |
-| --- | --- | --- |
-| `categories` | Agrupa tarefas por área. | `id`, `name`, `color`, `createdAt`, `updatedAt` |
-| `tasks` | Registros duráveis de tarefas. | `id`, `title`, `categoryId`, `completed`, `priority`, `createdAt`, `updatedAt` |
+| Store        | Propósito                      | Campos principais                                                              |
+| ------------ | ------------------------------ | ------------------------------------------------------------------------------ |
+| `categories` | Agrupa tarefas por área.       | `id`, `name`, `color`, `createdAt`, `updatedAt`                                |
+| `tasks`      | Registros duráveis de tarefas. | `id`, `title`, `categoryId`, `completed`, `priority`, `createdAt`, `updatedAt` |
 
 Os exemplos mantêm o estado de framework fora do Cana. O Cana controla
 persistência e eventos commitados; React Context, Redux e Pinia controlam o

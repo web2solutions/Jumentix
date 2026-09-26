@@ -1,21 +1,22 @@
-import type { CSSProperties, ReactNode } from 'react';
-import type { Meta, StoryObj } from '@storybook/nextjs';
-
 // The designer (apps/service-management) is a zero-build vanilla SPA — these
 // stories mount its real markup and its real stylesheets (JUM-488), so the
 // Storybook catalog covers the designer's key UI states without a bundler or
 // a React rewrite. The stylesheets are token-driven (--jtx-*, same tokens as
 // components/design-system/tokens.css), so the addon-themes light/dark switch
 // applies to them exactly as it does to the website components.
-import '../../../service-management/tokens.css';
-import '../../../service-management/styles.css';
+
+import '@jumentix/service-management/styles.css';
+import '@jumentix/service-management/tokens.css';
+
+import type { Meta, StoryObj } from '@storybook/nextjs';
+import type { CSSProperties, ReactNode } from 'react';
 
 const meta = {
   title: 'Service Management Designer/Overview',
   parameters: {
-    layout: 'padded',
+    layout: 'padded'
   },
-  tags: ['autodocs'],
+  tags: ['autodocs']
 } satisfies Meta;
 
 export default meta;
@@ -38,112 +39,109 @@ const FixedSurfaceDemo = ({ children }: { children: ReactNode }) => (
 export const TabShell: Story = {
   render: () => (
     <Shell>
-      <nav className="tab-nav" role="tablist" aria-label="Service management tabs">
+      <div aria-label="Service management tabs" className="tab-nav" role="tablist">
         <button
-          className="tab-btn active"
-          type="button"
-          role="tab"
-          aria-selected="true"
           aria-controls="tab-domain-designer"
+          aria-selected="true"
+          className="tab-btn active"
+          role="tab"
           tabIndex={0}
+          type="button"
         >
           Domain Designer
         </button>
         <button
-          className="tab-btn"
-          type="button"
-          role="tab"
-          aria-selected="false"
           aria-controls="tab-interface-designer"
+          aria-selected="false"
+          className="tab-btn"
+          role="tab"
           tabIndex={-1}
+          type="button"
         >
           Communication Interface Designer
         </button>
         <button
-          className="tab-btn"
-          type="button"
-          role="tab"
-          aria-selected="false"
           aria-controls="tab-service-config"
+          aria-selected="false"
+          className="tab-btn"
+          role="tab"
           tabIndex={-1}
+          type="button"
         >
           Service Configuration
         </button>
         <button
-          className="tab-btn"
-          type="button"
-          role="tab"
-          aria-selected="false"
           aria-controls="tab-deploy-management"
+          aria-selected="false"
+          className="tab-btn"
+          role="tab"
           tabIndex={-1}
+          type="button"
         >
           Deploy Management
         </button>
-      </nav>
+      </div>
     </Shell>
-  ),
+  )
 };
 
 export const WorkspaceControls: Story = {
   render: () => (
     <Shell>
       <header className="workspace-header" style={{ border: '1px solid var(--jtx-line)' }}>
-        <div role="status" aria-live="polite">
+        <div aria-live="polite" role="status">
           Domain: Orders — 3 entities
         </div>
         <div className="workspace-actions">
-          <button type="button" title="Zoom out" aria-label="Zoom out">
+          <button aria-label="Zoom out" title="Zoom out" type="button">
             -
           </button>
-          <div className="zoom-indicator">
-            110%
-          </div>
-          <button type="button" title="Zoom in" aria-label="Zoom in">
+          <div className="zoom-indicator">110%</div>
+          <button aria-label="Zoom in" title="Zoom in" type="button">
             +
           </button>
-          <select title="Relationship routing style" aria-label="Relationship routing style" defaultValue="curved">
+          <select
+            aria-label="Relationship routing style"
+            defaultValue="curved"
+            title="Relationship routing style"
+          >
             <option value="curved">Curved</option>
             <option value="orthogonal">Orthogonal</option>
           </select>
-          <button type="button" aria-pressed="false">
+          <button aria-pressed="false" type="button">
             Compact View
           </button>
-          <button type="button" aria-pressed="true">
+          <button aria-pressed="true" type="button">
             Snap: On
           </button>
-          <button type="button">
-            Auto Layout
-          </button>
-          <button type="button" aria-pressed="false">
+          <button type="button">Auto Layout</button>
+          <button aria-pressed="false" type="button">
             Large Canvas: Off
           </button>
-          <button type="button">
-            Fit
-          </button>
-          <button type="button">
-            Reset View
-          </button>
+          <button type="button">Fit</button>
+          <button type="button">Reset View</button>
         </div>
       </header>
     </Shell>
-  ),
+  )
 };
 
 export const DomainCanvas: Story = {
   parameters: {
-    layout: 'fullscreen',
+    layout: 'fullscreen'
   },
   render: () => (
     <Shell style={{ height: 420 }}>
       <div className="workspace">
         <div
+          aria-label="Domain model canvas. Select an entity from the Entities panel, then use the arrow keys to move it."
           className="canvas"
           role="region"
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- story mock of the interactive model canvas; arrow keys move the selected entity (see aria-label)
           tabIndex={0}
-          aria-label="Domain model canvas. Select an entity from the Entities panel, then use the arrow keys to move it."
         >
           <div className="canvas-inner">
-            <svg className="edges" aria-hidden="true" focusable="false">
+            <svg aria-hidden="true" className="edges" focusable="false">
               <path className="edge-line" d="M 190 128 Q 268 128 268 96 T 346 96" />
               <path className="edge-hit" d="M 190 128 Q 268 128 268 96 T 346 96" />
               <text className="edge-label" x={196} y={122}>
@@ -175,10 +173,30 @@ export const DomainCanvas: Story = {
                     <li>status: string</li>
                     <li>total: number</li>
                   </ul>
-                  <button type="button" className="entity-anchor entity-anchor-top" title="Drag from Order (top) to create relationship" />
-                  <button type="button" className="entity-anchor entity-anchor-right" title="Drag from Order (right) to create relationship" />
-                  <button type="button" className="entity-anchor entity-anchor-bottom" title="Drag from Order (bottom) to create relationship" />
-                  <button type="button" className="entity-anchor entity-anchor-left" title="Drag from Order (left) to create relationship" />
+                  <button
+                    aria-label="Drag from Order (top) to create relationship"
+                    className="entity-anchor entity-anchor-top"
+                    title="Drag from Order (top) to create relationship"
+                    type="button"
+                  />
+                  <button
+                    aria-label="Drag from Order (right) to create relationship"
+                    className="entity-anchor entity-anchor-right"
+                    title="Drag from Order (right) to create relationship"
+                    type="button"
+                  />
+                  <button
+                    aria-label="Drag from Order (bottom) to create relationship"
+                    className="entity-anchor entity-anchor-bottom"
+                    title="Drag from Order (bottom) to create relationship"
+                    type="button"
+                  />
+                  <button
+                    aria-label="Drag from Order (left) to create relationship"
+                    className="entity-anchor entity-anchor-left"
+                    title="Drag from Order (left) to create relationship"
+                    type="button"
+                  />
                 </article>
                 <article className="entity" style={{ left: 320, top: 80 }}>
                   <header className="entity-header">OrderLine</header>
@@ -186,16 +204,36 @@ export const DomainCanvas: Story = {
                     <li>id: uuid PK</li>
                     <li>quantity: integer</li>
                   </ul>
-                  <button type="button" className="entity-anchor entity-anchor-top" title="Drag from OrderLine (top) to create relationship" />
-                  <button type="button" className="entity-anchor entity-anchor-right" title="Drag from OrderLine (right) to create relationship" />
-                  <button type="button" className="entity-anchor entity-anchor-bottom" title="Drag from OrderLine (bottom) to create relationship" />
-                  <button type="button" className="entity-anchor entity-anchor-left" title="Drag from OrderLine (left) to create relationship" />
+                  <button
+                    aria-label="Drag from OrderLine (top) to create relationship"
+                    className="entity-anchor entity-anchor-top"
+                    title="Drag from OrderLine (top) to create relationship"
+                    type="button"
+                  />
+                  <button
+                    aria-label="Drag from OrderLine (right) to create relationship"
+                    className="entity-anchor entity-anchor-right"
+                    title="Drag from OrderLine (right) to create relationship"
+                    type="button"
+                  />
+                  <button
+                    aria-label="Drag from OrderLine (bottom) to create relationship"
+                    className="entity-anchor entity-anchor-bottom"
+                    title="Drag from OrderLine (bottom) to create relationship"
+                    type="button"
+                  />
+                  <button
+                    aria-label="Drag from OrderLine (left) to create relationship"
+                    className="entity-anchor entity-anchor-left"
+                    title="Drag from OrderLine (left) to create relationship"
+                    type="button"
+                  />
                 </article>
               </div>
             </section>
           </div>
         </div>
-        <div className="mini-map" aria-hidden="true">
+        <div aria-hidden="true" className="mini-map">
           <div
             className="mini-map-domain active"
             style={{ left: 1.76, top: 1.32, width: 28.6, height: 15.4, borderColor: '#60a5fa' }}
@@ -204,30 +242,30 @@ export const DomainCanvas: Story = {
         </div>
       </div>
     </Shell>
-  ),
+  )
 };
 
 export const StatusSurfaces: Story = {
   render: () => (
     <Shell>
       <FixedSurfaceDemo>
-        <div className="status-region status-info" role="status" aria-live="polite">
+        <div aria-live="polite" className="status-region status-info" role="status">
           Model saved to the Cana store.
         </div>
       </FixedSurfaceDemo>
       <FixedSurfaceDemo>
-        <div className="status-region status-error" role="status" aria-live="polite">
+        <div aria-live="polite" className="status-region status-error" role="status">
           Validation failed: entity Order requires a primary key field.
         </div>
       </FixedSurfaceDemo>
-      <p className="hint status-line status-info" role="status" aria-live="polite">
+      <p aria-live="polite" className="hint status-line status-info" role="status">
         Loaded ecosystem.dev.config.cjs — 2 processes.
       </p>
-      <p className="hint status-line status-error" role="status" aria-live="polite">
+      <p aria-live="polite" className="hint status-line status-error" role="status">
         Port 70000 is outside the accepted range (1-65535).
       </p>
     </Shell>
-  ),
+  )
 };
 
 export const EntityInspector: Story = {
@@ -236,67 +274,71 @@ export const EntityInspector: Story = {
       <div className="sidebar" style={{ border: '1px solid var(--jtx-line)', maxWidth: 360 }}>
         <section className="panel">
           <h2>Entity Inspector</h2>
-          <p className="hint">
-            Editing: Order
-          </p>
+          <p className="hint">Editing: Order</p>
           <div className="row">
-            <input type="text" placeholder="Entity name" aria-label="Entity name" defaultValue="Order" />
-            <button type="button">
-              Save Name
-            </button>
+            <input
+              aria-label="Entity name"
+              defaultValue="Order"
+              placeholder="Entity name"
+              type="text"
+            />
+            <button type="button">Save Name</button>
           </div>
           <div className="column compact" style={{ marginTop: 12 }}>
-            <label htmlFor="entity-rbac-action-select">RBAC Action</label>
-            <select defaultValue="list">
-              <option value="list">list</option>
-              <option value="getById">getById</option>
-              <option value="create">create</option>
-            </select>
-            <label className="check">
-              <input type="checkbox" defaultChecked /> superadmin
+            <label htmlFor="entity-rbac-action-select" style={{ display: 'contents' }}>
+              RBAC Action
+              <select defaultValue="list" id="entity-rbac-action-select">
+                <option value="list">list</option>
+                <option value="getById">getById</option>
+                <option value="create">create</option>
+              </select>
             </label>
-            <label className="check">
-              <input type="checkbox" defaultChecked /> admin
+            <label className="check" htmlFor="entity-rbac-superadmin">
+              <input defaultChecked id="entity-rbac-superadmin" type="checkbox" /> superadmin
             </label>
-            <label className="check">
-              <input type="checkbox" /> user
+            <label className="check" htmlFor="entity-rbac-admin">
+              <input defaultChecked id="entity-rbac-admin" type="checkbox" /> admin
             </label>
-            <label className="check">
-              <input type="checkbox" disabled /> tenant scoped (derived from roles)
+            <label className="check" htmlFor="entity-rbac-user">
+              <input id="entity-rbac-user" type="checkbox" /> user
+            </label>
+            <label className="check" htmlFor="entity-rbac-tenant-scoped">
+              <input disabled id="entity-rbac-tenant-scoped" type="checkbox" /> tenant scoped
+              (derived from roles)
             </label>
           </div>
           <div className="field-row" style={{ marginTop: 12 }}>
-            <input type="text" aria-label="Field name" defaultValue="total" />
+            <input aria-label="Field name" defaultValue="total" type="text" />
             <select aria-label="Field type" defaultValue="number">
               <option value="string">string</option>
               <option value="number">number</option>
             </select>
-            <label className="check">
-              <input type="checkbox" /> required
+            <label className="check" htmlFor="entity-field-required">
+              <input id="entity-field-required" type="checkbox" /> required
             </label>
-            <label className="check">
-              <input type="checkbox" /> PK
+            <label className="check" htmlFor="entity-field-pk">
+              <input id="entity-field-pk" type="checkbox" /> PK
             </label>
-            <label className="check">
-              <input type="checkbox" /> FK
+            <label className="check" htmlFor="entity-field-fk">
+              <input id="entity-field-fk" type="checkbox" /> FK
             </label>
-            <label className="check">
-              <input type="checkbox" /> unique
+            <label className="check" htmlFor="entity-field-unique">
+              <input id="entity-field-unique" type="checkbox" /> unique
             </label>
-            <label className="check">
-              <input type="checkbox" defaultChecked /> nullable
+            <label className="check" htmlFor="entity-field-nullable">
+              <input defaultChecked id="entity-field-nullable" type="checkbox" /> nullable
             </label>
-            <button type="button" aria-label="Move field up">
+            <button aria-label="Move field up" type="button">
               ↑
             </button>
-            <button type="button" aria-label="Delete field">
+            <button aria-label="Delete field" type="button">
               ×
             </button>
           </div>
         </section>
       </div>
     </Shell>
-  ),
+  )
 };
 
 export const PanelsAndLists: Story = {
@@ -306,14 +348,12 @@ export const PanelsAndLists: Story = {
         <section className="panel">
           <h2>Domains</h2>
           <div className="row">
-            <input type="text" placeholder="Domain name" aria-label="Domain name" />
-            <button type="button">
-              Add
-            </button>
+            <input aria-label="Domain name" placeholder="Domain name" type="text" />
+            <button type="button">Add</button>
           </div>
           <ul className="list">
             <li>
-              <button type="button" className="active">
+              <button className="active" type="button">
                 Orders
               </button>
             </li>
@@ -327,7 +367,7 @@ export const PanelsAndLists: Story = {
           <ul className="list">
             <li className="relationship-item">
               <span className="relationship-name">Order → OrderLine (1:N)</span>
-              <button type="button" aria-label="Delete relationship places">
+              <button aria-label="Delete relationship places" type="button">
                 ×
               </button>
             </li>
@@ -336,7 +376,7 @@ export const PanelsAndLists: Story = {
         </section>
       </div>
     </Shell>
-  ),
+  )
 };
 
 export const CodePreviews: Story = {
@@ -355,7 +395,7 @@ export const CodePreviews: Story = {
 }`}
       </pre>
     </Shell>
-  ),
+  )
 };
 
 export const PwaUpdateBanner: Story = {
@@ -367,15 +407,15 @@ export const PwaUpdateBanner: Story = {
             A new version of Service Management is available.
           </p>
           <div className="pwa-update-banner-actions">
-            <button type="button" className="pwa-update-banner-btn pwa-update-banner-btn-reload">
+            <button className="pwa-update-banner-btn pwa-update-banner-btn-reload" type="button">
               Reload to update
             </button>
-            <button type="button" className="pwa-update-banner-btn pwa-update-banner-btn-reset">
+            <button className="pwa-update-banner-btn pwa-update-banner-btn-reset" type="button">
               Dismiss
             </button>
           </div>
         </div>
       </FixedSurfaceDemo>
     </Shell>
-  ),
+  )
 };

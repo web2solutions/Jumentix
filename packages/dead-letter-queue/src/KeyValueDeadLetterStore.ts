@@ -27,7 +27,10 @@ export class KeyValueDeadLetterStore implements IDeadLetterStore {
 
   private readonly prefix: string;
 
-  public constructor(client: IKeyValueClient, { prefix = 'dlq' }: IKeyValueDeadLetterStoreOptions = {}) {
+  public constructor(
+    client: IKeyValueClient,
+    { prefix = 'dlq' }: IKeyValueDeadLetterStoreOptions = {}
+  ) {
     if (!client) throw new Error('KeyValueDeadLetterStore depends on a key-value client');
     this.client = client;
     this.prefix = prefix;
@@ -58,26 +61,32 @@ export class KeyValueDeadLetterStore implements IDeadLetterStore {
     }
   }
 
+  private static toError(error: unknown): Error {
+    return error instanceof Error
+      ? error
+      : Object.assign(new Error('Key-value client operation failed'), { cause: error });
+  }
+
   private async readIndex(): Promise<string[]> {
     const { result, error } = await this.client.get(this.indexKey);
-    if (error) throw error;
+    if (error) throw KeyValueDeadLetterStore.toError(error);
     const parsed = KeyValueDeadLetterStore.parse<string[]>(result);
     return Array.isArray(parsed) ? parsed : [];
   }
 
   public async put(record: DeadLetterRecord): Promise<void> {
     const { error } = await this.client.set(this.recordKey(record.id), JSON.stringify(record));
-    if (error) throw error;
+    if (error) throw KeyValueDeadLetterStore.toError(error);
 
     const index = await this.readIndex();
     if (index.includes(record.id)) return;
     const appended = await this.client.set(this.indexKey, JSON.stringify([...index, record.id]));
-    if (appended.error) throw appended.error;
+    if (appended.error) throw KeyValueDeadLetterStore.toError(appended.error);
   }
 
   public async get(id: string): Promise<DeadLetterRecord | undefined> {
     const { result, error } = await this.client.get(this.recordKey(id));
-    if (error) throw error;
+    if (error) throw KeyValueDeadLetterStore.toError(error);
     return KeyValueDeadLetterStore.parse<DeadLetterRecord>(result);
   }
 

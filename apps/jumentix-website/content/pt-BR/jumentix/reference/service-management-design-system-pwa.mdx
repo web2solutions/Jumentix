@@ -1,14 +1,14 @@
 ---
-title: "Design System e PWA do Service Management"
-description: "Tokens de design, o modelo de acessibilidade e como instalar, atualizar e recuperar o app shell."
+title: 'Design System e PWA do Service Management'
+description: 'Tokens de design, o modelo de acessibilidade e como instalar, atualizar e recuperar o app shell.'
 ---
 
 # Design system e shell PWA do Service Management
 
 Este é o documento E7 da cadeia de documentação E1–E8 do Service Management
 ([JUM-490](https://linear.app/jumentix/issue/JUM-490/docs-e7-documentation-design-system-and-pwa-shell)).
-Ele documenta as duas superfícies que definem a *aparência* do designer e
-*como ele chega à máquina do usuário*: a **adoção do design system**
+Ele documenta as duas superfícies que definem a _aparência_ do designer e
+_como ele chega à máquina do usuário_: a **adoção do design system**
 ([JUM-488](https://linear.app/jumentix/issue/JUM-488/feature-adopt-jumentix-design-system-and-storybook-coverage))
 e o **shell PWA instalável**
 ([JUM-489](https://linear.app/jumentix/issue/JUM-489/feature-installable-pwa-shell-service-worker-manifest))
@@ -29,7 +29,7 @@ Dois limites deliberados:
 
 - **A história dos dados é referenciada, não duplicada.** Onde o trabalho do
   designer vive (Cana), como a migração do localStorage se comportou e o que
-  offline significa para os *dados* pertencem ao documento E6
+  offline significa para os _dados_ pertencem ao documento E6
   ([JUM-487](https://linear.app/jumentix/issue/JUM-487/docs-e6-documentation-cana-adoption-migration-and-offline-behavior)),
   com o contrato da porta de armazenamento no documento E3,
   [Arquitetura de módulos do Service Management](/docs/pt-BR/jumentix/reference/service-management-module-architecture).
@@ -40,7 +40,7 @@ Dois limites deliberados:
   as restrições de design e o fluxo de trabalho do Storybook pertencem ao
   documento
   Design System e Storybook
-  do website. Este documento cobre a *adoção* desse sistema pelo designer;
+  do website. Este documento cobre a _adoção_ desse sistema pelo designer;
   ele não o redefine.
 
 ## Adoção do design system na camada de tokens (JUM-488)
@@ -104,7 +104,7 @@ Dois corolários que um contribuidor precisa conhecer:
 
 - **O arquivo do website é estendido de forma aditiva, nunca a partir do
   designer.** Quando o designer precisou das pilhas tipográficas como tokens
-  (JUM-488), elas foram adicionadas ao arquivo do *website* — porque a cópia
+  (JUM-488), elas foram adicionadas ao arquivo do _website_ — porque a cópia
   vendorizada existe, consumidores não-Mantine herdam a mesma voz tipográfica
   — e depois espelhadas para baixo. Um token adicionado apenas à cópia do
   designer seria invisível para o website e silenciosamente apagado no próximo
@@ -117,7 +117,7 @@ Dois corolários que um contribuidor precisa conhecer:
 
 1. **Reutilize os tokens existentes antes de introduzir um novo valor.** Um
    literal cosmético em `styles.css` é uma regressão ao estado anterior ao
-   JUM-488; se nenhum token servir, adicione um token *semântico* primeiro ao
+   JUM-488; se nenhum token servir, adicione um token _semântico_ primeiro ao
    `tokens.css` do website e espelhe-o na cópia vendorizada na mesma mudança.
 2. **Mantenha a geometria estrutural literal apenas quando a matemática do
    canvas for dona dela** — e quando for, o número pertence ao conjunto fixado
@@ -327,7 +327,7 @@ requisições não-GET e requisições cross-origin passam direto para a rede (e
 falham naturalmente offline), e **zero dado de aplicação é cacheado** — uma
 cópia de conveniência na Cache API seria um fallback pela porta dos fundos,
 com garantias mais fracas que o store que ela sombreia. O que offline
-significa para os seus *dados* é a história do Cana, contada pelo documento
+significa para os seus _dados_ é a história do Cana, contada pelo documento
 E6.
 
 ## A fronteira de armazenamento: o que instalar não faz
@@ -343,7 +343,7 @@ armazenamentos separados com ciclos de vida separados:
 
 Uma assimetria que todo usuário deve conhecer: a opção do próprio navegador
 **"limpar dados do site"** (ou limpar dados de navegação desta origem) remove
-**ambos** — os caches do shell *e* o banco de dados Cana. A presença do shell
+**ambos** — os caches do shell _e_ o banco de dados Cana. A presença do shell
 nunca implica que seus designs estejam seguros; não há cópia do seu trabalho
 no shell para servir de fallback. Exporte seus designs pelos exportadores do
 designer quando quiser uma cópia durável.

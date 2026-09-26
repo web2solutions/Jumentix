@@ -1,29 +1,28 @@
-import type {
-  IPagingRequest,
-  IPagingResponse,
-  IServiceResponse,
-  IServiceConfig,
-  IEventBus
-} from '@src/modules/port';
-import {
-  BaseService
-} from '@src/modules/port';
+import { BaseService } from '@src/modules/port';
 import { UUID } from '@src/modules/port/UUID';
 
-import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
-import type { CatalogDataRepository } from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
-import { createCatalog } from '@service-management-api/modules/Catalogs/features/createCatalog';
-import { updateCatalog } from '@service-management-api/modules/Catalogs/features/updateCatalog';
-import { deleteCatalogById } from '@service-management-api/modules/Catalogs/features/deleteCatalogById';
-import { restoreCatalog } from '@service-management-api/modules/Catalogs/features/restoreCatalog';
-import { getCatalogById } from '@service-management-api/modules/Catalogs/features/getCatalogById';
-import { getAllCatalogs } from '@service-management-api/modules/Catalogs/features/getAllCatalogs';
 import { CatalogIntegrationEventName } from '@service-management-api/modules/Catalogs/events/contracts/CatalogIntegrationEventName';
+import createCatalog from '@service-management-api/modules/Catalogs/features/createCatalog';
+import deleteCatalogById from '@service-management-api/modules/Catalogs/features/deleteCatalogById';
+import getAllCatalogs from '@service-management-api/modules/Catalogs/features/getAllCatalogs';
+import getCatalogById from '@service-management-api/modules/Catalogs/features/getCatalogById';
+import restoreCatalog from '@service-management-api/modules/Catalogs/features/restoreCatalog';
+import updateCatalog from '@service-management-api/modules/Catalogs/features/updateCatalog';
+
+import type { BaseError } from '@src/infra/exceptions';
+import type {
+  IEventBus,
+  IPagingRequest,
+  IPagingResponse,
+  IServiceConfig,
+  IServiceResponse
+} from '@src/modules/port';
+
+import type CatalogDataRepository from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
+import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
+import type { RequestCatalogListOptions } from '@service-management-api/modules/Catalogs/interface/dto/RequestCatalogListOptions';
 import type { RequestCreateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestCreateCatalog';
 import type { RequestUpdateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestUpdateCatalog';
-import type { RequestCatalogListOptions } from '@service-management-api/modules/Catalogs/interface/dto/RequestCatalogListOptions';
-
-import { BaseError } from '@src/infra/exceptions';
 
 /**
  * CatalogService — application service of the shared catalog (JUM-491).
@@ -32,8 +31,7 @@ import { BaseError } from '@src/infra/exceptions';
  * consumers reconcile against the same concurrency token the API enforces.
  * Event publication never breaks the primary flow (same rule as UserService).
  */
-export class CatalogService
-  extends BaseService<ICatalog, RequestCreateCatalog, RequestUpdateCatalog> {
+class CatalogService extends BaseService<ICatalog, RequestCreateCatalog, RequestUpdateCatalog> {
   public dataRepository: CatalogDataRepository;
 
   private readonly eventBus?: IEventBus;
@@ -66,10 +64,7 @@ export class CatalogService
     };
   }
 
-  public async create(
-    data: RequestCreateCatalog,
-    actor: string = ''
-  ): Promise<IServiceResponse<ICatalog>> {
+  public async create(data: RequestCreateCatalog, actor = ''): Promise<IServiceResponse<ICatalog>> {
     const serviceResponse: IServiceResponse<ICatalog> = {};
     try {
       const createdCatalog = await createCatalog(
@@ -90,7 +85,7 @@ export class CatalogService
   public async update(
     id: string,
     data: RequestUpdateCatalog,
-    actor: string = ''
+    actor = ''
   ): Promise<IServiceResponse<ICatalog>> {
     const serviceResponse: IServiceResponse<ICatalog> = {};
     try {
@@ -110,7 +105,7 @@ export class CatalogService
   public async delete(
     id: string,
     expectedVersion?: number,
-    actor: string = ''
+    actor = ''
   ): Promise<IServiceResponse<boolean>> {
     const serviceResponse: IServiceResponse<boolean> = {};
     try {
@@ -122,17 +117,14 @@ export class CatalogService
         this.dataRepository,
         actor
       );
-      await this.publishEvent(
-        CatalogIntegrationEventName.Deleted,
-        {
-          id,
-          organization: current.organization,
-          // The tombstone bumps the token exactly once, so the event carries
-          // the post-delete version whether or not a version was supplied.
-          version: current.version + 1,
-          actor
-        }
-      );
+      await this.publishEvent(CatalogIntegrationEventName.Deleted, {
+        id,
+        organization: current.organization,
+        // The tombstone bumps the token exactly once, so the event carries
+        // the post-delete version whether or not a version was supplied.
+        version: current.version + 1,
+        actor
+      });
     } catch (error) {
       serviceResponse.error = error as BaseError;
     }
@@ -142,7 +134,7 @@ export class CatalogService
   public async restore(
     id: string,
     expectedVersion: number,
-    actor: string = ''
+    actor = ''
   ): Promise<IServiceResponse<ICatalog>> {
     const serviceResponse: IServiceResponse<ICatalog> = {};
     try {
@@ -171,7 +163,7 @@ export class CatalogService
   }
 
   public async getAll(
-    filters: Record<string, string|number>,
+    filters: Record<string, string | number>,
     paging: IPagingRequest,
     options: RequestCatalogListOptions = {}
   ): Promise<IServiceResponse<ICatalog[]>> {
@@ -201,9 +193,12 @@ export class CatalogService
     if (!documents || typeof documents !== 'object' || Array.isArray(documents)) {
       return { merged: null, services: {} };
     }
-    const services = documents.services && typeof documents.services === 'object' && !Array.isArray(documents.services)
-      ? documents.services
-      : {};
+    const services =
+      documents.services &&
+      typeof documents.services === 'object' &&
+      !Array.isArray(documents.services)
+        ? documents.services
+        : {};
     return {
       merged: documents.merged && typeof documents.merged === 'object' ? documents.merged : null,
       services
@@ -214,3 +209,5 @@ export class CatalogService
     return new CatalogService(config);
   }
 }
+
+export default CatalogService;

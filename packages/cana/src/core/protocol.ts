@@ -27,10 +27,9 @@
  * that is what the operation ledger is for (`reconciliation.ts`).
  */
 
-import type {
-  CanaError, CanaKey, CanaQuery, CanaTransactionMode
-} from '../contracts';
 import { canaError } from './errors';
+
+import type { CanaError, CanaKey, CanaQuery, CanaTransactionMode } from '../contracts';
 
 export type CanaRequestKind =
   | 'open'
@@ -160,7 +159,9 @@ export function createRouter(options: RouterOptions): CanaRouter {
     if (message.ok) {
       entry.resolve(message.result);
     } else {
-      entry.reject(message.error ?? canaError('Internal', 'Worker reported a failure with no detail.'));
+      entry.reject(
+        message.error ?? canaError('Internal', 'Worker reported a failure with no detail.')
+      );
     }
   };
 
@@ -185,21 +186,26 @@ export function createRouter(options: RouterOptions): CanaRouter {
           if (!entry) return;
           // A write that was sent and never answered may still have committed.
           // Calling it a failure would invite a retry that duplicates it.
-          entry.reject(WRITE_KINDS.has(request.kind)
-            ? canaError(
-              'UnknownOutcome',
-              `No response for ${request.kind} within ${timeoutMs}ms. The worker may have died `
-                + 'after committing. Resolve it against the operation ledger rather than retrying '
-                + 'blind.'
-            )
-            : canaError(
-              'Unavailable',
-              `No response for ${request.kind} within ${timeoutMs}ms; the worker is not answering.`
-            ));
+          entry.reject(
+            WRITE_KINDS.has(request.kind)
+              ? canaError(
+                  'UnknownOutcome',
+                  `No response for ${request.kind} within ${timeoutMs}ms. The worker may have died ` +
+                    'after committing. Resolve it against the operation ledger rather than retrying ' +
+                    'blind.'
+                )
+              : canaError(
+                  'Unavailable',
+                  `No response for ${request.kind} within ${timeoutMs}ms; the worker is not answering.`
+                )
+          );
         }, timeoutMs);
 
         pending.set(requestId, {
-          kind: request.kind, resolve, reject, timer
+          kind: request.kind,
+          resolve,
+          reject,
+          timer
         });
 
         try {
@@ -208,12 +214,14 @@ export function createRouter(options: RouterOptions): CanaRouter {
           settle(requestId);
           // A message that cannot even be cloned never reached the worker, so
           // this one genuinely did not happen.
-          reject(canaError(
-            'InvalidRequest',
-            'Request could not be sent to the worker. Payloads must be structured-cloneable: '
-              + 'functions, class instances and DOM objects cannot cross the boundary.',
-            { cause: error }
-          ));
+          reject(
+            canaError(
+              'InvalidRequest',
+              'Request could not be sent to the worker. Payloads must be structured-cloneable: ' +
+                'functions, class instances and DOM objects cannot cross the boundary.',
+              { cause: error }
+            )
+          );
         }
       });
     },
@@ -221,9 +229,11 @@ export function createRouter(options: RouterOptions): CanaRouter {
     abandonAll(reason: string) {
       for (const [requestId, entry] of [...pending.entries()]) {
         settle(requestId);
-        entry.reject(WRITE_KINDS.has(entry.kind)
-          ? canaError('UnknownOutcome', `${reason} This write's outcome is unknown.`)
-          : canaError('Unavailable', reason));
+        entry.reject(
+          WRITE_KINDS.has(entry.kind)
+            ? canaError('UnknownOutcome', `${reason} This write's outcome is unknown.`)
+            : canaError('Unavailable', reason)
+        );
       }
     },
 

@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import type { CanaSchema } from '../src';
 import {
-  StorageDurability,
   deleteDatabase,
   isCanaErrorCode,
   openDatabase,
+  StorageDurability,
   validateSchema
 } from '../src';
 import { rejection } from './harness';
+
+import type { CanaSchema } from '../src';
 
 /**
  * Exercised against the browser's own IndexedDB, not a
@@ -18,9 +18,7 @@ import { rejection } from './harness';
 
 const schema = (over: Partial<CanaSchema> = {}): CanaSchema => ({
   version: 1,
-  stores: [
-    { name: 'designs', keyPath: 'id', indexes: [{ name: 'byName', keyPath: 'name' }] }
-  ],
+  stores: [{ name: 'designs', keyPath: 'id', indexes: [{ name: 'byName', keyPath: 'name' }] }],
   ...over
 });
 
@@ -34,8 +32,12 @@ const tombstoneEnvironment = () => {
     environment: {
       tombstone: {
         get: (key: string) => store.get(key) ?? null,
-        set: (key: string, value: string) => { store.set(key, value); },
-        remove: (key: string) => { store.delete(key); }
+        set: (key: string, value: string) => {
+          store.set(key, value);
+        },
+        remove: (key: string) => {
+          store.delete(key);
+        }
       }
     }
   };
@@ -49,32 +51,47 @@ describe('cana schema validation', () => {
   it('rejects multiEntry combined with a compound keyPath', () => {
     // IndexedDB forbids this and reports it from inside a versionchange
     // transaction, where it reads as a broken upgrade rather than a bad schema.
-    const problems = validateSchema(schema({
-      stores: [{
-        name: 'designs',
-        keyPath: 'id',
-        indexes: [{ name: 'bad', keyPath: ['a', 'b'], multiEntry: true }]
-      }]
-    }));
+    const problems = validateSchema(
+      schema({
+        stores: [
+          {
+            name: 'designs',
+            keyPath: 'id',
+            indexes: [{ name: 'bad', keyPath: ['a', 'b'], multiEntry: true }]
+          }
+        ]
+      })
+    );
 
     expect(problems).to.have.lengthOf(1);
     expect(problems[0]).to.include('multiEntry cannot be combined with a compound keyPath');
   });
 
   it('rejects duplicate stores, duplicate indexes and empty compound key paths', () => {
-    const problems = validateSchema(schema({
-      stores: [
-        { name: 'a', keyPath: [] },
-        { name: 'a', keyPath: 'id', indexes: [{ name: 'i', keyPath: 'x' }, { name: 'i', keyPath: 'y' }] }
-      ]
-    }));
+    const problems = validateSchema(
+      schema({
+        stores: [
+          { name: 'a', keyPath: [] },
+          {
+            name: 'a',
+            keyPath: 'id',
+            indexes: [
+              { name: 'i', keyPath: 'x' },
+              { name: 'i', keyPath: 'y' }
+            ]
+          }
+        ]
+      })
+    );
 
     expect(problems.some((entry) => entry.includes('compound keyPath is empty'))).to.equal(true);
     expect(problems.some((entry) => entry.includes('declared more than once'))).to.equal(true);
   });
 
   it('rejects a non-positive version', () => {
-    expect(validateSchema(schema({ version: 0 }))[0]).to.include('version must be a positive integer');
+    expect(validateSchema(schema({ version: 0 }))[0]).to.include(
+      'version must be a positive integer'
+    );
   });
 });
 
@@ -85,8 +102,9 @@ describe('cana database lifecycle', () => {
 
     expect(result.upgraded).to.equal(true);
     expect([...result.database.objectStoreNames]).to.deep.equal(['designs']);
-    expect([...result.database.transaction('designs').objectStore('designs').indexNames])
-      .to.deep.equal(['byName']);
+    expect([
+      ...result.database.transaction('designs').objectStore('designs').indexNames
+    ]).to.deep.equal(['byName']);
     result.database.close();
   });
 
@@ -107,7 +125,10 @@ describe('cana database lifecycle', () => {
       })
     });
 
-    expect([...upgraded.database.objectStoreNames].sort()).to.deep.equal(['deployments', 'designs']);
+    expect([...upgraded.database.objectStoreNames].sort()).to.deep.equal([
+      'deployments',
+      'designs'
+    ]);
     upgraded.database.close();
   });
 
@@ -118,7 +139,12 @@ describe('cana database lifecycle', () => {
     const first = await openDatabase({
       name: 'designer',
       factory,
-      schema: schema({ stores: [{ name: 'designs', keyPath: 'id' }, { name: 'legacy', keyPath: 'id' }] })
+      schema: schema({
+        stores: [
+          { name: 'designs', keyPath: 'id' },
+          { name: 'legacy', keyPath: 'id' }
+        ]
+      })
     });
     first.database.close();
 
@@ -137,17 +163,23 @@ describe('cana database lifecycle', () => {
     const first = await openDatabase({ name: 'designer', factory, schema: schema({ version: 3 }) });
     first.database.close();
 
-    expect(await rejection(openDatabase({ name: 'designer', factory, schema: schema({ version: 2 }) }))).to.deep.include({ canaError: true, code: 'UpgradeFailed' });
+    expect(
+      await rejection(openDatabase({ name: 'designer', factory, schema: schema({ version: 2 }) }))
+    ).to.deep.include({ canaError: true, code: 'UpgradeFailed' });
   });
 
   it('rejects an inapplicable schema before touching the database', async () => {
     const factory = freshFactory();
 
-    expect(await rejection(openDatabase({
-      name: 'designer',
-      factory,
-      schema: schema({ version: -1 })
-    }))).to.deep.include({ canaError: true, code: 'InvalidRequest' });
+    expect(
+      await rejection(
+        openDatabase({
+          name: 'designer',
+          factory,
+          schema: schema({ version: -1 })
+        })
+      )
+    ).to.deep.include({ canaError: true, code: 'InvalidRequest' });
 
     // Nothing was created, so the failure left no partial state behind.
     const listed = await factory.databases();
@@ -157,8 +189,11 @@ describe('cana database lifecycle', () => {
 
   it('surfaces a typed error rather than a DOMException', async () => {
     const factory = freshFactory();
-    const failure = await openDatabase({ name: 'designer', factory, schema: schema({ version: 0 }) })
-      .catch((error: unknown) => error);
+    const failure = await openDatabase({
+      name: 'designer',
+      factory,
+      schema: schema({ version: 0 })
+    }).catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
     expect(failure).not.to.be.instanceOf(Error);
@@ -170,7 +205,10 @@ describe('cana database lifecycle', () => {
     const durability = new StorageDurability(environment);
 
     const result = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
 
     expect(result.eviction).to.deep.equal({ evicted: false, reason: 'first-run' });
@@ -186,13 +224,19 @@ describe('cana database lifecycle', () => {
     const durability = new StorageDurability(environment);
 
     const first = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
     first.database.close();
     await deleteDatabase('designer', { factory });
 
     const second = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
 
     expect(second.eviction.evicted).to.equal(true);
@@ -207,7 +251,10 @@ describe('cana database lifecycle', () => {
     const durability = new StorageDurability(environment);
 
     const first = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
     await new Promise<void>((resolve, reject) => {
       const transaction = first.database.transaction('designs', 'readwrite');
@@ -218,7 +265,10 @@ describe('cana database lifecycle', () => {
     first.database.close();
 
     const second = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
 
     expect(second.eviction).to.deep.equal({ evicted: false, reason: 'existing-data' });
@@ -249,10 +299,7 @@ describe('cana database lifecycle', () => {
  */
 describe('cana database environment handling', () => {
   /** Swap the ambient IndexedDB for the duration of one test. */
-  const withAmbient = async (
-    ambient: IDBFactory | undefined,
-    body: () => Promise<void>
-  ) => {
+  const withAmbient = async (ambient: IDBFactory | undefined, body: () => Promise<void>) => {
     const globals = globalThis as { indexedDB?: IDBFactory };
     const previous = globals.indexedDB;
     if (ambient === undefined) delete globals.indexedDB;
@@ -271,8 +318,9 @@ describe('cana database environment handling', () => {
     // (JUM-615) — so this path stays Unavailable with a message that points at
     // the optional localStorage fallback.
     await withAmbient(undefined, async () => {
-      const failure = await openDatabase({ name: 'no-idb', schema: schema() })
-        .catch((error: unknown) => error);
+      const failure = await openDatabase({ name: 'no-idb', schema: schema() }).catch(
+        (error: unknown) => error
+      );
 
       expect(isCanaErrorCode(failure, 'Unavailable')).to.equal(true);
       expect((failure as { message: string }).message).to.include('No usable IndexedDB');
@@ -340,11 +388,13 @@ describe('cana database upgrade failure', () => {
       name,
       schema: {
         version: 1,
-        stores: [{
-          name: 'designs',
-          keyPath: 'id',
-          indexes: [{ name: 'bad', keyPath: ['a', 'b'], multiEntry: true }]
-        }]
+        stores: [
+          {
+            name: 'designs',
+            keyPath: 'id',
+            indexes: [{ name: 'bad', keyPath: ['a', 'b'], multiEntry: true }]
+          }
+        ]
       },
       factory
     }).catch((error: unknown) => error);
@@ -364,11 +414,13 @@ describe('cana database upgrade failure', () => {
       name,
       schema: {
         version: 1,
-        stores: [{
-          name: 'designs',
-          keyPath: 'id',
-          indexes: [{ name: 'bad', keyPath: ['a', 'b'], multiEntry: true }]
-        }]
+        stores: [
+          {
+            name: 'designs',
+            keyPath: 'id',
+            indexes: [{ name: 'bad', keyPath: ['a', 'b'], multiEntry: true }]
+          }
+        ]
       },
       factory
     }).catch(() => undefined);

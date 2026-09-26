@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
+/* eslint-disable jest/no-conditional-in-test */
 /*
  * JUM-485 — multi-tab write-event sync, run in a REAL browser (Playwright
  * WebKit, the engine this repository already pins) against the REAL server
@@ -19,18 +19,22 @@
  */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+
 import { webkit } from 'playwright-webkit';
-import type { Browser, Page } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
-  envFileContent,
-  startServer,
   clickInPanels,
+  createTempConfigDir,
+  envFileContent,
   openDesignerPanels,
+  startServer,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser, Page } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
@@ -40,7 +44,7 @@ async function waitForDomain(page: Page, name: string) {
   await page.waitForFunction(
     (expected) => {
       const list = document.getElementById('domain-list');
-      return Boolean(list && list.textContent && list.textContent.includes(String(expected)));
+      return Boolean(list?.textContent?.includes(String(expected)));
     },
     name,
     { timeout: 20000 }
@@ -52,8 +56,9 @@ async function waitForRemoteChangeStatus(page: Page) {
   await page.waitForFunction(
     () => {
       const region = document.getElementById('status-region');
-      return Boolean(region && !region.hidden && region.textContent
-        && region.textContent.includes('change from another tab'));
+      return Boolean(
+        region && !region.hidden && region.textContent?.includes('change from another tab')
+      );
     },
     undefined,
     { timeout: 20000 }
@@ -75,20 +80,21 @@ async function bootPage(context: Awaited<ReturnType<Browser['newContext']>>, bas
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.waitForSelector('#domain-designer-empty-state:not([hidden])', { timeout: 20000 });
   await page.waitForFunction(
-    () => new Promise((resolve) => {
-      const request = indexedDB.open('service-management');
-      request.onsuccess = () => {
-        try {
-          const tx = request.result.transaction('designerDocuments', 'readonly');
-          const getRequest = tx.objectStore('designerDocuments').get('service-management.v1');
-          getRequest.onsuccess = () => resolve(typeof getRequest.result === 'string');
-          getRequest.onerror = () => resolve(false);
-        } catch (_) {
-          resolve(false);
-        }
-      };
-      request.onerror = () => resolve(false);
-    }),
+    () =>
+      new Promise((resolve) => {
+        const request = indexedDB.open('service-management');
+        request.onsuccess = () => {
+          try {
+            const tx = request.result.transaction('designerDocuments', 'readonly');
+            const getRequest = tx.objectStore('designerDocuments').get('service-management.v1');
+            getRequest.onsuccess = () => resolve(typeof getRequest.result === 'string');
+            getRequest.onerror = () => resolve(false);
+          } catch (_) {
+            resolve(false);
+          }
+        };
+        request.onerror = () => resolve(false);
+      }),
     undefined,
     { polling: 250, timeout: 20000 }
   );
@@ -120,13 +126,24 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
   beforeAll(async () => {
     // The SPA resolves `@jumentix/cana` to the vendored bundle; regenerate it
     // so the suite never boots against a stale or absent artifact.
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], {
-      cwd: repoRoot,
-      stdio: 'inherit'
-    });
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-cana-bundle.js'],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit'
+      }
+    );
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
     await waitForServer(server.port);
@@ -144,7 +161,7 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
 
   it('converges two tabs on the same state after concurrent edits, announced via the status region', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const pageA = await bootPage(context, baseUrl);
     const pageB = await bootPage(context, baseUrl);
     await loadSampleAndConverge(pageA, pageB);
@@ -171,7 +188,7 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
 
   it('a pending local edit survives a remote apply with its value and focus intact (question 2)', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const pageA = await bootPage(context, baseUrl);
     const pageB = await bootPage(context, baseUrl);
     await loadSampleAndConverge(pageA, pageB);

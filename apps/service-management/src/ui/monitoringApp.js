@@ -1,3 +1,4 @@
+import { createHelpPopoverState, resolveOpenHelpKey } from './helpPopoverState.js';
 import {
   computeWindowThroughput,
   drawCoreBars,
@@ -14,7 +15,6 @@ import {
   legendEntriesForStack
 } from './monitoringCharts.js';
 import { describeProcessHelp } from './processHelpCatalog.js';
-import { createHelpPopoverState, resolveOpenHelpKey } from './helpPopoverState.js';
 
 const HISTORY_CAP = 60;
 const PROCESS_HISTORY_LIMIT = 40;
@@ -44,16 +44,12 @@ function formatAsyncContextSummary(asyncContext) {
   return `active ${active} · entered ${entered}`;
 }
 
-export function createMonitoringController(dom, options = {}) {
-  const getPersistedHistory = typeof options.getHistory === 'function'
-    ? options.getHistory
-    : () => null;
-  const setPersistedHistory = typeof options.setHistory === 'function'
-    ? options.setHistory
-    : () => {};
-  const persistHistory = typeof options.persist === 'function'
-    ? options.persist
-    : () => {};
+function createMonitoringController(dom, options = {}) {
+  const getPersistedHistory =
+    typeof options.getHistory === 'function' ? options.getHistory : () => null;
+  const setPersistedHistory =
+    typeof options.setHistory === 'function' ? options.setHistory : () => {};
+  const persistHistory = typeof options.persist === 'function' ? options.persist : () => {};
   // Which process-help popover is open, tracked by process key so it survives
   // the table re-render each WebSocket push triggers (JUM-770).
   const helpPopover = createHelpPopoverState();
@@ -68,7 +64,11 @@ export function createMonitoringController(dom, options = {}) {
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => {
-      try { toast.remove(); } catch (_error) { /* ignore */ }
+      try {
+        toast.remove();
+      } catch {
+        /* ignore */
+      }
     }, 4500);
   }
 
@@ -112,20 +112,24 @@ export function createMonitoringController(dom, options = {}) {
     state.history.aggregate.cpuTotal = samples.map((sample) => Number(sample.cpuTotal) || 0);
     state.history.aggregate.memTotal = samples.map((sample) => Number(sample.memTotal) || 0);
     state.history.aggregate.onlineRatio = samples.map((sample) => Number(sample.onlineRatio) || 0);
-    state.history.aggregate.asyncActiveSum = samples.map((sample) => Number(sample.asyncActiveSum) || 0);
-    state.history.aggregate.hostCpu = samples.map((sample) => (
+    state.history.aggregate.asyncActiveSum = samples.map(
+      (sample) => Number(sample.asyncActiveSum) || 0
+    );
+    state.history.aggregate.hostCpu = samples.map((sample) =>
       sample.hostCpu == null ? 0 : Number(sample.hostCpu) || 0
-    ));
-    state.history.aggregate.hostMemUsedPercent = samples.map((sample) => (
+    );
+    state.history.aggregate.hostMemUsedPercent = samples.map((sample) =>
       sample.hostMemUsedPercent == null ? 0 : Number(sample.hostMemUsedPercent) || 0
-    ));
+    );
     state.history.aggregate.sampleTimes = samples.map((sample) => String(sample.t || ''));
     state.history.processes.clear();
     Object.entries(persisted.processes || {}).forEach(([key, bucket]) => {
       state.history.processes.set(key, {
         cpu: Array.isArray(bucket?.cpu) ? bucket.cpu.map(Number).filter(Number.isFinite) : [],
         mem: Array.isArray(bucket?.mem) ? bucket.mem.map(Number).filter(Number.isFinite) : [],
-        restarts: Array.isArray(bucket?.restarts) ? bucket.restarts.map(Number).filter(Number.isFinite) : [],
+        restarts: Array.isArray(bucket?.restarts)
+          ? bucket.restarts.map(Number).filter(Number.isFinite)
+          : [],
         asyncActive: Array.isArray(bucket?.asyncActive)
           ? bucket.asyncActive.map(Number).filter(Number.isFinite)
           : [],
@@ -156,7 +160,7 @@ export function createMonitoringController(dom, options = {}) {
           diskWriteBytes: [...(bucket.diskWriteBytes || [])]
         };
       });
-      const length = state.history.aggregate.sampleTimes.length;
+      const { length } = state.history.aggregate.sampleTimes;
       const samples = [];
       for (let index = 0; index < length; index += 1) {
         samples.push({
@@ -205,7 +209,7 @@ export function createMonitoringController(dom, options = {}) {
     const host = snapshot?.host || {};
     const processes = Array.isArray(snapshot?.processes) ? snapshot.processes : [];
     const onlineRatio = summary.processCount
-      ? (Number(summary.onlineCount || 0) / Number(summary.processCount || 1))
+      ? Number(summary.onlineCount || 0) / Number(summary.processCount || 1)
       : 0;
     pushSample(state.history.aggregate.cpuTotal, summary.totalCpuPercent);
     pushSample(state.history.aggregate.memTotal, summary.totalMemoryBytes);
@@ -218,7 +222,9 @@ export function createMonitoringController(dom, options = {}) {
     pushSample(state.history.aggregate.hostCpu, host.cpu?.usagePercent);
     pushSample(state.history.aggregate.hostLoad1, host.cpu?.loadAvg?.one);
     pushSample(state.history.aggregate.hostMemUsedPercent, host.memory?.usedPercent);
-    state.history.aggregate.sampleTimes.push(String(snapshot?.collectedAt || new Date().toISOString()));
+    state.history.aggregate.sampleTimes.push(
+      String(snapshot?.collectedAt || new Date().toISOString())
+    );
     if (state.history.aggregate.sampleTimes.length > HISTORY_CAP) {
       state.history.aggregate.sampleTimes.shift();
     }
@@ -270,7 +276,8 @@ export function createMonitoringController(dom, options = {}) {
       if (state.filters.expectedOnly && !expected.has(processEntry.name)) return false;
       if (state.filters.missingOnly && !missing.has(processEntry.name)) return false;
       if (!state.filters.query) return true;
-      const hay = `${processEntry.name} ${processEntry.script} ${processEntry.namespace}`.toLowerCase();
+      const hay =
+        `${processEntry.name} ${processEntry.script} ${processEntry.namespace}`.toLowerCase();
       return hay.includes(state.filters.query.toLowerCase());
     });
   }
@@ -298,7 +305,7 @@ export function createMonitoringController(dom, options = {}) {
   function paintCharts() {
     const host = state.snapshot?.host || {};
     const summary = state.snapshot?.summary || {};
-    const aggregate = state.history.aggregate;
+    const { aggregate } = state.history;
     const percentTick = (value) => formatPercentValue(value);
     const intervalSeconds = Math.max(0.5, Number(state.intervalMs || 1000) / 1000);
     const coreCount = Math.max(1, Number(host.cpu?.coreCount) || 1);
@@ -332,11 +339,10 @@ export function createMonitoringController(dom, options = {}) {
     drawDiskBars(dom.hostDiskBars, host.disk || []);
     const online = Number(summary.onlineCount || 0);
     const total = Number(summary.processCount || 0);
-    drawRingGauge(
-      dom.pm2HealthGauge,
-      state.snapshot ? online / Math.max(1, total) : 0,
-      { label: state.snapshot ? `${online}/${total}` : '—', labelColor: '#f8fafc' }
-    );
+    drawRingGauge(dom.pm2HealthGauge, state.snapshot ? online / Math.max(1, total) : 0, {
+      label: state.snapshot ? `${online}/${total}` : '—',
+      labelColor: '#f8fafc'
+    });
     drawSparkline(dom.procCpuSpark, aggregate.cpuTotal, { yAxis: { format: percentTick } });
     drawSparkline(dom.procMemSpark, aggregate.memTotal, {
       stroke: '#7c3aed',
@@ -394,8 +400,14 @@ export function createMonitoringController(dom, options = {}) {
     state.history.processes.forEach((bucket) => {
       const read = computeWindowThroughput(bucket.diskReadBytes, intervalSeconds);
       const write = computeWindowThroughput(bucket.diskWriteBytes, intervalSeconds);
-      if (read != null) { readRate += read; hasIo = true; }
-      if (write != null) { writeRate += write; hasIo = true; }
+      if (read != null) {
+        readRate += read;
+        hasIo = true;
+      }
+      if (write != null) {
+        writeRate += write;
+        hasIo = true;
+      }
     });
     const volumeText = (host.disk || [])
       .filter((volume) => !volume.error)
@@ -409,9 +421,15 @@ export function createMonitoringController(dom, options = {}) {
       ? aggregate.restartTotal[aggregate.restartTotal.length - 1]
       : 0;
     setStats(dom.pm2HealthGaugeStats, `Σ restarts ${Math.round(restartSummary)}`);
-    setStats(dom.procCpuSparkStats, formatSeriesSummary(aggregate.cpuTotal, (value) => formatPercentValue(value, 1)));
+    setStats(
+      dom.procCpuSparkStats,
+      formatSeriesSummary(aggregate.cpuTotal, (value) => formatPercentValue(value, 1))
+    );
     setStats(dom.procMemSparkStats, formatSeriesSummary(aggregate.memTotal, formatBytesValue));
-    setStats(dom.asyncActiveSparkStats, formatSeriesSummary(aggregate.asyncActiveSum, (value) => String(Math.round(value))));
+    setStats(
+      dom.asyncActiveSparkStats,
+      formatSeriesSummary(aggregate.asyncActiveSum, (value) => String(Math.round(value)))
+    );
     renderStackLegend(dom.stackCpuLegend, cpuSeries, (value) => formatPercentValue(value, 1));
     renderStackLegend(dom.stackMemLegend, memSeries, formatBytesValue);
     const statusCounts = state.snapshot?.summary?.statusCounts || {};
@@ -426,23 +444,21 @@ export function createMonitoringController(dom, options = {}) {
     const host = state.snapshot?.host || {};
     if (dom.hostCpuMeta) {
       dom.hostCpuMeta.textContent = host.cpu
-        ? `${host.cpu.coreCount} cores · load ${Number(host.cpu.loadAvg?.one || 0).toFixed(2)}`
-          + ` / ${Number(host.cpu.loadAvg?.five || 0).toFixed(2)}`
-          + ` / ${Number(host.cpu.loadAvg?.fifteen || 0).toFixed(2)}`
-          + ` · Σ proc ${Number(host.cpu.processCpuPercentSum || 0).toFixed(1)}%`
+        ? `${host.cpu.coreCount} cores · load ${Number(host.cpu.loadAvg?.one || 0).toFixed(2)}` +
+          ` / ${Number(host.cpu.loadAvg?.five || 0).toFixed(2)}` +
+          ` / ${Number(host.cpu.loadAvg?.fifteen || 0).toFixed(2)}` +
+          ` · Σ proc ${Number(host.cpu.processCpuPercentSum || 0).toFixed(1)}%`
         : '—';
     }
     if (dom.hostMemMeta) {
       dom.hostMemMeta.textContent = host.memory
-        ? `${formatBytes(host.memory.usedBytes)} / ${formatBytes(host.memory.totalBytes)}`
-          + ` · RSS ${formatBytes(host.memory.processRssSumBytes)}`
+        ? `${formatBytes(host.memory.usedBytes)} / ${formatBytes(host.memory.totalBytes)}` +
+          ` · RSS ${formatBytes(host.memory.processRssSumBytes)}`
         : '—';
     }
     if (dom.hostDiskMeta) {
       const ok = (host.disk || []).filter((volume) => !volume.error);
-      dom.hostDiskMeta.textContent = ok.length
-        ? `${ok.length} volume(s)`
-        : 'no volumes';
+      dom.hostDiskMeta.textContent = ok.length ? `${ok.length} volume(s)` : 'no volumes';
     }
     if (dom.asyncActiveSum) {
       dom.asyncActiveSum.textContent = String(state.snapshot?.summary?.asyncContextActiveSum || 0);
@@ -524,20 +540,33 @@ export function createMonitoringController(dom, options = {}) {
         processEntry.namespace,
         processEntry.interpreter,
         processEntry.pmId != null ? `pm_id ${processEntry.pmId}` : ''
-      ].filter(Boolean).join(' / ');
+      ]
+        .filter(Boolean)
+        .join(' / ');
       const status = tr.querySelector('.process-status');
       status.textContent = processEntry.status || 'unknown';
       status.dataset.status = processEntry.status || 'unknown';
-      tr.children[3].querySelector('.metric-cell-value').textContent = `${Number(processEntry.cpuPercent || 0).toFixed(1)}%`;
-      tr.children[4].querySelector('.metric-cell-value').textContent = formatBytes(processEntry.memoryBytes);
+      tr.children[3].querySelector('.metric-cell-value').textContent =
+        `${Number(processEntry.cpuPercent || 0).toFixed(1)}%`;
+      tr.children[4].querySelector('.metric-cell-value').textContent = formatBytes(
+        processEntry.memoryBytes
+      );
       const restart = tr.querySelector('.restart-pill');
       restart.textContent = String(processEntry.restartCount || 0);
-      tr.querySelector('.async-cell').textContent = processEntry.asyncContext?.active != null
-        ? String(processEntry.asyncContext.active)
-        : (processEntry.asyncContext?.error ? 'err' : '—');
-      tr.querySelector('.uptime-cell').textContent = `${Math.max(0, Math.floor(Number(processEntry.uptimeMs || 0) / 60000))}m`;
+      let asyncCell;
+      if (processEntry.asyncContext?.active != null) {
+        asyncCell = String(processEntry.asyncContext.active);
+      } else {
+        asyncCell = processEntry.asyncContext?.error ? 'err' : '—';
+      }
+      tr.querySelector('.async-cell').textContent = asyncCell;
+      tr.querySelector('.uptime-cell').textContent =
+        `${Math.max(0, Math.floor(Number(processEntry.uptimeMs || 0) / 60000))}m`;
       drawSparkline(tr.querySelector('canvas.cpu'), hist.cpu);
-      drawSparkline(tr.querySelector('canvas.mem'), hist.mem, { stroke: '#7c3aed', fill: 'rgba(124,58,237,0.12)' });
+      drawSparkline(tr.querySelector('canvas.mem'), hist.mem, {
+        stroke: '#7c3aed',
+        fill: 'rgba(124,58,237,0.12)'
+      });
       tr.querySelector('.expand-btn').onclick = () => {
         if (state.expanded.has(key)) state.expanded.delete(key);
         else state.expanded.add(key);
@@ -545,15 +574,17 @@ export function createMonitoringController(dom, options = {}) {
       };
       tr.querySelectorAll('[data-action]').forEach((button) => {
         const action = button.getAttribute('data-action');
-        button.disabled = Boolean(state.pendingAction)
-          || (action === 'start' && processEntry.status === 'online')
-          || (action === 'stop' && processEntry.status === 'stopped');
-        button.onclick = () => sendAction({
-          action,
-          scope: 'process',
-          name: processEntry.name,
-          pmId: processEntry.pmId
-        });
+        button.disabled =
+          Boolean(state.pendingAction) ||
+          (action === 'start' && processEntry.status === 'online') ||
+          (action === 'stop' && processEntry.status === 'stopped');
+        button.onclick = () =>
+          sendAction({
+            action,
+            scope: 'process',
+            name: processEntry.name,
+            pmId: processEntry.pmId
+          });
       });
       dom.pm2MetricsProcessList.appendChild(tr);
       if (state.expanded.has(key)) {
@@ -576,17 +607,24 @@ export function createMonitoringController(dom, options = {}) {
         cell.querySelector('pre').textContent = JSON.stringify(metrics, null, 2);
         cell.querySelector('pre.custom').textContent = JSON.stringify(custom, null, 2);
         cell.querySelector('pre.async').textContent = formatAsyncContextSummary(asyncContext);
-        cell.querySelector('pre.disk').textContent = formatDiskIoSummary(processEntry.diskIo, formatBytes);
+        cell.querySelector('pre.disk').textContent = formatDiskIoSummary(
+          processEntry.diskIo,
+          formatBytes
+        );
         detail.appendChild(cell);
         dom.pm2MetricsProcessList.appendChild(detail);
       }
     });
     // Re-open the tracked help popover after this rebuild, so it survives the
     // render each WebSocket push triggers (JUM-770).
-    const openKey = resolveOpenHelpKey(helpPopover.current(), rows.map((entry) => processKey(entry)));
+    const openKey = resolveOpenHelpKey(
+      helpPopover.current(),
+      rows.map((entry) => processKey(entry))
+    );
     if (openKey) {
-      const row = [...dom.pm2MetricsProcessList.querySelectorAll('tr[data-key]')]
-        .find((node) => node.dataset.key === openKey);
+      const row = [...dom.pm2MetricsProcessList.querySelectorAll('tr[data-key]')].find(
+        (node) => node.dataset.key === openKey
+      );
       if (row) {
         row.querySelector('.process-help-popover')?.removeAttribute('hidden');
         row.querySelector('.process-help-btn')?.setAttribute('aria-expanded', 'true');
@@ -612,11 +650,12 @@ export function createMonitoringController(dom, options = {}) {
         const li = document.createElement('li');
         li.innerHTML = `<span></span> <button type="button">Start</button>`;
         li.querySelector('span').textContent = name;
-        li.querySelector('button').onclick = () => sendAction({
-          action: 'start',
-          scope: 'ecosystem-missing',
-          name
-        });
+        li.querySelector('button').onclick = () =>
+          sendAction({
+            action: 'start',
+            scope: 'ecosystem-missing',
+            name
+          });
         dom.pm2MetricsMissingList.appendChild(li);
       });
       return;
@@ -631,13 +670,16 @@ export function createMonitoringController(dom, options = {}) {
       (state.snapshot?.processes || []).map((entry) => entry.namespace || 'default')
     );
     dom.pm2FilterNamespace.innerHTML = '<option value="all">all namespaces</option>';
-    [...namespaces].sort((a, b) => a.localeCompare(b)).forEach((namespace) => {
-      const option = document.createElement('option');
-      option.value = namespace;
-      option.textContent = namespace;
-      dom.pm2FilterNamespace.appendChild(option);
-    });
-    dom.pm2FilterNamespace.value = [...namespaces].includes(current) || current === 'all' ? current : 'all';
+    [...namespaces]
+      .sort((a, b) => a.localeCompare(b))
+      .forEach((namespace) => {
+        const option = document.createElement('option');
+        option.value = namespace;
+        option.textContent = namespace;
+        dom.pm2FilterNamespace.appendChild(option);
+      });
+    dom.pm2FilterNamespace.value =
+      [...namespaces].includes(current) || current === 'all' ? current : 'all';
     state.filters.namespace = dom.pm2FilterNamespace.value;
   }
 
@@ -654,9 +696,7 @@ export function createMonitoringController(dom, options = {}) {
       const summary = state.snapshot.summary || {};
       const online = Number(summary.onlineCount || 0);
       const total = Number(summary.processCount || 0);
-      dom.pm2HealthLabel.textContent = total
-        ? `${online}/${total} online`
-        : 'No PM2 processes';
+      dom.pm2HealthLabel.textContent = total ? `${online}/${total} online` : 'No PM2 processes';
     }
     if (dom.pm2ProcessDensityLabel && state.snapshot) {
       const count = (state.snapshot.processes || []).length;
@@ -673,17 +713,23 @@ export function createMonitoringController(dom, options = {}) {
 
   function subscribe() {
     if (!state.ws || state.ws.readyState !== WebSocket.OPEN) return;
-    state.ws.send(JSON.stringify({
-      type: 'subscribe',
-      environment: state.environment,
-      intervalMs: state.intervalMs,
-      filters: state.filters
-    }));
+    state.ws.send(
+      JSON.stringify({
+        type: 'subscribe',
+        environment: state.environment,
+        intervalMs: state.intervalMs,
+        filters: state.filters
+      })
+    );
   }
 
   function connect() {
     if (state.ws) {
-      try { state.ws.close(); } catch (_error) { /* ignore */ }
+      try {
+        state.ws.close();
+      } catch {
+        /* ignore */
+      }
     }
     setConn('connecting', 'warn');
     const socket = new WebSocket(wsUrl());
@@ -751,7 +797,11 @@ export function createMonitoringController(dom, options = {}) {
       state.persistTimer = null;
     }
     if (state.ws) {
-      try { state.ws.close(); } catch (_error) { /* ignore */ }
+      try {
+        state.ws.close();
+      } catch {
+        /* ignore */
+      }
       state.ws = null;
     }
   }
@@ -812,9 +862,11 @@ export function createMonitoringController(dom, options = {}) {
       };
     }
     const bulk = (action) => {
-      const namespace = state.filters.namespace === 'all'
-        ? (dom.pm2NamespaceOpsSelect?.value || 'default')
-        : state.filters.namespace;
+      const namespace =
+        state.filters.namespace === 'all'
+          ? dom.pm2NamespaceOpsSelect?.value || 'default'
+          : state.filters.namespace;
+      // eslint-disable-next-line no-alert -- native confirm guards the bulk process action in this no-framework runtime
       if (!window.confirm(`${action} all processes in namespace "${namespace}"?`)) return;
       sendAction({ action, scope: 'namespace', namespace });
     };
@@ -825,3 +877,5 @@ export function createMonitoringController(dom, options = {}) {
 
   return { start, stop, wire, render };
 }
+
+export default createMonitoringController;

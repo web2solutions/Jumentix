@@ -1,9 +1,9 @@
-export type CanaSnippet = {
+export interface CanaSnippet {
   id: string;
   title: { en: string; 'pt-BR': string };
   description: { en: string; 'pt-BR': string };
   code: string;
-};
+}
 
 const schemaSource = `{
   version: 1,
@@ -559,10 +559,14 @@ try {
   },
   {
     id: 'spa-mvp-offline',
-    title: { en: 'SPA MVP Day 1 — offline records in Cana', 'pt-BR': 'MVP SPA Dia 1 — registros offline no Cana' },
+    title: {
+      en: 'SPA MVP Day 1 — offline records in Cana',
+      'pt-BR': 'MVP SPA Dia 1 — registros offline no Cana'
+    },
     description: {
       en: 'Open a real Cana IndexedDB client, seed Category, and create the first Task — the whole workflow runs in the browser.',
-      'pt-BR': 'Abra um client Cana IndexedDB real, semeie Category e crie a primeira Task — o fluxo inteiro roda no browser.'
+      'pt-BR':
+        'Abra um client Cana IndexedDB real, semeie Category e crie a primeira Task — o fluxo inteiro roda no browser.'
     },
     code: `const client = cana.createClient({
   name: dbName,
@@ -596,10 +600,14 @@ return {
   },
   {
     id: 'spa-mvp-events',
-    title: { en: 'SPA MVP Day 2 — UI state from Cana events and indexed queries', 'pt-BR': 'MVP SPA Dia 2 — estado da UI via eventos do Cana e queries indexadas' },
+    title: {
+      en: 'SPA MVP Day 2 — UI state from Cana events and indexed queries',
+      'pt-BR': 'MVP SPA Dia 2 — estado da UI via eventos do Cana e queries indexadas'
+    },
     description: {
       en: 'Subscribe to committed change events, write and update a Task, then read it back through the byCategory index.',
-      'pt-BR': 'Assine eventos de mudança confirmados, escreva e atualize uma Task, depois leia de volta pelo índice byCategory.'
+      'pt-BR':
+        'Assine eventos de mudança confirmados, escreva e atualize uma Task, depois leia de volta pelo índice byCategory.'
     },
     code: `const client = cana.createClient({
   name: dbName,
@@ -644,10 +652,14 @@ return {
   },
   {
     id: 'spa-mvp-durability',
-    title: { en: 'SPA MVP Release — durability across reopen', 'pt-BR': 'MVP SPA Release — durabilidade ao reabrir' },
+    title: {
+      en: 'SPA MVP Release — durability across reopen',
+      'pt-BR': 'MVP SPA Release — durabilidade ao reabrir'
+    },
     description: {
       en: 'Close the client and reopen the same database: the offline records survive, proving durable local state.',
-      'pt-BR': 'Feche o client e reabra o mesmo banco: os registros offline sobrevivem, provando estado local durável.'
+      'pt-BR':
+        'Feche o client e reabra o mesmo banco: os registros offline sobrevivem, provando estado local durável.'
     },
     code: `const client = cana.createClient({
   name: dbName,

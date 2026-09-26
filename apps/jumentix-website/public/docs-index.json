@@ -5,11 +5,7 @@
     "description": "Jumentix technical documentation portal.",
     "section": "index.mdx",
     "locale": "en",
-    "headings": [
-      "Build with Jumentix",
-      "Explore the documentation",
-      "Recommended journeys"
-    ]
+    "headings": ["Build with Jumentix", "Explore the documentation", "Recommended journeys"]
   },
   {
     "title": "Aurora Adapter",
@@ -222,10 +218,7 @@
     "description": "Explore the Jumentix Adapters section.",
     "section": "adapters",
     "locale": "en",
-    "headings": [
-      "Adapters",
-      "How to choose"
-    ]
+    "headings": ["Adapters", "How to choose"]
   },
   {
     "title": "Realtime",
@@ -233,9 +226,7 @@
     "description": "Explore the Jumentix Realtime section.",
     "section": "adapters",
     "locale": "en",
-    "headings": [
-      "Realtime"
-    ]
+    "headings": ["Realtime"]
   },
   {
     "title": "gRPC Realtime API",
@@ -571,9 +562,7 @@
     "description": "Explore the Jumentix Guides section.",
     "section": "guides",
     "locale": "en",
-    "headings": [
-      "Guides"
-    ]
+    "headings": ["Guides"]
   },
   {
     "title": "Create a Modular SaaS",
@@ -991,12 +980,7 @@
     "description": "Packages documentation.",
     "section": "packages",
     "locale": "en",
-    "headings": [
-      "@jumentix/cana-react",
-      "Install",
-      "Hooks",
-      "Redux bridge"
-    ]
+    "headings": ["@jumentix/cana-react", "Install", "Hooks", "Redux bridge"]
   },
   {
     "title": "@jumentix/key-value-storage",
@@ -1161,11 +1145,7 @@
     "description": "Packages documentation.",
     "section": "packages",
     "locale": "en",
-    "headings": [
-      "@jumentix/cana-vue",
-      "Install",
-      "Live query"
-    ]
+    "headings": ["@jumentix/cana-vue", "Install", "Live query"]
   },
   {
     "title": "Cana with React Context API",
@@ -1408,9 +1388,7 @@
     "description": "Explore the Jumentix Concepts section.",
     "section": "concepts",
     "locale": "en",
-    "headings": [
-      "Concepts"
-    ]
+    "headings": ["Concepts"]
   },
   {
     "title": "Architecture and Structure",
@@ -1480,9 +1458,7 @@
     "description": "Explore the Jumentix apps section.",
     "section": "apps",
     "locale": "en",
-    "headings": [
-      "apps"
-    ]
+    "headings": ["apps"]
   },
   {
     "title": "backend-template",
@@ -1573,10 +1549,7 @@
     "description": "Explore the Jumentix Reference section.",
     "section": "reference",
     "locale": "en",
-    "headings": [
-      "Reference",
-      "Start here"
-    ]
+    "headings": ["Reference", "Start here"]
   },
   {
     "title": "Service Management Operations Console",
@@ -1820,10 +1793,7 @@
     "description": "Every supported monorepo command and its usage.",
     "section": "reference",
     "locale": "en",
-    "headings": [
-      "Package.json Scripts Reference (Consumer)",
-      "Next step"
-    ]
+    "headings": ["Package.json Scripts Reference (Consumer)", "Next step"]
   },
   {
     "title": "Documentação do Jumentix",
@@ -1831,11 +1801,7 @@
     "description": "Portal técnico do Jumentix.",
     "section": "index.mdx",
     "locale": "pt-BR",
-    "headings": [
-      "Construa com o Jumentix",
-      "Explore a documentação",
-      "Jornadas recomendadas"
-    ]
+    "headings": ["Construa com o Jumentix", "Explore a documentação", "Jornadas recomendadas"]
   },
   {
     "title": "Adaptador Aurora",
@@ -2048,10 +2014,7 @@
     "description": "Explore a seção Adaptadores do Jumentix.",
     "section": "adapters",
     "locale": "pt-BR",
-    "headings": [
-      "Adaptadores",
-      "Como escolher"
-    ]
+    "headings": ["Adaptadores", "Como escolher"]
   },
   {
     "title": "Realtime",
@@ -2059,9 +2022,7 @@
     "description": "Explore a seção Realtime do Jumentix.",
     "section": "adapters",
     "locale": "pt-BR",
-    "headings": [
-      "Realtime"
-    ]
+    "headings": ["Realtime"]
   },
   {
     "title": "API gRPC em tempo real",
@@ -2394,9 +2355,7 @@
     "description": "Explore a seção Guias do Jumentix.",
     "section": "guides",
     "locale": "pt-BR",
-    "headings": [
-      "Guias"
-    ]
+    "headings": ["Guias"]
   },
   {
     "title": "Crie um SaaS modular",
@@ -2814,12 +2773,7 @@
     "description": "Documentação de Pacotes.",
     "section": "packages",
     "locale": "pt-BR",
-    "headings": [
-      "@jumentix/cana-react",
-      "Instalação",
-      "Hooks",
-      "Bridge Redux"
-    ]
+    "headings": ["@jumentix/cana-react", "Instalação", "Hooks", "Bridge Redux"]
   },
   {
     "title": "@jumentix/key-value-storage",
@@ -2984,11 +2938,7 @@
     "description": "Documentação de Pacotes.",
     "section": "packages",
     "locale": "pt-BR",
-    "headings": [
-      "@jumentix/cana-vue",
-      "Instalação",
-      "Live query"
-    ]
+    "headings": ["@jumentix/cana-vue", "Instalação", "Live query"]
   },
   {
     "title": "Cana com React Context API",
@@ -3231,9 +3181,7 @@
     "description": "Explore a seção Conceitos do Jumentix.",
     "section": "concepts",
     "locale": "pt-BR",
-    "headings": [
-      "Conceitos"
-    ]
+    "headings": ["Conceitos"]
   },
   {
     "title": "Arquitetura e estrutura",
@@ -3303,9 +3251,7 @@
     "description": "Explore a seção apps do Jumentix.",
     "section": "apps",
     "locale": "pt-BR",
-    "headings": [
-      "apps"
-    ]
+    "headings": ["apps"]
   },
   {
     "title": "backend-template",
@@ -3396,10 +3342,7 @@
     "description": "Explore a seção Referência do Jumentix.",
     "section": "reference",
     "locale": "pt-BR",
-    "headings": [
-      "Referência",
-      "Comece aqui"
-    ]
+    "headings": ["Referência", "Comece aqui"]
   },
   {
     "title": "Console de Operações do Service Management",
@@ -3642,8 +3585,6 @@
     "description": "Todos os comandos suportados pelo monorepo e como utilizá-los.",
     "section": "reference",
     "locale": "pt-BR",
-    "headings": [
-      "Referência de Scripts do Package.json (Consumidor)"
-    ]
+    "headings": ["Referência de Scripts do Package.json (Consumidor)"]
   }
 ]

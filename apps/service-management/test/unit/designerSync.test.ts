@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
+/* eslint-disable jest/max-expects, jest/no-conditional-in-test */
 import path from 'node:path';
-import { until } from '@test/helpers/until';
+
+import until from '@test/helpers/until';
 
 /**
  * Unit suite for the multi-tab write-event sync engine (JUM-485),
@@ -34,8 +34,12 @@ import { until } from '@test/helpers/until';
 
 const repoRoot = path.resolve(__dirname, '../../../..');
 const {
-  createDesignerState,
+  canaError
+  // The REAL Cana module (jest maps `@jumentix/cana` to packages/cana/src).
+} = require('@jumentix/cana');
+const {
   createDefaultView,
+  createDesignerState,
   normalizeStatePayload
 } = require('@jumentix/designer-core/state/designerState.js');
 
@@ -46,14 +50,9 @@ const {
   createDesignerSync,
   reconcileSelection
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerSync.js'));
-const {
-  CanaDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js'));
-const {
-  canaError
-  // The REAL Cana module (jest maps `@jumentix/cana` to packages/cana/src).
-  // eslint-disable-next-line import/no-unresolved
-} = require('@jumentix/cana');
+const { CanaDesignerStore } = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js')
+);
 
 const STATE_KEY = 'service-management.v1';
 const STORE_NAME = 'designerDocuments';
@@ -62,8 +61,12 @@ function createFakeStorage(initial: Record<string, string> = {}) {
   const map = new Map<string, string>(Object.entries(initial));
   return {
     getItem: (key: string) => (map.has(key) ? (map.get(key) as string) : null),
-    setItem: (key: string, value: string) => { map.set(key, String(value)); },
-    removeItem: (key: string) => { map.delete(key); },
+    setItem: (key: string, value: string) => {
+      map.set(key, String(value));
+    },
+    removeItem: (key: string) => {
+      map.delete(key);
+    },
     map
   };
 }
@@ -100,7 +103,9 @@ function createFakeMediatorHub() {
   };
 }
 
-type Backend = { records: Map<string, string> };
+interface Backend {
+  records: Map<string, string>;
+}
 
 /**
  * Declared in-memory double of the Cana client's ordered-listener contract
@@ -120,15 +125,21 @@ function createCanaSyncClientDouble(backend: Backend, clientId: string) {
     openError?: unknown;
     readError?: unknown;
   } = {};
+  // The double re-throws the scripted value verbatim — including non-Error
+  // values — so the sync client's foreign-throw mapping is genuinely
+  // exercised; wrapping it in an Error here would fake the scenario.
+  const throwScripted = (value: unknown): never => {
+    throw value;
+  };
   const client = {
     async open() {
-      if (script.openError !== undefined) throw script.openError;
+      if (script.openError !== undefined) throwScripted(script.openError);
     },
     table(name: string) {
       return {
         name,
         async get(key: string) {
-          if (script.readError !== undefined) throw script.readError;
+          if (script.readError !== undefined) throwScripted(script.readError);
           return backend.records.has(key) ? backend.records.get(key) : undefined;
         }
       };
@@ -138,11 +149,15 @@ function createCanaSyncClientDouble(backend: Backend, clientId: string) {
       _stores: readonly string[],
       body: (scope: any) => Promise<unknown>
     ) {
-      const staged: Array<{ op: 'put' | 'delete'; key: string; value?: string }> = [];
+      const staged: { op: 'put' | 'delete'; key: string; value?: string }[] = [];
       const scope = {
         table: () => ({
-          async put(value: string, key: string) { staged.push({ op: 'put', key, value }); },
-          async delete(key: string) { staged.push({ op: 'delete', key }); }
+          async put(value: string, key: string) {
+            staged.push({ op: 'put', key, value });
+          },
+          async delete(key: string) {
+            staged.push({ op: 'delete', key });
+          }
         }),
         abort: () => undefined
       };
@@ -173,7 +188,11 @@ function createCanaSyncClientDouble(backend: Backend, clientId: string) {
         });
       }
       return {
-        outcome, result, events: [], correlationId, attemptedAt
+        outcome,
+        result,
+        events: [],
+        correlationId,
+        attemptedAt
       };
     },
     subscribe(listener: (event: any) => void, options?: { sinceCursor?: number }) {
@@ -181,19 +200,27 @@ function createCanaSyncClientDouble(backend: Backend, clientId: string) {
       if (since !== undefined && since !== null) {
         const oldest = retained.length > 0 ? retained[0].cursor : 0;
         if (since < oldest - 1) {
-          throw canaError('NotFound', 'The requested cursor predates the retained event window; reload from the database.');
+          throw canaError(
+            'NotFound',
+            'The requested cursor predates the retained event window; reload from the database.'
+          );
         }
         retained.filter((event) => event.cursor > since).forEach(listener);
       }
       listeners.add(listener);
-      return () => { listeners.delete(listener); };
+      return () => {
+        listeners.delete(listener);
+      };
     },
     async storageState() {
       return { persistent: true, nearQuota: false, evicted: false };
     }
   };
   return {
-    client, script, retained, listeners
+    client,
+    script,
+    retained,
+    listeners
   };
 }
 
@@ -205,19 +232,31 @@ function makeEntity(id: string, name: string) {
     y: 14,
     fields: [],
     meta: {
-      aggregateRoot: false, invariants: [], rbac: {}, contracts: [], oasComposition: {}
+      aggregateRoot: false,
+      invariants: [],
+      rbac: {},
+      contracts: [],
+      oasComposition: {}
     }
   };
 }
 
 function makeDomain(id: string, name: string, entities: any[] = []) {
   return {
-    id, name, color: '#60a5fa', x: 10, y: 10, context: {}, entities
+    id,
+    name,
+    color: '#60a5fa',
+    x: 10,
+    y: 10,
+    context: {},
+    entities
   };
 }
 
 function makeDocument(overrides: Record<string, unknown> = {}) {
-  const domains = (overrides.domains as any[]) ?? [makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])];
+  const domains = (overrides.domains as any[]) ?? [
+    makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+  ];
   return {
     domains,
     relationships: [],
@@ -242,21 +281,23 @@ let clientSeq = 0; // eslint-disable-line jest/require-hook
  * the shared backend and the fake mediator, with a manually-flushed scheduler
  * so the coalescing window is deterministic.
  */
-function createTab(backend: Backend, hub: ReturnType<typeof createFakeMediatorHub>, options: {
-  noChannel?: boolean;
-  channel?: unknown;
-  cursorStorage?: ReturnType<typeof createFakeStorage>;
-  seedDocument?: Record<string, unknown>;
-} = {}) {
+function createTab(
+  backend: Backend,
+  hub: ReturnType<typeof createFakeMediatorHub>,
+  options: {
+    noChannel?: boolean;
+    channel?: unknown;
+    cursorStorage?: ReturnType<typeof createFakeStorage>;
+    seedDocument?: Record<string, unknown>;
+  } = {}
+) {
   clientSeq += 1;
   const clientId = `client-${clientSeq}`;
-  const {
-    client, script, retained, listeners
-  } = createCanaSyncClientDouble(backend, clientId);
+  const { client, script, retained, listeners } = createCanaSyncClientDouble(backend, clientId);
   const store = new CanaDesignerStore({ client });
   const renders: string[] = [];
-  const notifications: Array<{ message: string; severity: string }> = [];
-  const saveOutcomes: Array<Promise<unknown>> = [];
+  const notifications: { message: string; severity: string }[] = [];
+  const saveOutcomes: Promise<unknown>[] = [];
   const timers: Map<number, () => void> = new Map();
   let timerSeq = 0;
   let core: any;
@@ -292,7 +333,9 @@ function createTab(backend: Backend, hub: ReturnType<typeof createFakeMediatorHu
       timers.set(timerSeq, fn);
       return timerSeq;
     },
-    cancelSchedule: (handle: number) => { timers.delete(handle); },
+    cancelSchedule: (handle: number) => {
+      timers.delete(handle);
+    },
     coalesceWindowMs: 5
   });
   const flush = () => {
@@ -332,12 +375,16 @@ function lastItem<T>(items: T[]): T {
 }
 
 function lastNotification(tab: any): { message: string; severity: string } {
-  return lastItem(tab.notifications as Array<{ message: string; severity: string }>);
+  return lastItem(tab.notifications as { message: string; severity: string }[]);
 }
 
 async function flushAsync() {
-  await new Promise((resolve) => { setImmediate(resolve); });
-  await new Promise((resolve) => { setImmediate(resolve); });
+  await new Promise((resolve) => {
+    setImmediate(resolve);
+  });
+  await new Promise((resolve) => {
+    setImmediate(resolve);
+  });
 }
 
 /** Perform a local edit and wait for its committed event to broadcast. */
@@ -366,7 +413,10 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     });
     tabB.flush();
 
-    expect(tabB.core.state.domains.map((domain: any) => domain.id)).toStrictEqual(['domain-1', 'domain-2']);
+    expect(tabB.core.state.domains.map((domain: any) => domain.id)).toStrictEqual([
+      'domain-1',
+      'domain-2'
+    ]);
     // Convergence is on the NORMALISED document: the remote apply normalises
     // exactly as loadState does, so compare against A's document normalised
     // by the same function.
@@ -380,14 +430,19 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     expect(lastNotification(tabB).severity).toBe('info');
     // The broadcast carried this tab's origin identity and Cana's cursor.
     const channelA = [...hub.channels].find((channel) => channel.posted.length > 0);
-    expect(channelA.posted[0]!.originId).toBe(tabA.sync.originId);
+    expect(channelA.posted[0]?.originId).toBe(tabA.sync.originId);
     // The boot seed save was cursor 1 on A's client; this write is cursor 2.
-    expect(channelA.posted[0]!.cursor).toBe(2);
+    expect(channelA.posted[0]?.cursor).toBe(2);
     // And the converse direction converges too.
     await edit(tabB, () => {
-      tabB.core.state.relationships = [{
-        id: 'rel-1', fromEntityId: 'entity-1', toEntityId: 'entity-2', name: 'bills'
-      }];
+      tabB.core.state.relationships = [
+        {
+          id: 'rel-1',
+          fromEntityId: 'entity-1',
+          toEntityId: 'entity-2',
+          name: 'bills'
+        }
+      ];
     });
     tabA.flush();
     const normalizedB = normalizeStatePayload({
@@ -423,7 +478,11 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     await peer.sync.start();
 
     tab.sync.onLocalEvent({ store: 'otherStore', key: STATE_KEY, record: '{}' });
-    tab.sync.onLocalEvent({ store: STORE_NAME, key: 'service-management.schema-baseline.v1', record: '{}' });
+    tab.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: 'service-management.schema-baseline.v1',
+      record: '{}'
+    });
     expect(peer.timers.size).toBe(0);
     // A cursor-less event for the state document still broadcasts (no persist).
     tab.sync.onLocalEvent({
@@ -450,7 +509,9 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     const tab = createTab(backend, hub, { channel: eventTargetChannel });
     await tab.core.loadState();
     expect((await tab.sync.start()).channelAvailable).toBe(true);
-    eventTargetChannel.listener({ data: { originId: 'remote-tab', record: JSON.stringify(makeDocument({ domains: [] })) } });
+    eventTargetChannel.listener({
+      data: { originId: 'remote-tab', record: JSON.stringify(makeDocument({ domains: [] })) }
+    });
     tab.flush();
     expect(tab.core.state.domains).toStrictEqual([]);
   });
@@ -609,9 +670,14 @@ describe('designerSync — selection reconciliation on remote deletes (question 
     expect.hasAssertions();
     const { tabA, tabB } = await bootPair();
     tabB.core.withPersist(() => {
-      tabB.core.state.relationships = [{
-        id: 'rel-1', fromEntityId: 'entity-1', toEntityId: 'entity-1', name: 'self'
-      }];
+      tabB.core.state.relationships = [
+        {
+          id: 'rel-1',
+          fromEntityId: 'entity-1',
+          toEntityId: 'entity-1',
+          name: 'self'
+        }
+      ];
       tabB.core.state.selectedRelationshipId = 'rel-1';
     });
     tabB.flush();
@@ -628,15 +694,14 @@ describe('designerSync — selection reconciliation on remote deletes (question 
     expect.hasAssertions();
     const { tabA, tabB } = await bootPair();
     await edit(tabA, () => {
-      tabA.core.state.domains = [
-        ...tabA.core.state.domains,
-        makeDomain('domain-2', 'Shipping')
-      ];
+      tabA.core.state.domains = [...tabA.core.state.domains, makeDomain('domain-2', 'Shipping')];
     });
     tabB.flush();
     tabB.core.state.selectedDomainId = 'domain-2';
     await edit(tabA, () => {
-      tabA.core.state.domains = tabA.core.state.domains.filter((domain: any) => domain.id !== 'domain-2');
+      tabA.core.state.domains = tabA.core.state.domains.filter(
+        (domain: any) => domain.id !== 'domain-2'
+      );
     });
     tabB.flush();
     expect(tabB.core.state.selectedDomainId).toBe('domain-1');
@@ -654,8 +719,18 @@ describe('designerSync — selection reconciliation on remote deletes (question 
     };
     expect(reconcileSelection(state)).toStrictEqual([]);
     expect(state.selectedDomainId).toBe('domain-1');
-    const empty = {
-      domains: [], relationships: [], selectedDomainId: 'domain-9', selectedEntityId: null, selectedRelationshipId: null
+    const empty: {
+      domains: unknown[];
+      relationships: unknown[];
+      selectedDomainId: string | null;
+      selectedEntityId: string | null;
+      selectedRelationshipId: string | null;
+    } = {
+      domains: [],
+      relationships: [],
+      selectedDomainId: 'domain-9',
+      selectedEntityId: null,
+      selectedRelationshipId: null
     };
     expect(reconcileSelection(empty)).toStrictEqual(['domain']);
     expect(empty.selectedDomainId).toBeNull();
@@ -745,16 +820,21 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
     expect(cursorStorage.getItem(DESIGNER_SYNC_CURSOR_KEY)).toBe('3');
     // The replayed local event is re-published on the second tab's channel.
     expect(secondChannel.posted).toHaveLength(1);
-    expect(secondChannel.posted[0]!.cursor).toBe(3);
+    expect(secondChannel.posted[0]?.cursor).toBe(3);
     second.stop();
   });
 
   it('a cursor the retained window no longer covers resyncs from the document, then subscribes fresh', async () => {
     expect.hasAssertions();
     const backend: Backend = { records: new Map() };
-    backend.records.set(STATE_KEY, JSON.stringify(makeDocument({ domains: [makeDomain('domain-7', 'Recovered')] })));
+    backend.records.set(
+      STATE_KEY,
+      JSON.stringify(makeDocument({ domains: [makeDomain('domain-7', 'Recovered')] }))
+    );
     const hub = createFakeMediatorHub();
-    const tab = createTab(backend, hub, { cursorStorage: createFakeStorage({ [DESIGNER_SYNC_CURSOR_KEY]: '2' }) });
+    const tab = createTab(backend, hub, {
+      cursorStorage: createFakeStorage({ [DESIGNER_SYNC_CURSOR_KEY]: '2' })
+    });
     // The client's window starts at cursor 10 — the persisted cursor 2 is gone.
     tab.retained.push({
       type: 'updated',
@@ -783,7 +863,9 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
     // A stale cursor from a previous page load: a fresh client's window is
     // empty and cursors restart, so resume is accepted without replay — the
     // boot loadState() already applied the current document.
-    const tab = createTab(backend, hub, { cursorStorage: createFakeStorage({ [DESIGNER_SYNC_CURSOR_KEY]: '42' }) });
+    const tab = createTab(backend, hub, {
+      cursorStorage: createFakeStorage({ [DESIGNER_SYNC_CURSOR_KEY]: '42' })
+    });
     await tab.core.loadState();
     expect(tab.core.state.domains).toHaveLength(1);
     expect((await tab.sync.start()).started).toBe(true);
@@ -821,8 +903,14 @@ describe('designerSync — durable cursor, resume and closed-tab recovery (Cana 
     const backend: Backend = { records: new Map() };
     const hub = createFakeMediatorHub();
     const tab = createTab(backend, hub);
-    await expect(tab.sync.resume()).resolves.toStrictEqual({ resynced: false, reason: 'not-started' });
-    await expect(tab.sync.resync()).resolves.toStrictEqual({ resynced: false, reason: 'empty' });
+    await expect(tab.sync.resume() as Promise<unknown>).resolves.toStrictEqual({
+      resynced: false,
+      reason: 'not-started'
+    });
+    await expect(tab.sync.resync() as Promise<unknown>).resolves.toStrictEqual({
+      resynced: false,
+      reason: 'empty'
+    });
   });
 });
 
@@ -834,7 +922,9 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
     const tab = createTab(backend, hub);
     await tab.core.loadState();
     await tab.sync.start();
-    await expect(tab.sync.reportSaveOutcome({ status: 'persisted' })).resolves.toStrictEqual({ confirmed: true });
+    await expect(
+      tab.sync.reportSaveOutcome({ status: 'persisted' }) as Promise<unknown>
+    ).resolves.toStrictEqual({ confirmed: true });
     expect(tab.notifications).toStrictEqual([]);
   });
 
@@ -853,9 +943,15 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
     });
     await flushAsync();
     expect(tab.saveOutcomes).toHaveLength(1);
-    await expect(tab.saveOutcomes[0]).resolves.toStrictEqual({ confirmed: true, reconciled: 'read-back-match' });
-    expect(tab.notifications.some((note) => note.severity === 'error'
-      && note.message.includes('could not be confirmed'))).toBe(true);
+    await expect(tab.saveOutcomes[0]).resolves.toStrictEqual({
+      confirmed: true,
+      reconciled: 'read-back-match'
+    });
+    expect(
+      tab.notifications.some(
+        (note) => note.severity === 'error' && note.message.includes('could not be confirmed')
+      )
+    ).toBe(true);
     expect(lastNotification(tab).message).toContain('confirmed after reconciliation');
     expect(tab.core.state.domains[0].name).toBe('Maybe written');
   });
@@ -873,7 +969,10 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
       tab.core.state.domains[0].name = 'Lost write';
     });
     await flushAsync();
-    await expect(tab.saveOutcomes[0]).resolves.toStrictEqual({ confirmed: false, reconciled: 'reloaded' });
+    await expect(tab.saveOutcomes[0]).resolves.toStrictEqual({
+      confirmed: false,
+      reconciled: 'reloaded'
+    });
     // The stored document (the seeded template) is the truth; the unconfirmed
     // edit is gone from state and the user was told, never silently.
     expect(tab.core.state.domains[0].name).toBe('Billing');
@@ -889,14 +988,17 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
     await tab.core.loadState();
     await tab.sync.start();
     tab.script.readError = canaError('Internal', 'Engine fault.');
-    const outcome = await tab.sync.reportSaveOutcome({ status: 'unknown', reason: 'unknown-outcome: torn down' }, {});
+    const outcome = await tab.sync.reportSaveOutcome(
+      { status: 'unknown', reason: 'unknown-outcome: torn down' },
+      {}
+    );
     expect(outcome).toStrictEqual({ confirmed: false, reason: 'unavailable' });
     expect(lastNotification(tab).message).toContain('no fallback store');
   });
 
   it('a rejected save promise is observed as an unknown outcome, never unhandled', async () => {
     expect.hasAssertions();
-    const observed: Array<{ result: any; payload: any }> = [];
+    const observed: { result: any; payload: any }[] = [];
     const rejectingStore = {
       save: () => Promise.reject(new Error('worker gone')),
       load: () => Promise.resolve({ status: 'empty', payload: null })
@@ -925,8 +1027,11 @@ describe('designerSync — declared unavailable states, never a silent single-ta
     await tab.core.loadState();
     const started = await tab.sync.start();
     expect(started.channelAvailable).toBe(false);
-    expect(tab.notifications.some((note) => note.severity === 'error'
-      && note.message.includes('BroadcastChannel'))).toBe(true);
+    expect(
+      tab.notifications.some(
+        (note) => note.severity === 'error' && note.message.includes('BroadcastChannel')
+      )
+    ).toBe(true);
     // Still writing to Cana (declared degraded, not blocked, never silent).
     await edit(tab, () => {
       tab.core.state.domains[0].name = 'Local only';
@@ -942,7 +1047,10 @@ describe('designerSync — declared unavailable states, never a silent single-ta
     const tab = createTab(backend, hub);
     tab.script.openError = canaError('Unavailable', 'No usable IndexedDB in this environment.');
     const started = await tab.sync.start();
-    expect(started).toStrictEqual({ started: false, reason: expect.stringContaining('Unavailable') });
+    expect(started).toStrictEqual({
+      started: false,
+      reason: expect.stringContaining('Unavailable')
+    });
     expect(lastNotification(tab).severity).toBe('error');
     expect(lastNotification(tab).message).toContain('could not start');
   });
@@ -986,8 +1094,11 @@ describe('designerSync — malformed remote input never applies partially', () =
     tabB.sync.onChannelMessage({ originId: tabA.sync.originId, record: '{not-json' });
     tabB.flush();
     expect(JSON.stringify(tabB.core.state.domains)).toBe(before);
-    expect(tabB.notifications.some((note) => note.message.includes('could not be decoded')
-      && note.severity === 'error')).toBe(true);
+    expect(
+      tabB.notifications.some(
+        (note) => note.message.includes('could not be decoded') && note.severity === 'error'
+      )
+    ).toBe(true);
     await flushAsync();
   });
 
@@ -1003,7 +1114,10 @@ describe('designerSync — malformed remote input never applies partially', () =
     tab.sync.onChannelMessage({ originId: 'other' });
     tab.sync.onChannelMessage({ originId: 'other', record: 42 });
     expect(tab.timers.size).toBe(0);
-    expect(tab.sync.flushPendingRemote()).toStrictEqual({ applied: false, reason: 'no-pending-remote' });
+    expect(tab.sync.flushPendingRemote()).toStrictEqual({
+      applied: false,
+      reason: 'no-pending-remote'
+    });
   });
 });
 
@@ -1048,7 +1162,10 @@ describe('designerSync — lifecycle', () => {
     const started = await ownChannelSync.start();
     expect(started.channelAvailable).toBe(true);
     ownChannelSync.stop();
-    await expect(ownChannelSync.resume()).resolves.toStrictEqual({ resynced: false, reason: 'not-started' });
+    await expect(ownChannelSync.resume() as Promise<unknown>).resolves.toStrictEqual({
+      resynced: false,
+      reason: 'not-started'
+    });
   });
 
   it('applyRemoteDocument is the one apply path: exported for the boot and tests', () => {
@@ -1059,7 +1176,10 @@ describe('designerSync — lifecycle', () => {
       render: () => undefined
     });
     core.state.selectedDomainId = 'gone';
-    const { reconciled } = applyRemoteDocument(core, makeDocument({ domains: [makeDomain('domain-3', 'New')] }));
+    const { reconciled } = applyRemoteDocument(
+      core,
+      makeDocument({ domains: [makeDomain('domain-3', 'New')] })
+    );
     expect(core.state.domains[0].id).toBe('domain-3');
     expect(core.state.selectedDomainId).toBe('domain-3');
     expect(reconciled).toStrictEqual(['domain']);
@@ -1076,7 +1196,13 @@ describe('designerSync — lifecycle', () => {
 describe('designerSync — defensive defaults', () => {
   it('reconciles dangling relationship and entity selections directly', () => {
     expect.hasAssertions();
-    const state = {
+    const state: {
+      domains: unknown[];
+      relationships: unknown[];
+      selectedDomainId: string | null;
+      selectedEntityId: string | null;
+      selectedRelationshipId: string | null;
+    } = {
       domains: [makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])],
       relationships: [{ id: 'rel-1', fromEntityId: 'entity-1', toEntityId: 'entity-1' }],
       selectedDomainId: 'domain-1',
@@ -1131,7 +1257,7 @@ describe('designerSync — defensive defaults', () => {
   it('a runtime without BroadcastChannel resolves no channel and declares the outage', async () => {
     expect.hasAssertions();
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'BroadcastChannel');
-    if (!descriptor || descriptor.configurable !== true) {
+    if (descriptor?.configurable !== true) {
       // A non-configurable global cannot be removed for this probe; the
       // injected-null channel path above already pins the declared state.
       return;
@@ -1174,7 +1300,9 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
     const tab = createTab(backend, hub);
     Object.defineProperty(globalThis, 'localStorage', {
       configurable: true,
-      get() { throw new Error('hostile storage'); }
+      get() {
+        throw new Error('hostile storage');
+      }
     });
     try {
       // No cursorStorage injected: the ambient resolution hits the guard on
@@ -1222,11 +1350,13 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
     const hub = createFakeMediatorHub();
     const throwing = createTab(backend, hub, {
       cursorStorage: {
-        getItem: () => { throw new Error('hostile'); },
+        getItem: () => {
+          throw new Error('hostile');
+        },
         setItem: () => undefined,
         removeItem: () => undefined,
         map: new Map()
-      } as any
+      }
     });
     await throwing.core.loadState();
     expect((await throwing.sync.start()).started).toBe(true);
@@ -1260,7 +1390,10 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
     await tab.sync.start();
     const channel = [...hub.channels][0];
     // The channel contract also accepts a bare message (no MessageEvent).
-    channel.onmessage({ originId: 'remote-tab', record: JSON.stringify(makeDocument({ domains: [] })) });
+    channel.onmessage({
+      originId: 'remote-tab',
+      record: JSON.stringify(makeDocument({ domains: [] }))
+    });
     tab.flush();
     expect(tab.core.state.domains).toStrictEqual([]);
   });
@@ -1304,7 +1437,9 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
       storeName: STORE_NAME,
       loadCalls: 0,
       fail: false,
-      async ensureOpen() { return { ok: true }; },
+      async ensureOpen() {
+        return { ok: true };
+      },
       async load() {
         stubStore.loadCalls += 1;
         if (stubStore.fail) return { status: 'unavailable', payload: null };
@@ -1315,7 +1450,7 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
     // recomputeIdCounter branch all cross here.
     const minimalCore = { state: {}, history: { future: ['redo'] } };
     const renders: string[] = [];
-    const notes: Array<{ message: string; severity: string }> = [];
+    const notes: { message: string; severity: string }[] = [];
     const sync = createDesignerSync({
       store: stubStore,
       designerState: minimalCore,

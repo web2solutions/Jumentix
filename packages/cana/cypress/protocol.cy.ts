@@ -1,6 +1,7 @@
-import type { CanaResponseEnvelope } from '../src';
 import { createRouter, isCanaErrorCode } from '../src';
 import { rejection } from './harness';
+
+import type { CanaResponseEnvelope } from '../src';
 
 /**
  * A fake port rather than a real Worker: the behaviour under test is the
@@ -16,7 +17,9 @@ function fakePort() {
 
   return {
     sent,
-    failOnUnclonable() { rejectUnclonable = true; },
+    failOnUnclonable() {
+      rejectUnclonable = true;
+    },
     /** Answer a request as a worker would. */
     reply(requestId: string, response: Partial<CanaResponseEnvelope>) {
       const message = { requestId, ok: true, ...response };
@@ -87,7 +90,10 @@ describe('cana router correlation', () => {
     harness.reply(harness.sent[0].requestId as string, {
       ok: false,
       error: {
-        canaError: true, code: 'NotFound', message: 'no such row', retryable: false
+        canaError: true,
+        code: 'NotFound',
+        message: 'no such row',
+        retryable: false
       }
     });
 

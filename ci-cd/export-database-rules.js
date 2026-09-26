@@ -24,16 +24,12 @@
  * discovered through the Firebase Management API, which is what the console
  * itself lists.
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const RULES_FILE = 'database.rules.json';
-const SCOPES = [
-  'https://www.googleapis.com/auth/firebase.database',
-  'https://www.googleapis.com/auth/firebase',
-  'https://www.googleapis.com/auth/userinfo.email'
-].join(' ');
 
 /**
  * The service account, parsed from the environment.
@@ -45,8 +41,8 @@ function serviceAccount(env = process.env) {
   const raw = env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (!raw || raw.trim() === '') {
     throw new Error(
-      'Missing FIREBASE_SERVICE_ACCOUNT_KEY. Export the key JSON into the '
-      + 'environment; do not pass a path and do not commit it.'
+      'Missing FIREBASE_SERVICE_ACCOUNT_KEY. Export the key JSON into the ' +
+        'environment; do not pass a path and do not commit it.'
     );
   }
   let parsed;
@@ -56,7 +52,9 @@ function serviceAccount(env = process.env) {
     throw new Error(`FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON: ${error.message}`);
   }
   if (!parsed.project_id || !parsed.private_key || !parsed.client_email) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is missing project_id, private_key or client_email');
+    throw new Error(
+      'FIREBASE_SERVICE_ACCOUNT_KEY is missing project_id, private_key or client_email'
+    );
   }
   return parsed;
 }
@@ -87,13 +85,14 @@ async function databaseUrl(account, token, env = process.env) {
   if (env.FIREBASE_DATABASE_URL && env.FIREBASE_DATABASE_URL.trim() !== '') {
     return env.FIREBASE_DATABASE_URL.trim().replace(/\/+$/, '');
   }
-  const endpoint = 'https://firebasedatabase.googleapis.com/v1beta/projects/'
-    + `${account.project_id}/locations/-/instances`;
+  const endpoint =
+    'https://firebasedatabase.googleapis.com/v1beta/projects/' +
+    `${account.project_id}/locations/-/instances`;
   const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${token}` } });
   if (!response.ok) {
     throw new Error(
-      `Could not list database instances (${response.status}). Set FIREBASE_DATABASE_URL `
-      + 'explicitly, or grant the service account the Firebase Viewer role.'
+      `Could not list database instances (${response.status}). Set FIREBASE_DATABASE_URL ` +
+        'explicitly, or grant the service account the Firebase Viewer role.'
     );
   }
   const body = await response.json();
@@ -112,8 +111,8 @@ async function fetchRules(url, token) {
   });
   if (!response.ok) {
     throw new Error(
-      `Reading ${url}/.settings/rules.json returned ${response.status}. The service account `
-      + 'needs the Firebase Realtime Database Viewer role to read rules.'
+      `Reading ${url}/.settings/rules.json returned ${response.status}. The service account ` +
+        'needs the Firebase Realtime Database Viewer role to read rules.'
     );
   }
   return response.text();
@@ -130,9 +129,7 @@ async function run(rootDir = process.cwd(), env = process.env) {
     const existed = fs.existsSync(target);
     fs.writeFileSync(target, rules.endsWith('\n') ? rules : `${rules}\n`, 'utf8');
 
-    console.log(
-      `${existed ? 'Updated' : 'Wrote'} ${RULES_FILE} from the live rules of ${url}.`
-    );
+    console.log(`${existed ? 'Updated' : 'Wrote'} ${RULES_FILE} from the live rules of ${url}.`);
     console.log('Review the diff before deploying: a deploy replaces the whole ruleset.');
     return 0;
   } catch (error) {
@@ -142,7 +139,9 @@ async function run(rootDir = process.cwd(), env = process.env) {
 }
 
 if (isEntryPoint(module)) {
-  run().then((code) => { process.exitCode = code; });
+  run().then((code) => {
+    process.exitCode = code;
+  });
 }
 
 module.exports = { databaseUrl, fetchRules, run, serviceAccount };

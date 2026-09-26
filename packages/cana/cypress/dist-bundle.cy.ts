@@ -36,11 +36,18 @@ interface DistPageReport {
  */
 function loadDistPage(url: string): Promise<DistPageReport> {
   return new Promise((resolve, reject) => {
-    window.addEventListener('message', (event) => {
-      const data = event.data as DistPageReport & { type?: string };
-      if (data?.type === 'cana-dist') resolve(data);
-    }, { once: true });
-    setTimeout(() => reject(new Error('the cana-dist page never reported — check the config route')), 15_000);
+    window.addEventListener(
+      'message',
+      (event) => {
+        const data = event.data as DistPageReport & { type?: string };
+        if (data?.type === 'cana-dist') resolve(data);
+      },
+      { once: true }
+    );
+    setTimeout(
+      () => reject(new Error('the cana-dist page never reported — check the config route')),
+      15_000
+    );
 
     const iframe = document.createElement('iframe');
     iframe.src = url;

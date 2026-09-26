@@ -6,15 +6,16 @@
  * callers rely on.
  */
 
-import {
-  createClient,
-  isCanaErrorCode,
-  openLocalStorageBackend,
-  type CanaSchema
-} from '../src';
+import { createClient, isCanaErrorCode, openLocalStorageBackend } from '../src';
 import { rejection, uniqueName } from './harness';
 
-interface Design { id: number; name: string; owner?: string }
+import type { CanaSchema } from '../src';
+
+interface Design {
+  id: number;
+  name: string;
+  owner?: string;
+}
 
 const schema = (): CanaSchema => ({
   version: 1,
@@ -28,9 +29,13 @@ const schema = (): CanaSchema => ({
 function memoryStorage() {
   const bag = new Map<string, string>();
   return {
-    getItem: (key: string) => (bag.has(key) ? bag.get(key)! : null),
-    removeItem: (key: string) => { bag.delete(key); },
-    setItem: (key: string, value: string) => { bag.set(key, String(value)); }
+    getItem: (key: string) => bag.get(key) ?? null,
+    removeItem: (key: string) => {
+      bag.delete(key);
+    },
+    setItem: (key: string, value: string) => {
+      bag.set(key, String(value));
+    }
   };
 }
 
@@ -102,9 +107,15 @@ describe('cana localStorage fallback', () => {
         name: uniqueName('ls-both'),
         schema: schema(),
         localStorage: {
-          getItem: () => { throw new Error('private mode'); },
-          setItem: () => { throw new Error('private mode'); },
-          removeItem: () => { throw new Error('private mode'); }
+          getItem: () => {
+            throw new Error('private mode');
+          },
+          setItem: () => {
+            throw new Error('private mode');
+          },
+          removeItem: () => {
+            throw new Error('private mode');
+          }
         }
       });
 
@@ -126,7 +137,9 @@ describe('cana localStorage fallback', () => {
       await client.open();
 
       const events: string[] = [];
-      const stop = client.subscribe((event) => { events.push(event.type); });
+      const stop = client.subscribe((event) => {
+        events.push(event.type);
+      });
 
       await client.table<Design>('designs').add({ id: 1, name: 'one', owner: 'a' });
       await client.table<Design>('designs').put({ id: 1, name: 'one-b', owner: 'a' });
@@ -137,7 +150,9 @@ describe('cana localStorage fallback', () => {
       ]);
       await client.table<Design>('designs').bulkPut([{ id: 3, name: 'three-b', owner: 'a' }]);
 
-      const byOwner = await client.table<Design>('designs').query({ index: 'byOwner', equals: 'a' });
+      const byOwner = await client
+        .table<Design>('designs')
+        .query({ index: 'byOwner', equals: 'a' });
       expect(byOwner.map((row) => row.id).sort()).to.deep.equal([1, 3]);
       expect(await client.table<Design>('designs').count()).to.equal(3);
 
@@ -158,8 +173,9 @@ describe('cana localStorage fallback', () => {
         return 'ok';
       });
       expect(committed.outcome).to.equal('committed');
-      expect(await client.resolveWrite(committed.correlationId, committed.attemptedAt))
-        .to.equal('committed');
+      expect(await client.resolveWrite(committed.correlationId, committed.attemptedAt)).to.equal(
+        'committed'
+      );
 
       await client.table<Design>('designs').bulkDelete([3]);
       await client.table<Design>('designs').clear();
@@ -202,15 +218,17 @@ describe('cana localStorage fallback', () => {
       originId: 'test',
       nextCursor: () => 1
     });
-    const failure = await rejection(backend.transaction(
-      'readwrite',
-      ['designs'],
-      async (scope) => {
-        await scope.table<Design>('designs').put({ id: 1, name: 'x' });
-        return null;
-      },
-      'c:1'
-    ));
+    const failure = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['designs'],
+        async (scope) => {
+          await scope.table<Design>('designs').put({ id: 1, name: 'x' });
+          return null;
+        },
+        'c:1'
+      )
+    );
     expect(isCanaErrorCode(failure, 'QuotaExceeded')).to.equal(true);
   });
 
@@ -240,8 +258,12 @@ describe('cana localStorage fallback edge coverage', () => {
 
       const again = createClient({ name, schema: schema() });
       await again.open();
-      expect(await again.table<Design>('designs').get(7)).to.deep.equal({ id: 7, name: 'browser-ls' });
+      expect(await again.table<Design>('designs').get(7)).to.deep.equal({
+        id: 7,
+        name: 'browser-ls'
+      });
       await again.close();
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
       localStorage.removeItem(`cana.ls.v1:${name}`);
     });
   });
@@ -256,10 +278,15 @@ describe('cana localStorage fallback edge coverage', () => {
       originId: 'o',
       nextCursor: () => 1
     });
-    await v1.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').put({ id: 1, name: 'v1' });
-      return null;
-    }, 'c:1');
+    await v1.transaction(
+      'readwrite',
+      ['designs'],
+      async (scope) => {
+        await scope.table<Design>('designs').put({ id: 1, name: 'v1' });
+        return null;
+      },
+      'c:1'
+    );
     v1.close();
 
     const v2 = openLocalStorageBackend({
@@ -341,106 +368,136 @@ describe('cana localStorage fallback edge coverage', () => {
       operationLedger: true
     });
 
-    await backend.transaction('readwrite', ['outbound', 'nested', 'compound'], async (scope) => {
-      await scope.table<{ text: string }, string>('outbound').add({ text: 'a' }, 'k1');
-      await scope.table<{ text: string }, string>('outbound').put({ text: 'b' }, 'k1');
-      const nested = await scope.table<{ meta?: { id?: number }; tag: string }>('nested')
-        .add({ tag: 't', meta: {} as { id?: number } });
-      expect(typeof nested.key).to.equal('number');
-      await scope.table<{ owner: string; id: number; label: string }>('compound').put({
-        owner: 'ana',
-        id: 1,
-        label: 'one'
-      });
-      await scope.table<{ owner: string; id: number; label: string }>('compound').put({
-        owner: 'ana',
-        id: 2,
-        label: 'two'
-      });
-      await scope.table<{ owner: string; id: number; label: string }>('compound').put({
-        owner: 'bob',
-        id: 1,
-        label: 'bob'
-      });
-      return null;
-    }, 'c:write');
+    await backend.transaction(
+      'readwrite',
+      ['outbound', 'nested', 'compound'],
+      async (scope) => {
+        await scope.table<{ text: string }, string>('outbound').add({ text: 'a' }, 'k1');
+        await scope.table<{ text: string }, string>('outbound').put({ text: 'b' }, 'k1');
+        const nested = await scope
+          .table<{ meta?: { id?: number }; tag: string }>('nested')
+          .add({ tag: 't', meta: {} as { id?: number } });
+        expect(typeof nested.key).to.equal('number');
+        await scope.table<{ owner: string; id: number; label: string }>('compound').put({
+          owner: 'ana',
+          id: 1,
+          label: 'one'
+        });
+        await scope.table<{ owner: string; id: number; label: string }>('compound').put({
+          owner: 'ana',
+          id: 2,
+          label: 'two'
+        });
+        await scope.table<{ owner: string; id: number; label: string }>('compound').put({
+          owner: 'bob',
+          id: 1,
+          label: 'bob'
+        });
+        return null;
+      },
+      'c:write'
+    );
 
-    const ranged = await backend.transaction('readonly', ['compound'], async (scope) => (
-      scope.table('compound').query({
-        index: 'byOwner',
-        range: { lower: 'ana', upper: 'ana' },
-        direction: 'prev',
-        distinct: true
-      })
-    ), 'c:read');
+    const ranged = await backend.transaction(
+      'readonly',
+      ['compound'],
+      async (scope) =>
+        scope.table('compound').query({
+          index: 'byOwner',
+          range: { lower: 'ana', upper: 'ana' },
+          direction: 'prev',
+          distinct: true
+        }),
+      'c:read'
+    );
     expect(ranged.outcome).to.equal('committed');
 
-    const readonlyWrite = await rejection(backend.transaction(
-      'readonly',
-      ['outbound'],
-      async (scope) => scope.table<{ text: string }, string>('outbound').put({ text: 'nope' }, 'k2'),
-      'c:ro'
-    ));
+    const readonlyWrite = await rejection(
+      backend.transaction(
+        'readonly',
+        ['outbound'],
+        async (scope) =>
+          scope.table<{ text: string }, string>('outbound').put({ text: 'nope' }, 'k2'),
+        'c:ro'
+      )
+    );
     expect(isCanaErrorCode(readonlyWrite, 'InvalidRequest')).to.equal(true);
 
-    const missingKey = await rejection(backend.transaction(
-      'readwrite',
-      ['outbound'],
-      async (scope) => scope.table<{ text: string }, string>('outbound').add({ text: 'x' }),
-      'c:nokey'
-    ));
+    const missingKey = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['outbound'],
+        async (scope) => scope.table<{ text: string }, string>('outbound').add({ text: 'x' }),
+        'c:nokey'
+      )
+    );
     expect(isCanaErrorCode(missingKey, 'InvalidRequest')).to.equal(true);
 
-    const duplicate = await rejection(backend.transaction(
-      'readwrite',
-      ['outbound'],
-      async (scope) => scope.table<{ text: string }, string>('outbound').add({ text: 'dup' }, 'k1'),
-      'c:dup'
-    ));
+    const duplicate = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['outbound'],
+        async (scope) =>
+          scope.table<{ text: string }, string>('outbound').add({ text: 'dup' }, 'k1'),
+        'c:dup'
+      )
+    );
     expect(isCanaErrorCode(duplicate, 'ConstraintViolation')).to.equal(true);
 
-    const badIndex = await rejection(backend.transaction(
-      'readonly',
-      ['compound'],
-      async (scope) => scope.table('compound').query({ index: 'nope' }),
-      'c:idx'
-    ));
+    const badIndex = await rejection(
+      backend.transaction(
+        'readonly',
+        ['compound'],
+        async (scope) => scope.table('compound').query({ index: 'nope' }),
+        'c:idx'
+      )
+    );
     expect(isCanaErrorCode(badIndex, 'InvalidRequest')).to.equal(true);
 
-    const updateMissing = await rejection(backend.transaction(
-      'readwrite',
-      ['outbound'],
-      async (scope) => scope.table<{ text: string }, string>('outbound').update('missing', { text: 'z' }),
-      'c:upd'
-    ));
+    const updateMissing = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['outbound'],
+        async (scope) =>
+          scope.table<{ text: string }, string>('outbound').update('missing', { text: 'z' }),
+        'c:upd'
+      )
+    );
     expect(isCanaErrorCode(updateMissing, 'NotFound')).to.equal(true);
 
-    const explicitOnInbound = await rejection(backend.transaction(
-      'readwrite',
-      ['compound'],
-      async (scope) => scope.table('compound').add({ owner: 'x', id: 9 }, 1 as never),
-      'c:explicit'
-    ));
+    const explicitOnInbound = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['compound'],
+        async (scope) => scope.table('compound').add({ owner: 'x', id: 9 }, 1 as never),
+        'c:explicit'
+      )
+    );
     expect(isCanaErrorCode(explicitOnInbound, 'InvalidRequest')).to.equal(true);
 
     expect(await backend.resolveWrite('nope', Date.now() - 10)).to.equal('rolled-back');
-    expect(await backend.resolveWrite('nope', Date.now() - 10, { horizonMs: 1, now: Date.now() + 1000 }))
-      .to.equal('unresolvable');
+    expect(
+      await backend.resolveWrite('nope', Date.now() - 10, { horizonMs: 1, now: Date.now() + 1000 })
+    ).to.equal('unresolvable');
 
     backend.close();
-    const closed = await rejection(backend.transaction(
-      'readonly',
-      ['outbound'],
-      async (scope) => scope.table('outbound').query(),
-      'c:closed'
-    ));
+    const closed = await rejection(
+      backend.transaction(
+        'readonly',
+        ['outbound'],
+        async (scope) => scope.table('outbound').query(),
+        'c:closed'
+      )
+    );
     expect(isCanaErrorCode(closed, 'InvalidRequest')).to.equal(true);
   });
 
   it('maps non-quota persist failures and private-mode browser storage', async () => {
     const refused = {
       getItem: () => null,
-      setItem: () => { throw new Error('denied'); },
+      setItem: () => {
+        throw new Error('denied');
+      },
       removeItem: () => undefined
     };
     const backend = openLocalStorageBackend({
@@ -450,12 +507,14 @@ describe('cana localStorage fallback edge coverage', () => {
       originId: 'o',
       nextCursor: () => 1
     });
-    const failure = await rejection(backend.transaction(
-      'readwrite',
-      ['designs'],
-      async (scope) => scope.table<Design>('designs').put({ id: 1, name: 'x' }),
-      'c:1'
-    ));
+    const failure = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['designs'],
+        async (scope) => scope.table<Design>('designs').put({ id: 1, name: 'x' }),
+        'c:1'
+      )
+    );
     expect(isCanaErrorCode(failure, 'Unavailable')).to.equal(true);
 
     // Inject a storage that refuses reads rather than mutating ambient
@@ -467,8 +526,12 @@ describe('cana localStorage fallback edge coverage', () => {
         name: uniqueName('ls-private'),
         schema: schema(),
         localStorage: {
-          getItem: () => { throw new Error('private'); },
-          setItem: () => { throw new Error('private'); },
+          getItem: () => {
+            throw new Error('private');
+          },
+          setItem: () => {
+            throw new Error('private');
+          },
           removeItem: () => undefined
         }
       });
@@ -487,11 +550,14 @@ describe('cana localStorage fallback edge coverage', () => {
       originId: 'o',
       nextCursor: () => 1
     });
-    storage.setItem(`cana.ls.v1:${name}`, JSON.stringify({
-      version: 1,
-      stores: { designs: {}, notes: {} },
-      sequences: { designs: 0, notes: 0 }
-    }));
+    storage.setItem(
+      `cana.ls.v1:${name}`,
+      JSON.stringify({
+        version: 1,
+        stores: { designs: {}, notes: {} },
+        sequences: { designs: 0, notes: 0 }
+      })
+    );
     backend.deletePersisted();
     expect(storage.getItem(`cana.ls.v1:${name}`)).to.equal(null);
   });
@@ -510,12 +576,14 @@ describe('cana localStorage fallback edge coverage', () => {
       originId: 'o',
       nextCursor: () => 1
     });
-    const failure = await rejection(backend.transaction(
-      'readwrite',
-      ['entries'],
-      async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
-      'c:proto'
-    ));
+    const failure = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['entries'],
+        async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
+        'c:proto'
+      )
+    );
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
     expect((Object.prototype as Record<string, unknown>).polluted).to.equal(undefined);
   });
@@ -524,31 +592,36 @@ describe('cana localStorage fallback edge coverage', () => {
     // Same class of attack through the other prototype-chain names: each one
     // would let a generated key mutate Object.prototype. Every segment is
     // validated at the point of use.
-    const openGuarded = (segment: string) => openLocalStorageBackend({
-      name: uniqueName(`ls-${segment}`),
-      schema: {
-        version: 1,
-        stores: [{ name: 'entries', keyPath: `${segment}.polluted`, autoIncrement: true }]
-      },
-      storage: memoryStorage(),
-      originId: 'o',
-      nextCursor: () => 1
-    });
+    const openGuarded = (segment: string) =>
+      openLocalStorageBackend({
+        name: uniqueName(`ls-${segment}`),
+        schema: {
+          version: 1,
+          stores: [{ name: 'entries', keyPath: `${segment}.polluted`, autoIncrement: true }]
+        },
+        storage: memoryStorage(),
+        originId: 'o',
+        nextCursor: () => 1
+      });
 
-    const constructorFailure = await rejection(openGuarded('constructor').transaction(
-      'readwrite',
-      ['entries'],
-      async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
-      'c:constructor'
-    ));
+    const constructorFailure = await rejection(
+      openGuarded('constructor').transaction(
+        'readwrite',
+        ['entries'],
+        async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
+        'c:constructor'
+      )
+    );
     expect(isCanaErrorCode(constructorFailure, 'InvalidRequest')).to.equal(true);
 
-    const prototypeFailure = await rejection(openGuarded('prototype').transaction(
-      'readwrite',
-      ['entries'],
-      async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
-      'c:prototype'
-    ));
+    const prototypeFailure = await rejection(
+      openGuarded('prototype').transaction(
+        'readwrite',
+        ['entries'],
+        async (scope) => scope.table<Record<string, unknown>, number>('entries').add({ name: 'x' }),
+        'c:prototype'
+      )
+    );
     expect(isCanaErrorCode(prototypeFailure, 'InvalidRequest')).to.equal(true);
 
     expect((Object.prototype as Record<string, unknown>).polluted).to.equal(undefined);
@@ -565,12 +638,15 @@ describe('cana localStorage fallback edge coverage', () => {
       originId: 'o',
       nextCursor: () => 1
     });
-    const failure = await rejection(backend.transaction(
-      'readwrite',
-      ['__proto__'],
-      async (scope) => scope.table<Record<string, unknown>, string>('__proto__').add({ name: 'x' }, 'k1'),
-      'c:proto-store'
-    ));
+    const failure = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['__proto__'],
+        async (scope) =>
+          scope.table<Record<string, unknown>, string>('__proto__').add({ name: 'x' }, 'k1'),
+        'c:proto-store'
+      )
+    );
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
     expect((Object.prototype as Record<string, unknown>)['"k1"']).to.equal(undefined);
   });

@@ -1,6 +1,6 @@
-import {
-  EmailValueObject,
+import type {
   DocumentValueObject,
+  EmailValueObject,
   PhoneValueObject
 } from '@src/modules/ddd/valueObjects';
 
@@ -14,7 +14,7 @@ export interface RequestCreateUser {
   avatar?: string;
   organization?: string;
   emails: EmailValueObject[];
-  documents?: DocumentValueObject[]
+  documents?: DocumentValueObject[];
   phones?: PhoneValueObject[];
-  roles?: string[]
+  roles?: string[];
 }

@@ -19,7 +19,9 @@ describe('users X-CRUD', () => {
     cy.get('.xcrud-grid tbody tr').should('have.length.at.least', 6);
     cy.contains('th', 'First name').click();
     cy.get('.xcrud-grid tbody tr').first().should('contain', 'Admin');
-    cy.get('.xcrud-footer span').invoke('text').should('match', /1–\d+ of \d+/);
+    cy.get('.xcrud-footer span')
+      .invoke('text')
+      .should('match', /1–\d+ of \d+/);
   });
 
   it('opens the column filter row from the toolbar and filters by organization with the quick select', () => {
@@ -41,7 +43,7 @@ describe('users X-CRUD', () => {
     cy.get('.xcrud-row-detail').should('not.contain', 'T00:00:');
     cy.get('.xcrud-row-detail').contains('.nav-link', 'Edit User').click();
     cy.get('#xref-organization').should('have.value', 'ACME');
-    cy.get('.xcrud-row-detail .form-text').first().should('contain', 'User\'s first name');
+    cy.get('.xcrud-row-detail .form-text').first().should('contain', "User's first name");
   });
 
   it('creates a user with a document row, then deletes it', () => {

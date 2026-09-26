@@ -10,21 +10,23 @@ const SERVICE_MANAGEMENT_DESIGNER_PORT_BY_ENV: Record<string, string> = {
   production: '5200'
 };
 
-const splitOrigins = (configured = ''): string[] => configured
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const splitOrigins = (configured = ''): string[] =>
+  configured
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
-const normalizeRuntimeEnv = (value = ''): string => String(value || 'dev').trim().toLowerCase() || 'dev';
+const normalizeRuntimeEnv = (value = ''): string =>
+  String(value || 'dev')
+    .trim()
+    .toLowerCase() || 'dev';
 
 const serviceManagementLocalOrigins = (envName = 'dev', port = ''): string[] => {
-  const resolvedPort = String(port || '').trim()
-    || SERVICE_MANAGEMENT_DESIGNER_PORT_BY_ENV[normalizeRuntimeEnv(envName)]
-    || SERVICE_MANAGEMENT_DESIGNER_PORT_BY_ENV.dev;
-  return [
-    `http://localhost:${resolvedPort}`,
-    `http://127.0.0.1:${resolvedPort}`
-  ];
+  const resolvedPort =
+    String(port || '').trim() ||
+    SERVICE_MANAGEMENT_DESIGNER_PORT_BY_ENV[normalizeRuntimeEnv(envName)] ||
+    SERVICE_MANAGEMENT_DESIGNER_PORT_BY_ENV.dev;
+  return [`http://localhost:${resolvedPort}`, `http://127.0.0.1:${resolvedPort}`];
 };
 
 export const normalizeCatalogCorsAllowedOrigins = (
@@ -35,11 +37,13 @@ export const normalizeCatalogCorsAllowedOrigins = (
   const runtimeEnv = normalizeRuntimeEnv(envName);
   const configuredOrigins = splitOrigins(configured);
   const origins = new Set(configuredOrigins);
-  const hasExplicitNonDevAllowlist = configuredOrigins.length > 0
-    && !['dev', 'development', 'local', 'test', 'ci'].includes(runtimeEnv);
+  const hasExplicitNonDevAllowlist =
+    configuredOrigins.length > 0 &&
+    !['dev', 'development', 'local', 'test', 'ci'].includes(runtimeEnv);
   if (!hasExplicitNonDevAllowlist) {
-    serviceManagementLocalOrigins(runtimeEnv, serviceManagementPort)
-      .forEach((origin) => origins.add(origin));
+    serviceManagementLocalOrigins(runtimeEnv, serviceManagementPort).forEach((origin) =>
+      origins.add(origin)
+    );
   }
   return Array.from(origins).join(',');
 };

@@ -1,13 +1,17 @@
 'use client';
 
-import type * as Monaco from 'monaco-editor';
-import type { CSSProperties, HTMLAttributes } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { trimTrailingBlankCodeLines } from './normalizeCode';
 
-type MonacoApi = typeof Monaco;
-type MonacoEditor = Monaco.editor.IStandaloneCodeEditor;
-type MonacoModel = Monaco.editor.ITextModel;
+import trimTrailingBlankCodeLines from './normalizeCode';
+
+import type { editor as monacoEditorApi } from 'monaco-editor';
+import type { CSSProperties, HTMLAttributes } from 'react';
+
+interface MonacoApi {
+  editor: typeof monacoEditorApi;
+}
+type MonacoEditor = monacoEditorApi.IStandaloneCodeEditor;
+type MonacoModel = monacoEditorApi.ITextModel;
 
 export type MonacoCodeBlockProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   value: string;
@@ -157,7 +161,7 @@ function defineThemes(monaco: MonacoApi) {
   });
 }
 
-export function MonacoCodeBlock({
+export const MonacoCodeBlock = ({
   value,
   language,
   readOnly = true,
@@ -168,7 +172,7 @@ export function MonacoCodeBlock({
   className,
   testId,
   ...rootProps
-}: MonacoCodeBlockProps) {
+}: MonacoCodeBlockProps) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const monacoRef = useRef<MonacoApi | null>(null);
   const editorRef = useRef<MonacoEditor | null>(null);
@@ -261,7 +265,9 @@ export function MonacoCodeBlock({
       });
 
       if (onChange) {
-        editor.onDidChangeModelContent(() => onChange(trimTrailingBlankCodeLines(model.getValue())));
+        editor.onDidChangeModelContent(() =>
+          onChange(trimTrailingBlankCodeLines(model.getValue()))
+        );
       }
 
       monacoRef.current = monaco;
@@ -270,7 +276,7 @@ export function MonacoCodeBlock({
       markMounted(true);
     }
 
-    void mountEditor();
+    mountEditor().catch(() => undefined);
 
     return () => {
       cancelled = true;
@@ -325,25 +331,27 @@ export function MonacoCodeBlock({
       className={['jtx-monaco-code', className].filter(Boolean).join(' ')}
       data-language={normalizedLanguage}
       data-testid={dataTestId}
-      style={{
-        ...rootProps.style,
-        '--jtx-monaco-height': `${height}px`
-      } as CSSProperties}
+      style={
+        {
+          ...rootProps.style,
+          '--jtx-monaco-height': `${height}px`
+        } as CSSProperties
+      }
     >
       <div
         ref={hostRef}
+        aria-label={ariaLabel ?? `${normalizedLanguage} code`}
         className="jtx-monaco-code__editor"
         role="region"
-        aria-label={ariaLabel ?? `${normalizedLanguage} code`}
       />
       <pre
         ref={fallbackRef}
-        className="jtx-monaco-code__fallback"
         aria-hidden="false"
+        className="jtx-monaco-code__fallback"
         data-mounted="false"
       >
         <code data-language={normalizedLanguage}>{normalizedValue}</code>
       </pre>
     </div>
   );
-}
+};

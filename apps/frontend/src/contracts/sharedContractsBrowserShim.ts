@@ -6,9 +6,16 @@
  * the SDK (requirement 136: the contract is consumed as data), so this shim
  * is only ever a static placeholder: it fails loudly if anything calls it.
  */
-export const loadCanonicalSpec = (_input: unknown): never => {
+const loadCanonicalSpec = (_input: unknown): never => {
   throw new Error(
-    'loadCanonicalSpec is unavailable in the browser — inject the bundled spec '
-      + 'from src/contracts/openapi.json instead (requirement 136).'
+    'loadCanonicalSpec is unavailable in the browser — inject the bundled spec ' +
+      'from src/contracts/openapi.json instead (requirement 136).'
   );
 };
+
+// Named export kept alongside the default: the frontend tsconfig maps the
+// bare `@jumentix/shared-contracts` specifier to this shim, so cross-package
+// sources (e.g. packages/sdk-rest-client) consume the named binding while the
+// strict lint contract (import-x/prefer-default-export) requires the default.
+export { loadCanonicalSpec };
+export default loadCanonicalSpec;

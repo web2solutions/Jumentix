@@ -1,5 +1,8 @@
+/* eslint-disable no-console */
 import fs from 'node:fs';
 import path from 'node:path';
+
+const { process } = globalThis;
 
 const outputDirectory = path.resolve(process.cwd(), 'storybook-static');
 const indexPath = path.join(outputDirectory, 'index.html');
@@ -37,7 +40,7 @@ const requiredStories = [
   'service-management-designer-overview--entity-inspector',
   'service-management-designer-overview--panels-and-lists',
   'service-management-designer-overview--code-previews',
-  'service-management-designer-overview--pwa-update-banner',
+  'service-management-designer-overview--pwa-update-banner'
 ];
 
 for (const storyId of requiredStories) {
@@ -47,7 +50,9 @@ for (const storyId of requiredStories) {
 }
 
 if (entries.length < 54) {
-  throw new Error(`Storybook smoke check failed: expected at least 54 entries, found ${entries.length}`);
+  throw new Error(
+    `Storybook smoke check failed: expected at least 54 entries, found ${entries.length}`
+  );
 }
 
 console.log(`Storybook smoke check passed with ${entries.length} indexed entries.`);

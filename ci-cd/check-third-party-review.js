@@ -1,7 +1,8 @@
-#!/usr/bin/env bun
+/* eslint-disable no-console */
 /* Requirement 113 — deterministic third-party PR review contract. */
 const fs = require('node:fs');
 const path = require('node:path');
+
 const YAML = require('yaml');
 
 const root = path.resolve(__dirname, '..');
@@ -73,7 +74,9 @@ function reviewJobFailures(configText) {
   }
 
   const steps = Array.isArray(job.steps) ? job.steps : [];
-  const stepNames = steps.map((step) => (typeof step === 'string' ? step : Object.keys(step || {})[0]));
+  const stepNames = steps.map((step) =>
+    typeof step === 'string' ? step : Object.keys(step || {})[0]
+  );
 
   if (stepNames.includes('setup_remote_docker')) {
     problems.push(
@@ -97,12 +100,13 @@ function reviewJobFailures(configText) {
   }
 
   const allowedBootstrapActions = new Set(['actions/checkout@v5', 'actions/setup-node@v5']);
-  const disallowedActionStep = steps.find((step) => (
-    step
-    && typeof step === 'object'
-    && step.uses
-    && !allowedBootstrapActions.has(String(step.uses))
-  ));
+  const disallowedActionStep = steps.find(
+    (step) =>
+      step &&
+      typeof step === 'object' &&
+      step.uses &&
+      !allowedBootstrapActions.has(String(step.uses))
+  );
   if (disallowedActionStep) {
     problems.push(
       `third-party GitHub Actions job may only use bootstrap actions: ${String(disallowedActionStep.uses)}`
@@ -111,26 +115,34 @@ function reviewJobFailures(configText) {
 
   const evidenceStep = steps.find((step) => step?.name === 'List review evidence');
   if (!evidenceStep) {
-    problems.push('third-party GitHub Actions job must list scanner evidence without uploading artifacts');
+    problems.push(
+      'third-party GitHub Actions job must list scanner evidence without uploading artifacts'
+    );
   }
 
   const enforceStep = steps.find((step) => step?.name === 'Enforce scanner outcomes');
   if (!enforceStep) {
     problems.push('third-party GitHub Actions job must enforce scanner outcomes');
   } else if (enforceStep.if !== 'always()') {
-    problems.push('third-party GitHub Actions scanner enforcement must run even when evidence upload fails');
+    problems.push(
+      'third-party GitHub Actions scanner enforcement must run even when evidence upload fails'
+    );
   }
 
   return problems;
 }
 
 const workflow = fs.existsSync(path.join(root, contracts[0].file))
-  ? fs.readFileSync(path.join(root, contracts[0].file), 'utf8') : '';
+  ? fs.readFileSync(path.join(root, contracts[0].file), 'utf8')
+  : '';
 failures.push(...reviewJobFailures(workflow));
 
 if (failures.length) {
   console.error('Third-party review contract failed:\n');
   failures.forEach((failure) => console.error(`- ${failure}`));
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log(
+    'Third-party review contract passed: pinned Gitleaks and native Semgrep are fail-closed in GitHub Actions.'
+  );
 }
-console.log('Third-party review contract passed: pinned Gitleaks and native Semgrep are fail-closed in GitHub Actions.');

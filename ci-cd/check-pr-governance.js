@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 const { fetchIssueProject, readLinearKey } = require('./lib/linear.js');
 
@@ -44,9 +45,12 @@ const SUPPORTED_AGENT_FIELDS = Object.freeze([
   'instructionsFile'
 ]);
 
-const LINEAR_ISSUE_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/issue\/[A-Z][A-Z0-9]*-\d+\/[^/?#]+$/;
-const LINEAR_PROJECT_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+(?:\/(?:overview|activity))?$/;
-const LINEAR_PROJECT_UPDATE_URL_PATTERN = /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+\/activity#project-update-[a-f0-9-]+$/i;
+const LINEAR_ISSUE_URL_PATTERN =
+  /^https:\/\/linear\.app\/[^/]+\/issue\/[A-Z][A-Z0-9]*-\d+\/[^/?#]+$/;
+const LINEAR_PROJECT_URL_PATTERN =
+  /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+(?:\/(?:overview|activity))?$/;
+const LINEAR_PROJECT_UPDATE_URL_PATTERN =
+  /^https:\/\/linear\.app\/[^/]+\/project\/[^/?#]+\/activity#project-update-[a-f0-9-]+$/i;
 
 function readField(body, field) {
   const escaped = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -56,9 +60,7 @@ function readField(body, field) {
 
 function isPlaceholder(value) {
   const normalized = String(value || '').trim();
-  return !normalized
-    || /^<.*>$/.test(normalized)
-    || /^(n\/a|none|todo|tbd|-+)$/i.test(normalized);
+  return !normalized || /^<.*>$/.test(normalized) || /^(n\/a|none|todo|tbd|-+)$/i.test(normalized);
 }
 
 function loadSupportedAgents(rootDir = process.cwd()) {
@@ -83,14 +85,16 @@ function loadSupportedAgents(rootDir = process.cwd()) {
     );
   }
   for (const agent of agents) {
-    const hasRequiredFields = agent !== null && typeof agent === 'object'
-      && SUPPORTED_AGENT_FIELDS.every(
+    const hasRequiredFields =
+      agent !== null &&
+      typeof agent === 'object' &&
+      SUPPORTED_AGENT_FIELDS.every(
         (field) => typeof agent[field] === 'string' && agent[field].trim() !== ''
       );
     if (!hasRequiredFields) {
       throw new Error(
-        '[pr-governance] supported agents declaration entries must define '
-        + `${SUPPORTED_AGENT_FIELDS.join(', ')}: ${SUPPORTED_AGENTS_PATH}`
+        '[pr-governance] supported agents declaration entries must define ' +
+          `${SUPPORTED_AGENT_FIELDS.join(', ')}: ${SUPPORTED_AGENTS_PATH}`
       );
     }
     if (!/^[a-z0-9][a-z0-9-]*$/.test(agent.branchPrefix)) {
@@ -123,8 +127,9 @@ function validateSupportedAgents(rootDir = process.cwd()) {
   return agents
     .filter((agent) => !fs.existsSync(path.join(rootDir, agent.instructionsFile)))
     .map(
-      (agent) => `[pr-governance] declared agent "${agent.platformId}" is missing `
-        + `instructions file: ${agent.instructionsFile}`
+      (agent) =>
+        `[pr-governance] declared agent "${agent.platformId}" is missing ` +
+        `instructions file: ${agent.instructionsFile}`
     );
 }
 
@@ -161,9 +166,12 @@ function isSignedDevPromotionBranch(headRef) {
 }
 
 function isGeneratedChangelogSync({ title, body, headRef }) {
-  return /^chore\/changelog-sync-[0-9a-f]{8}$/i.test(String(headRef || '').trim())
-    && title === 'chore: synchronize changelog'
-    && body.trim() === 'Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.';
+  return (
+    /^chore\/changelog-sync-[0-9a-f]{8}$/i.test(String(headRef || '').trim()) &&
+    title === 'chore: synchronize changelog' &&
+    body.trim() ===
+      'Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.'
+  );
 }
 
 function validateReleasePullRequest({ title, body, headRef }) {
@@ -199,9 +207,9 @@ function resolveTaskBranch(headRef, rootDir) {
 }
 
 function validateStructuredFields(body) {
-  return REQUIRED_EPIC_FIELDS
-    .filter((field) => isPlaceholder(readField(body, field)))
-    .map((field) => `[pr-governance] missing structured PR field: ${field}`);
+  return REQUIRED_EPIC_FIELDS.filter((field) => isPlaceholder(readField(body, field))).map(
+    (field) => `[pr-governance] missing structured PR field: ${field}`
+  );
 }
 
 function validateTaskNature(body, branchNature) {
@@ -216,21 +224,18 @@ function validateTaskNature(body, branchNature) {
 }
 
 function taskIdentifierFromLink(taskLink) {
-  return taskLink.match(
-    /^https:\/\/linear\.app\/[^/]+\/issue\/([A-Z][A-Z0-9]*-\d+)\//
-  )?.[1] || '';
+  return taskLink.match(/^https:\/\/linear\.app\/[^/]+\/issue\/([A-Z][A-Z0-9]*-\d+)\//)?.[1] || '';
 }
 
 function validateTaskTitle({ title, nature, taskIdentifier, branchMatch }) {
   const failures = [];
   const expectedPrefix = TITLE_PREFIX_BY_NATURE[nature];
-  const expectedTitlePrefix = taskIdentifier && expectedPrefix
-    ? `[${taskIdentifier}]${expectedPrefix} `
-    : '';
+  const expectedTitlePrefix =
+    taskIdentifier && expectedPrefix ? `[${taskIdentifier}]${expectedPrefix} ` : '';
   if (!expectedTitlePrefix || !title.startsWith(expectedTitlePrefix)) {
     failures.push(
-      '[pr-governance] PR title must start with the matching '
-      + `[JUM-XXXX][Nature] prefix (${expectedTitlePrefix.trim() || '<invalid metadata>'})`
+      '[pr-governance] PR title must start with the matching ' +
+        `[JUM-XXXX][Nature] prefix (${expectedTitlePrefix.trim() || '<invalid metadata>'})`
     );
   }
   if (branchMatch && taskIdentifier && branchMatch[2] !== taskIdentifier) {
@@ -273,7 +278,11 @@ function validatePullRequest(metadata, rootDir = process.cwd()) {
     return failures;
   }
 
-  const { failures: branchFailures, branchMatch, branchNature } = resolveTaskBranch(headRef, rootDir);
+  const {
+    failures: branchFailures,
+    branchMatch,
+    branchNature
+  } = resolveTaskBranch(headRef, rootDir);
   if (branchFailures.length > 0 && !branchMatch) return branchFailures;
   failures.push(...branchFailures, ...validateStructuredFields(body));
 
@@ -337,13 +346,12 @@ async function verifyIssueProjectMembership(metadata, options = {}) {
   const apiKey = options.apiKey ?? readLinearKey(options.rootDir ?? process.cwd());
   if (!apiKey) {
     return [
-      '[pr-governance] cannot verify that the child task issue belongs to the focused epic:'
-        + ' no Linear credential. Set LINEAR_API_KEY in the CI environment.'
+      '[pr-governance] cannot verify that the child task issue belongs to the focused epic:' +
+        ' no Linear credential. Set LINEAR_API_KEY in the CI environment.'
     ];
   }
 
-  const fetchProject = options.fetchProject
-    ?? ((key, id) => fetchIssueProject(key, id));
+  const fetchProject = options.fetchProject ?? ((key, id) => fetchIssueProject(key, id));
 
   let result;
   try {
@@ -362,18 +370,22 @@ async function verifyIssueProjectMembership(metadata, options = {}) {
   }
   if (!result.project) {
     return [
-      `[pr-governance] child task issue ${identifier} belongs to no Linear project,`
-        + ' so the focused epic link in this body is not a delegation that holds'
+      `[pr-governance] child task issue ${identifier} belongs to no Linear project,` +
+        ' so the focused epic link in this body is not a delegation that holds'
     ];
   }
 
-  const actual = projectKeyFrom(result.project.url) ?? String(result.project.id || '').toLowerCase();
-  const matches = actual === expectedProject
-    || String(result.project.id || '').toLowerCase().startsWith(expectedProject);
+  const actual =
+    projectKeyFrom(result.project.url) ?? String(result.project.id || '').toLowerCase();
+  const matches =
+    actual === expectedProject ||
+    String(result.project.id || '')
+      .toLowerCase()
+      .startsWith(expectedProject);
   if (!matches) {
     return [
-      `[pr-governance] child task issue ${identifier} belongs to "${result.project.name}",`
-        + ' not to the project named in the focused epic link'
+      `[pr-governance] child task issue ${identifier} belongs to "${result.project.name}",` +
+        ' not to the project named in the focused epic link'
     ];
   }
 
@@ -389,7 +401,9 @@ async function verifyIssueProjectMembership(metadata, options = {}) {
 
 function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
   if (typeof value === 'boolean') return value;
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
   if (['1', 'true', 'yes'].includes(normalized)) return true;
   if (['0', 'false', 'no'].includes(normalized)) return false;
   return Boolean(process.env.CIRCLE_PULL_REQUEST);
@@ -403,12 +417,12 @@ async function run(options = {}) {
     baseRef: options.baseRef ?? process.env.JUMENTIX_PR_BASE_REF
   };
   const hasExplicitPullRequestMetadata = Boolean(
-    String(metadata.title || '').trim()
-    || String(metadata.body || '').trim()
-    || String(metadata.baseRef || '').trim()
+    String(metadata.title || '').trim() ||
+    String(metadata.body || '').trim() ||
+    String(metadata.baseRef || '').trim()
   );
-  const shouldValidatePullRequest = resolvePullRequestFlag(options.isPullRequest)
-    || hasExplicitPullRequestMetadata;
+  const shouldValidatePullRequest =
+    resolvePullRequestFlag(options.isPullRequest) || hasExplicitPullRequestMetadata;
   const failures = [
     ...validateSupportedAgents(options.rootDir),
     ...validateTemplates(options.rootDir),
@@ -419,11 +433,13 @@ async function run(options = {}) {
   // is nothing to look up, and a second complaint about the same field would
   // bury the one that says what to fix.
   if (shouldValidatePullRequest && failures.length === 0) {
-    failures.push(...await verifyIssueProjectMembership(metadata, {
-      rootDir: options.rootDir,
-      apiKey: options.apiKey,
-      fetchProject: options.fetchProject
-    }));
+    failures.push(
+      ...(await verifyIssueProjectMembership(metadata, {
+        rootDir: options.rootDir,
+        apiKey: options.apiKey,
+        fetchProject: options.fetchProject
+      }))
+    );
   }
 
   if (failures.length > 0) {
@@ -438,24 +454,26 @@ async function run(options = {}) {
 if (isEntryPoint(module)) {
   // Awaited, not fire-and-forget: an unawaited promise would let the process
   // exit 0 before the membership lookup resolved.
-  run().then((code) => { process.exitCode = code; });
+  run().then((code) => {
+    process.exitCode = code;
+  });
 }
 
 module.exports = {
-  REQUIRED_EPIC_FIELDS,
-  REQUIRED_TITLE_FORMAT,
-  SUPPORTED_AGENTS_PATH,
-  SUPPORTED_AGENT_FIELDS,
-  TEMPLATE_PATHS,
-  TITLE_PREFIX_BY_NATURE,
   agentBranchPatterns,
   isPlaceholder,
-  loadSupportedAgents,
   issueIdentifierFrom,
+  loadSupportedAgents,
   projectKeyFrom,
   readField,
+  REQUIRED_EPIC_FIELDS,
+  REQUIRED_TITLE_FORMAT,
   resolvePullRequestFlag,
   run,
+  SUPPORTED_AGENT_FIELDS,
+  SUPPORTED_AGENTS_PATH,
+  TEMPLATE_PATHS,
+  TITLE_PREFIX_BY_NATURE,
   validatePullRequest,
   validateSupportedAgents,
   validateTemplates,

@@ -1,11 +1,11 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
 import { defineComponent } from 'vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
+import organizationsCrudConfig from '@/features/organizations/organizationsCrudConfig';
+import usersCrudConfig from '@/features/users/usersCrudConfig';
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
-import { requireAuthRedirect, requireScopeRedirect, requireSyncRedirect } from '@/router/guards';
-import { organizationsCrudConfig } from '@/features/organizations/organizationsCrudConfig';
-import { usersCrudConfig } from '@/features/users/usersCrudConfig';
 import '@/modules/index';
+import { requireAuthRedirect, requireScopeRedirect, requireSyncRedirect } from '@/router/guards';
 
 /** Keep-alive panes live in DefaultLayout; this route only binds URL params. */
 const ModuleOutlet = defineComponent({
@@ -81,11 +81,12 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 })
 });
 
-router.beforeEach(async (to) => (
-  requireAuthRedirect(to)
-  ?? (await requireSyncRedirect(to))
-  ?? (await requireScopeRedirect(to))
-  ?? true
-));
+router.beforeEach(
+  async (to) =>
+    requireAuthRedirect(to) ??
+    (await requireSyncRedirect(to)) ??
+    (await requireScopeRedirect(to)) ??
+    true
+);
 
 export default router;

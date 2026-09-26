@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Bun toolchain guard.
  *
@@ -25,8 +26,9 @@
  * guards, so the logic is unit-testable without spawning a process.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const EXACT_VERSION = /^\d+\.\d+\.\d+$/;
@@ -49,9 +51,9 @@ function validateToolchain({ runningBunVersion, rawPin, declaredPackageManager }
 
   if (!runningBunVersion) {
     failures.push(
-      'Not running under Bun. Internal engineering workflows must execute on the '
-        + 'pinned Bun toolchain (Requirement 096 §1). Invoke this guard with '
-        + '`bun ci-cd/check-bun-version.js`.',
+      'Not running under Bun. Internal engineering workflows must execute on the ' +
+        'pinned Bun toolchain (Requirement 096 §1). Invoke this guard with ' +
+        '`bun ci-cd/check-bun-version.js`.'
     );
   }
 
@@ -60,15 +62,17 @@ function validateToolchain({ runningBunVersion, rawPin, declaredPackageManager }
   // `=== undefined` arm could never be true: `readToolchainInput` returns
   // `string | null`, so it was dead code that read as a second safety check.
   if (rawPin == null) {
-    failures.push('.bun-version is missing. The canonical Bun version must be pinned in the repository.');
+    failures.push(
+      '.bun-version is missing. The canonical Bun version must be pinned in the repository.'
+    );
   } else {
     const trimmed = String(rawPin).trim();
     if (!trimmed) {
       failures.push('.bun-version is empty.');
     } else if (!EXACT_VERSION.test(trimmed)) {
       failures.push(
-        `.bun-version must contain a single exact version, found "${trimmed}". `
-          + 'Ranges are not accepted: a range lets local and CI diverge.',
+        `.bun-version must contain a single exact version, found "${trimmed}". ` +
+          'Ranges are not accepted: a range lets local and CI diverge.'
       );
     } else {
       pinnedVersion = trimmed;
@@ -76,27 +80,29 @@ function validateToolchain({ runningBunVersion, rawPin, declaredPackageManager }
   }
 
   if (!declaredPackageManager) {
-    failures.push('package.json#packageManager is not set. It must declare bun at the pinned version.');
+    failures.push(
+      'package.json#packageManager is not set. It must declare bun at the pinned version.'
+    );
   } else {
     const match = /^bun@(.+)$/.exec(declaredPackageManager);
     if (!match) {
       failures.push(
-        `package.json#packageManager is "${declaredPackageManager}", expected "bun@<version>". `
-          + 'Requirement 096 §1 makes Bun the sole internal package manager.',
+        `package.json#packageManager is "${declaredPackageManager}", expected "bun@<version>". ` +
+          'Requirement 096 §1 makes Bun the sole internal package manager.'
       );
     } else if (pinnedVersion && match[1] !== pinnedVersion) {
       failures.push(
-        `Version skew between sources of truth: .bun-version is "${pinnedVersion}" but `
-          + `package.json#packageManager is "${declaredPackageManager}". They must match exactly.`,
+        `Version skew between sources of truth: .bun-version is "${pinnedVersion}" but ` +
+          `package.json#packageManager is "${declaredPackageManager}". They must match exactly.`
       );
     }
   }
 
   if (runningBunVersion && pinnedVersion && runningBunVersion !== pinnedVersion) {
     failures.push(
-      `Bun version mismatch: running ${runningBunVersion}, pinned ${pinnedVersion}. `
-        + `Install the pinned version (\`bun upgrade --to ${pinnedVersion}\`) or update the pin `
-        + 'deliberately, with the matrix re-run that justifies it.',
+      `Bun version mismatch: running ${runningBunVersion}, pinned ${pinnedVersion}. ` +
+        `Install the pinned version (\`bun upgrade --to ${pinnedVersion}\`) or update the pin ` +
+        'deliberately, with the matrix re-run that justifies it.'
     );
   }
 
@@ -124,7 +130,7 @@ function readToolchainInput(sources = {}) {
     rawPin: fs.existsSync(pinPath) ? fs.readFileSync(pinPath, 'utf8') : null,
     declaredPackageManager: fs.existsSync(manifestPath)
       ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')).packageManager || null
-      : null,
+      : null
   };
 }
 
@@ -144,7 +150,8 @@ function main(input = readToolchainInput()) {
       console.error(`  - ${failure}`);
     }
     console.error('');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log(`Bun toolchain guard passed: running pinned Bun ${String(input.rawPin).trim()}.`);
@@ -158,5 +165,5 @@ module.exports = {
   EXACT_VERSION,
   main,
   readToolchainInput,
-  validateToolchain,
+  validateToolchain
 };

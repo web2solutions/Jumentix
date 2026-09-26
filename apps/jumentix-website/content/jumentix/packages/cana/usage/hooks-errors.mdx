@@ -1,6 +1,6 @@
 ---
-title: "Hooks and errors"
-description: "Apply write hooks and handle plain-data Cana errors."
+title: 'Hooks and errors'
+description: 'Apply write hooks and handle plain-data Cana errors.'
 ---
 
 # Hooks and errors
@@ -90,14 +90,14 @@ try {
 
 ## Common errors
 
-| Code | Typical cause | Recovery |
-| --- | --- | --- |
-| `InvalidRequest` | Using a table before `open()` or sending an invalid key. | Fix call order or key shape. |
-| `ConstraintViolation` | Duplicate key or unique index conflict. | Show create-only conflict UI. |
-| `NotFound` | `update()` target missing or replay cursor too old. | Reload durable state, then subscribe again. |
-| `TransactionInactive` | Awaited non-IndexedDB work inside a transaction. | Move network/timer work outside the transaction body. |
-| `QuotaExceeded` | Browser storage quota is full. | Export, clear or ask for persistent storage. |
-| `UnknownOutcome` | Worker/tab died while a write was in flight. | Use `operationLedger` and `resolveWrite()`. |
+| Code                  | Typical cause                                            | Recovery                                              |
+| --------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
+| `InvalidRequest`      | Using a table before `open()` or sending an invalid key. | Fix call order or key shape.                          |
+| `ConstraintViolation` | Duplicate key or unique index conflict.                  | Show create-only conflict UI.                         |
+| `NotFound`            | `update()` target missing or replay cursor too old.      | Reload durable state, then subscribe again.           |
+| `TransactionInactive` | Awaited non-IndexedDB work inside a transaction.         | Move network/timer work outside the transaction body. |
+| `QuotaExceeded`       | Browser storage quota is full.                           | Export, clear or ask for persistent storage.          |
+| `UnknownOutcome`      | Worker/tab died while a write was in flight.             | Use `operationLedger` and `resolveWrite()`.           |
 
 ## Run it here
 

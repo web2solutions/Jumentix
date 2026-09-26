@@ -1,23 +1,26 @@
-/* eslint-disable @typescript-eslint/no-var-requires, global-require */
 import path from 'node:path';
 
 const packageRoot = path.resolve(__dirname, '..');
 
-const {
-  normalizeCodeWorkspaceInput,
-  normalizeEntityInput,
-  normalizeNote
-} = require(path.join(packageRoot, 'src', 'state', 'designerState.js')) as {
+const { normalizeCodeWorkspaceInput, normalizeEntityInput, normalizeNote } = require(
+  path.join(packageRoot, 'src', 'state', 'designerState.js')
+) as {
   normalizeCodeWorkspaceInput: (input: unknown) => {
-    files: Record<string, {
-      path: string;
-      state: string;
-      baseContent: string;
-      content: string;
-    }>;
+    files: Record<
+      string,
+      {
+        path: string;
+        state: string;
+        baseContent: string;
+        content: string;
+      }
+    >;
   };
   normalizeEntityInput: (input: unknown, index: number) => { width: number; height?: number };
-  normalizeNote: (input: unknown, index: number) => {
+  normalizeNote: (
+    input: unknown,
+    index: number
+  ) => {
     id: string;
     x: number;
     y: number;
@@ -25,35 +28,44 @@ const {
   };
 };
 
-const {
-  buildBoilerplateBundleDocument
-} = require(path.join(packageRoot, 'src', 'exporters', 'designerExporters.js')) as {
-  buildBoilerplateBundleDocument: (state: Record<string, unknown>, generatedAt?: string) => {
-    modules: Array<{
-      entities: Array<{
-        files: Record<string, {
-          content: string;
-          workspaceState?: string;
-        }>;
-      }>;
-    }>;
+const { buildBoilerplateBundleDocument } = require(
+  path.join(packageRoot, 'src', 'exporters', 'designerExporters.js')
+) as {
+  buildBoilerplateBundleDocument: (
+    state: Record<string, unknown>,
+    generatedAt?: string
+  ) => {
+    modules: {
+      entities: {
+        files: Record<
+          string,
+          {
+            content: string;
+            workspaceState?: string;
+          }
+        >;
+      }[];
+    }[];
   };
 };
 
-const {
-  searchModel,
-  resizeDomainBox
-} = require(path.join(packageRoot, 'src', 'model', 'modelQueries.js')) as {
+const { searchModel, resizeDomainBox } = require(
+  path.join(packageRoot, 'src', 'model', 'modelQueries.js')
+) as {
   searchModel: (domains: unknown, query: unknown) => unknown[];
-  resizeDomainBox: (domain: unknown, width: number, height: number) => {
+  resizeDomainBox: (
+    domain: unknown,
+    width: number,
+    height: number
+  ) => {
     width: number;
     height: number;
   };
 };
 
-const {
-  isBarePropertyKey
-} = require(path.join(packageRoot, 'src', 'model', 'propertyKeys.js')) as {
+const { isBarePropertyKey } = require(
+  path.join(packageRoot, 'src', 'model', 'propertyKeys.js')
+) as {
   isBarePropertyKey: (name: unknown) => boolean;
 };
 
@@ -74,13 +86,16 @@ describe('designer-core fallback branches', () => {
   it('keeps explicit note coordinates and colours when they are valid', () => {
     expect.hasAssertions();
 
-    const note = normalizeNote({
-      id: 'note-a',
-      text: ' Decision ',
-      x: 12,
-      y: 34,
-      color: '#abcdef'
-    }, 0);
+    const note = normalizeNote(
+      {
+        id: 'note-a',
+        text: ' Decision ',
+        x: 12,
+        y: 34,
+        color: '#abcdef'
+      },
+      0
+    );
 
     expect(note).toMatchObject({
       id: 'note-a',
@@ -135,21 +150,27 @@ describe('designer-core fallback branches', () => {
   it('builds boilerplate bundles when no code workspace overlay exists', () => {
     expect.hasAssertions();
     const state = {
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          fields: [{
-            id: 'field-1',
-            name: 'id',
-            type: 'uuid',
-            primary: true,
-            required: true
-          }]
-        }]
-      }],
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'Invoice',
+              fields: [
+                {
+                  id: 'field-1',
+                  name: 'id',
+                  type: 'uuid',
+                  primary: true,
+                  required: true
+                }
+              ]
+            }
+          ]
+        }
+      ],
       relationships: []
     };
 
@@ -161,21 +182,27 @@ describe('designer-core fallback branches', () => {
   it('keeps boilerplate overlays safe when a stale file has no edited content', () => {
     expect.hasAssertions();
     const state = {
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          fields: [{
-            id: 'field-1',
-            name: 'id',
-            type: 'uuid',
-            primary: true,
-            required: true
-          }]
-        }]
-      }],
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'Invoice',
+              fields: [
+                {
+                  id: 'field-1',
+                  name: 'id',
+                  type: 'uuid',
+                  primary: true,
+                  required: true
+                }
+              ]
+            }
+          ]
+        }
+      ],
       relationships: [],
       codeWorkspace: {
         files: {
@@ -199,8 +226,9 @@ describe('designer-core fallback branches', () => {
 
     expect(normalizeEntityInput({}, 0).height).toBeUndefined();
     expect(normalizeEntityInput({ height: 444 }, 0).height).toBe(444);
-    expect(resizeDomainBox({ entities: [{ x: Number.NaN, y: Number.NaN }] }, 12, 16))
-      .toStrictEqual({ width: 356, height: 160 });
+    expect(resizeDomainBox({ entities: [{ x: Number.NaN, y: Number.NaN }] }, 12, 16)).toStrictEqual(
+      { width: 356, height: 160 }
+    );
   });
 
   it('keeps model search and property key nullish fallbacks explicit', () => {

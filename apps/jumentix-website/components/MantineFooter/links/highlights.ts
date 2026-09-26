@@ -1,4 +1,4 @@
-export const highlights = [
+const highlights = [
   {
     key: 'mantine-extensions',
     title: 'Mantine Extensions HUB',
@@ -20,3 +20,5 @@ export const highlights = [
     href: 'https://www.youtube.com/playlist?list=PL85tTROKkZrWyqCcmNCdWajpx05-cTal4'
   }
 ];
+
+export default highlights;

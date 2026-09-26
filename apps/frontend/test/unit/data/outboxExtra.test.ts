@@ -1,37 +1,44 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { resetSharedApiClient } from '@/contracts/apiClient';
-import {
-  getCanaClient, closeCana, openCana, wipeCanaDatabase
-} from '@/data/db';
+import { closeCana, getCanaClient, openCana, wipeCanaDatabase } from '@/data/db';
 import { getLocal } from '@/data/localRepository';
-import {
-  drainOutbox, enqueueMutation, listOutbox, type OutboxIntent
-} from '@/data/outbox';
+import { drainOutbox, enqueueMutation, listOutbox } from '@/data/outbox';
 import { useAuthStore } from '@/stores/auth';
 import { useNotificationStore } from '@/stores/notifications';
+
+import type { OutboxIntent } from '@/data/outbox';
 
 const DB = 'jumentix-frontend-test-outbox-extra';
 
 const userOps = {
-  create: 'create', update: 'update', delete: 'deleteOne'
+  create: 'create',
+  update: 'update',
+  delete: 'deleteOne'
 };
 
 const jsonResponse = (status: number, body: unknown) => ({
   ok: status >= 200 && status < 300,
   status,
-  headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) },
+  headers: {
+    get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null)
+  },
   json: async () => body,
   text: async () => JSON.stringify(body)
 });
 
 const seedSyncedUser = async (id: string, firstName: string): Promise<void> => {
-  await getCanaClient().table('users').put({
-    id, firstName, username: `${id}@x.dev`, updatedAt: '2026-01-01T00:00:00.000Z', _sync: 'synced'
-  });
+  await getCanaClient()
+    .table('users')
+    .put({
+      id,
+      firstName,
+      username: `${id}@x.dev`,
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      _sync: 'synced'
+    });
 };
 
 /**
@@ -110,9 +117,12 @@ describe('outbox intents beyond the happy path (JUM-806/807)', () => {
       payload: { firstName: 'New' },
       operations: userOps
     });
-    globalThis.fetch = (async () => jsonResponse(200, {
-      id: 'u-upd', firstName: 'New', username: 'u-upd@x.dev'
-    })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      jsonResponse(200, {
+        id: 'u-upd',
+        firstName: 'New',
+        username: 'u-upd@x.dev'
+      })) as unknown as typeof fetch;
 
     await drainOutbox();
 
@@ -132,7 +142,8 @@ describe('outbox intents beyond the happy path (JUM-806/807)', () => {
       payload: { firstName: 'After' },
       operations: userOps
     });
-    globalThis.fetch = (async () => jsonResponse(400, { message: 'invalid payload' })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      jsonResponse(400, { message: 'invalid payload' })) as unknown as typeof fetch;
 
     await drainOutbox();
 
@@ -152,7 +163,8 @@ describe('outbox intents beyond the happy path (JUM-806/807)', () => {
       payload: { firstName: 'Retry', username: 'retry@x.dev', password: 'secret-1' },
       operations: userOps
     });
-    globalThis.fetch = (async () => jsonResponse(500, { message: 'boom' })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      jsonResponse(500, { message: 'boom' })) as unknown as typeof fetch;
 
     await drainOutbox();
 
@@ -171,7 +183,8 @@ describe('outbox intents beyond the happy path (JUM-806/807)', () => {
       payload: { firstName: 'Auth', username: 'auth@x.dev', password: 'secret-1' },
       operations: userOps
     });
-    globalThis.fetch = (async () => jsonResponse(401, { message: 'expired' })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      jsonResponse(401, { message: 'expired' })) as unknown as typeof fetch;
 
     await drainOutbox();
 
@@ -189,9 +202,12 @@ describe('outbox intents beyond the happy path (JUM-806/807)', () => {
       payload: { firstName: 'Conc', username: 'conc@x.dev', password: 'secret-1' },
       operations: userOps
     });
-    globalThis.fetch = (async () => jsonResponse(201, {
-      id: 'u-conc', firstName: 'Conc', username: 'conc@x.dev'
-    })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      jsonResponse(201, {
+        id: 'u-conc',
+        firstName: 'Conc',
+        username: 'conc@x.dev'
+      })) as unknown as typeof fetch;
 
     const first = drainOutbox();
     const second = drainOutbox();
@@ -203,7 +219,10 @@ describe('outbox intents beyond the happy path (JUM-806/807)', () => {
   it('falls back to timestamped ids when crypto.randomUUID is unavailable', async () => {
     expect.hasAssertions();
     const originalRandomUUID = crypto.randomUUID;
-    Object.defineProperty(globalThis.crypto, 'randomUUID', { value: undefined, configurable: true });
+    Object.defineProperty(globalThis.crypto, 'randomUUID', {
+      value: undefined,
+      configurable: true
+    });
     try {
       const record = await enqueueMutation({
         entity: 'User',
@@ -215,7 +234,10 @@ describe('outbox intents beyond the happy path (JUM-806/807)', () => {
       const intents = await listOutbox();
       expect(intents[0].opId).toMatch(/^op-/);
     } finally {
-      Object.defineProperty(globalThis.crypto, 'randomUUID', { value: originalRandomUUID, configurable: true });
+      Object.defineProperty(globalThis.crypto, 'randomUUID', {
+        value: originalRandomUUID,
+        configurable: true
+      });
     }
   });
 
@@ -228,16 +250,20 @@ describe('outbox intents beyond the happy path (JUM-806/807)', () => {
       payload: { firstName: 'Dep', username: 'dep@x.dev', password: 'secret-1' },
       operations: userOps
     });
-    globalThis.fetch = (async () => jsonResponse(500, { message: 'boom' })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      jsonResponse(500, { message: 'boom' })) as unknown as typeof fetch;
     await drainOutbox();
 
     const pending: OutboxIntent[] = await listOutbox();
     expect(pending).toHaveLength(1);
     expect(pending[0].attempts).toBe(1);
 
-    globalThis.fetch = (async () => jsonResponse(201, {
-      id: 'u-dep', firstName: 'Dep', username: 'dep@x.dev'
-    })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      jsonResponse(201, {
+        id: 'u-dep',
+        firstName: 'Dep',
+        username: 'dep@x.dev'
+      })) as unknown as typeof fetch;
     await drainOutbox();
     expect(await listOutbox()).toHaveLength(0);
     expect((await getLocal('User', 'u-dep'))?._sync).toBe('synced');

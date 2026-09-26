@@ -1,4 +1,4 @@
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 
 describe('user provider local', () => {
   it('delegates all provider operations to user service', async () => {
@@ -7,7 +7,9 @@ describe('user provider local', () => {
       create: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
       update: jest.fn().mockResolvedValue({ result: { id: 'u1', username: 'john' } }),
       delete: jest.fn().mockResolvedValue({ result: true }),
-      getOneByUsernameForAuth: jest.fn().mockResolvedValue({ result: { id: 'u1', username: 'john' } }),
+      getOneByUsernameForAuth: jest
+        .fn()
+        .mockResolvedValue({ result: { id: 'u1', username: 'john' } }),
       updatePassword: jest.fn().mockResolvedValue({ result: { id: 'u1' } })
     };
 

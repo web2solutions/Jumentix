@@ -1,4 +1,4 @@
-import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
+import InMemoryRelationalStore from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
 
 interface IRecord {
   id: string;
@@ -16,9 +16,9 @@ describe('in memory relational store', () => {
     });
 
     await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
-    await expect(store.create('2', { id: '2', username: 'JOHN', organization: 'org-2' }))
-      .rejects
-      .toThrow('username already in use');
+    await expect(
+      store.create('2', { id: '2', username: 'JOHN', organization: 'org-2' })
+    ).rejects.toThrow('username already in use');
 
     await store.create('2', { id: '2', username: 'mary', organization: 'org-1' });
     const byOrg = await store.getByRelation('organization', 'org-1');
@@ -35,7 +35,9 @@ describe('in memory relational store', () => {
     const page = await store.getAll({ organization: 'org-2' }, { page: 1, size: 10 });
     expect(page.total).toBe(1);
     expect(page.result[0].username).toBe('mary-updated');
-    await expect(store.getAll({}, { page: 0, size: 10 })).rejects.toThrow('page must be greater than 0');
+    await expect(store.getAll({}, { page: 0, size: 10 })).rejects.toThrow(
+      'page must be greater than 0'
+    );
     await expect(store.getAll({}, { page: 3, size: 1 })).rejects.toThrow(
       'page number must be smaller than the number of total pages'
     );
@@ -48,11 +50,15 @@ describe('in memory relational store', () => {
     });
 
     await expect(store.getOneById('missing')).rejects.toThrow('Record not found');
-    await expect(store.update('missing', { id: 'missing', username: 'n/a' })).rejects.toThrow('Record not found');
+    await expect(store.update('missing', { id: 'missing', username: 'n/a' })).rejects.toThrow(
+      'Record not found'
+    );
 
     await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
     await store.create('2', { id: '2', username: 'mary', organization: 'org-2' });
-    await expect(store.create('1', { id: '1', username: 'again' })).rejects.toThrow('The field "id" already exists.');
+    await expect(store.create('1', { id: '1', username: 'again' })).rejects.toThrow(
+      'The field "id" already exists.'
+    );
 
     await store.update('2', { id: '2', username: 'mary', organization: 'org-3' });
     await expect(store.getByRelation('organization', 'org-2')).resolves.toHaveLength(0);
@@ -112,10 +118,12 @@ describe('in memory relational store', () => {
     await store.create('1', { id: '1', username: 'john', organization: 'org-1' });
     await store.delete('1');
     await expect(store.getByRelation('organization', 'org-1')).resolves.toHaveLength(0);
-    await expect(store.create('2', { id: '2', username: 'john', organization: 'org-1' }))
-      .resolves.toMatchObject({ username: 'john' });
-    await expect(store.create('1', { id: '1', username: 'other' }))
-      .rejects.toThrow('The field "id" already exists.');
+    await expect(
+      store.create('2', { id: '2', username: 'john', organization: 'org-1' })
+    ).resolves.toMatchObject({ username: 'john' });
+    await expect(store.create('1', { id: '1', username: 'other' })).rejects.toThrow(
+      'The field "id" already exists.'
+    );
   });
 
   it('hard-deletes a tombstone and reserves the id on the ledger', async () => {
@@ -132,8 +140,9 @@ describe('in memory relational store', () => {
     await store.delete('gone');
     await expect(store.hardDelete('gone')).resolves.toBe(true);
     ledger.reserve({ entity: 'User', id: 'gone', purgedAt: '2026-06-01T00:00:00.000Z' });
-    await expect(store.create('gone', { id: 'gone', username: 'tmp2' }))
-      .rejects.toThrow('The field "id" already exists.');
+    await expect(store.create('gone', { id: 'gone', username: 'tmp2' })).rejects.toThrow(
+      'The field "id" already exists.'
+    );
   });
 
   it('hard-delete reports a miss and skips empty relation refs', async () => {

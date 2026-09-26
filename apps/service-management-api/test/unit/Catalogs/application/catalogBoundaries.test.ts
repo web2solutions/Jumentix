@@ -1,16 +1,18 @@
-/* eslint-disable jest/max-expects */
-import { CatalogCreateRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogCreateRequestEvent';
-import { CatalogUpdateRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogUpdateRequestEvent';
-import { CatalogDeleteRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogDeleteRequestEvent';
-import { CatalogRestoreRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogRestoreRequestEvent';
-import { CatalogGetAllRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogGetAllRequestEvent';
-import { CatalogGetOneRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogGetOneRequestEvent';
-import { CatalogService } from '@service-management-api/modules/Catalogs/service/CatalogService';
-import { CatalogDataRepository } from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
-import { CatalogUseCases } from '@service-management-api/modules/Catalogs/application/use-cases/CatalogUseCases';
-import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
-import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
+import InMemoryRelationalStore from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
+
+import CatalogDataRepository from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
+import CatalogUseCases from '@service-management-api/modules/Catalogs/application/use-cases/CatalogUseCases';
+import CatalogCreateRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogCreateRequestEvent';
+import CatalogDeleteRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogDeleteRequestEvent';
+import CatalogGetAllRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogGetAllRequestEvent';
+import CatalogGetOneRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogGetOneRequestEvent';
+import CatalogRestoreRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogRestoreRequestEvent';
+import CatalogUpdateRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogUpdateRequestEvent';
+import CatalogService from '@service-management-api/modules/Catalogs/service/CatalogService';
+
 import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+
+import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
 
 /**
  * Boundary suite for the shared catalog (JUM-491): every request-event class
@@ -19,7 +21,7 @@ import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClien
  * contract — the failure modes the HTTP layer relies on.
  */
 describe('catalog request events fail closed', () => {
-  const cases: Array<[string, any, Record<string, any>]> = [
+  const cases: [string, any, Record<string, any>][] = [
     ['create', CatalogCreateRequestEvent, { input: { name: 'Billing' } }],
     ['update', CatalogUpdateRequestEvent, { params: { id: 'x' }, input: { version: 1 } }],
     ['delete', CatalogDeleteRequestEvent, { params: { id: 'x' }, queryString: { version: '1' } }],
@@ -58,7 +60,9 @@ describe('catalogService error channels', () => {
     expect.hasAssertions();
     const catalogUseCases = createStack();
     const { result, error } = await catalogUseCases.create({
-      organization: 'org-1', name: '', design: {}
+      organization: 'org-1',
+      name: '',
+      design: {}
     });
     expect(result).toBeUndefined();
     expect((error as any).message).toContain('name can not be empty');

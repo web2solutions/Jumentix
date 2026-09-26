@@ -1,11 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/nextjs';
 import { MantineFooter } from './MantineFooter';
+
+import type { Meta, StoryObj } from '@storybook/nextjs';
 
 const meta = {
   title: 'Documentation/Shell Footer',
   component: MantineFooter,
   tags: ['autodocs'],
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: 'fullscreen' }
 } satisfies Meta<typeof MantineFooter>;
 
 export default meta;
@@ -17,8 +18,8 @@ export const Portuguese: Story = {
   parameters: {
     nextjs: {
       navigation: {
-        pathname: '/docs/pt-BR/jumentix',
-      },
-    },
-  },
+        pathname: '/docs/pt-BR/jumentix'
+      }
+    }
+  }
 };

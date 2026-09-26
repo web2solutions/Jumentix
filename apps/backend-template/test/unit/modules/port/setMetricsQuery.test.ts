@@ -1,13 +1,14 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { setMetricsQuery } from '@src/modules/port/setMetricsQuery';
 import { ValidationError } from '@src/infra/exceptions';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import { setMetricsQuery } from '@src/modules/port/setMetricsQuery';
 
-class TestEvent extends BaseDomainEvent<any> {}
+class TestEvent extends BaseDomainEvent {}
 
-const event = (queryString: Record<string, unknown>) => new TestEvent({
-  queryString,
-  schemaOAS: { 'x-metrics-capabilities': { groupable: ['roles'], series: ['createdAt'] } }
-});
+const event = (queryString: Record<string, unknown>) =>
+  new TestEvent({
+    queryString,
+    schemaOAS: { 'x-metrics-capabilities': { groupable: ['roles'], series: ['createdAt'] } }
+  });
 
 describe('setMetricsQuery', () => {
   it('parses a count query', () => {
@@ -20,10 +21,12 @@ describe('setMetricsQuery', () => {
   it('names accepted metrics and intervals on 400-style ValidationError', () => {
     expect.hasAssertions();
     expect(() => setMetricsQuery(event({ metric: 'avg' }))).toThrow(ValidationError);
-    expect(() => setMetricsQuery(event({ metric: 'avg' })))
-      .toThrow('Accepted: count, groupBy, series');
-    expect(() => setMetricsQuery(event({ metric: 'series', interval: 'year' })))
-      .toThrow('Accepted: day, week, month.');
+    expect(() => setMetricsQuery(event({ metric: 'avg' }))).toThrow(
+      'Accepted: count, groupBy, series'
+    );
+    expect(() => setMetricsQuery(event({ metric: 'series', interval: 'year' }))).toThrow(
+      'Accepted: day, week, month.'
+    );
   });
 
   it('defaults a missing queryString and metric, and accepts a declared groupBy field', () => {

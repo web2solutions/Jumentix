@@ -28,10 +28,7 @@ const HYDRATION_MARKERS = [
  * Noise that is not the site's fault and would make this spec a coin flip:
  * third-party embeds and network conditions the test does not control.
  */
-const IGNORED_CONSOLE = [
-  'Download the React DevTools',
-  'favicon.ico'
-];
+const IGNORED_CONSOLE = ['Download the React DevTools', 'favicon.ico'];
 
 const CRITICAL_ROUTES = [
   '/',
@@ -67,8 +64,8 @@ describe('route integrity in a real browser (JUM-158)', () => {
         const relevant = errors.filter(
           (message) => !IGNORED_CONSOLE.some((ignored) => message.includes(ignored))
         );
-        const hydration = relevant.filter(
-          (message) => HYDRATION_MARKERS.some((marker) => message.includes(marker))
+        const hydration = relevant.filter((message) =>
+          HYDRATION_MARKERS.some((marker) => message.includes(marker))
         );
 
         // Reported separately: a hydration mismatch and a stray console error
@@ -92,9 +89,11 @@ describe('route integrity in a real browser (JUM-158)', () => {
   it('has no route rendering an empty document body', () => {
     CRITICAL_ROUTES.forEach((route) => {
       cy.visit(route);
-      cy.get('body').invoke('text').should((text) => {
-        expect(text.trim().length, `visible text on ${route}`).to.be.greaterThan(0);
-      });
+      cy.get('body')
+        .invoke('text')
+        .should((text) => {
+          expect(text.trim().length, `visible text on ${route}`).to.be.greaterThan(0);
+        });
     });
   });
 });

@@ -4,12 +4,12 @@ Root of repository-owned CI/CD tooling (Requirement 137).
 
 ## Layout
 
-| Path | Owns |
-| --- | --- |
-| `ci-cd/*.js` | Monorepo gates, runners, test-map, release and governance checks |
-| `ci-cd/lib/` | Shared helpers for those gates |
-| `ci-cd/test/` | Proof suites for the scripts above |
-| `ci-cd/ownership-placement-allowlist.json` | Shrink-only debt register for Req 137 (steady state: `[]`) |
+| Path                                       | Owns                                                             |
+| ------------------------------------------ | ---------------------------------------------------------------- |
+| `ci-cd/*.js`                               | Monorepo gates, runners, test-map, release and governance checks |
+| `ci-cd/lib/`                               | Shared helpers for those gates                                   |
+| `ci-cd/test/`                              | Proof suites for the scripts above                               |
+| `ci-cd/ownership-placement-allowlist.json` | Shrink-only debt register for Req 137 (steady state: `[]`)       |
 
 Component-specific scripts do **not** live here. They belong under
 `apps/<A>/scripts/`, `packages/<P>/scripts/`, or `bin/`. Root `package.json`

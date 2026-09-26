@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 
 /**
  * JUM-470 — unit suite for the designer normalisers
@@ -26,8 +25,8 @@
  */
 
 const {
-  DOMAIN_COLORS,
   createDefaultView,
+  DOMAIN_COLORS,
   getDefaultRbacPolicy,
   normalizeContractInput,
   normalizeField,
@@ -41,9 +40,18 @@ describe('designer normalisers (JUM-470)', () => {
   describe('normalizeField — importer-shaped inputs', () => {
     it('coerces non-string names and boolean-ish flags', () => {
       expect.hasAssertions();
-      const field = normalizeField({
-        name: 42, type: 'integer', required: 1, pk: 0, fk: 'yes', unique: null, nullable: undefined
-      }, 0);
+      const field = normalizeField(
+        {
+          name: 42,
+          type: 'integer',
+          required: 1,
+          pk: 0,
+          fk: 'yes',
+          unique: null,
+          nullable: undefined
+        },
+        0
+      );
       expect(field.name).toBe('42');
       expect(field.required).toBe(true);
       expect(field.pk).toBe(false);
@@ -54,15 +62,27 @@ describe('designer normalisers (JUM-470)', () => {
 
     it('keeps itemsType only on array fields and repairs unknown array item types', () => {
       expect.hasAssertions();
-      expect(normalizeField({ name: 'a', type: 'array', itemsType: 'weird' }, 0).itemsType).toBe('string');
-      expect(normalizeField({ name: 'b', type: 'string', itemsType: 'uuid' }, 1).itemsType).toBe('');
+      expect(normalizeField({ name: 'a', type: 'array', itemsType: 'weird' }, 0).itemsType).toBe(
+        'string'
+      );
+      expect(normalizeField({ name: 'b', type: 'string', itemsType: 'uuid' }, 1).itemsType).toBe(
+        ''
+      );
     });
 
     it('maps non-numeric constraint values to null (no constraint)', () => {
       expect.hasAssertions();
-      const field = normalizeField({
-        name: 'c', type: 'string', minLength: 'abc', maxLength: 'many', minimum: {}, maximum: NaN
-      }, 2);
+      const field = normalizeField(
+        {
+          name: 'c',
+          type: 'string',
+          minLength: 'abc',
+          maxLength: 'many',
+          minimum: {},
+          maximum: NaN
+        },
+        2
+      );
       expect(field.minLength).toBeNull();
       expect(field.maxLength).toBeNull();
       expect(field.minimum).toBeNull();
@@ -71,9 +91,17 @@ describe('designer normalisers (JUM-470)', () => {
 
     it('keeps zero-valued constraints — 0 is not "unset"', () => {
       expect.hasAssertions();
-      const field = normalizeField({
-        name: 'n', type: 'number', minLength: 0, maxLength: 0, minimum: 0, maximum: 0
-      }, 0);
+      const field = normalizeField(
+        {
+          name: 'n',
+          type: 'number',
+          minLength: 0,
+          maxLength: 0,
+          minimum: 0,
+          maximum: 0
+        },
+        0
+      );
       expect(field.minLength).toBe(0);
       expect(field.maxLength).toBe(0);
       expect(field.minimum).toBe(0);
@@ -82,8 +110,9 @@ describe('designer normalisers (JUM-470)', () => {
 
     it('stringifies enum members arriving from an OAS importer enum array', () => {
       expect.hasAssertions();
-      expect(normalizeField({ name: 'status', enum: ['a', 1, ' b '] }, 0).enumValues)
-        .toStrictEqual(['a', '1', 'b']);
+      expect(normalizeField({ name: 'status', enum: ['a', 1, ' b '] }, 0).enumValues).toStrictEqual(
+        ['a', '1', 'b']
+      );
     });
   });
 
@@ -97,9 +126,18 @@ describe('designer normalisers (JUM-470)', () => {
 
     it('repairs whitespace names, channels and versions and unknown types', () => {
       expect.hasAssertions();
-      expect(normalizeContractInput({
-        id: ' c-1 ', name: '  ', type: 'query', channel: ' ch ', version: ' '
-      }, 0)).toStrictEqual({
+      expect(
+        normalizeContractInput(
+          {
+            id: ' c-1 ',
+            name: '  ',
+            type: 'query',
+            channel: ' ch ',
+            version: ' '
+          },
+          0
+        )
+      ).toStrictEqual({
         id: 'c-1',
         name: 'Contract_1',
         type: 'event',
@@ -112,8 +150,9 @@ describe('designer normalisers (JUM-470)', () => {
     it('keeps object payload schemas (arrays included) and drops null', () => {
       expect.hasAssertions();
       expect(normalizeContractInput({ payloadSchema: null }, 0).payloadSchema).toStrictEqual({});
-      expect(normalizeContractInput({ payloadSchema: ['schema'] }, 1).payloadSchema)
-        .toStrictEqual(['schema']);
+      expect(normalizeContractInput({ payloadSchema: ['schema'] }, 1).payloadSchema).toStrictEqual([
+        'schema'
+      ]);
     });
   });
 
@@ -121,69 +160,87 @@ describe('designer normalisers (JUM-470)', () => {
     it('is idempotent: a normalized payload survives the load normalisation unchanged', () => {
       expect.hasAssertions();
       const input = {
-        domains: [{
-          id: 'domain-1',
-          name: 'Billing',
-          color: '#34d399',
-          x: 200,
-          y: 300,
-          context: {
-            ubiquitousLanguage: 'UL',
-            ownerTeam: 'Team',
-            upstreamDependencies: ['up'],
-            downstreamDependencies: ['down'],
-            integrationChannel: 'ch',
-            packageDependencies: ['pkg'],
-            sharedValueObjects: ['vo']
-          },
-          entities: [{
-            id: 'entity-1',
-            name: 'Invoice',
-            x: 14,
-            y: 14,
-            fields: [
-              normalizeField({
-                name: 'id', type: 'uuid', required: true, pk: true, unique: true
-              }, 0),
-              normalizeField({ name: 'total', type: 'number', minimum: 0 }, 1)
-            ],
-            meta: {
-              aggregateRoot: true,
-              invariants: ['total positive'],
-              rbac: getDefaultRbacPolicy(),
-              contracts: [{
-                id: 'c-1',
-                name: 'issued',
-                type: 'event',
-                channel: 'billing.issued',
-                version: '1.0.0',
-                payloadSchema: { type: 'object' }
-              }],
-              oasComposition: {
-                mode: 'allOf', refs: ['A', 'B'], externalRefs: ['X'], discriminator: 'kind'
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            color: '#34d399',
+            x: 200,
+            y: 300,
+            context: {
+              ubiquitousLanguage: 'UL',
+              ownerTeam: 'Team',
+              upstreamDependencies: ['up'],
+              downstreamDependencies: ['down'],
+              integrationChannel: 'ch',
+              packageDependencies: ['pkg'],
+              sharedValueObjects: ['vo']
+            },
+            entities: [
+              {
+                id: 'entity-1',
+                name: 'Invoice',
+                x: 14,
+                y: 14,
+                fields: [
+                  normalizeField(
+                    {
+                      name: 'id',
+                      type: 'uuid',
+                      required: true,
+                      pk: true,
+                      unique: true
+                    },
+                    0
+                  ),
+                  normalizeField({ name: 'total', type: 'number', minimum: 0 }, 1)
+                ],
+                meta: {
+                  aggregateRoot: true,
+                  invariants: ['total positive'],
+                  rbac: getDefaultRbacPolicy(),
+                  contracts: [
+                    {
+                      id: 'c-1',
+                      name: 'issued',
+                      type: 'event',
+                      channel: 'billing.issued',
+                      version: '1.0.0',
+                      payloadSchema: { type: 'object' }
+                    }
+                  ],
+                  oasComposition: {
+                    mode: 'allOf',
+                    refs: ['A', 'B'],
+                    externalRefs: ['X'],
+                    discriminator: 'kind'
+                  }
+                }
               }
-            }
-          }]
-        }],
-        relationships: [{
-          id: 'rel-1',
-          name: 'R',
-          fromEntityId: 'entity-1',
-          toEntityId: 'entity-1',
-          fromCardinality: '1',
-          toCardinality: 'N',
-          fromAnchorSide: 'top',
-          toAnchorSide: 'bottom',
-          // JUM-729 follow-up: a link that names the columns it joins survives the
-          // round trip with those names intact.
-          fromField: 'organizationId',
-          toField: 'id',
-          anchorBehavior: 'center',
-          bendX: 5,
-          bendY: 6,
-          labelOffsetX: 1,
-          labelOffsetY: 2
-        }],
+            ]
+          }
+        ],
+        relationships: [
+          {
+            id: 'rel-1',
+            name: 'R',
+            fromEntityId: 'entity-1',
+            toEntityId: 'entity-1',
+            fromCardinality: '1',
+            toCardinality: 'N',
+            fromAnchorSide: 'top',
+            toAnchorSide: 'bottom',
+            // JUM-729 follow-up: a link that names the columns it joins survives the
+            // round trip with those names intact.
+            fromField: 'organizationId',
+            toField: 'id',
+            anchorBehavior: 'center',
+            bendX: 5,
+            bendY: 6,
+            labelOffsetX: 1,
+            labelOffsetY: 2
+          }
+        ],
         selectedDomainId: 'domain-1',
         selectedEntityId: 'entity-1',
         selectedRelationshipId: 'rel-1',
@@ -218,17 +275,21 @@ describe('designer normalisers (JUM-470)', () => {
     it('upgrades a legacy partial payload predictably instead of dropping it', () => {
       expect.hasAssertions();
       const normalized = normalizeStatePayload({
-        domains: [{
-          name: ' Legacy ',
-          entities: [{
-            name: ' Thing ',
-            meta: {
-              invariants: 'first\nsecond',
-              contracts: [{}],
-              oasComposition: { mode: 'allOf', refs: 'A, B' }
-            }
-          }]
-        }],
+        domains: [
+          {
+            name: ' Legacy ',
+            entities: [
+              {
+                name: ' Thing ',
+                meta: {
+                  invariants: 'first\nsecond',
+                  contracts: [{}],
+                  oasComposition: { mode: 'allOf', refs: 'A, B' }
+                }
+              }
+            ]
+          }
+        ],
         relationships: 'nope',
         view: { zoom: '1.5' }
       });
@@ -253,8 +314,11 @@ describe('designer normalisers (JUM-470)', () => {
       const entity = domain.entities[0];
       expect(entity.id).toMatch(/^entity-import-0-[a-z0-9]+$/);
       expect(entity.name).toBe('Thing');
-      expect(entity.fields.map((field: { name: string }) => field.name))
-        .toStrictEqual(['id', 'createdAt', 'updatedAt']);
+      expect(entity.fields.map((field: { name: string }) => field.name)).toStrictEqual([
+        'id',
+        'createdAt',
+        'updatedAt'
+      ]);
       expect(entity.meta.aggregateRoot).toBe(false);
       // Newline-separated legacy invariants are upgraded to a list.
       expect(entity.meta.invariants).toStrictEqual(['first', 'second']);
@@ -265,7 +329,10 @@ describe('designer normalisers (JUM-470)', () => {
       expect(entity.meta.contracts[0].version).toBe('1.0.0');
       // Comma-separated legacy composition refs are upgraded to a list.
       expect(entity.meta.oasComposition).toStrictEqual({
-        mode: 'allOf', refs: ['A', 'B'], externalRefs: [], discriminator: ''
+        mode: 'allOf',
+        refs: ['A', 'B'],
+        externalRefs: [],
+        discriminator: ''
       });
 
       // A non-array relationships section becomes an empty list, not a throw.
@@ -282,7 +349,10 @@ describe('designer normalisers (JUM-470)', () => {
 
     it('treats a non-array domains section as an empty model', () => {
       expect.hasAssertions();
-      const normalized = normalizeStatePayload({ domains: { 0: { name: 'Ghost' } }, relationships: null });
+      const normalized = normalizeStatePayload({
+        domains: { 0: { name: 'Ghost' } },
+        relationships: null
+      });
       expect(normalized.domains).toStrictEqual([]);
       expect(normalized.relationships).toStrictEqual([]);
       expect(normalized.selectedDomainId).toBeNull();
@@ -293,19 +363,33 @@ describe('designer normalisers (JUM-470)', () => {
   describe('full-suite section normalisers (JUM-547)', () => {
     it('normalizeInterfaceInput trims values and defaults an empty type', () => {
       expect.hasAssertions();
-      expect(normalizeInterfaceInput({
-        type: ' grpc ', framework: ' bun ', entrypoint: ' src/grpc.ts ', controller: ' BillingGrpc '
-      })).toStrictEqual({
-        type: 'grpc', framework: 'bun', entrypoint: 'src/grpc.ts', controller: 'BillingGrpc'
+      expect(
+        normalizeInterfaceInput({
+          type: ' grpc ',
+          framework: ' bun ',
+          entrypoint: ' src/grpc.ts ',
+          controller: ' BillingGrpc '
+        })
+      ).toStrictEqual({
+        type: 'grpc',
+        framework: 'bun',
+        entrypoint: 'src/grpc.ts',
+        controller: 'BillingGrpc'
       });
       expect(normalizeInterfaceInput({})).toStrictEqual({
-        type: 'http-rest', framework: '', entrypoint: '', controller: ''
+        type: 'http-rest',
+        framework: '',
+        entrypoint: '',
+        controller: ''
       });
       // Unknown non-empty types are kept verbatim (lossless migration
       // precedent) — a newer tab vocabulary never loses data on import.
       expect(normalizeInterfaceInput({ type: 'graphql' }).type).toBe('graphql');
       expect(normalizeInterfaceInput(null)).toStrictEqual({
-        type: 'http-rest', framework: '', entrypoint: '', controller: ''
+        type: 'http-rest',
+        framework: '',
+        entrypoint: '',
+        controller: ''
       });
     });
 
@@ -339,7 +423,9 @@ describe('designer normalisers (JUM-470)', () => {
     it('normalizeRuntimeEnvironmentInput defaults the selection and isolates the values object', () => {
       expect.hasAssertions();
       expect(normalizeRuntimeEnvironmentInput(undefined)).toStrictEqual({
-        environment: 'dev', fileName: '.env.dev', values: {}
+        environment: 'dev',
+        fileName: '.env.dev',
+        values: {}
       });
       const source = {
         environment: ' staging ',
@@ -371,7 +457,9 @@ describe('designer normalisers (JUM-470)', () => {
         ports: { rest: 3000, websocket: 3001, grpc: 3002 }
       });
       expect(normalized.runtimeEnvironment).toStrictEqual({
-        environment: 'dev', fileName: '.env.dev', values: {}
+        environment: 'dev',
+        fileName: '.env.dev',
+        values: {}
       });
       expect(normalized.deployments).toStrictEqual([]);
     });
@@ -381,9 +469,14 @@ describe('designer normalisers (JUM-470)', () => {
       const once = normalizeStatePayload({
         domains: [],
         relationships: [],
-        interfaces: [{
-          type: 'websocket', framework: 'bun', entrypoint: 'src/ws.ts', controller: 'Events'
-        }],
+        interfaces: [
+          {
+            type: 'websocket',
+            framework: 'bun',
+            entrypoint: 'src/ws.ts',
+            controller: 'Events'
+          }
+        ],
         serviceConfiguration: {
           serviceKind: 'websocket-rest-api',
           runMode: 'virtual-machine',
@@ -392,11 +485,18 @@ describe('designer normalisers (JUM-470)', () => {
           ports: { rest: 4000, websocket: 4001, grpc: 4002 }
         },
         runtimeEnvironment: {
-          environment: 'ci', fileName: '.env.ci', values: { JUMENTIX_DATABASE_DRIVER: 'InMemory' }
+          environment: 'ci',
+          fileName: '.env.ci',
+          values: { JUMENTIX_DATABASE_DRIVER: 'InMemory' }
         },
-        deployments: [{
-          name: 'edge', type: 'lambda', region: 'us-east-1', runtime: 'node22'
-        }]
+        deployments: [
+          {
+            name: 'edge',
+            type: 'lambda',
+            region: 'us-east-1',
+            runtime: 'node22'
+          }
+        ]
       });
       const twice = normalizeStatePayload(once);
       expect(twice).toStrictEqual(once);

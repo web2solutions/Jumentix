@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 // Imported rather than required so this file is a module: two `fs`/`path`
 // declarations at global scope collide across the ci-cd suites (TS2451).
-import indexFs from 'fs';
-import indexOs from 'os';
-import indexPath from 'path';
+import indexFs from 'node:fs';
+import indexOs from 'node:os';
+import indexPath from 'node:path';
 
 // The subject of this suite is source text containing `${...}`. Every such
 // literal below is the input being checked, not an interpolation that was
@@ -62,9 +60,7 @@ describe('rtdb index check (JUM-656)', () => {
 
     // The value is decided at runtime, so the check cannot know the key. It can
     // still know the shape, which is what the rules are written against.
-    expect(refSegments('${BUS_ROOT}/events/${epicKey}')).toStrictEqual([
-      '*', 'events', '*'
-    ]);
+    expect(refSegments('${BUS_ROOT}/events/${epicKey}')).toStrictEqual(['*', 'events', '*']);
   });
 
   it('catches the exact query that shipped before this change', () => {
@@ -81,7 +77,7 @@ describe('rtdb index check (JUM-656)', () => {
     const failures = validateRtdbIndexes(root);
 
     expect(failures).toHaveLength(1);
-    expect(failures[0]).toContain('orders ${BUS_ROOT}/events/${epicKey} by \'ts\'');
+    expect(failures[0]).toContain("orders ${BUS_ROOT}/events/${epicKey} by 'ts'");
     expect(failures[0]).toContain('.indexOn');
 
     indexFs.rmSync(root, { recursive: true, force: true });
@@ -108,10 +104,12 @@ describe('rtdb index check (JUM-656)', () => {
   it('reads the array form of .indexOn', () => {
     expect.hasAssertions();
 
-    expect(rulesIndex({ events: { $id: { '.indexOn': ['kind', 'ts'] } } }, ['events', '*'], 'ts'))
-      .toBe(true);
-    expect(rulesIndex({ events: { $id: { '.indexOn': ['kind'] } } }, ['events', '*'], 'ts'))
-      .toBe(false);
+    expect(
+      rulesIndex({ events: { $id: { '.indexOn': ['kind', 'ts'] } } }, ['events', '*'], 'ts')
+    ).toBe(true);
+    expect(rulesIndex({ events: { $id: { '.indexOn': ['kind'] } } }, ['events', '*'], 'ts')).toBe(
+      false
+    );
   });
 
   it('fails closed when the rules are not under version control', () => {

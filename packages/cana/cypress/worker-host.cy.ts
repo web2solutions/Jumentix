@@ -1,4 +1,3 @@
-/* eslint-disable jest/prefer-expect-resolves -- see the note below */
 /*
  * The rule asks for `await expect(promise).resolves`, which is the one form
  * that does not work here. Under `bun test`, .resolves on a promise settled by
@@ -7,7 +6,6 @@
  * asserting on the value is equivalent in strength and passes under both
  * runners (JUM-584).
  */
-import type { CanaSchema } from '../src';
 import {
   createClient,
   createRouter,
@@ -17,6 +15,8 @@ import {
   serve
 } from '../src';
 import { rejection } from './harness';
+
+import type { CanaSchema } from '../src';
 
 /**
  * A full round trip across a message boundary.
@@ -45,7 +45,11 @@ import { rejection } from './harness';
  * (JUM-584). Awaiting first is equivalent in strength and works in both.
  */
 
-interface Design { id: number; name: string; owner?: string }
+interface Design {
+  id: number;
+  name: string;
+  owner?: string;
+}
 
 const schema: CanaSchema = {
   version: 1,
@@ -100,7 +104,10 @@ function connected(options: { ledger?: boolean } = {}) {
 }
 
 /** Broadcasts arrive on a later task; give the port a turn. */
-const settle = () => new Promise((resolve) => { setTimeout(resolve, 10); });
+const settle = () =>
+  new Promise((resolve) => {
+    setTimeout(resolve, 10);
+  });
 
 describe('cana worker round trip', () => {
   afterEach(releaseOpenPorts);
@@ -115,7 +122,6 @@ describe('cana worker round trip', () => {
   it('opens the database and reports its identity', async () => {
     const { api, teardown } = connected();
 
-    // eslint-disable-next-line jest/prefer-strict-equal -- see the clone test below
     expect(await api.open()).to.deep.equal({ name: 'designer', version: 1 });
     await teardown();
   });
@@ -176,8 +182,14 @@ describe('cana worker round trip', () => {
     await api.add('designs', { id: 1, name: 'a' });
     await api.put('designs', { id: 1, name: 'replaced' });
     await api.update('designs', 1, { owner: 'ana' });
-    await api.bulkAdd('designs', [{ id: 2, name: 'b' }, { id: 3, name: 'c' }]);
-    await api.bulkPut('designs', [{ id: 3, name: 'changed' }, { id: 4, name: 'd' }]);
+    await api.bulkAdd('designs', [
+      { id: 2, name: 'b' },
+      { id: 3, name: 'c' }
+    ]);
+    await api.bulkPut('designs', [
+      { id: 3, name: 'changed' },
+      { id: 4, name: 'd' }
+    ]);
     await api.bulkDelete('designs', [2]);
     await api.remove('designs', 4);
 
@@ -189,7 +201,10 @@ describe('cana worker round trip', () => {
   it('clears a store', async () => {
     const { api, teardown } = connected();
     await api.open();
-    await api.bulkAdd('designs', [{ id: 1, name: 'a' }, { id: 2, name: 'b' }]);
+    await api.bulkAdd('designs', [
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' }
+    ]);
 
     await api.clear('designs');
 
@@ -279,7 +294,8 @@ describe('cana worker failure handling', () => {
     await api.open();
     await api.add('designs', { id: 1, name: 'a' });
 
-    const failure = await api.add('designs', { id: 1, name: 'clash' })
+    const failure = await api
+      .add('designs', { id: 1, name: 'clash' })
       .catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'ConstraintViolation')).to.equal(true);
@@ -291,7 +307,9 @@ describe('cana worker failure handling', () => {
     const { api, teardown } = connected();
     await api.open();
 
-    expect(await api.get('no-such-store', 1).catch((error: unknown) => error)).to.deep.include({ canaError: true });
+    expect(await api.get('no-such-store', 1).catch((error: unknown) => error)).to.deep.include({
+      canaError: true
+    });
     await teardown();
   });
 
@@ -302,8 +320,9 @@ describe('cana worker failure handling', () => {
     const client = createClient({ name: 'designer', schema });
     await client.open();
 
-    const failure = await serve(client, { kind: 'transaction', requestId: 'r1' })
-      .catch((error: unknown) => error);
+    const failure = await serve(client, { kind: 'transaction', requestId: 'r1' }).catch(
+      (error: unknown) => error
+    );
 
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
     expect((failure as { message: string }).message).to.include('structured-cloneable');
@@ -314,10 +333,10 @@ describe('cana worker failure handling', () => {
     const client = createClient({ name: 'designer', schema });
     await client.open();
 
-    const failure = await serve(
-      client,
-      { kind: 'nonsense' as unknown as 'ping', requestId: 'r1' }
-    ).catch((error: unknown) => error);
+    const failure = await serve(client, {
+      kind: 'nonsense' as unknown as 'ping',
+      requestId: 'r1'
+    }).catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
     expect((failure as { message: string }).message).to.include('nonsense');
@@ -328,13 +347,19 @@ describe('cana worker failure handling', () => {
     const client = createClient({ name: 'designer', schema });
     await client.open();
 
-    expect(await rejection(serve(client, { kind: 'write', store: 'designs', requestId: 'r1' }))).to.deep.include({ code: 'InvalidRequest' });
-    expect(await rejection(serve(client, {
-      kind: 'write',
-      store: 'designs',
-      requestId: 'r2',
-      payload: { operation: 'frobnicate' }
-    }))).to.deep.include({ code: 'InvalidRequest' });
+    expect(
+      await rejection(serve(client, { kind: 'write', store: 'designs', requestId: 'r1' }))
+    ).to.deep.include({ code: 'InvalidRequest' });
+    expect(
+      await rejection(
+        serve(client, {
+          kind: 'write',
+          store: 'designs',
+          requestId: 'r2',
+          payload: { operation: 'frobnicate' }
+        })
+      )
+    ).to.deep.include({ code: 'InvalidRequest' });
     await client.close();
   });
 
@@ -342,7 +367,9 @@ describe('cana worker failure handling', () => {
     const client = createClient({ name: 'designer', schema });
     await client.open();
 
-    expect(await rejection(serve(client, { kind: 'get', store: 'designs', requestId: 'r1' }))).to.deep.include({ code: 'InvalidRequest' });
+    expect(
+      await rejection(serve(client, { kind: 'get', store: 'designs', requestId: 'r1' }))
+    ).to.deep.include({ code: 'InvalidRequest' });
     await client.close();
   });
 
@@ -392,7 +419,8 @@ describe('cana worker crash reconciliation', () => {
     const { api, teardown } = connected({ ledger: true });
     await api.open();
 
-    const failure = await api.resolveWrite(undefined as unknown as string, Date.now())
+    const failure = await api
+      .resolveWrite(undefined as unknown as string, Date.now())
       .catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
@@ -417,9 +445,13 @@ describe('cana worker request validation', () => {
     const { api, teardown } = connected();
     await api.open();
 
-    const raw = await (api as unknown as {
-      get: (store: unknown, key: unknown) => Promise<unknown>;
-    }).get(undefined, 1).catch((error: unknown) => error);
+    const raw = await (
+      api as unknown as {
+        get: (store: unknown, key: unknown) => Promise<unknown>;
+      }
+    )
+      .get(undefined, 1)
+      .catch((error: unknown) => error);
 
     expect(isCanaErrorCode(raw, 'InvalidRequest')).to.equal(true);
     expect((raw as { message: string }).message).to.include('requires a store name');

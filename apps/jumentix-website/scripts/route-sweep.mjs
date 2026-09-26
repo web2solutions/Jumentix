@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /**
  * JUM-158 — exercise every discovered route, and every internal link they emit.
  *
@@ -15,10 +14,13 @@
  * neither. A link is checked once however many pages emit it.
  */
 import { spawn } from 'node:child_process';
-import { setTimeout as delay } from 'node:timers/promises';
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
-import { discoverRoutes } from './discover-routes.mjs';
+
+import discoverRoutes from './discover-routes.mjs';
+
+const { process } = globalThis;
 
 const websiteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sitePort = Number(process.env.JUMENTIX_WEBSITE_PORT ?? '3010');
@@ -27,21 +29,24 @@ const bunCommand = process.platform === 'win32' ? 'bun.exe' : 'bun';
 const externalServer = Boolean(process.env.JUMENTIX_WEBSITE_BASE_URL);
 const concurrency = Number(process.env.JUMENTIX_WEBSITE_SWEEP_CONCURRENCY ?? '8');
 
-const startServer = () => spawn(bunCommand, ['run', 'start'], {
-  stdio: 'inherit',
-  cwd: websiteRoot,
-  env: { ...process.env, PORT: String(sitePort) }
-});
+const startServer = () =>
+  spawn(bunCommand, ['run', 'start'], {
+    stdio: 'inherit',
+    cwd: websiteRoot,
+    env: { ...process.env, PORT: String(sitePort) }
+  });
 
 const waitForServer = async () => {
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
     try {
+      // eslint-disable-next-line no-await-in-loop -- readiness polling: each probe must finish before the next one starts
       const response = await fetch(baseUrl, { signal: AbortSignal.timeout(5_000) });
       if (response.ok || response.status < 500) return;
     } catch {
       // Not listening yet.
     }
+    // eslint-disable-next-line no-await-in-loop -- polling interval: the delay between probes is the point of the loop
     await delay(1_000);
   }
   throw new Error(`website did not start on ${baseUrl} within 90s`);
@@ -69,6 +74,7 @@ async function mapWithConcurrency(items, limit, worker) {
     while (cursor < items.length) {
       const index = cursor;
       cursor += 1;
+      // eslint-disable-next-line no-await-in-loop -- worker pool: each runner drains the shared cursor one item at a time; concurrency comes from the sibling runners
       results[index] = await worker(items[index]);
     }
   });
@@ -87,7 +93,12 @@ const fetchRoute = async (route) => {
       : '';
     return { route, status: response.status, html };
   } catch (error) {
-    return { route, status: 0, html: '', error: error instanceof Error ? error.message : String(error) };
+    return {
+      route,
+      status: 0,
+      html: '',
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
 };
 
@@ -122,8 +133,10 @@ async function sweep() {
 
   for (const { route: link, status, error } of linkResults) {
     const origin = linkOrigins.get(link);
-    if (status === 0) failures.push(`broken internal link ${link} (linked from ${origin}): ${error}`);
-    else if (status >= 400) failures.push(`broken internal link ${link} (linked from ${origin}) returned ${status}`);
+    if (status === 0)
+      failures.push(`broken internal link ${link} (linked from ${origin}): ${error}`);
+    else if (status >= 400)
+      failures.push(`broken internal link ${link} (linked from ${origin}) returned ${status}`);
   }
 
   if (failures.length > 0) {
@@ -152,6 +165,6 @@ async function main() {
 if (import.meta.main) {
   main().catch((error) => {
     process.stderr.write(`${error.message}\n`);
-    process.exit(1);
+    process.exitCode = 1;
   });
 }

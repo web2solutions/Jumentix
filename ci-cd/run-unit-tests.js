@@ -1,11 +1,12 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
-const { readTestMap, isQuarantined } = require('./lib/test-map');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const { isEntryPoint } = require('./lib/entry-point.js');
+const { isQuarantined, readTestMap } = require('./lib/test-map');
 const { effectiveRunner, isCiNodeRuntime, resolveTestRuntime } = require('./lib/test-runtime');
 const { runSuitePaths } = require('./run-suite');
-const { isEntryPoint } = require('./lib/entry-point.js');
 
 const UNIT_DIRS = [
   'apps/backend-template/test/unit',
@@ -76,7 +77,8 @@ function runScriptedUnit(scripts, options = {}) {
     // Jest run made 23 accessibility tests fail that pass under the `test`
     // default — the components render differently in dev. The suites were
     // right; the environment was the caller's.
-    const { NODE_ENV, ...childEnv } = process.env;
+    const childEnv = { ...process.env };
+    delete childEnv.NODE_ENV;
     const result = (options.spawn || spawnSync)('bun', ['run', script], {
       stdio: 'inherit',
       env: childEnv
@@ -117,9 +119,10 @@ const BUN_ISOLATION = '--isolate';
  */
 function runBunUnit(suites, options = {}) {
   const spawn = options.spawn || spawnSync;
-  const args = suites.length > 0
-    ? ['test', '--conditions=development', BUN_ISOLATION, ...suites]
-    : ['test', '--conditions=development', BUN_ISOLATION, ...UNIT_DIRS];
+  const args =
+    suites.length > 0
+      ? ['test', '--conditions=development', BUN_ISOLATION, ...suites]
+      : ['test', '--conditions=development', BUN_ISOLATION, ...UNIT_DIRS];
   console.log(`[ci] unit tests (bun:test, isolated): ${suites.length || 'directory'} target(s)`);
   const result = spawn('bun', args, {
     stdio: 'inherit',
@@ -184,7 +187,9 @@ function runUnitTests(options = {}) {
   try {
     manifest = options.manifest || readTestMap(path.join(root, 'test-map.json'));
   } catch (error) {
-    console.warn(`[ci] test-map unavailable (${error.message}); falling back to bun:test directory run`);
+    console.warn(
+      `[ci] test-map unavailable (${error.message}); falling back to bun:test directory run`
+    );
     return runBunUnit([], options);
   }
 
@@ -192,8 +197,9 @@ function runUnitTests(options = {}) {
   // their own script (JUM-680). Handing a jsdom React suite to `bun test` does
   // not run it under a different runner; it fails to run it at all.
   if (runtime === 'bun') {
-    const eligible = (manifest.suites || [])
-      .filter((suite) => suite.type === 'unit' && !isQuarantined(manifest, suite.path));
+    const eligible = (manifest.suites || []).filter(
+      (suite) => suite.type === 'unit' && !isQuarantined(manifest, suite.path)
+    );
     const all = eligible.filter((suite) => !suite.script).map((suite) => suite.path);
     const scripts = [...new Set(eligible.filter((s) => s.script).map((s) => s.script))];
     const bunStatus = runBunUnit(all, options);
@@ -232,9 +238,9 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   partitionUnitSuites,
-  runScriptedUnit,
   runBunUnit,
   runNodeUnit,
   runReportOnlyUnit,
+  runScriptedUnit,
   runUnitTests
 };

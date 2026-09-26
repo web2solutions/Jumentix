@@ -1,11 +1,14 @@
-export type LocaleText = { en: string; 'pt-BR': string };
+export interface LocaleText {
+  en: string;
+  'pt-BR': string;
+}
 
-export type DocsSnippet = {
+export interface DocsSnippet {
   id: string;
   title: LocaleText;
   description: LocaleText;
   code: string;
-};
+}
 
 export type DocsRuntimeId =
   | 'cana'
@@ -19,7 +22,7 @@ export type DocsRuntimeId =
 
 export type RuntimeApiBag = Record<string, unknown>;
 
-export type DocsRuntime = {
+export interface DocsRuntime {
   id: DocsRuntimeId;
   /** Global name injected into snippet scope (e.g. `cana`, `api`). */
   apiGlobalName: string;
@@ -29,4 +32,4 @@ export type DocsRuntime = {
     extras?: Record<string, unknown>;
     reset?: () => Promise<void>;
   }>;
-};
+}

@@ -1,9 +1,8 @@
-import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
-import {
-  DynamoDbRepository,
-  MongoMongooseRepository
-} from '@jumentix/external-db-repositories';
-import { ExternalStoreProxy, createExternalStores } from '../src';
+import { DynamoDbRepository, MongoMongooseRepository } from '@jumentix/external-db-repositories';
+
+import { createExternalStores, ExternalStoreProxy } from '../src';
+
+import type { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
 /**
  * Requirement 112 — this package owns its suite.
@@ -25,31 +24,31 @@ import { ExternalStoreProxy, createExternalStores } from '../src';
 /** A connector that was never connected — the state every guard is about. */
 const unconnected = () => new DynamoDbRepository({}) as BaseExternalDataRepository;
 
-const proxyFor = (
-  driver: string,
-  entity = 'User',
-  connector = unconnected()
-) => new ExternalStoreProxy(driver as never, entity, connector);
+const proxyFor = (driver: string, entity = 'User', connector = unconnected()) =>
+  new ExternalStoreProxy(driver as never, entity, connector);
 
 /** Reaches the private configuration, which is the only record of the decision. */
-const configOf = (proxy: object) => (proxy as unknown as {
-  config: {
-    collectionName: string;
-    tableName: string;
-    uniqueFields?: string[];
-    caseInsensitiveUniqueFields?: string[];
-    relationFields?: string[];
-  };
-}).config;
+const configOf = (proxy: object) =>
+  (
+    proxy as unknown as {
+      config: {
+        collectionName: string;
+        tableName: string;
+        uniqueFields?: string[];
+        caseInsensitiveUniqueFields?: string[];
+        relationFields?: string[];
+      };
+    }
+  ).config;
 
-type TDynamoAttribute = { S?: string; NULL?: boolean };
+interface TDynamoAttribute {
+  S?: string;
+  NULL?: boolean;
+}
 
 const statics = ExternalStoreProxy as unknown as {
   parsePayload(item: Record<string, unknown> | undefined | null): Record<string, unknown> | null;
-  toDynamoItem(
-    id: string,
-    value: Record<string, unknown>
-  ): Record<string, TDynamoAttribute>;
+  toDynamoItem(id: string, value: Record<string, unknown>): Record<string, TDynamoAttribute>;
   fromDynamoItem(item: Record<string, unknown> | undefined): Record<string, unknown> | null;
 };
 
@@ -75,9 +74,12 @@ describe('the store map', () => {
 
     const connector = unconnected();
     const stores = createExternalStores('Mongo' as never, connector);
-    const connectorOf = (store: unknown) => (store as unknown as {
-      connector: BaseExternalDataRepository;
-    }).connector;
+    const connectorOf = (store: unknown) =>
+      (
+        store as unknown as {
+          connector: BaseExternalDataRepository;
+        }
+      ).connector;
 
     expect(connectorOf(stores.User)).toBe(connector);
     expect(connectorOf(stores.Organization)).toBe(connector);
@@ -142,7 +144,7 @@ describe('entity configuration', () => {
  */
 describe('an unsupported driver', () => {
   type TStore = ExternalStoreProxy<Record<string, unknown>>;
-  const calls: Array<[string, (store: TStore) => Promise<unknown>]> = [
+  const calls: [string, (store: TStore) => Promise<unknown>][] = [
     ['create', (store) => store.create('1', { id: '1' })],
     ['update', (store) => store.update('1', { id: '1' })],
     ['delete', (store) => store.delete('1')],
@@ -150,33 +152,34 @@ describe('an unsupported driver', () => {
     ['getAll', (store) => store.getAll({}, { page: 1, size: 10 })]
   ];
 
-  it.each(calls)('refuses %s, naming the driver and the store', async (
-    _method: string,
-    call: (store: TStore) => Promise<unknown>
-  ) => {
-    expect.hasAssertions();
+  it.each(calls)(
+    'refuses %s, naming the driver and the store',
+    async (_method: string, call: (store: TStore) => Promise<unknown>) => {
+      expect.hasAssertions();
 
-    await expect(call(proxyFor('InMemory', 'User')))
-      .rejects.toThrow(
+      await expect(call(proxyFor('InMemory', 'User'))).rejects.toThrow(
         '[Database:InMemory] Store "User" is not supported by ExternalStoreProxy yet.'
       );
-  });
+    }
+  );
 
-  it.each(calls)('refuses %s for IndexedDB too', async (
-    _method: string,
-    call: (store: TStore) => Promise<unknown>
-  ) => {
-    expect.hasAssertions();
+  it.each(calls)(
+    'refuses %s for IndexedDB too',
+    async (_method: string, call: (store: TStore) => Promise<unknown>) => {
+      expect.hasAssertions();
 
-    await expect(call(proxyFor('IndexedDB', 'Organization')))
-      .rejects.toThrow('[Database:IndexedDB] Store "Organization" is not supported');
-  });
+      await expect(call(proxyFor('IndexedDB', 'Organization'))).rejects.toThrow(
+        '[Database:IndexedDB] Store "Organization" is not supported'
+      );
+    }
+  );
 
   it('names the entity it was asked about', async () => {
     expect.hasAssertions();
 
-    await expect(proxyFor('InMemory', 'Invoice').delete('1'))
-      .rejects.toThrow('Store "Invoice" is not supported');
+    await expect(proxyFor('InMemory', 'Invoice').delete('1')).rejects.toThrow(
+      'Store "Invoice" is not supported'
+    );
   });
 });
 
@@ -197,8 +200,9 @@ describe('a client nobody connected', () => {
   ])('is refused by the %s store', async (driver: string, expected: string) => {
     expect.hasAssertions();
 
-    await expect(proxyFor(driver, 'User').getAll({}, { page: 1, size: 10 }))
-      .rejects.toThrow(expected);
+    await expect(proxyFor(driver, 'User').getAll({}, { page: 1, size: 10 })).rejects.toThrow(
+      expected
+    );
   });
 
   it('is refused by the Mongo store', async () => {
@@ -206,29 +210,33 @@ describe('a client nobody connected', () => {
 
     const proxy = proxyFor('Mongo', 'User', new MongoMongooseRepository({}));
 
-    await expect(proxy.getAll({}, { page: 1, size: 10 }))
-      .rejects.toThrow('Mongo client is not connected');
+    await expect(proxy.getAll({}, { page: 1, size: 10 })).rejects.toThrow(
+      'Mongo client is not connected'
+    );
   });
 
   /** The message tells the caller what to do, not only what went wrong. */
   it('says which call was missing', async () => {
     expect.hasAssertions();
 
-    await expect(proxyFor('DynamoDB', 'User').getOneById('1'))
-      .rejects.toThrow('Call databaseClient.connect() before accessing stores.');
+    await expect(proxyFor('DynamoDB', 'User').getOneById('1')).rejects.toThrow(
+      'Call databaseClient.connect() before accessing stores.'
+    );
   });
 
-  it.each(['create', 'update', 'delete', 'getOneById'])('refuses %s as well', async (
-    method: string
-  ) => {
-    expect.hasAssertions();
+  it.each(['create', 'update', 'delete', 'getOneById'])(
+    'refuses %s as well',
+    async (method: string) => {
+      expect.hasAssertions();
 
-    const proxy = proxyFor('DynamoDB', 'User') as unknown as Record<
-      string, (...args: unknown[]) => Promise<unknown>
-    >;
+      const proxy = proxyFor('DynamoDB', 'User') as unknown as Record<
+        string,
+        (...args: unknown[]) => Promise<unknown>
+      >;
 
-    await expect(proxy[method]('1', { id: '1' })).rejects.toThrow('is not connected');
-  });
+      await expect(proxy[method]('1', { id: '1' })).rejects.toThrow('is not connected');
+    }
+  );
 });
 
 describe('reading a stored payload', () => {
@@ -241,15 +249,18 @@ describe('reading a stored payload', () => {
   it('prefers a payload that is already an object', () => {
     expect.hasAssertions();
 
-    expect(statics.parsePayload({ payload: { id: '1' }, payload_json: '{"id":"2"}' }))
-      .toStrictEqual({ id: '1' });
+    expect(
+      statics.parsePayload({ payload: { id: '1' }, payload_json: '{"id":"2"}' })
+    ).toStrictEqual({ id: '1' });
   });
 
   it('parses a payload_json column', () => {
     expect.hasAssertions();
 
-    expect(statics.parsePayload({ payload_json: '{"id":"1","name":"a"}' }))
-      .toStrictEqual({ id: '1', name: 'a' });
+    expect(statics.parsePayload({ payload_json: '{"id":"1","name":"a"}' })).toStrictEqual({
+      id: '1',
+      name: 'a'
+    });
   });
 
   it('parses a payload stored as a string', () => {
@@ -266,8 +277,10 @@ describe('reading a stored payload', () => {
   it('takes the row itself when there is no payload column', () => {
     expect.hasAssertions();
 
-    expect(statics.parsePayload({ id: '1', username: 'a' }))
-      .toStrictEqual({ id: '1', username: 'a' });
+    expect(statics.parsePayload({ id: '1', username: 'a' })).toStrictEqual({
+      id: '1',
+      username: 'a'
+    });
   });
 });
 
@@ -280,9 +293,12 @@ describe('the Dynamo item shape', () => {
   it('writes the record, its id and the indexed columns', () => {
     expect.hasAssertions();
 
-    expect(statics.toDynamoItem('u-1', {
-      username: 'Alice', organization: 'org-1'
-    })).toStrictEqual({
+    expect(
+      statics.toDynamoItem('u-1', {
+        username: 'Alice',
+        organization: 'org-1'
+      })
+    ).toStrictEqual({
       id: { S: 'u-1' },
       payload_json: { S: JSON.stringify({ username: 'Alice', organization: 'org-1', id: 'u-1' }) },
       username: { S: 'Alice' },
@@ -356,7 +372,8 @@ describe('finding a record by name', () => {
   it('reports not found for an entity with no unique field', async () => {
     expect.hasAssertions();
 
-    await expect(proxyFor('DynamoDB', 'Invoice').getByName('anything'))
-      .rejects.toThrow('Record not found');
+    await expect(proxyFor('DynamoDB', 'Invoice').getByName('anything')).rejects.toThrow(
+      'Record not found'
+    );
   });
 });

@@ -1,15 +1,11 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  rmSync,
-  writeFileSync
-} from 'node:fs';
-import { dirname, join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
+
 import { CANA_FRAMEWORK_EXAMPLES } from '../components/cana-framework/catalog.ts';
+
+const { process } = globalThis;
 
 const root = process.cwd();
 const monorepoRoot = join(root, '../..');
@@ -49,38 +45,43 @@ function assertZipAvailable() {
 
 function vendorPackageJson(packageName) {
   const packageBase = packageName.replace('@jumentix/', '');
-  const exports = packageBase === 'cana-react'
-    ? {
-        '.': {
-          types: './src/index.ts',
-          import: './src/index.ts',
-          default: './src/index.ts'
-        },
-        './redux': {
-          types: './src/redux.ts',
-          import: './src/redux.ts',
-          default: './src/redux.ts'
-        },
-        './package.json': './package.json'
-      }
-    : {
-        '.': {
-          types: './src/index.ts',
-          import: './src/index.ts',
-          default: './src/index.ts'
-        },
-        './package.json': './package.json'
-      };
+  const exports =
+    packageBase === 'cana-react'
+      ? {
+          '.': {
+            types: './src/index.ts',
+            import: './src/index.ts',
+            default: './src/index.ts'
+          },
+          './redux': {
+            types: './src/redux.ts',
+            import: './src/redux.ts',
+            default: './src/redux.ts'
+          },
+          './package.json': './package.json'
+        }
+      : {
+          '.': {
+            types: './src/index.ts',
+            import: './src/index.ts',
+            default: './src/index.ts'
+          },
+          './package.json': './package.json'
+        };
 
-  return JSON.stringify({
-    name: packageName,
-    version: '0.1.0-local-docs',
-    private: true,
-    type: 'module',
-    module: './src/index.ts',
-    types: './src/index.ts',
-    exports
-  }, null, 2);
+  return JSON.stringify(
+    {
+      name: packageName,
+      version: '0.1.0-local-docs',
+      private: true,
+      type: 'module',
+      module: './src/index.ts',
+      types: './src/index.ts',
+      exports
+    },
+    null,
+    2
+  );
 }
 
 function writeVendorPackage(appDir, packageBase, packageName) {

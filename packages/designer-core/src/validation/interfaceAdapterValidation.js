@@ -35,8 +35,8 @@
  */
 
 import {
-  INTERFACE_TYPES,
   getSupportedFrameworks,
+  INTERFACE_TYPES,
   isFrameworkSupportedByType
 } from '../model/interfaceFrameworkMatrix.js';
 
@@ -87,7 +87,9 @@ export function collectInterfaceAdapterIssues(candidate, existingAdapters = [], 
   const controller = String(adapter.controller || '');
 
   if (!INTERFACE_TYPES.includes(type)) {
-    pushError(`Interface type "${type}" is not supported — choose one of: ${INTERFACE_TYPES.join(', ')}.`);
+    pushError(
+      `Interface type "${type}" is not supported — choose one of: ${INTERFACE_TYPES.join(', ')}.`
+    );
   }
   if (!framework) {
     pushError('Framework/runtime is required.');
@@ -111,11 +113,19 @@ export function collectInterfaceAdapterIssues(candidate, existingAdapters = [], 
     );
   }
 
-  const siblings = (Array.isArray(existingAdapters) ? existingAdapters : [])
-    .filter((existing, index) => index !== editingIndex);
-  if (type && entrypoint
-    && siblings.some((existing) => existing && existing.type === type && existing.entrypoint === entrypoint)) {
-    pushError(`Duplicate adapter: interface type "${type}" is already registered at entrypoint "${entrypoint}".`);
+  const siblings = (Array.isArray(existingAdapters) ? existingAdapters : []).filter(
+    (existing, index) => index !== editingIndex
+  );
+  if (
+    type &&
+    entrypoint &&
+    siblings.some(
+      (existing) => existing && existing.type === type && existing.entrypoint === entrypoint
+    )
+  ) {
+    pushError(
+      `Duplicate adapter: interface type "${type}" is already registered at entrypoint "${entrypoint}".`
+    );
   }
   if (controller && siblings.some((existing) => existing && existing.controller === controller)) {
     pushError(`Duplicate controller mapping "${controller}" — another adapter already maps it.`);
@@ -140,7 +150,13 @@ export function upsertInterfaceAdapter(adapters, candidate, editingIndex = -1) {
   const list = Array.isArray(adapters) ? [...adapters] : [];
   if (editingIndex >= list.length) {
     return {
-      issues: [{ message: `Adapter index ${editingIndex} does not exist.`, entityId: null, severity: 'error' }],
+      issues: [
+        {
+          message: `Adapter index ${editingIndex} does not exist.`,
+          entityId: null,
+          severity: 'error'
+        }
+      ],
       adapters: null
     };
   }

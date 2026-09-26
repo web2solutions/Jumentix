@@ -1,14 +1,15 @@
 import config from '@/config';
-import * as pageFind from '../../../public/_pagefind/pagefind';
+
+import { init, options, search as pageFind_search } from '../../../public/_pagefind/pagefind';
 
 interface SearchResult {
   title: string;
   content: string;
-  items: Array<{
+  items: {
     title: string;
     url: string;
     excerpt: string;
-  }>;
+  }[];
 }
 
 export async function GET(request: Request) {
@@ -61,13 +62,13 @@ export async function GET(request: Request) {
   const excerptLength = url.searchParams.get(excerptLengthKeyword) || defaultExcerptLength;
 
   try {
-    await pageFind.options({
+    await options({
       basePath: `${url.origin}/_pagefind/`,
       excerptLength: parseInt(excerptLength.toString(), 10)
     });
-    await pageFind.init();
+    await init();
 
-    const search = await pageFind.search(query);
+    const search = await pageFind_search(query);
     const results = await Promise.all(
       search.results.slice(0, limit).map((r: { data: () => unknown }) => r.data())
     );
@@ -77,17 +78,15 @@ export async function GET(request: Request) {
     delete (global as any).window;
 
     // format results
-    const formattedResults: SearchResult[] = results.map((result: any) => {
-      return {
-        title: result.meta.title,
-        content: result.content,
-        items: result.sub_results.map((item: any) => ({
-          title: item.title,
-          url: item.url,
-          excerpt: item.excerpt
-        }))
-      };
-    });
+    const formattedResults: SearchResult[] = results.map((result: any) => ({
+      title: result.meta.title,
+      content: result.content,
+      items: result.sub_results.map((item: any) => ({
+        title: item.title,
+        url: item.url,
+        excerpt: item.excerpt
+      }))
+    }));
 
     return Response.json(formattedResults);
   } catch (error) {

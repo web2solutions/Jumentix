@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const {
+  classifyCiContext,
   CONTEXTS,
   FULL_JOBS,
-  classifyCiContext,
   jobSelected,
   runCli,
   selectedJobsFor
@@ -44,7 +43,11 @@ describe('classify-ci-context', () => {
     });
 
     expect(evidence.context).toBe(CONTEXTS.TASK_PR_TO_DEV);
-    expect(evidence.selectedJobs).toStrictEqual(['branch-gate', 'third-party-review', 'browser-matrix']);
+    expect(evidence.selectedJobs).toStrictEqual([
+      'branch-gate',
+      'third-party-review',
+      'browser-matrix'
+    ]);
   });
 
   it('classifies a dev push as the cheap health gate', () => {
@@ -143,28 +146,34 @@ describe('classify-ci-context', () => {
   it('fails closed when PR metadata omits the base branch', () => {
     expect.hasAssertions();
 
-    expect(() => classify({
-      CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
-      CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/202'
-    })).toThrow('base branch');
+    expect(() =>
+      classify({
+        CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
+        CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/202'
+      })
+    ).toThrow('base branch');
   });
 
   it('fails closed for non-dev PRs targeting main', () => {
     expect.hasAssertions();
 
-    expect(() => classify({
-      CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
-      CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/203',
-      CIRCLE_PR_BASE_BRANCH: 'main'
-    })).toThrow('only dev may open release pull requests to main');
+    expect(() =>
+      classify({
+        CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
+        CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/203',
+        CIRCLE_PR_BASE_BRANCH: 'main'
+      })
+    ).toThrow('only dev may open release pull requests to main');
   });
 
   it('returns exit 78 when a required job is not selected', () => {
     expect.hasAssertions();
 
-    expect(runCli(['node', 'classify', '--require-job', 'coverage'], {
-      CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci'
-    })).toBe(78);
+    expect(
+      runCli(['node', 'classify', '--require-job', 'coverage'], {
+        CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci'
+      })
+    ).toBe(78);
   });
 
   it('confirms selected jobs for continuation guards', () => {
@@ -197,8 +206,10 @@ describe('classify-ci-context', () => {
   it('returns exit 78 when browser-matrix is required outside pull request contexts', () => {
     expect.hasAssertions();
 
-    expect(runCli(['node', 'classify', '--require-job', 'browser-matrix'], {
-      CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci'
-    })).toBe(78);
+    expect(
+      runCli(['node', 'classify', '--require-job', 'browser-matrix'], {
+        CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci'
+      })
+    ).toBe(78);
   });
 });

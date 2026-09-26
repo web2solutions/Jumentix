@@ -18,8 +18,9 @@
  * cache restore. The question asked here is the one that matters — is each
  * exported name actually present in the built output.
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const PACKAGES_DIR = 'packages';
@@ -63,7 +64,7 @@ function builtEntrypoint(root, packageDir) {
   const manifestPath = path.join(root, PACKAGES_DIR, packageDir, 'package.json');
   if (!fs.existsSync(manifestPath)) return null;
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  const main = manifest.main;
+  const { main } = manifest;
   if (typeof main !== 'string' || !main.startsWith('dist/')) return null;
   return {
     name: manifest.name || packageDir,
@@ -91,9 +92,9 @@ function checkPackage(entry) {
 
   if (missing.length > 0) {
     failures.push(
-      `[build-freshness] ${entry.name}: ${entry.manifestMain} is missing `
-      + `${missing.length} export(s) declared in src/index.ts: ${missing.sort((a, b) => a.localeCompare(b)).join(', ')}`
-      + ' — rebuild the package'
+      `[build-freshness] ${entry.name}: ${entry.manifestMain} is missing ` +
+        `${missing.length} export(s) declared in src/index.ts: ${missing.sort((a, b) => a.localeCompare(b)).join(', ')}` +
+        ' — rebuild the package'
     );
   }
 
@@ -104,7 +105,8 @@ function validatePackageBuilds(rootDir = process.cwd()) {
   const packagesRoot = path.join(rootDir, PACKAGES_DIR);
   if (!fs.existsSync(packagesRoot)) return [];
 
-  return fs.readdirSync(packagesRoot, { withFileTypes: true })
+  return fs
+    .readdirSync(packagesRoot, { withFileTypes: true })
     .filter((item) => item.isDirectory())
     .map((item) => builtEntrypoint(rootDir, item.name))
     .filter(Boolean)
@@ -117,7 +119,9 @@ function run(rootDir = process.cwd()) {
     failures.forEach((failure) => console.error(failure));
     return 1;
   }
-  console.log('Package build freshness check passed: every built entrypoint carries its source exports.');
+  console.log(
+    'Package build freshness check passed: every built entrypoint carries its source exports.'
+  );
   return 0;
 }
 

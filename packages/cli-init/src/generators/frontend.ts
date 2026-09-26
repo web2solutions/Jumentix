@@ -1,26 +1,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { GenerationPlan } from '../sources/types';
+
 import {
   patchI18nTitles,
   patchRouterHome,
   writeDomainModule,
-  writeModulesIndex,
-  type GeneratedModuleResult
+  writeModulesIndex
 } from './frontendModules';
-import {
-  mergeServiceOas,
-  oasPathCount,
-  type JsonObject
-} from './frontendOas';
-import {
-  resolveFrontendTemplateRoot,
-  sanitizePackageScope
-} from './paths';
+import { mergeServiceOas, oasPathCount } from './frontendOas';
+import { resolveFrontendTemplateRoot, sanitizePackageScope } from './paths';
+
+import type { GeneratedModuleResult } from './frontendModules';
+import type { JsonObject } from './frontendOas';
+import type { GenerationPlan } from '../sources/types';
 
 type OasDoc = JsonObject;
 
-export type GenerateFrontendOptions = {
+export interface GenerateFrontendOptions {
   plan: GenerationPlan;
   /** Workspace root (services/frontend land under `apps/`). */
   outputDir: string;
@@ -33,16 +29,16 @@ export type GenerateFrontendOptions = {
   /** Destination folder under apps/ (default: frontend). */
   appFolder?: string;
   log?: (message?: string) => void;
-};
+}
 
-export type GenerateFrontendResult = {
+export interface GenerateFrontendResult {
   root: string;
   packageName: string;
   modules: GeneratedModuleResult[];
   offline: boolean;
   bakedPaths: number;
   envPath: string;
-};
+}
 
 const FRONTEND_JUMENTIX_DEPS = Object.freeze([
   '@jumentix/cana',
@@ -98,9 +94,11 @@ function writeFrontendPackageJson(
   pkg.version = '0.0.0';
   pkg.private = true;
 
-  const dependencies = (pkg.dependencies && typeof pkg.dependencies === 'object'
-    ? { ...(pkg.dependencies as Record<string, string>) }
-    : {}) as Record<string, string>;
+  const dependencies = (
+    pkg.dependencies && typeof pkg.dependencies === 'object'
+      ? { ...(pkg.dependencies as Record<string, string>) }
+      : {}
+  ) as Record<string, string>;
   for (const name of FRONTEND_JUMENTIX_DEPS) {
     if (dependencies[name] !== undefined) {
       dependencies[name] = jumentixVersion;
@@ -126,7 +124,7 @@ export function bakeMergedOas(
   plan: GenerationPlan
 ): { bakedPaths: number; keptTemplate: boolean } {
   const outputPath = path.join(frontendRoot, 'src', 'contracts', 'openapi.json');
-  const merged = mergeServiceOas(plan.contracts.oasPerService) as OasDoc;
+  const merged = mergeServiceOas(plan.contracts.oasPerService);
   const pathCount = oasPathCount(merged);
 
   if (pathCount === 0) {
@@ -151,7 +149,7 @@ function readBundledOas(frontendRoot: string): OasDoc {
 }
 
 function coreServiceUrl(plan: GenerationPlan): string {
-  const core = plan.services.find((service) => service.kind === 'core') || plan.services[0];
+  const core = plan.services.find((service) => service.kind === 'core') ?? plan.services[0];
   return core?.url || 'http://localhost:3000/api/1.0.0';
 }
 
@@ -212,15 +210,12 @@ export function applyOfflineFlag(frontendRoot: string, offline: boolean): void {
   const mainPath = path.join(frontendRoot, 'src', 'main.ts');
   if (fs.existsSync(mainPath)) {
     let source = fs.readFileSync(mainPath, 'utf8');
-    source = source.replace(
-      /import \{ bootCana, exposeCanaTestHooks \} from '@\/data\/db';\n/,
-      ''
-    );
+    source = source.replace(/import \{ bootCana, exposeCanaTestHooks \} from '@\/data\/db';\n/, '');
     source = source.replace(/import \{ registerSW \} from '@\/data\/pwa';\n/, '');
     source = source.replace(/import \{ bindOnlineReplay \} from '@\/data\/sync';\n/, '');
     source = source.replace(
       /const boot = await bootCana\(\);\nexposeCanaTestHooks\(\);\nif \(boot === 'ok'\) \{\n {2}bindOnlineReplay\(\);\n {2}registerSW\(\);\n\}\napp\.provide\('canaBoot', boot\);\n/,
-      'const boot = \'unavailable\' as const;\napp.provide(\'canaBoot\', boot);\n'
+      "const boot = 'unavailable' as const;\napp.provide('canaBoot', boot);\n"
     );
     fs.writeFileSync(mainPath, source, 'utf8');
   }
@@ -241,18 +236,12 @@ export function applyOfflineFlag(frontendRoot: string, offline: boolean): void {
 export async function generateFrontend(
   options: GenerateFrontendOptions
 ): Promise<GenerateFrontendResult> {
-  const {
-    plan,
-    outputDir,
-    projectName,
-    appFolder = 'frontend',
-    log = () => undefined
-  } = options;
+  const { plan, outputDir, projectName, appFolder = 'frontend', log = () => undefined } = options;
 
   if (!plan.frontend && plan.mode !== 'hybrid' && plan.mode !== 'frontend') {
     throw new Error(
-      'Frontend generation failed: GenerationPlan has no frontend section '
-      + '(pass --frontend or --mode=hybrid|frontend).'
+      'Frontend generation failed: GenerationPlan has no frontend section ' +
+        '(pass --frontend or --mode=hybrid|frontend).'
     );
   }
 
@@ -284,10 +273,7 @@ export async function generateFrontend(
   const envPath = writeFrontendEnv(frontendRoot, plan, offline);
   applyOfflineFlag(frontendRoot, offline);
 
-  log(
-    `Frontend generation wrote ${modules.length} module(s), `
-    + `${bakedPaths} OAS path(s) baked.`
-  );
+  log(`Frontend generation wrote ${modules.length} module(s), ${bakedPaths} OAS path(s) baked.`);
 
   return {
     root: frontendRoot,

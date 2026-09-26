@@ -1,6 +1,6 @@
 ---
-title: "@jumentix/sdk-grpc-client"
-description: "AsyncAPI/gRPC realtime SDK client (Node)."
+title: '@jumentix/sdk-grpc-client'
+description: 'AsyncAPI/gRPC realtime SDK client (Node).'
 ---
 
 # @jumentix/sdk-grpc-client
@@ -60,7 +60,6 @@ const response = await client.request({
 });
 ```
 
-
 ### 3. Core workflows
 
 ### 1. Point at host:port
@@ -75,7 +74,6 @@ operationId + input matching AsyncAPI/proto.
 
 Do not bundle this into a browser app.
 
-
 ### 4. Full practical surface (exports)
 
 - `GrpcApiClient`
@@ -84,8 +82,8 @@ Use exports from application/adapters layers as described above — not from dom
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
+| Symptom         | Cause                | Fix                                                    |
+| --------------- | -------------------- | ------------------------------------------------------ |
 | Proto not found | Packaging/path issue | Ensure dist proto is present in the installed package. |
 
 **Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.

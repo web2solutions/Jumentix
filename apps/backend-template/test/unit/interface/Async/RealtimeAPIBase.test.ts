@@ -1,22 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import { RealtimeAPIBase } from '@src/interface/Async/RealtimeAPIBase';
+import { composeUsersAuthServices } from '@src/modules/Users';
+
 import type {
   IAsyncOperationRequest,
   IRealtimeAPIFactory,
   IRealtimeOperationEntry
 } from '@src/interface/Async/RealtimeAPIBase';
-import {
-  RealtimeAPIBase
-} from '@src/interface/Async/RealtimeAPIBase';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { composeUsersAuthServices } from '@src/modules/Users';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
 
 class TestRealtimeAPI extends RealtimeAPIBase {
   public constructor(config: IRealtimeAPIFactory, autoBuild = false) {
@@ -152,10 +150,12 @@ describe('realtime api base', () => {
       input: { username: 'john' }
     });
 
-    expect(runtimeHandler).toHaveBeenCalledWith(expect.objectContaining({
-      version: '1.0.0',
-      operationId: 'login'
-    }));
+    expect(runtimeHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        version: '1.0.0',
+        operationId: 'login'
+      })
+    );
     expect(response.ok).toBe(true);
     expect(response.result).toStrictEqual({ from: 'runtime' });
   });
@@ -250,7 +250,10 @@ describe('realtime api base', () => {
       controllerName: 'UserController'
     });
 
-    const organizationControllerModule = (RealtimeAPIBase as any).getControllerModule('Users', 'OrganizationController');
+    const organizationControllerModule = (RealtimeAPIBase as any).getControllerModule(
+      'Users',
+      'OrganizationController'
+    );
     expect(organizationControllerModule).toBeDefined();
     expect(() => (RealtimeAPIBase as any).getControllerModule('Missing', 'Controller')).toThrow(
       'Controller Controller not found for module Missing.'
@@ -261,7 +264,9 @@ describe('realtime api base', () => {
     expect.hasAssertions();
     const specDir = fs.mkdtempSync(path.join(os.tmpdir(), 'realtime-oas-'));
     const filePath = path.join(specDir, '1.0.0.yml');
-    fs.writeFileSync(filePath, `
+    fs.writeFileSync(
+      filePath,
+      `
 openapi: 3.1.0
 info:
   version: 1.0.0
@@ -270,11 +275,13 @@ paths:
   /tasks:
     post:
       operationId: create
-`, 'utf8');
+`,
+      'utf8'
+    );
 
-    const mockControllerFactory = jest.fn().mockImplementation(() => ({
+    const mockControllerFactory = jest.fn().mockReturnValue({
       create: jest.fn().mockResolvedValue({ result: { id: 'new-user' } })
-    }));
+    });
     const getControllerModuleSpy = jest
       .spyOn(RealtimeAPIBase as any, 'getControllerModule')
       .mockReturnValue(mockControllerFactory);
@@ -298,8 +305,14 @@ paths:
     expect.hasAssertions();
     const specDir = fs.mkdtempSync(path.join(os.tmpdir(), 'realtime-oas-sparse-'));
     fs.writeFileSync(path.join(specDir, 'readme.txt'), 'not a spec', 'utf8');
-    fs.writeFileSync(path.join(specDir, 'broken.yml'), 'openapi: 3.1.0\ninfo:\n  version: 1.0.0\n', 'utf8');
-    fs.writeFileSync(path.join(specDir, '2.0.0.yaml'), `
+    fs.writeFileSync(
+      path.join(specDir, 'broken.yml'),
+      'openapi: 3.1.0\ninfo:\n  version: 1.0.0\n',
+      'utf8'
+    );
+    fs.writeFileSync(
+      path.join(specDir, '2.0.0.yaml'),
+      `
 openapi: 3.1.0
 info:
   version: 2.0.0
@@ -308,7 +321,9 @@ paths:
   /health:
     get:
       summary: no operation id
-`, 'utf8');
+`,
+      'utf8'
+    );
 
     const api = new TestRealtimeAPI({ databaseClient, specDir }, true);
 
@@ -324,7 +339,7 @@ paths:
       paths: { '/reports': { post: { operationId: 'publishReport' } } }
     };
     const controller = { publishReport: jest.fn().mockResolvedValue({ result: { ok: true } }) };
-    const controllerFactory = jest.fn().mockImplementation(() => controller);
+    const controllerFactory = jest.fn().mockReturnValue(controller);
     const getControllerModuleSpy = jest
       .spyOn(RealtimeAPIBase as any, 'getControllerModule')
       .mockReturnValue(controllerFactory);
@@ -332,8 +347,9 @@ paths:
 
     (api as any).registerOperationsFromSpec('1.0.0', spec);
 
-    expect((api as any).operations.get('1.0.0:publishReport').controllerMethod)
-      .toBe('publishReport');
+    expect((api as any).operations.get('1.0.0:publishReport').controllerMethod).toBe(
+      'publishReport'
+    );
     getControllerModuleSpy.mockRestore();
   });
 
@@ -358,7 +374,7 @@ paths:
     const organizationUseCases = { list: jest.fn() };
     const authUseCases = { authenticate: jest.fn() };
     const controllerFactory = jest.fn();
-    controllerFactory.mockImplementation(() => ({ login: jest.fn() }));
+    controllerFactory.mockReturnValue({ login: jest.fn() });
     const getControllerModuleSpy = jest
       .spyOn(RealtimeAPIBase as any, 'getControllerModule')
       .mockReturnValue(controllerFactory);
@@ -379,13 +395,15 @@ paths:
     });
 
     expect(composeUsersModuleSpy).toHaveBeenCalledTimes(1);
-    expect(controllerFactory).toHaveBeenCalledWith(expect.objectContaining({
-      authService,
-      userService,
-      userUseCases,
-      organizationUseCases,
-      authUseCases
-    }));
+    expect(controllerFactory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        authService,
+        userService,
+        userUseCases,
+        organizationUseCases,
+        authUseCases
+      })
+    );
     composeUsersModuleSpy.mockRestore();
     getControllerModuleSpy.mockRestore();
   });
@@ -422,7 +440,7 @@ paths:
 
   it('returns undefined when the runtime handler module exports no factory', () => {
     expect.hasAssertions();
-    const nodeModule = require('module');
+    const nodeModule = require('node:module');
     const originalLoad = nodeModule._load;
     const moduleLoads = new Map<string, ModuleLoader>([
       [
@@ -517,10 +535,12 @@ paths:
       },
       endPointConfig: { operationId: 'login' }
     });
-    await expect(serviceErrorHandler({
-      operationId: 'login',
-      input: {}
-    })).rejects.toThrow('runtime service failed');
+    await expect(
+      serviceErrorHandler({
+        operationId: 'login',
+        input: {}
+      }) as Promise<unknown>
+    ).rejects.toThrow('runtime service failed');
 
     const missingHandler = (api as any).getRuntimeHandlerFactory({
       moduleName: 'Users',
@@ -566,7 +586,7 @@ paths:
 
   it('treats resolver-shaped non-Error runtime module failures as missing handlers', () => {
     expect.hasAssertions();
-    const nodeModule = require('module');
+    const nodeModule = require('node:module');
     const originalLoad = nodeModule._load;
     const moduleLoads = new Map<string, ModuleLoader>([
       [
@@ -586,19 +606,21 @@ paths:
       frameworkName: 'socket-io'
     });
 
-    expect((api as any).getRuntimeHandlerFactory({
-      moduleName: 'Users',
-      operationId: 'resolverString',
-      controllerMethod: 'resolverString',
-      controller: {},
-      endPointConfig: {}
-    })).toBeUndefined();
+    expect(
+      (api as any).getRuntimeHandlerFactory({
+        moduleName: 'Users',
+        operationId: 'resolverString',
+        controllerMethod: 'resolverString',
+        controller: {},
+        endPointConfig: {}
+      })
+    ).toBeUndefined();
     loadSpy.mockRestore();
   });
 
   it('treats resolver-shaped non-Error controller module failures as missing controllers', () => {
     expect.hasAssertions();
-    const nodeModule = require('module');
+    const nodeModule = require('node:module');
     const originalLoad = nodeModule._load;
     const moduleLoads = new Map<string, ModuleLoader>([
       [
@@ -613,9 +635,9 @@ paths:
       return loadModule(moduleLoads, originalLoad, request, parent, isMain);
     });
 
-    expect(() => (RealtimeAPIBase as any).getControllerModule('Virtual', 'VirtualController')).toThrow(
-      'Controller VirtualController not found for module Virtual.'
-    );
+    expect(() =>
+      (RealtimeAPIBase as any).getControllerModule('Virtual', 'VirtualController')
+    ).toThrow('Controller VirtualController not found for module Virtual.');
     loadSpy.mockRestore();
   });
 
@@ -631,28 +653,30 @@ paths:
       throw new Error('controller init failed');
     });
 
-    expect(() => (api as any).registerOperationFromEndpoint({
-      version: '1.0.0',
-      spec: { openapi: '3.1.0', info: { version: '1.0.0', title: 'test' }, paths: {} },
-      path: '/reports',
-      endPointConfig: { operationId: 'publishReport' }
-    })).toThrow('controller init failed');
+    expect(() =>
+      (api as any).registerOperationFromEndpoint({
+        version: '1.0.0',
+        spec: { openapi: '3.1.0', info: { version: '1.0.0', title: 'test' }, paths: {} },
+        path: '/reports',
+        endPointConfig: { operationId: 'publishReport' }
+      })
+    ).toThrow('controller init failed');
 
     (RealtimeAPIBase as any).getControllerModule.mockRestore();
   });
 
   it('throws when controller module resolution fails for missing controllers', () => {
     expect.hasAssertions();
-    expect(() => (RealtimeAPIBase as any).getControllerModule('Users', 'MissingController')).toThrow(
-      'Controller MissingController not found for module Users.'
-    );
+    expect(() =>
+      (RealtimeAPIBase as any).getControllerModule('Users', 'MissingController')
+    ).toThrow('Controller MissingController not found for module Users.');
   });
 
   it('covers controller-not-found fallback after module resolution errors', () => {
     expect.hasAssertions();
-    expect(() => (RealtimeAPIBase as any).getControllerModule('Users', 'MissingController')).toThrow(
-      'Controller MissingController not found for module Users.'
-    );
+    expect(() =>
+      (RealtimeAPIBase as any).getControllerModule('Users', 'MissingController')
+    ).toThrow('Controller MissingController not found for module Users.');
   });
 });
 

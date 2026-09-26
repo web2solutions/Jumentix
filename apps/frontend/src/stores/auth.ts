@@ -1,5 +1,5 @@
-import { ref } from 'vue';
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { appOperations } from '@/contracts/appOperations';
@@ -152,6 +152,14 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   return {
-    token, username, userId, isAuthenticated, isSessionExpired, register, login, logout, expire
+    token,
+    username,
+    userId,
+    isAuthenticated,
+    isSessionExpired,
+    register,
+    login,
+    logout,
+    expire
   };
 });

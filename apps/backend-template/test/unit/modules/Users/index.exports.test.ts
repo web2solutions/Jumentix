@@ -1,8 +1,7 @@
-import * as UsersModule from '@src/modules/Users';
-
 describe('users module exports', () => {
-  it('exposes all runtime exports through the barrel file', () => {
+  it('exposes all runtime exports through the barrel file', async () => {
     expect.hasAssertions();
+    const UsersModule = await import('@src/modules/Users');
     const keys = Object.keys(UsersModule);
     expect(keys.length).toBeGreaterThan(40);
 

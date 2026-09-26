@@ -1,41 +1,38 @@
-import { Request, Response } from 'restify';
-import { sendErrorResponse } from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
+import sendErrorResponse from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
+import UpdatePasswordRequestEvent from '@src/modules/Users/events/UpdatePasswordRequestEvent';
 
-import type {
-  IHandlerFactory,
-  IbaseHandler,
-  EndPointFactory
-} from '@src/interface/HTTP/ports';
+import type { Request, Response } from 'restify';
 
-import { UpdatePasswordRequestEvent } from '@src/modules/Users/events/UpdatePasswordRequestEvent';
+import type { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
 import type { IUpdatePasswordRequest } from '@src/modules/Users';
 
-const updateUserPassword: EndPointFactory = (
-  {
-    endPointConfig,
-    controller
-  }: IHandlerFactory
-): IbaseHandler => {
-  return {
-    path: '/auth/updateUserPassword',
-    method: 'post',
-    async handler(req: Request, res: Response) {
-      try {
-        const { result, error } = await controller!.updatePassword!(
-          new UpdatePasswordRequestEvent<IUpdatePasswordRequest>({
-            authorization: req.headers.authorization ?? '',
-            input: req.body as IUpdatePasswordRequest,
-            schemaOAS: endPointConfig
-          })
+const updateUserPassword: EndPointFactory = ({
+  endPointConfig,
+  controller
+}: IHandlerFactory): IbaseHandler => ({
+  path: '/auth/updateUserPassword',
+  method: 'post',
+  async handler(req: Request, res: Response) {
+    try {
+      if (!controller?.updatePassword) {
+        throw new Error(
+          'The updateUserPassword endpoint requires a controller implementing updatePassword.'
         );
-        if (error) throw error;
-        res.status(200);
-        return res.json(result);
-      } catch (error: any) {
-        return sendErrorResponse(error, res);
       }
+      const { result, error } = await controller.updatePassword(
+        new UpdatePasswordRequestEvent<IUpdatePasswordRequest>({
+          authorization: req.headers.authorization ?? '',
+          input: req.body as IUpdatePasswordRequest,
+          schemaOAS: endPointConfig
+        })
+      );
+      if (error) throw error;
+      res.status(200);
+      return res.json(result);
+    } catch (error: any) {
+      return sendErrorResponse(error, res);
     }
-  };
-};
+  }
+});
 
 export default updateUserPassword;

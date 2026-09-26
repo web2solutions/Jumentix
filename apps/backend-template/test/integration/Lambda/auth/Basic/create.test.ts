@@ -16,12 +16,13 @@ import {
 import handler from '@src/modules/Users/interface/restapi/frameworks/aws/lambda/handlers/create';
 import AuthService from '@src/modules/Users/service/AuthService';
 import { composeContext, composeHttpEvent } from '@test/integration/Lambda/utils';
-import { authenticateForHeader,
+import {
+  authenticateForHeader,
   BasicAuthorizationHeaderUserGuest,
   user1,
   // user2,
   user3
- } from '@test/mock';
+} from '@test/mock';
 
 import type { IAuthorizationHeader, IUser } from '@src/modules/Users';
 

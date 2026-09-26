@@ -1,7 +1,7 @@
 import { Content } from './Content';
 
 export default {
-  title: 'Content',
+  title: 'Content'
 };
 
 export const Usage = () => <Content />;
