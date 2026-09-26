@@ -1,0 +1,13 @@
+{
+  "//": "ESLint import resolution only (Requirement 138 / JUM-12): the app tsconfig excludes test/** by design (bun:test suites, JUM-760), but eslint-import-resolver-typescript only resolves path aliases for files a listed project covers. This project extends the app config and adds the test/cypress trees. Nothing compiles with it — the app's typecheck and build keep using tsconfig.json.",
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue",
+    "test/**/*.ts",
+    "cypress/**/*.ts",
+    "vite.config.mjs"
+  ],
+  "exclude": ["dist", "node_modules", "template"]
+}
