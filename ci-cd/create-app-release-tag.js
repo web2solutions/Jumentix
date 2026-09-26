@@ -788,21 +788,38 @@ function syncChangelogAfterTag({
   const contents = fs.readFileSync(path.join(rootDir, 'CHANGELOG.md'), 'utf8');
   resetWorktree(rootDir);
 
-  ensureBranchAtSha({
+  const ensured = ensureBranchAtSha({
     repository,
     branch: changelogBranch,
     sha: releaseSha,
     env,
     cwd: rootDir
   });
-  createSignedCommitOnBranchWithGh({
-    repository,
-    branch: changelogBranch,
-    expectedHeadOid: releaseSha,
-    headline: 'chore: synchronize changelog',
-    additions: [{ path: 'CHANGELOG.md', contents }],
-    env
-  });
+
+  // sync-changelog may race and land the same branch first (app-release run
+  // 36175725849). Reuse the current tip instead of insisting on releaseSha.
+  let expectedHeadOid = releaseSha;
+  if (!ensured.created && ensured.ref && ensured.ref.object && ensured.ref.object.sha) {
+    expectedHeadOid = ensured.ref.object.sha;
+  }
+
+  try {
+    createSignedCommitOnBranchWithGh({
+      repository,
+      branch: changelogBranch,
+      expectedHeadOid,
+      headline: 'chore: synchronize changelog',
+      additions: [{ path: 'CHANGELOG.md', contents }],
+      env
+    });
+  } catch (error) {
+    const message = String(error && error.message ? error.message : error);
+    if (!/but expected|Reference already exists|already exists/i.test(message)) {
+      throw error;
+    }
+    // Tip moved or commit already present — openAndMergeReleasePr reuses the PR.
+  }
+
   const changelogPr = openAndMergeReleasePr({
     branch: changelogBranch,
     title: 'chore: synchronize changelog',
