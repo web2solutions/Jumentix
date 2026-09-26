@@ -35,10 +35,10 @@ As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template
     - `derby-js`
     - `adonis-js`
     - `total-js`
-  - decisão sobre aliases (JUM-461): `derby-js` e `sails-js` são as grafias
+  - decisão sobre aliases: `derby-js` e `sails-js` são as grafias
     canônicas. Os aliases `derby` e `sails` NÃO são aceitos — o
     `RuntimeEnvironment.ts` falha imediatamente com eles. `hyper-express` foi
-    removido do runtime (JUM-27) e também é rejeitado. O seletor do Service
+    removido do runtime e também é rejeitado. O seletor do Service
     Management oferece exatamente os 11 valores canônicos acima; as opções da UI
     e a validação de enum do servidor devem sempre concordar.
   - usado por: `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
@@ -181,7 +181,7 @@ O Service Management expõe pontos de extremidade de leitura/gravação do ambie
 
 O editor env altera apenas as chaves aprovadas deste contrato, preservando as proteções.
 
-### API de visualização do ecossistema PM2 (JUM-480)
+### API de visualização do ecossistema PM2
 
 O Service Management também expõe um endpoint PM2 somente leitura, a fonte
 única da visualização de perfil de tempo de execução do designer:
@@ -193,8 +193,8 @@ O endpoint lê o arquivo real `pm2/ecosystem.*.cjs` do ambiente selecionado
 `<repo-root>/pm2`) e retorna `{ environment, fileName, path, exists, apps }`,
 onde cada app carrega `{ name, script, interpreter, interpreterArgs, env, command }`. `command` deriva da definição do ecossistema —
 `pm2 start <caminho do ecossistema> --only <nome do app> --update-env` — nunca
-uma string de gerenciador de pacotes embutida, de modo que a migração para Bun
-(JUM-33/JUM-40) não pode invalidar silenciosamente a visualização. O módulo do
+uma string de gerenciador de pacotes embutida, de modo que a ferramenta Bun atual
+não pode invalidar silenciosamente a visualização. O módulo do
 ecossistema é carregado sem cache: editar um arquivo de ecossistema muda a
 resposta sem reiniciar o servidor e sem alteração de código.
 
@@ -222,8 +222,8 @@ quando o diretório não existe.
 ### Níveis de chaves e listas de permissão
 
 As listas de leitura e gravação são conjuntos separados; cada chave pertence a exatamente um nível.
-A classificação autoritativa por chave (com justificativas) está em
-`.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`.
+A classificação autoritativa por chave (com justificativas) está no requisito de
+contratos públicos do Service Management.
 
 - **Editável** (leitura + gravação) — seletores de topologia de tempo de execução:
   `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
@@ -282,15 +282,9 @@ razão declarada:
   aparecer na resposta do GET e não devem ser graváveis, pois a resposta cruza o
   mesmo limite de confiança que a escrita.
 
-O conjunto editável atual são os quatro seletores de topologia listados em
-[Chaves de tempo de execução](#chaves-de-tempo-de-execução) (`JUMENTIX_HTTP_FRAMEWORK`,
-`JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`,
-`JUMENTIX_REALTIME_API_DATABASE_DRIVER`), e a superfície de leitura é limitada às
-mesmas quatro. A classificação completa por chave dos arquivos env nesses níveis
-chega via JUM-460; as decisões de classificação autoritativas — uma por chave, cada
-uma com uma razão escrita — estão no
-Requisito 126.
-Toda adição ao conjunto editável é uma decisão de segurança.
+A classificação por chave nesses níveis — uma razão por chave — está no requisito
+de contratos públicos do Service Management, e as listas de níveis
+acima a espelham. Toda adição ao conjunto editável é uma decisão de segurança.
 
 ### Conjuntos de enum e decisão de alias
 
@@ -298,7 +292,7 @@ Valores fora do enum aceito para cada chave (listados em
 [Chaves de tempo de execução](#chaves-de-tempo-de-execução)) são rejeitados com a
 lista de aceitos.
 
-Decisão de alias (JUM-461): `derby`/`derby-js` e `sails`/`sails-js` são o mesmo
+Decisão de alias: `derby`/`derby-js` e `sails`/`sails-js` são o mesmo
 framework sob duas grafias. As grafias canônicas são `derby-js` e `sails-js` — as
 formas aceitas por
 `apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts` — e o seletor
@@ -319,8 +313,7 @@ distintas e devem ser rotuladas e editáveis separadamente na UI.
 
 ### Contrato de erro
 
-As respostas distinguem falhas de parse, validação e filesystem (entregue pelo
-JUM-543; Requisito 126 §3):
+As respostas distinguem falhas de parse, validação e filesystem:
 
 - Corpo JSON malformado (POST): `400 { "error": "Invalid payload.", "details": … }`.
   O `try` de parse é restrito apenas ao `JSON.parse`, de modo que este envelope

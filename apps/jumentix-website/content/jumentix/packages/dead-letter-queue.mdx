@@ -1,27 +1,32 @@
+---
+title: "@jumentix/dead-letter-queue"
+description: "Packages documentation."
+---
+
 # @jumentix/dead-letter-queue
 
-Fila privada para transações recusadas pelo mutex (JUM-53).
+Private queue for transactions the mutex refused.
 
-> **Uma escrita em fila não aconteceu.** Tudo neste pacote decorre dessa frase.
-> O serviço continua a lançar `ResourceLockedError`; a fila apenas torna a
-> tentativa recuperável.
+> **A queued write has not happened.** Everything in this package follows from
+> that one sentence. The service still throws `ResourceLockedError`; the queue
+> only makes the attempt recoverable.
 
 ---
 
-## 1. O problema
+## 1. The problem
 
-O `UserService` protege cada mutação com o mutex. Quando o recurso já está
-bloqueado, recusa:
+`UserService` guards every mutation with the mutex. When the resource is
+already locked, it refuses:
 
 ```ts
 const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
 if (previouslyLocked) await this.rejectLocked('update', id, data);
 ```
 
-São **doze** pontos assim. Antes deste pacote, o chamador recebia um erro e a
-transação pretendida era descartada. Nada registava que tinha sido tentada, por
-isso uma escrita perdida por contenção era indistinguível de uma escrita que
-ninguém chegou a fazer.
+There are **twelve** such sites. Before this package, the caller got an error
+and the intended transaction was discarded. Nothing recorded that it had been
+attempted, so a write lost to contention was indistinguishable from a write
+nobody ever made.
 
 <svg viewBox="0 0 720 300" role="img" aria-label="Without the queue the refused write disappeared; with it the write is recorded and still refused" width="720" height="300" preserveAspectRatio="xMidYMid meet">
   <defs>
@@ -65,12 +70,12 @@ ninguém chegou a fazer.
   </g>
 </svg>
 
-O cliente é recusado nos **dois** caminhos. É esse o ponto: a escrita não
-aconteceu, e um cliente informado do contrário agiria sobre uma mentira.
+The client is refused in **both** paths. That is the point: the write has not
+happened, and a client told otherwise would act on a lie.
 
 ---
 
-## 2. As peças
+## 2. The pieces
 
 <svg viewBox="0 0 720 300" role="img" aria-label="UserService enqueues into DeadLetterQueue; the replay worker drains it back through the service; stores are in-memory or Redis" width="720" height="300" preserveAspectRatio="xMidYMid meet">
   <defs>
@@ -119,17 +124,17 @@ aconteceu, e um cliente informado do contrário agiria sobre uma mentira.
   </g>
 </svg>
 
-| Peça | Responsabilidade |
+| Piece | Responsibility |
 |---|---|
-| `DeadLetterQueue` | Registos, estados, limite de tentativas, ordem de replay |
-| `DeadLetterReplayWorker` | Chama `replay` num intervalo, sem sobreposição |
-| `InMemoryDeadLetterStore` | Local ao processo; testes e runtimes de processo único |
-| `KeyValueDeadLetterStore` | Redis, através do cliente que o mutex já usa |
-| `composeUserDeadLetterReplay` | Mapeia nomes de operação de volta para métodos do `UserService` |
+| `DeadLetterQueue` | Records, statuses, attempt bound, replay ordering |
+| `DeadLetterReplayWorker` | Calls `replay` on an interval, without overlapping |
+| `InMemoryDeadLetterStore` | Process-local; tests and single-process runtimes |
+| `KeyValueDeadLetterStore` | Redis, through the client the mutex already uses |
+| `composeUserDeadLetterReplay` | Maps operation names back to `UserService` methods |
 
 ---
 
-## 3. O ciclo de vida do registo
+## 3. The record lifecycle
 
 <svg viewBox="0 0 720 220" role="img" aria-label="A record starts pending, becomes succeeded when a handler wrote, retries while under the attempt bound, and is abandoned at the bound" width="720" height="220" preserveAspectRatio="xMidYMid meet">
   <defs>
@@ -165,17 +170,17 @@ aconteceu, e um cliente informado do contrário agiria sobre uma mentira.
   </g>
 </svg>
 
-| Estado | Significado | Escolhido pelo `replay`? |
+| Status | Meaning | Picked by `replay`? |
 |---|---|---|
-| `pending` | Recusada, reexecutável | sim |
-| `succeeded` | Um handler executou a escrita | não |
-| `abandoned` | Limite de tentativas atingido | nunca |
+| `pending` | Refused, replayable | yes |
+| `succeeded` | A handler performed the write | no |
+| `abandoned` | Attempt bound reached | no, ever |
 
 ---
 
-## 4. O replay passa pelo serviço
+## 4. Replay goes through the service
 
-Esta é a decisão com maior probabilidade de ser mal feita, por isso vale ser explícito.
+This is the decision most likely to be got wrong, so it is worth being explicit.
 
 <svg viewBox="0 0 720 250" role="img" aria-label="Replay calls the service, which re-acquires the mutex; a cleared lock marks the record succeeded, a held lock counts an attempt and keeps it pending" width="720" height="250" preserveAspectRatio="xMidYMid meet">
   <defs>
@@ -208,18 +213,18 @@ Esta é a decisão com maior probabilidade de ser mal feita, por isso vale ser e
   </g>
 </svg>
 
-Duas coisas que este diagrama defende:
+Two things this diagram is defending:
 
-**Pelo serviço, não pelo repositório.** O serviço readquire o mutex, por isso um
-registo cujo lock não libertou é recusado outra vez e continua em fila. Um replay
-ao nível do repositório escreveria *por cima* do lock, que é exatamente a
-corrupção que o mutex existe para prevenir.
+**Through the service, not the repository.** The service re-acquires the mutex,
+so a record whose lock has not cleared is refused again and stays queued. A
+repository-level replay would write *past* the lock, which is exactly the
+corruption the mutex exists to prevent.
 
-**`orThrow` não é decoração.** O `UserService` reporta falha em
-`response.error` e **não** lança. Um handler que ignorasse isso retornaria
-normalmente para um registo ainda bloqueado, a fila marcaria `succeeded`, e a
-escrita perder-se-ia com o relatório a dizer que passou. Todos os handlers passam
-por `orThrow`.
+**`orThrow` is not decoration.** `UserService` reports failure in
+`response.error` and does **not** throw. A handler that ignored that would
+return normally for a still-locked record, the queue would mark it `succeeded`,
+and the write would be lost while the report said it landed. Every handler goes
+through `orThrow`.
 
 ---
 
@@ -231,22 +236,22 @@ por `orThrow`.
 new DeadLetterQueue({ store?, maxAttempts?, now?, newId? })
 ```
 
-| Opção | Omissão | Notas |
+| Option | Default | Notes |
 |---|---|---|
-| `store` | `InMemoryDeadLetterStore` | Usar `KeyValueDeadLetterStore` num runtime real |
-| `maxAttempts` | `5` | Mínimo 1; uma fila que nunca tenta é recusada na construção |
-| `now` | `() => new Date()` | Injetado para testes determinísticos |
-| `newId` | timestamp + contador | O contador é o que evita colisão entre dois registos no mesmo milissegundo |
+| `store` | `InMemoryDeadLetterStore` | Use `KeyValueDeadLetterStore` in a real runtime |
+| `maxAttempts` | `5` | Must be at least 1; a queue that never attempts is refused at construction |
+| `now` | `() => new Date()` | Injected for deterministic tests |
+| `newId` | timestamp + counter | The counter is why two records in the same millisecond do not collide |
 
-| Método | Devolve |
+| Method | Returns |
 |---|---|
-| `enqueue(input)` | O registo `pending` guardado |
-| `pending()` | Registos reexecutáveis, por ordem de recusa |
-| `find(id)` | Um registo, qualquer que seja o estado |
-| `replay(handlers)` | `{ replayed, retried, abandoned, skipped }` — ids, não contagens |
+| `enqueue(input)` | The stored `pending` record |
+| `pending()` | Replayable records, in rejection order |
+| `find(id)` | One record, whatever its status |
+| `replay(handlers)` | `{ replayed, retried, abandoned, skipped }` — ids, not counts |
 
-O `enqueue` recusa entrada que não poderia ser reexecutada: `entityName`,
-`resourceId` e `operation` são obrigatórios.
+`enqueue` refuses input that could not be replayed: `entityName`, `resourceId`
+and `operation` are all required.
 
 ### `DeadLetterReplayWorker`
 
@@ -254,33 +259,32 @@ O `enqueue` recusa entrada que não poderia ser reexecutada: `entityName`,
 new DeadLetterReplayWorker({ queue, handlers, intervalMs?, onReport?, onError? })
 ```
 
-| Membro | Comportamento |
+| Member | Behaviour |
 |---|---|
-| `start()` | Inicia o intervalo (omissão `30_000` ms). O timer leva `unref` |
-| `stop()` | Termina; nenhum tick corre depois |
-| `tick()` | Força uma drenagem — no shutdown, ou ao libertar um recurso |
-| `running` | Se o intervalo está ativo |
+| `start()` | Begins the interval (default `30_000` ms). The timer is `unref`ed |
+| `stop()` | Ends it; no tick runs afterwards |
+| `tick()` | Forces one drain — on shutdown, or on the unlock of a resource |
+| `running` | Whether the interval is active |
 
-Três propriedades, cada uma um modo de um ciclo de timer ingénuo correr mal:
+Three properties, each a way a naive timer loop goes wrong:
 
-- **Sem sobreposição.** Uma drenagem mais lenta que o intervalo não recomeça
-  enquanto a anterior corre, ou o mesmo registo é reexecutado duas vezes em
-  simultâneo.
-- **Uma drenagem que falha não mata o worker.** Redis em baixo é um tick mau,
-  não o fim. Um worker que morre ao primeiro erro é indistinguível de um que
-  nunca arrancou.
-- **Parar é completo**, incluindo um tick já agendado.
+- **No overlap.** A drain slower than the interval is not started again while
+  the previous one runs, or the same record is replayed twice concurrently.
+- **A failing drain does not stop the worker.** Redis down is a bad tick, not
+  the end. A worker that dies on the first error is indistinguishable from one
+  that was never started.
+- **Stopping is complete**, including a tick already scheduled.
 
 ### Stores
 
-| Store | Uso |
+| Store | Use |
 |---|---|
-| `InMemoryDeadLetterStore` | Testes, runtimes de processo único |
-| `KeyValueDeadLetterStore(client, { prefix })` | Redis, prefixo por omissão `dlq` |
+| `InMemoryDeadLetterStore` | Tests, single-process runtimes |
+| `KeyValueDeadLetterStore(client, { prefix })` | Redis, prefix defaults to `dlq` |
 
-O cliente Redis que este repositório usa expõe `get`, `set` e `del` — **sem
-`SCAN`, sem `KEYS`**. Por isso a store mantém um índice explícito dos ids dos
-registos sob uma chave, que é também o que preserva a ordem de replay.
+The Redis client this repository uses exposes `get`, `set` and `del` — **no
+`SCAN`, no `KEYS`**. The store therefore keeps an explicit index of record ids
+under one key, which is also what preserves replay order.
 
 <svg viewBox="0 0 720 170" role="img" aria-label="One index key holds the record ids in rejection order, each pointing at its own record key" width="720" height="170" preserveAspectRatio="xMidYMid meet">
   <defs>
@@ -313,9 +317,9 @@ registos sob uma chave, que é também o que preserva a ordem de replay.
 
 ---
 
-## 6. Ligação
+## 6. Wiring
 
-Passar a fila como serviço. Sem ela, o comportamento é **exatamente** o anterior.
+Pass the queue as a service. Without it, behaviour is **exactly** as before.
 
 ```ts
 import { composeUserDeadLetterQueue, composeUserDeadLetterWorker }
@@ -329,31 +333,31 @@ const userService = UserService.compile({
 const deadLetterWorker = composeUserDeadLetterWorker(deadLetterQueue, userService);
 ```
 
-O `composeUsersAuthServices` já faz isto e devolve ambos. Constrói o worker mas
-**não** o arranca: um timer em fundo é do runtime arrancar e, mais importante,
-parar.
+`composeUsersAuthServices` already does this and returns both. It builds the
+worker but does **not** start it: a background timer is the runtime's to start
+and, more importantly, to stop.
 
 ```ts
 deadLetterWorker?.start();
 process.on('SIGTERM', () => deadLetterWorker?.stop());
 ```
 
-Sem `keyValueStorageClient` ambos ficam `undefined`, de propósito: uma fila local
-ao processo perder-se-ia no restart parecendo durável.
+Without a `keyValueStorageClient` both are `undefined`, on purpose: a
+process-local queue would be lost on restart while looking like durability.
 
 ---
 
-## 7. Experimentar
+## 7. Try it
 
-Um script executável, sem Redis:
+A runnable script, no Redis required:
 
 ```bash
 bun run --filter @jumentix/dead-letter-queue example
 ```
 
-É o `examples/replay.ts` deste pacote — edita e volta a correr. Percorre o ciclo
-todo: uma escrita recusada, um replay que falha porque o lock ainda se mantém, um
-replay que passa, e um registo que atinge o limite de tentativas.
+It is `examples/replay.ts` in this package — edit it and re-run. It walks the
+whole lifecycle: a refused write, a replay that fails because the lock still
+holds, a replay that succeeds, and a record that reaches the attempt bound.
 
 ```ts
 import { DeadLetterQueue } from '@jumentix/dead-letter-queue';
@@ -375,35 +379,35 @@ await queue.replay(handlers); // replayed: [ 'dlq-...' ]
 
 ---
 
-## 8. Operação
+## 8. Operating it
 
-| Sintoma | O que significa | O que fazer |
+| Symptom | What it means | What to do |
 |---|---|---|
-| `pending()` cresce | Locks não libertam, ou o worker não arrancou | Verificar `worker.running` e o TTL do mutex |
-| Registos chegam a `abandoned` | Um recurso ficou bloqueado durante `maxAttempts` drenagens | Ler `lastError`; a escrita perdeu-se e o registo é a prova |
-| `skipped` num relatório | Uma operação não tem handler registado | Erro de ligação — o registo é mantido, não descartado |
-| `onError` dispara | A própria drenagem falhou, por exemplo Redis em baixo | O worker continua a tiquetaquear; corrigir a store |
+| `pending()` grows | Locks are not clearing, or the worker is not started | Check `worker.running` and the mutex TTL |
+| Records reach `abandoned` | A resource stayed locked for `maxAttempts` drains | Read `lastError`; the write is lost and the record is the evidence |
+| `skipped` in a report | An operation has no registered handler | A wiring mistake — the record is kept, not discarded |
+| `onError` fires | The drain itself failed, for example Redis down | The worker keeps ticking; fix the store |
 
-O relatório devolve **ids**, não contagens, para que um operador possa procurar o
-registo em vez de inferir de um total.
+The report returns **ids**, not counts, so an operator can look a record up
+rather than infer from a total.
 
 ---
 
-## 9. Validação
+## 9. Validation
 
 ```bash
 bun run --filter @jumentix/dead-letter-queue build
 bun run --filter @jumentix/dead-letter-queue typecheck
 bun run --filter @jumentix/dead-letter-queue lint
 bun run --filter @jumentix/dead-letter-queue test
-bun run smoke:dead-letter:redis   # contra um contentor Redis real
+bun run smoke:dead-letter:redis   # against a real Redis container
 ```
 
-A suite de integração **salta-se a si própria** sem `RUN_REDIS_INTEGRATION=1` em
-vez de passar. Uma suite que reporta sucesso sem a sua dependência é o
-falso-verde que este repositório continua a encontrar.
+The integration suite **skips itself** without `RUN_REDIS_INTEGRATION=1` rather
+than passing. A suite that reports success without its dependency is the false
+green this repository keeps finding.
 
-O que só o servidor real responde, e que essa suite portanto verifica: valores
-voltam como strings e fazem parse, uma segunda fila sobre o mesmo servidor vê o
-que a primeira escreveu, o índice mantém a ordem de recusa, o worker drena, e um
-registo abandonado continua abandonado depois de reabrir.
+What only the real server can answer, and what that suite therefore asserts:
+values come back as strings and parse, a second queue over the same server sees
+what the first wrote, the index holds rejection order, the worker drains, and an
+abandoned record is still abandoned after a reopen.

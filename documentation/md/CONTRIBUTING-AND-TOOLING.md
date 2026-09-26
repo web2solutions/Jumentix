@@ -62,6 +62,11 @@ Prospect and developer pages never carry CI/gate control variables
 ids, or `.agents/` paths. Runtime keys such as `JUMENTIX_HTTP_FRAMEWORK` are product
 configuration and stay allowed.
 
+Contributor documents published on the website (see
+`apps/jumentix-website/config/content-sources.json`) may cite issues and requirements, but put
+that provenance in parentheses — `(JUM-460; Requirement 126)` — so the site's sync drops it.
+Inline citations reach the website and fail the check.
+
 ```bash
 bun run docs:check-audience
 ```

@@ -23,7 +23,7 @@ and the intended transaction was discarded. Nothing recorded that it had been
 attempted, so a write lost to contention was indistinguishable from a write
 nobody ever made.
 
-<svg viewBox="0 0 720 300" role="img" aria-label="Before JUM-53 the refused write disappeared; after JUM-53 it is recorded and still refused" width="720" height="300" preserveAspectRatio="xMidYMid meet">
+<svg viewBox="0 0 720 300" role="img" aria-label="Without the queue the refused write disappeared; with it the write is recorded and still refused" width="720" height="300" preserveAspectRatio="xMidYMid meet">
   <defs>
     <marker id="dlq-arrow" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor"/>
@@ -59,9 +59,9 @@ nobody ever made.
   </g>
   <g font-size="11" font-family="inherit" fill="currentColor" opacity="0.75">
     <rect x="60" y="160" width="620" height="46" rx="6" fill="none" stroke="currentColor" stroke-dasharray="4 4" opacity="0.5"/>
-    <text x="66" y="176">before JUM-53 — the attempt disappeared</text>
+    <text x="66" y="176">without the queue — the attempt disappeared</text>
     <rect x="60" y="216" width="620" height="70" rx="6" fill="none" stroke="currentColor" stroke-dasharray="4 4" opacity="0.5"/>
-    <text x="66" y="232">after JUM-53 — recorded, and still refused</text>
+    <text x="66" y="232">with the queue — recorded, and still refused</text>
   </g>
 </svg>
 
