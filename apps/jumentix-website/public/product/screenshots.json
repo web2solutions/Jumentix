@@ -2,7 +2,7 @@
   "screenshots": [
     {
       "file": "domain-designer.png",
-      "capturedAt": "a46de5d2",
+      "capturedAt": "987a5c50",
       "watch": [
         "apps/service-management/src",
         "apps/service-management/index.html",
@@ -14,7 +14,7 @@
     },
     {
       "file": "architecture-designer.png",
-      "capturedAt": "a46de5d2",
+      "capturedAt": "987a5c50",
       "watch": [
         "apps/service-management/src",
         "apps/service-management/index.html",
@@ -25,7 +25,7 @@
     },
     {
       "file": "openapi-swagger.png",
-      "capturedAt": "a46de5d2",
+      "capturedAt": "987a5c50",
       "watch": [
         "apps/service-management/src",
         "apps/service-management/index.html",
@@ -37,7 +37,7 @@
     },
     {
       "file": "code-workspace.png",
-      "capturedAt": "a46de5d2",
+      "capturedAt": "987a5c50",
       "watch": [
         "apps/service-management/src",
         "apps/service-management/index.html",
@@ -49,14 +49,14 @@
     },
     {
       "file": "frontend-dashboard.png",
-      "capturedAt": "a46de5d2",
+      "capturedAt": "987a5c50",
       "watch": [
         "apps/frontend/src"
       ]
     },
     {
       "file": "frontend-xcrud-users.png",
-      "capturedAt": "a46de5d2",
+      "capturedAt": "987a5c50",
       "watch": [
         "apps/frontend/src"
       ]
