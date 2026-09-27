@@ -57,8 +57,23 @@ that cannot map to repository behavior are prohibited.
 ## Product Proof
 
 The homepage uses the real Domain Designer canvas as full-bleed first-viewport media. The product
-page uses the Jumentix mascot as an immediate brand signal. The product capture is stored at
-`public/product/domain-designer.png`.
+page opens with a "See it running" tour of six captures under `public/product/`:
+`architecture-designer.png`, `domain-designer.png`, `openapi-swagger.png`, `code-workspace.png`
+(Service Management) and `frontend-xcrud-users.png`, `frontend-dashboard.png` (the frontend seed).
+
+Every capture is produced by one command against the running apps — WebKit, 1440×900 at 2×,
+dark scheme — so a refresh is repeatable rather than a manual session:
+
+```bash
+bun apps/service-management/server.js                 # Service Management (JUMENTIX_SERVICE_MANAGEMENT_PORT)
+# backend-template on InMemory + `bun run dev` in apps/frontend
+FRONTEND_USERNAME=… FRONTEND_PASSWORD=… \
+  bun run --filter @jumentix/website screenshots:capture
+```
+
+Use a seeded account (`apps/backend-template/seed/users.ts`). The script loads the Service
+Management sample model, splits it into two services for the architecture view, and signs in to
+the frontend for the admin and dashboard views.
 
 Every image on the site shows Jumentix itself. The starter-template leftovers the site was
 scaffolded with — the `mantine+nextjs+nextra-template.png` placeholder, the unused `Welcome`,

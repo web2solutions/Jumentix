@@ -1837,7 +1837,7 @@ function Home({ locale }: { locale: CommercialLocale }) {
           </div>
           <figure className={classes.productShot}>
             <img src="/product/domain-designer.png" alt={t(locale, 'Jumentix Domain Designer displaying bounded contexts and entity relationships', 'Domain Designer do Jumentix exibindo contextos delimitados e relações entre entidades')} />
-            <figcaption>{t(locale, 'The real Jumentix Domain Designer interface.', 'A interface real do Domain Designer do Jumentix.')}</figcaption>
+            <figcaption>{t(locale, 'The Domain Designer as it ships today.', 'O Domain Designer como ele é hoje.')}</figcaption>
           </figure>
         </div>
       </Band>
@@ -1883,6 +1883,67 @@ function Home({ locale }: { locale: CommercialLocale }) {
   );
 }
 
+const productTour = [
+  {
+    src: '/product/architecture-designer.png',
+    title: ['Architecture designer', 'Designer de arquitetura'],
+    caption: ['Split domains across services and link them; each service gets its own contract.', 'Divida domínios entre serviços e ligue-os; cada serviço ganha seu próprio contrato.'],
+  },
+  {
+    src: '/product/domain-designer.png',
+    title: ['Domain modeling', 'Modelagem de domínio'],
+    caption: ['Entities, fields, keys and relationships on one canvas, validated before anything is generated.', 'Entidades, campos, chaves e relacionamentos em um canvas, validados antes de qualquer geração.'],
+  },
+  {
+    src: '/product/openapi-swagger.png',
+    title: ['OpenAPI, live', 'OpenAPI ao vivo'],
+    caption: ['The model becomes an OpenAPI 3.1 document you can browse and try from the designer.', 'O modelo vira um documento OpenAPI 3.1 que você navega e testa no próprio designer.'],
+  },
+  {
+    src: '/product/code-workspace.png',
+    title: ['Generated code you can read', 'Código gerado que você lê'],
+    caption: ['Controllers, use cases, ports and repositories for every entity, regenerated as the model changes.', 'Controllers, casos de uso, ports e repositórios para cada entidade, regerados quando o modelo muda.'],
+  },
+  {
+    src: '/product/frontend-xcrud-users.png',
+    title: ['A working admin app', 'Um app administrativo pronto'],
+    caption: ['Lists, filters, forms and exports driven by the same contract — no hand-written screens.', 'Listas, filtros, formulários e exportações guiados pelo mesmo contrato — sem telas escritas à mão.'],
+  },
+  {
+    src: '/product/frontend-dashboard.png',
+    title: ['Dashboards per domain', 'Dashboards por domínio'],
+    caption: ['Each domain ships its own widgets, scoped to the signed-in user’s roles.', 'Cada domínio traz seus próprios widgets, limitados aos papéis de quem está logado.'],
+  },
+] as const;
+
+function ProductTourBand({ locale }: { locale: CommercialLocale }) {
+  return (
+    <Band>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'See it running', 'Veja funcionando')}
+          title={t(locale, 'From a model to a running product', 'De um modelo a um produto rodando')}
+          description={t(
+            locale,
+            'Every image below is a capture of the current Jumentix apps, not a mockup.',
+            'Todas as imagens abaixo são capturas dos apps atuais do Jumentix, não mockups.',
+          )}
+        />
+        <div className={classes.productTour}>
+          {productTour.map((shot) => (
+            <figure key={shot.src} className={classes.productShot}>
+              <img src={shot.src} alt={t(locale, shot.title[0], shot.title[1])} loading="lazy" width={2880} height={1800} />
+              <figcaption>
+                <strong>{t(locale, shot.title[0], shot.title[1])}</strong> {t(locale, shot.caption[0], shot.caption[1])}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </Band>
+  );
+}
+
 function Product({ locale }: { locale: CommercialLocale }) {
   return (
     <>
@@ -1901,6 +1962,7 @@ function Product({ locale }: { locale: CommercialLocale }) {
           <ActionLink href={repositoryUrl} variant="secondary" external>{t(locale, 'Inspect the source', 'Inspecione o código')}</ActionLink>
         </div>
       </PageHero>
+      <ProductTourBand locale={locale} />
       <Band>
         <div className={classes.sectionStack}>
           <SectionHeading eyebrow={t(locale, 'Platform capabilities', 'Capacidades da plataforma')} title={t(locale, 'The full delivery lifecycle, connected', 'Todo o ciclo de entrega, conectado')} />

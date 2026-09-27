@@ -56,8 +56,23 @@ correspondência no repositório são proibidos.
 ## Prova do produto
 
 A homepage usa o canvas real do Domain Designer como mídia full-bleed na primeira viewport. A
-página de produto usa o mascote como sinal imediato da marca. A captura está em
-`public/product/domain-designer.png`.
+página de produto abre com um tour "Veja funcionando" de seis capturas em `public/product/`:
+`architecture-designer.png`, `domain-designer.png`, `openapi-swagger.png`, `code-workspace.png`
+(Service Management) e `frontend-xcrud-users.png`, `frontend-dashboard.png` (o seed de frontend).
+
+Toda captura sai de um único comando contra os apps rodando — WebKit, 1440×900 em 2×, esquema
+escuro — então atualizar é repetível, não uma sessão manual:
+
+```bash
+bun apps/service-management/server.js                 # Service Management (JUMENTIX_SERVICE_MANAGEMENT_PORT)
+# backend-template em InMemory + `bun run dev` em apps/frontend
+FRONTEND_USERNAME=… FRONTEND_PASSWORD=… \
+  bun run --filter @jumentix/website screenshots:capture
+```
+
+Use uma conta do seed (`apps/backend-template/seed/users.ts`). O script carrega o modelo de exemplo
+do Service Management, divide em dois serviços para a visão de arquitetura e entra no frontend
+para as visões administrativa e de dashboard.
 
 Toda imagem do site mostra o próprio Jumentix. As sobras do template inicial usado no scaffold —
 o placeholder `mantine+nextjs+nextra-template.png`, os componentes sem uso `Welcome`,
