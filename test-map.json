@@ -324,6 +324,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/docs/swaggerUiBundle.test.ts",
+      "path": "apps/backend-template/test/unit/interface/docs/swaggerUiBundle.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
       "path": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
       "layer": "interface/runtime",
@@ -6077,9 +6087,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 358,
+    "unit": 362,
     "integration": 102,
     "smoke": 2,
-    "suites": 523
+    "suites": 525
   }
 }
