@@ -324,6 +324,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/docs/swaggerUiBundle.test.ts",
+      "path": "apps/backend-template/test/unit/interface/docs/swaggerUiBundle.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
       "path": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
       "layer": "interface/runtime",
@@ -1638,6 +1648,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/architectureCanvasTheme.test.ts",
+      "path": "apps/service-management/test/unit/architectureCanvasTheme.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/modelQueries.test.ts",
       "path": "apps/service-management/test/unit/modelQueries.test.ts",
       "layer": "service-management/designer",
@@ -2652,6 +2672,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/component/AppBreadcrumb.test.ts",
+      "path": "apps/frontend/test/component/AppBreadcrumb.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/component/ModuleLayout.test.ts",
       "path": "apps/frontend/test/component/ModuleLayout.test.ts",
       "layer": "frontend",
@@ -2922,6 +2954,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/ci-gate-coverage.test.ts",
+      "path": "ci-cd/test/ci-gate-coverage.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-generated-automation-pr.test.ts",
       "path": "ci-cd/test/check-generated-automation-pr.test.ts",
       "layer": "tooling",
@@ -2944,6 +2986,16 @@
     {
       "id": "ci-cd/test/check-sonar-reliability.test.ts",
       "path": "ci-cd/test/check-sonar-reliability.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/check-current-governance-docs.test.ts",
+      "path": "ci-cd/test/check-current-governance-docs.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -5471,6 +5523,18 @@
       "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
     },
     {
+      "id": "apps/jumentix-website/scripts/content-leaks.test.mjs",
+      "path": "apps/jumentix-website/scripts/content-leaks.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
       "id": "apps/jumentix-website/scripts/discover-routes.test.mjs",
       "path": "apps/jumentix-website/scripts/discover-routes.test.mjs",
       "layer": "website",
@@ -6035,9 +6099,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 357,
+    "unit": 362,
     "integration": 102,
     "smoke": 2,
-    "suites": 519
+    "suites": 526
   }
 }

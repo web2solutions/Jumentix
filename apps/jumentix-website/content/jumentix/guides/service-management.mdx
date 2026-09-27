@@ -28,10 +28,12 @@ the environment files the backend boots from.
 flowchart TB
   subgraph browser["Browser · http://127.0.0.1:3200"]
     direction LR
-    DD["Tab 1 · Domain Designer<br/>domains, entities, relationships,<br/>RBAC, contracts, exports"]
-    CID["Tab 2 · Communication Interface Designer<br/>inbound adapters"]
-    SC["Tab 3 · Service Configuration<br/>runtime profile, PM2 preview, env keys"]
-    DM["Tab 4 · Deploy Management<br/>deployment targets"]
+    ARCH["Tab · Architecture<br/>Core service, domain services, links"]
+    DD["Tab · Domain Designer<br/>domains, entities, relationships,<br/>RBAC, contracts, exports"]
+    CID["Tab · Communication Interface Designer<br/>inbound adapters"]
+    SC["Tab · Service Configuration<br/>runtime profile, PM2 preview, env keys"]
+    DM["Tab · Deploy Management<br/>deployment targets"]
+    OAS["Tab · OpenAPI<br/>Swagger UI + service selector"]
   end
 
   CANA[("Cana · IndexedDB<br/>the only designer store")]
@@ -234,6 +236,10 @@ A complete first round trip:
    `domain-designer-oas-3.1.json`.
 4. Delete the sample domain and model your own.
 
+## 5.1 Architecture and OpenAPI tabs
+
+Architecture starts as one Core service (Users + every other domain). Split with Add Service, assign domains, draw links. OpenAPI renders the generated OAS in Swagger UI; pick a service to filter operations and Try it out against that address.
+
 ## 6. Domain Designer
 
 ### 6.1 Canvas and navigation
@@ -357,7 +363,7 @@ schema refs, add external `$ref` targets and set a discriminator property, then
 
 Where these land in the exported documents — and the exact fidelity guarantees
 of each crossing — is owned by
-[Contract Parity Guarantees](/docs/jumentix/reference/service-management-contract-parity).
+Contract Parity Guarantees.
 
 ### 6.6 Validation, the export gate and schema diff
 
@@ -414,7 +420,7 @@ first. Import targets are `Import JSON`, `Import OAS 3.1` and
 `Import Package`; each failure reason maps to one explicit status message.
 
 Domain-package versioning, dependency graphs and conflict policy are owned by
-[Collaboration and Packaging](/docs/jumentix/reference/service-management-collaboration-packaging).
+Collaboration and Packaging.
 
 ## 7. Communication Interface Designer
 
@@ -452,7 +458,7 @@ re-pick them each time.
 
 `Save Profile` validates before it writes: ports outside range, ports colliding
 across the protocols the selected service kind actually binds, and run-mode ×
-provider combinations with no deploy target in the Requirement `059` matrix are
+provider combinations with no deploy target in the deploy matrix are
 refused with the reason on the status surface.
 
 ### 8.2 PM2 ecosystem preview
@@ -467,7 +473,7 @@ or a silently empty list.
 ### 8.3 Runtime environment variables
 
 The editor exposes runtime keys in two tiers. The write allowlist is a security
-decision, pinned by Requirement `126`:
+decision:
 
 | Tier | Keys |
 | --- | --- |
@@ -550,7 +556,7 @@ runtime version. PM2-managed targets also take a PM2 profile.
 
 ![Deploy Management with an EC2 target and a Cloudflare Workers target registered](/docs-assets/documentation/images/service-manager/08-deploy-management.png "Deploy Management")
 
-The form validates against the Requirement `059` deploy matrix and explains
+The form validates against the deploy matrix and explains
 every refusal:
 
 | Target type | Service types it can run | PM2 profile | Region means |
@@ -563,7 +569,7 @@ a bare runtime name is refused. Targets can be edited in place and duplicated;
 `Cancel` leaves an edit without applying it.
 
 The matrix, the metadata contract and the lifecycle rules are owned by
-[Operations Console](/docs/jumentix/reference/service-management-operations-console).
+Operations Console.
 
 ## 10. Where your work is stored
 
@@ -598,9 +604,9 @@ Export a JSON model before any risky change: that file is the only portable
 backup.
 
 Storage states, the one-way migration and the offline matrix are owned by
-[Cana Adoption, Migration and Offline Behaviour](/docs/jumentix/reference/service-management-cana-adoption).
+Cana Adoption, Migration and Offline Behaviour.
 The install, update and recovery flows are owned by
-[Design System and PWA Shell](/docs/jumentix/reference/service-management-design-system-pwa).
+Design System and PWA Shell.
 
 ## 11. From the model to a running service
 
@@ -715,11 +721,11 @@ adapters, the deploy-target lifecycle and catalog sync.
 
 - [Runtime Environment Contracts](/docs/jumentix/reference/service-management-runtime-environment)
 - [Domain Designer Features and Usage](/docs/jumentix/reference/domain-designer-features)
-- [Module Architecture and the IDesignerStore Port](/docs/jumentix/reference/service-management-module-architecture)
-- [Contract Parity Guarantees](/docs/jumentix/reference/service-management-contract-parity)
-- [Operations Console](/docs/jumentix/reference/service-management-operations-console)
-- [Cana Adoption, Migration and Offline Behaviour](/docs/jumentix/reference/service-management-cana-adoption)
-- [Design System and PWA Shell](/docs/jumentix/reference/service-management-design-system-pwa)
-- [Collaboration and Packaging](/docs/jumentix/reference/service-management-collaboration-packaging)
+- Module Architecture and the IDesignerStore Port
+- Contract Parity Guarantees
+- Operations Console
+- Cana Adoption, Migration and Offline Behaviour
+- Design System and PWA Shell
+- Collaboration and Packaging
 - [Creating SPA/PWA with Jumentix](/docs/jumentix/guides/spa-pwa)
 - [Creating a REST API with Jumentix](/docs/jumentix/guides/rest-api)

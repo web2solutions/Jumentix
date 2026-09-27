@@ -453,7 +453,7 @@ re-pick them each time.
 
 `Save Profile` validates before it writes: ports outside range, ports colliding
 across the protocols the selected service kind actually binds, and run-mode ×
-provider combinations with no deploy target in the Requirement `059` matrix are
+provider combinations with no deploy target in the deploy matrix (Requirement `059`) are
 refused with the reason on the status surface.
 
 ### 8.2 PM2 ecosystem preview
@@ -468,7 +468,7 @@ or a silently empty list.
 ### 8.3 Runtime environment variables
 
 The editor exposes runtime keys in two tiers. The write allowlist is a security
-decision, pinned by Requirement `126`:
+decision (Requirement `126`):
 
 | Tier | Keys |
 | --- | --- |
@@ -551,7 +551,7 @@ runtime version. PM2-managed targets also take a PM2 profile.
 
 ![Deploy Management with an EC2 target and a Cloudflare Workers target registered](../../images/service-manager/08-deploy-management.png "Deploy Management")
 
-The form validates against the Requirement `059` deploy matrix and explains
+The form validates against the deploy matrix (Requirement `059`) and explains
 every refusal:
 
 | Target type | Service types it can run | PM2 profile | Region means |

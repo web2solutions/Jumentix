@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { CCard, CCardBody, CCol, CRow } from '@coreui/vue';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import DashboardGrid from '@/components/dashboard/DashboardGrid.vue';
 import { genericWidgetsForModule } from '@/components/dashboard/genericWidgets';
 import { hasSuperadmin } from '@/contracts/rbac';
+import { loadRelationLabels, relationFor } from '@/contracts/relationLabels';
 import { useI18n } from '@/i18n';
 import { findModule } from '@/modules/manifest';
 import { useAuthStore } from '@/stores/auth';
@@ -34,10 +35,17 @@ const roles = computed(() => profile.record?.roles ?? []);
 const displayName = computed(() => (
   profile.record ? `${profile.record.firstName ?? ''} ${profile.record.lastName ?? ''}`.trim() : auth.username
 ));
+// The profile stores the organization's id; show its name (JUM-908), or the id
+// when the organization list is not readable for this user.
+const organizationNames = ref<Record<string, string>>({});
+watch(() => profile.record?.organization, async (id) => {
+  const relation = id ? relationFor('User', 'organization') : undefined;
+  organizationNames.value = relation ? await loadRelationLabels(relation) : {};
+}, { immediate: true });
 const organizationLabel = computed(() => {
   const id = profile.record?.organization;
   if (!id) return hasSuperadmin(roles.value) ? '*' : '—';
-  return String(id);
+  return organizationNames.value[String(id)] ?? String(id);
 });
 </script>
 
@@ -61,7 +69,7 @@ const organizationLabel = computed(() => {
         <CCard class="border-0 shadow-sm h-100">
           <CCardBody class="pb-2">
             <div class="small text-body-secondary text-uppercase">{{ t('dashboard.myOrganization') }}</div>
-            <div class="mt-1 font-monospace small" :title="organizationLabel">{{ organizationLabel }}</div>
+            <div class="mt-1 small" :title="organizationLabel">{{ organizationLabel }}</div>
           </CCardBody>
         </CCard>
       </CCol>

@@ -17,6 +17,8 @@ export interface MetricsCapabilities {
 export interface MetricsBucket {
   key: string;
   count: number;
+  /** Display label when `key` is a foreign key (`x-relation`); absent otherwise. */
+  label?: string;
 }
 
 export interface MetricsResult {

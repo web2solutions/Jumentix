@@ -387,6 +387,9 @@ jobs:
             source "$BASH_ENV"
             if bun ci-cd/needs-frontend-patch-coverage.js; then
               bun run frontend:test:coverage
+              # JUM-903: the frontend threshold check lived only in ci:gate,
+              # which no CI job runs.
+              bun run frontend:coverage:check
             else
               echo "No frontend coverage subjects in patch; skipping frontend:test:coverage."
             fi

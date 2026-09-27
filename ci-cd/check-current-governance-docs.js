@@ -36,8 +36,27 @@ function trackedMarkdownFiles(rootDir = ROOT) {
     .filter((filePath) => !EXCLUDED_FILES.has(filePath));
 }
 
-function validateCurrentGovernanceDocs(rootDir = ROOT) {
+/**
+ * Requirement 076: contributor documentation ships in English and Portuguese.
+ * Six evidence records under documentation/md existed in English only until
+ * JUM-895 found them; nothing checked the pair.
+ */
+function missingLanguageTwins(files) {
+  const present = new Set(files);
   const failures = [];
+  for (const file of files) {
+    if (!file.startsWith('documentation/md/') || !file.endsWith('.md')) continue;
+    const isPortuguese = file.endsWith('.pt-BR.md');
+    const twin = isPortuguese ? file.replace(/\.pt-BR\.md$/, '.md') : file.replace(/\.md$/, '.pt-BR.md');
+    if (!present.has(twin)) {
+      failures.push(`${file}: missing ${isPortuguese ? 'English' : 'Portuguese'} counterpart ${twin} (Requirement 076)`);
+    }
+  }
+  return failures;
+}
+
+function validateCurrentGovernanceDocs(rootDir = ROOT) {
+  const failures = [...missingLanguageTwins(trackedMarkdownFiles(rootDir))];
 
   for (const relativePath of trackedMarkdownFiles(rootDir)) {
     const contents = fs.readFileSync(path.join(rootDir, relativePath), 'utf8');
@@ -82,4 +101,4 @@ function main(rootDir = ROOT) {
 
 if (isEntryPoint(module)) main();
 
-module.exports = { RETIRED_PATHS, RETIRED_REPOSITORY_SLUG, trackedMarkdownFiles, validateCurrentGovernanceDocs };
+module.exports = { RETIRED_PATHS, missingLanguageTwins, RETIRED_REPOSITORY_SLUG, trackedMarkdownFiles, validateCurrentGovernanceDocs };

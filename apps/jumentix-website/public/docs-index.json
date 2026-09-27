@@ -555,6 +555,7 @@
       "Glossary",
       "Numbered steps",
       "Step 1 — Model business domains first (< 20 minutes)",
+      "Step 1b — Scaffold hybrid/frontend with the factory CLI (< 5 minutes)",
       "Step 2 — Define communication contracts (< 10 minutes)",
       "Step 3 — Configure service runtime (< 10 minutes)",
       "Step 4 — Build offline-capable PWA storage (< 30 minutes)",
@@ -642,6 +643,7 @@
       "4.4 Environment variables",
       "4.5 Process control",
       "5. First run",
+      "5.1 Architecture and OpenAPI tabs",
       "6. Domain Designer",
       "6.1 Canvas and navigation",
       "6.2 Domains and bounded context",
@@ -653,8 +655,7 @@
       "7. Communication Interface Designer",
       "8. Service Configuration",
       "8.1 Runtime profile",
-      "8.2 PM2 ecosystem preview",
-      "8.3 Runtime environment variables"
+      "8.2 PM2 ecosystem preview"
     ]
   },
   {
@@ -834,7 +835,7 @@
       "What it is",
       "Usage",
       "Versioning policy",
-      "Publish policy: dry-run only",
+      "Publish policy",
       "Development",
       "License",
       "Try it in the browser",
@@ -942,6 +943,28 @@
       "Common errors",
       "Junior checklist (“I can …”)",
       "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/dead-letter-queue",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/dead-letter-queue",
+    "description": "Packages documentation.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/dead-letter-queue",
+      "1. The problem",
+      "2. The pieces",
+      "3. The record lifecycle",
+      "4. Replay goes through the service",
+      "5. API",
+      "`DeadLetterQueue`",
+      "`DeadLetterReplayWorker`",
+      "Stores",
+      "6. Wiring",
+      "7. Try it",
+      "8. Operating it",
+      "9. Validation"
     ]
   },
   {
@@ -1441,10 +1464,9 @@
       "Numbered steps",
       "Step 1 — Install the toolchain (< 5 minutes)",
       "Step 2 — Pick your starting path (< 2 minutes)",
-      "Step 3 — Open the reference backend (< 10 minutes)",
-      "follow scripts in that app's package.json / README for local run",
+      "Step 3 — First success: factory `init` (< 10 minutes)",
       "Step 4 — Learn the mental model (< 5 minutes)",
-      "Step 5 — First success: touch Cana in the browser (< 10 minutes)",
+      "Step 5 — Touch Cana in the browser (< 10 minutes)",
       "Step 6 — Core workflows (this week)",
       "Step 7 — Full surface (when you need lookup, not tutorials)",
       "Examples",
@@ -1533,6 +1555,8 @@
       "1) Canvas and Navigation",
       "2) Relationship Design",
       "3) Domain Context Metadata",
+      "3.1) Architecture designer",
+      "3.2) Per-service OAS export and Swagger",
       "4) Entity Editing and Templates",
       "5) RBAC Policy Mapping",
       "6) Message Contract Designer",
@@ -1540,31 +1564,9 @@
       "8) Validation, Quality Gate, and Diff",
       "9) Example and Code Generation",
       "10) Export and Import Targets",
-      "10.1) OAS 3.1 export contract (Requirement 036, JUM-474)",
-      "10.2) Lossless OAS round-trip (JUM-478)",
+      "10.1) OAS 3.1 export contract",
+      "10.2) Lossless OAS round-trip",
       "11) Smoke Coverage"
-    ]
-  },
-  {
-    "title": "Service Management Contract Parity",
-    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-contract-parity",
-    "description": "What each export guarantees: OAS 3.1, AsyncAPI, proto, codegen bundle and round-trip fidelity.",
-    "section": "reference",
-    "locale": "en",
-    "headings": [
-      "Service Management Contract Parity Guarantees",
-      "Guarantee 1 — the OAS 3.1 export is boilerplate-consumable (JUM-474)",
-      "Guarantee 2 — AsyncAPI 3.0 per transport and a canonical proto (JUM-475)",
-      "Guarantee 3 — the codegen bundle is deliverable code (JUM-476)",
-      "Guarantee 4 — round-trip fidelity, with the honest boundaries (JUM-471, JUM-478)",
-      "Symmetric crossings (lossless, deep-equal asserted)",
-      "The OAS crossing: fixed point, empty loss list",
-      "The boundaries that remain (named, asserted, not swept away)",
-      "One-way exporters",
-      "Where the gates enforce all of this",
-      "RBAC alignment and the divergence it reconciled (JUM-477)",
-      "Full-suite export and the `runtimeEnvironment` decision (JUM-547, landed)",
-      "References"
     ]
   },
   {
@@ -1576,27 +1578,6 @@
     "headings": [
       "Reference",
       "Start here"
-    ]
-  },
-  {
-    "title": "Service Management Operations Console",
-    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-operations-console",
-    "description": "The capabilities matrix, PM2 ecosystem preview and the deploy-target metadata contract.",
-    "section": "reference",
-    "locale": "en",
-    "headings": [
-      "Service Management Operations Console",
-      "The shared capabilities matrix (JUM-544, JUM-481)",
-      "Service Configuration: validate before state (JUM-544)",
-      "Multi-environment editing (JUM-480) — by cross-reference",
-      "The PM2 ecosystem preview (JUM-480) — by source, not by command string",
-      "The PM2 monitoring dashboard — WebSocket live stream (Contract 1e) + HTTP one-shot (1c)",
-      "Deploy Management: the Requirement 059 metadata contract (JUM-481)",
-      "Deploy target lifecycle: edit, duplicate and field validation (JUM-546)",
-      "Lifecycle rules — what exists today, and what is open",
-      "The status-surface contract every console surface follows (JUM-543)",
-      "What this document deliberately does not cover",
-      "References"
     ]
   },
   {
@@ -1615,34 +1596,6 @@
     ]
   },
   {
-    "title": "Service Management Cana Adoption",
-    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-cana-adoption",
-    "description": "The single-store decision, the one-way migration and the offline state matrix.",
-    "section": "reference",
-    "locale": "en",
-    "headings": [
-      "Service Management Cana Adoption, Migration and Offline Behaviour",
-      "The one fact everything else follows from: no fallback",
-      "Migration: one-way, verified, terminal (JUM-484)",
-      "Offline behaviour: everything works, and \"offline\" is not \"safe\"",
-      "The state matrix: what you see, what you can do",
-      "Private/incognito or blocked storage — non-persisting session",
-      "A browser without usable IndexedDB — unsupported environment",
-      "Persistence not granted — degraded durability",
-      "Quota near exhaustion — warning before failure",
-      "Quota exhausted — the write did not happen",
-      "Evicted database — data loss, declared",
-      "Corrupted record — lost, not empty, announced, and the designer recovers",
-      "Unknown write outcome — worker crash after dispatch",
-      "Multi-tab behaviour (JUM-485)",
-      "Export and backup",
-      "Troubleshooting",
-      "Known follow-ups",
-      "What this document deliberately does not cover",
-      "References"
-    ]
-  },
-  {
     "title": "Frontend offline data layer",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/frontend-offline-data-layer",
     "description": "Cana boot, local repository, outbox, delta sync and PWA shell for apps/frontend.",
@@ -1650,13 +1603,13 @@
     "locale": "en",
     "headings": [
       "Frontend offline data layer",
-      "Boot (JUM-802)",
-      "Local repository (JUM-803)",
-      "X-CRUD local mode (JUM-804)",
-      "Sync (JUM-805)",
-      "Outbox (JUM-806 / JUM-807)",
-      "PWA (JUM-808)",
-      "Tests (JUM-809)"
+      "Boot",
+      "Local repository",
+      "X-CRUD local mode",
+      "Sync",
+      "Outbox",
+      "PWA",
+      "Tests"
     ]
   },
   {
@@ -1679,34 +1632,6 @@
     ]
   },
   {
-    "title": "Service Management Module Architecture",
-    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-module-architecture",
-    "description": "Module boundaries and the IDesignerStore port contract behind the designer.",
-    "section": "reference",
-    "locale": "en",
-    "headings": [
-      "Service Management Module Architecture and IDesignerStore Port Contract",
-      "Audience",
-      "Module architecture (post-PR #86)",
-      "The layering convention",
-      "Current modules",
-      "The injection pattern",
-      "The state core (`src/state/designerState.js`)",
-      "The `service-management.v1` storage schema",
-      "The `IDesignerStore` port contract",
-      "Why the port is shaped around Cana, not localStorage",
-      "The no-fallback rule and its consequence",
-      "Operations",
-      "The base class fails loudly",
-      "The retired reference implementation — and what its wire format became",
-      "Implementing a new adapter: `CanaDesignerStore` (JUM-483)",
-      "The implemented adapter: `CanaDesignerStore` (JUM-483)",
-      "The one-way migration: `canaMigration.js` (JUM-484)",
-      "Multi-tab write-event sync: `designerSync.js` (JUM-485)",
-      "References"
-    ]
-  },
-  {
     "title": "Security and PCI Hardening",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance",
     "description": "Security controls and compliance evidence.",
@@ -1717,56 +1642,6 @@
       "Security Baseline",
       "Compliance-Oriented Delivery",
       "Recommended Consumer Practice"
-    ]
-  },
-  {
-    "title": "Service Management Design System and PWA",
-    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-design-system-pwa",
-    "description": "Design tokens, the accessibility model, and installing, updating and recovering the app shell.",
-    "section": "reference",
-    "locale": "en",
-    "headings": [
-      "Service Management Design System and PWA Shell",
-      "Design system adoption at the token layer (JUM-488)",
-      "Which tokens the designer uses",
-      "How tokens stay in sync — the vendored-copy rule",
-      "How to add a component without reintroducing ad-hoc styles",
-      "Where the Storybook inventory lives",
-      "Accessibility: the keyboard and screen-reader model",
-      "The tab bar is a real tablist",
-      "Reaching the canvas: the skip link",
-      "The canvas's non-visual equivalent",
-      "What a screen reader announces",
-      "Installing the designer as an app (JUM-489)",
-      "Updates and recovery — written for the user",
-      "The storage boundary: what installing does not do",
-      "What this document deliberately does not cover",
-      "References"
-    ]
-  },
-  {
-    "title": "Service Management Collaboration and Packaging",
-    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-collaboration-packaging",
-    "description": "The shared catalog, domain-package versioning and the designer-core packaging boundary.",
-    "section": "reference",
-    "locale": "en",
-    "headings": [
-      "Service Management Collaboration and Packaging",
-      "Collaboration: the shared catalog (JUM-491)",
-      "What shipped",
-      "What JUM-491 deliberately descoped (12-01 carry-over candidates)",
-      "What this changes for the user — and what it does not",
-      "Domain-package versioning (JUM-492)",
-      "The versioned package document",
-      "Version semantics, redefined for a data model",
-      "Provenance and the installed-package registry",
-      "The dependency graph",
-      "Semantic conflict resolution",
-      "Packaging: the `@jumentix` designer core (JUM-493)",
-      "The full-suite export (JUM-547), the portable bundle",
-      "Chain closure: the E1–E8 gate evidence (Req 094)",
-      "What this document deliberately does not cover",
-      "References"
     ]
   },
   {
@@ -1801,7 +1676,7 @@
       "Startup Entrypoints",
       "PM2 Process Model",
       "Service Management Runtime Env API",
-      "PM2 ecosystem preview API (JUM-480)",
+      "PM2 ecosystem preview API",
       "Env file location",
       "Key tiers and allowlists",
       "Enum validation",
@@ -1821,8 +1696,7 @@
     "section": "reference",
     "locale": "en",
     "headings": [
-      "Package.json Scripts Reference (Consumer)",
-      "Next step"
+      "Package.json Scripts Reference (Consumer)"
     ]
   },
   {
@@ -2378,6 +2252,7 @@
       "Glossário",
       "O que é",
       "1. Modele primeiro os domínios de negócios",
+      "1b. Gere hybrid/frontend com a CLI de fábrica",
       "2. Definir contratos de comunicação",
       "3. Configurar o tempo de execução do serviço",
       "4. Crie um PWA com capacidade offline",
@@ -2465,6 +2340,7 @@
       "4.4 Variáveis de ambiente",
       "4.5 Controle de processos",
       "5. Primeiro boot",
+      "5.1 Abas Architecture e OpenAPI",
       "6. Domain Designer",
       "6.1 Canvas e navegação",
       "6.2 Domínios e contexto delimitado",
@@ -2476,8 +2352,7 @@
       "7. Communication Interface Designer",
       "8. Service Configuration",
       "8.1 Perfil de runtime",
-      "8.2 Preview do ecossistema PM2",
-      "8.3 Variáveis de ambiente de runtime"
+      "8.2 Preview do ecossistema PM2"
     ]
   },
   {
@@ -2657,7 +2532,7 @@
       "O que é",
       "Uso",
       "Política de versionamento",
-      "Política de publicação: apenas dry-run",
+      "Política de publicação",
       "Desenvolvimento",
       "Licença",
       "Experimente no navegador",
@@ -2765,6 +2640,28 @@
       "Erros comuns",
       "Checklist júnior (“Eu consigo …”)",
       "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/dead-letter-queue",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/dead-letter-queue",
+    "description": "Documentação de Pacotes.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/dead-letter-queue",
+      "1. O problema",
+      "2. As peças",
+      "3. O ciclo de vida do registo",
+      "4. O replay passa pelo serviço",
+      "5. API",
+      "`DeadLetterQueue`",
+      "`DeadLetterReplayWorker`",
+      "Stores",
+      "6. Ligação",
+      "7. Experimentar",
+      "8. Operação",
+      "9. Validação"
     ]
   },
   {
@@ -3264,10 +3161,9 @@
       "Passos numerados",
       "Passo 1 — Instalar a toolchain (< 5 minutos)",
       "Passo 2 — Escolher o caminho inicial (< 2 minutos)",
-      "Passo 3 — Abrir o backend de referência (< 10 minutos)",
-      "siga os scripts do package.json / README desse app para subir localmente",
+      "Passo 3 — Primeiro sucesso: `init` da fábrica (< 10 minutos)",
       "Passo 4 — Aprender o modelo mental (< 5 minutos)",
-      "Passo 5 — Primeiro sucesso: tocar o Cana no browser (< 10 minutos)",
+      "Passo 5 — Tocar o Cana no browser (< 10 minutos)",
       "Passo 6 — Fluxos centrais (esta semana)",
       "Passo 7 — Superfície completa (lookup, não tutoriais)",
       "Exemplos",
@@ -3356,6 +3252,8 @@
       "1) Tela e navegação",
       "2) Design de Relacionamento",
       "3) Metadados de contexto de domínio",
+      "3.1) Designer de arquitetura",
+      "3.2) Export OAS por serviço e Swagger",
       "4) Edição de entidades e modelos",
       "5) Mapeamento de políticas RBAC",
       "6) Designer de contrato de mensagem",
@@ -3363,31 +3261,9 @@
       "8) Validação, Portão de Qualidade e Diferença",
       "9) Exemplo e geração de código",
       "10) Destinos de exportação e importação",
-      "10.1) Contrato de exportação OAS 3.1 (Requisito 036, JUM-474)",
-      "10.2) Ida e volta OAS sem perdas (JUM-478)",
+      "10.1) Contrato de exportação OAS 3.1",
+      "10.2) Ida e volta OAS sem perdas",
       "11) Cobertura de fumaça"
-    ]
-  },
-  {
-    "title": "Paridade de Contrato do Service Management",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/service-management-contract-parity",
-    "description": "O que cada exportação garante: OAS 3.1, AsyncAPI, proto, bundle de codegen e fidelidade de ida e volta.",
-    "section": "reference",
-    "locale": "pt-BR",
-    "headings": [
-      "Garantias de paridade de contratos do Service Management",
-      "Garantia 1 — a exportação OAS 3.1 é consumível pelo boilerplate (JUM-474)",
-      "Garantia 2 — AsyncAPI 3.0 por transporte e um proto canônico (JUM-475)",
-      "Garantia 3 — o bundle de codegen é código entregável (JUM-476)",
-      "Garantia 4 — fidelidade de ida e volta, com as fronteiras honestas (JUM-471, JUM-478)",
-      "Travessias simétricas (sem perdas, deep-equal assertado)",
-      "A travessia OAS: ponto fixo, lista de perdas vazia",
-      "As fronteiras que permanecem (nomeadas, assertadas, não varridas para debaixo do tapete)",
-      "Exportadores de mão única",
-      "Onde os portões aplicam tudo isso",
-      "Alinhamento RBAC e a divergência que ele reconciliou (JUM-477)",
-      "Exportação de suíte completa e a decisão sobre `runtimeEnvironment` (JUM-547, entregue)",
-      "Referências"
     ]
   },
   {
@@ -3399,27 +3275,6 @@
     "headings": [
       "Referência",
       "Comece aqui"
-    ]
-  },
-  {
-    "title": "Console de Operações do Service Management",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/service-management-operations-console",
-    "description": "A matriz de capacidades, o preview do ecossistema PM2 e o contrato de metadados dos alvos de deploy.",
-    "section": "reference",
-    "locale": "pt-BR",
-    "headings": [
-      "Console de operações do Service Management",
-      "A matriz de capacidades compartilhada (JUM-544, JUM-481)",
-      "Service Configuration: validar antes do estado (JUM-544)",
-      "Edição multi-ambiente (JUM-480) — por referência cruzada",
-      "A prévia do ecossistema PM2 (JUM-480) — pela fonte, não pela string de comando",
-      "O dashboard de monitoramento PM2 — stream WebSocket (Contrato 1e) + HTTP one-shot (1c)",
-      "Deploy Management: o contrato de metadados do Requisito 059 (JUM-481)",
-      "Ciclo de vida dos deploy targets: edição, duplicação e validação de campos (JUM-546)",
-      "Regras de ciclo de vida — o que existe hoje e o que está aberto",
-      "O contrato de superfície de status que toda superfície do console segue (JUM-543)",
-      "O que este documento deliberadamente não cobre",
-      "Referências"
     ]
   },
   {
@@ -3437,34 +3292,6 @@
     ]
   },
   {
-    "title": "Adoção do Cana no Service Management",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/service-management-cana-adoption",
-    "description": "A decisão de store único, a migração unidirecional e a matriz de estados offline.",
-    "section": "reference",
-    "locale": "pt-BR",
-    "headings": [
-      "Adoção do Cana no Service Management, migração e comportamento offline",
-      "O único fato do qual todo o resto decorre: sem fallback",
-      "Migração: unidirecional, verificada, terminal (JUM-484)",
-      "Comportamento offline: tudo funciona, e \"offline\" não é \"seguro\"",
-      "A matriz de estados: o que você vê, o que você pode fazer",
-      "Armazenamento privado/anônimo ou bloqueado — sessão sem persistência",
-      "Um navegador sem IndexedDB utilizável — ambiente não suportado",
-      "Persistência não concedida — durabilidade degradada",
-      "Quota perto do esgotamento — aviso antes da falha",
-      "Quota esgotada — a escrita não aconteceu",
-      "Banco evictado — perda de dados, declarada",
-      "Registro corrompido — perdido, não vazio, anunciado, e o designer se recupera",
-      "Resultado de escrita desconhecido — falha do worker após o despacho",
-      "Comportamento multi-abas (JUM-485)",
-      "Exportação e backup",
-      "Solução de problemas",
-      "Pendências conhecidas",
-      "O que este documento deliberadamente não cobre",
-      "Referências"
-    ]
-  },
-  {
     "title": "Camada de dados offline do frontend",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/frontend-offline-data-layer",
     "description": "Boot Cana, repositório local, outbox, delta sync e shell PWA do apps/frontend.",
@@ -3472,13 +3299,13 @@
     "locale": "pt-BR",
     "headings": [
       "Camada de dados offline do frontend",
-      "Boot (JUM-802)",
-      "Repositório local (JUM-803)",
-      "Modo local do X-CRUD (JUM-804)",
-      "Sync (JUM-805)",
-      "Outbox (JUM-806 / JUM-807)",
-      "PWA (JUM-808)",
-      "Testes (JUM-809)"
+      "Boot",
+      "Repositório local",
+      "Modo local do X-CRUD",
+      "Sync",
+      "Outbox",
+      "PWA",
+      "Testes"
     ]
   },
   {
@@ -3501,34 +3328,6 @@
     ]
   },
   {
-    "title": "Arquitetura de Módulos do Service Management",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/service-management-module-architecture",
-    "description": "Fronteiras de módulo e o contrato da porta IDesignerStore por trás do designer.",
-    "section": "reference",
-    "locale": "pt-BR",
-    "headings": [
-      "Arquitetura de módulos do Service Management e contrato da porta IDesignerStore",
-      "Público",
-      "Arquitetura de módulos (pós-PR #86)",
-      "A convenção de camadas",
-      "Módulos atuais",
-      "O padrão de injeção",
-      "O núcleo de estado (`src/state/designerState.js`)",
-      "O esquema de armazenamento `service-management.v1`",
-      "O contrato da porta `IDesignerStore`",
-      "Por que a porta é moldada pelo Cana, não pelo localStorage",
-      "A regra de não-fallback e sua consequência",
-      "Operações",
-      "A classe base falha ruidosamente",
-      "A implementação de referência aposentada — e no que seu formato de transmissão se tornou",
-      "Implementando um novo adaptador: `CanaDesignerStore` (JUM-483)",
-      "O adaptador implementado: `CanaDesignerStore` (JUM-483)",
-      "A migração unidirecional: `canaMigration.js` (JUM-484)",
-      "Sincronização multi-abas por eventos de escrita: `designerSync.js` (JUM-485)",
-      "Referências"
-    ]
-  },
-  {
     "title": "Segurança e hardening PCI",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/security-compliance",
     "description": "Controles de segurança e evidências de compliance.",
@@ -3539,56 +3338,6 @@
       "Baseline de segurança",
       "Entrega orientada a compliance",
       "Prática recomendada para consumidores"
-    ]
-  },
-  {
-    "title": "Design System e PWA do Service Management",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/service-management-design-system-pwa",
-    "description": "Tokens de design, o modelo de acessibilidade e como instalar, atualizar e recuperar o app shell.",
-    "section": "reference",
-    "locale": "pt-BR",
-    "headings": [
-      "Design system e shell PWA do Service Management",
-      "Adoção do design system na camada de tokens (JUM-488)",
-      "Quais tokens o designer usa",
-      "Como os tokens se mantêm sincronizados — a regra da cópia vendorizada",
-      "Como adicionar um componente sem reintroduzir estilos ad hoc",
-      "Onde o inventário do Storybook vive",
-      "Acessibilidade: o modelo de teclado e leitor de tela",
-      "A barra de abas é uma tablist de verdade",
-      "Alcançando o canvas: o skip link",
-      "O equivalente não visual do canvas",
-      "O que um leitor de tela anuncia",
-      "Instalando o designer como aplicativo (JUM-489)",
-      "Atualizações e recuperação — escrito para o usuário",
-      "A fronteira de armazenamento: o que instalar não faz",
-      "O que este documento deliberadamente não cobre",
-      "Referências"
-    ]
-  },
-  {
-    "title": "Colaboração e Empacotamento do Service Management",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/service-management-collaboration-packaging",
-    "description": "O catálogo compartilhado, o versionamento de pacotes de domínio e a fronteira de empacotamento do designer-core.",
-    "section": "reference",
-    "locale": "pt-BR",
-    "headings": [
-      "Colaboração e empacotamento do Service Management",
-      "Colaboração: o catálogo compartilhado (JUM-491)",
-      "O que foi entregue",
-      "O que o JUM-491 deliberadamente desescopou (candidatos ao carry-over de 12-01)",
-      "O que isto muda para o usuário — e o que não muda",
-      "Versionamento de pacotes de domínio (JUM-492)",
-      "O documento de pacote versionado",
-      "Semântica de versão, redefinida para um modelo de dados",
-      "Proveniência e o registro de pacotes instalados",
-      "O grafo de dependências",
-      "Resolução semântica de conflitos",
-      "Empacotamento: o núcleo do designer `@jumentix` (JUM-493)",
-      "A exportação full-suite (JUM-547), o pacote portátil",
-      "Fechamento da cadeia: a evidência do portão E1–E8 (Req 094)",
-      "O que este documento deliberadamente não cobre",
-      "Referências"
     ]
   },
   {
@@ -3623,7 +3372,7 @@
       "Pontos de entrada de inicialização",
       "Modelo de Processo PM2",
       "API de ambiente de execução de gerenciamento de serviços",
-      "API de visualização do ecossistema PM2 (JUM-480)",
+      "API de visualização do ecossistema PM2",
       "Localização dos arquivos env",
       "Níveis de chaves e listas de permissão",
       "Validação de enum",
