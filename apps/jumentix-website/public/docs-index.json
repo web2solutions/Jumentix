@@ -555,6 +555,7 @@
       "Glossary",
       "Numbered steps",
       "Step 1 — Model business domains first (< 20 minutes)",
+      "Step 1b — Scaffold hybrid/frontend with the factory CLI (< 5 minutes)",
       "Step 2 — Define communication contracts (< 10 minutes)",
       "Step 3 — Configure service runtime (< 10 minutes)",
       "Step 4 — Build offline-capable PWA storage (< 30 minutes)",
@@ -642,6 +643,7 @@
       "4.4 Environment variables",
       "4.5 Process control",
       "5. First run",
+      "5.1 Architecture and OpenAPI tabs",
       "6. Domain Designer",
       "6.1 Canvas and navigation",
       "6.2 Domains and bounded context",
@@ -653,8 +655,7 @@
       "7. Communication Interface Designer",
       "8. Service Configuration",
       "8.1 Runtime profile",
-      "8.2 PM2 ecosystem preview",
-      "8.3 Runtime environment variables"
+      "8.2 PM2 ecosystem preview"
     ]
   },
   {
@@ -834,7 +835,7 @@
       "What it is",
       "Usage",
       "Versioning policy",
-      "Publish policy: dry-run only",
+      "Publish policy",
       "Development",
       "License",
       "Try it in the browser",
@@ -942,6 +943,28 @@
       "Common errors",
       "Junior checklist (“I can …”)",
       "Next step"
+    ]
+  },
+  {
+    "title": "@jumentix/dead-letter-queue",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/dead-letter-queue",
+    "description": "Packages documentation.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "@jumentix/dead-letter-queue",
+      "1. The problem",
+      "2. The pieces",
+      "3. The record lifecycle",
+      "4. Replay goes through the service",
+      "5. API",
+      "`DeadLetterQueue`",
+      "`DeadLetterReplayWorker`",
+      "Stores",
+      "6. Wiring",
+      "7. Try it",
+      "8. Operating it",
+      "9. Validation"
     ]
   },
   {
@@ -1441,10 +1464,9 @@
       "Numbered steps",
       "Step 1 — Install the toolchain (< 5 minutes)",
       "Step 2 — Pick your starting path (< 2 minutes)",
-      "Step 3 — Open the reference backend (< 10 minutes)",
-      "follow scripts in that app's package.json / README for local run",
+      "Step 3 — First success: factory `init` (< 10 minutes)",
       "Step 4 — Learn the mental model (< 5 minutes)",
-      "Step 5 — First success: touch Cana in the browser (< 10 minutes)",
+      "Step 5 — Touch Cana in the browser (< 10 minutes)",
       "Step 6 — Core workflows (this week)",
       "Step 7 — Full surface (when you need lookup, not tutorials)",
       "Examples",
@@ -1523,6 +1545,25 @@
     ]
   },
   {
+    "title": "CLI Reference",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/cli",
+    "description": "Create, extend, upgrade and check a Jumentix project with the jumentix CLI.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Jumentix CLI reference",
+      "Run it",
+      "`init` — create a project",
+      "Users preset, one service, Express and SQLite, no prompts",
+      "Your own OpenAPI contract, backend plus frontend with offline support",
+      "What is generated",
+      "`add` — extend a project",
+      "`upgrade` — take newer templates",
+      "`doctor` — check the environment and the project",
+      "Related"
+    ]
+  },
+  {
     "title": "Domain Designer Features and Usage",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/domain-designer-features",
     "description": "Every Domain Designer capability and how to use it in practice.",
@@ -1533,6 +1574,8 @@
       "1) Canvas and Navigation",
       "2) Relationship Design",
       "3) Domain Context Metadata",
+      "3.1) Architecture designer (JUM-815, JUM-816)",
+      "3.2) Per-service OAS export and Swagger (JUM-817, JUM-818)",
       "4) Entity Editing and Templates",
       "5) RBAC Policy Mapping",
       "6) Message Contract Designer",
@@ -1812,17 +1855,6 @@
       "Error contract",
       "Guardrails",
       "Operational Examples"
-    ]
-  },
-  {
-    "title": "Package Scripts Reference",
-    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts",
-    "description": "Every supported monorepo command and its usage.",
-    "section": "reference",
-    "locale": "en",
-    "headings": [
-      "Package.json Scripts Reference (Consumer)",
-      "Next step"
     ]
   },
   {
@@ -2378,6 +2410,7 @@
       "Glossário",
       "O que é",
       "1. Modele primeiro os domínios de negócios",
+      "1b. Gere hybrid/frontend com a CLI de fábrica",
       "2. Definir contratos de comunicação",
       "3. Configurar o tempo de execução do serviço",
       "4. Crie um PWA com capacidade offline",
@@ -2465,6 +2498,7 @@
       "4.4 Variáveis de ambiente",
       "4.5 Controle de processos",
       "5. Primeiro boot",
+      "5.1 Abas Architecture e OpenAPI",
       "6. Domain Designer",
       "6.1 Canvas e navegação",
       "6.2 Domínios e contexto delimitado",
@@ -2476,8 +2510,7 @@
       "7. Communication Interface Designer",
       "8. Service Configuration",
       "8.1 Perfil de runtime",
-      "8.2 Preview do ecossistema PM2",
-      "8.3 Variáveis de ambiente de runtime"
+      "8.2 Preview do ecossistema PM2"
     ]
   },
   {
@@ -2657,7 +2690,7 @@
       "O que é",
       "Uso",
       "Política de versionamento",
-      "Política de publicação: apenas dry-run",
+      "Política de publicação",
       "Desenvolvimento",
       "Licença",
       "Experimente no navegador",
@@ -2765,6 +2798,28 @@
       "Erros comuns",
       "Checklist júnior (“Eu consigo …”)",
       "Próximo passo"
+    ]
+  },
+  {
+    "title": "@jumentix/dead-letter-queue",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/dead-letter-queue",
+    "description": "Documentação de Pacotes.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "@jumentix/dead-letter-queue",
+      "1. O problema",
+      "2. As peças",
+      "3. O ciclo de vida do registo",
+      "4. O replay passa pelo serviço",
+      "5. API",
+      "`DeadLetterQueue`",
+      "`DeadLetterReplayWorker`",
+      "Stores",
+      "6. Ligação",
+      "7. Experimentar",
+      "8. Operação",
+      "9. Validação"
     ]
   },
   {
@@ -3264,10 +3319,9 @@
       "Passos numerados",
       "Passo 1 — Instalar a toolchain (< 5 minutos)",
       "Passo 2 — Escolher o caminho inicial (< 2 minutos)",
-      "Passo 3 — Abrir o backend de referência (< 10 minutos)",
-      "siga os scripts do package.json / README desse app para subir localmente",
+      "Passo 3 — Primeiro sucesso: `init` da fábrica (< 10 minutos)",
       "Passo 4 — Aprender o modelo mental (< 5 minutos)",
-      "Passo 5 — Primeiro sucesso: tocar o Cana no browser (< 10 minutos)",
+      "Passo 5 — Tocar o Cana no browser (< 10 minutos)",
       "Passo 6 — Fluxos centrais (esta semana)",
       "Passo 7 — Superfície completa (lookup, não tutoriais)",
       "Exemplos",
@@ -3346,6 +3400,25 @@
     ]
   },
   {
+    "title": "Referência do CLI",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/cli",
+    "description": "Crie, amplie, atualize e verifique um projeto Jumentix com o CLI jumentix.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Referência do CLI Jumentix",
+      "Como executar",
+      "`init` — criar um projeto",
+      "Preset Users, um serviço, Express e SQLite, sem perguntas",
+      "Seu próprio contrato OpenAPI, backend mais frontend com suporte offline",
+      "O que é gerado",
+      "`add` — ampliar um projeto",
+      "`upgrade` — receber templates mais novos",
+      "`doctor` — verificar o ambiente e o projeto",
+      "Relacionados"
+    ]
+  },
+  {
     "title": "Recursos e Uso do Domain Designer",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/domain-designer-features",
     "description": "Todos os recursos do Domain Designer e como usá-los na prática.",
@@ -3356,6 +3429,8 @@
       "1) Tela e navegação",
       "2) Design de Relacionamento",
       "3) Metadados de contexto de domínio",
+      "3.1) Designer de arquitetura (JUM-815, JUM-816)",
+      "3.2) Export OAS por serviço e Swagger (JUM-817, JUM-818)",
       "4) Edição de entidades e modelos",
       "5) Mapeamento de políticas RBAC",
       "6) Designer de contrato de mensagem",
@@ -3634,16 +3709,6 @@
       "Contrato de erro",
       "Guarda-corpos",
       "Exemplos Operacionais"
-    ]
-  },
-  {
-    "title": "Referência de scripts dos pacotes",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/package-scripts",
-    "description": "Todos os comandos suportados pelo monorepo e como utilizá-los.",
-    "section": "reference",
-    "locale": "pt-BR",
-    "headings": [
-      "Referência de Scripts do Package.json (Consumidor)"
     ]
   }
 ]

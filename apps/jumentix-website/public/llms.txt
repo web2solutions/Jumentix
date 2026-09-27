@@ -31,6 +31,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - @jumentix/sdk-rest-client: https://jumentix-website.vercel.app/docs/jumentix/packages/sdk-rest-client
 - @jumentix/runtime-infra: https://jumentix-website.vercel.app/docs/jumentix/packages/runtime-infra
 - @jumentix/database-client-factory: https://jumentix-website.vercel.app/docs/jumentix/packages/database-client-factory
+- @jumentix/dead-letter-queue: https://jumentix-website.vercel.app/docs/jumentix/packages/dead-letter-queue
 - @jumentix/mutex-service: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service
 - mutex-service usage: https://jumentix-website.vercel.app/docs/jumentix/packages/mutex-service/usage
 - @jumentix/cana-react: https://jumentix-website.vercel.app/docs/jumentix/packages/cana-react
@@ -90,6 +91,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Total.js Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/total-js
 
 ## Reference
+- CLI Reference: https://jumentix-website.vercel.app/docs/jumentix/reference/cli
 - Domain Designer Features and Usage: https://jumentix-website.vercel.app/docs/jumentix/reference/domain-designer-features
 - Service Management Contract Parity: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-contract-parity
 - Reference: https://jumentix-website.vercel.app/docs/jumentix/reference
@@ -104,7 +106,6 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Service Management Collaboration and Packaging: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-collaboration-packaging
 - Errors and Responses Map: https://jumentix-website.vercel.app/docs/jumentix/reference/errors-responses
 - Runtime Environment Contracts: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-runtime-environment
-- Package Scripts Reference: https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts
 
 ## Portuguese
 - Docs hub: https://jumentix-website.vercel.app/docs/pt-BR/jumentix

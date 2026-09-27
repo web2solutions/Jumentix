@@ -186,10 +186,7 @@ from**:
   ecosystem module cache-busted on every read. The rationale belongs in
   writing: the day a contributor embeds a literal process list or a
   package-manager invocation in the designer, the preview starts lying about
-  reality, and the Bun cutover
-  ([JUM-33](https://linear.app/jumentix/issue/JUM-33/refactor-migrate-internal-development-cli-and-pm2-workflows-to-bun),
-  [JUM-40](https://linear.app/jumentix/issue/JUM-40/release-complete-the-bun-only-internal-tooling-cutover))
-  will change the invocation format underneath it. That is why Contract 1b
+  reality and the current Bun toolchain. That is why Contract 1b
   **forbids** any package-manager string (`pnpm run`, `bun run`, `npm run`) or
   `pm2:start:*` script name in the server and the designer: the reported
   command is *derived from the ecosystem definition* (its path and the app
@@ -221,28 +218,38 @@ from**:
   the persisted `service-management.v1` payload (Requirement 126, Contract 2)
   — a server-derived snapshot is not design state.
 
-## The PM2 monitoring dashboard (JUM-736) — by PM2, not by ecosystem
+## The PM2 monitoring dashboard — WebSocket live stream (Contract 1e) + HTTP one-shot (1c)
 
-The **Monitoring** tab is runtime telemetry, not another static preview. Its
-endpoint, `GET /api/runtime/pm2-metrics` (Requirement 126, Contract 1c), connects
-to PM2 through the PM2 Node API and reads `pm2.list`. The dashboard reports live
-process status, CPU, memory, restarts, uptime, namespace, watch mode and PM2
-custom metrics. It also compares those live process names with the selected
-`pm2/ecosystem.*.cjs` file so an expected app that is not running is visible in
-the UI without asking the operator to inspect a terminal.
+The **Monitoring** tab is runtime telemetry, not another static preview.
 
-The Monitoring snapshot is intentionally transient: it is refreshed manually or
-every five seconds while the tab is active, and it is never written into
-`service-management.v1` or exported in the suite JSON. If PM2 cannot be loaded,
-connected or listed, the endpoint fails with the explicit PM2 metrics envelope
-rather than falling back to ecosystem-only data.
+- **Primary UI path:** `WS /api/runtime/pm2-ws` (Requirement 126, Contract 1e).
+  The tab opens a WebSocket when active, subscribes with environment + refresh
+  interval (500–2000 ms, default 1000), and renders host CPU/memory/disk charts
+  (D3, vendored — no CDN), process stacks, filters, and start/stop/restart
+  actions. Aggregate + per-process spark history persists in Cana under
+  `monitoringHistory` in `service-management.v1` (Contract 2). Leaving the tab
+  closes the socket.
+- **HTTP one-shot:** `GET /api/runtime/pm2-metrics` (Contract 1c) remains for
+  tests and tooling. Both transports collect through the PM2 Node API, compare
+  live names with the selected ecosystem, include host metrics, per-process
+  disk I/O (Linux; Darwin via in-process Bun FFI / `proc_pid_rusage`; Windows),
+  and optional `async-context-metrics` scrapes (counters + redacted ALS Map
+  `recentStores`). The scrape targets `GET http://127.0.0.1:<JUMENTIX_HTTP_PORT>/async-context-metrics`
+  on each process that exposes that port — restart RestAPI from a checkout that
+  includes the route (JUM-767+) if Monitoring reports `ASYNC_CONTEXT_ROUTE_MISSING`.
+  Each process row exposes a help control describing the app's role.
+
+If PM2 cannot be loaded, connected or listed, the HTTP endpoint fails with the
+explicit PM2 metrics envelope and the WebSocket emits an `error` / failed
+`action-result` frame rather than inventing healthy process data.
 
 **Proven by:**
 `pm2Ecosystem.integration.test.ts`
-(real ecosystem reads, edit-reflected-without-restart, explicit missing-file
-state, honest 500 envelope, explicit rejection of unknown environments) and
+(real ecosystem reads, metrics + host shape, WebSocket subscribe/actions,
+edit-reflected-without-restart, explicit missing-file state, honest 500 envelope,
+explicit rejection of unknown environments) and
 `pm2EcosystemUi.contract.test.ts`
-(the structural no-hardcoded-commands guarantee over the designer sources).
+(the structural no-hardcoded-commands guarantee and WebSocket-backed Monitoring UI).
 
 ## Deploy Management: the Requirement 059 metadata contract (JUM-481)
 
@@ -376,6 +383,10 @@ same model:
   Configuration status, the runtime-env status and the per-file targeting
   line — carry failures *with environment, file and cause* where the user is
   looking, instead of a silent console error.
+- **Reachable help controls** — each static form, toolbar and action control
+  exposes the same `?` help affordance used by the console surfaces. The text
+  states what the control changes downstream: generated contracts, runtime
+  files, deploy matrix rows, PM2 streams or exports.
 - **The client renders the API's error envelope verbatim.** `error` /
   `details`, plus `code` and `path` on the 500 filesystem classes, are
   surfaced exactly as returned — there is no client-side error remapping, so
@@ -397,11 +408,8 @@ same model:
   the E4 document owns that scope and its proof in
   [Service Management Contract Parity Guarantees](/docs/jumentix/reference/service-management-contract-parity).
 - **The literal PM2 invocation format** — pinned by Requirement 126 Contract
-  1b and due to change with the Bun cutover
-  ([JUM-33](https://linear.app/jumentix/issue/JUM-33/refactor-migrate-internal-development-cli-and-pm2-workflows-to-bun),
-  [JUM-40](https://linear.app/jumentix/issue/JUM-40/release-complete-the-bun-only-internal-tooling-cutover));
-  the preview is documented by its source precisely so this document survives
-  that cutover.
+  1b; the preview is documented by its source so it remains aligned with the
+  current runtime configuration.
 
 ## References
 
@@ -412,4 +420,4 @@ same model:
 - Suites: `serviceConfigurationValidation.test.ts`, `deployTargetValidation.test.ts`, `deployTargetLifecycle.test.ts`, `designerState.test.ts`, `pm2EcosystemUi.contract.test.ts`, `runtimeEnvUi.contract.test.ts`, `pm2Ecosystem.integration.test.ts`, `runtimeEnv.integration.test.ts`, `runtimeEnvContract.integration.test.ts`, `deployTargetLifecycle.browser.integration.test.ts`
 - Requirements: Requirement 126, Contracts 1 and 1b (Contracts 1, 1b and 2), 059 (the deploy and factory matrices), 076 (EN/PT parity)
 - Sibling E-chain documents: [Runtime Environment Contracts](/docs/jumentix/reference/service-management-runtime-environment) (E1), [Service Management Module Architecture](/docs/jumentix/reference/service-management-module-architecture) (E3), [Service Management Contract Parity Guarantees](/docs/jumentix/reference/service-management-contract-parity) (E4), Service Management Application, [Domain Designer Features and Usage](/docs/jumentix/reference/domain-designer-features)
-- Linear: [JUM-480](https://linear.app/jumentix/issue/JUM-480/feature-real-multi-environment-editing-and-pm2-ecosystem-preview), [JUM-481](https://linear.app/jumentix/issue/JUM-481/feature-deploy-management-aligned-to-req-059-matrix-with-per-service), [JUM-543](https://linear.app/jumentix/issue/JUM-543/fix-replace-blocking-alerts-with-non-blocking-status-surfaces-and), [JUM-544](https://linear.app/jumentix/issue/JUM-544/fix-service-configuration-validation-port-conflicts-and-run-mode), [JUM-545](https://linear.app/jumentix/issue/JUM-545/feature-interface-adapter-lifecycle-edit-in-place-uniqueness-and), [JUM-546](https://linear.app/jumentix/issue/JUM-546/feature-deploy-target-lifecycle-edit-duplicate-and-field-validation), [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration), [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths), [JUM-33](https://linear.app/jumentix/issue/JUM-33/refactor-migrate-internal-development-cli-and-pm2-workflows-to-bun), [JUM-40](https://linear.app/jumentix/issue/JUM-40/release-complete-the-bun-only-internal-tooling-cutover)
+- Linear: [JUM-480](https://linear.app/jumentix/issue/JUM-480/feature-real-multi-environment-editing-and-pm2-ecosystem-preview), [JUM-481](https://linear.app/jumentix/issue/JUM-481/feature-deploy-management-aligned-to-req-059-matrix-with-per-service), [JUM-543](https://linear.app/jumentix/issue/JUM-543/fix-replace-blocking-alerts-with-non-blocking-status-surfaces-and), [JUM-544](https://linear.app/jumentix/issue/JUM-544/fix-service-configuration-validation-port-conflicts-and-run-mode), [JUM-545](https://linear.app/jumentix/issue/JUM-545/feature-interface-adapter-lifecycle-edit-in-place-uniqueness-and), [JUM-546](https://linear.app/jumentix/issue/JUM-546/feature-deploy-target-lifecycle-edit-duplicate-and-field-validation), [JUM-547](https://linear.app/jumentix/issue/JUM-547/feature-full-suite-exportimport-carry-interfaces-service-configuration), [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths)

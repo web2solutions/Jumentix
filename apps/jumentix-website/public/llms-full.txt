@@ -586,6 +586,7 @@ Headings:
 - Glossary
 - Numbered steps
 - Step 1 — Model business domains first (< 20 minutes)
+- Step 1b — Scaffold hybrid/frontend with the factory CLI (< 5 minutes)
 - Step 2 — Define communication contracts (< 10 minutes)
 - Step 3 — Configure service runtime (< 10 minutes)
 - Step 4 — Build offline-capable PWA storage (< 30 minutes)
@@ -677,6 +678,7 @@ Headings:
 - 4.4 Environment variables
 - 4.5 Process control
 - 5. First run
+- 5.1 Architecture and OpenAPI tabs
 - 6. Domain Designer
 - 6.1 Canvas and navigation
 - 6.2 Domains and bounded context
@@ -689,7 +691,6 @@ Headings:
 - 8. Service Configuration
 - 8.1 Runtime profile
 - 8.2 PM2 ecosystem preview
-- 8.3 Runtime environment variables
 
 ---
 
@@ -877,7 +878,7 @@ Headings:
 - What it is
 - Usage
 - Versioning policy
-- Publish policy: dry-run only
+- Publish policy
 - Development
 - License
 - Try it in the browser
@@ -989,6 +990,29 @@ Headings:
 - Common errors
 - Junior checklist (“I can …”)
 - Next step
+
+---
+
+# @jumentix/dead-letter-queue
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/dead-letter-queue
+
+Packages documentation.
+
+Headings:
+- @jumentix/dead-letter-queue
+- 1. The problem
+- 2. The pieces
+- 3. The record lifecycle
+- 4. Replay goes through the service
+- 5. API
+- `DeadLetterQueue`
+- `DeadLetterReplayWorker`
+- Stores
+- 6. Wiring
+- 7. Try it
+- 8. Operating it
+- 9. Validation
 
 ---
 
@@ -1517,10 +1541,9 @@ Headings:
 - Numbered steps
 - Step 1 — Install the toolchain (< 5 minutes)
 - Step 2 — Pick your starting path (< 2 minutes)
-- Step 3 — Open the reference backend (< 10 minutes)
-- follow scripts in that app's package.json / README for local run
+- Step 3 — First success: factory `init` (< 10 minutes)
 - Step 4 — Learn the mental model (< 5 minutes)
-- Step 5 — First success: touch Cana in the browser (< 10 minutes)
+- Step 5 — Touch Cana in the browser (< 10 minutes)
 - Step 6 — Core workflows (this week)
 - Step 7 — Full surface (when you need lookup, not tutorials)
 - Examples
@@ -1603,6 +1626,26 @@ Headings:
 
 ---
 
+# CLI Reference
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/cli
+
+Create, extend, upgrade and check a Jumentix project with the jumentix CLI.
+
+Headings:
+- Jumentix CLI reference
+- Run it
+- `init` — create a project
+- Users preset, one service, Express and SQLite, no prompts
+- Your own OpenAPI contract, backend plus frontend with offline support
+- What is generated
+- `add` — extend a project
+- `upgrade` — take newer templates
+- `doctor` — check the environment and the project
+- Related
+
+---
+
 # Domain Designer Features and Usage
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/reference/domain-designer-features
@@ -1614,6 +1657,8 @@ Headings:
 - 1) Canvas and Navigation
 - 2) Relationship Design
 - 3) Domain Context Metadata
+- 3.1) Architecture designer (JUM-815, JUM-816)
+- 3.2) Per-service OAS export and Swagger (JUM-817, JUM-818)
 - 4) Entity Editing and Templates
 - 5) RBAC Policy Mapping
 - 6) Message Contract Designer
@@ -1906,15 +1951,3 @@ Headings:
 - Error contract
 - Guardrails
 - Operational Examples
-
----
-
-# Package Scripts Reference
-
-URL: https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts
-
-Every supported monorepo command and its usage.
-
-Headings:
-- Package.json Scripts Reference (Consumer)
-- Next step

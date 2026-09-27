@@ -36,12 +36,6 @@
     "reason": "Generated from a documentation/md source that carries maintainer provenance (issue ids, requirement numbers); fixed at the source by the documentation audit."
   },
   {
-    "file": "apps/jumentix-website/content/jumentix/reference/package-scripts.mdx",
-    "rule": "internal-ci-variable",
-    "issue": "JUM-899",
-    "reason": "Contributor gate-script reference published on the developer site; the calibration pass decides whether it belongs there."
-  },
-  {
     "file": "apps/jumentix-website/content/jumentix/reference/service-management-cana-adoption.mdx",
     "rule": "linear-issue-id",
     "issue": "JUM-895",
@@ -160,12 +154,6 @@
     "rule": "linear-issue-id",
     "issue": "JUM-895",
     "reason": "Generated from a documentation/md source that carries maintainer provenance (issue ids, requirement numbers); fixed at the source by the documentation audit."
-  },
-  {
-    "file": "apps/jumentix-website/content/pt-BR/jumentix/reference/package-scripts.mdx",
-    "rule": "internal-ci-variable",
-    "issue": "JUM-899",
-    "reason": "Contributor gate-script reference published on the developer site; the calibration pass decides whether it belongs there."
   },
   {
     "file": "apps/jumentix-website/content/pt-BR/jumentix/reference/service-management-cana-adoption.mdx",

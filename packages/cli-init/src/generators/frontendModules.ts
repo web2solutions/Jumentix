@@ -367,8 +367,10 @@ export function patchI18nTitles(
     }
   }
 
-  const marker = '  // --- generated module titles (JUM-848) ---';
-  if (source.includes(marker)) {
+  const marker = '  // --- generated module titles ---';
+  // Prefix match: projects generated before the marker lost its issue id carry
+  // `// --- generated module titles (JUM-848) ---` and must not be patched twice.
+  if (source.includes('  // --- generated module titles')) {
     // already patched in a prior run — leave as-is
     return;
   }

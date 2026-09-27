@@ -168,9 +168,9 @@ behind fixed expected outputs.
 ### Symmetric crossings (lossless, deep-equal asserted)
 
 - **JSON** (`buildJsonExportDocument` → `buildStateFromSuiteExport` over
-  `normalizeStatePayload`): the versioned full-suite document (JUM-547) —
-  `domains`, `relationships`, `view`, `interfaces`, `serviceConfiguration`
-  and `deployments` round-trip deep-equal, and the export is idempotent. The
+  `normalizeStatePayload`): the versioned full-suite document (JUM-547/JUM-736) —
+  `domains`, `relationships`, `view`, `interfaces`, `serviceConfiguration`,
+  `codeWorkspace` and `deployments` round-trip deep-equal, and the export is idempotent. The
   boundary is documented and asserted: selections and `idCounter` are not
   part of the document and are recomputed on import, and `runtimeEnvironment`
   crosses as the environment *selection* only (see the JUM-547 section
@@ -178,6 +178,7 @@ behind fixed expected outputs.
   defaulted; a document with an unknown top-level section, a newer major
   `version`, or a `kind` other than `service-management-suite` fails clearly
   instead of half-importing.
+- **Architecture** (`architecture.services` / `architecture.links`): JSON suite export carries the architecture slice. OAS export/import uses `x-services`, `x-service`, `servers[].x-service-id` and `x-architecture-links` so a two-service model reaches a fixed point for service identity and addresses (JUM-815/JUM-817).
 - **Domain package** (`buildDomainPackageDocument` → `buildDomainFromPackage`):
   a package round-trips deep-equal into an empty model, stamped with
   provenance (JUM-492): the v2 document carries a `package` block

@@ -76,7 +76,7 @@ How to use:
 
 1. Select a domain.
 2. Fill values in `Bounded Context`.
-3. Click `Save Context`.
+  3. Click `Save Context`.
 
 These fields are persisted in the designer state and exported through JSON/package flows.
 
@@ -99,7 +99,20 @@ How to use:
 
 ## 3.2) Per-service OAS export and Swagger (JUM-817, JUM-818)
 
-Export OAS 3.1 now writes `x-services`, `servers[]` with `x-service-id`, `x-service` on operations and schemas, and `x-architecture-links`. The merged document is the Core view. The **OpenAPI** tab embeds Swagger UI (vendored from `apps/backend-template/OASdoc`). The service selector filters operations; Try it out uses that service's `servers` URL.
+Export OAS 3.1 now writes:
+
+- `x-services` and `servers[]` with `x-service-id`
+- `x-service` on every operation and entity schema
+- `x-architecture-links` for lossless architecture round-trip
+
+The merged document is the Core view (every operation, every service address). **OpenAPI** tab embeds Swagger UI (vendored `swagger-ui-dist` from `apps/backend-template/OASdoc`). The service selector filters to one service; Try it out uses that service's `servers` URL.
+
+How to use:
+
+1. Model architecture, then open **OpenAPI**.
+2. Choose **Merged Core document** or a named service.
+3. Press **Refresh** after model edits.
+4. Export OAS from Domain Designer Share panel for files; the catalog record may store `design.oasDocuments.merged` and `design.oasDocuments.services`.
 
 ## 4) Entity Editing and Templates
 
