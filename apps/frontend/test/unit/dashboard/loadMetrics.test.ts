@@ -100,6 +100,29 @@ describe('dashboard loadMetrics offline path (JUM-811)', () => {
     ]);
   });
 
+  it('labels groupBy buckets over a foreign key with the related record name (JUM-908)', async () => {
+    expect.hasAssertions();
+    await getCanaClient().table('organizations').put({ id: 'org-1', name: 'XpertMinds' });
+    const users = getCanaClient().table('users');
+    await users.put({ id: 'u1', username: 'ana', organization: 'org-1' });
+    await users.put({ id: 'u2', username: 'bia', organization: 'org-1' });
+    await users.put({ id: 'u3', username: 'cio', organization: 'org-gone' });
+
+    const result = await loadMetrics({
+      listOperationId: 'getAll',
+      metricsOperationId: 'getUsersMetrics',
+      schemaName: 'User',
+      metric: 'groupBy',
+      field: 'organization'
+    });
+
+    // An organization that no longer resolves keeps its id rather than vanishing.
+    expect(result.buckets).toStrictEqual([
+      { key: 'org-1', count: 2, label: 'XpertMinds' },
+      { key: 'org-gone', count: 1 }
+    ]);
+  });
+
   it('counts pending local rows when Cana is open and reports zero when closed', async () => {
     expect.hasAssertions();
     const users = getCanaClient().table('users');

@@ -7,6 +7,7 @@ import {
   metricsSpecForListOperation,
   type MetricsResult
 } from '@/contracts/metricsSchema';
+import { loadRelationLabels, relationFor } from '@/contracts/relationLabels';
 import { isCanaOpen } from '@/data/db';
 import { listLocal } from '@/data/localRepository';
 import { useAuthStore } from '@/stores/auth';
@@ -29,7 +30,28 @@ const localRecords = async (
   return page.result.filter((row) => Date.parse(String(row.createdAt ?? '')) >= start);
 };
 
-export const loadMetrics = async (query: DashboardMetricsQuery): Promise<MetricsResult> => {
+/**
+ * groupBy over a foreign key buckets by the stored id; label each bucket with
+ * the related record's display field so a chart never shows raw ids (JUM-908).
+ */
+const labelRelationBuckets = async (
+  query: DashboardMetricsQuery,
+  result: MetricsResult
+): Promise<MetricsResult> => {
+  const relation = query.metric === 'groupBy' && query.field
+    ? relationFor(query.schemaName, query.field)
+    : undefined;
+  if (!relation) return result;
+  const labels = await loadRelationLabels(relation);
+  return {
+    ...result,
+    buckets: result.buckets.map((bucket) => (
+      labels[bucket.key] ? { ...bucket, label: labels[bucket.key] } : bucket
+    ))
+  };
+};
+
+const loadRawMetrics = async (query: DashboardMetricsQuery): Promise<MetricsResult> => {
   const spec = metricsSpecForListOperation(query.listOperationId);
   const capabilities = spec?.capabilities ?? { groupable: [], series: [] };
   if (isCanaOpen()) {
@@ -54,6 +76,10 @@ export const loadMetrics = async (query: DashboardMetricsQuery): Promise<Metrics
   });
   return asMetricsResult(response);
 };
+
+export const loadMetrics = async (query: DashboardMetricsQuery): Promise<MetricsResult> => (
+  labelRelationBuckets(query, await loadRawMetrics(query))
+);
 
 export const countPendingLocal = async (schemaName: string): Promise<number> => {
   if (!isCanaOpen()) return 0;
