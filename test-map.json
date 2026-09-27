@@ -2984,6 +2984,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/check-current-governance-docs.test.ts",
+      "path": "ci-cd/test/check-current-governance-docs.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-integration-migration.test.ts",
       "path": "ci-cd/test/check-integration-migration.test.ts",
       "layer": "tooling",
@@ -5491,6 +5501,18 @@
       "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
     },
     {
+      "id": "apps/jumentix-website/scripts/content-leaks.test.mjs",
+      "path": "apps/jumentix-website/scripts/content-leaks.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
       "id": "apps/jumentix-website/scripts/discover-routes.test.mjs",
       "path": "apps/jumentix-website/scripts/discover-routes.test.mjs",
       "layer": "website",
@@ -6058,6 +6080,6 @@
     "unit": 358,
     "integration": 102,
     "smoke": 2,
-    "suites": 521
+    "suites": 523
   }
 }
