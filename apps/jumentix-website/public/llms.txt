@@ -91,6 +91,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Total.js Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/http/total-js
 
 ## Reference
+- CLI Reference: https://jumentix-website.vercel.app/docs/jumentix/reference/cli
 - Domain Designer Features and Usage: https://jumentix-website.vercel.app/docs/jumentix/reference/domain-designer-features
 - Reference: https://jumentix-website.vercel.app/docs/jumentix/reference
 - Runtime Environment Contracts: https://jumentix-website.vercel.app/docs/jumentix/reference/runtime-contracts
@@ -99,7 +100,6 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Security and PCI Hardening: https://jumentix-website.vercel.app/docs/jumentix/reference/security-compliance
 - Errors and Responses Map: https://jumentix-website.vercel.app/docs/jumentix/reference/errors-responses
 - Runtime Environment Contracts: https://jumentix-website.vercel.app/docs/jumentix/reference/service-management-runtime-environment
-- Package Scripts Reference: https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts
 
 ## Portuguese
 - Docs hub: https://jumentix-website.vercel.app/docs/pt-BR/jumentix

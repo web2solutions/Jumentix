@@ -226,11 +226,11 @@ describe('Commercial pages', () => {
       renderPage('roadmap', 'en');
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('A public path from platform foundation to software factory');
       expect(screen.getByText('Now')).toBeInTheDocument();
-      expect(screen.getByText('Monorepo consolidation')).toBeInTheDocument();
+      expect(screen.getByText('Distribution')).toBeInTheDocument();
       expect(screen.getByText('Next')).toBeInTheDocument();
       expect(screen.getByText('Service factory workflows')).toBeInTheDocument();
       expect(screen.getByText('Later')).toBeInTheDocument();
-      expect(screen.getByText('Ecosystem distribution')).toBeInTheDocument();
+      expect(screen.getByText('Ecosystem')).toBeInTheDocument();
     });
   });
 

@@ -1626,6 +1626,26 @@ Headings:
 
 ---
 
+# CLI Reference
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/reference/cli
+
+Create, extend, upgrade and check a Jumentix project with the jumentix CLI.
+
+Headings:
+- Jumentix CLI reference
+- Run it
+- `init` — create a project
+- Users preset, one service, Express and SQLite, no prompts
+- Your own OpenAPI contract, backend plus frontend with offline support
+- What is generated
+- `add` — extend a project
+- `upgrade` — take newer templates
+- `doctor` — check the environment and the project
+- Related
+
+---
+
 # Domain Designer Features and Usage
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/reference/domain-designer-features
@@ -1776,14 +1796,3 @@ Headings:
 - Error contract
 - Guardrails
 - Operational Examples
-
----
-
-# Package Scripts Reference
-
-URL: https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts
-
-Every supported monorepo command and its usage.
-
-Headings:
-- Package.json Scripts Reference (Consumer)

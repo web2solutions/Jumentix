@@ -1,14 +1,1 @@
-[
-  {
-    "file": "apps/jumentix-website/content/jumentix/reference/package-scripts.mdx",
-    "rule": "internal-ci-variable",
-    "issue": "JUM-899",
-    "reason": "Contributor gate-script reference published on the developer site; the calibration pass decides whether it belongs there."
-  },
-  {
-    "file": "apps/jumentix-website/content/pt-BR/jumentix/reference/package-scripts.mdx",
-    "rule": "internal-ci-variable",
-    "issue": "JUM-899",
-    "reason": "Contributor gate-script reference published on the developer site; the calibration pass decides whether it belongs there."
-  }
-]
+[]

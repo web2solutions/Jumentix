@@ -11,7 +11,7 @@ const englishRoutes = [
   ['/architecture', ['Domain ownership at the center', 'Backend-template hexagonal map', 'Application core']],
   ['/security-compliance', ['Controls your audit can verify', 'RBAC']],
   ['/community', ['Build the factory with us', 'Every contribution']],
-  ['/roadmap', ['A public path', 'Monorepo consolidation']],
+  ['/roadmap', ['A public path', 'Service factory workflows']],
   ['/contact', ['Bring your architecture challenge', 'GitHub Discussions']],
   ['/pricing-or-engagement', ['Open source foundation', 'Product pilot']],
   ['/changelog?page=1', ['Jumentix changelog']]
@@ -30,7 +30,7 @@ const portugueseRoutes = [
   ['/pt-BR/architecture', ['Domínio no centro', 'Mapa hexagonal do backend-template', 'Núcleo da aplicação']],
   ['/pt-BR/security-compliance', ['Controles que sua auditoria', 'RBAC']],
   ['/pt-BR/community', ['Construa a fábrica conosco', 'Toda contribuição']],
-  ['/pt-BR/roadmap', ['Um caminho público', 'Consolidação do monorepo']],
+  ['/pt-BR/roadmap', ['Um caminho público', 'Fluxos da fábrica de serviços']],
   ['/pt-BR/contact', ['Traga seu desafio', 'GitHub Discussions']],
   ['/pt-BR/pricing-or-engagement', ['Fundação open source', 'Piloto de produto']],
   ['/pt-BR/changelog?page=1', ['Changelog do Jumentix']]

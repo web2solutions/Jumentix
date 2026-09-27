@@ -1545,6 +1545,25 @@
     ]
   },
   {
+    "title": "CLI Reference",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/cli",
+    "description": "Create, extend, upgrade and check a Jumentix project with the jumentix CLI.",
+    "section": "reference",
+    "locale": "en",
+    "headings": [
+      "Jumentix CLI reference",
+      "Run it",
+      "`init` — create a project",
+      "Users preset, one service, Express and SQLite, no prompts",
+      "Your own OpenAPI contract, backend plus frontend with offline support",
+      "What is generated",
+      "`add` — extend a project",
+      "`upgrade` — take newer templates",
+      "`doctor` — check the environment and the project",
+      "Related"
+    ]
+  },
+  {
     "title": "Domain Designer Features and Usage",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/domain-designer-features",
     "description": "Every Domain Designer capability and how to use it in practice.",
@@ -1687,16 +1706,6 @@
       "Error contract",
       "Guardrails",
       "Operational Examples"
-    ]
-  },
-  {
-    "title": "Package Scripts Reference",
-    "url": "https://jumentix-website.vercel.app/docs/jumentix/reference/package-scripts",
-    "description": "Every supported monorepo command and its usage.",
-    "section": "reference",
-    "locale": "en",
-    "headings": [
-      "Package.json Scripts Reference (Consumer)"
     ]
   },
   {
@@ -3242,6 +3251,25 @@
     ]
   },
   {
+    "title": "Referência do CLI",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/cli",
+    "description": "Crie, amplie, atualize e verifique um projeto Jumentix com o CLI jumentix.",
+    "section": "reference",
+    "locale": "pt-BR",
+    "headings": [
+      "Referência do CLI Jumentix",
+      "Como executar",
+      "`init` — criar um projeto",
+      "Preset Users, um serviço, Express e SQLite, sem perguntas",
+      "Seu próprio contrato OpenAPI, backend mais frontend com suporte offline",
+      "O que é gerado",
+      "`add` — ampliar um projeto",
+      "`upgrade` — receber templates mais novos",
+      "`doctor` — verificar o ambiente e o projeto",
+      "Relacionados"
+    ]
+  },
+  {
     "title": "Recursos e Uso do Domain Designer",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/domain-designer-features",
     "description": "Todos os recursos do Domain Designer e como usá-los na prática.",
@@ -3383,16 +3411,6 @@
       "Contrato de erro",
       "Guarda-corpos",
       "Exemplos Operacionais"
-    ]
-  },
-  {
-    "title": "Referência de scripts dos pacotes",
-    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/reference/package-scripts",
-    "description": "Todos os comandos suportados pelo monorepo e como utilizá-los.",
-    "section": "reference",
-    "locale": "pt-BR",
-    "headings": [
-      "Referência de Scripts do Package.json (Consumidor)"
     ]
   }
 ]

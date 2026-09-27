@@ -102,13 +102,13 @@
     },
     {
       "section": "reference",
-      "slug": "package-scripts",
-      "title": "Package Scripts Reference",
-      "titlePtBr": "Referência de scripts dos pacotes",
-      "description": "Every supported monorepo command and its usage.",
-      "descriptionPtBr": "Todos os comandos suportados pelo monorepo e como utilizá-los.",
-      "source": "../../documentation/consumers/PACKAGE-SCRIPTS-REFERENCE.md",
-      "sourcePtBr": "../../documentation/consumers/PACKAGE-SCRIPTS-REFERENCE.pt-BR.md"
+      "slug": "cli",
+      "title": "CLI Reference",
+      "titlePtBr": "Referência do CLI",
+      "description": "Create, extend, upgrade and check a Jumentix project with the jumentix CLI.",
+      "descriptionPtBr": "Crie, amplie, atualize e verifique um projeto Jumentix com o CLI jumentix.",
+      "source": "../../documentation/consumers/CLI-REFERENCE.md",
+      "sourcePtBr": "../../documentation/consumers/CLI-REFERENCE.pt-BR.md"
     },
     {
       "section": "reference",

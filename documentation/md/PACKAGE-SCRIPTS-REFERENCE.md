@@ -1,9 +1,4 @@
----
-title: "Package Scripts Reference"
-description: "Every supported monorepo command and its usage."
----
-
-# Package.json Scripts Reference (Consumer)
+# Package.json Scripts Reference (Contributor)
 
 This page lists all root `package.json` scripts and how to use each command.
 
@@ -19,16 +14,18 @@ bun run <command>
 | `compat:check-node-version` | Use when you need this specific workspace operation. | `bun run compat:check-node-version` | `node ci-cd/check-node-version.js` |
 | `preinstall` | Use when you need this specific workspace operation. | `bun run preinstall` | `bun ci-cd/check-bun-version.js` |
 | `deps:check-overrides` | Use when you need this specific workspace operation. | `bun run deps:check-overrides` | `bun ci-cd/check-dependency-override-integrity.js` |
-| `mono:build` | Run workspace-wide recursive operations. | `bun run mono:build` | `bun run mono:build:deps && bun run --filter '*' build` |
+| `mono:build` | Run workspace-wide recursive operations. | `bun run mono:build` | `bun run workspace:build:packages` |
 | `mono:build:deps` | Run workspace-wide recursive operations. | `bun run mono:build:deps` | `bun run --filter @jumentix/cana build` |
-| `mono:test` | Run workspace-wide recursive operations. | `bun run mono:test` | `bun run workspace:test` |
+| `workspace:build:packages` | Validate workspace-level policies. | `bun run workspace:build:packages` | `bun ci-cd/build-workspace-packages.js` |
+| `mono:test` | Run workspace-wide recursive operations. | `bun run mono:test` | `bun run workspace:build:packages && bun run workspace:test` |
 | `mono:lint` | Run workspace-wide recursive operations. | `bun run mono:lint` | `bun run --filter '*' lint` |
 | `mono:typecheck` | Run workspace-wide recursive operations. | `bun run mono:typecheck` | `bun run --filter '*' typecheck` |
 | `docs:translate:ptbr` | Generate or synchronize documentation artifacts. | `bun run docs:translate:ptbr` | `bun tooling/scripts/generate-ptbr-docs.mjs` |
 | `docs:translate:ptbr:links` | Generate or synchronize documentation artifacts. | `bun run docs:translate:ptbr:links` | `bun tooling/scripts/patch-ptbr-links.mjs` |
 | `docs:consumers:package-scripts` | Generate or synchronize documentation artifacts. | `bun run docs:consumers:package-scripts` | `bun tooling/scripts/generate-consumer-package-scripts-docs.mjs` |
 | `docs:check-current-governance` | Generate or synchronize documentation artifacts. | `bun run docs:check-current-governance` | `bun ci-cd/check-current-governance-docs.js` |
-| `prepare` | Install git hooks (husky). Usually runs automatically. | `bun run prepare` | `husky` |
+| `docs:check-audience` | Generate or synchronize documentation artifacts. | `bun run docs:check-audience` | `bun ci-cd/check-documentation-audience.js` |
+| `prepare` | Install git hooks (husky). Usually runs automatically. | `bun run prepare` | `husky && node ci-cd/setup-git-merge-drivers.js` |
 | `changelog:update` | Generate or verify changelog from git history. | `bun run changelog:update` | `bun ci-cd/update-changelog.js` |
 | `changelog:check` | Generate or verify changelog from git history. | `bun run changelog:check` | `bun ci-cd/update-changelog.js --check` |
 | `oas:check-routes` | Validate OpenAPI contracts and route resolution. | `bun run oas:check-routes` | `bun ci-cd/check-oas-route-resolution.js` |
@@ -46,6 +43,10 @@ bun run <command>
 | `release:dry-run` | Run release governance and dry-run routines. | `bun run release:dry-run` | `bun ci-cd/release-dry-run.js all` |
 | `release:dry-run:packages` | Run release governance and dry-run routines. | `bun run release:dry-run:packages` | `bun run npm:packages:check && bun ci-cd/release-dry-run.js packages` |
 | `release:dry-run:apps` | Run release governance and dry-run routines. | `bun run release:dry-run:apps` | `bun ci-cd/release-dry-run.js apps` |
+| `release:next-version` | Run release governance and dry-run routines. | `bun run release:next-version` | `bun ci-cd/lib/next-version.js` |
+| `release:app-tag` | Run release governance and dry-run routines. | `bun run release:app-tag` | `bun ci-cd/create-app-release-tag.js` |
+| `release:github-release` | Run release governance and dry-run routines. | `bun run release:github-release` | `bun ci-cd/create-github-release.js` |
+| `release:publish-cohort` | Run release governance and dry-run routines. | `bun run release:publish-cohort` | `bun ci-cd/publish-npm-cohort.js` |
 | `agent-registry:register` | Use when you need this specific workspace operation. | `bun run agent-registry:register` | `bun packages/agent-registry/bin/agent-registry-cli.js register` |
 | `agent-registry:heartbeat` | Use when you need this specific workspace operation. | `bun run agent-registry:heartbeat` | `bun packages/agent-registry/bin/agent-registry-cli.js heartbeat` |
 | `agent-registry:assign` | Use when you need this specific workspace operation. | `bun run agent-registry:assign` | `bun packages/agent-registry/bin/agent-registry-cli.js assign` |
@@ -73,16 +74,18 @@ bun run <command>
 | `ci:smoke` | Use in CI validation and delivery gates. | `bun run ci:smoke` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun apps/backend-template/scripts/run-api-smoke.js` |
 | `ci:integration` | Use in CI validation and delivery gates. | `bun run ci:integration` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js` |
 | `ci:security-smoke` | Use in CI validation and delivery gates. | `bun run ci:security-smoke` | `NODE_ENV=ci bun apps/backend-template/scripts/run-security-smoke.js` |
-| `ci:gate` | Use in CI validation and delivery gates. | `bun run ci:gate` | `bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-ownership-placement && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run docs:check-current-governance && bun run packages:check-suites && bun run packages:check-build-freshness && bun run website:check-content-routes && bun run rtdb:check-indexes && bun run test:integrity && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run frontend:test:coverage && bun run frontend:coverage:check && bun run ci:security-smoke && bun run oas:check-routes && bun run oas:check-relations && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke` |
+| `ci:gate` | Use in CI validation and delivery gates. | `bun run ci:gate` | `bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-ownership-placement && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run docs:check-current-governance && bun run docs:check-audience && bun run packages:check-suites && bun run packages:check-build-freshness && bun run cli:check-template-freshness && bun run website:check-content-routes && bun run rtdb:check-indexes && bun run test:integrity && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run frontend:test:coverage && bun run frontend:coverage:check && bun run ci:security-smoke && bun run oas:check-routes && bun run oas:check-relations && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke` |
 | `ci:gate:branch` | Use in CI validation and delivery gates. | `bun run ci:gate:branch` | `bun ci-cd/run-branch-quality-gate.js` |
-| `ci:gate:task` | Use in CI validation and delivery gates. | `bun run ci:gate:task` | `bun ci-cd/run-task-change-tests.js` |
+| `ci:gate:task` | Use in CI validation and delivery gates. | `bun run ci:gate:task` | `bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js` |
+| `ci:gate:static` | Use in CI validation and delivery gates. | `bun run ci:gate:static` | `bun run deps:check-overrides && bun run deps:audit && bun run arch:check-http-adapters && bun run governance:check-authorship && bun run packages:check-suites && bun run packages:check-build-freshness && bun run cli:check-template-freshness && bun run website:check-content-routes && bun run rtdb:check-indexes && bun run test-map:check && bun run ci:check-provider && bun run oas:check-relations` |
 | `ci:gate:strict` | Use in CI validation and delivery gates. | `bun run ci:gate:strict` | `bun ci-cd/run-full-test-matrix.js` |
+| `ci:gate:generated-automation` | Use in CI validation and delivery gates. | `bun run ci:gate:generated-automation` | `bun ci-cd/check-generated-automation-pr.js` |
 | `dev` | Default local entrypoint; starts dev PM2 profile. | `bun run dev` | `bun run pm2:start:dev:restapi` |
 | `website:dev` | Operate the commercial website lifecycle. | `bun run website:dev` | `bun run --filter @jumentix/website dev` |
 | `website:build` | Operate the commercial website lifecycle. | `bun run website:build` | `bun run --filter @jumentix/website build` |
 | `website:start` | Operate the commercial website lifecycle. | `bun run website:start` | `bun run --filter @jumentix/website start` |
 | `website:storybook` | Operate the commercial website lifecycle. | `bun run website:storybook` | `bun run --filter @jumentix/website storybook` |
-| `website:deps:build` | Operate the commercial website lifecycle. | `bun run website:deps:build` | `bun run --filter @jumentix/cana build && bun run --filter @jumentix/cana-react build && bun run --filter @jumentix/cana-vue build && bun run --filter @jumentix/designer-core build && bun run --filter @jumentix/key-value-storage build && bun run --filter @jumentix/message-mediator build && bun run --filter @jumentix/mutex-service build && bun run --filter @jumentix/sdk-grpc-client build && bun run --filter @jumentix/sdk-rest-client build && bun run --filter @jumentix/sdk-websocket-client build` |
+| `website:deps:build` | Operate the commercial website lifecycle. | `bun run website:deps:build` | `bun run --filter @jumentix/cana build && bun run --filter @jumentix/cana-react build && bun run --filter @jumentix/cana-vue build && bun run --filter @jumentix/designer-core build && bun run --filter @jumentix/key-value-storage build && bun run --filter @jumentix/message-mediator build && bun run --filter @jumentix/mutex-service build && bun run --filter @jumentix/shared-contracts build && bun run --filter @jumentix/sdk-grpc-client build && bun run --filter @jumentix/sdk-rest-client build && bun run --filter @jumentix/sdk-websocket-client build` |
 | `website:storybook:build` | Operate the commercial website lifecycle. | `bun run website:storybook:build` | `bun run website:deps:build && bun run --filter @jumentix/website storybook:build` |
 | `website:storybook:smoke` | Operate the commercial website lifecycle. | `bun run website:storybook:smoke` | `bun run --filter @jumentix/website storybook:smoke` |
 | `website:test:prepublish` | Operate the commercial website lifecycle. | `bun run website:test:prepublish` | `bun run --filter @jumentix/website test:prepublish` |
@@ -121,7 +124,7 @@ bun run <command>
 | `tdd` | Use when you need this specific workspace operation. | `bun run tdd` | `NODE_ENV=dev bun ci-cd/run-tdd.js` |
 | `npm` | Use when you need this specific workspace operation. | `bun run npm` | `NODE_ENV=dev bun test ./apps/backend-template/test` |
 | `test` | Run default backend-template test suite. | `bun run test` | `NODE_ENV=dev bun test ./apps/backend-template/test` |
-| `test:unit` | Run tests for specific scope or profile. | `bun run test:unit` | `NODE_ENV=dev bun ci-cd/run-unit-tests.js` |
+| `test:unit` | Run tests for specific scope or profile. | `bun run test:unit` | `bun run workspace:build:packages && NODE_ENV=dev bun ci-cd/run-unit-tests.js` |
 | `coverage:patch` | Use when you need this specific workspace operation. | `bun run coverage:patch` | `bun ci-cd/check-patch-coverage.js` |
 | `coverage:browser-lcov` | Use when you need this specific workspace operation. | `bun run coverage:browser-lcov` | `bun packages/cana/scripts/write-browser-lcov.js` |
 | `test:integration` | Run tests for specific scope or profile. | `bun run test:integration` | `bun ci-cd/run-integration-tests.js` |
@@ -202,7 +205,9 @@ bun run <command>
 | `dev:grpc` | Start development runtime mode. | `bun run dev:grpc` | `bun run pm2:start:dev:grpc-rest` |
 | `dev:serverless` | Start development runtime mode. | `bun run dev:serverless` | `bun run lint && NODE_ENV=dev serverless dev` |
 | `cli` | Use when you need this specific workspace operation. | `bun run cli` | `bun run dev:cli` |
-| `cli:bootstrap` | Use when you need this specific workspace operation. | `bun run cli:bootstrap` | `node ./bin/jumentix-bootstrap.js` |
+| `cli:bootstrap` | Use when you need this specific workspace operation. | `bun run cli:bootstrap` | `bun ./bin/jumentix-bootstrap.js` |
+| `cli:build-templates` | Use when you need this specific workspace operation. | `bun run cli:build-templates` | `bun packages/cli-init/scripts/build-templates.js` |
+| `cli:check-template-freshness` | Use when you need this specific workspace operation. | `bun run cli:check-template-freshness` | `bun packages/cli-init/scripts/check-template-freshness.js` |
 | `dev:cli` | Start development runtime mode. | `bun run dev:cli` | `bun -r tsconfig-paths/register ./apps/backend-template/src/interface/CLI/index.ts` |
 | `service-management:vendor` | Use when you need this specific workspace operation. | `bun run service-management:vendor` | `bun apps/service-management/scripts/sync-service-management-cana-bundle.js && bun apps/service-management/scripts/sync-service-management-designer-core.js && bun apps/service-management/scripts/sync-service-management-d3.js && bun apps/service-management/scripts/sync-service-management-swagger-ui.js` |
 | `dev:service-management` | Start development runtime mode. | `bun run dev:service-management` | `bun run service-management:vendor && pm2 start ./apps/service-management/server.js --name jumentix-dev-service-management --interpreter bun --update-env` |
@@ -225,19 +230,19 @@ bun run <command>
 | `staging:websocket` | Start staging runtime profile. | `bun run staging:websocket` | `bun run pm2:start:staging:websocket-rest` |
 | `staging:grpc` | Start staging runtime profile. | `bun run staging:grpc` | `bun run pm2:start:staging:grpc-rest` |
 | `prod:serverless` | Start production runtime profile. | `bun run prod:serverless` | `bun run lint && NODE_ENV=prod serverless dev` |
-| `docker:composeredis` | Start/stop containerized dependencies and services. | `bun run docker:composeredis` | `ci-cd/cleanup-local-ci-services.sh && docker compose -f "apps/backend-template/docker-compose-redis.yml" down --remove-orphans \|\| true && docker compose -f "apps/backend-template/docker-compose-redis.yml" up -d --build --wait --force-recreate --remove-orphans` |
+| `docker:composeredis` | Start/stop containerized dependencies and services. | `bun run docker:composeredis` | `ci-cd/start-redis-compose.sh` |
 | `docker:composemessaging` | Start/stop containerized dependencies and services. | `bun run docker:composemessaging` | `docker compose -f "apps/backend-template/docker-compose-messaging.yml" up -d --build --wait` |
 | `docker:compose:platform-services` | Start/stop containerized dependencies and services. | `bun run docker:compose:platform-services` | `docker compose -f "apps/backend-template/docker-compose-platform-services.yml" up -d --build --wait` |
-| `docker:up:postgresql` | Start/stop containerized dependencies and services. | `bun run docker:up:postgresql` | `docker compose -p jumentix-postgresql -f "apps/backend-template/docker-compose-postgresql.yml" down --remove-orphans \|\| true && docker compose -p jumentix-postgresql -f "apps/backend-template/docker-compose-postgresql.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:mysql` | Start/stop containerized dependencies and services. | `bun run docker:up:mysql` | `docker compose -p jumentix-mysql -f "apps/backend-template/docker-compose-mysql.yml" down --remove-orphans \|\| true && docker compose -p jumentix-mysql -f "apps/backend-template/docker-compose-mysql.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:mssql` | Start/stop containerized dependencies and services. | `bun run docker:up:mssql` | `docker compose -p jumentix-mssql -f "apps/backend-template/docker-compose-mssql.yml" down --remove-orphans \|\| true && docker compose -p jumentix-mssql -f "apps/backend-template/docker-compose-mssql.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:oracle` | Start/stop containerized dependencies and services. | `bun run docker:up:oracle` | `docker compose -p jumentix-oracle -f "apps/backend-template/docker-compose-oracle.yml" down --remove-orphans \|\| true && docker compose -p jumentix-oracle -f "apps/backend-template/docker-compose-oracle.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:mongodb` | Start/stop containerized dependencies and services. | `bun run docker:up:mongodb` | `docker compose -p jumentix-mongodb -f "apps/backend-template/docker-compose-mongodb.yml" down --remove-orphans \|\| true && docker compose -p jumentix-mongodb -f "apps/backend-template/docker-compose-mongodb.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:cassandra` | Start/stop containerized dependencies and services. | `bun run docker:up:cassandra` | `docker compose -p jumentix-cassandra -f "apps/backend-template/docker-compose-cassandra.yml" down --remove-orphans \|\| true && docker compose -p jumentix-cassandra -f "apps/backend-template/docker-compose-cassandra.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:dynamodb` | Start/stop containerized dependencies and services. | `bun run docker:up:dynamodb` | `docker compose -p jumentix-dynamodb -f "apps/backend-template/docker-compose-dynamodb.yml" down --remove-orphans \|\| true && docker compose -p jumentix-dynamodb -f "apps/backend-template/docker-compose-dynamodb.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:firebase` | Start/stop containerized dependencies and services. | `bun run docker:up:firebase` | `docker compose -p jumentix-firebase -f "apps/backend-template/docker-compose-firebase.yml" down --remove-orphans \|\| true && docker compose -p jumentix-firebase -f "apps/backend-template/docker-compose-firebase.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:aurora` | Start/stop containerized dependencies and services. | `bun run docker:up:aurora` | `docker compose -p jumentix-aurora -f "apps/backend-template/docker-compose-aurora.yml" down --remove-orphans \|\| true && docker compose -p jumentix-aurora -f "apps/backend-template/docker-compose-aurora.yml" up -d --build --wait --force-recreate --remove-orphans` |
-| `docker:up:rds` | Start/stop containerized dependencies and services. | `bun run docker:up:rds` | `docker compose -p jumentix-rds -f "apps/backend-template/docker-compose-rds.yml" down --remove-orphans \|\| true && docker compose -p jumentix-rds -f "apps/backend-template/docker-compose-rds.yml" up -d --build --wait --force-recreate --remove-orphans` |
+| `docker:up:postgresql` | Start/stop containerized dependencies and services. | `bun run docker:up:postgresql` | `ci-cd/start-compose-service.sh jumentix-postgresql apps/backend-template/docker-compose-postgresql.yml` |
+| `docker:up:mysql` | Start/stop containerized dependencies and services. | `bun run docker:up:mysql` | `ci-cd/start-compose-service.sh jumentix-mysql apps/backend-template/docker-compose-mysql.yml` |
+| `docker:up:mssql` | Start/stop containerized dependencies and services. | `bun run docker:up:mssql` | `ci-cd/start-compose-service.sh jumentix-mssql apps/backend-template/docker-compose-mssql.yml` |
+| `docker:up:oracle` | Start/stop containerized dependencies and services. | `bun run docker:up:oracle` | `ci-cd/start-compose-service.sh jumentix-oracle apps/backend-template/docker-compose-oracle.yml` |
+| `docker:up:mongodb` | Start/stop containerized dependencies and services. | `bun run docker:up:mongodb` | `ci-cd/start-compose-service.sh jumentix-mongodb apps/backend-template/docker-compose-mongodb.yml` |
+| `docker:up:cassandra` | Start/stop containerized dependencies and services. | `bun run docker:up:cassandra` | `ci-cd/start-compose-service.sh jumentix-cassandra apps/backend-template/docker-compose-cassandra.yml` |
+| `docker:up:dynamodb` | Start/stop containerized dependencies and services. | `bun run docker:up:dynamodb` | `ci-cd/start-compose-service.sh jumentix-dynamodb apps/backend-template/docker-compose-dynamodb.yml` |
+| `docker:up:firebase` | Start/stop containerized dependencies and services. | `bun run docker:up:firebase` | `ci-cd/start-compose-service.sh jumentix-firebase apps/backend-template/docker-compose-firebase.yml` |
+| `docker:up:aurora` | Start/stop containerized dependencies and services. | `bun run docker:up:aurora` | `ci-cd/start-compose-service.sh jumentix-aurora apps/backend-template/docker-compose-aurora.yml` |
+| `docker:up:rds` | Start/stop containerized dependencies and services. | `bun run docker:up:rds` | `ci-cd/start-compose-service.sh jumentix-rds apps/backend-template/docker-compose-rds.yml` |
 | `docker:down:postgresql` | Start/stop containerized dependencies and services. | `bun run docker:down:postgresql` | `docker compose -p jumentix-postgresql -f "apps/backend-template/docker-compose-postgresql.yml" down --remove-orphans` |
 | `docker:down:mysql` | Start/stop containerized dependencies and services. | `bun run docker:down:mysql` | `docker compose -p jumentix-mysql -f "apps/backend-template/docker-compose-mysql.yml" down --remove-orphans` |
 | `docker:down:mssql` | Start/stop containerized dependencies and services. | `bun run docker:down:mssql` | `docker compose -p jumentix-mssql -f "apps/backend-template/docker-compose-mssql.yml" down --remove-orphans` |

@@ -61,7 +61,7 @@ export function printAddHelp(log: (message?: string) => void = console.log): voi
   log(`
 jumentix add <domain|service|frontend> [name] [options]
 
-Extend a generated Jumentix project (Req 037 v2 / JUM-850).
+Extend a project created by jumentix init.
 
 Subcommands:
   add domain <name> [--from …] [--service <id>] [--force]

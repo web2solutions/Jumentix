@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "2120b03528d8c59c365178c4448c84ece09efb55",
+  "sourceCommit": "fa52aa2d2a9018637422b053b4bf40e4ff94d372",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
