@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "ee05afec604d6b016cd0136cc1915afb2a2ab91d",
+  "sourceCommit": "fa52aa2d2a9018637422b053b4bf40e4ff94d372",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -49,7 +49,7 @@
     "@jumentix/sdk-websocket-client": "0.0.0",
     "@jumentix/shared-contracts": "0.1.0"
   },
-  "fileCount": 1035,
+  "fileCount": 1036,
   "files": {
     "backend/README.md": {
       "sha256": "8381bdf1bdc0a4e7132d479111ebb35d9243a758b739edb5019d0bc4982a380f",
@@ -3788,7 +3788,7 @@
       "source": "apps/frontend/src/App.vue"
     },
     "frontend/src/components/AppBreadcrumb.vue": {
-      "sha256": "6f3b663e86a6e799b1e424336424f0bf81101e2d6e9c528c39c0e464d910244c",
+      "sha256": "f47862797e201e7c32a01047baa06c52e6574a32e06c824e7924867c8d9b9dff",
       "source": "apps/frontend/src/components/AppBreadcrumb.vue"
     },
     "frontend/src/components/AppFooter.vue": {
@@ -3836,7 +3836,7 @@
       "source": "apps/frontend/src/components/dashboard/AdminUserRatioWidget.vue"
     },
     "frontend/src/components/dashboard/ChartCard.vue": {
-      "sha256": "afa8ea37139993a5d6d3b590bd894545b21e8724ba9e40f9438c6a394f471406",
+      "sha256": "b34e09c3c1b50118a79e8abfc112b54b15dc48aa7b8962ad93d8b4bf45a0a8df",
       "source": "apps/frontend/src/components/dashboard/ChartCard.vue"
     },
     "frontend/src/components/dashboard/DashboardGrid.vue": {
@@ -3852,7 +3852,7 @@
       "source": "apps/frontend/src/components/dashboard/genericWidgets.ts"
     },
     "frontend/src/components/dashboard/loadMetrics.ts": {
-      "sha256": "0b8940830e4ee50f7205dcadd9168d8ca7818acca4471f098fab280b33a8d5b2",
+      "sha256": "90998eb7320fa720c238d45deb7204841a8ddf5c6b559b54ec3797f662737353",
       "source": "apps/frontend/src/components/dashboard/loadMetrics.ts"
     },
     "frontend/src/components/dashboard/types.ts": {
@@ -3904,7 +3904,7 @@
       "source": "apps/frontend/src/components/x-crud/XCrudToolbar.vue"
     },
     "frontend/src/components/x-crud/useXCrud.ts": {
-      "sha256": "b7737345f5556a95212ba7187e5387392eea75038064b753f3d161e0e23a044e",
+      "sha256": "2557115d551d9936a292fd06d891d8d2cfbd48d1a9f25b331ec33d013a80e60a",
       "source": "apps/frontend/src/components/x-crud/useXCrud.ts"
     },
     "frontend/src/components/x-crud/xCrudFormat.ts": {
@@ -3940,7 +3940,7 @@
       "source": "apps/frontend/src/contracts/listSchema.ts"
     },
     "frontend/src/contracts/metricsSchema.ts": {
-      "sha256": "4d336bd6d5b5cb99d68842ba5674e8110b0cb4d3abca91da7c54b477faaabcf7",
+      "sha256": "17288bb22ae126463b9234655516b9028ca342d551536f481be71488763eda31",
       "source": "apps/frontend/src/contracts/metricsSchema.ts"
     },
     "frontend/src/contracts/oasForm.ts": {
@@ -3954,6 +3954,10 @@
     "frontend/src/contracts/rbac.ts": {
       "sha256": "74622348565392e8a84f8ca99ade2b2925e5ff3007c5a20be6a09c0eb107044c",
       "source": "apps/frontend/src/contracts/rbac.ts"
+    },
+    "frontend/src/contracts/relationLabels.ts": {
+      "sha256": "59fb6d2397b5b62156a380df84de18cab26d68814d61faea24cfc5531f5399a7",
+      "source": "apps/frontend/src/contracts/relationLabels.ts"
     },
     "frontend/src/contracts/sessionGuard.ts": {
       "sha256": "f7cb106fa9b4ab7e8cf520f88bcf02b87820e987fcd28676391f328ba7df318f",
@@ -3972,7 +3976,7 @@
       "source": "apps/frontend/src/contracts/validation.ts"
     },
     "frontend/src/data/canaSchema.ts": {
-      "sha256": "358e8e3e26e9b6266b89d7ef568941018d4d5ba19255827cf153cc61605e05d0",
+      "sha256": "1d34048e3b810346d445ea334fb03ac7391521c4fe6149391e278cfddd37b2d9",
       "source": "apps/frontend/src/data/canaSchema.ts"
     },
     "frontend/src/data/db.ts": {
@@ -4008,7 +4012,7 @@
       "source": "apps/frontend/src/features/auth/RegisterView.vue"
     },
     "frontend/src/features/dashboard/DashboardView.vue": {
-      "sha256": "bdd1ad44d762c99216358a4eb06d0f38adf311d91e8c9932f5f58ec3971b09a8",
+      "sha256": "370419294f21b66cdcf1d34434c78eb550e3af8341ca8a7081b445a08f111c13",
       "source": "apps/frontend/src/features/dashboard/DashboardView.vue"
     },
     "frontend/src/features/dashboard/NotFoundView.vue": {

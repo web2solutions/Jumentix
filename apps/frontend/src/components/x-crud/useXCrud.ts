@@ -2,20 +2,18 @@ import {
   computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref
 } from 'vue';
 
-import { getSharedApiClient } from '@/contracts/apiClient';
 import { apiErrorStatus, formatApiError } from '@/contracts/errors';
 import {
   entityPrimaryKey,
   fieldDescriptors,
-  listOperationForEntity,
   type FieldDescriptor
 } from '@/contracts/formSchema';
 import { listCapabilities, type ListCapabilities, type ListQuery } from '@/contracts/listSchema';
+import { loadRelationLabels } from '@/contracts/relationLabels';
 import { isCanaOpen } from '@/data/db';
-import { listLocal, subscribeLocal } from '@/data/localRepository';
+import { subscribeLocal } from '@/data/localRepository';
 import { localized, t } from '@/i18n';
 import { createEntityStore } from '@/stores/entityStore';
-import { useAuthStore } from '@/stores/auth';
 
 import type { XCrudAggregate, XCrudEntityConfig } from './xCrudTypes';
 
@@ -215,40 +213,7 @@ export const useXCrud = (config: XCrudEntityConfig) => {
   const referenceFields = columns.filter((d) => d.relation?.entity);
   const loadReferences = async (): Promise<void> => {
     await Promise.all(referenceFields.map(async (d) => {
-      const relation = d.relation!;
-      const operationId = listOperationForEntity(relation.entity);
-      if (!operationId) {
-        referenceLabels[d.name] = {};
-        return;
-      }
-      try {
-        const targetCapabilities = listCapabilities(operationId);
-        type Rows = Array<Record<string, unknown>>;
-        type ReferenceRows = { result?: Rows } | Rows;
-        let list: Rows = [];
-        if (isCanaOpen()) {
-          const localPage = await listLocal(relation.entity, {
-            page: 1,
-            size: targetCapabilities?.maxSize ?? 100
-          });
-          list = localPage.result;
-        } else {
-          const client = getSharedApiClient();
-          const response = await client.request<ReferenceRows>({
-            operationId,
-            query: targetCapabilities ? { page: 1, size: targetCapabilities.maxSize } : undefined,
-            headers: { Authorization: useAuthStore().token }
-          });
-          list = Array.isArray(response) ? response : (response.result ?? []);
-        }
-        const labelField = relation.display ?? 'name';
-        const match = relation.match || entityPrimaryKey(relation.entity);
-        referenceLabels[d.name] = Object.fromEntries(
-          list.map((row) => [String(row[match] ?? row.id), String(row[labelField] ?? row[match] ?? '')])
-        );
-      } catch {
-        referenceLabels[d.name] = {};
-      }
+      referenceLabels[d.name] = await loadRelationLabels(d.relation!);
     }));
   };
 
