@@ -1,0 +1,65 @@
+{
+  "screenshots": [
+    {
+      "file": "domain-designer.png",
+      "capturedAt": "a46de5d2",
+      "watch": [
+        "apps/service-management/src",
+        "apps/service-management/index.html",
+        "apps/service-management/script.js",
+        "apps/service-management/styles.css",
+        "apps/service-management/tokens.css",
+        "packages/designer-core/src"
+      ]
+    },
+    {
+      "file": "architecture-designer.png",
+      "capturedAt": "a46de5d2",
+      "watch": [
+        "apps/service-management/src",
+        "apps/service-management/index.html",
+        "apps/service-management/script.js",
+        "apps/service-management/styles.css",
+        "apps/service-management/tokens.css"
+      ]
+    },
+    {
+      "file": "openapi-swagger.png",
+      "capturedAt": "a46de5d2",
+      "watch": [
+        "apps/service-management/src",
+        "apps/service-management/index.html",
+        "apps/service-management/script.js",
+        "apps/service-management/styles.css",
+        "apps/service-management/tokens.css",
+        "apps/backend-template/OASdoc"
+      ]
+    },
+    {
+      "file": "code-workspace.png",
+      "capturedAt": "a46de5d2",
+      "watch": [
+        "apps/service-management/src",
+        "apps/service-management/index.html",
+        "apps/service-management/script.js",
+        "apps/service-management/styles.css",
+        "apps/service-management/tokens.css",
+        "packages/designer-core/src"
+      ]
+    },
+    {
+      "file": "frontend-dashboard.png",
+      "capturedAt": "a46de5d2",
+      "watch": [
+        "apps/frontend/src"
+      ]
+    },
+    {
+      "file": "frontend-xcrud-users.png",
+      "capturedAt": "a46de5d2",
+      "watch": [
+        "apps/frontend/src"
+      ]
+    }
+  ]
+}

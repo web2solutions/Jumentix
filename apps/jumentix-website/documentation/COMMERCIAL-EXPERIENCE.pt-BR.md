@@ -74,6 +74,15 @@ Use uma conta do seed (`apps/backend-template/seed/users.ts`). O script carrega 
 do Service Management, divide em dois serviços para a visão de arquitetura e entra no frontend
 para as visões administrativa e de dashboard.
 
+`public/product/screenshots.json` lista cada imagem, o commit em que foi capturada (`capturedAt`,
+escrito pelo script de captura) e os caminhos de código da tela que ela mostra (`watch`).
+`bun run website:check-screenshot-freshness` roda no `ci:gate` e avisa — sem falhar — quando um
+caminho observado mudou depois da captura, nomeando os commits, para que uma imagem desatualizada
+apareça no log do gate em vez de ser notada por um visitante. Ele só falha quando o próprio
+manifesto está errado: imagem ausente do manifesto ou do disco, entrada sem `watch`, ou um
+`capturedAt` que não é um commit (um clone raso só avisa). Depois de recapturar, faça commit das
+imagens e do manifesto juntos.
+
 Toda imagem do site mostra o próprio Jumentix. As sobras do template inicial usado no scaffold —
 o placeholder `mantine+nextjs+nextra-template.png`, os componentes sem uso `Welcome`,
 `ProductHunt`, `Content`, `Sponsors` e `ColorSchemeToggle`, as listas de links do autor do
