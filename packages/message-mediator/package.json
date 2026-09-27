@@ -12,7 +12,8 @@
   ],
   "dependencies": {
     "amqplib": "^2.0.1",
-    "bullmq": "^6.3.8"
+    "bullmq": "^6.3.8",
+    "ioredis": "^5.4.1"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
