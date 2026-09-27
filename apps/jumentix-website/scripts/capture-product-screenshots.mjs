@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Capture the website's product screenshots from the running applications
- * (JUM-896). Every image under public/product/ is produced here, so a refresh
+ * Capture the website's product screenshots from the running applications.
+ * Every image under public/product/ is produced here, so a refresh
  * is one command against current builds rather than a manual session.
  *
  * Prerequisites (see documentation/COMMERCIAL-EXPERIENCE.md):
@@ -18,6 +18,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -25,6 +26,7 @@ const require = createRequire(import.meta.url);
 const { webkit } = require('playwright-webkit');
 
 const websiteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const manifestPath = path.join(websiteRoot, 'public', 'product', 'screenshots.json');
 const smUrl = process.env.SERVICE_MANAGEMENT_URL ?? 'http://127.0.0.1:3200';
 const feUrl = process.env.FRONTEND_URL ?? 'http://127.0.0.1:3001';
 const outDir = process.env.SCREENSHOT_OUT ?? path.join(websiteRoot, 'public', 'product');
@@ -115,6 +117,20 @@ async function captureFrontend(browser) {
   await page.close();
 }
 
+/**
+ * Stamp every manifest entry with the commit just captured, so
+ * check-screenshot-freshness.mjs measures staleness from this capture.
+ * Captures written elsewhere (SCREENSHOT_OUT) leave the manifest alone.
+ */
+function stampManifest() {
+  if (path.resolve(outDir) !== path.dirname(manifestPath)) return;
+  const commit = execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], { cwd: websiteRoot, encoding: 'utf8' }).trim();
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  for (const entry of manifest.screenshots) entry.capturedAt = commit;
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  console.log(`[capture] screenshots.json capturedAt=${commit}`);
+}
+
 const browser = await webkit.launch();
 try {
   await captureServiceManagement(browser);
@@ -122,3 +138,4 @@ try {
 } finally {
   await browser.close();
 }
+stampManifest();

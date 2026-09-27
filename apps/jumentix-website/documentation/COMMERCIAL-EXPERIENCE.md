@@ -75,6 +75,15 @@ Use a seeded account (`apps/backend-template/seed/users.ts`). The script loads t
 Management sample model, splits it into two services for the architecture view, and signs in to
 the frontend for the admin and dashboard views.
 
+`public/product/screenshots.json` lists each image, the commit it was captured at (`capturedAt`,
+written by the capture script) and the source paths of the screen it shows (`watch`).
+`bun run website:check-screenshot-freshness` runs in `ci:gate` and warns — without failing — when
+a watched path changed after the capture, naming the commits, so a stale image is visible in the
+gate log instead of being noticed by a visitor. It fails only when the manifest itself is wrong: an
+image missing from the manifest or from disk, an entry without `watch`, or a `capturedAt` that is
+not a commit (a shallow clone only warns). After a recapture, commit the images and the manifest
+together.
+
 Every image on the site shows Jumentix itself. The starter-template leftovers the site was
 scaffolded with — the `mantine+nextjs+nextra-template.png` placeholder, the unused `Welcome`,
 `ProductHunt`, `Content`, `Sponsors` and `ColorSchemeToggle` components, the template author's
