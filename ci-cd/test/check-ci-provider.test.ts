@@ -245,6 +245,42 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('must not expose remote-Docker services through localhost');
   });
 
+  it('fails when CircleCI coverage drops the origin/dev baseline for dev→main promotions', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch',
+          'bun run coverage:patch'
+        )
+      );
+    });
+    expect(run(directory).output).toContain(
+      'CircleCI coverage must use origin/dev as the patch baseline for dev→main promotions'
+    );
+  });
+
+  it('fails when CircleCI coverage drops the origin/main baseline for generated release PRs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').replace(
+          'JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch',
+          'bun run coverage:patch'
+        )
+      );
+    });
+    expect(run(directory).output).toContain(
+      'CircleCI coverage must use origin/main as the patch baseline for changelog/release reconciliation PRs'
+    );
+  });
+
   it('fails when CircleCI writes untrusted PR metadata to BASH_ENV with JSON quoting', () => {
     expect.hasAssertions();
 

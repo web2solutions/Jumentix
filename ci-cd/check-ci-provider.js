@@ -464,6 +464,16 @@ if (fs.existsSync(circleciPath)) {
   if (!/needs-frontend-patch-coverage\.js/.test(circleCoverageBlock)) {
     failures.push('CircleCI coverage must gate frontend coverage with needs-frontend-patch-coverage.js');
   }
+  if (!/JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/.test(circleCoverageBlock)) {
+    failures.push(
+      'CircleCI coverage must use origin/dev as the patch baseline for dev→main promotions'
+    );
+  }
+  if (!/JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/.test(circleCoverageBlock)) {
+    failures.push(
+      'CircleCI coverage must use origin/main as the patch baseline for changelog/release reconciliation PRs'
+    );
+  }
 
   if (!fs.existsSync(serviceWaitPath)) {
     failures.push('CircleCI service readiness helper is missing: ci-cd/wait-for-ci-services.sh');

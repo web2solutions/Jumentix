@@ -399,7 +399,19 @@ jobs:
             source "$BASH_ENV"
             if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
               bun run coverage:merge
-              bun run coverage:patch
+              # Mirror .github/workflows/ci.yml: a dev→main promotion has no new
+              # patch beyond protected `dev` (PR #548 / JUM-900). Measuring
+              # against origin/main re-litigates the whole promotion history and
+              # fails closed on already-gated task work (CircleCI job 3006).
+              BASE_REF="${JUMENTIX_PR_BASE_REF:-}"
+              HEAD_REF="${JUMENTIX_PR_HEAD_REF:-${CIRCLE_BRANCH:-}}"
+              if [ "$BASE_REF" = "main" ] && [ "$HEAD_REF" = "dev" ]; then
+                JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch
+              elif [ "$BASE_REF" = "main" ] && { [[ "$HEAD_REF" =~ ^chore/changelog-sync-[0-9a-f]{8}$ ]] || [[ "$HEAD_REF" =~ ^chore/release-v[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$HEAD_REF" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
+                JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch
+              else
+                bun run coverage:patch
+              fi
             else
               echo "Patch coverage is PR-only; project coverage already passed."
             fi
