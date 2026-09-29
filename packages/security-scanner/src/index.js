@@ -120,6 +120,9 @@ const ACCEPTED_RISK = {
   'GHSA-8cw4-87c7-c6xx': { until: '2026-10-31', reason: 'csv-parse prototype replacement via columns path inherited transitively; awaiting upstream' },
   'GHSA-55q2-fjhq-7xh7': { until: '2026-10-31', reason: 'DOMPurify IN_PLACE hook XSS inherited via website/docs sanitization; awaiting upstream' },
   'GHSA-vwc7-r8mq-g2x9': { until: '2026-10-31', reason: 'adm-zip symlink overwrite inherited via cassandra-driver; awaiting upstream consuming fixed release' },
+  'GHSA-8238-w5pm-2374': { until: '2026-10-31', reason: 'adm-zip async DEFLATE unhandled error DoS inherited via cassandra-driver; awaiting upstream' },
+  'GHSA-c6fg-446q-cg94': { until: '2026-10-31', reason: 'adm-zip getDataAsync maxOutputLength bypass inherited via cassandra-driver; awaiting upstream' },
+  'GHSA-p634-w6r4-rjp2': { until: '2026-10-31', reason: 'adm-zip duplicate ZIP entry name mismatch inherited via cassandra-driver; awaiting upstream' },
 };
 
 /**
