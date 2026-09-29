@@ -174,7 +174,7 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
   const recordedVersions = manifest.packageVersions && typeof manifest.packageVersions === 'object'
     ? manifest.packageVersions
     : {};
-  for (const name of [...new Set([...Object.keys(expectedVersions), ...Object.keys(recordedVersions)])].sort()) {
+  for (const name of [...new Set([...Object.keys(expectedVersions), ...Object.keys(recordedVersions)])].sort((left, right) => left.localeCompare(right))) {
     if (expectedVersions[name] !== recordedVersions[name]) {
       failures.push(
         `[cli-init template-freshness] package version drift: ${name}`
