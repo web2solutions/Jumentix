@@ -4,12 +4,17 @@
  * binary answered an authentication question (Sonar javascript:S4036,
  * code-scanning alert #114); these tests pin the absolute-path resolution
  * and its fail-closed behaviour.
+ *
+ * JUM-913: when Bun is `execPath`, npm-cli.js must still run under Node so
+ * provenance attestation does not hit ERR_OSSL_NO_DEFAULT_DIGEST.
  */
 
 const {
+  NODE_INSTALL_CANDIDATES,
   NPM_INSTALL_CANDIDATES,
   NPM_SCOPE,
   checkNpmOrgAccess,
+  resolveNodeRunner,
   resolveNpmCommand
 } = require('../check-npm-org-integration');
 
@@ -22,7 +27,7 @@ describe('resolveNpmCommand (JUM-859)', () => {
         npm_node_execpath: '/usr/local/bin/node'
       },
       execPath: '/should/not/be/used',
-      exists: () => false
+      exists: (candidate: string) => candidate === '/usr/local/bin/node'
     });
     expect(resolved).toStrictEqual({
       command: '/usr/local/bin/node',
@@ -35,7 +40,7 @@ describe('resolveNpmCommand (JUM-859)', () => {
     const resolved = resolveNpmCommand({
       env: { npm_execpath: '/usr/lib/node_modules/npm/bin/npm-cli.js' },
       execPath: '/usr/bin/node',
-      exists: () => false
+      exists: (candidate: string) => candidate === '/usr/bin/node'
     });
     expect(resolved.command).toBe('/usr/bin/node');
     expect(resolved.argsPrefix).toStrictEqual(['/usr/lib/node_modules/npm/bin/npm-cli.js']);
@@ -43,20 +48,29 @@ describe('resolveNpmCommand (JUM-859)', () => {
 
   it('ignores npm_execpath pointing at bun (script-compat self-report)', () => {
     expect.hasAssertions();
+    const present = new Set([
+      '/usr/bin/node',
+      '/usr/lib/node_modules/npm/bin/npm-cli.js'
+    ]);
     const resolved = resolveNpmCommand({
       env: { npm_execpath: '/home/ci/.bun/bin/bun' },
       execPath: '/usr/bin/node',
-      exists: (candidate: string) => candidate === '/usr/lib/node_modules/npm/bin/npm-cli.js'
+      exists: (candidate: string) => present.has(candidate)
     });
+    expect(resolved.command).toBe('/usr/bin/node');
     expect(resolved.argsPrefix).toStrictEqual(['/usr/lib/node_modules/npm/bin/npm-cli.js']);
   });
 
   it('resolves the npm bundled next to the running node binary', () => {
     expect.hasAssertions();
+    const present = new Set([
+      '/usr/bin/node',
+      '/usr/lib/node_modules/npm/bin/npm-cli.js'
+    ]);
     const resolved = resolveNpmCommand({
       env: {},
       execPath: '/usr/bin/node',
-      exists: (candidate: string) => candidate === '/usr/lib/node_modules/npm/bin/npm-cli.js'
+      exists: (candidate: string) => present.has(candidate)
     });
     expect(resolved).toStrictEqual({
       command: '/usr/bin/node',
@@ -67,20 +81,57 @@ describe('resolveNpmCommand (JUM-859)', () => {
   it('walks the fixed install candidates in order', () => {
     expect.hasAssertions();
     const seen: string[] = [];
+    const present = new Set(['/custom/bin/node', NPM_INSTALL_CANDIDATES[1]]);
     const resolved = resolveNpmCommand({
       env: {},
       execPath: '/custom/bin/node',
       exists: (candidate: string) => {
         seen.push(String(candidate));
-        return candidate === NPM_INSTALL_CANDIDATES[1];
+        return present.has(candidate);
       }
     });
     expect(resolved.argsPrefix).toStrictEqual([NPM_INSTALL_CANDIDATES[1]]);
+    expect(resolved.command).toBe('/custom/bin/node');
     expect(seen).toStrictEqual([
+      '/custom/bin/node',
       '/custom/lib/node_modules/npm/bin/npm-cli.js',
       NPM_INSTALL_CANDIDATES[0],
       NPM_INSTALL_CANDIDATES[1]
     ]);
+  });
+
+  it('never uses Bun as the Node runner for npm-cli.js (JUM-913)', () => {
+    expect.hasAssertions();
+    const present = new Set(['/usr/bin/node', NPM_INSTALL_CANDIDATES[1]]);
+    const resolved = resolveNpmCommand({
+      env: {},
+      execPath: '/home/runner/.bun/bin/bun',
+      exists: (candidate: string) => present.has(candidate)
+    });
+    expect(resolved.command).toBe('/usr/bin/node');
+    expect(resolved.argsPrefix).toStrictEqual([NPM_INSTALL_CANDIDATES[1]]);
+  });
+
+  it('honours NPM_NODE_EXE over Bun execPath (JUM-913)', () => {
+    expect.hasAssertions();
+    const nodeExe = '/opt/hostedtoolcache/node/22.0.0/x64/bin/node';
+    const present = new Set([nodeExe, NPM_INSTALL_CANDIDATES[2]]);
+    const resolved = resolveNpmCommand({
+      env: { NPM_NODE_EXE: nodeExe },
+      execPath: '/home/runner/.bun/bin/bun',
+      exists: (candidate: string) => present.has(candidate)
+    });
+    expect(resolved.command).toBe(nodeExe);
+    expect(resolved.argsPrefix).toStrictEqual([NPM_INSTALL_CANDIDATES[2]]);
+  });
+
+  it('fails closed when Bun is execPath and no Node binary resolves (JUM-913)', () => {
+    expect.hasAssertions();
+    expect(() => resolveNpmCommand({
+      env: {},
+      execPath: '/home/runner/.bun/bin/bun',
+      exists: () => false
+    })).toThrow(/Could not resolve a Node binary/);
   });
 
   it('fails closed when no absolute npm CLI resolves', () => {
@@ -88,7 +139,7 @@ describe('resolveNpmCommand (JUM-859)', () => {
     expect(() => resolveNpmCommand({
       env: {},
       execPath: '/usr/bin/node',
-      exists: () => false
+      exists: (candidate: string) => candidate === '/usr/bin/node'
     })).toThrow(/Could not resolve the npm CLI/);
   });
 
@@ -96,6 +147,25 @@ describe('resolveNpmCommand (JUM-859)', () => {
     expect.hasAssertions();
     expect(process.exitCode).toBeUndefined();
     expect(resolveNpmCommand).toStrictEqual(expect.any(Function));
+  });
+});
+
+describe('resolveNodeRunner (JUM-913)', () => {
+  it('returns execPath when it is already Node', () => {
+    expect.hasAssertions();
+    expect(resolveNodeRunner({
+      execPath: '/usr/bin/node',
+      exists: (candidate: string) => candidate === '/usr/bin/node'
+    })).toBe('/usr/bin/node');
+  });
+
+  it('walks NODE_INSTALL_CANDIDATES when execPath is Bun', () => {
+    expect.hasAssertions();
+    expect(NODE_INSTALL_CANDIDATES[0]).toBe('/usr/bin/node');
+    expect(resolveNodeRunner({
+      execPath: '/home/runner/.bun/bin/bun',
+      exists: (candidate: string) => candidate === NODE_INSTALL_CANDIDATES[1]
+    })).toBe(NODE_INSTALL_CANDIDATES[1]);
   });
 });
 
