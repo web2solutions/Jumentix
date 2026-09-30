@@ -77,6 +77,7 @@ const ACCEPTED_RISK = {
   // Pins land in a follow-up security task; expiry keeps these temporary.
   'GHSA-2xp9-vwfh-vxw4': { until: '2026-10-31', reason: 'Next.js image-opt RCE inherited via website Nextra stack; bump coordinated with website release' },
   'GHSA-p293-qw3h-jr36': { until: '2026-10-31', reason: 'Next.js Windows RCE inherited via website Nextra stack; bump coordinated with website release' },
+  'GHSA-vcvr-r3jv-pc5j': { until: '2026-10-31', reason: 'Next.js next/og ImageResponse RCE inherited via website Nextra stack; bump coordinated with website release' },
   'GHSA-7q85-xj36-vmfc': { until: '2026-10-31', reason: 'adm-zip memory allocation inherited via cassandra-driver; awaiting upstream consuming fixed release' },
   'GHSA-j5f4-cc29-5x44': { until: '2026-10-31', reason: 'adm-zip SUID/SGID extraction inherited via cassandra-driver; awaiting upstream consuming fixed release' },
   'GHSA-rcw4-f5rp-g42v': { until: '2026-10-31', reason: 'adm-zip decompression-bomb bypass inherited via cassandra-driver; awaiting upstream consuming fixed release' },

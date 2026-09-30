@@ -105,6 +105,7 @@ describe('public npm package release policy', () => {
     );
     const setsNpmNodeExe = workflow.includes('export NPM_NODE_EXE=');
     const invokesPublishUnderNode = workflow.includes('node ci-cd/publish-npm-cohort.js');
+    const wiresGithubTokenForTags = /GITHUB_TOKEN:\s*\$\{\{\s*github\.token\s*\}\}/.test(workflow);
     expect({
       manual: workflow.includes('workflow_dispatch:'),
       mainOnly: workflow.includes('github.ref == \'refs/heads/main\''),
@@ -116,6 +117,7 @@ describe('public npm package release policy', () => {
       contentsWrite: /contents:\s*write/.test(workflow),
       publishCohort: invokesPublishUnderNode,
       publishUnderNode: setsNpmNodeExe,
+      packageTagToken: wiresGithubTokenForTags,
       publishesCli: publishScript.includes('\'cli-init\''),
       publishesRuntime: publishScript.includes('\'persistence-contracts\''),
       publishesSdks: publishScript.includes('\'sdk-rest-client\'')
@@ -130,6 +132,7 @@ describe('public npm package release policy', () => {
       contentsWrite: true,
       publishCohort: true,
       publishUnderNode: true,
+      packageTagToken: true,
       publishesCli: true,
       publishesRuntime: true,
       publishesSdks: true
