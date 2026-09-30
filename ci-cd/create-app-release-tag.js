@@ -172,15 +172,31 @@ function listCliTemplateReleasePaths(rootDir) {
   return relativePaths;
 }
 
-/** Build signed-commit additions without leaving a dirty worktree. */
+/**
+ * Build signed-commit additions without leaving a dirty worktree.
+ * Reads every file as a Buffer so PNG/ICO survive GitHub API base64 encoding.
+ * Fail-closed: rebuilt templates must pass cli:check-template-freshness before
+ * we open the release PR (JUM-914).
+ */
 function buildLockedVersionAdditions(rootDir, version) {
   const files = applyLockedVersion(rootDir, version);
   rebuildCliTemplates(rootDir);
+  const {
+    validateTemplateFreshness
+  } = require('../packages/cli-init/scripts/check-template-freshness.js');
+  const freshnessFailures = validateTemplateFreshness(rootDir);
+  if (freshnessFailures.length > 0) {
+    resetWorktree(rootDir);
+    throw new Error(
+      `CLI templates stale after release rebuild:\n${freshnessFailures.join('\n')}`
+    );
+  }
   const templates = listCliTemplateReleasePaths(rootDir);
   const relativePaths = [files.rootPackage, files.policy, ...files.apps, ...templates];
   const additions = relativePaths.map((rel) => ({
     path: rel,
-    contents: fs.readFileSync(path.join(rootDir, rel), 'utf8')
+    // Binary-safe: do not decode as utf8 (corrupts PNG/ICO — JUM-914).
+    contents: fs.readFileSync(path.join(rootDir, rel))
   }));
   resetWorktree(rootDir);
   return {
