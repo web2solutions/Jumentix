@@ -120,26 +120,28 @@ function defaultPublishIo() {
     },
     tag(tagName) {
       // Prefer the GitHub API for annotated package tags. `git push origin
-      // <tag>` from Actions hung indefinitely after the first successful
-      // npm publish (run 36724567997 — @jumentix/cana@0.1.0 landed, no tag
-      // reached the remote). createAnnotatedTagRef uses the same path as
-      // app-release tagging (JUM-913 follow-up).
+      // <tag>` from Actions fires husky pre-push (deps:audit) and previously
+      // hung or failed closed (runs 36724567997 / 36735005194). Always use
+      // createAnnotatedTagRef in CI — same path as app-release (JUM-913).
       const env = process.env;
       const repository = resolveRepository(env);
       const token = resolveToken(env);
-      if (repository && token) {
-        const commitSha = runGit(['rev-parse', 'HEAD']);
-        createAnnotatedTagRef({
-          repository,
-          tag: tagName,
-          message: `npm publish ${tagName}`,
-          commitSha,
-          env
-        });
-        return;
+      if (!repository || !token) {
+        throw new Error(
+          `Package tag ${tagName} requires GitHub API credentials `
+            + '(GITHUB_TOKEN or GH_TOKEN or CHANGELOG_GH_TOKEN, plus GITHUB_REPOSITORY). '
+            + 'git push of package tags is not supported: husky pre-push runs the '
+            + 'full quality gate and fails closed on new advisories.'
+        );
       }
-      runGit(['tag', '-a', tagName, '-m', `npm publish ${tagName}`]);
-      runGit(['push', 'origin', tagName], { inherit: true });
+      const commitSha = runGit(['rev-parse', 'HEAD']);
+      createAnnotatedTagRef({
+        repository,
+        tag: tagName,
+        message: `npm publish ${tagName}`,
+        commitSha,
+        env
+      });
     },
     log: console.log
   };

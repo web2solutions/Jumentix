@@ -77,6 +77,12 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_CD }}
           RELEASE: ${{ inputs.release }}
+          # Explicit: secrets Environment jobs have been observed without a
+          # usable default token for createAnnotatedTagRef (JUM-913) — fall
+          # through to git push then tripped husky pre-push + deps:audit.
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CHANGELOG_GH_TOKEN || github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
           # npm provenance attestation needs Node's OpenSSL. Invoking via
@@ -84,4 +90,5 @@ jobs:
           # failed with ERR_OSSL_NO_DEFAULT_DIGEST (app-release 36716475438).
           export NPM_NODE_EXE="$(command -v node)"
           test -x "$NPM_NODE_EXE"
+          test -n "${GH_TOKEN:-}${GITHUB_TOKEN:-}"
           node ci-cd/publish-npm-cohort.js "$RELEASE"
