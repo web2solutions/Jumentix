@@ -322,6 +322,28 @@ describe('template freshness gate (JUM-845)', () => {
     }
   });
 
+  it('reports @jumentix/* version drift so generated pins stay publishable (JUM-902)', () => {
+    expect.hasAssertions();
+    const root = fixtureRoot();
+    try {
+      writeFile(root, 'packages/cana/package.json', '{"name":"@jumentix/cana","version":"0.1.0"}\n');
+      writeFile(root, 'packages/secret/package.json', '{"name":"@jumentix/secret","version":"1.0.0","private":true}\n');
+      buildTemplates(root, { sourceCommit: 'fixture-commit' });
+      const manifestPath = path.join(root, 'packages/cli-init/templates.manifest.json');
+
+      expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).packageVersions).toStrictEqual({ '@jumentix/cana': '0.1.0' });
+
+      writeFile(root, 'packages/cana/package.json', '{"name":"@jumentix/cana","version":"0.2.0"}\n');
+
+      expect(validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' })).toStrictEqual([
+        '[cli-init template-freshness] package version drift: @jumentix/cana (manifest 0.1.0, source 0.2.0)'
+        + ' — run `bun run cli:build-templates`'
+      ]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('reports stale manifest entries', () => {
     expect.hasAssertions();
     const root = fixtureRoot();

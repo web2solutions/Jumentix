@@ -6,6 +6,11 @@ const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 /**
  * Copy the already-reviewed swagger-ui-dist files from backend-template OASdoc
  * into the Service Management vendor tree (JUM-818).
+ *
+ * OASdoc carries swagger-ui-dist 5.33.0 (npm integrity
+ * sha512-wpdK+m6BU5yj6pmUdMskZVTSWYG4DLglAx3sIhylloY37i8O37IrH+YEpqdXNfpaTGxILRBFzUqLF2jKqbfI7A==).
+ * Jumentix contracts are OpenAPI 3.1, which swagger-ui renders from 5.x; the
+ * 3.20.3 bundle vendored before JUM-907 refused them.
  */
 
 const SOURCE_DIR = path.join('apps', 'backend-template', 'OASdoc');

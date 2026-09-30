@@ -236,6 +236,10 @@ Um primeiro ciclo completo:
    `domain-designer-oas-3.1.json`.
 4. Exclua o domínio de exemplo e modele o seu.
 
+## 5.1 Abas Architecture e OpenAPI
+
+Architecture começa como um Core (Users + demais domínios). Separe com Add Service, atribua domínios, desenhe links. OpenAPI mostra o OAS no Swagger UI; escolha um serviço para filtrar operações.
+
 ## 6. Domain Designer
 
 ### 6.1 Canvas e navegação
@@ -362,7 +366,7 @@ discriminadora, e então `Save OAS Composition`.
 
 Onde isso aterrissa nos documentos exportados — e as garantias exatas de
 fidelidade de cada travessia — é assunto de
-[Garantias de Paridade de Contrato](/docs/pt-BR/jumentix/reference/service-management-contract-parity).
+Garantias de Paridade de Contrato.
 
 ### 6.6 Validação, gate de exportação e diff de schema
 
@@ -420,7 +424,7 @@ explícita.
 
 Versionamento de pacote de domínio, grafos de dependência e política de
 conflito são assunto de
-[Colaboração e Empacotamento](/docs/pt-BR/jumentix/reference/service-management-collaboration-packaging).
+Colaboração e Empacotamento.
 
 ## 7. Communication Interface Designer
 
@@ -474,7 +478,7 @@ silenciosa.
 ### 8.3 Variáveis de ambiente de runtime
 
 O editor expõe as chaves de runtime em dois níveis. A lista de escrita é uma
-decisão de segurança, fixada pelo Requisito `126`:
+decisão de segurança:
 
 | Nível | Chaves |
 | --- | --- |
@@ -558,7 +562,7 @@ versão de runtime. Alvos gerenciados por PM2 também recebem um perfil PM2.
 
 ![Deploy Management com um alvo EC2 e um alvo Cloudflare Workers registrados](/docs-assets/documentation/images/service-manager/08-deploy-management.png "Deploy Management")
 
-O formulário valida contra a matriz de deploy do Requisito `059` e explica cada
+O formulário valida contra a matriz de deploy e explica cada
 recusa:
 
 | Tipo de alvo | Tipos de serviço que pode rodar | Perfil PM2 | Região significa |
@@ -571,7 +575,7 @@ runtime sozinho é recusado. Alvos podem ser editados no lugar e duplicados;
 `Cancel` abandona uma edição sem aplicá-la.
 
 A matriz, o contrato de metadados e as regras de ciclo de vida são assunto de
-[Console de Operações](/docs/pt-BR/jumentix/reference/service-management-operations-console).
+Console de Operações.
 
 ## 10. Onde seu trabalho é guardado
 
@@ -608,9 +612,9 @@ Exporte um modelo JSON antes de qualquer mudança arriscada: esse arquivo é o
 
 Estados de armazenamento, a migração unidirecional e a matriz offline são
 assunto de
-[Adoção do Cana, Migração e Comportamento Offline](/docs/pt-BR/jumentix/reference/service-management-cana-adoption).
+Adoção do Cana, Migração e Comportamento Offline.
 Os fluxos de instalação, atualização e recuperação são assunto de
-[Design System e Shell PWA](/docs/pt-BR/jumentix/reference/service-management-design-system-pwa).
+Design System e Shell PWA.
 
 ## 11. Do modelo ao serviço em execução
 
@@ -730,11 +734,11 @@ de catálogo.
 
 - [Contratos de Ambiente de Runtime](/docs/pt-BR/jumentix/reference/service-management-runtime-environment)
 - [Recursos e Uso do Domain Designer](/docs/pt-BR/jumentix/reference/domain-designer-features)
-- [Arquitetura de Módulos e a Porta IDesignerStore](/docs/pt-BR/jumentix/reference/service-management-module-architecture)
-- [Garantias de Paridade de Contrato](/docs/pt-BR/jumentix/reference/service-management-contract-parity)
-- [Console de Operações](/docs/pt-BR/jumentix/reference/service-management-operations-console)
-- [Adoção do Cana, Migração e Comportamento Offline](/docs/pt-BR/jumentix/reference/service-management-cana-adoption)
-- [Design System e Shell PWA](/docs/pt-BR/jumentix/reference/service-management-design-system-pwa)
-- [Colaboração e Empacotamento](/docs/pt-BR/jumentix/reference/service-management-collaboration-packaging)
+- Arquitetura de Módulos e a Porta IDesignerStore
+- Garantias de Paridade de Contrato
+- Console de Operações
+- Adoção do Cana, Migração e Comportamento Offline
+- Design System e Shell PWA
+- Colaboração e Empacotamento
 - [Criando SPA/PWA com Jumentix](/docs/pt-BR/jumentix/guides/spa-pwa)
 - [Criando uma API REST com Jumentix](/docs/pt-BR/jumentix/guides/rest-api)

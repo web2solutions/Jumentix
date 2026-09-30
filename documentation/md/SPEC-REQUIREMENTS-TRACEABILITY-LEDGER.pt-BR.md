@@ -129,6 +129,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
   - links de índice de documentos atualizados
   - registro de requisitos sincronizado
   - `bun run requirements:check` aprovado
+  - `bun run docs:check-audience` aprovado (matriz de audiência do Requisito `066`: README e site sem vocabulário interno de governança)
   - paridade de instruções de agentes (Codex, Claude Code, Grok, OpenCode, Kimi Code CLI)
   - registros de cadastro de agentes e atribuição por disponibilidade
   - registros de associação ao milestone, parentagem do épico focado, agrupamento por natureza e

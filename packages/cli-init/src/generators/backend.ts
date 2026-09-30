@@ -4,6 +4,7 @@ import { stringify as stringifyYaml } from 'yaml';
 import type { GenerationPlan, PlanService } from '../sources/types';
 import { injectDesignerDomains } from './domains';
 import { renderEnvDev } from './env';
+import { resolveJumentixPin, type JumentixPin } from './jumentixVersions';
 import { buildServicePackageJson } from './packageJson';
 import {
   resolveBackendTemplateRoot,
@@ -18,7 +19,7 @@ export type GenerateBackendOptions = {
   outputDir: string;
   /** npm scope from project name (`@<project>/<service>`). */
   projectName: string;
-  /** Pin for `@jumentix/*` deps (defaults to package version). */
+  /** Force one version for every `@jumentix/*` dep (default: recorded per-package versions). */
   jumentixVersion?: string;
   /** Override template root (tests). */
   templateRoot?: string;
@@ -39,16 +40,6 @@ export type GenerateBackendResult = {
   services: GeneratedServiceResult[];
   appsDir: string;
 };
-
-function readCliVersion(packageRoot: string): string {
-  try {
-    const raw = fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8');
-    const parsed = JSON.parse(raw) as { version?: string };
-    return parsed.version && parsed.version !== '0.0.0' ? parsed.version : '0.0.0';
-  } catch {
-    return '0.0.0';
-  }
-}
 
 function copyTemplateSlice(
   templateRoot: string,
@@ -101,12 +92,12 @@ function writePackageJson(
   serviceRoot: string,
   service: PlanService,
   projectName: string,
-  jumentixVersion: string
+  pin: JumentixPin
 ): string {
   const pkg = buildServicePackageJson({
     projectName,
     serviceId: service.id,
-    jumentixVersion,
+    pin,
     http: service.interfaces.http,
     realtime: service.interfaces.realtime,
     db: service.db
@@ -165,7 +156,7 @@ export async function generateBackendService(options: {
   service: PlanService;
   outputDir: string;
   projectName: string;
-  jumentixVersion: string;
+  pin: JumentixPin;
   templateRoot: string;
   log?: (message?: string) => void;
 }): Promise<GeneratedServiceResult> {
@@ -174,7 +165,7 @@ export async function generateBackendService(options: {
     service,
     outputDir,
     projectName,
-    jumentixVersion,
+    pin,
     templateRoot,
     log = () => undefined
   } = options;
@@ -194,7 +185,7 @@ export async function generateBackendService(options: {
 
   log(`Generating backend service "${service.id}" → apps/${serviceFolder}`);
   const droppedPaths = copyTemplateSlice(templateRoot, serviceRoot, slice);
-  const packageName = writePackageJson(serviceRoot, service, projectName, jumentixVersion);
+  const packageName = writePackageJson(serviceRoot, service, projectName, pin);
   writeEnvDev(serviceRoot, service);
   writeFilteredOas(serviceRoot, service, plan);
   writeMinimalTsconfig(serviceRoot);
@@ -229,7 +220,7 @@ export async function generateBackend(
 
   const packageRoot = path.resolve(__dirname, '..', '..');
   const templateRoot = options.templateRoot || resolveBackendTemplateRoot(packageRoot);
-  const jumentixVersion = options.jumentixVersion || readCliVersion(packageRoot);
+  const pin = resolveJumentixPin(packageRoot, options.jumentixVersion);
   const scope = sanitizePackageScope(projectName);
 
   const selected = serviceIds?.length
@@ -257,7 +248,7 @@ export async function generateBackend(
       service,
       outputDir,
       projectName: scope,
-      jumentixVersion,
+      pin,
       templateRoot,
       log
     });

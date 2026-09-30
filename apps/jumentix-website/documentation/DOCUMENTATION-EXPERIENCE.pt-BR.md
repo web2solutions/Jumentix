@@ -63,6 +63,23 @@ content/
     └── <mesma hierarquia>
 ```
 
+## Público e Proveniência de Mantenedor
+
+A árvore publicada atende quem integra o Jumentix (matriz de público do Requisito 066). As fontes em
+`documentation/md/**` são documentos de contribuidor e podem citar issues do Linear e números de
+requisito como proveniência. O sync separa os dois:
+
+- `stripMaintainerProvenance` (`scripts/content-leaks.mjs`) remove parênteses que só citam issues,
+  requisitos ou PRs — `(JUM-468)`, `([JUM-493](…))`, `(Requisito \`059\`)`,
+  `(entregue pelo JUM-460; Requisito 126 §3)` — e definições de link de referência para o Linear.
+  Escreva a proveniência entre parênteses para que a doc de contribuidor a mantenha e o site a remova.
+- Proveniência citada no meio da prosa não é reescrita; `bun run docs:check-audience` a aponta na
+  página gerada e a fonte é corrigida.
+- Registros de design de mantenedor não são publicados. A cadeia E1–E8 do Service Management
+  (arquitetura de módulos, paridade de contratos, console de operações, adoção do Cana, design
+  system e PWA, colaboração e empacotamento) saiu de `config/content-sources.json` no JUM-895; as
+  URLs antigas `/docs/…/reference/service-management-*` resolvem para o guia do Service Manager.
+
 ## Gates de Publicação
 
 ```bash

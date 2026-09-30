@@ -66,7 +66,7 @@ export function printDoctorHelp(log: (message?: string) => void = console.log): 
   log(`
 jumentix doctor
 
-Diagnose the environment and a generated project's contract files (Req 037 v2 / JUM-852).
+Diagnose the environment and a generated project's contract files.
 
 Checks:
   environment  bun version, node (>=${MIN_NODE_MAJOR} when present), docker availability

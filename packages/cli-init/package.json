@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
+    "cli-init": "./bin/jumentix.js",
     "jumentix": "./bin/jumentix.js",
     "jumentix-init": "./bin/jumentix-init.js",
     "jumentix-bootstrap": "./bin/jumentix-init.js"
@@ -13,6 +14,7 @@
     "bin",
     "dist",
     "templates",
+    "templates.manifest.json",
     "fixtures",
     "README.md",
     "LICENSE.md",

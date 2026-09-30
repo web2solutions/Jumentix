@@ -9,7 +9,7 @@ Repository-owned documentation automation used from root package scripts.
 - `scripts/patch-ptbr-links.mjs` rewrites links in Portuguese artifacts to their translated
   counterparts where those files exist.
 - `scripts/generate-consumer-package-scripts-docs.mjs` reads the real root and workspace manifests
-  and regenerates the consumer package-script reference.
+  and regenerates the contributor package-script reference (`documentation/md/PACKAGE-SCRIPTS-REFERENCE.md`).
 
 ## Root Commands
 

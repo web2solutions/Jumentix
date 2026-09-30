@@ -53,3 +53,16 @@ jobs:
           fi
           export GH_TOKEN="$CHANGELOG_GH_TOKEN"
           bun ci-cd/create-app-release-tag.js --github-api
+
+  # JUM-894: npm publication is automated. Every application release on main
+  # publishes the public packages whose versions are not yet on npm.
+  publish-npm:
+    name: publish-npm
+    needs: create-app-release
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/npm-publish.yml
+    with:
+      release: all
+    secrets: inherit

@@ -180,7 +180,26 @@ function collectExpectedFiles(root = REPO_ROOT, exclusions = DEFAULT_EXCLUSIONS)
   return files;
 }
 
-function buildManifest(expectedFiles, sourceCommit, exclusions = DEFAULT_EXCLUSIONS) {
+/**
+ * Versions of every public `@jumentix/*` workspace package, recorded so the
+ * CLI pins each generated dependency to a version that is actually published
+ * (JUM-902). Packages version independently (Requirement 060).
+ */
+function collectPackageVersions(root = REPO_ROOT) {
+  const packagesDir = path.join(root, 'packages');
+  const versions = {};
+  for (const entry of fs.readdirSync(packagesDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const manifestPath = path.join(packagesDir, entry.name, 'package.json');
+    if (!fs.existsSync(manifestPath)) continue;
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    if (manifest.private || typeof manifest.name !== 'string' || !manifest.name.startsWith('@jumentix/')) continue;
+    versions[manifest.name] = manifest.version;
+  }
+  return Object.fromEntries(Object.entries(versions).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+}
+
+function buildManifest(expectedFiles, sourceCommit, exclusions = DEFAULT_EXCLUSIONS, packageVersions = {}) {
   const files = {};
   for (const [templatePath, meta] of [...expectedFiles.entries()].sort((a, b) => (
     a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0
@@ -196,6 +215,7 @@ function buildManifest(expectedFiles, sourceCommit, exclusions = DEFAULT_EXCLUSI
     sourceCommit,
     exclusions: [...exclusions],
     seeds: { ...SEEDS },
+    packageVersions,
     fileCount: Object.keys(files).length,
     files
   };
@@ -235,7 +255,7 @@ function buildTemplates(root = REPO_ROOT, options = {}) {
   // macOS (and some tools) may drop .DS_Store into freshly created trees.
   stripExcludedFromTree(templatesDir, exclusions);
 
-  const manifest = buildManifest(expected, sourceCommit, exclusions);
+  const manifest = buildManifest(expected, sourceCommit, exclusions, collectPackageVersions(root));
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 
   return {
@@ -274,6 +294,7 @@ module.exports = {
   buildManifest,
   buildTemplates,
   collectExpectedFiles,
+  collectPackageVersions,
   isExcluded,
   matchGlob,
   resolveSourceCommit,

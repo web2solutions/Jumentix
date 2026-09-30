@@ -56,8 +56,38 @@ correspondência no repositório são proibidos.
 ## Prova do produto
 
 A homepage usa o canvas real do Domain Designer como mídia full-bleed na primeira viewport. A
-página de produto usa o mascote como sinal imediato da marca. A captura está em
-`public/product/domain-designer.png`.
+página de produto abre com um tour "Veja funcionando" de seis capturas em `public/product/`:
+`architecture-designer.png`, `domain-designer.png`, `openapi-swagger.png`, `code-workspace.png`
+(Service Management) e `frontend-xcrud-users.png`, `frontend-dashboard.png` (o seed de frontend).
+
+Toda captura sai de um único comando contra os apps rodando — WebKit, 1440×900 em 2×, esquema
+escuro — então atualizar é repetível, não uma sessão manual:
+
+```bash
+bun apps/service-management/server.js                 # Service Management (JUMENTIX_SERVICE_MANAGEMENT_PORT)
+# backend-template em InMemory + `bun run dev` em apps/frontend
+FRONTEND_USERNAME=… FRONTEND_PASSWORD=… \
+  bun run --filter @jumentix/website screenshots:capture
+```
+
+Use uma conta do seed (`apps/backend-template/seed/users.ts`). O script carrega o modelo de exemplo
+do Service Management, divide em dois serviços para a visão de arquitetura e entra no frontend
+para as visões administrativa e de dashboard.
+
+`public/product/screenshots.json` lista cada imagem, o commit em que foi capturada (`capturedAt`,
+escrito pelo script de captura) e os caminhos de código da tela que ela mostra (`watch`).
+`bun run website:check-screenshot-freshness` roda no `ci:gate` e avisa — sem falhar — quando um
+caminho observado mudou depois da captura, nomeando os commits, para que uma imagem desatualizada
+apareça no log do gate em vez de ser notada por um visitante. Ele só falha quando o próprio
+manifesto está errado: imagem ausente do manifesto ou do disco, entrada sem `watch`, ou um
+`capturedAt` que não é um commit (um clone raso só avisa). Depois de recapturar, faça commit das
+imagens e do manifesto juntos.
+
+Toda imagem do site mostra o próprio Jumentix. As sobras do template inicial usado no scaffold —
+o placeholder `mantine+nextjs+nextra-template.png`, os componentes sem uso `Welcome`,
+`ProductHunt`, `Content`, `Sponsors` e `ColorSchemeToggle`, as listas de links do autor do
+template e os estilos `@gfazioli/mantine-*` que eles exigiam — foram removidas (JUM-897). O
+único vestígio é a linha de atribuição no README deste app.
 
 ## Implementação
 

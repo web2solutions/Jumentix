@@ -181,11 +181,12 @@ function playgroundGuideFor(entry: PlaygroundCatalogEntry, locale: CommercialLoc
 const codeSamples = {
   start: [
     {
-      label: 'Install',
+      label: 'Create',
       language: 'shell',
-      code: `bun install
-bun run cli
-bun run dev:express`,
+      code: `npx @jumentix/cli-init init my-product
+cd my-product
+bun install
+bun run dev`,
     },
     {
       label: 'Service contract',
@@ -319,9 +320,10 @@ await taskStore.create(task);`,
     {
       label: 'Docker',
       language: 'shell',
-      code: `bun run docker:up:postgresql
-JUMENTIX_DATABASE_DRIVER=PostgreSQL bun run test:smoke:db:postgresql
-bun run docker:down:postgresql`,
+      code: `npx @jumentix/cli-init init my-product --db=postgres --non-interactive
+cd my-product
+docker compose up -d
+bun install && bun run dev`,
     },
   ],
   deploy: [
@@ -347,6 +349,16 @@ bun run pm2:start:prod:restapi`,
       label: 'Quality gate',
       language: 'shell',
       code: `bun run lint
+bun run test
+bun run build
+jumentix doctor`,
+    },
+  ],
+  contribution: [
+    {
+      label: 'Contribution gate',
+      language: 'shell',
+      code: `bun run lint
 bun run test:unit
 bun run test:integration
 bun run ci:gate`,
@@ -354,26 +366,26 @@ bun run ci:gate`,
   ],
   tooling: [
     {
-      label: 'Fast local loop',
+      label: 'Scaffold',
       language: 'shell',
-      code: `bun install
-bun run website:dev
-bun run ci:affected`,
+      code: `npx @jumentix/cli-init init my-product --mode=hybrid
+cd my-product
+bun install
+bun run dev`,
     },
     {
-      label: 'Workspace gates',
+      label: 'Grow',
       language: 'shell',
-      code: `bun run check-bun-version
-bun run requirements:check
-bun run test-map:check
-bun run ci:gate:branch`,
+      code: `jumentix add domain Billing
+jumentix add service billing --domains Billing
+jumentix add frontend`,
     },
     {
-      label: 'Package workflow',
+      label: 'Maintain',
       language: 'shell',
-      code: `bun run packages:check-suites
-bun run npm:publish:dry-run:packages
-bun run release:governance:check`,
+      code: `bun run test
+jumentix doctor
+jumentix upgrade --dry-run`,
     },
   ],
   quality: [
@@ -381,7 +393,8 @@ bun run release:governance:check`,
       label: 'Requirements',
       language: 'shell',
       code: `bun run requirements:check
-bun run docs:consumers:package-scripts
+bun run test-map:check
+bun run docs:check-audience
 bun run website:test:prepublish`,
     },
     {
@@ -1112,9 +1125,9 @@ function BunToolingBand({
   locale: CommercialLocale;
   alternate?: boolean;
 }) {
-  const packageScriptsHref = locale === 'pt-BR'
-    ? '/docs/pt-BR/jumentix/reference/package-scripts'
-    : '/docs/jumentix/reference/package-scripts';
+  const cliReferenceHref = locale === 'pt-BR'
+    ? '/docs/pt-BR/jumentix/reference/cli'
+    : '/docs/jumentix/reference/cli';
 
   return (
     <Band alternate={alternate}>
@@ -1124,8 +1137,8 @@ function BunToolingBand({
           title={t(locale, 'The fast path is the default path', 'O caminho rápido é o caminho padrão')}
           description={t(
             locale,
-            'Jumentix standardizes on Bun as the pinned monorepo runtime, package manager, script runner, test runner and browser-spec bundler. That keeps local work, CI gates, package checks and website publishing on one toolchain.',
-            'O Jumentix padroniza Bun como runtime, gerenciador de pacotes, executor de scripts, test runner e bundler das specs de browser do monorepo. Isso mantém trabalho local, gates de CI, checagens de pacote e publicação do site em uma ferramenta só.',
+            'Every project the Jumentix CLI generates runs on Bun: one pinned tool is the runtime, package manager, script runner and test runner, so your laptop and your CI run the same thing.',
+            'Todo projeto gerado pelo CLI Jumentix roda em Bun: uma ferramenta pinada é runtime, gerenciador de pacotes, executor de scripts e test runner, então seu notebook e seu CI rodam a mesma coisa.',
           )}
         />
         <div className={classes.twoColumn}>
@@ -1134,31 +1147,31 @@ function BunToolingBand({
             <p>
               {t(
                 locale,
-                'The repository uses Bun where it actually reduces friction: fast installs with workspaces, direct TypeScript execution, repeatable package scripts, focused branch gates, and browser-test bundling before Cypress runs against real IndexedDB and DOM APIs.',
-                'O repositório usa Bun onde ele realmente reduz atrito: installs rápidos com workspaces, execução direta de TypeScript, scripts repetíveis, gates focados por branch e bundling das specs de browser antes de o Cypress rodar contra IndexedDB e DOM reais.',
+                'Bun removes the setup a new project usually needs: workspaces install fast, TypeScript runs without a build step in development, and one set of scripts covers every app in the project.',
+                'Bun elimina o setup que um projeto novo costuma exigir: workspaces instalam rápido, TypeScript roda sem etapa de build em desenvolvimento e um único conjunto de scripts cobre todos os apps do projeto.',
               )}
             </p>
             <ProofList items={[
-              t(locale, 'One pinned version, `bun@1.3.13`, protects every workspace from “works on my machine” drift.', 'Uma versão pinada, `bun@1.3.13`, protege todos os workspaces contra drift de ambiente.'),
-              t(locale, '`bun run --filter` lets package checks stay scoped while full gates remain available for release work.', '`bun run --filter` mantém checagens de pacote focadas enquanto gates completos seguem disponíveis para release.'),
-              t(locale, 'Bun bundles Cana browser specs before Cypress, avoiding Cypress webpack fragility while preserving real-browser evidence.', 'Bun empacota specs browser do Cana antes do Cypress, evitando fragilidade do webpack do Cypress sem perder evidência em browser real.'),
-              t(locale, 'The same CLI drives local dev, docs sync, package dry-runs, security checks and production website publishing.', 'A mesma CLI move dev local, sync de docs, dry-runs de pacote, checagens de segurança e publicação do site em produção.'),
+              t(locale, 'Generated projects pin `bun@1.3.13` in `packageManager`, so every machine runs the same version.', 'Projetos gerados pinam `bun@1.3.13` em `packageManager`, então toda máquina roda a mesma versão.'),
+              t(locale, '`bun run dev`, `test`, `lint` and `build` run across every app in the workspace.', '`bun run dev`, `test`, `lint` e `build` rodam em todos os apps do workspace.'),
+              t(locale, 'Backend services start straight from TypeScript source in development.', 'Serviços backend sobem direto do código TypeScript em desenvolvimento.'),
+              t(locale, '`jumentix add`, `upgrade` and `doctor` keep the project growing and current after the first day.', '`jumentix add`, `upgrade` e `doctor` fazem o projeto crescer e seguir atualizado depois do primeiro dia.'),
             ]} />
             <div className={classes.sectionActions}>
-              <ActionLink href={packageScriptsHref} variant="secondary">
-                {t(locale, 'See Jumentix scripts', 'Ver scripts Jumentix')}
+              <ActionLink href={cliReferenceHref} variant="secondary">
+                {t(locale, 'CLI reference', 'Referência do CLI')}
               </ActionLink>
               <ActionLink href="https://bun.sh/docs" variant="quiet" external>
                 Bun docs
               </ActionLink>
             </div>
           </div>
-          <CodeShowcase samples={codeSamples.tooling} title={t(locale, 'Bun tooling commands', 'Comandos Bun do tooling')} />
+          <CodeShowcase samples={codeSamples.tooling} title={t(locale, 'Project commands', 'Comandos do projeto')} />
         </div>
         <MetricStrip metrics={[
           { value: '1', label: t(locale, 'runtime/package/test/bundle tool', 'ferramenta de runtime/pacote/teste/bundle') },
           { value: '1.3.13+', label: t(locale, 'pinned Bun version', 'versão Bun pinada') },
-          { value: '3', label: t(locale, 'workspace roots: apps, packages, tooling', 'raízes: apps, packages, tooling') },
+          { value: '4', label: t(locale, 'CLI commands: init, add, upgrade, doctor', 'comandos do CLI: init, add, upgrade, doctor') },
           { value: '30x', label: t(locale, 'official Bun install-speed ceiling vs npm', 'teto oficial de velocidade de install vs npm') },
         ]} />
       </div>
@@ -1186,7 +1199,7 @@ function QualityEvidenceBand({
           )}
         />
         <MetricStrip metrics={[
-          { value: '99/90', label: t(locale, 'statement/branch quality standard', 'padrão de statements/branches') },
+          { value: '98%', label: t(locale, 'minimum statement, branch, function and line coverage', 'cobertura mínima de statements, branches, funções e linhas') },
           { value: 'reqs', label: t(locale, 'requirements tied to executable checks', 'requisitos ligados a checagens executáveis') },
           { value: '0', label: t(locale, 'tolerance for hidden docs drift', 'tolerância a drift oculto de docs') },
           { value: 'real', label: t(locale, 'browser tests for browser APIs', 'testes browser para APIs browser') },
@@ -1197,7 +1210,7 @@ function QualityEvidenceBand({
           { title: t(locale, 'Executable architecture', 'Arquitetura executável'), description: t(locale, 'Boundary scripts reject imports and shortcuts that would leak frameworks, databases or infrastructure into domain code.', 'Scripts de limite rejeitam imports e atalhos que vazariam frameworks, bancos ou infraestrutura para o domínio.'), meta: 'arch:check-*', icon: <IconHierarchy3 /> },
           { title: t(locale, 'Publish discipline', 'Disciplina de publicação'), description: t(locale, 'Content sync, route checks, package dry-runs and release governance run before public artifacts move.', 'Sync de conteúdo, checagens de rota, dry-runs de pacote e governança de release rodam antes de artefatos públicos avançarem.'), meta: 'website:test:prepublish', icon: <IconRocket /> },
         ]} />
-        <CodeShowcase samples={codeSamples.quality} title={t(locale, 'Quality commands', 'Comandos de qualidade')} />
+        <CodeShowcase samples={codeSamples.quality} title={t(locale, 'Checks every Jumentix change passes', 'Checagens que toda mudança no Jumentix passa')} />
       </div>
     </Band>
   );
@@ -1837,7 +1850,7 @@ function Home({ locale }: { locale: CommercialLocale }) {
           </div>
           <figure className={classes.productShot}>
             <img src="/product/domain-designer.png" alt={t(locale, 'Jumentix Domain Designer displaying bounded contexts and entity relationships', 'Domain Designer do Jumentix exibindo contextos delimitados e relações entre entidades')} />
-            <figcaption>{t(locale, 'The real Jumentix Domain Designer interface.', 'A interface real do Domain Designer do Jumentix.')}</figcaption>
+            <figcaption>{t(locale, 'The Domain Designer as it ships today.', 'O Domain Designer como ele é hoje.')}</figcaption>
           </figure>
         </div>
       </Band>
@@ -1883,6 +1896,67 @@ function Home({ locale }: { locale: CommercialLocale }) {
   );
 }
 
+const productTour = [
+  {
+    src: '/product/architecture-designer.png',
+    title: ['Architecture designer', 'Designer de arquitetura'],
+    caption: ['Split domains across services and link them; each service gets its own contract.', 'Divida domínios entre serviços e ligue-os; cada serviço ganha seu próprio contrato.'],
+  },
+  {
+    src: '/product/domain-designer.png',
+    title: ['Domain modeling', 'Modelagem de domínio'],
+    caption: ['Entities, fields, keys and relationships on one canvas, validated before anything is generated.', 'Entidades, campos, chaves e relacionamentos em um canvas, validados antes de qualquer geração.'],
+  },
+  {
+    src: '/product/openapi-swagger.png',
+    title: ['OpenAPI, live', 'OpenAPI ao vivo'],
+    caption: ['The model becomes an OpenAPI 3.1 document you can browse and try from the designer.', 'O modelo vira um documento OpenAPI 3.1 que você navega e testa no próprio designer.'],
+  },
+  {
+    src: '/product/code-workspace.png',
+    title: ['Generated code you can read', 'Código gerado que você lê'],
+    caption: ['Controllers, use cases, ports and repositories for every entity, regenerated as the model changes.', 'Controllers, casos de uso, ports e repositórios para cada entidade, regerados quando o modelo muda.'],
+  },
+  {
+    src: '/product/frontend-xcrud-users.png',
+    title: ['A working admin app', 'Um app administrativo pronto'],
+    caption: ['Lists, filters, forms and exports driven by the same contract — no hand-written screens.', 'Listas, filtros, formulários e exportações guiados pelo mesmo contrato — sem telas escritas à mão.'],
+  },
+  {
+    src: '/product/frontend-dashboard.png',
+    title: ['Dashboards per domain', 'Dashboards por domínio'],
+    caption: ['Each domain ships its own widgets, scoped to the signed-in user’s roles.', 'Cada domínio traz seus próprios widgets, limitados aos papéis de quem está logado.'],
+  },
+] as const;
+
+function ProductTourBand({ locale }: { locale: CommercialLocale }) {
+  return (
+    <Band>
+      <div className={classes.sectionStack}>
+        <SectionHeading
+          eyebrow={t(locale, 'See it running', 'Veja funcionando')}
+          title={t(locale, 'From a model to a running product', 'De um modelo a um produto rodando')}
+          description={t(
+            locale,
+            'Every image below is a capture of the current Jumentix apps, not a mockup.',
+            'Todas as imagens abaixo são capturas dos apps atuais do Jumentix, não mockups.',
+          )}
+        />
+        <div className={classes.productTour}>
+          {productTour.map((shot) => (
+            <figure key={shot.src} className={classes.productShot}>
+              <img src={shot.src} alt={t(locale, shot.title[0], shot.title[1])} loading="lazy" width={2880} height={1800} />
+              <figcaption>
+                <strong>{t(locale, shot.title[0], shot.title[1])}</strong> {t(locale, shot.caption[0], shot.caption[1])}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </Band>
+  );
+}
+
 function Product({ locale }: { locale: CommercialLocale }) {
   return (
     <>
@@ -1901,6 +1975,7 @@ function Product({ locale }: { locale: CommercialLocale }) {
           <ActionLink href={repositoryUrl} variant="secondary" external>{t(locale, 'Inspect the source', 'Inspecione o código')}</ActionLink>
         </div>
       </PageHero>
+      <ProductTourBand locale={locale} />
       <Band>
         <div className={classes.sectionStack}>
           <SectionHeading eyebrow={t(locale, 'Platform capabilities', 'Capacidades da plataforma')} title={t(locale, 'The full delivery lifecycle, connected', 'Todo o ciclo de entrega, conectado')} />
@@ -1916,7 +1991,7 @@ function Product({ locale }: { locale: CommercialLocale }) {
             { value: '12', label: t(locale, 'HTTP/function runtime adapters', 'adaptadores HTTP/functions') },
             { value: '12', label: t(locale, 'database adapter targets', 'alvos de banco de dados') },
             { value: '3', label: t(locale, 'contracted API styles', 'estilos de API contratados') },
-            { value: '99/90', label: t(locale, 'statement/branch quality standard', 'padrão de statements/branches') },
+            { value: '98%', label: t(locale, 'minimum statement, branch, function and line coverage', 'cobertura mínima de statements, branches, funções e linhas') },
           ]} />
         </div>
       </Band>
@@ -1929,8 +2004,8 @@ function Product({ locale }: { locale: CommercialLocale }) {
             title={t(locale, 'What Jumentix gives each team', 'O que o Jumentix entrega para cada equipe')}
             description={t(
               locale,
-              'The site should not hide behind vague platform language: Jumentix is a connected set of tools, packages, templates, contracts, and release rules.',
-              'O site não deve se esconder atrás de linguagem vaga de plataforma: o Jumentix é um conjunto conectado de ferramentas, pacotes, templates, contratos e regras de release.',
+              'Jumentix is a connected set of tools, packages, templates, contracts, and release rules. Each team picks up the part it works in.',
+              'O Jumentix é um conjunto conectado de ferramentas, pacotes, templates, contratos e regras de release. Cada equipe usa a parte em que trabalha.',
             )}
           />
           <DetailGrid items={[
@@ -3579,7 +3654,7 @@ function Community({ locale }: { locale: CommercialLocale }) {
   return (
     <>
       <PageHero locale={locale} eyebrow={t(locale, 'Community', 'Comunidade')} title={t(locale, 'Build the factory with us', 'Construa a fábrica conosco')} description={t(locale, 'Jumentix grows through documented proposals, focused epics, tested changes, and reusable packages.', 'O Jumentix cresce por meio de propostas documentadas, épicos focados, mudanças testadas e pacotes reutilizáveis.')} />
-      <Band><div className={classes.twoColumn}><div className={classes.prose}><h2>{t(locale, 'Every contribution has a path', 'Toda contribuição tem um caminho')}</h2><ul><li>{t(locale, 'Discuss the problem before implementation.', 'Discuta o problema antes da implementação.')}</li><li>{t(locale, 'Connect work to an issue, epic, milestone, estimate, and evidence.', 'Conecte o trabalho a issue, épico, milestone, estimativa e evidência.')}</li><li>{t(locale, 'Keep specs, documentation, and behavior synchronized.', 'Mantenha specs, documentação e comportamento sincronizados.')}</li><li>{t(locale, 'Prove quality locally before CI.', 'Comprove a qualidade localmente antes do CI.')}</li></ul><div className={classes.sectionActions}><ActionLink href={`${repositoryUrl}/blob/dev/CONTRIBUTING.md`} external>{t(locale, 'Contribution guide', 'Guia de contribuição')}</ActionLink><ActionLink href={`${repositoryUrl}/issues`} variant="secondary" external>{t(locale, 'Find an issue', 'Encontre uma issue')}</ActionLink></div></div><CodeShowcase samples={codeSamples.deploy.slice(2)} title={t(locale, 'Contribution gate', 'Gate de contribuição')} /></div></Band>
+      <Band><div className={classes.twoColumn}><div className={classes.prose}><h2>{t(locale, 'Every contribution has a path', 'Toda contribuição tem um caminho')}</h2><ul><li>{t(locale, 'Discuss the problem before implementation.', 'Discuta o problema antes da implementação.')}</li><li>{t(locale, 'Connect work to an issue, epic, milestone, estimate, and evidence.', 'Conecte o trabalho a issue, épico, milestone, estimativa e evidência.')}</li><li>{t(locale, 'Keep specs, documentation, and behavior synchronized.', 'Mantenha specs, documentação e comportamento sincronizados.')}</li><li>{t(locale, 'Prove quality locally before CI.', 'Comprove a qualidade localmente antes do CI.')}</li></ul><div className={classes.sectionActions}><ActionLink href={`${repositoryUrl}/blob/dev/documentation/md/CONTRIBUTING-AND-TOOLING.md`} external>{t(locale, 'Contribution guide', 'Guia de contribuição')}</ActionLink><ActionLink href={`${repositoryUrl}/issues`} variant="secondary" external>{t(locale, 'Find an issue', 'Encontre uma issue')}</ActionLink></div></div><CodeShowcase samples={codeSamples.contribution} title={t(locale, 'Contribution gate', 'Gate de contribuição')} /></div></Band>
       <FinalCta locale={locale} />
     </>
   );
@@ -3587,14 +3662,14 @@ function Community({ locale }: { locale: CommercialLocale }) {
 
 function Roadmap({ locale }: { locale: CommercialLocale }) {
   const phases = [
-    ['Now', t(locale, 'Monorepo consolidation', 'Consolidação do monorepo'), t(locale, 'Package boundaries, commercial website, documentation UX, and governance automation.', 'Limites de pacotes, site comercial, UX da documentação e automação de governança.')],
-    ['Next', t(locale, 'Service factory workflows', 'Fluxos da fábrica de serviços'), t(locale, 'Complete visual configuration, scaffolding journeys, and deployment management.', 'Completar configuração visual, jornadas de scaffolding e gerenciamento de deploy.')],
-    ['Later', t(locale, 'Ecosystem distribution', 'Distribuição do ecossistema'), t(locale, 'Publish reusable packages, templates, SDK generators, and provider integrations.', 'Publicar pacotes reutilizáveis, templates, geradores de SDK e integrações com provedores.')],
+    ['Now', t(locale, 'Distribution', 'Distribuição'), t(locale, 'Automated npm releases of the packages and the CLI, and documentation written for each reader.', 'Releases automáticos no npm dos pacotes e do CLI, e documentação escrita para cada leitor.')],
+    ['Next', t(locale, 'Service factory workflows', 'Fluxos da fábrica de serviços'), t(locale, 'Deployment management from Service Management and more sources for project generation.', 'Gerenciamento de deploy a partir do Service Management e mais fontes para gerar projetos.')],
+    ['Later', t(locale, 'Ecosystem', 'Ecossistema'), t(locale, 'SDK generators, shared templates, and provider integrations.', 'Geradores de SDK, templates compartilhados e integrações com provedores.')],
   ];
   return (
     <>
       <PageHero locale={locale} eyebrow="Roadmap" title={t(locale, 'A public path from platform foundation to software factory', 'Um caminho público da fundação da plataforma à fábrica de software')} description={t(locale, 'The canonical repository remains the source of truth. This view explains the product direction without hiding the implementation backlog.', 'O repositório canônico permanece como fonte da verdade. Esta visão explica a direção do produto sem ocultar o backlog de implementação.')} />
-      <Band><ol className={classes.timeline}>{phases.map(([phase, title, description]) => <li key={phase}><strong>{phase}</strong><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol><div className={classes.sectionActions}><ActionLink href={`${repositoryUrl}/milestones`} external>{t(locale, 'Open live roadmap', 'Abra o roadmap ao vivo')}</ActionLink></div></Band>
+      <Band><ol className={classes.timeline}>{phases.map(([phase, title, description]) => <li key={phase}><strong>{phase}</strong><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol><div className={classes.sectionActions}><ActionLink href={`${repositoryUrl}/releases`} external>{t(locale, 'See release history', 'Veja o histórico de releases')}</ActionLink></div></Band>
       <FinalCta locale={locale} />
     </>
   );

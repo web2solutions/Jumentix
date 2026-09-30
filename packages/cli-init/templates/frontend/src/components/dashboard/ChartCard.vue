@@ -21,7 +21,7 @@ const tableVisible = ref(false);
 
 const PALETTE = ['#4a5cd4', '#39f', '#2eb85c', '#f9b115', '#e55353', '#9da5b1'];
 
-const labels = computed(() => props.buckets.map((bucket) => bucket.key));
+const labels = computed(() => props.buckets.map((bucket) => bucket.label ?? bucket.key));
 const values = computed(() => props.buckets.map((bucket) => bucket.count));
 const colors = computed(() => props.buckets.map((_, index) => PALETTE[index % PALETTE.length]));
 </script>
@@ -79,7 +79,7 @@ const colors = computed(() => props.buckets.map((_, index) => PALETTE[index % PA
       </thead>
       <tbody>
         <tr v-for="bucket in buckets" :key="bucket.key">
-          <td>{{ bucket.key }}</td>
+          <td>{{ bucket.label ?? bucket.key }}</td>
           <td>{{ bucket.count }}</td>
         </tr>
       </tbody>

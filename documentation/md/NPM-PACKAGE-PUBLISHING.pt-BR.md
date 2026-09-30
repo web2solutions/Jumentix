@@ -36,8 +36,8 @@ Pacotes internos do workspace (`config-*`, `agent-registry`, `security-scanner` 
   `ci-cd/lib/next-version.js` + `ci-cd/create-app-release-tag.js` (nao por scripts locais de commit).
 - Apos um `npm publish` bem-sucedido, a CI cria uma tag anotada de pacote
   `@jumentix/<pkg>@<version>` para mapear a versao publicada a um commit exato.
-- Um segundo dispatch do mesmo cohort ignora qualquer pacote cuja tag de pacote ja exista
-  (guard de re-publish) em vez de falhar no registry com erro generico.
+- Uma execucao posterior ignora qualquer pacote cuja tag de pacote ja exista, e uma versao ja
+  publicada no npm sem tag tem a tag reparada em vez de falhar com `EPUBLISHCONFLICT`.
 - A versao de `@jumentix/cli-init` acompanha o cohort de templates da fabrica que ela gera; projetos gerados fixam versoes publicadas de `@jumentix/*` em vez de `workspace:*`.
 - Pre-releases usam dist-tags npm (por exemplo `0.1.0-rc.1`) e exigem o ambiente protegido `secrets`.
 
@@ -54,9 +54,9 @@ bun run release:dry-run:packages
 
 ## Publicacao
 
-Use o workflow `Publish npm packages` do GitHub Actions a partir de `main`. Ele e manual e usa o ambiente protegido `secrets`. O workflow verifica o acesso a org `@jumentix`, executa o gate de artefatos e depois roda `bun run release:publish-cohort <cohort>` (`ci-cd/publish-npm-cohort.js`), que publica em ordem de dependencia, ignora versoes ja tagueadas e faz push das tags de pacote no sucesso. Ele mapeia o segredo GitHub `NPM_CI_CD` para `NODE_AUTH_TOKEN` no check de org e no `npm publish`, concede `id-token: write` para proveniencia npm (`.npmrc` raiz com `provenance=true`) e concede `contents: write` para push das tags de pacote.
+A publicacao e automatizada. Depois de cada release da aplicacao em `main`, `.github/workflows/app-release.yml` chama o workflow `Publish npm packages` (`.github/workflows/npm-publish.yml`) com o cohort `all`; subir a `version` de um pacote e promover para `main` e o que o publica. O mesmo workflow continua disponivel via `workflow_dispatch` para reexecutar um cohort manualmente. Ele usa o ambiente `secrets`. O workflow verifica o acesso a org `@jumentix`, executa o gate de artefatos e depois roda `bun run release:publish-cohort <cohort>` (`ci-cd/publish-npm-cohort.js`), que ignora versoes ja tagueadas ou ja publicadas, empacota cada pacote com `bun pm pack` (reescrevendo faixas `workspace:*` para versoes concretas), publica esse tarball e faz push da tag de pacote no sucesso. Ele mapeia o segredo GitHub `NPM_CI_CD` para `NODE_AUTH_TOKEN` no check de org e no `npm publish`, concede `id-token: write` para proveniencia npm (`.npmrc` raiz com `provenance=true`) e concede `contents: write` para push das tags de pacote.
 
-Configure o ambiente `secrets` com revisores obrigatorios antes do primeiro release. Nunca imprima, versione ou armazene o token em um arquivo do projeto.
+Nunca imprima, versione ou armazene o token em um arquivo do projeto.
 
 Instale a CLI apos uma publicacao bem-sucedida:
 

@@ -69,7 +69,11 @@ entire monorepo.
    in Docker.
 
 7. **Published dependencies.** Generated apps depend on published `@jumentix/*`
-   packages pinned to the CLI release version. The CLI itself is publishable
+   packages, each pinned to its own version as recorded in
+   `templates.manifest.json` (`packageVersions`) when the CLI templates were
+   built — packages version independently (Req `060`), so a single CLI version
+   cannot stand in for all of them (JUM-902). The freshness gate fails when the
+   recorded versions drift from `packages/*/package.json`. The CLI itself is publishable
    under release governance (Req `065` / `128` / `070`).
 
 8. **Non-interactive parity.** `--non-interactive` requires every answer from

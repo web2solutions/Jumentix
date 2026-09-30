@@ -223,8 +223,8 @@ quando o diretório não existe.
 ### Níveis de chaves e listas de permissão
 
 As listas de leitura e gravação são conjuntos separados; cada chave pertence a exatamente um nível.
-A classificação autoritativa por chave (com justificativas) está em
-`.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`.
+A classificação autoritativa por chave (com justificativas) está no requisito de
+contratos públicos do Service Management (Requisito `126`).
 
 - **Editável** (leitura + gravação) — seletores de topologia de tempo de execução:
   `JUMENTIX_HTTP_FRAMEWORK`, `JUMENTIX_REALTIME_API`,
@@ -283,15 +283,9 @@ razão declarada:
   aparecer na resposta do GET e não devem ser graváveis, pois a resposta cruza o
   mesmo limite de confiança que a escrita.
 
-O conjunto editável atual são os quatro seletores de topologia listados em
-[Chaves de tempo de execução](#chaves-de-tempo-de-execução) (`JUMENTIX_HTTP_FRAMEWORK`,
-`JUMENTIX_REALTIME_API`, `JUMENTIX_REALTIME_API_PROTOCOL`,
-`JUMENTIX_REALTIME_API_DATABASE_DRIVER`), e a superfície de leitura é limitada às
-mesmas quatro. A classificação completa por chave dos arquivos env nesses níveis
-chega via JUM-460; as decisões de classificação autoritativas — uma por chave, cada
-uma com uma razão escrita — estão no
-[Requisito 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
-Toda adição ao conjunto editável é uma decisão de segurança.
+A classificação por chave nesses níveis — uma razão por chave — está no requisito
+de contratos públicos do Service Management (Requisito `126`), e as listas de níveis
+acima a espelham. Toda adição ao conjunto editável é uma decisão de segurança.
 
 ### Conjuntos de enum e decisão de alias
 

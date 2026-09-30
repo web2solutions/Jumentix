@@ -8,7 +8,11 @@ Workspace ownership:
 
 - `packages/cli-init` owns the CLI implementation, packaged templates, and
   freshness gate.
-- Root `bin/jumentix-bootstrap.js` delegates to the package for compatibility.
+- Root `bin/jumentix-bootstrap.js` (the `bun x github:web2solutions/Jumentix#dev` entry)
+  runs the local `packages/cli-init` build when it and its dependencies resolve;
+  in a fresh git install, which carries no build output, it runs the published
+  `@jumentix/cli-init` of the same version through `npx` and forwards argv and
+  the exit code (`packages/cli-init/bin/launcher.js`).
 
 Install and invoke:
 
@@ -161,8 +165,11 @@ Every generated workspace includes:
 
 `.jumentix/service-profile.json` is retired and removed when present.
 
-Runtime dependencies are published `@jumentix/*` packages pinned to the CLI
-version (not `workspace:*`). Generated projects must pass their own
+Runtime dependencies are published `@jumentix/*` packages, each pinned to its
+own version as recorded in `packages/cli-init/templates.manifest.json`
+(`packageVersions`, rebuilt by `bun run cli:build-templates`) — never
+`workspace:*`, and never one shared CLI version, because packages version
+independently. Generated projects must pass their own
 `lint` / `test` / `build` and boot in Docker.
 
 ## `add` (extend)

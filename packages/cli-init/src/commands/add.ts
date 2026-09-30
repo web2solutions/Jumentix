@@ -27,6 +27,7 @@ import {
   type PlanDomain,
   type PlanService
 } from '../sources';
+import { resolveJumentixPin } from '../generators/jumentixVersions';
 
 const PROJECT_META = '.jumentix/project.json';
 const MANIFEST_META = '.jumentix/manifest.json';
@@ -60,7 +61,7 @@ export function printAddHelp(log: (message?: string) => void = console.log): voi
   log(`
 jumentix add <domain|service|frontend> [name] [options]
 
-Extend a generated Jumentix project (Req 037 v2 / JUM-850).
+Extend a project created by jumentix init.
 
 Subcommands:
   add domain <name> [--from …] [--service <id>] [--force]
@@ -442,7 +443,7 @@ async function addService(options: {
     service: newService,
     outputDir: rootDir,
     projectName,
-    jumentixVersion: readCliVersion(packageRoot),
+    pin: resolveJumentixPin(packageRoot),
     templateRoot,
     log
   });

@@ -115,15 +115,17 @@ describe('run-branch-quality-gate', () => {
     // integrity, workspace boundaries, and build:dev run ahead of all three,
     // including the strict matrix path used by release/main (JUM-683 / JUM-786).
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes',
-      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'unit',
-      'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'full-matrix',
-      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes'
+      'lint', 'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes',
+      'lint', 'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'unit',
+      'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'full-matrix',
+      'lint', 'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes'
     ]);
     const lintPassed = [
       { id: 'lint', script: 'lint', status: 0 },
       { id: 'test-integrity', script: 'test:integrity', status: 0 },
       { id: 'current-governance-docs', script: 'docs:check-current-governance', status: 0 },
+      { id: 'documentation-audience', script: 'docs:check-audience', status: 0 },
+      { id: 'static-gates', script: 'ci:gate:static', status: 0 },
       { id: 'workspace-boundaries', script: 'arch:check-workspace-boundaries', status: 0 },
       { id: 'ownership-placement', script: 'arch:check-ownership-placement', status: 0 },
       { id: 'build-dev', script: 'build:dev', status: 0 }
@@ -131,6 +133,8 @@ describe('run-branch-quality-gate', () => {
     const integrityOnlyPassed = [
       { id: 'test-integrity', script: 'test:integrity', status: 0 },
       { id: 'current-governance-docs', script: 'docs:check-current-governance', status: 0 },
+      { id: 'documentation-audience', script: 'docs:check-audience', status: 0 },
+      { id: 'static-gates', script: 'ci:gate:static', status: 0 },
       { id: 'workspace-boundaries', script: 'arch:check-workspace-boundaries', status: 0 },
       { id: 'ownership-placement', script: 'arch:check-ownership-placement', status: 0 },
       { id: 'build-dev', script: 'build:dev', status: 0 }
@@ -253,6 +257,8 @@ describe('run-branch-quality-gate', () => {
       'lint',
       'test-integrity',
       'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
       'workspace-boundaries',
       'ownership-placement',
       'build-dev',
@@ -284,7 +290,7 @@ describe('run-branch-quality-gate', () => {
       script: 'ci:gate:task'
     });
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'current-governance-docs', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes'
+      'lint', 'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes'
     ]);
   });
 
@@ -366,6 +372,8 @@ describe('run-branch-quality-gate', () => {
       id: 'current-governance-docs',
       script: 'docs:check-current-governance'
     };
+    const documentationAudience = { id: 'documentation-audience', script: 'docs:check-audience' };
+    const staticGates = { id: 'static-gates', script: 'ci:gate:static' };
     const workspaceBoundaries = {
       id: 'workspace-boundaries',
       script: 'arch:check-workspace-boundaries'
@@ -380,6 +388,8 @@ describe('run-branch-quality-gate', () => {
       { id: 'lint', script: 'lint' },
       integrity,
       currentGovernanceDocs,
+      documentationAudience,
+      staticGates,
       workspaceBoundaries,
       ownershipPlacement,
       buildDev
@@ -388,6 +398,8 @@ describe('run-branch-quality-gate', () => {
       { id: 'lint', script: 'lint' },
       integrity,
       currentGovernanceDocs,
+      documentationAudience,
+      staticGates,
       workspaceBoundaries,
       ownershipPlacement,
       buildDev
@@ -399,6 +411,8 @@ describe('run-branch-quality-gate', () => {
     expect(FULL_MATRIX_QUALITY_GATE.preflight).toStrictEqual([
       integrity,
       currentGovernanceDocs,
+      documentationAudience,
+      staticGates,
       workspaceBoundaries,
       ownershipPlacement,
       buildDev

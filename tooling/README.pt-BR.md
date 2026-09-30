@@ -9,7 +9,7 @@ Automação documental mantida pelo repositório e executada pelos scripts do pa
 - `scripts/patch-ptbr-links.mjs` direciona links dos artefatos em português para seus equivalentes
   traduzidos quando eles existem.
 - `scripts/generate-consumer-package-scripts-docs.mjs` lê os manifests reais da raiz e dos
-  workspaces e regenera a referência de scripts para consumidores.
+  workspaces e regenera a referência de scripts para contribuidores (`documentation/md/PACKAGE-SCRIPTS-REFERENCE.pt-BR.md`).
 
 ## Comandos na Raiz
 

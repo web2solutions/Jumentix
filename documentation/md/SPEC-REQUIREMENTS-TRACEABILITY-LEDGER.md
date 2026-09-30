@@ -127,6 +127,7 @@ For any change, identify impacted requirement IDs and ensure:
   - docs index links updated
   - requirements registry synchronized
   - `bun run requirements:check` passes
+  - `bun run docs:check-audience` passes (Requirement `066` audience matrix: README and website carry no internal governance vocabulary)
   - agent instruction parity (Codex, Claude Code, Grok, OpenCode, Kimi Code CLI)
   - agent registration and availability assignment records
   - milestone association, focused epic parentage, nature grouping, and epic-level delegation

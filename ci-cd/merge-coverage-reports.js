@@ -9,10 +9,19 @@
  * records `SF:` paths relative to `apps/frontend`, so this merge rebases them
  * to the repository root; otherwise every changed frontend line reports as
  * uncovered patch debt even when the frontend suite covers it (JUM-821).
+ *
+ * A `tsc`-built package tested against its own `dist/` (packages/cli-init's
+ * own convention) has the same problem one layer down: its LCOV is keyed to
+ * the compiled `.js`, so a record survives rebasing but still cannot match
+ * the `.ts` path patch coverage diffs against. `lib/build-artifact-source-map.js`
+ * remaps such a record to its original source through the adjacent `.js.map`
+ * before it is deduplicated by file, so "compiled and tested via dist" stops
+ * reading as "untested" (Req 065).
  */
 const fs = require('fs');
 const path = require('path');
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { remapDistLcovRecord } = require('./lib/build-artifact-source-map.js');
 
 function splitRecords(lcovText) {
   const records = [];
@@ -42,7 +51,7 @@ function hasBranchData(record) {
   return /^BRDA:/m.test(record) || /^BRF:/m.test(record);
 }
 
-function mergeLcovFiles(inputPaths, outputPath) {
+function mergeLcovFiles(inputPaths, outputPath, repoRoot = process.cwd()) {
   const seen = new Set();
   const merged = [];
   const stats = { inputs: inputPaths.length, records: 0, skippedDuplicates: 0, withBranches: 0 };
@@ -52,7 +61,8 @@ function mergeLcovFiles(inputPaths, outputPath) {
     if (!fs.existsSync(spec.path)) continue;
     const text = fs.readFileSync(spec.path, 'utf8');
     for (const rawRecord of splitRecords(text)) {
-      const record = spec.pathPrefix ? rebaseRecordFile(rawRecord, spec.pathPrefix) : rawRecord;
+      const rebased = spec.pathPrefix ? rebaseRecordFile(rawRecord, spec.pathPrefix) : rawRecord;
+      const record = remapDistLcovRecord(rebased, repoRoot);
       const file = recordFile(record);
       if (!file) continue;
       if (seen.has(file)) {

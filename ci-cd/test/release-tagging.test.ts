@@ -6,6 +6,7 @@ const {
 } = require('../create-github-release.js');
 const {
   packageTagName,
+  publishPackage,
   resolveCohort
 } = require('../publish-npm-cohort.js');
 const {
@@ -352,5 +353,88 @@ describe('publish-npm-cohort helpers', () => {
     expect.hasAssertions();
     expect(resolveCohort('cana')).toStrictEqual(['cana', 'cana-react', 'cana-vue']);
     expect(() => resolveCohort('nope')).toThrow(/Unsupported release cohort/);
+  });
+});
+
+/**
+ * JUM-894: the only publish attempt ran `npm publish` inside each package
+ * directory, which ships `workspace:*` ranges verbatim to consumers. The
+ * publisher now publishes the tarball `bun pm pack` produced, and a version
+ * already on npm repairs its tag instead of failing every later release.
+ */
+describe('publish-npm-cohort publishPackage', () => {
+  const meta = {
+    dirName: 'cana',
+    name: '@jumentix/cana',
+    version: '0.1.0',
+    tag: '@jumentix/cana@0.1.0',
+    cwd: '/repo/packages/cana'
+  };
+
+  function recordingIo(overrides: Record<string, unknown> = {}) {
+    const calls: string[] = [];
+    const io = {
+      tagExists: () => false,
+      versionPublished: () => false,
+      pack: () => {
+        calls.push('pack');
+        return '/tmp/jumentix-cana-0.1.0.tgz';
+      },
+      publish: (tarball: string) => calls.push(`publish ${tarball}`),
+      tag: (tagName: string) => calls.push(`tag ${tagName}`),
+      log: () => undefined,
+      ...overrides
+    };
+    return { calls, io };
+  }
+
+  it('publishes the packed tarball, never the package directory, then tags it', () => {
+    expect.hasAssertions();
+    const { calls, io } = recordingIo();
+
+    expect(publishPackage(meta, { io }).action).toBe('published');
+    expect(calls).toStrictEqual([
+      'pack',
+      'publish /tmp/jumentix-cana-0.1.0.tgz',
+      'tag @jumentix/cana@0.1.0'
+    ]);
+  });
+
+  it('skips without touching npm when the package tag already exists', () => {
+    expect.hasAssertions();
+    const { calls, io } = recordingIo({ tagExists: () => true });
+
+    expect(publishPackage(meta, { io })).toStrictEqual({
+      action: 'skip', reason: 'tag-exists', package: '@jumentix/cana', tag: '@jumentix/cana@0.1.0'
+    });
+    expect(calls).toStrictEqual([]);
+  });
+
+  it('repairs the tag instead of re-publishing a version already on npm', () => {
+    expect.hasAssertions();
+    const { calls, io } = recordingIo({ versionPublished: () => true });
+
+    expect(publishPackage(meta, { io }).reason).toBe('already-published');
+    expect(calls).toStrictEqual(['tag @jumentix/cana@0.1.0']);
+  });
+
+  it('changes nothing on a dry run', () => {
+    expect.hasAssertions();
+    const { calls, io } = recordingIo();
+
+    expect(publishPackage(meta, { io, dryRun: true }).action).toBe('dry-run');
+    expect(calls).toStrictEqual([]);
+  });
+
+  it('does not tag when publishing fails', () => {
+    expect.hasAssertions();
+    const { calls, io } = recordingIo({
+      publish: () => {
+        throw new Error('npm error EUSAGE');
+      }
+    });
+
+    expect(() => publishPackage(meta, { io })).toThrow('EUSAGE');
+    expect(calls).toStrictEqual(['pack']);
   });
 });

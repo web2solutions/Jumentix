@@ -10,14 +10,12 @@ const apiDocGetHandlerFactory: EndPointFactory = (
   return {
     path: `/${version}`,
     method: 'get',
-    handler(req: FastifyRequest, res: FastifyReply) {
-      (async () => {
-        try {
-          res.send(spec);
-        } catch (error: unknown) {
-          sendErrorResponse(error as BaseError, res);
-        }
-      })();
+    async handler(_req: FastifyRequest, res: FastifyReply) {
+      try {
+        return await res.send(spec);
+      } catch (error: unknown) {
+        return sendErrorResponse(error as BaseError, res);
+      }
     }
   };
 };

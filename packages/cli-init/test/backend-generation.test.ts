@@ -15,7 +15,8 @@ const {
   generateBackend,
   domainsForService,
   renderCompositionRoot,
-  HTTP_INTEGRATION_SUITES
+  HTTP_INTEGRATION_SUITES,
+  resolveJumentixPin
 } = require('../dist/generators');
 
 const { resolveSources } = require('../dist/sources');
@@ -123,7 +124,7 @@ describe('backend generation — package rename (JUM-847)', () => {
     const pkg = buildServicePackageJson({
       projectName: 'Acme Apps',
       serviceId: 'core',
-      jumentixVersion: '1.2.3',
+      pin: () => '1.2.3',
       http: 'express',
       realtime: 'none',
       db: 'sqlite'
@@ -343,5 +344,52 @@ describe('backend generation — generateBackend (JUM-847)', () => {
     } finally {
       fs.rmSync(out, { recursive: true, force: true });
     }
+  });
+});
+
+/**
+/* dependency was pinned to the CLI's own version
+ * (0.0.0), which no package publishes. Pins now come from the per-package
+ * versions recorded in templates.manifest.json.
+ */
+describe('backend generation — per-package @jumentix/* pins (JUM-902)', () => {
+  const packageRoot = path.resolve(__dirname, '..');
+  const repoRoot = path.resolve(packageRoot, '..', '..');
+
+  function sourceVersion(name: string): string {
+    const dir = name.replace('@jumentix/', '');
+    return JSON.parse(fs.readFileSync(path.join(repoRoot, 'packages', dir, 'package.json'), 'utf8')).version;
+  }
+
+  it('pins each runtime dependency to its own source package version', () => {
+    expect.hasAssertions();
+    const pin = resolveJumentixPin(packageRoot);
+    const pkg = buildServicePackageJson({
+      projectName: 'demo', serviceId: 'core', pin, http: 'express', realtime: 'none', db: 'sqlite'
+    });
+    const deps = pkg.dependencies as Record<string, string>;
+
+    expect(Object.keys(deps).map((name) => [name, deps[name]])).toStrictEqual(
+      Object.keys(deps).map((name) => [name, sourceVersion(name)])
+    );
+    expect(deps['@jumentix/database-client-factory']).not.toBe(deps['@jumentix/key-value-storage']);
+  });
+
+  it('fails closed for a package the manifest does not record', () => {
+    expect.hasAssertions();
+    const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'cli-init-pins-'));
+    try {
+      fs.writeFileSync(path.join(empty, 'templates.manifest.json'), JSON.stringify({ packageVersions: {} }));
+
+      expect(() => resolveJumentixPin(empty)('@jumentix/cana')).toThrow('No published version recorded for @jumentix/cana');
+    } finally {
+      fs.rmSync(empty, { recursive: true, force: true });
+    }
+  });
+
+  it('lets an explicit override pin every package to one version', () => {
+    expect.hasAssertions();
+
+    expect(resolveJumentixPin(packageRoot, '9.9.9')('@jumentix/cana')).toBe('9.9.9');
   });
 });

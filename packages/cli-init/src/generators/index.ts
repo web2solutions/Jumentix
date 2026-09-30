@@ -87,3 +87,4 @@ export {
   type AssembleWorkspaceResult,
   type WorkspaceAnswers
 } from './workspace';
+export { readPackageVersions, resolveJumentixPin, type JumentixPin } from './jumentixVersions';

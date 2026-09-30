@@ -1,8 +1,21 @@
 {
   "name": "@jumentix/backend-template",
-  "version": "0.0.2",
+  "version": "0.2.15",
   "private": true,
   "description": "Jumentix backend template workspace app",
+  "dependencies": {
+    "@jumentix/adapter-runtime-bootstrap": "workspace:*",
+    "@jumentix/database-client-factory": "workspace:*",
+    "@jumentix/dead-letter-queue": "workspace:*",
+    "@jumentix/external-db-repositories": "workspace:*",
+    "@jumentix/external-persistence-core": "workspace:*",
+    "@jumentix/external-store-proxy": "workspace:*",
+    "@jumentix/key-value-storage": "workspace:*",
+    "@jumentix/message-mediator": "workspace:*",
+    "@jumentix/mutex-service": "workspace:*",
+    "@jumentix/persistence-contracts": "workspace:*",
+    "@jumentix/sdk-grpc-client": "workspace:*"
+  },
   "scripts": {
     "build": "NODE_ENV=dev tsc -p ../../tsconfig.build.json",
     "build:dev": "NODE_ENV=dev tsc -p ../../tsconfig.build.json",
