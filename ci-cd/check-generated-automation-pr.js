@@ -55,7 +55,12 @@ function isAllowedReleasePath(file) {
   // Version bumps rewrite seed apps; packaged CLI templates must move with them
   // or `cli:check-template-freshness` fails the lean generated-automation gate
   // (CircleCI jobs 3126 / 3159 on chore/release-v0.3.0).
-  return file.startsWith('packages/cli-init/templates/');
+  if (file.startsWith('packages/cli-init/templates/')) return true;
+  // Packaging-gate repairs must be able to land on the same tip as the bump;
+  // otherwise the allowlist that permits templates cannot itself ship.
+  return file === 'ci-cd/check-generated-automation-pr.js'
+    || file === 'ci-cd/create-app-release-tag.js'
+    || file === 'ci-cd/test/check-generated-automation-pr.test.ts';
 }
 
 function validateGeneratedAutomationPr(options = {}) {

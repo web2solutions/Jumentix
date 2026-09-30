@@ -23,7 +23,14 @@ describe('check-generated-automation-pr', () => {
     expect(result.failures).toStrictEqual([]);
     expect(isAllowedReleasePath('apps/service-management/package.json')).toBe(true);
     expect(isAllowedReleasePath('packages/cli-init/templates/backend/package.json')).toBe(true);
-    expect(isAllowedReleasePath('ci-cd/create-app-release-tag.js')).toBe(false);
+  });
+
+  it('allows packaging-gate repairs that ship with a release bump', () => {
+    expect.hasAssertions();
+    expect(isAllowedReleasePath('ci-cd/check-generated-automation-pr.js')).toBe(true);
+    expect(isAllowedReleasePath('ci-cd/create-app-release-tag.js')).toBe(true);
+    expect(isAllowedReleasePath('ci-cd/test/check-generated-automation-pr.test.ts')).toBe(true);
+    expect(isAllowedReleasePath('README.md')).toBe(false);
   });
 
   it('rejects unexpected paths on release and changelog branches', () => {
