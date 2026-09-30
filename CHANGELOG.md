@@ -4,7 +4,36 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-09-29 [JUM-900][Release] Promote dev to main — close the docs epic, publish npm packages (#548) - Eduardo A.
+- 2026-09-29 fix(ci): resolve git via absolute path in merge-driver setup (#557) - Eduardo A.
+- 2026-09-29 fix(service-management): detect busy ports with TCP connect (#556) - Eduardo A.
+- 2026-09-29 fix(cli-init): compare package-version keys with localeCompare (#555) - Eduardo A.
+- 2026-09-29 fix(ci): mirror GHA patch baselines on CircleCI for release coverage (#554) - Eduardo A.
+- 2026-09-28 fix(coverage): remap dist-tested TypeScript coverage back to its source for patch coverage (#553) - Eduardo A.
+- 2026-09-28 test(architecture-canvas): cover createArchitectureCanvas render/interaction paths (#552) - Eduardo A.
+- 2026-09-27 fix(website): update the prepublish roadmap-content smoke check (#551) - Eduardo A.
+- 2026-09-27 fix(message-mediator): declare ioredis, bullmq's real Redis dependency (#550) - Eduardo A.
+- 2026-09-27 fix(cli-init): restore process.exitCode with a number Bun actually honors (#549) - Eduardo A.
+- 2026-09-26 docs(website): marketing-vs-technical language calibration pass (#547) - Eduardo A.
+- 2026-09-26 [JUM-898][Feature] Warn when a product screenshot may be stale (#546) - Eduardo A.
+- 2026-09-26 feat(website): current product screenshots and a "See it running" tour (#542) - Eduardo A.
+- 2026-09-26 fix(frontend): resolve dashboard organization ids to their display name (#543) - Eduardo A.
+- 2026-09-26 fix(docs-ui): vendor swagger-ui 5 so /OASdoc and the designer render OpenAPI 3.1 (#541) - Eduardo A.
+- 2026-09-26 chore(ci): stop test-map.json from conflicting on every PR (#544) - Eduardo A.
+- 2026-09-26 docs(website): keep maintainer provenance off the developer site and pair every contributor doc (#538) - Eduardo A.
+- 2026-09-26 [JUM-906][Fix] Breadcrumb names the module and tab and links to real locations (#540) - Eduardo A.
+- 2026-09-26 [JUM-905][Fix] Dark canvas, sidebar and anchored mini-map on the Architecture tab (#539) - Eduardo A.
+- 2026-09-26 ci(gate): run ci:gate checks that no CI job ran as a branch-gate preflight (#534) - Eduardo A.
+- 2026-09-26 chore(website): remove starter-template leftovers nothing renders (#536) - Eduardo A.
+- 2026-09-26 fix(cli-init): commit the packaged Users persistence adapters .gitignore dropped (#537) - Eduardo A.
+- 2026-09-26 docs(readme): speak to prospects, drop the CI-governance leak and document the real CLI (#535) - Eduardo A.
+- 2026-09-26 [JUM-891][Chore] Consolidate Dependabot updates (#458–#460, #462) (#529) - Eduardo A.
+- 2026-09-26 chore(deps): consolidate Dependabot bumps (#458–#460, #462) - Eduardo A.
+- 2026-09-26 [JUM-901][Fix] Run the published CLI when the GitHub entry point has no local build (#533) - Eduardo A.
+- 2026-09-26 fix(cli-init): pin each generated @jumentix/* dependency to its own published version (#532) - Eduardo A.
+- 2026-09-26 ci(release): automate npm publish after each main release and publish packed tarballs (#531) - Eduardo A.
+- 2026-09-26 feat(governance): add Requirement 066 audience matrix and docs:check-audience gate (#530) - Eduardo A.
+- 2026-09-26 [JUM-889][Chore] Sync v0.2.15 release into dev (#528) - Eduardo A.
 
 ## v0.2.15 - 2026-09-26
 
