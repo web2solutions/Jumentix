@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.3.0 - 2026-09-30
+
+- 2026-09-30 chore(release): v0.3.0 (#560) - Eduardo A.
 - 2026-09-29 [JUM-900][Release] Promote dev to main — close the docs epic, publish npm packages (#548) - Eduardo A.
 - 2026-09-29 fix(ci): resolve git via absolute path in merge-driver setup (#557) - Eduardo A.
 - 2026-09-29 fix(service-management): detect busy ports with TCP connect (#556) - Eduardo A.
