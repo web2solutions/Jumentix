@@ -139,16 +139,55 @@ function applyLockedVersion(rootDir, version) {
   };
 }
 
+/**
+ * Seed apps are the source of `packages/cli-init/templates/*`. A version bump
+ * that does not rebuild those templates fails `cli:check-template-freshness`
+ * on the lean generated-automation gate (release PRs #558 / #560).
+ */
+function rebuildCliTemplates(rootDir) {
+  execFileSync(resolveBunBinary(), ['run', 'cli:build-templates'], {
+    cwd: rootDir,
+    stdio: 'inherit'
+  });
+}
+
+function listCliTemplateReleasePaths(rootDir) {
+  const relativePaths = [];
+  const manifestRel = path.join('packages', 'cli-init', 'templates.manifest.json');
+  if (fs.existsSync(path.join(rootDir, manifestRel))) {
+    relativePaths.push(manifestRel.split(path.sep).join('/'));
+  }
+  const templatesRoot = path.join(rootDir, 'packages', 'cli-init', 'templates');
+  if (!fs.existsSync(templatesRoot)) return relativePaths;
+
+  const walk = (absDir, relPosix) => {
+    for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
+      const childRel = `${relPosix}/${entry.name}`;
+      const childAbs = path.join(absDir, entry.name);
+      if (entry.isDirectory()) walk(childAbs, childRel);
+      else relativePaths.push(childRel);
+    }
+  };
+  walk(templatesRoot, 'packages/cli-init/templates');
+  return relativePaths;
+}
+
 /** Build signed-commit additions without leaving a dirty worktree. */
 function buildLockedVersionAdditions(rootDir, version) {
   const files = applyLockedVersion(rootDir, version);
-  const relativePaths = [files.rootPackage, files.policy, ...files.apps];
+  rebuildCliTemplates(rootDir);
+  const templates = listCliTemplateReleasePaths(rootDir);
+  const relativePaths = [files.rootPackage, files.policy, ...files.apps, ...templates];
   const additions = relativePaths.map((rel) => ({
     path: rel,
     contents: fs.readFileSync(path.join(rootDir, rel), 'utf8')
   }));
   resetWorktree(rootDir);
-  return { files, additions, relativePaths };
+  return {
+    files: { ...files, templates },
+    additions,
+    relativePaths
+  };
 }
 
 function resetWorktree(rootDir) {
@@ -448,8 +487,10 @@ function createAppReleaseTag(options = {}) {
   }
 
   const files = applyLockedVersion(rootDir, next.nextVersion);
+  rebuildCliTemplates(rootDir);
+  const templates = listCliTemplateReleasePaths(rootDir);
   configureGitIdentity(rootDir);
-  runGit(['add', files.rootPackage, files.policy, ...files.apps], { cwd: rootDir });
+  runGit(['add', files.rootPackage, files.policy, ...files.apps, ...templates], { cwd: rootDir });
   runGit(['commit', '-m', `chore(release): ${tag}`], { cwd: rootDir });
   runGit(['tag', '-a', tag, '-m', `Application release ${tag}`], { cwd: rootDir });
 
@@ -871,7 +912,9 @@ module.exports = {
   applyLockedVersion,
   buildLockedVersionAdditions,
   ensureBranchAtSha,
+  listCliTemplateReleasePaths,
   listFailedRequiredChecks,
+  rebuildCliTemplates,
   remoteTagExists,
   resetWorktree,
   runGh,

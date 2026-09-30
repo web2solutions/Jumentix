@@ -14,11 +14,15 @@ describe('check-generated-automation-pr', () => {
         'package.json',
         'release-policy.json',
         'apps/frontend/package.json',
-        'apps/backend-template/package.json'
+        'apps/backend-template/package.json',
+        'packages/cli-init/templates.manifest.json',
+        'packages/cli-init/templates/backend/package.json',
+        'packages/cli-init/templates/frontend/package.json'
       ]
     });
     expect(result.failures).toStrictEqual([]);
     expect(isAllowedReleasePath('apps/service-management/package.json')).toBe(true);
+    expect(isAllowedReleasePath('packages/cli-init/templates/backend/package.json')).toBe(true);
     expect(isAllowedReleasePath('ci-cd/create-app-release-tag.js')).toBe(false);
   });
 

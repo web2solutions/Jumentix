@@ -23,7 +23,8 @@ const {
 
 const RELEASE_ALLOWED = new Set([
   'package.json',
-  'release-policy.json'
+  'release-policy.json',
+  'packages/cli-init/templates.manifest.json'
 ]);
 
 function runGit(args, options = {}) {
@@ -50,7 +51,11 @@ function listChangedFiles(diffBaseRef, cwd) {
 
 function isAllowedReleasePath(file) {
   if (RELEASE_ALLOWED.has(file)) return true;
-  return /^apps\/[^/]+\/package\.json$/.test(file);
+  if (/^apps\/[^/]+\/package\.json$/.test(file)) return true;
+  // Version bumps rewrite seed apps; packaged CLI templates must move with them
+  // or `cli:check-template-freshness` fails the lean generated-automation gate
+  // (CircleCI jobs 3126 / 3159 on chore/release-v0.3.0).
+  return file.startsWith('packages/cli-init/templates/');
 }
 
 function validateGeneratedAutomationPr(options = {}) {
