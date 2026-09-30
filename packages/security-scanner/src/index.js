@@ -123,6 +123,14 @@ const ACCEPTED_RISK = {
   'GHSA-8238-w5pm-2374': { until: '2026-10-31', reason: 'adm-zip async DEFLATE unhandled error DoS inherited via cassandra-driver; awaiting upstream' },
   'GHSA-c6fg-446q-cg94': { until: '2026-10-31', reason: 'adm-zip getDataAsync maxOutputLength bypass inherited via cassandra-driver; awaiting upstream' },
   'GHSA-p634-w6r4-rjp2': { until: '2026-10-31', reason: 'adm-zip duplicate ZIP entry name mismatch inherited via cassandra-driver; awaiting upstream' },
+  'GHSA-2gc4-cqfq-p2gv': { until: '2026-10-31', reason: 'engine.io protocol revision mismatch DoS inherited via socket.io transitive chain; awaiting upstream' },
+  'GHSA-6j4f-fj2g-mc7p': { until: '2026-10-31', reason: 'brace-expansion parseCommaParts recursion DoS inherited transitively; Bun cannot override nested edges yet' },
+  'GHSA-qhr7-859c-m2p7': { until: '2026-10-31', reason: 'brace-expansion nested brace recursion DoS inherited transitively; Bun cannot override nested edges yet' },
+  'GHSA-4p3w-j4w9-5jqw': { until: '2026-10-31', reason: 'moment locale path traversal inherited transitively; Bun cannot override nested edges yet' },
+  'GHSA-h3mg-xc3c-68pw': { until: '2026-10-31', reason: 'ip-address Address6 parse diagnostic length DoS inherited transitively; awaiting upstream' },
+  'GHSA-j6r3-76f7-8jcv': { until: '2026-10-31', reason: 'ip-address cross-family isInSubnet allowlist bypass inherited transitively; awaiting upstream' },
+  'GHSA-q2hr-2g5m-vwhr': { until: '2026-10-31', reason: 'brace-expansion quadratic rewrite CPU DoS inherited transitively; Bun cannot override nested edges yet' },
+  'GHSA-hrr3-gc8f-f4qj': { until: '2026-10-31', reason: 'fast-uri percent-encoded host case normalization via Ajv/fastify; awaiting upstream' },
 };
 
 /**
