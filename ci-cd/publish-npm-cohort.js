@@ -10,6 +10,11 @@ const { execFileSync } = require('child_process');
 const { gitBinary } = require('./lib/git-binary.js');
 const { isEntryPoint } = require('./lib/entry-point.js');
 const { resolveNpmCommand } = require('./check-npm-org-integration.js');
+const {
+  createAnnotatedTagRef,
+  resolveRepository,
+  resolveToken
+} = require('./lib/github-signed-commit.js');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -114,6 +119,25 @@ function defaultPublishIo() {
       });
     },
     tag(tagName) {
+      // Prefer the GitHub API for annotated package tags. `git push origin
+      // <tag>` from Actions hung indefinitely after the first successful
+      // npm publish (run 36724567997 — @jumentix/cana@0.1.0 landed, no tag
+      // reached the remote). createAnnotatedTagRef uses the same path as
+      // app-release tagging (JUM-913 follow-up).
+      const env = process.env;
+      const repository = resolveRepository(env);
+      const token = resolveToken(env);
+      if (repository && token) {
+        const commitSha = runGit(['rev-parse', 'HEAD']);
+        createAnnotatedTagRef({
+          repository,
+          tag: tagName,
+          message: `npm publish ${tagName}`,
+          commitSha,
+          env
+        });
+        return;
+      }
       runGit(['tag', '-a', tagName, '-m', `npm publish ${tagName}`]);
       runGit(['push', 'origin', tagName], { inherit: true });
     },
