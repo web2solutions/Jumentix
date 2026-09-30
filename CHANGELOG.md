@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-09-30 [JUM-913][Ci] Promote npm package-tag API fix to main (#570) - Eduardo A.
+- 2026-09-30 ci(npm-publish): create package tags via GitHub API (JUM-913) (#569) - Eduardo A.
 - 2026-09-30 [JUM-913][Ci] Promote npm Node publish fix (and #561) to main (#565) - Eduardo A.
 - 2026-09-30 ci(npm-publish): run under Node for provenance (JUM-913) (#564) - Eduardo A.
 - 2026-09-29 [JUM-900][Fix] Rebuild CLI templates with app-release version bumps (#561) - Eduardo A.
