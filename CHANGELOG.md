@@ -4,6 +4,17 @@
 
 ## Unreleased
 
+- 2026-09-30 [JUM-913][Ci] Promote tag-token + next/og ACCEPTED_RISK to main (#574) - Eduardo A.
+- 2026-09-30 ci(npm-publish): wire tag API token; accept next/og GHSA (JUM-913) (#573) - Eduardo A.
+- 2026-09-30 [JUM-913][Ci] Promote npm package-tag API fix to main (#570) - Eduardo A.
+- 2026-09-30 ci(npm-publish): create package tags via GitHub API (JUM-913) (#569) - Eduardo A.
+- 2026-09-30 [JUM-913][Ci] Promote npm Node publish fix (and #561) to main (#565) - Eduardo A.
+- 2026-09-30 ci(npm-publish): run under Node for provenance (JUM-913) (#564) - Eduardo A.
+- 2026-09-29 [JUM-900][Fix] Rebuild CLI templates with app-release version bumps (#561) - Eduardo A.
+
+## v0.3.0 - 2026-09-30
+
+- 2026-09-30 chore(release): v0.3.0 (#560) - Eduardo A.
 - 2026-09-29 [JUM-900][Release] Promote dev to main — close the docs epic, publish npm packages (#548) - Eduardo A.
 - 2026-09-29 fix(ci): resolve git via absolute path in merge-driver setup (#557) - Eduardo A.
 - 2026-09-29 fix(service-management): detect busy ports with TCP connect (#556) - Eduardo A.
