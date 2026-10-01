@@ -2,7 +2,12 @@ const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { classifyCiContext, CONTEXTS } = require('./classify-ci-context.js');
+const {
+  classifyCiContext,
+  CONTEXTS,
+  isGeneratedAppReleaseBranch,
+  isGeneratedChangelogSyncBranch
+} = require('./classify-ci-context.js');
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 /**
@@ -17,6 +22,13 @@ const { isEntryPoint } = require('./lib/entry-point.js');
  * twenty minutes of tests.
  */
 const LINT_PREFLIGHT = Object.freeze({ id: 'lint', script: 'lint' });
+// The frontend and website are separate lint consumers with their own flat
+// configs (Requirement 138): the root run says nothing about them, so they
+// preflight alongside it — same fail-fast rationale as the root lint above.
+// format:check joins them: Prettier is a ci:gate step no other CI path runs.
+const LINT_FRONTEND_PREFLIGHT = Object.freeze({ id: 'lint-frontend', script: 'lint:frontend' });
+const LINT_WEBSITE_PREFLIGHT = Object.freeze({ id: 'lint-website', script: 'lint:website' });
+const FORMAT_CHECK_PREFLIGHT = Object.freeze({ id: 'format-check', script: 'format:check' });
 
 /**
  * Test integrity runs before every gate, including the strict matrix (JUM-683).
@@ -40,6 +52,23 @@ const TEST_INTEGRITY_PREFLIGHT = Object.freeze({ id: 'test-integrity', script: '
 const CURRENT_GOVERNANCE_DOCS_PREFLIGHT = Object.freeze({
   id: 'current-governance-docs',
   script: 'docs:check-current-governance'
+});
+// Public layers (README, website) must not restate internal governance
+// (Requirement 066 audience matrix, JUM-892). Seconds, static, fail-closed.
+const DOCUMENTATION_AUDIENCE_PREFLIGHT = Object.freeze({
+  id: 'documentation-audience',
+  script: 'docs:check-audience'
+});
+/**
+ * `ci:gate` steps that no CI path ran (JUM-903). Hosted CI never executes the
+ * `ci:gate` script, so a step listed only there was a gate in name only — the
+ * CLI template freshness check was failing on `dev` with every required check
+ * green. `ci:gate:static` groups the cheap checks (static reads plus the OSV
+ * dependency audit) and runs before every gate.
+ */
+const STATIC_GATES_PREFLIGHT = Object.freeze({
+  id: 'static-gates',
+  script: 'ci:gate:static'
 });
 
 /**
@@ -81,6 +110,30 @@ const FULL_MATRIX_QUALITY_GATE = Object.freeze({
   preflight: Object.freeze([
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
+    DOCUMENTATION_AUDIENCE_PREFLIGHT,
+    STATIC_GATES_PREFLIGHT,
+    WORKSPACE_BOUNDARIES_PREFLIGHT,
+    OWNERSHIP_PLACEMENT_PREFLIGHT,
+    BUILD_DEV_PREFLIGHT
+  ])
+});
+/**
+ * Generated app-release / changelog PRs (JUM-889). Preflight + diff shape only.
+ * Heavy suites already run as selected CircleCI jobs; duplicating `ci:gate:strict`
+ * inside branch-gate flakes and stalls unattended merges.
+ */
+const GENERATED_AUTOMATION_QUALITY_GATE = Object.freeze({
+  id: 'generated-automation',
+  script: 'ci:gate:generated-automation',
+  preflight: Object.freeze([
+    LINT_PREFLIGHT,
+    LINT_FRONTEND_PREFLIGHT,
+    LINT_WEBSITE_PREFLIGHT,
+    FORMAT_CHECK_PREFLIGHT,
+    TEST_INTEGRITY_PREFLIGHT,
+    CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
+    DOCUMENTATION_AUDIENCE_PREFLIGHT,
+    STATIC_GATES_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
     OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
@@ -91,8 +144,13 @@ const UNIT_QUALITY_GATE = Object.freeze({
   script: 'test:unit',
   preflight: Object.freeze([
     LINT_PREFLIGHT,
+    LINT_FRONTEND_PREFLIGHT,
+    LINT_WEBSITE_PREFLIGHT,
+    FORMAT_CHECK_PREFLIGHT,
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
+    DOCUMENTATION_AUDIENCE_PREFLIGHT,
+    STATIC_GATES_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
     OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
@@ -103,8 +161,13 @@ const TASK_QUALITY_GATE = Object.freeze({
   script: 'ci:gate:task',
   preflight: Object.freeze([
     LINT_PREFLIGHT,
+    LINT_FRONTEND_PREFLIGHT,
+    LINT_WEBSITE_PREFLIGHT,
+    FORMAT_CHECK_PREFLIGHT,
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
+    DOCUMENTATION_AUDIENCE_PREFLIGHT,
+    STATIC_GATES_PREFLIGHT,
     WORKSPACE_BOUNDARIES_PREFLIGHT,
     OWNERSHIP_PLACEMENT_PREFLIGHT,
     BUILD_DEV_PREFLIGHT
@@ -128,7 +191,14 @@ function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
   return Boolean(process.env.CIRCLE_PULL_REQUEST);
 }
 
+function isGeneratedAutomationHead(headRef) {
+  return isGeneratedAppReleaseBranch(headRef) || isGeneratedChangelogSyncBranch(headRef);
+}
+
 function selectQualityGate(targetBranch, options = {}) {
+  if (isGeneratedAutomationHead(options.headRef)) {
+    return GENERATED_AUTOMATION_QUALITY_GATE;
+  }
   if (options.context) {
     if (
       options.context === CONTEXTS.RELEASE_PR_TO_MAIN ||
@@ -214,7 +284,8 @@ function runBranchQualityGate(options = {}) {
   const isPullRequest = ciContext?.isPullRequest ?? resolvePullRequestFlag(options.isPullRequest);
   const gate = selectQualityGate(targetBranch, {
     isPullRequest,
-    context: ciContext?.context
+    context: ciContext?.context,
+    headRef: options.headRef || ciContext?.headRef
   });
   logger.log(`[ci] target branch: ${targetBranch}`);
   if (ciContext?.context) logger.log(`[ci] context: ${ciContext.context}`);
@@ -277,6 +348,8 @@ if (isEntryPoint(module)) {
 module.exports = {
   executeQualityGate,
   FULL_MATRIX_QUALITY_GATE,
+  GENERATED_AUTOMATION_QUALITY_GATE,
+  isGeneratedAutomationHead,
   resolvePullRequestFlag,
   resolveTargetBranch,
   runBranchQualityGate,

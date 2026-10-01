@@ -47,7 +47,7 @@ export function printUpgradeHelp(log: (message?: string) => void = console.log):
   log(`
 jumentix upgrade [--dry-run] [--force]
 
-Apply a template three-way merge using .jumentix/manifest.json (Req 037 v2 / JUM-851).
+Apply a template three-way merge using .jumentix/manifest.json.
 
 Options:
   --dry-run   Print the updated/conflicted/skipped report without writing

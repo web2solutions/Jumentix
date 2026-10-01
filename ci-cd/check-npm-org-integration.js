@@ -30,20 +30,67 @@ const NPM_INSTALL_CANDIDATES = Object.freeze([
   '/usr/lib/node_modules/npm/bin/npm-cli.js'
 ]);
 
+/**
+ * Fixed Node locations used when `process.execPath` is Bun.
+ *
+ * npm provenance (`provenance=true` in the root `.npmrc`) signs with OpenSSL
+ * digests that Bun's runtime does not provide — app-release run 36716475438
+ * failed with `ERR_OSSL_NO_DEFAULT_DIGEST` when Bun executed npm-cli.js.
+ * Prefer an explicit `NPM_NODE_EXE` (set by CI after setup-node), then these
+ * root-owned paths. Never search PATH (Sonar javascript:S4036).
+ */
+const NODE_INSTALL_CANDIDATES = Object.freeze(['/usr/bin/node', '/usr/local/bin/node']);
+
+function isBunExecPath(execPath) {
+  return /^bun(?:\.exe)?$/i.test(path.basename(String(execPath || '')));
+}
+
+/**
+ * Node binary that must run npm-cli.js. Bun is rejected: provenance and other
+ * npm crypto paths need Node's OpenSSL.
+ */
+function resolveNodeRunner({
+  env = process.env,
+  execPath = process.execPath,
+  exists = fs.existsSync,
+  preferredNode = null
+} = {}) {
+  const explicit = preferredNode || env.NPM_NODE_EXE || env.npm_node_execpath;
+  if (explicit && exists(explicit) && !isBunExecPath(explicit)) {
+    return explicit;
+  }
+  if (!isBunExecPath(execPath) && exists(execPath)) {
+    return execPath;
+  }
+  for (const candidate of NODE_INSTALL_CANDIDATES) {
+    if (exists(candidate)) return candidate;
+  }
+  throw new Error(
+    'Could not resolve a Node binary to run the npm CLI ' +
+      `(execPath=${execPath}; looked at NPM_NODE_EXE / npm_node_execpath and: ` +
+      `${NODE_INSTALL_CANDIDATES.join(', ')}).\n` +
+      "  npm provenance attestation requires Node's OpenSSL — Bun cannot run\n" +
+      '  npm-cli.js for publish (ERR_OSSL_NO_DEFAULT_DIGEST). Set NPM_NODE_EXE\n' +
+      '  to an absolute Node path, or run the publish script under node.'
+  );
+}
+
 function resolveNpmCommand({
   env = process.env,
   execPath = process.execPath,
-  exists = fs.existsSync
+  exists = fs.existsSync,
+  preferredNode = null
 } = {}) {
+  const nodeRunner = resolveNodeRunner({ env, execPath, exists, preferredNode });
   const npmCli = env.npm_execpath;
-  const npmNode = env.npm_node_execpath;
   // Bun exports its own path as npm_execpath for script compatibility; only an
   // npm-owned CLI passes this check.
   if (npmCli && /npm/i.test(path.basename(npmCli))) {
-    return { command: npmNode || execPath, argsPrefix: [npmCli] };
+    return { command: nodeRunner, argsPrefix: [npmCli] };
   }
+  // Prefer npm bundled next to the Node runner (not next to Bun).
   const bundled = path.join(
-    path.dirname(execPath),
+    path.dirname(nodeRunner),
     '..',
     'lib',
     'node_modules',
@@ -52,16 +99,16 @@ function resolveNpmCommand({
     'npm-cli.js'
   );
   if (exists(bundled)) {
-    return { command: execPath, argsPrefix: [bundled] };
+    return { command: nodeRunner, argsPrefix: [bundled] };
   }
   for (const candidate of NPM_INSTALL_CANDIDATES) {
     if (exists(candidate)) {
-      return { command: execPath, argsPrefix: [candidate] };
+      return { command: nodeRunner, argsPrefix: [candidate] };
     }
   }
   throw new Error(
     'Could not resolve the npm CLI to an absolute path ' +
-      `(looked next to ${execPath} and in: ${NPM_INSTALL_CANDIDATES.join(', ')}).\n` +
+      `(looked next to ${nodeRunner} and in: ${NPM_INSTALL_CANDIDATES.join(', ')}).\n` +
       '  This check resolves npm without PATH on purpose: a writable PATH entry\n' +
       '  can shadow the real CLI and this check trusts what npm tells it about\n' +
       '  authentication. Run it through an npm script (npm_execpath) or add the\n' +
@@ -136,8 +183,11 @@ function main() {
 
 module.exports = {
   checkNpmOrgAccess,
+  isBunExecPath,
+  NODE_INSTALL_CANDIDATES,
   NPM_INSTALL_CANDIDATES,
   NPM_SCOPE,
+  resolveNodeRunner,
   resolveNpmCommand,
   run
 };

@@ -41,35 +41,44 @@ Jumentix is an open-source software factory for teams building SaaS products. It
 [![Run on Vercel Functions](https://img.shields.io/badge/Run%20on-Vercel%20Functions-gold?style=flat-square&logo=vercel&logoColor=000)](https://vercel.com/docs/functions)
 [![Stand with Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://vshymanskyy.github.io/StandWithUkraine)
 
-CircleCI is the canonical CI orchestrator; GitHub Actions is retained and can be re-enabled at any time by setting the repository Actions variable `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` to `true` (see `documentation/md/CI-PROVIDER-GOVERNANCE.md`).
-
 ## What You Can Build
 
-- REST APIs with OpenAPI 3.1 contracts, plus WebSocket, gRPC, and GraphQL services.
-- Function services for AWS, Google Cloud, Azure, Vercel Functions, and Cloudflare Workers.
+- REST APIs with OpenAPI 3.1 contracts, plus WebSocket and gRPC realtime services.
+- Function services for AWS Lambda, Vercel Functions, and Cloudflare Workers.
 - Modular SaaS monoliths that can evolve into independently deployed service ecosystems.
-- Complete product experiences: SPAs, offline-first PWAs, and SSR applications with contract-driven client SDKs.
+- Complete product experiences: SPAs and offline-first PWAs with contract-driven client SDKs.
 - Offline field and operations applications backed by IndexedDB and local storage.
 - Domain models and service boundaries designed in Service Management, with service-specific OpenAPI and AsyncAPI exports.
 - Services backed by in-memory, SQL, or NoSQL persistence adapters.
 
+## Why Teams Choose Jumentix
+
+- **The contract comes first.** Every service is generated from an OpenAPI or Domain Designer model, so APIs, clients and documentation agree from day one.
+- **The code is yours.** Jumentix generates a plain Bun workspace you read, change and deploy, on open-source libraries.
+- **Swap infrastructure, keep the domain.** HTTP frameworks, databases and messaging sit behind adapters, so changing one does not touch your business rules.
+- **Start small, split later.** Begin as one modular service and move domains into separate services when the product needs it.
+
 ## Get Started
 
-```bash
-bun x github:web2solutions/Jumentix#dev
-```
-
-Choose a service profile and project folder when prompted. For a repeatable REST scaffold:
+Create a project and answer a few questions about how it should run:
 
 ```bash
-bun x github:web2solutions/Jumentix#dev \
-  --non-interactive \
-  --service-type=rest \
-  --project-name=my-product \
-  --git-branch=dev
+npx @jumentix/cli-init init my-product
 ```
 
-The CLI creates the project and installs its dependencies with Bun. Choose a guide below to continue shaping your product.
+Or generate the same project without prompts:
+
+```bash
+npx @jumentix/cli-init init my-product \
+  --mode=monolith \
+  --preset=users \
+  --http=express \
+  --realtime=none \
+  --db=sqlite \
+  --non-interactive
+```
+
+`--mode` picks the shape: `monolith`, `services`, `hybrid` (backend and web app) or `frontend`. Start from your own model with `--from=<designer-export.json | openapi.yml>`. Using Bun? `bunx @jumentix/cli-init init my-product` works the same way. The [CLI guide](./packages/cli-init/README.md) lists every option.
 
 ## Guides and Documentation
 

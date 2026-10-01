@@ -1,13 +1,12 @@
 import { computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref } from 'vue';
 
-import { getSharedApiClient } from '@/contracts/apiClient';
 import { apiErrorStatus, formatApiError } from '@/contracts/errors';
-import { entityPrimaryKey, fieldDescriptors, listOperationForEntity } from '@/contracts/formSchema';
+import { entityPrimaryKey, fieldDescriptors } from '@/contracts/formSchema';
 import { listCapabilities } from '@/contracts/listSchema';
+import { loadRelationLabels } from '@/contracts/relationLabels';
 import { isCanaOpen } from '@/data/db';
-import { listLocal, subscribeLocal } from '@/data/localRepository';
+import { subscribeLocal } from '@/data/localRepository';
 import { localized, t } from '@/i18n';
-import { useAuthStore } from '@/stores/auth';
 import createEntityStore from '@/stores/entityStore';
 
 import type { FieldDescriptor } from '@/contracts/formSchema';
@@ -217,42 +216,7 @@ export const useXCrud = (config: XCrudEntityConfig) => {
       referenceFields.map(async (d) => {
         const { relation } = d;
         if (!relation) return;
-        const operationId = listOperationForEntity(relation.entity);
-        if (!operationId) {
-          referenceLabels[d.name] = {};
-          return;
-        }
-        try {
-          const targetCapabilities = listCapabilities(operationId);
-          type Rows = Record<string, unknown>[];
-          type ReferenceRows = { result?: Rows } | Rows;
-          let list: Rows = [];
-          if (isCanaOpen()) {
-            const localPage = await listLocal(relation.entity, {
-              page: 1,
-              size: targetCapabilities?.maxSize ?? 100
-            });
-            list = localPage.result;
-          } else {
-            const client = getSharedApiClient();
-            const response = await client.request<ReferenceRows>({
-              operationId,
-              query: targetCapabilities ? { page: 1, size: targetCapabilities.maxSize } : undefined,
-              headers: { Authorization: useAuthStore().token }
-            });
-            list = Array.isArray(response) ? response : (response.result ?? []);
-          }
-          const labelField = relation.display ?? 'name';
-          const match = relation.match || entityPrimaryKey(relation.entity);
-          referenceLabels[d.name] = Object.fromEntries(
-            list.map((row) => [
-              String(row[match] ?? row.id),
-              String(row[labelField] ?? row[match] ?? '')
-            ])
-          );
-        } catch {
-          referenceLabels[d.name] = {};
-        }
+        referenceLabels[d.name] = await loadRelationLabels(relation);
       })
     );
   };
@@ -489,9 +453,8 @@ export const useXCrud = (config: XCrudEntityConfig) => {
     const values = rows.value
       .map((row) => row[aggregate.field])
       .filter((value) => value !== undefined && value !== null);
-    if (aggregate.op === 'count') {
+    if (aggregate.op === 'count' && aggregate.groupBy) {
       const { groupBy } = aggregate;
-      if (!groupBy) return 0;
       return new Set(rows.value.map((row) => String(row[groupBy]))).size;
     }
     const numbers = values

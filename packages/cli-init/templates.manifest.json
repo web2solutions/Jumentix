@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "93e24cb6cb7d1426e09722a4d86c4f6108773e51",
+  "sourceCommit": "3c6fb3665a49ea41cd02aef726425537ff2cf094",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -27,7 +27,29 @@
     "backend": "apps/backend-template",
     "frontend": "apps/frontend"
   },
-  "fileCount": 1035,
+  "packageVersions": {
+    "@jumentix/adapter-runtime-bootstrap": "0.1.0",
+    "@jumentix/cana": "0.1.0",
+    "@jumentix/cana-react": "0.1.0",
+    "@jumentix/cana-vue": "0.1.0",
+    "@jumentix/cli-init": "0.0.0",
+    "@jumentix/database-client-factory": "0.1.0",
+    "@jumentix/dead-letter-queue": "0.1.0",
+    "@jumentix/designer-core": "0.1.0",
+    "@jumentix/external-db-repositories": "0.1.0",
+    "@jumentix/external-persistence-core": "0.1.0",
+    "@jumentix/external-store-proxy": "0.1.0",
+    "@jumentix/key-value-storage": "0.0.0",
+    "@jumentix/message-mediator": "0.0.0",
+    "@jumentix/mutex-service": "0.1.0",
+    "@jumentix/persistence-contracts": "0.1.0",
+    "@jumentix/runtime-infra": "0.1.0",
+    "@jumentix/sdk-grpc-client": "0.0.0",
+    "@jumentix/sdk-rest-client": "0.0.0",
+    "@jumentix/sdk-websocket-client": "0.0.0",
+    "@jumentix/shared-contracts": "0.1.0"
+  },
+  "fileCount": 1036,
   "files": {
     "backend/README.md": {
       "sha256": "8381bdf1bdc0a4e7132d479111ebb35d9243a758b739edb5019d0bc4982a380f",
@@ -134,7 +156,7 @@
       "source": "apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.pt-BR.md"
     },
     "backend/package.json": {
-      "sha256": "12158c7be4ed35aa3e2d632af9ef4c27c6a2cf7a9c5d2a96af0faddd44419ca6",
+      "sha256": "9e39b4a35a201790a3261c4503cd87f67f5163f21eae337c31147dede25fe642",
       "source": "apps/backend-template/package.json"
     },
     "backend/scripts/purge-tombstones.js": {
@@ -3622,7 +3644,7 @@
       "source": "apps/frontend/index.html"
     },
     "frontend/package.json": {
-      "sha256": "40959d1dec00de0caa4eee42be2591092d3bb5ef844b9a25bab865a2fc627814",
+      "sha256": "b05538b1aa4f2ecb8be175c193a2f6ce1471b075dcb63a10946d8fd1761472b7",
       "source": "apps/frontend/package.json"
     },
     "frontend/public/android-icon-144x144.png": {
@@ -3762,7 +3784,7 @@
       "source": "apps/frontend/src/App.vue"
     },
     "frontend/src/components/AppBreadcrumb.vue": {
-      "sha256": "c4d789cb20014ec9a2f7291947a09886335991ab85536ab2b785be380c364d74",
+      "sha256": "433fe4c2010af7e7bc4dd56d8907f018353447f8216dba7af7dccc8b01d60988",
       "source": "apps/frontend/src/components/AppBreadcrumb.vue"
     },
     "frontend/src/components/AppFooter.vue": {
@@ -3810,7 +3832,7 @@
       "source": "apps/frontend/src/components/dashboard/AdminUserRatioWidget.vue"
     },
     "frontend/src/components/dashboard/ChartCard.vue": {
-      "sha256": "7559cbbd791c733798f4f0ea647d327a2d7b91ae8d648e147e31379d0d7da9c6",
+      "sha256": "17054f135627621a4275bad1262f31009c0116cc1815ccf55a994c46f1ff78cb",
       "source": "apps/frontend/src/components/dashboard/ChartCard.vue"
     },
     "frontend/src/components/dashboard/DashboardGrid.vue": {
@@ -3826,7 +3848,7 @@
       "source": "apps/frontend/src/components/dashboard/genericWidgets.ts"
     },
     "frontend/src/components/dashboard/loadMetrics.ts": {
-      "sha256": "472b326381edf463458c1354eb13b922f54f19e97930a3402499a63707940c39",
+      "sha256": "065bda857102bfef59a677cc0367bf98234dddc8949bd5046007e2be8b477f4a",
       "source": "apps/frontend/src/components/dashboard/loadMetrics.ts"
     },
     "frontend/src/components/dashboard/types.ts": {
@@ -3878,7 +3900,7 @@
       "source": "apps/frontend/src/components/x-crud/XCrudToolbar.vue"
     },
     "frontend/src/components/x-crud/useXCrud.ts": {
-      "sha256": "487ddd28f6e48d199a866fa8b87d1986d95cabf75afd9d905c72ff36fcc01770",
+      "sha256": "8fe923e9cbd2099b4fe2b7b5c583863616c799a2ac3e7dfc5056d9533b92569c",
       "source": "apps/frontend/src/components/x-crud/useXCrud.ts"
     },
     "frontend/src/components/x-crud/xCrudFormat.ts": {
@@ -3914,7 +3936,7 @@
       "source": "apps/frontend/src/contracts/listSchema.ts"
     },
     "frontend/src/contracts/metricsSchema.ts": {
-      "sha256": "40615543de2b5b4eed2a6f46caf496ded09c8e9095b9fcb2d090713b5e9a0ab2",
+      "sha256": "171f0d74a07c34c1c08ddbfdfb4725e2566a1b2d6a9d67a5862b71352a26e2e7",
       "source": "apps/frontend/src/contracts/metricsSchema.ts"
     },
     "frontend/src/contracts/oasForm.ts": {
@@ -3928,6 +3950,10 @@
     "frontend/src/contracts/rbac.ts": {
       "sha256": "9b759dd4d6b80b2ea73647837d0aa261bec1e18e09b30c57ff7f925b567014da",
       "source": "apps/frontend/src/contracts/rbac.ts"
+    },
+    "frontend/src/contracts/relationLabels.ts": {
+      "sha256": "d710af2f853fc6e5897d7561cfe0dc352776bae185e0b435a823580069cca4ee",
+      "source": "apps/frontend/src/contracts/relationLabels.ts"
     },
     "frontend/src/contracts/sessionGuard.ts": {
       "sha256": "bd2758bfcf03bd496598471fe8eefb0b85f2ae89fe95c0af01d77d11ff8a342a",
@@ -3946,7 +3972,7 @@
       "source": "apps/frontend/src/contracts/validation.ts"
     },
     "frontend/src/data/canaSchema.ts": {
-      "sha256": "033c500bd2e9740269bac7e8739e26b8a070207eca25cac77eadada72a3ce590",
+      "sha256": "9d4df7feb7cf8e276334b0e1b27c5ca0a7ef1e43d82229669739aeaf9bec62f8",
       "source": "apps/frontend/src/data/canaSchema.ts"
     },
     "frontend/src/data/db.ts": {
@@ -3966,7 +3992,7 @@
       "source": "apps/frontend/src/data/pwa.ts"
     },
     "frontend/src/data/sync.ts": {
-      "sha256": "b47716c21519bccd4546e54df5a0cb3ad62afd4ff410e2371d1245f1ce81d1eb",
+      "sha256": "d8cfa6090c236975e97338d22531e944ad7340cc8da64d8c8f0af676f629070b",
       "source": "apps/frontend/src/data/sync.ts"
     },
     "frontend/src/env.d.ts": {
@@ -3982,7 +4008,7 @@
       "source": "apps/frontend/src/features/auth/RegisterView.vue"
     },
     "frontend/src/features/dashboard/DashboardView.vue": {
-      "sha256": "26b5a7043970af20206b2b22beed64c524211b115296b0d56bdbc9c3dd45487b",
+      "sha256": "2904ac2e5dce7f41954339ad45272f3adafc61e818882d3e31cc9be289551ecd",
       "source": "apps/frontend/src/features/dashboard/DashboardView.vue"
     },
     "frontend/src/features/dashboard/NotFoundView.vue": {

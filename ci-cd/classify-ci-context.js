@@ -126,6 +126,11 @@ function isGeneratedChangelogSyncBranch(headRef) {
   return /^chore\/changelog-sync-[0-9a-f]{8}$/i.test(String(headRef || '').trim());
 }
 
+/** Signed app-release bump branches opened by `create-app-release-tag.js --github-api`. */
+function isGeneratedAppReleaseBranch(headRef) {
+  return /^chore\/release-v\d+\.\d+\.\d+$/i.test(String(headRef || '').trim());
+}
+
 function classifyCiContext(options = {}) {
   const env = options.env || process.env;
   const cwd = options.cwd || process.cwd();
@@ -145,7 +150,8 @@ function classifyCiContext(options = {}) {
       baseRef === 'main' &&
       (headRef === 'dev' ||
         isSignedDevPromotionBranch(headRef) ||
-        isGeneratedChangelogSyncBranch(headRef))
+        isGeneratedChangelogSyncBranch(headRef) ||
+        isGeneratedAppReleaseBranch(headRef))
     ) {
       context = CONTEXTS.RELEASE_PR_TO_MAIN;
     } else if (baseRef === 'dev') {
@@ -235,6 +241,7 @@ module.exports = {
   classifyCiContext,
   CONTEXTS,
   FULL_JOBS,
+  isGeneratedAppReleaseBranch,
   isGeneratedChangelogSyncBranch,
   isPullRequest,
   isScheduled,

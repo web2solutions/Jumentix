@@ -1,9 +1,10 @@
 {
   "name": "@jumentix/website",
-  "version": "0.0.2",
+  "version": "0.2.16",
   "private": true,
   "packageManager": "bun@1.3.13",
   "scripts": {
+    "screenshots:capture": "node ./scripts/capture-product-screenshots.mjs",
     "content:sync": "bun ./scripts/sync-markdown-content.mjs && bun ./scripts/sync-changelog.mjs && bun ./scripts/sync-releases.mjs",
     "content:smoke": "bun ./scripts/content-smoke.mjs",
     "examples:cana:downloads": "bun ./scripts/build-cana-example-downloads.mjs",
@@ -32,9 +33,6 @@
     "test:unit": "jest"
   },
   "dependencies": {
-    "@gfazioli/mantine-border-animate": "^2.0.7",
-    "@gfazioli/mantine-marquee": "^4.1.2",
-    "@gfazioli/mantine-text-animate": "^4.0.6",
     "@jumentix/cana": "workspace:*",
     "@jumentix/designer-core": "workspace:*",
     "@jumentix/key-value-storage": "workspace:*",
@@ -92,6 +90,7 @@
     "postcss-simple-vars": "^7.0.1",
     "storybook": "10.6.0",
     "turbopack-inline-svg-loader": "^1.0.3",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "playwright-webkit": "^1.62.1"
   }
 }

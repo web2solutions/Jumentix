@@ -293,6 +293,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/backend-template/test/unit/interface/docs/swaggerUiBundle.test.ts",
+      "path": "apps/backend-template/test/unit/interface/docs/swaggerUiBundle.test.ts",
+      "layer": "interface/runtime",
+      "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
       "path": "apps/backend-template/test/unit/interface/CLI/domainManager.refusals.test.ts",
       "layer": "interface/runtime",
@@ -1487,6 +1497,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/architectureCanvas.dom.test.ts",
+      "path": "apps/service-management/test/unit/architectureCanvas.dom.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/deployTargetValidation.test.ts",
       "path": "apps/service-management/test/unit/deployTargetValidation.test.ts",
       "layer": "service-management/designer",
@@ -1599,6 +1619,16 @@
     {
       "id": "apps/service-management/test/unit/catalogSyncTransport.test.ts",
       "path": "apps/service-management/test/unit/catalogSyncTransport.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/architectureCanvasTheme.test.ts",
+      "path": "apps/service-management/test/unit/architectureCanvasTheme.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2621,6 +2651,18 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/frontend/test/component/AppBreadcrumb.test.ts",
+      "path": "apps/frontend/test/component/AppBreadcrumb.test.ts",
+      "layer": "frontend",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "script": "frontend:test:unit",
+      "reason": "bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/frontend/test/component/ModuleLayout.test.ts",
       "path": "apps/frontend/test/component/ModuleLayout.test.ts",
       "layer": "frontend",
@@ -2781,6 +2823,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/check-documentation-audience.test.ts",
+      "path": "ci-cd/test/check-documentation-audience.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-workspace-ownership-placement.test.ts",
       "path": "ci-cd/test/check-workspace-ownership-placement.test.ts",
       "layer": "tooling",
@@ -2881,6 +2933,26 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/ci-gate-coverage.test.ts",
+      "path": "ci-cd/test/ci-gate-coverage.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/check-generated-automation-pr.test.ts",
+      "path": "ci-cd/test/check-generated-automation-pr.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/start-redis-compose.test.ts",
       "path": "ci-cd/test/start-redis-compose.test.ts",
       "layer": "tooling",
@@ -2893,6 +2965,16 @@
     {
       "id": "ci-cd/test/check-sonar-reliability.test.ts",
       "path": "ci-cd/test/check-sonar-reliability.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/check-current-governance-docs.test.ts",
+      "path": "ci-cd/test/check-current-governance-docs.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -2933,6 +3015,16 @@
     {
       "id": "ci-cd/test/entry-point.test.ts",
       "path": "ci-cd/test/entry-point.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/build-artifact-source-map.test.ts",
+      "path": "ci-cd/test/build-artifact-source-map.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -3013,6 +3105,16 @@
     {
       "id": "ci-cd/test/report-sonar-findings.test.ts",
       "path": "ci-cd/test/report-sonar-findings.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/needs-frontend-patch-coverage.test.ts",
+      "path": "ci-cd/test/needs-frontend-patch-coverage.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -4822,6 +4924,26 @@
       "timeoutMs": 120000
     },
     {
+      "id": "packages/cli-init/test/jumentix-versions.test.ts",
+      "path": "packages/cli-init/test/jumentix-versions.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/cli-init/test/launcher.test.ts",
+      "path": "packages/cli-init/test/launcher.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "packages/cli-init/test/source-resolution.test.ts",
       "path": "packages/cli-init/test/source-resolution.test.ts",
       "layer": "tooling",
@@ -5268,18 +5390,6 @@
       "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
     },
     {
-      "id": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
-      "path": "apps/jumentix-website/components/Welcome/Welcome.test.tsx",
-      "layer": "website",
-      "kind": "non-hexagonal",
-      "type": "unit",
-      "script": "website:test:unit",
-      "runner": "bun",
-      "tier": "gate",
-      "timeoutMs": 60000,
-      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
-    },
-    {
       "id": "apps/jumentix-website/components/architecture/HexagonalArchitectureMap.test.tsx",
       "path": "apps/jumentix-website/components/architecture/HexagonalArchitectureMap.test.tsx",
       "layer": "website",
@@ -5450,6 +5560,30 @@
     {
       "id": "apps/jumentix-website/scripts/cana-consumer-filter.test.mjs",
       "path": "apps/jumentix-website/scripts/cana-consumer-filter.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/scripts/check-screenshot-freshness.test.mjs",
+      "path": "apps/jumentix-website/scripts/check-screenshot-freshness.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
+      "id": "apps/jumentix-website/scripts/content-leaks.test.mjs",
+      "path": "apps/jumentix-website/scripts/content-leaks.test.mjs",
       "layer": "website",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -6024,9 +6158,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 359,
+    "unit": 371,
     "integration": 102,
     "smoke": 2,
-    "suites": 522
+    "suites": 535
   }
 }

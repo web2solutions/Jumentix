@@ -98,6 +98,9 @@ out
 !src/modules/**/adapters/out/
 !src/modules/**/adapters/out/**
 !apps/backend-template/src/modules/**/adapters/out/
+# JUM-904: the CLI packages the backend seed; its outbound adapters must be committed too.
+!packages/cli-init/templates/backend/src/modules/**/adapters/out/
+!packages/cli-init/templates/backend/src/modules/**/adapters/out/**
 !apps/backend-template/src/modules/**/adapters/out/**
 !apps/service-management-api/src/modules/**/adapters/out/
 !apps/service-management-api/src/modules/**/adapters/out/**

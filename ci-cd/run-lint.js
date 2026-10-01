@@ -66,9 +66,18 @@ function runLintSurface(surface, options = {}) {
   const floors = loadFloors();
   const floor = options.floor ?? floors[surface] ?? null;
 
+  // The report goes to a temp file, not a piped stdout: under load, Bun's
+  // spawnSync has intermittently delivered an empty stdout for the (large,
+  // minutes-long) eslint child with exit 0 — a phantom "no JSON report"
+  // failure that has nothing to do with the lint result. `--output-file`
+  // removes the pipe from the equation entirely.
+  const reportPath = path.join(
+    fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'jumentix-lint-')),
+    `${surface}.json`
+  );
   const run = spawnSync(
     process.execPath,
-    [eslintEntrypoint(), '.', '--format', 'json', '--max-warnings=0'],
+    [eslintEntrypoint(), '.', '--format', 'json', '--output-file', reportPath, '--max-warnings=0'],
     {
       cwd,
       encoding: 'utf8',
@@ -82,10 +91,26 @@ function runLintSurface(surface, options = {}) {
     return { code: 2, files: 0, errors: 0, warnings: 0 };
   }
 
+  let reportText = null;
+  try {
+    reportText = fs.readFileSync(reportPath, 'utf8');
+  } catch {
+    reportText = null;
+  } finally {
+    try {
+      fs.rmSync(path.dirname(reportPath), { recursive: true, force: true });
+    } catch {
+      // temp cleanup is best-effort
+    }
+  }
+
   let results = null;
   try {
-    results = JSON.parse(run.stdout || '[]');
+    results = reportText === null ? null : JSON.parse(reportText || '[]');
   } catch {
+    results = null;
+  }
+  if (results === null) {
     // eslint prints config crashes to stderr with no JSON payload.
     console.error(`[lint] ${surface}: eslint produced no JSON report (exit ${run.status})`);
     process.stderr.write(run.stderr || '');

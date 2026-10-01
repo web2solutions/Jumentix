@@ -4,8 +4,8 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const packagePath = path.join(ROOT, 'package.json');
-const outEn = path.join(ROOT, 'documentation/consumers/PACKAGE-SCRIPTS-REFERENCE.md');
-const outPt = path.join(ROOT, 'documentation/consumers/PACKAGE-SCRIPTS-REFERENCE.pt-BR.md');
+const outEn = path.join(ROOT, 'documentation/md/PACKAGE-SCRIPTS-REFERENCE.md');
+const outPt = path.join(ROOT, 'documentation/md/PACKAGE-SCRIPTS-REFERENCE.pt-BR.md');
 
 const PREFIX_HINTS = [
   {
@@ -138,7 +138,7 @@ const buildTable = (scripts, lang) => {
   return [header, ...rows].join('\n');
 };
 
-const buildEn = (scripts) => `# Package.json Scripts Reference (Consumer)
+const buildEn = (scripts) => `# Package.json Scripts Reference (Contributor)
 
 This page lists all root \`package.json\` scripts and how to use each command.
 
@@ -151,7 +151,7 @@ bun run <command>
 ${buildTable(scripts, 'en')}
 `;
 
-const buildPt = (scripts) => `# Referência de Scripts do Package.json (Consumidor)
+const buildPt = (scripts) => `# Referência de Scripts do Package.json (Contribuidor)
 
 Esta página lista todos os scripts do \`package.json\` raiz e como usar cada comando.
 

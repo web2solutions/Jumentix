@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console -- CLI script prints results to stdout/stderr */
 /** Requirement 113 — public open-source CI provider contract. */
 
 const fs = require('node:fs');
@@ -10,6 +10,7 @@ const failures = [];
 const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
 const feedbackWorkflowPath = path.join(root, '.github', 'workflows', 'pr-feedback.yml');
+const appReleaseWorkflowPath = path.join(root, '.github', 'workflows', 'app-release.yml');
 const sonarReliabilityWorkflowPath = path.join(
   root,
   '.github',
@@ -118,6 +119,7 @@ if (!fs.existsSync(workflowPath)) {
     /JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
     /JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/,
     /startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)/,
+    /startsWith\(github\.head_ref, 'chore\/release-v'\)/,
     /website:storybook:build/,
     /website:storybook:smoke/,
     /website:test:prepublish/,
@@ -190,10 +192,10 @@ if (!fs.existsSync(workflowPath)) {
   }
 
   const heavyContextGuard =
-    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   // Coverage (Codecov + Sonar) must also run on pushes to `dev`.
   const coverageContextGuard =
-    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   for (const job of [
     'workspace-builds',
     'workspace-tests',
@@ -214,7 +216,8 @@ if (!fs.existsSync(workflowPath)) {
   // Requirement 113 (2026-09-23 amendment): CircleCI is canonical; every retained
   // GitHub Actions matrix job must stay disabled by default behind the single
   // reversible flag. Always-on exceptions (pr-feedback, sync-changelog,
-  // pr-feedback.yml, npm-publish.yml) are intentionally absent from this list.
+  // pr-feedback.yml, app-release.yml, npm-publish.yml) are intentionally absent
+  // from this list.
   const disableFlagGuard = /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/;
   for (const job of [
     'branch-gate',
@@ -258,6 +261,9 @@ if (!fs.existsSync(workflowPath)) {
     failures.push(
       'Coverage job must build workspace package dependencies before frontend patch coverage'
     );
+  }
+  if (!/needs-frontend-patch-coverage\.js/.test(coverageBlock)) {
+    failures.push('Coverage job must gate frontend coverage with needs-frontend-patch-coverage.js');
   }
 
   [/\n\s+codecov:\s*\n/, /\n\s+sonarqube:\s*\n/].forEach((marker) => {
@@ -329,6 +335,24 @@ checkTrustedPullRequestWorkflow(feedbackWorkflowPath, 'PR feedback workflow', [
   /check-pr-feedback\.js --repo/,
   /github\.event\.pull_request\.number/
 ]);
+
+if (!fs.existsSync(appReleaseWorkflowPath)) {
+  failures.push('Missing required always-on workflow: .github/workflows/app-release.yml');
+} else {
+  const appReleaseContents = fs.readFileSync(appReleaseWorkflowPath, 'utf8');
+  for (const marker of [
+    /name:\s*Application release/,
+    /create-app-release:/,
+    /environment:\s*secrets/,
+    /CHANGELOG_GH_TOKEN/,
+    /create-app-release-tag\.js --github-api/,
+    /group:\s*app-release-main/
+  ]) {
+    if (!marker.test(appReleaseContents)) {
+      failures.push(`.github/workflows/app-release.yml is missing ${String(marker)}`);
+    }
+  }
+}
 
 function checkSonarReliabilityWorkflow(workflowPathToCheck) {
   if (!fs.existsSync(workflowPathToCheck)) {
@@ -536,6 +560,21 @@ if (fs.existsSync(circleciPath)) {
       'CircleCI coverage must build workspace package dependencies before frontend patch coverage'
     );
   }
+  if (!/needs-frontend-patch-coverage\.js/.test(circleCoverageBlock)) {
+    failures.push(
+      'CircleCI coverage must gate frontend coverage with needs-frontend-patch-coverage.js'
+    );
+  }
+  if (!/JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/.test(circleCoverageBlock)) {
+    failures.push(
+      'CircleCI coverage must use origin/dev as the patch baseline for dev→main promotions'
+    );
+  }
+  if (!/JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/.test(circleCoverageBlock)) {
+    failures.push(
+      'CircleCI coverage must use origin/main as the patch baseline for changelog/release reconciliation PRs'
+    );
+  }
 
   if (!fs.existsSync(serviceWaitPath)) {
     failures.push('CircleCI service readiness helper is missing: ci-cd/wait-for-ci-services.sh');
@@ -602,6 +641,6 @@ if (failures.length > 0) {
     'CI provider check passed: CircleCI is the canonical orchestrator (branch gate, browser matrix, full ' +
       'promotion matrix, coverage, website, third-party review, Codecov/Sonar publishing, nightly schedule); ' +
       'GitHub Actions retains the same surface disabled-by-default behind JUMENTIX_ENABLE_GITHUB_ACTIONS_CI, ' +
-      'with pr-feedback, sync-changelog, and npm-publish always-on.'
+      'with pr-feedback, sync-changelog, app-release, and npm-publish always-on.'
   );
 }

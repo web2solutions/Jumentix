@@ -134,28 +134,45 @@ describe('run-branch-quality-gate', () => {
     // including the strict matrix path used by release/main (JUM-683 / JUM-786).
     expect(stepIds(execute)).toStrictEqual([
       'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
       'test-integrity',
       'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
       'workspace-boundaries',
       'ownership-placement',
       'build-dev',
       'task-changes',
       'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
       'test-integrity',
       'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
       'workspace-boundaries',
       'ownership-placement',
       'build-dev',
       'unit',
       'test-integrity',
       'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
       'workspace-boundaries',
       'ownership-placement',
       'build-dev',
       'full-matrix',
       'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
       'test-integrity',
       'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
       'workspace-boundaries',
       'ownership-placement',
       'build-dev',
@@ -163,8 +180,13 @@ describe('run-branch-quality-gate', () => {
     ]);
     const lintPassed = [
       { id: 'lint', script: 'lint', status: 0 },
+      { id: 'lint-frontend', script: 'lint:frontend', status: 0 },
+      { id: 'lint-website', script: 'lint:website', status: 0 },
+      { id: 'format-check', script: 'format:check', status: 0 },
       { id: 'test-integrity', script: 'test:integrity', status: 0 },
       { id: 'current-governance-docs', script: 'docs:check-current-governance', status: 0 },
+      { id: 'documentation-audience', script: 'docs:check-audience', status: 0 },
+      { id: 'static-gates', script: 'ci:gate:static', status: 0 },
       { id: 'workspace-boundaries', script: 'arch:check-workspace-boundaries', status: 0 },
       { id: 'ownership-placement', script: 'arch:check-ownership-placement', status: 0 },
       { id: 'build-dev', script: 'build:dev', status: 0 }
@@ -172,6 +194,8 @@ describe('run-branch-quality-gate', () => {
     const integrityOnlyPassed = [
       { id: 'test-integrity', script: 'test:integrity', status: 0 },
       { id: 'current-governance-docs', script: 'docs:check-current-governance', status: 0 },
+      { id: 'documentation-audience', script: 'docs:check-audience', status: 0 },
+      { id: 'static-gates', script: 'ci:gate:static', status: 0 },
       { id: 'workspace-boundaries', script: 'arch:check-workspace-boundaries', status: 0 },
       { id: 'ownership-placement', script: 'arch:check-ownership-placement', status: 0 },
       { id: 'build-dev', script: 'build:dev', status: 0 }
@@ -245,6 +269,67 @@ describe('run-branch-quality-gate', () => {
     ]);
   });
 
+  it('selects the generated-automation gate for app-release and changelog heads', () => {
+    expect.hasAssertions();
+    const {
+      GENERATED_AUTOMATION_QUALITY_GATE: generatedGate
+    } = require('../run-branch-quality-gate');
+    expect(
+      selectQualityGate('main', {
+        context: 'release-pr-to-main',
+        headRef: 'chore/release-v0.2.15'
+      })
+    ).toBe(generatedGate);
+    expect(
+      selectQualityGate('main', {
+        context: 'release-pr-to-main',
+        headRef: 'chore/changelog-sync-deadbeef'
+      })
+    ).toBe(generatedGate);
+  });
+
+  it('runs only preflight plus the generated-automation script for release heads', () => {
+    expect.hasAssertions();
+    const execute = jest.fn().mockReturnValue(0);
+    const evidence = runBranchQualityGate({
+      env: {
+        CIRCLE_BRANCH: 'chore/release-v0.2.15',
+        CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/514',
+        CIRCLE_PR_BASE_BRANCH: 'main'
+      },
+      spawn: jest.fn().mockReturnValue({
+        status: 0,
+        stdout: ['package.json', 'release-policy.json', 'apps/frontend/package.json'].join('\n')
+      }),
+      execute,
+      logger: { log: jest.fn(), error: jest.fn() },
+      resultFile: ''
+    });
+
+    expect(evidence).toMatchObject({
+      targetBranch: 'main',
+      isPullRequest: true,
+      context: 'release-pr-to-main',
+      gate: 'generated-automation',
+      script: 'ci:gate:generated-automation',
+      outcome: 'passed'
+    });
+    expect(stepIds(execute)).toStrictEqual([
+      'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
+      'test-integrity',
+      'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'generated-automation'
+    ]);
+  });
+
   it('records CI context evidence when CircleCI metadata is available', () => {
     expect.hasAssertions();
     const execute = jest.fn().mockReturnValue(0);
@@ -270,8 +355,13 @@ describe('run-branch-quality-gate', () => {
     });
     expect(stepIds(execute)).toStrictEqual([
       'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
       'test-integrity',
       'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
       'workspace-boundaries',
       'ownership-placement',
       'build-dev',
@@ -357,6 +447,8 @@ describe('run-branch-quality-gate', () => {
       id: 'current-governance-docs',
       script: 'docs:check-current-governance'
     };
+    const documentationAudience = { id: 'documentation-audience', script: 'docs:check-audience' };
+    const staticGates = { id: 'static-gates', script: 'ci:gate:static' };
     const workspaceBoundaries = {
       id: 'workspace-boundaries',
       script: 'arch:check-workspace-boundaries'
@@ -369,16 +461,26 @@ describe('run-branch-quality-gate', () => {
 
     expect(TASK_QUALITY_GATE.preflight).toStrictEqual([
       { id: 'lint', script: 'lint' },
+      { id: 'lint-frontend', script: 'lint:frontend' },
+      { id: 'lint-website', script: 'lint:website' },
+      { id: 'format-check', script: 'format:check' },
       integrity,
       currentGovernanceDocs,
+      documentationAudience,
+      staticGates,
       workspaceBoundaries,
       ownershipPlacement,
       buildDev
     ]);
     expect(UNIT_QUALITY_GATE.preflight).toStrictEqual([
       { id: 'lint', script: 'lint' },
+      { id: 'lint-frontend', script: 'lint:frontend' },
+      { id: 'lint-website', script: 'lint:website' },
+      { id: 'format-check', script: 'format:check' },
       integrity,
       currentGovernanceDocs,
+      documentationAudience,
+      staticGates,
       workspaceBoundaries,
       ownershipPlacement,
       buildDev
@@ -390,6 +492,8 @@ describe('run-branch-quality-gate', () => {
     expect(FULL_MATRIX_QUALITY_GATE.preflight).toStrictEqual([
       integrity,
       currentGovernanceDocs,
+      documentationAudience,
+      staticGates,
       workspaceBoundaries,
       ownershipPlacement,
       buildDev

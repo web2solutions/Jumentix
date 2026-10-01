@@ -1,6 +1,6 @@
 ---
-title: '@jumentix/database-client-factory'
-description: 'Compile database clients from env/driver selection.'
+title: "@jumentix/database-client-factory"
+description: "Compile database clients from env/driver selection."
 ---
 
 # @jumentix/database-client-factory
@@ -23,7 +23,7 @@ Services hard-coded a driver. Switching Mongo→SQL meant editing use-cases. The
 
 - **Stack layer:** persistence / runtime composition
 - **Problem boundary it owns:** `buildDatabaseClientCompilers`, `DriverName`, and related factory types.
-- **Used with:** Works with persistence-contracts + external-\* adapters.
+- **Used with:** Works with persistence-contracts + external-* adapters.
 - **Typical composition:** env driver → factory → client/stores → use-cases.
 - **Journeys:** backend-template / REST guide runtime setup.
 - **Not responsible for:** SQL query building inside use-cases or OpenAPI routing.

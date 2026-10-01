@@ -22,6 +22,7 @@ import {
   writeDomainModule,
   writeModulesIndex
 } from '../generators';
+import { resolveJumentixPin } from '../generators/jumentixVersions';
 import { resolveSources, SourceResolutionError } from '../sources';
 
 import type { InitConfig } from '../config';
@@ -59,7 +60,7 @@ export function printAddHelp(log: (message?: string) => void = console.log): voi
   log(`
 jumentix add <domain|service|frontend> [name] [options]
 
-Extend a generated Jumentix project (Req 037 v2 / JUM-850).
+Extend a project created by jumentix init.
 
 Subcommands:
   add domain <name> [--from …] [--service <id>] [--force]
@@ -166,7 +167,7 @@ function persistProjectState(
   writeInitConfig(rootDir, {
     ...answers,
     mode: plan.mode,
-    frontend: Boolean(plan.frontend) || plan.mode === 'hybrid' || plan.mode === 'frontend',
+    frontend: Boolean(plan.frontend ?? (plan.mode === 'hybrid' || plan.mode === 'frontend')),
     offline: Boolean(plan.frontend?.offline || answers.offline),
     projectName: answers.projectName || path.basename(rootDir)
   });
@@ -431,7 +432,7 @@ async function addService(options: {
     service: newService,
     outputDir: rootDir,
     projectName,
-    jumentixVersion: readCliVersion(packageRoot),
+    pin: resolveJumentixPin(packageRoot),
     templateRoot,
     log
   });

@@ -1,6 +1,6 @@
 ---
-title: '@jumentix/persistence-contracts'
-description: 'Ports de persistência compartilhados (IStore, IDatabaseClient).'
+title: "@jumentix/persistence-contracts"
+description: "Ports de persistência compartilhados (IStore, IDatabaseClient)."
 ---
 
 # @jumentix/persistence-contracts
@@ -23,7 +23,7 @@ Without shared ports, every adapter invents incompatible method names and paging
 
 - **Camada:** persistence / ports (application boundary)
 - **Fronteira do problema:** Persistence port types only — no runtime drivers.
-- **Usado com:** Implemented by external-\* packages and database-client-factory compositions.
+- **Usado com:** Implemented by external-* packages and database-client-factory compositions.
 - **Composição típica:** Application imports contracts; adapters implement them; guides wire backend-template.
 - **Jornadas:** Concepts architecture → REST guide → persistence adapters.
 - **Não é responsável por:** Connecting to databases, Redis, or HTTP.

@@ -114,7 +114,7 @@ import {
   readRetainedMigrationSource
 } from './src/store/canaMigration.js';
 import { createDesignerStore } from './src/store/designerStoreFactory.js';
-import createArchitectureCanvas from './src/ui/architectureCanvas.js';
+import { createArchitectureCanvas } from './src/ui/architectureCanvas.js';
 import createCanvas from './src/ui/canvas.js';
 import { drawModel } from './src/ui/canvasImage.js';
 import createContextMenu from './src/ui/contextMenu.js';

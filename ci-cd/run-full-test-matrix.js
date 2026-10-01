@@ -6,6 +6,9 @@ const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 const FULL_TEST_MATRIX = Object.freeze([
   { id: 'lint', script: 'lint' },
+  { id: 'lint-frontend', script: 'lint:frontend' },
+  { id: 'lint-website', script: 'lint:website' },
+  { id: 'format-check', script: 'format:check' },
   { id: 'architecture-cycles', script: 'deps:check-cycles' },
   { id: 'architecture-boundaries', script: 'arch:check-boundaries' },
   { id: 'architecture-users-legacy', script: 'arch:check-users-legacy-imports' },

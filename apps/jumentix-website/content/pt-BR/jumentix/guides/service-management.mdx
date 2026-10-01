@@ -1,6 +1,6 @@
 ---
-title: 'Execute e use o Service Manager'
-description: 'Instale, execute, modele, exporte, configure e resolva problemas do Service Manager e do Domain Designer.'
+title: "Execute e use o Service Manager"
+description: "Instale, execute, modele, exporte, configure e resolva problemas do Service Manager e do Domain Designer."
 ---
 
 # Usando o Service Manager e o Domain Designer
@@ -212,7 +212,7 @@ Em um perfil de navegador novo, o designer sobe com um **modelo vazio**. Cada
 aba mostra um estado vazio guiado que nomeia a primeira ação daquela aba — não
 existe template pré-carregado silenciosamente.
 
-![Primeiro boot: o estado vazio do Domain Designer explicando a aba e oferecendo Load Sample Model](/docs-assets/documentation/images/service-manager/01-first-run-empty-state.png 'Estado vazio do primeiro boot')
+![Primeiro boot: o estado vazio do Domain Designer explicando a aba e oferecendo Load Sample Model](../../images/service-manager/01-first-run-empty-state.png 'Estado vazio do primeiro boot')
 
 A primeira ação do Domain Designer é **Load Sample Model** (também disponível no
 painel Export). Um clique carrega um domínio de identidade realista — `Users`,
@@ -220,7 +220,7 @@ painel Export). Um clique carrega um domínio de identidade realista — `Users`
 `spec/1.0.0.yml` declara — com relacionamentos, RBAC por entidade, um contrato
 de mensagem, invariantes e composição OpenAPI `oneOf` + discriminador.
 
-![Canvas do Domain Designer após carregar o modelo de exemplo](/docs-assets/documentation/images/service-manager/02-domain-designer-canvas.png 'Canvas do Domain Designer com o modelo de exemplo')
+![Canvas do Domain Designer após carregar o modelo de exemplo](../../images/service-manager/02-domain-designer-canvas.png 'Canvas do Domain Designer com o modelo de exemplo')
 
 O conteúdo de exemplo permanece distinguível do seu trabalho: todo id do
 exemplo carrega o prefixo `sample-` e domínios de exemplo mostram o selo
@@ -235,6 +235,10 @@ Um primeiro ciclo completo:
 3. Clique em `Export OAS 3.1` — o navegador baixa
    `domain-designer-oas-3.1.json`.
 4. Exclua o domínio de exemplo e modele o seu.
+
+## 5.1 Abas Architecture e OpenAPI
+
+Architecture começa como um Core (Users + demais domínios). Separe com Add Service, atribua domínios, desenhe links. OpenAPI mostra o OAS no Swagger UI; escolha um serviço para filtrar operações.
 
 ## 6. Domain Designer
 
@@ -289,7 +293,7 @@ Com uma entidade selecionada, o Entity Inspector oferece `Save Name`,
 agregado e as invariantes (uma regra por linha). Raízes de agregado exibem o
 marcador `AR` no card.
 
-![Entity Inspector: o nome da entidade, a flag de raiz de agregado, as invariantes e a matriz RBAC](/docs-assets/documentation/images/service-manager/03a-entity-inspector-rules-and-rbac.png 'Entity Inspector — regras e RBAC')
+![Entity Inspector: o nome da entidade, a flag de raiz de agregado, as invariantes e a matriz RBAC](../../images/service-manager/03a-entity-inspector-rules-and-rbac.png 'Entity Inspector — regras e RBAC')
 
 Os campos carregam metadados alinhados ao OpenAPI:
 
@@ -347,9 +351,9 @@ escopo da própria organização e `superadmin` é global, que é o que o runtim
 aplica. Escopos diretos legados continuam funcionando, mas não são editáveis
 aqui.
 
-![Entity Inspector: contratos de mensagem e os controles de composição OpenAPI](/docs-assets/documentation/images/service-manager/03b-entity-inspector-contracts-and-composition.png 'Entity Inspector — contratos e composição')
+![Entity Inspector: contratos de mensagem e os controles de composição OpenAPI](../../images/service-manager/03b-entity-inspector-contracts-and-composition.png 'Entity Inspector — contratos e composição')
 
-![Entity Inspector: o editor de campos e o preview de CRUD OpenAPI gerado](/docs-assets/documentation/images/service-manager/03c-entity-inspector-fields-and-api-preview.png 'Entity Inspector — campos e preview de API')
+![Entity Inspector: o editor de campos e o preview de CRUD OpenAPI gerado](../../images/service-manager/03c-entity-inspector-fields-and-api-preview.png 'Entity Inspector — campos e preview de API')
 
 Declare contratos `event`, `command`, `request` e `response` por entidade com
 nome, canal ou tópico, versão e um schema JSON de payload. `Add Contract`
@@ -362,7 +366,7 @@ discriminadora, e então `Save OAS Composition`.
 
 Onde isso aterrissa nos documentos exportados — e as garantias exatas de
 fidelidade de cada travessia — é assunto de
-[Garantias de Paridade de Contrato](/docs/pt-BR/jumentix/reference/service-management-contract-parity).
+Garantias de Paridade de Contrato.
 
 ### 6.6 Validação, gate de exportação e diff de schema
 
@@ -370,7 +374,7 @@ fidelidade de cada travessia — é assunto de
 (`error`, `warn`, `info`) e aparece prefixado. O seletor de severidade mínima
 filtra a lista.
 
-![Model Check sem problemas e Schema Diff reportando um campo adicionado em relação ao baseline salvo](/docs-assets/documentation/images/service-manager/04-model-check-and-diff.png 'Model Check e Schema Diff')
+![Model Check sem problemas e Schema Diff reportando um campo adicionado em relação ao baseline salvo](../../images/service-manager/04-model-check-and-diff.png 'Model Check e Schema Diff')
 
 Marque **block export on critical issues** para transformar a validação em gate
 rígido. Todas as rotas de exportação chamam o gate antes e recusam enquanto
@@ -398,9 +402,9 @@ caso de uso, controller e handler. `Generate Examples` renderiza exemplos de
 payload de request e response. Selecione uma entidade para limitar a saída, ou
 deixe nada selecionado para gerar a partir de todo o canvas.
 
-![Painel Export: os botões de exportação, importação e geração](/docs-assets/documentation/images/service-manager/05a-export-and-import-targets.png 'Alvos de exportação e importação')
+![Painel Export: os botões de exportação, importação e geração](../../images/service-manager/05a-export-and-import-targets.png 'Alvos de exportação e importação')
 
-![Os esqueletos de código gerados e os exemplos de request e response](/docs-assets/documentation/images/service-manager/05b-code-preview-and-examples.png 'Preview de código e exemplos gerados')
+![Os esqueletos de código gerados e os exemplos de request e response](../../images/service-manager/05b-code-preview-and-examples.png 'Preview de código e exemplos gerados')
 
 | Botão                       | Arquivo baixado                               | Uso                                            |
 | --------------------------- | --------------------------------------------- | ---------------------------------------------- |
@@ -420,13 +424,13 @@ explícita.
 
 Versionamento de pacote de domínio, grafos de dependência e política de
 conflito são assunto de
-[Colaboração e Empacotamento](/docs/pt-BR/jumentix/reference/service-management-collaboration-packaging).
+Colaboração e Empacotamento.
 
 ## 7. Communication Interface Designer
 
 Registre os adaptadores de entrada que vão servir as operações modeladas.
 
-![Communication Interface Designer com um adaptador REST e um WebSocket registrados](/docs-assets/documentation/images/service-manager/06-communication-interface-designer.png 'Communication Interface Designer')
+![Communication Interface Designer com um adaptador REST e um WebSocket registrados](../../images/service-manager/06-communication-interface-designer.png 'Communication Interface Designer')
 
 O candidato é validado **antes** de tocar o estado, e a recusa se explica na
 região de status:
@@ -444,7 +448,7 @@ do mesmo tipo não exige escolhê-los de novo a cada vez.
 
 ## 8. Service Configuration
 
-![Service Configuration com o preview do perfil de runtime, o preview do ecossistema PM2 e o editor de ambiente carregado de .env.dev](/docs-assets/documentation/images/service-manager/07-service-configuration.png 'Service Configuration')
+![Service Configuration com o preview do perfil de runtime, o preview do ecossistema PM2 e o editor de ambiente carregado de .env.dev](../../images/service-manager/07-service-configuration.png 'Service Configuration')
 
 ### 8.1 Perfil de runtime
 
@@ -474,7 +478,7 @@ silenciosa.
 ### 8.3 Variáveis de ambiente de runtime
 
 O editor expõe as chaves de runtime em dois níveis. A lista de escrita é uma
-decisão de segurança, fixada pelo Requisito `126`:
+decisão de segurança:
 
 | Nível           | Chaves                                                                                                                                                                                                                                                                                                   |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -556,9 +560,9 @@ são assunto de
 Registre alvos de deploy com nome, tipo de alvo, tipo de serviço, região e
 versão de runtime. Alvos gerenciados por PM2 também recebem um perfil PM2.
 
-![Deploy Management com um alvo EC2 e um alvo Cloudflare Workers registrados](/docs-assets/documentation/images/service-manager/08-deploy-management.png 'Deploy Management')
+![Deploy Management com um alvo EC2 e um alvo Cloudflare Workers registrados](../../images/service-manager/08-deploy-management.png 'Deploy Management')
 
-O formulário valida contra a matriz de deploy do Requisito `059` e explica cada
+O formulário valida contra a matriz de deploy e explica cada
 recusa:
 
 | Tipo de alvo                                       | Tipos de serviço que pode rodar                | Perfil PM2                                   | Região significa                  |
@@ -571,7 +575,7 @@ runtime sozinho é recusado. Alvos podem ser editados no lugar e duplicados;
 `Cancel` abandona uma edição sem aplicá-la.
 
 A matriz, o contrato de metadados e as regras de ciclo de vida são assunto de
-[Console de Operações](/docs/pt-BR/jumentix/reference/service-management-operations-console).
+Console de Operações.
 
 ## 10. Onde seu trabalho é guardado
 
@@ -608,9 +612,9 @@ Exporte um modelo JSON antes de qualquer mudança arriscada: esse arquivo é o
 
 Estados de armazenamento, a migração unidirecional e a matriz offline são
 assunto de
-[Adoção do Cana, Migração e Comportamento Offline](/docs/pt-BR/jumentix/reference/service-management-cana-adoption).
+Adoção do Cana, Migração e Comportamento Offline.
 Os fluxos de instalação, atualização e recuperação são assunto de
-[Design System e Shell PWA](/docs/pt-BR/jumentix/reference/service-management-design-system-pwa).
+Design System e Shell PWA.
 
 ## 11. Do modelo ao serviço em execução
 
@@ -730,11 +734,11 @@ de catálogo.
 
 - [Contratos de Ambiente de Runtime](/docs/pt-BR/jumentix/reference/service-management-runtime-environment)
 - [Recursos e Uso do Domain Designer](/docs/pt-BR/jumentix/reference/domain-designer-features)
-- [Arquitetura de Módulos e a Porta IDesignerStore](/docs/pt-BR/jumentix/reference/service-management-module-architecture)
-- [Garantias de Paridade de Contrato](/docs/pt-BR/jumentix/reference/service-management-contract-parity)
-- [Console de Operações](/docs/pt-BR/jumentix/reference/service-management-operations-console)
-- [Adoção do Cana, Migração e Comportamento Offline](/docs/pt-BR/jumentix/reference/service-management-cana-adoption)
-- [Design System e Shell PWA](/docs/pt-BR/jumentix/reference/service-management-design-system-pwa)
-- [Colaboração e Empacotamento](/docs/pt-BR/jumentix/reference/service-management-collaboration-packaging)
+- Arquitetura de Módulos e a Porta IDesignerStore
+- Garantias de Paridade de Contrato
+- Console de Operações
+- Adoção do Cana, Migração e Comportamento Offline
+- Design System e Shell PWA
+- Colaboração e Empacotamento
 - [Criando SPA/PWA com Jumentix](/docs/pt-BR/jumentix/guides/spa-pwa)
 - [Criando uma API REST com Jumentix](/docs/pt-BR/jumentix/guides/rest-api)

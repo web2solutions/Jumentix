@@ -20,7 +20,6 @@ import {
   IconTopologyStar3,
   IconUsers
 } from '@tabler/icons-react';
-import Image from 'next/image';
 
 import { HexagonalArchitectureMap } from '../architecture/HexagonalArchitectureMap';
 import {
@@ -69,6 +68,156 @@ const localize = (href: string, locale: CommercialLocale) => {
 const t = <T,>(locale: CommercialLocale, en: T, pt: T) => (locale === 'pt-BR' ? pt : en);
 
 const repositoryUrl = 'https://github.com/web2solutions/Jumentix';
+
+const AIGovernanceFlow = ({ locale }: { locale: CommercialLocale }) => {
+  const steps = [
+    {
+      label: t(locale, '1. Model service', '1. Modele o serviço'),
+      title: t(locale, 'UI captures the domain', 'A UI captura o domínio'),
+      description: t(
+        locale,
+        'Category, Task, relationships, validations and API surfaces become explicit platform data.',
+        'Category, Task, relacionamentos, validações e superfícies de API viram dados explícitos da plataforma.'
+      ),
+      icon: <IconDeviceDesktop />
+    },
+    {
+      label: t(locale, '2. Ground the agent', '2. Fundamente o agente'),
+      title: t(locale, 'Docs and packages name the path', 'Docs e pacotes nomeiam o caminho'),
+      description: t(
+        locale,
+        'The agent reads the docs index, package contracts and UI blueprint before choosing files to change.',
+        'O agente lê índice de docs, contratos de pacote e blueprint da UI antes de escolher arquivos para alterar.'
+      ),
+      icon: <IconCode />
+    },
+    {
+      label: t(locale, '3. Generate inside boundaries', '3. Gere dentro dos limites'),
+      title: t(locale, 'Ports and adapters shape the code', 'Ports e adapters moldam o código'),
+      description: t(
+        locale,
+        'Use-cases, controllers, SDK clients, Cana examples and runtime profiles keep their ownership boundaries.',
+        'Casos de uso, controllers, SDKs, exemplos Cana e perfis de runtime preservam seus limites de ownership.'
+      ),
+      icon: <IconHierarchy3 />
+    },
+    {
+      label: t(locale, '4. Verify evidence', '4. Verifique evidências'),
+      title: t(locale, 'Governance checks catch drift', 'Checks de governança capturam drift'),
+      description: t(
+        locale,
+        'Requirements, test maps, architecture scripts, route checks and prepublish gates validate the change.',
+        'Requisitos, test maps, scripts de arquitetura, checagens de rota e gates prepublish validam a mudança.'
+      ),
+      icon: <IconShieldCheck />
+    },
+    {
+      label: t(locale, '5. Publish with confidence', '5. Publique com confiança'),
+      title: t(locale, 'PR carries proof', 'A PR carrega prova'),
+      description: t(
+        locale,
+        'Reviewers see what changed, why it fits the architecture and which checks prove it is ready.',
+        'Revisores veem o que mudou, por que cabe na arquitetura e quais checks provam que está pronto.'
+      ),
+      icon: <IconRocket />
+    }
+  ];
+
+  return (
+    <div
+      aria-label={t(locale, 'UI to governed PR', 'UI até PR governada')}
+      className={classes.aiFlow}
+    >
+      {steps.map((step) => (
+        <article key={step.label} className={classes.aiStep}>
+          <span aria-hidden="true" className={classes.aiStepIcon}>
+            {step.icon}
+          </span>
+          <strong>{step.label}</strong>
+          <h3>{step.title}</h3>
+          <p>{step.description}</p>
+        </article>
+      ))}
+    </div>
+  );
+};
+
+interface DetailCard {
+  title: string;
+  description: string;
+  eyebrow?: string;
+  meta?: string;
+  icon?: ReactNode;
+}
+
+const DetailGrid = ({ items }: { items: DetailCard[] }) => (
+  <div className={classes.detailGrid}>
+    {items.map((item) => (
+      <article key={`${item.eyebrow ?? 'detail'}-${item.title}`} className={classes.detailCard}>
+        {item.icon ? (
+          <span aria-hidden="true" className={classes.detailIcon}>
+            {item.icon}
+          </span>
+        ) : null}
+        {item.eyebrow ? <p className={classes.cardEyebrow}>{item.eyebrow}</p> : null}
+        <h3>{item.title}</h3>
+        <p>{item.description}</p>
+        {item.meta ? <strong>{item.meta}</strong> : null}
+      </article>
+    ))}
+  </div>
+);
+
+interface CommercialMatrixRow {
+  focus: string;
+  when: string;
+  implementation: string;
+  outcome: string;
+}
+
+const CommercialMatrix = ({
+  headers,
+  rows
+}: {
+  headers: string[];
+  rows: CommercialMatrixRow[];
+}) => (
+  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- keyboard-scrollable data matrix region (WAI scrollable-region pattern)
+  <div aria-label={headers.join(' / ')} className={classes.matrixWrap} role="region" tabIndex={0}>
+    <table className={classes.matrix}>
+      <thead>
+        <tr>
+          {headers.map((header) => (
+            <th key={header} scope="col">
+              {header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.focus}>
+            <th scope="row">{row.focus}</th>
+            <td>{row.when}</td>
+            <td>{row.implementation}</td>
+            <td>{row.outcome}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+const ProofList = ({ items }: { items: string[] }) => (
+  <ul className={classes.proofList}>
+    {items.map((item) => (
+      <li key={item}>
+        <IconShieldCheck size={17} /> {item}
+      </li>
+    ))}
+  </ul>
+);
+
 const playgroundRuntimeOrder: readonly DocsRuntimeId[] = [
   'jumentix-browser-lab',
   'cana',
@@ -285,11 +434,12 @@ function playgroundGuideFor(
 const codeSamples = {
   start: [
     {
-      label: 'Install',
+      label: 'Create',
       language: 'shell',
-      code: `bun install
-bun run cli
-bun run dev:express`
+      code: `npx @jumentix/cli-init init my-product
+cd my-product
+bun install
+bun run dev`
     },
     {
       label: 'Service contract',
@@ -423,9 +573,10 @@ await taskStore.create(task);`
     {
       label: 'Docker',
       language: 'shell',
-      code: `bun run docker:up:postgresql
-JUMENTIX_DATABASE_DRIVER=PostgreSQL bun run test:smoke:db:postgresql
-bun run docker:down:postgresql`
+      code: `npx @jumentix/cli-init init my-product --db=postgres --non-interactive
+cd my-product
+docker compose up -d
+bun install && bun run dev`
     }
   ],
   deploy: [
@@ -451,6 +602,16 @@ bun run pm2:start:prod:restapi`
       label: 'Quality gate',
       language: 'shell',
       code: `bun run lint
+bun run test
+bun run build
+jumentix doctor`
+    }
+  ],
+  contribution: [
+    {
+      label: 'Contribution gate',
+      language: 'shell',
+      code: `bun run lint
 bun run test:unit
 bun run test:integration
 bun run ci:gate`
@@ -458,26 +619,26 @@ bun run ci:gate`
   ],
   tooling: [
     {
-      label: 'Fast local loop',
+      label: 'Scaffold',
       language: 'shell',
-      code: `bun install
-bun run website:dev
-bun run ci:affected`
+      code: `npx @jumentix/cli-init init my-product --mode=hybrid
+cd my-product
+bun install
+bun run dev`
     },
     {
-      label: 'Workspace gates',
+      label: 'Grow',
       language: 'shell',
-      code: `bun run check-bun-version
-bun run requirements:check
-bun run test-map:check
-bun run ci:gate:branch`
+      code: `jumentix add domain Billing
+jumentix add service billing --domains Billing
+jumentix add frontend`
     },
     {
-      label: 'Package workflow',
+      label: 'Maintain',
       language: 'shell',
-      code: `bun run packages:check-suites
-bun run npm:publish:dry-run:packages
-bun run release:governance:check`
+      code: `bun run test
+jumentix doctor
+jumentix upgrade --dry-run`
     }
   ],
   quality: [
@@ -485,7 +646,8 @@ bun run release:governance:check`
       label: 'Requirements',
       language: 'shell',
       code: `bun run requirements:check
-bun run docs:consumers:package-scripts
+bun run test-map:check
+bun run docs:check-audience
 bun run website:test:prepublish`
     },
     {
@@ -1158,12 +1320,11 @@ const PageHero = ({
         <p>{description}</p>
         {children}
       </div>
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element -- marketing figure with CSS-aspect sizing; a next/image conversion is a design pass owned by the website track */}
+      <img
         alt={t(locale, 'Jumentix open-source mascot', 'Mascote open source do Jumentix')}
         className={classes.mascot}
-        height={300}
         src="/brand/jumentix-mascot.png"
-        width={300}
       />
     </div>
   </section>
@@ -1206,235 +1367,6 @@ const FinalCta = ({ locale }: { locale: CommercialLocale }) => (
   </Band>
 );
 
-const AIGovernanceFlow = ({ locale }: { locale: CommercialLocale }) => {
-  const steps = [
-    {
-      label: t(locale, '1. Model service', '1. Modele o serviço'),
-      title: t(locale, 'UI captures the domain', 'A UI captura o domínio'),
-      description: t(
-        locale,
-        'Category, Task, relationships, validations and API surfaces become explicit platform data.',
-        'Category, Task, relacionamentos, validações e superfícies de API viram dados explícitos da plataforma.'
-      ),
-      icon: <IconDeviceDesktop />
-    },
-    {
-      label: t(locale, '2. Ground the agent', '2. Fundamente o agente'),
-      title: t(locale, 'Docs and packages name the path', 'Docs e pacotes nomeiam o caminho'),
-      description: t(
-        locale,
-        'The agent reads the docs index, package contracts and UI blueprint before choosing files to change.',
-        'O agente lê índice de docs, contratos de pacote e blueprint da UI antes de escolher arquivos para alterar.'
-      ),
-      icon: <IconCode />
-    },
-    {
-      label: t(locale, '3. Generate inside boundaries', '3. Gere dentro dos limites'),
-      title: t(locale, 'Ports and adapters shape the code', 'Ports e adapters moldam o código'),
-      description: t(
-        locale,
-        'Use-cases, controllers, SDK clients, Cana examples and runtime profiles keep their ownership boundaries.',
-        'Casos de uso, controllers, SDKs, exemplos Cana e perfis de runtime preservam seus limites de ownership.'
-      ),
-      icon: <IconHierarchy3 />
-    },
-    {
-      label: t(locale, '4. Verify evidence', '4. Verifique evidências'),
-      title: t(locale, 'Governance checks catch drift', 'Checks de governança capturam drift'),
-      description: t(
-        locale,
-        'Requirements, test maps, architecture scripts, route checks and prepublish gates validate the change.',
-        'Requisitos, test maps, scripts de arquitetura, checagens de rota e gates prepublish validam a mudança.'
-      ),
-      icon: <IconShieldCheck />
-    },
-    {
-      label: t(locale, '5. Publish with confidence', '5. Publique com confiança'),
-      title: t(locale, 'PR carries proof', 'A PR carrega prova'),
-      description: t(
-        locale,
-        'Reviewers see what changed, why it fits the architecture and which checks prove it is ready.',
-        'Revisores veem o que mudou, por que cabe na arquitetura e quais checks provam que está pronto.'
-      ),
-      icon: <IconRocket />
-    }
-  ];
-
-  return (
-    <div
-      aria-label={t(locale, 'UI to governed PR', 'UI até PR governada')}
-      className={classes.aiFlow}
-    >
-      {steps.map((step) => (
-        <article key={step.label} className={classes.aiStep}>
-          <span aria-hidden="true" className={classes.aiStepIcon}>
-            {step.icon}
-          </span>
-          <strong>{step.label}</strong>
-          <h3>{step.title}</h3>
-          <p>{step.description}</p>
-        </article>
-      ))}
-    </div>
-  );
-};
-
-const useCases: {
-  name: UseCaseName;
-  icon: ReactNode;
-  en: [string, string];
-  pt: [string, string];
-}[] = [
-  {
-    name: 'rest-api',
-    icon: <IconApi size={24} />,
-    en: ['REST API', 'Ship OpenAPI 3.1 services with interchangeable native HTTP adapters.'],
-    pt: ['API REST', 'Entregue serviços OpenAPI 3.1 com adaptadores HTTP nativos intercambiáveis.']
-  },
-  {
-    name: 'realtime-api',
-    icon: <IconMessages size={24} />,
-    en: [
-      'Realtime API',
-      'Run Socket.IO or gRPC beside a REST fallback and AsyncAPI documentation.'
-    ],
-    pt: [
-      'API em tempo real',
-      'Execute Socket.IO ou gRPC ao lado de fallback REST e documentação AsyncAPI.'
-    ]
-  },
-  {
-    name: 'saas-monolith',
-    icon: <IconBuildingFactory2 size={24} />,
-    en: ['Modular SaaS', 'Launch one deployable with domain boundaries ready to become services.'],
-    pt: ['SaaS modular', 'Lance um deploy com limites de domínio prontos para virar serviços.']
-  },
-  {
-    name: 'saas-microservices',
-    icon: <IconTopologyStar3 size={24} />,
-    en: ['Microservices', 'Keep service communication contract-based with the Message Mediator.'],
-    pt: [
-      'Microsserviços',
-      'Mantenha a comunicação entre serviços baseada em contratos com o Message Mediator.'
-    ]
-  },
-  {
-    name: 'spa-pwa',
-    icon: <IconDeviceDesktop size={24} />,
-    en: [
-      'SPA and offline PWA',
-      'Build frontend products that share generated SDKs and work offline.'
-    ],
-    pt: [
-      'SPA e PWA offline',
-      'Crie produtos frontend que compartilham SDKs gerados e funcionam offline.'
-    ]
-  }
-];
-
-const UseCaseLinks = ({ locale }: { locale: CommercialLocale }) => (
-  <div className={classes.linkGrid}>
-    {useCases.map((item) => {
-      const [title, description] = locale === 'pt-BR' ? item.pt : item.en;
-      return (
-        <a
-          key={item.name}
-          className={classes.linkCard}
-          href={localize(`/use-cases/${item.name}`, locale)}
-        >
-          {item.icon}
-          <h3>{title}</h3>
-          <p>{description}</p>
-          <span>
-            {t(locale, 'Explore the blueprint', 'Explore o blueprint')} <IconArrowRight size={16} />
-          </span>
-        </a>
-      );
-    })}
-  </div>
-);
-
-interface DetailCard {
-  title: string;
-  description: string;
-  eyebrow?: string;
-  meta?: string;
-  icon?: ReactNode;
-}
-
-const DetailGrid = ({ items }: { items: DetailCard[] }) => (
-  <div className={classes.detailGrid}>
-    {items.map((item) => (
-      <article key={`${item.eyebrow ?? 'detail'}-${item.title}`} className={classes.detailCard}>
-        {item.icon ? (
-          <span aria-hidden="true" className={classes.detailIcon}>
-            {item.icon}
-          </span>
-        ) : null}
-        {item.eyebrow ? <p className={classes.cardEyebrow}>{item.eyebrow}</p> : null}
-        <h3>{item.title}</h3>
-        <p>{item.description}</p>
-        {item.meta ? <strong>{item.meta}</strong> : null}
-      </article>
-    ))}
-  </div>
-);
-
-interface CommercialMatrixRow {
-  focus: string;
-  when: string;
-  implementation: string;
-  outcome: string;
-}
-
-const CommercialMatrix = ({
-  headers,
-  rows
-}: {
-  headers: string[];
-  rows: CommercialMatrixRow[];
-}) => (
-  <div
-    aria-label={headers.join(' / ')}
-    className={classes.matrixWrap}
-    role="region"
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- scrollable matrix: tabIndex makes the overflow region keyboard-scrollable
-    tabIndex={0}
-  >
-    <table className={classes.matrix}>
-      <thead>
-        <tr>
-          {headers.map((header) => (
-            <th key={header} scope="col">
-              {header}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr key={row.focus}>
-            <th scope="row">{row.focus}</th>
-            <td>{row.when}</td>
-            <td>{row.implementation}</td>
-            <td>{row.outcome}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
-
-const ProofList = ({ items }: { items: string[] }) => (
-  <ul className={classes.proofList}>
-    {items.map((item) => (
-      <li key={item}>
-        <IconShieldCheck size={17} /> {item}
-      </li>
-    ))}
-  </ul>
-);
-
 const BunToolingBand = ({
   locale,
   alternate = false
@@ -1442,10 +1374,8 @@ const BunToolingBand = ({
   locale: CommercialLocale;
   alternate?: boolean;
 }) => {
-  const packageScriptsHref =
-    locale === 'pt-BR'
-      ? '/docs/pt-BR/jumentix/reference/package-scripts'
-      : '/docs/jumentix/reference/package-scripts';
+  const cliReferenceHref =
+    locale === 'pt-BR' ? '/docs/pt-BR/jumentix/reference/cli' : '/docs/jumentix/reference/cli';
 
   return (
     <Band alternate={alternate}>
@@ -1454,8 +1384,8 @@ const BunToolingBand = ({
           eyebrow={t(locale, 'Bun-powered tooling', 'Tooling movido a Bun')}
           description={t(
             locale,
-            'Jumentix standardizes on Bun as the pinned monorepo runtime, package manager, script runner, test runner and browser-spec bundler. That keeps local work, CI gates, package checks and website publishing on one toolchain.',
-            'O Jumentix padroniza Bun como runtime, gerenciador de pacotes, executor de scripts, test runner e bundler das specs de browser do monorepo. Isso mantém trabalho local, gates de CI, checagens de pacote e publicação do site em uma ferramenta só.'
+            'Every project the Jumentix CLI generates runs on Bun: one pinned tool is the runtime, package manager, script runner and test runner, so your laptop and your CI run the same thing.',
+            'Todo projeto gerado pelo CLI Jumentix roda em Bun: uma ferramenta pinada é runtime, gerenciador de pacotes, executor de scripts e test runner, então seu notebook e seu CI rodam a mesma coisa.'
           )}
           title={t(
             locale,
@@ -1469,37 +1399,37 @@ const BunToolingBand = ({
             <p>
               {t(
                 locale,
-                'The repository uses Bun where it actually reduces friction: fast installs with workspaces, direct TypeScript execution, repeatable package scripts, focused branch gates, and browser-test bundling before Cypress runs against real IndexedDB and DOM APIs.',
-                'O repositório usa Bun onde ele realmente reduz atrito: installs rápidos com workspaces, execução direta de TypeScript, scripts repetíveis, gates focados por branch e bundling das specs de browser antes de o Cypress rodar contra IndexedDB e DOM reais.'
+                'Bun removes the setup a new project usually needs: workspaces install fast, TypeScript runs without a build step in development, and one set of scripts covers every app in the project.',
+                'Bun elimina o setup que um projeto novo costuma exigir: workspaces instalam rápido, TypeScript roda sem etapa de build em desenvolvimento e um único conjunto de scripts cobre todos os apps do projeto.'
               )}
             </p>
             <ProofList
               items={[
                 t(
                   locale,
-                  'One pinned version, `bun@1.3.13`, protects every workspace from “works on my machine” drift.',
-                  'Uma versão pinada, `bun@1.3.13`, protege todos os workspaces contra drift de ambiente.'
+                  'Generated projects pin `bun@1.3.13` in `packageManager`, so every machine runs the same version.',
+                  'Projetos gerados pinam `bun@1.3.13` em `packageManager`, então toda máquina roda a mesma versão.'
                 ),
                 t(
                   locale,
-                  '`bun run --filter` lets package checks stay scoped while full gates remain available for release work.',
-                  '`bun run --filter` mantém checagens de pacote focadas enquanto gates completos seguem disponíveis para release.'
+                  '`bun run dev`, `test`, `lint` and `build` run across every app in the workspace.',
+                  '`bun run dev`, `test`, `lint` e `build` rodam em todos os apps do workspace.'
                 ),
                 t(
                   locale,
-                  'Bun bundles Cana browser specs before Cypress, avoiding Cypress webpack fragility while preserving real-browser evidence.',
-                  'Bun empacota specs browser do Cana antes do Cypress, evitando fragilidade do webpack do Cypress sem perder evidência em browser real.'
+                  'Backend services start straight from TypeScript source in development.',
+                  'Serviços backend sobem direto do código TypeScript em desenvolvimento.'
                 ),
                 t(
                   locale,
-                  'The same CLI drives local dev, docs sync, package dry-runs, security checks and production website publishing.',
-                  'A mesma CLI move dev local, sync de docs, dry-runs de pacote, checagens de segurança e publicação do site em produção.'
+                  '`jumentix add`, `upgrade` and `doctor` keep the project growing and current after the first day.',
+                  '`jumentix add`, `upgrade` e `doctor` fazem o projeto crescer e seguir atualizado depois do primeiro dia.'
                 )
               ]}
             />
             <div className={classes.sectionActions}>
-              <ActionLink href={packageScriptsHref} variant="secondary">
-                {t(locale, 'See Jumentix scripts', 'Ver scripts Jumentix')}
+              <ActionLink href={cliReferenceHref} variant="secondary">
+                {t(locale, 'CLI reference', 'Referência do CLI')}
               </ActionLink>
               <ActionLink external href="https://bun.sh/docs" variant="quiet">
                 Bun docs
@@ -1508,7 +1438,7 @@ const BunToolingBand = ({
           </div>
           <CodeShowcase
             samples={codeSamples.tooling}
-            title={t(locale, 'Bun tooling commands', 'Comandos Bun do tooling')}
+            title={t(locale, 'Project commands', 'Comandos do projeto')}
           />
         </div>
         <MetricStrip
@@ -1523,11 +1453,11 @@ const BunToolingBand = ({
             },
             { value: '1.3.13+', label: t(locale, 'pinned Bun version', 'versão Bun pinada') },
             {
-              value: '3',
+              value: '4',
               label: t(
                 locale,
-                'workspace roots: apps, packages, tooling',
-                'raízes: apps, packages, tooling'
+                'CLI commands: init, add, upgrade, doctor',
+                'comandos do CLI: init, add, upgrade, doctor'
               )
             },
             {
@@ -1570,8 +1500,12 @@ const QualityEvidenceBand = ({
       <MetricStrip
         metrics={[
           {
-            value: '99/90',
-            label: t(locale, 'statement/branch quality standard', 'padrão de statements/branches')
+            value: '98%',
+            label: t(
+              locale,
+              'minimum statement, branch, function and line coverage',
+              'cobertura mínima de statements, branches, funções e linhas'
+            )
           },
           {
             value: 'reqs',
@@ -1637,7 +1571,11 @@ const QualityEvidenceBand = ({
       />
       <CodeShowcase
         samples={codeSamples.quality}
-        title={t(locale, 'Quality commands', 'Comandos de qualidade')}
+        title={t(
+          locale,
+          'Checks every Jumentix change passes',
+          'Checagens que toda mudança no Jumentix passa'
+        )}
       />
     </div>
   </Band>
@@ -2271,6 +2209,81 @@ const AIReadyBand = ({
   </Band>
 );
 
+const useCases: {
+  name: UseCaseName;
+  icon: ReactNode;
+  en: [string, string];
+  pt: [string, string];
+}[] = [
+  {
+    name: 'rest-api',
+    icon: <IconApi size={24} />,
+    en: ['REST API', 'Ship OpenAPI 3.1 services with interchangeable native HTTP adapters.'],
+    pt: ['API REST', 'Entregue serviços OpenAPI 3.1 com adaptadores HTTP nativos intercambiáveis.']
+  },
+  {
+    name: 'realtime-api',
+    icon: <IconMessages size={24} />,
+    en: [
+      'Realtime API',
+      'Run Socket.IO or gRPC beside a REST fallback and AsyncAPI documentation.'
+    ],
+    pt: [
+      'API em tempo real',
+      'Execute Socket.IO ou gRPC ao lado de fallback REST e documentação AsyncAPI.'
+    ]
+  },
+  {
+    name: 'saas-monolith',
+    icon: <IconBuildingFactory2 size={24} />,
+    en: ['Modular SaaS', 'Launch one deployable with domain boundaries ready to become services.'],
+    pt: ['SaaS modular', 'Lance um deploy com limites de domínio prontos para virar serviços.']
+  },
+  {
+    name: 'saas-microservices',
+    icon: <IconTopologyStar3 size={24} />,
+    en: ['Microservices', 'Keep service communication contract-based with the Message Mediator.'],
+    pt: [
+      'Microsserviços',
+      'Mantenha a comunicação entre serviços baseada em contratos com o Message Mediator.'
+    ]
+  },
+  {
+    name: 'spa-pwa',
+    icon: <IconDeviceDesktop size={24} />,
+    en: [
+      'SPA and offline PWA',
+      'Build frontend products that share generated SDKs and work offline.'
+    ],
+    pt: [
+      'SPA e PWA offline',
+      'Crie produtos frontend que compartilham SDKs gerados e funcionam offline.'
+    ]
+  }
+];
+
+const UseCaseLinks = ({ locale }: { locale: CommercialLocale }) => (
+  <div className={classes.linkGrid}>
+    {useCases.map((item) => {
+      const [title, description] = locale === 'pt-BR' ? item.pt : item.en;
+      return (
+        <a
+          key={item.name}
+          className={classes.linkCard}
+          href={localize(`/use-cases/${item.name}`, locale)}
+        >
+          {item.icon}
+          <h3>{title}</h3>
+          <p>{description}</p>
+          <span>
+            {t(locale, 'Explore the blueprint', 'Explore o blueprint')} <IconArrowRight size={16} />
+          </span>
+        </a>
+      );
+    })}
+  </div>
+);
+
 const MvpLaunchBand = ({
   locale,
   alternate = false
@@ -2490,11 +2503,12 @@ const Home = ({ locale }: { locale: CommercialLocale }) => (
   <Fragment>
     <section className={classes.hero}>
       <div className={classes.heroMedia} />
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element -- marketing figure with CSS-aspect sizing; a next/image conversion is a design pass owned by the website track */}
+      <img
         className={classes.heroMascot}
-        height={300}
+        height="300"
         src="/brand/jumentix-mascot.png"
-        width={300}
+        width="300"
         alt={t(
           locale,
           'Jumentix mascot, inspired by the Brazilian jegue',
@@ -2605,10 +2619,9 @@ const Home = ({ locale }: { locale: CommercialLocale }) => (
           </div>
         </div>
         <figure className={classes.productShot}>
-          <Image
-            height={720}
+          {/* eslint-disable-next-line @next/next/no-img-element -- marketing figure with CSS-aspect sizing; a next/image conversion is a design pass owned by the website track */}
+          <img
             src="/product/domain-designer.png"
-            width={1280}
             alt={t(
               locale,
               'Jumentix Domain Designer displaying bounded contexts and entity relationships',
@@ -2618,8 +2631,8 @@ const Home = ({ locale }: { locale: CommercialLocale }) => (
           <figcaption>
             {t(
               locale,
-              'The real Jumentix Domain Designer interface.',
-              'A interface real do Domain Designer do Jumentix.'
+              'The Domain Designer as it ships today.',
+              'O Domain Designer como ele é hoje.'
             )}
           </figcaption>
         </figure>
@@ -2677,6 +2690,91 @@ const Home = ({ locale }: { locale: CommercialLocale }) => (
   </Fragment>
 );
 
+const productTour = [
+  {
+    src: '/product/architecture-designer.png',
+    title: ['Architecture designer', 'Designer de arquitetura'],
+    caption: [
+      'Split domains across services and link them; each service gets its own contract.',
+      'Divida domínios entre serviços e ligue-os; cada serviço ganha seu próprio contrato.'
+    ]
+  },
+  {
+    src: '/product/domain-designer.png',
+    title: ['Domain modeling', 'Modelagem de domínio'],
+    caption: [
+      'Entities, fields, keys and relationships on one canvas, validated before anything is generated.',
+      'Entidades, campos, chaves e relacionamentos em um canvas, validados antes de qualquer geração.'
+    ]
+  },
+  {
+    src: '/product/openapi-swagger.png',
+    title: ['OpenAPI, live', 'OpenAPI ao vivo'],
+    caption: [
+      'The model becomes an OpenAPI 3.1 document you can browse and try from the designer.',
+      'O modelo vira um documento OpenAPI 3.1 que você navega e testa no próprio designer.'
+    ]
+  },
+  {
+    src: '/product/code-workspace.png',
+    title: ['Generated code you can read', 'Código gerado que você lê'],
+    caption: [
+      'Controllers, use cases, ports and repositories for every entity, regenerated as the model changes.',
+      'Controllers, casos de uso, ports e repositórios para cada entidade, regerados quando o modelo muda.'
+    ]
+  },
+  {
+    src: '/product/frontend-xcrud-users.png',
+    title: ['A working admin app', 'Um app administrativo pronto'],
+    caption: [
+      'Lists, filters, forms and exports driven by the same contract — no hand-written screens.',
+      'Listas, filtros, formulários e exportações guiados pelo mesmo contrato — sem telas escritas à mão.'
+    ]
+  },
+  {
+    src: '/product/frontend-dashboard.png',
+    title: ['Dashboards per domain', 'Dashboards por domínio'],
+    caption: [
+      'Each domain ships its own widgets, scoped to the signed-in user’s roles.',
+      'Cada domínio traz seus próprios widgets, limitados aos papéis de quem está logado.'
+    ]
+  }
+] as const;
+
+const ProductTourBand = ({ locale }: { locale: CommercialLocale }) => (
+  <Band>
+    <div className={classes.sectionStack}>
+      <SectionHeading
+        eyebrow={t(locale, 'See it running', 'Veja funcionando')}
+        title={t(locale, 'From a model to a running product', 'De um modelo a um produto rodando')}
+        description={t(
+          locale,
+          'Every image below is a capture of the current Jumentix apps, not a mockup.',
+          'Todas as imagens abaixo são capturas dos apps atuais do Jumentix, não mockups.'
+        )}
+      />
+      <div className={classes.productTour}>
+        {productTour.map((shot) => (
+          <figure key={shot.src} className={classes.productShot}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- marketing figure with CSS-aspect sizing; a next/image conversion is a design pass owned by the website track */}
+            <img
+              alt={t(locale, shot.title[0], shot.title[1])}
+              height={1800}
+              loading="lazy"
+              src={shot.src}
+              width={2880}
+            />
+            <figcaption>
+              <strong>{t(locale, shot.title[0], shot.title[1])}</strong>{' '}
+              {t(locale, shot.caption[0], shot.caption[1])}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </Band>
+);
+
 const Product = ({ locale }: { locale: CommercialLocale }) => (
   <Fragment>
     <PageHero
@@ -2702,6 +2800,7 @@ const Product = ({ locale }: { locale: CommercialLocale }) => (
         </ActionLink>
       </div>
     </PageHero>
+    <ProductTourBand locale={locale} />
     <Band>
       <div className={classes.sectionStack}>
         <SectionHeading
@@ -2789,8 +2888,12 @@ const Product = ({ locale }: { locale: CommercialLocale }) => (
               label: t(locale, 'contracted API styles', 'estilos de API contratados')
             },
             {
-              value: '99/90',
-              label: t(locale, 'statement/branch quality standard', 'padrão de statements/branches')
+              value: '98%',
+              label: t(
+                locale,
+                'minimum statement, branch, function and line coverage',
+                'cobertura mínima de statements, branches, funções e linhas'
+              )
             }
           ]}
         />
@@ -2804,8 +2907,8 @@ const Product = ({ locale }: { locale: CommercialLocale }) => (
           eyebrow={t(locale, 'Product surfaces', 'Superfícies do produto')}
           description={t(
             locale,
-            'The site should not hide behind vague platform language: Jumentix is a connected set of tools, packages, templates, contracts, and release rules.',
-            'O site não deve se esconder atrás de linguagem vaga de plataforma: o Jumentix é um conjunto conectado de ferramentas, pacotes, templates, contratos e regras de release.'
+            'Jumentix is a connected set of tools, packages, templates, contracts, and release rules. Each team picks up the part it works in.',
+            'O Jumentix é um conjunto conectado de ferramentas, pacotes, templates, contratos e regras de release. Cada equipe usa a parte em que trabalha.'
           )}
           title={t(
             locale,
@@ -6000,7 +6103,10 @@ const Community = ({ locale }: { locale: CommercialLocale }) => (
             </li>
           </ul>
           <div className={classes.sectionActions}>
-            <ActionLink external href={`${repositoryUrl}/blob/dev/CONTRIBUTING.md`}>
+            <ActionLink
+              external
+              href={`${repositoryUrl}/blob/dev/documentation/md/CONTRIBUTING-AND-TOOLING.md`}
+            >
               {t(locale, 'Contribution guide', 'Guia de contribuição')}
             </ActionLink>
             <ActionLink external href={`${repositoryUrl}/issues`} variant="secondary">
@@ -6009,7 +6115,7 @@ const Community = ({ locale }: { locale: CommercialLocale }) => (
           </div>
         </div>
         <CodeShowcase
-          samples={codeSamples.deploy.slice(2)}
+          samples={codeSamples.contribution}
           title={t(locale, 'Contribution gate', 'Gate de contribuição')}
         />
       </div>
@@ -6022,11 +6128,11 @@ const Roadmap = ({ locale }: { locale: CommercialLocale }) => {
   const phases = [
     [
       'Now',
-      t(locale, 'Monorepo consolidation', 'Consolidação do monorepo'),
+      t(locale, 'Distribution', 'Distribuição'),
       t(
         locale,
-        'Package boundaries, commercial website, documentation UX, and governance automation.',
-        'Limites de pacotes, site comercial, UX da documentação e automação de governança.'
+        'Automated npm releases of the packages and the CLI, and documentation written for each reader.',
+        'Releases automáticos no npm dos pacotes e do CLI, e documentação escrita para cada leitor.'
       )
     ],
     [
@@ -6034,17 +6140,17 @@ const Roadmap = ({ locale }: { locale: CommercialLocale }) => {
       t(locale, 'Service factory workflows', 'Fluxos da fábrica de serviços'),
       t(
         locale,
-        'Complete visual configuration, scaffolding journeys, and deployment management.',
-        'Completar configuração visual, jornadas de scaffolding e gerenciamento de deploy.'
+        'Deployment management from Service Management and more sources for project generation.',
+        'Gerenciamento de deploy a partir do Service Management e mais fontes para gerar projetos.'
       )
     ],
     [
       'Later',
-      t(locale, 'Ecosystem distribution', 'Distribuição do ecossistema'),
+      t(locale, 'Ecosystem', 'Ecossistema'),
       t(
         locale,
-        'Publish reusable packages, templates, SDK generators, and provider integrations.',
-        'Publicar pacotes reutilizáveis, templates, geradores de SDK e integrações com provedores.'
+        'SDK generators, shared templates, and provider integrations.',
+        'Geradores de SDK, templates compartilhados e integrações com provedores.'
       )
     ]
   ];
@@ -6077,8 +6183,8 @@ const Roadmap = ({ locale }: { locale: CommercialLocale }) => {
           ))}
         </ol>
         <div className={classes.sectionActions}>
-          <ActionLink external href={`${repositoryUrl}/milestones`}>
-            {t(locale, 'Open live roadmap', 'Abra o roadmap ao vivo')}
+          <ActionLink external href={`${repositoryUrl}/releases`}>
+            {t(locale, 'See release history', 'Veja o histórico de releases')}
           </ActionLink>
         </div>
       </Band>

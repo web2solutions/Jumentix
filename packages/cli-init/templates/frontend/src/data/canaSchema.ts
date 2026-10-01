@@ -35,7 +35,7 @@ const storeNameFromListPath = (operationId: string, schemaName: string): string 
   for (const [path, methods] of Object.entries(document.paths ?? {})) {
     for (const operation of Object.values(methods)) {
       if (operation?.operationId === operationId) {
-        const segment = path.split('/').filter(Boolean).findLast(Boolean);
+        const segment = path.split('/').filter(Boolean).at(-1);
         if (segment) return segment;
       }
     }

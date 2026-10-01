@@ -1,8 +1,8 @@
 {
   "name": "@jumentix/frontend",
-  "version": "0.0.2",
+  "version": "0.2.16",
   "private": true,
-  "description": "Jumentix frontend workspace app \u2014 offline-first, hybrid and online frontends over Jumentix backend contracts",
+  "description": "Jumentix frontend workspace app — offline-first, hybrid and online frontends over Jumentix backend contracts",
   "scripts": {
     "predev": "bun ./scripts/sync-contracts.mjs",
     "dev": "vite --force",
@@ -42,7 +42,7 @@
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/compiler-sfc": "3.5.41",
-    "@vue/test-utils": "2.5.0",
+    "@vue/test-utils": "2.5.1",
     "autoprefixer": "^10.4.27",
     "cypress": "^15.19.0",
     "eslint": "9.39.5",

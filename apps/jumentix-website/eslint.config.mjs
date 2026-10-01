@@ -82,5 +82,14 @@ export default [
       sourceType: 'commonjs',
       globals: globals.node
     }
+  },
+  {
+    // ESM Node scripts (content/screenshot tooling): same runtime globals as
+    // the CJS block, but the module system stays ESM.
+    name: 'jumentix/website-esm-scripts',
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: globals.node
+    }
   }
 ];

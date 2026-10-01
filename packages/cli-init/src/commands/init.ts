@@ -17,7 +17,7 @@ export function printInitHelp(log: (message?: string) => void = console.log): vo
   log(`
 jumentix init [dir] [options]
 
-Create a lean Jumentix workspace (Req 037 v2).
+Create a lean Jumentix workspace.
 
 Options:
   --mode=<monolith|services|hybrid|frontend>
@@ -31,11 +31,10 @@ Options:
   --non-interactive
   --help
 
-Source resolution (JUM-846) normalizes --from / --preset into a GenerationPlan.
-Backend generation (JUM-847) writes apps/<service> slices under the target
-directory. Frontend generation (JUM-848) writes apps/frontend for hybrid /
-frontend modes. Workspace assembly (JUM-849) writes the Bun root, docker
-compose, README, .jumentix manifests, and optional --git / --install steps.
+--from / --preset resolve into one generation plan (default preset: users).
+Each service is written to apps/<service>; hybrid and frontend modes add
+apps/frontend. The workspace root gets a Bun package.json, docker-compose.yml,
+a README, .jumentix/ metadata, and optional --git / --install steps.
 Legacy --service-type still clones the monorepo.
 `);
 }
@@ -62,7 +61,7 @@ export async function runInit(options: {
   }
 
   if (flags.legacyInvocation || flags.serviceType) {
-    log('Deprecated: jumentix-init --service-type maps to `init --mode monolith` (Req 037 v2).');
+    log('Deprecated: jumentix-init --service-type maps to `init --mode monolith`.');
     const mapped = mapLegacyServiceTypeToMode(flags.serviceType || 'rest');
     log(`Mapped to mode=${mapped.mode} http=${mapped.http}.`);
     const legacyArgv = [
@@ -239,7 +238,7 @@ export async function runInit(options: {
   }
 
   throw new Error(
-    `Factory generation for mode="${flags.mode || '(none)'}" is not implemented yet ` +
-      '(JUM-847+). Pass --from or --preset to resolve a GenerationPlan.'
+    `Factory generation for mode="${flags.mode || '(none)'}" is not implemented yet. ` +
+      'Pass --from or --preset to resolve a GenerationPlan.'
   );
 }

@@ -1,20 +1,24 @@
-// !! The order of these imports is important: theme overrides must load after vendor CSS !!
-import '@gfazioli/mantine-border-animate/styles.css';
-import '@gfazioli/mantine-marquee/styles.css';
-import '@gfazioli/mantine-text-animate/styles.css';
-import { mantineHtmlProps, MantineProvider } from '@mantine/core';
+/* eslint-disable import-x/order -- the Mantine base styles must precede the
+   theme overrides (CSS cascade is order-sensitive; see the inline note). */
 import '@mantine/core/styles.css';
-import { Analytics } from '@vercel/analytics/react';
-import Script from 'next/script';
 
-import { CommercialChrome } from '@/components/commercial/CommercialChrome';
-import '@/components/design-system/tokens.css';
-import config from '@/config';
+// !! The order of these imports is important !!
 // Mantine theme overrides (body background, marquee fade edges, etc.)
 import '@/theme/global.css';
 
+import { Analytics } from '@vercel/analytics/react';
+import { mantineHtmlProps, MantineProvider } from '@mantine/core';
+import Script from 'next/script';
+
+import { CommercialChrome } from '@/components/commercial/CommercialChrome';
+// !! End of important imports !!
+
+import config from '@/config';
+
+import { theme } from '../theme';
 import './global.css';
-import theme from '../theme';
+
+import '@/components/design-system/tokens.css';
 
 export const { metadata } = config;
 export const dynamic = 'force-dynamic';

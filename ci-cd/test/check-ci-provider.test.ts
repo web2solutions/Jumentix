@@ -329,6 +329,46 @@ describe('check-ci-provider', () => {
     );
   });
 
+  it('fails when CircleCI coverage drops the origin/dev baseline for dev→main promotions', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch',
+            'bun run coverage:patch'
+          )
+      );
+    });
+    expect(run(directory).output).toContain(
+      'CircleCI coverage must use origin/dev as the patch baseline for dev→main promotions'
+    );
+  });
+
+  it('fails when CircleCI coverage drops the origin/main baseline for generated release PRs', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            'JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch',
+            'bun run coverage:patch'
+          )
+      );
+    });
+    expect(run(directory).output).toContain(
+      'CircleCI coverage must use origin/main as the patch baseline for changelog/release reconciliation PRs'
+    );
+  });
+
   it('fails when CircleCI writes untrusted PR metadata to BASH_ENV with JSON quoting', () => {
     expect.hasAssertions();
 
@@ -674,18 +714,33 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
+      const original = fs.readFileSync(file, 'utf8');
+      const mutated = original.replace(
+        /\n {6}- name: Build workspace package dependencies for frontend coverage\n {8}run: \|[\s\S]*?\n {6}- name: Produce frontend coverage for the patch report\n/,
+        '\n      - name: Produce frontend coverage for the patch report\n'
+      );
+      expect(mutated).not.toBe(original);
+      fs.writeFileSync(file, mutated);
+    });
+    expect(run(directory).output).toContain(
+      'Coverage job must build workspace package dependencies before frontend patch coverage'
+    );
+  });
+
+  it('fails when frontend coverage is not gated by needs-frontend-patch-coverage', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
         fs
           .readFileSync(file, 'utf8')
-          .replace(
-            '      - name: Build workspace package dependencies for frontend coverage\n        run: bun run mono:build\n',
-            ''
-          )
+          .replace(/needs-frontend-patch-coverage\.js/g, 'needs-frontend-missing.js')
       );
     });
     expect(run(directory).output).toContain(
-      'Coverage job must build workspace package dependencies before frontend patch coverage'
+      'Coverage job must gate frontend coverage with needs-frontend-patch-coverage.js'
     );
   });
 
@@ -756,6 +811,26 @@ describe('check-ci-provider', () => {
       );
     });
     expect(run(directory).output).toContain('createCommitOnBranch');
+  });
+
+  it('fails when generated changelog commits skip REST signature verification', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.github/workflows/ci.yml');
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, 'utf8')
+          .replace(
+            'repos/$GITHUB_REPOSITORY/commits/$commit_oid',
+            'repos/$GITHUB_REPOSITORY/commits/$commit_id'
+          )
+      );
+    });
+    expect(run(directory).output).toContain(
+      'repos\\/\\$GITHUB_REPOSITORY\\/commits\\/\\$commit_oid'
+    );
   });
 
   it('fails when Sonar can scan binary assets as source files', () => {

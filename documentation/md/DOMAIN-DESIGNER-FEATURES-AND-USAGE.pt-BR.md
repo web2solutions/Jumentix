@@ -99,7 +99,20 @@ Como usar:
 
 ## 3.2) Export OAS por serviço e Swagger (JUM-817, JUM-818)
 
-O export OAS 3.1 agora grava `x-services`, `servers[]` com `x-service-id`, `x-service` em operações e schemas, e `x-architecture-links`. O documento mesclado é a vista Core. A aba **OpenAPI** embute Swagger UI (arquivos já revisados em `apps/backend-template/OASdoc`). O seletor filtra por serviço; Try it out usa o `servers` daquele serviço.
+O export OAS 3.1 agora grava:
+
+- `x-services` e `servers[]` com `x-service-id`
+- `x-service` em cada operação e schema de entidade
+- `x-architecture-links` para round-trip sem perdas da arquitetura
+
+O documento mesclado é a vista Core (toda operação, todo endereço de serviço). A aba **OpenAPI** embute o Swagger UI (`swagger-ui-dist` empacotado a partir de `apps/backend-template/OASdoc`). O seletor filtra por um serviço; Try it out usa o `servers` daquele serviço.
+
+Como usar:
+
+1. Modele a arquitetura e abra **OpenAPI**.
+2. Escolha **Merged Core document** ou um serviço nomeado.
+3. Pressione **Refresh** após editar o modelo.
+4. Exporte o OAS pelo painel Share do Domain Designer para arquivos; o registro do catálogo pode guardar `design.oasDocuments.merged` e `design.oasDocuments.services`.
 
 ## 4) Edição de entidades e modelos
 
@@ -126,7 +139,7 @@ Como usar:
 ## 5) Mapeamento de políticas RBAC
 
 Política de ação por entidade, alinhada ao contrato de autorização de tenant e
-RBAC (`TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`, JUM-477):
+RBAC (`TENANT-RBAC-AUTHORIZATION-CONTRACT.pt-BR.md`) (JUM-477):
 
 - Ações:
   - `lista`

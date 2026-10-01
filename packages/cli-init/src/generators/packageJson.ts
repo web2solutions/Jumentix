@@ -1,5 +1,6 @@
 import { sanitizePackageScope, sanitizeServiceId } from './paths';
 
+import type { JumentixPin } from './jumentixVersions';
 import type { DbChoice, HttpInterface, RealtimeInterface } from '../sources/types';
 
 export const JUMENTIX_RUNTIME_DEPS = Object.freeze([
@@ -19,8 +20,8 @@ export const JUMENTIX_RUNTIME_DEPS = Object.freeze([
 export interface PackageJsonInput {
   projectName: string;
   serviceId: string;
-  /** CLI / pin version for `@jumentix/*` dependencies. */
-  jumentixVersion: string;
+  /** Version resolver for each `@jumentix/*` dependency. */
+  pin: JumentixPin;
   http: HttpInterface;
   realtime: RealtimeInterface;
   db: DbChoice;
@@ -35,7 +36,7 @@ export function buildServicePackageJson(input: PackageJsonInput): Record<string,
 
   const dependencies: Record<string, string> = {};
   for (const name of JUMENTIX_RUNTIME_DEPS) {
-    dependencies[name] = input.jumentixVersion;
+    dependencies[name] = input.pin(name);
   }
 
   return {

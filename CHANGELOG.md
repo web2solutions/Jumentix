@@ -1,29 +1,146 @@
 # Changelog
 
-<!-- This file is generated from Git history. GitHub Actions synchronizes it after pushes to dev. -->
+<!-- This file is generated from Git history. GitHub Actions synchronizes it after merges to main. -->
 
-## All Changes
+## Unreleased
 
+- 2026-09-29 [JUM-900][Release] Promote dev to main — close the docs epic, publish npm packages (#548) - Eduardo A.
+- 2026-09-29 fix(ci): resolve git via absolute path in merge-driver setup (#557) - Eduardo A.
+- 2026-09-29 fix(service-management): detect busy ports with TCP connect (#556) - Eduardo A.
+- 2026-09-29 fix(cli-init): compare package-version keys with localeCompare (#555) - Eduardo A.
+- 2026-09-29 fix(ci): mirror GHA patch baselines on CircleCI for release coverage (#554) - Eduardo A.
+- 2026-09-28 fix(coverage): remap dist-tested TypeScript coverage back to its source for patch coverage (#553) - Eduardo A.
+- 2026-09-28 test(architecture-canvas): cover createArchitectureCanvas render/interaction paths (#552) - Eduardo A.
+- 2026-09-27 fix(website): update the prepublish roadmap-content smoke check (#551) - Eduardo A.
+- 2026-09-27 fix(message-mediator): declare ioredis, bullmq's real Redis dependency (#550) - Eduardo A.
+- 2026-09-27 fix(cli-init): restore process.exitCode with a number Bun actually honors (#549) - Eduardo A.
+- 2026-09-26 docs(website): marketing-vs-technical language calibration pass (#547) - Eduardo A.
+- 2026-09-26 [JUM-898][Feature] Warn when a product screenshot may be stale (#546) - Eduardo A.
+- 2026-09-26 feat(website): current product screenshots and a "See it running" tour (#542) - Eduardo A.
+- 2026-09-26 fix(frontend): resolve dashboard organization ids to their display name (#543) - Eduardo A.
+- 2026-09-26 fix(docs-ui): vendor swagger-ui 5 so /OASdoc and the designer render OpenAPI 3.1 (#541) - Eduardo A.
+- 2026-09-26 chore(ci): stop test-map.json from conflicting on every PR (#544) - Eduardo A.
+- 2026-09-26 docs(website): keep maintainer provenance off the developer site and pair every contributor doc (#538) - Eduardo A.
+- 2026-09-26 [JUM-906][Fix] Breadcrumb names the module and tab and links to real locations (#540) - Eduardo A.
+- 2026-09-26 [JUM-905][Fix] Dark canvas, sidebar and anchored mini-map on the Architecture tab (#539) - Eduardo A.
+- 2026-09-26 ci(gate): run ci:gate checks that no CI job ran as a branch-gate preflight (#534) - Eduardo A.
+- 2026-09-26 chore(website): remove starter-template leftovers nothing renders (#536) - Eduardo A.
+- 2026-09-26 fix(cli-init): commit the packaged Users persistence adapters .gitignore dropped (#537) - Eduardo A.
+- 2026-09-26 docs(readme): speak to prospects, drop the CI-governance leak and document the real CLI (#535) - Eduardo A.
+- 2026-09-26 [JUM-891][Chore] Consolidate Dependabot updates (#458–#460, #462) (#529) - Eduardo A.
+- 2026-09-26 chore(deps): consolidate Dependabot bumps (#458–#460, #462) - Eduardo A.
+- 2026-09-26 [JUM-901][Fix] Run the published CLI when the GitHub entry point has no local build (#533) - Eduardo A.
+- 2026-09-26 fix(cli-init): pin each generated @jumentix/* dependency to its own published version (#532) - Eduardo A.
+- 2026-09-26 ci(release): automate npm publish after each main release and publish packed tarballs (#531) - Eduardo A.
+- 2026-09-26 feat(governance): add Requirement 066 audience matrix and docs:check-audience gate (#530) - Eduardo A.
+- 2026-09-26 [JUM-889][Chore] Sync v0.2.15 release into dev (#528) - Eduardo A.
+
+## v0.2.15 - 2026-09-26
+
+- 2026-09-26 chore(release): v0.2.15 (#525) - Eduardo A.
+- 2026-09-26 [JUM-889][Fix] Promote unattended release branch-gate fixes to main (#524) - Eduardo A.
+- 2026-09-26 [JUM-889][Fix] Force-reset stale chore/release branch tips (#523) - Eduardo A.
+- 2026-09-26 fix(release): diff generated PRs against main on branch push - Eduardo A.
+- 2026-09-26 fix(release): force-reset stale chore/release branch tips - Eduardo A.
+- 2026-09-26 [JUM-889][Chore] Promote changelog race fix to main (#520) - Eduardo A.
+- 2026-09-26 [JUM-889][Chore] Reconcile main into dev + changelog race fix (#519) - Eduardo A.
+- 2026-09-26 fix(release): tolerate changelog-sync race after tagging - Eduardo A.
+
+## v0.2.14 - 2026-09-25
+
+- 2026-09-25 [JUM-889][Release] Promote unattended release automation to main (#517) - Eduardo A.
+- 2026-09-25 [JUM-889][Fix] Unattended release/changelog PR automation (#516) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.14 (#512) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.13 (#510) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.12 (#508) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.11 (#507) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.10 (#505) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.9 (#504) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.8 (#501) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.7 (#499) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.6 (#497) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.5 (#496) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.4 (#494) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.3 (#492) - Eduardo A.
+- 2026-09-25 chore(release): v0.2.2 (#489) - Eduardo A.
+- 2026-09-25 [JUM-889][Release] Promote coverage harden to main (#486) - Eduardo A.
+- 2026-09-25 [JUM-889][Fix] Ignore cli-init templates in patch coverage (#488) - Eduardo A.
+- 2026-09-25 fix(coverage): ignore cli-init templates in patch coverage - Eduardo A.
+- 2026-09-25 [JUM-889][Fix] Decouple app-release dry-run from live tip history (#487) - Eduardo A.
+- 2026-09-25 fix(test): decouple app-release dry-run from live tip history - Eduardo A.
+- 2026-09-25 [JUM-889][Release] Reconcile main into dev (v0.2.1 ancestry) (#485) - Eduardo A.
+- 2026-09-25 chore(release): merge main into dev (v0.2.1 ancestry) - Eduardo A.
+- 2026-09-24 [JUM-889][CI] Skip frontend coverage on non-frontend release patches (#481) - Eduardo A.
+- 2026-09-24 fix(ci): treat Codecov PR comments as automated decoration - Eduardo A.
+- 2026-09-24 fix(ci): skip frontend coverage on non-frontend release patches - Eduardo A.
+
+## v0.2.1 - 2026-09-24
+
+- 2026-09-24 chore(release): v0.2.1 (#479) - Eduardo A.
+- 2026-09-24 [JUM-889][Release] Promote app-release inherit fix to main (#477) - Eduardo A.
+- 2026-09-24 chore(release): merge main into dev (v0.2.0 ancestry) - Eduardo A.
+- 2026-09-24 fix(release): handle gh inherit stdio returning null (#476) - Eduardo A.
+- 2026-09-24 fix(ci): allow app-release chore branches to target main (#474) - Eduardo A.
+
+## v0.2.0 - 2026-09-24
+
+- 2026-09-24 chore(release): v0.2.0 (#475) - Eduardo A.
+
+## v0.1.0 - 2026-09-24
+
+- 2026-09-24 chore(release): v0.1.0 (#472) - Eduardo A.
+- 2026-09-24 [JUM-889][Release] Promote signed app-release path to main (#468) - Eduardo A.
+- 2026-09-24 fix(ci): preinstall Firefox before browser-tools orb (#471) - Eduardo A.
+- 2026-09-24 fix(release): resolve sleep/bun via absolute paths (#470) - Eduardo A.
+- 2026-09-24 [JUM-890][Test] Guard REST changelog signature verification (#469) - Eduardo A.
+- 2026-09-24 test(ci): guard changelog REST signature verification - Eduardo Almeida
+- 2026-09-24 [JUM-889][Chore] Merge main into dev (ancestry for promote) (#467) - Eduardo A.
+- 2026-09-24 chore(release): merge main into dev (ancestry) - Eduardo A.
+- 2026-09-24 [JUM-889][Chore] Merge main into dev before app-release promote (#465) - Eduardo A.
+- 2026-09-23 fix(release): move app tags to signed GHA path (#457) - Eduardo A.
+- 2026-09-23 [JUM-882][Fix] Resolve gh/npm via absolute paths for Sonar S4036 - Eduardo A.
+- 2026-09-23 [JUM-882][Release] Promote tag-driven release epic to main - Eduardo A.
+- 2026-09-23 [JUM-882][Release] Tag-driven changelog, GitHub Releases and npm publish - Eduardo A.
+- 2026-09-23 [JUM-890][Release] Verify automated changelog commit signing (#446) - Eduardo A.
+- 2026-09-23 [JUM-890][Chore] Merge main into dev (#451) - Eduardo A.
+- 2026-09-23 chore: merge main into dev - Eduardo Almeida
+- 2026-09-23 fix(ci): sign generated changelog commits (#441) (#443) (#450) - Eduardo A.
+- 2026-09-23 [JUM-872][CI] CircleCI as canonical CI; GitHub Actions minimal and reversible (#444) - Eduardo A.
+- 2026-09-23 fix(ci): grant id-token write for npm provenance publish (#442) - Eduardo A.
+- 2026-09-23 [JUM-890][Fix] Run CircleCI services on the executor network (#447) - Eduardo A.
+- 2026-09-23 fix(ci): verify generated changelog commits via REST (#445) - Eduardo A.
+- 2026-09-23 fix(ci): sign generated changelog commits (#441) (#443) - Eduardo A.
+- 2026-09-23 fix(ci): sign generated changelog commits (#441) - Eduardo A.
+- 2026-09-23 [JUM-863][Release] Promote dev to main after Sonar reliability repair (#438) - Eduardo A.
+- 2026-09-23 merge: reconcile main into dev (#439) - Eduardo A.
+- 2026-09-23 merge: reconcile main into dev - Eduardo Almeida
+- 2026-09-23 fix(api): await Fastify documentation replies (#437) - Eduardo A.
+- 2026-09-22 [JUM-862][Release] Reconcile changelog CI safeguards (#435) - Eduardo A.
+- 2026-09-22 fix(ci): run required jobs for changelog sync PRs (#433) - Eduardo A.
+- 2026-09-22 [JUM-862][Release] Repair generated changelog promotion (#431) - Eduardo A.
+- 2026-09-22 fix(ci): allow generated changelog release PRs (#430) - Eduardo A.
+- 2026-09-22 [JUM-821][Release] Promote dev to main — factory cli-init, npm publish readiness, CI governance (#409) - Eduardo A.
+- 2026-09-22 fix(ci): scope release patch coverage to dev baseline (#428) - Eduardo A.
+- 2026-09-22 fix(ci): prepare frontend coverage dependencies (#427) - Eduardo A.
+- 2026-09-22 test(backend): cover paging fallbacks (#426) - Eduardo A.
+- 2026-09-22 fix(ci): retry database compose startup (#425) - Eduardo A.
+- 2026-09-22 fix(ci): retry transient Redis registry failures (#424) - Eduardo A.
+- 2026-09-22 fix(ci): [JUM-821] harden isolated promotion jobs (#423) - Eduardo A.
+- 2026-09-22 fix(ci): [JUM-821] build dependencies before workspace tests (#422) - Eduardo A.
+- 2026-09-22 fix(ci): build workspaces topologically (#421) - Eduardo A.
 - 2026-09-22 fix(cli-init): [JUM-821] resolve Bun in Actions (#419) - Eduardo A.
-- 2026-09-22 chore: synchronize changelog (#418) - Eduardo A.
 - 2026-09-22 fix(ci): [JUM-821] bootstrap promotion gates (#417) - Eduardo A.
 - 2026-09-22 fix(cli-init): [JUM-821] restore coverage setup (#416) - Eduardo A.
-- 2026-09-21 chore: synchronize changelog (#415) - Eduardo A.
 - 2026-09-21 [JUM-871][Fix] Build workspace packages in topological level order (#414) - Eduardo A.
-- 2026-09-21 chore: synchronize changelog (#413) - Eduardo A.
 - 2026-09-21 ci(JUM-862): bind bot-token jobs to the consolidated secrets environment (#412) - Eduardo A.
 - 2026-09-21 fix(JUM-872): address PR #409 review findings on dev (#411) - Eduardo A.
 - 2026-09-21 ci(JUM-866): guard the patch-report frontend coverage step to PRs (#410) - Eduardo A.
 - 2026-09-21 Merge remote-tracking branch 'origin/main' into dev - Eduardo Almeida
 - 2026-09-21 [JUM-821][Chore] Reconcile main squash ancestry into dev (#408) - Eduardo A.
 - 2026-09-21 ci(JUM-841): verify npm org access before publishing (#407) - Eduardo A.
-- 2026-09-21 chore: synchronize changelog (#404) - Eduardo A.
 - 2026-09-21 [JUM-862][CI] Treat UNKNOWN merge state as retryable in the changelog sync poll (#401) - Eduardo A.
-- 2026-09-21 chore: synchronize changelog (#402) - Eduardo A.
 - 2026-09-21 [JUM-870][Fix] Restore npm pack gate and map NPM_CI_CD (#398) - Eduardo A.
 - 2026-09-21 ci(JUM-862): bind sync-changelog to the env vars environment (#399) - Eduardo A.
-- 2026-09-21 chore: synchronize changelog (#397) - Eduardo A.
-- 2026-09-21 chore: synchronize changelog - github-actions[bot]
 - 2026-09-21 [JUM-856][Docs] Fill factory epic closure merge evidence (#396) - Eduardo A.
 - 2026-09-21 docs(cli-init): fill factory epic closure merge evidence - Eduardo A.
 - 2026-09-21 [JUM-866][Fix] Restore long-lived CI health (#393) - Eduardo A.
@@ -48,7 +165,6 @@
 - 2026-09-20 [JUM-847][Feature] Generate backend services from GenerationPlan (#386) - Eduardo A.
 - 2026-09-20 fix(cli-init): sanitize npm name segments without ReDoS regex - Eduardo A.
 - 2026-09-20 feat(cli-init): generate backend services from GenerationPlan - Eduardo A.
-- 2026-09-20 chore: synchronize changelog (#383) - github-actions[bot]
 - 2026-09-20 ci(JUM-862): open changelog PRs with a PAT and poll mergeability (#385) - Eduardo A.
 - 2026-09-20 [JUM-846][Feature] Resolve sources into GenerationPlan (#384) - Eduardo A.
 - 2026-09-20 chore: merge origin/dev into GenerationPlan branch - Eduardo A.
@@ -57,7 +173,6 @@
 - 2026-09-20 feat(release): make @jumentix packages and cli-init publishable - Eduardo A.
 - 2026-09-20 [JUM-845][Feature] Package CLI templates with freshness gate (#377) - Eduardo A.
 - 2026-09-20 feat(cli-init): package backend/frontend seeds with freshness gate - Eduardo A.
-- 2026-09-20 chore: synchronize changelog (#380) - Eduardo A.
 - 2026-09-20 [JUM-865][Chore] Enforce PR feedback and Sonar reliability gates (#376) - Eduardo A.
 - 2026-09-20 Merge remote-tracking branch 'origin/dev' into codex/chore/JUM-865-pr-feedback-resolution-gate - Eduardo Almeida
 - 2026-09-20 ci(JUM-862): grant pull-requests write to sync-changelog (#378) - Eduardo A.

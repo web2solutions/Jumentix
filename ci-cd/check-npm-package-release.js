@@ -241,6 +241,7 @@ if (isEntryPoint(module)) runReleaseCheck();
 
 module.exports = {
   assertTarballContents,
+  buildAndPack,
   discoverPublishablePackages,
   isForbiddenTarballPath,
   PUBLIC_PACKAGE_NAMES,

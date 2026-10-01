@@ -117,11 +117,15 @@ module.exports = {
     // frontend's own coverage run (`coverage/frontend`) does not measure it.
     // The patch-coverage checker reads this same list (JUM-821).
     '<rootDir>/apps/frontend/template/',
+    // packages/cli-init/templates/ are generator seeds copied into new apps,
+    // not executed by Jest. Same false-green trap as apps/frontend/template/
+    // (proven by #486 patch coverage on bindOnlineReplay in the frontend seed).
+    '<rootDir>/packages/cli-init/templates/',
     // ci-cd is excluded from coverage wholesale, with named opt-ins. Sonar reads
     // this same lcov, so a new ci-cd file that is not listed here reports as 0%
     // covered on new code and fails the quality gate even when it has tests.
     // Keep this list and the suites under ci-cd/test/ in step.
-    '<rootDir>/ci-cd/(?!(lib/mapped-suites|check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|check-package-suites|merge-coverage-reports|run-full-test-matrix|run-suite|build-workspace-packages)\\.js$)',
+    '<rootDir>/ci-cd/(?!(lib/mapped-suites|lib/build-artifact-source-map|check-canonical-integrations|check-bun-version|check-commit-authorship|check-coverage-thresholds|check-dependency-override-integrity|check-package-suites|merge-coverage-reports|run-full-test-matrix|run-suite|build-workspace-packages)\\.js$)',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts',
     '<rootDir>/apps/backend-template/src/modules/Users/adapters/out/persistence/OrganizationDataRepository.ts'
   ],

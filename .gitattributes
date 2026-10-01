@@ -1,2 +1,10 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Generated from the current test tree (ci-cd/generate-test-map.js). Two
+# branches that both touch test files textually conflict on this file even
+# when neither is wrong, so conflicts here keep "ours" instead of blocking
+# (driver registered by `prepare` — ci-cd/setup-git-merge-drivers.js);
+# `test-map:check` (in `ci:gate:static`) fails closed on the resulting
+# staleness until `test-map:generate` runs for real.
+test-map.json merge=keep-ours-test-map

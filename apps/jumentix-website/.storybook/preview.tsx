@@ -1,14 +1,16 @@
-// !! The order of these imports is important: theme overrides must load after vendor CSS !!
-import '@gfazioli/mantine-marquee/styles.css';
-import '@gfazioli/mantine-text-animate/styles.css';
-import { MantineProvider } from '@mantine/core';
+/* eslint-disable import-x/order -- the Mantine base styles must precede the
+   app/theme/design-token styles (CSS cascade is order-sensitive). */
 import '@mantine/core/styles.css';
-import { withThemeByClassName } from '@storybook/addon-themes';
 
+// !! The order of these imports is important !!
+import '../theme/global.css';
 import '../app/global.css';
 import '../components/design-system/tokens.css';
-import theme from '../theme';
-import '../theme/global.css';
+
+import { MantineProvider } from '@mantine/core';
+import { withThemeByClassName } from '@storybook/addon-themes';
+
+import { theme } from '../theme';
 
 export const parameters = {
   layout: 'fullscreen',

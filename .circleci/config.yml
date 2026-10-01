@@ -131,6 +131,21 @@ commands:
             sudo apt-get update
             sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
       - browser-tools/install-chrome
+      # Preinstall Firefox from Mozilla so browser-tools/install-firefox
+      # hits installation_check and skips its silenced apt path (exit 100 on
+      # CircleCI job 759 / pipeline 179 — Ubuntu mirror/apt flake under the orb).
+      - run:
+          name: Preinstall Firefox from Mozilla archive
+          command: |
+            set -euo pipefail
+            VER="$(curl -fsSL https://product-details.mozilla.org/1.0/firefox_versions.json | jq -r .LATEST_FIREFOX_VERSION)"
+            test -n "$VER" && test "$VER" != "null"
+            ARCHIVE="https://archive.mozilla.org/pub/firefox/releases/${VER}/linux-x86_64/en-US/firefox-${VER}.tar.xz"
+            curl -fsSL -o /tmp/firefox.tar.xz "$ARCHIVE"
+            sudo rm -rf /opt/firefox
+            sudo tar -xJf /tmp/firefox.tar.xz -C /opt
+            sudo ln -sfn /opt/firefox/firefox /usr/local/bin/firefox
+            firefox --version | grep -F "$VER"
       - browser-tools/install-firefox
 
 jobs:
@@ -358,12 +373,26 @@ jobs:
           no_output_timeout: 30m
           command: |
             source "$BASH_ENV"
-            bun run mono:build
+            # Version-only / non-frontend patches skip this build — frontend
+            # coverage is only needed when the patch has apps/frontend subjects
+            # (JUM-889). Keep this step name for check-ci-provider.
+            if bun ci-cd/needs-frontend-patch-coverage.js; then
+              bun run mono:build
+            else
+              echo "No frontend coverage subjects in patch; skipping mono:build for frontend coverage."
+            fi
       - run:
           name: Produce frontend coverage for the patch report
           command: |
             source "$BASH_ENV"
-            bun run frontend:test:coverage
+            if bun ci-cd/needs-frontend-patch-coverage.js; then
+              bun run frontend:test:coverage
+              # JUM-903: the frontend threshold check lived only in ci:gate,
+              # which no CI job runs.
+              bun run frontend:coverage:check
+            else
+              echo "No frontend coverage subjects in patch; skipping frontend:test:coverage."
+            fi
       - run:
           name: Produce config-eslint coverage for the patch report
           command: |
@@ -375,7 +404,19 @@ jobs:
             source "$BASH_ENV"
             if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
               bun run coverage:merge
-              bun run coverage:patch
+              # Mirror .github/workflows/ci.yml: a dev→main promotion has no new
+              # patch beyond protected `dev` (PR #548 / JUM-900). Measuring
+              # against origin/main re-litigates the whole promotion history and
+              # fails closed on already-gated task work (CircleCI job 3006).
+              BASE_REF="${JUMENTIX_PR_BASE_REF:-}"
+              HEAD_REF="${JUMENTIX_PR_HEAD_REF:-${CIRCLE_BRANCH:-}}"
+              if [ "$BASE_REF" = "main" ] && [ "$HEAD_REF" = "dev" ]; then
+                JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch
+              elif [ "$BASE_REF" = "main" ] && { [[ "$HEAD_REF" =~ ^chore/changelog-sync-[0-9a-f]{8}$ ]] || [[ "$HEAD_REF" =~ ^chore/release-v[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$HEAD_REF" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
+                JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch
+              else
+                bun run coverage:patch
+              fi
             else
               echo "Patch coverage is PR-only; project coverage already passed."
             fi
@@ -666,18 +707,12 @@ workflows:
       - coverage
       - website
       - database-matrix
-  # JUM-884 / JUM-885: application tags and GitHub Releases (CircleCI-canonical).
-  release:
-    jobs:
-      - create-app-release-tag:
-          filters:
-            branches:
-              only: main
-            tags:
-              ignore: /.*/
-      - create-github-release:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
+  # JUM-889: application tags + GitHub Releases moved to the always-on GitHub
+  # Actions workflow `.github/workflows/app-release.yml` (CHANGELOG_GH_TOKEN +
+  # createCommitOnBranch). CircleCI cannot produce required signed commits on
+  # protected `main` without a bypass actor, and GH_TOKEN was never provisioned
+  # here — leaving these jobs enabled kept `main` red (job 562).
+  # release:
+  #   jobs:
+  #     - create-app-release-tag: ...
+  #     - create-github-release: ...

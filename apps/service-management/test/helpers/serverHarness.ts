@@ -9,6 +9,7 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
+import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -225,14 +226,21 @@ function spawnServerProcess(
   };
 }
 
+/**
+ * True when something is bound on the loopback port. Uses a raw TCP connect
+ * rather than an HTTP GET: the busy-pin suites (and real stale `server.js`
+ * holders) often accept TCP without answering HTTP, so a GET times out and
+ * mis-classifies EADDRINUSE as a generic early exit (CircleCI job 3049 / JUM-900).
+ */
 function loopbackPortAcceptsConnection(port: number): Promise<boolean> {
   return new Promise((resolve) => {
-    const req = http.get(`http://127.0.0.1:${String(port)}/`, () => {
+    const socket = net.connect({ host: '127.0.0.1', port }, () => {
+      socket.end();
       resolve(true);
     });
-    req.on('error', () => resolve(false));
-    req.setTimeout(250, () => {
-      req.destroy();
+    socket.on('error', () => resolve(false));
+    socket.setTimeout(250, () => {
+      socket.destroy();
       resolve(false);
     });
   });

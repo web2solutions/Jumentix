@@ -20,8 +20,11 @@
 4. Three GitHub Actions surfaces stay always-on because they have no CircleCI
    equivalent: `.github/workflows/pr-feedback.yml` (`pull_request_target`
    trusted-fork execution is a GitHub-only security model), the `sync-changelog`
-   and `pr-feedback` jobs inside `.github/workflows/ci.yml` (cheap, event-scoped
-   automation with no CircleCI job), and `.github/workflows/npm-publish.yml`
+   and `pr-feedback` jobs inside `.github/workflows/ci.yml` plus
+   `.github/workflows/app-release.yml` (signed `createCommitOnBranch` + annotated
+   application tags + GitHub Releases on `main`; protected `main` requires verified
+   commits and a pull-request ruleset that CircleCI cannot satisfy without a bypass
+   actor), and `.github/workflows/npm-publish.yml`
    (requirement `070`'s protected GitHub Environment). Everything else in GitHub
    Actions — the eight `ci.yml` matrix jobs, `browser-matrix.yml`, and
    `sonar-reliability.yml` — runs only when
