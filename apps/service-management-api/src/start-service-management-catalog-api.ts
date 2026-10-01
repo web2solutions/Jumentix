@@ -45,7 +45,11 @@ const catalogAPI = new ServiceManagementCatalogAPI<Express>({
 (async () => {
   await catalogAPI.start();
   console.log('Service Management catalog API started.');
-})();
+})().catch((error: unknown) => {
+  // eslint-disable-next-line no-console
+  console.error(error);
+  process.exitCode = 1;
+});
 
 const stop = async () => {
   await catalogAPI.stop();
@@ -53,8 +57,8 @@ const stop = async () => {
 };
 
 process.once('SIGTERM', () => {
-  stop().finally(() => process.exit(0));
+  stop().finally(() => process.exit(0)).catch(() => undefined);
 });
 process.once('SIGINT', () => {
-  stop().finally(() => process.exit(0));
+  stop().finally(() => process.exit(0)).catch(() => undefined);
 });
