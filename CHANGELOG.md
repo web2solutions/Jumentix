@@ -6,6 +6,16 @@
 
 - No changes.
 
+## v0.3.2 - 2026-10-01
+
+- 2026-10-01 chore(release): v0.3.2 (#590) - Eduardo A.
+- 2026-10-01 [JUM-914][Release] Promote remaining S9383 clear for Sonar reliability A (#588) - Eduardo A.
+- 2026-10-01 [JUM-914][Release] Reconcile main v0.3.1 into dev for Sonar A promote (#587) - Eduardo A.
+- 2026-10-01 Merge remote-tracking branch 'origin/main' into cursor/release/JUM-914-reconcile-v031 - Eduardo A.
+- 2026-10-01 [JUM-914][Fix] Clear remaining designer-core and SM-api S9383 (#586) - Eduardo A.
+- 2026-10-01 fix(security): accept basic-ftp GHSA-c475 until get-uri can take 6.x - Eduardo A.
+- 2026-10-01 fix(sonar): clear remaining S9383 in designer-core and SM API - Eduardo A.
+
 ## v0.3.1 - 2026-10-01
 
 - 2026-10-01 chore(release): v0.3.1 (#584) - Eduardo A.
