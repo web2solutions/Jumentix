@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.3.1 - 2026-10-01
+
+- 2026-10-01 chore(release): v0.3.1 (#584) - Eduardo A.
 - 2026-10-01 [JUM-914][Release] Promote binary-safe release + Sonar S9383 tip green (#581) - Eduardo A.
 - 2026-10-01 [JUM-914][Release] Reconcile main into dev to unblock tip promote (#582) - Eduardo A.
 - 2026-10-01 chore(release): reconcile main into dev for JUM-914 promote - Eduardo A.
