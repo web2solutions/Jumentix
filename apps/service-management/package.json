@@ -1,6 +1,6 @@
 {
   "name": "@jumentix/service-management",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Jumentix service-management workspace app",
   "scripts": {
