@@ -30,5 +30,9 @@ export async function startWebSocketApiAdapter(
 
 /* istanbul ignore if */
 if (require.main === module) {
-  startWebSocketApiAdapter();
+  startWebSocketApiAdapter().catch((error: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    process.exitCode = 1;
+  });
 }

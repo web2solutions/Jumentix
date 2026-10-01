@@ -90,17 +90,11 @@ export const withLambdaContext = async <T>(
   const authorization = headers.authorization || headers.Authorization || 'Bearer';
   const store = new Map();
 
-  return new Promise((resolve, reject) => {
-    Context.run(store, async () => {
-      try {
-        store.set('correlationId', v4());
-        store.set('timeStart', +new Date());
-        store.set('request', event);
-        store.set('authorization', authorization);
-        resolve(await runner());
-      } catch (error) {
-        reject(error);
-      }
-    });
+  return Context.run(store, async () => {
+    store.set('correlationId', v4());
+    store.set('timeStart', +new Date());
+    store.set('request', event);
+    store.set('authorization', authorization);
+    return runner();
   });
 };

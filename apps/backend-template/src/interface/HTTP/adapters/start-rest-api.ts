@@ -61,5 +61,9 @@ export async function startRestApiAdapter(
 
 /* istanbul ignore if */
 if (require.main === module) {
-  startRestApiAdapter();
+  startRestApiAdapter().catch((error: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    process.exitCode = 1;
+  });
 }

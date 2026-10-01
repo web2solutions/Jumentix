@@ -142,6 +142,14 @@ O gate de frescor falha fechado quando os templates empacotados divergem das
 seeds. Script: `packages/cli-init/scripts/check-template-freshness.js` (ligado
 ao `ci:gate`).
 
+O release da aplicação (`ci-cd/create-app-release-tag.js --github-api`) reconstrói
+os templates a cada bump e os envia via `createCommitOnBranch` assinado. Os
+conteúdos são lidos como `Buffer` bruto e codificados em base64 para a API do
+GitHub (`encodeAdditionContents` em `ci-cd/lib/github-signed-commit.js`). Ler
+PNG/ICO como utf8 antes do base64 corrompe binários e falha o frescor no PR de
+release (JUM-914). A reconstrução também roda `validateTemplateFreshness` local
+antes de abrir o PR.
+
 ## Pipeline de montagem do workspace
 
 1. **Resolução de fontes** — monta o `GenerationPlan` a partir de `--from` /

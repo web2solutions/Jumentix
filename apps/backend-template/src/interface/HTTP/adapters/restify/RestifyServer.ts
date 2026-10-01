@@ -94,7 +94,7 @@ class RestifyServer extends HTTPBaseServer<Restify> {
         });
       } catch (error) {
         // console.error(`An error occurred: ${JSON.stringify(error)}`);
-        this.stop();
+        this.stop().catch(() => undefined);
         reject(new Error((error as BaseError).message));
       }
     });

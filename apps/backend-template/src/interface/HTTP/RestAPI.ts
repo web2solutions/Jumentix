@@ -93,7 +93,7 @@ export class RestAPI<T> {
     this.buildInfraEndPoints(config);
 
     process.on('exit', () => {
-      this.stop();
+      this.stop().catch(() => undefined);
     });
 
     process.on('unhandledRejection', (e) => {
@@ -522,19 +522,12 @@ export class RestAPI<T> {
     const requests: Promise<boolean>[] = [];
     const allUsers = (await userUseCases.getAll({}, { page: 1, size: 1000 })).result || [];
     for (const user of allUsers) {
-      requests.push(new Promise((resolve, reject) => {
-        (async () => {
-          try {
-            const deletedUser = await userUseCases.delete(user.id);
-            if (deletedUser.error) throw deletedUser.error;
-            if (deletedUser.result === undefined) throw new Error('User delete failed');
-            resolve(deletedUser.result);
-          } catch (error: any) {
-            // console.log(error.message);
-            reject(new Error(error.message));
-          }
-        })();
-      }));
+      requests.push((async () => {
+        const deletedUser = await userUseCases.delete(user.id);
+        if (deletedUser.error) throw deletedUser.error;
+        if (deletedUser.result === undefined) throw new Error('User delete failed');
+        return deletedUser.result;
+      })());
     }
     return Promise.all(requests);
     // console.log('>>>> done');

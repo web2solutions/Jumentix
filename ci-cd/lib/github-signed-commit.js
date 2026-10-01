@@ -38,6 +38,18 @@ function ghEnv(env = process.env) {
   };
 }
 
+/**
+ * Encode file contents for GitHub createCommitOnBranch FileAddition.contents.
+ * Accepts Buffer (binary-safe) or utf8 string (text). Always returns base64.
+ * Reading binaries as utf8 then Buffer.from(..., 'utf8') corrupts PNG/ICO and
+ * fails cli:check-template-freshness on release PRs (JUM-914).
+ */
+function encodeAdditionContents(contents) {
+  if (Buffer.isBuffer(contents)) return contents.toString('base64');
+  if (typeof contents === 'string') return Buffer.from(contents, 'utf8').toString('base64');
+  throw new Error('addition contents must be a string or Buffer');
+}
+
 function createSignedCommitOnBranchWithGh({
   repository,
   branch,
@@ -76,7 +88,7 @@ function createSignedCommitOnBranchWithGh({
         fileChanges: {
           additions: additions.map((item) => ({
             path: item.path,
-            contents: Buffer.from(item.contents, 'utf8').toString('base64')
+            contents: encodeAdditionContents(item.contents)
           }))
         }
       }
@@ -147,6 +159,7 @@ function createAnnotatedTagRef({
 module.exports = {
   createAnnotatedTagRef,
   createSignedCommitOnBranchWithGh,
+  encodeAdditionContents,
   resolveRepository,
   resolveToken
 };

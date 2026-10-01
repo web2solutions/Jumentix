@@ -30,6 +30,12 @@ Duas famílias de tags anotadas, ambas criadas por CI — nunca a partir de uma 
 | Aplicação | `v<appLockedVersion>` (ex.: `v0.0.3`) | Após cada bump bem-sucedido em `main` | GitHub Actions `app-release.yml` → `bun ci-cd/create-app-release-tag.js --github-api` |
 | Pacote | `@jumentix/<pkg>@<version>` | Após cada `npm publish` bem-sucedido | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
 
+Commits assinados de release que incluem templates CLI reconstruídos devem
+codificar conteúdos como bytes brutos → base64 (nunca binários decodificados
+como utf8). Caso contrário, drift de hash PNG/ICO falha
+`cli:check-template-freshness` no PR de release e faz o `create-app-release`
+entrar em loop (JUM-914).
+
 A próxima versão de aplicação é calculada por `ci-cd/lib/next-version.js` a partir dos commits
 desde a última tag de aplicação (ou do histórico completo quando não houver nenhuma):
 

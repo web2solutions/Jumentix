@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "509aa1e8b1d2c7f49f9a35cfabe68829c01d3918",
+  "sourceCommit": "aa9e43f280eef4a624cf79964542513e80c4bf69",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -548,7 +548,7 @@
       "source": "apps/backend-template/src/interface/GUI/web/README.md"
     },
     "backend/src/interface/HTTP/RestAPI.ts": {
-      "sha256": "7ce5dd108218494735bca91e2d12aa1422bf6f287ef3649532c896ee56c90c32",
+      "sha256": "1d12f091e360e279568479e2bb2912a52d6ff6ff06e24a8697a6e5c41b24b339",
       "source": "apps/backend-template/src/interface/HTTP/RestAPI.ts"
     },
     "backend/src/interface/HTTP/adapters/adonis-js/AdonisJsServer.ts": {
@@ -556,7 +556,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/adonis-js/AdonisJsServer.ts"
     },
     "backend/src/interface/HTTP/adapters/adonis-js/adonis-js.ts": {
-      "sha256": "192ae1f946a9b0589782da7f96c4aefde5d6e3103b128b8af1b738d2c5a58471",
+      "sha256": "b06c39ee524cf86e499fb8edeed5f60e8ea1eca67b394d4216104b71d5867a3e",
       "source": "apps/backend-template/src/interface/HTTP/adapters/adonis-js/adonis-js.ts"
     },
     "backend/src/interface/HTTP/adapters/adonis-js/handlers/infraHandlers.ts": {
@@ -588,7 +588,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/derby-js/DerbyJsServer.ts"
     },
     "backend/src/interface/HTTP/adapters/derby-js/derby-js.ts": {
-      "sha256": "79ce64d1749326ef05eb95fb9ab60612b3f27c356013d652590d7bbd7c0190e4",
+      "sha256": "a9fda2d6b00dde1608ebaff337f52cf2db1c8ba459cb294edd1ab5c6e7542b0b",
       "source": "apps/backend-template/src/interface/HTTP/adapters/derby-js/derby-js.ts"
     },
     "backend/src/interface/HTTP/adapters/derby-js/handlers/infraHandlers.ts": {
@@ -600,11 +600,11 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/derby-js/responses/sendErrorResponse.ts"
     },
     "backend/src/interface/HTTP/adapters/express/ExpressServer.ts": {
-      "sha256": "531bd88a3c2fc7391f8d8bcc07511e3101a9497353b96c4b1ad70379354014b9",
+      "sha256": "40685dabc4e585b2de05ab2f4fb0fbbdd4b92a3188e64f379048d1f6d757990d",
       "source": "apps/backend-template/src/interface/HTTP/adapters/express/ExpressServer.ts"
     },
     "backend/src/interface/HTTP/adapters/express/express.ts": {
-      "sha256": "89a3fa248cf49fd1998b047bf21dc9b6c083766c96c9e1ec8a6fb5b568a0c7e4",
+      "sha256": "b611c50480f0d033afd43b63449edfa3710509a2df5705661506680e9bbf4124",
       "source": "apps/backend-template/src/interface/HTTP/adapters/express/express.ts"
     },
     "backend/src/interface/HTTP/adapters/express/handlers/apiDocGetHandlerFactory.ts": {
@@ -628,11 +628,11 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/express/responses/sendErrorResponse.ts"
     },
     "backend/src/interface/HTTP/adapters/fastify/FastifyServer.ts": {
-      "sha256": "130c41aba1fc880a60e1940f66345560ff585de1c3e7628430959f9858568cb9",
+      "sha256": "f375bbb5c9d80b743bc6805e28f19da0407cd28319d824681eaffe15ec5aecd4",
       "source": "apps/backend-template/src/interface/HTTP/adapters/fastify/FastifyServer.ts"
     },
     "backend/src/interface/HTTP/adapters/fastify/fastify.ts": {
-      "sha256": "f6a761dca3b11ebf8d717223a966a92d90be1513ee2062ae78e993e2e50606df",
+      "sha256": "2ce1572853ba78c73223bb67020f0e5f96ea8b8b22a2ca67d612b1eb1858c109",
       "source": "apps/backend-template/src/interface/HTTP/adapters/fastify/fastify.ts"
     },
     "backend/src/interface/HTTP/adapters/fastify/handlers/apiDocGetHandlerFactory.ts": {
@@ -660,7 +660,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/feathers/FeathersServer.ts"
     },
     "backend/src/interface/HTTP/adapters/feathers/feathers.ts": {
-      "sha256": "9da71c2fdd7cbca11d89730ee39a2ef3a2db2f966e1997fa5d4bb0eb223b2eb6",
+      "sha256": "c9bafbbf20edec1acf16bd5855814a7d40a5b29d45175347768222a8a6e803f6",
       "source": "apps/backend-template/src/interface/HTTP/adapters/feathers/feathers.ts"
     },
     "backend/src/interface/HTTP/adapters/feathers/handlers/infraHandlers.ts": {
@@ -672,7 +672,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/feathers/responses/sendErrorResponse.ts"
     },
     "backend/src/interface/HTTP/adapters/loopback/LoopBackServer.ts": {
-      "sha256": "355a0f5440484950314b605b41374253cf852d982a7a2e5805c40e7c5a10a4e1",
+      "sha256": "8aa279cfbbb81a3465d921bd1d161c3c362021c8932ebdd1ef465089610c403d",
       "source": "apps/backend-template/src/interface/HTTP/adapters/loopback/LoopBackServer.ts"
     },
     "backend/src/interface/HTTP/adapters/loopback/handlers/infraHandlers.ts": {
@@ -680,7 +680,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/loopback/handlers/infraHandlers.ts"
     },
     "backend/src/interface/HTTP/adapters/loopback/loopback.ts": {
-      "sha256": "4f62ced6ea0658885767edd8072eedc3890d33b2752778986edb87b11d39abae",
+      "sha256": "60619f200231d2c43a7d6e8ff9e8c9c4a868af68156e0ce61d65d36998102e96",
       "source": "apps/backend-template/src/interface/HTTP/adapters/loopback/loopback.ts"
     },
     "backend/src/interface/HTTP/adapters/loopback/responses/sendErrorResponse.ts": {
@@ -688,7 +688,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/loopback/responses/sendErrorResponse.ts"
     },
     "backend/src/interface/HTTP/adapters/restify/RestifyServer.ts": {
-      "sha256": "e7ea22c1c3d192d522179270ab82eb3499369ecfef91e4c0a9b9955e992c83cf",
+      "sha256": "79cfc4f3ac9b4357c09bd36de76d8b820e4b4bba1aa4cefc0cf999d51e7e7836",
       "source": "apps/backend-template/src/interface/HTTP/adapters/restify/RestifyServer.ts"
     },
     "backend/src/interface/HTTP/adapters/restify/handlers/apiDocGetHandlerFactory.ts": {
@@ -788,7 +788,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/restify/responses/sendErrorResponse.ts"
     },
     "backend/src/interface/HTTP/adapters/restify/restify.ts": {
-      "sha256": "82f56ffc0208ee4c7a105c4e6c42df0c2bd6bf66d82b13343d0e2c71a675e56a",
+      "sha256": "9e0673c29b047889a21c996e426ab94119f7952e9ade270f6893f9c2e2f3a579",
       "source": "apps/backend-template/src/interface/HTTP/adapters/restify/restify.ts"
     },
     "backend/src/interface/HTTP/adapters/sails-js/SailsJsServer.ts": {
@@ -804,11 +804,11 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/sails-js/responses/sendErrorResponse.ts"
     },
     "backend/src/interface/HTTP/adapters/sails-js/sails-js.ts": {
-      "sha256": "eb0cdeb81667b4342ebfe8fd7f7307ab2b1e5a3e77377303fd94b9b817604004",
+      "sha256": "6c2c08bad0075ad3c846c87bb7321c6e438435a097df283e9fe2b9e87677697a",
       "source": "apps/backend-template/src/interface/HTTP/adapters/sails-js/sails-js.ts"
     },
     "backend/src/interface/HTTP/adapters/start-rest-api.ts": {
-      "sha256": "1427d093c48db0e3931446be9b04e41854b88ac4dc29d8db526ab7330c757578",
+      "sha256": "ed81ac574ce620a584476746a424dd7c3c3a1b642d07dcfcd0ad79658a6d745d",
       "source": "apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts"
     },
     "backend/src/interface/HTTP/adapters/total-js/TotalJsServer.ts": {
@@ -824,7 +824,7 @@
       "source": "apps/backend-template/src/interface/HTTP/adapters/total-js/responses/sendErrorResponse.ts"
     },
     "backend/src/interface/HTTP/adapters/total-js/total-js.ts": {
-      "sha256": "833d6b08203d27af0e59c0b507b30b43c4b3d698b00f4791bc36c5ac8d834412",
+      "sha256": "dd7b6e26a0592154a2271243dbecdbfee0e3ea38d3c37f92496288223b286111",
       "source": "apps/backend-template/src/interface/HTTP/adapters/total-js/total-js.ts"
     },
     "backend/src/interface/HTTP/adapters/vercel-functions/responses/sendErrorResponse.ts": {
@@ -924,7 +924,7 @@
       "source": "apps/backend-template/src/interface/HTTP/validators/validateRequestParams.ts"
     },
     "backend/src/interface/WebSocket/WebSocketAPI.ts": {
-      "sha256": "cb30c034e1d0ebe49d08965b52125a60f3a316d430f2f39f00c6add6d92c5a60",
+      "sha256": "a6f4f945df7c7758a01adec4e60ef7aa9d78808447d5d20faf5cbc5a6005ba1d",
       "source": "apps/backend-template/src/interface/WebSocket/WebSocketAPI.ts"
     },
     "backend/src/interface/WebSocket/adapters/socket-io/clusterAdapter.ts": {
@@ -936,19 +936,19 @@
       "source": "apps/backend-template/src/interface/WebSocket/adapters/socket-io/redisStreamsAdapter.ts"
     },
     "backend/src/interface/WebSocket/adapters/socket-io/socket-io.ts": {
-      "sha256": "1ab85be7ce0b98e1c2ff71eaefc79eb423af32244f9654d3db98a55b9e637cc2",
+      "sha256": "8a42c855dc04c85002527753bda2f6a88b0a27c888193ad48890f8e3a4d01481",
       "source": "apps/backend-template/src/interface/WebSocket/adapters/socket-io/socket-io.ts"
     },
     "backend/src/interface/WebSocket/adapters/start-websocket-api.ts": {
-      "sha256": "37bc1ddd4bc562832fad66754de9ea5c9d733ff36f138d4341358b1db1504326",
+      "sha256": "d96c0a286097de993f6ce8781ce9c55eb914dfc5b46582e890c6a9785969ad4e",
       "source": "apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts"
     },
     "backend/src/interface/gRPC/adapters/grpc/grpc.ts": {
-      "sha256": "b2dda7645ab01ed440afc718386d8e0991c3ae98835a390526e51d7de314b1f6",
+      "sha256": "f4ecf61579f3badd5f6714e127f39620da6d717fe008ae74816b6c596aa61819",
       "source": "apps/backend-template/src/interface/gRPC/adapters/grpc/grpc.ts"
     },
     "backend/src/interface/gRPC/adapters/start-grpc-api.ts": {
-      "sha256": "7b8b23a2a591d0f2fcb43c74b617b69899059449dd1981d9e34372ef3632b19d",
+      "sha256": "610c80498c9e170f87f324774f9118bf4a5ff063ddb50de6b1af27bfb3e4c06d",
       "source": "apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts"
     },
     "backend/src/interface/gRPC/gRPCAPI.ts": {
@@ -1740,7 +1740,7 @@
       "source": "apps/backend-template/src/modules/Users/interface/restapi/frameworks/aws/lambda/handlers/register.ts"
     },
     "backend/src/modules/Users/interface/restapi/frameworks/aws/lambda/handlers/runtime.ts": {
-      "sha256": "7b091ac7338127b13073581bc89ef8f6c194addd3ac5867f7e79bcffe095a634",
+      "sha256": "0206dbcfd2c428bc039ba7263b3de58b9c0f40184e19d65cf60240a5712c4eec",
       "source": "apps/backend-template/src/modules/Users/interface/restapi/frameworks/aws/lambda/handlers/runtime.ts"
     },
     "backend/src/modules/Users/interface/restapi/frameworks/aws/lambda/handlers/update.ts": {
@@ -3764,7 +3764,7 @@
       "source": "apps/frontend/public/ms-icon-70x70.png"
     },
     "frontend/public/sw.js": {
-      "sha256": "d80c59637f3f79e94286dc778622af999cde5612d8d166de3e7386cb5c66e476",
+      "sha256": "747b745e44cfba34fe039999b2f815ecab3f9252da56593f2d84fb9cd6fc7bae",
       "source": "apps/frontend/public/sw.js"
     },
     "frontend/scripts/check-coverage.js": {
@@ -3960,7 +3960,7 @@
       "source": "apps/frontend/src/contracts/relationLabels.ts"
     },
     "frontend/src/contracts/sessionGuard.ts": {
-      "sha256": "f7cb106fa9b4ab7e8cf520f88bcf02b87820e987fcd28676391f328ba7df318f",
+      "sha256": "46af2f3309027a3a04faa9d9b5b9ae2d86776000ab31ee5aaa4ecaeef93ac7df",
       "source": "apps/frontend/src/contracts/sessionGuard.ts"
     },
     "frontend/src/contracts/sharedContractsBrowserShim.ts": {

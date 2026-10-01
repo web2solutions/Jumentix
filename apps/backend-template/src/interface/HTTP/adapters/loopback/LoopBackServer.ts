@@ -123,7 +123,7 @@ class LoopBackServer extends HTTPBaseServer<any> {
     const method = handlerFactory.method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete';
     this.router[method](handlerFactory.path, (req: any, res: any) => {
       const store = new Map();
-      RequestContext.run(store, () => {
+      Promise.resolve(RequestContext.run(store, () => {
         store.set('correlationId', createUuid());
         store.set('timeStart', +new Date());
         store.set('request', req);
@@ -132,7 +132,7 @@ class LoopBackServer extends HTTPBaseServer<any> {
           .catch(() => {
             if (!res.headersSent) res.status(500).json({ message: '' });
           });
-      });
+      })).catch(() => undefined);
     });
   }
 

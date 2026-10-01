@@ -163,7 +163,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
     if (!this.started) return;
 
     if (this.io) {
-      this.io.close();
+      Promise.resolve(this.io.close()).catch(() => undefined);
       this.io = undefined;
     }
 

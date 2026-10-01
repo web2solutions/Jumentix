@@ -91,7 +91,7 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`An error occurred: ${JSON.stringify(error)}`);
-      this.stop();
+      this.stop().catch(() => undefined);
       throw error;
     }
   }
