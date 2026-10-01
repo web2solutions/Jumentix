@@ -132,6 +132,8 @@ const ACCEPTED_RISK = {
   'GHSA-j6r3-76f7-8jcv': { until: '2026-10-31', reason: 'ip-address cross-family isInSubnet allowlist bypass inherited transitively; awaiting upstream' },
   'GHSA-q2hr-2g5m-vwhr': { until: '2026-10-31', reason: 'brace-expansion quadratic rewrite CPU DoS inherited transitively; Bun cannot override nested edges yet' },
   'GHSA-hrr3-gc8f-f4qj': { until: '2026-10-31', reason: 'fast-uri percent-encoded host case normalization via Ajv/fastify; awaiting upstream' },
+  // 2026-10-01: OSV wave blocking branch-gate on JUM-914 remaining S9383 PR.
+  'GHSA-c475-qrg2-pj4r': { until: '2026-10-31', reason: 'basic-ftp RE_LINE DoS inherited via get-uri; fixed only on 6.x which breaks get-uri^5; awaiting upstream' },
 };
 
 /**
