@@ -52,4 +52,8 @@ const API = new RestAPI<any>({
 (async () => {
   await API.start();
   await API.seedData();
-})();
+})().catch((error: unknown) => {
+  // eslint-disable-next-line no-console
+  console.error(error);
+  process.exitCode = 1;
+});

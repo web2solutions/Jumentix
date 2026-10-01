@@ -52,7 +52,7 @@ export const installSessionGuard = (router: Router): void => {
     // survive into the next login in the same tab (JUM-776 e2e finding).
     handleSdkEvent(event, () => { auth.expire(); profile.reset(); }, () => {
       if (router.currentRoute.value.meta.public !== true) {
-        router.push('/login');
+        router.push('/login').catch(() => undefined);
       }
     });
   });

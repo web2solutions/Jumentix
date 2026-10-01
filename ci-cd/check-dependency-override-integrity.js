@@ -82,6 +82,12 @@ const REQUIRED_OVERRIDES = {
   // resolutions pin; 5.29.0 is the latest 5.x and carries HIGH WebSocket GHSAs.
   // Flat override lifts it to the already-resolved 6.28.0 line.
   undici: '^6.28.0',
+  // Raised on 2026-09-30: GHSA-667r / GHSA-9q9j / GHSA-hwr6 / GHSA-p68q are
+  // fixed in fastify >=5.12.2; nested 5.10.0 / 5.12.0 copies were still fatal.
+  fastify: '^5.12.5',
+  // Raised on 2026-09-30: GHSA-hxh3-vqpv-xpqv (hono/jsx unescaped boundary XSS)
+  // fixed on current 4.13 line; nested 4.12.32 / 4.13.2 copies were still warning.
+  hono: '^4.13.12',
 };
 
 /** Resolutions that must survive alongside the overrides. */
