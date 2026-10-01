@@ -89,5 +89,9 @@ export async function startWebSocketAdapter(): Promise<void> {
 
 /* istanbul ignore if */
 if (require.main === module) {
-  startWebSocketAdapter();
+  startWebSocketAdapter().catch((error: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    process.exitCode = 1;
+  });
 }

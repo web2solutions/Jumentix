@@ -450,7 +450,13 @@ async function run(options = {}) {
 if (isEntryPoint(module)) {
   // Awaited, not fire-and-forget: an unawaited promise would let the process
   // exit 0 before the membership lookup resolved.
-  run().then((code) => { process.exitCode = code; });
+  run().then(
+    (code) => { process.exitCode = code; },
+    (error) => {
+      console.error(error);
+      process.exitCode = 1;
+    }
+  );
 }
 
 module.exports = {

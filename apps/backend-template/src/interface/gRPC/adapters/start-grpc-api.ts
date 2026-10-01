@@ -9,5 +9,9 @@ export async function startGrpcApiAdapter(env: NodeJS.ProcessEnv = process.env):
 
 /* istanbul ignore if */
 if (require.main === module) {
-  startGrpcApiAdapter();
+  startGrpcApiAdapter().catch((error: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    process.exitCode = 1;
+  });
 }
