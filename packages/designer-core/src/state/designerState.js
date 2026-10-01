@@ -834,7 +834,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
   function withPersist(action, options = {}) {
     if (options.recordHistory !== false) recordHistory();
     action();
-    saveState();
+    Promise.resolve(saveState()).catch(() => undefined);
   }
 
   function undo() {
@@ -842,7 +842,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     history.future.push(snapshotState());
     const previous = history.past.pop();
     applySnapshot(previous);
-    saveState();
+    Promise.resolve(saveState()).catch(() => undefined);
     render();
   }
 
@@ -851,7 +851,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     history.past.push(snapshotState());
     const next = history.future.pop();
     applySnapshot(next);
-    saveState();
+    Promise.resolve(saveState()).catch(() => undefined);
     render();
   }
 
@@ -886,13 +886,13 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     const result = await store.load();
     if (result.status === 'empty') {
       seed();
-      saveState();
+      Promise.resolve(saveState()).catch(() => undefined);
       clearHistory();
       return { status: 'empty' };
     }
     if (result.status === 'lost' || result.status === 'unavailable') {
       seed();
-      if (result.status === 'lost') saveState();
+      if (result.status === 'lost') Promise.resolve(saveState()).catch(() => undefined);
       state.view = createDefaultView();
       clearHistory();
       return { status: result.status, reason: result.reason };
@@ -915,7 +915,7 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       return { status: 'ok' };
     } catch (error) {
       seed();
-      saveState();
+      Promise.resolve(saveState()).catch(() => undefined);
       state.view = createDefaultView();
       clearHistory();
       return { status: 'recovered', reason: String((error && error.message) || error) };
