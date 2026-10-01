@@ -26,6 +26,11 @@ Two annotated tag families, both created by CI — never from a developer machin
 | Application | `v<appLockedVersion>` (e.g. `v0.0.3`) | After each successful version bump on `main` | GitHub Actions `app-release.yml` → `bun ci-cd/create-app-release-tag.js --github-api` |
 | Package | `@jumentix/<pkg>@<version>` | After each successful `npm publish` | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
 
+Signed release commits that include rebuilt CLI templates must encode file
+contents as raw bytes → base64 (never utf8-decoded binaries). Otherwise PNG/ICO
+hash drift fails `cli:check-template-freshness` on the release PR and loops
+`create-app-release` (JUM-914).
+
 The next application version is computed by `ci-cd/lib/next-version.js` from commits
 since the last application tag (or full history when none exist):
 
