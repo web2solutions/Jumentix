@@ -134,6 +134,7 @@ const ACCEPTED_RISK = {
   'GHSA-hrr3-gc8f-f4qj': { until: '2026-10-31', reason: 'fast-uri percent-encoded host case normalization via Ajv/fastify; awaiting upstream' },
   // 2026-10-01: OSV wave blocking branch-gate on JUM-914 remaining S9383 PR.
   'GHSA-c475-qrg2-pj4r': { until: '2026-10-31', reason: 'basic-ftp RE_LINE DoS inherited via get-uri; fixed only on 6.x which breaks get-uri^5; awaiting upstream' },
+  'GHSA-vfj7-8cjw-p6xm': { until: '2026-10-31', reason: 'braces@3.0.3 stack-exhaustion DoS; no patched release yet (OSV last_affected 3.0.3); transitive via micromatch/chokidar' },
 };
 
 /**
