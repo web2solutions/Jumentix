@@ -1,0 +1,66 @@
+# JUM-917 / Req 070: production website must auto-deploy on every relevant
+# change to `main`. Vercel Git Integration owns the deploy; this workflow
+# fail-closes if the Vercel production commit status does not succeed.
+name: Website deploy verify
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/jumentix-website/**"
+      - "packages/*/docs/**"
+      - "packages/*/README.md"
+      - "packages/*/README.pt-BR.md"
+      - "packages/*/media/**"
+      - "documentation/**"
+  workflow_dispatch:
+
+concurrency:
+  group: website-deploy-verify-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  statuses: read
+
+jobs:
+  verify-production-deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Wait for Vercel production status on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          deadline=$((SECONDS + 1500))
+          while :; do
+            payload="$(gh api "repos/$REPO/commits/$SHA/status")"
+            state="$(jq -r '.state // "pending"' <<<"$payload")"
+            vercel="$(jq -r '
+              [.statuses[]? | select(.context == "Vercel")]
+              | if length == 0 then "missing"
+                else .[0].state end
+            ' <<<"$payload")"
+            echo "combined=$state vercel=$vercel"
+            case "$vercel" in
+              success)
+                echo "Vercel production/preview status succeeded for $SHA."
+                exit 0
+                ;;
+              failure|error)
+                echo "Vercel deployment failed for $SHA." >&2
+                jq -r '.statuses[]? | select(.context == "Vercel") | .description, .target_url' <<<"$payload" >&2
+                exit 1
+                ;;
+            esac
+            if [ "$SECONDS" -gt "$deadline" ]; then
+              echo "Timed out waiting for Vercel status on $SHA (last vercel=$vercel)." >&2
+              exit 1
+            fi
+            sleep 20
+          done

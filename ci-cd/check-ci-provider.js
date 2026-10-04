@@ -1,4 +1,4 @@
-/* eslint-disable no-console -- CLI script prints results to stdout/stderr */
+/* eslint-disable no-console -- CLI provider check: stdout/stderr is its report channel. */
 /** Requirement 113 — public open-source CI provider contract. */
 
 const fs = require('node:fs');
@@ -119,6 +119,7 @@ if (!fs.existsSync(workflowPath)) {
     /JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
     /JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/,
     /startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)/,
+    /startsWith\(github\.head_ref, 'chore\/package-bump-'\)/,
     /startsWith\(github\.head_ref, 'chore\/release-v'\)/,
     /website:storybook:build/,
     /website:storybook:smoke/,
@@ -192,10 +193,10 @@ if (!fs.existsSync(workflowPath)) {
   }
 
   const heavyContextGuard =
-    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   // Coverage (Codecov + Sonar) must also run on pushes to `dev`.
   const coverageContextGuard =
-    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   for (const job of [
     'workspace-builds',
     'workspace-tests',
@@ -350,6 +351,52 @@ if (!fs.existsSync(appReleaseWorkflowPath)) {
   ]) {
     if (!marker.test(appReleaseContents)) {
       failures.push(`.github/workflows/app-release.yml is missing ${String(marker)}`);
+    }
+  }
+}
+
+const packageContentBumpWorkflowPath = path.join(
+  root,
+  '.github',
+  'workflows',
+  'package-content-bump.yml'
+);
+const websiteDeployVerifyWorkflowPath = path.join(
+  root,
+  '.github',
+  'workflows',
+  'website-deploy-verify.yml'
+);
+
+if (!fs.existsSync(packageContentBumpWorkflowPath)) {
+  failures.push('Missing required always-on workflow: .github/workflows/package-content-bump.yml');
+} else {
+  const contents = fs.readFileSync(packageContentBumpWorkflowPath, 'utf8');
+  for (const marker of [
+    /name:\s*Package content bump/,
+    /plan-package-content-bumps\.js/,
+    /chore\/package-bump-/,
+    /timeout-minutes:\s*120/,
+    /group:\s*package-content-bump-main/
+  ]) {
+    if (!marker.test(contents)) {
+      failures.push(`.github/workflows/package-content-bump.yml is missing ${String(marker)}`);
+    }
+  }
+}
+
+if (!fs.existsSync(websiteDeployVerifyWorkflowPath)) {
+  failures.push('Missing required always-on workflow: .github/workflows/website-deploy-verify.yml');
+} else {
+  const contents = fs.readFileSync(websiteDeployVerifyWorkflowPath, 'utf8');
+  for (const marker of [
+    /name:\s*Website deploy verify/,
+    /Wait for Vercel production status/,
+    /context == "Vercel"/,
+    /group:\s*website-deploy-verify-main/
+  ]) {
+    if (!marker.test(contents)) {
+      failures.push(`.github/workflows/website-deploy-verify.yml is missing ${String(marker)}`);
     }
   }
 }
@@ -636,11 +683,11 @@ if (failures.length > 0) {
   console.error('CI provider check failed (Requirement 113):\n');
   failures.forEach((failure) => console.error(`- ${failure}`));
   process.exitCode = 1;
-} else {
-  console.log(
-    'CI provider check passed: CircleCI is the canonical orchestrator (branch gate, browser matrix, full ' +
-      'promotion matrix, coverage, website, third-party review, Codecov/Sonar publishing, nightly schedule); ' +
-      'GitHub Actions retains the same surface disabled-by-default behind JUMENTIX_ENABLE_GITHUB_ACTIONS_CI, ' +
-      'with pr-feedback, sync-changelog, app-release, and npm-publish always-on.'
-  );
 }
+
+console.log(
+  'CI provider check passed: CircleCI is the canonical orchestrator (branch gate, browser matrix, full ' +
+    'promotion matrix, coverage, website, third-party review, Codecov/Sonar publishing, nightly schedule); ' +
+    'GitHub Actions retains the same surface disabled-by-default behind JUMENTIX_ENABLE_GITHUB_ACTIONS_CI, ' +
+    'with pr-feedback, sync-changelog, app-release, and npm-publish always-on.'
+);

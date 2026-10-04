@@ -12,11 +12,23 @@ const axeConfig = {
   }
 };
 
+// jest-axe refuses overlapping runs; under load the 5s default timeout leaves a
+// previous axe call active and every following case fails with
+// "Axe is already running" (JUM-917 push flake).
+let axeGate: Promise<void> = Promise.resolve();
+
 describe('Commercial pages a11y', () => {
   const testA11y = async (component: React.ReactElement) => {
-    const { container } = render(component);
-    const results = await axe(container, axeConfig);
-    expect(results).toHaveNoViolations();
+    const run = axeGate.then(async () => {
+      const { container } = render(component);
+      const results = await axe(container, axeConfig);
+      expect(results).toHaveNoViolations();
+    });
+    axeGate = run.then(
+      () => undefined,
+      () => undefined
+    );
+    await run;
   };
 
   const pages: Parameters<typeof CommercialPage>[0]['page'][] = [
@@ -36,12 +48,12 @@ describe('Commercial pages a11y', () => {
     it(`has no a11y violations (EN)`, async () => {
       expect.hasAssertions();
       await testA11y(<CommercialPage locale="en" page={page} />);
-    });
+    }, 15000);
 
     it(`has no a11y violations (PT-BR)`, async () => {
       expect.hasAssertions();
       await testA11y(<CommercialPage locale="pt-BR" page={page} />);
-    });
+    }, 15000);
   });
 
   describe('CommercialUseCasePage', () => {
@@ -57,12 +69,12 @@ describe('Commercial pages a11y', () => {
       it(`has no a11y violations (EN)`, async () => {
         expect.hasAssertions();
         await testA11y(<CommercialUseCasePage locale="en" name={name} />);
-      });
+      }, 15000);
 
       it(`has no a11y violations (PT-BR)`, async () => {
         expect.hasAssertions();
         await testA11y(<CommercialUseCasePage locale="pt-BR" name={name} />);
-      });
+      }, 15000);
     });
   });
 });

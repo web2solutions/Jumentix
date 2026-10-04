@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Cana performance ladder</title>
+  <desc id="desc">A visual comparison of measured Cana operation times from primary key lookup through bulk insertion.</desc>
+  <rect width="1200" height="560" rx="24" fill="#ffffff"/>
+  <text x="64" y="58" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30" font-weight="700" fill="#0f172a">Measured reference, in one glance</text>
+  <text x="64" y="92" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16" fill="#475569">Median local run on 2026-08-12 with Headless Chrome 151. Bars use a log scale so small reads stay visible.</text>
+
+  <g font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="15">
+    <text x="64" y="150" fill="#0f172a" font-weight="700">Primary-key get, 1k/10k rows</text>
+    <rect x="350" y="130" width="40" height="28" rx="6" fill="#22c55e"/>
+    <text x="410" y="150" fill="#334155">0.2 ms</text>
+
+    <text x="64" y="200" fill="#0f172a" font-weight="700">Limited query, 10k rows, limit 10</text>
+    <rect x="350" y="180" width="58" height="28" rx="6" fill="#38bdf8"/>
+    <text x="428" y="200" fill="#334155">0.5 ms</text>
+
+    <text x="64" y="250" fill="#0f172a" font-weight="700">Indexed lookup, 10k rows</text>
+    <rect x="350" y="230" width="82" height="28" rx="6" fill="#6366f1"/>
+    <text x="452" y="250" fill="#334155">1.4 ms</text>
+
+    <text x="64" y="300" fill="#0f172a" font-weight="700">Native count, 10k rows</text>
+    <rect x="350" y="280" width="112" height="28" rx="6" fill="#a855f7"/>
+    <text x="482" y="300" fill="#334155">3.2 ms</text>
+
+    <text x="64" y="350" fill="#0f172a" font-weight="700">Deep page, offset 9000, limit 20</text>
+    <rect x="350" y="330" width="175" height="28" rx="6" fill="#f59e0b"/>
+    <text x="545" y="350" fill="#334155">13.8 ms</text>
+
+    <text x="64" y="400" fill="#0f172a" font-weight="700">Full read query, 10k rows</text>
+    <rect x="350" y="380" width="250" height="28" rx="6" fill="#ef4444"/>
+    <text x="620" y="400" fill="#334155">55.2 ms</text>
+
+    <text x="64" y="450" fill="#0f172a" font-weight="700">bulkAdd, writes 10k rows</text>
+    <rect x="350" y="430" width="600" height="28" rx="6" fill="#0f172a"/>
+    <text x="970" y="450" fill="#334155">1117.5 ms</text>
+  </g>
+
+  <line x1="350" y1="490" x2="950" y2="490" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="350" y="522" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#64748b">cursor-bound reads</text>
+  <text x="820" y="522" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#64748b">intentional full write</text>
+</svg>

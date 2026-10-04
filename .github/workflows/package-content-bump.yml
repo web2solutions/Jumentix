@@ -1,0 +1,142 @@
+# JUM-917 / Req 070: when package content changes on main without a version
+# bump, open a signed PR that patch-bumps the affected packages so the existing
+# npm-publish path ships the new surface (docs, media, README, dist, …).
+name: Package content bump
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/**"
+  workflow_dispatch:
+
+concurrency:
+  group: package-content-bump-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan-and-open-pr:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: secrets
+    permissions:
+      contents: write
+      pull-requests: write
+    timeout-minutes: 120
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Install Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
+          bash /tmp/bun-install.sh "bun-v1.3.13"
+          test -x "$HOME/.bun/bin/bun"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - name: Plan package content bumps
+        id: plan
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_CI_CD }}
+        run: |
+          set -euo pipefail
+          bun install --frozen-lockfile
+          plan="$(bun ci-cd/plan-package-content-bumps.js)"
+          echo "$plan"
+          count="$(jq '.bumps | length' <<<"$plan")"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "$plan" > /tmp/package-bumps.json
+          if [ "$count" = "0" ]; then
+            echo "No package content bumps required."
+          fi
+      - name: Open signed bump PR
+        if: steps.plan.outputs.count != '0'
+        env:
+          CHANGELOG_GH_TOKEN: ${{ secrets.CHANGELOG_GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CHANGELOG_GH_TOKEN:-}" ]; then
+            echo "Secret CHANGELOG_GH_TOKEN is not configured." >&2
+            exit 1
+          fi
+          export GH_TOKEN="$CHANGELOG_GH_TOKEN"
+          git fetch origin main
+          git merge --ff-only origin/main
+          bun ci-cd/plan-package-content-bumps.js --apply --from /tmp/package-bumps.json
+          branch="chore/package-bump-${GITHUB_SHA:0:8}"
+          git push origin "HEAD:refs/heads/$branch"
+          mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
+          changed+=("packages/cli-init/templates.manifest.json")
+          additions='[]'
+          for pkg_path in "${changed[@]}"; do
+            contents="$(base64 -w 0 "$pkg_path")"
+            additions="$(jq -nc --argjson acc "$additions" --arg path "$pkg_path" --arg contents "$contents" \
+              '$acc + [{path: $path, contents: $contents}]')"
+          done
+          mutation='mutation CreatePackageBumpCommit($input: CreateCommitOnBranchInput!) {
+            createCommitOnBranch(input: $input) {
+              commit { oid }
+            }
+          }'
+          headline="chore(release): bump packages with unpublished content changes"
+          mutation_result="$(jq -nc \
+            --arg query "$mutation" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg branch "$branch" \
+            --arg expectedHeadOid "$GITHUB_SHA" \
+            --arg headline "$headline" \
+            --argjson additions "$additions" \
+            '{query: $query, variables: {input: {
+              branch: {repositoryNameWithOwner: $repository, branchName: $branch},
+              expectedHeadOid: $expectedHeadOid,
+              message: {headline: $headline},
+              fileChanges: {additions: $additions}
+          }}}' | gh api graphql --input -)"
+          commit_oid="$(jq -r '.data.createCommitOnBranch.commit.oid // empty' <<<"$mutation_result")"
+          verified="$(gh api "repos/$GITHUB_REPOSITORY/commits/$commit_oid" --jq '.commit.verification.verified // false')"
+          if [ -z "$commit_oid" ] || [ "$verified" != "true" ]; then
+            echo "Package bump commit was not verified." >&2
+            echo "$mutation_result" >&2
+            exit 1
+          fi
+          gh pr list --base main --state open --json number,headRefName --jq \
+            '.[] | select(.headRefName | test("^chore/package-bump-[0-9a-f]{8}$")) | .number' | \
+            while read -r prior_pr; do
+              gh pr close "$prior_pr" --delete-branch || true
+            done
+          body="$(jq -r '
+            "Automated patch bumps for public packages whose published surface changed on `main` while the declared version was already on npm (JUM-917 / Req 070).\n\n"
+            + "## Bumps\n\n"
+            + (.bumps | map("- `\(.name)`: `\(.from)` → `\(.to)` (\(.reason))") | join("\n"))
+            + "\n\nAfter merge, `app-release.yml` → `npm-publish.yml` publishes the new versions."
+          ' /tmp/package-bumps.json)"
+          pr_url="$(gh pr create --base main --head "$branch" \
+            --title "chore(release): bump packages with unpublished content changes" \
+            --body "$body")"
+          echo "Opened $pr_url"
+          deadline=$((SECONDS + 5400))
+          while :; do
+            state="$(gh pr view "$pr_url" --json mergeStateStatus --jq .mergeStateStatus)"
+            case "$state" in
+              CLEAN|UNSTABLE|HAS_HOOKS) break ;;
+              BLOCKED|UNKNOWN)
+                if [ "$SECONDS" -gt "$deadline" ]; then
+                  echo "Required checks did not pass within 90m on $pr_url (last state: $state)." >&2
+                  exit 1
+                fi
+                sleep 30
+                ;;
+              *)
+                echo "Unexpected merge state '$state' on $pr_url." >&2
+                exit 1
+                ;;
+            esac
+          done
+          gh pr merge "$pr_url" --squash --delete-branch
