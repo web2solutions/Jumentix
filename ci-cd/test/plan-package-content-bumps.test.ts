@@ -1,6 +1,7 @@
 const {
   applyPackageContentBumps,
   bumpPatch,
+  peelRemoteTagSha,
   planPackageContentBumps,
   publishedPaths
 } = require('../plan-package-content-bumps');
@@ -10,6 +11,21 @@ describe('plan-package-content-bumps', () => {
     expect.hasAssertions();
     expect(bumpPatch('0.1.0')).toBe('0.1.1');
     expect(bumpPatch('1.2.9')).toBe('1.2.10');
+  });
+
+  it('peels annotated tag object SHAs from ls-remote output', () => {
+    expect.hasAssertions();
+    const tag = '@jumentix/cana@0.1.0';
+    const annotated = [
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\trefs/tags/@jumentix/cana@0.1.0',
+      'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\trefs/tags/@jumentix/cana@0.1.0^{}'
+    ].join('\n');
+    expect(peelRemoteTagSha(annotated, tag)).toBe('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+    expect(peelRemoteTagSha(
+      'cccccccccccccccccccccccccccccccccccccccc\trefs/tags/@jumentix/cana@0.1.0',
+      tag
+    )).toBe('cccccccccccccccccccccccccccccccccccccccc');
+    expect(peelRemoteTagSha('', tag)).toBe('');
   });
 
   it('watches package.json, README, and every files entry', () => {

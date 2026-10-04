@@ -65,19 +65,45 @@ function tagExists(tagName) {
   return Boolean(remote && remote.includes(tagName));
 }
 
+/**
+ * Parse `git ls-remote --tags` output into the peeled commit SHA for a tag.
+ * Annotated tags emit both `<tag-object> refs/tags/name` and
+ * `<commit> refs/tags/name^{}`; prefer the peeled line so diffs never use the
+ * annotated tag object as a commit base.
+ */
+function peelRemoteTagSha(lsRemoteOutput, tagName) {
+  const lines = String(lsRemoteOutput || '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const peeled = `refs/tags/${tagName}^{}`;
+  const exact = `refs/tags/${tagName}`;
+  for (const line of lines) {
+    const [sha, ref] = line.split(/\s+/);
+    if (sha && ref === peeled) return sha;
+  }
+  for (const line of lines) {
+    const [sha, ref] = line.split(/\s+/);
+    if (sha && ref === exact) return sha;
+  }
+  return '';
+}
+
 function resolveTagCommit(tagName) {
   const local = runGit(['rev-parse', '--verify', `${tagName}^{commit}`], { allowFailure: true });
   if (local) return local;
 
+  // Fetch the tag by ref name so annotated tags materialize and peel correctly.
+  runGit(['fetch', '--no-tags', 'origin', `refs/tags/${tagName}:refs/tags/${tagName}`], {
+    allowFailure: true
+  });
+  const afterFetch = runGit(['rev-parse', '--verify', `${tagName}^{commit}`], { allowFailure: true });
+  if (afterFetch) return afterFetch;
+
   const remote = runGit(['ls-remote', '--tags', 'origin', `refs/tags/${tagName}`], {
     allowFailure: true
   });
-  const sha = String(remote || '').split(/\s+/)[0];
-  if (!sha) return '';
-
-  // Materialize the remote tag locally so subsequent diffs use a real object.
-  runGit(['fetch', '--no-tags', 'origin', `${sha}:refs/tags/${tagName}`], { allowFailure: true });
-  return runGit(['rev-parse', '--verify', `${tagName}^{commit}`], { allowFailure: true }) || sha;
+  return peelRemoteTagSha(remote, tagName);
 }
 
 function contentChangedSinceTag(tagName, watchPaths) {
@@ -87,10 +113,13 @@ function contentChangedSinceTag(tagName, watchPaths) {
     // bump can republish. Caller decides via versionPublished.
     return true;
   }
-  const diff = runGit(['diff', '--name-only', `${base}...HEAD`, '--', ...watchPaths], {
-    allowFailure: true
-  });
-  return Boolean(diff);
+  try {
+    const diff = runGit(['diff', '--name-only', `${base}...HEAD`, '--', ...watchPaths]);
+    return Boolean(diff);
+  } catch {
+    // Fail open toward a bump when the base is unusable (e.g. tag object SHA).
+    return true;
+  }
 }
 
 function planPackageContentBumps(options = {}) {
@@ -192,6 +221,7 @@ module.exports = {
   applyPackageContentBumps,
   bumpPatch,
   contentChangedSinceTag,
+  peelRemoteTagSha,
   planPackageContentBumps,
   publishedPaths,
   readBumpPlan,
