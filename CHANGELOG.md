@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.3.3 - 2026-10-04
+
+- 2026-10-04 chore(release): v0.3.3 (#604) - Eduardo A.
 - 2026-10-04 [JUM-916][Release] Promote framework-agnostic Cana docs to main (#601) - Eduardo A.
 - 2026-10-04 [JUM-916][Fix] Reload vanilla seed maps and auto-exempt Vercel feedback (#602) - Eduardo A.
 - 2026-10-04 fix(cana): reload vanilla seed maps before first paint - Eduardo A.
