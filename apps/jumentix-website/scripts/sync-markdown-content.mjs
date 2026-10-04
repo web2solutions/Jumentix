@@ -642,6 +642,9 @@ async function writeNavigation(locale, records) {
       const packageTitles = {
         cana: '@jumentix/cana',
         usage: locale === 'pt-BR' ? 'Guia de uso' : 'Usage guide',
+        'any-framework':
+          locale === 'pt-BR' ? 'Integrar com qualquer framework' : 'Integrate with any framework',
+        'vanilla-typescript': locale === 'pt-BR' ? 'Vanilla TypeScript' : 'Vanilla TypeScript',
         'designer-core': '@jumentix/designer-core',
         'key-value-storage': '@jumentix/key-value-storage',
         'mutex-service': '@jumentix/mutex-service',
@@ -667,7 +670,15 @@ async function writeNavigation(locale, records) {
         }))
       ];
       if (section === 'packages/cana') {
-        const order = ['index', 'usage', 'react-context', 'react-redux', 'vue-pinia'];
+        const order = [
+          'index',
+          'usage',
+          'any-framework',
+          'vanilla-typescript',
+          'react-context',
+          'react-redux',
+          'vue-pinia'
+        ];
         metaEntries.sort((a, b) => {
           const aIndex = order.indexOf(a.slug);
           const bIndex = order.indexOf(b.slug);

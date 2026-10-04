@@ -138,17 +138,17 @@ medido, e não apenas nos que permitem a API conveniente.
 Verificado por `packages/cana/test/packaging.test.ts`, que
 constrói o pacote e carrega o artefato em vez do alias do workspace.
 
-| Item                                                     | Estado                                      |
-| -------------------------------------------------------- | ------------------------------------------- |
-| `main` → `dist/index.js` (CommonJS)                      | sim                                         |
-| `module` / `exports.import` → `dist/index.mjs` (ESM)     | sim                                         |
-| `types` → `dist/index.d.ts`, primeiro no mapa de exports | sim                                         |
-| `files` publica `dist`, README, LICENSE — não `src`      | sim                                         |
-| `LICENSE.md` presente e coerente com o MIT declarado     | sim                                         |
-| Dependências de runtime                                  | **nenhuma**                                 |
-| `sideEffects: false`                                     | sim                                         |
-| `prepublishOnly` limpa e depois constrói                 | sim                                         |
-| Construído com Bun (Req 096)                             | sim — `tsc` e depois `bun build` para o ESM |
+| Item                                                        | Estado                                      |
+| ----------------------------------------------------------- | ------------------------------------------- |
+| `main` → `dist/index.js` (CommonJS)                         | sim                                         |
+| `module` / `exports.import` → `dist/index.mjs` (ESM)        | sim                                         |
+| `types` → `dist/index.d.ts`, primeiro no mapa de exports    | sim                                         |
+| `files` publica `dist`, `docs`, README, LICENSE — não `src` | sim                                         |
+| `LICENSE.md` presente e coerente com o MIT declarado        | sim                                         |
+| Dependências de runtime                                     | **nenhuma**                                 |
+| `sideEffects: false`                                        | sim                                         |
+| `prepublishOnly` limpa e depois constrói                    | sim                                         |
+| Construído com Bun (Req 096)                                | sim — `tsc` e depois `bun build` para o ESM |
 
 O formato duplo não é otimização. O Cana é uma biblioteca de navegador, e um
 pacote só-CommonJS não pode ser carregado por um `import` nativo — a página de

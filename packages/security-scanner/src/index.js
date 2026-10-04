@@ -58,13 +58,6 @@ const NON_BLOCKING_SEVERITIES = new Set(['LOW', 'NONE', 'UNKNOWN']);
  * than permanent.
  */
 const ACCEPTED_RISK = {
-  'GHSA-vfj7-8cjw-p6xm': {
-    until: '2026-11-30',
-    reason:
-      'braces 3.0.3 stack-exhaustion via deeply nested glob patterns has no patched release; ' +
-      'braces enters only through build/test tooling (micromatch/fast-glob/chokidar) where ' +
-      'patterns are developer-controlled, never request input'
-  },
   'GHSA-rrr8-f88r-h8q6': {
     until: '2026-10-31',
     reason: 'restify 11.1.0 pins find-my-way 7.x; no patched major-compatible release'
@@ -392,6 +385,11 @@ const ACCEPTED_RISK = {
     until: '2026-10-31',
     reason:
       'basic-ftp RE_LINE DoS inherited via get-uri; fixed only on 6.x which breaks get-uri^5; awaiting upstream'
+  },
+  'GHSA-vfj7-8cjw-p6xm': {
+    until: '2026-10-31',
+    reason:
+      'braces@3.0.3 stack-exhaustion DoS; no patched release yet (OSV last_affected 3.0.3); transitive via micromatch/chokidar'
   }
 };
 

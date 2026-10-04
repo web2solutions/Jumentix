@@ -12,14 +12,18 @@ const INTERNAL_DOC_NAMES = [
 
 export function isCanaUsageGuideSource(sourceFile) {
   const base = sourceFile.replace(/\\/g, '/');
-  return /\/CANA-USAGE-GUIDE(\.pt-BR)?\.md$/i.test(base);
+  return (
+    /\/CANA-USAGE-GUIDE(\.pt-BR)?\.md$/i.test(base) ||
+    /\/packages\/cana\/docs\/(?:en|pt-BR)\/usage-guide\.md$/i.test(base)
+  );
 }
 
 export function isCanaPublishedSource(sourceFile) {
   const base = sourceFile.replace(/\\/g, '/');
   return (
     /\/CANA-USAGE(?:-[A-Z-]+)?(\.pt-BR)?\.md$/i.test(base) ||
-    /\/packages\/cana\/README(\.pt-BR)?\.md$/i.test(base)
+    /\/packages\/cana\/README(\.pt-BR)?\.md$/i.test(base) ||
+    /\/packages\/cana\/docs\/(?:en|pt-BR)\/[A-Za-z0-9-]+\.md$/i.test(base)
   );
 }
 

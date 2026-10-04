@@ -86,5 +86,9 @@ Download the complete Vite app used by the advanced example:
 
 ## Next
 
+The core client is framework-agnostic — see
+[Integrate with any framework](/docs/jumentix/packages/cana/any-framework) and
+[Vanilla TypeScript](/docs/jumentix/packages/cana/vanilla-typescript).
+
 Compare this with [React Redux](./react-redux) for larger apps with explicit
 slices and selectors, or [Vue 3 + Pinia](./vue-pinia) for the Vue store pattern.

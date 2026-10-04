@@ -6,6 +6,32 @@
 
 - No changes.
 
+## v0.3.3 - 2026-10-04
+
+- 2026-10-04 chore(release): v0.3.3 (#604) - Eduardo A.
+- 2026-10-04 [JUM-916][Release] Promote framework-agnostic Cana docs to main (#601) - Eduardo A.
+- 2026-10-04 [JUM-916][Fix] Reload vanilla seed maps and auto-exempt Vercel feedback (#602) - Eduardo A.
+- 2026-10-04 fix(cana): reload vanilla seed maps before first paint - Eduardo A.
+- 2026-10-04 [JUM-916][Docs] Framework-agnostic Cana docs in package and website (#600) - Eduardo A.
+- 2026-10-04 fix(cana): assert usage pages in docs drift check - Eduardo A.
+- 2026-10-04 docs(cana): ship framework-agnostic docs in package and site - Eduardo A.
+- 2026-10-03 [JUM-915][Release] Promote monorepo-aware Vercel website build (#595) - Eduardo A.
+- 2026-10-03 [JUM-915][Docs] Note main promotes must be from-dev (#596) - Eduardo A.
+- 2026-10-03 docs(website): note that main promotes must be from-dev - Eduardo A.
+- 2026-10-03 [JUM-915][Chore] Monorepo-aware Vercel build for jumentix-website (#593) - Eduardo A.
+- 2026-10-03 fix(website): monorepo-aware Vercel build; accept braces GHSA - Eduardo A.
+- 2026-10-01 [JUM-914][Release] Reconcile main v0.3.2 into dev (#592) - Eduardo A.
+
+## v0.3.2 - 2026-10-01
+
+- 2026-10-01 chore(release): v0.3.2 (#590) - Eduardo A.
+- 2026-10-01 [JUM-914][Release] Promote remaining S9383 clear for Sonar reliability A (#588) - Eduardo A.
+- 2026-10-01 [JUM-914][Release] Reconcile main v0.3.1 into dev for Sonar A promote (#587) - Eduardo A.
+- 2026-10-01 Merge remote-tracking branch 'origin/main' into cursor/release/JUM-914-reconcile-v031 - Eduardo A.
+- 2026-10-01 [JUM-914][Fix] Clear remaining designer-core and SM-api S9383 (#586) - Eduardo A.
+- 2026-10-01 fix(security): accept basic-ftp GHSA-c475 until get-uri can take 6.x - Eduardo A.
+- 2026-10-01 fix(sonar): clear remaining S9383 in designer-core and SM API - Eduardo A.
+
 ## v0.3.1 - 2026-10-01
 
 - 2026-10-01 chore(release): v0.3.1 (#584) - Eduardo A.

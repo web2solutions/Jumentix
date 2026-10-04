@@ -44,6 +44,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - message-mediator usage: https://jumentix-website.vercel.app/docs/jumentix/packages/message-mediator/usage
 - @jumentix/cana-vue: https://jumentix-website.vercel.app/docs/jumentix/packages/cana-vue
 - Cana with React Context API: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-context
+- Cana with Vanilla TypeScript: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vanilla-typescript
 - Cana with Vue 3 and Pinia: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia
 - @jumentix/cana: https://jumentix-website.vercel.app/docs/jumentix/packages/cana
 - Cana with React Redux: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/react-redux
@@ -57,6 +58,7 @@ Docs index JSON: https://jumentix-website.vercel.app/docs-index.json
 - Getting started with Cana: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/getting-started
 - Transactions and change events: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/transactions-events
 - Storage and crash recovery: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/usage/storage-recovery
+- Integrate Cana with any UI framework: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/any-framework
 
 ## Adapters
 - Aurora Adapter: https://jumentix-website.vercel.app/docs/jumentix/adapters/databases/aurora

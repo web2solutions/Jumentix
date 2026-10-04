@@ -135,17 +135,17 @@ convenient API.
 Verified by `packages/cana/test/packaging.test.ts`, which
 builds the package and loads the artefact rather than the workspace alias.
 
-| Item                                                  | State                                |
-| ----------------------------------------------------- | ------------------------------------ |
-| `main` → `dist/index.js` (CommonJS)                   | yes                                  |
-| `module` / `exports.import` → `dist/index.mjs` (ESM)  | yes                                  |
-| `types` → `dist/index.d.ts`, first in the exports map | yes                                  |
-| `files` ships `dist`, README, LICENSE — not `src`     | yes                                  |
-| `LICENSE.md` present and matching the declared MIT    | yes                                  |
-| Runtime dependencies                                  | **none**                             |
-| `sideEffects: false`                                  | yes                                  |
-| `prepublishOnly` cleans then builds                   | yes                                  |
-| Built with Bun (Req 096)                              | yes — `tsc` then `bun build` for ESM |
+| Item                                                      | State                                |
+| --------------------------------------------------------- | ------------------------------------ |
+| `main` → `dist/index.js` (CommonJS)                       | yes                                  |
+| `module` / `exports.import` → `dist/index.mjs` (ESM)      | yes                                  |
+| `types` → `dist/index.d.ts`, first in the exports map     | yes                                  |
+| `files` ships `dist`, `docs`, README, LICENSE — not `src` | yes                                  |
+| `LICENSE.md` present and matching the declared MIT        | yes                                  |
+| Runtime dependencies                                      | **none**                             |
+| `sideEffects: false`                                      | yes                                  |
+| `prepublishOnly` cleans then builds                       | yes                                  |
+| Built with Bun (Req 096)                                  | yes — `tsc` then `bun build` for ESM |
 
 The dual format is not an optimisation. Cana is a browser library, and a
 CommonJS-only package cannot be loaded by a native `import` at all — the
