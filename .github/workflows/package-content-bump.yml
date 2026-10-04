@@ -75,8 +75,12 @@ jobs:
           # Uniquify with run id + attempt so same-run retries never collide with a
           # leftover branch from a prior failed attempt of this job.
           branch="chore/package-bump-${base_oid:0:8}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          git push origin --delete "refs/heads/$branch" 2>/dev/null || true
-          git push origin "HEAD:refs/heads/$branch"
+          # Create the branch via the Git refs API (not `git push`) so husky
+          # pre-push never runs on this automation job after bun install.
+          gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${branch}" >/dev/null 2>&1 || true
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/heads/${branch}" \
+            -f sha="${base_oid}" >/dev/null
           mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
           changed+=("packages/cli-init/templates.manifest.json")
           additions='[]'
