@@ -36,15 +36,14 @@
 import {
   DATABASE_DRIVERS,
   DEPLOY_TARGETS,
+  getSupportedProtocols,
+  isPm2ManagedDeployTarget,
+  isProtocolSupportedByServiceType,
+  isServiceTypeSupportedByDeployTarget,
   KEY_VALUE_DRIVERS,
   PM2_PROFILES,
   RUNTIME_PROTOCOLS,
-  SERVICE_TYPES,
-  getSupportedProtocols,
-  getSupportedServiceTypes,
-  isPm2ManagedDeployTarget,
-  isProtocolSupportedByServiceType,
-  isServiceTypeSupportedByDeployTarget
+  SERVICE_TYPES
 } from '../model/deployCapabilityMatrix.js';
 
 /**
@@ -55,7 +54,7 @@ import {
  *   are unconstrained here).
  * @returns {ModelIssue[]}
  */
-export function collectDeployTargetIssues(target) {
+function collectDeployTargetIssues(target) {
   const issues = [];
   const pushError = (message) => issues.push({ message, entityId: null, severity: 'error' });
   const candidate = target || {};
@@ -67,30 +66,46 @@ export function collectDeployTargetIssues(target) {
   const pm2Profile = String(candidate.pm2Profile || '');
 
   if (!SERVICE_TYPES.includes(serviceType)) {
-    pushError(`Service type "${serviceType}" is not supported — choose one of: ${SERVICE_TYPES.join(', ')}.`);
+    pushError(
+      `Service type "${serviceType}" is not supported — choose one of: ${SERVICE_TYPES.join(', ')}.`
+    );
   }
   if (!DEPLOY_TARGETS.includes(deployTarget)) {
-    pushError(`Deploy target "${deployTarget}" is not supported — choose one of: ${DEPLOY_TARGETS.join(', ')}.`);
+    pushError(
+      `Deploy target "${deployTarget}" is not supported — choose one of: ${DEPLOY_TARGETS.join(', ')}.`
+    );
   }
   if (!RUNTIME_PROTOCOLS.includes(runtimeProtocol)) {
-    pushError(`Runtime protocol "${runtimeProtocol}" is not supported — choose one of: ${RUNTIME_PROTOCOLS.join(', ')}.`);
+    pushError(
+      `Runtime protocol "${runtimeProtocol}" is not supported — choose one of: ${RUNTIME_PROTOCOLS.join(', ')}.`
+    );
   }
   if (!DATABASE_DRIVERS.includes(databaseDriver)) {
-    pushError(`Database driver "${databaseDriver}" is not a supported JUMENTIX_DATABASE_DRIVER value — choose one of: ${DATABASE_DRIVERS.join(', ')}.`);
+    pushError(
+      `Database driver "${databaseDriver}" is not a supported JUMENTIX_DATABASE_DRIVER value — choose one of: ${DATABASE_DRIVERS.join(', ')}.`
+    );
   }
   if (!KEY_VALUE_DRIVERS.includes(keyValueDriver)) {
-    pushError(`Key-value driver "${keyValueDriver}" is not a supported JUMENTIX_KEYVALUESTORAGE_DRIVER value — choose one of: ${KEY_VALUE_DRIVERS.join(', ')}.`);
+    pushError(
+      `Key-value driver "${keyValueDriver}" is not a supported JUMENTIX_KEYVALUESTORAGE_DRIVER value — choose one of: ${KEY_VALUE_DRIVERS.join(', ')}.`
+    );
   }
 
-  if (SERVICE_TYPES.includes(serviceType) && DEPLOY_TARGETS.includes(deployTarget)
-    && !isServiceTypeSupportedByDeployTarget(serviceType, deployTarget)) {
+  if (
+    SERVICE_TYPES.includes(serviceType) &&
+    DEPLOY_TARGETS.includes(deployTarget) &&
+    !isServiceTypeSupportedByDeployTarget(serviceType, deployTarget)
+  ) {
     pushError(
       `Deploy target "${deployTarget}" cannot run service type "${serviceType}" — the Requirement 059 deploy matrix supports it on: ${DEPLOY_TARGETS.filter((option) => isServiceTypeSupportedByDeployTarget(serviceType, option)).join(', ')}.`
     );
   }
 
-  if (SERVICE_TYPES.includes(serviceType) && RUNTIME_PROTOCOLS.includes(runtimeProtocol)
-    && !isProtocolSupportedByServiceType(serviceType, runtimeProtocol)) {
+  if (
+    SERVICE_TYPES.includes(serviceType) &&
+    RUNTIME_PROTOCOLS.includes(runtimeProtocol) &&
+    !isProtocolSupportedByServiceType(serviceType, runtimeProtocol)
+  ) {
     pushError(
       `Service type "${serviceType}" does not expose protocol "${runtimeProtocol}" — the Requirement 059 deploy matrix gives it: ${getSupportedProtocols(serviceType).join(', ')}.`
     );
@@ -111,3 +126,5 @@ export function collectDeployTargetIssues(target) {
 
   return issues;
 }
+
+export default collectDeployTargetIssues;

@@ -1,8 +1,9 @@
-import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import type { RestApiRequestEvent } from '@jumentix/sdk-rest-client';
+import { ref } from 'vue';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
+
+import type { RestApiRequestEvent } from '@jumentix/sdk-rest-client';
 
 export interface NetworkRequestRecord {
   operationId: string;
@@ -45,9 +46,7 @@ export const useNetworkStore = defineStore('network', () => {
   };
 
   const start = (): void => {
-    if (!unsubscribe) {
-      unsubscribe = getSharedApiClient().subscribe(onEvent);
-    }
+    unsubscribe ??= getSharedApiClient().subscribe(onEvent);
   };
 
   const stop = (): void => {
@@ -56,6 +55,9 @@ export const useNetworkStore = defineStore('network', () => {
   };
 
   return {
-    inFlight, recent, start, stop
+    inFlight,
+    recent,
+    start,
+    stop
   };
 });

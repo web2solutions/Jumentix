@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 /*
  * hostMetrics pure computations and real-filesystem disk probes: CPU-usage
  * deltas (clamps, mismatched samples), disk path resolution from the env
@@ -18,7 +18,9 @@ const {
   toFiniteNumber
 } = require('../../src/runtime/hostMetrics');
 
-type CpuSample = { times: Record<string, number> };
+interface CpuSample {
+  times: Record<string, number>;
+}
 
 function cpu(times: Record<string, number>): CpuSample {
   return { times };
@@ -38,12 +40,25 @@ describe('service-management hostMetrics.toFiniteNumber', () => {
 describe('service-management hostMetrics.computeCpuUsage', () => {
   it('returns null usage until two samples with the same core count exist', () => {
     expect.hasAssertions();
-    const oneCore = [cpu({
-      user: 1, nice: 0, sys: 1, idle: 1, irq: 0
-    })];
-    const twoCores = [...oneCore, cpu({
-      user: 1, nice: 0, sys: 1, idle: 1, irq: 0
-    })];
+    const oneCore = [
+      cpu({
+        user: 1,
+        nice: 0,
+        sys: 1,
+        idle: 1,
+        irq: 0
+      })
+    ];
+    const twoCores = [
+      ...oneCore,
+      cpu({
+        user: 1,
+        nice: 0,
+        sys: 1,
+        idle: 1,
+        irq: 0
+      })
+    ];
     expect(computeCpuUsage(null, oneCore)).toStrictEqual({ usagePercent: null, perCore: [] });
     expect(computeCpuUsage(oneCore, null)).toStrictEqual({ usagePercent: null, perCore: [] });
     expect(computeCpuUsage(oneCore, twoCores)).toStrictEqual({ usagePercent: null, perCore: [] });
@@ -54,18 +69,34 @@ describe('service-management hostMetrics.computeCpuUsage', () => {
     expect.hasAssertions();
     const before = [
       cpu({
-        user: 100, nice: 0, sys: 50, idle: 200, irq: 0
+        user: 100,
+        nice: 0,
+        sys: 50,
+        idle: 200,
+        irq: 0
       }),
       cpu({
-        user: 0, nice: 0, sys: 0, idle: 100, irq: 0
+        user: 0,
+        nice: 0,
+        sys: 0,
+        idle: 100,
+        irq: 0
       })
     ];
     const after = [
       cpu({
-        user: 200, nice: 0, sys: 100, idle: 250, irq: 0
+        user: 200,
+        nice: 0,
+        sys: 100,
+        idle: 250,
+        irq: 0
       }),
       cpu({
-        user: 25, nice: 0, sys: 0, idle: 175, irq: 0
+        user: 25,
+        nice: 0,
+        sys: 0,
+        idle: 175,
+        irq: 0
       })
     ];
     // core 0: idle delta 50 of 200 total → 75%; core 1: idle 75 of 100 → 25%.
@@ -77,32 +108,66 @@ describe('service-management hostMetrics.computeCpuUsage', () => {
 
   it('reports 0 for a core whose counters did not advance', () => {
     expect.hasAssertions();
-    const sample = [cpu({
-      user: 1, nice: 0, sys: 1, idle: 1, irq: 0
-    })];
-    expect(computeCpuUsage(sample, sample.map((entry) => cpu({ ...entry.times }))))
-      .toStrictEqual({ usagePercent: 0, perCore: [0] });
+    const sample = [
+      cpu({
+        user: 1,
+        nice: 0,
+        sys: 1,
+        idle: 1,
+        irq: 0
+      })
+    ];
+    expect(
+      computeCpuUsage(
+        sample,
+        sample.map((entry) => cpu({ ...entry.times }))
+      )
+    ).toStrictEqual({ usagePercent: 0, perCore: [0] });
   });
 
   it('clamps negative usage to 0 when non-idle counters regress', () => {
     expect.hasAssertions();
-    const before = [cpu({
-      user: 100, nice: 0, sys: 0, idle: 0, irq: 0
-    })];
-    const after = [cpu({
-      user: 50, nice: 0, sys: 0, idle: 200, irq: 0
-    })];
+    const before = [
+      cpu({
+        user: 100,
+        nice: 0,
+        sys: 0,
+        idle: 0,
+        irq: 0
+      })
+    ];
+    const after = [
+      cpu({
+        user: 50,
+        nice: 0,
+        sys: 0,
+        idle: 200,
+        irq: 0
+      })
+    ];
     expect(computeCpuUsage(before, after).perCore).toStrictEqual([0]);
   });
 
   it('clamps usage above 100 when the idle counter regresses', () => {
     expect.hasAssertions();
-    const before = [cpu({
-      user: 0, nice: 0, sys: 0, idle: 100, irq: 0
-    })];
-    const after = [cpu({
-      user: 100, nice: 0, sys: 0, idle: 90, irq: 0
-    })];
+    const before = [
+      cpu({
+        user: 0,
+        nice: 0,
+        sys: 0,
+        idle: 100,
+        irq: 0
+      })
+    ];
+    const after = [
+      cpu({
+        user: 100,
+        nice: 0,
+        sys: 0,
+        idle: 90,
+        irq: 0
+      })
+    ];
     expect(computeCpuUsage(before, after).perCore).toStrictEqual([100]);
   });
 });

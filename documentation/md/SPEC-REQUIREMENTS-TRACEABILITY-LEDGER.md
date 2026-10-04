@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=128 unique=128 mapped=128 duplicates= -->
+<!-- requirements-inventory: files=129 unique=129 mapped=129 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -159,6 +159,11 @@ For any change, identify impacted requirement IDs and ensure:
   - deployment script validation
   - docs + governance sync
 
+### `138` ESLint 9 flat-config governance (JUM-5…JUM-21, JUM-44, JUM-866…JUM-869)
+
+- Specs: `.agents/requirements/software/138-eslint-9-flat-config-governance.md`, `documentation/md/ESLINT-AND-FORMATTING-GUIDE.md` (+ pt-BR)
+- Evidence: `bun run lint` and `bun run format:check` (`--max-warnings=0`); `ci-cd/check-lint-coverage.js` empty-glob and shrink proof; `packages/config-eslint` contract suite (`bun run --cwd packages/config-eslint test`); `bun run requirements:check`
+
 ## Governance Binding
 
 This ledger is mandatory in PR planning for medium/high-impact changes.  
@@ -175,27 +180,33 @@ As of `2026-08-05`, this ledger covers all unique requirement IDs currently regi
 5. Missing IDs: `none`
 
 ### `105` Hexagonal Test Pyramid / layer-aware gates
+
 - Specs: `documentation/md/HEXAGONAL-TEST-PYRAMID.md`, `.agents/requirements/software/105-hexagonal-test-pyramid-layer-aware-gates.md`
 - Evidence: `test-map.json`, `ci-cd/check-test-map.js`, `ci-cd/lib/layer-resolver.js`, `ci-cd/run-task-change-tests.js`, `ci-cd/run-unit-tests.js`
 
 ### `114`–`121` Agent operating pack (JUM-595 + 2026-08-02 owner additions)
+
 - Specs: `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.md` (+ pt-BR)
 - Requirements: `.agents/requirements/project/114-*.md` … `121-*.md`
 - Evidence: `bun run requirements:check`; agent instruction parity in `AGENTS.md` / `CLAUDE.md` / `GROK.md`; Docker-backed smoke/integration scripts for `118`; API-first / `gh` orchestration for `119`; Linear agent-assignment visibility for `120`; cross-agent coordination evidence for `121`
 
 ### `129` Mandatory Firebase RTDB agent progress bus
+
 - Specs: `.agents/requirements/project/129-mandatory-firebase-agent-bus.md`, `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.md` (+ pt-BR), `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.md` (+ pt-BR)
 - Evidence: `packages/agent-registry/src/rtdb-client.ts`, `packages/agent-registry/src/bus-commands.ts`, `packages/agent-registry/bin/agent-registry-cli.js`, `bun run agent-bus:publish|watch|status`, package unit tests with mocked RTDB
 
 ### `126` Service Management ownership and public contracts (JUM-465)
+
 - Specs: `.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`, `.agents/COMPONENT-OWNERSHIP.md`
 - Evidence: `bun run requirements:check`; `bun run test-map:check`; integration smoke asserting the pinned contracts (`JUM-466`); SM suite evidence under `apps/service-management/test/**`
 
 ### `137` Workspace suite and tooling ownership placement (JUM-824…838)
+
 - Specs: `.agents/requirements/software/137-workspace-suite-and-tooling-ownership.md`, `documentation/md/TESTING-CI-AND-QUALITY.md` (+ pt-BR), `ci-cd/README.md`
 - Evidence: `bun run arch:check-ownership-placement`; `ci-cd/ownership-placement-allowlist.json` steady state `[]`; proof suite `ci-cd/test/check-workspace-ownership-placement.test.ts`; wired into `ci:gate` / branch preflight
 
 ### `125` Agent support declaration (JUM-604)
+
 - Specs: `documentation/md/AGENT-SUPPORT-DECLARATION.md` (+ pt-BR)
 - Requirements: `.agents/requirements/project/125-agent-support-declaration.md`
 - Evidence: `.agents/supported-agents.json`; `ci-cd/check-pr-governance.js` deriving task-branch prefixes from the declaration and verifying each declared instructions file; `KIMI.md`; `bun run pr:governance:check`; `bun run requirements:check`

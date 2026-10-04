@@ -3,13 +3,14 @@
  * Publish an npm release cohort with a re-publish guard and per-package tags
  * (JUM-886 / Requirement 070 additive tagging).
  */
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const { execFileSync } = require('child_process');
-const { gitBinary } = require('./lib/git-binary.js');
-const { isEntryPoint } = require('./lib/entry-point.js');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
 const { resolveNpmCommand } = require('./check-npm-org-integration.js');
+const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 const {
   createAnnotatedTagRef,
   resolveRepository,
@@ -20,24 +21,44 @@ const ROOT = path.resolve(__dirname, '..');
 
 const COHORTS = {
   all: [
-    'cana', 'cana-react', 'cana-vue', 'designer-core', 'persistence-contracts',
-    'shared-contracts', 'external-persistence-core', 'external-store-proxy',
-    'external-db-repositories', 'key-value-storage', 'database-client-factory',
-    'message-mediator', 'mutex-service', 'dead-letter-queue', 'runtime-infra',
-    'adapter-runtime-bootstrap', 'sdk-grpc-client', 'sdk-rest-client',
-    'sdk-websocket-client', 'cli-init'
+    'cana',
+    'cana-react',
+    'cana-vue',
+    'designer-core',
+    'persistence-contracts',
+    'shared-contracts',
+    'external-persistence-core',
+    'external-store-proxy',
+    'external-db-repositories',
+    'key-value-storage',
+    'database-client-factory',
+    'message-mediator',
+    'mutex-service',
+    'dead-letter-queue',
+    'runtime-infra',
+    'adapter-runtime-bootstrap',
+    'sdk-grpc-client',
+    'sdk-rest-client',
+    'sdk-websocket-client',
+    'cli-init'
   ],
   cana: ['cana', 'cana-react', 'cana-vue'],
   'designer-core': ['designer-core'],
   runtime: [
-    'persistence-contracts', 'shared-contracts', 'external-persistence-core',
-    'external-store-proxy', 'external-db-repositories', 'key-value-storage',
-    'database-client-factory', 'message-mediator', 'mutex-service',
-    'dead-letter-queue', 'runtime-infra', 'adapter-runtime-bootstrap'
+    'persistence-contracts',
+    'shared-contracts',
+    'external-persistence-core',
+    'external-store-proxy',
+    'external-db-repositories',
+    'key-value-storage',
+    'database-client-factory',
+    'message-mediator',
+    'mutex-service',
+    'dead-letter-queue',
+    'runtime-infra',
+    'adapter-runtime-bootstrap'
   ],
-  sdks: [
-    'shared-contracts', 'sdk-grpc-client', 'sdk-rest-client', 'sdk-websocket-client'
-  ],
+  sdks: ['shared-contracts', 'sdk-grpc-client', 'sdk-rest-client', 'sdk-websocket-client'],
   'cli-init': ['cli-init']
 };
 
@@ -45,9 +66,13 @@ function runGit(args, options = {}) {
   try {
     return execFileSync(gitBinary(), args, {
       encoding: 'utf8',
-      stdio: options.inherit ? 'inherit' : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
+      stdio: options.inherit
+        ? 'inherit'
+        : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
       cwd: options.cwd || ROOT
-    }).toString().trim();
+    })
+      .toString()
+      .trim();
   } catch (error) {
     if (options.allowFailure) return '';
     throw error;
@@ -91,10 +116,16 @@ function defaultPublishIo() {
     versionPublished(name, version) {
       const npm = resolveNpmCommand();
       try {
-        const out = execFileSync(npm.command, [...npm.argsPrefix, 'view', `${name}@${version}`, 'version'], {
-          encoding: 'utf8',
-          stdio: ['ignore', 'pipe', 'pipe']
-        }).toString().trim();
+        const out = execFileSync(
+          npm.command,
+          [...npm.argsPrefix, 'view', `${name}@${version}`, 'version'],
+          {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'pipe']
+          }
+        )
+          .toString()
+          .trim();
         return out === version;
       } catch (error) {
         const stderr = String(error.stderr || '');
@@ -123,15 +154,15 @@ function defaultPublishIo() {
       // <tag>` from Actions fires husky pre-push (deps:audit) and previously
       // hung or failed closed (runs 36724567997 / 36735005194). Always use
       // createAnnotatedTagRef in CI — same path as app-release (JUM-913).
-      const env = process.env;
+      const { env } = process;
       const repository = resolveRepository(env);
       const token = resolveToken(env);
       if (!repository || !token) {
         throw new Error(
-          `Package tag ${tagName} requires GitHub API credentials `
-            + '(GITHUB_TOKEN or GH_TOKEN or CHANGELOG_GH_TOKEN, plus GITHUB_REPOSITORY). '
-            + 'git push of package tags is not supported: husky pre-push runs the '
-            + 'full quality gate and fails closed on new advisories.'
+          `Package tag ${tagName} requires GitHub API credentials ` +
+            '(GITHUB_TOKEN or GH_TOKEN or CHANGELOG_GH_TOKEN, plus GITHUB_REPOSITORY). ' +
+            'git push of package tags is not supported: husky pre-push runs the ' +
+            'full quality gate and fails closed on new advisories.'
         );
       }
       const commitSha = runGit(['rev-parse', 'HEAD']);
@@ -201,25 +232,31 @@ function main(argv = process.argv.slice(2)) {
   const dryRun = argv.includes('--dry-run');
   const cohort = argv.find((arg) => !arg.startsWith('-')) || process.env.RELEASE || 'all';
   const summary = publishNpmCohort(cohort, { dryRun });
-  console.log(JSON.stringify({
-    cohort: summary.cohort,
-    published: summary.results.filter((r) => r.action === 'published').length,
-    skipped: summary.results.filter((r) => r.action === 'skip').length,
-    dryRun: summary.results.filter((r) => r.action === 'dry-run').length
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        cohort: summary.cohort,
+        published: summary.results.filter((r) => r.action === 'published').length,
+        skipped: summary.results.filter((r) => r.action === 'skip').length,
+        dryRun: summary.results.filter((r) => r.action === 'dry-run').length
+      },
+      null,
+      2
+    )
+  );
   return summary;
 }
 
 module.exports = {
   COHORTS,
   defaultPublishIo,
+  main,
   packageTagName,
   publishNpmCohort,
   publishPackage,
   readPackageMeta,
   remoteTagExists,
-  resolveCohort,
-  main
+  resolveCohort
 };
 
 if (isEntryPoint(module)) {

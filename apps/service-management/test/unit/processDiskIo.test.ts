@@ -1,22 +1,21 @@
-/* eslint-disable jest/prefer-expect-assertions */
-const processDiskIoFs = require('fs');
-const processDiskIoPath = require('path');
-const {
-  parseLinuxIoText,
-  readProcessDiskIo
-} = require('../../src/runtime/processDiskIo');
+const processDiskIoFs = require('node:fs');
+const processDiskIoPath = require('node:path');
+
+const { parseLinuxIoText, readProcessDiskIo } = require('../../src/runtime/processDiskIo');
 
 describe('service-management processDiskIo', () => {
   it('parses Linux /proc io text into unified fields', () => {
     expect.hasAssertions();
-    const parsed = parseLinuxIoText([
-      'rchar: 100',
-      'wchar: 200',
-      'syscr: 3',
-      'syscw: 4',
-      'read_bytes: 1024',
-      'write_bytes: 2048'
-    ].join('\n'));
+    const parsed = parseLinuxIoText(
+      [
+        'rchar: 100',
+        'wchar: 200',
+        'syscr: 3',
+        'syscw: 4',
+        'read_bytes: 1024',
+        'write_bytes: 2048'
+      ].join('\n')
+    );
     expect(parsed).toMatchObject({
       supported: true,
       platform: 'linux',

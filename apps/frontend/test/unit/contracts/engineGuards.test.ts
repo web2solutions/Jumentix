@@ -1,6 +1,4 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
 
 import { getOperationForEntity, resolveSchema } from '@/contracts/formSchema';
 import { toQueryParams } from '@/contracts/listSchema';
@@ -21,13 +19,15 @@ describe('contract engine guards', () => {
 
   it('fails loudly when the schema is not declared in the bundled OAS', () => {
     expect.hasAssertions();
-    expect(() => resolveSchema('NoSuchSchema')).toThrow('formSchema: schema "NoSuchSchema" not declared in the bundled OAS');
+    expect(() => resolveSchema('NoSuchSchema')).toThrow(
+      'formSchema: schema "NoSuchSchema" not declared in the bundled OAS'
+    );
   });
 
   it('encodes filters as base64 JSON even without btoa', () => {
     expect.hasAssertions();
     const originalBtoa = globalThis.btoa;
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+
     delete (globalThis as Record<string, unknown>).btoa;
     try {
       const params = toQueryParams({ page: 1, size: 30, filter: { organization: 'org-1' } });
@@ -40,11 +40,27 @@ describe('contract engine guards', () => {
 
   it('rejects malformed values on email-format fields', () => {
     expect.hasAssertions();
-    expect(validateField({
-      name: 'contact', type: 'string', format: 'email', required: false
-    }, 'not-an-email')).not.toBeNull();
-    expect(validateField({
-      name: 'contact', type: 'string', format: 'email', required: false
-    }, 'person@x.dev')).toBeNull();
+    expect(
+      validateField(
+        {
+          name: 'contact',
+          type: 'string',
+          format: 'email',
+          required: false
+        },
+        'not-an-email'
+      )
+    ).not.toBeNull();
+    expect(
+      validateField(
+        {
+          name: 'contact',
+          type: 'string',
+          format: 'email',
+          required: false
+        },
+        'person@x.dev'
+      )
+    ).toBeNull();
   });
 });

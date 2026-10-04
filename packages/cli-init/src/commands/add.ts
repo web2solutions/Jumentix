@@ -1,39 +1,38 @@
 /* eslint-disable no-console */
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { stringify as stringifyYaml } from 'yaml';
-import { writeInitConfig, type InitConfig } from '../config';
+
+import { writeInitConfig } from '../config';
 import {
+  buildManifestJson,
+  buildProjectJson,
   generateBackendService,
   generateFrontend,
   injectDesignerDomains,
-  buildManifestJson,
-  buildProjectJson,
-  sha256File,
-  writeBaselineObjects,
-  writeDomainModule,
-  writeModulesIndex,
+  pascalCaseName,
   patchI18nTitles,
   patchRouterHome,
   resolveBackendTemplateRoot,
   sanitizeServiceId,
+  sha256File,
   slugifyIdentifier,
-  pascalCaseName
+  writeBaselineObjects,
+  writeDomainModule,
+  writeModulesIndex
 } from '../generators';
-import {
-  resolveSources,
-  SourceResolutionError,
-  type GenerationPlan,
-  type PlanDomain,
-  type PlanService
-} from '../sources';
 import { resolveJumentixPin } from '../generators/jumentixVersions';
+import { resolveSources, SourceResolutionError } from '../sources';
+
+import type { InitConfig } from '../config';
+import type { GenerationPlan, PlanDomain, PlanService } from '../sources';
 
 const PROJECT_META = '.jumentix/project.json';
 const MANIFEST_META = '.jumentix/manifest.json';
 const INIT_CONFIG = 'jumentix.init.json';
 
-type ProjectDocument = {
+interface ProjectDocument {
   schemaVersion: number;
   cliVersion: string;
   template: { version: number; commit: string };
@@ -41,21 +40,21 @@ type ProjectDocument = {
   plan: GenerationPlan;
   createdAt: string;
   updatedAt: string;
-};
+}
 
-type ManifestDocument = {
+interface ManifestDocument {
   schemaVersion: number;
   generatedAt: string;
   files: Record<string, { sha256: string }>;
-};
+}
 
-export type AddFlags = {
+export interface AddFlags {
   from?: string;
   domains?: string;
   service?: string;
   force?: boolean;
   offline?: boolean;
-};
+}
 
 export function printAddHelp(log: (message?: string) => void = console.log): void {
   log(`
@@ -87,8 +86,8 @@ function loadProjectDocument(rootDir: string): ProjectDocument {
   const projectPath = path.join(rootDir, ...PROJECT_META.split('/'));
   if (!fs.existsSync(projectPath)) {
     throw new Error(
-      `Missing ${PROJECT_META}. Run this command inside a project created by `
-      + '`jumentix init` (or pass the project directory as cwd).'
+      `Missing ${PROJECT_META}. Run this command inside a project created by ` +
+        '`jumentix init` (or pass the project directory as cwd).'
     );
   }
   return JSON.parse(fs.readFileSync(projectPath, 'utf8')) as ProjectDocument;
@@ -129,9 +128,7 @@ function assertNoDrift(
   const drifted = findManifestDrift(rootDir, manifest);
   if (drifted.length === 0) return null;
   const preview = drifted.slice(0, 8).join('\n  - ');
-  const extra = drifted.length > 8
-    ? `\n  - …and ${drifted.length - 8} more`
-    : '';
+  const extra = drifted.length > 8 ? `\n  - …and ${drifted.length - 8} more` : '';
   log(
     [
       `Refusing to add: ${drifted.length} generated file(s) differ from ${MANIFEST_META}`,
@@ -170,7 +167,7 @@ function persistProjectState(
   writeInitConfig(rootDir, {
     ...answers,
     mode: plan.mode,
-    frontend: Boolean(plan.frontend || plan.mode === 'hybrid' || plan.mode === 'frontend'),
+    frontend: Boolean(plan.frontend ?? (plan.mode === 'hybrid' || plan.mode === 'frontend')),
     offline: Boolean(plan.frontend?.offline || answers.offline),
     projectName: answers.projectName || path.basename(rootDir)
   });
@@ -181,7 +178,7 @@ function persistProjectState(
 }
 
 function coreService(plan: GenerationPlan): PlanService {
-  return plan.services.find((service) => service.kind === 'core') || plan.services[0];
+  return plan.services.find((service) => service.kind === 'core') ?? plan.services[0];
 }
 
 function findService(plan: GenerationPlan, serviceId: string | undefined): PlanService {
@@ -194,16 +191,20 @@ function findService(plan: GenerationPlan, serviceId: string | undefined): PlanS
   }
   const match = plan.services.find((service) => service.id === serviceId);
   if (!match) {
-    throw new Error(`Unknown service id "${serviceId}". Known: ${plan.services.map((s) => s.id).join(', ')}`);
+    throw new Error(
+      `Unknown service id "${serviceId}". Known: ${plan.services.map((s) => s.id).join(', ')}`
+    );
   }
   return match;
 }
 
 function domainMatches(domain: PlanDomain, name: string): boolean {
   const needle = name.trim().toLowerCase();
-  return domain.id.toLowerCase() === needle
-    || String(domain.name || '').toLowerCase() === needle
-    || slugifyIdentifier(domain.name || domain.id) === slugifyIdentifier(name);
+  return (
+    domain.id.toLowerCase() === needle ||
+    String(domain.name || '').toLowerCase() === needle ||
+    slugifyIdentifier(domain.name || domain.id) === slugifyIdentifier(name)
+  );
 }
 
 function createStubDomain(name: string): PlanDomain {
@@ -249,13 +250,15 @@ async function resolveDomainFromSource(
   const domain = sourcePlan.domains.find((entry) => domainMatches(entry, name));
   if (!domain) {
     throw new Error(
-      `Domain "${name}" not found in --from=${from}. `
-      + `Available: ${sourcePlan.domains.map((entry) => entry.name || entry.id).join(', ') || '(none)'}`
+      `Domain "${name}" not found in --from=${from}. ` +
+        `Available: ${sourcePlan.domains.map((entry) => entry.name || entry.id).join(', ') || '(none)'}`
     );
   }
-  const owner = sourcePlan.services.find((service) => (
-    service.domains.includes(domain.id) || service.domains.includes(String(domain.name || ''))
-  )) || sourcePlan.services.find((service) => service.kind === 'core');
+  const owner =
+    sourcePlan.services.find(
+      (service) =>
+        service.domains.includes(domain.id) || service.domains.includes(String(domain.name || ''))
+    ) ?? sourcePlan.services.find((service) => service.kind === 'core');
   const oasSlice = owner ? sourcePlan.contracts.oasPerService[owner.id] : undefined;
   return { domain, oasSlice };
 }
@@ -298,14 +301,7 @@ async function addDomain(options: {
   answers: InitConfig;
   log: (message?: string) => void;
 }): Promise<number> {
-  const {
-    rootDir,
-    name,
-    flags,
-    project,
-    answers,
-    log
-  } = options;
+  const { rootDir, name, flags, project, answers, log } = options;
   const plan: GenerationPlan = structuredClone(project.plan);
 
   if (plan.domains.some((domain) => domainMatches(domain, name))) {
@@ -332,22 +328,24 @@ async function addDomain(options: {
       ...(plan.contracts.oasPerService[target.id] || {}),
       ...oasSlice,
       paths: {
-        ...((plan.contracts.oasPerService[target.id]?.paths as Record<string, unknown>) || {}),
-        ...((oasSlice.paths as Record<string, unknown>) || {})
+        ...(plan.contracts.oasPerService[target.id]?.paths || {}),
+        ...(oasSlice.paths || {})
       }
     };
   }
 
   const serviceRoot = path.join(rootDir, 'apps', sanitizeServiceId(target.id));
   if (!fs.existsSync(serviceRoot)) {
-    throw new Error(`Service app missing at apps/${sanitizeServiceId(target.id)}. Re-run init or add service first.`);
+    throw new Error(
+      `Service app missing at apps/${sanitizeServiceId(target.id)}. Re-run init or add service first.`
+    );
   }
 
   const injected = await injectDesignerDomains({ serviceRoot, plan, service: target });
   writeServiceOas(rootDir, target, plan);
   log(
-    `Injected domain "${domain.name || domain.id}" into apps/${sanitizeServiceId(target.id)} `
-    + `(modules=${injected.moduleNames.join(', ') || 'none'}).`
+    `Injected domain "${domain.name || domain.id}" into apps/${sanitizeServiceId(target.id)} ` +
+      `(modules=${injected.moduleNames.join(', ') || 'none'}).`
   );
 
   if (plan.frontend) {
@@ -368,20 +366,11 @@ async function addService(options: {
   answers: InitConfig;
   log: (message?: string) => void;
 }): Promise<number> {
-  const {
-    rootDir,
-    name,
-    flags,
-    project,
-    answers,
-    log
-  } = options;
+  const { rootDir, name, flags, project, answers, log } = options;
   const plan: GenerationPlan = structuredClone(project.plan);
 
   if (plan.mode !== 'services' && plan.mode !== 'hybrid') {
-    throw new Error(
-      `add service requires mode=services (or hybrid). Current mode=${plan.mode}.`
-    );
+    throw new Error(`add service requires mode=services (or hybrid). Current mode=${plan.mode}.`);
   }
 
   const domainTokens = String(flags.domains || '')
@@ -472,13 +461,7 @@ async function addFrontend(options: {
   answers: InitConfig;
   log: (message?: string) => void;
 }): Promise<number> {
-  const {
-    rootDir,
-    flags,
-    project,
-    answers,
-    log
-  } = options;
+  const { rootDir, flags, project, answers, log } = options;
   const plan: GenerationPlan = structuredClone(project.plan);
   const frontendRoot = path.join(rootDir, 'apps', 'frontend');
 
@@ -507,9 +490,9 @@ async function addFrontend(options: {
     log
   });
   log(
-    `Frontend generated at ${result.root} `
-    + `(modules=${result.modules.map((mod) => mod.moduleId).join(', ') || 'none'}, `
-    + `offline=${result.offline ? 'yes' : 'no'}).`
+    `Frontend generated at ${result.root} ` +
+      `(modules=${result.modules.map((mod) => mod.moduleId).join(', ') || 'none'}, ` +
+      `offline=${result.offline ? 'yes' : 'no'}).`
   );
 
   persistProjectState(rootDir, project, plan, {

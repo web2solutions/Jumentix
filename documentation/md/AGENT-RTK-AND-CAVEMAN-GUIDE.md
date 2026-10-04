@@ -5,8 +5,8 @@ to meet it.
 
 Two separate savings, one rule each:
 
-- **`rtk`** compresses what the *tools* return to you.
-- **Caveman** compresses what *you* return to the reader.
+- **`rtk`** compresses what the _tools_ return to you.
+- **Caveman** compresses what _you_ return to the reader.
 
 Neither is allowed to compress evidence. That exclusion is the whole reason the rest is safe.
 
@@ -14,19 +14,19 @@ Neither is allowed to compress evidence. That exclusion is the whole reason the 
 
 Replace the left column with the right one. This is the entire day-to-day change.
 
-| Instead of | Use |
-| --- | --- |
-| `bun run <script>` | `rtk proxy bun run <script>` |
-| `git <cmd>` | `rtk git <cmd>` |
-| `gh <cmd>` | `rtk gh <cmd>` |
-| `bunx jest <paths>` | `rtk jest <paths>` |
-| `eslint` / lint script | `rtk lint` |
-| `tsc` | `rtk tsc` |
-| `docker <cmd>` | `rtk docker <cmd>` |
-| `grep` / `rg` | `rtk grep` / `rtk rg` |
-| `find` | `rtk find` |
-| `cat` / reading a file for context | `rtk read` |
-| `curl` | `rtk curl` |
+| Instead of                         | Use                          |
+| ---------------------------------- | ---------------------------- |
+| `bun run <script>`                 | `rtk proxy bun run <script>` |
+| `git <cmd>`                        | `rtk git <cmd>`              |
+| `gh <cmd>`                         | `rtk gh <cmd>`               |
+| `bunx jest <paths>`                | `rtk jest <paths>`           |
+| `eslint` / lint script             | `rtk lint`                   |
+| `tsc`                              | `rtk tsc`                    |
+| `docker <cmd>`                     | `rtk docker <cmd>`           |
+| `grep` / `rg`                      | `rtk grep` / `rtk rg`        |
+| `find`                             | `rtk find`                   |
+| `cat` / reading a file for context | `rtk read`                   |
+| `curl`                             | `rtk curl`                   |
 
 Run `rtk --help` for the full list; it covers pytest, cargo, go, mvn, kubectl and about forty others.
 

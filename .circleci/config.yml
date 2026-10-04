@@ -394,6 +394,11 @@ jobs:
               echo "No frontend coverage subjects in patch; skipping frontend:test:coverage."
             fi
       - run:
+          name: Produce config-eslint coverage for the patch report
+          command: |
+            source "$BASH_ENV"
+            bun run --cwd packages/config-eslint test:coverage
+      - run:
           name: Enforce patch coverage
           command: |
             source "$BASH_ENV"
@@ -711,4 +716,3 @@ workflows:
   #   jobs:
   #     - create-app-release-tag: ...
   #     - create-github-release: ...
-

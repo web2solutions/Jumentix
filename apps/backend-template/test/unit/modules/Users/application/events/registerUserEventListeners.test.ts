@@ -1,6 +1,6 @@
-import { InMemoryEventBus } from '@src/infra/events/InMemoryEventBus';
-import { registerUserEventListeners } from '@src/modules/Users/events/listeners/registerUserEventListeners';
+import InMemoryEventBus from '@src/infra/events/InMemoryEventBus';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
+import registerUserEventListeners from '@src/modules/Users/events/listeners/registerUserEventListeners';
 
 describe('registerUserEventListeners', () => {
   it('registers all listeners and dispatches each event', async () => {
@@ -50,10 +50,12 @@ describe('registerUserEventListeners', () => {
     const eventBus = InMemoryEventBus.compile();
     registerUserEventListeners(eventBus);
 
-    await expect(eventBus.publish({
-      name: UserIntegrationEventName.Created,
-      payload: { id: 'u2' },
-      occurredAt: new Date().toISOString()
-    })).resolves.toBeUndefined();
+    await expect(
+      eventBus.publish({
+        name: UserIntegrationEventName.Created,
+        payload: { id: 'u2' },
+        occurredAt: new Date().toISOString()
+      })
+    ).resolves.toBeUndefined();
   });
 });

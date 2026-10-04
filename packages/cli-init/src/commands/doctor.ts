@@ -2,15 +2,17 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { sha256File } from '../generators';
-import type { GenerationPlan } from '../sources';
 import { ALLOWED_MODES } from '../sources';
+
+import type { GenerationPlan } from '../sources';
 
 const PROJECT_META = '.jumentix/project.json';
 const MANIFEST_META = '.jumentix/manifest.json';
 const MIN_NODE_MAJOR = 20;
 
-type ProjectDocument = {
+interface ProjectDocument {
   schemaVersion: number;
   cliVersion: string;
   template: { version: number; commit: string };
@@ -18,35 +20,35 @@ type ProjectDocument = {
   plan: GenerationPlan;
   createdAt: string;
   updatedAt: string;
-};
+}
 
-type ManifestDocument = {
+interface ManifestDocument {
   schemaVersion: number;
   generatedAt: string;
   files: Record<string, { sha256: string }>;
-};
+}
 
 export type DoctorSeverity = 'ok' | 'warn' | 'blocker';
 
-export type DoctorFinding = {
+export interface DoctorFinding {
   area: 'environment' | 'project';
   severity: DoctorSeverity;
   code: string;
   message: string;
-};
+}
 
-export type DoctorReport = {
+export interface DoctorReport {
   findings: DoctorFinding[];
   blockers: number;
   warnings: number;
-};
+}
 
-export type DoctorProbe = {
+export interface DoctorProbe {
   run: (
     command: string,
     args: string[]
   ) => { status: number | null; stdout: string; stderr: string };
-};
+}
 
 const defaultProbe: DoctorProbe = {
   run(command, args) {
@@ -139,9 +141,8 @@ function expectedAppPaths(plan: GenerationPlan): string[] {
       if (service?.id) apps.push(`apps/${service.id}`);
     }
   }
-  const wantsFrontend = Boolean(
-    plan.frontend || plan.mode === 'hybrid' || plan.mode === 'frontend'
-  );
+  const wantsFrontend =
+    Boolean(plan.frontend) || plan.mode === 'hybrid' || plan.mode === 'frontend';
   if (wantsFrontend) apps.push('apps/frontend');
   return [...new Set(apps)].sort((left, right) => left.localeCompare(right));
 }
@@ -195,9 +196,7 @@ function collectEnvironmentFindings(probe: DoctorProbe): DoctorFinding[] {
   }
 
   const docker = probe.run('docker', ['version', '--format', '{{.Server.Version}}']);
-  const dockerAlt = docker.status === 0
-    ? docker
-    : probe.run('docker', ['--version']);
+  const dockerAlt = docker.status === 0 ? docker : probe.run('docker', ['--version']);
   if (dockerAlt.status === 0) {
     const version = firstLine(dockerAlt.stdout || dockerAlt.stderr) || 'available';
     findings.push({
@@ -271,37 +270,40 @@ function collectProjectFindings(options: {
   const projectTemplateVersion = project.template?.version;
   const projectTemplateCommit = project.template?.commit || '';
   if (
-    typeof projectTemplateVersion === 'number'
-    && projectTemplateVersion !== templates.schemaVersion
+    typeof projectTemplateVersion === 'number' &&
+    projectTemplateVersion !== templates.schemaVersion
   ) {
     findings.push({
       area: 'project',
       severity: 'blocker',
       code: 'template-version-mismatch',
-      message: `template version mismatch: project=${projectTemplateVersion}, `
-        + `cli=${templates.schemaVersion} (run jumentix upgrade)`
+      message:
+        `template version mismatch: project=${projectTemplateVersion}, ` +
+        `cli=${templates.schemaVersion} (run jumentix upgrade)`
     });
   } else if (
-    templates.sourceCommit
-    && projectTemplateCommit
-    && projectTemplateCommit !== 'unknown'
-    && projectTemplateCommit !== 'test'
-    && projectTemplateCommit !== templates.sourceCommit
+    templates.sourceCommit &&
+    projectTemplateCommit &&
+    projectTemplateCommit !== 'unknown' &&
+    projectTemplateCommit !== 'test' &&
+    projectTemplateCommit !== templates.sourceCommit
   ) {
     findings.push({
       area: 'project',
       severity: 'warn',
       code: 'template-commit-drift',
-      message: `template commit differs: project=${projectTemplateCommit.slice(0, 12)}, `
-        + `cli=${templates.sourceCommit.slice(0, 12)} (consider jumentix upgrade)`
+      message:
+        `template commit differs: project=${projectTemplateCommit.slice(0, 12)}, ` +
+        `cli=${templates.sourceCommit.slice(0, 12)} (consider jumentix upgrade)`
     });
   } else {
     findings.push({
       area: 'project',
       severity: 'ok',
       code: 'template-version',
-      message: `template version ${projectTemplateVersion ?? templates.schemaVersion} `
-        + `matches CLI package (${readCliVersion(packageRoot)})`
+      message:
+        `template version ${projectTemplateVersion ?? templates.schemaVersion} ` +
+        `matches CLI package (${readCliVersion(packageRoot)})`
     });
   }
 
@@ -387,7 +389,7 @@ function mark(severity: DoctorSeverity): string {
 
 export function formatDoctorReport(report: DoctorReport): string {
   const lines: string[] = ['jumentix doctor', ''];
-  const sections: Array<'environment' | 'project'> = ['environment', 'project'];
+  const sections: ('environment' | 'project')[] = ['environment', 'project'];
   for (const area of sections) {
     const title = area === 'environment' ? 'Environment' : 'Project';
     lines.push(`${title}:`);
@@ -403,14 +405,10 @@ export function formatDoctorReport(report: DoctorReport): string {
   }
   if (report.blockers === 0) {
     lines.push(
-      report.warnings > 0
-        ? `Healthy with ${report.warnings} warning(s).`
-        : 'Healthy — no blockers.'
+      report.warnings > 0 ? `Healthy with ${report.warnings} warning(s).` : 'Healthy — no blockers.'
     );
   } else {
-    const warningSuffix = report.warnings > 0
-      ? `, ${report.warnings} warning(s)`
-      : '';
+    const warningSuffix = report.warnings > 0 ? `, ${report.warnings} warning(s)` : '';
     lines.push(`Unhealthy — ${report.blockers} blocker(s)${warningSuffix}.`);
   }
   return lines.join('\n');
@@ -423,7 +421,7 @@ export function buildDoctorReport(options: {
 }): DoctorReport {
   const rootDir = path.resolve(options.workingDirectory || process.cwd());
   const packageRoot = options.packageRoot || path.resolve(__dirname, '..', '..');
-  const probe = options.probe || defaultProbe;
+  const probe = options.probe ?? defaultProbe;
   const findings = [
     ...collectEnvironmentFindings(probe),
     ...collectProjectFindings({ rootDir, packageRoot })

@@ -1,21 +1,20 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 require('./ensure-built');
 
+const { main } = require('../dist/cli');
 const {
+  generateFrontend,
   mergeServiceOas,
   oasPathCount,
   resolveEntityOperations,
-  searchableFieldsForOperation,
-  generateFrontend,
-  resolveFrontendTemplateRoot
+  resolveFrontendTemplateRoot,
+  searchableFieldsForOperation
 } = require('../dist/generators');
-
 const { resolveSources } = require('../dist/sources');
-const { main } = require('../dist/cli');
 
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 const templateRoot = path.join(__dirname, '..', 'templates', 'frontend');
@@ -145,7 +144,7 @@ describe('frontend generation — generateFrontend (JUM-848)', () => {
         path.join(result.root, 'src', 'features', 'user', 'userCrudConfig.ts'),
         'utf8'
       );
-      expect(configSource).toContain('list: \'getAll\'');
+      expect(configSource).toContain("list: 'getAll'");
       expect(configSource).toContain('searchFields:');
     } finally {
       fs.rmSync(out, { recursive: true, force: true });
@@ -179,7 +178,9 @@ describe('frontend generation — generateFrontend (JUM-848)', () => {
       expect(env).toContain('VITE_API_BASE_URL=');
       expect(env).toContain('VITE_OFFLINE=1');
       expect(result.offline).toBe(true);
-      expect(fs.existsSync(path.join(result.root, 'cypress', 'e2e', 'offline-boot.cy.ts'))).toBe(true);
+      expect(fs.existsSync(path.join(result.root, 'cypress', 'e2e', 'offline-boot.cy.ts'))).toBe(
+        true
+      );
     } finally {
       fs.rmSync(out, { recursive: true, force: true });
     }
@@ -212,7 +213,9 @@ describe('frontend generation — generateFrontend (JUM-848)', () => {
       expect(env).toContain('VITE_OFFLINE=0');
       const mainSource = fs.readFileSync(path.join(result.root, 'src', 'main.ts'), 'utf8');
       expect(mainSource).not.toContain('bootCana');
-      expect(fs.existsSync(path.join(result.root, 'cypress', 'e2e', 'offline-boot.cy.ts'))).toBe(false);
+      expect(fs.existsSync(path.join(result.root, 'cypress', 'e2e', 'offline-boot.cy.ts'))).toBe(
+        false
+      );
     } finally {
       fs.rmSync(out, { recursive: true, force: true });
     }

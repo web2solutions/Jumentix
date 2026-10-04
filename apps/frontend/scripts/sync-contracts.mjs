@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Contract sync for the frontend workspace (requirement 136).
  *
@@ -9,8 +10,8 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+
 import YAML from 'yaml';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -28,4 +29,6 @@ if (!openApi?.paths || Object.keys(openApi.paths).length === 0) {
 
 await fs.mkdir(path.dirname(outputPath), { recursive: true });
 await fs.writeFile(outputPath, `${JSON.stringify(openApi, null, 2)}\n`, 'utf8');
-console.log(`[sync-contracts] wrote ${Object.keys(openApi.paths).length} paths to src/contracts/openapi.json`);
+console.log(
+  `[sync-contracts] wrote ${Object.keys(openApi.paths).length} paths to src/contracts/openapi.json`
+);

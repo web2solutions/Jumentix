@@ -1,10 +1,15 @@
-import {
-  createClient, deleteDatabase, isCanaError, type CanaClient
-} from '@jumentix/cana';
+import { createClient, deleteDatabase, isCanaError } from '@jumentix/cana';
 
 import {
-  DATABASE_NAME, META_STORE, SCHEMA_META_ID, buildCanaSchema, buildCanaStores, schemaFingerprint
+  buildCanaSchema,
+  buildCanaStores,
+  DATABASE_NAME,
+  META_STORE,
+  SCHEMA_META_ID,
+  schemaFingerprint
 } from '@/data/canaSchema';
+
+import type { CanaClient } from '@jumentix/cana';
 
 export type CanaBootStatus = 'ok' | 'unavailable';
 
@@ -29,14 +34,16 @@ const openFresh = async (name: string): Promise<CanaClient> => {
   await next.open();
   const fingerprint = schemaFingerprint(schema.stores);
   const meta = next.table(META_STORE);
-  const recorded = await meta.get(SCHEMA_META_ID) as { fingerprint?: string } | undefined;
+  const recorded = (await meta.get(SCHEMA_META_ID)) as { fingerprint?: string } | undefined;
   if (recorded && recorded.fingerprint !== fingerprint) {
     await next.close();
     await deleteDatabase(name);
     const reopened = createClient({ name, schema, fallback: false });
     await reopened.open();
     await reopened.table(META_STORE).put({
-      id: SCHEMA_META_ID, fingerprint, version: schema.version
+      id: SCHEMA_META_ID,
+      fingerprint,
+      version: schema.version
     });
     return reopened;
   }

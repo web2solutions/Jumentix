@@ -1,4 +1,4 @@
-import { InMemoryEventBus } from '@src/infra/events/InMemoryEventBus';
+import InMemoryEventBus from '@src/infra/events/InMemoryEventBus';
 
 describe('in-memory event bus', () => {
   it('publishes events to subscribed listeners', async () => {
@@ -14,10 +14,12 @@ describe('in-memory event bus', () => {
     });
 
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'users.user.created',
-      payload: { id: 'u1' }
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'users.user.created',
+        payload: { id: 'u1' }
+      })
+    );
   });
 
   it('publishes without listeners and supports multiple subscribers on same event', async () => {

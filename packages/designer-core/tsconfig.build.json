@@ -13,9 +13,7 @@
     "strict": false,
     "noEmitOnError": false
   },
-  "include": [
-    "dist/**/*.js"
-  ],
+  "include": ["dist/**/*.js"],
   "//": "outDir defaults into tsc's own exclude list; the declarations are emitted next to the modules on purpose, so the default exclusion of dist is lifted.",
   "exclude": []
 }

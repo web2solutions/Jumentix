@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -7,10 +7,10 @@ import path from 'node:path';
 require('./ensure-built');
 
 const {
-  runDoctor,
-  printDoctorHelp,
   buildDoctorReport,
-  formatDoctorReport
+  formatDoctorReport,
+  printDoctorHelp,
+  runDoctor
 } = require('../dist/commands/doctor');
 
 function scratch(label: string): string {
@@ -41,7 +41,7 @@ function writeProjectScaffold(
     mode?: string;
     templateVersion?: number;
     templateCommit?: string;
-    services?: Array<{ id: string }>;
+    services?: { id: string }[];
     frontend?: boolean;
   } = {}
 ): void {
@@ -68,41 +68,47 @@ function writeProjectScaffold(
   fs.mkdirSync(path.join(root, '.jumentix'), { recursive: true });
   fs.writeFileSync(
     path.join(root, '.jumentix', 'project.json'),
-    `${JSON.stringify({
-      schemaVersion: 1,
-      cliVersion: '0.0.0',
-      template: {
-        version: options.templateVersion ?? 1,
-        commit: options.templateCommit || 'test'
-      },
-      mode,
-      plan: {
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        cliVersion: '0.0.0',
+        template: {
+          version: options.templateVersion ?? 1,
+          commit: options.templateCommit || 'test'
+        },
         mode,
-        services: services.map((service) => ({
-          id: service.id,
-          kind: service.id === 'core' ? 'core' : 'domain',
+        plan: {
+          mode,
+          services: services.map((service) => ({
+            id: service.id,
+            kind: service.id === 'core' ? 'core' : 'domain',
+            domains: [],
+            interfaces: { http: 'express', realtime: 'none' },
+            db: 'sqlite'
+          })),
           domains: [],
-          interfaces: { http: 'express', realtime: 'none' },
-          db: 'sqlite'
-        })),
-        domains: [],
-        frontend: options.frontend
-          ? { modules: [], offline: false }
-          : undefined,
-        contracts: { oasPerService: {} }
+          frontend: options.frontend ? { modules: [], offline: false } : undefined,
+          contracts: { oasPerService: {} }
+        },
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z'
       },
-      createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-01-01T00:00:00.000Z'
-    }, null, 2)}\n`,
+      null,
+      2
+    )}\n`,
     'utf8'
   );
   fs.writeFileSync(
     path.join(root, '.jumentix', 'manifest.json'),
-    `${JSON.stringify({
-      schemaVersion: 1,
-      generatedAt: '2026-01-01T00:00:00.000Z',
-      files: manifestFiles
-    }, null, 2)}\n`,
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        files: manifestFiles
+      },
+      null,
+      2
+    )}\n`,
     'utf8'
   );
 }
@@ -213,8 +219,9 @@ describe('doctor environment and project diagnostics (JUM-852)', () => {
         probe: healthyProbe()
       });
       expect(code).toBe(1);
-      expect(report.findings.some((f: { code: string }) => f.code === 'template-version-mismatch'))
-        .toBe(true);
+      expect(
+        report.findings.some((f: { code: string }) => f.code === 'template-version-mismatch')
+      ).toBe(true);
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }

@@ -1,15 +1,6 @@
-import type { GenerationPlan, SourceResolveOptions } from './types';
-import { SourceResolutionError } from './types';
-import { SOURCE_MESSAGES } from './messages';
-import { validateGenerationPlan } from './validate';
-import {
-  parseDb,
-  parseHttp,
-  parseRealtime,
-  type InterfaceDefaults
-} from './planBuilder';
-import { loadCatalogSource } from './catalog';
+import loadCatalogSource from './catalog';
 import { loadDesignerExportSource } from './designerExport';
+import SOURCE_MESSAGES from './messages';
 import {
   isDesignerExport,
   isHttpUrl,
@@ -17,7 +8,13 @@ import {
   loadOasSource,
   readLocalDocument
 } from './oas';
+import { parseDb, parseHttp, parseRealtime } from './planBuilder';
 import { loadPresetSource } from './preset';
+import { SourceResolutionError } from './types';
+import validateGenerationPlan from './validate';
+
+import type { InterfaceDefaults } from './planBuilder';
+import type { GenerationPlan, SourceResolveOptions } from './types';
 
 function buildDefaults(options: SourceResolveOptions): InterfaceDefaults {
   return {
@@ -49,9 +46,7 @@ export async function resolveSources(options: SourceResolveOptions = {}): Promis
       } else if (isOpenApiDocument(doc)) {
         plan = await loadOasSource(from, defaults);
       } else {
-        throw new SourceResolutionError(
-          SOURCE_MESSAGES.INVALID_FROM(from)
-        );
+        throw new SourceResolutionError(SOURCE_MESSAGES.INVALID_FROM(from));
       }
     }
   } else {
@@ -63,17 +58,16 @@ export async function resolveSources(options: SourceResolveOptions = {}): Promis
   return plan;
 }
 
-export function printPlanSummary(
-  plan: GenerationPlan,
-  log: (message?: string) => void
-): void {
+export function printPlanSummary(plan: GenerationPlan, log: (message?: string) => void): void {
   log('GenerationPlan resolved:');
   log(`  mode: ${plan.mode}`);
   log(`  services: ${plan.services.map((s) => `${s.id}(${s.kind})`).join(', ')}`);
   log(
     `  domains: ${plan.domains.map((d) => `${d.name || d.id}[${d.entities.map((e) => e.name).join('|')}]`).join(', ')}`
   );
-  log(`  contracts.oasPerService: ${Object.keys(plan.contracts.oasPerService).join(', ') || '(none)'}`);
+  log(
+    `  contracts.oasPerService: ${Object.keys(plan.contracts.oasPerService).join(', ') || '(none)'}`
+  );
   if (plan.frontend) {
     log(`  frontend.modules: ${plan.frontend.modules.join(', ')} offline=${plan.frontend.offline}`);
   }

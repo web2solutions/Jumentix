@@ -13,13 +13,13 @@ maduro com rastreabilidade até os arquivos canônicos do monorepo.
 
 ## Arquitetura da Informação
 
-| Seção | Pergunta do leitor | Conteúdo típico |
-| --- | --- | --- |
-| Conceitos | Por que o Jumentix funciona assim? | Arquitetura, domínios, contratos e Event-Driven Design |
-| Guias | Como construo um produto? | REST, realtime, SPA/PWA, monólito e microsserviços |
-| Adaptadores | Qual runtime ou infraestrutura devo usar? | HTTP, bancos de dados e realtime |
-| Pacotes | Qual biblioteca reutilizável devo instalar? | Message Mediator, runtime bootstrap e SDKs |
-| Referência | Qual é o comportamento exato? | Contratos, comandos, segurança, entidades e eventos |
+| Seção       | Pergunta do leitor                          | Conteúdo típico                                        |
+| ----------- | ------------------------------------------- | ------------------------------------------------------ |
+| Conceitos   | Por que o Jumentix funciona assim?          | Arquitetura, domínios, contratos e Event-Driven Design |
+| Guias       | Como construo um produto?                   | REST, realtime, SPA/PWA, monólito e microsserviços     |
+| Adaptadores | Qual runtime ou infraestrutura devo usar?   | HTTP, bancos de dados e realtime                       |
+| Pacotes     | Qual biblioteca reutilizável devo instalar? | Message Mediator, runtime bootstrap e SDKs             |
+| Referência  | Qual é o comportamento exato?               | Contratos, comandos, segurança, entidades e eventos    |
 
 As rotas em inglês começam em `/docs/jumentix`. As páginas em português preservam a mesma
 hierarquia sob `/docs/pt-BR/jumentix`.
@@ -71,7 +71,7 @@ requisito como proveniência. O sync separa os dois:
 
 - `stripMaintainerProvenance` (`scripts/content-leaks.mjs`) remove parênteses que só citam issues,
   requisitos ou PRs — `(JUM-468)`, `([JUM-493](…))`, `(Requisito \`059\`)`,
-  `(entregue pelo JUM-460; Requisito 126 §3)` — e definições de link de referência para o Linear.
+`(entregue pelo JUM-460; Requisito 126 §3)` — e definições de link de referência para o Linear.
   Escreva a proveniência entre parênteses para que a doc de contribuidor a mantenha e o site a remova.
 - Proveniência citada no meio da prosa não é reescrita; `bun run docs:check-audience` a aponta na
   página gerada e a fonte é corrigida.

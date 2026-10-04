@@ -3,7 +3,7 @@ import { computed, markRaw, ref, watch, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { CNav, CNavItem, CNavLink } from '@coreui/vue';
 
-import { usePermissions } from '@/contracts/usePermissions';
+import usePermissions from '@/contracts/usePermissions';
 import { localized, useI18n } from '@/i18n';
 import {
   findModule,
@@ -28,10 +28,7 @@ const tabs = computed(() => {
     label: localized(entity.title),
     kind: 'entity' as const
   }));
-  return [
-    ...entities,
-    { id: 'dashboard', label: t('nav.dashboard'), kind: 'dashboard' as const }
-  ];
+  return [...entities, { id: 'dashboard', label: t('nav.dashboard'), kind: 'dashboard' as const }];
 });
 
 const activeTab = computed(() => {
@@ -51,7 +48,7 @@ watch(
     if (!tab || !tabs.value.some((item) => item.id === tab)) {
       const next = firstAllowedTab(mod.value, roles.value);
       if (route.path !== `/m/${props.moduleId}/${next}`) {
-        router.replace(`/m/${props.moduleId}/${next}`);
+        void router.replace(`/m/${props.moduleId}/${next}`);
       }
     }
   },
@@ -80,7 +77,7 @@ watch(
 );
 
 const selectTab = (tabId: string) => {
-  router.push(`/m/${props.moduleId}/${tabId}`);
+  void router.push(`/m/${props.moduleId}/${tabId}`);
 };
 </script>
 
@@ -102,8 +99,8 @@ const selectTab = (tabId: string) => {
     </CNav>
     <div
       v-for="tab in tabs"
-      :key="tab.id"
       v-show="tab.id === activeTab"
+      :key="tab.id"
       class="module-pane"
       role="tabpanel"
     >

@@ -1,1 +1,3 @@
-export { InMemoryMessageMediatorAdapter } from '@jumentix/message-mediator';
+import { InMemoryMessageMediatorAdapter } from '@jumentix/message-mediator';
+
+export default InMemoryMessageMediatorAdapter;

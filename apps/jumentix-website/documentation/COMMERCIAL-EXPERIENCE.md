@@ -16,20 +16,20 @@ open-source framework websites while preserving Jumentix language, product asset
 
 ## Information Architecture
 
-| Route | Responsibility |
-| --- | --- |
-| `/` | Positioning, proof, real Domain Designer view, and code entry point |
-| `/product` | Complete platform capability and delivery lifecycle |
-| `/use-cases` and children | REST, realtime, modular SaaS, microservices, and offline PWA blueprints |
-| `/integrations` | HTTP, realtime, persistence, messaging, and deployment inventory |
-| `/architecture` | DDD, Hexagonal, Event-Driven, SOLID, and contract boundaries, plus an interactive backend-template hexagonal map (including `interface/GUI`) |
-| `/security-compliance` | RBAC, PCI-oriented controls, secret safety, and evidence |
-| `/pricing-or-engagement` | Open-source, pilot, and platform adoption paths |
-| `/community` | Contribution workflow and governance |
-| `/roadmap` | Product direction linked to the live Linear roadmap |
-| `/changelog` | GitHub history with up to 200 changes per page |
-| `/contact` | Discussions, issues, and enterprise contact |
-| `/docs/jumentix` | Technical documentation entry point |
+| Route                     | Responsibility                                                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                       | Positioning, proof, real Domain Designer view, and code entry point                                                                          |
+| `/product`                | Complete platform capability and delivery lifecycle                                                                                          |
+| `/use-cases` and children | REST, realtime, modular SaaS, microservices, and offline PWA blueprints                                                                      |
+| `/integrations`           | HTTP, realtime, persistence, messaging, and deployment inventory                                                                             |
+| `/architecture`           | DDD, Hexagonal, Event-Driven, SOLID, and contract boundaries, plus an interactive backend-template hexagonal map (including `interface/GUI`) |
+| `/security-compliance`    | RBAC, PCI-oriented controls, secret safety, and evidence                                                                                     |
+| `/pricing-or-engagement`  | Open-source, pilot, and platform adoption paths                                                                                              |
+| `/community`              | Contribution workflow and governance                                                                                                         |
+| `/roadmap`                | Product direction linked to the live Linear roadmap                                                                                          |
+| `/changelog`              | GitHub history with up to 200 changes per page                                                                                               |
+| `/contact`                | Discussions, issues, and enterprise contact                                                                                                  |
+| `/docs/jumentix`          | Technical documentation entry point                                                                                                          |
 
 Each commercial route also exists under `/pt-BR`. The locale control preserves the current route.
 

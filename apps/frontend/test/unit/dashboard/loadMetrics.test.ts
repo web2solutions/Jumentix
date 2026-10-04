@@ -1,14 +1,9 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
-import {
-  countPendingLocal, loadMetrics
-} from '@/components/dashboard/loadMetrics';
-import {
-  closeCana, getCanaClient, openCana, wipeCanaDatabase
-} from '@/data/db';
+import { countPendingLocal, loadMetrics } from '@/components/dashboard/loadMetrics';
+import { closeCana, getCanaClient, openCana, wipeCanaDatabase } from '@/data/db';
 
 const DB = 'jumentix-frontend-test-load-metrics';
 
@@ -32,16 +27,25 @@ describe('dashboard loadMetrics offline path (JUM-811)', () => {
   const seedUsers = async () => {
     const users = getCanaClient().table('users');
     await users.put({
-      id: 'u1', username: 'ana', createdAt: '2026-01-01T00:00:00.000Z'
+      id: 'u1',
+      username: 'ana',
+      createdAt: '2026-01-01T00:00:00.000Z'
     });
     await users.put({
-      id: 'u2', username: 'bia', createdAt: '2026-03-01T00:00:00.000Z'
+      id: 'u2',
+      username: 'bia',
+      createdAt: '2026-03-01T00:00:00.000Z'
     });
     await users.put({
-      id: 'u3', username: 'cio', createdAt: '2026-03-05T00:00:00.000Z'
+      id: 'u3',
+      username: 'cio',
+      createdAt: '2026-03-05T00:00:00.000Z'
     });
     await users.put({
-      id: 'u4', username: 'dio', createdAt: '2026-03-09T00:00:00.000Z', deletedAt: '2026-03-10T00:00:00.000Z'
+      id: 'u4',
+      username: 'dio',
+      createdAt: '2026-03-09T00:00:00.000Z',
+      deletedAt: '2026-03-10T00:00:00.000Z'
     });
   };
 

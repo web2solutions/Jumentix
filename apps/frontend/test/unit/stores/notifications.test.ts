@@ -1,6 +1,5 @@
-import {
-  beforeEach, describe, expect, it
-} from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { useNotificationStore } from '@/stores/notifications';

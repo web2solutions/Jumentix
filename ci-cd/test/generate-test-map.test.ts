@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -35,7 +34,10 @@ const {
 } = require(path.join(repoRoot, 'ci-cd', 'generate-test-map.js'));
 
 const dirs: string[] = [];
-const track = (dir: string) => { dirs.push(dir); return dir; };
+const track = (dir: string) => {
+  dirs.push(dir);
+  return dir;
+};
 
 function workspace(files: Record<string, string>): string {
   const dir = track(fs.mkdtempSync(path.join(os.tmpdir(), 'generate-map-')));
@@ -47,20 +49,23 @@ function workspace(files: Record<string, string>): string {
   return dir;
 }
 
-const suite = (over: Record<string, unknown> = {}) => JSON.stringify({
-  suites: [{
-    id: 'packages/alpha/test/a.test.ts',
-    path: 'packages/alpha/test/a.test.ts',
-    layer: 'adapters/out+infra',
-    kind: 'hexagonal',
-    type: 'unit',
-    runner: 'bun',
-    tier: 'gate',
-    timeoutMs: 120_000,
-    ...over
-  }],
-  quarantine: []
-});
+const suite = (over: Record<string, unknown> = {}) =>
+  JSON.stringify({
+    suites: [
+      {
+        id: 'packages/alpha/test/a.test.ts',
+        path: 'packages/alpha/test/a.test.ts',
+        layer: 'adapters/out+infra',
+        kind: 'hexagonal',
+        type: 'unit',
+        runner: 'bun',
+        tier: 'gate',
+        timeoutMs: 120_000,
+        ...over
+      }
+    ],
+    quarantine: []
+  });
 
 /**
  * JUM-682 — a quarantine entry outlives its file, and should not.
@@ -77,7 +82,7 @@ describe('quarantine carry-forward (JUM-682)', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'jum682-keep-'));
     const quarantined = 'packages/sample/test/flaky.test.ts';
     fs.mkdirSync(path.join(root, 'packages/sample/test'), { recursive: true });
-    fs.writeFileSync(path.join(root, quarantined), 'it(\'x\', () => undefined);\n');
+    fs.writeFileSync(path.join(root, quarantined), "it('x', () => undefined);\n");
 
     const kept = carriedQuarantine(root, {
       quarantine: [{ path: quarantined, issue: 'JUM-1', reason: 'why' }]
@@ -194,8 +199,11 @@ describe('loadPreviousRunnerOverrides', () => {
       'test-map.json': suite({ runner: 'node', ciRunner: 'node', reason: 'bun cannot load it' })
     });
 
-    expect(loadPreviousRunnerOverrides(dir).get('packages/alpha/test/a.test.ts'))
-      .toMatchObject({ runner: 'node', ciRunner: 'node', reason: 'bun cannot load it' });
+    expect(loadPreviousRunnerOverrides(dir).get('packages/alpha/test/a.test.ts')).toMatchObject({
+      runner: 'node',
+      ciRunner: 'node',
+      reason: 'bun cannot load it'
+    });
   });
 });
 
@@ -255,8 +263,9 @@ describe('buildManifest', () => {
     const manifest = buildManifest(dir);
 
     expect(manifest.stats.unit).toBe(1);
-    expect(manifest.suites.map((entry: { path: string }) => entry.path))
-      .toContain('packages/alpha/test/a.test.ts');
+    expect(manifest.suites.map((entry: { path: string }) => entry.path)).toContain(
+      'packages/alpha/test/a.test.ts'
+    );
   });
 
   it('classifies pipeline and root tooling configuration', () => {
@@ -266,12 +275,9 @@ describe('buildManifest', () => {
 
     // Without these a change touching only a workflow or `test-map.json` maps to
     // no layer, and the task gate refuses it as an unsupported change set.
-    expect(globs).toStrictEqual(expect.arrayContaining([
-      '.github/**',
-      '.circleci/**',
-      'test-map.json',
-      'jest.config.js'
-    ]));
+    expect(globs).toStrictEqual(
+      expect.arrayContaining(['.github/**', '.circleci/**', 'test-map.json', 'jest.config.js'])
+    );
   });
 
   it('declares cheap dev health and full main matrix in the generated gate table', () => {
@@ -298,8 +304,10 @@ describe('service-management classification (JUM-472)', () => {
   it('files SM unit suites under the designer sub-layer, not tooling', () => {
     expect.hasAssertions();
 
-    expect(classifyUnit('apps/service-management/test/unit/designerStore.test.ts'))
-      .toStrictEqual({ layer: 'service-management/designer', kind: 'non-hexagonal' });
+    expect(classifyUnit('apps/service-management/test/unit/designerStore.test.ts')).toStrictEqual({
+      layer: 'service-management/designer',
+      kind: 'non-hexagonal'
+    });
   });
 
   it.each([
@@ -312,13 +320,14 @@ describe('service-management classification (JUM-472)', () => {
   ])('files the SM integration suite %s under %s', (name, layer, areaDir) => {
     expect.hasAssertions();
 
-    expect(classifyIntegration(`apps/service-management/test/integration/${areaDir}/${name}`))
-      .toMatchObject({
-        layer,
-        kind: 'non-hexagonal',
-        adapter: 'service-management',
-        script: 'test:integration:service-management'
-      });
+    expect(
+      classifyIntegration(`apps/service-management/test/integration/${areaDir}/${name}`)
+    ).toMatchObject({
+      layer,
+      kind: 'non-hexagonal',
+      adapter: 'service-management',
+      script: 'test:integration:service-management'
+    });
   });
 
   /**
@@ -330,9 +339,11 @@ describe('service-management classification (JUM-472)', () => {
   it('refuses an SM integration suite with no recorded area', () => {
     expect.hasAssertions();
 
-    expect(() => classifyIntegration(
-      'apps/service-management/test/integration/server/brand-new.integration.test.ts'
-    )).toThrow('brand-new.integration.test.ts');
+    expect(() =>
+      classifyIntegration(
+        'apps/service-management/test/integration/server/brand-new.integration.test.ts'
+      )
+    ).toThrow('brand-new.integration.test.ts');
   });
 
   it('declares the Service Management sub-layers with enumerated globs and dependency direction', () => {
@@ -392,14 +403,13 @@ describe('the repository itself', () => {
     const committed = JSON.parse(fs.readFileSync(path.join(repoRoot, 'test-map.json'), 'utf8'));
     const regenerated = buildManifest(repoRoot);
 
-    const paths = (
-      manifest: { suites: Array<{ path: string }> }
-    ) => manifest.suites.map((entry) => entry.path).sort();
+    const paths = (manifest: { suites: { path: string }[] }) =>
+      manifest.suites.map((entry) => entry.path).sort();
 
     expect(paths(regenerated)).toStrictEqual(paths(committed));
     expect(regenerated.quarantine).toStrictEqual(committed.quarantine);
 
-    const pinned = (manifest: { suites: Array<{ runner?: string; reason?: string }> }) => ({
+    const pinned = (manifest: { suites: { runner?: string; reason?: string }[] }) => ({
       node: manifest.suites.filter((entry) => entry.runner === 'node').length,
       reasoned: manifest.suites.filter((entry) => entry.reason).length
     });

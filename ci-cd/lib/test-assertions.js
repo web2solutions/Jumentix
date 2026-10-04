@@ -18,7 +18,8 @@
  * is not a loophole: a hook that runs before every test declares for every test
  * as surely as the line would.
  */
-const fs = require('fs');
+const fs = require('node:fs');
+
 const ts = require('typescript');
 
 /** `it`, `test`, and their modifier chains: `it.each(...)`, `test.concurrent`. */
@@ -40,7 +41,10 @@ function rootName(expression) {
   let node = expression;
   const modifiers = [];
   for (;;) {
-    if (ts.isCallExpression(node)) { node = node.expression; continue; }
+    if (ts.isCallExpression(node)) {
+      node = node.expression;
+      continue;
+    }
     if (ts.isPropertyAccessExpression(node)) {
       modifiers.unshift(node.name.getText ? node.name.getText() : node.name.escapedText);
       node = node.expression;
@@ -75,9 +79,9 @@ function declaresAssertions(node) {
       const method = child.expression.name.escapedText.toString();
       const target = child.expression.expression;
       if (
-        (method === 'hasAssertions' || method === 'assertions')
-        && ts.isIdentifier(target)
-        && target.escapedText.toString() === 'expect'
+        (method === 'hasAssertions' || method === 'assertions') &&
+        ts.isIdentifier(target) &&
+        target.escapedText.toString() === 'expect'
       ) {
         found = true;
         return;

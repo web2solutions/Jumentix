@@ -31,6 +31,8 @@ onUnmounted(() => {
     :data-online="online ? 'true' : 'false'"
   >
     <CIcon :icon="online ? 'cil-check-circle' : 'cil-x-circle'" size="sm" />
-    <span class="d-none d-md-inline">{{ online ? t('network.online') : t('network.offline') }}</span>
+    <span class="d-none d-md-inline">{{
+      online ? t('network.online') : t('network.offline')
+    }}</span>
   </span>
 </template>

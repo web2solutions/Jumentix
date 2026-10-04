@@ -11,7 +11,6 @@
 // modifier on the whole statement, which erased every runtime binding below —
 // the suite failed with `isCanaErrorCode is not defined` (JUM-657).
 import {
-  type CanaSchema,
   canaError,
   createClient,
   createRouter,
@@ -25,10 +24,11 @@ import {
   resolveOutcome,
   runConformance,
   serve,
-  StorageDurability,
-  type CanaResponseEnvelope
+  StorageDurability
 } from '../src';
 import { rejection, uniqueName } from './harness';
+
+import type { CanaResponseEnvelope, CanaSchema } from '../src';
 
 const schema = (): CanaSchema => ({
   version: 1,
@@ -38,9 +38,13 @@ const schema = (): CanaSchema => ({
 function memoryStorage() {
   const bag = new Map<string, string>();
   return {
-    getItem: (key: string) => (bag.has(key) ? bag.get(key)! : null),
-    removeItem: (key: string) => { bag.delete(key); },
-    setItem: (key: string, value: string) => { bag.set(key, String(value)); },
+    getItem: (key: string) => bag.get(key) ?? null,
+    removeItem: (key: string) => {
+      bag.delete(key);
+    },
+    setItem: (key: string, value: string) => {
+      bag.set(key, String(value));
+    },
     bag
   };
 }
@@ -71,20 +75,28 @@ function fakePort() {
 
 describe('cana 100% coverage — localStorage backend edges', () => {
   it('refuses to open when ambient localStorage is missing', async () => {
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
     const globals = globalThis as { localStorage?: Storage };
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
     const previous = globals.localStorage;
     // @ts-expect-error deliberate deletion for Unavailable path
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
     delete globals.localStorage;
     try {
-      const failure = await rejection(Promise.resolve().then(() => openLocalStorageBackend({
-        name: uniqueName('no-ls'),
-        schema: schema(),
-        originId: 'o',
-        nextCursor: () => 1
-      })));
+      const failure = await rejection(
+        Promise.resolve().then(() =>
+          openLocalStorageBackend({
+            name: uniqueName('no-ls'),
+            schema: schema(),
+            originId: 'o',
+            nextCursor: () => 1
+          })
+        )
+      );
       expect(isCanaErrorCode(failure, 'Unavailable')).to.equal(true);
     } finally {
-      globals.localStorage = previous!;
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
+      globals.localStorage = previous;
     }
   });
 
@@ -114,109 +126,149 @@ describe('cana 100% coverage — localStorage backend edges', () => {
       nextCursor: () => 1
     });
 
-    await backend.transaction('readwrite', ['compound', 'nested', 'inbound'], async (scope) => {
-      await scope.table('compound').put({ owner: 'ana', id: 1, label: 'a1' });
-      await scope.table('compound').put({ owner: 'ana', id: 2, label: 'a2' });
-      await scope.table('compound').put({ owner: 'bob', id: 1, label: 'b1' });
-      // Nested autoIncrement creates the missing parent object.
-      const nested = await scope.table('nested').add({ tag: 't' } as never);
-      expect(typeof nested.key).to.equal('number');
-      await scope.table('inbound').put({ id: 1, name: 'ok' });
-      return null;
-    }, 'c:seed');
+    await backend.transaction(
+      'readwrite',
+      ['compound', 'nested', 'inbound'],
+      async (scope) => {
+        await scope.table('compound').put({ owner: 'ana', id: 1, label: 'a1' });
+        await scope.table('compound').put({ owner: 'ana', id: 2, label: 'a2' });
+        await scope.table('compound').put({ owner: 'bob', id: 1, label: 'b1' });
+        // Nested autoIncrement creates the missing parent object.
+        const nested = await scope.table('nested').add({ tag: 't' } as never);
+        expect(typeof nested.key).to.equal('number');
+        await scope.table('inbound').put({ id: 1, name: 'ok' });
+        return null;
+      },
+      'c:seed'
+    );
 
     // Compound primary-key range with open bounds + reverse length mismatch via query sort.
-    const ranged = await backend.transaction('readonly', ['compound'], async (scope) => (
-      scope.table('compound').query({
-        range: {
-          lower: ['ana', 1],
-          upper: ['ana', 9],
-          lowerOpen: true,
-          upperOpen: true
-        },
-        direction: 'prev'
-      })
-    ), 'c:range');
+    const ranged = await backend.transaction(
+      'readonly',
+      ['compound'],
+      async (scope) =>
+        scope.table('compound').query({
+          range: {
+            lower: ['ana', 1],
+            upper: ['ana', 9],
+            lowerOpen: true,
+            upperOpen: true
+          },
+          direction: 'prev'
+        }),
+      'c:range'
+    );
     expect(ranged.outcome).to.equal('committed');
 
     // Nested index path through a non-object mid-node (readPath early return).
     const nestedStorage = memoryStorage();
     const nestedName = uniqueName('ls-nested-mid');
-    nestedStorage.setItem(`cana.ls.v1:${nestedName}`, JSON.stringify({
-      version: 1,
-      stores: { nested: { 1: { meta: null, tag: 't' } } },
-      sequences: { nested: 1 }
-    }));
+    nestedStorage.setItem(
+      `cana.ls.v1:${nestedName}`,
+      JSON.stringify({
+        version: 1,
+        stores: { nested: { 1: { meta: null, tag: 't' } } },
+        sequences: { nested: 1 }
+      })
+    );
     const nestedBackend = openLocalStorageBackend({
       name: nestedName,
       schema: {
         version: 1,
-        stores: [{
-          name: 'nested',
-          keyPath: 'meta.id',
-          indexes: [{ name: 'byDeep', keyPath: 'meta.tag' }]
-        }]
+        stores: [
+          {
+            name: 'nested',
+            keyPath: 'meta.id',
+            indexes: [{ name: 'byDeep', keyPath: 'meta.tag' }]
+          }
+        ]
       },
       storage: nestedStorage,
       originId: 'o',
       nextCursor: () => 1
     });
-    const midPath = await nestedBackend.transaction('readonly', ['nested'], async (scope) => (
-      scope.table('nested').query({ index: 'byDeep', equals: 't' })
-    ), 'c:mid');
+    const midPath = await nestedBackend.transaction(
+      'readonly',
+      ['nested'],
+      async (scope) => scope.table('nested').query({ index: 'byDeep', equals: 't' }),
+      'c:mid'
+    );
     expect(midPath.outcome).to.equal('committed');
     nestedBackend.close();
 
-    const missingInbound = await rejection(backend.transaction(
-      'readwrite',
-      ['inbound'],
-      async (scope) => scope.table('inbound').put({ name: 'no-id' } as never),
-      'c:noid'
-    ));
+    const missingInbound = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['inbound'],
+        async (scope) => scope.table('inbound').put({ name: 'no-id' } as never),
+        'c:noid'
+      )
+    );
     expect(isCanaErrorCode(missingInbound, 'InvalidRequest')).to.equal(true);
 
-    const explicitPut = await rejection(backend.transaction(
-      'readwrite',
-      ['inbound'],
-      async (scope) => scope.table('inbound').put({ id: 2, name: 'x' }, 2 as never),
-      'c:explicit-put'
-    ));
+    const explicitPut = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['inbound'],
+        async (scope) => scope.table('inbound').put({ id: 2, name: 'x' }, 2 as never),
+        'c:explicit-put'
+      )
+    );
     expect(isCanaErrorCode(explicitPut, 'InvalidRequest')).to.equal(true);
 
-    const unknownStore = await rejection(backend.transaction(
-      'readonly',
-      ['nope'],
-      async (scope) => scope.table('nope').query(),
-      'c:unknown'
-    ));
+    const unknownStore = await rejection(
+      backend.transaction(
+        'readonly',
+        ['nope'],
+        async (scope) => scope.table('nope').query(),
+        'c:unknown'
+      )
+    );
     expect(isCanaErrorCode(unknownStore, 'InvalidRequest')).to.equal(true);
 
     // Delete a missing key (present=false arm) and an existing one (record arm).
-    await backend.transaction('readwrite', ['inbound', 'outbound'], async (scope) => {
-      await scope.table('inbound').put({ id: 99, name: 'gone' });
-      await scope.table('inbound').delete(99);
-      await scope.table('outbound').delete('missing');
-      scope.abort();
-      return null;
-    }, 'c:abort').catch(() => undefined);
+    await backend
+      .transaction(
+        'readwrite',
+        ['inbound', 'outbound'],
+        async (scope) => {
+          await scope.table('inbound').put({ id: 99, name: 'gone' });
+          await scope.table('inbound').delete(99);
+          await scope.table('outbound').delete('missing');
+          scope.abort();
+          return null;
+        },
+        'c:abort'
+      )
+      .catch(() => undefined);
 
     // Open ranges with only a lower or only an upper bound.
-    const lowerOnly = await backend.transaction('readonly', ['compound'], async (scope) => (
-      scope.table('compound').query({ range: { lower: ['bob', 0], lowerOpen: false } })
-    ), 'c:lower');
+    const lowerOnly = await backend.transaction(
+      'readonly',
+      ['compound'],
+      async (scope) =>
+        scope.table('compound').query({ range: { lower: ['bob', 0], lowerOpen: false } }),
+      'c:lower'
+    );
     expect(lowerOnly.outcome).to.equal('committed');
-    const upperOnly = await backend.transaction('readonly', ['compound'], async (scope) => (
-      scope.table('compound').query({ range: { upper: ['bob', 9], upperOpen: true } })
-    ), 'c:upper');
+    const upperOnly = await backend.transaction(
+      'readonly',
+      ['compound'],
+      async (scope) =>
+        scope.table('compound').query({ range: { upper: ['bob', 9], upperOpen: true } }),
+      'c:upper'
+    );
     expect(upperOnly.outcome).to.equal('committed');
 
     // Compound keyPath with a missing part.
-    const compoundGap = await rejection(backend.transaction(
-      'readwrite',
-      ['compound'],
-      async (scope) => scope.table('compound').put({ owner: 'ana' } as never),
-      'c:compound-gap'
-    ));
+    const compoundGap = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['compound'],
+        async (scope) => scope.table('compound').put({ owner: 'ana' } as never),
+        'c:compound-gap'
+      )
+    );
     expect(isCanaErrorCode(compoundGap, 'InvalidRequest')).to.equal(true);
 
     // operationLedger resolveWrite when the ledger bag is absent from the snapshot.
@@ -249,7 +301,10 @@ describe('cana 100% coverage — localStorage backend edges', () => {
       name: uniqueName('ls-export'),
       schema: {
         version: 1,
-        stores: [{ name: 'designs', keyPath: 'id' }, { name: 'extra', keyPath: 'id' }]
+        stores: [
+          { name: 'designs', keyPath: 'id' },
+          { name: 'extra', keyPath: 'id' }
+        ]
       },
       storage: memoryStorage(),
       originId: 'o',
@@ -265,15 +320,18 @@ describe('cana 100% coverage — localStorage backend edges', () => {
     // Sequences already non-zero and compound autoIncrement keyPath false arm.
     const seqName = uniqueName('ls-seq');
     const seqStorage = memoryStorage();
-    seqStorage.setItem(`cana.ls.v1:${seqName}`, JSON.stringify({
-      version: 1,
-      stores: {
-        keyed: {},
-        compoundGen: {},
-        outboundGen: {}
-      },
-      sequences: { keyed: 2, compoundGen: 1, outboundGen: 3 }
-    }));
+    seqStorage.setItem(
+      `cana.ls.v1:${seqName}`,
+      JSON.stringify({
+        version: 1,
+        stores: {
+          keyed: {},
+          compoundGen: {},
+          outboundGen: {}
+        },
+        sequences: { keyed: 2, compoundGen: 1, outboundGen: 3 }
+      })
+    );
     const seqBackend = openLocalStorageBackend({
       name: seqName,
       schema: {
@@ -288,12 +346,17 @@ describe('cana 100% coverage — localStorage backend edges', () => {
       originId: 'o',
       nextCursor: () => 1
     });
-    await seqBackend.transaction('readwrite', ['keyed', 'compoundGen', 'outboundGen'], async (scope) => {
-      await scope.table('keyed').add({ label: 'a' } as never);
-      await scope.table('compoundGen').add({ tenant: 't1' } as never);
-      await scope.table('outboundGen').add({ label: 'b' } as never);
-      return null;
-    }, 'c:seq');
+    await seqBackend.transaction(
+      'readwrite',
+      ['keyed', 'compoundGen', 'outboundGen'],
+      async (scope) => {
+        await scope.table('keyed').add({ label: 'a' } as never);
+        await scope.table('compoundGen').add({ tenant: 't1' } as never);
+        await scope.table('outboundGen').add({ label: 'b' } as never);
+        return null;
+      },
+      'c:seq'
+    );
     seqBackend.close();
 
     expect(await backend.resolveWrite('any', Date.now())).to.equal('unresolvable');
@@ -301,12 +364,16 @@ describe('cana 100% coverage — localStorage backend edges', () => {
     // Queue continuation after a rejected transaction (internal queue rejection).
     const internal = backend as unknown as { queue: Promise<unknown> };
     internal.queue = Promise.reject(new Error('prior queue link rejected'));
-    await backend.transaction(
-      'readwrite',
-      ['inbound'],
-      async () => { throw new Error('boom'); },
-      'c:boom'
-    ).catch(() => undefined);
+    await backend
+      .transaction(
+        'readwrite',
+        ['inbound'],
+        async () => {
+          throw new Error('boom');
+        },
+        'c:boom'
+      )
+      .catch(() => undefined);
     const after = await backend.transaction(
       'readonly',
       ['inbound'],
@@ -322,24 +389,37 @@ describe('cana 100% coverage — localStorage backend edges', () => {
     const storage = memoryStorage();
     const name = uniqueName('ls-snap');
     storage.setItem(`cana.ls.v1:${name}`, JSON.stringify({ version: 'x', stores: null }));
-    const corrupt = await rejection(Promise.resolve().then(() => openLocalStorageBackend({
-      name,
-      schema: schema(),
-      storage,
-      originId: 'o',
-      nextCursor: () => 1
-    })));
+    const corrupt = await rejection(
+      Promise.resolve().then(() =>
+        openLocalStorageBackend({
+          name,
+          schema: schema(),
+          storage,
+          originId: 'o',
+          nextCursor: () => 1
+        })
+      )
+    );
     expect(isCanaErrorCode(corrupt, 'Internal')).to.equal(true);
 
     const name2 = uniqueName('ls-up');
-    storage.setItem(`cana.ls.v1:${name2}`, JSON.stringify({
-      version: 1,
-      stores: { designs: {} },
-      sequences: { designs: 0 }
-    }));
+    storage.setItem(
+      `cana.ls.v1:${name2}`,
+      JSON.stringify({
+        version: 1,
+        stores: { designs: {} },
+        sequences: { designs: 0 }
+      })
+    );
     const upgraded = openLocalStorageBackend({
       name: name2,
-      schema: { version: 2, stores: [{ name: 'designs', keyPath: 'id' }, { name: 'extra', keyPath: 'id' }] },
+      schema: {
+        version: 2,
+        stores: [
+          { name: 'designs', keyPath: 'id' },
+          { name: 'extra', keyPath: 'id' }
+        ]
+      },
       storage,
       originId: 'o',
       nextCursor: () => 1
@@ -348,7 +428,9 @@ describe('cana 100% coverage — localStorage backend edges', () => {
 
     const throwsString = {
       getItem: () => null,
-      setItem: () => { throw new Error('quota-string'); },
+      setItem: () => {
+        throw new Error('quota-string');
+      },
       removeItem: () => undefined
     };
     const backend = openLocalStorageBackend({
@@ -358,12 +440,14 @@ describe('cana 100% coverage — localStorage backend edges', () => {
       originId: 'o',
       nextCursor: () => 1
     });
-    const failure = await rejection(backend.transaction(
-      'readwrite',
-      ['designs'],
-      async (scope) => scope.table('designs').put({ id: 1 }),
-      'c:str'
-    ));
+    const failure = await rejection(
+      backend.transaction(
+        'readwrite',
+        ['designs'],
+        async (scope) => scope.table('designs').put({ id: 1 }),
+        'c:str'
+      )
+    );
     expect(isCanaErrorCode(failure, 'QuotaExceeded')).to.equal(true);
   });
 
@@ -378,16 +462,22 @@ describe('cana 100% coverage — localStorage backend edges', () => {
         schema: schema(),
         localStorage: memoryStorage(),
         hooks: {
-          afterRollback: (_outcome, reason) => { seen.push(reason ?? 'none'); }
+          afterRollback: (_outcome, reason) => {
+            seen.push(reason ?? 'none');
+          }
         }
       });
       await client.open();
-      await rejection(client.transaction('readwrite', ['designs'], async () => {
-        throw new Error('plain');
-      }));
-      await rejection(client.transaction('readwrite', ['designs'], async () => {
-        throw canaError('InvalidRequest', 'typed');
-      }));
+      await rejection(
+        client.transaction('readwrite', ['designs'], async () => {
+          throw new Error('plain');
+        })
+      );
+      await rejection(
+        client.transaction('readwrite', ['designs'], async () => {
+          throw canaError('InvalidRequest', 'typed');
+        })
+      );
       // Non-Cana throws pass `undefined` as the reason; Cana errors pass `.message`.
       expect(seen).to.deep.equal(['none', 'typed']);
       await client.close();
@@ -428,7 +518,9 @@ describe('cana 100% coverage — open/delete timers and client guards', () => {
       factory,
       blockedTimeoutMs: 30
     });
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
     opened.database.close();
   });
 
@@ -442,13 +534,17 @@ describe('cana 100% coverage — open/delete timers and client guards', () => {
     };
     const factory = {
       deleteDatabase: () => {
-        setTimeout(() => { request.onsuccess?.(); }, 0);
+        setTimeout(() => {
+          request.onsuccess?.();
+        }, 0);
         return request;
       }
     } as unknown as IDBFactory;
 
     await deleteDatabase(name, { factory, blockedTimeoutMs: 30 });
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
   });
 
   it('ignores late delete success after blocked timeout already rejected', async () => {
@@ -461,15 +557,20 @@ describe('cana 100% coverage — open/delete timers and client guards', () => {
     };
     const factory = {
       deleteDatabase: () => {
-        setTimeout(() => { request.onsuccess?.(); }, 40);
+        setTimeout(() => {
+          request.onsuccess?.();
+        }, 40);
         return request;
       }
     } as unknown as IDBFactory;
 
-    const failure = await deleteDatabase(name, { factory, blockedTimeoutMs: 20 })
-      .catch((error: unknown) => error);
+    const failure = await deleteDatabase(name, { factory, blockedTimeoutMs: 20 }).catch(
+      (error: unknown) => error
+    );
     expect(isCanaErrorCode(failure, 'UpgradeBlocked')).to.equal(true);
-    await new Promise((resolve) => { setTimeout(resolve, 60); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 60);
+    });
   });
 
   it('prefers upgradeFailure on onerror over the request error', async () => {
@@ -485,12 +586,16 @@ describe('cana 100% coverage — open/delete timers and client guards', () => {
     };
     const store = {
       objectStoreNames: { contains: () => false },
-      createObjectStore: () => { throw new DOMException('refused', 'InvalidAccessError'); },
+      createObjectStore: () => {
+        throw new DOMException('refused', 'InvalidAccessError');
+      },
       close: () => undefined
     };
     const transaction = {
       abort: () => undefined,
-      objectStore: () => { throw new DOMException('no store', 'NotFoundError'); }
+      objectStore: () => {
+        throw new DOMException('no store', 'NotFoundError');
+      }
     };
     const factory = {
       open: () => {
@@ -506,8 +611,9 @@ describe('cana 100% coverage — open/delete timers and client guards', () => {
       databases: async () => []
     } as unknown as IDBFactory;
 
-    const failure = await openDatabase({ name, schema: schema(), factory })
-      .catch((error: unknown) => error);
+    const failure = await openDatabase({ name, schema: schema(), factory }).catch(
+      (error: unknown) => error
+    );
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
     expect((failure as { message: string }).message).to.include('refused');
   });
@@ -531,7 +637,13 @@ describe('cana 100% coverage — open/delete timers and client guards', () => {
 
     const upgraded = await openDatabase({
       name,
-      schema: { version: 2, stores: [{ name: 'designs', keyPath: 'id' }, { name: 'extra', keyPath: 'id' }] },
+      schema: {
+        version: 2,
+        stores: [
+          { name: 'designs', keyPath: 'id' },
+          { name: 'extra', keyPath: 'id' }
+        ]
+      },
       factory: blind,
       durability: new StorageDurability({})
     });
@@ -546,7 +658,8 @@ describe('cana 100% coverage — open/delete timers and client guards', () => {
     const internal = client as unknown as { database?: IDBDatabase };
     // Keep the real handle so the suite afterEach is not left with an orphaned
     // connection that blocks `indexedDB.databases()` cleanup.
-    const live = internal.database!;
+    const live = internal.database;
+    if (!live) throw new Error('expected an open IDB handle before simulating its loss');
     internal.database = undefined;
     const failure = await rejection(client.exportAll());
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
@@ -564,19 +677,26 @@ describe('cana 100% coverage — protocol and conformance', () => {
     harness.reply(harness.sent[0].requestId as string, { result: 'fast' });
     expect(await pending).to.equal('fast');
     // Leave the router alive so the armed timer can fire and hit the settled guard.
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
     router.dispose();
   });
 
   it('covers resolveOutcome default options and canaError cause shapes', async () => {
     expect(canaError('Internal', 'x', { cause: { message: 'only' } }).cause).to.equal('only');
     expect(canaError('Internal', 'x', { cause: { name: 'OnlyName' } }).cause).to.equal('OnlyName');
-    expect(canaError('Internal', 'x', { cause: { name: 'Named', message: 'and messaged' } }).cause)
-      .to.equal('Named: and messaged');
-    expect(canaError('Internal', 'x', { cause: { other: true } }).cause).to.equal('[object Object]');
+    expect(
+      canaError('Internal', 'x', { cause: { name: 'Named', message: 'and messaged' } }).cause
+    ).to.equal('Named: and messaged');
+    expect(canaError('Internal', 'x', { cause: { other: true } }).cause).to.equal(
+      '[object Object]'
+    );
     const database = {
       objectStoreNames: { contains: () => false },
-      transaction: () => { throw new Error('no ledger'); }
+      transaction: () => {
+        throw new Error('no ledger');
+      }
     } as unknown as IDBDatabase;
     const outcome = await resolveOutcome(database, 'id', Date.now());
     expect(outcome).to.equal('unresolvable');
@@ -591,7 +711,9 @@ describe('cana 100% coverage — protocol and conformance', () => {
 
   it('runs the aborted-transaction subscribe check from the harness', async () => {
     const report = await runConformance({ label: 'coverage-subscribe-abort' });
-    const check = report.results.find((result) => result.name === 'emits no events for an aborted transaction');
+    const check = report.results.find(
+      (result) => result.name === 'emits no events for an aborted transaction'
+    );
     expect(check?.status).to.equal('passed');
   });
 
@@ -604,13 +726,19 @@ describe('cana 100% coverage — protocol and conformance', () => {
     const browserChecks = report.results.filter((result) => result.browserOnly);
     expect(browserChecks.every((result) => result.status !== 'skipped')).to.equal(true);
 
-    const persistence = report.results.find((result) => result.name === 'reports real persistence state');
+    const persistence = report.results.find(
+      (result) => result.name === 'reports real persistence state'
+    );
     expect(persistence?.status).to.equal('passed');
 
-    const fallback = report.results.find((result) => result.name === 'opens the localStorage fallback when IndexedDB is missing');
+    const fallback = report.results.find(
+      (result) => result.name === 'opens the localStorage fallback when IndexedDB is missing'
+    );
     expect(fallback?.status).to.equal('passed');
 
-    const reload = report.results.find((result) => result.name === 'survives a page reload with data intact');
+    const reload = report.results.find(
+      (result) => result.name === 'survives a page reload with data intact'
+    );
     expect(reload?.status).to.equal('passed');
   });
 });
@@ -630,22 +758,32 @@ describe('cana 100% coverage — table, transaction, and hooks', () => {
     });
     try {
       await client.open();
-      type Row = { tenant: string; id: number; name: string };
+      interface Row {
+        tenant: string;
+        id: number;
+        name: string;
+      }
       const table = client.table<Row>('designs');
       await table.add({ tenant: 't1', id: 1, name: 'first' });
 
-      const partial = await table.bulkAdd([
-        { tenant: 't1', id: 1, name: 'dup' },
-        { tenant: 't1', id: 2, name: 'ok' }
-      ]).catch((error: unknown) => error);
+      const partial = await table
+        .bulkAdd([
+          { tenant: 't1', id: 1, name: 'dup' },
+          { tenant: 't1', id: 2, name: 'ok' }
+        ])
+        .catch((error: unknown) => error);
       expect(isCanaErrorCode(partial, 'ConstraintViolation')).to.equal(true);
 
       // Missing compound part — covers extractKey's undefined-part arm.
-      const compoundGap = await table.put({ tenant: 't1' } as never)
+      const compoundGap = await table
+        .put({ tenant: 't1' } as never)
         .catch((error: unknown) => error);
-      expect(isCanaError(compoundGap) || compoundGap instanceof DOMException
-        || (compoundGap as { name?: string })?.name === 'DataError'
-        || String(compoundGap).includes('key path')).to.equal(true);
+      expect(
+        isCanaError(compoundGap) ||
+          compoundGap instanceof DOMException ||
+          (compoundGap as { name?: string })?.name === 'DataError' ||
+          String(compoundGap).includes('key path')
+      ).to.equal(true);
 
       // Delete an existing row so record('deleted', key) omits the value arm.
       await table.add({ tenant: 't1', id: 2, name: 'second' });
@@ -653,12 +791,16 @@ describe('cana 100% coverage — table, transaction, and hooks', () => {
 
       // Missing compound part on nested null meta.
       await nested.open();
-      const missingPart = await nested.table<{ meta: null; tag: string }>('nested')
+      const missingPart = await nested
+        .table<{ meta: null; tag: string }>('nested')
         .put({ meta: null, tag: 'x' })
         .catch((error: unknown) => error);
-      expect(isCanaError(missingPart) || missingPart instanceof DOMException
-        || (missingPart as { name?: string })?.name === 'DataError'
-        || String(missingPart).includes('key path')).to.equal(true);
+      expect(
+        isCanaError(missingPart) ||
+          missingPart instanceof DOMException ||
+          (missingPart as { name?: string })?.name === 'DataError' ||
+          String(missingPart).includes('key path')
+      ).to.equal(true);
     } finally {
       await nested.close().catch(() => undefined);
       await client.close().catch(() => undefined);
@@ -707,7 +849,9 @@ describe('cana 100% coverage — table, transaction, and hooks', () => {
       request.onerror?.();
     }, 0);
 
-    expect(await rejection(requestToPromise(request as IDBRequest))).to.deep.include({ code: 'Internal' });
+    expect(await rejection(requestToPromise(request as IDBRequest))).to.deep.include({
+      code: 'Internal'
+    });
 
     const queryOnly = new StorageDurability({ persisted: async () => false });
     expect(await queryOnly.requestPersistence()).to.equal('unknown');
@@ -724,7 +868,9 @@ describe('cana 100% coverage — table, transaction, and hooks', () => {
       onabort: null as (() => void) | null,
       onerror: null as (() => void) | null,
       error: null,
-      abort() { /* already committed */ },
+      abort() {
+        /* already committed */
+      },
       objectStore: () => ({ name: 'designs' })
     };
     const database = {
@@ -760,7 +906,11 @@ describe('cana 100% coverage — table, transaction, and hooks', () => {
       name,
       schema: schema(),
       factory,
-      hooks: { afterRollback: (outcome) => { seen.push(outcome); } }
+      hooks: {
+        afterRollback: (outcome) => {
+          seen.push(outcome);
+        }
+      }
     });
     await client.open();
 
@@ -783,12 +933,15 @@ describe('cana 100% coverage — table, transaction, and hooks', () => {
       name: uniqueName('hook-noid'),
       schema: { version: 1, stores: [{ name: 'notes', autoIncrement: true }] },
       hooks: {
-        beforeWrite: () => { throw new Error('veto-no-key'); }
+        beforeWrite: () => {
+          throw new Error('veto-no-key');
+        }
       }
     });
     await client.open();
     try {
-      const failure = await client.table<{ title: string }>('notes')
+      const failure = await client
+        .table<{ title: string }>('notes')
         .add({ title: 'x' })
         .catch((error: unknown) => error);
       expect(isCanaError(failure)).to.equal(true);
@@ -808,7 +961,8 @@ describe('cana 100% coverage — table, transaction, and hooks', () => {
     await keyed.open();
     try {
       await keyed.table<{ id: number; name: string }>('designs').put({ id: 1, name: 'seed' });
-      const veto = await keyed.table<{ id: number; name: string }>('designs')
+      const veto = await keyed
+        .table<{ id: number; name: string }>('designs')
         .update(1, { name: 'blocked' })
         .catch((error: unknown) => error);
       expect(isCanaError(veto)).to.equal(true);
@@ -817,20 +971,24 @@ describe('cana 100% coverage — table, transaction, and hooks', () => {
       await keyed.close();
     }
 
-    const seen: Array<string | undefined> = [];
+    const seen: (string | undefined)[] = [];
     const idb = createClient({
       name: uniqueName('idb-plain-rollback'),
       schema: schema(),
       hooks: {
-        afterRollback: (_outcome, reason) => { seen.push(reason); }
+        afterRollback: (_outcome, reason) => {
+          seen.push(reason);
+        }
       }
     });
     await idb.open();
     try {
-      await rejection(idb.transaction('readwrite', ['designs'], async (scope) => {
-        await scope.table('designs').put({ id: 1, name: 'a' });
-        throw new Error('plain-idb');
-      }));
+      await rejection(
+        idb.transaction('readwrite', ['designs'], async (scope) => {
+          await scope.table('designs').put({ id: 1, name: 'a' });
+          throw new Error('plain-idb');
+        })
+      );
       // IDB path translates the body Error before notifyRolledBack, so the
       // reason is the message — unlike the localStorage catch which forwards
       // the raw throw.
@@ -847,18 +1005,31 @@ describe('cana 100% coverage — worker host defensive paths', () => {
     await client.open();
     try {
       await serve(client, {
-        kind: 'write', store: 'designs', requestId: 'b1', payload: { operation: 'bulkAdd' }
+        kind: 'write',
+        store: 'designs',
+        requestId: 'b1',
+        payload: { operation: 'bulkAdd' }
       });
       await serve(client, {
-        kind: 'write', store: 'designs', requestId: 'b2', payload: { operation: 'bulkPut' }
+        kind: 'write',
+        store: 'designs',
+        requestId: 'b2',
+        payload: { operation: 'bulkPut' }
       });
       await serve(client, {
-        kind: 'write', store: 'designs', requestId: 'b3', payload: { operation: 'bulkDelete' }
+        kind: 'write',
+        store: 'designs',
+        requestId: 'b3',
+        payload: { operation: 'bulkDelete' }
       });
       // Seed so update's omitted `changes` (`?? {}`) path can run against a real row.
       await client.table<{ id: number; name: string }>('designs').put({ id: 1, name: 'seed' });
       await serve(client, {
-        kind: 'write', store: 'designs', requestId: 'u1', key: 1, payload: { operation: 'update' }
+        kind: 'write',
+        store: 'designs',
+        requestId: 'u1',
+        key: 1,
+        payload: { operation: 'update' }
       });
     } finally {
       await client.close();
@@ -896,7 +1067,9 @@ describe('cana 100% coverage — worker host defensive paths', () => {
       key: 1
     });
 
-    await new Promise((resolve) => { setTimeout(resolve, 30); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 30);
+    });
     expect(replies).to.have.lengthOf(1);
     expect(replies[0]?.ok).to.equal(false);
     expect(replies[0]?.error).to.deep.include({ canaError: true, code: 'Internal' });

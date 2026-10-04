@@ -69,8 +69,8 @@ import {
 } from '@jumentix/designer-core';
 
 const state = normalizeStatePayload(buildSampleModelPayload());
-const issues = collectModelIssues(state);           // validate
-const document = buildJsonExportDocument(state);    // export
+const issues = collectModelIssues(state); // validate
+const document = buildJsonExportDocument(state); // export
 const back = normalizeStatePayload(JSON.parse(JSON.stringify(document))); // re-import
 ```
 
@@ -90,7 +90,7 @@ The package follows semver over its **public API surface** (the barrel
 - **minor** — additive exports or optional parameters;
 - **major** — removed/renamed exports, narrowed parameter or return shapes.
 
-The *data contracts* the core reads and writes (the full-suite export
+The _data contracts_ the core reads and writes (the full-suite export
 document, the domain-package document) are versioned independently inside the
 payloads themselves — that policy is the domain-package versioning contract
 ; this package's version does not restate it.

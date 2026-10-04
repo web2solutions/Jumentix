@@ -36,29 +36,29 @@ problema no ambiente (por exemplo, Bun ausente).
 jumentix init [dir] [options]
 ```
 
-| Opção | Valores | Padrão |
-| --- | --- | --- |
-| `--mode` | `monolith`, `services`, `hybrid`, `frontend` | inferido: um serviço vira `monolith` |
-| `--from` | um export do Domain Designer (`.json`), um arquivo OpenAPI 3.x (`.yml`/`.json`) ou uma URL `https://` de catálogo | o preset Users |
-| `--preset` | `users` | `users` quando `--from` é omitido |
-| `--http` | `express`, `fastify`, `restify` | `express` |
-| `--realtime` | `none`, `websocket`, `grpc` | `none` |
-| `--db` | `sqlite`, `postgres`, `mysql`, `mongo`, `inmemory` | `sqlite` |
-| `--frontend` | inclui `apps/frontend` | ligado nos modos `hybrid` e `frontend` |
-| `--offline` | mantém a camada de dados offline-first no frontend | desligado |
-| `--git` | executa `git init` e faz o primeiro commit | desligado |
-| `--install` | executa `bun install` depois da geração | desligado |
-| `--config` | lê as respostas de um arquivo `jumentix.init.json` | — |
-| `--non-interactive` | nunca pergunta; usa flags e padrões | desligado |
+| Opção               | Valores                                                                                                           | Padrão                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `--mode`            | `monolith`, `services`, `hybrid`, `frontend`                                                                      | inferido: um serviço vira `monolith`   |
+| `--from`            | um export do Domain Designer (`.json`), um arquivo OpenAPI 3.x (`.yml`/`.json`) ou uma URL `https://` de catálogo | o preset Users                         |
+| `--preset`          | `users`                                                                                                           | `users` quando `--from` é omitido      |
+| `--http`            | `express`, `fastify`, `restify`                                                                                   | `express`                              |
+| `--realtime`        | `none`, `websocket`, `grpc`                                                                                       | `none`                                 |
+| `--db`              | `sqlite`, `postgres`, `mysql`, `mongo`, `inmemory`                                                                | `sqlite`                               |
+| `--frontend`        | inclui `apps/frontend`                                                                                            | ligado nos modos `hybrid` e `frontend` |
+| `--offline`         | mantém a camada de dados offline-first no frontend                                                                | desligado                              |
+| `--git`             | executa `git init` e faz o primeiro commit                                                                        | desligado                              |
+| `--install`         | executa `bun install` depois da geração                                                                           | desligado                              |
+| `--config`          | lê as respostas de um arquivo `jumentix.init.json`                                                                | —                                      |
+| `--non-interactive` | nunca pergunta; usa flags e padrões                                                                               | desligado                              |
 
 Modos:
 
-| Modo | O que você recebe |
-| --- | --- |
+| Modo       | O que você recebe                                          |
+| ---------- | ---------------------------------------------------------- |
 | `monolith` | Um serviço backend com todos os domínios no mesmo processo |
-| `services` | Um serviço backend para cada serviço do seu modelo |
-| `hybrid` | Serviços backend mais `apps/frontend` |
-| `frontend` | Só `apps/frontend`, apontado para uma API existente |
+| `services` | Um serviço backend para cada serviço do seu modelo         |
+| `hybrid`   | Serviços backend mais `apps/frontend`                      |
+| `frontend` | Só `apps/frontend`, apontado para uma API existente        |
 
 Exemplos:
 
@@ -110,11 +110,11 @@ acesso de exemplo.
 
 Execute dentro de um projeto criado por `init`.
 
-| Comando | Efeito |
-| --- | --- |
+| Comando                                                         | Efeito                                                                                                           |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `jumentix add domain <name> [--from <source>] [--service <id>]` | Adiciona um domínio ao serviço core (ou ao `--service`) e atualiza os módulos do frontend quando existe frontend |
-| `jumentix add service <name> --domains a,b` | Cria `apps/<name>` e move para ele os domínios listados (modos `services` e `hybrid`) |
-| `jumentix add frontend [--offline]` | Adiciona `apps/frontend` a um projeto só com backend; o modo passa a `hybrid` |
+| `jumentix add service <name> --domains a,b`                     | Cria `apps/<name>` e move para ele os domínios listados (modos `services` e `hybrid`)                            |
+| `jumentix add frontend [--offline]`                             | Adiciona `apps/frontend` a um projeto só com backend; o modo passa a `hybrid`                                    |
 
 `add` se recusa a sobrescrever arquivos gerados que você editou. Passe
 `--force` para seguir mesmo assim.
@@ -129,11 +129,11 @@ jumentix upgrade
 `upgrade` mescla no seu projeto os templates da versão instalada do CLI,
 arquivo por arquivo, sem descartar suas edições:
 
-| Status | Significado |
-| --- | --- |
-| updated | Você não tinha alterado o arquivo, ou as duas mudanças mesclaram sem conflito |
-| conflicted | Você e o template mudaram as mesmas linhas; marcadores de conflito ficam no arquivo |
-| skipped | O template não mudou, ou só você mudou o arquivo |
+| Status          | Significado                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| updated         | Você não tinha alterado o arquivo, ou as duas mudanças mesclaram sem conflito              |
+| conflicted      | Você e o template mudaram as mesmas linhas; marcadores de conflito ficam no arquivo        |
+| skipped         | O template não mudou, ou só você mudou o arquivo                                           |
 | added / removed | Arquivos novos do template são adicionados; arquivos aposentados são reportados e mantidos |
 
 `--dry-run` imprime o relatório sem escrever. O upgrade se recusa a rodar com
@@ -146,10 +146,10 @@ aplicados escrevem um relatório em `.jumentix/upgrade-<version>.md`.
 jumentix doctor
 ```
 
-| Área | Verificações |
-| --- | --- |
-| ambiente | versão do Bun (obrigatório), Node.js 20 ou mais novo quando instalado, disponibilidade do Docker |
-| projeto | metadados e modo do projeto, versão dos templates contra o CLI instalado, diretórios `apps/*` esperados, arquivos gerados editados |
+| Área     | Verificações                                                                                                                       |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| ambiente | versão do Bun (obrigatório), Node.js 20 ou mais novo quando instalado, disponibilidade do Docker                                   |
+| projeto  | metadados e modo do projeto, versão dos templates contra o CLI instalado, diretórios `apps/*` esperados, arquivos gerados editados |
 
 `doctor` sai com `0` quando está tudo certo, `1` quando o projeto precisa de
 atenção e `2` quando o ambiente precisa.

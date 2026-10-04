@@ -1,21 +1,10 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const releaseFs = require('fs');
-const releasePath = require('path');
-const {
-  extractChangelogSection
-} = require('../create-github-release.js');
-const {
-  packageTagName,
-  publishPackage,
-  resolveCohort
-} = require('../publish-npm-cohort.js');
-const {
-  resolveRepository,
-  resolveToken
-} = require('../lib/github-signed-commit.js');
-const {
-  createAppReleaseTagGithubApi
-} = require('../create-app-release-tag.js');
+const releaseFs = require('node:fs');
+const releasePath = require('node:path');
+
+const { createAppReleaseTagGithubApi } = require('../create-app-release-tag.js');
+const { extractChangelogSection } = require('../create-github-release.js');
+const { resolveRepository, resolveToken } = require('../lib/github-signed-commit.js');
+const { packageTagName, publishPackage, resolveCohort } = require('../publish-npm-cohort.js');
 
 describe('create-github-release helpers', () => {
   it('extracts the CHANGELOG section for an application tag', () => {
@@ -46,8 +35,9 @@ describe('create-github-release helpers', () => {
     expect.hasAssertions();
     expect(resolveToken({ CHANGELOG_GH_TOKEN: 'pat' })).toBe('pat');
     expect(resolveToken({ GH_TOKEN: 'gh', CHANGELOG_GH_TOKEN: 'pat' })).toBe('gh');
-    expect(resolveRepository({ GITHUB_REPOSITORY: 'web2solutions/Jumentix' }))
-      .toBe('web2solutions/Jumentix');
+    expect(resolveRepository({ GITHUB_REPOSITORY: 'web2solutions/Jumentix' })).toBe(
+      'web2solutions/Jumentix'
+    );
   });
 });
 
@@ -71,13 +61,15 @@ describe('create-app-release-tag --github-api dry-run', () => {
         nextVersion: '0.2.2'
       })
     });
-    expect(result).toStrictEqual(expect.objectContaining({
-      mode: 'github-api',
-      dryRun: true,
-      action: 'create',
-      tag: 'v0.2.2',
-      version: '0.2.2'
-    }));
+    expect(result).toStrictEqual(
+      expect.objectContaining({
+        mode: 'github-api',
+        dryRun: true,
+        action: 'create',
+        tag: 'v0.2.2',
+        version: '0.2.2'
+      })
+    );
   });
 
   it('plans a noop when the tip has no releasable commits', () => {
@@ -94,20 +86,19 @@ describe('create-app-release-tag --github-api dry-run', () => {
         reason: 'no-releasable-commits'
       })
     });
-    expect(result).toStrictEqual(expect.objectContaining({
-      mode: 'github-api',
-      dryRun: true,
-      action: 'noop',
-      reason: 'no-releasable-commits'
-    }));
+    expect(result).toStrictEqual(
+      expect.objectContaining({
+        mode: 'github-api',
+        dryRun: true,
+        action: 'noop',
+        reason: 'no-releasable-commits'
+      })
+    );
   });
 });
 
 describe('create-app-release-tag absolute CLI resolution', () => {
-  const {
-    resolveSleepBinary,
-    resolveBunBinary
-  } = require('../create-app-release-tag.js');
+  const { resolveBunBinary, resolveSleepBinary } = require('../create-app-release-tag.js');
 
   it('resolves sleep to a fixed system path', () => {
     expect.hasAssertions();
@@ -117,14 +108,18 @@ describe('create-app-release-tag absolute CLI resolution', () => {
 
   it('resolves bun without searching PATH by bare name', () => {
     expect.hasAssertions();
-    expect(resolveBunBinary({
-      execPath: '/usr/bin/node',
-      exists: (p: string) => p === '/usr/local/bin/bun'
-    })).toBe('/usr/local/bin/bun');
-    expect(resolveBunBinary({
-      execPath: '/opt/homebrew/bin/bun',
-      exists: () => false
-    })).toBe('/opt/homebrew/bin/bun');
+    expect(
+      resolveBunBinary({
+        execPath: '/usr/bin/node',
+        exists: (p: string) => p === '/usr/local/bin/bun'
+      })
+    ).toBe('/usr/local/bin/bun');
+    expect(
+      resolveBunBinary({
+        execPath: '/opt/homebrew/bin/bun',
+        exists: () => false
+      })
+    ).toBe('/opt/homebrew/bin/bun');
   });
 });
 
@@ -141,16 +136,15 @@ function runGhWithNamedResponses(responses: Record<string, string>) {
 
 describe('waitForPullRequestMergeable fail-fast', () => {
   const {
-    waitForPullRequestMergeable,
-    listFailedRequiredChecks
+    listFailedRequiredChecks,
+    waitForPullRequestMergeable
   } = require('../create-app-release-tag.js');
 
   it('lists failed required checks from the rollup', () => {
     expect.hasAssertions();
     const failed = listFailedRequiredChecks('https://example.test/pr/1', {
-      runGh: () => JSON.stringify([
-        { name: 'ci/circleci: coverage', url: 'https://circleci.com/gh/x/1' }
-      ])
+      runGh: () =>
+        JSON.stringify([{ name: 'ci/circleci: coverage', url: 'https://circleci.com/gh/x/1' }])
     });
     expect(failed).toStrictEqual([
       { name: 'ci/circleci: coverage', url: 'https://circleci.com/gh/x/1' }
@@ -212,11 +206,13 @@ describe('waitForPullRequestMergeable fail-fast', () => {
       createAppReleaseTagGithubApi: createApi,
       parseFailedCheckJson
     } = require('../create-app-release-tag.js');
-    expect(parseFailedCheckJson(JSON.stringify([
-      { name: 'ci/circleci: branch-gate', url: 'https://circleci.com/gh/x/1953' }
-    ]))).toStrictEqual([
-      { name: 'ci/circleci: branch-gate', url: 'https://circleci.com/gh/x/1953' }
-    ]);
+    expect(
+      parseFailedCheckJson(
+        JSON.stringify([
+          { name: 'ci/circleci: branch-gate', url: 'https://circleci.com/gh/x/1953' }
+        ])
+      )
+    ).toStrictEqual([{ name: 'ci/circleci: branch-gate', url: 'https://circleci.com/gh/x/1953' }]);
     const rootDir = releasePath.join(__dirname, '.tmp-tag-missing-locked');
     releaseFs.rmSync(rootDir, { recursive: true, force: true });
     releaseFs.mkdirSync(rootDir, { recursive: true });
@@ -301,7 +297,10 @@ describe('ensureBranchAtSha force-reset', () => {
     expect(result.created).toBe(false);
     expect(result.forced).toBe(false);
     expect(result.sha).toBe('bbb222');
-    expect(calls.map((args) => args[1])).toStrictEqual(['-X', 'repos/web2solutions/Jumentix/git/ref/heads/chore/release-v0.2.15']);
+    expect(calls.map((args) => args[1])).toStrictEqual([
+      '-X',
+      'repos/web2solutions/Jumentix/git/ref/heads/chore/release-v0.2.15'
+    ]);
   });
 
   it('force-updates when existing tip differs (stale release branch)', () => {
@@ -330,15 +329,22 @@ describe('ensureBranchAtSha force-reset', () => {
         return value;
       }
     });
-    expect(result).toStrictEqual(expect.objectContaining({
-      created: false,
-      forced: true,
-      sha: 'ccc333'
-    }));
+    expect(result).toStrictEqual(
+      expect.objectContaining({
+        created: false,
+        forced: true,
+        sha: 'ccc333'
+      })
+    );
     expect(calls[2]).toStrictEqual([
-      'api', '-X', 'PATCH', 'repos/web2solutions/Jumentix/git/refs/heads/chore/release-v0.2.15',
-      '-f', 'sha=ccc333',
-      '-F', 'force=true'
+      'api',
+      '-X',
+      'PATCH',
+      'repos/web2solutions/Jumentix/git/refs/heads/chore/release-v0.2.15',
+      '-f',
+      'sha=ccc333',
+      '-F',
+      'force=true'
     ]);
   });
 });
@@ -405,7 +411,10 @@ describe('publish-npm-cohort publishPackage', () => {
     const { calls, io } = recordingIo({ tagExists: () => true });
 
     expect(publishPackage(meta, { io })).toStrictEqual({
-      action: 'skip', reason: 'tag-exists', package: '@jumentix/cana', tag: '@jumentix/cana@0.1.0'
+      action: 'skip',
+      reason: 'tag-exists',
+      package: '@jumentix/cana',
+      tag: '@jumentix/cana@0.1.0'
     });
     expect(calls).toStrictEqual([]);
   });
@@ -441,8 +450,8 @@ describe('publish-npm-cohort publishPackage', () => {
 
 describe('signed-commit binary-safe encoding (JUM-914)', () => {
   const {
-    encodeAdditionContents,
-    createSignedCommitOnBranchWithGh
+    createSignedCommitOnBranchWithGh,
+    encodeAdditionContents
   } = require('../lib/github-signed-commit.js');
 
   it('round-trips binary Buffer contents without utf8 corruption', () => {
@@ -482,7 +491,6 @@ describe('signed-commit binary-safe encoding (JUM-914)', () => {
       }
     });
     const payload = JSON.parse(captured);
-    expect(payload.variables.input.fileChanges.additions[0].contents)
-      .toBe(png.toString('base64'));
+    expect(payload.variables.input.fileChanges.additions[0].contents).toBe(png.toString('base64'));
   });
 });

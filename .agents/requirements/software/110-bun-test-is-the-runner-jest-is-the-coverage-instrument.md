@@ -18,7 +18,7 @@
    records at all** — no `BRF`, no `BRH`, no `BRDA` — because Bun has no branch
    metric and no flag adds one. Requirements `020` and `063` mandate 90% branch
    coverage. A Bun-only pipeline cannot measure it, and the honest choice between
-   *losing the metric* and *keeping one tool for one job* is the second.
+   _losing the metric_ and _keeping one tool for one job_ is the second.
 
 3. **`ci-cd/check-coverage-thresholds.js` is the authority on all four metrics.**
    It reads `coverage/coverage-final.json` — Istanbul's own format, written by the
@@ -54,7 +54,7 @@
    lived there for a few hours on 2026-07-31 — `statements` at a floor of 98.99%
    after the coverage scope widened to include `packages/cana/src` (JUM-588) —
    and the ratchet removed it the same day: the metric reached 99%, at which
-   point the checker failed *because the exception was still listed*.
+   point the checker failed _because the exception was still listed_.
    Both directions of the mechanism were exercised in practice before the day
    was out.
 
@@ -102,19 +102,19 @@ poor exchange.
 - `bunfig.toml` keeps `[run] bun = false`. Flipping it would reroute Jest onto
   Bun, and jest-runtime is not Bun-compatible — the measured failure is total:
   every suite dies at load with `TypeError: Attempted to assign to readonly
-  property`.
+property`.
 - No test file may import from `bun:test`. Suites must use the globals both
   runners provide, so the coverage run and the test run execute the same code.
 
 ## Enforcement
 
-| Rule | Enforced by |
-|---|---|
-| Four coverage thresholds, fail-closed | `bun run coverage:check` in `ci:gate` |
-| Exceptions ratchet, and expire | same checker: below floor fails, above threshold fails |
-| `runner: "node"` carries a `reason` | `bun run test-map:check` |
-| Map pin beats environment | `ci-cd/run-suite.js` |
-| Pinned Bun toolchain | `bun ci-cd/check-bun-version.js` |
+| Rule                                  | Enforced by                                            |
+| ------------------------------------- | ------------------------------------------------------ |
+| Four coverage thresholds, fail-closed | `bun run coverage:check` in `ci:gate`                  |
+| Exceptions ratchet, and expire        | same checker: below floor fails, above threshold fails |
+| `runner: "node"` carries a `reason`   | `bun run test-map:check`                               |
+| Map pin beats environment             | `ci-cd/run-suite.js`                                   |
+| Pinned Bun toolchain                  | `bun ci-cd/check-bun-version.js`                       |
 
 ## Revisit when
 

@@ -22,8 +22,9 @@
  * write is on disk, and pretending otherwise would be a lie about durability.
  */
 
-import type { CanaChangeEvent, CanaChangeType, CanaKey } from '../contracts';
 import { canaError, translateError } from './errors';
+
+import type { CanaChangeEvent, CanaChangeType, CanaKey } from '../contracts';
 
 export interface WriteHookContext {
   readonly store: string;
@@ -63,9 +64,11 @@ export interface CanaHooks {
 }
 
 function isThenable(value: unknown): boolean {
-  return typeof value === 'object'
-    && value !== null
-    && typeof (value as { then?: unknown }).then === 'function';
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { then?: unknown }).then === 'function'
+  );
 }
 
 /**
@@ -88,6 +91,7 @@ export function applyBeforeWrite(
   } catch (error) {
     // Deliberately not swallowed. A veto is a real outcome and the caller must
     // see it; the transaction runner turns this into an abort.
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw translateError(error, {
       store: context.store,
       ...(context.key === undefined ? {} : { key: context.key })
@@ -98,11 +102,12 @@ export function applyBeforeWrite(
     // The signature forbids this, but JavaScript callers have no compiler. An
     // awaited promise here would already have cost the transaction, so this
     // fails clearly instead of writing a Promise object into the store.
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError(
       'InvalidRequest',
-      `beforeWrite on "${context.store}" returned a promise. Hooks that run inside a transaction `
-        + 'must be synchronous: awaiting anything closes the auto-commit window and the write '
-        + 'that follows would fail with TransactionInactive.',
+      `beforeWrite on "${context.store}" returned a promise. Hooks that run inside a transaction ` +
+        'must be synchronous: awaiting anything closes the auto-commit window and the write ' +
+        'that follows would fail with TransactionInactive.',
       { store: context.store }
     );
   }

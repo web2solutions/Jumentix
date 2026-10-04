@@ -4,11 +4,13 @@ import 'cypress-axe';
  * Seeded accounts (apps/backend-template/seed/users.ts). The e2e backend
  * starts fresh (InMemory) on every run, so these always exist.
  */
-export const accounts = {
+const accounts = {
   superadmin: { username: 'eduardo@xpertminds.dev', password: 'eduardo@123456' },
   admin: { username: 'admin@xpertminds.dev', password: 'admin@123456' },
   user: { username: 'user@xpertminds.dev', password: 'user@123456' }
 };
+
+export default accounts;
 
 const backendOrigin = `http://127.0.0.1:${Cypress.env('FRONTEND_E2E_BACKEND_PORT') || '3130'}`;
 
@@ -23,7 +25,7 @@ declare global {
       serverCreate(
         entity: 'users' | 'organizations',
         body: Record<string, unknown>
-      ): Chainable<Cypress.Response<unknown>>;
+      ): Chainable<Response<unknown>>;
     }
   }
 }

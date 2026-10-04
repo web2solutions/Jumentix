@@ -50,7 +50,7 @@ function resolveLocalRef(document, ref, expectedPrefix) {
  * Validates an AsyncAPI document against the 3.0 structural rules.
  * @returns {string[]} the list of violations; empty means valid.
  */
-export function validateAsyncApi30Document(document) {
+function validateAsyncApi30Document(document) {
   const errors = [];
   if (!isObject(document)) return ['document must be an object'];
 
@@ -71,7 +71,11 @@ export function validateAsyncApi30Document(document) {
       errors.push('servers must be a map');
     } else {
       Object.entries(document.servers).forEach(([name, server]) => {
-        if (!isObject(server) || !String(server.host || '').trim() || !String(server.protocol || '').trim()) {
+        if (
+          !isObject(server) ||
+          !String(server.host || '').trim() ||
+          !String(server.protocol || '').trim()
+        ) {
           errors.push(`servers.${name} must declare host and protocol`);
         }
       });
@@ -93,15 +97,22 @@ export function validateAsyncApi30Document(document) {
     if (channel.messages !== undefined && !isObject(channel.messages)) {
       errors.push(`channels.${channelKey}.messages must be a map`);
     }
-    Object.entries(isObject(channel.messages) ? channel.messages : {}).forEach(([messageKey, message]) => {
-      if (!isObject(message)) {
-        errors.push(`channels.${channelKey}.messages.${messageKey} must be an object`);
-        return;
+    Object.entries(isObject(channel.messages) ? channel.messages : {}).forEach(
+      ([messageKey, message]) => {
+        if (!isObject(message)) {
+          errors.push(`channels.${channelKey}.messages.${messageKey} must be an object`);
+          return;
+        }
+        if (
+          message.$ref !== undefined &&
+          !resolveLocalRef(document, message.$ref, '#/components/messages/')
+        ) {
+          errors.push(
+            `channels.${channelKey}.messages.${messageKey} $ref does not resolve: ${message.$ref}`
+          );
+        }
       }
-      if (message.$ref !== undefined && !resolveLocalRef(document, message.$ref, '#/components/messages/')) {
-        errors.push(`channels.${channelKey}.messages.${messageKey} $ref does not resolve: ${message.$ref}`);
-      }
-    });
+    );
   });
 
   if (document.operations !== undefined && !isObject(document.operations)) {
@@ -114,12 +125,16 @@ export function validateAsyncApi30Document(document) {
       return;
     }
     if (!ACTIONS.has(operation.action)) {
-      errors.push(`operations.${operationKey}.action must be send|receive, got "${operation.action}"`);
+      errors.push(
+        `operations.${operationKey}.action must be send|receive, got "${operation.action}"`
+      );
     }
     if (!isObject(operation.channel) || typeof operation.channel.$ref !== 'string') {
       errors.push(`operations.${operationKey}.channel must be a $ref to a channel`);
     } else if (!resolveLocalRef(document, operation.channel.$ref, '#/channels/')) {
-      errors.push(`operations.${operationKey}.channel $ref does not resolve: ${operation.channel.$ref}`);
+      errors.push(
+        `operations.${operationKey}.channel $ref does not resolve: ${operation.channel.$ref}`
+      );
     }
     if (operation.messages !== undefined) {
       if (!Array.isArray(operation.messages)) {
@@ -128,7 +143,9 @@ export function validateAsyncApi30Document(document) {
         operation.messages.forEach((message, index) => {
           const ref = isObject(message) ? message.$ref : undefined;
           if (typeof ref !== 'string' || !resolveLocalRef(document, ref, '#/')) {
-            errors.push(`operations.${operationKey}.messages.${index} $ref does not resolve: ${ref}`);
+            errors.push(
+              `operations.${operationKey}.messages.${index} $ref does not resolve: ${ref}`
+            );
           }
         });
       }
@@ -142,11 +159,18 @@ export function validateAsyncApi30Document(document) {
       errors.push(`components.messages.${messageName} must be an object`);
       return;
     }
-    if (isObject(message.payload) && typeof message.payload.$ref === 'string'
-      && !resolveLocalRef(document, message.payload.$ref, '#/components/schemas/')) {
-      errors.push(`components.messages.${messageName}.payload $ref does not resolve: ${message.payload.$ref}`);
+    if (
+      isObject(message.payload) &&
+      typeof message.payload.$ref === 'string' &&
+      !resolveLocalRef(document, message.payload.$ref, '#/components/schemas/')
+    ) {
+      errors.push(
+        `components.messages.${messageName}.payload $ref does not resolve: ${message.payload.$ref}`
+      );
     }
   });
 
   return errors;
 }
+
+export default validateAsyncApi30Document;

@@ -1,4 +1,3 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 /*
  * hostMetrics against a spied host: os/fs method spies drive every fallback
  * branch that real hardware cannot reach deterministically — zero total
@@ -15,22 +14,23 @@
  * resetHostCpuSampleForTests — jest.resetModules does not exist under bun.
  */
 
-const hostMetricsFs = require('fs');
-const hostMetricsOs = require('os');
+const hostMetricsFs = require('node:fs');
+const hostMetricsOs = require('node:os');
 
-const mockStatfs = jest.spyOn(hostMetricsFs.promises, 'statfs') as jest.Mock;
-const mockCpus = jest.spyOn(hostMetricsOs, 'cpus') as jest.Mock;
-const mockTotalmem = jest.spyOn(hostMetricsOs, 'totalmem') as jest.Mock;
-const mockFreemem = jest.spyOn(hostMetricsOs, 'freemem') as jest.Mock;
-const mockLoadavg = jest.spyOn(hostMetricsOs, 'loadavg') as jest.Mock;
+const mockStatfs = jest.spyOn(hostMetricsFs.promises, 'statfs');
+const mockCpus = jest.spyOn(hostMetricsOs, 'cpus');
+const mockTotalmem = jest.spyOn(hostMetricsOs, 'totalmem');
+const mockFreemem = jest.spyOn(hostMetricsOs, 'freemem');
+const mockLoadavg = jest.spyOn(hostMetricsOs, 'loadavg');
 
-const {
-  collectHostMetrics,
-  resetHostCpuSampleForTests
-} = require('../../src/runtime/hostMetrics');
+const { collectHostMetrics, resetHostCpuSampleForTests } = require('../../src/runtime/hostMetrics');
 
 const healthyTimes = {
-  user: 10, nice: 0, sys: 5, idle: 85, irq: 0
+  user: 10,
+  nice: 0,
+  sys: 5,
+  idle: 85,
+  irq: 0
 };
 
 function resetHostSpies() {
@@ -45,7 +45,12 @@ function resetHostSpies() {
   mockFreemem.mockReturnValue(400);
   mockLoadavg.mockReturnValue([0.1, 0.2, 0.3]);
   mockStatfs.mockResolvedValue({
-    bsize: 512, blocks: 1000, bfree: 500, bavail: 450, files: 100, ffree: 90
+    bsize: 512,
+    blocks: 1000,
+    bfree: 500,
+    bavail: 450,
+    files: 100,
+    ffree: 90
   });
 }
 
@@ -56,7 +61,9 @@ describe('service-management hostMetrics on a mocked host', () => {
   it('computes memory and disk numbers from the raw os/statfs values', async () => {
     expect.hasAssertions();
     const first = await collectHostMetrics({
-      projectRoot: '/project', processRssSumBytes: 100, processCpuPercentSum: 12.5
+      projectRoot: '/project',
+      processRssSumBytes: 100,
+      processCpuPercentSum: 12.5
     });
     expect(first.cpu).toMatchObject({
       coreCount: 1,
@@ -116,7 +123,9 @@ describe('service-management hostMetrics on a mocked host', () => {
 
   it('propagates the errno code when the statfs Error carries one', async () => {
     expect.hasAssertions();
-    mockStatfs.mockRejectedValue(Object.assign(new Error('no space left on device'), { code: 'ENOSPC' }));
+    mockStatfs.mockRejectedValue(
+      Object.assign(new Error('no space left on device'), { code: 'ENOSPC' })
+    );
     const result = await collectHostMetrics({ projectRoot: '/project' });
     for (const volume of result.disk) {
       expect(volume).toMatchObject({ error: 'no space left on device', code: 'ENOSPC' });
@@ -134,7 +143,11 @@ describe('service-management hostMetrics on a mocked host', () => {
   it('coerces missing or non-numeric statfs fields without inventing totals', async () => {
     expect.hasAssertions();
     mockStatfs.mockResolvedValue({
-      blksize: 4096, blocks: 'many', bfree: 250, files: 'lots', ffree: undefined
+      blksize: 4096,
+      blocks: 'many',
+      bfree: 250,
+      files: 'lots',
+      ffree: undefined
     });
     const result = await collectHostMetrics({ projectRoot: '/project' });
     const volume = result.disk.find((entry: { path: string }) => entry.path === '/project');
@@ -199,7 +212,9 @@ describe('service-management hostMetrics on a mocked host', () => {
     expect.hasAssertions();
     mockLoadavg.mockReturnValue([NaN, undefined, 'x']);
     const result = await collectHostMetrics({
-      projectRoot: '/project', processRssSumBytes: 'lots', processCpuPercentSum: null
+      projectRoot: '/project',
+      processRssSumBytes: 'lots',
+      processCpuPercentSum: null
     });
     expect(result.cpu.loadAvg).toStrictEqual({ one: 0, five: 0, fifteen: 0 });
     expect(result.cpu.processCpuPercentSum).toBe(0);

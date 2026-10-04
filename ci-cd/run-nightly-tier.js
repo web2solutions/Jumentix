@@ -1,15 +1,13 @@
-#!/usr/bin/env bun
-/* eslint-disable no-console */
 /**
  * Nightly/release tier runner (JUM-498).
  * Executes suites with tier=nightly from test-map.json plus explicit redis/db targets.
  */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
-const { readTestMap } = require('./lib/test-map');
-const { runViaPackageScript } = require('./lib/suite-runner');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { runViaPackageScript } = require('./lib/suite-runner');
+const { readTestMap } = require('./lib/test-map');
 
 const DEFAULT_NIGHTLY_SCRIPTS = Object.freeze([
   'test:integration:mutex',

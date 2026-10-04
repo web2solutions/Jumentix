@@ -1,8 +1,8 @@
 /* eslint-disable func-names */
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { UserMessageContracts } from '@src/modules/Users/events/contracts/UserMessageContracts';
 
-export function Authorize(): Function {
+import UserMessageContracts from '@src/modules/Users/events/contracts/UserMessageContracts';
+
+function Authorize(): Function {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     // eslint-disable-next-line no-param-reassign
@@ -23,20 +23,17 @@ export function Authorize(): Function {
         }
         authorizedUser = result;
       } else {
-        authorizedUser = await authService.authorize(
-          event.authorization
-        );
-        authService.throwIfUserHasNoAccessToResource(
-          authorizedUser,
-          event.schemaOAS
-        );
+        authorizedUser = await authService.authorize(event.authorization);
+        authService.throwIfUserHasNoAccessToResource(authorizedUser, event.schemaOAS);
       }
-      (event as any).authenticatedUser = authorizedUser;
-      if ((event as any).metadata) {
-        (event as any).metadata.userId = authorizedUser?.id || '';
+      event.authenticatedUser = authorizedUser;
+      if (event.metadata) {
+        event.metadata.userId = authorizedUser?.id || '';
       }
       return originalMethod.apply(this, [...args]);
     };
     return descriptor;
   };
 }
+
+export default Authorize;

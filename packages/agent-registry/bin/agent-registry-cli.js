@@ -1,7 +1,7 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 
-const path = require('path');
+const path = require('node:path');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 // Resolve the workspace package
@@ -31,7 +31,7 @@ function missingExports(registry) {
 }
 
 function buildRegistryPackage() {
-  const { execFileSync } = require('child_process');
+  const { execFileSync } = require('node:child_process');
   console.log('[agent-registry-cli] building package...');
   execFileSync('bun', ['--filter', '@jumentix/agent-registry', 'build'], {
     cwd: path.resolve(__dirname, '..'),
@@ -49,9 +49,7 @@ async function loadRegistry() {
     registry = require(resolveRegistryEntrypoint());
     const stillMissing = missingExports(registry);
     if (stillMissing.length > 0) {
-      throw new Error(
-        `@jumentix/agent-registry build is missing: ${stillMissing.join(', ')}`
-      );
+      throw new Error(`@jumentix/agent-registry build is missing: ${stillMissing.join(', ')}`);
     }
     return registry;
   }
@@ -183,17 +181,14 @@ Examples:
 function isFirestoreUnavailable(error) {
   const message = String(error?.message || error || '');
   return (
-    message.includes('Cloud Firestore API')
-    && message.includes('disabled')
-  )
-    || (
-      message.includes('The database (default) does not exist')
-      && message.includes('Firestore database')
-    )
-    || message.includes('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON')
-    || message.includes('FIREBASE_SERVICE_ACCOUNT_KEY_FILE is not valid JSON')
-    || message.includes('Missing Firebase credentials')
-    || message.includes('Invalid service account structure');
+    (message.includes('Cloud Firestore API') && message.includes('disabled')) ||
+    (message.includes('The database (default) does not exist') &&
+      message.includes('Firestore database')) ||
+    message.includes('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON') ||
+    message.includes('FIREBASE_SERVICE_ACCOUNT_KEY_FILE is not valid JSON') ||
+    message.includes('Missing Firebase credentials') ||
+    message.includes('Invalid service account structure')
+  );
 }
 
 function shouldSkipCiRegistryCheck(command, error) {
@@ -202,26 +197,19 @@ function shouldSkipCiRegistryCheck(command, error) {
 
 function logSkippedCiRegistryCheck() {
   console.log(
-    '[agent-registry-cli] skipping CI registry snapshot check: '
-      + 'Firestore is unavailable for the configured project or credentials.'
+    '[agent-registry-cli] skipping CI registry snapshot check: ' +
+      'Firestore is unavailable for the configured project or credentials.'
   );
 }
 
-const RTDB_COMMANDS = new Set([
-  'heartbeat',
-  'assign',
-  'complete',
-  'publish',
-  'watch',
-  'status'
-]);
+const RTDB_COMMANDS = new Set(['heartbeat', 'assign', 'complete', 'publish', 'watch', 'status']);
 
 function hasFirebaseCredentials() {
   return Boolean(
-    (process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-      && String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY).trim())
-    || (process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE
-      && String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE).trim())
+    (process.env.FIREBASE_SERVICE_ACCOUNT_KEY &&
+      String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY).trim()) ||
+    (process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE &&
+      String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY_FILE).trim())
   );
 }
 
@@ -236,16 +224,17 @@ async function main() {
     if (command === 'check') {
       // Optional check: skip when Firestore credentials are not configured yet.
       console.log(
-        '[agent-registry-cli] skipping check: Firebase credentials are not set '
-          + '(FIREBASE_SERVICE_ACCOUNT_KEY or FIREBASE_SERVICE_ACCOUNT_KEY_FILE).'
+        '[agent-registry-cli] skipping check: Firebase credentials are not set ' +
+          '(FIREBASE_SERVICE_ACCOUNT_KEY or FIREBASE_SERVICE_ACCOUNT_KEY_FILE).'
       );
-      process.exit(0);
+      return;
     }
     console.error(
-      'Missing Firebase credentials: set FIREBASE_SERVICE_ACCOUNT_KEY '
-        + 'or FIREBASE_SERVICE_ACCOUNT_KEY_FILE'
+      'Missing Firebase credentials: set FIREBASE_SERVICE_ACCOUNT_KEY ' +
+        'or FIREBASE_SERVICE_ACCOUNT_KEY_FILE'
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const registry = await loadRegistry();
@@ -272,32 +261,49 @@ async function main() {
           workspace_path: flags['workspace-path'],
           agent_runtime: flags['agent-runtime'],
           agent_version: flags['agent-version'],
-          capabilities: flags.capabilities ? String(flags.capabilities).split(',').map((s) => s.trim()).filter(Boolean) : undefined
+          capabilities: flags.capabilities
+            ? String(flags.capabilities)
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : undefined
         });
         break;
 
       case 'heartbeat':
-        await registry.heartbeat(firestore, {
-          agent_id: flags['agent-id'],
-          status: flags.status,
-          main_ref_checked: flags['main-ref'],
-          dev_ref_checked: flags['dev-ref']
-        }, { rtdb });
+        await registry.heartbeat(
+          firestore,
+          {
+            agent_id: flags['agent-id'],
+            status: flags.status,
+            main_ref_checked: flags['main-ref'],
+            dev_ref_checked: flags['dev-ref']
+          },
+          { rtdb }
+        );
         break;
 
       case 'assign':
-        await registry.assignTask(firestore, {
-          agent_id: flags['agent-id'],
-          assigned_task: flags.task,
-          active_epic: flags.epic
-        }, { rtdb });
+        await registry.assignTask(
+          firestore,
+          {
+            agent_id: flags['agent-id'],
+            assigned_task: flags.task,
+            active_epic: flags.epic
+          },
+          { rtdb }
+        );
         break;
 
       case 'complete':
-        await registry.completeTask(firestore, {
-          agent_id: flags['agent-id'],
-          status: flags.status
-        }, { rtdb });
+        await registry.completeTask(
+          firestore,
+          {
+            agent_id: flags['agent-id'],
+            status: flags.status
+          },
+          { rtdb }
+        );
         break;
 
       case 'publish': {
@@ -308,7 +314,10 @@ async function main() {
           kind: flags.kind,
           summary: flags.summary,
           refs: flags.refs
-            ? String(flags.refs).split(',').map((value) => value.trim()).filter(Boolean)
+            ? String(flags.refs)
+                .split(',')
+                .map((value) => value.trim())
+                .filter(Boolean)
             : undefined
         });
         console.log(JSON.stringify(published));
@@ -325,6 +334,7 @@ async function main() {
         });
         const shutdown = () => {
           unsubscribe();
+          // eslint-disable-next-line n/no-process-exit -- SIGINT/SIGTERM handler must terminate the watcher; exitCode alone cannot guarantee exit while bus handles are open
           process.exit(0);
         };
         process.on('SIGINT', shutdown);
@@ -358,8 +368,8 @@ async function main() {
           await registry.checkSnapshot(firestore);
         } catch (error) {
           if (
-            process.env.CI
-            && String(error?.message || '').includes('Local agent registry snapshot not found')
+            process.env.CI &&
+            String(error?.message || '').includes('Local agent registry snapshot not found')
           ) {
             try {
               await registry.syncSnapshot(firestore);
@@ -380,7 +390,7 @@ async function main() {
       default:
         console.error(`Unknown command: ${command}`);
         printHelp();
-        process.exit(1);
+        process.exitCode = 1;
     }
   } catch (error) {
     if (shouldSkipCiRegistryCheck(command, error)) {
@@ -396,13 +406,13 @@ async function main() {
 if (isEntryPoint(module)) {
   main().catch((error) => {
     console.error(error.message);
-    process.exit(1);
+    process.exitCode = 1;
   });
 }
 
 module.exports = {
   isFirestoreUnavailable,
   resolveRegistryEntrypoint,
-  shouldSkipCiRegistryCheck,
-  RTDB_COMMANDS
+  RTDB_COMMANDS,
+  shouldSkipCiRegistryCheck
 };

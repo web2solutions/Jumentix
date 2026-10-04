@@ -36,7 +36,7 @@
 // CanaKey and CanaKeyArray are mutually recursive by definition: an array of keys
 // is itself a key. No declaration order satisfies no-use-before-define, so it is
 // disabled at this one site rather than by relaxing the rule repo-wide.
-// eslint-disable-next-line no-use-before-define
+
 export interface CanaKeyArray extends Array<CanaKey> {}
 
 export type CanaKey = number | string | Date | ArrayBufferView | ArrayBuffer | CanaKeyArray;
@@ -136,9 +136,11 @@ export interface CanaError {
 
 /** Narrow an unknown rejection to a Cana failure. */
 export function isCanaError(value: unknown): value is CanaError {
-  return typeof value === 'object'
-    && value !== null
-    && (value as { canaError?: unknown }).canaError === true;
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as { canaError?: unknown }).canaError === true
+  );
 }
 
 /** Narrow to a specific code. Preferred over comparing `message` strings. */
@@ -473,7 +475,7 @@ export interface CanaClient {
   transaction<TResult>(
     mode: CanaTransactionMode,
     stores: readonly string[],
-    body: (scope: CanaTransactionScope) => Promise<TResult> | TResult,
+    body: (scope: CanaTransactionScope) => Promise<TResult> | TResult
   ): Promise<CanaTransactionResult<TResult>>;
 
   /** Current durability state. See `CanaStorageState`. */
@@ -488,7 +490,7 @@ export interface CanaClient {
    */
   subscribe(
     listener: (event: CanaChangeEvent) => void,
-    options?: { sinceCursor?: number },
+    options?: { sinceCursor?: number }
   ): () => void;
 
   /**

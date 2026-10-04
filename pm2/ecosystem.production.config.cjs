@@ -12,7 +12,8 @@ module.exports = {
     },
     {
       name: 'jumentix-prod-websocketapi',
-      script: './.build/apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.js',
+      script:
+        './.build/apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.js',
       interpreter: 'bun',
       interpreter_args: '--env-file=./.build/apps/backend-template/src/config/.env.prod',
       env: {

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const CANDIDATE_SMOKE_TESTS = [
   'apps/backend-template/test/integration/Express/get.localhost.test.ts',
@@ -15,7 +15,8 @@ function run() {
   if (!testFile) {
     console.error('[ci] api smoke: missing localhost smoke test file.');
     console.error(`[ci] expected one of: ${CANDIDATE_SMOKE_TESTS.join(', ')}`);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log(`[ci] api smoke target: ${testFile}`);
@@ -26,7 +27,7 @@ function run() {
   });
 
   if (result.status !== 0) {
-    process.exit(result.status || 1);
+    process.exitCode = result.status || 1;
   }
 }
 

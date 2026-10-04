@@ -1,12 +1,13 @@
 import {
   DeadLetterQueue,
   DeadLetterReplayWorker,
-  KeyValueDeadLetterStore,
-  type DeadLetterReplayHandler,
-  type DeadLetterRecord
+  KeyValueDeadLetterStore
 } from '@jumentix/dead-letter-queue';
-import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
-import type { UserService } from '@src/modules/Users/service/UserService';
+
+import type { DeadLetterRecord, DeadLetterReplayHandler } from '@jumentix/dead-letter-queue';
+
+import type IKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type UserService from '@src/modules/Users/service/UserService';
 
 /**
  * JUM-53 — replay the writes the mutex refused, through the same service.
@@ -18,12 +19,12 @@ import type { UserService } from '@src/modules/Users/service/UserService';
  */
 
 /** The service methods that can refuse a write for a lock, by operation name. */
-type AggregatePayload = {
+interface AggregatePayload {
   documentId?: string;
   phoneId?: string;
   emailId?: string;
   data?: unknown;
-};
+}
 
 /**
  * The service reports failure in `response.error` and does not throw.
@@ -33,9 +34,7 @@ type AggregatePayload = {
  * would mark it `succeeded` — losing the write while reporting that it landed.
  * Every handler goes through here.
  */
-async function orThrow(
-  operation: () => Promise<{ error?: unknown }>
-): Promise<void> {
+async function orThrow(operation: () => Promise<{ error?: unknown }>): Promise<void> {
   const response = await operation();
   if (response?.error) {
     const error = response.error as Error;
@@ -47,24 +46,28 @@ export function userReplayHandlers(
   userService: UserService
 ): Record<string, DeadLetterReplayHandler> {
   const service = userService as unknown as Record<
-    string, (...args: unknown[]) => Promise<{ error?: unknown }>
+    string,
+    (...args: unknown[]) => Promise<{ error?: unknown }>
   >;
   const of = (record: DeadLetterRecord) => (record.payload ?? {}) as AggregatePayload;
 
   /** `payload` is the whole argument: `update`, `updatePassword`, `create*`. */
-  const whole = (method: string): DeadLetterReplayHandler => (
-    (record) => orThrow(() => service[method](record.resourceId, record.payload))
-  );
+  const whole =
+    (method: string): DeadLetterReplayHandler =>
+    (record) =>
+      orThrow(() => service[method](record.resourceId, record.payload));
 
   /** `payload` names a child and carries its data: `update{Document,Phone,Email}`. */
-  const child = (method: string, key: keyof AggregatePayload): DeadLetterReplayHandler => (
-    (record) => orThrow(() => service[method](record.resourceId, of(record)[key], of(record).data))
-  );
+  const child =
+    (method: string, key: keyof AggregatePayload): DeadLetterReplayHandler =>
+    (record) =>
+      orThrow(() => service[method](record.resourceId, of(record)[key], of(record).data));
 
   /** `payload` names a child only: `delete{Document,Phone,Email}`. */
-  const target = (method: string, key: keyof AggregatePayload): DeadLetterReplayHandler => (
-    (record) => orThrow(() => service[method](record.resourceId, of(record)[key]))
-  );
+  const target =
+    (method: string, key: keyof AggregatePayload): DeadLetterReplayHandler =>
+    (record) =>
+      orThrow(() => service[method](record.resourceId, of(record)[key]));
 
   return {
     update: whole('update'),
@@ -94,7 +97,7 @@ export function composeUserDeadLetterQueue(
 ): DeadLetterQueue | undefined {
   if (!keyValueStorageClient) return undefined;
   return new DeadLetterQueue({
-    store: new KeyValueDeadLetterStore(keyValueStorageClient as never)
+    store: new KeyValueDeadLetterStore(keyValueStorageClient)
   });
 }
 

@@ -1,4 +1,3 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 /*
  * JUM-730 — the global status region reports the outcome of the action that
  * just ran, in a REAL browser against the REAL server (Requirement 115), on
@@ -15,18 +14,22 @@
  */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+
 import { webkit } from 'playwright-webkit';
-import type { Browser } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
-  envFileContent,
-  startServer,
   clickInPanels,
+  createTempConfigDir,
+  envFileContent,
   openDesignerPanels,
+  startServer,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser, Page } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
@@ -37,15 +40,30 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
   beforeAll(async () => {
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], {
-      cwd: repoRoot,
-      stdio: 'inherit'
-    });
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-designer-core.js'], {
-      cwd: repoRoot,
-      stdio: 'inherit'
-    });
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-cana-bundle.js'],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit'
+      }
+    );
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-designer-core.js'],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit'
+      }
+    );
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
     await waitForServer(server.port);
@@ -59,11 +77,11 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
     cleanupTempConfigDir(tempDir);
   });
 
-  async function statusText(page: import('playwright-webkit').Page): Promise<string> {
+  async function statusText(page: Page): Promise<string> {
     return page.$eval('#status-region', (el) => (el.textContent || '').trim());
   }
 
-  const addDomain = async (page: import('playwright-webkit').Page, name: string): Promise<void> => {
+  const addDomain = async (page: Page, name: string): Promise<void> => {
     await openDesignerPanels(page, '#domain-name-input');
     await page.fill('#domain-name-input', name);
     await clickInPanels(page, '#add-domain-btn');
@@ -72,7 +90,7 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
 
   it('replaces a failure with the outcome of the next successful action', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
@@ -91,7 +109,7 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
 
   it('explains an ignored empty name instead of leaving the previous message standing', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
@@ -111,7 +129,7 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
 
   it('reports entity and field additions, which were silent before', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
@@ -141,7 +159,7 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
 
   it('reports a deletion, so the model change is announced', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     page.on('dialog', async (dialog) => {
       await dialog.accept();

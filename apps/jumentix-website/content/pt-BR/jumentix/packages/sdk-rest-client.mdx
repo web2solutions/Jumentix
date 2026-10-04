@@ -76,7 +76,6 @@ Pass body/params matching the OpenAPI operation.
 
 Read structured error fields — do not assume thrown Error only.
 
-
 ### 4. Superfície prática (exports)
 
 - `RestApiClient`
@@ -85,8 +84,8 @@ Use os exports nas camadas de aplicação/adaptadores — não em entidades de d
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
+| Sintoma             | Causa         | Correção                                          |
+| ------------------- | ------------- | ------------------------------------------------- |
 | Unknown operationId | Spec mismatch | Regenerate/load the same OpenAPI the server uses. |
 
 **Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.

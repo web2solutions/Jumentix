@@ -1,6 +1,6 @@
 export { ServiceManagementCatalogAPI } from './ServiceManagementCatalogAPI';
 export {
-  InMemoryCatalogDbClient,
-  createServiceManagementCatalogDbClient
+  createServiceManagementCatalogDbClient,
+  InMemoryCatalogDbClient
 } from './infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
 export * from './modules/Catalogs';

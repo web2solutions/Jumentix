@@ -40,8 +40,8 @@ export function resolveJumentixPin(packageRoot: string, override?: string): Jume
     const version = versions[packageName];
     if (!version) {
       throw new Error(
-        `No published version recorded for ${packageName} in templates.manifest.json`
-        + ' (packageVersions). Rebuild templates with `bun run cli:build-templates`.'
+        `No published version recorded for ${packageName} in templates.manifest.json` +
+          ' (packageVersions). Rebuild templates with `bun run cli:build-templates`.'
       );
     }
     return version;

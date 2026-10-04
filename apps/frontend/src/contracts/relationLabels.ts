@@ -1,10 +1,5 @@
 import { getSharedApiClient } from '@/contracts/apiClient';
-import {
-  entityPrimaryKey,
-  fieldDescriptors,
-  listOperationForEntity,
-  type FieldDescriptor
-} from '@/contracts/formSchema';
+import { entityPrimaryKey, fieldDescriptors, listOperationForEntity } from '@/contracts/formSchema';
 import { listCapabilities } from '@/contracts/listSchema';
 import { can } from '@/contracts/rbac';
 import { isCanaOpen } from '@/data/db';
@@ -12,7 +7,9 @@ import { listLocal } from '@/data/localRepository';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
 
-type Rows = Array<Record<string, unknown>>;
+import type { FieldDescriptor } from '@/contracts/formSchema';
+
+type Rows = Record<string, unknown>[];
 type Relation = NonNullable<FieldDescriptor['relation']>;
 
 /**

@@ -49,10 +49,16 @@ interface RawSchema {
 
 const document = openApi as {
   components?: { schemas?: Record<string, RawSchema> };
-  paths?: Record<string, Record<string, RawSchema & {
-    operationId?: string;
-    responses?: Record<string, unknown>;
-  }>>;
+  paths?: Record<
+    string,
+    Record<
+      string,
+      RawSchema & {
+        operationId?: string;
+        responses?: Record<string, unknown>;
+      }
+    >
+  >;
 };
 
 export interface EntityRelation {
@@ -156,31 +162,33 @@ export const fieldDescriptors = (schemaName: string): FieldDescriptor[] => {
   const schema = resolveSchema(schemaName);
   const required = schema.required ?? [];
 
-  return Object.entries(schema.properties ?? {})
-    // `x-hide: true` (JUM-769): the property stays in the contract (defaults
-    // apply server-side) but never renders in OAS-driven forms.
-    .filter(([, rawProperty]) => resolveRef(rawProperty)['x-hide'] !== true)
-    .map(([name, rawProperty]) => {
-      const property = resolveRef(rawProperty);
-      return {
-        name,
-        type: property.type ?? 'string',
-        format: property.format as string | undefined,
-        required: required.includes(name),
-        minLength: property.minLength as number | undefined,
-        maxLength: property.maxLength as number | undefined,
-        enum: property.enum as string[] | undefined,
-        pattern: property.pattern as string | undefined,
-        default: property.default,
-        nullable: property.nullable as boolean | undefined,
-        description: property.description as string | undefined,
-        example: property.example !== undefined ? String(property.example) : undefined,
-        xValidation: property['x-validation'] as Record<string, unknown> | undefined,
-        relation: asRelation(property, name),
-        title: property.title as string | undefined,
-        xLabel: property['x-label'] as Record<string, string> | undefined
-      };
-    });
+  return (
+    Object.entries(schema.properties ?? {})
+      // `x-hide: true` (JUM-769): the property stays in the contract (defaults
+      // apply server-side) but never renders in OAS-driven forms.
+      .filter(([, rawProperty]) => resolveRef(rawProperty)['x-hide'] !== true)
+      .map(([name, rawProperty]) => {
+        const property = resolveRef(rawProperty);
+        return {
+          name,
+          type: property.type ?? 'string',
+          format: property.format,
+          required: required.includes(name),
+          minLength: property.minLength as number | undefined,
+          maxLength: property.maxLength as number | undefined,
+          enum: property.enum as string[] | undefined,
+          pattern: property.pattern as string | undefined,
+          default: property.default,
+          nullable: property.nullable as boolean | undefined,
+          description: property.description as string | undefined,
+          example: property.example !== undefined ? String(property.example) : undefined,
+          xValidation: property['x-validation'] as Record<string, unknown> | undefined,
+          relation: asRelation(property, name),
+          title: property.title as string | undefined,
+          xLabel: property['x-label'] as Record<string, string> | undefined
+        };
+      })
+  );
 };
 
 /**

@@ -63,13 +63,13 @@ await upgradedClient.table('tasks').put({
 
 ## Upgrade rules
 
-| Change | Cana behavior |
-| --- | --- |
-| Add store | Applied during the next higher version. |
-| Add index | Applied during the next higher version. |
-| Remove a store from the schema object | The old store remains. Cana avoids accidental data loss. |
-| Change an existing index definition | The old index remains. Use a new index name to rebuild intentionally. |
-| Open an older version over newer data | Refused with `UpgradeFailed`. |
+| Change                                | Cana behavior                                                         |
+| ------------------------------------- | --------------------------------------------------------------------- |
+| Add store                             | Applied during the next higher version.                               |
+| Add index                             | Applied during the next higher version.                               |
+| Remove a store from the schema object | The old store remains. Cana avoids accidental data loss.              |
+| Change an existing index definition   | The old index remains. Use a new index name to rebuild intentionally. |
+| Open an older version over newer data | Refused with `UpgradeFailed`.                                         |
 
 ## Key strategies
 
@@ -105,10 +105,9 @@ await client.table('tasks').put({
   updatedAt: 1
 });
 
-await client.table('cache').put(
-  { body: '<html>cached response</html>', savedAt: Date.now() },
-  'https://example.com/tasks'
-);
+await client
+  .table('cache')
+  .put({ body: '<html>cached response</html>', savedAt: Date.now() }, 'https://example.com/tasks');
 ```
 
 ## Run it here

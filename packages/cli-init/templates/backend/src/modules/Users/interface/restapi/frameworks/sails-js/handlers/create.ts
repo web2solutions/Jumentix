@@ -1,37 +1,36 @@
-import type { SailsJsRequest, SailsJsResponse } from '@src/interface/HTTP/adapters/sails-js/SailsJsServer';
-import { sendErrorResponse } from '@src/interface/HTTP/adapters/sails-js/responses/sendErrorResponse';
+import sendErrorResponse from '@src/interface/HTTP/adapters/sails-js/responses/sendErrorResponse';
+import UserCreateRequestEvent from '@src/modules/Users/events/UserCreateRequestEvent';
 
 import type {
-  IHandlerFactory,
-  IbaseHandler,
-  EndPointFactory
-} from '@src/interface/HTTP/ports';
+  SailsJsRequest,
+  SailsJsResponse
+} from '@src/interface/HTTP/adapters/sails-js/SailsJsServer';
+import type { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
 
-import { UserCreateRequestEvent } from '@src/modules/Users/events/UserCreateRequestEvent';
-
-const create: EndPointFactory = (
-  {
-    endPointConfig,
-    controller
-  }: IHandlerFactory
-): IbaseHandler => {
-  return {
-    path: '/users',
-    method: 'post',
-    async handler(req: SailsJsRequest, res: SailsJsResponse) {
-      try {
-        const { result, error } = await controller!.create!(new UserCreateRequestEvent({
+const create: EndPointFactory = ({
+  endPointConfig,
+  controller
+}: IHandlerFactory): IbaseHandler => ({
+  path: '/users',
+  method: 'post',
+  async handler(req: SailsJsRequest, res: SailsJsResponse) {
+    try {
+      if (!controller?.create) {
+        throw new Error('The create endpoint requires a controller implementing create.');
+      }
+      const { result, error } = await controller.create(
+        new UserCreateRequestEvent({
           authorization: req.headers.authorization ?? '',
           input: req.body,
           schemaOAS: endPointConfig
-        }));
-        if (error) throw error;
-        return res.status(201).json(result);
-      } catch (error: any) {
-        return sendErrorResponse(error, res);
-      }
+        })
+      );
+      if (error) throw error;
+      return res.status(201).json(result);
+    } catch (error: any) {
+      return sendErrorResponse(error, res);
     }
-  };
-};
+  }
+});
 
 export default create;

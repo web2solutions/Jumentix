@@ -1,17 +1,18 @@
 /* global describe, it, expect, beforeAll, afterAll */
 import request from 'supertest';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/sails-js/handlers/infraHandlers';
 import { SailsJsServer } from '@src/interface/HTTP/adapters/sails-js/SailsJsServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/sails-js/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { UserDataRepository, UserService } from '@src/modules/Users';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 
 /**
  * JUM-704 — this suite lives in `test/integration/Sails-JS/`, and now
@@ -23,7 +24,7 @@ import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
  *
  * Sails is the one adapter here with no in-process request path — it lifts a
  * real runtime and binds a socket. So this binds an **ephemeral** port rather
- * than the configured one: a suite that takes `_HTTP_PORT_` fails whenever
+ * than the configured one: a suite that takes `HTTP_PORT` fails whenever
  * anything else on the machine holds it, which is Requirement 134 §1.
  */
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -76,9 +77,7 @@ describe('sails-js -> /localhost suite', () => {
   it('answers the root route through the lifted runtime', async () => {
     expect.hasAssertions();
 
-    const response = await request(baseUrl)
-      .get('/')
-      .set('Accept', 'application/json');
+    const response = await request(baseUrl).get('/').set('Accept', 'application/json');
 
     expect(response.statusCode).toBe(200);
     expect(response.body.status).toBe('result');

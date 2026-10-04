@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Contratos de ambiente de tempo de execução
 
 Este documento define o contrato do ambiente de tempo de execução usado para inicializar adaptadores de API e perfis de processo PM2.
@@ -148,9 +149,9 @@ As seguintes chaves são obrigatórias em arquivos env em `apps/backend-template
 
 - DESCANSO:
   - `apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts`
--WebSocket:
+    -WebSocket:
   - `apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts`
--gRPC:
+    -gRPC:
   - `apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts`
 
 Esses arquivos são os pontos de entrada oficiais do processo usados ​​pelos perfis do ecossistema PM2.
@@ -209,7 +210,7 @@ de arquivos env:
   silenciosamente vazia.
 - Arquivo de ecossistema ilegível ou sintaticamente quebrado:
   `500 { "error": "PM2 ecosystem file operation failed.", "code", "path",
-  "details" }`.
+"details" }`.
 
 ### Localização dos arquivos env
 
@@ -308,7 +309,7 @@ distintas e devem ser rotuladas e editáveis separadamente na UI.
   loopback é um opt-in explícito via `JUMENTIX_SERVICE_MANAGEMENT_HOST`.
 - A porta padrão é `3200`, substituível via `JUMENTIX_SERVICE_MANAGEMENT_PORT`.
 - Quando `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` está definido, `POST
-  /api/runtime/env` requer `Authorization: Bearer <token>` e rejeita qualquer
+/api/runtime/env` requer `Authorization: Bearer <token>` e rejeita qualquer
   outra coisa com `401 { "error": "Unauthorized." }`; quando não definido, a
   operação apenas em loopback é permitida sem token.
 - Log de auditoria de mutações registra timestamp, ambiente e chaves alteradas (não valores).
@@ -322,11 +323,11 @@ JUM-543; Requisito 126 §3):
   O `try` de parse é restrito apenas ao `JSON.parse`, de modo que este envelope
   nunca pode relatar uma falha de filesystem.
 - Ambiente não suportado: `400 { "error": "Invalid environment request.",
-  "details": … }` cujo `details` nomeia o valor não suportado e a lista de
+"details": … }` cujo `details` nomeia o valor não suportado e a lista de
   aceitos — tanto no GET quanto no POST; nenhum arquivo é escrito.
 - Falhas de filesystem — arquivo env ausente (código de erro
   `ENV_FILE_NOT_FOUND`), erros de permissão, disco cheio: `500 { "error":
-  "Environment file operation failed.", "code": …, "path": …, "details": … }`,
+"Environment file operation failed.", "code": …, "path": …, "details": … }`,
   onde `code` é `ENV_FILE_NOT_FOUND` ou o código de erro do `fs` subjacente e
   `path` é o path resolvido do arquivo env. Uma instalação quebrada é uma
   classe de falha distinta e identificável — nunca `400 Invalid payload.`.

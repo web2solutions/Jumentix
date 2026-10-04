@@ -53,11 +53,11 @@ export const ALL_DB_COMPOSE_FILES = Object.freeze([
   'docker-compose-rds.yml'
 ]);
 
-export type SlicePlan = {
+export interface SlicePlan {
   http: HttpInterface;
   realtime: RealtimeInterface;
   db: DbChoice;
-};
+}
 
 /**
  * Relative paths (posix) under a generated service root that should be removed
@@ -66,9 +66,9 @@ export type SlicePlan = {
  */
 export function computeUnusedPaths(slice: SlicePlan): string[] {
   const keepHttp = HTTP_INTEGRATION_SUITES[slice.http];
-  const dropHttp = ALL_HTTP_INTEGRATION_SUITES
-    .filter((name) => name !== keepHttp)
-    .map((name) => `test/integration/${name}`);
+  const dropHttp = ALL_HTTP_INTEGRATION_SUITES.filter((name) => name !== keepHttp).map(
+    (name) => `test/integration/${name}`
+  );
 
   const dropRealtime: string[] = [];
   if (slice.realtime === 'none') {
@@ -79,8 +79,7 @@ export function computeUnusedPaths(slice: SlicePlan): string[] {
     ...ALWAYS_KEEP_COMPOSE_FILES,
     ...(DB_COMPOSE_FILES[slice.db] || [])
   ]);
-  const dropCompose = ALL_DB_COMPOSE_FILES
-    .filter((name) => !keepCompose.has(name));
+  const dropCompose = ALL_DB_COMPOSE_FILES.filter((name) => !keepCompose.has(name));
 
   return [...dropHttp, ...dropRealtime, ...dropCompose];
 }

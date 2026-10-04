@@ -1,34 +1,26 @@
 /* istanbul ignore file */
-import type { IStore } from '@src/infra/ports/persistence/IStore';
-import {
-  throwIfPreUpdateValidationFails,
-  throwIfNotFound
-} from '@src/shared/validators';
-import type {
-  IPagingRequest,
-  IPagingResponse,
-  IRepoConfig
-} from '@src/modules/port';
-import {
-  BaseRepo
-} from '@src/modules/port';
+import { DEFAULT_PAGE_SIZE } from '@src/config/constants';
+import { BaseRepo } from '@src/modules/port';
+import Organization from '@src/modules/Users/domain/Model/Organization';
+import { throwIfNotFound, throwIfPreUpdateValidationFails } from '@src/shared/validators';
 
-import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
+import type { IStore } from '@src/infra/ports/persistence/IStore';
+import type { IPagingRequest, IPagingResponse, IRepoConfig } from '@src/modules/port';
 import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
-import { Organization } from '@src/modules/Users/domain/Model/Organization';
-import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
 import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
-import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
-import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
 import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
 import type { IOrganizationRepository } from '@src/modules/Users/service/ports/IOrganizationRepository';
 
-export class OrganizationDataRepository
+class OrganizationDataRepository
   extends BaseRepo<Organization, RequestCreateOrganization, RequestUpdateOrganization>
-  implements IOrganizationRepository {
+  implements IOrganizationRepository
+{
   public store: IStore<IOrganization>;
 
   public limit: number;
@@ -37,7 +29,7 @@ export class OrganizationDataRepository
     super(config);
     const { limit } = config;
     this.store = this.databaseClient.stores.Organization;
-    this.limit = limit ?? _DEFAULT_PAGE_SIZE_;
+    this.limit = limit ?? DEFAULT_PAGE_SIZE;
   }
 
   public async create(data: RequestCreateOrganization): Promise<Organization> {
@@ -55,7 +47,7 @@ export class OrganizationDataRepository
         ...data
       }).serialize()
     };
-    const updated = await this.store.update(id, patch as IOrganization);
+    const updated = await this.store.update(id, patch);
     return new Organization(updated);
   }
 
@@ -73,9 +65,7 @@ export class OrganizationDataRepository
     filters: Record<string, string | number>,
     paging: IPagingRequest
   ): Promise<IPagingResponse<Organization[]>> {
-    const {
-      result, page, size, total
-    } = await this.store.getAll(filters, paging);
+    const { result, page, size, total } = await this.store.getAll(filters, paging);
     const currentPage = page ?? paging?.page ?? 1;
     const currentSize = size ?? paging?.size ?? this.limit;
     const rows = result ?? [];
@@ -98,7 +88,7 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.createAddress(data);
-    const updated = await this.store.update(organizationId, model.serialize() as IOrganization);
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 
@@ -110,7 +100,7 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.updateAddress({ ...data, id: addressId });
-    const updated = await this.store.update(organizationId, model.serialize() as IOrganization);
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 
@@ -118,7 +108,7 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.deleteAddress(addressId);
-    const updated = await this.store.update(organizationId, model.serialize() as IOrganization);
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 
@@ -129,10 +119,7 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.createPhone(data);
-    const updated = await this.store.update(
-      organizationId,
-      model.serialize() as IOrganization
-    );
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 
@@ -144,7 +131,7 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.updatePhone({ ...data, id: phoneId });
-    const updated = await this.store.update(organizationId, model.serialize() as IOrganization);
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 
@@ -152,7 +139,7 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.deletePhone(phoneId);
-    const updated = await this.store.update(organizationId, model.serialize() as IOrganization);
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 
@@ -163,10 +150,7 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.createEmail(data);
-    const updated = await this.store.update(
-      organizationId,
-      model.serialize() as IOrganization
-    );
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 
@@ -178,7 +162,7 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.updateEmail({ ...data, id: emailId });
-    const updated = await this.store.update(organizationId, model.serialize() as IOrganization);
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 
@@ -186,7 +170,9 @@ export class OrganizationDataRepository
     const current = await this.getOneById(organizationId);
     const model = new Organization({ ...current.serialize() });
     model.deleteEmail(emailId);
-    const updated = await this.store.update(organizationId, model.serialize() as IOrganization);
+    const updated = await this.store.update(organizationId, model.serialize());
     return new Organization(updated);
   }
 }
+
+export default OrganizationDataRepository;

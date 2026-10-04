@@ -1,10 +1,11 @@
+import BaseKeyValueStorageClient from './BaseKeyValueStorageClient';
+import ServiceResponse from './ServiceResponse';
+
 import type { IServiceResponse } from './contracts';
-import { ServiceResponse } from './ServiceResponse';
-import { BaseKeyValueStorageClient } from './BaseKeyValueStorageClient';
 
 let inMemoryKeyValueStorageClient: BaseKeyValueStorageClient | undefined;
 
-export class InMemoryKeyValueStorageClient extends BaseKeyValueStorageClient {
+class InMemoryKeyValueStorageClient extends BaseKeyValueStorageClient {
   public client: Map<string, any>;
 
   private constructor() {
@@ -51,9 +52,11 @@ export class InMemoryKeyValueStorageClient extends BaseKeyValueStorageClient {
 
   public static compile(): InMemoryKeyValueStorageClient {
     if (inMemoryKeyValueStorageClient) {
-      return inMemoryKeyValueStorageClient as InMemoryKeyValueStorageClient;
+      return inMemoryKeyValueStorageClient;
     }
     inMemoryKeyValueStorageClient = new InMemoryKeyValueStorageClient();
-    return inMemoryKeyValueStorageClient as InMemoryKeyValueStorageClient;
+    return inMemoryKeyValueStorageClient;
   }
 }
+
+export default InMemoryKeyValueStorageClient;

@@ -1,14 +1,18 @@
 /* global  describe, it, expect */
 import request from 'supertest';
-import { Server as Restify } from 'restify';
-import { RestifyServer } from '@src/interface/HTTP/adapters/restify/RestifyServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/restify/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { AuthService } from '@src/modules/Users/service/AuthService';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/restify/handlers/infraHandlers';
+import RestifyServer from '@src/interface/HTTP/adapters/restify/RestifyServer';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 import {
   BasicAuthorizationHeaderUser1,
   BasicAuthorizationHeaderUser2,
@@ -16,12 +20,12 @@ import {
   BasicAuthorizationHeaderUser4,
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
-import type { IUser } from '@src/modules/Users/';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { UserDataRepository, UserService } from '@src/modules/Users';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+
 import { listenForSupertest } from '../../../helpers/listenForSupertest';
+
+import type { Server as Restify } from 'restify';
+
+import type { IUser } from '@src/modules/Users/';
 
 const webServer = RestifyServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -42,11 +46,7 @@ const userService = UserService.compile({
   }
 });
 const userProvider = UserProviderLocal.compile(userService);
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 const serverType = EHTTPFrameworks.restify;
@@ -101,7 +101,9 @@ describe('restify -> delete User suite', () => {
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser2);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the delete_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the delete_user role'
+    );
   });
 
   it('user3 must not be able to delete new user - Forbidden: the role delete_user is required', async () => {
@@ -112,7 +114,9 @@ describe('restify -> delete User suite', () => {
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser3);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the delete_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the delete_user role'
+    );
   });
 
   it('user4 must not be able to delete new user - Forbidden: the role delete_user is required', async () => {
@@ -123,7 +127,9 @@ describe('restify -> delete User suite', () => {
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser4);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the delete_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the delete_user role'
+    );
   });
 
   it('guest must not be able to delete new user - Unauthorized', async () => {

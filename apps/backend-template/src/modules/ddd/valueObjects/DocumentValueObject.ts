@@ -1,7 +1,7 @@
-import { EDocumentType } from '@src/modules/ddd/valueObjects/EDocumentType';
+import { DomainValidationError } from '@src/infra/exceptions';
+import EDocumentType from '@src/modules/ddd/valueObjects/EDocumentType';
 import { UUID } from '@src/modules/port';
 import { canNotBeEmpty, throwIfIsNotObject } from '@src/shared/validators';
-import { DomainValidationError } from '@src/infra/exceptions';
 
 export interface IDocumentValueObjectPayload {
   id?: string;
@@ -21,12 +21,7 @@ export class DocumentValueObject {
 
   public constructor(payload: IDocumentValueObjectPayload) {
     throwIfIsNotObject('payload', payload);
-    const {
-      id,
-      type,
-      countryIssue,
-      data
-    } = payload;
+    const { id, type, countryIssue, data } = payload;
     canNotBeEmpty('type', type);
     canNotBeEmpty('countryIssue', countryIssue);
     canNotBeEmpty('data', data);
@@ -42,15 +37,15 @@ export class DocumentValueObject {
   }
 
   private static normalizeType(input: EDocumentType | string): EDocumentType {
-    const value = `${input}`.trim();
+    const value = input.trim();
     if (!value) {
       throw new DomainValidationError('type can not be empty');
     }
 
     const enumValues = Object.values(EDocumentType);
-    const directMatch = enumValues.find((item) => item === value);
+    const directMatch = enumValues.find((item) => item === (value as EDocumentType));
     if (directMatch) {
-      return directMatch as EDocumentType;
+      return directMatch;
     }
 
     if (value.toUpperCase() === 'PASSPORT') {
@@ -61,7 +56,7 @@ export class DocumentValueObject {
   }
 
   private static normalizeCountryIssue(input: string): string {
-    const value = `${input}`.trim().toUpperCase();
+    const value = input.trim().toUpperCase();
     if (!value) {
       throw new DomainValidationError('countryIssue can not be empty');
     }
@@ -69,7 +64,7 @@ export class DocumentValueObject {
   }
 
   private static normalizeData(input: string): string {
-    const value = `${input}`.trim();
+    const value = input.trim();
     if (!value) {
       throw new DomainValidationError('data can not be empty');
     }

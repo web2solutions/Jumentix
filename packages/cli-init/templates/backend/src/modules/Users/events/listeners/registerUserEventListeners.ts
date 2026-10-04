@@ -1,13 +1,11 @@
-import type { IEventBus } from '@src/modules/port/IEventBus';
-import type { IUserEventListeners } from '@src/modules/Users/events/contracts/IUserEventListeners';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
+
+import type IEventBus from '@src/modules/port/IEventBus';
+import type { IUserEventListeners } from '@src/modules/Users/events/contracts/IUserEventListeners';
 
 const noop = async () => undefined;
 
-export const registerUserEventListeners = (
-  eventBus: IEventBus,
-  listeners?: IUserEventListeners
-): void => {
+const registerUserEventListeners = (eventBus: IEventBus, listeners?: IUserEventListeners): void => {
   const safeListeners: Required<IUserEventListeners> = {
     onUserCreated: listeners?.onUserCreated ?? noop,
     onUserUpdated: listeners?.onUserUpdated ?? noop,
@@ -23,3 +21,5 @@ export const registerUserEventListeners = (
     safeListeners.onUserPasswordUpdated
   );
 };
+
+export default registerUserEventListeners;

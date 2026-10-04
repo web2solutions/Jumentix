@@ -1,4 +1,4 @@
-import { JwtService } from '@src/infra/jwt/JwtService';
+import JwtService from '@src/infra/jwt/JwtService';
 
 const restoreEnv = (name: string, previous: string | undefined): void => {
   if (previous === undefined) {

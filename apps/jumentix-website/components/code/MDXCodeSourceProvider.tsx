@@ -1,13 +1,15 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { createContext, useContext, useMemo } from 'react';
-import { trimTrailingBlankCodeLines } from './normalizeCode';
 
-export type MDXCodeBlockSource = {
+import trimTrailingBlankCodeLines from './normalizeCode';
+
+import type { ReactNode } from 'react';
+
+export interface MDXCodeBlockSource {
   language?: string;
   value: string;
-};
+}
 
 const MDXCodeSourceContext = createContext<MDXCodeBlockSource[]>([]);
 
@@ -61,21 +63,17 @@ export function parseMDXCodeBlocks(sourceCode: string): MDXCodeBlockSource[] {
   return blocks;
 }
 
-export function MDXCodeSourceProvider({
+export const MDXCodeSourceProvider = ({
   children,
   sourceCode
 }: {
   children: ReactNode;
   sourceCode?: string;
-}) {
+}) => {
   const blocks = useMemo(() => parseMDXCodeBlocks(sourceCode ?? ''), [sourceCode]);
 
-  return (
-    <MDXCodeSourceContext.Provider value={blocks}>
-      {children}
-    </MDXCodeSourceContext.Provider>
-  );
-}
+  return <MDXCodeSourceContext.Provider value={blocks}>{children}</MDXCodeSourceContext.Provider>;
+};
 
 export function useMDXCodeSourceBlocks(): MDXCodeBlockSource[] {
   return useContext(MDXCodeSourceContext);

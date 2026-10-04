@@ -1,14 +1,15 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/prefer-strict-equal, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import {
-  normalizeMonitoringHistoryInput,
-  createEmptyMonitoringHistory
+  createEmptyMonitoringHistory,
+  normalizeMonitoringHistoryInput
 } from '@jumentix/designer-core/state/designerState.js';
 
 describe('normalizeMonitoringHistoryInput', () => {
   it('normalizes empty payloads and clamps process spark series', () => {
     expect.hasAssertions();
-    expect(normalizeMonitoringHistoryInput(undefined))
-      .toStrictEqual(createEmptyMonitoringHistory());
+    expect(normalizeMonitoringHistoryInput(undefined)).toStrictEqual(
+      createEmptyMonitoringHistory()
+    );
     const normalized = normalizeMonitoringHistoryInput({
       environment: 'staging',
       samples: Array.from({ length: 80 }, (_, index) => ({
@@ -33,7 +34,9 @@ describe('normalizeMonitoringHistoryInput', () => {
     });
     expect(normalized.environment).toBe('staging');
     expect(normalized.samples).toHaveLength(60);
-    const processHistory = (normalized.processes as Record<string, { cpu: number[]; diskReadBytes: number[] }>)['default::app'];
+    const processHistory = (
+      normalized.processes as Record<string, { cpu: number[]; diskReadBytes: number[] }>
+    )['default::app'];
     expect(processHistory.cpu).toHaveLength(60);
     expect(processHistory.diskReadBytes).toStrictEqual([9]);
   });
@@ -86,7 +89,12 @@ describe('normalizeMonitoringHistoryInput malformed entries (JUM-821)', () => {
         // A blank key is not a process name; keeping it would draw a row with
         // no label in the monitoring view.
         '': {
-          cpu: [1], mem: [2], restarts: [], asyncActive: [], diskReadBytes: [], diskWriteBytes: []
+          cpu: [1],
+          mem: [2],
+          restarts: [],
+          asyncActive: [],
+          diskReadBytes: [],
+          diskWriteBytes: []
         },
         'default::api': {
           cpu: 'not-an-array',
@@ -100,7 +108,9 @@ describe('normalizeMonitoringHistoryInput malformed entries (JUM-821)', () => {
     });
 
     expect(Object.keys(normalized.processes)).toStrictEqual(['default::api']);
-    const bucket = (normalized.processes as Record<string, Record<string, number[]>>)['default::api'];
+    const bucket = (normalized.processes as Record<string, Record<string, number[]>>)[
+      'default::api'
+    ];
     // A series that is not an array clamps to empty; non-finite entries drop out.
     expect(bucket.cpu).toStrictEqual([]);
     expect(bucket.mem).toStrictEqual([1, 3]);

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/documentation/SEO-AND-PERFORMANCE-BASELINE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # SEO e linha de base de desempenho
 
 Rastreamento de problemas:

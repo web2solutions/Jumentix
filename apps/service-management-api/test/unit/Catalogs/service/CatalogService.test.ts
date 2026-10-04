@@ -1,17 +1,19 @@
-/* eslint-disable jest/max-expects, jest/prefer-expect-assertions */
-import { CatalogService } from '@service-management-api/modules/Catalogs/service/CatalogService';
-import { CatalogDataRepository } from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
-import { CatalogUseCases } from '@service-management-api/modules/Catalogs/application/use-cases/CatalogUseCases';
-import { deleteCatalogById } from '@service-management-api/modules/Catalogs/features/deleteCatalogById';
-import { getAllCatalogs } from '@service-management-api/modules/Catalogs/features/getAllCatalogs';
-import { restoreCatalog } from '@service-management-api/modules/Catalogs/features/restoreCatalog';
-import { updateCatalog } from '@service-management-api/modules/Catalogs/features/updateCatalog';
-import { CatalogIntegrationEventName } from '@service-management-api/modules/Catalogs/events/contracts/CatalogIntegrationEventName';
-import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
-import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
-import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-// eslint-disable-next-line import/no-unresolved
+/* eslint-disable jest/max-expects */
 import { InMemoryMessageMediatorAdapter } from '@jumentix/message-mediator';
+import InMemoryRelationalStore from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
+
+import CatalogDataRepository from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
+import CatalogUseCases from '@service-management-api/modules/Catalogs/application/use-cases/CatalogUseCases';
+import { CatalogIntegrationEventName } from '@service-management-api/modules/Catalogs/events/contracts/CatalogIntegrationEventName';
+import deleteCatalogById from '@service-management-api/modules/Catalogs/features/deleteCatalogById';
+import getAllCatalogs from '@service-management-api/modules/Catalogs/features/getAllCatalogs';
+import restoreCatalog from '@service-management-api/modules/Catalogs/features/restoreCatalog';
+import updateCatalog from '@service-management-api/modules/Catalogs/features/updateCatalog';
+import CatalogService from '@service-management-api/modules/Catalogs/service/CatalogService';
+
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+
+import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
 
 /**
  * Core unit suite for the shared catalog (JUM-491), running the REAL service,
@@ -53,23 +55,40 @@ const createServiceStack = (eventBus?: any) => {
   });
   const catalogUseCases = CatalogUseCases.compile(catalogService);
   return {
-    store, dataRepository, catalogService, catalogUseCases
+    store,
+    dataRepository,
+    catalogService,
+    catalogUseCases
   };
 };
 
 const designV1 = { entities: [{ name: 'Invoice', fields: [{ name: 'total', type: 'number' }] }] };
+
+const unwrapResult = <T>(response: { result?: T | null }): T => {
+  if (response.result === undefined || response.result === null) {
+    throw new Error('expected a result from the catalog stack');
+  }
+  return response.result;
+};
 
 describe('catalogService — optimistic concurrency and events', () => {
   it('creates a record at version 1 and publishes catalogs.catalog.created', async () => {
     expect.hasAssertions();
     const mediator = new InMemoryMessageMediatorAdapter();
     const observed: any[] = [];
-    mediator.subscribe(CatalogIntegrationEventName.Created, (event) => { observed.push(event); });
+    mediator.subscribe(CatalogIntegrationEventName.Created, (event) => {
+      observed.push(event);
+    });
     const { catalogUseCases } = createServiceStack(mediator);
 
-    const { result, error } = await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    }, 'admin@xpertminds.dev');
+    const { result, error } = await catalogUseCases.create(
+      {
+        organization: 'org-1',
+        name: 'Billing',
+        design: designV1
+      },
+      'admin@xpertminds.dev'
+    );
 
     expect(error).toBeUndefined();
     expect(result?.version).toBe(1);
@@ -77,7 +96,10 @@ describe('catalogService — optimistic concurrency and events', () => {
     expect(result?.createdBy).toBe('admin@xpertminds.dev');
     expect(observed).toHaveLength(1);
     expect(observed[0].payload).toMatchObject({
-      id: result?.id, organization: 'org-1', version: 1, actor: 'admin@xpertminds.dev'
+      id: result?.id,
+      organization: 'org-1',
+      version: 1,
+      actor: 'admin@xpertminds.dev'
     });
   });
 
@@ -85,16 +107,40 @@ describe('catalogService — optimistic concurrency and events', () => {
     expect.hasAssertions();
     const mediator = new InMemoryMessageMediatorAdapter();
     const observed: any[] = [];
-    mediator.subscribe(CatalogIntegrationEventName.Updated, (event) => { observed.push(event); });
+    mediator.subscribe(CatalogIntegrationEventName.Updated, (event) => {
+      observed.push(event);
+    });
     const { catalogUseCases } = createServiceStack(mediator);
-    const created = (await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    }, 'admin@xpertminds.dev')).result!;
+    const created = unwrapResult(
+      await catalogUseCases.create(
+        {
+          organization: 'org-1',
+          name: 'Billing',
+          design: designV1
+        },
+        'admin@xpertminds.dev'
+      )
+    );
 
-    const designV2 = { entities: [{ name: 'Invoice', fields: [{ name: 'total', type: 'number' }, { name: 'dueAt', type: 'date' }] }] };
-    const { result, error } = await catalogUseCases.update(created.id, {
-      version: 1, design: designV2
-    }, 'user@xpertminds.dev');
+    const designV2 = {
+      entities: [
+        {
+          name: 'Invoice',
+          fields: [
+            { name: 'total', type: 'number' },
+            { name: 'dueAt', type: 'date' }
+          ]
+        }
+      ]
+    };
+    const { result, error } = await catalogUseCases.update(
+      created.id,
+      {
+        version: 1,
+        design: designV2
+      },
+      'user@xpertminds.dev'
+    );
 
     expect(error).toBeUndefined();
     expect(result?.version).toBe(2);
@@ -107,19 +153,24 @@ describe('catalogService — optimistic concurrency and events', () => {
   it('rejects a stale update with the current version and record in the error metadata', async () => {
     expect.hasAssertions();
     const { catalogUseCases } = createServiceStack();
-    const created = (await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    })).result!;
+    const created = unwrapResult(
+      await catalogUseCases.create({
+        organization: 'org-1',
+        name: 'Billing',
+        design: designV1
+      })
+    );
     await catalogUseCases.update(created.id, { version: 1, description: 'moved on' });
 
     const { result, error } = await catalogUseCases.update(created.id, {
-      version: 1, description: 'stale edit'
+      version: 1,
+      description: 'stale edit'
     });
 
     expect(result).toBeUndefined();
     expect(error).toBeDefined();
     expect((error as any).code).toBe('GENERIC.CONFLICT');
-    const metadata = (error as any).metadata as any;
+    const { metadata } = error as any;
     expect(metadata.catalogId).toBe(created.id);
     expect(metadata.expectedVersion).toBe(1);
     expect(metadata.currentVersion).toBe(2);
@@ -129,13 +180,17 @@ describe('catalogService — optimistic concurrency and events', () => {
   it('a rejected stale write leaves the server record untouched — the loser reconciles', async () => {
     expect.hasAssertions();
     const { catalogUseCases } = createServiceStack();
-    const created = (await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    })).result!;
+    const created = unwrapResult(
+      await catalogUseCases.create({
+        organization: 'org-1',
+        name: 'Billing',
+        design: designV1
+      })
+    );
     await catalogUseCases.update(created.id, { version: 1, description: 'winner' });
     await catalogUseCases.update(created.id, { version: 1, description: 'loser' });
 
-    const current = (await catalogUseCases.getOneById(created.id)).result!;
+    const current = unwrapResult(await catalogUseCases.getOneById(created.id));
     expect(current.description).toBe('winner');
     expect(current.version).toBe(2);
   });
@@ -144,17 +199,23 @@ describe('catalogService — optimistic concurrency and events', () => {
     expect.hasAssertions();
     const mediator = new InMemoryMessageMediatorAdapter();
     const observed: any[] = [];
-    mediator.subscribe(CatalogIntegrationEventName.Deleted, (event) => { observed.push(event); });
+    mediator.subscribe(CatalogIntegrationEventName.Deleted, (event) => {
+      observed.push(event);
+    });
     const { catalogUseCases } = createServiceStack(mediator);
-    const created = (await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    })).result!;
+    const created = unwrapResult(
+      await catalogUseCases.create({
+        organization: 'org-1',
+        name: 'Billing',
+        design: designV1
+      })
+    );
 
     const { result, error } = await catalogUseCases.delete(created.id, 1, 'admin@xpertminds.dev');
     expect(error).toBeUndefined();
     expect(result).toBe(true);
 
-    const tombstoned = (await catalogUseCases.getOneById(created.id)).result!;
+    const tombstoned = unwrapResult(await catalogUseCases.getOneById(created.id));
     expect(tombstoned.deletedAt).not.toBe('');
     expect(tombstoned.version).toBe(2);
 
@@ -175,15 +236,19 @@ describe('catalogService — optimistic concurrency and events', () => {
   it('rejects a stale delete', async () => {
     expect.hasAssertions();
     const { catalogUseCases } = createServiceStack();
-    const created = (await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    })).result!;
+    const created = unwrapResult(
+      await catalogUseCases.create({
+        organization: 'org-1',
+        name: 'Billing',
+        design: designV1
+      })
+    );
     await catalogUseCases.update(created.id, { version: 1, description: 'moved on' });
 
     const { result, error } = await catalogUseCases.delete(created.id, 1);
     expect(result).toBeUndefined();
     expect((error as any).code).toBe('GENERIC.CONFLICT');
-    const current = (await catalogUseCases.getOneById(created.id)).result!;
+    const current = unwrapResult(await catalogUseCases.getOneById(created.id));
     expect(current.deletedAt).toBe('');
   });
 
@@ -191,17 +256,23 @@ describe('catalogService — optimistic concurrency and events', () => {
     expect.hasAssertions();
     const mediator = new InMemoryMessageMediatorAdapter();
     const observed: any[] = [];
-    mediator.subscribe(CatalogIntegrationEventName.Deleted, (event) => { observed.push(event); });
+    mediator.subscribe(CatalogIntegrationEventName.Deleted, (event) => {
+      observed.push(event);
+    });
     const { catalogService } = createServiceStack(mediator);
-    const created = (await catalogService.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    })).result!;
+    const created = unwrapResult(
+      await catalogService.create({
+        organization: 'org-1',
+        name: 'Billing',
+        design: designV1
+      })
+    );
 
     const { result, error } = await catalogService.delete(created.id);
     expect(error).toBeUndefined();
     expect(result).toBe(true);
 
-    const tombstoned = (await catalogService.getOneById(created.id)).result!;
+    const tombstoned = unwrapResult(await catalogService.getOneById(created.id));
     expect(tombstoned.deletedAt).not.toBe('');
     expect(tombstoned.deletedAt).not.toBeNull();
 
@@ -214,11 +285,17 @@ describe('catalogService — optimistic concurrency and events', () => {
     expect.hasAssertions();
     const mediator = new InMemoryMessageMediatorAdapter();
     const observed: any[] = [];
-    mediator.subscribe(CatalogIntegrationEventName.Restored, (event) => { observed.push(event); });
+    mediator.subscribe(CatalogIntegrationEventName.Restored, (event) => {
+      observed.push(event);
+    });
     const { catalogUseCases } = createServiceStack(mediator);
-    const created = (await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    })).result!;
+    const created = unwrapResult(
+      await catalogUseCases.create({
+        organization: 'org-1',
+        name: 'Billing',
+        design: designV1
+      })
+    );
     await catalogUseCases.delete(created.id, 1);
 
     const { result, error } = await catalogUseCases.restore(created.id, 2, 'admin@xpertminds.dev');
@@ -237,7 +314,9 @@ describe('catalogService — optimistic concurrency and events', () => {
     const failingBus = { publish: () => Promise.reject(new Error('broker down')) };
     const { catalogUseCases } = createServiceStack(failingBus);
     const { result, error } = await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
+      organization: 'org-1',
+      name: 'Billing',
+      design: designV1
     });
     expect(error).toBeUndefined();
     expect(result?.version).toBe(1);
@@ -246,10 +325,17 @@ describe('catalogService — optimistic concurrency and events', () => {
   it('writes without any event bus configured still succeed', async () => {
     expect.hasAssertions();
     const { catalogUseCases } = createServiceStack(undefined);
-    const created = (await catalogUseCases.create({
-      organization: 'org-1', name: 'Billing', design: designV1
-    })).result!;
-    const { error } = await catalogUseCases.update(created.id, { version: 1, description: 'no bus' });
+    const created = unwrapResult(
+      await catalogUseCases.create({
+        organization: 'org-1',
+        name: 'Billing',
+        design: designV1
+      })
+    );
+    const { error } = await catalogUseCases.update(created.id, {
+      version: 1,
+      description: 'no bus'
+    });
     expect(error).toBeUndefined();
   });
 
@@ -267,10 +353,10 @@ describe('catalogService — optimistic concurrency and events', () => {
   it('rejects an update of a missing record as not found', async () => {
     expect.hasAssertions();
     const { catalogUseCases } = createServiceStack();
-    const { error } = await catalogUseCases.update(
-      '123e4567-e89b-42d3-a456-426614174000',
-      { version: 1, description: 'ghost' }
-    );
+    const { error } = await catalogUseCases.update('123e4567-e89b-42d3-a456-426614174000', {
+      version: 1,
+      description: 'ghost'
+    });
     expect((error as any).code).toBe('GENERIC.NOT_FOUND');
   });
 });
@@ -278,21 +364,29 @@ describe('catalogService — optimistic concurrency and events', () => {
 describe('catalog OAS documents (JUM-817)', () => {
   it('returns an empty OAS document set when the design has no valid OAS documents', () => {
     expect.hasAssertions();
-    expect(CatalogService.oasDocumentsFromDesign(undefined))
-      .toStrictEqual({ merged: null, services: {} });
+    expect(CatalogService.oasDocumentsFromDesign(undefined)).toStrictEqual({
+      merged: null,
+      services: {}
+    });
     expect(CatalogService.oasDocumentsFromDesign({})).toStrictEqual({ merged: null, services: {} });
-    expect(CatalogService.oasDocumentsFromDesign({ oasDocuments: [] }))
-      .toStrictEqual({ merged: null, services: {} });
+    expect(CatalogService.oasDocumentsFromDesign({ oasDocuments: [] })).toStrictEqual({
+      merged: null,
+      services: {}
+    });
   });
 
   it('drops malformed services maps and non-document merged payloads', () => {
     expect.hasAssertions();
-    expect(CatalogService.oasDocumentsFromDesign({
-      oasDocuments: { services: ['not', 'a', 'map'], merged: 'not-a-document' }
-    })).toStrictEqual({ merged: null, services: {} });
-    expect(CatalogService.oasDocumentsFromDesign({
-      oasDocuments: { services: null, merged: null }
-    })).toStrictEqual({ merged: null, services: {} });
+    expect(
+      CatalogService.oasDocumentsFromDesign({
+        oasDocuments: { services: ['not', 'a', 'map'], merged: 'not-a-document' }
+      })
+    ).toStrictEqual({ merged: null, services: {} });
+    expect(
+      CatalogService.oasDocumentsFromDesign({
+        oasDocuments: { services: null, merged: null }
+      })
+    ).toStrictEqual({ merged: null, services: {} });
   });
 
   it('stores and serves merged and per-service OAS on the catalog design', async () => {
@@ -305,22 +399,28 @@ describe('catalog OAS documents (JUM-817)', () => {
         billing: { openapi: '3.1.0', info: { title: 'Billing' }, paths: { '/billing/invoice': {} } }
       }
     };
-    const { result, error } = await catalogUseCases.create({
-      organization: 'org-1',
-      name: 'Architecture',
-      design: {
-        kind: 'domain-package',
-        version: '2.0.0',
-        domain: { name: 'Users' },
-        oasDocuments
-      }
-    }, 'admin@xpertminds.dev');
-    expect(error).toBeUndefined();
-    const stored = CatalogService.oasDocumentsFromDesign(result?.design);
+    const createResponse = await catalogUseCases.create(
+      {
+        organization: 'org-1',
+        name: 'Architecture',
+        design: {
+          kind: 'domain-package',
+          version: '2.0.0',
+          domain: { name: 'Users' },
+          oasDocuments
+        }
+      },
+      'admin@xpertminds.dev'
+    );
+    expect(createResponse.error).toBeUndefined();
+    const result = unwrapResult(createResponse);
+    const stored = CatalogService.oasDocumentsFromDesign(result.design);
     expect(stored.merged?.info?.title).toBe('Core');
     expect(Object.keys(stored.services).sort()).toStrictEqual(['billing', 'core']);
-    const read = await catalogUseCases.getOneById(result!.id);
-    expect(CatalogService.oasDocumentsFromDesign(read.result?.design).services.billing.info.title).toBe('Billing');
+    const read = await catalogUseCases.getOneById(result.id);
+    expect(
+      CatalogService.oasDocumentsFromDesign(read.result?.design).services.billing.info.title
+    ).toBe('Billing');
   });
 });
 
@@ -329,20 +429,27 @@ describe('catalog feature functions — repository port mapping', () => {
     expect.hasAssertions();
     const repository = {
       getAll: jest.fn().mockResolvedValue({
-        result: undefined, page: 1, size: 10, total: 0
+        result: undefined,
+        page: 1,
+        size: 10,
+        total: 0
       }),
       delete: jest.fn().mockResolvedValue(true),
       update: jest.fn().mockResolvedValue({ serialize: () => ({ id: 'catalog-1', version: 2 }) }),
       restore: jest.fn().mockResolvedValue({ serialize: () => ({ id: 'catalog-1', version: 3 }) })
     };
 
-    await expect(getAllCatalogs({ organization: 'org-1' }, { page: 1, size: 10 }, repository as never))
-      .resolves.toMatchObject({ result: [] });
+    await expect(
+      getAllCatalogs({ organization: 'org-1' }, { page: 1, size: 10 }, repository as never)
+    ).resolves.toMatchObject({ result: [] });
     await expect(deleteCatalogById('catalog-1', 2, repository as never)).resolves.toBe(true);
-    await expect(updateCatalog('catalog-1', { version: 1 }, repository as never))
-      .resolves.toStrictEqual({ id: 'catalog-1', version: 2 });
-    await expect(restoreCatalog('catalog-1', 2, repository as never))
-      .resolves.toStrictEqual({ id: 'catalog-1', version: 3 });
+    await expect(
+      updateCatalog('catalog-1', { version: 1 }, repository as never)
+    ).resolves.toStrictEqual({ id: 'catalog-1', version: 2 });
+    await expect(restoreCatalog('catalog-1', 2, repository as never)).resolves.toStrictEqual({
+      id: 'catalog-1',
+      version: 3
+    });
 
     expect(repository.delete).toHaveBeenCalledWith('catalog-1', 2, '');
     expect(repository.update).toHaveBeenCalledWith('catalog-1', { version: 1 }, '');

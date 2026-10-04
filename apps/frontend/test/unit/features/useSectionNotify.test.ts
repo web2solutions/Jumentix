@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { useSectionNotify } from '@/features/profile/useSectionNotify';
-
+import useSectionNotify from '@/features/profile/useSectionNotify';
 import { setLocale } from '@/i18n';
 
 setLocale('en');

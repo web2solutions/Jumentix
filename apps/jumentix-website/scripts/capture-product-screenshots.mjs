@@ -1,4 +1,6 @@
-#!/usr/bin/env node
+/* eslint-disable no-await-in-loop -- screenshots are captured page by page:
+   one navigation + axe pass at a time keeps the WebKit session deterministic. */
+/* eslint-disable no-console -- CLI capture script: stdout is its report channel. */
 /**
  * Capture the website's product screenshots from the running applications.
  * Every image under public/product/ is produced here, so a refresh
@@ -16,10 +18,10 @@
  *
  * Fixed framing: WebKit, 1440x900 CSS pixels at 2x, dark color scheme.
  */
-import fs from 'node:fs';
-import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
@@ -35,7 +37,7 @@ const password = process.env.FRONTEND_PASSWORD;
 
 if (!username || !password) {
   console.error('Set FRONTEND_USERNAME and FRONTEND_PASSWORD to a seeded account.');
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 fs.mkdirSync(outDir, { recursive: true });
@@ -46,13 +48,18 @@ async function dismissToasts(page) {
     const buttons = page.getByRole('button', { name: label, exact: true });
     const count = await buttons.count();
     for (let index = 0; index < count; index += 1) {
-      await buttons.nth(index).click({ timeout: 1000 }).catch(() => undefined);
+      await buttons
+        .nth(index)
+        .click({ timeout: 1000 })
+        .catch(() => undefined);
     }
   }
   await page.evaluate(() => {
-    document.querySelectorAll('[role="status"], .toast, .status-toast').forEach((node) => {
-      node.setAttribute('hidden', '');
-    });
+    globalThis.document
+      .querySelectorAll('[role="status"], .toast, .status-toast')
+      .forEach((node) => {
+        node.setAttribute('hidden', '');
+      });
   });
 }
 
@@ -68,7 +75,7 @@ async function captureServiceManagement(browser) {
   await page.getByRole('button', { name: 'Load Sample Model', exact: true }).first().click();
   await page.waitForTimeout(1500);
   await dismissToasts(page);
-  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.evaluate(() => globalThis.window.scrollTo(0, 0));
   await shot(page, 'domain-designer.png');
 
   // Split the sample into two services so the architecture view shows a link.
@@ -77,7 +84,10 @@ async function captureServiceManagement(browser) {
   await architecture.getByPlaceholder('Service name').fill('Tasks API');
   await architecture.getByRole('button', { name: 'Add Service', exact: true }).click();
   await page.waitForTimeout(500);
-  await architecture.locator('#architecture-service-list').getByText('Tasks API', { exact: false }).click();
+  await architecture
+    .locator('#architecture-service-list')
+    .getByText('Tasks API', { exact: false })
+    .click();
   await page.waitForTimeout(300);
   await page.selectOption('#architecture-inspect-domain', { label: 'Tasks' });
   await page.click('#architecture-move-domain-btn');
@@ -108,7 +118,9 @@ async function captureFrontend(browser) {
   await page.fill('#oas-field-username', username);
   await page.fill('#oas-field-password', password);
   await page.locator('form').evaluate((form) => form.requestSubmit());
-  await page.waitForFunction(() => window.location.hash.includes('/dashboard'), null, { timeout: 30000 });
+  await page.waitForFunction(() => globalThis.window.location.hash.includes('/dashboard'), null, {
+    timeout: 30000
+  });
   await page.waitForTimeout(1500);
   await shot(page, 'frontend-dashboard.png');
   await page.goto(`${feUrl}/#/m/users/users`, { waitUntil: 'networkidle' });
@@ -124,7 +136,10 @@ async function captureFrontend(browser) {
  */
 function stampManifest() {
   if (path.resolve(outDir) !== path.dirname(manifestPath)) return;
-  const commit = execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], { cwd: websiteRoot, encoding: 'utf8' }).trim();
+  const commit = execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {
+    cwd: websiteRoot,
+    encoding: 'utf8'
+  }).trim();
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   for (const entry of manifest.screenshots) entry.capturedAt = commit;
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);

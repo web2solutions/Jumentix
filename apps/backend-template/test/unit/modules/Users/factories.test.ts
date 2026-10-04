@@ -1,7 +1,7 @@
 import {
-  AuthUseCases,
   AuthController,
   AuthService,
+  AuthUseCases,
   UserController,
   UserDataRepository,
   UserProviderLocal,
@@ -69,14 +69,10 @@ describe('user factories', () => {
 
     const compiledAuthService = AuthService.compile(
       userProvider,
-      passwordCryptoService as never,
-      jwtService as never
+      passwordCryptoService,
+      jwtService
     );
-    const otherAuthService = AuthService.compile(
-      userProvider,
-      passwordCryptoService as never,
-      jwtService as never
-    );
+    const otherAuthService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
     const authUseCases = AuthUseCases.compile(compiledAuthService, mutexService as never);
     const otherAuthUseCases = AuthUseCases.compile(compiledAuthService, mutexService as never);
 
@@ -105,15 +101,6 @@ describe('user factories', () => {
       authUseCases === otherAuthUseCases,
       userController === otherUserController,
       authController === otherAuthController
-    ]).toStrictEqual([
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false
-    ]);
+    ]).toStrictEqual([false, false, false, false, false, false, false, false]);
   });
 });

@@ -7,7 +7,12 @@ const { t, locale, setLocale, locales } = useI18n();
 </script>
 
 <template>
-  <CDropdown variant="nav-item" placement="bottom-end" data-widget="locale" :aria-label="t('app.language')">
+  <CDropdown
+    variant="nav-item"
+    placement="bottom-end"
+    data-widget="locale"
+    :aria-label="t('app.language')"
+  >
     <CDropdownToggle :caret="false">
       <CIcon icon="cil-list" size="lg" />
     </CDropdownToggle>

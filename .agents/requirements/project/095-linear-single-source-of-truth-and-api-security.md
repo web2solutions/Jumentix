@@ -1,6 +1,7 @@
 # Requirement 095 - Linear Single Source of Truth and API Security
 
 ## Status
+
 Implemented
 
 ## Policy

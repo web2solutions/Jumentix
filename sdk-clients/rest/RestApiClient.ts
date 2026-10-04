@@ -1,1 +1,3 @@
-export { RestApiClient } from '@jumentix/sdk-rest-client';
+import { RestApiClient } from '@jumentix/sdk-rest-client';
+
+export default RestApiClient;

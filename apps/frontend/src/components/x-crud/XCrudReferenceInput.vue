@@ -3,7 +3,11 @@ import { computed, onMounted, ref } from 'vue';
 
 import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import { getSharedApiClient } from '@/contracts/apiClient';
-import { entityPrimaryKey, listOperationForEntity, type FieldDescriptor } from '@/contracts/formSchema';
+import {
+  entityPrimaryKey,
+  listOperationForEntity,
+  type FieldDescriptor
+} from '@/contracts/formSchema';
 import { listCapabilities } from '@/contracts/listSchema';
 import { isCanaOpen } from '@/data/db';
 import { listLocal } from '@/data/localRepository';
@@ -39,7 +43,9 @@ onMounted(async () => {
       });
       rows = page.result;
     } else {
-      const response = await getSharedApiClient().request<{ result?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>>({
+      const response = await getSharedApiClient().request<
+        { result?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>
+      >({
         operationId,
         query: capabilities ? { page: 1, size: capabilities.maxSize } : undefined,
         headers: { Authorization: useAuthStore().token }

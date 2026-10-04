@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: packages/cli-init/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # @jumentix/cli-init
 
 O CLI do Jumentix. Ele cria um projeto a partir do seu modelo de domínio ou de
@@ -21,14 +22,14 @@ usado quando o projeto roda um servidor de banco de dados ou Redis.
 
 ## Comandos
 
-| Comando | O que faz |
-| --- | --- |
-| `jumentix init [dir]` | Cria um projeto (`--mode`, `--from`, `--preset`, `--http`, `--realtime`, `--db`, `--frontend`, `--offline`, `--git`, `--install`, `--config`, `--non-interactive`) |
-| `jumentix add domain <name>` | Adiciona um domínio a um serviço e atualiza os módulos do frontend |
-| `jumentix add service <name> --domains a,b` | Separa domínios em um serviço novo |
-| `jumentix add frontend` | Adiciona `apps/frontend` a um projeto só com backend |
-| `jumentix upgrade [--dry-run]` | Mescla em três vias os templates do CLI instalado no projeto |
-| `jumentix doctor` | Verifica o ambiente e o projeto |
+| Comando                                     | O que faz                                                                                                                                                          |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `jumentix init [dir]`                       | Cria um projeto (`--mode`, `--from`, `--preset`, `--http`, `--realtime`, `--db`, `--frontend`, `--offline`, `--git`, `--install`, `--config`, `--non-interactive`) |
+| `jumentix add domain <name>`                | Adiciona um domínio a um serviço e atualiza os módulos do frontend                                                                                                 |
+| `jumentix add service <name> --domains a,b` | Separa domínios em um serviço novo                                                                                                                                 |
+| `jumentix add frontend`                     | Adiciona `apps/frontend` a um projeto só com backend                                                                                                               |
+| `jumentix upgrade [--dry-run]`              | Mescla em três vias os templates do CLI instalado no projeto                                                                                                       |
+| `jumentix doctor`                           | Verifica o ambiente e o projeto                                                                                                                                    |
 
 O pacote instala o comando `jumentix` (também `cli-init`, para que
 `npx @jumentix/cli-init` resolva). Todo comando tem `--help`. Códigos de saída:

@@ -128,9 +128,9 @@ export function buildPackageRegistry(domains) {
     const name = String(provenance?.package || '').trim();
     if (!name) return;
     const version = String(provenance?.version || '').trim() || DEFAULT_PACKAGE_VERSION;
-    const dependencies = (Array.isArray(domain?.context?.packageDependencies)
-      ? domain.context.packageDependencies
-      : [])
+    const dependencies = (
+      Array.isArray(domain?.context?.packageDependencies) ? domain.context.packageDependencies : []
+    )
       .map(parsePackageDependency)
       .filter(Boolean);
     const current = registry.get(name);
@@ -208,7 +208,8 @@ export function resolvePackageGraph(registry, incoming = null) {
       indegree.set(node.name, indegree.get(node.name) + 1);
     });
   });
-  const queue = [...nodes.keys()].filter((name) => indegree.get(name) === 0)
+  const queue = [...nodes.keys()]
+    .filter((name) => indegree.get(name) === 0)
     .sort((a, b) => a.localeCompare(b));
   const order = [];
   while (queue.length) {
@@ -284,9 +285,11 @@ export function normalizePackageIdentity(parsed, sourceDomain) {
     return { ok: false, reason: 'invalid-package-version', version: block.version };
   }
   const dependencies = (Array.isArray(block.dependencies) ? block.dependencies : [])
-    .map((entry) => (entry && typeof entry === 'object'
-      ? { name: String(entry.name || '').trim(), range: String(entry.range || '').trim() || '*' }
-      : parsePackageDependency(entry)))
+    .map((entry) =>
+      entry && typeof entry === 'object'
+        ? { name: String(entry.name || '').trim(), range: String(entry.range || '').trim() || '*' }
+        : parsePackageDependency(entry)
+    )
     .filter((entry) => entry && entry.name);
   return { ok: true, package: { name, version, dependencies } };
 }
@@ -344,7 +347,9 @@ function metaProjection(meta) {
     oasComposition: {
       mode: source.oasComposition?.mode || '',
       refs: [...(source.oasComposition?.refs || [])].sort((a, b) => a.localeCompare(b)),
-      externalRefs: [...(source.oasComposition?.externalRefs || [])].sort((a, b) => a.localeCompare(b)),
+      externalRefs: [...(source.oasComposition?.externalRefs || [])].sort((a, b) =>
+        a.localeCompare(b)
+      ),
       discriminator: source.oasComposition?.discriminator || ''
     }
   };
@@ -355,8 +360,12 @@ function contextProjection(context) {
   return {
     ubiquitousLanguage: source.ubiquitousLanguage || '',
     ownerTeam: source.ownerTeam || '',
-    upstreamDependencies: [...(source.upstreamDependencies || [])].sort((a, b) => a.localeCompare(b)),
-    downstreamDependencies: [...(source.downstreamDependencies || [])].sort((a, b) => a.localeCompare(b)),
+    upstreamDependencies: [...(source.upstreamDependencies || [])].sort((a, b) =>
+      a.localeCompare(b)
+    ),
+    downstreamDependencies: [...(source.downstreamDependencies || [])].sort((a, b) =>
+      a.localeCompare(b)
+    ),
     integrationChannel: source.integrationChannel || '',
     packageDependencies: [...(source.packageDependencies || [])].sort((a, b) => a.localeCompare(b)),
     sharedValueObjects: [...(source.sharedValueObjects || [])].sort((a, b) => a.localeCompare(b))
@@ -382,7 +391,10 @@ function contentProjection(domain) {
  * name are not content.
  */
 export function packageContentsEqual(existingDomain, incomingDomain) {
-  return JSON.stringify(contentProjection(existingDomain)) === JSON.stringify(contentProjection(incomingDomain));
+  return (
+    JSON.stringify(contentProjection(existingDomain)) ===
+    JSON.stringify(contentProjection(incomingDomain))
+  );
 }
 
 /* ------------------------------------------------------------------------- *
@@ -474,90 +486,162 @@ export function buildPackageMerge(existingDomain, incomingDomain, packageInfo, o
   const mergedEntities = (existingDomain.entities || []).map((existingEntity) => {
     const incomingEntity = incomingByName.get(existingEntity.name);
     if (!incomingEntity) {
-      decision('entity-removed', `Package no longer carries entity "${label(existingEntity.name)}" — kept as-is; remove it explicitly if the removal was intended.`);
+      decision(
+        'entity-removed',
+        `Package no longer carries entity "${label(existingEntity.name)}" — kept as-is; remove it explicitly if the removal was intended.`
+      );
       return existingEntity;
     }
     const entityLabelText = label(existingEntity.name);
-    const existingFields = new Map((existingEntity.fields || []).map((field) => [field.name, field]));
-    const incomingFields = new Map((incomingEntity.fields || []).map((field) => [field.name, field]));
+    const existingFields = new Map(
+      (existingEntity.fields || []).map((field) => [field.name, field])
+    );
+    const incomingFields = new Map(
+      (incomingEntity.fields || []).map((field) => [field.name, field])
+    );
 
     const mergedFields = (existingEntity.fields || []).map((existingField) => {
       const incomingField = incomingFields.get(existingField.name);
       if (!incomingField) {
-        decision('field-removed', `Package removes field "${entityLabelText}.${existingField.name}" — kept; remove it explicitly if intended.`);
+        decision(
+          'field-removed',
+          `Package removes field "${entityLabelText}.${existingField.name}" — kept; remove it explicitly if intended.`
+        );
         return existingField;
       }
       const merged = { ...existingField };
-      if (existingField.type !== incomingField.type || existingField.itemsType !== incomingField.itemsType) {
-        decision('field-type-changed', `Package changes the type of "${entityLabelText}.${existingField.name}" from ${existingField.type}${existingField.itemsType ? `(${existingField.itemsType})` : ''} to ${incomingField.type}${incomingField.itemsType ? `(${incomingField.itemsType})` : ''} — kept ${existingField.type}${existingField.itemsType ? `(${existingField.itemsType})` : ''}.`);
+      if (
+        existingField.type !== incomingField.type ||
+        existingField.itemsType !== incomingField.itemsType
+      ) {
+        decision(
+          'field-type-changed',
+          `Package changes the type of "${entityLabelText}.${existingField.name}" from ${existingField.type}${existingField.itemsType ? `(${existingField.itemsType})` : ''} to ${incomingField.type}${incomingField.itemsType ? `(${incomingField.itemsType})` : ''} — kept ${existingField.type}${existingField.itemsType ? `(${existingField.itemsType})` : ''}.`
+        );
       }
-      if (['pk', 'fk', 'unique'].some((flag) => Boolean(existingField[flag]) !== Boolean(incomingField[flag]))) {
-        decision('field-flags-changed', `Package changes PK/FK/unique flags on "${entityLabelText}.${existingField.name}" — kept the existing flags.`);
+      if (
+        ['pk', 'fk', 'unique'].some(
+          (flag) => Boolean(existingField[flag]) !== Boolean(incomingField[flag])
+        )
+      ) {
+        decision(
+          'field-flags-changed',
+          `Package changes PK/FK/unique flags on "${entityLabelText}.${existingField.name}" — kept the existing flags.`
+        );
       }
       if (Boolean(existingField.required) !== Boolean(incomingField.required)) {
         if (incomingField.required) {
-          decision('field-required-tightened', `Package makes "${entityLabelText}.${existingField.name}" required — kept it optional; tighten it explicitly if intended.`);
+          decision(
+            'field-required-tightened',
+            `Package makes "${entityLabelText}.${existingField.name}" required — kept it optional; tighten it explicitly if intended.`
+          );
         } else {
           merged.required = false;
-          auto('field-required-loosened', `Field "${entityLabelText}.${existingField.name}" is no longer required.`);
+          auto(
+            'field-required-loosened',
+            `Field "${entityLabelText}.${existingField.name}" is no longer required.`
+          );
         }
       }
-      const metadataKeys = ['format', 'description', 'pattern', 'minLength', 'maxLength', 'minimum', 'maximum'];
-      const metadataChanged = metadataKeys.some((key) => (existingField[key] ?? null) !== (incomingField[key] ?? null))
-        || Boolean(existingField.nullable) !== Boolean(incomingField.nullable)
-        || JSON.stringify(existingField.enumValues || []) !== JSON.stringify(incomingField.enumValues || []);
+      const metadataKeys = [
+        'format',
+        'description',
+        'pattern',
+        'minLength',
+        'maxLength',
+        'minimum',
+        'maximum'
+      ];
+      const metadataChanged =
+        metadataKeys.some((key) => (existingField[key] ?? null) !== (incomingField[key] ?? null)) ||
+        Boolean(existingField.nullable) !== Boolean(incomingField.nullable) ||
+        JSON.stringify(existingField.enumValues || []) !==
+          JSON.stringify(incomingField.enumValues || []);
       if (metadataChanged) {
         metadataKeys.forEach((key) => {
           merged[key] = incomingField[key];
         });
         merged.nullable = Boolean(incomingField.nullable);
-        merged.enumValues = Array.isArray(incomingField.enumValues) ? [...incomingField.enumValues] : [];
-        auto('field-metadata-changed', `Metadata of "${entityLabelText}.${existingField.name}" updated (description/format/constraints/nullability).`);
+        merged.enumValues = Array.isArray(incomingField.enumValues)
+          ? [...incomingField.enumValues]
+          : [];
+        auto(
+          'field-metadata-changed',
+          `Metadata of "${entityLabelText}.${existingField.name}" updated (description/format/constraints/nullability).`
+        );
       }
       return merged;
     });
     (incomingEntity.fields || []).forEach((incomingField) => {
       if (existingFields.has(incomingField.name)) return;
       mergedFields.push({ ...incomingField });
-      auto('field-added', `Add field "${entityLabelText}.${incomingField.name}" (${incomingField.type}).`);
+      auto(
+        'field-added',
+        `Add field "${entityLabelText}.${incomingField.name}" (${incomingField.type}).`
+      );
     });
 
     const existingMeta = metaProjection(existingEntity.meta);
     const incomingMeta = metaProjection(incomingEntity.meta);
     const mergedMeta = { ...(existingEntity.meta || {}) };
 
-    const existingContracts = new Map((existingMeta.contracts || []).map((contract) => [contractKey(contract), contract]));
-    const incomingContracts = new Map((incomingMeta.contracts || []).map((contract) => [contractKey(contract), contract]));
+    const existingContracts = new Map(
+      (existingMeta.contracts || []).map((contract) => [contractKey(contract), contract])
+    );
+    const incomingContracts = new Map(
+      (incomingMeta.contracts || []).map((contract) => [contractKey(contract), contract])
+    );
     const mergedContracts = [...(existingEntity.meta?.contracts || [])];
     incomingContracts.forEach((incomingContract, key) => {
       if (!existingContracts.has(key)) {
-        const source = (incomingEntity.meta?.contracts || []).find((contract) => contractKey(contractProjection(contract)) === key);
+        const source = (incomingEntity.meta?.contracts || []).find(
+          (contract) => contractKey(contractProjection(contract)) === key
+        );
         mergedContracts.push(source ? { ...source } : incomingContract);
         auto('contract-added', `Add message contract "${entityLabelText}" -> ${key}.`);
         return;
       }
       const existingContract = existingContracts.get(key);
-      if (JSON.stringify(contractProjection(existingContract)) !== JSON.stringify(incomingContract)) {
-        decision('contract-changed', `Package changes message contract "${entityLabelText}" -> ${key} (channel or payload) — kept the existing contract.`);
+      if (
+        JSON.stringify(contractProjection(existingContract)) !== JSON.stringify(incomingContract)
+      ) {
+        decision(
+          'contract-changed',
+          `Package changes message contract "${entityLabelText}" -> ${key} (channel or payload) — kept the existing contract.`
+        );
       }
     });
     existingContracts.forEach((contract, key) => {
       if (!incomingContracts.has(key)) {
-        decision('contract-removed', `Package removes message contract "${entityLabelText}" -> ${key} — kept; remove it explicitly if intended.`);
+        decision(
+          'contract-removed',
+          `Package removes message contract "${entityLabelText}" -> ${key} — kept; remove it explicitly if intended.`
+        );
       }
     });
     mergedMeta.contracts = mergedContracts;
 
     if (Boolean(existingMeta.aggregateRoot) !== Boolean(incomingMeta.aggregateRoot)) {
-      decision('aggregate-root-changed', `Package changes the aggregate declaration of "${entityLabelText}" — kept the existing declaration.`);
+      decision(
+        'aggregate-root-changed',
+        `Package changes the aggregate declaration of "${entityLabelText}" — kept the existing declaration.`
+      );
     }
     if (JSON.stringify(existingMeta.invariants) !== JSON.stringify(incomingMeta.invariants)) {
-      decision('invariants-changed', `Package changes the invariants of "${entityLabelText}" — kept the existing invariants; reconcile them explicitly (invariants never auto-merge).`);
+      decision(
+        'invariants-changed',
+        `Package changes the invariants of "${entityLabelText}" — kept the existing invariants; reconcile them explicitly (invariants never auto-merge).`
+      );
     }
     if (JSON.stringify(existingMeta.rbac) !== JSON.stringify(incomingMeta.rbac)) {
-      decision('rbac-changed', `Package changes the RBAC policy of "${entityLabelText}" — kept the existing policy; reconcile it explicitly (RBAC never auto-merges).`);
+      decision(
+        'rbac-changed',
+        `Package changes the RBAC policy of "${entityLabelText}" — kept the existing policy; reconcile it explicitly (RBAC never auto-merges).`
+      );
     }
-    if (JSON.stringify(existingMeta.oasComposition) !== JSON.stringify(incomingMeta.oasComposition)) {
+    if (
+      JSON.stringify(existingMeta.oasComposition) !== JSON.stringify(incomingMeta.oasComposition)
+    ) {
       mergedMeta.oasComposition = { ...(incomingEntity.meta?.oasComposition || {}) };
       auto('composition-changed', `OAS composition hints of "${entityLabelText}" updated.`);
     }
@@ -587,8 +671,15 @@ export function buildPackageMerge(existingDomain, incomingDomain, packageInfo, o
   const incomingContext = contextProjection(incomingDomain.context);
   const mergedContext = { ...(existingDomain.context || {}) };
   if (JSON.stringify(existingContext) !== JSON.stringify(incomingContext)) {
-    ['ubiquitousLanguage', 'ownerTeam', 'upstreamDependencies', 'downstreamDependencies',
-      'integrationChannel', 'packageDependencies', 'sharedValueObjects'].forEach((key) => {
+    [
+      'ubiquitousLanguage',
+      'ownerTeam',
+      'upstreamDependencies',
+      'downstreamDependencies',
+      'integrationChannel',
+      'packageDependencies',
+      'sharedValueObjects'
+    ].forEach((key) => {
       mergedContext[key] = Array.isArray(incomingDomain.context?.[key])
         ? [...incomingDomain.context[key]]
         : String(incomingDomain.context?.[key] || '').trim();

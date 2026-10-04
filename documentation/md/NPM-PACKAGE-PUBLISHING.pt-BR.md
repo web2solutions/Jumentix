@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/NPM-PACKAGE-PUBLISHING.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Publicacao de Pacotes npm
 
 O Jumentix publica bibliotecas publicas sob o escopo npm `@jumentix`. O conjunto de release publico e:

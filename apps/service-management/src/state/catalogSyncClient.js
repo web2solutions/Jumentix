@@ -68,10 +68,14 @@
  * from `globalThis`, exactly like designerSync and the store port.
  */
 
-import { applyRemoteDocument } from './designerSync.js';
+import {
+  DOMAIN_PACKAGE_KIND,
+  DOMAIN_PACKAGE_VERSION
+} from '@jumentix/designer-core/packages/packageVersioning.js';
 import { normalizeDomainInput } from '@jumentix/designer-core/state/designerState.js';
+
+import { applyRemoteDocument } from './designerSync.js';
 import { CANA_STATE_KEY } from '../store/CanaDesignerStore.js';
-import { DOMAIN_PACKAGE_KIND, DOMAIN_PACKAGE_VERSION } from '@jumentix/designer-core/packages/packageVersioning.js';
 
 /** Default poll interval for catalog read-back. */
 export const CATALOG_SYNC_POLL_INTERVAL_MS = 15000;
@@ -97,7 +101,8 @@ function stripCatalogMarker(domain) {
   if (!domain || typeof domain !== 'object') return domain;
   const { context, ...rest } = domain;
   if (!context || typeof context !== 'object') return rest;
-  const { catalog, ...contextRest } = context;
+  const contextRest = { ...context };
+  delete contextRest.catalog;
   return { ...rest, context: contextRest };
 }
 
@@ -150,7 +155,7 @@ function defaultOriginId() {
     if (typeof globalThis !== 'undefined' && typeof globalThis.crypto?.randomUUID === 'function') {
       return `catalog-sync-${globalThis.crypto.randomUUID()}`;
     }
-  } catch (_) {
+  } catch {
     // Fall through to the Math.random spelling.
   }
   return `catalog-sync-${Math.random().toString(36).slice(2, 10)}`;
@@ -210,23 +215,20 @@ export function createCatalogSyncClient({
   }
 
   function setMarker(domain, marker) {
-    // eslint-disable-next-line no-param-reassign
     domain.context = { ...(domain.context || {}), catalog: marker };
   }
 
   function clearMarker(domain) {
-    // eslint-disable-next-line no-param-reassign
     domain.context = { ...(domain.context || {}) };
-    // eslint-disable-next-line no-param-reassign
     delete domain.context.catalog;
   }
 
   function raiseConflict(entry) {
     conflicts.set(entry.catalogId, { ...entry, at: new Date().toISOString() });
     notify(
-      `The shared domain "${entry.domainName}" conflicts with the shared catalog `
-        + `(server version ${entry.serverVersion}). Your local edit is kept; `
-        + 'review the conflict and choose to take the server version or push yours.',
+      `The shared domain "${entry.domainName}" conflicts with the shared catalog ` +
+        `(server version ${entry.serverVersion}). Your local edit is kept; ` +
+        'review the conflict and choose to take the server version or push yours.',
       'error'
     );
   }
@@ -263,7 +265,7 @@ export function createCatalogSyncClient({
         try {
           const current = await transport.getCatalog(marker.id);
           serverVersion = current.version;
-        } catch (readError) {
+        } catch {
           return { pushed: false, reason: 'conflict-unreadable' };
         }
         raiseConflict({
@@ -411,9 +413,9 @@ export function createCatalogSyncClient({
     } catch (error) {
       degraded = true;
       notify(
-        `The shared catalog is unreachable (${String((error && error.message) || error)}). `
-          + 'Local work still saves to Cana; synchronization retries on the next cycle. '
-          + 'There is no fallback store behind the catalog.',
+        `The shared catalog is unreachable (${String((error && error.message) || error)}). ` +
+          'Local work still saves to Cana; synchronization retries on the next cycle. ' +
+          'There is no fallback store behind the catalog.',
         'error'
       );
       return { synced: false, reason: 'transport-unavailable' };
@@ -435,8 +437,8 @@ export function createCatalogSyncClient({
       return pushLocalChanges().catch((error) => {
         degraded = true;
         notify(
-          `Pushing to the shared catalog failed (${String((error && error.message) || error)}); `
-            + 'the local edit is durable in Cana and the push retries on the next cycle.',
+          `Pushing to the shared catalog failed (${String((error && error.message) || error)}); ` +
+            'the local edit is durable in Cana and the push retries on the next cycle.',
           'error'
         );
       });
@@ -520,7 +522,11 @@ export function createCatalogSyncClient({
             id: domain.id,
             context: {
               ...(remoteDomain.context || {}),
-              catalog: { id: catalogId, version: current.version, contentHash: contentHashOf(remoteDomain) }
+              catalog: {
+                id: catalogId,
+                version: current.version,
+                contentHash: contentHashOf(remoteDomain)
+              }
             }
           };
         }
@@ -563,7 +569,7 @@ export function createCatalogSyncClient({
   async function start() {
     if (started) return { started: true, already: true };
     started = true;
-    const client = store.client;
+    const { client } = store;
     if (client && typeof client.subscribe === 'function') {
       unsubscribe = client.subscribe(onLocalCommit);
     }
@@ -630,7 +636,9 @@ export function createCatalogHttpTransport({
   // the root is resolved per request, never captured once.
   const resolveRoot = () => {
     const base = typeof baseUrl === 'function' ? baseUrl() : baseUrl;
-    const normalized = String(base || '').trim().replace(/\/$/, '');
+    const normalized = String(base || '')
+      .trim()
+      .replace(/\/$/, '');
     if (!normalized) {
       throw new Error(
         'Service Management catalog API endpoint is not configured. Set JUMENTIX_SERVICE_MANAGEMENT_CATALOG_API_URL.'
@@ -655,7 +663,7 @@ export function createCatalogHttpTransport({
     let parsed = null;
     try {
       parsed = text ? JSON.parse(text) : null;
-    } catch (_) {
+    } catch {
       parsed = null;
     }
     if (!response.ok) {
@@ -678,14 +686,12 @@ export function createCatalogHttpTransport({
     getCatalog: (id) => call('GET', `/catalogs/${encodeURIComponent(id)}`),
     createCatalog: (body) => call('POST', '/catalogs', body),
     updateCatalog: (id, body) => call('PUT', `/catalogs/${encodeURIComponent(id)}`, body),
-    deleteCatalog: (id, version) => call(
-      'DELETE',
-      `/catalogs/${encodeURIComponent(id)}?version=${encodeURIComponent(String(version))}`
-    ),
-    restoreCatalog: (id, version) => call(
-      'POST',
-      `/catalogs/${encodeURIComponent(id)}/restore`,
-      { version }
-    )
+    deleteCatalog: (id, version) =>
+      call(
+        'DELETE',
+        `/catalogs/${encodeURIComponent(id)}?version=${encodeURIComponent(String(version))}`
+      ),
+    restoreCatalog: (id, version) =>
+      call('POST', `/catalogs/${encodeURIComponent(id)}/restore`, { version })
   };
 }

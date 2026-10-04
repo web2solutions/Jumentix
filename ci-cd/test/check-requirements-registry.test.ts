@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const registryFs = require('fs');
-const registryOs = require('os');
-const registryPath = require('path');
+const registryFs = require('node:fs');
+const registryOs = require('node:os');
+const registryPath = require('node:path');
+
 const {
-  INVENTORY_DOCUMENTS,
   collectRequirementInventory,
   extractNfrRegistryIds,
+  INVENTORY_DOCUMENTS,
   inventoryMarker,
   validateRequirementsRegistry
 } = require('../check-requirements-registry');
@@ -39,10 +39,14 @@ function coverageFixture(documentPath: string, marker: string): string {
 describe('check-requirements-registry', () => {
   it('extracts only explicit NFR entry prefixes, including combined entries', () => {
     expect.hasAssertions();
-    expect(extractNfrRegistryIds([
-      '- `096` Bun migration supersedes `001`, `012`, and `048`.',
-      '- `056`/`064` Superseded project tracking requirements.'
-    ].join('\n'))).toStrictEqual(['056', '064', '096']);
+    expect(
+      extractNfrRegistryIds(
+        [
+          '- `096` Bun migration supersedes `001`, `012`, and `048`.',
+          '- `056`/`064` Superseded project tracking requirements.'
+        ].join('\n')
+      )
+    ).toStrictEqual(['056', '064', '096']);
   });
 
   it('keeps the live requirement index, ledger, and bilingual inventory synchronized', () => {
@@ -71,17 +75,25 @@ describe('check-requirements-registry', () => {
   it('names the duplicate ID and both files that claim it', () => {
     expect.hasAssertions();
 
-    const rootDir = registryFs.mkdtempSync(registryPath.join(registryOs.tmpdir(), 'requirements-dup-'));
+    const rootDir = registryFs.mkdtempSync(
+      registryPath.join(registryOs.tmpdir(), 'requirements-dup-')
+    );
     const requirementsDir = registryPath.join(rootDir, '.agents/requirements');
     registryFs.mkdirSync(registryPath.join(requirementsDir, 'project'), { recursive: true });
     registryFs.mkdirSync(registryPath.join(requirementsDir, 'software'), { recursive: true });
-    registryFs.writeFileSync(registryPath.join(requirementsDir, 'project/055-original.md'), '# 055\n');
-    registryFs.writeFileSync(registryPath.join(requirementsDir, 'software/055-renumbered.md'), '# 055\n');
+    registryFs.writeFileSync(
+      registryPath.join(requirementsDir, 'project/055-original.md'),
+      '# 055\n'
+    );
+    registryFs.writeFileSync(
+      registryPath.join(requirementsDir, 'software/055-renumbered.md'),
+      '# 055\n'
+    );
 
     registryFs.writeFileSync(
       registryPath.join(rootDir, '.agents/README.md'),
-      '- [055-original](requirements/project/055-original.md)\n'
-        + '- [055-renumbered](requirements/software/055-renumbered.md)\n'
+      '- [055-original](requirements/project/055-original.md)\n' +
+        '- [055-renumbered](requirements/software/055-renumbered.md)\n'
     );
     registryFs.writeFileSync(
       registryPath.join(rootDir, '.agents/NFR-REGISTRY.md'),
@@ -110,10 +122,12 @@ describe('check-requirements-registry', () => {
     ]);
     // Across the two namespaces, which is where the collisions this issue was
     // filed for actually came from.
-    expect(validateRequirementsRegistry(rootDir)).toStrictEqual(expect.arrayContaining([
-      '[requirements] duplicate requirement ID 055 used by 2 files: '
-        + 'project/055-original.md, software/055-renumbered.md'
-    ]));
+    expect(validateRequirementsRegistry(rootDir)).toStrictEqual(
+      expect.arrayContaining([
+        '[requirements] duplicate requirement ID 055 used by 2 files: ' +
+          'project/055-original.md, software/055-renumbered.md'
+      ])
+    );
 
     registryFs.rmSync(rootDir, { recursive: true, force: true });
   });
@@ -125,7 +139,10 @@ describe('check-requirements-registry', () => {
     registryFs.mkdirSync(requirementsDir, { recursive: true });
     registryFs.writeFileSync(registryPath.join(requirementsDir, '001-first.md'), '# 001\n');
     registryFs.writeFileSync(registryPath.join(requirementsDir, '002-second.md'), '# 002\n');
-    registryFs.writeFileSync(registryPath.join(requirementsDir, '002-third.md'), '# 002 duplicate\n');
+    registryFs.writeFileSync(
+      registryPath.join(requirementsDir, '002-third.md'),
+      '# 002 duplicate\n'
+    );
     registryFs.writeFileSync(
       registryPath.join(rootDir, '.agents/README.md'),
       '- [001-first](requirements/001-first.md)\n'
@@ -151,20 +168,23 @@ describe('check-requirements-registry', () => {
     }
 
     const failures = validateRequirementsRegistry(rootDir);
-    expect(failures).toStrictEqual(expect.arrayContaining([
-      expect.stringContaining('002-second.md exactly once'),
-      expect.stringContaining('002-third.md exactly once'),
-      expect.stringContaining('ledger missing IDs: 002'),
-      expect.stringContaining('NFR registry missing IDs: 002'),
-      expect.stringContaining('stale inventory marker'),
-      // JUM-609: the fixture has carried a duplicate 002 all along, and nothing
-      // asserted on it because nothing failed for it.
-      expect.stringContaining(
-        'duplicate requirement ID 002 used by 2 files: 002-second.md, 002-third.md'
-      )
-    ]));
-    expect(inventoryMarker(collectRequirementInventory(rootDir), 1))
-      .toContain('files=3 unique=2 mapped=1 duplicates=002');
+    expect(failures).toStrictEqual(
+      expect.arrayContaining([
+        expect.stringContaining('002-second.md exactly once'),
+        expect.stringContaining('002-third.md exactly once'),
+        expect.stringContaining('ledger missing IDs: 002'),
+        expect.stringContaining('NFR registry missing IDs: 002'),
+        expect.stringContaining('stale inventory marker'),
+        // JUM-609: the fixture has carried a duplicate 002 all along, and nothing
+        // asserted on it because nothing failed for it.
+        expect.stringContaining(
+          'duplicate requirement ID 002 used by 2 files: 002-second.md, 002-third.md'
+        )
+      ])
+    );
+    expect(inventoryMarker(collectRequirementInventory(rootDir), 1)).toContain(
+      'files=3 unique=2 mapped=1 duplicates=002'
+    );
     registryFs.rmSync(rootDir, { recursive: true, force: true });
   });
 });

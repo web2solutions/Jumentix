@@ -12,7 +12,7 @@
 3. **Manifest honesty.** `test-map.json` records:
    - `runner: "bun"` as the local/default runner for suites executed under Bun;
    - optional `ciRunner: "node"` for suites the CI matrix may still execute under Node/Jest.
-   A suite MUST NOT silently remain on Jest locally.
+     A suite MUST NOT silently remain on Jest locally.
 4. **Package scripts.** Root `test`, `tdd`, `test:integration:*`, `test:smoke:*` and related developer scripts resolve to Bun locally. CI-oriented Node entry points, when present, are explicit (`*:ci` suffix and/or the env switch in §2) and are outside the local DX contract.
 5. **Out of scope for this requirement.** Making GitHub Actions / CircleCI jobs green, provisioning Redis/DB matrices, and repairing remote CI infra are **not** acceptance criteria of Requirement `106` or of the Hexagonal Test Pyramid project delivery that implements it. Those belong to CI operations ownership.
 6. **False-green resistance still applies.** Switching the local runner to Bun does not relax Requirements `065` / `105` evidence rules (empty plans fail closed; quarantine needs Linear refs; skipped/pending is not green).

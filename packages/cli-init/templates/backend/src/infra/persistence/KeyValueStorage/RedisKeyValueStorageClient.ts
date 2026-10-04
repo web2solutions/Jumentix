@@ -1,1 +1,3 @@
-export { RedisKeyValueStorageClient } from '@jumentix/key-value-storage';
+import { RedisKeyValueStorageClient } from '@jumentix/key-value-storage';
+
+export default RedisKeyValueStorageClient;

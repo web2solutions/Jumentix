@@ -1,8 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const {
-  mapPinsToNode,
-  runSuitePaths
-} = require('../run-suite');
+const { mapPinsToNode, runSuitePaths } = require('../run-suite');
 
 /**
  * How `run-suite` decides to spawn, and what it refuses (JUM-681).
@@ -119,19 +115,23 @@ describe('run-suite execution (JUM-681)', () => {
     // green build over a run that was terminated.
     const killed = jest.fn().mockReturnValue({ status: null });
 
-    expect(runSuitePaths(['packages/sample/test/a.test.ts'], {
-      spawn: killed,
-      readTestMap,
-      listTestFiles: () => ['packages/sample/test/a.test.ts'],
-      runtime: 'bun'
-    })).toBe(1);
+    expect(
+      runSuitePaths(['packages/sample/test/a.test.ts'], {
+        spawn: killed,
+        readTestMap,
+        listTestFiles: () => ['packages/sample/test/a.test.ts'],
+        runtime: 'bun'
+      })
+    ).toBe(1);
 
-    expect(runSuitePaths(['packages/sample/test/a.test.ts'], {
-      spawn: killed,
-      readTestMap,
-      listTestFiles: () => ['packages/sample/test/a.test.ts'],
-      runtime: 'node'
-    })).toBe(1);
+    expect(
+      runSuitePaths(['packages/sample/test/a.test.ts'], {
+        spawn: killed,
+        readTestMap,
+        listTestFiles: () => ['packages/sample/test/a.test.ts'],
+        runtime: 'node'
+      })
+    ).toBe(1);
   });
 
   it('only honours a pin that declares its reason', () => {
@@ -151,9 +151,11 @@ describe('run-suite execution (JUM-681)', () => {
 
     // No map, no pin — and no crash: the runtime resolution the caller already
     // has still stands.
-    expect(mapPinsToNode(['packages/sample/test/a.test.ts'], () => {
-      throw new Error('test-map.json is missing');
-    })).toBe(false);
+    expect(
+      mapPinsToNode(['packages/sample/test/a.test.ts'], () => {
+        throw new Error('test-map.json is missing');
+      })
+    ).toBe(false);
   });
 });
 
@@ -167,20 +169,21 @@ describe('run-suite execution (JUM-681)', () => {
  * directory reported as fully run.
  */
 describe('run-suite path resolution (JUM-681)', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const suiteModule = require('../run-suite') as {
     canonicalSuitePaths: (paths: string[], root?: string) => string[];
-    resolveMappedSuitePaths: (paths: string[], options?: Record<string, unknown>) => {
-      resolved: string[]; unmatched: string[]; unmapped: string[];
+    resolveMappedSuitePaths: (
+      paths: string[],
+      options?: Record<string, unknown>
+    ) => {
+      resolved: string[];
+      unmatched: string[];
+      unmapped: string[];
     };
   };
 
   const root = '/repo';
   const readResolutionMap = () => ({
-    suites: [
-      { path: 'packages/sample/test/a.test.ts' },
-      { path: 'packages/sample/test/b.test.ts' }
-    ]
+    suites: [{ path: 'packages/sample/test/a.test.ts' }, { path: 'packages/sample/test/b.test.ts' }]
   });
 
   it('canonicalises a request rather than executing the string it was given', () => {
@@ -188,8 +191,9 @@ describe('run-suite path resolution (JUM-681)', () => {
 
     // The executed value is derived from the validated one, so `./a/../b`
     // shapes cannot smuggle a different path past the check.
-    expect(suiteModule.canonicalSuitePaths(['packages/./sample/../sample/test'], root))
-      .toStrictEqual(['packages/sample/test']);
+    expect(
+      suiteModule.canonicalSuitePaths(['packages/./sample/../sample/test'], root)
+    ).toStrictEqual(['packages/sample/test']);
   });
 
   it('expands a directory to every mapped suite beneath it', () => {
@@ -255,10 +259,14 @@ describe('run-suite path resolution (JUM-681)', () => {
  * the run it did do.
  */
 describe('run-suite manifest and environment (JUM-721)', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const runner = require('../run-suite') as {
-    resolveMappedSuitePaths: (paths: string[], options?: Record<string, unknown>) => {
-      resolved: string[]; unmatched: string[]; unmapped: string[];
+    resolveMappedSuitePaths: (
+      paths: string[],
+      options?: Record<string, unknown>
+    ) => {
+      resolved: string[];
+      unmatched: string[];
+      unmapped: string[];
     };
   };
   const emptyMap = () => ({});

@@ -54,18 +54,18 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - **Read vs write allowlist and classification rule (landed by `JUM-460`).** The
      read allowlist and the write allowlist are separate sets. Every env key belongs
      to exactly one of three tiers, each with a stated reason:
-     - *Editable* — runtime topology selectors (frameworks, drivers, adapters,
+     - _Editable_ — runtime topology selectors (frameworks, drivers, adapters,
        protocol toggles); readable and writable.
-     - *Read-only* — connection endpoints and non-secret configuration; visible in
+     - _Read-only_ — connection endpoints and non-secret configuration; visible in
        GET so the designer reflects reality, never writable through POST.
-     - *Never exposed* — secrets and credential-bearing values
+     - _Never exposed_ — secrets and credential-bearing values
        (`JUMENTIX_JWT_TOKEN_SECRET_KEY`, `JUMENTIX_REDIS_PASSWORD`,
        `JUMENTIX_RABBITMQ_URL`); MUST NOT appear in the GET response and MUST NOT be
        writable, since the response crosses the same boundary as the write. The tier
        is enforced by omission from both allowlists and proven by test.
-     The full 24-key classification of `.env.dev` (each addition to the editable set
-     is a security decision with a written reason):
-     - *Editable (write allowlist, 9 keys):*
+       The full 24-key classification of `.env.dev` (each addition to the editable set
+       is a security decision with a written reason):
+     - _Editable (write allowlist, 9 keys):_
        - `JUMENTIX_HTTP_FRAMEWORK` — REST framework selector; the designer's primary
          topology control.
        - `JUMENTIX_REALTIME_API` — realtime on/off toggle; selects whether a
@@ -94,7 +94,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
          in the template env files, and the endpoint rejects values with embedded
          credentials (userinfo) or non-`redis://`/`rediss://` protocols, so the tool
          cannot be used to store secrets through this key.
-     - *Read-only (read allowlist only, 15 keys):*
+     - _Read-only (read allowlist only, 15 keys):_
        - `JUMENTIX_DATABASE_NAME` — logical database name; non-secret config, not a
          topology selector.
        - `JUMENTIX_ENABLE_BASIC_AUTH` — authentication posture toggle;
@@ -114,7 +114,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
          platform-owned Service Management catalog API. The designer reads it to
          avoid same-origin fallback to generated-service template routes; it is
          non-secret and never writable through the browser.
-     - *Never exposed (3 keys):* `JUMENTIX_JWT_TOKEN_SECRET_KEY` (signing key),
+     - _Never exposed (3 keys):_ `JUMENTIX_JWT_TOKEN_SECRET_KEY` (signing key),
        `JUMENTIX_REDIS_PASSWORD` (credential), `JUMENTIX_RABBITMQ_URL`
        (credential-bearing URL embedding `user:password`).
    - **Enum sets per key (landed by `JUM-460`).** Values outside the accepted enum
@@ -162,6 +162,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      - `JUMENTIX_WEBSOCKET_REDIS_URL`: a valid `redis://` or `rediss://` URL without
        embedded credentials, or empty (empty falls back to `JUMENTIX_REDIS_URL` and
        then to the discrete `JUMENTIX_REDIS_*` settings in the backend).
+
    - **Alias decision (per `JUM-461`).** `derby`/`derby-js` and `sails`/`sails-js`
      are the same framework under two accepted spellings. The selector offers the
      canonical spelling of each pair and the server's enum validation agrees with the
@@ -193,12 +194,12 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `ENV_FILE_NOT_FOUND` — permission errors, full disk) MUST NOT be reported as
        `400 Invalid payload`; they surface as the distinct, identifiable failure
        class `500 { "error": "Environment file operation failed.", "code": …,
-       "path": …, "details": … }`, where `code` is `ENV_FILE_NOT_FOUND` or the
+"path": …, "details": … }`, where `code` is `ENV_FILE_NOT_FOUND` or the
        underlying `fs` error code and `path` is the resolved env-file path, so the
        user can tell a broken installation from a malformed request.
-     The UI surfaces these failures through non-blocking `aria-live` status
-     surfaces, not `window.alert` (`JUM-543`); the client renders exactly what
-     the API returns, with no client-side error remapping.
+       The UI surfaces these failures through non-blocking `aria-live` status
+       surfaces, not `window.alert` (`JUM-543`); the client renders exactly what
+       the API returns, with no client-side error remapping.
    - **Write semantics.** POST accepts `{ "environment"?, "values" { … } }`; only
      write-allowlisted keys present in `values` are updated — all other keys are
      ignored. Writes are atomic (temp file, `fsync`, rename), preserve unrelated
@@ -236,7 +237,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        with `exists: false` and empty `apps` — an explicit state, not a silent
        empty preview. An unreadable or broken ecosystem file is the 500 class
        `{ "error": "PM2 ecosystem file operation failed.", "code", "path",
-       "details" }`, parallel to the env-file filesystem class.
+"details" }`, parallel to the env-file filesystem class.
    - **Contract 1c — `GET /api/runtime/pm2-metrics` (amended by `JUM-736`, host/async-context by Monitoring WebSocket delivery).**
      Read-only one-shot snapshot; remains the HTTP Contract for tests and tools.
      The Monitoring tab's **primary live UI path** is Contract 1e (WebSocket);
@@ -268,27 +269,27 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `IOReadBytes`/`IOWriteBytes`. Failures and unsupported platforms MUST use
        honest envelopes (`supported: false` or `error`/`code`) — never invent zeros.
      - **Response shape.** Success is `{ source: "pm2", collectedAt,
-       environment, ecosystem, summary, host, processes }`. `ecosystem` carries
+environment, ecosystem, summary, host, processes }`. `ecosystem` carries
        `{ fileName, path, exists, expectedProcessCount, missingExpected }`;
        `summary` carries process counts, online/stopped/errored counts, total CPU,
        total memory, status counts and `asyncContextActiveSum`; each process carries
        `{ name, pmId, pid, namespace, status, cpuPercent, memoryBytes, restartCount,
-       unstableRestarts, uptimeMs, startedAt, script, interpreter, watching,
-       customMetrics, asyncContext?, diskIo? }`.
+unstableRestarts, uptimeMs, startedAt, script, interpreter, watching,
+customMetrics, asyncContext?, diskIo? }`.
      - **Honest failure state.** Unsupported environments reuse Contract 1's
        `400` invalid-environment envelope. PM2 connection/list/module failures
        are `500` with `{ "error": "PM2 metrics collection failed.", "code",
-       "details" }`.
+"details" }`.
 
    - **Contract 1e — `WS /api/runtime/pm2-ws` (Monitoring live stream + actions).**
      Primary Monitoring-tab transport. Uses the `ws` package on the Service
      Management HTTP server upgrade path; MUST NOT replace Contract 1c.
      - **Subscribe.** Client sends `{ type: "subscribe", environment, intervalMs,
-       filters? }`. `intervalMs` is clamped to `[500, 2000]` (default `1000`).
+filters? }`. `intervalMs` is clamped to `[500, 2000]` (default `1000`).
        Server pushes `{ type: "metrics", payload }` where `payload` matches
        Contract 1c success shape.
      - **Actions.** Client may send `{ type: "action", action, scope, name?,
-       pmId?, namespace? }` with `action` ∈ { `start`, `stop`, `restart` } and
+pmId?, namespace? }` with `action` ∈ { `start`, `stop`, `restart` } and
        `scope` ∈ { `process`, `namespace`, `ecosystem-missing` }. Server replies
        `{ type: "action-result", ok, action, scope, name?, error? }` and MAY push
        a fresh metrics frame after success.
@@ -305,14 +306,14 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      documents across without changing the persisted domain/interface/deploy wire
      format. `JUM-736` adds the generated-code workspace as another additive
      section. The current document has exactly these top-level
-   sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
-   `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
-   `serviceConfiguration`, `runtimeEnvironment`, `codeWorkspace`,
-   `monitoringHistory`, `deployments`, `view`.
+     sections: `domains`, `relationships`, `selectedDomainId`, `selectedEntityId`,
+     `selectedRelationshipId`, `idCounter`, `activeTab`, `interfaces`,
+     `serviceConfiguration`, `runtimeEnvironment`, `codeWorkspace`,
+     `monitoringHistory`, `deployments`, `view`.
    - `activeTab` ∈ { `domain-designer`, `interface-designer`, `service-config`,
      `deploy-management`, `monitoring`, `code-workspace` } — one per visible tab.
    - `serviceConfiguration`: `{ serviceKind, runMode, cloudProvider,
-     staticAssetsPath, ports: { rest, websocket, grpc } }` with
+staticAssetsPath, ports: { rest, websocket, grpc } }` with
      `serviceKind` ∈ { `rest-api`, `websocket-rest-api`, `grpc-rest-api` },
      `runMode` ∈ { `dedicated-server`, `virtual-machine`, `container`, `functions` },
      and `cloudProvider` ∈ { `aws`, `google`, `azure`, `vercel`, `cloudflare`,
@@ -322,7 +323,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      tiers; never-exposed keys never enter this state).
    - `codeWorkspace`: `{ activePath, files }`, where `files` is keyed by generated
      path and each value is `{ path, state, baseContent, generatedContent, content,
-     updatedAt }`. `state` ∈ { `generated`, `edited`, `stale` }. Generated files
+updatedAt }`. `state` ∈ { `generated`, `edited`, `stale` }. Generated files
      follow the current model automatically; user-edited files become `stale` when
      the generator output changes underneath them until the user explicitly keeps
      their edit or takes the regenerated version. This is a backward-compatible
@@ -330,15 +331,15 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - `monitoringHistory`: `{ version: 1, updatedAt, environment, samples, processes }`
      — local Monitoring telemetry cache (not domain-package export). `samples` is a
      ring (max 60) of aggregate ticks `{ t, hostCpu, hostMemUsedPercent, cpuTotal,
-     memTotal, onlineRatio, asyncActiveSum }`. `processes` maps
+memTotal, onlineRatio, asyncActiveSum }`. `processes` maps
      `${namespace}::${name}` to spark series `{ cpu, mem, restarts, asyncActive,
-     diskReadBytes, diskWriteBytes }` (each series max 60; max 40 process keys,
+diskReadBytes, diskWriteBytes }` (each series max 60; max 40 process keys,
      LRU). Older payloads normalize to an empty history. Charts use D3 vendored
      under `vendor/d3` (no CDN).
    - `deployments`: array of deploy targets aligned to the Requirement 059
      Service Management metadata contract (`JUM-481`), each
      `{ name, region, runtime, serviceType, deployTarget, runtimeProtocol,
-     databaseDriver, keyValueDriver, pm2Profile }` with
+databaseDriver, keyValueDriver, pm2Profile }` with
      `serviceType` ∈ { `restapi`, `websocket+restapi`, `grpc+restapi`,
      `functions` }, `deployTarget` ∈ { `dedicated-server`, `vm`, `ec2`,
      `lambda`, `vercel-functions`, `cloudflare-workers` }, `runtimeProtocol` ∈
@@ -354,9 +355,9 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      This is a backward-compatible extension of an existing section, so the
      versioned key is unchanged.
    - `view`: `{ zoom (clamped 0.5–2), compactEntities, snapToGrid,
-     edgeStyle ∈ { curved, orthogonal },
-     modelCheckMinSeverity ∈ { info, warn, error }, exportBlockCritical (default
-     true), largeCanvasMode }`.
+edgeStyle ∈ { curved, orthogonal },
+modelCheckMinSeverity ∈ { info, warn, error }, exportBlockCritical (default
+true), largeCanvasMode }`.
    - Entity field types ∈ { `string`, `integer`, `number`, `boolean`, `array`,
      `object`, `date`, `datetime`, `uuid` }.
    - **Additive package-versioning fields (landed by `JUM-492`).** Domains MAY
@@ -369,9 +370,9 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    - The schema-diff baseline lives under the separate key
      `service-management.schema-baseline.v1` and holds
      `{ domains: [{ id, name, color, context, entities: [{ id, name, meta, contracts,
-     fields: [{ name, type, required, pk, fk, unique, nullable, format, itemsType,
-     enumValues }] }] }], relationships: [{ id, fromEntityId, toEntityId,
-     fromCardinality, toCardinality }] }`.
+fields: [{ name, type, required, pk, fk, unique, nullable, format, itemsType,
+enumValues }] }] }], relationships: [{ id, fromEntityId, toEntityId,
+fromCardinality, toCardinality }] }`.
    - This schema was the migration source for the `IDesignerStore` port (`JUM-468`)
      and the Cana migration (`JUM-484`, landed): the migration copied these exact
      documents into Cana (IndexedDB) without changing the wire format — the
@@ -383,20 +384,20 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
    Eight exporters exist; each guarantees:
    - **JSON** (`domain-designer.json`): the full-suite document (shape landed
      by `JUM-547`): `{ kind: "service-management-suite", version: "2.0.0",
-     domains, relationships, interfaces, serviceConfiguration,
-     runtimeEnvironment, codeWorkspace, deployments, view }` — all persisted
+domains, relationships, interfaces, serviceConfiguration,
+runtimeEnvironment, codeWorkspace, deployments, view }` — all persisted
      authoring sections, re-importable shape. `interfaces` entries are
      `{ type, framework, entrypoint, controller }`; `serviceConfiguration` and
      `deployments` carry the Contract 2 shapes. The pre-`JUM-547` shape was
      `{ domains, relationships,
-     view }` with no `kind`/`version`; import MUST keep accepting it,
+view }` with no `kind`/`version`; import MUST keep accepting it,
      defaulting the missing sections (backward compatibility). Import MUST
      refuse a document whose `version` major is newer than the importer's, a
      `kind` other than the suite kind, or any unknown top-level section —
      failing clearly rather than half-importing or silently discarding
      sections (forward compatibility).
    - **`runtimeEnvironment` in the JSON export — the recorded `JUM-547`
-     decision.** The bundle carries the environment *selection* only
+     decision.** The bundle carries the environment _selection_ only
      (`{ environment, fileName }`), never `values`. The values mirror real
      `.env` contents of the machine the designer runs on — the editable and
      read-only tiers of the Contract 1 classification (the never-exposed tier
@@ -463,8 +464,8 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      pre-hexagonal path-only layout.)
    - **Domain package** (`<domain>-package.json`): versioned single-domain
      package (shape landed by `JUM-492`): `{ kind: "domain-package",
-     version: "2.0.0", exportedAt, package: { name, version, dependencies:
-     [{ name, range }] }, domain }`. The `package` block declares the package
+version: "2.0.0", exportedAt, package: { name, version, dependencies:
+[{ name, range }] }, domain }`. The `package` block declares the package
      identity: `name` (the domain's `context.packageName`, falling back to
      the domain name), `version` (the domain's `context.packageVersion`,
      falling back to `1.0.0`) and `dependencies` parsed from the domain's
@@ -472,23 +473,23 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      presence-only dependency). Import MUST keep accepting the pre-`JUM-492`
      v1 shape (`{ kind, version: "1.0.0", exportedAt, domain }`, no `package`
      block), synthesizing the identity `{ name: domain.name, version:
-     1.0.0, dependencies: [] }` (backward compatibility), and MUST refuse a
+1.0.0, dependencies: [] }` (backward compatibility), and MUST refuse a
      document whose `version` major is newer than the importer's (2) or a
      `kind` other than `domain-package` (forward compatibility).
    - **Domain-package versioning semantics (landed by `JUM-492`).** A domain
      package is versioned data, not code, so the usual semver semantics are
      redefined for it:
-     - *patch* — documentation/metadata only (field descriptions, formats,
+     - _patch_ — documentation/metadata only (field descriptions, formats,
        constraints, domain context text, OAS composition hints);
-     - *minor* — additive structure (a new entity, field or message
+     - _minor_ — additive structure (a new entity, field or message
        contract; a required flag loosened);
-     - *major* — removal or narrowing (a removed entity/field/contract, a
+     - _major_ — removal or narrowing (a removed entity/field/contract, a
        field type or PK/FK/unique change, a required flag tightened, an RBAC
        or invariant change, an aggregate declaration change).
-     Dependency ranges accept `*`/empty (any), exact `1.2.3`, caret `^1.2.3`
-     (same major; for `0.x`, same minor — the npm convention) and tilde
-     `~1.2.3` (same major.minor); anything else is invalid and satisfies
-     nothing, so it is reported rather than silently accepted.
+       Dependency ranges accept `*`/empty (any), exact `1.2.3`, caret `^1.2.3`
+       (same major; for `0.x`, same minor — the npm convention) and tilde
+       `~1.2.3` (same major.minor); anything else is invalid and satisfies
+       nothing, so it is reported rather than silently accepted.
    - **Provenance (landed by `JUM-492`).** Imported content MUST be stamped:
      the domain carries `context.provenance = { package, version }` plus
      `context.packageName`/`context.packageVersion`, and every imported
@@ -518,22 +519,22 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        preview and nothing is applied;
      - older version → refused (`downgrade-rejected`);
      - newer version → merge with a per-aspect classification:
-       - *auto-merge* (applied): added entity/field/contract, required flag
+       - _auto-merge_ (applied): added entity/field/contract, required flag
          loosened, field metadata, OAS composition and domain context
          changes;
-       - *requires a decision* (NEVER auto-applied — the existing designer
+       - _requires a decision_ (NEVER auto-applied — the existing designer
          content is kept for the aspect): removed entity/field/contract,
          contract change, field type or PK/FK/unique flag change, required
          flag tightened, aggregate declaration change, and ALWAYS RBAC and
          invariant changes — automatically resolving a security policy or a
          domain invariant is a decision a merge algorithm must not make.
-       The merge preview renders every aspect (with its class and
-       resolution) on the schema-diff surface BEFORE anything changes, and a
-       merge carrying requires-decision aspects applies only after the user
-       explicitly accepts (a gated `window.confirm` — a toast is not a
-       substitute for the gate). After a merge the provenance advances to
-       the incoming version. All user-facing outcomes surface through the
-       non-blocking status region (`showStatus`), never `alert()`.
+         The merge preview renders every aspect (with its class and
+         resolution) on the schema-diff surface BEFORE anything changes, and a
+         merge carrying requires-decision aspects applies only after the user
+         explicitly accepts (a gated `window.confirm` — a toast is not a
+         substitute for the gate). After a merge the provenance advances to
+         the incoming version. All user-facing outcomes surface through the
+         non-blocking status region (`showStatus`), never `alert()`.
    - **OpenAPI 3.1** (`domain-designer-oas-3.1.json`): `openapi: 3.1.0`; CRUD paths
      per entity with unique operationIds on the canonical `spec/1.0.0.yml` verb
      scheme (`getAll<Schema>`/`create<Schema>`/`get<Schema>ById`/`update<Schema>`/
@@ -556,7 +557,7 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      `x-field-flags: { pk, fk, unique }` when those flags diverge from the
      importer's name heuristic (`id` → PK/unique, `*Id` → FK); `x-relations`
      rows carry `{ name, fromSchema, toSchema, fromCardinality,
-     toCardinality }` — schema names, not model ids, which the importer
+toCardinality }` — schema names, not model ids, which the importer
      recomputes. The importer normalizes this extension set back into
      `entity.meta` (RBAC rules are rebuilt against the tenant RBAC contract,
      JUM-477), restores relationships from `x-relations` re-keyed to the

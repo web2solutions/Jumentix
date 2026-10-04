@@ -1,36 +1,36 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
-import { createMemoryHistory, createRouter, type Router } from 'vue-router';
+import { afterEach, describe, expect, it } from 'bun:test';
+
+import { createMemoryHistory, createRouter } from 'vue-router';
 
 import AppHeaderDropdownAccnt from '@/components/AppHeaderDropdownAccnt.vue';
 import AppSidebarNav from '@/components/AppSidebarNav.vue';
-import DashboardView from '@/features/dashboard/DashboardView.vue';
 import LoginView from '@/features/auth/LoginView.vue';
+import DashboardView from '@/features/dashboard/DashboardView.vue';
 import { setLocale } from '@/i18n';
 import '@/modules/index';
 import { useAuthStore } from '@/stores/auth';
 
 import { backend } from './fixtures';
-import {
-  flush, freshSession, mockFetch, mountWithShell, recorded
-} from './support';
+import { flush, freshSession, mockFetch, mountWithShell, must, recorded } from './support';
+
+import type { Router } from 'vue-router';
 
 const originalFetch = globalThis.fetch;
 
-const makeRouter = (): Router => createRouter({
-  history: createMemoryHistory(),
-  routes: [
-    { path: '/', component: { template: '<div />' } },
-    { path: '/login', component: { template: '<div />' } },
-    { path: '/sync', component: { template: '<div />' } },
-    { path: '/dashboard', component: { template: '<div />' } },
-    { path: '/profile', component: { template: '<div />' } },
-    { path: '/m/:moduleId/:tab?', component: { template: '<div />' } },
-    { path: '/users', component: { template: '<div />' } },
-    { path: '/organizations', component: { template: '<div />' } }
-  ]
-});
+const makeRouter = (): Router =>
+  createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: '/', component: { template: '<div />' } },
+      { path: '/login', component: { template: '<div />' } },
+      { path: '/sync', component: { template: '<div />' } },
+      { path: '/dashboard', component: { template: '<div />' } },
+      { path: '/profile', component: { template: '<div />' } },
+      { path: '/m/:moduleId/:tab?', component: { template: '<div />' } },
+      { path: '/users', component: { template: '<div />' } },
+      { path: '/organizations', component: { template: '<div />' } }
+    ]
+  });
 
 /**
  * JUM-776/781 — the shell around X-CRUD: login submits the OAS body through
@@ -90,7 +90,8 @@ describe('DashboardView', () => {
     const pinia = freshSession({ roles: ['superadmin'] });
     mockFetch(backend);
     const wrapper = mountWithShell(DashboardView, {
-      pinia, global: { plugins: [pinia, makeRouter()] }
+      pinia,
+      global: { plugins: [pinia, makeRouter()] }
     });
     await flush(20);
     expect(wrapper.find('[data-metric="users"]').text()).toContain('3');
@@ -99,8 +100,16 @@ describe('DashboardView', () => {
     expect(wrapper.text()).not.toContain('Traffic');
     expect(wrapper.text()).not.toContain('Yiorgos');
     const metricsCalls = recorded.filter((call) => call.url.includes('/metrics'));
-    expect(metricsCalls.some((call) => call.url.includes('/users/metrics') && call.url.includes('metric=count'))).toBe(true);
-    expect(metricsCalls.some((call) => call.url.includes('/organizations/metrics') && call.url.includes('metric=count'))).toBe(true);
+    expect(
+      metricsCalls.some(
+        (call) => call.url.includes('/users/metrics') && call.url.includes('metric=count')
+      )
+    ).toBe(true);
+    expect(
+      metricsCalls.some(
+        (call) => call.url.includes('/organizations/metrics') && call.url.includes('metric=count')
+      )
+    ).toBe(true);
     wrapper.unmount();
   });
 
@@ -109,10 +118,13 @@ describe('DashboardView', () => {
     const pinia = freshSession({ roles: ['user'] });
     mockFetch(backend);
     const wrapper = mountWithShell(DashboardView, {
-      pinia, global: { plugins: [pinia, makeRouter()] }
+      pinia,
+      global: { plugins: [pinia, makeRouter()] }
     });
     await flush(20);
-    expect(wrapper.find('[data-metric="organizations"]').text()).toContain('Your role has no read access');
+    expect(wrapper.find('[data-metric="organizations"]').text()).toContain(
+      'Your role has no read access'
+    );
     expect(recorded.filter((c) => c.url.includes('/organizations'))).toHaveLength(0);
     wrapper.unmount();
   });
@@ -127,14 +139,18 @@ describe('AppHeaderDropdownAccnt', () => {
     expect.hasAssertions();
     const pinia = freshSession();
     const wrapper = mountWithShell(AppHeaderDropdownAccnt, {
-      pinia, global: { plugins: [pinia, makeRouter()] }
+      pinia,
+      global: { plugins: [pinia, makeRouter()] }
     });
     const items = wrapper.findAll('.dropdown-item').map((i) => i.text());
     expect(items).toStrictEqual(['Profile', 'English', 'Português (BR)', 'Logout']);
     expect(wrapper.text()).not.toContain('Payments');
     expect(wrapper.text()).not.toContain('42');
     expect(wrapper.find('.avatar').text()).toBe('ZL');
-    await wrapper.findAll('.dropdown-item').find((i) => i.text() === 'Português (BR)')!.trigger('click');
+    await must(
+      wrapper.findAll('.dropdown-item').find((i) => i.text() === 'Português (BR)'),
+      'Português (BR) menu item'
+    ).trigger('click');
     await flush(1);
     expect(wrapper.findAll('.dropdown-item').map((i) => i.text())).toContain('Sair');
     setLocale('en');
@@ -151,7 +167,8 @@ describe('AppSidebarNav', () => {
     expect.hasAssertions();
     const admin = freshSession({ roles: ['admin'] });
     const asAdmin = mountWithShell(AppSidebarNav, {
-      pinia: admin, global: { plugins: [admin, makeRouter()] }
+      pinia: admin,
+      global: { plugins: [admin, makeRouter()] }
     });
     const adminLinks = asAdmin.findAll('.nav-link, .nav-group-toggle').map((a) => a.text().trim());
     expect(adminLinks).toContain('Users');
@@ -160,7 +177,8 @@ describe('AppSidebarNav', () => {
 
     const user = freshSession({ roles: ['user'], locale: 'pt-BR' });
     const asUser = mountWithShell(AppSidebarNav, {
-      pinia: user, global: { plugins: [user, makeRouter()] }
+      pinia: user,
+      global: { plugins: [user, makeRouter()] }
     });
     const userLinks = asUser.findAll('.nav-link, .nav-group-toggle').map((a) => a.text().trim());
     expect(userLinks).toContain('Usuários');

@@ -31,4 +31,3 @@ Realtime APIs must have explicit automated validation at three levels:
 
 - Redis-backed integration should be environment-gated for CI/local portability (`RUN_REDIS_INTEGRATION=1`).
 - Realtime smoke/integration commands should run with `--coverage=false` to avoid coverage artifact drift.
-

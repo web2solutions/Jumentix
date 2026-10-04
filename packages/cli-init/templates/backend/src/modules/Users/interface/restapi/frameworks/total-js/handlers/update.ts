@@ -1,39 +1,38 @@
-import type { TotalJsRequest, TotalJsResponse } from '@src/interface/HTTP/adapters/total-js/TotalJsServer';
-import { sendErrorResponse } from '@src/interface/HTTP/adapters/total-js/responses/sendErrorResponse';
+import sendErrorResponse from '@src/interface/HTTP/adapters/total-js/responses/sendErrorResponse';
+import UserUpdateRequestEvent from '@src/modules/Users/events/UserUpdateRequestEvent';
 
 import type {
-  IHandlerFactory,
-  IbaseHandler,
-  EndPointFactory
-} from '@src/interface/HTTP/ports';
+  TotalJsRequest,
+  TotalJsResponse
+} from '@src/interface/HTTP/adapters/total-js/TotalJsServer';
+import type { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
 
-import { UserUpdateRequestEvent } from '@src/modules/Users/events/UserUpdateRequestEvent';
-
-const update: EndPointFactory = (
-  {
-    endPointConfig,
-    controller
-  }: IHandlerFactory
-): IbaseHandler => {
-  return {
-    path: '/users/{id}',
-    method: 'put',
-    async handler(req: TotalJsRequest, res: TotalJsResponse) {
-      try {
-        const params = req.params as Record<string, any>;
-        const { result, error } = await controller!.update!(new UserUpdateRequestEvent({
+const update: EndPointFactory = ({
+  endPointConfig,
+  controller
+}: IHandlerFactory): IbaseHandler => ({
+  path: '/users/{id}',
+  method: 'put',
+  async handler(req: TotalJsRequest, res: TotalJsResponse) {
+    try {
+      const params = req.params as Record<string, any>;
+      if (!controller?.update) {
+        throw new Error('The update endpoint requires a controller implementing update.');
+      }
+      const { result, error } = await controller.update(
+        new UserUpdateRequestEvent({
           authorization: req.headers.authorization ?? '',
           input: req.body,
           schemaOAS: endPointConfig,
           params
-        }));
-        if (error) throw error;
-        return res.status(200).json(result);
-      } catch (error: any) {
-        return sendErrorResponse(error, res);
-      }
+        })
+      );
+      if (error) throw error;
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return sendErrorResponse(error, res);
     }
-  };
-};
+  }
+});
 
 export default update;

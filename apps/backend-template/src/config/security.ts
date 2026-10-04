@@ -1,7 +1,9 @@
 import { readProductEnv } from '@src/interface/runtime/RuntimeEnvironment';
 
 function isProductionEnv(): boolean {
-  const nodeEnv = String(process.env.NODE_ENV || '').trim().toLowerCase();
+  const nodeEnv = String(process.env.NODE_ENV || '')
+    .trim()
+    .toLowerCase();
   return nodeEnv === 'prod' || nodeEnv === 'production';
 }
 
@@ -14,7 +16,7 @@ const parseAllowedCorsOrigins = (): string[] => {
     .filter(Boolean);
 };
 
-export const isCorsOriginAllowed = (origin?: string): boolean => {
+const isCorsOriginAllowed = (origin?: string): boolean => {
   const allowedOrigins = parseAllowedCorsOrigins();
   if (!origin) return true;
   if (allowedOrigins.includes('*')) return true;
@@ -23,3 +25,5 @@ export const isCorsOriginAllowed = (origin?: string): boolean => {
   }
   return allowedOrigins.includes(origin);
 };
+
+export default isCorsOriginAllowed;

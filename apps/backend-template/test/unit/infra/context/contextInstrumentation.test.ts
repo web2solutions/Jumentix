@@ -1,5 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects,
-  jest/prefer-lowercase-title, jest/prefer-strict-equal */
+/* eslint-disable jest/max-expects */
 import {
   Context,
   redactSensitive,
@@ -30,16 +29,19 @@ describe('asyncLocalStorage context instrumentation', () => {
     const circular: Record<string, unknown> = {};
     circular.self = circular;
 
-    runWithContext(new Map<unknown, unknown>([
-      ['count', 1],
-      ['big', 10n],
-      ['list', ['a', 1]],
-      ['lookup', new Map([['k', 'v']])],
-      ['plain', { nested: true }],
-      ['nothing', null],
-      ['circular', circular],
-      ['fn', () => 'x']
-    ]), () => 'done');
+    runWithContext(
+      new Map<unknown, unknown>([
+        ['count', 1],
+        ['big', 10n],
+        ['list', ['a', 1]],
+        ['lookup', new Map([['k', 'v']])],
+        ['plain', { nested: true }],
+        ['nothing', null],
+        ['circular', circular],
+        ['fn', () => 'x']
+      ]),
+      () => 'done'
+    );
 
     const { recentStores } = snapshotAsyncContextMetrics();
     expect(recentStores).toHaveLength(1);
@@ -60,10 +62,12 @@ describe('asyncLocalStorage context instrumentation', () => {
 
     expect(redactSensitive(['a', 'b'])).toStrictEqual(['a', 'b']);
     expect(redactSensitive('value', 'secretKey')).toBe('[REDACTED]');
-    expect(redactSensitive({
-      token: 'x',
-      nested: { password: 'y', keep: 1 }
-    })).toStrictEqual({
+    expect(
+      redactSensitive({
+        token: 'x',
+        nested: { password: 'y', keep: 1 }
+      })
+    ).toStrictEqual({
       token: '[REDACTED]',
       nested: { password: '[REDACTED]', keep: 1 }
     });
@@ -101,9 +105,11 @@ describe('asyncLocalStorage context instrumentation', () => {
   it('counts a rejected promise as an error and releases the active slot', async () => {
     expect.hasAssertions();
 
-    await expect(runWithContext(new Map(), async () => {
-      throw new Error('async boom');
-    })).rejects.toThrow('async boom');
+    await expect(
+      runWithContext(new Map(), async () => {
+        throw new Error('async boom');
+      })
+    ).rejects.toThrow('async boom');
 
     const snapshot = snapshotAsyncContextMetrics();
     expect(snapshot.errorTotal).toBe(1);
@@ -115,9 +121,11 @@ describe('asyncLocalStorage context instrumentation', () => {
   it('counts a synchronous throw as an error and releases the active slot', () => {
     expect.hasAssertions();
 
-    expect(() => runWithContext(new Map(), () => {
-      throw new Error('sync boom');
-    })).toThrow('sync boom');
+    expect(() =>
+      runWithContext(new Map(), () => {
+        throw new Error('sync boom');
+      })
+    ).toThrow('sync boom');
 
     const snapshot = snapshotAsyncContextMetrics();
     expect(snapshot.errorTotal).toBe(1);
@@ -184,8 +192,9 @@ describe('asyncLocalStorage context instrumentation', () => {
       }
     };
 
-    expect(() => runWithContext(new Map(), () => doubleSettling as never))
-      .toThrow('late rejection');
+    expect(() => runWithContext(new Map(), () => doubleSettling as never)).toThrow(
+      'late rejection'
+    );
 
     const snapshot = snapshotAsyncContextMetrics();
     expect(snapshot.enteredTotal).toBe(1);
@@ -201,8 +210,7 @@ describe('asyncLocalStorage context instrumentation', () => {
 
     Context.enterWith(new Map([['correlationId', 'entered']]));
     expect(Context.getStore()?.get('correlationId')).toBe('entered');
-    expect(snapshotAsyncContextMetrics().currentStore)
-      .toMatchObject({ correlationId: 'entered' });
+    expect(snapshotAsyncContextMetrics().currentStore).toMatchObject({ correlationId: 'entered' });
 
     Context.disable();
     expect(Context.getStore()).toBeUndefined();

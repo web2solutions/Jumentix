@@ -1,11 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/nextjs';
 import { MantineNavBar } from './MantineNavBar';
+
+import type { Meta, StoryObj } from '@storybook/nextjs';
 
 const meta = {
   title: 'Documentation/Shell Navigation',
   component: MantineNavBar,
   tags: ['autodocs'],
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: 'fullscreen' }
 } satisfies Meta<typeof MantineNavBar>;
 
 export default meta;
@@ -17,14 +18,14 @@ export const Portuguese: Story = {
   parameters: {
     nextjs: {
       navigation: {
-        pathname: '/docs/pt-BR/jumentix/guides/rest-api',
-      },
-    },
-  },
+        pathname: '/docs/pt-BR/jumentix/guides/rest-api'
+      }
+    }
+  }
 };
 
 export const Mobile: Story = {
   globals: {
-    viewport: { value: 'mobile1', isRotated: false },
-  },
+    viewport: { value: 'mobile1', isRotated: false }
+  }
 };

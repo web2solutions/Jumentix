@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /**
  * JUM-822 — opt-in tombstone purge. Default is dry-run (stdout JSONL, no write).
  * dev PM2 calls this with --via-loopback so the dev RestAPI process owns the store.
@@ -37,14 +36,16 @@ const printReport = (report) => {
   for (const event of report.events || []) {
     process.stdout.write(`${JSON.stringify(event)}\n`);
   }
-  process.stdout.write(`${JSON.stringify({
-    summary: true,
-    dryRun: report.dryRun,
-    olderThanDays: report.olderThanDays,
-    eligible: (report.events || []).length,
-    skippedProtected: report.skippedProtected,
-    skippedTooYoung: report.skippedTooYoung
-  })}\n`);
+  process.stdout.write(
+    `${JSON.stringify({
+      summary: true,
+      dryRun: report.dryRun,
+      olderThanDays: report.olderThanDays,
+      eligible: (report.events || []).length,
+      skippedProtected: report.skippedProtected,
+      skippedTooYoung: report.skippedTooYoung
+    })}\n`
+  );
 };
 
 const viaLoopback = async (flags) => {
@@ -81,10 +82,11 @@ if (import.meta.main) {
     const message = error instanceof Error ? error.message : String(error);
     if (message.includes('ECONNREFUSED') || message.includes('fetch failed')) {
       process.stderr.write(`purge-tombstones: RestAPI not reachable (${message})\n`);
-      process.exit(0);
+      process.exitCode = 0;
+      return;
     }
     process.stderr.write(`${message}\n`);
-    process.exit(1);
+    process.exitCode = 1;
   });
 }
 

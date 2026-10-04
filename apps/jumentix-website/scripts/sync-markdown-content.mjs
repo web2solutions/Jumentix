@@ -1,7 +1,10 @@
+/* eslint-disable no-await-in-loop -- content sync walks locale/page batches
+   sequentially on purpose: each step's output feeds the next manifest entry. */
+/* eslint-disable no-console -- CLI sync script: stdout is its report channel. */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+
 import {
   assertNoCanaContentLeaks,
   isCanaPublishedSource,
@@ -29,7 +32,6 @@ const publicRoot = path.join(appRoot, 'public');
 const assetsDirectoryName = 'docs-assets';
 const assetsRoot = path.join(publicRoot, assetsDirectoryName);
 
-
 /**
  * Public site package docs policy (fail-closed):
  * - Never auto-publish a package whose package.json has `"private": true`.
@@ -43,7 +45,7 @@ const NEVER_PUBLISH_PACKAGE_SLUGS = new Set([
   'config-ts',
   'agent-registry',
   'security-scanner',
-  'cli-init',
+  'cli-init'
 ]);
 
 const NESTED_PACKAGE_HUB_SLUGS = new Set([
@@ -51,7 +53,7 @@ const NESTED_PACKAGE_HUB_SLUGS = new Set([
   'designer-core',
   'key-value-storage',
   'mutex-service',
-  'message-mediator',
+  'message-mediator'
 ]);
 
 async function readPackagePrivateFlag(packageDir) {
@@ -75,13 +77,15 @@ async function shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug
   }
   const packageDir = path.dirname(englishSource);
   // Only apply private:true to package folders directly under packages/.
-  if (path.basename(path.dirname(packageDir)) === 'packages' || path.basename(sourceDir) === 'packages') {
+  if (
+    path.basename(path.dirname(packageDir)) === 'packages' ||
+    path.basename(sourceDir) === 'packages'
+  ) {
     const isPrivate = await readPackagePrivateFlag(packageDir);
     if (isPrivate) return true;
   }
   return false;
 }
-
 
 const localeConfig = {
   en: {
@@ -89,15 +93,15 @@ const localeConfig = {
     outputDir: path.join(contentRoot, 'jumentix'),
     sourceKey: 'source',
     titleKey: 'title',
-    descriptionKey: 'description',
+    descriptionKey: 'description'
   },
   'pt-BR': {
     basePath: '/docs/pt-BR/jumentix',
     outputDir: path.join(contentRoot, 'pt-BR', 'jumentix'),
     sourceKey: 'sourcePtBr',
     titleKey: 'titlePtBr',
-    descriptionKey: 'descriptionPtBr',
-  },
+    descriptionKey: 'descriptionPtBr'
+  }
 };
 
 const sectionTitles = {
@@ -106,24 +110,21 @@ const sectionTitles = {
     guides: 'Guides',
     adapters: 'Adapters',
     packages: 'Packages',
-    reference: 'Reference',
+    reference: 'Reference'
   },
   'pt-BR': {
     concepts: 'Conceitos',
     guides: 'Guias',
     adapters: 'Adaptadores',
     packages: 'Pacotes',
-    reference: 'Referência',
-  },
+    reference: 'Referência'
+  }
 };
 
 const normalizeLineEndings = (text) => text.replace(/\r\n/g, '\n');
-const escapeForSingleQuotedTs = (value) =>
-  value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+const escapeForSingleQuotedTs = (value) => value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 const toTsObjectKey = (key) =>
-  /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)
-    ? key
-    : `'${escapeForSingleQuotedTs(key)}'`;
+  /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key) ? key : `'${escapeForSingleQuotedTs(key)}'`;
 const slugify = (value) =>
   value
     .replace(/\.pt-BR$/i, '')
@@ -136,9 +137,7 @@ const inferTitle = (markdown, fallback) => {
   const heading = normalizeLineEndings(markdown)
     .split('\n')
     .find((line) => /^#\s+/.test(line));
-  return heading
-    ? heading.replace(/^#\s+/, '').replace(/[`*_]/g, '').trim()
-    : fallback;
+  return heading ? heading.replace(/^#\s+/, '').replace(/[`*_]/g, '').trim() : fallback;
 };
 
 const sanitizeDocBody = (markdown) => {
@@ -233,7 +232,9 @@ async function copyDocumentationImages(markdown, sourceFile) {
     // Fail closed on anything outside the monorepo: a published page must never
     // reference a file the repository does not own.
     if (relativeToRepository.startsWith('..') || path.isAbsolute(relativeToRepository)) {
-      throw new Error(`Documentation image ${href} in ${sourceFile} resolves outside the repository`);
+      throw new Error(
+        `Documentation image ${href} in ${sourceFile} resolves outside the repository`
+      );
     }
 
     try {
@@ -245,7 +246,10 @@ async function copyDocumentationImages(markdown, sourceFile) {
     const destination = path.join(assetsRoot, relativeToRepository);
     await fs.mkdir(path.dirname(destination), { recursive: true });
     await fs.copyFile(absoluteSource, destination);
-    replacements.set(href, `/${assetsDirectoryName}/${relativeToRepository.split(path.sep).join('/')}`);
+    replacements.set(
+      href,
+      `/${assetsDirectoryName}/${relativeToRepository.split(path.sep).join('/')}`
+    );
   };
 
   for (const match of markdown.matchAll(imagePattern)) {
@@ -258,10 +262,10 @@ async function copyDocumentationImages(markdown, sourceFile) {
   if (replacements.size === 0) return markdown;
 
   let next = markdown.replace(imagePattern, (fullMatch, alt, href, title) =>
-    (replacements.has(href) ? `![${alt}](${replacements.get(href)}${title || ''})` : fullMatch)
+    replacements.has(href) ? `![${alt}](${replacements.get(href)}${title || ''})` : fullMatch
   );
   next = next.replace(htmlImagePattern, (fullMatch, prefix, href, suffix) =>
-    (replacements.has(href) ? `${prefix}${replacements.get(href)}${suffix}` : fullMatch)
+    replacements.has(href) ? `${prefix}${replacements.get(href)}${suffix}` : fullMatch
   );
   return next;
 }
@@ -277,19 +281,17 @@ async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {
     const href = match[2];
     const label = match[1];
     if (
-      replacements.has(href)
-      || labelOnly.has(href)
-      || href.startsWith('#')
-      || href.startsWith('/')
+      replacements.has(href) ||
+      labelOnly.has(href) ||
+      href.startsWith('#') ||
+      href.startsWith('/')
     ) {
       continue;
     }
 
     if (/^[a-z][a-z\d+.-]*:/i.test(href)) {
       if (/github\.com\/XpertMinds\/Jumentix/i.test(href)) {
-        throw new Error(
-          `Published docs cannot keep GitHub content link ${href} (${sourceFile})`
-        );
+        throw new Error(`Published docs cannot keep GitHub content link ${href} (${sourceFile})`);
       }
       continue;
     }
@@ -351,7 +353,10 @@ function isLicense(sourceFile) {
 
 function collectionSlug(sourceDir, sourceFile) {
   const relative = path.relative(sourceDir, sourceFile).replaceAll('\\', '/');
-  const basename = path.basename(relative).replace(/\.pt-BR\.md$/i, '').replace(/\.md$/i, '');
+  const basename = path
+    .basename(relative)
+    .replace(/\.pt-BR\.md$/i, '')
+    .replace(/\.md$/i, '');
   if (basename.toLowerCase() === 'readme') {
     const parent = path.dirname(relative);
     return parent === '.' ? 'index' : slugify(parent);
@@ -361,9 +366,7 @@ function collectionSlug(sourceDir, sourceFile) {
 
 async function prepareRecords(config) {
   const records = [];
-  const explicitRoutes = new Set(
-    config.entries.map((entry) => `${entry.section}/${entry.slug}`)
-  );
+  const explicitRoutes = new Set(config.entries.map((entry) => `${entry.section}/${entry.slug}`));
 
   for (const entry of config.entries) {
     for (const [locale, localeSettings] of Object.entries(localeConfig)) {
@@ -374,7 +377,7 @@ async function prepareRecords(config) {
         slug: entry.slug,
         title: entry[localeSettings.titleKey],
         description: entry[localeSettings.descriptionKey],
-        source,
+        source
       });
     }
   }
@@ -382,9 +385,7 @@ async function prepareRecords(config) {
   for (const collection of config.collections) {
     const sourceDir = path.resolve(appRoot, collection.sourceDir);
     const files = await listMarkdownFiles(sourceDir);
-    const englishFiles = files.filter(
-      (file) => !/\.pt-BR\.md$/i.test(file) && !isLicense(file),
-    );
+    const englishFiles = files.filter((file) => !/\.pt-BR\.md$/i.test(file) && !isLicense(file));
 
     for (const englishSource of englishFiles) {
       const slug = collectionSlug(sourceDir, englishSource);
@@ -392,8 +393,8 @@ async function prepareRecords(config) {
       // packages/ must not replace one with a terse package README.
       if (explicitRoutes.has(`${collection.section}/${slug}`)) continue;
       if (
-        collection.section === 'packages'
-        && await shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug)
+        collection.section === 'packages' &&
+        (await shouldSkipPackagesCollectionSource(sourceDir, englishSource, slug))
       ) {
         continue;
       }
@@ -405,10 +406,12 @@ async function prepareRecords(config) {
         throw new Error(`Missing Portuguese documentation pair: ${portugueseSource}`);
       }
 
-      for (const [locale, source] of [['en', englishSource], ['pt-BR', portugueseSource]]) {
+      for (const [locale, source] of [
+        ['en', englishSource],
+        ['pt-BR', portugueseSource]
+      ]) {
         const markdown = await fs.readFile(source, 'utf8');
-        const fallbackTitle =
-          locale === 'pt-BR' ? collection.titlePtBr : collection.title;
+        const fallbackTitle = locale === 'pt-BR' ? collection.titlePtBr : collection.title;
         records.push({
           locale,
           section: collection.section,
@@ -418,7 +421,7 @@ async function prepareRecords(config) {
             locale === 'pt-BR'
               ? `Documentação de ${collection.titlePtBr}.`
               : `${collection.title} documentation.`,
-          source,
+          source
         });
       }
     }
@@ -453,8 +456,9 @@ async function writeGeneratedDoc(record, routesBySource) {
     assertNoCanaContentLeaks(body, record.source);
   }
   assertNoContentLeaks(body, record.source);
-  const description = record.description
-    || (record.locale === 'pt-BR'
+  const description =
+    record.description ||
+    (record.locale === 'pt-BR'
       ? 'Documentação do framework Jumentix para adoção rápida.'
       : 'Jumentix framework documentation for fast adoption.');
   const content = `---
@@ -500,9 +504,11 @@ description: ${JSON.stringify(portuguese ? 'Portal técnico do Jumentix.' : 'Jum
 
 # ${portuguese ? 'Construa com o Jumentix' : 'Build with Jumentix'}
 
-${portuguese
+${
+  portuguese
     ? 'Use este portal para aprender os conceitos, construir aplicações, escolher adaptadores e operar os pacotes do Jumentix.'
-    : 'Use this portal to learn the concepts, build applications, choose adapters, and operate Jumentix packages.'}
+    : 'Use this portal to learn the concepts, build applications, choose adapters, and operate Jumentix packages.'
+}
 
 \`\`\`bash
 bun install
@@ -541,18 +547,25 @@ function sectionLandingContent(locale, section, records) {
   const directRecords = records.filter(
     (record) => record.section === section && record.slug !== 'index'
   );
-  const childSections = [...new Set(
-    records
-      .map((record) => record.section)
-      .filter((candidate) => candidate.startsWith(`${section}/`))
-      .map((candidate) => candidate.split('/').slice(0, section.split('/').length + 1).join('/'))
-  )];
+  const childSections = [
+    ...new Set(
+      records
+        .map((record) => record.section)
+        .filter((candidate) => candidate.startsWith(`${section}/`))
+        .map((candidate) =>
+          candidate
+            .split('/')
+            .slice(0, section.split('/').length + 1)
+            .join('/')
+        )
+    )
+  ];
   const links = [
     ...childSections.map((child) => ({
       title: sectionDisplayTitle(locale, child),
-      route: `${localeConfig[locale].basePath}/${child}`,
+      route: `${localeConfig[locale].basePath}/${child}`
     })),
-    ...directRecords.map((record) => ({ title: record.title, route: recordRoute(record) })),
+    ...directRecords.map((record) => ({ title: record.title, route: recordRoute(record) }))
   ];
 
   const juniorIntro = (() => {
@@ -592,15 +605,15 @@ ${links.map((link) => `- [${link.title}](${link.route})`).join('\n')}
 }
 
 async function writeNavigation(locale, records) {
-  const outputDir = localeConfig[locale].outputDir;
+  const { outputDir } = localeConfig[locale];
   await fs.writeFile(path.join(outputDir, 'index.mdx'), landingContent(locale, records), 'utf8');
 
   await writeMeta(outputDir, [
     { slug: 'index', title: locale === 'pt-BR' ? 'Início' : 'Start', display: 'hidden' },
     ...['concepts', 'guides', 'adapters', 'packages', 'reference'].map((slug) => ({
       slug,
-      title: sectionTitles[locale][slug],
-    })),
+      title: sectionTitles[locale][slug]
+    }))
   ]);
 
   const grouped = new Map();
@@ -626,24 +639,23 @@ async function writeNavigation(locale, records) {
         'utf8'
       );
     }
-    const childSlugs = [...new Set(
-      records
-        .map((record) => record.section)
-        .filter((candidate) => candidate.startsWith(`${section}/`))
-        .map((candidate) => candidate.split('/')[section.split('/').length])
-        .filter(Boolean)
-    )];
+    const childSlugs = [
+      ...new Set(
+        records
+          .map((record) => record.section)
+          .filter((candidate) => candidate.startsWith(`${section}/`))
+          .map((candidate) => candidate.split('/')[section.split('/').length])
+          .filter(Boolean)
+      )
+    ];
 
     const childTitle = (slug) => {
       const packageTitles = {
         cana: '@jumentix/cana',
         usage: locale === 'pt-BR' ? 'Guia de uso' : 'Usage guide',
         'any-framework':
-          locale === 'pt-BR'
-            ? 'Integrar com qualquer framework'
-            : 'Integrate with any framework',
-        'vanilla-typescript':
-          locale === 'pt-BR' ? 'Vanilla TypeScript' : 'Vanilla TypeScript',
+          locale === 'pt-BR' ? 'Integrar com qualquer framework' : 'Integrate with any framework',
+        'vanilla-typescript': locale === 'pt-BR' ? 'Vanilla TypeScript' : 'Vanilla TypeScript',
         'designer-core': '@jumentix/designer-core',
         'key-value-storage': '@jumentix/key-value-storage',
         'mutex-service': '@jumentix/mutex-service',
@@ -651,9 +663,9 @@ async function writeNavigation(locale, records) {
       };
       if (packageTitles[slug]) return packageTitles[slug];
       if (locale === 'pt-BR') {
-        return ({ http: 'HTTP', databases: 'Bancos de dados', realtime: 'Realtime' }[slug] ?? slug);
+        return { http: 'HTTP', databases: 'Bancos de dados', realtime: 'Realtime' }[slug] ?? slug;
       }
-      return ({ http: 'HTTP', databases: 'Databases', realtime: 'Realtime' }[slug] ?? slug);
+      return { http: 'HTTP', databases: 'Databases', realtime: 'Realtime' }[slug] ?? slug;
     };
 
     if (sectionRecords.length > 0 || childSlugs.length > 0) {
@@ -661,12 +673,12 @@ async function writeNavigation(locale, records) {
         ...sectionRecords.map((record) => ({
           slug: record.slug,
           title: record.title,
-          display: record.slug === 'index' ? 'hidden' : undefined,
+          display: record.slug === 'index' ? 'hidden' : undefined
         })),
         ...childSlugs.map((slug) => ({
           slug,
-          title: childTitle(slug),
-        })),
+          title: childTitle(slug)
+        }))
       ];
       if (section === 'packages/cana') {
         const order = [
@@ -702,7 +714,7 @@ async function writeNavigation(locale, records) {
       directory,
       childSlugs.map((slug) => ({
         slug,
-        title: childTitle(slug),
+        title: childTitle(slug)
       }))
     );
   }
@@ -728,11 +740,14 @@ async function main() {
   }
 
   for (const locale of Object.keys(localeConfig)) {
-    await writeNavigation(locale, records.filter((record) => record.locale === locale));
+    await writeNavigation(
+      locale,
+      records.filter((record) => record.locale === locale)
+    );
   }
 
   await writeMeta(path.join(contentRoot, 'pt-BR'), [
-    { slug: 'jumentix', title: 'Documentação Jumentix' },
+    { slug: 'jumentix', title: 'Documentação Jumentix' }
   ]);
 
   const { spawn } = await import('node:child_process');
@@ -754,5 +769,5 @@ async function main() {
 
 main().catch((error) => {
   console.error(error);
-  process.exit(1);
+  process.exitCode = 1;
 });

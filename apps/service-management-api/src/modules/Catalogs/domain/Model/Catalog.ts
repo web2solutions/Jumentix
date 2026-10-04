@@ -1,16 +1,8 @@
-/* eslint-disable no-underscore-dangle */
-import {
-  BaseModel
-} from '@src/modules/port';
-import {
-  canNotBeEmpty
-} from '@src/shared/validators';
-import type {
-  ICatalog
-} from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
-import type {
-  RequestCreateCatalog
-} from '@service-management-api/modules/Catalogs/interface/dto/RequestCreateCatalog';
+import { BaseModel } from '@src/modules/port';
+import { canNotBeEmpty } from '@src/shared/validators';
+
+import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
+import type { RequestCreateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestCreateCatalog';
 
 interface CatalogFactory extends RequestCreateCatalog {
   id?: string;
@@ -27,22 +19,22 @@ interface CatalogFactory extends RequestCreateCatalog {
  * shared domain design plus its concurrency metadata; see `ICatalog` for the
  * concurrency and tombstone semantics.
  */
-export class Catalog extends BaseModel<ICatalog> implements ICatalog {
-  private _organization: string = '';
+class Catalog extends BaseModel<ICatalog> implements ICatalog {
+  private _organization = '';
 
-  private _name: string = '';
+  private _name = '';
 
-  private _description: string = '';
+  private _description = '';
 
-  private _version: number = 1;
+  private _version = 1;
 
   private _design: Record<string, any> = {};
 
   private _provenance: Record<string, any> | undefined;
 
-  private _createdBy: string = '';
+  private _createdBy = '';
 
-  private _updatedBy: string = '';
+  private _updatedBy = '';
 
   constructor(payload: CatalogFactory) {
     super({
@@ -61,12 +53,7 @@ export class Catalog extends BaseModel<ICatalog> implements ICatalog {
     this._provenance = payload.provenance;
     this._createdBy = payload.createdBy ?? '';
     this._updatedBy = payload.updatedBy ?? '';
-    this._excludeOnSerialize = [
-      'deleted',
-      'bumpVersion',
-      'tombstone',
-      'restore'
-    ];
+    this._excludeOnSerialize = ['deleted', 'bumpVersion', 'tombstone', 'restore'];
   }
 
   public get organization(): string {
@@ -131,21 +118,23 @@ export class Catalog extends BaseModel<ICatalog> implements ICatalog {
   }
 
   /** Bump the concurrency token and stamp the mutation time/actor. */
-  public bumpVersion(actor: string = ''): void {
+  public bumpVersion(actor = ''): void {
     this._version += 1;
     this.updatedAt = new Date();
     this._updatedBy = actor;
   }
 
   /** Soft-delete: the record stays so the deletion can propagate/recover. */
-  public tombstone(actor: string = ''): void {
+  public tombstone(actor = ''): void {
     this._deletedAt = new Date().toISOString();
     this.bumpVersion(actor);
   }
 
   /** Recover a tombstoned record; a restore is a write, so the version bumps. */
-  public restore(actor: string = ''): void {
+  public restore(actor = ''): void {
     this._deletedAt = '';
     this.bumpVersion(actor);
   }
 }
+
+export default Catalog;

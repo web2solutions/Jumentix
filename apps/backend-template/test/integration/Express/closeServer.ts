@@ -1,6 +1,6 @@
 import type { Server } from 'node:http';
 
-export const closeServer = async (server: Server | undefined | null): Promise<void> => {
+const closeServer = async (server: Server | undefined | null): Promise<void> => {
   if (!server) return;
 
   await new Promise<void>((resolve, reject) => {
@@ -14,3 +14,5 @@ export const closeServer = async (server: Server | undefined | null): Promise<vo
     server.closeAllConnections?.();
   });
 };
+
+export default closeServer;

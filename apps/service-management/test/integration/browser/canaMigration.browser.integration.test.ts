@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
+/* eslint-disable jest/no-conditional-in-test, jest/max-expects */
 /*
  * JUM-484 — the ONE-WAY migration of `service-management.v1` from
  * localStorage to Cana, run in a REAL browser (Playwright WebKit, the engine
@@ -18,16 +18,20 @@
  */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+
 import { webkit } from 'playwright-webkit';
-import type { Browser, Page } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  createTempConfigDir,
   envFileContent,
   startServer,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser, Page } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
@@ -51,7 +55,13 @@ const LEGACY_PAYLOAD = {
           meta: { aggregateRoot: true, invariants: [], contracts: [] },
           fields: [
             {
-              name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true, nullable: false
+              name: 'id',
+              type: 'uuid',
+              required: true,
+              pk: true,
+              fk: false,
+              unique: true,
+              nullable: false
             }
           ]
         }
@@ -72,9 +82,15 @@ const LEGACY_PAYLOAD = {
 };
 
 const LEGACY_BASELINE = {
-  domains: [{
-    id: 'domain-1', name: 'MigratedDomain', color: '#93c5fd', context: {}, entities: []
-  }],
+  domains: [
+    {
+      id: 'domain-1',
+      name: 'MigratedDomain',
+      color: '#93c5fd',
+      context: {},
+      entities: []
+    }
+  ],
   relationships: []
 };
 
@@ -103,10 +119,10 @@ function readCanaRecords() {
   });
 }
 
-type CanaRecordsRead = {
+interface CanaRecordsRead {
   keys: string[];
-  state: { domains?: Array<{ name: string }> } | null;
-};
+  state: { domains?: { name: string }[] } | null;
+}
 
 async function canaRecords(page: Page): Promise<CanaRecordsRead> {
   return page.evaluate(readCanaRecords) as Promise<CanaRecordsRead>;
@@ -118,13 +134,24 @@ describe('serviceManagement one-way migration localStorage → Cana (JUM-484)', 
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
   beforeAll(async () => {
     // The SPA resolves `@jumentix/cana` to the vendored bundle; regenerate it
     // so the suite never boots against a stale or absent artifact.
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], {
-      cwd: repoRoot,
-      stdio: 'inherit'
-    });
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-cana-bundle.js'],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit'
+      }
+    );
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
     await waitForServer(server.port);
@@ -142,7 +169,7 @@ describe('serviceManagement one-way migration localStorage → Cana (JUM-484)', 
 
   it('migrates a legacy payload into real IndexedDB with backup, verification, marker and retention', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     await context.addInitScript(
       (data: Record<string, unknown>) => {
         window.localStorage.setItem(data.stateKey as string, JSON.stringify(data.state));
@@ -185,10 +212,12 @@ describe('serviceManagement one-way migration localStorage → Cana (JUM-484)', 
 
     // One-way and terminal: the marker is verified and the source payload is
     // RETAINED in localStorage, unused, as the manual recovery path.
-    const marker = JSON.parse((await page.evaluate(
-      (markerKey) => window.localStorage.getItem(markerKey),
-      MARKER_KEY
-    )) as string);
+    const marker = JSON.parse(
+      (await page.evaluate(
+        (markerKey) => window.localStorage.getItem(markerKey),
+        MARKER_KEY
+      )) as string
+    );
     expect(marker.status).toBe('verified');
     expect(Date.parse(marker.sourceRetainedUntil)).toBeGreaterThan(Date.parse(marker.migratedAt));
     const retained = await page.evaluate(
@@ -227,7 +256,7 @@ describe('serviceManagement one-way migration localStorage → Cana (JUM-484)', 
 
   it('boots clean without a legacy payload: nothing migrates, nothing downloads', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     const consoleErrors: string[] = [];
     page.on('console', (message) => {

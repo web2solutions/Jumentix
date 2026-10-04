@@ -24,14 +24,30 @@ html {
 
 body {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--jtx-page-band) 82%, transparent) 0, transparent 360px),
-    linear-gradient(90deg, color-mix(in srgb, var(--jtx-page-warm) 42%, transparent) 0, transparent 36%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--jtx-page-band) 82%, transparent) 0,
+      transparent 360px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--jtx-page-warm) 42%, transparent) 0,
+      transparent 36%
+    ),
     var(--jtx-page-bg);
 
   @mixin dark {
     background:
-      linear-gradient(180deg, color-mix(in srgb, var(--jtx-page-band) 76%, transparent) 0, transparent 360px),
-      linear-gradient(90deg, color-mix(in srgb, var(--jtx-green-50) 24%, transparent) 0, transparent 40%),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--jtx-page-band) 76%, transparent) 0,
+        transparent 360px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--jtx-green-50) 24%, transparent) 0,
+        transparent 40%
+      ),
       var(--jtx-page-bg);
   }
 }

@@ -1,6 +1,25 @@
-/* eslint-disable no-console, camelcase */
+/* eslint-disable no-console */
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { presenceFromAgent, upsertPresence } from './bus-commands';
+import {
+  deleteAgent,
+  generateSnapshot,
+  getAgent,
+  getStoredAgents,
+  upsertAgent
+} from './firestore-client';
+import {
+  AGENTS_WITHOUT_DECLARED_WORKSPACE,
+  canonicalAgentId,
+  describeProblems,
+  duplicateCanonicalIds,
+  findIntegrityProblems,
+  isAgentStatus,
+  workspacePathProblem
+} from './validation';
+
 import type {
   AgentRecord,
   AgentRegistrySnapshot,
@@ -12,28 +31,8 @@ import type {
   RegisterAgentInput,
   RegistryCommandOptions
 } from './types';
-import {
-  getAgent,
-  upsertAgent,
-  deleteAgent,
-  generateSnapshot,
-  getStoredAgents
-} from './firestore-client';
-import { presenceFromAgent, upsertPresence } from './bus-commands';
-import {
-  AGENTS_WITHOUT_DECLARED_WORKSPACE,
-  canonicalAgentId,
-  describeProblems,
-  duplicateCanonicalIds,
-  findIntegrityProblems,
-  isAgentStatus,
-  workspacePathProblem
-} from './validation';
 
-async function mirrorPresence(
-  agent: AgentRecord,
-  options?: RegistryCommandOptions
-): Promise<void> {
+async function mirrorPresence(agent: AgentRecord, options?: RegistryCommandOptions): Promise<void> {
   if (!options?.rtdb) return;
   await upsertPresence(options.rtdb, presenceFromAgent(agent));
 }
@@ -84,12 +83,12 @@ export async function registerAgent(
   firestore: FirestoreLike,
   input: RegisterAgentInput
 ): Promise<AgentRecord> {
-  const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
-  const existing = await getAgent(firestore, agent_id);
+  const agentId = requireNonEmpty(input.agent_id, 'agent_id');
+  const existing = await getAgent(firestore, agentId);
   const now = nowIso();
 
   const agent: AgentRecord = {
-    agent_id,
+    agent_id: agentId,
     agent_name: requireNonEmpty(input.agent_name, 'agent_name'),
     platform: requireNonEmpty(input.platform, 'platform'),
     machine_id: requireNonEmpty(input.machine_id, 'machine_id'),
@@ -106,11 +105,11 @@ export async function registerAgent(
     dev_ref_checked: existing?.dev_ref_checked || '',
     active_epic: existing?.active_epic || 'none',
     assigned_task: existing?.assigned_task || 'none',
-    capabilities: input.capabilities || existing?.capabilities || buildDefaultCapabilities()
+    capabilities: input.capabilities ?? existing?.capabilities ?? buildDefaultCapabilities()
   };
 
   await upsertAgent(firestore, agent);
-  console.log(`[agent-registry] registered ${agent_id} (status=${agent.status})`);
+  console.log(`[agent-registry] registered ${agentId} (status=${agent.status})`);
   return agent;
 }
 
@@ -119,10 +118,10 @@ export async function heartbeat(
   input: HeartbeatInput,
   options?: RegistryCommandOptions
 ): Promise<AgentRecord> {
-  const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
-  const existing = await getAgent(firestore, agent_id);
+  const agentId = requireNonEmpty(input.agent_id, 'agent_id');
+  const existing = await getAgent(firestore, agentId);
   if (!existing) {
-    throw new Error(`Agent "${agent_id}" is not registered. Run agent-registry:register first.`);
+    throw new Error(`Agent "${agentId}" is not registered. Run agent-registry:register first.`);
   }
 
   const now = nowIso();
@@ -137,7 +136,7 @@ export async function heartbeat(
 
   await upsertAgent(firestore, agent);
   await mirrorPresence(agent, options);
-  console.log(`[agent-registry] heartbeat ${agent_id} (status=${agent.status})`);
+  console.log(`[agent-registry] heartbeat ${agentId} (status=${agent.status})`);
   return agent;
 }
 
@@ -146,10 +145,10 @@ export async function assignTask(
   input: AssignTaskInput,
   options?: RegistryCommandOptions
 ): Promise<AgentRecord> {
-  const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
-  const existing = await getAgent(firestore, agent_id);
+  const agentId = requireNonEmpty(input.agent_id, 'agent_id');
+  const existing = await getAgent(firestore, agentId);
   if (!existing) {
-    throw new Error(`Agent "${agent_id}" is not registered. Run agent-registry:register first.`);
+    throw new Error(`Agent "${agentId}" is not registered. Run agent-registry:register first.`);
   }
 
   const agent: AgentRecord = {
@@ -162,7 +161,7 @@ export async function assignTask(
 
   await upsertAgent(firestore, agent);
   await mirrorPresence(agent, options);
-  console.log(`[agent-registry] assigned ${agent_id} to ${input.assigned_task}`);
+  console.log(`[agent-registry] assigned ${agentId} to ${input.assigned_task}`);
   return agent;
 }
 
@@ -171,10 +170,10 @@ export async function completeTask(
   input: CompleteTaskInput,
   options?: RegistryCommandOptions
 ): Promise<AgentRecord> {
-  const agent_id = requireNonEmpty(input.agent_id, 'agent_id');
-  const existing = await getAgent(firestore, agent_id);
+  const agentId = requireNonEmpty(input.agent_id, 'agent_id');
+  const existing = await getAgent(firestore, agentId);
   if (!existing) {
-    throw new Error(`Agent "${agent_id}" is not registered. Run agent-registry:register first.`);
+    throw new Error(`Agent "${agentId}" is not registered. Run agent-registry:register first.`);
   }
 
   const status: AgentStatus = input.status || 'available';
@@ -188,7 +187,7 @@ export async function completeTask(
 
   await upsertAgent(firestore, agent);
   await mirrorPresence(agent, options);
-  console.log(`[agent-registry] completed task for ${agent_id} (status=${status})`);
+  console.log(`[agent-registry] completed task for ${agentId} (status=${status})`);
   return agent;
 }
 
@@ -258,12 +257,12 @@ export async function repairRegistry(
   const actions: RepairAction[] = [];
 
   for (const entry of stored.filter((candidate) => candidate.problems.length > 0)) {
-    const canonicalId = canonicalAgentId(entry.record.agent_id)
-      || canonicalAgentId(entry.documentId);
+    const canonicalId =
+      canonicalAgentId(entry.record.agent_id) || canonicalAgentId(entry.documentId);
     if (!canonicalId) {
       throw new Error(
-        `Document "${entry.documentId}" has no recoverable agent id. `
-        + 'Repair it by hand rather than guessing at an identity.'
+        `Document "${entry.documentId}" has no recoverable agent id. ` +
+          'Repair it by hand rather than guessing at an identity.'
       );
     }
 
@@ -284,8 +283,8 @@ export async function repairRegistry(
     // is not something to guess at.
     if (!isAgentStatus(cleaned.status)) {
       throw new Error(
-        `Document "${entry.documentId}" holds an unrecognised status "${String(cleaned.status)}". `
-        + 'Set it by hand rather than guessing at it.'
+        `Document "${entry.documentId}" holds an unrecognised status "${String(cleaned.status)}". ` +
+          'Set it by hand rather than guessing at it.'
       );
     }
 
@@ -303,9 +302,9 @@ export async function repairRegistry(
     const problems = findIntegrityProblems(record, { honourExemptions: true });
     if (problems.length > 0) {
       throw new Error(
-        `Repairing "${entry.documentId}" does not produce a valid record:\n`
-        + `${describeProblems(problems)}\n`
-        + 'Fix it by hand rather than writing it back broken.'
+        `Repairing "${entry.documentId}" does not produce a valid record:\n` +
+          `${describeProblems(problems)}\n` +
+          'Fix it by hand rather than writing it back broken.'
       );
     }
 
@@ -354,15 +353,17 @@ export async function syncSnapshot(firestore: FirestoreLike): Promise<AgentRegis
     fs.mkdirSync(dir, { recursive: true });
   }
   fs.writeFileSync(snapshotPath(), `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
-  console.log(`[agent-registry] snapshot written to ${snapshotPath()} (${snapshot.agents.length} agents)`);
+  console.log(
+    `[agent-registry] snapshot written to ${snapshotPath()} (${snapshot.agents.length} agents)`
+  );
   return snapshot;
 }
 
 export async function checkSnapshot(firestore: FirestoreLike): Promise<void> {
   if (!fs.existsSync(snapshotPath())) {
     throw new Error(
-      `Local agent registry snapshot not found: ${snapshotPath()}\n`
-      + 'Run: bun run agent-registry:sync'
+      `Local agent registry snapshot not found: ${snapshotPath()}\n` +
+        'Run: bun run agent-registry:sync'
     );
   }
 
@@ -373,21 +374,21 @@ export async function checkSnapshot(firestore: FirestoreLike): Promise<void> {
   // `agent_id`, so a corrupt document and its clean twin were two unrelated
   // keys that both matched — the gate reported success over ten broken
   // records. Comparing sides is only meaningful once each side is sound.
-  const corrupt = remote.agents.flatMap(
-    (agent) => findIntegrityProblems(agent, { honourExemptions: true })
+  const corrupt = remote.agents.flatMap((agent) =>
+    findIntegrityProblems(agent, { honourExemptions: true })
   );
   if (corrupt.length > 0) {
     throw new Error(
-      `Firestore holds ${corrupt.length} integrity problem(s):\n${describeProblems(corrupt)}\n`
-      + 'Run: bun run agent-registry:repair'
+      `Firestore holds ${corrupt.length} integrity problem(s):\n${describeProblems(corrupt)}\n` +
+        'Run: bun run agent-registry:repair'
     );
   }
 
   const duplicates = duplicateCanonicalIds(remote.agents.map((agent) => agent.agent_id));
   if (duplicates.length > 0) {
     throw new Error(
-      `Firestore holds more than one document per agent: ${duplicates.join(', ')}\n`
-      + 'Run: bun run agent-registry:repair'
+      `Firestore holds more than one document per agent: ${duplicates.join(', ')}\n` +
+        'Run: bun run agent-registry:repair'
     );
   }
 
@@ -408,11 +409,11 @@ export async function checkSnapshot(firestore: FirestoreLike): Promise<void> {
 
   if (spent.length > 0) {
     throw new Error(
-      `${spent.length} agent(s) have declared a workspace but are still exempt: `
-      + `${spent.join(', ')}\n`
-      + 'Remove them from AGENTS_WITHOUT_DECLARED_WORKSPACE in '
-      + 'packages/agent-registry/src/validation.ts — an exemption that outlives '
-      + 'its reason is a permanently lowered bar.'
+      `${spent.length} agent(s) have declared a workspace but are still exempt: ` +
+        `${spent.join(', ')}\n` +
+        'Remove them from AGENTS_WITHOUT_DECLARED_WORKSPACE in ' +
+        'packages/agent-registry/src/validation.ts — an exemption that outlives ' +
+        'its reason is a permanently lowered bar.'
     );
   }
 
@@ -440,7 +441,8 @@ export async function checkSnapshot(firestore: FirestoreLike): Promise<void> {
   if (missingInLocal.length > 0 || missingInRemote.length > 0 || staleAgents.length > 0) {
     const parts: string[] = ['Agent registry snapshot is out of sync with Firestore.'];
     if (missingInLocal.length > 0) parts.push(`Missing in local: ${missingInLocal.join(', ')}`);
-    if (missingInRemote.length > 0) parts.push(`Missing in Firestore: ${missingInRemote.join(', ')}`);
+    if (missingInRemote.length > 0)
+      parts.push(`Missing in Firestore: ${missingInRemote.join(', ')}`);
     if (staleAgents.length > 0) parts.push(`Stale agents: ${staleAgents.join(', ')}`);
     parts.push('Run: bun run agent-registry:sync');
     throw new Error(parts.join('\n'));

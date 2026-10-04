@@ -2,12 +2,12 @@
 
 import { DocsPlayground } from '../docs-playground/DocsPlayground';
 
-export type CanaPlaygroundProps = {
+export interface CanaPlaygroundProps {
   id?: string;
   code?: string;
-};
+}
 
 /** Backward-compatible alias for DocsPlayground runtime="cana". */
-export function CanaPlayground({ id = 'getting-started', code }: CanaPlaygroundProps) {
-  return <DocsPlayground runtime="cana" id={id} code={code} />;
-}
+export const CanaPlayground = ({ id = 'getting-started', code }: CanaPlaygroundProps) => (
+  <DocsPlayground code={code} id={id} runtime="cana" />
+);

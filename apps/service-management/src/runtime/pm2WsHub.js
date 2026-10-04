@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const { WebSocketServer } = require('ws');
 
 const DEFAULT_INTERVAL_MS = 1000;
@@ -14,14 +13,14 @@ function clampInterval(value) {
 function parseMessage(raw) {
   try {
     return JSON.parse(String(raw || '{}'));
-  } catch (_error) {
+  } catch {
     return null;
   }
 }
 
 function createPm2WsHub(httpServer, options = {}) {
-  const collectMetrics = options.collectMetrics;
-  const runAction = options.runAction;
+  const { collectMetrics } = options;
+  const { runAction } = options;
   const isAuthorized = options.isAuthorized || (() => true);
   const pathName = options.pathName || '/api/runtime/pm2-ws';
 
@@ -88,7 +87,8 @@ function createPm2WsHub(httpServer, options = {}) {
       }
       if (message.type === 'subscribe') {
         client.environment = String(message.environment || 'dev');
-        client.filters = message.filters && typeof message.filters === 'object' ? message.filters : {};
+        client.filters =
+          message.filters && typeof message.filters === 'object' ? message.filters : {};
         client.intervalMs = clampInterval(message.intervalMs);
         schedule(client);
         await pushMetrics(client);
@@ -149,7 +149,11 @@ function createPm2WsHub(httpServer, options = {}) {
     close() {
       for (const client of clients) {
         if (client.timer) clearInterval(client.timer);
-        try { client.ws.close(); } catch (_error) { /* ignore */ }
+        try {
+          client.ws.close();
+        } catch {
+          /* ignore */
+        }
       }
       clients.clear();
       wss.close();
@@ -158,9 +162,9 @@ function createPm2WsHub(httpServer, options = {}) {
 }
 
 module.exports = {
-  DEFAULT_INTERVAL_MS,
-  MIN_INTERVAL_MS,
-  MAX_INTERVAL_MS,
   clampInterval,
-  createPm2WsHub
+  createPm2WsHub,
+  DEFAULT_INTERVAL_MS,
+  MAX_INTERVAL_MS,
+  MIN_INTERVAL_MS
 };

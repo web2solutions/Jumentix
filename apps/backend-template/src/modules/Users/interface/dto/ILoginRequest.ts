@@ -1,4 +1,4 @@
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
+import type EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
 
 export interface ILoginRequest {
   username: string;

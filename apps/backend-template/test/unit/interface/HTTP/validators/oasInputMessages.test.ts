@@ -1,4 +1,5 @@
 import throwIfOASInputValidationFails from '@src/interface/HTTP/validators/throwIfOASInputValidationFails';
+
 import type { OpenAPIV3 } from 'openapi-types';
 
 /**
@@ -66,9 +67,13 @@ describe('openAPI input validation messages (JUM-681)', () => {
   it('accepts a payload that satisfies the schema', () => {
     expect.hasAssertions();
 
-    expect(throwIfOASInputValidationFails(spec, endPoint('createUser'), {
-      username: 'alice', password: 'longenough', role: 'admin'
-    })).toBe(true);
+    expect(
+      throwIfOASInputValidationFails(spec, endPoint('createUser'), {
+        username: 'alice',
+        password: 'longenough',
+        role: 'admin'
+      })
+    ).toBe(true);
   });
 
   it('rewrites an empty required string as "can not be empty"', () => {
@@ -82,8 +87,9 @@ describe('openAPI input validation messages (JUM-681)', () => {
   it('rewrites an empty enum value the same way', () => {
     expect.hasAssertions();
 
-    expect(reject({ username: 'alice', password: 'longenough', role: '' }))
-      .toBe('role can not be empty');
+    expect(reject({ username: 'alice', password: 'longenough', role: '' })).toBe(
+      'role can not be empty'
+    );
   });
 
   it('names the minimum length for an empty password on any other operation', () => {
@@ -91,8 +97,9 @@ describe('openAPI input validation messages (JUM-681)', () => {
 
     // On a create, an empty password is a password that is too short, and the
     // caller needs the number.
-    expect(reject({ username: 'alice', password: '' }, 'createUser'))
-      .toBe('password must have at least 8 chars.');
+    expect(reject({ username: 'alice', password: '' }, 'createUser')).toBe(
+      'password must have at least 8 chars.'
+    );
   });
 
   it('says the password is empty rather than short when it is being changed', () => {
@@ -101,15 +108,17 @@ describe('openAPI input validation messages (JUM-681)', () => {
     // `updatePassword` with an empty field means the new password was not
     // typed; telling that caller about a minimum length answers a question they
     // did not ask.
-    expect(reject({ username: 'alice', password: '' }, 'updatePassword'))
-      .toBe('password can not be empty');
+    expect(reject({ username: 'alice', password: '' }, 'updatePassword')).toBe(
+      'password can not be empty'
+    );
   });
 
   it('names the minimum length for a password that is present and short', () => {
     expect.hasAssertions();
 
-    expect(reject({ username: 'alice', password: 'short' }, 'updatePassword'))
-      .toBe('password must have at least 8 chars.');
+    expect(reject({ username: 'alice', password: 'short' }, 'updatePassword')).toBe(
+      'password must have at least 8 chars.'
+    );
   });
 
   it('passes a message through when it names no field of the payload', () => {
@@ -126,24 +135,26 @@ describe('openAPI input validation messages (JUM-681)', () => {
   it('accepts a body it was not given when the schema does not require one', () => {
     expect.hasAssertions();
 
-    expect(throwIfOASInputValidationFails(spec, endPoint('createUser', false), undefined))
-      .toBe(true);
-    expect(throwIfOASInputValidationFails(spec, endPoint('createUser', false), null))
-      .toBe(true);
+    expect(throwIfOASInputValidationFails(spec, endPoint('createUser', false), undefined)).toBe(
+      true
+    );
+    expect(throwIfOASInputValidationFails(spec, endPoint('createUser', false), null)).toBe(true);
   });
 
   it('refuses a missing body the schema does require', () => {
     expect.hasAssertions();
 
-    expect(() => throwIfOASInputValidationFails(spec, endPoint('createUser'), undefined))
-      .toThrow('Request body is required by OpenAPI schema.');
+    expect(() => throwIfOASInputValidationFails(spec, endPoint('createUser'), undefined)).toThrow(
+      'Request body is required by OpenAPI schema.'
+    );
   });
 
   it('accepts any payload for an endpoint that declares no body at all', () => {
     expect.hasAssertions();
 
-    expect(throwIfOASInputValidationFails(spec, { operationId: 'listUsers' }, { anything: true }))
-      .toBe(true);
+    expect(
+      throwIfOASInputValidationFails(spec, { operationId: 'listUsers' }, { anything: true })
+    ).toBe(true);
   });
 
   it('ignores the server-managed properties a client echoed back', () => {
@@ -151,12 +162,14 @@ describe('openAPI input validation messages (JUM-681)', () => {
 
     // `createdAt`, `updatedAt` and `deletedAt` are not in the contract's input,
     // and a client that round-trips a record it read must not be refused.
-    expect(throwIfOASInputValidationFails(spec, endPoint('createUser'), {
-      username: 'alice',
-      password: 'longenough',
-      createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-01-01T00:00:00.000Z',
-      deletedAt: null
-    })).toBe(true);
+    expect(
+      throwIfOASInputValidationFails(spec, endPoint('createUser'), {
+        username: 'alice',
+        password: 'longenough',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+        deletedAt: null
+      })
+    ).toBe(true);
   });
 });

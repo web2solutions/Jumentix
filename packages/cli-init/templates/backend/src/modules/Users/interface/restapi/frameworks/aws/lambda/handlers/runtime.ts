@@ -1,21 +1,23 @@
-import fs from 'fs';
-import path from 'path';
-import { OpenAPIV3 } from 'openapi-types';
-import YAML from 'yaml';
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { v4 } from 'uuid';
-import type { APIGatewayProxyEvent } from 'aws-lambda';
+import YAML from 'yaml';
 
 import { Context } from '@src/infra/context/Context';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import JwtService from '@src/infra/jwt/JwtService';
+import compileMessageMediator from '@src/infra/messages/compileMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
 import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
-import { composeUsersAuthServices } from '@src/modules/Users/composition/composeUsersAuthServices';
-import { UserController } from '@src/modules/Users/adapters/in/http/controllers/UserController';
-import { AuthController } from '@src/modules/Users/adapters/in/http/controllers/AuthController';
-import { OrganizationController } from '@src/modules/Users/adapters/in/http/controllers/OrganizationController';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import AuthController from '@src/modules/Users/adapters/in/http/controllers/AuthController';
+import OrganizationController from '@src/modules/Users/adapters/in/http/controllers/OrganizationController';
+import UserController from '@src/modules/Users/adapters/in/http/controllers/UserController';
+import composeUsersAuthServices from '@src/modules/Users/composition/composeUsersAuthServices';
+
+import type { APIGatewayProxyEvent } from 'aws-lambda';
+import type { OpenAPIV3 } from 'openapi-types';
 
 const OasFilePath = path.resolve('./spec/1.0.0.yml');
 const OasYmlfile = fs.readFileSync(path.resolve(OasFilePath), 'utf8');
@@ -28,12 +30,7 @@ const keyValueStorageClient = InMemoryKeyValueStorageClient.compile();
 const mutexService = MutexService.compile(keyValueStorageClient);
 const messageMediator = compileMessageMediator();
 
-const {
-  authService,
-  userUseCases,
-  organizationUseCases,
-  authUseCases
-} = composeUsersAuthServices({
+const { authService, userUseCases, organizationUseCases, authUseCases } = composeUsersAuthServices({
   databaseClient,
   passwordCryptoService,
   mutexService,

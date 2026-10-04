@@ -1,13 +1,23 @@
-const fs = require('fs');
-const path = require('path');
-const { outwardClosure, readTestMap, suitesForLayers, isQuarantined } = require('./test-map');
+const fs = require('node:fs');
+const path = require('node:path');
 
-const IMPORT_RE = /(?:import|export)\s+(?:type\s+)?(?:[^'"\n]+from\s+)?['"]([^'"]+)['"]|require\(\s*['"]([^'"]+)['"]\s*\)/g;
+const { isQuarantined, outwardClosure, readTestMap, suitesForLayers } = require('./test-map');
+
+const IMPORT_RE =
+  /(?:import|export)\s+(?:type\s+)?(?:[^'"\n]+from\s+)?['"]([^'"]+)['"]|require\(\s*['"]([^'"]+)['"]\s*\)/g;
 
 function normalizeFiles(files) {
-  return [...new Set((files || [])
-    .map((file) => String(file || '').trim().replace(/\\/g, '/'))
-    .filter(Boolean))];
+  return [
+    ...new Set(
+      (files || [])
+        .map((file) =>
+          String(file || '')
+            .trim()
+            .replace(/\\/g, '/')
+        )
+        .filter(Boolean)
+    )
+  ];
 }
 
 function matchGlob(filePath, globPattern) {
@@ -40,21 +50,6 @@ function extractSpecifiers(sourceText) {
   return specs;
 }
 
-function resolveSpecifier(fromFile, specifier, aliases, root) {
-  if (!specifier) return null;
-  if (specifier.startsWith('.')) {
-    const base = path.posix.join(path.posix.dirname(fromFile), specifier);
-    return resolveExisting(base, root);
-  }
-  const aliased = resolveAlias(specifier, aliases);
-  if (aliased) return resolveExisting(aliased, root);
-  if (specifier.startsWith('@jumentix/')) {
-    const pkg = specifier.replace('@jumentix/', '').split('/')[0];
-    return resolveExisting(`packages/${pkg}/src`, root);
-  }
-  return null;
-}
-
 function resolveExisting(candidate, root) {
   const abs = path.join(root, candidate);
   const tries = [
@@ -71,6 +66,36 @@ function resolveExisting(candidate, root) {
   }
   if (fs.existsSync(abs)) return candidate.replace(/\\/g, '/');
   return candidate.replace(/\\/g, '/');
+}
+
+function resolveSpecifier(fromFile, specifier, aliases, root) {
+  if (!specifier) return null;
+  if (specifier.startsWith('.')) {
+    const base = path.posix.join(path.posix.dirname(fromFile), specifier);
+    return resolveExisting(base, root);
+  }
+  const aliased = resolveAlias(specifier, aliases);
+  if (aliased) return resolveExisting(aliased, root);
+  if (specifier.startsWith('@jumentix/')) {
+    const pkg = specifier.replace('@jumentix/', '').split('/')[0];
+    return resolveExisting(`packages/${pkg}/src`, root);
+  }
+  return null;
+}
+
+function collectSourceFiles(dir, root, out) {
+  if (!fs.existsSync(dir)) return;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, ent.name);
+    if (ent.isDirectory()) {
+      if (['node_modules', 'dist', '.build', 'coverage'].includes(ent.name)) continue;
+      collectSourceFiles(abs, root, out);
+      continue;
+    }
+    if (/\.[cm]?[jt]sx?$/.test(ent.name)) {
+      out.push(path.relative(root, abs).replace(/\\/g, '/'));
+    }
+  }
 }
 
 function buildDependencyGraph(manifest, options = {}) {
@@ -101,21 +126,6 @@ function buildDependencyGraph(manifest, options = {}) {
   return graph;
 }
 
-function collectSourceFiles(dir, root, out) {
-  if (!fs.existsSync(dir)) return;
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    const abs = path.join(dir, ent.name);
-    if (ent.isDirectory()) {
-      if (['node_modules', 'dist', '.build', 'coverage'].includes(ent.name)) continue;
-      collectSourceFiles(abs, root, out);
-      continue;
-    }
-    if (/\.[cm]?[jt]sx?$/.test(ent.name)) {
-      out.push(path.relative(root, abs).replace(/\\/g, '/'));
-    }
-  }
-}
-
 /** Docs under a source tree must not select that layer (GUI README placeholders). */
 const SOURCE_GLOB_SKIP = /\.(md|mdx|txt)$/i;
 
@@ -139,41 +149,56 @@ function layersForFile(manifest, filePath) {
   const exactSuite = (manifest.suites || []).find((suite) => suite.path === filePath);
   if (exactSuite) matched.add(exactSuite.layer);
 
-  if (filePath.startsWith('ci-cd/')
-    || filePath.startsWith('tooling/')
-    || filePath.startsWith('apps/jumentix-website/')
-    || filePath.startsWith('.github/')
-    || filePath.startsWith('.circleci/')) {
+  if (
+    filePath.startsWith('ci-cd/') ||
+    filePath.startsWith('tooling/') ||
+    filePath.startsWith('apps/jumentix-website/') ||
+    filePath.startsWith('.github/') ||
+    filePath.startsWith('.circleci/')
+  ) {
     matched.add('tooling');
   }
   // Root toolchain pins (lockfile, package manifests, version pins) gate the
   // same toolchain evidence as ci-cd/ changes — a bun.lock-only change must
   // not fall through to unsupported-change-set.
-  if (filePath === 'bun.lock' || filePath === 'package.json' || filePath === '.bun-version'
-    || filePath === '.gitignore') {
+  if (
+    filePath === 'bun.lock' ||
+    filePath === 'package.json' ||
+    filePath === '.bun-version' ||
+    filePath === '.gitignore'
+  ) {
     matched.add('tooling');
   }
   // The CLI's packaged templates are data its tooling-layer suites (template
   // freshness, generation) read from disk, never imports — so no dependency
   // edge reaches them and a templates-only change was `unsupported-change-set`
   // (JUM-904).
-  if (filePath.startsWith('packages/cli-init/templates/')
-    || filePath === 'packages/cli-init/templates.manifest.json') {
+  if (
+    filePath.startsWith('packages/cli-init/templates/') ||
+    filePath === 'packages/cli-init/templates.manifest.json'
+  ) {
     matched.add('tooling');
   }
-  if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/domain/')) matched.add('domain');
-  if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/application/')
-    || filePath.startsWith('apps/backend-template/test/unit/modules/Users/composition/')
-    || filePath === 'apps/backend-template/test/unit/modules/Users/factories.test.ts'
-    || filePath === 'apps/backend-template/test/unit/modules/Users/index.exports.test.ts') {
+  if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/domain/'))
+    matched.add('domain');
+  if (
+    filePath.startsWith('apps/backend-template/test/unit/modules/Users/application/') ||
+    filePath.startsWith('apps/backend-template/test/unit/modules/Users/composition/') ||
+    filePath === 'apps/backend-template/test/unit/modules/Users/factories.test.ts' ||
+    filePath === 'apps/backend-template/test/unit/modules/Users/index.exports.test.ts'
+  ) {
     matched.add('application');
   }
-  if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/adapters/in/')) matched.add('adapters/in');
-  if (filePath.startsWith('apps/backend-template/test/unit/infra/')
-    || filePath.startsWith('apps/backend-template/test/unit/modules/Users/adapters/out/')) {
+  if (filePath.startsWith('apps/backend-template/test/unit/modules/Users/adapters/in/'))
+    matched.add('adapters/in');
+  if (
+    filePath.startsWith('apps/backend-template/test/unit/infra/') ||
+    filePath.startsWith('apps/backend-template/test/unit/modules/Users/adapters/out/')
+  ) {
     matched.add('adapters/out+infra');
   }
-  if (filePath.startsWith('apps/backend-template/test/unit/interface/')) matched.add('interface/runtime');
+  if (filePath.startsWith('apps/backend-template/test/unit/interface/'))
+    matched.add('interface/runtime');
   if (filePath.startsWith('apps/backend-template/test/integration/')) {
     const suite = (manifest.suites || []).find((item) => item.path === filePath);
     if (suite) matched.add(suite.layer);
@@ -202,6 +227,11 @@ function expandThroughGraph(seedFiles, graph) {
     }
   }
   return [...out];
+}
+
+function layerNamesNotSelected(manifest, selectedLayers) {
+  const selected = new Set(selectedLayers);
+  return Object.keys(manifest.layers || {}).filter((layer) => !selected.has(layer));
 }
 
 function createLayerAwarePlan(changedFiles, options = {}) {
@@ -245,8 +275,9 @@ function createLayerAwarePlan(changedFiles, options = {}) {
   }
 
   const allowNightly = Boolean(options.allowNightly);
-  const suites = suitesForLayers(manifest, selectedLayers, { allowNightly })
-    .filter((suite) => !isQuarantined(manifest, suite.path));
+  const suites = suitesForLayers(manifest, selectedLayers, { allowNightly }).filter(
+    (suite) => !isQuarantined(manifest, suite.path)
+  );
 
   const unitSuites = suites.filter((suite) => suite.type === 'unit');
   // Contract suites (JUM-440: `oas:check-routes`, `serverless:check-handlers`)
@@ -254,14 +285,23 @@ function createLayerAwarePlan(changedFiles, options = {}) {
   // planned but not executed here, they made the evidence validation report
   // its own planned suites as unrun whenever a change selected the contracts
   // layer (first hit by JUM-474 editing `ci-cd/check-oas-route-resolution.js`).
-  const integrationScripts = [...new Set(
-    suites
-      .filter((suite) => (suite.type === 'integration' || suite.type === 'contract') && suite.script)
-      .map((suite) => suite.script)
-  )];
+  const integrationScripts = [
+    ...new Set(
+      suites
+        .filter(
+          (suite) => (suite.type === 'integration' || suite.type === 'contract') && suite.script
+        )
+        .map((suite) => suite.script)
+    )
+  ];
 
-  const documentationOnly = files.length > 0
-    && files.every((file) => /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i.test(file));
+  const documentationOnly =
+    files.length > 0 &&
+    files.every((file) =>
+      /(^|\/)(documentation\/|\.agents\/)|(^|\/)(README|CHANGELOG|CLAUDE|GROK|AGENTS)(\.[^/]*)?\.md$|\.md$/i.test(
+        file
+      )
+    );
 
   if (documentationOnly) {
     return {
@@ -300,11 +340,6 @@ function createLayerAwarePlan(changedFiles, options = {}) {
     integrationScripts,
     suites
   };
-}
-
-function layerNamesNotSelected(manifest, selectedLayers) {
-  const selected = new Set(selectedLayers);
-  return Object.keys(manifest.layers || {}).filter((layer) => !selected.has(layer));
 }
 
 module.exports = {

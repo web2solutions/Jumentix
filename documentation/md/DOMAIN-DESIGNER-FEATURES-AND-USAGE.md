@@ -71,7 +71,7 @@ How to use:
 
 1. Select a domain.
 2. Fill values in `Bounded Context`.
-  3. Click `Save Context`.
+3. Click `Save Context`.
 
 These fields are persisted in the designer state and exported through JSON/package flows.
 
@@ -315,7 +315,7 @@ reaches a fixed point with an empty model-level loss list (asserted by
 - `x-field-flags: { pk, fk, unique }` carries a field's flags only when they
   diverge from the importer's name heuristic (`id` → PK/unique, `*Id` → FK).
 - `x-relations` rows carry `{ name, fromSchema, toSchema, fromCardinality,
-  toCardinality }` — schema names, not model ids — and the importer restores
+toCardinality }` — schema names, not model ids — and the importer restores
   relationships re-keyed to the recomputed entity ids, dropping rows whose
   endpoints did not import.
 - Foreign documents without designer markers (the canonical

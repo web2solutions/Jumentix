@@ -12,34 +12,34 @@
  *    using CHANGELOG_GH_TOKEN from the `secrets` Environment (same as
  *    sync-changelog / Req 113 always-on exception).
  */
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
-const { gitBinary } = require('./lib/git-binary.js');
-const { ghBinary } = require('./lib/gh-binary.js');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const { GENERATED_CHANGELOG_SYNC_BODY_PREFIX } = require('./check-pr-governance.js');
+const { createGithubRelease } = require('./create-github-release.js');
 const { isEntryPoint } = require('./lib/entry-point.js');
-const {
-  APP_TAG_RE,
-  resolveNextVersionFromRepo
-} = require('./lib/next-version.js');
+const { ghBinary } = require('./lib/gh-binary.js');
+const { gitBinary } = require('./lib/git-binary.js');
 const {
   createAnnotatedTagRef,
   createSignedCommitOnBranchWithGh,
   resolveRepository,
   resolveToken
 } = require('./lib/github-signed-commit.js');
-const { createGithubRelease } = require('./create-github-release.js');
-const {
-  GENERATED_CHANGELOG_SYNC_BODY_PREFIX
-} = require('./check-pr-governance.js');
+const { APP_TAG_RE, resolveNextVersionFromRepo } = require('./lib/next-version.js');
 
 function runGit(args, options = {}) {
   try {
     return execFileSync(gitBinary(), args, {
       encoding: 'utf8',
-      stdio: options.inherit ? 'inherit' : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
+      stdio: options.inherit
+        ? 'inherit'
+        : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
       cwd: options.cwd
-    }).toString().trim();
+    })
+      .toString()
+      .trim();
   } catch (error) {
     if (options.allowFailure) return '';
     throw error;
@@ -49,9 +49,7 @@ function runGit(args, options = {}) {
 function runGh(args, options = {}) {
   const token = resolveToken(options.env || process.env);
   if (!token) {
-    throw new Error(
-      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN (fail closed).'
-    );
+    throw new Error('Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN (fail closed).');
   }
   try {
     const stdout = execFileSync(ghBinary(), args, {
@@ -92,7 +90,8 @@ function writeJson(filePath, value) {
 function listAppPackageJsons(rootDir) {
   const appsDir = path.join(rootDir, 'apps');
   if (!fs.existsSync(appsDir)) return [];
-  return fs.readdirSync(appsDir)
+  return fs
+    .readdirSync(appsDir)
     .map((name) => path.join(appsDir, name, 'package.json'))
     .filter((filePath) => fs.existsSync(filePath));
 }
@@ -100,11 +99,14 @@ function listAppPackageJsons(rootDir) {
 function headHasAppTag(rootDir) {
   const head = runGit(['rev-parse', 'HEAD'], { cwd: rootDir });
   // Peel annotated tags to the commit SHA (*objectname); fall back to lightweight.
-  const output = runGit([
-    'for-each-ref',
-    '--format=%(refname:short)%09%(if)%(*objectname)%(then)%(*objectname)%(else)%(objectname)%(end)',
-    'refs/tags'
-  ], { allowFailure: true, cwd: rootDir });
+  const output = runGit(
+    [
+      'for-each-ref',
+      '--format=%(refname:short)%09%(if)%(*objectname)%(then)%(*objectname)%(else)%(objectname)%(end)',
+      'refs/tags'
+    ],
+    { allowFailure: true, cwd: rootDir }
+  );
   if (!output) return null;
   for (const line of output.split('\n')) {
     const [name, sha] = line.split('\t');
@@ -137,6 +139,24 @@ function applyLockedVersion(rootDir, version) {
     policy: 'release-policy.json',
     apps: updatedApps
   };
+}
+
+function resolveBunBinary(options = {}) {
+  const execPath = options.execPath || process.execPath;
+  const exists = options.exists || fs.existsSync;
+  if (String(execPath).includes('bun')) return execPath;
+  for (const candidate of ['/usr/local/bin/bun', '/opt/homebrew/bin/bun', '/usr/bin/bun']) {
+    if (exists(candidate)) return candidate;
+  }
+  throw new Error(
+    'Could not find bun at process.execPath or a fixed system location. ' +
+      'Run under bun, or install bun to /usr/local/bin/bun.'
+  );
+}
+
+function resetWorktree(rootDir) {
+  runGit(['reset', '--hard', 'HEAD'], { cwd: rootDir, allowFailure: true });
+  runGit(['clean', '-fd'], { cwd: rootDir, allowFailure: true });
 }
 
 /**
@@ -187,9 +207,7 @@ function buildLockedVersionAdditions(rootDir, version) {
   const freshnessFailures = validateTemplateFreshness(rootDir);
   if (freshnessFailures.length > 0) {
     resetWorktree(rootDir);
-    throw new Error(
-      `CLI templates stale after release rebuild:\n${freshnessFailures.join('\n')}`
-    );
+    throw new Error(`CLI templates stale after release rebuild:\n${freshnessFailures.join('\n')}`);
   }
   const templates = listCliTemplateReleasePaths(rootDir);
   const relativePaths = [files.rootPackage, files.policy, ...files.apps, ...templates];
@@ -204,11 +222,6 @@ function buildLockedVersionAdditions(rootDir, version) {
     additions,
     relativePaths
   };
-}
-
-function resetWorktree(rootDir) {
-  runGit(['reset', '--hard', 'HEAD'], { cwd: rootDir, allowFailure: true });
-  runGit(['clean', '-fd'], { cwd: rootDir, allowFailure: true });
 }
 
 function checkoutMainClean(rootDir) {
@@ -226,10 +239,7 @@ function remoteTagExists(repository, tag, options = {}) {
     return Boolean(sha);
   }
   const invoke = options.runGh || runGh;
-  const raw = invoke([
-    'api',
-    `repos/${repository}/git/ref/tags/${tag}`
-  ], {
+  const raw = invoke(['api', `repos/${repository}/git/ref/tags/${tag}`], {
     env,
     cwd: options.cwd,
     allowFailure: true
@@ -237,29 +247,29 @@ function remoteTagExists(repository, tag, options = {}) {
   return Boolean(raw && raw.trim());
 }
 
-function ensureBranchAtSha({
-  repository,
-  branch,
-  sha,
-  env,
-  cwd,
-  runGh: invoke = runGh
-}) {
-  const created = invoke([
-    'api', '-X', 'POST', `repos/${repository}/git/refs`,
-    '-f', `ref=refs/heads/${branch}`,
-    '-f', `sha=${sha}`
-  ], { env, cwd, allowFailure: true });
+function ensureBranchAtSha({ repository, branch, sha, env, cwd, runGh: invoke = runGh }) {
+  const created = invoke(
+    [
+      'api',
+      '-X',
+      'POST',
+      `repos/${repository}/git/refs`,
+      '-f',
+      `ref=refs/heads/${branch}`,
+      '-f',
+      `sha=${sha}`
+    ],
+    { env, cwd, allowFailure: true }
+  );
   if (created) return { created: true, sha };
 
-  const existingRaw = invoke([
-    'api',
-    `repos/${repository}/git/ref/heads/${branch}`
-  ], { env, cwd, allowFailure: true });
+  const existingRaw = invoke(['api', `repos/${repository}/git/ref/heads/${branch}`], {
+    env,
+    cwd,
+    allowFailure: true
+  });
   if (!existingRaw) {
-    throw new Error(
-      `Could not create or read refs/heads/${branch} at ${sha}`
-    );
+    throw new Error(`Could not create or read refs/heads/${branch} at ${sha}`);
   }
   const existing = JSON.parse(existingRaw);
   const tip = existing && existing.object ? existing.object.sha : '';
@@ -270,11 +280,19 @@ function ensureBranchAtSha({
   // Stale automation branches (e.g. chore/release-v0.2.15 left at an older
   // bump OID) must be force-reset to the current tip before createCommitOnBranch
   // (app-release run 36246791005: STALE_DATA vs main merge 23b897e4).
-  const updatedRaw = invoke([
-    'api', '-X', 'PATCH', `repos/${repository}/git/refs/heads/${branch}`,
-    '-f', `sha=${sha}`,
-    '-F', 'force=true'
-  ], { env, cwd, allowFailure: true });
+  const updatedRaw = invoke(
+    [
+      'api',
+      '-X',
+      'PATCH',
+      `repos/${repository}/git/refs/heads/${branch}`,
+      '-f',
+      `sha=${sha}`,
+      '-F',
+      'force=true'
+    ],
+    { env, cwd, allowFailure: true }
+  );
   if (!updatedRaw) {
     throw new Error(
       `Could not force-update refs/heads/${branch} to ${sha} (was ${tip || 'unknown'})`
@@ -299,9 +317,7 @@ function resolveSleepBinary(exists = fs.existsSync) {
   for (const candidate of ['/bin/sleep', '/usr/bin/sleep']) {
     if (exists(candidate)) return candidate;
   }
-  throw new Error(
-    'Could not find sleep in a fixed system location (/bin/sleep, /usr/bin/sleep).'
-  );
+  throw new Error('Could not find sleep in a fixed system location (/bin/sleep, /usr/bin/sleep).');
 }
 
 function sleepMs(ms) {
@@ -310,17 +326,23 @@ function sleepMs(ms) {
   execFileSync(resolveSleepBinary(), [String(seconds)], { stdio: 'ignore' });
 }
 
-function resolveBunBinary(options = {}) {
-  const execPath = options.execPath || process.execPath;
-  const exists = options.exists || fs.existsSync;
-  if (String(execPath).includes('bun')) return execPath;
-  for (const candidate of ['/usr/local/bin/bun', '/opt/homebrew/bin/bun', '/usr/bin/bun']) {
-    if (exists(candidate)) return candidate;
+function parseFailedCheckJson(raw) {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((entry) => {
+        if (!entry || typeof entry !== 'object') return false;
+        return Boolean(entry.name);
+      })
+      .map((entry) => ({
+        name: String(entry.name),
+        url: entry.url ? String(entry.url) : ''
+      }));
+  } catch {
+    return [];
   }
-  throw new Error(
-    'Could not find bun at process.execPath or a fixed system location. '
-      + 'Run under bun, or install bun to /usr/local/bin/bun.'
-  );
 }
 
 /**
@@ -334,58 +356,53 @@ function resolveBunBinary(options = {}) {
  */
 function listFailedRequiredChecks(prUrl, options = {}) {
   const invoke = options.runGh || runGh;
-  const rollupRaw = invoke([
-    'pr', 'view', prUrl,
-    '--json', 'statusCheckRollup',
-    '--jq',
-    '[.statusCheckRollup[]? | select('
-      + '((.conclusion // .state // "") | ascii_upcase) as $s '
-      + '| ($s == "FAILURE" or $s == "FAILED" or $s == "FAIL" or $s == "FAILING"'
-      + ' or $s == "CANCELLED" or $s == "CANCELED" or $s == "TIMED_OUT"'
-      + ' or $s == "ERROR" or $s == "ACTION_REQUIRED"))'
-      + ' | {name: (.name // .context // "unknown"),'
-      + ' url: (.detailsUrl // .targetUrl // "")}]'
-  ], {
-    env: options.env,
-    cwd: options.cwd,
-    allowFailure: true
-  });
+  const rollupRaw = invoke(
+    [
+      'pr',
+      'view',
+      prUrl,
+      '--json',
+      'statusCheckRollup',
+      '--jq',
+      '[.statusCheckRollup[]? | select(' +
+        '((.conclusion // .state // "") | ascii_upcase) as $s ' +
+        '| ($s == "FAILURE" or $s == "FAILED" or $s == "FAIL" or $s == "FAILING"' +
+        ' or $s == "CANCELLED" or $s == "CANCELED" or $s == "TIMED_OUT"' +
+        ' or $s == "ERROR" or $s == "ACTION_REQUIRED"))' +
+        ' | {name: (.name // .context // "unknown"),' +
+        ' url: (.detailsUrl // .targetUrl // "")}]'
+    ],
+    {
+      env: options.env,
+      cwd: options.cwd,
+      allowFailure: true
+    }
+  );
   const fromRollup = parseFailedCheckJson(rollupRaw);
   if (fromRollup.length > 0) return fromRollup;
 
-  const checksRaw = invoke([
-    'pr', 'checks', prUrl,
-    '--json', 'name,state,link',
-    '--jq',
-    '[.[] | select('
-      + '((.state // "") | ascii_upcase) as $s '
-      + '| ($s == "FAILURE" or $s == "FAILED" or $s == "FAIL" or $s == "FAILING"'
-      + ' or $s == "CANCELLED" or $s == "CANCELED" or $s == "TIMED_OUT"'
-      + ' or $s == "ERROR" or $s == "ACTION_REQUIRED"))'
-      + ' | {name: (.name // "unknown"), url: (.link // "")}]'
-  ], {
-    env: options.env,
-    cwd: options.cwd,
-    allowFailure: true
-  });
+  const checksRaw = invoke(
+    [
+      'pr',
+      'checks',
+      prUrl,
+      '--json',
+      'name,state,link',
+      '--jq',
+      '[.[] | select(' +
+        '((.state // "") | ascii_upcase) as $s ' +
+        '| ($s == "FAILURE" or $s == "FAILED" or $s == "FAIL" or $s == "FAILING"' +
+        ' or $s == "CANCELLED" or $s == "CANCELED" or $s == "TIMED_OUT"' +
+        ' or $s == "ERROR" or $s == "ACTION_REQUIRED"))' +
+        ' | {name: (.name // "unknown"), url: (.link // "")}]'
+    ],
+    {
+      env: options.env,
+      cwd: options.cwd,
+      allowFailure: true
+    }
+  );
   return parseFailedCheckJson(checksRaw);
-}
-
-function parseFailedCheckJson(raw) {
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((entry) => {
-      if (!entry || typeof entry !== 'object') return false;
-      return Boolean(entry.name);
-    }).map((entry) => ({
-      name: String(entry.name),
-      url: entry.url ? String(entry.url) : ''
-    }));
-  } catch {
-    return [];
-  }
 }
 
 function waitForPullRequestMergeable(prUrl, options = {}) {
@@ -407,9 +424,7 @@ function waitForPullRequestMergeable(prUrl, options = {}) {
         const detail = failed
           .map((entry) => `${entry.name}${entry.url ? ` (${entry.url})` : ''}`)
           .join('; ');
-        throw new Error(
-          `Required checks failed on ${prUrl}: ${detail}`
-        );
+        throw new Error(`Required checks failed on ${prUrl}: ${detail}`);
       }
       sleepMs(pollMs);
       continue;
@@ -430,33 +445,53 @@ function openAndMergeReleasePr({
 }) {
   // Close older matching PRs so a failed generation cannot block forever —
   // but keep an open PR already on this exact head branch (retry path).
-  const prior = runGh([
-    'pr', 'list', '--base', 'main', '--state', 'open',
-    '--json', 'number,headRefName',
-    '--jq',
-    `.[] | select(.headRefName != "${branch}"`
-      + ` and (.headRefName | test("${priorHeadRegex}"))) | .number`
-  ], { env, cwd, allowFailure: true });
-  for (const number of prior.split('\n').map((s) => s.trim()).filter(Boolean)) {
+  const prior = runGh(
+    [
+      'pr',
+      'list',
+      '--base',
+      'main',
+      '--state',
+      'open',
+      '--json',
+      'number,headRefName',
+      '--jq',
+      `.[] | select(.headRefName != "${branch}"` +
+        ` and (.headRefName | test("${priorHeadRegex}"))) | .number`
+    ],
+    { env, cwd, allowFailure: true }
+  );
+  for (const number of prior
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean)) {
     runGh(['pr', 'close', number, '--delete-branch'], { env, cwd, allowFailure: true });
   }
 
-  const existingUrl = runGh([
-    'pr', 'list',
-    '--base', 'main',
-    '--head', branch,
-    '--state', 'open',
-    '--json', 'url',
-    '--jq', '.[0].url // empty'
-  ], { env, cwd, allowFailure: true });
+  const existingUrl = runGh(
+    [
+      'pr',
+      'list',
+      '--base',
+      'main',
+      '--head',
+      branch,
+      '--state',
+      'open',
+      '--json',
+      'url',
+      '--jq',
+      '.[0].url // empty'
+    ],
+    { env, cwd, allowFailure: true }
+  );
 
-  const prUrl = existingUrl || runGh([
-    'pr', 'create',
-    '--base', 'main',
-    '--head', branch,
-    '--title', title,
-    '--body', body
-  ], { env, cwd });
+  const prUrl =
+    existingUrl ||
+    runGh(['pr', 'create', '--base', 'main', '--head', branch, '--title', title, '--body', body], {
+      env,
+      cwd
+    });
 
   wait(prUrl, { env, cwd });
   runGh(['pr', 'merge', prUrl, '--squash', '--delete-branch'], { env, cwd, inherit: true });
@@ -548,20 +583,93 @@ function resolveRepositoryFromGit(rootDir) {
   return match ? match[1] : '';
 }
 
+function syncChangelogAfterTag({
+  repository,
+  tagName,
+  releaseSha,
+  rootDir,
+  env,
+  wait = waitForPullRequestMergeable
+}) {
+  runGit(['fetch', '--tags', '--prune', 'origin'], { cwd: rootDir, allowFailure: true });
+  execFileSync(resolveBunBinary(), [path.join(rootDir, 'ci-cd/update-changelog.js')], {
+    cwd: rootDir,
+    stdio: 'inherit'
+  });
+
+  const changelogStatus = runGit(['status', '--porcelain', '--', 'CHANGELOG.md'], {
+    allowFailure: true,
+    cwd: rootDir
+  });
+  if (!changelogStatus) return null;
+
+  const changelogBranch = `chore/changelog-sync-${releaseSha.slice(0, 8)}`;
+  const contents = fs.readFileSync(path.join(rootDir, 'CHANGELOG.md'), 'utf8');
+  resetWorktree(rootDir);
+
+  // Force-reset tip to releaseSha when a prior race left the branch elsewhere;
+  // createCommitOnBranch then always expects releaseSha (or the forced tip).
+  const ensured = ensureBranchAtSha({
+    repository,
+    branch: changelogBranch,
+    sha: releaseSha,
+    env,
+    cwd: rootDir
+  });
+  const expectedHeadOid = ensured.sha || releaseSha;
+
+  try {
+    createSignedCommitOnBranchWithGh({
+      repository,
+      branch: changelogBranch,
+      expectedHeadOid,
+      headline: 'chore: synchronize changelog',
+      additions: [{ path: 'CHANGELOG.md', contents }],
+      env
+    });
+  } catch (error) {
+    const message = String(error && error.message ? error.message : error);
+    // GitHub GraphQL STALE_DATA wording varies: "Expected branch to point to …
+    // but it did not", "but expected …", or "already exists".
+    if (
+      !/STALE_DATA|Expected branch to point|but expected|but it did not|Reference already exists|already exists/i.test(
+        message
+      )
+    ) {
+      throw error;
+    }
+    // Tip moved or commit already present — openAndMergeReleasePr reuses the PR.
+  }
+
+  const changelogPr = openAndMergeReleasePr({
+    branch: changelogBranch,
+    title: 'chore: synchronize changelog',
+    body: [
+      GENERATED_CHANGELOG_SYNC_BODY_PREFIX,
+      '',
+      `Application tag \`${tagName}\` (JUM-889).`
+    ].join('\n'),
+    env,
+    cwd: rootDir,
+    priorHeadRegex: '^chore/changelog-sync-[0-9a-f]{8}$',
+    wait
+  });
+  runGit(['fetch', 'origin', 'main'], { cwd: rootDir });
+  checkoutMainClean(rootDir);
+  return changelogPr;
+}
+
 function createAppReleaseTagGithubApi(options = {}) {
   const dryRun = Boolean(options.dryRun);
   const rootDir = options.rootDir || getRepoRoot();
   const env = options.env || process.env;
-  const repository = options.repository
-    || resolveRepository(env)
-    || resolveRepositoryFromGit(rootDir);
+  const repository =
+    options.repository || resolveRepository(env) || resolveRepositoryFromGit(rootDir);
   if (!repository) {
     throw new Error('GITHUB_REPOSITORY (or CIRCLE_PROJECT_*) is required for --github-api');
   }
   if (!dryRun && !resolveToken(env)) {
-    throw new Error(
-      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN (fail closed).'
-    );
+    throw new Error('Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN (fail closed).');
   }
 
   // Plan against the current checkout first — never mutate the worktree for dry-run.
@@ -618,8 +726,8 @@ function createAppReleaseTagGithubApi(options = {}) {
     const lockedTagOnMain = `v${lockedOnMain}`;
     const rootVersionOnMain = readJson(path.join(rootDir, 'package.json')).version;
     if (
-      rootVersionOnMain === lockedOnMain
-      && !tagExists(repository, lockedTagOnMain, { env, cwd: rootDir, runGh })
+      rootVersionOnMain === lockedOnMain &&
+      !tagExists(repository, lockedTagOnMain, { env, cwd: rootDir, runGh })
     ) {
       const releaseSha = runGit(['rev-parse', 'HEAD'], { cwd: rootDir });
       createAnnotatedTagRef({
@@ -708,8 +816,8 @@ function createAppReleaseTagGithubApi(options = {}) {
   const lockedTagOnMain = `v${lockedOnMain}`;
   const rootVersionOnMain = readJson(path.join(rootDir, 'package.json')).version;
   if (
-    rootVersionOnMain === lockedOnMain
-    && !tagExists(repository, lockedTagOnMain, { env, cwd: rootDir, runGh })
+    rootVersionOnMain === lockedOnMain &&
+    !tagExists(repository, lockedTagOnMain, { env, cwd: rootDir, runGh })
   ) {
     const releaseSha = runGit(['rev-parse', 'HEAD'], { cwd: rootDir });
     createAnnotatedTagRef({
@@ -841,78 +949,6 @@ function createAppReleaseTagGithubApi(options = {}) {
   };
 }
 
-function syncChangelogAfterTag({
-  repository,
-  tagName,
-  releaseSha,
-  rootDir,
-  env,
-  wait = waitForPullRequestMergeable
-}) {
-  runGit(['fetch', '--tags', '--prune', 'origin'], { cwd: rootDir, allowFailure: true });
-  execFileSync(resolveBunBinary(), [path.join(rootDir, 'ci-cd/update-changelog.js')], {
-    cwd: rootDir,
-    stdio: 'inherit'
-  });
-
-  const changelogStatus = runGit(['status', '--porcelain', '--', 'CHANGELOG.md'], {
-    allowFailure: true,
-    cwd: rootDir
-  });
-  if (!changelogStatus) return null;
-
-  const changelogBranch = `chore/changelog-sync-${releaseSha.slice(0, 8)}`;
-  const contents = fs.readFileSync(path.join(rootDir, 'CHANGELOG.md'), 'utf8');
-  resetWorktree(rootDir);
-
-  // Force-reset tip to releaseSha when a prior race left the branch elsewhere;
-  // createCommitOnBranch then always expects releaseSha (or the forced tip).
-  const ensured = ensureBranchAtSha({
-    repository,
-    branch: changelogBranch,
-    sha: releaseSha,
-    env,
-    cwd: rootDir
-  });
-  const expectedHeadOid = ensured.sha || releaseSha;
-
-  try {
-    createSignedCommitOnBranchWithGh({
-      repository,
-      branch: changelogBranch,
-      expectedHeadOid,
-      headline: 'chore: synchronize changelog',
-      additions: [{ path: 'CHANGELOG.md', contents }],
-      env
-    });
-  } catch (error) {
-    const message = String(error && error.message ? error.message : error);
-    // GitHub GraphQL STALE_DATA wording varies: "Expected branch to point to …
-    // but it did not", "but expected …", or "already exists".
-    if (!/STALE_DATA|Expected branch to point|but expected|but it did not|Reference already exists|already exists/i.test(message)) {
-      throw error;
-    }
-    // Tip moved or commit already present — openAndMergeReleasePr reuses the PR.
-  }
-
-  const changelogPr = openAndMergeReleasePr({
-    branch: changelogBranch,
-    title: 'chore: synchronize changelog',
-    body: [
-      GENERATED_CHANGELOG_SYNC_BODY_PREFIX,
-      '',
-      `Application tag \`${tagName}\` (JUM-889).`
-    ].join('\n'),
-    env,
-    cwd: rootDir,
-    priorHeadRegex: '^chore/changelog-sync-[0-9a-f]{8}$',
-    wait
-  });
-  runGit(['fetch', 'origin', 'main'], { cwd: rootDir });
-  checkoutMainClean(rootDir);
-  return changelogPr;
-}
-
 function main(argv = process.argv.slice(2)) {
   const dryRun = argv.includes('--dry-run');
   const noPush = argv.includes('--no-push');
@@ -927,21 +963,21 @@ function main(argv = process.argv.slice(2)) {
 module.exports = {
   applyLockedVersion,
   buildLockedVersionAdditions,
-  ensureBranchAtSha,
-  listCliTemplateReleasePaths,
-  listFailedRequiredChecks,
-  rebuildCliTemplates,
-  remoteTagExists,
-  resetWorktree,
-  runGh,
   createAppReleaseTag,
   createAppReleaseTagGithubApi,
+  ensureBranchAtSha,
   headHasAppTag,
+  listCliTemplateReleasePaths,
+  listFailedRequiredChecks,
   main,
   openAndMergeReleasePr,
   parseFailedCheckJson,
+  rebuildCliTemplates,
+  remoteTagExists,
+  resetWorktree,
   resolveBunBinary,
   resolveSleepBinary,
+  runGh,
   syncChangelogAfterTag,
   waitForPullRequestMergeable
 };

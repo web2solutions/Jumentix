@@ -1,9 +1,4 @@
-import {
-  EUserRole,
-  hasSuperadminRole,
-  normalizeRoles,
-  shouldRequireOrganization
-} from './Rbac';
+import { EUserRole, hasSuperadminRole, normalizeRoles, shouldRequireOrganization } from './Rbac';
 
 export const TENANT_AUTHORIZATION_REASONS = {
   organizationRequired: 'Insufficient permission - organization scope is required',
@@ -23,15 +18,13 @@ export interface IUserTenantTarget {
 }
 
 export type ITenantAuthorizationDecision =
-  | { allowed: true; reason?: never }
-  | { allowed: false; reason: string };
+  { allowed: true; reason?: never } | { allowed: false; reason: string };
 
 const allow = (): ITenantAuthorizationDecision => ({ allowed: true });
 const deny = (reason: string): ITenantAuthorizationDecision => ({ allowed: false, reason });
 
-const isTenantPrincipal = (principal: ITenantPrincipal): boolean => {
-  return shouldRequireOrganization(principal.roles);
-};
+const isTenantPrincipal = (principal: ITenantPrincipal): boolean =>
+  shouldRequireOrganization(principal.roles);
 
 const isNormalizedUser = (principal: ITenantPrincipal): boolean => {
   const roles = normalizeRoles(principal.roles);

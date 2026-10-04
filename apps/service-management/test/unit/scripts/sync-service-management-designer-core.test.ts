@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 import path from 'node:path';
 
 /**
@@ -14,28 +12,31 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
-const {
-  PACKAGE_SRC,
-  VENDORED_DIR,
-  syncServiceManagementDesignerCore
-} = require(path.join(repoRoot, 'apps/service-management/scripts/sync-service-management-designer-core.js'));
+const { PACKAGE_SRC, VENDORED_DIR, syncServiceManagementDesignerCore } = require(
+  path.join(repoRoot, 'apps/service-management/scripts/sync-service-management-designer-core.js')
+);
 
-type DirEntry = { name: string; isDirectory: () => boolean };
+interface DirEntry {
+  name: string;
+  isDirectory: () => boolean;
+}
 
-function createHarness(options: {
-  sourceExists?: boolean;
-  modules?: Record<string, string>;
-} = {}) {
+function createHarness(
+  options: {
+    sourceExists?: boolean;
+    modules?: Record<string, string>;
+  } = {}
+) {
   const {
     sourceExists = true,
     modules = {
-      'index.js': 'export * from \'./model/modelQueries.js\';\n',
+      'index.js': "export * from './model/modelQueries.js';\n",
       'model/modelQueries.js': 'export function toSchemaName() {}\n'
     }
   } = options;
   const logs: string[] = [];
   const errors: string[] = [];
-  const written: Array<{ target: string; contents: string }> = [];
+  const written: { target: string; contents: string }[] = [];
   const removed: string[] = [];
   const srcRoot = path.join('/repo', PACKAGE_SRC);
 
@@ -67,15 +68,23 @@ function createHarness(options: {
       if (!(rel in modules)) throw new Error(`unexpected read: ${target}`);
       return modules[rel];
     },
-    writeFile: (target: string, contents: string) => { written.push({ target, contents }); },
-    removeDir: (target: string) => { removed.push(target); },
+    writeFile: (target: string, contents: string) => {
+      written.push({ target, contents });
+    },
+    removeDir: (target: string) => {
+      removed.push(target);
+    },
     logger: {
       log: (line: string) => logs.push(String(line)),
       error: (line: string) => errors.push(String(line))
     }
   };
   return {
-    harness, logs, errors, written, removed
+    harness,
+    logs,
+    errors,
+    written,
+    removed
   };
 }
 
@@ -106,9 +115,7 @@ describe('sync-service-management-designer-core (JUM-493)', () => {
 
   it('replaces the vendored tree with a verbatim copy of the package sources', () => {
     expect.hasAssertions();
-    const {
-      harness, logs, written, removed
-    } = createHarness();
+    const { harness, logs, written, removed } = createHarness();
     expect(syncServiceManagementDesignerCore(harness)).toBe(0);
 
     // Replace, not merge: the old tree is removed first so a module deleted
@@ -116,10 +123,12 @@ describe('sync-service-management-designer-core (JUM-493)', () => {
     expect(removed).toStrictEqual([path.join('/repo', VENDORED_DIR)]);
 
     const byTarget = new Map(written.map((entry) => [entry.target, entry.contents]));
-    expect(byTarget.get(path.join('/repo', VENDORED_DIR, 'index.js')))
-      .toBe('export * from \'./model/modelQueries.js\';\n');
-    expect(byTarget.get(path.join('/repo', VENDORED_DIR, 'model', 'modelQueries.js')))
-      .toBe('export function toSchemaName() {}\n');
+    expect(byTarget.get(path.join('/repo', VENDORED_DIR, 'index.js'))).toBe(
+      "export * from './model/modelQueries.js';\n"
+    );
+    expect(byTarget.get(path.join('/repo', VENDORED_DIR, 'model', 'modelQueries.js'))).toBe(
+      'export function toSchemaName() {}\n'
+    );
     expect(logs.join('\n')).toContain('designer-core synced');
   });
 
@@ -146,7 +155,7 @@ describe('sync-service-management-designer-core (JUM-493)', () => {
     const repoRootDir = path.resolve(repoRoot);
     expect(process.cwd()).toBe(repoRootDir);
     expect(syncServiceManagementDesignerCore()).toBe(0);
-    const fs = require('fs');
+    const fs = require('node:fs');
     expect(fs.existsSync(path.join(repoRootDir, VENDORED_DIR, 'index.js'))).toBe(true);
   });
 });

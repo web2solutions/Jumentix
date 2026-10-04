@@ -1,6 +1,4 @@
-import {
-  afterEach, beforeEach, mock
-} from 'bun:test';
+import { afterEach, beforeEach, mock } from 'bun:test';
 
 import { resetSharedApiClient } from '@/contracts/apiClient';
 import { closeCana } from '@/data/db';

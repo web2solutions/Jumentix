@@ -1,5 +1,3 @@
-/* eslint-disable jest/no-untyped-mock-factory */
-
 const mockExpressServerInstance = { name: 'express-server' };
 const mockBaseDatabaseClient = { name: 'base-database-client' };
 const mockCatalogDatabaseClient = { name: 'catalog-database-client' };
@@ -29,7 +27,8 @@ const mockCompileDatabaseClient = jest.fn();
 const mockCompileKeyValueStorageClient = jest.fn();
 
 jest.mock('@src/interface/HTTP/adapters/express/ExpressServer', () => ({
-  ExpressServer: mockExpressServer
+  __esModule: true,
+  default: mockExpressServer
 }));
 
 jest.mock('@src/modules/Users', () => ({
@@ -37,7 +36,8 @@ jest.mock('@src/modules/Users', () => ({
 }));
 
 jest.mock('@src/infra/mutex/adapter/MutexService', () => ({
-  MutexService: { compile: mockMutexCompile }
+  __esModule: true,
+  default: { compile: mockMutexCompile }
 }));
 
 jest.mock('@src/infra/persistence/compileDatabaseClient', () => ({
@@ -45,19 +45,23 @@ jest.mock('@src/infra/persistence/compileDatabaseClient', () => ({
 }));
 
 jest.mock('@src/infra/jwt/JwtService', () => ({
-  JwtService: { compile: mockJwtCompile }
+  __esModule: true,
+  default: { compile: mockJwtCompile }
 }));
 
 jest.mock('@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient', () => ({
-  compileKeyValueStorageClient: mockCompileKeyValueStorageClient
+  __esModule: true,
+  default: mockCompileKeyValueStorageClient
 }));
 
 jest.mock('@src/infra/security/PasswordCryptoService', () => ({
-  PasswordCryptoService: { compile: mockPasswordCryptoCompile }
+  __esModule: true,
+  default: { compile: mockPasswordCryptoCompile }
 }));
 
 jest.mock('@src/infra/messages/compileMessageMediator', () => ({
-  compileMessageMediator: mockCompileMessageMediator
+  __esModule: true,
+  default: mockCompileMessageMediator
 }));
 
 jest.mock('@jumentix/adapter-runtime-bootstrap', () => ({
@@ -80,17 +84,24 @@ jest.mock('@service-management-api/runtime/catalogCors', () => ({
   applyCatalogCorsDefaults: mockApplyCatalogCorsDefaults
 }));
 
-const flushAsync = () => new Promise((resolve) => { setImmediate(resolve); });
+const flushAsync = () =>
+  new Promise((resolve) => {
+    setImmediate(resolve);
+  });
 
 describe('start-service-management-catalog-api entrypoint', () => {
   const signalHandlers: Record<string, () => void> = {};
   let logSpy: jest.SpyInstance;
   let exitSpy: jest.SpyInstance;
+  let onceSpy: jest.SpyInstance;
 
   beforeAll(async () => {
-    logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    logSpy = jest.spyOn(console, 'log').mockReturnValue(undefined);
     exitSpy = jest.spyOn(process, 'exit').mockImplementation((() => undefined) as () => never);
-    jest.spyOn(process, 'once').mockImplementation(((event: string, handler: () => void) => {
+    onceSpy = jest.spyOn(process, 'once').mockImplementation(((
+      event: string,
+      handler: () => void
+    ) => {
       signalHandlers[event] = handler;
       return process;
     }) as typeof process.once);
@@ -99,9 +110,10 @@ describe('start-service-management-catalog-api entrypoint', () => {
   });
 
   afterAll(() => {
+    process.exitCode = undefined;
     logSpy.mockRestore();
     exitSpy.mockRestore();
-    (process.once as jest.Mock).mockRestore();
+    onceSpy.mockRestore();
   });
 
   it('applies the catalog CORS defaults and compiles the adapter runtime on boot', () => {
@@ -121,7 +133,7 @@ describe('start-service-management-catalog-api entrypoint', () => {
 
   it('delegates the service compilers through the runtime config lambdas', () => {
     expect.hasAssertions();
-    const runtimeConfig = mockCompileAdapterRuntime.mock.calls[0][0] as Record<string, any>;
+    const runtimeConfig = mockCompileAdapterRuntime.mock.calls[0][0];
     const connector = { name: 'connector' };
     runtimeConfig.compileMutexService(connector);
     runtimeConfig.compilePasswordCryptoService();
@@ -136,13 +148,15 @@ describe('start-service-management-catalog-api entrypoint', () => {
   it('builds and starts the catalog API over the compiled runtime pieces', () => {
     expect.hasAssertions();
     expect(mockCreateDbClient).toHaveBeenCalledWith(mockBaseDatabaseClient);
-    expect(mockCatalogAPI).toHaveBeenCalledWith(expect.objectContaining({
-      databaseClient: mockCatalogDatabaseClient,
-      webServer: mockExpressServerInstance,
-      authService: mockAuthService,
-      eventBus: mockMessageMediator,
-      messageMediator: mockMessageMediator
-    }));
+    expect(mockCatalogAPI).toHaveBeenCalledWith(
+      expect.objectContaining({
+        databaseClient: mockCatalogDatabaseClient,
+        webServer: mockExpressServerInstance,
+        authService: mockAuthService,
+        eventBus: mockMessageMediator,
+        messageMediator: mockMessageMediator
+      })
+    );
     expect(mockCatalogStart).toHaveBeenCalledTimes(1);
     expect(logSpy).toHaveBeenCalledWith('Service Management catalog API started.');
   });
@@ -154,7 +168,7 @@ describe('start-service-management-catalog-api entrypoint', () => {
     await flushAsync();
     expect(mockCatalogStop).toHaveBeenCalledTimes(1);
     expect(mockKeyValueDisconnect).toHaveBeenCalledTimes(1);
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(process.exitCode).toBe(0);
   });
 
   it('stops the API and disconnects storage on SIGINT before exiting', async () => {

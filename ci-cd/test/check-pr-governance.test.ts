@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const prFs = require('fs');
-const prOs = require('os');
-const prPath = require('path');
+const prFs = require('node:fs');
+const prOs = require('node:os');
+const prPath = require('node:path');
+
 const {
-  REQUIRED_EPIC_FIELDS,
-  REQUIRED_TITLE_FORMAT,
-  SUPPORTED_AGENTS_PATH,
-  TEMPLATE_PATHS,
   issueIdentifierFrom,
   projectKeyFrom,
   readField,
+  REQUIRED_EPIC_FIELDS,
+  REQUIRED_TITLE_FORMAT,
   resolvePullRequestFlag: resolvePrGovernancePullRequestFlag,
   run: runPrGovernanceCheck,
+  SUPPORTED_AGENTS_PATH,
+  TEMPLATE_PATHS,
   validatePullRequest,
   validateSupportedAgents,
   validateTemplates,
@@ -79,23 +79,27 @@ describe('check-pr-governance', () => {
 
   it('accepts a task PR with matching branch, title, and structured metadata', () => {
     expect.hasAssertions();
-    expect(validatePullRequest({
-      title: '[JUM-163][CI] Enforce focused epic metadata',
-      body: validBody,
-      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
-      baseRef: 'dev'
-    })).toStrictEqual([]);
+    expect(
+      validatePullRequest({
+        title: '[JUM-163][CI] Enforce focused epic metadata',
+        body: validBody,
+        headRef: 'codex/ci/JUM-163-focused-epic-metadata',
+        baseRef: 'dev'
+      })
+    ).toStrictEqual([]);
     expect(readField(validBody, 'Epic-delegated agent ID')).toBe('codex-primary-001');
   });
 
   it('accepts a legacy agent branch when Linear task metadata is structured', () => {
     expect.hasAssertions();
-    expect(validatePullRequest({
-      title: '[JUM-163][CI] Enforce focused epic metadata',
-      body: validBody,
-      headRef: 'codex/ci/focused-epic-metadata',
-      baseRef: 'dev'
-    })).toStrictEqual([]);
+    expect(
+      validatePullRequest({
+        title: '[JUM-163][CI] Enforce focused epic metadata',
+        body: validBody,
+        headRef: 'codex/ci/focused-epic-metadata',
+        baseRef: 'dev'
+      })
+    ).toStrictEqual([]);
   });
 
   it('accepts bug tasks with the canonical branch and title prefix', () => {
@@ -104,12 +108,14 @@ describe('check-pr-governance', () => {
       .replace('Primary task nature: ci', 'Primary task nature: bug')
       .replace('JUM-163/focused-epic-metadata', 'JUM-183/codecov-artifact');
 
-    expect(validatePullRequest({
-      title: '[JUM-183][Bug] Preserve unit LCOV for Codecov',
-      body: bugBody,
-      headRef: 'codex/bug/JUM-183-codecov-artifact',
-      baseRef: 'dev'
-    })).toStrictEqual([]);
+    expect(
+      validatePullRequest({
+        title: '[JUM-183][Bug] Preserve unit LCOV for Codecov',
+        body: bugBody,
+        headRef: 'codex/bug/JUM-183-codecov-artifact',
+        baseRef: 'dev'
+      })
+    ).toStrictEqual([]);
   });
 
   it('rejects task metadata links outside Linear', () => {
@@ -124,15 +130,19 @@ describe('check-pr-governance', () => {
         'https://github.com/web2solutions/Jumentix/issues/501'
       );
 
-    expect(validatePullRequest({
-      title: '[JUM-163][CI] Enforce focused epic metadata',
-      body: invalidBody,
-      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
-      baseRef: 'dev'
-    })).toStrictEqual(expect.arrayContaining([
-      expect.stringContaining('focused epic link'),
-      expect.stringContaining('child task issue link')
-    ]));
+    expect(
+      validatePullRequest({
+        title: '[JUM-163][CI] Enforce focused epic metadata',
+        body: invalidBody,
+        headRef: 'codex/ci/JUM-163-focused-epic-metadata',
+        baseRef: 'dev'
+      })
+    ).toStrictEqual(
+      expect.arrayContaining([
+        expect.stringContaining('focused epic link'),
+        expect.stringContaining('child task issue link')
+      ])
+    );
   });
 
   it('fails closed for missing metadata and mismatched task nature', () => {
@@ -144,12 +154,14 @@ describe('check-pr-governance', () => {
       baseRef: 'dev'
     });
 
-    expect(failures).toStrictEqual(expect.arrayContaining([
-      expect.stringContaining('Focused epic link'),
-      expect.stringContaining('Project Update'),
-      expect.stringContaining('primary task nature must match branch nature'),
-      expect.stringContaining('[JUM-XXXX][Nature]')
-    ]));
+    expect(failures).toStrictEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Focused epic link'),
+        expect.stringContaining('Project Update'),
+        expect.stringContaining('primary task nature must match branch nature'),
+        expect.stringContaining('[JUM-XXXX][Nature]')
+      ])
+    );
   });
 
   it('rejects a Project Update field that is not a Linear project update URL', () => {
@@ -164,9 +176,9 @@ describe('check-pr-governance', () => {
       baseRef: 'dev'
     });
 
-    expect(failures).toStrictEqual(expect.arrayContaining([
-      expect.stringContaining('Project Update')
-    ]));
+    expect(failures).toStrictEqual(
+      expect.arrayContaining([expect.stringContaining('Project Update')])
+    );
   });
 
   it('reports only the missing-field error when Project Update is empty', () => {
@@ -178,31 +190,41 @@ describe('check-pr-governance', () => {
       baseRef: 'dev'
     });
 
-    expect(failures).toStrictEqual(expect.arrayContaining([
-      expect.stringContaining('missing structured PR field: Project Update')
-    ]));
-    expect(failures).not.toStrictEqual(expect.arrayContaining([
-      expect.stringContaining('Project Update must be a Linear project update URL')
-    ]));
+    expect(failures).toStrictEqual(
+      expect.arrayContaining([
+        expect.stringContaining('missing structured PR field: Project Update')
+      ])
+    );
+    expect(failures).not.toStrictEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Project Update must be a Linear project update URL')
+      ])
+    );
   });
 
   it('allows only a release PR from dev to target main', () => {
     expect.hasAssertions();
-    expect(validatePullRequest({
-      title: '[JUM-163][Release] Promote dev to main',
-      headRef: 'dev',
-      baseRef: 'main'
-    })).toStrictEqual([]);
-    expect(validatePullRequest({
-      title: '[JUM-636][Release] Promote dev to main',
-      headRef: 'codex/release/JUM-636-dev-main-signed-squash',
-      baseRef: 'main'
-    })).toStrictEqual([]);
-    expect(validatePullRequest({
-      title: '[JUM-99][Fix] Direct task promotion',
-      headRef: 'codex/fix/JUM-99-direct-main',
-      baseRef: 'main'
-    })).toHaveLength(2);
+    expect(
+      validatePullRequest({
+        title: '[JUM-163][Release] Promote dev to main',
+        headRef: 'dev',
+        baseRef: 'main'
+      })
+    ).toStrictEqual([]);
+    expect(
+      validatePullRequest({
+        title: '[JUM-636][Release] Promote dev to main',
+        headRef: 'codex/release/JUM-636-dev-main-signed-squash',
+        baseRef: 'main'
+      })
+    ).toStrictEqual([]);
+    expect(
+      validatePullRequest({
+        title: '[JUM-99][Fix] Direct task promotion',
+        headRef: 'codex/fix/JUM-99-direct-main',
+        baseRef: 'main'
+      })
+    ).toHaveLength(2);
   });
 
   it('allows only the exact CI-generated changelog PR to target main', () => {
@@ -215,10 +237,12 @@ describe('check-pr-governance', () => {
     };
 
     expect(validatePullRequest(generated)).toStrictEqual([]);
-    expect(validatePullRequest({
-      ...generated,
-      body: `${generated.body}\n\n<!-- CURSOR_SUMMARY -->\n> note\n`
-    })).toStrictEqual([]);
+    expect(
+      validatePullRequest({
+        ...generated,
+        body: `${generated.body}\n\n<!-- CURSOR_SUMMARY -->\n> note\n`
+      })
+    ).toStrictEqual([]);
     expect(validatePullRequest({ ...generated, body: 'manual changelog update' })).toHaveLength(2);
   });
 
@@ -237,14 +261,18 @@ describe('check-pr-governance', () => {
     };
 
     expect(validatePullRequest(generated)).toStrictEqual([]);
-    expect(validatePullRequest({
-      ...generated,
-      body: `${generated.body}\n\n<!-- CURSOR_SUMMARY -->\n> note\n`
-    })).toStrictEqual([]);
-    expect(validatePullRequest({
-      ...generated,
-      title: 'chore(release): not-a-semver'
-    })).toHaveLength(2);
+    expect(
+      validatePullRequest({
+        ...generated,
+        body: `${generated.body}\n\n<!-- CURSOR_SUMMARY -->\n> note\n`
+      })
+    ).toStrictEqual([]);
+    expect(
+      validatePullRequest({
+        ...generated,
+        title: 'chore(release): not-a-semver'
+      })
+    ).toHaveLength(2);
   });
 
   it('allows the CI-generated package-bump PR to target main', () => {
@@ -263,34 +291,38 @@ describe('check-pr-governance', () => {
     };
 
     expect(validatePullRequest(generated)).toStrictEqual([]);
-    expect(validatePullRequest({
-      ...generated,
-      body: 'manual package bump'
-    })).toHaveLength(2);
+    expect(
+      validatePullRequest({
+        ...generated,
+        body: 'manual package bump'
+      })
+    ).toHaveLength(2);
   });
 
   it('validates templates but skips PR metadata on long-lived branch builds', async () => {
     expect.hasAssertions();
 
-    await expect(runPrGovernanceCheck({
+    const status: Promise<number> = runPrGovernanceCheck({
       isPullRequest: false,
       title: '',
       body: '',
       headRef: 'main',
       baseRef: ''
-    })).resolves.toBe(0);
+    });
+    await expect(status).resolves.toBe(0);
   });
 
   it('still validates PR metadata when CircleCI marks the job as a pull request', async () => {
     expect.hasAssertions();
 
-    await expect(runPrGovernanceCheck({
+    const status: Promise<number> = runPrGovernanceCheck({
       isPullRequest: true,
       title: '',
       body: '',
       headRef: 'main',
       baseRef: ''
-    })).resolves.toBe(1);
+    });
+    await expect(status).resolves.toBe(1);
     expect(resolvePrGovernancePullRequestFlag('1')).toBe(true);
     expect(resolvePrGovernancePullRequestFlag('0')).toBe(false);
   });
@@ -304,10 +336,12 @@ describe('check-pr-governance', () => {
       baseRef: 'dev'
     });
 
-    expect(failures).toStrictEqual(expect.arrayContaining([
-      expect.stringContaining('[JUM-163][CI]'),
-      expect.stringContaining('branch task identifier (JUM-999) must match JUM-163')
-    ]));
+    expect(failures).toStrictEqual(
+      expect.arrayContaining([
+        expect.stringContaining('[JUM-163][CI]'),
+        expect.stringContaining('branch task identifier (JUM-999) must match JUM-163')
+      ])
+    );
   });
 
   it('rejects a numeric-only legacy branch identifier', () => {
@@ -330,12 +364,14 @@ describe('check-pr-governance', () => {
       .replace('Primary task nature: ci', 'Primary task nature: governance')
       .replace('JUM-163/focused-epic-metadata', 'JUM-604/declarative-agent-support');
 
-    expect(validatePullRequest({
-      title: '[JUM-604][Governance] Declare supported agents as data',
-      body: kimiBody,
-      headRef: 'kimi/governance/JUM-604-declarative-agent-support',
-      baseRef: 'dev'
-    })).toStrictEqual([]);
+    expect(
+      validatePullRequest({
+        title: '[JUM-604][Governance] Declare supported agents as data',
+        body: kimiBody,
+        headRef: 'kimi/governance/JUM-604-declarative-agent-support',
+        baseRef: 'dev'
+      })
+    ).toStrictEqual([]);
   });
 
   it('rejects a branch prefix absent from the supported agents declaration', () => {
@@ -358,28 +394,40 @@ describe('check-pr-governance', () => {
     prFs.mkdirSync(prPath.join(rootDir, '.agents'), { recursive: true });
     prFs.writeFileSync(
       prPath.join(rootDir, SUPPORTED_AGENTS_PATH),
-      JSON.stringify([{
-        platformId: 'kimi',
-        branchPrefix: 'kimi',
-        displayName: 'Kimi Code CLI',
-        instructionsFile: 'KIMI.md'
-      }])
+      JSON.stringify([
+        {
+          platformId: 'kimi',
+          branchPrefix: 'kimi',
+          displayName: 'Kimi Code CLI',
+          instructionsFile: 'KIMI.md'
+        }
+      ])
     );
 
-    expect(validatePullRequest({
-      title: '[JUM-163][CI] Enforce focused epic metadata',
-      body: validBody,
-      headRef: 'codex/ci/JUM-163-focused-epic-metadata',
-      baseRef: 'dev'
-    }, rootDir)).toStrictEqual([
+    expect(
+      validatePullRequest(
+        {
+          title: '[JUM-163][CI] Enforce focused epic metadata',
+          body: validBody,
+          headRef: 'codex/ci/JUM-163-focused-epic-metadata',
+          baseRef: 'dev'
+        },
+        rootDir
+      )
+    ).toStrictEqual([
       '[pr-governance] invalid task branch format: codex/ci/JUM-163-focused-epic-metadata'
     ]);
-    expect(validatePullRequest({
-      title: '[JUM-163][CI] Enforce focused epic metadata',
-      body: validBody,
-      headRef: 'kimi/ci/JUM-163-focused-epic-metadata',
-      baseRef: 'dev'
-    }, rootDir)).toStrictEqual([]);
+    expect(
+      validatePullRequest(
+        {
+          title: '[JUM-163][CI] Enforce focused epic metadata',
+          body: validBody,
+          headRef: 'kimi/ci/JUM-163-focused-epic-metadata',
+          baseRef: 'dev'
+        },
+        rootDir
+      )
+    ).toStrictEqual([]);
     prFs.rmSync(rootDir, { recursive: true, force: true });
   });
 
@@ -389,12 +437,14 @@ describe('check-pr-governance', () => {
     prFs.mkdirSync(prPath.join(rootDir, '.agents'), { recursive: true });
     prFs.writeFileSync(
       prPath.join(rootDir, SUPPORTED_AGENTS_PATH),
-      JSON.stringify([{
-        platformId: 'kimi',
-        branchPrefix: 'kimi',
-        displayName: 'Kimi Code CLI',
-        instructionsFile: 'KIMI.md'
-      }])
+      JSON.stringify([
+        {
+          platformId: 'kimi',
+          branchPrefix: 'kimi',
+          displayName: 'Kimi Code CLI',
+          instructionsFile: 'KIMI.md'
+        }
+      ])
     );
 
     expect(validateSupportedAgents(rootDir)).toStrictEqual([
@@ -410,20 +460,23 @@ describe('check-pr-governance', () => {
     expect(validateSupportedAgents(rootDir)).toStrictEqual([
       `[pr-governance] missing supported agents declaration: ${SUPPORTED_AGENTS_PATH}`
     ]);
-    expect(validatePullRequest({
-      title: '[JUM-163][CI] Enforce focused epic metadata',
-      body: validBody,
-      headRef: 'kimi/ci/JUM-163-focused-epic-metadata',
-      baseRef: 'dev'
-    }, rootDir)).toStrictEqual([
+    expect(
+      validatePullRequest(
+        {
+          title: '[JUM-163][CI] Enforce focused epic metadata',
+          body: validBody,
+          headRef: 'kimi/ci/JUM-163-focused-epic-metadata',
+          baseRef: 'dev'
+        },
+        rootDir
+      )
+    ).toStrictEqual([
       `[pr-governance] missing supported agents declaration: ${SUPPORTED_AGENTS_PATH}`
     ]);
 
     prFs.mkdirSync(prPath.join(rootDir, '.agents'), { recursive: true });
     prFs.writeFileSync(prPath.join(rootDir, SUPPORTED_AGENTS_PATH), '{not json');
-    expect(validateSupportedAgents(rootDir)[0]).toContain(
-      'malformed supported agents declaration'
-    );
+    expect(validateSupportedAgents(rootDir)[0]).toContain('malformed supported agents declaration');
     prFs.rmSync(rootDir, { recursive: true, force: true });
   });
 });
@@ -442,21 +495,23 @@ describe('check-pr-governance', () => {
  */
 describe('child task project membership (JUM-627)', () => {
   const EPIC = 'https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/overview';
-  const bodyFor = (issueLink: string) => [
-    `- Focused epic link: ${EPIC}`,
-    '- Epic milestone: Governance foundation - 2026-08-08',
-    '- Primary task nature: ci',
-    '- Epic-delegated agent ID: codex-primary-001',
-    `- Child task issue link: ${issueLink}`,
-    '- Project Update: https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity#project-update-7ef876cc'
-  ].join('\n');
+  const bodyFor = (issueLink: string) =>
+    [
+      `- Focused epic link: ${EPIC}`,
+      '- Epic milestone: Governance foundation - 2026-08-08',
+      '- Primary task nature: ci',
+      '- Epic-delegated agent ID: codex-primary-001',
+      `- Child task issue link: ${issueLink}`,
+      '- Project Update: https://linear.app/jumentix/project/governance-foundation-c3cb6bae0771/activity#project-update-7ef876cc'
+    ].join('\n');
   const TASK = 'https://linear.app/jumentix/issue/JUM-163/focused-epic-metadata';
 
   const logged: string[] = [];
-  const verify = async (issueLink: string, fetchProject: unknown) => verifyIssueProjectMembership(
-    { body: bodyFor(issueLink) },
-    { apiKey: 'test-key', fetchProject, log: (line: string) => logged.push(line) }
-  );
+  const verify = async (issueLink: string, fetchProject: unknown) =>
+    verifyIssueProjectMembership(
+      { body: bodyFor(issueLink) },
+      { apiKey: 'test-key', fetchProject, log: (line: string) => logged.push(line) }
+    );
 
   it('reads the identifier and the project key out of the two links', () => {
     expect.hasAssertions();
@@ -468,10 +523,12 @@ describe('child task project membership (JUM-627)', () => {
   it('passes when the issue is in the project the body names', async () => {
     expect.hasAssertions();
 
-    await expect(verify(TASK, async () => ({
-      found: true,
-      project: { id: 'c3cb6bae0771-full-id', name: 'Governance foundation', url: EPIC }
-    }))).resolves.toStrictEqual([]);
+    await expect(
+      verify(TASK, async () => ({
+        found: true,
+        project: { id: 'c3cb6bae0771-full-id', name: 'Governance foundation', url: EPIC }
+      }))
+    ).resolves.toStrictEqual([]);
 
     // The pass is announced. Silence on success would leave a green run unable
     // to show whether the lookup ran at all.
@@ -518,7 +575,9 @@ describe('child task project membership (JUM-627)', () => {
 
     // A verification that cannot reach Linear has verified nothing. Saying so is
     // the difference between this gate and the one it replaces.
-    const failures = await verify(TASK, async () => { throw new Error('network down'); });
+    const failures = await verify(TASK, async () => {
+      throw new Error('network down');
+    });
 
     expect(failures[0]).toContain('could not resolve JUM-163 in Linear: network down');
   });
@@ -526,10 +585,12 @@ describe('child task project membership (JUM-627)', () => {
   it('refuses to skip itself when no credential is configured', async () => {
     expect.hasAssertions();
 
-    const failures = await withoutLinearEnvKey(async () => verifyIssueProjectMembership(
-      { body: bodyFor(TASK) },
-      { apiKey: null, rootDir: prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'jum627-')) }
-    ));
+    const failures = await withoutLinearEnvKey(async () =>
+      verifyIssueProjectMembership(
+        { body: bodyFor(TASK) },
+        { apiKey: null, rootDir: prFs.mkdtempSync(prPath.join(prOs.tmpdir(), 'jum627-')) }
+      )
+    );
 
     expect(failures[0]).toContain('no Linear credential');
   });
@@ -593,7 +654,8 @@ describe('linear credential fallback (JUM-627)', () => {
   it('prefers the environment variable over any file', () => {
     expect.hasAssertions();
 
-    expect(withEnvKey('lin_api_from_env', () => readLinearKey('/nonexistent')))
-      .toBe('lin_api_from_env');
+    expect(withEnvKey('lin_api_from_env', () => readLinearKey('/nonexistent'))).toBe(
+      'lin_api_from_env'
+    );
   });
 });

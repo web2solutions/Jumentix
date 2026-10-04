@@ -19,29 +19,28 @@
  * touches ten records, which is the behaviour the plan claims.
  */
 
-import type { CanaQuery, CanaQueryPlan } from '../contracts';
 import { translateError } from './errors';
+
+import type { CanaQuery, CanaQueryPlan } from '../contracts';
 
 /** Build the IndexedDB key range for a query, or null when unbounded. */
 export function toKeyRange(query: CanaQuery | undefined): IDBKeyRange | null {
   if (!query) return null;
 
   if (query.equals !== undefined) {
-    return IDBKeyRange.only(query.equals as IDBValidKey);
+    return IDBKeyRange.only(query.equals);
   }
 
   const { range } = query;
   if (!range) return null;
 
-  const {
-    lower, upper, lowerOpen = false, upperOpen = false
-  } = range;
+  const { lower, upper, lowerOpen = false, upperOpen = false } = range;
 
   if (lower !== undefined && upper !== undefined) {
-    return IDBKeyRange.bound(lower as IDBValidKey, upper as IDBValidKey, lowerOpen, upperOpen);
+    return IDBKeyRange.bound(lower, upper, lowerOpen, upperOpen);
   }
-  if (lower !== undefined) return IDBKeyRange.lowerBound(lower as IDBValidKey, lowerOpen);
-  if (upper !== undefined) return IDBKeyRange.upperBound(upper as IDBValidKey, upperOpen);
+  if (lower !== undefined) return IDBKeyRange.lowerBound(lower, lowerOpen);
+  if (upper !== undefined) return IDBKeyRange.upperBound(upper, upperOpen);
 
   return null;
 }
@@ -81,6 +80,7 @@ function sourceFor(store: IDBObjectStore, query: CanaQuery | undefined): IDBObje
   } catch (error) {
     // A named index that does not exist is a caller mistake, and the raw
     // NotFoundError does not say which index or which store.
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw translateError(error, { store: store.name });
   }
 }
@@ -198,11 +198,11 @@ export function runQuery<TRecord>(
  * the cursor fallback, so "did this read the table?" is a number the engine
  * states rather than a duration a test infers.
  */
-type CountWithMetrics = {
+interface CountWithMetrics {
   count: number;
   recordsExamined: number;
   usedNativeCount: boolean;
-};
+}
 
 export function runCountWithMetrics(
   store: IDBObjectStore,
@@ -231,19 +231,17 @@ export function runCountWithMetrics(
       reject(translateError(error, { store: store.name }));
       return;
     }
-    request.onsuccess = () => resolve({
-      count: request.result,
-      recordsExamined: 0,
-      usedNativeCount: true
-    });
+    request.onsuccess = () =>
+      resolve({
+        count: request.result,
+        recordsExamined: 0,
+        usedNativeCount: true
+      });
     request.onerror = () => reject(translateError(request.error, { store: store.name }));
   });
 }
 
 /** The number alone, for callers that do not need the metrics. */
-export function runCount(
-  store: IDBObjectStore,
-  query: CanaQuery | undefined
-): Promise<number> {
+export function runCount(store: IDBObjectStore, query: CanaQuery | undefined): Promise<number> {
   return runCountWithMetrics(store, query).then((result) => result.count);
 }

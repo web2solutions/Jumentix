@@ -1,5 +1,6 @@
-import type { DocsRuntime, DocsRuntimeId } from './types';
 import { deleteEphemeralDatabase } from './runSnippet';
+
+import type { DocsRuntime, DocsRuntimeId } from './types';
 
 async function loadCana(sessionKey: string) {
   const cana = await import('@jumentix/cana');
@@ -13,12 +14,8 @@ async function loadCana(sessionKey: string) {
 
 async function loadDesignerCore() {
   try {
-    const mod = await import('@jumentix/designer-core') as unknown as Record<string, unknown>;
-    const {
-      collectModelIssues,
-      normalizeStatePayload,
-      buildSampleModelPayload
-    } = mod;
+    const mod = (await import('@jumentix/designer-core')) as unknown as Record<string, unknown>;
+    const { collectModelIssues, normalizeStatePayload, buildSampleModelPayload } = mod;
 
     // Friendly alias: validate(stateOrRaw) → { ok, issues } using the real
     // collectModelIssues contract (domains/relationships), never a toy shape.
@@ -26,16 +23,18 @@ async function loadDesignerCore() {
       if (typeof collectModelIssues !== 'function') {
         return { ok: true, issues: [], note: 'designer-core stub' };
       }
-      const state = typeof normalizeStatePayload === 'function'
-        ? (normalizeStatePayload as (v: unknown) => unknown)(input)
-        : input;
+      const state =
+        typeof normalizeStatePayload === 'function'
+          ? (normalizeStatePayload as (v: unknown) => unknown)(input)
+          : input;
       const issues = (collectModelIssues as (v: unknown) => unknown[])(state);
       const list = Array.isArray(issues) ? issues : [];
-      const errors = list.filter((issue) => (
-        Boolean(issue)
-        && typeof issue === 'object'
-        && (issue as { severity?: string }).severity === 'error'
-      ));
+      const errors = list.filter(
+        (issue) =>
+          Boolean(issue) &&
+          typeof issue === 'object' &&
+          (issue as { severity?: string }).severity === 'error'
+      );
       return { ok: errors.length === 0, issues: list, errorCount: errors.length };
     };
 
@@ -60,41 +59,44 @@ async function loadDesignerCore() {
   }
 }
 
-type ServiceResult<T> = { result: T; error?: string };
-type PlaygroundEvent = {
+interface ServiceResult<T> {
+  result: T;
+  error?: string;
+}
+interface PlaygroundEvent {
   name?: string;
   subject?: string;
   payload?: unknown;
   metadata?: Record<string, unknown>;
-};
-type PlaygroundMessage = {
+}
+interface PlaygroundMessage {
   contract?: string;
   subject?: string;
   name?: string;
   payload?: unknown;
   metadata?: Record<string, unknown>;
-};
+}
 type PlaygroundRecord = Record<string, unknown> & { id?: string };
 type PlaygroundEventListener = (event: PlaygroundEvent) => unknown | Promise<unknown>;
 type PlaygroundMessageHandler = (message: PlaygroundMessage) => unknown | Promise<unknown>;
-type PlaygroundRestRequest = {
+interface PlaygroundRestRequest {
   operationId: string;
   method?: string;
   path?: string;
   body?: PlaygroundRecord;
-};
-type PlaygroundWebSocketRequest = {
+}
+interface PlaygroundWebSocketRequest {
   operationId: string;
   input?: PlaygroundRecord;
-};
+}
 type PlaygroundDeadLetterStatus = 'pending' | 'succeeded' | 'abandoned';
-type PlaygroundDeadLetterInput = {
+interface PlaygroundDeadLetterInput {
   entityName: string;
   resourceId: string;
   operation: string;
   payload: unknown;
   actorId?: string;
-};
+}
 type PlaygroundDeadLetterRecord = PlaygroundDeadLetterInput & {
   id: string;
   createdAt: string;
@@ -103,12 +105,12 @@ type PlaygroundDeadLetterRecord = PlaygroundDeadLetterInput & {
   status: PlaygroundDeadLetterStatus;
   lastError?: string;
 };
-type PlaygroundDeadLetterReplayReport = {
+interface PlaygroundDeadLetterReplayReport {
   replayed: string[];
   retried: string[];
   abandoned: string[];
   skipped: string[];
-};
+}
 type PlaygroundDeadLetterReplayHandler = (
   record: PlaygroundDeadLetterRecord
 ) => unknown | Promise<unknown>;
@@ -150,19 +152,14 @@ function createMessageMediatorApi() {
   };
 
   return {
-    subscribe: async (
-      name: string,
-      listener: PlaygroundEventListener
-    ) => {
+    subscribe: async (name: string, listener: PlaygroundEventListener) => {
       const list = subscribers.get(name) ?? new Set<PlaygroundEventListener>();
       list.add(listener);
       subscribers.set(name, list);
       return ok(true);
     },
     publish: async (eventOrName: PlaygroundEvent | string, payload?: unknown) => {
-      const event = typeof eventOrName === 'string'
-        ? { name: eventOrName, payload }
-        : eventOrName;
+      const event = typeof eventOrName === 'string' ? { name: eventOrName, payload } : eventOrName;
       const name = eventName(event);
       const list = Array.from(subscribers.get(name) ?? []);
       await Promise.all(list.map((listener) => listener(event)));
@@ -182,7 +179,11 @@ function createMessageMediatorApi() {
         return { ok: false, error: `handler not found: ${name}`, contract: name };
       }
       const response = await handler(message);
-      if (response && typeof response === 'object' && ('ok' in response || 'result' in response || 'error' in response)) {
+      if (
+        response &&
+        typeof response === 'object' &&
+        ('ok' in response || 'result' in response || 'error' in response)
+      ) {
         return response;
       }
       return { ok: true, contract: name, result: response };
@@ -199,16 +200,26 @@ function createMutexApi() {
       const key = lockKey(resourceName, uuid);
       if (locks.has(key)) {
         return ok({
-          resourceName, uuid, key, locked: false, alreadyLocked: true
+          resourceName,
+          uuid,
+          key,
+          locked: false,
+          alreadyLocked: true
         });
       }
       locks.add(key);
       return ok({
-        resourceName, uuid, key, locked: true, alreadyLocked: false
+        resourceName,
+        uuid,
+        key,
+        locked: true,
+        alreadyLocked: false
       });
     },
-    isLocked: async (resourceName: string, uuid = 'default') => ok(locks.has(lockKey(resourceName, uuid))),
-    unlock: async (resourceName: string, uuid = 'default') => ok(locks.delete(lockKey(resourceName, uuid))),
+    isLocked: async (resourceName: string, uuid = 'default') =>
+      ok(locks.has(lockKey(resourceName, uuid))),
+    unlock: async (resourceName: string, uuid = 'default') =>
+      ok(locks.delete(lockKey(resourceName, uuid))),
     acquire: async (name: string) => {
       const response = await service.lock(name);
       if (!response.result.locked) throw new Error(`lock busy: ${name}`);
@@ -226,9 +237,7 @@ function createMutexApi() {
   return service;
 }
 
-function createDeadLetterQueueApi({
-  maxAttempts = 5
-}: { maxAttempts?: number } = {}) {
+function createDeadLetterQueueApi({ maxAttempts = 5 }: { maxAttempts?: number } = {}) {
   if (maxAttempts < 1) throw new Error('dead letter queue requires maxAttempts of at least 1');
 
   const records = new Map<string, PlaygroundDeadLetterRecord>();
@@ -272,19 +281,16 @@ function createDeadLetterQueueApi({
       records.set(record.id, record);
       return clone(record);
     },
-    pending: async () => Array.from(records.values())
-      .filter((record) => record.status === 'pending')
-      .map(clone),
+    pending: async () =>
+      Array.from(records.values())
+        .filter((record) => record.status === 'pending')
+        .map(clone),
     list: async () => Array.from(records.values()).map(clone),
     find: async (id: string) => {
       const record = records.get(id);
       return record ? clone(record) : undefined;
     },
-    settle: async (
-      id: string,
-      status?: PlaygroundDeadLetterStatus,
-      lastError?: string
-    ) => {
+    settle: async (id: string, status?: PlaygroundDeadLetterStatus, lastError?: string) => {
       const record = records.get(id);
       if (!record) throw new Error(`dead letter record not found: ${id}`);
       await settle(record, status ?? 'succeeded', lastError);
@@ -295,9 +301,14 @@ function createDeadLetterQueueApi({
       handlers: Record<string, PlaygroundDeadLetterReplayHandler>
     ): Promise<PlaygroundDeadLetterReplayReport> => {
       const report: PlaygroundDeadLetterReplayReport = {
-        replayed: [], retried: [], abandoned: [], skipped: []
+        replayed: [],
+        retried: [],
+        abandoned: [],
+        skipped: []
       };
-      const pendingRecords = Array.from(records.values()).filter((item) => item.status === 'pending');
+      const pendingRecords = Array.from(records.values()).filter(
+        (item) => item.status === 'pending'
+      );
 
       const replayNext = async (index: number): Promise<void> => {
         const record = pendingRecords[index];
@@ -348,7 +359,7 @@ function createInMemoryStore() {
     if (typeof idOrRecord === 'string') {
       return { ...(value ?? {}), id: value?.id ?? idOrRecord };
     }
-    return { ...idOrRecord, id: idOrRecord.id ?? crypto.randomUUID() };
+    return { ...idOrRecord, id: idOrRecord.id ?? window.crypto.randomUUID() };
   };
 
   return {
@@ -366,16 +377,15 @@ function createInMemoryStore() {
     },
     getOneById: async (id: string) => ok(records.get(id) ?? null),
     delete: async (id: string) => ok(records.delete(id)),
-    getByRelation: async (field: string, value: unknown) => ok(
-      Array.from(records.values()).filter((record) => record[field] === value)
-    ),
+    getByRelation: async (field: string, value: unknown) =>
+      ok(Array.from(records.values()).filter((record) => record[field] === value)),
     getAll: async (
       filters: Record<string, unknown> = {},
       paging: { page?: number; size?: number } = {}
     ) => {
-      const entries = Object.entries(filters).filter(([, value]) => (
-        value !== undefined && value !== null
-      ));
+      const entries = Object.entries(filters).filter(
+        ([, value]) => value !== undefined && value !== null
+      );
       let list = Array.from(records.values());
       for (const [field, value] of entries) {
         list = list.filter((record) => record[field] === value);
@@ -414,11 +424,17 @@ function createRestClientApi(
       if (request.operationId === 'createTask' && request.body) {
         tasks.push(request.body);
         return {
-          ok: true, status: 201, operationId: request.operationId, result: request.body
+          ok: true,
+          status: 201,
+          operationId: request.operationId,
+          result: request.body
         };
       }
       return {
-        ok: true, status: 200, operationId: request.operationId, result: tasks
+        ok: true,
+        status: 200,
+        operationId: request.operationId,
+        result: tasks
       };
     }
   };
@@ -487,8 +503,8 @@ async function loadWsSdk() {
 }
 
 async function loadJumentixBrowserLab(sessionKey: string) {
-  const cana = await import('@jumentix/cana') as unknown as Record<string, unknown>;
-  const React = await import('react') as unknown as Record<string, unknown>;
+  const cana = (await import('@jumentix/cana')) as unknown as Record<string, unknown>;
+  const React = (await import('react')) as unknown as Record<string, unknown>;
   const designerCore = await loadDesignerCore();
   const dbPrefix = `jumentix-browser-lab-${sessionKey}`;
   return {
@@ -508,25 +524,28 @@ async function loadJumentixBrowserLab(sessionKey: string) {
       createRestClient: createRestClientApi,
       createWebSocketClient: createWebSocketClientApi,
       createServiceModel: (input: Record<string, unknown>) => ({
-        domains: [{
-          id: 'tasks-domain',
-          name: String(input.domain ?? 'Tasks'),
-          entities: [
-            { id: 'category', name: 'Category', fields: ['id', 'name', 'color'] },
-            { id: 'task', name: 'Task', fields: ['id', 'title', 'categoryId', 'completed'] }
-          ],
-          app: input.app ?? 'service-management'
-        }],
-        relationships: [{
-          id: 'task-category',
-          from: 'task',
-          to: 'category',
-          type: 'many-to-one'
-        }]
+        domains: [
+          {
+            id: 'tasks-domain',
+            name: String(input.domain ?? 'Tasks'),
+            entities: [
+              { id: 'category', name: 'Category', fields: ['id', 'name', 'color'] },
+              { id: 'task', name: 'Task', fields: ['id', 'title', 'categoryId', 'completed'] }
+            ],
+            app: input.app ?? 'service-management'
+          }
+        ],
+        relationships: [
+          {
+            id: 'task-category',
+            from: 'task',
+            to: 'category',
+            type: 'many-to-one'
+          }
+        ]
       }),
-      validateDesign: (input: unknown) => (
-        designerCore.api.validate as (value: unknown) => unknown
-      )(input)
+      validateDesign: (input: unknown) =>
+        (designerCore.api.validate as (value: unknown) => unknown)(input)
     },
     reset: () => deleteEphemeralDatabase(dbPrefix)
   };
@@ -561,10 +580,12 @@ const API_NAMES: Record<DocsRuntimeId, string> = {
   'sdk-websocket-client': 'api'
 };
 
-export function getRuntime(runtime: DocsRuntimeId): DocsRuntime {
+function getRuntime(runtime: DocsRuntimeId): DocsRuntime {
   return {
     id: runtime,
     apiGlobalName: API_NAMES[runtime],
     load: LOADERS[runtime]
   };
 }
+
+export default getRuntime;

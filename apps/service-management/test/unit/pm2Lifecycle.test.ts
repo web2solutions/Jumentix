@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 /*
  * JUM-770 — PM2 lifecycle rules: config-file recognition (mirrors pm2's
  * Common.isConfigFile), start verification and the service-manager
@@ -6,23 +6,28 @@
  */
 
 const {
+  createPm2ActionRunner,
   isPm2ConfigFile,
-  isServiceManagerProcess,
-  createPm2ActionRunner
+  isServiceManagerProcess
 } = require('../../src/runtime/pm2Lifecycle');
 
-type ProcessEntry = { name: string; pmId: number | null; namespace: string; status?: string };
+interface ProcessEntry {
+  name: string;
+  pmId: number | null;
+  namespace: string;
+  status?: string;
+}
 
-type RunnerOverrides = {
+interface RunnerOverrides {
   processes?: ProcessEntry[];
   ecosystem?: { exists: boolean; path: string };
-};
+}
 
 function makeRunner(overrides: RunnerOverrides = {}) {
-  const calls: Array<{ method: string; args: unknown[] }> = [];
+  const calls: { method: string; args: unknown[] }[] = [];
   const state = {
-    processes: overrides.processes || [],
-    ecosystem: overrides.ecosystem || { exists: true, path: 'pm2/ecosystem.dev.config.cjs' }
+    processes: overrides.processes ?? [],
+    ecosystem: overrides.ecosystem ?? { exists: true, path: 'pm2/ecosystem.dev.config.cjs' }
   };
   const runner = createPm2ActionRunner({
     normalizeEnvironment: (runtime: string) => String(runtime || 'dev'),
@@ -37,7 +42,10 @@ function makeRunner(overrides: RunnerOverrides = {}) {
 }
 
 const restApi = {
-  name: 'jumentix-dev-restapi', pmId: 1, namespace: 'default', status: 'online'
+  name: 'jumentix-dev-restapi',
+  pmId: 1,
+  namespace: 'default',
+  status: 'online'
 };
 const serviceManager = {
   name: 'jumentix-dev-service-management',
@@ -82,42 +90,51 @@ describe('service-management pm2Lifecycle self-guard', () => {
     expect(isServiceManagerProcess('')).toBe(false);
   });
 
-  it.each(['stop', 'restart', 'delete'])('refuses %s on the service manager with an explicit reason', async (action) => {
-    expect.hasAssertions();
-    const { runner, calls } = makeRunner({ processes: [restApi, serviceManager] });
-    await expect(runner({
-      action,
-      scope: 'process',
-      name: 'jumentix-dev-service-management',
-      environment: 'dev'
-    })).rejects.toMatchObject({
-      code: 'SELF_ACTION_BLOCKED',
-      message: expect.stringContaining(`cannot ${action} itself`)
-    });
-    expect(calls).toStrictEqual([]);
-  });
+  it.each(['stop', 'restart', 'delete'])(
+    'refuses %s on the service manager with an explicit reason',
+    async (action) => {
+      expect.hasAssertions();
+      const { runner, calls } = makeRunner({ processes: [restApi, serviceManager] });
+      await expect(
+        runner({
+          action,
+          scope: 'process',
+          name: 'jumentix-dev-service-management',
+          environment: 'dev'
+        }) as Promise<unknown>
+      ).rejects.toMatchObject({
+        code: 'SELF_ACTION_BLOCKED',
+        message: expect.stringContaining(`cannot ${action} itself`)
+      });
+      expect(calls).toStrictEqual([]);
+    }
+  );
 
   it('refuses stop/restart resolved to the manager by pmId, and never calls pm2', async () => {
     expect.hasAssertions();
     const { runner, calls } = makeRunner({ processes: [restApi, serviceManager] });
-    await expect(runner({
-      action: 'restart',
-      scope: 'process',
-      pmId: 2,
-      environment: 'dev'
-    })).rejects.toMatchObject({ code: 'SELF_ACTION_BLOCKED' });
+    await expect(
+      runner({
+        action: 'restart',
+        scope: 'process',
+        pmId: 2,
+        environment: 'dev'
+      }) as Promise<unknown>
+    ).rejects.toMatchObject({ code: 'SELF_ACTION_BLOCKED' });
     expect(calls).toStrictEqual([]);
   });
 
   it('still allows stop/restart on regular processes', async () => {
     expect.hasAssertions();
     const { runner, calls } = makeRunner({ processes: [restApi, serviceManager] });
-    await expect(runner({
-      action: 'restart',
-      scope: 'process',
-      name: 'jumentix-dev-restapi',
-      environment: 'dev'
-    })).resolves.toBeUndefined();
+    await expect(
+      runner({
+        action: 'restart',
+        scope: 'process',
+        name: 'jumentix-dev-restapi',
+        environment: 'dev'
+      }) as Promise<unknown>
+    ).resolves.toBeUndefined();
     expect(calls).toStrictEqual([{ method: 'restart', args: ['jumentix-dev-restapi'] }]);
   });
 
@@ -158,7 +175,7 @@ describe('service-management pm2Lifecycle start verification', () => {
   it('resolves when the started process shows up in the post-start list', async () => {
     expect.hasAssertions();
     const state = {
-      processes: [] as Array<{ name: string; pmId: number; namespace: string; status: string }>
+      processes: [] as { name: string; pmId: number; namespace: string; status: string }[]
     };
     const runner = createPm2ActionRunner({
       normalizeEnvironment: () => 'dev',
@@ -166,30 +183,39 @@ describe('service-management pm2Lifecycle start verification', () => {
       listProcesses: async () => state.processes,
       runMethod: async () => {
         // Simulate pm2 honouring the start: the process appears in the list.
-        state.processes = [{
-          name: 'jumentix-dev-websocketapi', pmId: 3, namespace: 'default', status: 'online'
-        }];
+        state.processes = [
+          {
+            name: 'jumentix-dev-websocketapi',
+            pmId: 3,
+            namespace: 'default',
+            status: 'online'
+          }
+        ];
         return null;
       }
     });
-    await expect(runner({
-      action: 'start',
-      scope: 'ecosystem-missing',
-      name: 'jumentix-dev-websocketapi',
-      environment: 'dev'
-    })).resolves.toBeUndefined();
+    await expect(
+      runner({
+        action: 'start',
+        scope: 'ecosystem-missing',
+        name: 'jumentix-dev-websocketapi',
+        environment: 'dev'
+      }) as Promise<unknown>
+    ).resolves.toBeUndefined();
   });
 
   it('fails with START_VERIFY_FAILED when the process is absent after an ecosystem --only start', async () => {
     expect.hasAssertions();
     // The pre-fix phantom: pm2 answers ok but nothing was ever registered.
     const { runner, calls } = makeRunner({ processes: [restApi] });
-    await expect(runner({
-      action: 'start',
-      scope: 'ecosystem-missing',
-      name: 'jumentix-dev-grpcapi',
-      environment: 'dev'
-    })).rejects.toMatchObject({
+    await expect(
+      runner({
+        action: 'start',
+        scope: 'ecosystem-missing',
+        name: 'jumentix-dev-grpcapi',
+        environment: 'dev'
+      }) as Promise<unknown>
+    ).rejects.toMatchObject({
       code: 'START_VERIFY_FAILED',
       message: expect.stringContaining('jumentix-dev-grpcapi')
     });
@@ -212,39 +238,46 @@ describe('service-management pm2Lifecycle start verification', () => {
       },
       runMethod: async () => null
     });
-    await expect(runner({
-      action: 'start',
-      scope: 'process',
-      name: 'jumentix-dev-restapi',
-      environment: 'dev'
-    })).rejects.toMatchObject({ code: 'START_VERIFY_FAILED' });
+    await expect(
+      runner({
+        action: 'start',
+        scope: 'process',
+        name: 'jumentix-dev-restapi',
+        environment: 'dev'
+      }) as Promise<unknown>
+    ).rejects.toMatchObject({ code: 'START_VERIFY_FAILED' });
   });
 
   it('starts a missing ecosystem process through the .config.cjs path and verifies it', async () => {
     expect.hasAssertions();
     const state = { processes: [restApi] };
-    const calls: Array<{ method: string; args: unknown[] }> = [];
+    const calls: { method: string; args: unknown[] }[] = [];
     const runner = createPm2ActionRunner({
       normalizeEnvironment: () => 'dev',
       readEcosystem: () => ({ exists: true, path: 'pm2/ecosystem.dev.config.cjs' }),
       listProcesses: async () => state.processes,
       runMethod: async (method: string, ...args: unknown[]) => {
         calls.push({ method, args });
-        state.processes = [...state.processes, {
-          name: 'jumentix-dev-grpcapi',
-          pmId: 4,
-          namespace: 'default',
-          status: 'online'
-        }];
+        state.processes = [
+          ...state.processes,
+          {
+            name: 'jumentix-dev-grpcapi',
+            pmId: 4,
+            namespace: 'default',
+            status: 'online'
+          }
+        ];
         return null;
       }
     });
-    await expect(runner({
-      action: 'start',
-      scope: 'ecosystem-missing',
-      name: 'jumentix-dev-grpcapi',
-      environment: 'dev'
-    })).resolves.toBeUndefined();
+    await expect(
+      runner({
+        action: 'start',
+        scope: 'ecosystem-missing',
+        name: 'jumentix-dev-grpcapi',
+        environment: 'dev'
+      }) as Promise<unknown>
+    ).resolves.toBeUndefined();
     expect(calls).toStrictEqual([
       { method: 'start', args: ['pm2/ecosystem.dev.config.cjs', { only: 'jumentix-dev-grpcapi' }] }
     ]);
@@ -253,15 +286,24 @@ describe('service-management pm2Lifecycle start verification', () => {
   it('rejects unsupported actions and scopes with the pre-existing error codes', async () => {
     expect.hasAssertions();
     const { runner } = makeRunner({ processes: [restApi] });
-    await expect(runner({
-      action: 'reload', scope: 'process', name: 'x', environment: 'dev'
-    }))
-      .rejects.toMatchObject({ code: 'UNSUPPORTED_PM2_ACTION' });
-    await expect(runner({
-      action: 'stop', scope: 'galaxy', name: 'x', environment: 'dev'
-    }))
-      .rejects.toMatchObject({ code: 'UNSUPPORTED_PM2_SCOPE' });
-    await expect(runner({ action: 'stop', scope: 'process', environment: 'dev' }))
-      .rejects.toMatchObject({ code: 'INVALID_PM2_TARGET' });
+    await expect(
+      runner({
+        action: 'reload',
+        scope: 'process',
+        name: 'x',
+        environment: 'dev'
+      }) as Promise<unknown>
+    ).rejects.toMatchObject({ code: 'UNSUPPORTED_PM2_ACTION' });
+    await expect(
+      runner({
+        action: 'stop',
+        scope: 'galaxy',
+        name: 'x',
+        environment: 'dev'
+      }) as Promise<unknown>
+    ).rejects.toMatchObject({ code: 'UNSUPPORTED_PM2_SCOPE' });
+    await expect(
+      runner({ action: 'stop', scope: 'process', environment: 'dev' }) as Promise<unknown>
+    ).rejects.toMatchObject({ code: 'INVALID_PM2_TARGET' });
   });
 });

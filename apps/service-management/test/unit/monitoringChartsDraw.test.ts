@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, import/first */
+/* eslint-disable jest/max-expects */
 /*
  * JUM-821 — canvas drawing half of monitoringCharts.js: sparklines, ring
  * gauges, stacked areas, status donuts, core bars, memory breakdown and disk
@@ -6,6 +6,22 @@
  * the mock is functional — real linear scales, real arc/pie geometry — so the
  * assertions check the pixels-level commands the charts emit, not mock calls.
  */
+
+import {
+  colorForStatus,
+  computeWindowThroughput,
+  drawCoreBars,
+  drawDiskBars,
+  drawMemoryBreakdown,
+  drawRingGauge,
+  drawSparkline,
+  drawStackedArea,
+  drawStatusBars,
+  formatSeriesSummary,
+  legendEntriesForStack,
+  STACK_PALETTE,
+  stackColorAt
+} from '../../src/ui/monitoringCharts.js';
 
 jest.mock('d3', () => {
   const scaleLinear = () => {
@@ -16,18 +32,27 @@ jest.mock('d3', () => {
       return range[0] + ((value - domain[0]) / span) * (range[1] - range[0]);
     };
     scale.domain = (next?: number[]) => {
-      if (next) { domain = next; return scale; }
+      if (next) {
+        domain = next;
+        return scale;
+      }
       return domain;
     };
     scale.range = (next?: number[]) => {
-      if (next) { range = next; return scale; }
+      if (next) {
+        range = next;
+        return scale;
+      }
       return range;
     };
     return scale;
   };
   const arc = () => {
     const config = {
-      innerRadius: 0, outerRadius: 0, startAngle: 0, endAngle: 0
+      innerRadius: 0,
+      outerRadius: 0,
+      startAngle: 0,
+      endAngle: 0
     };
     let context: any = null;
     const generator: any = (datum?: { startAngle: number; endAngle: number }) => {
@@ -38,11 +63,26 @@ jest.mock('d3', () => {
       }
       return '';
     };
-    generator.innerRadius = (value: number) => { config.innerRadius = value; return generator; };
-    generator.outerRadius = (value: number) => { config.outerRadius = value; return generator; };
-    generator.startAngle = (value: number) => { config.startAngle = value; return generator; };
-    generator.endAngle = (value: number) => { config.endAngle = value; return generator; };
-    generator.context = (next: any) => { context = next; return generator; };
+    generator.innerRadius = (value: number) => {
+      config.innerRadius = value;
+      return generator;
+    };
+    generator.outerRadius = (value: number) => {
+      config.outerRadius = value;
+      return generator;
+    };
+    generator.startAngle = (value: number) => {
+      config.startAngle = value;
+      return generator;
+    };
+    generator.endAngle = (value: number) => {
+      config.endAngle = value;
+      return generator;
+    };
+    generator.context = (next: any) => {
+      context = next;
+      return generator;
+    };
     generator.centroid = (datum: { startAngle: number; endAngle: number }) => {
       const midAngle = (datum.startAngle + datum.endAngle) / 2 - Math.PI / 2;
       const radius = (config.innerRadius + config.outerRadius) / 2;
@@ -60,11 +100,17 @@ jest.mock('d3', () => {
         const startAngle = angle;
         angle += (values[index] / total) * Math.PI * 2;
         return {
-          data: entry, value: values[index], startAngle, endAngle: angle
+          data: entry,
+          value: values[index],
+          startAngle,
+          endAngle: angle
         };
       });
     };
-    generator.value = (fn: (entry: any) => number) => { valueFn = fn; return generator; };
+    generator.value = (fn: (entry: any) => number) => {
+      valueFn = fn;
+      return generator;
+    };
     generator.sort = () => generator;
     return generator;
   };
@@ -74,28 +120,13 @@ jest.mock('d3', () => {
     scaleLinear,
     max: (values: number[]) => (values.length ? Math.max(...values) : undefined),
     min: (values: number[]) => (values.length ? Math.min(...values) : undefined),
-    sum: (values: unknown[], accessor?: (entry: any) => number) => values.reduce(
-      (total: number, entry) => total + (accessor ? accessor(entry) : Number(entry) || 0),
-      0
-    )
+    sum: (values: unknown[], accessor?: (entry: any) => number) =>
+      values.reduce(
+        (total: number, entry) => total + (accessor ? accessor(entry) : Number(entry) || 0),
+        0
+      )
   };
 });
-
-import {
-  STACK_PALETTE,
-  colorForStatus,
-  computeWindowThroughput,
-  drawCoreBars,
-  drawDiskBars,
-  drawMemoryBreakdown,
-  drawRingGauge,
-  drawSparkline,
-  drawStackedArea,
-  drawStatusBars,
-  formatSeriesSummary,
-  legendEntriesForStack,
-  stackColorAt
-} from '../../src/ui/monitoringCharts.js';
 
 type RecordedCall = [string, ...unknown[]];
 
@@ -103,20 +134,44 @@ function createRecordingContext() {
   const calls: RecordedCall[] = [];
   const ctx: any = {};
   const methods = [
-    'setTransform', 'clearRect', 'beginPath', 'moveTo', 'lineTo', 'stroke',
-    'closePath', 'fill', 'save', 'translate', 'restore', 'fillText', 'fillRect', 'arc'
+    'setTransform',
+    'clearRect',
+    'beginPath',
+    'moveTo',
+    'lineTo',
+    'stroke',
+    'closePath',
+    'fill',
+    'save',
+    'translate',
+    'restore',
+    'fillText',
+    'fillRect',
+    'arc'
   ];
   methods.forEach((name) => {
-    ctx[name] = (...args: unknown[]) => { calls.push([name, ...args]); };
+    ctx[name] = (...args: unknown[]) => {
+      calls.push([name, ...args]);
+    };
   });
-  ['strokeStyle', 'fillStyle', 'lineWidth', 'font', 'textAlign', 'textBaseline', 'globalAlpha']
-    .forEach((prop) => {
-      let value: unknown;
-      Object.defineProperty(ctx, prop, {
-        get: () => value,
-        set: (next: unknown) => { value = next; calls.push([`set:${prop}`, next]); }
-      });
+  [
+    'strokeStyle',
+    'fillStyle',
+    'lineWidth',
+    'font',
+    'textAlign',
+    'textBaseline',
+    'globalAlpha'
+  ].forEach((prop) => {
+    let value: unknown;
+    Object.defineProperty(ctx, prop, {
+      get: () => value,
+      set: (next: unknown) => {
+        value = next;
+        calls.push([`set:${prop}`, next]);
+      }
     });
+  });
   return { ctx, calls };
 }
 
@@ -178,7 +233,10 @@ describe('monitoringCharts canvas frame setup', () => {
     expect.hasAssertions();
     (globalThis as any).window = {};
     const settled = createCanvas({
-      clientWidth: 0, clientHeight: 0, width: 30, height: 12
+      clientWidth: 0,
+      clientHeight: 0,
+      width: 30,
+      height: 12
     });
     drawCoreBars(settled.canvas, [50]);
     expect(settled.canvas.width).toBe(30);
@@ -187,7 +245,10 @@ describe('monitoringCharts canvas frame setup', () => {
     expect(settled.calls[1]).toStrictEqual(['clearRect', 0, 0, 30, 12]);
 
     const empty = createCanvas({
-      clientWidth: 0, clientHeight: 0, width: 0, height: 0
+      clientWidth: 0,
+      clientHeight: 0,
+      width: 0,
+      height: 0
     });
     drawCoreBars(empty.canvas, [50]);
     expect(empty.canvas.width).toBe(1);
@@ -212,7 +273,9 @@ describe('monitoringCharts drawSparkline', () => {
 
     const custom = createCanvas();
     drawSparkline(custom.canvas, [], { stroke: '#000000' });
-    expect(callsNamed(custom.calls, 'set:strokeStyle')).toStrictEqual([['set:strokeStyle', '#000000']]);
+    expect(callsNamed(custom.calls, 'set:strokeStyle')).toStrictEqual([
+      ['set:strokeStyle', '#000000']
+    ]);
   });
 
   it('strokes the series on a min/max scale and fills the area under it', () => {
@@ -229,7 +292,9 @@ describe('monitoringCharts drawSparkline', () => {
       ['lineTo', 0, 40]
     ]);
     expect(callsNamed(calls, 'set:strokeStyle')).toStrictEqual([['set:strokeStyle', '#2563eb']]);
-    expect(callsNamed(calls, 'set:fillStyle')).toStrictEqual([['set:fillStyle', 'rgba(37, 99, 235, 0.12)']]);
+    expect(callsNamed(calls, 'set:fillStyle')).toStrictEqual([
+      ['set:fillStyle', 'rgba(37, 99, 235, 0.12)']
+    ]);
     expect(callsNamed(calls, 'stroke')).toHaveLength(1);
     expect(callsNamed(calls, 'fill')).toHaveLength(1);
   });
@@ -327,7 +392,10 @@ describe('monitoringCharts drawRingGauge', () => {
     expect.hasAssertions();
     const over = createCanvas({ clientWidth: 100, clientHeight: 100 });
     drawRingGauge(over.canvas, 1.4, {
-      track: '#111111', color: '#ff0000', labelColor: '#00ff00', label: 'busy'
+      track: '#111111',
+      color: '#ff0000',
+      labelColor: '#00ff00',
+      label: 'busy'
     });
     expect(callsNamed(over.calls, 'arc')).toStrictEqual([
       ['arc', 0, 0, 44, 0, Math.PI * 2],
@@ -594,6 +662,7 @@ describe('monitoringCharts status/palette edge branches', () => {
   it('falls back to the shared palette and tolerates non-array series', () => {
     expect.hasAssertions();
     expect(stackColorAt(2, [])).toBe(STACK_PALETTE[2]);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- required under the strict ts-jest tsconfig (eslint resolves this file with loose null checks)
     expect(stackColorAt(1, null as unknown as string[])).toBe(STACK_PALETTE[1]);
     const entries = legendEntriesForStack({ a: 'nope' }, { colors: ['#123456'] });
     expect(entries).toStrictEqual([{ name: 'a', color: '#123456', current: 0 }]);
@@ -604,6 +673,7 @@ describe('monitoringCharts status/palette edge branches', () => {
     expect.hasAssertions();
     expect(computeWindowThroughput([100, 300], 0)).toBe(200);
     expect(computeWindowThroughput([100, 300], Number.NaN)).toBe(200);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- required under the strict ts-jest tsconfig (eslint resolves this file with loose null checks)
     expect(computeWindowThroughput(null as unknown as number[], 1)).toBeNull();
   });
 
@@ -616,6 +686,7 @@ describe('monitoringCharts status/palette edge branches', () => {
   it('draws the sparkline baseline and skips the stack for non-array input', () => {
     expect.hasAssertions();
     const flat = createCanvas();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- required under the strict ts-jest tsconfig (eslint resolves this file with loose null checks)
     drawSparkline(flat.canvas, null as unknown as number[]);
     expect(callsNamed(flat.calls, 'moveTo')).toStrictEqual([['moveTo', 0, 20]]);
     expect(callsNamed(flat.calls, 'stroke')).toHaveLength(1);

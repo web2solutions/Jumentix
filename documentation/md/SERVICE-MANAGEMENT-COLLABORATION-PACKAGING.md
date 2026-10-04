@@ -145,7 +145,7 @@ Before JUM-491, the designer was per-browser and **export was the only way
 work left the machine** — the E6 document,
 [Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md),
 owns that data story and this document does not restate it. The shared
-catalog adds the missing lane: work a user *shares* now lives on the server
+catalog adds the missing lane: work a user _shares_ now lives on the server
 and converges across machines. Two honest boundaries remain, stated up
 front:
 
@@ -298,7 +298,7 @@ licensed, with provenance metadata pointing at its monorepo location.
   pin the package: `packaging.test.ts` asserts the manifest (entry points at
   built output, types-first exports map, `files`, licence, `sideEffects`,
   dry-run-only scripts, in the style of the cana packaging suite), asserts
-  the built file set is *exactly* the declared closure, and asserts the
+  the built file set is _exactly_ the declared closure, and asserts the
   packed tarball contents via `npm pack --dry-run --json`;
   `dom-free.test.ts` scans the built artifact's AST for any `window`,
   `document`, `localStorage`, `indexedDB`, `alert()` or FileReader/DOMParser
@@ -316,7 +316,7 @@ licensed, with provenance metadata pointing at its monorepo location.
   npm assembles the release tarball.
 - **Versioning policy.** The package follows semver over its public barrel:
   patch for internal fixes, minor for additive exports, major for removed or
-  narrowed surface. The *data* contracts it reads and writes (full-suite
+  narrowed surface. The _data_ contracts it reads and writes (full-suite
   export, domain-package document) stay versioned in-payload under JUM-492's
   policy (Requirement 126, Contract 3) — the package version does not restate
   them. JUM-492's domain-package versioning builds on exactly this split.
@@ -324,7 +324,7 @@ licensed, with provenance metadata pointing at its monorepo location.
 The practical consequence for the user is unchanged from the E6 document:
 **export is how work leaves the machine** — as the full-suite document or as
 a versioned domain package — and the shared catalog (above) is the only
-continuous second copy. The package changes who can *depend on* the core, not
+continuous second copy. The package changes who can _depend on_ the core, not
 how a designer user's work is stored.
 
 ### The full-suite export (JUM-547), the portable bundle
@@ -355,15 +355,15 @@ documentation issue exists in the project** (an audit of the project's issue
 list confirms none was ever created), so the gate closes on the seven
 published documents:
 
-| Link | Issue | Document | State |
-|---|---|---|---|
-| E1 | [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths) | [Runtime Environment Contracts](./RUNTIME-ENVIRONMENT-CONTRACTS.md) | Done |
-| E3 | [JUM-473](https://linear.app/jumentix/issue/JUM-473/docs-e3-documentation-module-architecture-and-storage-port-contract) | [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md) | Done |
-| E4 | [JUM-479](https://linear.app/jumentix/issue/JUM-479/docs-e4-documentation-contract-parity-guarantees) | [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md) | Done |
-| E5 | [JUM-482](https://linear.app/jumentix/issue/JUM-482/docs-e5-documentation-operations-console) | [Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md) | Done |
-| E6 | [JUM-487](https://linear.app/jumentix/issue/JUM-487/docs-e6-documentation-cana-adoption-migration-and-offline-behavior) | [Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md) | Done |
-| E7 | [JUM-490](https://linear.app/jumentix/issue/JUM-490/docs-e7-documentation-design-system-and-pwa-shell) | [Service Management Design System and PWA Shell](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md) | Done |
-| E8 | [JUM-494](https://linear.app/jumentix/issue/JUM-494/docs-e8-documentation-collaboration-and-packaging) | this document | this PR |
+| Link | Issue                                                                                                                    | Document                                                                                                   | State   |
+| ---- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------- |
+| E1   | [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths)     | [Runtime Environment Contracts](./RUNTIME-ENVIRONMENT-CONTRACTS.md)                                        | Done    |
+| E3   | [JUM-473](https://linear.app/jumentix/issue/JUM-473/docs-e3-documentation-module-architecture-and-storage-port-contract) | [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md)                      | Done    |
+| E4   | [JUM-479](https://linear.app/jumentix/issue/JUM-479/docs-e4-documentation-contract-parity-guarantees)                    | [Service Management Contract Parity Guarantees](./SERVICE-MANAGEMENT-CONTRACT-PARITY.md)                   | Done    |
+| E5   | [JUM-482](https://linear.app/jumentix/issue/JUM-482/docs-e5-documentation-operations-console)                            | [Service Management Operations Console](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.md)                        | Done    |
+| E6   | [JUM-487](https://linear.app/jumentix/issue/JUM-487/docs-e6-documentation-cana-adoption-migration-and-offline-behavior)  | [Service Management Cana Adoption, Migration and Offline Behaviour](./SERVICE-MANAGEMENT-CANA-ADOPTION.md) | Done    |
+| E7   | [JUM-490](https://linear.app/jumentix/issue/JUM-490/docs-e7-documentation-design-system-and-pwa-shell)                   | [Service Management Design System and PWA Shell](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.md)                | Done    |
+| E8   | [JUM-494](https://linear.app/jumentix/issue/JUM-494/docs-e8-documentation-collaboration-and-packaging)                   | this document                                                                                              | this PR |
 
 Every link is published in EN and PT-BR, synchronized per
 [Requirement 076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md)

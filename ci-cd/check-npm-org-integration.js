@@ -1,8 +1,8 @@
-#!/usr/bin/env node
 /* eslint-disable no-console */
+const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const NPM_SCOPE = 'jumentix';
@@ -39,10 +39,7 @@ const NPM_INSTALL_CANDIDATES = Object.freeze([
  * Prefer an explicit `NPM_NODE_EXE` (set by CI after setup-node), then these
  * root-owned paths. Never search PATH (Sonar javascript:S4036).
  */
-const NODE_INSTALL_CANDIDATES = Object.freeze([
-  '/usr/bin/node',
-  '/usr/local/bin/node'
-]);
+const NODE_INSTALL_CANDIDATES = Object.freeze(['/usr/bin/node', '/usr/local/bin/node']);
 
 function isBunExecPath(execPath) {
   return /^bun(?:\.exe)?$/i.test(path.basename(String(execPath || '')));
@@ -58,9 +55,7 @@ function resolveNodeRunner({
   exists = fs.existsSync,
   preferredNode = null
 } = {}) {
-  const explicit = preferredNode
-    || env.NPM_NODE_EXE
-    || env.npm_node_execpath;
+  const explicit = preferredNode || env.NPM_NODE_EXE || env.npm_node_execpath;
   if (explicit && exists(explicit) && !isBunExecPath(explicit)) {
     return explicit;
   }
@@ -71,12 +66,12 @@ function resolveNodeRunner({
     if (exists(candidate)) return candidate;
   }
   throw new Error(
-    'Could not resolve a Node binary to run the npm CLI '
-      + `(execPath=${execPath}; looked at NPM_NODE_EXE / npm_node_execpath and: `
-      + `${NODE_INSTALL_CANDIDATES.join(', ')}).\n`
-      + '  npm provenance attestation requires Node\'s OpenSSL — Bun cannot run\n'
-      + '  npm-cli.js for publish (ERR_OSSL_NO_DEFAULT_DIGEST). Set NPM_NODE_EXE\n'
-      + '  to an absolute Node path, or run the publish script under node.'
+    'Could not resolve a Node binary to run the npm CLI ' +
+      `(execPath=${execPath}; looked at NPM_NODE_EXE / npm_node_execpath and: ` +
+      `${NODE_INSTALL_CANDIDATES.join(', ')}).\n` +
+      "  npm provenance attestation requires Node's OpenSSL — Bun cannot run\n" +
+      '  npm-cli.js for publish (ERR_OSSL_NO_DEFAULT_DIGEST). Set NPM_NODE_EXE\n' +
+      '  to an absolute Node path, or run the publish script under node.'
   );
 }
 
@@ -96,7 +91,12 @@ function resolveNpmCommand({
   // Prefer npm bundled next to the Node runner (not next to Bun).
   const bundled = path.join(
     path.dirname(nodeRunner),
-    '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'
+    '..',
+    'lib',
+    'node_modules',
+    'npm',
+    'bin',
+    'npm-cli.js'
   );
   if (exists(bundled)) {
     return { command: nodeRunner, argsPrefix: [bundled] };
@@ -107,12 +107,12 @@ function resolveNpmCommand({
     }
   }
   throw new Error(
-    'Could not resolve the npm CLI to an absolute path '
-      + `(looked next to ${nodeRunner} and in: ${NPM_INSTALL_CANDIDATES.join(', ')}).\n`
-      + '  This check resolves npm without PATH on purpose: a writable PATH entry\n'
-      + '  can shadow the real CLI and this check trusts what npm tells it about\n'
-      + '  authentication. Run it through an npm script (npm_execpath) or add the\n'
-      + '  npm-cli.js location to NPM_INSTALL_CANDIDATES in ci-cd/check-npm-org-integration.js.'
+    'Could not resolve the npm CLI to an absolute path ' +
+      `(looked next to ${nodeRunner} and in: ${NPM_INSTALL_CANDIDATES.join(', ')}).\n` +
+      '  This check resolves npm without PATH on purpose: a writable PATH entry\n' +
+      '  can shadow the real CLI and this check trusts what npm tells it about\n' +
+      '  authentication. Run it through an npm script (npm_execpath) or add the\n' +
+      '  npm-cli.js location to NPM_INSTALL_CANDIDATES in ci-cd/check-npm-org-integration.js.'
   );
 }
 
@@ -123,7 +123,12 @@ function run(args, resolverOptions) {
   if (env.NPM_CI_CD) env.NODE_AUTH_TOKEN = env.NPM_CI_CD;
   else if (env.NPM_JUMENTIX_CI_CD) env.NODE_AUTH_TOKEN = env.NPM_JUMENTIX_CI_CD;
   const npm = resolveNpmCommand(resolverOptions);
-  return execFileSync(npm.command, [...npm.argsPrefix, ...args], { env, stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim();
+  return execFileSync(npm.command, [...npm.argsPrefix, ...args], {
+    env,
+    stdio: ['ignore', 'pipe', 'pipe']
+  })
+    .toString()
+    .trim();
 }
 
 /**
@@ -162,7 +167,7 @@ function checkNpmOrgAccess(runCommand = run) {
 
 function fail(message) {
   console.error(message);
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 function main() {
@@ -177,11 +182,11 @@ function main() {
 }
 
 module.exports = {
+  checkNpmOrgAccess,
+  isBunExecPath,
   NODE_INSTALL_CANDIDATES,
   NPM_INSTALL_CANDIDATES,
   NPM_SCOPE,
-  checkNpmOrgAccess,
-  isBunExecPath,
   resolveNodeRunner,
   resolveNpmCommand,
   run

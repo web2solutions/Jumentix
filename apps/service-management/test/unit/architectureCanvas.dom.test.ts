@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
+/* eslint-disable jest/max-expects, jest/no-conditional-in-test */
 /*
  * JUM-816 / JUM-905 — behavioral suite for `createArchitectureCanvas`
  * (`apps/service-management/src/ui/architectureCanvas.js`).
@@ -13,17 +12,26 @@
  * clicks) and the state the module mutates through `withPersist`.
  */
 
-import { architectureLinkLabel, createArchitectureCanvas } from '../../src/ui/architectureCanvas.js';
+import {
+  architectureLinkLabel,
+  createArchitectureCanvas
+} from '../../src/ui/architectureCanvas.js';
 
 describe('architectureLinkLabel — unknown service ids', () => {
   it('falls back to the raw id when a link end has no matching service', () => {
     expect.hasAssertions();
     const core = {
-      id: 'core', name: 'Core', x: 80, y: 80, width: 270, height: 190
+      id: 'core',
+      name: 'Core',
+      x: 80,
+      y: 80,
+      width: 270,
+      height: 190
     };
 
-    expect(architectureLinkLabel({ from: 'core', to: 'ghost-service', protocol: 'rest' }, [core]))
-      .toBe('Core —rest→ ghost-service');
+    expect(
+      architectureLinkLabel({ from: 'core', to: 'ghost-service', protocol: 'rest' }, [core])
+    ).toBe('Core —rest→ ghost-service');
   });
 });
 
@@ -41,7 +49,7 @@ function createFakeElement(tag: string): any {
     href: '',
     download: '',
     children: [] as any[],
-    listeners: new Map<string, Array<(event: any) => void>>(),
+    listeners: new Map<string, ((event: any) => void)[]>(),
     get classList() {
       return {
         add: (name: string) => {
@@ -64,7 +72,8 @@ function createFakeElement(tag: string): any {
       el.listeners.set(type, list);
     },
     dispatch(type: string, payload: any = {}) {
-      (el.listeners.get(type) || []).slice()
+      (el.listeners.get(type) || [])
+        .slice()
         .forEach((handler: (event: any) => void) => handler(payload));
     },
     click() {
@@ -72,7 +81,10 @@ function createFakeElement(tag: string): any {
     },
     getContext() {
       return {
-        fillStyle: '', font: '', fillRect: () => {}, fillText: () => {}
+        fillStyle: '',
+        font: '',
+        fillRect: () => {},
+        fillText: () => {}
       };
     },
     toDataURL() {
@@ -89,22 +101,26 @@ function createFakeElement(tag: string): any {
 }
 
 function createFakeWindow() {
-  const listeners = new Map<string, Array<(event: any) => void>>();
+  const listeners = new Map<string, ((event: any) => void)[]>();
   return {
     addEventListener(type: string, handler: (event: any) => void) {
-      const list = listeners.get(type) || [];
+      const list = listeners.get(type) ?? [];
       list.push(handler);
       listeners.set(type, list);
     },
     removeEventListener(type: string, handler: (event: any) => void) {
-      listeners.set(type, (listeners.get(type) || []).filter((entry) => entry !== handler));
+      listeners.set(
+        type,
+        (listeners.get(type) ?? []).filter((entry) => entry !== handler)
+      );
     },
     dispatch(type: string, payload: any = {}) {
-      (listeners.get(type) || []).slice()
+      (listeners.get(type) ?? [])
+        .slice()
         .forEach((handler: (event: any) => void) => handler(payload));
     },
     listenerCount(type: string) {
-      return (listeners.get(type) || []).length;
+      return (listeners.get(type) ?? []).length;
     }
   };
 }
@@ -114,25 +130,43 @@ function fakeDataTransfer(initial: Record<string, string> = {}) {
   return {
     effectAllowed: '',
     dropEffect: '',
-    setData: (key: string, value: string) => { store[key] = value; },
+    setData: (key: string, value: string) => {
+      store[key] = value;
+    },
     getData: (key: string) => store[key] || ''
   };
 }
 
 const FULL_DOM_KEYS = [
-  'architectureEmptyState', 'architectureServiceNameInput', 'architectureAddServiceBtn',
-  'architectureServiceList', 'architectureDomainPalette', 'architectureInspectName',
-  'architectureInspectKind', 'architectureInspectUrl', 'architectureInspectDeploy',
-  'architectureInspectDomain', 'architectureMoveDomainBtn', 'architectureSaveServiceBtn',
-  'architectureDeleteServiceBtn', 'architectureLinkFrom', 'architectureLinkTo',
-  'architectureLinkProtocol', 'architectureAddLinkBtn', 'architectureLinkList',
-  'architectureIssueList', 'architectureCanvas', 'architectureMiniMap',
+  'architectureEmptyState',
+  'architectureServiceNameInput',
+  'architectureAddServiceBtn',
+  'architectureServiceList',
+  'architectureDomainPalette',
+  'architectureInspectName',
+  'architectureInspectKind',
+  'architectureInspectUrl',
+  'architectureInspectDeploy',
+  'architectureInspectDomain',
+  'architectureMoveDomainBtn',
+  'architectureSaveServiceBtn',
+  'architectureDeleteServiceBtn',
+  'architectureLinkFrom',
+  'architectureLinkTo',
+  'architectureLinkProtocol',
+  'architectureAddLinkBtn',
+  'architectureLinkList',
+  'architectureIssueList',
+  'architectureCanvas',
+  'architectureMiniMap',
   'architectureExportImageBtn'
 ];
 
 function createFullDom(): Record<string, any> {
   const dom: Record<string, any> = {};
-  FULL_DOM_KEYS.forEach((key) => { dom[key] = createFakeElement('div'); });
+  FULL_DOM_KEYS.forEach((key) => {
+    dom[key] = createFakeElement('div');
+  });
   return dom;
 }
 
@@ -211,12 +245,18 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     const state: any = { domains: createDomains(), architecture: undefined };
     const saveState = jest.fn();
     const actions = {
-      withPersist: (fn: () => void) => { fn(); saveState(); },
+      withPersist: (fn: () => void) => {
+        fn();
+        saveState();
+      },
       saveState
     };
     const canvas = createArchitectureCanvas({ dom, state, actions });
     return {
-      dom, state, saveState, canvas
+      dom,
+      state,
+      saveState,
+      canvas
     };
   }
 
@@ -277,8 +317,9 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
 
     // Selecting a service re-renders the list from scratch, so the live
     // "active" class lands on the freshly built buttons, not the stale ones.
-    const [rerenderedCore, rerenderedNew] = dom.architectureServiceList.children
-      .map((item: any) => item.children[0]);
+    const [rerenderedCore, rerenderedNew] = dom.architectureServiceList.children.map(
+      (item: any) => item.children[0]
+    );
     expect(rerenderedNew.className).toBe('active');
     expect(rerenderedCore.className).toBe('');
   });
@@ -291,8 +332,9 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
 
     dom.architectureAddServiceBtn.dispatch('click', {});
 
-    const labels = dom.architectureServiceList.children
-      .map((item: any) => item.children[0].textContent);
+    const labels = dom.architectureServiceList.children.map(
+      (item: any) => item.children[0].textContent
+    );
     expect(labels).toContain('Service (domain)');
   });
 
@@ -307,8 +349,9 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
 
     expect(() => dom.architectureAddServiceBtn.dispatch('click', {})).not.toThrow();
 
-    const labels = dom.architectureServiceList.children
-      .map((item: any) => item.children[0].textContent);
+    const labels = dom.architectureServiceList.children.map(
+      (item: any) => item.children[0].textContent
+    );
     expect(labels).toContain('Service (domain)');
   });
 
@@ -323,7 +366,9 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     // of writing the inspector's values onto any service.
     dom.architectureSaveServiceBtn.dispatch('click', {});
 
-    expect(state.architecture.services.map((service: any) => service.name)).not.toContain('Should not apply');
+    expect(state.architecture.services.map((service: any) => service.name)).not.toContain(
+      'Should not apply'
+    );
   });
 
   it('falls back to the id when a fillSelect item has no name', () => {
@@ -381,7 +426,9 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
 
     dom.architectureDeleteServiceBtn.dispatch('click', {});
 
-    expect(state.architecture.services.map((service: any) => service.name)).not.toContain('Removable');
+    expect(state.architecture.services.map((service: any) => service.name)).not.toContain(
+      'Removable'
+    );
   });
 
   it('edits and saves the selected service through the inspector, both kind branches', () => {
@@ -435,12 +482,16 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     // looked up again after every action rather than reused by reference.
     dom.architectureInspectDomain.value = '';
     dom.architectureMoveDomainBtn.dispatch('click', {});
-    let billingService = state.architecture.services.find((service: any) => service.name === 'Billing Service');
+    let billingService = state.architecture.services.find(
+      (service: any) => service.name === 'Billing Service'
+    );
     expect(billingService.domains).toHaveLength(0);
 
     dom.architectureInspectDomain.value = 'domain-billing';
     dom.architectureMoveDomainBtn.dispatch('click', {});
-    billingService = state.architecture.services.find((service: any) => service.name === 'Billing Service');
+    billingService = state.architecture.services.find(
+      (service: any) => service.name === 'Billing Service'
+    );
     expect(billingService.domains).toContain('domain-billing');
   });
 
@@ -484,7 +535,12 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
 
     const emptyTransfer = fakeDataTransfer();
     let prevented = false;
-    dropTargetBox.dispatch('drop', { preventDefault: () => { prevented = true; }, dataTransfer: emptyTransfer });
+    dropTargetBox.dispatch('drop', {
+      preventDefault: () => {
+        prevented = true;
+      },
+      dataTransfer: emptyTransfer
+    });
     expect(prevented).toBe(true);
     expect(dropTargetBox.dataset.serviceId).toBeTruthy();
 
@@ -496,8 +552,9 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     dropTargetBox.dispatch('drop', { preventDefault: () => {}, dataTransfer: transfer });
 
     const dropTargetId = dropTargetBox.dataset.serviceId;
-    const dropTargetService = state.architecture.services
-      .find((service: any) => service.id === dropTargetId);
+    const dropTargetService = state.architecture.services.find(
+      (service: any) => service.id === dropTargetId
+    );
     expect(dropTargetService.domains).toContain('domain-payments');
   });
 

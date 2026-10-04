@@ -113,12 +113,12 @@ Because safety cannot come from retreat, it comes from construction:
 
 What the user sees:
 
-- On success, the status region announces: *"Your saved design was moved to
+- On success, the status region announces: _"Your saved design was moved to
   the new persistent store and verified. A backup was downloaded as
   `service-management-v1-backup-<timestamp>.json`; the previous copy stays,
-  unused, for 30 days as a manual recovery path."*
+  unused, for 30 days as a manual recovery path."_
 - On failure, an error names the reason
-  (*"Your previously saved design could not be migrated: …"*) and the
+  (_"Your previously saved design could not be migrated: …"_) and the
   migration retries on the next launch — the source is still there.
 - The wire format did not change (Requirement 126 Contract 2): same keys,
   same JSON documents — only where they live. A baseline that existed crosses
@@ -146,8 +146,8 @@ cached data of its own; see the
 
 What "offline-first" does **not** guarantee:
 
-- **No sync.** Offline means *no server is needed*, not *your data exists
-  anywhere else*. There is no account, no cloud copy, no cross-device or
+- **No sync.** Offline means _no server is needed_, not _your data exists
+  anywhere else_. There is no account, no cloud copy, no cross-device or
   cross-browser replication.
 - **No backup.** Durability is the browser's storage policy, not ours.
   "Clear site data" removes BOTH the shell cache and the Cana database —
@@ -176,12 +176,12 @@ write-path states surface at the moment they happen.
 
 ### Private/incognito or blocked storage — non-persisting session
 
-- **What you see** (at startup, severity error): *"Persistent storage is
+- **What you see** (at startup, severity error): _"Persistent storage is
   unavailable in this browsing context (private/incognito mode, blocked
   storage, or storage not yet wired into this host). The designer cannot save
-  your work: anything you build in this session will be lost when it ends."*
+  your work: anything you build in this session will be lost when it ends."_
   The designer still opens and is fully explorable — in memory only. If you
-  try to save, the failure is surfaced (*"A save could not be confirmed…"*),
+  try to save, the failure is surfaced (_"A save could not be confirmed…"_),
   never silently accepted; a reload loses the edit and the declaration
   recurs.
 - **What you can do:** export the in-memory model (Export JSON works without
@@ -191,10 +191,10 @@ write-path states surface at the moment they happen.
 
 ### A browser without usable IndexedDB — unsupported environment
 
-- **What you see** (at startup, severity error): *"This browser provides no
+- **What you see** (at startup, severity error): _"This browser provides no
   usable IndexedDB storage. The Service Management designer depends on it for
   persistence, so this environment is unsupported: you can explore the
-  designer, but nothing you build here can be saved."* This is a distinct
+  designer, but nothing you build here can be saved."_ This is a distinct
   state from the private-mode one above — not a blank screen, and not the
   same message.
 - **What you can do:** explore and export; do real work in a browser with
@@ -202,9 +202,9 @@ write-path states surface at the moment they happen.
 
 ### Persistence not granted — degraded durability
 
-- **What you see** (severity info): *"Storage is working but durability is
+- **What you see** (severity info): _"Storage is working but durability is
   degraded: durability: storage is not persistent; the browser may reclaim it
-  under pressure."* Reads and writes work; the browser simply has not promised to
+  under pressure."_ Reads and writes work; the browser simply has not promised to
   keep the data when disk runs tight, which makes eviction (below) more
   likely.
 - **What you can do:** keep working, but export regularly; where the browser
@@ -212,9 +212,9 @@ write-path states surface at the moment they happen.
 
 ### Quota near exhaustion — warning before failure
 
-- **What you see** (severity info): *"Storage is working but durability is
+- **What you see** (severity info): _"Storage is working but durability is
   degraded: quota: storage usage is near the origin quota (usage/quota
-  bytes); writes may start failing."* The warning arrives BEFORE the hard
+  bytes); writes may start failing."_ The warning arrives BEFORE the hard
   failure — reads still work, and the export path is reachable from the
   warned session (proven by the JUM-486 quota cell, which exports
   `domain-designer.json` from exactly this state).
@@ -224,8 +224,8 @@ write-path states surface at the moment they happen.
 ### Quota exhausted — the write did not happen
 
 - **What you see:** a write rejected for quota is reported as unconfirmed
-  (*"A save could not be confirmed (quota: …); reconciling with the stored
-  document."*) — never as success. Cana's taxonomy is explicit: a
+  (_"A save could not be confirmed (quota: …); reconciling with the stored
+  document."_) — never as success. Cana's taxonomy is explicit: a
   quota-rejected write DID NOT happen; the durable record does not carry the
   doomed edit, and a reload tells the same truth.
 - **What you can do:** your edit is still on screen in this session — export
@@ -233,10 +233,10 @@ write-path states surface at the moment they happen.
 
 ### Evicted database — data loss, declared
 
-- **What you see** (at startup, severity error): *"Previously saved designer
+- **What you see** (at startup, severity error): _"Previously saved designer
   data is no longer readable (storage eviction or corruption) and there is no
   fallback store. A fresh template was loaded instead; your only recourse is
-  a backup/export made earlier."* An evicted database and a first run are
+  a backup/export made earlier."_ An evicted database and a first run are
   indistinguishable by inspection; only Cana's tombstone verdict tells them
   apart, so this state is NEVER presented as a first run — and a genuinely
   fresh profile is never reported as data loss (both directions proven).
@@ -246,11 +246,11 @@ write-path states surface at the moment they happen.
 
 ### Corrupted record — lost, not empty, announced, and the designer recovers
 
-- **What you see** (at startup, severity error): *"Your previously saved
+- **What you see** (at startup, severity error): _"Your previously saved
   design could not be loaded: the stored data is corrupted and there is no
   fallback store, so a fresh template was loaded instead and the saved model
   was lost. Your recourse is a backup/export made earlier — restore it with
-  Import JSON."* A stored payload that no longer parses reports `'lost'`
+  Import JSON."_ A stored payload that no longer parses reports `'lost'`
   through the port — never `'empty'` — and the designer recovers instead of
   crashing: the seed template loads and the recovered save makes the record
   readable again. The probe-time environment states cannot see an unreadable
@@ -266,12 +266,12 @@ write-path states surface at the moment they happen.
 
 ### Unknown write outcome — worker crash after dispatch
 
-- **What you see:** *"A save could not be confirmed (unknown-outcome: …);
-  reconciling with the stored document."* When Cana reports a write's outcome
+- **What you see:** _"A save could not be confirmed (unknown-outcome: …);
+  reconciling with the stored document."_ When Cana reports a write's outcome
   as unknown (a storage worker that died after the write was dispatched, Cana
   JUM-411), the designer never assumes success: it reads the stored document
   back. A read-back matching the attempted payload confirms the save
-  (*"The save was confirmed after reconciliation."*); anything else reloads
+  (_"The save was confirmed after reconciliation."_); anything else reloads
   the last confirmed state into the designer, so the screen never diverges
   from what is durable. If the read-back itself fails, the message says to
   export immediately — and means it.
@@ -340,15 +340,15 @@ must be obvious, not merely available.
 - **How to export:** the Domain Designer toolbar's **Export JSON** button
   downloads `domain-designer.json` — the full-suite document (JUM-547:
   `{ kind: "service-management-suite", version: "2.0.0", domains,
-  relationships, interfaces, serviceConfiguration, runtimeEnvironment,
-  codeWorkspace, deployments, view }`). **Import JSON** on the same toolbar restores it. The
+relationships, interfaces, serviceConfiguration, runtimeEnvironment,
+codeWorkspace, deployments, view }`). **Import JSON** on the same toolbar restores it. The
   other export buttons (Markdown, JSON Schema, OAS 3.1, AsyncAPI, gRPC proto,
   boilerplate bundle, domain package) are design artifacts for downstream
   tooling, not backups.
 - **The export's scope, honestly:** the JSON export carries all five tabs of
   the suite state — the domain model, the interface adapters, the service
   configuration, the generated-code workspace and the deploy targets — with one recorded boundary: the
-  runtime environment crosses as the environment *selection* only
+  runtime environment crosses as the environment _selection_ only
   (`environment`, `fileName`), never its values, so no machine configuration
   (and no secret) leaves in a bundle; import restores the selection and keeps
   the local machine's values. Bundles exported before JUM-547 (the domain-only

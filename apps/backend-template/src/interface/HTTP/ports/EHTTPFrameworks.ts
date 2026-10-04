@@ -1,5 +1,4 @@
-// eslint-disable-next-line no-shadow
-export enum EHTTPFrameworks {
+enum EHTTPFrameworks {
   express = 'express',
   fastify = 'fastify',
   restify = 'restify',
@@ -10,5 +9,7 @@ export enum EHTTPFrameworks {
   feathers = 'feathers',
   derby_js = 'derby-js',
   adonis_js = 'adonis-js',
-  total_js = 'total-js',
+  total_js = 'total-js'
 }
+
+export default EHTTPFrameworks;

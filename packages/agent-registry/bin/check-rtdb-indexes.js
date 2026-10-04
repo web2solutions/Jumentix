@@ -19,8 +19,9 @@
  * `ci-cd/export-database-rules.js`. Without that file this check fails closed:
  * a query whose index cannot be verified is exactly the case it exists for.
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const RULES_FILE = 'database.rules.json';
@@ -37,7 +38,8 @@ const SKIP_DIRECTORIES = new Set(['node_modules', 'dist', 'build', 'coverage', '
  */
 function queriesIn(source) {
   const found = [];
-  const chain = /\.ref\(\s*([`'"])([^`'"]*)\1\s*\)((?:\s*\.\w+\([^)]*\))*?)\s*\.orderByChild\(\s*['"]([^'"]+)['"]\s*\)/g;
+  const chain =
+    /\.ref\(\s*([`'"])([^`'"]*)\1\s*\)((?:\s*\.\w+\([^)]*\))*?)\s*\.orderByChild\(\s*['"]([^'"]+)['"]\s*\)/g;
   for (const match of source.matchAll(chain)) {
     found.push({ refPath: match[2], child: match[4] });
   }
@@ -94,7 +96,7 @@ function rulesIndex(rulesNode, segments, child) {
     // whose index does exist.
     candidates.push(...Object.values(rulesNode));
   } else {
-    if (Object.prototype.hasOwnProperty.call(rulesNode, head)) candidates.push(rulesNode[head]);
+    if (Object.hasOwn(rulesNode, head)) candidates.push(rulesNode[head]);
     for (const [key, value] of Object.entries(rulesNode)) {
       if (key.startsWith('$')) candidates.push(value);
     }
@@ -132,12 +134,10 @@ function validateRtdbIndexes(rootDir = process.cwd()) {
   const files = SEARCH_ROOTS.flatMap((root) => walk(path.join(rootDir, root)));
 
   const hits = [];
-  let unresolved = 0;
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
     if (!source.includes('orderByChild')) continue;
     const result = queriesIn(source);
-    unresolved += result.unresolved;
     for (const query of result.queries) {
       hits.push({ ...query, file: path.relative(rootDir, file) });
     }
@@ -151,9 +151,9 @@ function validateRtdbIndexes(rootDir = process.cwd()) {
   const rulesPath = path.join(rootDir, RULES_FILE);
   if (!fs.existsSync(rulesPath)) {
     failures.push(
-      `[rtdb-index] ${hits.length} orderByChild quer${hits.length === 1 ? 'y' : 'ies'} exist but`
-      + ` ${RULES_FILE} is missing. Run \`node ci-cd/export-database-rules.js\` to bring the live`
-      + ' rules under version control, then declare the index.'
+      `[rtdb-index] ${hits.length} orderByChild quer${hits.length === 1 ? 'y' : 'ies'} exist but` +
+        ` ${RULES_FILE} is missing. Run \`node ci-cd/export-database-rules.js\` to bring the live` +
+        ' rules under version control, then declare the index.'
     );
     return failures;
   }
@@ -170,10 +170,10 @@ function validateRtdbIndexes(rootDir = process.cwd()) {
     const segments = refSegments(hit.refPath);
     if (rulesIndex(rules.rules, segments, hit.child)) continue;
     failures.push(
-      `[rtdb-index] ${hit.file} orders ${hit.refPath || '/'} by '${hit.child}' with no matching`
-      + ` ".indexOn" in ${RULES_FILE}. Without it the server sends every child and the client`
-      + ' sorts, so the query stays correct and gets slower with every record. Either order by'
-      + ` key, or add:\n${suggestion(segments, hit.child)}`
+      `[rtdb-index] ${hit.file} orders ${hit.refPath || '/'} by '${hit.child}' with no matching` +
+        ` ".indexOn" in ${RULES_FILE}. Without it the server sends every child and the client` +
+        ' sorts, so the query stays correct and gets slower with every record. Either order by' +
+        ` key, or add:\n${suggestion(segments, hit.child)}`
     );
   }
 

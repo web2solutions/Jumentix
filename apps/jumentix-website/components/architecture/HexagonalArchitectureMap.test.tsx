@@ -1,4 +1,5 @@
 import { render, screen, userEvent } from '@/test-utils';
+
 import { HexagonalArchitectureMap } from './HexagonalArchitectureMap';
 
 describe('HexagonalArchitectureMap', () => {
@@ -8,7 +9,7 @@ describe('HexagonalArchitectureMap', () => {
 
     expect(screen.getByTestId('hexagonal-architecture-map')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Backend-template hexagonal map',
+      'Backend-template hexagonal map'
     );
     expect(screen.getByText(/Web and desktop GUIs sit on the inbound/i)).toBeInTheDocument();
 
@@ -17,7 +18,9 @@ describe('HexagonalArchitectureMap', () => {
     expect(screen.getByText('interface/GUI/desktop/')).toBeInTheDocument();
     expect(screen.getByText(/Web GUI \(SPA\/PWA\/React\/Vue\) — slot ready/i)).toBeInTheDocument();
 
-    expect(screen.getByText('apps/backend-template/src/interface/GUI/README.md')).toBeInTheDocument();
+    expect(
+      screen.getByText('apps/backend-template/src/interface/GUI/README.md')
+    ).toBeInTheDocument();
     expect(screen.getByTestId('hex-map-preview-inbound')).toHaveTextContent(/inbound GUI slot/i);
   });
 
@@ -26,13 +29,13 @@ describe('HexagonalArchitectureMap', () => {
     render(<HexagonalArchitectureMap locale="pt-BR" />);
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Mapa hexagonal do backend-template',
+      'Mapa hexagonal do backend-template'
     );
     await userEvent.click(screen.getByRole('tab', { name: 'Domínio' }));
     expect(screen.getByText('modules/Users/domain/')).toBeInTheDocument();
 
     expect(
-      screen.getByText('apps/backend-template/src/modules/Users/domain/security/Rbac.ts'),
+      screen.getByText('apps/backend-template/src/modules/Users/domain/security/Rbac.ts')
     ).toBeInTheDocument();
     expect(screen.getByTestId('hex-map-preview-domain')).toHaveTextContent('EUserRole');
   });

@@ -17,10 +17,14 @@ const {
  * first-time visitor. Every existing documentation check passed it.
  */
 
-const LEAK_LINE = 'CircleCI is the canonical CI orchestrator; GitHub Actions is retained and can be '
-  + 're-enabled by setting `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` to `true`.';
+const LEAK_LINE =
+  'CircleCI is the canonical CI orchestrator; GitHub Actions is retained and can be ' +
+  're-enabled by setting `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` to `true`.';
 
-type Fixture = { root: string; allowlistPath: string };
+interface Fixture {
+  root: string;
+  allowlistPath: string;
+}
 
 function workspace(files: Record<string, string>, allowlist: unknown = []): Fixture {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'doc-audience-'));
@@ -45,24 +49,32 @@ describe('documentation audience gate', () => {
 
     const failures = run({ 'README.md': `# Jumentix\n\n${LEAK_LINE}\n` });
 
-    expect(failures).toStrictEqual(expect.arrayContaining([
-      'README.md:3: [prospect] internal CI/gate control variable (internal-ci-variable)',
-      'README.md:3: [prospect] internal CI-provider canonical/fallback mechanics (ci-provider-mechanics)'
-    ]));
+    expect(failures).toStrictEqual(
+      expect.arrayContaining([
+        'README.md:3: [prospect] internal CI/gate control variable (internal-ci-variable)',
+        'README.md:3: [prospect] internal CI-provider canonical/fallback mechanics (ci-provider-mechanics)'
+      ])
+    );
   });
 
   it('passes the same README once the leak is removed', () => {
     expect.hasAssertions();
 
-    expect(run({ 'README.md': '# Jumentix\n\nShip services from one contract.\n' })).toStrictEqual([]);
+    expect(run({ 'README.md': '# Jumentix\n\nShip services from one contract.\n' })).toStrictEqual(
+      []
+    );
   });
 
   it('catches the Portuguese phrasing of the same leak', () => {
     expect.hasAssertions();
 
-    const failures = run({ 'README.pt-BR.md': 'CircleCI e o orquestrador canonico de CI; o GitHub Actions esta retido.\n' });
+    const failures = run({
+      'README.pt-BR.md': 'CircleCI e o orquestrador canonico de CI; o GitHub Actions esta retido.\n'
+    });
 
-    expect(failures).toStrictEqual(['README.pt-BR.md:1: [prospect] internal CI-provider canonical/fallback mechanics (ci-provider-mechanics)']);
+    expect(failures).toStrictEqual([
+      'README.pt-BR.md:1: [prospect] internal CI-provider canonical/fallback mechanics (ci-provider-mechanics)'
+    ]);
   });
 
   it('allows public runtime configuration keys', () => {
@@ -70,7 +82,9 @@ describe('documentation audience gate', () => {
 
     const page = 'Set `JUMENTIX_HTTP_FRAMEWORK=fastify` and `JUMENTIX_DATABASE_DRIVER=SQLite`.\n';
 
-    expect(run({ 'apps/jumentix-website/content/jumentix/guides/rest-api.mdx': page })).toStrictEqual([]);
+    expect(
+      run({ 'apps/jumentix-website/content/jumentix/guides/rest-api.mdx': page })
+    ).toStrictEqual([]);
   });
 
   it('flags requirement numbers, issue ids and .agents paths on the developer site', () => {
@@ -101,13 +115,17 @@ describe('documentation audience gate', () => {
     ].join('\n');
     const failures = run({ 'apps/jumentix-website/components/commercial/Note.tsx': component });
 
-    expect(failures).toStrictEqual(['apps/jumentix-website/components/commercial/Note.tsx:3: [prospect] Linear issue id in a public layer (linear-issue-id)']);
+    expect(failures).toStrictEqual([
+      'apps/jumentix-website/components/commercial/Note.tsx:3: [prospect] Linear issue id in a public layer (linear-issue-id)'
+    ]);
   });
 
   it('keeps URL schemes when stripping comments', () => {
     expect.hasAssertions();
 
-    expect(stripCodeComments('const a = "https://x.dev"; // JUM-1')).toBe('const a = "https://x.dev"; ');
+    expect(stripCodeComments('const a = "https://x.dev"; // JUM-1')).toBe(
+      'const a = "https://x.dev"; '
+    );
   });
 
   it('leaves tests, stories and non-public files out of the matrix', () => {
@@ -134,9 +152,14 @@ describe('documentation audience gate', () => {
   it('honours an allow-list entry that still matches', () => {
     expect.hasAssertions();
 
-    const allowlist = [{
-      file: 'README.md', rule: 'linear-issue-id', issue: 'JUM-893', reason: 'fixture'
-    }];
+    const allowlist = [
+      {
+        file: 'README.md',
+        rule: 'linear-issue-id',
+        issue: 'JUM-893',
+        reason: 'fixture'
+      }
+    ];
 
     expect(run({ 'README.md': 'Tracked in JUM-1.\n' }, allowlist)).toStrictEqual([]);
   });
@@ -144,9 +167,14 @@ describe('documentation audience gate', () => {
   it('fails a stale allow-list entry whose file is already clean', () => {
     expect.hasAssertions();
 
-    const allowlist = [{
-      file: 'README.md', rule: 'linear-issue-id', issue: 'JUM-893', reason: 'fixture'
-    }];
+    const allowlist = [
+      {
+        file: 'README.md',
+        rule: 'linear-issue-id',
+        issue: 'JUM-893',
+        reason: 'fixture'
+      }
+    ];
 
     expect(run({ 'README.md': 'Clean.\n' }, allowlist)).toStrictEqual([
       'README.md: allow-list entry for linear-issue-id (JUM-893) no longer matches — remove it'
@@ -156,9 +184,14 @@ describe('documentation audience gate', () => {
   it('fails an allow-list entry naming a deleted file', () => {
     expect.hasAssertions();
 
-    const allowlist = [{
-      file: 'README.gone.md', rule: 'agents-path', issue: 'JUM-893', reason: 'fixture'
-    }];
+    const allowlist = [
+      {
+        file: 'README.gone.md',
+        rule: 'agents-path',
+        issue: 'JUM-893',
+        reason: 'fixture'
+      }
+    ];
 
     expect(run({ 'README.md': 'Clean.\n' }, allowlist)).toStrictEqual([
       'README.gone.md: allow-list entry for agents-path names a file that no longer exists — remove it'
@@ -171,9 +204,18 @@ describe('documentation audience gate', () => {
     const missingIssue = [{ file: 'README.md', rule: 'agents-path' }];
 
     expect(() => run({ 'README.md': 'Clean.\n' }, missingIssue)).toThrow('missing "issue"');
-    expect(() => run({ 'README.md': 'Clean.\n' }, [{
-      file: 'README.md', rule: 'nope', issue: 'JUM-1', reason: 'r'
-    }])).toThrow('unknown rule');
-    expect(() => run({ 'README.md': 'Clean.\n' }, { not: 'an array' })).toThrow('must be a JSON array');
+    expect(() =>
+      run({ 'README.md': 'Clean.\n' }, [
+        {
+          file: 'README.md',
+          rule: 'nope',
+          issue: 'JUM-1',
+          reason: 'r'
+        }
+      ])
+    ).toThrow('unknown rule');
+    expect(() => run({ 'README.md': 'Clean.\n' }, { not: 'an array' })).toThrow(
+      'must be a JSON array'
+    );
   });
 });

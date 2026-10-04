@@ -1,35 +1,30 @@
-import type { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
+import { ResourceLockedError, ValidationError } from '@src/infra/exceptions';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
+
+import type { BaseError } from '@src/infra/exceptions';
+import type IMutexService from '@src/infra/mutex/port/IMutexService';
 import type { IServiceResponse } from '@src/modules/port/IServiceResponse';
-import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
 import type { ILoginRequest } from '@src/modules/Users/interface/dto/ILoginRequest';
+import type { ILogoutRequest } from '@src/modules/Users/interface/dto/ILogoutRequest';
 import type { IRegisterRequest } from '@src/modules/Users/interface/dto/IRegisterRequest';
 import type { IUpdatePasswordRequest } from '@src/modules/Users/interface/dto/IUpdatePasswordRequest';
-import type { ILogoutRequest } from '@src/modules/Users/interface/dto/ILogoutRequest';
-import { BaseError, ResourceLockedError, ValidationError } from '@src/infra/exceptions';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
 
-export class AuthUseCases implements IAuthUseCases {
+class AuthUseCases implements IAuthUseCases {
   private readonly authService: IAuthService;
 
   private readonly mutexService: IMutexService;
 
-  constructor(
-    authService: IAuthService,
-    mutexService: IMutexService
-  ) {
+  constructor(authService: IAuthService, mutexService: IMutexService) {
     this.authService = authService;
     this.mutexService = mutexService;
   }
 
   public async login(data: ILoginRequest): Promise<IServiceResponse<IAuthorizationHeader>> {
     const { username, password, schemaType } = data;
-    return this.authService.authenticate(
-      username,
-      password,
-      schemaType ?? EAuthSchemaType.Bearer
-    );
+    return this.authService.authenticate(username, password, schemaType ?? EAuthSchemaType.Bearer);
   }
 
   public async register(data: IRegisterRequest): Promise<IServiceResponse<Record<string, any>>> {
@@ -55,10 +50,7 @@ export class AuthUseCases implements IAuthUseCases {
         throw new ResourceLockedError('user locked');
       }
 
-      const response = await this.authService.updatePassword(
-        userId,
-        data.password
-      );
+      const response = await this.authService.updatePassword(userId, data.password);
       await this.mutexService.unlock('user', userId);
 
       if (response.error) {
@@ -82,7 +74,7 @@ export class AuthUseCases implements IAuthUseCases {
     try {
       const decodedToken = await this.authService.decodeToken(authorization);
 
-      if (decodedToken!.username !== data.username) {
+      if (decodedToken?.username !== data.username) {
         throw new ValidationError('Invalid request');
       }
 
@@ -101,3 +93,5 @@ export class AuthUseCases implements IAuthUseCases {
     return new AuthUseCases(authService, mutexService);
   }
 }
+
+export default AuthUseCases;

@@ -17,7 +17,6 @@ Juniores precisam de um app concreto para abrir — não só APIs de pacotes.
 - **Usado com:** `@jumentix/designer-core`, `@jumentix/cana`, SPA/PWA guide
 - **Não responsável por:** server OpenAPI gateways or Redis KV
 
-
 ## Pré-requisitos
 
 - [Começando](/docs/pt-BR/jumentix/concepts/getting-started)
@@ -36,8 +35,8 @@ Juniores precisam de um app concreto para abrir — não só APIs de pacotes.
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
+| Sintoma                                   | Causa             | Correção                        |
+| ----------------------------------------- | ----------------- | ------------------------------- |
 | Procurar docs de pacotes privados no site | Pacotes excluídos | Use só o hub público de pacotes |
 
 ## Checklist júnior (“Eu consigo …”)

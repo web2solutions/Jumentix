@@ -1,6 +1,8 @@
 import Dexie from 'dexie';
-import type { CanaSchema } from '../src';
+
 import { createClient } from '../src';
+
+import type { CanaSchema } from '../src';
 
 /**
  * Differential harness: Cana against Dexie on identical inputs (JUM-561).
@@ -34,35 +36,55 @@ interface Design {
 
 const rows: Design[] = [
   {
-    id: 1, name: 'alpha', owner: 'ana', size: 10
+    id: 1,
+    name: 'alpha',
+    owner: 'ana',
+    size: 10
   },
   {
-    id: 2, name: 'bravo', owner: 'bruno', size: 20
+    id: 2,
+    name: 'bravo',
+    owner: 'bruno',
+    size: 20
   },
   {
-    id: 3, name: 'charlie', owner: 'ana', size: 30
+    id: 3,
+    name: 'charlie',
+    owner: 'ana',
+    size: 30
   },
   {
-    id: 4, name: 'delta', owner: 'carla', size: 40
+    id: 4,
+    name: 'delta',
+    owner: 'carla',
+    size: 40
   },
   {
-    id: 5, name: 'echo', owner: 'ana', size: 50
+    id: 5,
+    name: 'echo',
+    owner: 'ana',
+    size: 50
   },
   {
-    id: 6, name: 'foxtrot', owner: 'bruno', size: 60
+    id: 6,
+    name: 'foxtrot',
+    owner: 'bruno',
+    size: 60
   }
 ];
 
 const schema: CanaSchema = {
   version: 1,
-  stores: [{
-    name: 'designs',
-    keyPath: 'id',
-    indexes: [
-      { name: 'owner', keyPath: 'owner' },
-      { name: 'size', keyPath: 'size' }
-    ]
-  }]
+  stores: [
+    {
+      name: 'designs',
+      keyPath: 'id',
+      indexes: [
+        { name: 'owner', keyPath: 'owner' },
+        { name: 'size', keyPath: 'size' }
+      ]
+    }
+  ]
 };
 
 /** Both engines, seeded identically, each on its own factory. */
@@ -89,9 +111,8 @@ async function bothSeeded() {
 }
 
 /** Ids in a stable order, so set equality is what is being compared. */
-const ids = (records: readonly Design[]): number[] => records
-  .map((row) => row.id)
-  .sort((a, b) => a - b);
+const ids = (records: readonly Design[]): number[] =>
+  records.map((row) => row.id).sort((a, b) => a - b);
 
 describe('differential: reads agree with Dexie', () => {
   it('returns the same records for a full scan', async () => {
@@ -119,10 +140,14 @@ describe('differential: reads agree with Dexie', () => {
   it('agrees on a closed range', async () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
-    const fromCana = await cana.table<Design>('designs')
+    const fromCana = await cana
+      .table<Design>('designs')
       .query({ index: 'size', range: { lower: 20, upper: 50 } });
-    const fromDexie = await dexie.table<Design>('designs')
-      .where('size').between(20, 50, true, true).toArray();
+    const fromDexie = await dexie
+      .table<Design>('designs')
+      .where('size')
+      .between(20, 50, true, true)
+      .toArray();
 
     expect(ids(fromCana)).to.deep.equal(ids(fromDexie));
     await teardown();
@@ -131,10 +156,14 @@ describe('differential: reads agree with Dexie', () => {
   it('agrees on a half-open range, which is where off-by-one bugs live', async () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
-    const fromCana = await cana.table<Design>('designs')
+    const fromCana = await cana
+      .table<Design>('designs')
       .query({ index: 'size', range: { lower: 20, upper: 50, upperOpen: true } });
-    const fromDexie = await dexie.table<Design>('designs')
-      .where('size').between(20, 50, true, false).toArray();
+    const fromDexie = await dexie
+      .table<Design>('designs')
+      .where('size')
+      .between(20, 50, true, false)
+      .toArray();
 
     expect(ids(fromCana)).to.deep.equal(ids(fromDexie));
     expect(ids(fromCana)).to.deep.equal([2, 3, 4]);
@@ -144,15 +173,20 @@ describe('differential: reads agree with Dexie', () => {
   it('agrees on both bounds open', async () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
-    const fromCana = await cana.table<Design>('designs')
-      .query({
-        index: 'size',
-        range: {
-          lower: 20, upper: 50, lowerOpen: true, upperOpen: true
-        }
-      });
-    const fromDexie = await dexie.table<Design>('designs')
-      .where('size').between(20, 50, false, false).toArray();
+    const fromCana = await cana.table<Design>('designs').query({
+      index: 'size',
+      range: {
+        lower: 20,
+        upper: 50,
+        lowerOpen: true,
+        upperOpen: true
+      }
+    });
+    const fromDexie = await dexie
+      .table<Design>('designs')
+      .where('size')
+      .between(20, 50, false, false)
+      .toArray();
 
     expect(ids(fromCana)).to.deep.equal(ids(fromDexie));
     expect(ids(fromCana)).to.deep.equal([3, 4]);
@@ -162,13 +196,23 @@ describe('differential: reads agree with Dexie', () => {
   it('agrees on lower-only and upper-only bounds', async () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
-    const canaAbove = await cana.table<Design>('designs')
+    const canaAbove = await cana
+      .table<Design>('designs')
       .query({ index: 'size', range: { lower: 40 } });
-    const dexieAbove = await dexie.table<Design>('designs').where('size').aboveOrEqual(40).toArray();
+    const dexieAbove = await dexie
+      .table<Design>('designs')
+      .where('size')
+      .aboveOrEqual(40)
+      .toArray();
 
-    const canaBelow = await cana.table<Design>('designs')
+    const canaBelow = await cana
+      .table<Design>('designs')
       .query({ index: 'size', range: { upper: 30 } });
-    const dexieBelow = await dexie.table<Design>('designs').where('size').belowOrEqual(30).toArray();
+    const dexieBelow = await dexie
+      .table<Design>('designs')
+      .where('size')
+      .belowOrEqual(30)
+      .toArray();
 
     expect(ids(canaAbove)).to.deep.equal(ids(dexieAbove));
     expect(ids(canaBelow)).to.deep.equal(ids(dexieBelow));
@@ -182,7 +226,9 @@ describe('differential: reads agree with Dexie', () => {
     const canaAsc = await cana.table<Design>('designs').query({ index: 'size' });
     const dexieAsc = await dexie.table<Design>('designs').orderBy('size').toArray();
 
-    const canaDesc = await cana.table<Design>('designs').query({ index: 'size', direction: 'prev' });
+    const canaDesc = await cana
+      .table<Design>('designs')
+      .query({ index: 'size', direction: 'prev' });
     const dexieDesc = await dexie.table<Design>('designs').orderBy('size').reverse().toArray();
 
     expect(canaAsc.map((row) => row.id)).to.deep.equal(dexieAsc.map((row) => row.id));
@@ -205,10 +251,14 @@ describe('differential: reads agree with Dexie', () => {
     // implementation diverge, so it is worth checking against another engine.
     const { cana, dexie, teardown } = await bothSeeded();
 
-    const fromCana = await cana.table<Design>('designs')
+    const fromCana = await cana
+      .table<Design>('designs')
       .query({ index: 'size', offset: 2, limit: 2 });
-    const fromDexie = await dexie.table<Design>('designs')
-      .orderBy('size').offset(2).limit(2)
+    const fromDexie = await dexie
+      .table<Design>('designs')
+      .orderBy('size')
+      .offset(2)
+      .limit(2)
       .toArray();
 
     expect(fromCana.map((row) => row.id)).to.deep.equal(fromDexie.map((row) => row.id));
@@ -219,17 +269,26 @@ describe('differential: reads agree with Dexie', () => {
   it('agrees on counts, overall and by index', async () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
-    expect(await cana.table<Design>('designs').count()).to.equal(await dexie.table<Design>('designs').count());
-    expect(await cana.table<Design>('designs').count({ index: 'owner', equals: 'ana' })).to.equal(await dexie.table<Design>('designs').where('owner').equals('ana').count());
+    expect(await cana.table<Design>('designs').count()).to.equal(
+      await dexie.table<Design>('designs').count()
+    );
+    expect(await cana.table<Design>('designs').count({ index: 'owner', equals: 'ana' })).to.equal(
+      await dexie.table<Design>('designs').where('owner').equals('ana').count()
+    );
     await teardown();
   });
 
   it('agrees on a lookup that matches nothing', async () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
-    const fromCana = await cana.table<Design>('designs')
+    const fromCana = await cana
+      .table<Design>('designs')
       .query({ index: 'owner', equals: 'nobody' });
-    const fromDexie = await dexie.table<Design>('designs').where('owner').equals('nobody').toArray();
+    const fromDexie = await dexie
+      .table<Design>('designs')
+      .where('owner')
+      .equals('nobody')
+      .toArray();
 
     expect(fromCana).to.deep.equal([]);
     expect(fromDexie).to.deep.equal([]);
@@ -254,17 +313,25 @@ describe('differential: writes agree with Dexie', () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
     await cana.table<Design>('designs').put({
-      id: 1, name: 'replaced', owner: 'ana', size: 10
+      id: 1,
+      name: 'replaced',
+      owner: 'ana',
+      size: 10
     });
     await dexie.table<Design>('designs').put({
-      id: 1, name: 'replaced', owner: 'ana', size: 10
+      id: 1,
+      name: 'replaced',
+      owner: 'ana',
+      size: 10
     });
 
     const canaRow = await cana.table<Design>('designs').get(1);
     const dexieRow = await dexie.table<Design>('designs').get(1);
 
     expect(canaRow?.name).to.equal(dexieRow?.name);
-    expect(await cana.table<Design>('designs').count()).to.equal(await dexie.table<Design>('designs').count());
+    expect(await cana.table<Design>('designs').count()).to.equal(
+      await dexie.table<Design>('designs').count()
+    );
     await teardown();
   });
 
@@ -284,16 +351,28 @@ describe('differential: writes agree with Dexie', () => {
   it('agrees that a bulk add of a duplicate key does not silently succeed', async () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
-    const canaFailed = await cana.table<Design>('designs')
-      .bulkAdd([{
-        id: 1, name: 'clash', owner: 'x', size: 1
-      }])
+    const canaFailed = await cana
+      .table<Design>('designs')
+      .bulkAdd([
+        {
+          id: 1,
+          name: 'clash',
+          owner: 'x',
+          size: 1
+        }
+      ])
       .then(() => false)
       .catch(() => true);
-    const dexieFailed = await dexie.table<Design>('designs')
-      .bulkAdd([{
-        id: 1, name: 'clash', owner: 'x', size: 1
-      }])
+    const dexieFailed = await dexie
+      .table<Design>('designs')
+      .bulkAdd([
+        {
+          id: 1,
+          name: 'clash',
+          owner: 'x',
+          size: 1
+        }
+      ])
       .then(() => false)
       .catch(() => true);
 
@@ -327,7 +406,8 @@ describe('differential: documented divergences', () => {
     const { cana, dexie, teardown } = await bothSeeded();
 
     const dexieResult = await dexie.table<Design>('designs').update(99, { name: 'ghost' });
-    const canaFailed = await cana.table<Design>('designs')
+    const canaFailed = await cana
+      .table<Design>('designs')
       .update(99, { name: 'ghost' })
       .then(() => false)
       .catch(() => true);
@@ -336,7 +416,9 @@ describe('differential: documented divergences', () => {
     expect(canaFailed).to.equal(true);
 
     // Both agree on the thing that actually matters: nothing was written.
-    expect(await cana.table<Design>('designs').count()).to.equal(await dexie.table<Design>('designs').count());
+    expect(await cana.table<Design>('designs').count()).to.equal(
+      await dexie.table<Design>('designs').count()
+    );
     expect(await cana.table<Design>('designs').get(99)).to.equal(undefined);
     await teardown();
   });

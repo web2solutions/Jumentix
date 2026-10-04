@@ -58,15 +58,15 @@ landing; the rule has not.
 
 ### Current modules
 
-| Module | Layer | Role |
-| --- | --- | --- |
-| `apps/service-management/script.js` | DOM-bound | Entry module: event wiring, rendering, import/export flows. Owns every `document`/`window` interaction. |
-| `packages/designer-core/src/state/designerState.js` | DOM-free | State and persistence core: the state object, the `normalizeStatePayload` normalisation chain, snapshot/apply, history (undo/redo), `loadState`, `buildModelSnapshot`. |
-| `packages/designer-core/src/store/IDesignerStore.js` | DOM-free, dependency-free | The storage port: contract + base class. Importable under any JavaScript runtime. |
-| `apps/service-management/src/store/CanaDesignerStore.js` | DOM-free | The sole `IDesignerStore` adapter (JUM-483), over the Cana client — injected, never imported. |
-| `apps/service-management/src/store/designerStoreFactory.js` | DOM-free | The store construction seam: `createDesignerStore()` always returns `CanaDesignerStore`; the Cana client is the only variable. |
-| `apps/service-management/src/store/canaMigration.js` | DOM-free | JUM-484's one-way localStorage → Cana migration (run at boot before any state load) and the declared storage-environment states. |
-| `apps/service-management/src/state/designerSync.js` | DOM-free | JUM-485's multi-tab sync engine: subscribes to Cana's ordered write events, bridges them across tabs over `BroadcastChannel`, and reconciles remote changes with the local undo/redo history, the pending local edit and the selection. |
+| Module                                                      | Layer                     | Role                                                                                                                                                                                                                                    |
+| ----------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/service-management/script.js`                         | DOM-bound                 | Entry module: event wiring, rendering, import/export flows. Owns every `document`/`window` interaction.                                                                                                                                 |
+| `packages/designer-core/src/state/designerState.js`         | DOM-free                  | State and persistence core: the state object, the `normalizeStatePayload` normalisation chain, snapshot/apply, history (undo/redo), `loadState`, `buildModelSnapshot`.                                                                  |
+| `packages/designer-core/src/store/IDesignerStore.js`        | DOM-free, dependency-free | The storage port: contract + base class. Importable under any JavaScript runtime.                                                                                                                                                       |
+| `apps/service-management/src/store/CanaDesignerStore.js`    | DOM-free                  | The sole `IDesignerStore` adapter (JUM-483), over the Cana client — injected, never imported.                                                                                                                                           |
+| `apps/service-management/src/store/designerStoreFactory.js` | DOM-free                  | The store construction seam: `createDesignerStore()` always returns `CanaDesignerStore`; the Cana client is the only variable.                                                                                                          |
+| `apps/service-management/src/store/canaMigration.js`        | DOM-free                  | JUM-484's one-way localStorage → Cana migration (run at boot before any state load) and the declared storage-environment states.                                                                                                        |
+| `apps/service-management/src/state/designerSync.js`         | DOM-free                  | JUM-485's multi-tab sync engine: subscribes to Cana's ordered write events, bridges them across tabs over `BroadcastChannel`, and reconciles remote changes with the local undo/redo history, the pending local edit and the selection. |
 
 The dependency direction is one-way: `script.js` → `src/state/designerState.js`
 → (port) `src/store/IDesignerStore.js` ← `src/store/CanaDesignerStore.js`
@@ -181,12 +181,12 @@ Under the no-fallback rule, an adapter failure surfaces as designer state —
 never as a silent swap to another backend. Concretely, `loadState()` maps the
 port's load outcomes onto recovery behaviour:
 
-| `load()` outcome | Meaning | `loadState()` behaviour |
-| --- | --- | --- |
-| `'ok'` | A stored document was found and decoded. | Normalise and apply the model slice. If normalisation itself throws (corrupt-but-decodable payload), recover exactly like `'lost'`. |
-| `'empty'` | Nothing is stored. First run — NOT an error, NOT data loss. | Seed the default template, persist it, clear history. |
-| `'lost'` | Storage was available and held data that is no longer readable (eviction, corruption). Distinct from `'empty'`. | Seed, persist the recovered state (overwriting the unreadable payload), reset the view, clear history. |
-| `'unavailable'` | The storage backend itself cannot be used (private mode, missing IndexedDB). Terminal under no-fallback. | Seed **in memory only** — there is nothing behind the store to write to, and no fallback. |
+| `load()` outcome | Meaning                                                                                                         | `loadState()` behaviour                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `'ok'`           | A stored document was found and decoded.                                                                        | Normalise and apply the model slice. If normalisation itself throws (corrupt-but-decodable payload), recover exactly like `'lost'`. |
+| `'empty'`        | Nothing is stored. First run — NOT an error, NOT data loss.                                                     | Seed the default template, persist it, clear history.                                                                               |
+| `'lost'`         | Storage was available and held data that is no longer readable (eviction, corruption). Distinct from `'empty'`. | Seed, persist the recovered state (overwriting the unreadable payload), reset the view, clear history.                              |
+| `'unavailable'`  | The storage backend itself cannot be used (private mode, missing IndexedDB). Terminal under no-fallback.        | Seed **in memory only** — there is nothing behind the store to write to, and no fallback.                                           |
 
 JUM-484 made these states visible instead of silent: at boot, the app detects
 and communicates four declared storage-environment states —
@@ -220,9 +220,9 @@ every result as asynchronous.
   - `'unknown'` — the outcome is indeterminate (e.g. a worker crashed after
     the write was dispatched). An unknown outcome **MUST NOT be reported to
     the user as success**.
-  Adapters MAY throw synchronously for programmer errors (an unserializable
-  payload); backend failures are reported through the result, never as
-  `'persisted'`.
+    Adapters MAY throw synchronously for programmer errors (an unserializable
+    payload); backend failures are reported through the result, never as
+    `'persisted'`.
 - **`clear()` → `DesignerStoreSaveResult`.** Removes the state document.
   Resolving `'persisted'` means the document is gone for good: a subsequent
   `load()` reports `'empty'`.

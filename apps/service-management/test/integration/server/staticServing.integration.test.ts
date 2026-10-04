@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
+/* eslint-disable jest/max-expects */
 /*
  * JUM-466 — Static-serving contract for the service-management SPA (JUM-463).
  *
@@ -13,9 +13,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  createTempConfigDir,
   envFileContent,
   requestRaw,
   startServer,
@@ -23,6 +24,7 @@ import {
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 describe('serviceManagement static serving (JUM-466/JUM-463)', () => {
@@ -76,19 +78,11 @@ describe('serviceManagement static serving (JUM-466/JUM-463)', () => {
     // Sent verbatim — a normalizing client would hide the attack. Twelve '..'
     // segments guarantee the path reaches the filesystem root no matter how
     // deep the worktree sits, so an unsafe server really serves /etc/passwd.
-    const dotted = await requestRaw(
-      server.port,
-      'GET',
-      `/${'../'.repeat(12)}etc/passwd`
-    );
+    const dotted = await requestRaw(server.port, 'GET', `/${'../'.repeat(12)}etc/passwd`);
     expect(dotted.status).toBe(404);
     expect(dotted.rawBody).not.toContain('root:');
 
-    const encoded = await requestRaw(
-      server.port,
-      'GET',
-      `/${'%2e%2e/'.repeat(12)}etc/passwd`
-    );
+    const encoded = await requestRaw(server.port, 'GET', `/${'%2e%2e/'.repeat(12)}etc/passwd`);
     expect(encoded.status).toBe(404);
     expect(encoded.rawBody).not.toContain('root:');
   });

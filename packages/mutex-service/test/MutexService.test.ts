@@ -1,4 +1,5 @@
 import { MutexService } from '../src/MutexService';
+
 import type { IKeyValueStorageClient, IServiceResponse } from '../src/contracts';
 
 /**
@@ -59,13 +60,15 @@ describe('lock', () => {
     expect.hasAssertions();
 
     const writes: string[] = [];
-    const service = build(storage({
-      get: async () => ({ result: 'locked' }),
-      set: async (key: string) => {
-        writes.push(key);
-        return { result: 'OK' };
-      }
-    }));
+    const service = build(
+      storage({
+        get: async () => ({ result: 'locked' }),
+        set: async (key: string) => {
+          writes.push(key);
+          return { result: 'OK' };
+        }
+      })
+    );
 
     await expect(service.lock('orders', 'uuid-1')).resolves.toMatchObject({
       result: { previouslyLocked: true, locked: false }
@@ -91,12 +94,19 @@ describe('lock', () => {
 
   it.each([
     ['the store returns an error', { set: async () => ({ error: new Error('store said no') }) }],
-    ['the store throws', { set: async () => { throw new Error('store said no'); } }]
+    [
+      'the store throws',
+      {
+        set: async () => {
+          throw new Error('store said no');
+        }
+      }
+    ]
   ])('surfaces the failure as an error response when %s', async (_label, over) => {
     expect.hasAssertions();
 
     const service = build(storage(over as Partial<IKeyValueStorageClient>));
-    const response = await service.lock('orders', 'uuid-1') as IServiceResponse;
+    const response = (await service.lock('orders', 'uuid-1')) as IServiceResponse;
 
     expect(response.error).toBeDefined();
     expect(response.result).toBeUndefined();
@@ -124,7 +134,7 @@ describe('isLocked', () => {
     // The dangerous default. A store error read as "not locked" hands the lock
     // to a second writer.
     const service = build(storage({ get: async () => ({ error: new Error('down') }) }));
-    const response = await service.isLocked('orders', 'uuid-1') as IServiceResponse;
+    const response = (await service.isLocked('orders', 'uuid-1')) as IServiceResponse;
 
     expect(response.error).toBeDefined();
     expect(response.result).toBeUndefined();
@@ -136,12 +146,14 @@ describe('unlock', () => {
     expect.hasAssertions();
 
     const deleted: string[] = [];
-    const service = build(storage({
-      del: async (key: string) => {
-        deleted.push(key);
-        return { result: 1 };
-      }
-    }));
+    const service = build(
+      storage({
+        del: async (key: string) => {
+          deleted.push(key);
+          return { result: 1 };
+        }
+      })
+    );
 
     await expect(service.unlock('orders', 'uuid-1')).resolves.toMatchObject({ result: 1 });
     expect(deleted).toHaveLength(1);
@@ -221,19 +233,23 @@ describe('compile', () => {
 
     const used: string[] = [];
     MutexService.reset();
-    MutexService.compile(storage({
-      get: async () => {
-        used.push('first');
-        return { result: undefined };
-      }
-    }));
+    MutexService.compile(
+      storage({
+        get: async () => {
+          used.push('first');
+          return { result: undefined };
+        }
+      })
+    );
 
-    const second = MutexService.compile(storage({
-      get: async () => {
-        used.push('second');
-        return { result: undefined };
-      }
-    }));
+    const second = MutexService.compile(
+      storage({
+        get: async () => {
+          used.push('second');
+          return { result: undefined };
+        }
+      })
+    );
 
     await second.isLocked('orders', 'uuid-1');
 
@@ -255,7 +271,8 @@ describe('compile', () => {
 
     MutexService.reset();
 
-    expect(() => MutexService.compile(undefined as unknown as IKeyValueStorageClient))
-      .toThrow('MutexService depends on KeyValueStorageClient implementation');
+    expect(() => MutexService.compile(undefined as unknown as IKeyValueStorageClient)).toThrow(
+      'MutexService depends on KeyValueStorageClient implementation'
+    );
   });
 });

@@ -1,1 +1,3 @@
-export { MutexService } from '@jumentix/mutex-service';
+import { MutexService } from '@jumentix/mutex-service';
+
+export default MutexService;

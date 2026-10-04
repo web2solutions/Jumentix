@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-LIFECYCLE-AND-WORKFLOW.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Ciclo de vida e fluxo de trabalho de especificações
 
 Este ciclo de vida é obrigatório para entrega do Jumentix.
@@ -101,4 +102,3 @@ Uma mudança é feita somente quando todas são verdadeiras:
 5. Documentação e registros de agentes são sincronizados.
 6. A rastreabilidade da Issue e do Project Update no Linear até o PR e os arquivos de
    especificação é explícita.
-

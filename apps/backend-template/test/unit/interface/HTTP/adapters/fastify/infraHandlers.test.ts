@@ -13,7 +13,7 @@ describe('fastify infra handlers', () => {
     const res = makeRes();
     res.send.mockResolvedValue(res);
 
-    await expect(endpoint.handler({} as any, res as any)).resolves.toBe(res);
+    await expect(endpoint.handler({} as any, res as any) as Promise<unknown>).resolves.toBe(res);
 
     expect(endpoint.path).toBe('/1.0.0');
     expect(endpoint.method).toBe('get');
@@ -24,9 +24,7 @@ describe('fastify infra handlers', () => {
     expect.hasAssertions();
     const endpoint = apiDocGetHandlerFactory({ spec: {}, version: '1.0.0' } as any);
     const res = makeRes();
-    res.send
-      .mockRejectedValueOnce(new Error('serialization failed'))
-      .mockReturnValueOnce(res);
+    res.send.mockRejectedValueOnce(new Error('serialization failed')).mockReturnValueOnce(res);
 
     await endpoint.handler({} as any, res as any);
 

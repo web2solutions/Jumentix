@@ -43,4 +43,3 @@ Mandatory outcomes:
 - Keep strict lint/build compatibility.
 - Document smoke workflows in project docs and README index.
 - Preserve in-memory default for CI baseline while allowing container-backed validation in local and staging workflows.
-

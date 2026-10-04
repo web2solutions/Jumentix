@@ -24,17 +24,9 @@
  * defaults keep the pre-refactor `new Date().toISOString()` behaviour.
  */
 
-import {
-  getDefaultRbacPolicy,
-  normalizeContractInput,
-  normalizeRbacPolicyInput,
-  parseCommaSeparated,
-  SUITE_EXPORT_KIND,
-  SUITE_EXPORT_VERSION
-} from '../state/designerState.js';
-import {
-  normalizeArchitectureInput
-} from '../model/architecture.js';
+import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
+import { buildHexagonalBundle } from '../codegen/hexagonalCodegen.js';
+import { normalizeArchitectureInput } from '../model/architecture.js';
 import {
   entityLabel,
   getEntityRbacPolicy,
@@ -43,9 +35,15 @@ import {
   toPathToken,
   toSchemaName
 } from '../model/modelQueries.js';
-import { buildHexagonalBundle } from '../codegen/hexagonalCodegen.js';
-import { buildAsyncApiTransportDocument } from './asyncApiExporters.js';
 import { parsePackageDependency } from '../packages/packageVersioning.js';
+import {
+  getDefaultRbacPolicy,
+  normalizeContractInput,
+  normalizeRbacPolicyInput,
+  parseCommaSeparated,
+  SUITE_EXPORT_KIND,
+  SUITE_EXPORT_VERSION
+} from '../state/designerState.js';
 
 /**
  * The default per-entity RBAC policy, captured once: `buildOasDocument`
@@ -103,10 +101,16 @@ export function buildMarkdownExport(state) {
       lines.push(`- Ubiquitous Language: ${domain.context.ubiquitousLanguage || '-'}`);
       lines.push(`- Owner Team: ${domain.context.ownerTeam || '-'}`);
       lines.push(`- Upstream: ${(domain.context.upstreamDependencies || []).join(', ') || '-'}`);
-      lines.push(`- Downstream: ${(domain.context.downstreamDependencies || []).join(', ') || '-'}`);
+      lines.push(
+        `- Downstream: ${(domain.context.downstreamDependencies || []).join(', ') || '-'}`
+      );
       lines.push(`- Integration Channel: ${domain.context.integrationChannel || '-'}`);
-      lines.push(`- Package Dependencies: ${(domain.context.packageDependencies || []).join(', ') || '-'}`);
-      lines.push(`- Shared Value Objects: ${(domain.context.sharedValueObjects || []).join(', ') || '-'}`);
+      lines.push(
+        `- Package Dependencies: ${(domain.context.packageDependencies || []).join(', ') || '-'}`
+      );
+      lines.push(
+        `- Shared Value Objects: ${(domain.context.sharedValueObjects || []).join(', ') || '-'}`
+      );
       lines.push('');
     }
     domain.entities.forEach((entity) => {
@@ -118,14 +122,18 @@ export function buildMarkdownExport(state) {
       lines.push('| Field | Type | Required | PK | FK | Unique | Nullable |');
       lines.push('|---|---|---:|---:|---:|---:|---:|');
       entity.fields.forEach((field) => {
-        lines.push(`| ${field.name} | ${field.type}${field.format ? `(${field.format})` : ''} | ${Boolean(field.required)} | ${Boolean(field.pk)} | ${Boolean(field.fk)} | ${Boolean(field.unique)} | ${Boolean(field.nullable)} |`);
+        lines.push(
+          `| ${field.name} | ${field.type}${field.format ? `(${field.format})` : ''} | ${Boolean(field.required)} | ${Boolean(field.pk)} | ${Boolean(field.fk)} | ${Boolean(field.unique)} | ${Boolean(field.nullable)} |`
+        );
       });
       lines.push('');
       lines.push('RBAC:');
       const policy = getEntityRbacPolicy(entity);
       ['list', 'getById', 'create', 'update', 'delete'].forEach((action) => {
         const rule = policy[action] || { roles: [], tenantScoped: true };
-        lines.push(`- ${action}: [${(rule.roles || []).join(', ')}], tenantScoped=${Boolean(rule.tenantScoped)}`);
+        lines.push(
+          `- ${action}: [${(rule.roles || []).join(', ')}], tenantScoped=${Boolean(rule.tenantScoped)}`
+        );
       });
       lines.push('');
       lines.push('Message Contracts:');
@@ -134,7 +142,9 @@ export function buildMarkdownExport(state) {
         lines.push('- none');
       } else {
         contracts.forEach((contract) => {
-          lines.push(`- ${contract.type}:${contract.name} | channel=${contract.channel || '-'} | version=${contract.version}`);
+          lines.push(
+            `- ${contract.type}:${contract.name} | channel=${contract.channel || '-'} | version=${contract.version}`
+          );
         });
       }
       lines.push('');
@@ -144,7 +154,9 @@ export function buildMarkdownExport(state) {
     lines.push('## Relationships');
     lines.push('');
     state.relationships.forEach((relationship) => {
-      lines.push(`- ${relationship.name || relationship.id}: ${entityLabel(state.domains, relationship.fromEntityId)} (${relationship.fromCardinality}) -> (${relationship.toCardinality}) ${entityLabel(state.domains, relationship.toEntityId)}`);
+      lines.push(
+        `- ${relationship.name || relationship.id}: ${entityLabel(state.domains, relationship.fromEntityId)} (${relationship.fromCardinality}) -> (${relationship.toCardinality}) ${entityLabel(state.domains, relationship.toEntityId)}`
+      );
     });
   }
   return lines.join('\n');
@@ -185,6 +197,7 @@ export function buildBoilerplateBundleDocument(state, generatedAt = new Date().t
   // from the model (JUM-476). The codegen module is also what the Code
   // Preview pane renders, so preview and bundle cannot drift apart.
   const bundle = buildHexagonalBundle(state, {
+    // eslint-disable-next-line no-use-before-define -- hoisted function declaration; the call runs after module evaluation
     oasDocument: buildOasDocument(state),
     // Both transports carry the same channel set (JUM-475); the websocket
     // document is the canonical event-channel source for the codegen.
@@ -200,16 +213,24 @@ export function buildBoilerplateBundleDocument(state, generatedAt = new Date().t
       workspaceState: overlay.state
     };
   };
-  bundle.modules.forEach((module) => {
-    Object.keys(module.files || {}).forEach((role) => {
-      module.files[role] = applyWorkspaceOverlay(module.files[role]);
-    });
-    (module.entities || []).forEach((entity) => {
-      Object.keys(entity.files || {}).forEach((role) => {
-        entity.files[role] = applyWorkspaceOverlay(entity.files[role]);
-      });
-    });
-  });
+  bundle.modules = bundle.modules.map((moduleEntry) => ({
+    ...moduleEntry,
+    files: Object.fromEntries(
+      Object.entries(moduleEntry.files || {}).map(([role, file]) => [
+        role,
+        applyWorkspaceOverlay(file)
+      ])
+    ),
+    entities: (moduleEntry.entities || []).map((entity) => ({
+      ...entity,
+      files: Object.fromEntries(
+        Object.entries(entity.files || {}).map(([role, file]) => [
+          role,
+          applyWorkspaceOverlay(file)
+        ])
+      )
+    }))
+  }));
   return {
     kind: 'boilerplate-bundle',
     version: '2.0.0',
@@ -313,11 +334,11 @@ export function filterOasDocumentForService(oas, serviceId) {
   let grew = true;
   while (grew) {
     grew = false;
-    [...needed].forEach((name) => {
+    for (const name of [...needed]) {
       const before = needed.size;
       collectSchemaRefs(schemas[name], needed);
       if (needed.size !== before) grew = true;
-    });
+    }
   }
   const filteredSchemas = {};
   needed.forEach((name) => {
@@ -342,6 +363,7 @@ export function filterOasDocumentForService(oas, serviceId) {
 }
 
 export function buildOasDocumentSet(state) {
+  // eslint-disable-next-line no-use-before-define -- hoisted function declaration; the call runs after module evaluation
   const merged = buildOasDocument(state);
   const services = {};
   (merged['x-services'] || []).forEach((entry) => {
@@ -379,10 +401,10 @@ export function buildOasDocument(state) {
         };
         const heuristic = oasFieldNameFlags(field.name);
         if (
-          flags.pk !== heuristic.pk
-          || flags.fk !== heuristic.fk
-          || flags.unique !== heuristic.unique
-          || flags.indexed
+          flags.pk !== heuristic.pk ||
+          flags.fk !== heuristic.fk ||
+          flags.unique !== heuristic.unique ||
+          flags.indexed
         ) {
           fieldSchema['x-field-flags'] = flags;
         }
@@ -483,13 +505,15 @@ export function buildOasDocument(state) {
       const entityPath = toPathToken(entity.name);
       const collectionPath = `/${domainPath}/${entityPath}`;
       const itemPath = `${collectionPath}/{id}`;
-      const idParam = [{
-        name: 'id',
-        in: 'path',
-        description: `ID of ${entity.name}`,
-        required: true,
-        schema: { type: 'string' }
-      }];
+      const idParam = [
+        {
+          name: 'id',
+          in: 'path',
+          description: `ID of ${entity.name}`,
+          required: true,
+          schema: { type: 'string' }
+        }
+      ];
 
       paths[collectionPath] = {
         get: {
@@ -524,14 +548,16 @@ export function buildOasDocument(state) {
         }
       };
 
-      const stampOperations = (item) => {
-        Object.keys(item).forEach((method) => {
-          if (item[method] && typeof item[method] === 'object') {
-            item[method]['x-service'] = serviceId;
-          }
-        });
-      };
-      stampOperations(paths[collectionPath]);
+      const stampOperations = (item) =>
+        Object.fromEntries(
+          Object.keys(item).map((method) => [
+            method,
+            item[method] && typeof item[method] === 'object'
+              ? { ...item[method], 'x-service': serviceId }
+              : item[method]
+          ])
+        );
+      paths[collectionPath] = stampOperations(paths[collectionPath]);
       paths[itemPath] = {
         get: {
           operationId: `get${schemaName}ById`,
@@ -582,7 +608,7 @@ export function buildOasDocument(state) {
           }
         }
       };
-      stampOperations(paths[itemPath]);
+      paths[itemPath] = stampOperations(paths[itemPath]);
     });
   });
 
@@ -608,7 +634,8 @@ export function buildOasDocument(state) {
     name: service.name,
     kind: service.kind,
     url: service.url,
-    description: service.kind === 'core' ? 'Merged Core service (monolith or host of Users).' : service.name
+    description:
+      service.kind === 'core' ? 'Merged Core service (monolith or host of Users).' : service.name
   }));
   const servers = architecture.services.map((service) => ({
     url: service.url,
@@ -632,15 +659,17 @@ export function buildOasDocument(state) {
     },
     'x-services': xServices,
     'x-architecture-links': architecture.links,
-    'x-message-contracts': state.domains.flatMap((domain) => (
-      domain.entities.flatMap((entity) => (
-        (Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : []).map((contract, index) => ({
-          ...normalizeContractInput(contract, index),
-          domain: domain.name,
-          entity: entity.name
-        }))
-      ))
-    )),
+    'x-message-contracts': state.domains.flatMap((domain) =>
+      domain.entities.flatMap((entity) =>
+        (Array.isArray(entity?.meta?.contracts) ? entity.meta.contracts : []).map(
+          (contract, index) => ({
+            ...normalizeContractInput(contract, index),
+            domain: domain.name,
+            entity: entity.name
+          })
+        )
+      )
+    ),
     'x-relations': state.relationships.map((relationship) => ({
       // JUM-478: relationships cross by schema name, not by model id — the
       // importer recomputes entity ids, so carrying them would make every

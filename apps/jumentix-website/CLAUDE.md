@@ -8,20 +8,20 @@ This is a **Next.js 16 + Mantine 9 + Nextra 4** template used as the documentati
 
 ## Commands
 
-| Command | Purpose |
-|---------|---------|
-| `yarn dev` | Start Next.js dev server |
-| `yarn build` | Production build (Next.js + pagefind search index) |
-| `yarn test` | Full suite: typegen, oxfmt, lint, typecheck, jest |
-| `yarn jest` | Run Jest tests only |
-| `yarn jest:watch` | Jest in watch mode |
-| `yarn jest -- path/to/file` | Run a single test file |
-| `yarn typecheck` | TypeScript type checking (`tsc --noEmit`) |
-| `yarn lint` | oxlint + Stylelint |
-| `yarn format:write` | Auto-format all TS/TSX/CSS files (oxfmt) |
-| `yarn format:test` | Check formatting (oxfmt) |
-| `yarn storybook` | Storybook dev server on port 6006 |
-| `yarn analyze` | Bundle analysis with `@next/bundle-analyzer` |
+| Command                     | Purpose                                            |
+| --------------------------- | -------------------------------------------------- |
+| `yarn dev`                  | Start Next.js dev server                           |
+| `yarn build`                | Production build (Next.js + pagefind search index) |
+| `yarn test`                 | Full suite: typegen, oxfmt, lint, typecheck, jest  |
+| `yarn jest`                 | Run Jest tests only                                |
+| `yarn jest:watch`           | Jest in watch mode                                 |
+| `yarn jest -- path/to/file` | Run a single test file                             |
+| `yarn typecheck`            | TypeScript type checking (`tsc --noEmit`)          |
+| `yarn lint`                 | oxlint + Stylelint                                 |
+| `yarn format:write`         | Auto-format all TS/TSX/CSS files (oxfmt)           |
+| `yarn format:test`          | Check formatting (oxfmt)                           |
+| `yarn storybook`            | Storybook dev server on port 6006                  |
+| `yarn analyze`              | Bundle analysis with `@next/bundle-analyzer`       |
 
 ## Architecture
 
@@ -59,6 +59,7 @@ Search uses [pagefind](https://pagefind.app/). The index is built post-build (`y
 ### CSS Import Order
 
 In `app/layout.tsx`, CSS imports must follow this order:
+
 1. `@mantine/core/styles.css`
 2. Mantine extension styles (e.g., marquee, text-animate)
 3. Global styles

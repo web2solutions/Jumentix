@@ -1,15 +1,15 @@
 'use client';
 
-import { Navbar } from 'nextra-theme-docs';
-import { usePathname } from 'next/navigation';
+import { Fragment } from 'react';
+
 import { IconBrandGithub, IconLanguage } from '@tabler/icons-react';
-import {
-  BrandMark,
-  StatusBadge,
-} from '../design-system';
+import { usePathname } from 'next/navigation';
+import { Navbar } from 'nextra-theme-docs';
+
 import { ColorSchemeControl } from '../ColorSchemeControl/ColorSchemeControl';
-import { MantineNextraThemeObserver } from '../MantineNextraThemeObserver/MantineNextraThemeObserver';
+import { BrandMark, StatusBadge } from '../design-system';
 import classes from './MantineNavBar.module.css';
+import { MantineNextraThemeObserver } from '../MantineNextraThemeObserver/MantineNextraThemeObserver';
 
 const localizedDocsPath = (pathname: string, portuguese: boolean) => {
   if (portuguese) {
@@ -18,6 +18,7 @@ const localizedDocsPath = (pathname: string, portuguese: boolean) => {
   return pathname.replace(/^\/docs(?=\/|$)/, '/docs/pt-BR');
 };
 
+// eslint-disable-next-line import-x/prefer-default-export -- single named export consumed via named imports/barrels; converting to default would change the module API
 export const MantineNavBar = () => {
   const pathname = usePathname();
   const portuguese = pathname.startsWith('/docs/pt-BR');
@@ -27,25 +28,28 @@ export const MantineNavBar = () => {
     [portuguese ? 'Conceitos' : 'Concepts', `${basePath}/concepts`],
     [portuguese ? 'Guias' : 'Guides', `${basePath}/guides`],
     [portuguese ? 'Adaptadores' : 'Adapters', `${basePath}/adapters`],
-    [portuguese ? 'Pacotes' : 'Packages', `${basePath}/packages`],
+    [portuguese ? 'Pacotes' : 'Packages', `${basePath}/packages`]
   ];
 
   return (
-    <>
+    <Fragment>
       <MantineNextraThemeObserver />
       <Navbar
         logo={<BrandMark asLink={false} />}
-        projectIcon={
-          <>
-            <span className="sr-only">GitHub repository</span>
-            <IconBrandGithub size={20} aria-hidden="true" focusable="false" />
-          </>
-        }
         projectLink="https://github.com/web2solutions/Jumentix"
+        projectIcon={
+          <Fragment>
+            <span className="sr-only">GitHub repository</span>
+            <IconBrandGithub aria-hidden="true" focusable="false" size={20} />
+          </Fragment>
+        }
       >
-        <nav className={classes.docsNav} aria-label={portuguese ? 'Seções da documentação' : 'Documentation sections'}>
+        <nav
+          aria-label={portuguese ? 'Seções da documentação' : 'Documentation sections'}
+          className={classes.docsNav}
+        >
           {links.map(([label, href]) => (
-            <a href={href} key={href} aria-current={pathname.startsWith(href) ? 'page' : undefined}>
+            <a key={href} aria-current={pathname.startsWith(href) ? 'page' : undefined} href={href}>
               {label}
             </a>
           ))}
@@ -55,7 +59,9 @@ export const MantineNavBar = () => {
           <a
             className={classes.locale}
             href={localizedDocsPath(pathname, portuguese)}
-            aria-label={portuguese ? 'Read documentation in English' : 'Leia a documentação em português'}
+            aria-label={
+              portuguese ? 'Read documentation in English' : 'Leia a documentação em português'
+            }
           >
             <IconLanguage size={17} />
             {portuguese ? 'EN' : 'PT-BR'}
@@ -63,6 +69,6 @@ export const MantineNavBar = () => {
           <ColorSchemeControl />
         </div>
       </Navbar>
-    </>
+    </Fragment>
   );
 };

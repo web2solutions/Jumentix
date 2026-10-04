@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const DEFAULT_INTEGRATION_TIMEOUT_MS = 120_000;
@@ -9,7 +10,7 @@ const INTEGRATION_TIMEOUT_OVERRIDES_MS = Object.freeze({
   'test:integration:restify': 600_000,
   // The service-management matrix boots real WebKit browsers over a real
   // server (JUM-466+); the default 120s was sized for a single-suite harness.
-  'test:integration:service-management': 1_200_000,
+  'test:integration:service-management': 1_200_000
 });
 
 const INTEGRATION_SCRIPTS = Object.freeze([
@@ -35,9 +36,10 @@ const INTEGRATION_SCRIPTS = Object.freeze([
 
 function executeIntegrationScript(scriptName, options = {}) {
   const spawn = options.spawn || spawnSync;
-  const timeoutMs = options.timeoutMs
-    ?? INTEGRATION_TIMEOUT_OVERRIDES_MS[scriptName]
-    ?? DEFAULT_INTEGRATION_TIMEOUT_MS;
+  const timeoutMs =
+    options.timeoutMs ??
+    INTEGRATION_TIMEOUT_OVERRIDES_MS[scriptName] ??
+    DEFAULT_INTEGRATION_TIMEOUT_MS;
   const result = spawn('bun', ['run', scriptName], {
     stdio: 'inherit',
     env: { ...process.env, CI: 'true' },
@@ -49,7 +51,7 @@ function executeIntegrationScript(scriptName, options = {}) {
     return 124;
   }
 
-  return result.status === 0 ? 0 : (result.status || 1);
+  return result.status === 0 ? 0 : result.status || 1;
 }
 
 function validateIntegrationManifest(scripts) {
@@ -119,9 +121,9 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   DEFAULT_INTEGRATION_TIMEOUT_MS,
+  executeIntegrationScript,
   INTEGRATION_SCRIPTS,
   INTEGRATION_TIMEOUT_OVERRIDES_MS,
-  executeIntegrationScript,
   runIntegrationTests,
   validateIntegrationManifest
 };

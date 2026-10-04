@@ -1,4 +1,4 @@
-import { EEmailType } from '@src/modules/ddd/valueObjects';
+import type { EEmailType } from '@src/modules/ddd/valueObjects';
 
 export interface RequestCreateEmail {
   email: string;

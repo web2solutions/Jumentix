@@ -1,7 +1,7 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test */
-import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
+import path from 'node:path';
+
 import {
   cleanupTempConfigDir,
   createTempConfigDir,
@@ -11,6 +11,7 @@ import {
   staticRoot,
   stopServer
 } from '../../helpers/serverHarness';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 /**
@@ -29,10 +30,13 @@ import type { StartedServer } from '../../helpers/serverHarness';
  * it. Readiness now comes from the child's own listen line, so a server that
  * did not start cannot be mistaken for one that did.
  */
-const configFiles = () => Object.fromEntries(
-  ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example']
-    .map((fileName) => [fileName, envFileContent('express')])
-);
+const configFiles = () =>
+  Object.fromEntries(
+    ['.env.dev', '.env.staging', '.env.ci', '.env.dev.example'].map((fileName) => [
+      fileName,
+      envFileContent('express')
+    ])
+  );
 
 describe('serviceManagement static manifest refresh strategy (JUM-463)', () => {
   const fixtureName = `jum463-post-boot-${process.pid}-${Date.now()}.txt`;

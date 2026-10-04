@@ -98,11 +98,12 @@
  * the base implementations throw so a partial adapter fails loudly instead of
  * silently dropping designer state.
  */
-export class IDesignerStore {
+class IDesignerStore {
   /**
    * Ask about storage health at startup, before any state exists.
    * @returns {Promise<DesignerStoreStatus>}
    */
+  // eslint-disable-next-line class-methods-use-this -- port base: throws so partial adapters fail loudly; it holds no instance state by design
   async probe() {
     throw new Error('IDesignerStore.probe() must be implemented by the adapter.');
   }
@@ -113,17 +114,19 @@ export class IDesignerStore {
    * when nothing is stored, `'unavailable'` when the backend cannot be used,
    * `'lost'` when stored data is gone or unreadable.
    */
+  // eslint-disable-next-line class-methods-use-this -- port base: throws so partial adapters fail loudly; it holds no instance state by design
   async load() {
     throw new Error('IDesignerStore.load() must be implemented by the adapter.');
   }
 
   /**
    * Persist the full designer state document.
-   * @param {Object} payload - serializable `service-management.v1` document.
+   * @param {Object} _payload - serializable `service-management.v1` document.
    * @returns {Promise<DesignerStoreSaveResult>} `'persisted'` only when the
    * write is durable; `'unknown'` when the outcome is indeterminate.
    */
-  async save(payload) {
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- port base: throws so partial adapters fail loudly, holds no instance state, and never reads the contract parameter by design
+  async save(_payload) {
     throw new Error('IDesignerStore.save() must be implemented by the adapter.');
   }
 
@@ -132,6 +135,7 @@ export class IDesignerStore {
    * @returns {Promise<DesignerStoreSaveResult>} `'persisted'` when a
    * subsequent `load()` is guaranteed to report `'empty'`.
    */
+  // eslint-disable-next-line class-methods-use-this -- port base: throws so partial adapters fail loudly; it holds no instance state by design
   async clear() {
     throw new Error('IDesignerStore.clear() must be implemented by the adapter.');
   }
@@ -140,17 +144,19 @@ export class IDesignerStore {
    * Read the schema-diff baseline document.
    * @returns {Promise<DesignerStoreLoadResult>} same semantics as `load()`.
    */
+  // eslint-disable-next-line class-methods-use-this -- port base: throws so partial adapters fail loudly; it holds no instance state by design
   async loadBaseline() {
     throw new Error('IDesignerStore.loadBaseline() must be implemented by the adapter.');
   }
 
   /**
    * Persist the schema-diff baseline document.
-   * @param {Object} snapshot - `{ domains, relationships }` baseline shape
+   * @param {Object} _snapshot - `{ domains, relationships }` baseline shape
    * pinned by Requirement 126 Contract 2.
    * @returns {Promise<DesignerStoreSaveResult>} same semantics as `save()`.
    */
-  async saveBaseline(snapshot) {
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars -- port base: throws so partial adapters fail loudly, holds no instance state, and never reads the contract parameter by design
+  async saveBaseline(_snapshot) {
     throw new Error('IDesignerStore.saveBaseline() must be implemented by the adapter.');
   }
 
@@ -158,7 +164,10 @@ export class IDesignerStore {
    * Remove the schema-diff baseline document.
    * @returns {Promise<DesignerStoreSaveResult>} same semantics as `clear()`.
    */
+  // eslint-disable-next-line class-methods-use-this -- port base: throws so partial adapters fail loudly; it holds no instance state by design
   async clearBaseline() {
     throw new Error('IDesignerStore.clearBaseline() must be implemented by the adapter.');
   }
 }
+
+export default IDesignerStore;

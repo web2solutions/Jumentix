@@ -1,1 +1,3 @@
-export { UserUseCases } from '@src/modules/Users/application/UserUseCases';
+import UserUseCases from '@src/modules/Users/application/UserUseCases';
+
+export default UserUseCases;

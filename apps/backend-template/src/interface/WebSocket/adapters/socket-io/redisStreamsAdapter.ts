@@ -1,19 +1,17 @@
-import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-streams-adapter';
-import { Server } from 'socket.io';
+import { createClient } from 'redis';
+
+import type { Server } from 'socket.io';
 
 export interface IRedisStreamsSocketIoAdapter {
   configure: (io: Server) => Promise<void>;
   cleanup: () => Promise<void>;
 }
 
-export const isRedisStreamsSocketIoEnabled = (
-  env: NodeJS.ProcessEnv = process.env
-): boolean => env.JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER === 'redis-streams';
+export const isRedisStreamsSocketIoEnabled = (env: NodeJS.ProcessEnv = process.env): boolean =>
+  env.JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER === 'redis-streams';
 
-export const buildRedisConnectionUrl = (
-  env: NodeJS.ProcessEnv = process.env
-): string => {
+export const buildRedisConnectionUrl = (env: NodeJS.ProcessEnv = process.env): string => {
   if (env.JUMENTIX_WEBSOCKET_REDIS_URL) return env.JUMENTIX_WEBSOCKET_REDIS_URL;
   if (env.JUMENTIX_REDIS_URL) return env.JUMENTIX_REDIS_URL;
 

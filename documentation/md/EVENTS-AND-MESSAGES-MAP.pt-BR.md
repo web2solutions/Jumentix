@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/EVENTS-AND-MESSAGES-MAP.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Mapa de eventos e mensagens
 
 Este documento mapeia os contratos de integração atuais usados pelo Jumentix, incluindo publicação/assinatura de eventos e contratos de mensagens de solicitação/resposta através do `MessageMediator`.
@@ -58,14 +59,15 @@ A seleção é feita por `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER` em `apps/backend-te
 
 Produtor: `UserService` (`apps/backend-template/src/modules/Users/service/UserService.ts`)
 
-| Nome do Evento | Publicado por | Gatilho |
-|---|---|---|
-| `users.user.created` | `UserService.create` | usuário criado |
-| `usuários.usuário.atualizado` | `UserService.update` | usuário atualizado |
-| `usuários.usuário.deletado` | `UserService.delete` | usuário excluído |
+| Nome do Evento                  | Publicado por                | Gatilho                       |
+| ------------------------------- | ---------------------------- | ----------------------------- |
+| `users.user.created`            | `UserService.create`         | usuário criado                |
+| `usuários.usuário.atualizado`   | `UserService.update`         | usuário atualizado            |
+| `usuários.usuário.deletado`     | `UserService.delete`         | usuário excluído              |
 | `users.user.credentialsUpdated` | `UserService.updatePassword` | senha/credenciais atualizadas |
 
 Os ouvintes são registrados em `registerUserEventListeners` (`apps/backend-template/src/modules/Users/events/listeners/registerUserEventListeners.ts`) por meio de:
+
 - `onUserCreated`
 - `onUserUpdated`
 - `onUserDeleted`
@@ -75,9 +77,9 @@ Os ouvintes são registrados em `registerUserEventListeners` (`apps/backend-temp
 
 Registrado em `registerUserMessageHandlers` (`apps/backend-template/src/modules/Users/events/listeners/registerUserMessageHandlers.ts`):
 
-| Contrato | Proprietário do manipulador | Carga útil de entrada | Resultado/Erro |
-|---|---|---|---|
-| `users.auth.authorize` | Serviço de autenticação de usuários | `{ autorização: string }` | carga útil ou erro do usuário autenticado |
+| Contrato                   | Proprietário do manipulador         | Carga útil de entrada                                      | Resultado/Erro                                                      |
+| -------------------------- | ----------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| `users.auth.authorize`     | Serviço de autenticação de usuários | `{ autorização: string }`                                  | carga útil ou erro do usuário autenticado                           |
 | `users.auth.ensure-access` | Serviço de autenticação de usuários | `{ autorização: string, esquemaOAS: Record<string, any> }` | carga útil do usuário autorizado ou erro se proibido/não autorizado |
 
 ## 6) Onde os contratos são consumidos

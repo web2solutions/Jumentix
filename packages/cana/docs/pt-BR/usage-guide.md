@@ -35,17 +35,17 @@ menores para cada assunto mostrar código completo sem virar uma parede única.
 9. [Storage e recuperação de crash](./storage-recovery.md) — avaliação de storage,
    avaliação de durabilidade, export/import e `resolveWrite()`.
 10. [Workers e testes](./workers-testing.md) — `createWorkerHost()`,
-   `createRouter()`, `createWorkerClient()` e estratégia de testes.
+    `createRouter()`, `createWorkerClient()` e estratégia de testes.
 11. [Referência de API](./api-reference.md) — mapa compacto de métodos e glossário.
 
 ## O exemplo contínuo
 
 Todas as páginas usam o mesmo sistema simples de tarefas. Existem duas stores:
 
-| Store | Propósito | Campos principais |
-| --- | --- | --- |
-| `categories` | Agrupa tarefas por área. | `id`, `name`, `color`, `createdAt`, `updatedAt` |
-| `tasks` | Registros duráveis de tarefas. | `id`, `title`, `categoryId`, `completed`, `priority`, `createdAt`, `updatedAt` |
+| Store        | Propósito                      | Campos principais                                                              |
+| ------------ | ------------------------------ | ------------------------------------------------------------------------------ |
+| `categories` | Agrupa tarefas por área.       | `id`, `name`, `color`, `createdAt`, `updatedAt`                                |
+| `tasks`      | Registros duráveis de tarefas. | `id`, `title`, `categoryId`, `completed`, `priority`, `createdAt`, `updatedAt` |
 
 Os exemplos mantêm o estado de framework fora do Cana. O Cana controla
 persistência e eventos commitados; sua store de UI (`Map` vanilla, Context,

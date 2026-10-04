@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 /**
  * The coverage thresholds, enforced from lcov rather than by a runner.
  *
@@ -12,7 +10,10 @@
  * been observed passing is indistinguishable from one that always passes.
  */
 
-interface CoverageCounters { found: number; hit: number }
+interface CoverageCounters {
+  found: number;
+  hit: number;
+}
 
 const coverageGuard = require('../check-coverage-thresholds') as {
   summarize: (report: unknown) => Record<string, CoverageCounters>;
@@ -37,25 +38,31 @@ const coverageGuard = require('../check-coverage-thresholds') as {
 };
 
 /** Counters where the first `hit` of `found` are covered. */
-const counters = (found: number, hit: number) => Object.fromEntries(
-  Array.from({ length: found }, (_, index) => [String(index), index < hit ? 1 : 0])
-);
+const counters = (found: number, hit: number) =>
+  Object.fromEntries(
+    Array.from({ length: found }, (_, index) => [String(index), index < hit ? 1 : 0])
+  );
 
 /** Branch points with one path each, the first `hit` of them covered. */
-const branches = (found: number, hit: number) => Object.fromEntries(
-  Array.from({ length: found }, (_, index) => [String(index), [index < hit ? 1 : 0]])
-);
+const branches = (found: number, hit: number) =>
+  Object.fromEntries(
+    Array.from({ length: found }, (_, index) => [String(index), [index < hit ? 1 : 0]])
+  );
 
 /** A statement map placing each statement on its own line. */
-const statements = (found: number) => Object.fromEntries(
-  Array.from({ length: found }, (_, index) => [
-    String(index), { start: { line: index + 1 } }
-  ])
-);
+const statements = (found: number) =>
+  Object.fromEntries(
+    Array.from({ length: found }, (_, index) => [String(index), { start: { line: index + 1 } }])
+  );
 
 /** An Istanbul report with the given per-metric found/hit totals. */
 const reportWith = ({
-  sf = 100, sh = 100, fnf = 10, fnh = 10, brf = 20, brh = 20
+  sf = 100,
+  sh = 100,
+  fnf = 10,
+  fnh = 10,
+  brf = 20,
+  brh = 20
 }: Partial<Record<'sf' | 'sh' | 'fnf' | 'fnh' | 'brf' | 'brh', number>>) => ({
   'apps/backend-template/src/example.ts': {
     statementMap: statements(sf),
@@ -81,7 +88,9 @@ describe('check-coverage-thresholds', () => {
     // happens to be last.
     const totals = coverageGuard.summarize({
       ...reportWith({ sf: 10, sh: 9 }),
-      'apps/backend-template/src/other.ts': reportWith({ sf: 30, sh: 21 })['apps/backend-template/src/example.ts']
+      'apps/backend-template/src/other.ts': reportWith({ sf: 30, sh: 21 })[
+        'apps/backend-template/src/example.ts'
+      ]
     });
 
     expect(totals.statements).toStrictEqual({ found: 40, hit: 30 });
@@ -120,12 +129,12 @@ describe('check-coverage-thresholds', () => {
     ['functions', { fnf: 100, fnh: 98 }]
   ])('fails when %s is below 99 percent', (metric, over) => {
     expect.hasAssertions();
-    const { failures } = coverageGuard.validateCoverage(
-      coverageGuard.summarize(reportWith(over)),
-      {
-        statements: 99, branches: 90, functions: 99, lines: 99
-      }
-    );
+    const { failures } = coverageGuard.validateCoverage(coverageGuard.summarize(reportWith(over)), {
+      statements: 99,
+      branches: 90,
+      functions: 99,
+      lines: 99
+    });
 
     expect(failures.join('\n')).toContain(`${metric}: 98.00%`);
   });
@@ -138,7 +147,10 @@ describe('check-coverage-thresholds', () => {
     // it — a threshold removed by omission rather than by decision.
     const withoutBranches = {
       'x.ts': {
-        statementMap: statements(1), s: counters(1, 1), f: counters(1, 1), b: {}
+        statementMap: statements(1),
+        s: counters(1, 1),
+        f: counters(1, 1),
+        b: {}
       }
     };
 
@@ -196,20 +208,26 @@ describe('check-coverage-thresholds CLI', () => {
   ) => {
     const errors: unknown[] = [];
     const logs: unknown[] = [];
-    jest.spyOn(process, 'exit').mockImplementation(((code: number): never => {
-      throw new Error(`exit:${String(code)}`);
-    }) as never);
-    jest.spyOn(console, 'error').mockImplementation((...args) => { errors.push(...args); });
-    jest.spyOn(console, 'log').mockImplementation((...args) => { logs.push(...args); });
+    const previousExitCode = process.exitCode;
+    jest.spyOn(console, 'error').mockImplementation((...args) => {
+      errors.push(...args);
+    });
+    jest.spyOn(console, 'log').mockImplementation((...args) => {
+      logs.push(...args);
+    });
 
     let thrown: Error | null = null;
+    let exitCode: typeof process.exitCode;
     try {
       coverageGuard.main(() => report, exceptions);
+      exitCode = process.exitCode;
     } catch (error) {
       thrown = error as Error;
+    } finally {
+      process.exitCode = previousExitCode;
     }
 
-    return { thrown, errors: errors.join('\n'), logs: logs.join('\n') };
+    return { thrown, exitCode, errors: errors.join('\n'), logs: logs.join('\n') };
   };
 
   afterEach(() => {
@@ -220,7 +238,8 @@ describe('check-coverage-thresholds CLI', () => {
     expect.hasAssertions();
     const result = runMain(reportWith({ brf: 100, brh: 50 }));
 
-    expect(result.thrown?.message).toBe('exit:1');
+    expect(result.thrown).toBeNull();
+    expect(result.exitCode).toBe(1);
     expect(result.errors).toContain('branches: 50.00% is below the required 98%');
   });
 
@@ -230,7 +249,8 @@ describe('check-coverage-thresholds CLI', () => {
     // produced, which is precisely when they matter most.
     const result = runMain(null);
 
-    expect(result.thrown?.message).toBe('exit:1');
+    expect(result.thrown).toBeNull();
+    expect(result.exitCode).toBe(1);
     expect(result.errors).toContain('coverage-final.json does not exist');
   });
 
@@ -269,8 +289,8 @@ describe('check-coverage-thresholds report reader', () => {
     // remediation, which is more useful than an ENOENT stack.
     // `spyOn` on the CommonJS fs module, not `jest.requireActual` — that does not
     // exist under Bun's runner, which is the whole subject of JUM-583.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const nodeFs = require('fs') as { existsSync: (path: string) => boolean };
+
+    const nodeFs = require('node:fs') as { existsSync: (path: string) => boolean };
     const spy = jest.spyOn(nodeFs, 'existsSync').mockReturnValue(false);
 
     expect(coverageGuard.defaultReadReport()).toBeNull();
@@ -281,22 +301,24 @@ describe('check-coverage-thresholds report reader', () => {
     expect.hasAssertions();
     // Requirement 112 §4: cana is measured in the browser. Returning the Jest
     // half alone would pass the gate with cana unmeasured.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const nodeFs = require('fs') as {
+
+    const nodeFs = require('node:fs') as {
       existsSync: (path: string) => boolean;
       readFileSync: (path: string, encoding: string) => string;
     };
-    const exists = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
-      String(filePath).endsWith('coverage/coverage-final.json')
-    ));
-    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(JSON.stringify({
-      'jest.ts': {
-        b: {},
-        f: {},
-        s: counters(1, 1),
-        statementMap: statements(1)
-      }
-    }));
+    const exists = jest
+      .spyOn(nodeFs, 'existsSync')
+      .mockImplementation((filePath) => String(filePath).endsWith('coverage/coverage-final.json'));
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(
+      JSON.stringify({
+        'jest.ts': {
+          b: {},
+          f: {},
+          s: counters(1, 1),
+          statementMap: statements(1)
+        }
+      })
+    );
 
     expect(coverageGuard.defaultReadReport()).toStrictEqual({ missingBrowserReport: true });
     exists.mockRestore();
@@ -305,8 +327,8 @@ describe('check-coverage-thresholds report reader', () => {
 
   it('can read only the preserved Jest report when the release job gates project coverage before browser publishing', () => {
     expect.hasAssertions();
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const nodeFs = require('fs') as {
+
+    const nodeFs = require('node:fs') as {
       existsSync: (path: string) => boolean;
       readFileSync: (path: string, encoding: string) => string;
     };
@@ -314,17 +336,19 @@ describe('check-coverage-thresholds report reader', () => {
     const previousRequireBrowser = process.env.JUMENTIX_COVERAGE_REQUIRE_BROWSER;
     process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER = '0';
     process.env.JUMENTIX_COVERAGE_REQUIRE_BROWSER = '0';
-    const exists = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
-      String(filePath).endsWith('coverage/coverage-final.json')
-    ));
-    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(JSON.stringify({
-      'jest.ts': {
-        b: {},
-        f: {},
-        s: counters(1, 1),
-        statementMap: statements(1)
-      }
-    }));
+    const exists = jest
+      .spyOn(nodeFs, 'existsSync')
+      .mockImplementation((filePath) => String(filePath).endsWith('coverage/coverage-final.json'));
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(
+      JSON.stringify({
+        'jest.ts': {
+          b: {},
+          f: {},
+          s: counters(1, 1),
+          statementMap: statements(1)
+        }
+      })
+    );
 
     try {
       const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
@@ -345,8 +369,8 @@ describe('check-coverage-thresholds report reader', () => {
     // order-dependent: the run that executes this test is the run that writes
     // that file, so it is absent on a clean run and present on a repeat. A
     // fixture makes the assertion about the reader rather than about timing.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const nodeFs = require('fs') as {
+
+    const nodeFs = require('node:fs') as {
       existsSync: (path: string) => boolean;
       readFileSync: (path: string, encoding: string) => string;
     };
@@ -371,30 +395,35 @@ describe('check-coverage-thresholds report reader', () => {
 
   it('reads the canonical report when the preserved Jest report is absent', () => {
     expect.hasAssertions();
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const nodeFs = require('fs') as {
+
+    const nodeFs = require('node:fs') as {
       existsSync: (path: string) => boolean;
       readFileSync: (path: string, encoding: string) => string;
     };
     const previousIncludeBrowser = process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER;
     process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER = '0';
-    const exists = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
-      String(filePath).endsWith('coverage/coverage-final.json')
-    ));
-    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(JSON.stringify({
-      'canonical.ts': {
-        b: {},
-        f: {},
-        s: counters(1, 1),
-        statementMap: statements(1)
-      }
-    }));
+    const exists = jest
+      .spyOn(nodeFs, 'existsSync')
+      .mockImplementation((filePath) => String(filePath).endsWith('coverage/coverage-final.json'));
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(
+      JSON.stringify({
+        'canonical.ts': {
+          b: {},
+          f: {},
+          s: counters(1, 1),
+          statementMap: statements(1)
+        }
+      })
+    );
 
     try {
       const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
 
       expect(Object.keys(report)).toStrictEqual(['canonical.ts']);
-      expect(read).toHaveBeenCalledWith(expect.stringContaining('coverage/coverage-final.json'), 'utf8');
+      expect(read).toHaveBeenCalledWith(
+        expect.stringContaining('coverage/coverage-final.json'),
+        'utf8'
+      );
     } finally {
       restoreEnvValue('JUMENTIX_COVERAGE_INCLUDE_BROWSER', previousIncludeBrowser);
       exists.mockRestore();
@@ -404,8 +433,8 @@ describe('check-coverage-thresholds report reader', () => {
 
   it('uses the canonical report without requiring browser coverage when explicitly allowed', () => {
     expect.hasAssertions();
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const nodeFs = require('fs') as {
+
+    const nodeFs = require('node:fs') as {
       existsSync: (path: string) => boolean;
       readFileSync: (path: string, encoding: string) => string;
     };
@@ -413,17 +442,19 @@ describe('check-coverage-thresholds report reader', () => {
     const previousRequireBrowser = process.env.JUMENTIX_COVERAGE_REQUIRE_BROWSER;
     process.env.JUMENTIX_COVERAGE_INCLUDE_BROWSER = '1';
     process.env.JUMENTIX_COVERAGE_REQUIRE_BROWSER = '0';
-    const exists = jest.spyOn(nodeFs, 'existsSync').mockImplementation((filePath) => (
-      String(filePath).endsWith('/coverage/coverage-final.json')
-    ));
-    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(JSON.stringify({
-      'canonical.ts': {
-        b: {},
-        f: {},
-        s: counters(1, 1),
-        statementMap: statements(1)
-      }
-    }));
+    const exists = jest
+      .spyOn(nodeFs, 'existsSync')
+      .mockImplementation((filePath) => String(filePath).endsWith('/coverage/coverage-final.json'));
+    const read = jest.spyOn(nodeFs, 'readFileSync').mockReturnValue(
+      JSON.stringify({
+        'canonical.ts': {
+          b: {},
+          f: {},
+          s: counters(1, 1),
+          statementMap: statements(1)
+        }
+      })
+    );
 
     try {
       const report = coverageGuard.defaultReadReport() as Record<string, { s: unknown }>;
@@ -439,8 +470,8 @@ describe('check-coverage-thresholds report reader', () => {
 
   it('prefers the preserved Jest report when browser coverage rewrites the canonical file', () => {
     expect.hasAssertions();
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-    const nodeFs = require('fs') as {
+
+    const nodeFs = require('node:fs') as {
       existsSync: (path: string) => boolean;
       readFileSync: (path: string, encoding: string) => string;
     };
@@ -463,7 +494,8 @@ describe('check-coverage-thresholds report reader', () => {
         }
       })
     };
-    const read = jest.spyOn(nodeFs, 'readFileSync')
+    const read = jest
+      .spyOn(nodeFs, 'readFileSync')
       .mockReturnValueOnce(reports.jest)
       .mockReturnValueOnce(reports.browser);
 
@@ -489,8 +521,9 @@ describe('check-coverage-thresholds report reader', () => {
       '/repo/ci-cd/check-coverage-thresholds.js',
       '/repo/packages/cana/src/core/database.ts'
     ]);
-    expect(coverageGuard.isThresholdSubject('/repo/packages/sdk-rest-client/src/index.ts'))
-      .toBe(false);
+    expect(coverageGuard.isThresholdSubject('/repo/packages/sdk-rest-client/src/index.ts')).toBe(
+      false
+    );
   });
 
   it('measures designer-core sources as threshold subjects (JUM-493)', () => {
@@ -499,12 +532,15 @@ describe('check-coverage-thresholds report reader', () => {
     // The service-management unit suites exercise the package's canonical
     // sources through the workspace alias, so the package belongs to the
     // global bar exactly like cana/src does.
-    expect(coverageGuard.isThresholdSubject('/repo/packages/designer-core/src/state/designerState.js'))
-      .toBe(true);
-    expect(coverageGuard.isThresholdSubject('/repo/packages/designer-core/test/packaging.test.ts'))
-      .toBe(false);
-    expect(coverageGuard.isThresholdSubject('/repo/packages/designer-core/dist/index.js'))
-      .toBe(false);
+    expect(
+      coverageGuard.isThresholdSubject('/repo/packages/designer-core/src/state/designerState.js')
+    ).toBe(true);
+    expect(
+      coverageGuard.isThresholdSubject('/repo/packages/designer-core/test/packaging.test.ts')
+    ).toBe(false);
+    expect(coverageGuard.isThresholdSubject('/repo/packages/designer-core/dist/index.js')).toBe(
+      false
+    );
   });
 
   it('parses boolean environment flags with absent and negative values', () => {
@@ -549,7 +585,8 @@ describe('check-coverage-thresholds exceptions', () => {
   };
 
   /** Hoisted so the predicates are not branches inside a test body. */
-  const hasIssue = (entry: { issue: string }) => typeof entry.issue === 'string' && entry.issue.length > 0;
+  const hasIssue = (entry: { issue: string }) =>
+    typeof entry.issue === 'string' && entry.issue.length > 0;
   const hasIsoDate = (entry: { since: string }) => /^\d{4}-\d{2}-\d{2}$/.test(entry.since);
 
   it('accepts a metric at its recorded floor', () => {
@@ -627,23 +664,23 @@ describe('check-coverage-thresholds exceptions', () => {
  */
 describe('check-coverage-thresholds entry point (JUM-681)', () => {
   const exitWith = (readReport: () => unknown) => {
-    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
-      throw new Error('exit');
-    }) as never);
+    const previousExitCode = process.exitCode;
     const errors: string[] = [];
     const consoleError = jest.spyOn(console, 'error').mockImplementation((message?: unknown) => {
       errors.push(String(message));
     });
 
     let threw = false;
+    let code: typeof process.exitCode;
     try {
       (coverageGuard as { main: (read: () => unknown) => void }).main(readReport);
+      code = process.exitCode;
     } catch {
       threw = true;
+    } finally {
+      process.exitCode = previousExitCode;
     }
 
-    const code = exit.mock.calls[0]?.[0];
-    exit.mockRestore();
     consoleError.mockRestore();
     return { code, errors, threw };
   };
@@ -711,7 +748,12 @@ describe('check-coverage-thresholds partial records (JUM-721)', () => {
     const totals = coverageGuard.summarize({
       'apps/backend-template/src/empty.ts': { statementMap: {} },
       ...reportWith({
-        sf: 10, sh: 10, fnf: 2, fnh: 2, brf: 4, brh: 4
+        sf: 10,
+        sh: 10,
+        fnf: 2,
+        fnh: 2,
+        brf: 4,
+        brh: 4
       })
     });
 
@@ -764,11 +806,13 @@ describe('check-coverage-thresholds default parameters (JUM-821)', () => {
       lineTotals: (report: unknown) => { found: number; hit: number };
     };
 
-    expect(guard.lineTotals({
-      'apps/backend-template/src/unset.ts': {
-        statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 2 } } }
-      }
-    })).toStrictEqual({ found: 2, hit: 0 });
+    expect(
+      guard.lineTotals({
+        'apps/backend-template/src/unset.ts': {
+          statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 2 } } }
+        }
+      })
+    ).toStrictEqual({ found: 2, hit: 0 });
   });
 
   it('validates against the built-in thresholds when none are passed', () => {
@@ -810,17 +854,16 @@ describe('check-coverage-thresholds default parameters (JUM-821)', () => {
         return { file, aside };
       });
 
-    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
-      throw new Error('exit');
-    }) as never);
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const previousExitCode = process.exitCode;
+    const consoleError = jest.spyOn(console, 'error').mockReturnValue(undefined);
     try {
-      expect(() => coverageGuard.main(undefined, {})).toThrow('exit');
-      expect(exit).toHaveBeenCalledWith(1);
-      expect(consoleError.mock.calls.flat().join('\n'))
-        .toContain('coverage-final.json does not exist');
+      coverageGuard.main(undefined, {});
+      expect(process.exitCode).toBe(1);
+      expect(consoleError.mock.calls.flat().join('\n')).toContain(
+        'coverage-final.json does not exist'
+      );
     } finally {
-      exit.mockRestore();
+      process.exitCode = previousExitCode;
       consoleError.mockRestore();
       for (const { file, aside } of movedAside) {
         fs.renameSync(aside, file);

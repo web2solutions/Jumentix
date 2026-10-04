@@ -1,5 +1,6 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+
 import YAML from 'yaml';
 
 export interface ICanonicalSpecLoaderOptions {
@@ -9,10 +10,7 @@ export interface ICanonicalSpecLoaderOptions {
   artifactLabel: string;
 }
 
-export const candidateSpecPaths = (
-  moduleDirectory: string,
-  specSegments: string[]
-): string[] => {
+export const candidateSpecPaths = (moduleDirectory: string, specSegments: string[]): string[] => {
   const candidates: string[] = [];
   let directory = path.resolve(moduleDirectory);
   let previousDirectory: string | undefined;
@@ -37,8 +35,9 @@ export const loadCanonicalSpec = ({
     return YAML.parse(fs.readFileSync(specPath, 'utf8'));
   }
 
-  const specPath = candidateSpecPaths(moduleDirectory, specSegments)
-    .find((candidate) => fs.existsSync(candidate));
+  const specPath = candidateSpecPaths(moduleDirectory, specSegments).find((candidate) =>
+    fs.existsSync(candidate)
+  );
 
   if (!specPath) {
     throw new Error(

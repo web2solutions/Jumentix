@@ -1,9 +1,9 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { readListCapabilities, setListQuery } from '@src/modules/port/setListQuery';
+import { DEFAULT_PAGE_SIZE } from '@src/config/constants';
 import { ValidationError } from '@src/infra/exceptions';
-import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import { readListCapabilities, setListQuery } from '@src/modules/port/setListQuery';
 
-class TestEvent extends BaseDomainEvent<any> {}
+class TestEvent extends BaseDomainEvent {}
 
 const capabilities = {
   sortable: ['firstName', 'createdAt'],
@@ -29,27 +29,41 @@ const event = (
 describe('setListQuery', () => {
   it('reads the capabilities declared by the operation', () => {
     expect.hasAssertions();
-    expect(readListCapabilities({ 'x-list-capabilities': capabilities })).toStrictEqual(capabilities);
+    expect(readListCapabilities({ 'x-list-capabilities': capabilities })).toStrictEqual(
+      capabilities
+    );
     expect(readListCapabilities({})).toBeUndefined();
     expect(readListCapabilities({ 'x-list-capabilities': { sortable: ['a'] } })).toStrictEqual({
-      sortable: ['a'], filterable: {}, searchable: [], defaultSize: 30, maxSize: 100
+      sortable: ['a'],
+      filterable: {},
+      searchable: [],
+      defaultSize: 30,
+      maxSize: 100
     });
   });
 
   it('parses page, size, filter, sort and q into filters + paging', () => {
     expect.hasAssertions();
-    const { filters, paging } = setListQuery(event({
-      page: '2',
-      size: '10',
-      filter: b64({ firstName: { operator: 'contains', value: 'an' }, roles: 'admin' }),
-      sort: 'createdAt:desc,firstName',
-      q: '  Ana '
-    }));
-    expect(filters).toStrictEqual({ firstName: { operator: 'contains', value: 'an' }, roles: 'admin' });
+    const { filters, paging } = setListQuery(
+      event({
+        page: '2',
+        size: '10',
+        filter: b64({ firstName: { operator: 'contains', value: 'an' }, roles: 'admin' }),
+        sort: 'createdAt:desc,firstName',
+        q: '  Ana '
+      })
+    );
+    expect(filters).toStrictEqual({
+      firstName: { operator: 'contains', value: 'an' },
+      roles: 'admin'
+    });
     expect(paging).toStrictEqual({
       page: 2,
       size: 10,
-      sort: [{ field: 'createdAt', direction: 'desc' }, { field: 'firstName', direction: 'asc' }],
+      sort: [
+        { field: 'createdAt', direction: 'desc' },
+        { field: 'firstName', direction: 'asc' }
+      ],
       q: 'Ana',
       searchFields: ['firstName', 'lastName']
     });
@@ -58,8 +72,7 @@ describe('setListQuery', () => {
   it('uses the declared defaultSize and falls back to the app default without capabilities', () => {
     expect.hasAssertions();
     expect(setListQuery(event({})).paging).toStrictEqual({ page: 1, size: 20 });
-    expect(setListQuery(event({}, {})).paging)
-      .toStrictEqual({ page: 1, size: _DEFAULT_PAGE_SIZE_ });
+    expect(setListQuery(event({}, {})).paging).toStrictEqual({ page: 1, size: DEFAULT_PAGE_SIZE });
   });
 
   it('rejects sizes above maxSize naming the bound', () => {
@@ -70,22 +83,28 @@ describe('setListQuery', () => {
 
   it('rejects sort fields, filter fields and operators outside the capabilities, listing what is accepted', () => {
     expect.hasAssertions();
-    expect(() => setListQuery(event({ sort: 'username:asc' })))
-      .toThrow('The sort field "username" is not sortable. Accepted: firstName, createdAt.');
-    expect(() => setListQuery(event({ filter: b64({ username: 'x' }) })))
-      .toThrow('The filter field "username" is not filterable. Accepted: firstName, roles, createdAt.');
-    expect(() => setListQuery(event({ filter: b64({ firstName: { operator: 'regex', value: '.*' } }) })))
-      .toThrow('The filter operator "regex" on "firstName" is not accepted.');
+    expect(() => setListQuery(event({ sort: 'username:asc' }))).toThrow(
+      'The sort field "username" is not sortable. Accepted: firstName, createdAt.'
+    );
+    expect(() => setListQuery(event({ filter: b64({ username: 'x' }) }))).toThrow(
+      'The filter field "username" is not filterable. Accepted: firstName, roles, createdAt.'
+    );
+    expect(() =>
+      setListQuery(event({ filter: b64({ firstName: { operator: 'regex', value: '.*' } }) }))
+    ).toThrow('The filter operator "regex" on "firstName" is not accepted.');
   });
 
   it('rejects q when nothing is searchable, and sort/q entirely for legacy operations', () => {
     expect.hasAssertions();
     const unsearchable = { 'x-list-capabilities': { ...capabilities, searchable: [] } };
-    expect(() => setListQuery(event({ q: 'x' }, unsearchable))).toThrow('declares no searchable fields');
+    expect(() => setListQuery(event({ q: 'x' }, unsearchable))).toThrow(
+      'declares no searchable fields'
+    );
     expect(() => setListQuery(event({ q: 'x' }, {}))).toThrow('not supported by this operation');
     expect(() => setListQuery(event({ sort: 'a' }, {}))).toThrow('not supported by this operation');
-    expect(setListQuery(event({ filter: b64({ anything: 1 }) }, {})).filters)
-      .toStrictEqual({ anything: 1 });
+    expect(setListQuery(event({ filter: b64({ anything: 1 }) }, {})).filters).toStrictEqual({
+      anything: 1
+    });
   });
 
   it('parses includeDeleted flags and tolerates a missing queryString', () => {
@@ -100,18 +119,25 @@ describe('setListQuery', () => {
 
   it('treats a non-array sortable declaration as empty and names "(none)" as accepted', () => {
     expect.hasAssertions();
-    expect(readListCapabilities({ 'x-list-capabilities': { sortable: 'firstName' } }))
-      .toStrictEqual({
-        sortable: [], filterable: {}, searchable: [], defaultSize: 30, maxSize: 100
-      });
+    expect(
+      readListCapabilities({ 'x-list-capabilities': { sortable: 'firstName' } })
+    ).toStrictEqual({
+      sortable: [],
+      filterable: {},
+      searchable: [],
+      defaultSize: 30,
+      maxSize: 100
+    });
     const unsortable = { 'x-list-capabilities': { ...capabilities, sortable: [] } };
-    expect(() => setListQuery(event({ sort: 'username:asc' }, unsortable)))
-      .toThrow('The sort field "username" is not sortable. Accepted: (none).');
+    expect(() => setListQuery(event({ sort: 'username:asc' }, unsortable))).toThrow(
+      'The sort field "username" is not sortable. Accepted: (none).'
+    );
   });
 
   it('rejects filter objects that omit the operator', () => {
     expect.hasAssertions();
-    expect(() => setListQuery(event({ filter: b64({ firstName: { value: 'an' } }) })))
-      .toThrow('The filter operator "" on "firstName" is not accepted.');
+    expect(() => setListQuery(event({ filter: b64({ firstName: { value: 'an' } }) }))).toThrow(
+      'The filter operator "" on "firstName" is not accepted.'
+    );
   });
 });

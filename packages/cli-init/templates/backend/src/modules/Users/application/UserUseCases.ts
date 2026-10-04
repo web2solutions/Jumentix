@@ -1,7 +1,7 @@
-import { UserService } from '@src/modules/Users/service/UserService';
 import type { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
+import type UserService from '@src/modules/Users/service/UserService';
 
-export class UserUseCases implements IUserUseCases {
+class UserUseCases implements IUserUseCases {
   private readonly userService: UserService;
 
   constructor(userService: UserService) {
@@ -63,7 +63,11 @@ export class UserUseCases implements IUserUseCases {
     return this.userService.createPhone(id, data);
   }
 
-  public async updatePhone(id: string, phoneId: string, data: Parameters<UserService['updatePhone']>[2]) {
+  public async updatePhone(
+    id: string,
+    phoneId: string,
+    data: Parameters<UserService['updatePhone']>[2]
+  ) {
     return this.userService.updatePhone(id, phoneId, data);
   }
 
@@ -75,7 +79,11 @@ export class UserUseCases implements IUserUseCases {
     return this.userService.createEmail(id, data);
   }
 
-  public async updateEmail(id: string, emailId: string, data: Parameters<UserService['updateEmail']>[2]) {
+  public async updateEmail(
+    id: string,
+    emailId: string,
+    data: Parameters<UserService['updateEmail']>[2]
+  ) {
     return this.userService.updateEmail(id, emailId, data);
   }
 
@@ -87,3 +95,5 @@ export class UserUseCases implements IUserUseCases {
     return new UserUseCases(userService);
   }
 }
+
+export default UserUseCases;

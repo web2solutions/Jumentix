@@ -1,4 +1,5 @@
 /* eslint-disable jest/max-expects */
+// eslint-disable-next-line import-x/no-namespace -- the suite enumerates every barrel export, which requires the namespace object
 import * as CatalogsModule from '@service-management-api/modules/Catalogs';
 
 describe('catalogs module exports', () => {

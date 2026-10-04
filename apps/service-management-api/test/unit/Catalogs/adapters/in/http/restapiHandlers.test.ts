@@ -1,23 +1,24 @@
-/* eslint-disable jest/max-expects, jest/prefer-expect-assertions */
-import expressGetAll from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/getAllCatalogs';
-import expressCreate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/createCatalog';
-import expressGetOne from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/getCatalogById';
-import expressUpdate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/updateCatalog';
-import expressDelete from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/deleteCatalog';
-import expressRestore from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/restoreCatalog';
-import fastifyGetAll from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/getAllCatalogs';
-import fastifyCreate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/createCatalog';
-import fastifyGetOne from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/getCatalogById';
-import fastifyUpdate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/updateCatalog';
-import fastifyDelete from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/deleteCatalog';
-import fastifyRestore from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/restoreCatalog';
-import restifyGetAll from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/getAllCatalogs';
-import restifyCreate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/createCatalog';
-import restifyGetOne from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/getCatalogById';
-import restifyUpdate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/updateCatalog';
-import restifyDelete from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/deleteCatalog';
-import restifyRestore from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/restoreCatalog';
+/* eslint-disable jest/max-expects */
 import { ConflictError } from '@src/infra/exceptions';
+
+import expressCreate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/createCatalog';
+import expressDelete from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/deleteCatalog';
+import expressGetAll from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/getAllCatalogs';
+import expressGetOne from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/getCatalogById';
+import expressRestore from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/restoreCatalog';
+import expressUpdate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/express/handlers/updateCatalog';
+import fastifyCreate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/createCatalog';
+import fastifyDelete from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/deleteCatalog';
+import fastifyGetAll from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/getAllCatalogs';
+import fastifyGetOne from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/getCatalogById';
+import fastifyRestore from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/restoreCatalog';
+import fastifyUpdate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/fastify/handlers/updateCatalog';
+import restifyCreate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/createCatalog';
+import restifyDelete from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/deleteCatalog';
+import restifyGetAll from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/getAllCatalogs';
+import restifyGetOne from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/getCatalogById';
+import restifyRestore from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/restoreCatalog';
+import restifyUpdate from '@service-management-api/modules/Catalogs/interface/restapi/frameworks/restify/handlers/updateCatalog';
 
 /**
  * Unit suite for the 18 catalog REST handlers (6 operations x 3 frameworks),
@@ -31,7 +32,7 @@ import { ConflictError } from '@src/infra/exceptions';
  * path through the REAL `sendErrorResponse` of each adapter.
  */
 
-type OperationCase = {
+interface OperationCase {
   operationId: string;
   controllerMethod: string;
   action: string;
@@ -41,7 +42,7 @@ type OperationCase = {
   req: Record<string, any>;
   result: Record<string, any>;
   expectedResponse: unknown;
-};
+}
 
 const OPERATIONS: OperationCase[] = [
   {
@@ -73,7 +74,11 @@ const OPERATIONS: OperationCase[] = [
     path: '/catalogs',
     httpMethod: 'post',
     successStatus: 201,
-    req: { body: { name: 'Billing', design: {} }, params: {}, headers: { authorization: 'Bearer token' } },
+    req: {
+      body: { name: 'Billing', design: {} },
+      params: {},
+      headers: { authorization: 'Bearer token' }
+    },
     result: { result: { id: 'catalog-1', version: 1 } },
     expectedResponse: { id: 'catalog-1', version: 1 }
   },
@@ -95,7 +100,11 @@ const OPERATIONS: OperationCase[] = [
     path: '/catalogs/{id}',
     httpMethod: 'put',
     successStatus: 200,
-    req: { params: { id: 'catalog-1' }, body: { version: 1 }, headers: { authorization: 'Bearer token' } },
+    req: {
+      params: { id: 'catalog-1' },
+      body: { version: 1 },
+      headers: { authorization: 'Bearer token' }
+    },
     result: { result: { id: 'catalog-1', version: 2 } },
     expectedResponse: { id: 'catalog-1', version: 2 }
   },
@@ -106,7 +115,11 @@ const OPERATIONS: OperationCase[] = [
     path: '/catalogs/{id}',
     httpMethod: 'delete',
     successStatus: 200,
-    req: { params: { id: 'catalog-1' }, query: { version: '2' }, headers: { authorization: 'Bearer token' } },
+    req: {
+      params: { id: 'catalog-1' },
+      query: { version: '2' },
+      headers: { authorization: 'Bearer token' }
+    },
     result: { result: true },
     expectedResponse: true
   },
@@ -117,7 +130,11 @@ const OPERATIONS: OperationCase[] = [
     path: '/catalogs/{id}/restore',
     httpMethod: 'post',
     successStatus: 200,
-    req: { params: { id: 'catalog-1' }, body: { version: 3 }, headers: { authorization: 'Bearer token' } },
+    req: {
+      params: { id: 'catalog-1' },
+      body: { version: 3 },
+      headers: { authorization: 'Bearer token' }
+    },
     result: { result: { id: 'catalog-1', version: 4 } },
     expectedResponse: { id: 'catalog-1', version: 4 }
   }
@@ -156,11 +173,12 @@ const endPointConfig = { operationId: 'stub', security: [{ bearerAuth: ['read_ca
 // gets a fresh copy so one framework's mutation cannot leak into another's.
 const freshReq = (operation: OperationCase) => JSON.parse(JSON.stringify(operation.req));
 
-const staleError = () => new ConflictError(
-  'Stale catalog version: expected 1, current is 2',
-  undefined,
-  { catalogId: 'catalog-1', expectedVersion: 1, currentVersion: 2 }
-);
+const staleError = () =>
+  new ConflictError('Stale catalog version: expected 1, current is 2', undefined, {
+    catalogId: 'catalog-1',
+    expectedVersion: 1,
+    currentVersion: 2
+  });
 
 function createControllerDouble(operation: OperationCase, mode: 'success' | 'error') {
   const captured: any[] = [];
@@ -179,26 +197,29 @@ describe('catalog REST handlers — express', () => {
     json: jest.fn()
   });
 
-  it.each(OPERATIONS)('$operationId maps the success path ($httpMethod $path)', async (operation) => {
-    expect.hasAssertions();
-    const { double, captured } = createControllerDouble(operation, 'success');
-    const factory = HANDLERS.express[operation.operationId];
-    const endpoint = factory({ endPointConfig, controller: double });
-    expect(endpoint.path).toBe(operation.path);
-    expect(endpoint.method).toBe(operation.httpMethod);
+  it.each(OPERATIONS)(
+    '$operationId maps the success path ($httpMethod $path)',
+    async (operation) => {
+      expect.hasAssertions();
+      const { double, captured } = createControllerDouble(operation, 'success');
+      const factory = HANDLERS.express[operation.operationId];
+      const endpoint = factory({ endPointConfig, controller: double });
+      expect(endpoint.path).toBe(operation.path);
+      expect(endpoint.method).toBe(operation.httpMethod);
 
-    const res = makeRes();
-    await endpoint.handler(freshReq(operation), res);
+      const res = makeRes();
+      await endpoint.handler(freshReq(operation), res);
 
-    expect(captured).toHaveLength(1);
-    const event = captured[0];
-    expect(event.entity).toBe('Catalog');
-    expect(event.action).toBe(operation.action);
-    expect(event.authorization).toBe('Bearer token');
-    expect(res.status).toHaveBeenCalledWith(operation.successStatus);
-    const payload = res.json.mock.calls[0][0];
-    expect(payload).toStrictEqual(operation.expectedResponse);
-  });
+      expect(captured).toHaveLength(1);
+      const event = captured[0];
+      expect(event.entity).toBe('Catalog');
+      expect(event.action).toBe(operation.action);
+      expect(event.authorization).toBe('Bearer token');
+      expect(res.status).toHaveBeenCalledWith(operation.successStatus);
+      const payload = res.json.mock.calls[0][0];
+      expect(payload).toStrictEqual(operation.expectedResponse);
+    }
+  );
 
   it.each(OPERATIONS)('$operationId maps controller errors to 409', async (operation) => {
     expect.hasAssertions();
@@ -218,7 +239,10 @@ describe('catalog REST handlers — express', () => {
     const { double, captured } = createControllerDouble(OPERATIONS[0], 'success');
     const endpoint = HANDLERS.express.getAllCatalogs({ endPointConfig, controller: double });
     const res = makeRes();
-    await endpoint.handler({ query: { page: '3', size: '5' }, headers: { authorization: 'Bearer token' } }, res);
+    await endpoint.handler(
+      { query: { page: '3', size: '5' }, headers: { authorization: 'Bearer token' } },
+      res
+    );
     expect(captured[0].queryString.page).toBe('3');
     expect(captured[0].queryString.size).toBe('5');
   });
@@ -234,7 +258,10 @@ describe('catalog REST handlers — express', () => {
       controller: getAllDouble
     });
     const getAllRes = makeRes();
-    await getAllEndpoint.handler({ params: {}, headers: { authorization: 'Bearer token' } }, getAllRes);
+    await getAllEndpoint.handler(
+      { params: {}, headers: { authorization: 'Bearer token' } },
+      getAllRes
+    );
 
     const { double: deleteDouble, captured: deleteCaptured } = createControllerDouble(
       OPERATIONS[4],
@@ -245,7 +272,10 @@ describe('catalog REST handlers — express', () => {
       controller: deleteDouble
     });
     const deleteRes = makeRes();
-    await deleteEndpoint.handler({ params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } }, deleteRes);
+    await deleteEndpoint.handler(
+      { params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } },
+      deleteRes
+    );
 
     const authRes = makeRes();
     await getAllEndpoint.handler({ params: {}, query: {}, headers: {} }, authRes);
@@ -284,25 +314,28 @@ describe('catalog REST handlers — fastify', () => {
     send: jest.fn()
   });
 
-  it.each(OPERATIONS)('$operationId maps the success path ($httpMethod $path)', async (operation) => {
-    expect.hasAssertions();
-    const { double, captured } = createControllerDouble(operation, 'success');
-    const endpoint = HANDLERS.fastify[operation.operationId]({
-      endPointConfig,
-      controller: double
-    });
-    expect(endpoint.path).toBe(operation.path);
-    expect(endpoint.method).toBe(operation.httpMethod);
+  it.each(OPERATIONS)(
+    '$operationId maps the success path ($httpMethod $path)',
+    async (operation) => {
+      expect.hasAssertions();
+      const { double, captured } = createControllerDouble(operation, 'success');
+      const endpoint = HANDLERS.fastify[operation.operationId]({
+        endPointConfig,
+        controller: double
+      });
+      expect(endpoint.path).toBe(operation.path);
+      expect(endpoint.method).toBe(operation.httpMethod);
 
-    const res = makeRes();
-    const payload = await endpoint.handler(freshReq(operation), res);
+      const res = makeRes();
+      const payload = await endpoint.handler(freshReq(operation), res);
 
-    expect(captured).toHaveLength(1);
-    expect(captured[0].entity).toBe('Catalog');
-    expect(captured[0].action).toBe(operation.action);
-    expect(res.code).toHaveBeenCalledWith(operation.successStatus);
-    expect(payload).toStrictEqual(operation.expectedResponse);
-  });
+      expect(captured).toHaveLength(1);
+      expect(captured[0].entity).toBe('Catalog');
+      expect(captured[0].action).toBe(operation.action);
+      expect(res.code).toHaveBeenCalledWith(operation.successStatus);
+      expect(payload).toStrictEqual(operation.expectedResponse);
+    }
+  );
 
   it.each(OPERATIONS)('$operationId maps controller errors to 409', async (operation) => {
     expect.hasAssertions();
@@ -322,7 +355,10 @@ describe('catalog REST handlers — fastify', () => {
     const { double, captured } = createControllerDouble(OPERATIONS[0], 'success');
     const endpoint = HANDLERS.fastify.getAllCatalogs({ endPointConfig, controller: double });
     const res = makeRes();
-    await endpoint.handler({ query: { page: '2' }, headers: { authorization: 'Bearer token' } }, res);
+    await endpoint.handler(
+      { query: { page: '2' }, headers: { authorization: 'Bearer token' } },
+      res
+    );
     expect(captured[0].queryString.page).toBe('2');
   });
 
@@ -337,7 +373,10 @@ describe('catalog REST handlers — fastify', () => {
       controller: getAllDouble
     });
     const getAllRes = makeRes();
-    await getAllEndpoint.handler({ params: {}, headers: { authorization: 'Bearer token' } }, getAllRes);
+    await getAllEndpoint.handler(
+      { params: {}, headers: { authorization: 'Bearer token' } },
+      getAllRes
+    );
 
     const { double: deleteDouble, captured: deleteCaptured } = createControllerDouble(
       OPERATIONS[4],
@@ -348,7 +387,10 @@ describe('catalog REST handlers — fastify', () => {
       controller: deleteDouble
     });
     const deleteRes = makeRes();
-    await deleteEndpoint.handler({ params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } }, deleteRes);
+    await deleteEndpoint.handler(
+      { params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } },
+      deleteRes
+    );
 
     const authRes = makeRes();
     await getAllEndpoint.handler({ params: {}, query: {}, headers: {} }, authRes);
@@ -387,26 +429,29 @@ describe('catalog REST handlers — restify', () => {
     json: jest.fn()
   });
 
-  it.each(OPERATIONS)('$operationId maps the success path ($httpMethod $path)', async (operation) => {
-    expect.hasAssertions();
-    const { double, captured } = createControllerDouble(operation, 'success');
-    const endpoint = HANDLERS.restify[operation.operationId]({
-      endPointConfig,
-      controller: double
-    });
-    expect(endpoint.path).toBe(operation.path);
-    expect(endpoint.method).toBe(operation.httpMethod);
+  it.each(OPERATIONS)(
+    '$operationId maps the success path ($httpMethod $path)',
+    async (operation) => {
+      expect.hasAssertions();
+      const { double, captured } = createControllerDouble(operation, 'success');
+      const endpoint = HANDLERS.restify[operation.operationId]({
+        endPointConfig,
+        controller: double
+      });
+      expect(endpoint.path).toBe(operation.path);
+      expect(endpoint.method).toBe(operation.httpMethod);
 
-    const res = makeRes();
-    await endpoint.handler(freshReq(operation), res);
+      const res = makeRes();
+      await endpoint.handler(freshReq(operation), res);
 
-    expect(captured).toHaveLength(1);
-    expect(captured[0].entity).toBe('Catalog');
-    expect(captured[0].action).toBe(operation.action);
-    expect(res.status).toHaveBeenCalledWith(operation.successStatus);
-    const payload = res.json.mock.calls[0][0];
-    expect(payload).toStrictEqual(operation.expectedResponse);
-  });
+      expect(captured).toHaveLength(1);
+      expect(captured[0].entity).toBe('Catalog');
+      expect(captured[0].action).toBe(operation.action);
+      expect(res.status).toHaveBeenCalledWith(operation.successStatus);
+      const payload = res.json.mock.calls[0][0];
+      expect(payload).toStrictEqual(operation.expectedResponse);
+    }
+  );
 
   it.each(OPERATIONS)('$operationId maps controller errors to 409', async (operation) => {
     expect.hasAssertions();
@@ -426,7 +471,10 @@ describe('catalog REST handlers — restify', () => {
     const { double, captured } = createControllerDouble(OPERATIONS[0], 'success');
     const endpoint = HANDLERS.restify.getAllCatalogs({ endPointConfig, controller: double });
     const res = makeRes();
-    await endpoint.handler({ query: { page: '4' }, headers: { authorization: 'Bearer token' } }, res);
+    await endpoint.handler(
+      { query: { page: '4' }, headers: { authorization: 'Bearer token' } },
+      res
+    );
     expect(captured[0].queryString.page).toBe('4');
   });
 
@@ -441,7 +489,10 @@ describe('catalog REST handlers — restify', () => {
       controller: getAllDouble
     });
     const getAllRes = makeRes();
-    await getAllEndpoint.handler({ params: {}, headers: { authorization: 'Bearer token' } }, getAllRes);
+    await getAllEndpoint.handler(
+      { params: {}, headers: { authorization: 'Bearer token' } },
+      getAllRes
+    );
 
     const { double: deleteDouble, captured: deleteCaptured } = createControllerDouble(
       OPERATIONS[4],
@@ -452,7 +503,10 @@ describe('catalog REST handlers — restify', () => {
       controller: deleteDouble
     });
     const deleteRes = makeRes();
-    await deleteEndpoint.handler({ params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } }, deleteRes);
+    await deleteEndpoint.handler(
+      { params: { id: 'catalog-1' }, headers: { authorization: 'Bearer token' } },
+      deleteRes
+    );
 
     const authRes = makeRes();
     await getAllEndpoint.handler({ params: {}, query: {}, headers: {} }, authRes);

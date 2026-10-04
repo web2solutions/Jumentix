@@ -1,37 +1,34 @@
 /* global describe, it, expect, beforeAll, afterAll */
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
-import request from 'supertest';
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import {
-  BasicAuthorizationHeaderUserGuest
-} from '@test/mock';
-import { EEmailType, EmailValueObject } from '@src/modules/ddd/valueObjects';
-
-import createdUsers from '@seed/users';
-import organizations from '@seed/organizations';
-
-import { UserDataRepository, UserService } from '@src/modules/Users';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-// eslint-disable-next-line import/no-unresolved
 import { InMemoryMessageMediatorAdapter } from '@jumentix/message-mediator';
+import organizations from '@seed/organizations';
+import createdUsers from '@seed/users';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { EEmailType } from '@src/modules/ddd/valueObjects';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
+import { BasicAuthorizationHeaderUserGuest } from '@test/mock';
+import request from 'supertest';
+
+import { createServiceManagementCatalogDbClient } from '@service-management-api/infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
 import { CatalogIntegrationEventName } from '@service-management-api/modules/Catalogs/events/contracts/CatalogIntegrationEventName';
 import { ServiceManagementCatalogAPI } from '@service-management-api/ServiceManagementCatalogAPI';
-import {
-  createServiceManagementCatalogDbClient
-} from '@service-management-api/infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
+
+import type { EmailValueObject } from '@src/modules/ddd/valueObjects';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { Express } from 'express';
 
 /**
  * API integration suite for the shared catalog module (JUM-491), over the
@@ -68,11 +65,7 @@ const userService = UserService.compile({
 });
 const userProvider = UserProviderLocal.compile(userService);
 
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 const serverType = EHTTPFrameworks.express;
@@ -88,23 +81,39 @@ let authorizationHeaderAdminOrg1: IAuthorizationHeader;
 const buildTenantUser = (username: string, roles: string[], organization: string) => ({
   firstName: 'Catalog',
   lastName: username,
-  emails: [{
-    email: `${username}@xpertminds.dev`,
-    type: EEmailType.work,
-    isPrimary: true
-  } as EmailValueObject],
+  emails: [
+    {
+      email: `${username}@xpertminds.dev`,
+      type: EEmailType.work,
+      isPrimary: true
+    } as EmailValueObject
+  ],
   username: `${username}@xpertminds.dev`,
   password: `catalog-${username}-A1!`,
   organization,
   roles
 });
 
+const authenticateOrThrow = async (
+  service: IAuthService,
+  username: string,
+  password: string
+): Promise<IAuthorizationHeader> => {
+  const auth = await service.authenticate(username, password, EAuthSchemaType.Basic);
+  if (!auth.result) {
+    throw new Error(`authentication failed for ${username}`);
+  }
+  return { ...auth.result };
+};
+
 const observedEvents: Record<string, any[]> = {
-  created: [], updated: [], deleted: [], restored: []
+  created: [],
+  updated: [],
+  deleted: [],
+  restored: []
 };
 
 describe('express -> Catalogs -> shared catalog sync target', () => {
-  // eslint-disable-next-line jest/require-hook
   const designV1 = { entities: [{ name: 'Invoice', fields: [{ name: 'total', type: 'number' }] }] };
   // eslint-disable-next-line jest/require-hook
   let catalogId = '';
@@ -135,15 +144,13 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
 
     await API.seedData();
 
-    authorizationHeaderSuperadmin = {
-      ...(await authService.authenticate(
-        createdUser1.username,
-        createdUser1.password,
-        EAuthSchemaType.Basic
-      )).result!
-    };
+    authorizationHeaderSuperadmin = await authenticateOrThrow(
+      authService,
+      createdUser1.username,
+      createdUser1.password
+    );
 
-    const tenantUsers: Array<[string, string[], string]> = [
+    const tenantUsers: [string, string[], string][] = [
       ['catalog-admin', ['admin'], orgZero.id],
       ['catalog-member', ['user'], orgZero.id],
       ['catalog-outsider', ['admin'], orgOne.id]
@@ -162,20 +169,14 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
         throw new Error(`tenant user seed failed for ${username}: ${response.statusCode}`);
       }
       // eslint-disable-next-line no-await-in-loop
-      const authResult = await authService.authenticate(
-        payload.username,
-        payload.password,
-        EAuthSchemaType.Basic
-      );
-      headers.push({ ...authResult.result! });
+      headers.push(await authenticateOrThrow(authService, payload.username, payload.password));
     }
-    [
-      authorizationHeaderAdminOrg0,
-      authorizationHeaderUserOrg0,
-      authorizationHeaderAdminOrg1
-    ] = headers;
+    [authorizationHeaderAdminOrg0, authorizationHeaderUserOrg0, authorizationHeaderAdminOrg1] =
+      headers;
 
-    const observe = (name: string, bucket: any[]) => (event: any) => { bucket.push(event); };
+    const observe = (name: string, bucket: any[]) => (event: any) => {
+      bucket.push(event);
+    };
     messageMediator.subscribe(
       CatalogIntegrationEventName.Created,
       observe(CatalogIntegrationEventName.Created, observedEvents.created)
@@ -196,7 +197,9 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
 
   afterAll(async () => {
     if (server) {
-      await new Promise<void>((resolve) => { server.close(() => resolve()); });
+      await new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      });
     }
     await catalogAPI.stop();
     await databaseClient.disconnect();
@@ -207,7 +210,11 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
     expect.hasAssertions();
     const response = await request(server)
       .post('/api/1.0.0/catalogs')
-      .send({ name: 'Billing', design: designV1, provenance: { package: 'billing', version: '1.0.0' } })
+      .send({
+        name: 'Billing',
+        design: designV1,
+        provenance: { package: 'billing', version: '1.0.0' }
+      })
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
       .set(authorizationHeaderAdminOrg0);
@@ -227,7 +234,9 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
       .set('Accept', 'application/json; charset=utf-8')
       .set(authorizationHeaderAdminOrg0);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - cross organization access is forbidden');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - cross organization access is forbidden'
+    );
   });
 
   it('a teammate with the user role reads the shared record', async () => {
@@ -254,7 +263,17 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
       .put(`/api/1.0.0/catalogs/${catalogId}`)
       .send({
         version: 1,
-        design: { entities: [{ name: 'Invoice', fields: [{ name: 'total', type: 'number' }, { name: 'dueAt', type: 'date' }] }] }
+        design: {
+          entities: [
+            {
+              name: 'Invoice',
+              fields: [
+                { name: 'total', type: 'number' },
+                { name: 'dueAt', type: 'date' }
+              ]
+            }
+          ]
+        }
       })
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
@@ -296,7 +315,9 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
       .set('Accept', 'application/json; charset=utf-8')
       .set(authorizationHeaderUserOrg0);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - missing Service Management scope delete_catalog');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - missing Service Management scope delete_catalog'
+    );
   });
 
   it('an admin soft-deletes: the record leaves the default feed but survives as a tombstone', async () => {
@@ -362,13 +383,11 @@ describe('express -> Catalogs -> shared catalog sync target', () => {
 
   it('a legacy-scope principal without catalog scopes is denied', async () => {
     expect.hasAssertions();
-    const legacyHeader = {
-      ...(await authService.authenticate(
-        createdUsers[1].username,
-        createdUsers[1].password,
-        EAuthSchemaType.Basic
-      )).result!
-    };
+    const legacyHeader = await authenticateOrThrow(
+      authService,
+      createdUsers[1].username,
+      createdUsers[1].password
+    );
     const response = await request(server)
       .get('/api/1.0.0/catalogs')
       .set('Accept', 'application/json; charset=utf-8')

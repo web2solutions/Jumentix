@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/ENGINEERING-BOOTSTRAP-GUIDE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Guia de bootstrap de engenharia
 
 Este guia explica como usar esse padrão para criar um novo serviço de back-end em três formatos comuns:
@@ -202,8 +203,8 @@ Um recurso deve ser considerado concluído quando:
 
 Seguir os padrões existentes neste modelo é o caminho mais rápido para uma entrega consistente e sustentável.
 
-
 <!-- test-pyramid-tdd -->
+
 ## Pirâmide de Testes Hexagonal / TDD (Bun)
 
 Localmente todos os testes rodam no Bun (Requisito 106). Prefira:

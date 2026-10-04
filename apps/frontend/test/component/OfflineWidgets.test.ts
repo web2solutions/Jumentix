@@ -1,10 +1,8 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
 
 import NotificationCenter from '@/shell/NotificationCenter.vue';
 import OnlineOfflineWidget from '@/shell/OnlineOfflineWidget.vue';
-import { registerShellToolbarWidgets } from '@/shell/registerShellWidgets';
+import registerShellToolbarWidgets from '@/shell/registerShellWidgets';
 import { listToolbarWidgets, resetToolbarWidgets } from '@/shell/toolbarWidgets';
 import { useNotificationStore } from '@/stores/notifications';
 
@@ -24,7 +22,9 @@ describe('offline toolbar widgets (JUM-807/808)', () => {
     expect(ids).toContain('online-offline');
     const wrapper = mountWithShell(NotificationCenter);
     useNotificationStore().push({
-      kind: 'info', title: 'Hello', message: 'There'
+      kind: 'info',
+      title: 'Hello',
+      message: 'There'
     });
     await flush(1);
     expect(wrapper.text()).toContain('Notifications');

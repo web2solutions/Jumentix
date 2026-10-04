@@ -1,4 +1,3 @@
-import type { CanaSchema } from '../src';
 import {
   createChangeBuffer,
   createClient,
@@ -7,6 +6,8 @@ import {
   runTransaction
 } from '../src';
 import { rejection } from './harness';
+
+import type { CanaSchema } from '../src';
 
 /**
  * The `unknown` write outcome, finally exercised.
@@ -38,7 +39,9 @@ function committingDatabase() {
     onabort: null as (() => void) | null,
     onerror: null as (() => void) | null,
     error: null,
-    abort() { /* too late: already committed */ },
+    abort() {
+      /* too late: already committed */
+    },
     objectStore: () => ({ name: 'designs' })
   };
 
@@ -67,7 +70,9 @@ describe('unknown write outcome', () => {
       stores: ['designs'],
       mode: 'readwrite',
       buffer,
-      body: async () => { throw new Error('application failure after the commit landed'); }
+      body: async () => {
+        throw new Error('application failure after the commit landed');
+      }
     });
 
     expect(outcome.outcome).to.equal('unknown');
@@ -85,7 +90,9 @@ describe('unknown write outcome', () => {
       stores: ['designs'],
       mode: 'readwrite',
       buffer,
-      body: async () => { throw new Error('failed after commit'); }
+      body: async () => {
+        throw new Error('failed after commit');
+      }
     });
 
     expect(outcome.outcome).to.equal('unknown');
@@ -99,7 +106,9 @@ describe('unknown write outcome', () => {
       onabort: null as (() => void) | null,
       onerror: null as (() => void) | null,
       error: null,
-      abort() { /* no-op */ },
+      abort() {
+        /* no-op */
+      },
       objectStore: () => ({ name: 'designs' })
     };
     const aborted = {
@@ -107,7 +116,9 @@ describe('unknown write outcome', () => {
       onabort: null as (() => void) | null,
       onerror: null as (() => void) | null,
       error: null,
-      abort() { /* no-op */ },
+      abort() {
+        /* no-op */
+      },
       objectStore: () => ({ name: 'designs' })
     };
 
@@ -146,18 +157,24 @@ describe('unknown write outcome', () => {
 
   it('translates a failure raised while starting the transaction', async () => {
     const database = {
-      transaction: () => { throw new Error('scope is invalid'); }
+      transaction: () => {
+        throw new Error('scope is invalid');
+      }
     } as unknown as IDBDatabase;
     const buffer = createChangeBuffer(() => 1, 'origin');
     buffer.record({ type: 'created', store: 'designs', correlationId: 'c1' });
 
-    expect(await rejection(runTransaction({
-      database,
-      stores: ['designs'],
-      mode: 'readwrite',
-      buffer,
-      body: async () => undefined
-    }))).to.deep.include({ canaError: true });
+    expect(
+      await rejection(
+        runTransaction({
+          database,
+          stores: ['designs'],
+          mode: 'readwrite',
+          buffer,
+          body: async () => undefined
+        })
+      )
+    ).to.deep.include({ canaError: true });
 
     // The buffer is discarded: a transaction that never started produced nothing.
     expect(buffer.drain()).to.deep.equal([]);
@@ -167,7 +184,9 @@ describe('unknown write outcome', () => {
     // The whole point of the fix from review: 'unknown' is the outcome that must
     // be reconciled, so it must carry what reconciling requires.
     const client = createClient({
-      name: 'designer', schema, operationLedger: true
+      name: 'designer',
+      schema,
+      operationLedger: true
     });
     await client.open();
 
@@ -189,7 +208,10 @@ describe('remaining lifecycle branches', () => {
       value: {
         storage: {
           persisted: async () => false,
-          persist: async () => { asked = true; return true; }
+          persist: async () => {
+            asked = true;
+            return true;
+          }
         }
       }
     });
@@ -215,11 +237,13 @@ describe('remaining lifecycle branches', () => {
       name: 'designer',
       schema: {
         version: 1,
-        stores: [{
-          name: 'designs',
-          keyPath: 'id',
-          indexes: [{ name: 'byTags', keyPath: 'tags', multiEntry: true }]
-        }]
+        stores: [
+          {
+            name: 'designs',
+            keyPath: 'id',
+            indexes: [{ name: 'byTags', keyPath: 'tags', multiEntry: true }]
+          }
+        ]
       }
     }).catch((error: unknown) => error);
 
@@ -236,7 +260,8 @@ describe('remaining lifecycle branches', () => {
     });
     await client.open();
 
-    const { events } = await client.table<{ name: string }>('designs')
+    const { events } = await client
+      .table<{ name: string }>('designs')
       .bulkPut([{ name: 'a' }, { name: 'b' }]);
 
     expect(events.map((event) => event.type)).to.deep.equal(['created', 'created']);

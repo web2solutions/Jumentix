@@ -1,1 +1,3 @@
-export { compileMessageMediator } from '@jumentix/message-mediator';
+import { compileMessageMediator } from '@jumentix/message-mediator';
+
+export default compileMessageMediator;

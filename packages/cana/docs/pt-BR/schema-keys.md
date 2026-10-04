@@ -64,13 +64,13 @@ await upgradedClient.table('tasks').put({
 
 ## Regras de upgrade
 
-| Mudança | Comportamento do Cana |
-| --- | --- |
-| Adicionar store | Aplicado na próxima versão maior. |
-| Adicionar índice | Aplicado na próxima versão maior. |
-| Remover uma store do objeto de schema | A store antiga permanece. O Cana evita perda acidental de dados. |
+| Mudança                               | Comportamento do Cana                                                                |
+| ------------------------------------- | ------------------------------------------------------------------------------------ |
+| Adicionar store                       | Aplicado na próxima versão maior.                                                    |
+| Adicionar índice                      | Aplicado na próxima versão maior.                                                    |
+| Remover uma store do objeto de schema | A store antiga permanece. O Cana evita perda acidental de dados.                     |
 | Alterar definição de índice existente | O índice antigo permanece. Use um novo nome de índice para reconstruir de propósito. |
-| Abrir versão antiga sobre dados novos | Recusado com `UpgradeFailed`. |
+| Abrir versão antiga sobre dados novos | Recusado com `UpgradeFailed`.                                                        |
 
 ## Estratégias de chave
 
@@ -106,10 +106,9 @@ await client.table('tasks').put({
   updatedAt: 1
 });
 
-await client.table('cache').put(
-  { body: '<html>cached response</html>', savedAt: Date.now() },
-  'https://example.com/tasks'
-);
+await client
+  .table('cache')
+  .put({ body: '<html>cached response</html>', savedAt: Date.now() }, 'https://example.com/tasks');
 ```
 
 ## Execute aqui

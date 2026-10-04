@@ -1,5 +1,5 @@
 import { CommercialPage } from '@/components/commercial/CommercialPages';
 
-export default function EngagementPage() {
-  return <CommercialPage page="engagement" />;
-}
+const EngagementPage = () => <CommercialPage page="engagement" />;
+
+export default EngagementPage;

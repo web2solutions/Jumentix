@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: LICENSE.md
 Idioma alvo: Português (Brasil)
 -->
+
 Licença MIT
 
 Copyright (c) 2024 Eduardo Almeida

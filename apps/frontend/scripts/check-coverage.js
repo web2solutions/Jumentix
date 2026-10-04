@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Frontend coverage gate (JUM-776, Requirement 112).
@@ -19,6 +18,7 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const APP_ROOT = path.resolve(__dirname, '..');
@@ -57,7 +57,11 @@ function parseLcov(text) {
     if (line.startsWith('SF:')) {
       // Bun writes SF entries relative to the directory it ran in (the app).
       current = {
-        path: path.resolve(APP_ROOT, line.slice(3)), lf: 0, lh: 0, fnf: 0, fnh: 0
+        path: path.resolve(APP_ROOT, line.slice(3)),
+        lf: 0,
+        lh: 0,
+        fnf: 0,
+        fnh: 0
       };
     } else if (line.startsWith('LF:') && current) current.lf = Number(line.slice(3));
     else if (line.startsWith('LH:') && current) current.lh = Number(line.slice(3));
@@ -82,8 +86,10 @@ function listSources(dir, out = []) {
 
 function isSubject(filePath) {
   const normalized = filePath.replaceAll('\\', '/');
-  return normalized.startsWith(SOURCE_ROOT.replaceAll('\\', '/'))
-    && !EXCLUDED.some((pattern) => pattern.test(normalized));
+  return (
+    normalized.startsWith(SOURCE_ROOT.replaceAll('\\', '/')) &&
+    !EXCLUDED.some((pattern) => pattern.test(normalized))
+  );
 }
 
 /** Untouched sources count as 0/LF where LF is estimated from line count. */
@@ -137,7 +143,9 @@ function run({ reportPath = DEFAULT_REPORT, thresholds = THRESHOLDS } = {}) {
       messages.push(line);
     }
   }
-  messages.push('  branches   unmeasured — bun emits no branch records (Requirement 110 §2); not counted as met.');
+  messages.push(
+    '  branches   unmeasured — bun emits no branch records (Requirement 110 §2); not counted as met.'
+  );
   if (untouched.length) {
     messages.push(`  untouched sources counted at 0 lines hit (${untouched.length}):`);
     untouched.forEach((file) => messages.push(`    - ${file}`));
@@ -146,12 +154,17 @@ function run({ reportPath = DEFAULT_REPORT, thresholds = THRESHOLDS } = {}) {
 }
 
 module.exports = {
-  THRESHOLDS, EXCLUDED, parseLcov, isSubject, summarize, run
+  EXCLUDED,
+  isSubject,
+  parseLcov,
+  run,
+  summarize,
+  THRESHOLDS
 };
 
 if (isEntryPoint(module)) {
   const result = run();
   console.log(result.ok ? 'Frontend coverage check passed.' : 'Frontend coverage check failed.');
   result.messages.forEach((message) => console.log(message));
-  process.exit(result.ok ? 0 : 1);
+  process.exitCode = result.ok ? 0 : 1;
 }

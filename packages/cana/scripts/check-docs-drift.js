@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+/* eslint-disable no-console -- CLI drift check: stdout/stderr is its report channel. */
 /**
  * Fail-closed drift check: website content-sources for Cana consumer guides
  * must point at packages/cana/docs (EN + pt-BR), and every listed source file
@@ -66,8 +66,8 @@ for (const entry of canaEntries) {
     }
     const normalized = rel.replace(/\\/g, '/');
     if (
-      entry.section === 'packages/cana/usage'
-      || ['any-framework', 'vanilla-typescript'].includes(entry.slug)
+      entry.section === 'packages/cana/usage' ||
+      ['any-framework', 'vanilla-typescript'].includes(entry.slug)
     ) {
       if (!normalized.includes('/packages/cana/docs/')) {
         errors.push(
@@ -118,8 +118,8 @@ for (const readmeName of ['README.md', 'README.pt-BR.md']) {
   const body = fs.readFileSync(readmePath, 'utf8');
   if (/\/images\/cana\//.test(body)) {
     errors.push(
-      `${readmeName} still references site-absolute /images/cana/ paths; `
-        + 'use package-local ./media/ so npm and GitHub render images'
+      `${readmeName} still references site-absolute /images/cana/ paths; ` +
+        'use package-local ./media/ so npm and GitHub render images'
     );
   }
   for (const name of REQUIRED_MEDIA) {
@@ -132,7 +132,7 @@ for (const readmeName of ['README.md', 'README.pt-BR.md']) {
 if (errors.length > 0) {
   console.error('cana docs drift check failed:');
   for (const error of errors) console.error(`- ${error}`);
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 console.log(

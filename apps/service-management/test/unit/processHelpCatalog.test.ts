@@ -1,5 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/prefer-strict-equal */
-import { EXACT_HELP, ROLE_HELP, describeProcessHelp } from '../../src/ui/processHelpCatalog.js';
+import { describeProcessHelp, EXACT_HELP, ROLE_HELP } from '../../src/ui/processHelpCatalog.js';
 
 describe('processHelpCatalog', () => {
   it('resolves known ecosystem names and role suffixes', () => {
@@ -76,9 +75,11 @@ describe('processHelpCatalog', () => {
 
   it('falls back per-field: blank script or blank interpreter get their own placeholder', () => {
     expect.hasAssertions();
-    expect(describeProcessHelp({ name: 'worker', interpreter: 'node' }).summary)
-      .toBe('Runs (unknown script) via node.');
-    expect(describeProcessHelp({ name: 'worker', script: '  ./run.js  ', interpreter: '   ' }).summary)
-      .toBe('Runs ./run.js via default interpreter.');
+    expect(describeProcessHelp({ name: 'worker', interpreter: 'node' }).summary).toBe(
+      'Runs (unknown script) via node.'
+    );
+    expect(
+      describeProcessHelp({ name: 'worker', script: '  ./run.js  ', interpreter: '   ' }).summary
+    ).toBe('Runs ./run.js via default interpreter.');
   });
 });

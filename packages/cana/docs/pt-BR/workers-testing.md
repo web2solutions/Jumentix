@@ -65,11 +65,7 @@ createWorkerHost({
 `src/cana-client.ts`
 
 ```ts
-import {
-  createRouter,
-  createWorkerClient,
-  type CanaChangeEvent
-} from '@jumentix/cana';
+import { createRouter, createWorkerClient, type CanaChangeEvent } from '@jumentix/cana';
 
 const worker = new Worker(new URL('./cana.worker.ts', import.meta.url), {
   type: 'module'
@@ -123,13 +119,13 @@ export async function createTaskInWorker() {
 
 ## Estratégia de testes
 
-| Camada | O que testar | Ferramenta |
-| --- | --- | --- |
-| Unit | Builders de schema, mappers de registro, reducers de evento. | Bun/Jest sem navegador. |
-| Componente no browser | Componentes React/Vue atualizam a partir de `CanaChangeEvent`. | Testing Library com eventos injetados. |
-| Integração IndexedDB | Open, upgrade, query, transaction, avaliação de storage, export/import. | Cypress ou automação de browser. |
-| Integração de worker | Timeout do router, broadcasts, falhas de structured clone. | Worker real em teste de browser. |
-| Performance | Proporções de query, count vs leitura completa, paginação profunda. | Suíte de performance no browser. |
+| Camada                | O que testar                                                            | Ferramenta                             |
+| --------------------- | ----------------------------------------------------------------------- | -------------------------------------- |
+| Unit                  | Builders de schema, mappers de registro, reducers de evento.            | Bun/Jest sem navegador.                |
+| Componente no browser | Componentes React/Vue atualizam a partir de `CanaChangeEvent`.          | Testing Library com eventos injetados. |
+| Integração IndexedDB  | Open, upgrade, query, transaction, avaliação de storage, export/import. | Cypress ou automação de browser.       |
+| Integração de worker  | Timeout do router, broadcasts, falhas de structured clone.              | Worker real em teste de browser.       |
+| Performance           | Proporções de query, count vs leitura completa, paginação profunda.     | Suíte de performance no browser.       |
 
 ## Próximo
 

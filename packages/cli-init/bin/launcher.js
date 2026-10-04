@@ -10,9 +10,9 @@
  * the published `@jumentix/cli-init` at the same version, forwarding argv and
  * the exit code.
  */
+const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..');
 
@@ -51,15 +51,21 @@ function planLaunch(argv, packageRoot = PACKAGE_ROOT, deps = {}) {
 function launch(argv = process.argv.slice(2), deps = {}) {
   const plan = planLaunch(argv, PACKAGE_ROOT, deps);
   if (plan.kind === 'local') {
-    // eslint-disable-next-line global-require, import/no-dynamic-require
-    return require(plan.cliPath).runAsCli(argv).catch((error) => {
-      console.error(`\nBootstrap failed: ${error instanceof Error ? error.message : String(error)}`);
-      process.exitCode = 1;
-    });
+    return require(plan.cliPath)
+      .runAsCli(argv)
+      .catch((error) => {
+        console.error(
+          `\nBootstrap failed: ${error instanceof Error ? error.message : String(error)}`
+        );
+        process.exitCode = 1;
+      });
   }
   console.error(`[jumentix] no local build in this checkout; running published ${plan.spec}`);
   const run = deps.spawn || spawnSync;
-  const result = run(plan.command, plan.args, { stdio: 'inherit', shell: process.platform === 'win32' });
+  const result = run(plan.command, plan.args, {
+    stdio: 'inherit',
+    shell: process.platform === 'win32'
+  });
   if (result.error) {
     console.error(`[jumentix] could not start ${plan.command}: ${result.error.message}`);
     process.exitCode = 2;
@@ -69,4 +75,4 @@ function launch(argv = process.argv.slice(2), deps = {}) {
   return Promise.resolve();
 }
 
-module.exports = { PACKAGE_ROOT, launch, localCliReady, planLaunch };
+module.exports = { launch, localCliReady, PACKAGE_ROOT, planLaunch };

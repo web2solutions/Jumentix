@@ -103,12 +103,12 @@ sample is ordinary domain/entity deletion. Content is defined in
      on the status surface. Invalid persisted entries are flagged inline.
 3. **Service Configuration**
    - Configure service kind (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
-   execution model, cloud provider, static assets profile, and runtime ports.
+     execution model, cloud provider, static assets profile, and runtime ports.
    - Saves are validated (JUM-544): ports must be integers in 1–65535 and unique across the
-   protocols the selected service kind actually binds, and the run-mode × cloud-provider
-   combination must exist in the Requirement 059 deploy matrix (read from the shared
-   machine-readable source `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`)). Invalid profiles are
-   reported on the tab's status surface and are not saved.
+     protocols the selected service kind actually binds, and the run-mode × cloud-provider
+     combination must exist in the Requirement 059 deploy matrix (read from the shared
+     machine-readable source `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`)). Invalid profiles are
+     reported on the tab's status surface and are not saved.
    - PM2 runtime profile preview for VM deployments reads the real
      `pm2/ecosystem.*.cjs` files through `GET /api/runtime/pm2-ecosystem`
      (JUM-480): the process list and the suggested `pm2 start` command derive
@@ -323,8 +323,8 @@ The full contract (enum sets, write semantics, response hygiene) lives in
 - `JUMENTIX_REALTIME_API_PROTOCOL`
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
-Every env key belongs to exactly one of three tiers: *editable* (readable and
-writable), *read-only* (visible in GET, never writable), and *never exposed*
+Every env key belongs to exactly one of three tiers: _editable_ (readable and
+writable), _read-only_ (visible in GET, never writable), and _never exposed_
 (secrets — absent from GET and not writable). The authoritative per-key
 classification is maintained in
 [Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
@@ -352,7 +352,7 @@ error if the directory does not exist.
   `JUMENTIX_SERVICE_MANAGEMENT_HOST`, port with
   `JUMENTIX_SERVICE_MANAGEMENT_PORT` (default `3200`).
 - When `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` is set, `POST
-  /api/runtime/env` requires `Authorization: Bearer <token>` and returns `401`
+/api/runtime/env` requires `Authorization: Bearer <token>` and returns `401`
   otherwise; when unset, loopback-only operation is allowed without a token.
 - Every mutation is logged with timestamp, environment, and changed keys (not
   values).

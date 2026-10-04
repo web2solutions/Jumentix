@@ -1,7 +1,8 @@
-import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
-export class RdsRepository extends BaseExternalDataRepository {
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+
+class RdsRepository extends BaseExternalDataRepository {
   private sequelize: any | null = null;
 
   constructor(options: IRepositoryConnectionOptions) {
@@ -13,9 +14,8 @@ export class RdsRepository extends BaseExternalDataRepository {
 
   public async connect(): Promise<void> {
     const sequelizeModule = await this.loadModule('sequelize');
-    const Sequelize = (
-      sequelizeModule.Sequelize || sequelizeModule.default?.Sequelize || sequelizeModule.default
-    );
+    const Sequelize =
+      sequelizeModule.Sequelize || sequelizeModule.default?.Sequelize || sequelizeModule.default;
 
     if (!Sequelize) {
       throw new Error('Unable to resolve Sequelize constructor from "sequelize" package.');
@@ -25,8 +25,8 @@ export class RdsRepository extends BaseExternalDataRepository {
       'dialect',
       'postgres'
     );
-    const connectionUrl = this.options.connectionUrl
-      || `${dialect}://localhost:5432/${this.options.database || 'app'}`;
+    const connectionUrl =
+      this.options.connectionUrl || `${dialect}://localhost:5432/${this.options.database || 'app'}`;
     this.sequelize = new Sequelize(connectionUrl, {
       dialect,
       pool: {
@@ -40,8 +40,8 @@ export class RdsRepository extends BaseExternalDataRepository {
     });
 
     if (
-      this.getExtraOption<boolean>('sequelizeAuthenticateOnConnect', true)
-      && typeof this.sequelize.authenticate === 'function'
+      this.getExtraOption<boolean>('sequelizeAuthenticateOnConnect', true) &&
+      typeof this.sequelize.authenticate === 'function'
     ) {
       await this.sequelize.authenticate();
     }
@@ -61,3 +61,5 @@ export class RdsRepository extends BaseExternalDataRepository {
     return this.sequelize;
   }
 }
+
+export default RdsRepository;

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Governança do Projeto Jumentix
 
 Este projeto usa o Linear como a única fonte de verdade para rastreamento de execução. Issues,
@@ -169,10 +170,10 @@ Não é permitido misturar `P0`, `P1` e `P2` no mesmo PR.
 9. Implementar com um PR dedicado tendo `dev` como destino e vinculado ao milestone, ao Project,
    à Issue e ao Project Update obrigatório no Linear.
 10. Promover `dev` para `main` somente por meio de um PR de promoção de release após a aprovação
-   da matriz completa.
+    da matriz completa.
 11. Verificar que a Issue dedicada de documentação e suas evidências estão concluídas.
 12. Mover o status do projeto (`Backlog` -> `Pronto` -> `Em andamento` -> `Em revisão` ->
-   `Concluído`) somente quando o estado real e todos os metadados obrigatórios concordarem.
+    `Concluído`) somente quando o estado real e todos os metadados obrigatórios concordarem.
 
 ## Política de Ciclo e Estimativa
 

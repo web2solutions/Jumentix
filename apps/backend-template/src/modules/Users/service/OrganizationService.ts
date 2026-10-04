@@ -1,12 +1,18 @@
+import { runMetricsQuery } from '@jumentix/persistence-contracts';
+
+import { ValidationError } from '@src/infra/exceptions';
+import { BaseService } from '@src/modules/port';
+
 import type {
-  IServiceConfig,
-  IServiceResponse,
-  IPagingRequest
-} from '@src/modules/port';
-import {
-  BaseService
-} from '@src/modules/port';
-import { BaseError, ValidationError } from '@src/infra/exceptions';
+  IMetricsCapabilities,
+  IMetricsQuery,
+  IMetricsResult
+} from '@jumentix/persistence-contracts';
+
+import type { ICacheService } from '@src/infra/cache';
+import type { BaseError } from '@src/infra/exceptions';
+import type { IPagingRequest, IServiceConfig, IServiceResponse } from '@src/modules/port';
+import type OrganizationDataRepository from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
 import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
@@ -16,26 +22,17 @@ import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/Requ
 import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
 import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import { OrganizationDataRepository } from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
-import type { ICacheService } from '@src/infra/cache';
-import {
-  runMetricsQuery,
-  type IMetricsCapabilities,
-  type IMetricsQuery,
-  type IMetricsResult
-} from '@jumentix/persistence-contracts';
 
-interface IOrganizationServiceConfig extends IServiceConfig {
-}
+interface IOrganizationServiceConfig extends IServiceConfig {}
 
 interface ISerializableOrganization extends IOrganization {
   serialize(): IOrganization;
 }
 
-export class OrganizationService extends BaseService<
-IOrganization,
-RequestCreateOrganization,
-RequestUpdateOrganization
+class OrganizationService extends BaseService<
+  IOrganization,
+  RequestCreateOrganization,
+  RequestUpdateOrganization
 > {
   public dataRepository: OrganizationDataRepository;
 
@@ -49,9 +46,7 @@ RequestUpdateOrganization
 
   private static serializeOrganization(organization: IOrganization): IOrganization {
     const candidate = organization as Partial<ISerializableOrganization>;
-    return typeof candidate.serialize === 'function'
-      ? candidate.serialize()
-      : organization;
+    return typeof candidate.serialize === 'function' ? candidate.serialize() : organization;
   }
 
   private static sortPayload(payload: any): any {
@@ -63,10 +58,13 @@ RequestUpdateOrganization
     }
     return Object.keys(payload)
       .sort((a, b) => a.localeCompare(b))
-      .reduce((acc, key) => {
-        acc[key] = OrganizationService.sortPayload(payload[key]);
-        return acc;
-      }, {} as Record<string, any>);
+      .reduce(
+        (acc, key) => {
+          acc[key] = OrganizationService.sortPayload(payload[key]);
+          return acc;
+        },
+        {} as Record<string, any>
+      );
   }
 
   private async getCacheVersion(): Promise<number> {
@@ -158,9 +156,9 @@ RequestUpdateOrganization
       const result = await this.dataRepository.getAll(filters, paging);
       const serializedResult = {
         ...result,
-        result: result.result.map((organization) => (
+        result: result.result.map((organization) =>
           OrganizationService.serializeOrganization(organization)
-        ))
+        )
       };
       await this.cacheService?.set(cacheKey, serializedResult);
       return serializedResult;
@@ -182,14 +180,16 @@ RequestUpdateOrganization
         const serialized = OrganizationService.serializeOrganization(organization);
         return {
           ...serialized,
-          createdAt: serialized.createdAt instanceof Date
-            ? serialized.createdAt.toISOString()
-            : serialized.createdAt,
-          updatedAt: serialized.updatedAt instanceof Date
-            ? serialized.updatedAt.toISOString()
-            : serialized.updatedAt
+          createdAt:
+            serialized.createdAt instanceof Date
+              ? serialized.createdAt.toISOString()
+              : serialized.createdAt,
+          updatedAt:
+            serialized.updatedAt instanceof Date
+              ? serialized.updatedAt.toISOString()
+              : serialized.updatedAt
         };
-      }) as Array<Record<string, unknown>>;
+      }) as Record<string, unknown>[];
       serviceResponse.result = runMetricsQuery(rows, { ...query, filters }, capabilities);
     } catch (error) {
       if (error instanceof Error && /Accepted:/.test(error.message)) {
@@ -346,3 +346,5 @@ RequestUpdateOrganization
     return new OrganizationService(config);
   }
 }
+
+export default OrganizationService;

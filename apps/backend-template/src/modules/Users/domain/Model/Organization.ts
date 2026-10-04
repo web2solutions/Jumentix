@@ -1,13 +1,13 @@
-/* eslint-disable no-underscore-dangle */
-import type { HasMany } from '@src/modules/port';
-import { BaseModel, hasMany } from '@src/modules/port';
-import type { EntityConstructor } from '@src/modules/port/relations';
-import { canNotBeEmpty, throwIfReadOnly } from '@src/shared/validators';
 import {
   AddressValueObject,
   EmailValueObject,
   PhoneValueObject
 } from '@src/modules/ddd/valueObjects';
+import { BaseModel, hasMany } from '@src/modules/port';
+import { canNotBeEmpty, throwIfReadOnly } from '@src/shared/validators';
+
+import type { HasMany } from '@src/modules/port';
+import type { EntityConstructor } from '@src/modules/port/relations';
 import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
 import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
@@ -30,7 +30,7 @@ interface RequestUpdateAddress {
 type OrganizationPhonePayload = NonNullable<RequestCreateOrganization['phone']>[number];
 type OrganizationEmailPayload = NonNullable<RequestCreateOrganization['email']>[number];
 
-export class Organization extends BaseModel<IOrganization> implements IOrganization {
+class Organization extends BaseModel<IOrganization> implements IOrganization {
   public static readonly dataEntitySchema = {
     name: 'Organization',
     fields: [
@@ -95,7 +95,7 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
     ]
   } as const;
 
-  private _name: string = '';
+  private _name = '';
 
   private _address: AddressValueObject[] = [];
 
@@ -109,7 +109,7 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
 
   private readonly _readOnly: boolean = false;
 
-  private _skipDomainValidation: boolean = true;
+  private _skipDomainValidation = true;
 
   constructor(payload: OrganizationFactory) {
     super({
@@ -123,7 +123,7 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
     payload.address?.forEach((entry) => this.createAddress(entry));
     payload.phone?.forEach((entry) => this.createPhone(entry));
     payload.email?.forEach((entry) => this.createEmail(entry));
-    this._users = [...(payload.users || [])];
+    this._users = [...(payload.users ?? [])];
     this._readOnly = payload.readOnly ?? false;
     this._excludeOnSerialize = [
       'createAddress',
@@ -278,3 +278,5 @@ export class Organization extends BaseModel<IOrganization> implements IOrganizat
     return [...this._users];
   }
 }
+
+export default Organization;

@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 // Namespaced requires: this file is a script, and destructured names would
 // collide with sibling suites in the root tsc program.
+const coverageRootPackage = require('../../package.json');
 const coverageGates = require('../run-branch-quality-gate.js');
 const coverageMatrix = require('../run-full-test-matrix.js');
-const coverageRootPackage = require('../../package.json');
 
 /**
  * Every `ci:gate` step must run in some CI path (JUM-903).
@@ -26,8 +25,13 @@ function scriptsOf(chain: string): string[] {
   return [...chain.matchAll(/bun run ([\w:.-]+)/g)].map((match) => match[1]);
 }
 
-type Step = { script: string };
-type Gate = { script: string; preflight: Step[] };
+interface Step {
+  script: string;
+}
+interface Gate {
+  script: string;
+  preflight: Step[];
+}
 
 const GATES: Gate[] = [
   coverageGates.TASK_QUALITY_GATE,
@@ -43,7 +47,11 @@ function ciRunnableScripts(): Set<string> {
   const matrix = coverageMatrix.FULL_TEST_MATRIX.map((cell: Step) => cell.script);
   const staticSteps = scriptsOf(coverageRootPackage.scripts['ci:gate:static']);
   return new Set([
-    ...preflight, ...selected, ...matrix, ...staticSteps, ...Object.keys(RUN_ELSEWHERE)
+    ...preflight,
+    ...selected,
+    ...matrix,
+    ...staticSteps,
+    ...Object.keys(RUN_ELSEWHERE)
   ]);
 }
 
@@ -52,12 +60,15 @@ describe('ci:gate coverage by CI (JUM-903)', () => {
     expect.hasAssertions();
     const covered = ciRunnableScripts();
 
-    expect(scriptsOf(coverageRootPackage.scripts['ci:gate']).filter((step) => !covered.has(step))).toStrictEqual([]);
+    expect(
+      scriptsOf(coverageRootPackage.scripts['ci:gate']).filter((step) => !covered.has(step))
+    ).toStrictEqual([]);
   });
 
   it('runs ci:gate:static ahead of every gate', () => {
     expect.hasAssertions();
-    const runsStatic = (gate: Gate) => gate.preflight.some((step) => step.script === 'ci:gate:static');
+    const runsStatic = (gate: Gate) =>
+      gate.preflight.some((step) => step.script === 'ci:gate:static');
 
     expect(GATES.map(runsStatic)).toStrictEqual([true, true, true, true]);
   });
@@ -67,7 +78,9 @@ describe('ci:gate coverage by CI (JUM-903)', () => {
     const covered = ciRunnableScripts();
     const chain = `${coverageRootPackage.scripts['ci:gate']} && bun run imaginary:new-check`;
 
-    expect(scriptsOf(chain).filter((step) => !covered.has(step))).toStrictEqual(['imaginary:new-check']);
+    expect(scriptsOf(chain).filter((step) => !covered.has(step))).toStrictEqual([
+      'imaginary:new-check'
+    ]);
   });
 
   it('names only steps that still exist in ci:gate', () => {

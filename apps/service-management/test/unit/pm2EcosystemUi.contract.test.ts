@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 /*
  * JUM-480 — Designer-side contract for the PM2 ecosystem preview and the
  * multi-environment editing surface.
@@ -9,10 +9,21 @@
  * `npm run`) nor the `pm2:start:*` script names — the preview derives every
  * command from the real ecosystem files through GET /api/runtime/pm2-ecosystem.
  */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const readDesignerSource = (relative: string): string => fs.readFileSync(path.resolve(process.cwd(), 'apps/service-management', relative), 'utf-8');
+const readDesignerSource = (relative: string): string =>
+  fs.readFileSync(path.resolve(process.cwd(), 'apps/service-management', relative), 'utf-8');
+
+const pm2PreviewEnvironmentOptions = (html: string): string[] => {
+  const selectMatch = html.match(
+    /<select id="pm2-preview-environment-select">([\s\S]*?)<\/select>/
+  );
+  if (!selectMatch) {
+    return [];
+  }
+  return Array.from(selectMatch[1].matchAll(/value="([^"]+)"/g), (m) => m[1]);
+};
 
 describe('service management PM2 preview UI contract (JUM-480)', () => {
   const designerSources = ['script.js', 'index.html', 'src/ui/inspectors.js'];
@@ -97,9 +108,7 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
   it('offers a preview environment per ecosystem the repository defines', () => {
     expect.hasAssertions();
     const html = readDesignerSource('index.html');
-    const selectMatch = html.match(/<select id="pm2-preview-environment-select">([\s\S]*?)<\/select>/);
-    expect(selectMatch).not.toBeNull();
-    const options = Array.from(selectMatch![1].matchAll(/value="([^"]+)"/g), (m) => m[1]);
+    const options = pm2PreviewEnvironmentOptions(html);
     expect(options).toStrictEqual(['dev', 'staging', 'production']);
   });
 
@@ -114,12 +123,16 @@ describe('service management PM2 preview UI contract (JUM-480)', () => {
   it('keeps the server ecosystem mapping aligned with the repository files', () => {
     expect.hasAssertions();
     const server = readDesignerSource('server.js');
-    expect(server).toContain('dev: \'ecosystem.dev.config.cjs\'');
-    expect(server).toContain('staging: \'ecosystem.staging.config.cjs\'');
-    expect(server).toContain('production: \'ecosystem.production.config.cjs\'');
-    expect(server).toContain('ci: \'ecosystem.ci.cjs\'');
+    expect(server).toContain("dev: 'ecosystem.dev.config.cjs'");
+    expect(server).toContain("staging: 'ecosystem.staging.config.cjs'");
+    expect(server).toContain("production: 'ecosystem.production.config.cjs'");
+    expect(server).toContain("ci: 'ecosystem.ci.cjs'");
     ['dev', 'staging', 'production'].forEach((environment) => {
-      const ecosystemPath = path.resolve(process.cwd(), 'pm2', `ecosystem.${environment}.config.cjs`);
+      const ecosystemPath = path.resolve(
+        process.cwd(),
+        'pm2',
+        `ecosystem.${environment}.config.cjs`
+      );
       expect(fs.existsSync(ecosystemPath)).toBe(true);
     });
   });

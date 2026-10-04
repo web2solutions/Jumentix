@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Plano de remediação de PCI e evidências de auditoria
 
 Este documento define o plano de remediação na ordem do sprint e mapeia as evidências técnicas necessárias para a auditoria.

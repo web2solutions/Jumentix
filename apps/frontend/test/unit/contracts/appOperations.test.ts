@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
-  DEFAULT_APP_OPERATIONS,
   appOperations,
   configureAppOperations,
+  DEFAULT_APP_OPERATIONS,
   resolveAppOperations,
   validateAppOperations
 } from '@/contracts/appOperations';

@@ -1,13 +1,14 @@
+import cluster from 'node:cluster';
+
 import { shouldStartRealtimeApi } from '@src/interface/runtime/RuntimeEnvironment';
-import { startWebSocketAdapter } from '@src/interface/WebSocket/adapters/socket-io/socket-io';
-import cluster from 'cluster';
 import {
   isClusterSocketIoEnabled,
   resolveWebSocketClusterWorkers,
   setupSocketIoClusterPrimary
 } from '@src/interface/WebSocket/adapters/socket-io/clusterAdapter';
+import { startWebSocketAdapter } from '@src/interface/WebSocket/adapters/socket-io/socket-io';
 
-export async function startWebSocketApiAdapter(
+export default async function startWebSocketApiAdapter(
   env: NodeJS.ProcessEnv = process.env
 ): Promise<boolean> {
   if (!shouldStartRealtimeApi('websocket', env)) return false;

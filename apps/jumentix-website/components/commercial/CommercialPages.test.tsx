@@ -1,51 +1,47 @@
 import { render, screen, userEvent } from '@/test-utils';
-import { getDocsSnippet } from '../docs-playground/catalogs';
-import type { DocsRuntimeId } from '../docs-playground/types';
+
+import { CommercialPage, CommercialUseCasePage } from './CommercialPages';
 import { getCanaSnippet } from '../cana/snippets';
-import {
-  CommercialPage,
-  CommercialUseCasePage,
-  Home,
-  Product,
-  UseCases,
-  Integrations,
-  Architecture,
-  Security,
-  Engagement,
-  Contact,
-  Community,
-  Roadmap,
-} from '../commercial/CommercialPages';
+import { getDocsSnippet } from '../docs-playground/catalogs';
+
+import type { DocsRuntimeId } from '../docs-playground/types';
 
 describe('Commercial pages', () => {
-  const renderPage = (page: Parameters<typeof CommercialPage>[0]['page'], locale: 'en' | 'pt-BR' = 'en') => {
+  const renderPage = (
+    page: Parameters<typeof CommercialPage>[0]['page'],
+    locale: 'en' | 'pt-BR' = 'en'
+  ) => {
     render(<CommercialPage locale={locale} page={page} />);
   };
 
   describe('Home page', () => {
     it('renders hero with badge, title, and actions (EN)', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('home', 'en');
       expect(screen.getByText('Open-source software factory')).toBeInTheDocument();
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Jumentix');
-      expect(screen.getByAltText('Jumentix mascot, inspired by the Brazilian jegue')).toBeInTheDocument();
+      expect(
+        screen.getByAltText('Jumentix mascot, inspired by the Brazilian jegue')
+      ).toBeInTheDocument();
       expect(screen.getByText(/Brazilian jegue/i)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Start building' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Explore the platform' })).toBeInTheDocument();
     });
 
     it('renders hero with badge, title, and actions (PT-BR)', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('home', 'pt-BR');
       expect(screen.getByText('Fábrica de software open source')).toBeInTheDocument();
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Jumentix');
-      expect(screen.getByAltText('Mascote Jumentix, inspirada no jegue brasileiro')).toBeInTheDocument();
+      expect(
+        screen.getByAltText('Mascote Jumentix, inspirada no jegue brasileiro')
+      ).toBeInTheDocument();
       expect(screen.getByText(/jegue brasileiro/i)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Comece a construir' })).toBeInTheDocument();
     });
 
     it('renders proof metrics', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('home', 'en');
       expect(screen.getByText('99% quality threshold')).toBeInTheDocument();
       expect(screen.getByText('DDD + Hexagonal')).toBeInTheDocument();
@@ -57,9 +53,11 @@ describe('Commercial pages', () => {
 
   describe('Product page', () => {
     it('renders platform capabilities feature grid (EN)', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('product', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('A software factory your teams can evolve');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'A software factory your teams can evolve'
+      );
       expect(screen.getByText('Service Management')).toBeInTheDocument();
       expect(screen.getByText('Contract-first runtimes')).toBeInTheDocument();
       expect(screen.getByText('Reusable package ecosystem')).toBeInTheDocument();
@@ -85,7 +83,7 @@ describe('Commercial pages', () => {
     });
 
     it('renders architecture flow steps', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('product', 'en');
       expect(screen.getByText('Interface adapter')).toBeInTheDocument();
       expect(screen.getByText('Controller')).toBeInTheDocument();
@@ -96,16 +94,20 @@ describe('Commercial pages', () => {
 
   describe('Use Cases page', () => {
     it('renders use case links grid', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('use-cases', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Start with the product you need now');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Start with the product you need now'
+      );
       expect(screen.getByRole('link', { name: /REST API/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /Realtime API/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /Modular SaaS/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /Microservices/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /SPA and offline PWA/ })).toBeInTheDocument();
       expect(screen.getByText('Zero to first MVP')).toBeInTheDocument();
-      expect(screen.getByText('Every use case is a launch path, not just an architecture label')).toBeInTheDocument();
+      expect(
+        screen.getByText('Every use case is a launch path, not just an architecture label')
+      ).toBeInTheDocument();
       expect(screen.getByText('MVP stage')).toBeInTheDocument();
       expect(screen.getByText('Ready evidence')).toBeInTheDocument();
       expect(screen.getByText('When to choose each Jumentix path')).toBeInTheDocument();
@@ -116,9 +118,11 @@ describe('Commercial pages', () => {
 
   describe('Integrations page', () => {
     it('renders integration categories', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('integrations', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Choose infrastructure per service, not per platform');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Choose infrastructure per service, not per platform'
+      );
       expect(screen.getByText('HTTP runtimes')).toBeInTheDocument();
       expect(screen.getByText('Realtime')).toBeInTheDocument();
       expect(screen.getByText('SQL')).toBeInTheDocument();
@@ -136,11 +140,15 @@ describe('Commercial pages', () => {
 
   describe('Architecture page', () => {
     it('renders architecture flow and capability table', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('architecture', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Domain ownership at the center, technology at the edges');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Domain ownership at the center, technology at the edges'
+      );
       expect(screen.getByTestId('hexagonal-architecture-map')).toBeInTheDocument();
-      expect(screen.getByRole('heading', { level: 2, name: 'Backend-template hexagonal map' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { level: 2, name: 'Backend-template hexagonal map' })
+      ).toBeInTheDocument();
       expect(screen.getByText('External request')).toBeInTheDocument();
       expect(screen.getByText('Input adapter')).toBeInTheDocument();
       expect(screen.getByText('Application core')).toBeInTheDocument();
@@ -165,9 +173,16 @@ describe('Commercial pages', () => {
       expect(screen.getByText('Cana frontend data')).toBeInTheDocument();
       expect(screen.getByText('Coordination and state ports')).toBeInTheDocument();
       expect(screen.getByText('Consumers and design source')).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: /Frontend data Getting started/ })).toHaveAttribute('href', '#playground-cana-getting-started');
-      expect(screen.getByRole('link', { name: /Frontend data Worker client flow/ })).toHaveAttribute('href', '#playground-cana-worker-client-flow');
-      expect(screen.getByRole('link', { name: /Stress path Bulk writes with mutex \+ DLQ/ })).toHaveAttribute('href', '#playground-jumentix-browser-lab-bulk-mutex-dead-letter');
+      expect(screen.getByRole('link', { name: /Frontend data Getting started/ })).toHaveAttribute(
+        'href',
+        '#playground-cana-getting-started'
+      );
+      expect(
+        screen.getByRole('link', { name: /Frontend data Worker client flow/ })
+      ).toHaveAttribute('href', '#playground-cana-worker-client-flow');
+      expect(
+        screen.getByRole('link', { name: /Stress path Bulk writes with mutex \+ DLQ/ })
+      ).toHaveAttribute('href', '#playground-jumentix-browser-lab-bulk-mutex-dead-letter');
       expect(screen.getAllByText('Bulk writes with mutex + DLQ').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Proves').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Watch').length).toBeGreaterThan(0);
@@ -178,9 +193,11 @@ describe('Commercial pages', () => {
 
   describe('Security page', () => {
     it('renders security features', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('security', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Controls your audit can verify');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Controls your audit can verify'
+      );
       expect(screen.getByText('RBAC')).toBeInTheDocument();
       expect(screen.getByText('PCI-oriented controls')).toBeInTheDocument();
       expect(screen.getByText('Secret-safe outputs')).toBeInTheDocument();
@@ -190,9 +207,11 @@ describe('Commercial pages', () => {
 
   describe('Engagement page', () => {
     it('renders adoption journey cards', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('engagement', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Open source foundation. Enterprise operating model.');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Open source foundation. Enterprise operating model.'
+      );
       expect(screen.getByText('Community adoption')).toBeInTheDocument();
       expect(screen.getByText('Product pilot')).toBeInTheDocument();
       expect(screen.getByText('Platform rollout')).toBeInTheDocument();
@@ -201,9 +220,11 @@ describe('Commercial pages', () => {
 
   describe('Contact page', () => {
     it('renders contact links', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('contact', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Bring your architecture challenge');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Bring your architecture challenge'
+      );
       expect(screen.getByRole('link', { name: /GitHub Discussions/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /GitHub Issues/ })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /Enterprise conversation/ })).toBeInTheDocument();
@@ -212,9 +233,11 @@ describe('Commercial pages', () => {
 
   describe('Community page', () => {
     it('renders contribution guidelines', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('community', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Build the factory with us');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Build the factory with us'
+      );
       expect(screen.getByText(/Discuss the problem before implementation/i)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Contribution guide' })).toBeInTheDocument();
     });
@@ -222,9 +245,11 @@ describe('Commercial pages', () => {
 
   describe('Roadmap page', () => {
     it('renders roadmap phases', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('roadmap', 'en');
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('A public path from platform foundation to software factory');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'A public path from platform foundation to software factory'
+      );
       expect(screen.getByText('Now')).toBeInTheDocument();
       expect(screen.getByText('Distribution')).toBeInTheDocument();
       expect(screen.getByText('Next')).toBeInTheDocument();
@@ -236,10 +261,14 @@ describe('Commercial pages', () => {
 
   describe('CommercialUseCasePage', () => {
     it('renders REST API use case page', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<CommercialUseCasePage locale="en" name="rest-api" />);
-      expect(screen.getByText('Contract-first REST APIs without domain lock-in')).toBeInTheDocument();
-      expect(screen.getByText('Native adapters for multiple Node.js HTTP runtimes')).toBeInTheDocument();
+      expect(
+        screen.getByText('Contract-first REST APIs without domain lock-in')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Native adapters for multiple Node.js HTTP runtimes')
+      ).toBeInTheDocument();
       expect(screen.getByText('From zero to first MVP')).toBeInTheDocument();
       expect(screen.getByText('Choose the first resource')).toBeInTheDocument();
       expect(screen.getByText('MVP scope')).toBeInTheDocument();
@@ -252,7 +281,7 @@ describe('Commercial pages', () => {
     });
 
     it('renders Realtime API use case page', async () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       const user = userEvent.setup();
       render(<CommercialUseCasePage locale="en" name="realtime-api" />);
       expect(screen.getByText('Bidirectional APIs with a built-in fallback')).toBeInTheDocument();
@@ -265,10 +294,12 @@ describe('Commercial pages', () => {
     });
 
     it('renders SaaS Monolith use case page', async () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       const user = userEvent.setup();
       render(<CommercialUseCasePage locale="en" name="saas-monolith" />);
-      expect(screen.getByText('Launch one deployable, preserve every domain boundary')).toBeInTheDocument();
+      expect(
+        screen.getByText('Launch one deployable, preserve every domain boundary')
+      ).toBeInTheDocument();
       expect(screen.getByText('Lower first-release operating cost')).toBeInTheDocument();
       expect(screen.getByText('Define the tenant-owned workflow')).toBeInTheDocument();
       await user.click(screen.getByRole('tab', { name: 'Release' }));
@@ -278,10 +309,12 @@ describe('Commercial pages', () => {
     });
 
     it('renders SaaS Microservices use case page', async () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       const user = userEvent.setup();
       render(<CommercialUseCasePage locale="en" name="saas-microservices" />);
-      expect(screen.getByText('Scale services without rewriting communication')).toBeInTheDocument();
+      expect(
+        screen.getByText('Scale services without rewriting communication')
+      ).toBeInTheDocument();
       expect(screen.getByText('Independent service ownership')).toBeInTheDocument();
       expect(screen.getByText('Extract only one boundary')).toBeInTheDocument();
       await user.click(screen.getByRole('tab', { name: 'Release' }));
@@ -291,10 +324,12 @@ describe('Commercial pages', () => {
     });
 
     it('renders SPA PWA use case page', async () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       const user = userEvent.setup();
       render(<CommercialUseCasePage locale="en" name="spa-pwa" />);
-      expect(screen.getByText('Build installable products that keep working offline')).toBeInTheDocument();
+      expect(
+        screen.getByText('Build installable products that keep working offline')
+      ).toBeInTheDocument();
       expect(screen.getByText('Offline-first data workflows')).toBeInTheDocument();
       expect(screen.getByText('Model local records')).toBeInTheDocument();
       await user.click(screen.getByRole('tab', { name: 'Day 2' }));
@@ -304,19 +339,25 @@ describe('Commercial pages', () => {
     });
 
     it('localizes to PT-BR', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<CommercialUseCasePage locale="pt-BR" name="rest-api" />);
-      expect(screen.getByText('APIs REST orientadas a contratos sem aprisionar o domínio')).toBeInTheDocument();
-      expect(screen.getByText('Adaptadores nativos para vários runtimes HTTP Node.js')).toBeInTheDocument();
+      expect(
+        screen.getByText('APIs REST orientadas a contratos sem aprisionar o domínio')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Adaptadores nativos para vários runtimes HTTP Node.js')
+      ).toBeInTheDocument();
       expect(screen.getByText('Do zero ao primeiro MVP')).toBeInTheDocument();
       expect(screen.getByText('Escolha o primeiro recurso')).toBeInTheDocument();
       expect(screen.getByText('Implementação prática')).toBeInTheDocument();
-      expect(screen.getByText('Código completo para a primeira fatia funcional')).toBeInTheDocument();
+      expect(
+        screen.getByText('Código completo para a primeira fatia funcional')
+      ).toBeInTheDocument();
     });
   });
 
   describe('MVP day-by-day journey (JUM-709)', () => {
-    const docsPlaygroundRefs: ReadonlyArray<{ runtime: DocsRuntimeId; id: string }> = [
+    const docsPlaygroundRefs: readonly { runtime: DocsRuntimeId; id: string }[] = [
       { runtime: 'jumentix-browser-lab', id: 'rest-mvp-use-case' },
       { runtime: 'jumentix-browser-lab', id: 'rest-mvp-client' },
       { runtime: 'jumentix-browser-lab', id: 'realtime-mvp-live' },
@@ -324,12 +365,12 @@ describe('Commercial pages', () => {
       { runtime: 'jumentix-browser-lab', id: 'saas-mvp-tenant' },
       { runtime: 'jumentix-browser-lab', id: 'micro-mvp-worker' },
       { runtime: 'jumentix-browser-lab', id: 'micro-mvp-dead-letter' },
-      { runtime: 'message-mediator', id: 'micro-mvp-mediator' },
+      { runtime: 'message-mediator', id: 'micro-mvp-mediator' }
     ];
     const canaPlaygroundRefs = ['spa-mvp-offline', 'spa-mvp-events', 'spa-mvp-durability'] as const;
 
     it('every MVP playground reference resolves to a real executable snippet', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       for (const ref of docsPlaygroundRefs) {
         const snippet = getDocsSnippet(ref.runtime, ref.id);
         expect(snippet).toBeDefined();
@@ -343,65 +384,99 @@ describe('Commercial pages', () => {
     });
 
     it('rest-api journey renders day tabs, tasks, executable playground, and done/defer (EN)', async () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       const user = userEvent.setup();
       render(<CommercialUseCasePage locale="en" name="rest-api" />);
       expect(screen.getByRole('tab', { name: 'Day 0' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Day 1' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Day 2' })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: 'Release' })).toBeInTheDocument();
-      expect(screen.getByText('Pick create and list as the only MVP operations.')).toBeInTheDocument();
+      expect(
+        screen.getByText('Pick create and list as the only MVP operations.')
+      ).toBeInTheDocument();
       await user.click(screen.getByRole('tab', { name: 'Day 1' }));
-      expect(screen.getByText('Prove the 201/400/404 validation rules with one Run in the executable playground.')).toBeInTheDocument();
-      expect(screen.getByTestId('docs-playground-jumentix-browser-lab-rest-mvp-use-case')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Prove the 201/400/404 validation rules with one Run in the executable playground.'
+        )
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('docs-playground-jumentix-browser-lab-rest-mvp-use-case')
+      ).toBeInTheDocument();
       expect(screen.getByText('Definition of done for the first MVP')).toBeInTheDocument();
-      expect(screen.getByText('Invalid input fails with 400 and unknown categories with 404 before persistence.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Invalid input fails with 400 and unknown categories with 404 before persistence.'
+        )
+      ).toBeInTheDocument();
       expect(screen.getByText('Deliberately out of scope')).toBeInTheDocument();
       expect(screen.getByText('Bulk operations and reporting endpoints.')).toBeInTheDocument();
     });
 
     it('realtime-api journey ships fallback parity evidence', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<CommercialUseCasePage locale="en" name="realtime-api" />);
       expect(screen.getByRole('tab', { name: 'Day 1' })).toBeInTheDocument();
-      expect(screen.getByText('The REST fallback returns the same business result when the socket is unavailable.')).toBeInTheDocument();
-      expect(screen.getByText('Presence, typing indicators, and history replay.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'The REST fallback returns the same business result when the socket is unavailable.'
+        )
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Presence, typing indicators, and history replay.')
+      ).toBeInTheDocument();
     });
 
     it('saas-monolith journey proves tenant isolation', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<CommercialUseCasePage locale="en" name="saas-monolith" />);
-      expect(screen.getByText('A cross-tenant read or write fails in an automated test.')).toBeInTheDocument();
+      expect(
+        screen.getByText('A cross-tenant read or write fails in an automated test.')
+      ).toBeInTheDocument();
       expect(screen.getByText('Billing, plans, and subscription lifecycle.')).toBeInTheDocument();
     });
 
     it('saas-microservices journey proves the mediator before any broker', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<CommercialUseCasePage locale="en" name="saas-microservices" />);
-      expect(screen.getByText('The in-memory mediator proves publish/subscribe before any broker is introduced.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'The in-memory mediator proves publish/subscribe before any broker is introduced.'
+        )
+      ).toBeInTheDocument();
       expect(screen.getByText('Service mesh and distributed tracing.')).toBeInTheDocument();
     });
 
     it('spa-pwa journey requires durable offline records', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<CommercialUseCasePage locale="en" name="spa-pwa" />);
-      expect(screen.getByText('The create/list workflow works with the network disabled.')).toBeInTheDocument();
-      expect(screen.getByText('Records survive a browser reload — durable IndexedDB, not localStorage.')).toBeInTheDocument();
+      expect(
+        screen.getByText('The create/list workflow works with the network disabled.')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Records survive a browser reload — durable IndexedDB, not localStorage.')
+      ).toBeInTheDocument();
       expect(screen.getByText('IndexedDB schema migrations beyond version 1.')).toBeInTheDocument();
     });
 
     it('rest-api journey localizes tasks and done criteria to PT-BR', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       render(<CommercialUseCasePage locale="pt-BR" name="rest-api" />);
       expect(screen.getByRole('tab', { name: 'Dia 0' })).toBeInTheDocument();
-      expect(screen.getByText('Escolha create e list como únicas operações do MVP.')).toBeInTheDocument();
+      expect(
+        screen.getByText('Escolha create e list como únicas operações do MVP.')
+      ).toBeInTheDocument();
       expect(screen.getByText('Critérios de pronto do primeiro MVP')).toBeInTheDocument();
-      expect(screen.getByText('Input inválido falha com 400 e categoria desconhecida com 404 antes da persistência.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Input inválido falha com 400 e categoria desconhecida com 404 antes da persistência.'
+        )
+      ).toBeInTheDocument();
       expect(screen.getByText('Fora de escopo de propósito')).toBeInTheDocument();
     });
 
     it('use-cases index renders the demo-ready checklist', () => {
-    expect.hasAssertions();
+      expect.hasAssertions();
       renderPage('use-cases', 'en');
       expect(screen.getByText('Demo-ready checklist')).toBeInTheDocument();
     });

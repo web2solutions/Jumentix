@@ -13,7 +13,7 @@ import {
   compileRdsDbClient,
   compileSqliteDbClient
 } from '@src/infra/persistence/compileDatabaseClient';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
 
 describe('compileDatabaseClient', () => {
   const originalEnv = { ...process.env };
@@ -98,10 +98,14 @@ describe('compileDatabaseClient', () => {
     expect(compileDatabaseClient()).not.toBe(InMemoryDbClient);
 
     process.env.JUMENTIX_DATABASE_DRIVER = 'firebase';
-    process.env.JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON = JSON.stringify({ project_id: 'demo-project' });
+    process.env.JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON = JSON.stringify({
+      project_id: 'demo-project'
+    });
     const firebaseClient = compileDatabaseClient();
     expect(firebaseClient).not.toBe(InMemoryDbClient);
-    await expect(firebaseClient.connect()).rejects.toThrow(/private_key|Missing optional dependency/);
+    await expect(firebaseClient.connect()).rejects.toThrow(
+      /private_key|Missing optional dependency/
+    );
     await expect(firebaseClient.disconnect()).resolves.toBeUndefined();
 
     process.env.JUMENTIX_DATABASE_DRIVER = 'rds';

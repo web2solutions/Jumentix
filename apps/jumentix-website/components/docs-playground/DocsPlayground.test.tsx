@@ -1,6 +1,7 @@
 import { render, screen } from '@/test-utils';
-import { DocsPlayground } from './DocsPlayground';
+
 import { listDocsSnippets } from './catalogs';
+import { DocsPlayground } from './DocsPlayground';
 
 describe('DocsPlayground catalogs', () => {
   it('exposes getting-started for each runtime', () => {
@@ -30,7 +31,9 @@ describe('DocsPlayground catalogs', () => {
 
   it('jumentix browser lab demonstrates complete in-memory task contracts', () => {
     expect.hasAssertions();
-    const snippet = listDocsSnippets('jumentix-browser-lab').find((s) => s.id === 'getting-started');
+    const snippet = listDocsSnippets('jumentix-browser-lab').find(
+      (s) => s.id === 'getting-started'
+    );
     expect(snippet?.code).toContain("stores: ['categories', 'tasks']");
     expect(snippet?.code).toContain('tasks.create.v1');
     expect(snippet?.code).toContain('categories.get.v1');
@@ -43,7 +46,9 @@ describe('DocsPlayground catalogs', () => {
 
   it('jumentix browser lab demonstrates mutex rejection and dead-letter replay through controllers', () => {
     expect.hasAssertions();
-    const snippet = listDocsSnippets('jumentix-browser-lab').find((s) => s.id === 'bulk-mutex-dead-letter');
+    const snippet = listDocsSnippets('jumentix-browser-lab').find(
+      (s) => s.id === 'bulk-mutex-dead-letter'
+    );
     expect(snippet?.title.en).toBe('Bulk writes with mutex + DLQ');
     expect(snippet?.description.en).toContain('force lock contention');
     expect(snippet?.code).toContain('api.createCanaDatabaseClient');
@@ -89,7 +94,9 @@ describe('DocsPlayground catalogs', () => {
     expect(snippet?.code).toContain('jobsAccountedFor');
     expect(snippet?.code).toContain('noLostJobs');
     expect(snippet?.code).toContain('createTaskController({');
-    expect(snippet?.code).toContain("step: request.replay ? 'controller-replay' : 'controller-create'");
+    expect(snippet?.code).toContain(
+      "step: request.replay ? 'controller-replay' : 'controller-create'"
+    );
     expect(snippet?.code).toContain('Promise.all(request.body.tasks.map');
     expect(snippet?.code).toContain('rejectedToDeadLetterQueue');
     expect(snippet?.code).toContain('requestTimeline: timeline');
@@ -99,7 +106,9 @@ describe('DocsPlayground catalogs', () => {
   it('message mediator playground composes data across domains', () => {
     expect.hasAssertions();
     const snippet = listDocsSnippets('message-mediator').find((s) => s.id === 'getting-started');
-    expect(snippet?.description.en).toContain('Exchange messages between Category and Task domains');
+    expect(snippet?.description.en).toContain(
+      'Exchange messages between Category and Task domains'
+    );
     expect(snippet?.code).toContain('categories.get.v1');
     expect(snippet?.code).toContain('tasks.board.v1');
     expect(snippet?.code).toContain("sourceDomain: 'Tasks'");
@@ -111,9 +120,12 @@ describe('DocsPlayground catalogs', () => {
 describe('DocsPlayground', () => {
   it('renders Run/Reset and keeps agent code as hidden markdown for cana', () => {
     expect.hasAssertions();
-    render(<DocsPlayground runtime="cana" id="getting-started" />);
+    render(<DocsPlayground id="getting-started" runtime="cana" />);
     expect(screen.getByTestId('docs-playground-cana-getting-started')).toBeInTheDocument();
-    expect(screen.getByTestId('docs-playground-cana-getting-started')).toHaveAttribute('id', 'playground-cana-getting-started');
+    expect(screen.getByTestId('docs-playground-cana-getting-started')).toHaveAttribute(
+      'id',
+      'playground-cana-getting-started'
+    );
     expect(screen.getByTestId('docs-playground-cana-getting-started-run')).toBeInTheDocument();
 
     const agentMarkdown = screen.getByTestId('docs-playground-cana-getting-started-static');
@@ -125,24 +137,52 @@ describe('DocsPlayground', () => {
 
   it('renders a canvas flow for the bulk mutex dead-letter playground with red rejected-flow semantics', () => {
     expect.hasAssertions();
-    render(<DocsPlayground runtime="jumentix-browser-lab" id="bulk-mutex-dead-letter" />);
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-canvas')).toBeInTheDocument();
+    render(<DocsPlayground id="bulk-mutex-dead-letter" runtime="jumentix-browser-lab" />);
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-canvas')
+    ).toBeInTheDocument();
     expect(screen.getByText('Live data flow')).toBeInTheDocument();
     expect(screen.getByText('Rejected by lock')).toBeInTheDocument();
     expect(screen.getByText('Input stopped')).toBeInTheDocument();
     expect(screen.getByText(/each recent request becomes its own token/i)).toBeInTheDocument();
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Real events: 0');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('React clients: 0');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Cana workers: 0');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Interrupted before controller: 0');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('DLQ drained: no');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('No lost jobs: no');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Cana events: 0');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Live request tokens: 0');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('IndexedDB quota: 0.0000%');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Window: 30s');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')).toHaveTextContent('Concurrency/client: 12');
-    expect(screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-metrics-charts')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('Real events: 0');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('React clients: 0');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('Cana workers: 0');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('Interrupted before controller: 0');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('DLQ drained: no');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('No lost jobs: no');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('Cana events: 0');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('Live request tokens: 0');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('IndexedDB quota: 0.0000%');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('Window: 30s');
+    expect(
+      screen.getByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-flow-state')
+    ).toHaveTextContent('Concurrency/client: 12');
+    expect(
+      screen.getByTestId(
+        'docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-metrics-charts'
+      )
+    ).toBeInTheDocument();
     expect(screen.getByText('Request outcomes')).toBeInTheDocument();
     expect(screen.getByText('Pipeline comparison')).toBeInTheDocument();
     expect(screen.getByText('Realtime flow')).toBeInTheDocument();
@@ -152,7 +192,15 @@ describe('DocsPlayground', () => {
     expect(screen.getByText('Message Mediator')).toBeInTheDocument();
     expect(screen.getAllByText('Cana workers').length).toBeGreaterThan(0);
     expect(screen.getByText('Shutdown health')).toBeInTheDocument();
-    expect(screen.queryByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-start-again')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-cana-flow-canvas')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId(
+        'docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-start-again'
+      )
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId(
+        'docs-playground-jumentix-browser-lab-bulk-mutex-dead-letter-cana-flow-canvas'
+      )
+    ).not.toBeInTheDocument();
   });
 });

@@ -8,9 +8,9 @@
  * The key is never logged, never echoed and never written anywhere: it is read
  * and passed straight to the request.
  */
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
+const fs = require('node:fs');
+const https = require('node:https');
+const path = require('node:path');
 
 /**
  * `LINEAR_API_KEY` first, then the untracked `../.linear` file used locally.
@@ -48,28 +48,33 @@ function readLinearKey(root = process.cwd()) {
 function linearRequest(apiKey, query, variables) {
   const body = JSON.stringify({ query, variables });
   return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'api.linear.app',
-      path: '/graphql',
-      method: 'POST',
-      headers: {
-        Authorization: apiKey,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
-    }, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.errors) reject(new Error(JSON.stringify(parsed.errors)));
-          else resolve(parsed.data);
-        } catch (error) {
-          reject(error);
+    const req = https.request(
+      {
+        hostname: 'api.linear.app',
+        path: '/graphql',
+        method: 'POST',
+        headers: {
+          Authorization: apiKey,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body)
         }
-      });
-    });
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.errors) reject(new Error(JSON.stringify(parsed.errors)));
+            else resolve(parsed.data);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+    );
     req.on('error', reject);
     req.write(body);
     req.end();

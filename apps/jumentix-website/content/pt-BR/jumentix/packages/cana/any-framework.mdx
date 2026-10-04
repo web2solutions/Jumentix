@@ -16,14 +16,14 @@ import { createClient, isCanaErrorCode, type CanaChangeEvent } from '@jumentix/c
 
 const client = createClient({
   name: 'tasks-app',
-  schema: { /* stores versionadas */ },
+  schema: {/* stores versionadas */},
   originId: 'ui-main'
 });
 
 await client.open();
 
 // Escritas
-await client.table('tasks').add({ /* registro */ });
+await client.table('tasks').add({/* registro */});
 await client.transaction('readwrite', ['categories', 'tasks'], async (tx) => {
   // Só awaits de Cana/IndexedDB dentro deste callback
 });
@@ -36,13 +36,13 @@ client.subscribe((event: CanaChangeEvent) => {
 
 Essa é toda a superfície de integração:
 
-| Passo | API Cana | Seu trabalho |
-| --- | --- | --- |
-| 1. Criar | `createClient({ name, schema, originId? })` | Escolher nome do DB e schema uma vez |
-| 2. Abrir | `await client.open()` | Chamar antes de qualquer acesso a tabela |
-| 3. Escrever | `table().add/put/update/delete` ou `transaction()` | Chamar a partir das ações de UI |
-| 4. Commit | IndexedDB `oncomplete` | O Cana bufferiza eventos até o commit |
-| 5. Sincronizar UI | `client.subscribe(...)` | Mapear `CanaChangeEvent` para sua store |
+| Passo             | API Cana                                           | Seu trabalho                             |
+| ----------------- | -------------------------------------------------- | ---------------------------------------- |
+| 1. Criar          | `createClient({ name, schema, originId? })`        | Escolher nome do DB e schema uma vez     |
+| 2. Abrir          | `await client.open()`                              | Chamar antes de qualquer acesso a tabela |
+| 3. Escrever       | `table().add/put/update/delete` ou `transaction()` | Chamar a partir das ações de UI          |
+| 4. Commit         | IndexedDB `oncomplete`                             | O Cana bufferiza eventos até o commit    |
+| 5. Sincronizar UI | `client.subscribe(...)`                            | Mapear `CanaChangeEvent` para sua store  |
 
 ```mermaid
 flowchart LR
@@ -70,12 +70,12 @@ flowchart LR
 
 ## Wiring manual vs pacotes helper
 
-| Situação | Use |
-| --- | --- |
-| Vanilla JS/TS, Svelte, Solid, Angular, store custom | `subscribe` manual → patch de estado (este guia + [Vanilla TypeScript](/docs/pt-BR/jumentix/packages/cana/vanilla-typescript)) |
-| React com Context | Opcional [`@jumentix/cana-react`](/docs/pt-BR/jumentix/packages/cana-react) ou Context manual ([tutorial](/docs/pt-BR/jumentix/packages/cana/react-context)) |
-| React com Redux | Opcional `connectCanaToRedux` de `@jumentix/cana-react/redux` ([tutorial](/docs/pt-BR/jumentix/packages/cana/react-redux)) |
-| Vue 3 com Pinia | Opcional [`@jumentix/cana-vue`](/docs/pt-BR/jumentix/packages/cana-vue) ([tutorial](/docs/pt-BR/jumentix/packages/cana/vue-pinia)) |
+| Situação                                            | Use                                                                                                                                                          |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Vanilla JS/TS, Svelte, Solid, Angular, store custom | `subscribe` manual → patch de estado (este guia + [Vanilla TypeScript](/docs/pt-BR/jumentix/packages/cana/vanilla-typescript))                                                             |
+| React com Context                                   | Opcional [`@jumentix/cana-react`](/docs/pt-BR/jumentix/packages/cana-react) ou Context manual ([tutorial](/docs/pt-BR/jumentix/packages/cana/react-context)) |
+| React com Redux                                     | Opcional `connectCanaToRedux` de `@jumentix/cana-react/redux` ([tutorial](/docs/pt-BR/jumentix/packages/cana/react-redux))                                   |
+| Vue 3 com Pinia                                     | Opcional [`@jumentix/cana-vue`](/docs/pt-BR/jumentix/packages/cana-vue) ([tutorial](/docs/pt-BR/jumentix/packages/cana/vue-pinia))                           |
 
 Os pacotes helper só traduzem eventos commitados em estado de framework. Eles
 não substituem `createClient`, o desenho de schema ou a disciplina de
@@ -104,11 +104,11 @@ export function connectCanaToUi(
 
 Mapeie os tipos de evento de forma consistente:
 
-| `event.type` | Patch típico de UI |
-| --- | --- |
-| `created` / `updated` | Upsert do registro pela chave |
-| `deleted` | Remover registro pela chave |
-| `cleared` | Esvaziar a coleção em memória daquela store |
+| `event.type`          | Patch típico de UI                          |
+| --------------------- | ------------------------------------------- |
+| `created` / `updated` | Upsert do registro pela chave               |
+| `deleted`             | Remover registro pela chave                 |
+| `cleared`             | Esvaziar a coleção em memória daquela store |
 
 ## Checklist para um framework novo
 

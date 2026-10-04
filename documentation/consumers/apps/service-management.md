@@ -17,7 +17,6 @@ Juniors need a concrete app to open — not only package APIs. This hub orients 
 - **Used with:** `@jumentix/designer-core`, `@jumentix/cana`, SPA/PWA guide
 - **Not responsible for:** server OpenAPI gateways or Redis KV
 
-
 ## Prerequisites
 
 - [Getting started](/docs/jumentix/concepts/getting-started)
@@ -36,10 +35,10 @@ Juniors need a concrete app to open — not only package APIs. This hub orients 
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| Looking for private package docs on the site | Those packages are excluded | Use public packages hub only |
-| Running the wrong app folder | Mixed paths | Stay under `apps/service-management` |
+| Symptom                                      | Cause                       | Fix                                  |
+| -------------------------------------------- | --------------------------- | ------------------------------------ |
+| Looking for private package docs on the site | Those packages are excluded | Use public packages hub only         |
+| Running the wrong app folder                 | Mixed paths                 | Stay under `apps/service-management` |
 
 ## Junior checklist (“I can …”)
 

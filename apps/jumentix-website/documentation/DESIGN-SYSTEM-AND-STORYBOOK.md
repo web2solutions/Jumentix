@@ -17,24 +17,24 @@ Jumentix retains an independent identity.
 
 ## Component Inventory
 
-| Component | Responsibility |
-| --- | --- |
-| `BrandMark` | Stable product identity and home link |
-| `ActionLink` | Primary, secondary, quiet, and external actions |
-| `StatusBadge` | Neutral, success, and attention status |
-| `SectionHeading` | Eyebrow, title, and supporting narrative |
-| `FeatureGrid` | Responsive capability summaries |
-| `Callout` | Information, success, and warning guidance |
-| `MetricStrip` | Comparable product and engineering metrics |
-| `CapabilityTable` | Dense, horizontally safe implementation matrix |
-| `CodeShowcase` | Keyboard-accessible code tabs and copy action |
-| `SearchField` | Stable documentation search control |
-| `Pagination` | Labelled previous, next, and numbered navigation |
-| `LocaleSwitch` | Explicit EN/PT-BR language control |
-| `SiteHeader` | Product navigation and repository action |
-| `SiteFooter` | Product, learning, and community navigation |
-| `DocsToolbar` | Documentation search, edit, and locale actions |
-| `ArchitectureFlow` | Responsive architecture and workflow diagrams |
+| Component          | Responsibility                                   |
+| ------------------ | ------------------------------------------------ |
+| `BrandMark`        | Stable product identity and home link            |
+| `ActionLink`       | Primary, secondary, quiet, and external actions  |
+| `StatusBadge`      | Neutral, success, and attention status           |
+| `SectionHeading`   | Eyebrow, title, and supporting narrative         |
+| `FeatureGrid`      | Responsive capability summaries                  |
+| `Callout`          | Information, success, and warning guidance       |
+| `MetricStrip`      | Comparable product and engineering metrics       |
+| `CapabilityTable`  | Dense, horizontally safe implementation matrix   |
+| `CodeShowcase`     | Keyboard-accessible code tabs and copy action    |
+| `SearchField`      | Stable documentation search control              |
+| `Pagination`       | Labelled previous, next, and numbered navigation |
+| `LocaleSwitch`     | Explicit EN/PT-BR language control               |
+| `SiteHeader`       | Product navigation and repository action         |
+| `SiteFooter`       | Product, learning, and community navigation      |
+| `DocsToolbar`      | Documentation search, edit, and locale actions   |
+| `ArchitectureFlow` | Responsive architecture and workflow diagrams    |
 
 The public entry point is `components/design-system/index.tsx`. Foundational styling is split into
 `tokens.css` and `DesignSystem.module.css`.

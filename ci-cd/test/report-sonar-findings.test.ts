@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import fs from 'fs';
+import fs from 'node:fs';
 
 /**
  * Printing Sonar's findings into the CI log.
@@ -15,11 +14,7 @@ import fs from 'fs';
 const reporter = require('../report-sonar-findings') as {
   readTaskMetadata: (contents: string) => Record<string, string>;
   formatIssues: (issues: unknown[]) => string[];
-  waitForAnalysis: (
-    url: string,
-    token: string,
-    now?: () => number
-  ) => Promise<{ status: string }>;
+  waitForAnalysis: (url: string, token: string, now?: () => number) => Promise<{ status: string }>;
   main: () => Promise<void>;
   ANALYSIS_TIMEOUT_MS: number;
 };
@@ -29,9 +24,9 @@ describe('report-sonar-findings', () => {
     expect.hasAssertions();
     // Written by the scanner; the only place the analysis task URL exists.
     const metadata = reporter.readTaskMetadata(
-      'projectKey=Jumentix\n'
-      + 'serverUrl=https://sonarcloud.io\n'
-      + 'ceTaskUrl=https://sonarcloud.io/api/ce/task?id=abc\n'
+      'projectKey=Jumentix\n' +
+        'serverUrl=https://sonarcloud.io\n' +
+        'ceTaskUrl=https://sonarcloud.io/api/ce/task?id=abc\n'
     );
 
     expect(metadata.projectKey).toBe('Jumentix');
@@ -81,7 +76,11 @@ describe('report-sonar-findings', () => {
     // issues that are hardest to locate.
     const [line] = reporter.formatIssues([
       {
-        type: 'VULNERABILITY', severity: 'CRITICAL', component: 'k:src/c.ts', message: 'm', rule: 'ts:S3'
+        type: 'VULNERABILITY',
+        severity: 'CRITICAL',
+        component: 'k:src/c.ts',
+        message: 'm',
+        rule: 'ts:S3'
       }
     ]);
 
@@ -105,8 +104,9 @@ describe('report-sonar-findings', () => {
       return clock;
     };
 
-    await expect(reporter.waitForAnalysis('https://x', 'token', advancing))
-      .rejects.toThrow('did not finish');
+    await expect(reporter.waitForAnalysis('https://x', 'token', advancing)).rejects.toThrow(
+      'did not finish'
+    );
 
     globalThis.fetch = originalFetch;
   });
@@ -120,10 +120,7 @@ describe('report-sonar-findings', () => {
 
     afterEach(() => {
       delete process.env.SONAR_TOKEN;
-      Object.assign(
-        process.env,
-        previousToken === undefined ? {} : { SONAR_TOKEN: previousToken }
-      );
+      Object.assign(process.env, previousToken === undefined ? {} : { SONAR_TOKEN: previousToken });
     });
 
     it('says nothing and exits cleanly', async () => {
@@ -131,7 +128,7 @@ describe('report-sonar-findings', () => {
       // The step runs on every Sonar job, including forks and local runs where
       // no token exists. Failing there would block merges over a reporting
       // nicety.
-      const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+      const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
 
       await expect(reporter.main()).resolves.toBeUndefined();
       expect(log.mock.calls.flat().join('\n')).toContain('SONAR_TOKEN is not set');
@@ -146,7 +143,7 @@ describe('report-sonar-findings', () => {
     // the normal state on every job that is not the Sonar one.
     process.env.SONAR_TOKEN = 'token-for-this-test';
     const exists = jest.spyOn(fs, 'existsSync').mockReturnValue(false);
-    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
 
     await expect(reporter.main()).resolves.toBeUndefined();
     expect(log.mock.calls.flat().join('\n')).toContain('scanner did not run here');

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import path from 'node:path';
 
 const { launch, localCliReady, planLaunch } = require('../bin/launcher.js');
@@ -29,7 +28,8 @@ const manifest = {
  * resetting to `0` unconditionally would trade Bun's leak for a Node one.
  * Reset with whichever value each runtime actually honors.
  */
-const EXIT_CODE_RESET = typeof (globalThis as Record<string, unknown>).Bun === 'undefined' ? undefined : 0;
+const EXIT_CODE_RESET =
+  typeof (globalThis as Record<string, unknown>).Bun === 'undefined' ? undefined : 0;
 
 describe('repository CLI launcher (JUM-901)', () => {
   it('delegates to the published package when the checkout has no dist (the shipped crash)', () => {
@@ -48,7 +48,7 @@ describe('repository CLI launcher (JUM-901)', () => {
   it('delegates when dist exists but a runtime dependency is unbuilt', () => {
     expect.hasAssertions();
     const resolve = () => {
-      throw new Error('Cannot find module \'@jumentix/designer-core\'');
+      throw new Error("Cannot find module '@jumentix/designer-core'");
     };
 
     expect(localCliReady(root, { manifest, exists: () => true, resolve })).toBe(false);
@@ -58,7 +58,9 @@ describe('repository CLI launcher (JUM-901)', () => {
     expect.hasAssertions();
 
     const plan = planLaunch([], root, {
-      manifest, exists: () => true, resolve: (id: string) => id
+      manifest,
+      exists: () => true,
+      resolve: (id: string) => id
     });
 
     expect(plan).toStrictEqual({ kind: 'local', cliPath: path.join(root, 'dist', 'cli.js') });
@@ -72,13 +74,16 @@ describe('repository CLI launcher (JUM-901)', () => {
       calls.push(args);
       return { status: 3 };
     };
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const errorSpy = jest.spyOn(console, 'error').mockReturnValue(undefined);
     try {
       await launch(['doctor'], { manifest, exists: () => false, spawn });
 
       expect(process.exitCode).toBe(3);
       expect(calls[0][1]).toStrictEqual([
-        '--yes', '--package=@jumentix/cli-init@0.1.0', 'jumentix', 'doctor'
+        '--yes',
+        '--package=@jumentix/cli-init@0.1.0',
+        'jumentix',
+        'doctor'
       ]);
     } finally {
       errorSpy.mockRestore();
@@ -89,9 +94,13 @@ describe('repository CLI launcher (JUM-901)', () => {
   it('fails with exit 2 when npx cannot start', async () => {
     expect.hasAssertions();
     const previous = EXIT_CODE_RESET;
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const errorSpy = jest.spyOn(console, 'error').mockReturnValue(undefined);
     try {
-      await launch([], { manifest, exists: () => false, spawn: () => ({ error: new Error('ENOENT') }) });
+      await launch([], {
+        manifest,
+        exists: () => false,
+        spawn: () => ({ error: new Error('ENOENT') })
+      });
 
       expect(process.exitCode).toBe(2);
     } finally {
@@ -102,7 +111,9 @@ describe('repository CLI launcher (JUM-901)', () => {
 
   it('exposes a bin named after the package so `npx @jumentix/cli-init` resolves', () => {
     expect.hasAssertions();
-    const pkg = JSON.parse(require('node:fs').readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+    const pkg = JSON.parse(
+      require('node:fs').readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
+    );
 
     // npx runs the bin whose name equals the unscoped package name when a
     // package declares several; without it `npx @jumentix/cli-init init` fails.

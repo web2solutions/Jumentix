@@ -1,6 +1,6 @@
-import getUsersMetrics from '@src/modules/Users/interface/restapi/frameworks/fastify/handlers/getUsersMetrics';
-import getOrganizationsMetrics from '@src/modules/Users/interface/restapi/frameworks/fastify/handlers/getOrganizationsMetrics';
 import { ValidationError } from '@src/infra/exceptions';
+import getOrganizationsMetrics from '@src/modules/Users/interface/restapi/frameworks/fastify/handlers/getOrganizationsMetrics';
+import getUsersMetrics from '@src/modules/Users/interface/restapi/frameworks/fastify/handlers/getUsersMetrics';
 
 const makeRes = () => ({
   code: jest.fn().mockReturnThis(),
@@ -23,10 +23,13 @@ describe('fastify entity metrics handlers', () => {
     expect(endpoint.method).toBe('get');
 
     const res = makeRes();
-    const payload = await endpoint.handler({
-      query: { metric: 'count' },
-      headers: { authorization: 'Bearer token' }
-    } as any, res as any);
+    const payload = await endpoint.handler(
+      {
+        query: { metric: 'count' },
+        headers: { authorization: 'Bearer token' }
+      } as any,
+      res as any
+    );
     expect(res.code).toHaveBeenCalledWith(200);
     expect(payload).toStrictEqual({ metric: 'count', buckets: [{ key: 'total', count: 2 }] });
   });
@@ -44,10 +47,13 @@ describe('fastify entity metrics handlers', () => {
     } as any);
     expect(endpoint.path).toBe('/organizations/metrics');
     const res = makeRes();
-    await endpoint.handler({
-      query: { metric: 'count' },
-      headers: { authorization: 'Bearer token' }
-    } as any, res as any);
+    await endpoint.handler(
+      {
+        query: { metric: 'count' },
+        headers: { authorization: 'Bearer token' }
+      } as any,
+      res as any
+    );
     expect(res.code).toHaveBeenCalledWith(200);
   });
 
@@ -62,9 +68,11 @@ describe('fastify entity metrics handlers', () => {
     const res = makeRes();
     await endpoint.handler({ headers: {} } as any, res as any);
     expect(res.code).toHaveBeenCalledWith(400);
-    expect(res.send).toHaveBeenCalledWith(expect.objectContaining({
-      message: expect.stringContaining('can not be empty')
-    }));
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('can not be empty')
+      })
+    );
   });
 
   it('defaults a missing query string and authorization header on organizations metrics', async () => {
@@ -78,9 +86,11 @@ describe('fastify entity metrics handlers', () => {
     const res = makeRes();
     await endpoint.handler({ headers: {} } as any, res as any);
     expect(res.code).toHaveBeenCalledWith(400);
-    expect(res.send).toHaveBeenCalledWith(expect.objectContaining({
-      message: expect.stringContaining('can not be empty')
-    }));
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('can not be empty')
+      })
+    );
   });
 
   it('rethrows a resolved service error through the error response path', async () => {
@@ -94,10 +104,13 @@ describe('fastify entity metrics handlers', () => {
       }
     } as any);
     const usersRes = makeRes();
-    await usersEndpoint.handler({
-      query: { metric: 'avg' },
-      headers: { authorization: 'Bearer token' }
-    } as any, usersRes as any);
+    await usersEndpoint.handler(
+      {
+        query: { metric: 'avg' },
+        headers: { authorization: 'Bearer token' }
+      } as any,
+      usersRes as any
+    );
     expect(usersRes.code).toHaveBeenCalledWith(400);
 
     const organizationsEndpoint = getOrganizationsMetrics({
@@ -109,10 +122,13 @@ describe('fastify entity metrics handlers', () => {
       }
     } as any);
     const organizationsRes = makeRes();
-    await organizationsEndpoint.handler({
-      query: { metric: 'avg' },
-      headers: { authorization: 'Bearer token' }
-    } as any, organizationsRes as any);
+    await organizationsEndpoint.handler(
+      {
+        query: { metric: 'avg' },
+        headers: { authorization: 'Bearer token' }
+      } as any,
+      organizationsRes as any
+    );
     expect(organizationsRes.code).toHaveBeenCalledWith(400);
   });
 });

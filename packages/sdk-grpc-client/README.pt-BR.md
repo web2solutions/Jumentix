@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: packages/sdk-grpc-client/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # @jumentix/sdk-grpc-client
 
 Cliente gRPC SDK para o gateway em tempo real, conduzido pela especificação AsyncAPI gRPC (`/spec/asyncapi/1.0.0.grpc.yml`).

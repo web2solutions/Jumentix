@@ -1,16 +1,19 @@
 import type { CanaChangeEvent } from '@jumentix/cana';
 
-export type LocaleText = { en: string; 'pt-BR': string };
+export interface LocaleText {
+  en: string;
+  'pt-BR': string;
+}
 
-export type Category = {
+export interface Category {
   id: string;
   name: string;
   color: string;
   createdAt: number;
   updatedAt: number;
-};
+}
 
-export type Task = {
+export interface Task {
   id: string;
   title: string;
   categoryId: string;
@@ -19,14 +22,14 @@ export type Task = {
   notes?: string;
   createdAt: number;
   updatedAt: number;
-};
+}
 
 export type TaskCategory = Category;
 
-export type TaskDemoSnapshot = {
+export interface TaskDemoSnapshot {
   categories: Category[];
   tasks: Task[];
-};
+}
 
 export type CanaFrameworkExampleId =
   | 'react-context-basic'
@@ -36,7 +39,7 @@ export type CanaFrameworkExampleId =
   | 'vue-pinia-basic'
   | 'vue-pinia-advanced';
 
-export type CanaFrameworkExample = {
+export interface CanaFrameworkExample {
   id: CanaFrameworkExampleId;
   framework: 'React Context' | 'React Redux' | 'Vue 3 + Pinia';
   level: 'simple' | 'advanced';
@@ -46,17 +49,17 @@ export type CanaFrameworkExample = {
     href: string;
     label: LocaleText;
   };
-  files: Array<{
+  files: {
     path: string;
     source: string;
-  }>;
-};
+  }[];
+}
 
-export type CanaFrameworkRunContext = {
+export interface CanaFrameworkRunContext {
   root: HTMLElement;
   dbName: string;
   log: (message: string) => void;
   report: (value: unknown) => void;
-};
+}
 
 export type CanaEventApplier = (event: CanaChangeEvent) => void;

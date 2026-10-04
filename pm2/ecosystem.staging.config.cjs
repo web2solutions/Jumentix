@@ -4,7 +4,8 @@ module.exports = {
       name: 'jumentix-staging-restapi',
       script: './apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts',
       interpreter: 'bun',
-      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
+      interpreter_args:
+        '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
       env: {
         NODE_ENV: 'staging',
         JUMENTIX_HTTP_PORT: '4000'
@@ -14,7 +15,8 @@ module.exports = {
       name: 'jumentix-staging-websocketapi',
       script: './apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts',
       interpreter: 'bun',
-      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
+      interpreter_args:
+        '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
       env: {
         NODE_ENV: 'staging',
         JUMENTIX_WEBSOCKET_PORT: '4001',
@@ -27,7 +29,8 @@ module.exports = {
       name: 'jumentix-staging-grpcapi',
       script: './apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts',
       interpreter: 'bun',
-      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
+      interpreter_args:
+        '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
       env: {
         NODE_ENV: 'staging',
         JUMENTIX_GRPC_PORT: '4002',
@@ -40,7 +43,8 @@ module.exports = {
       name: 'jumentix-staging-service-management-api',
       script: './apps/service-management-api/src/start-service-management-catalog-api.ts',
       interpreter: 'bun',
-      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
+      interpreter_args:
+        '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.staging',
       env: {
         NODE_ENV: 'staging',
         JUMENTIX_HTTP_PORT: '4003'

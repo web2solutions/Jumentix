@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test */
+/* eslint-disable jest/no-conditional-in-test */
 /* eslint-disable no-await-in-loop, jest/max-expects */
 /*
  * JUM-548 — first-run experience assertions, run in a REAL browser
@@ -19,18 +19,22 @@
  */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+
 import { webkit } from 'playwright-webkit';
-import type { Browser } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
-  envFileContent,
-  startServer,
   clickInPanels,
+  createTempConfigDir,
+  envFileContent,
   openDesignerPanels,
+  startServer,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser, ElementHandle } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const OTHER_TABS = [
@@ -42,7 +46,7 @@ const OTHER_TABS = [
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 
-async function isVisible(element: import('playwright-webkit').ElementHandle | null): Promise<boolean> {
+async function isVisible(element: ElementHandle | null): Promise<boolean> {
   if (!element) return false;
   return element.isVisible();
 }
@@ -53,14 +57,25 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
   beforeAll(async () => {
     // The SPA resolves `@jumentix/cana` to the vendored bundle. Regenerate it
     // here so this suite is order-independent when Jest schedules browser
     // integration files in parallel on CI.
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], {
-      cwd: repoRoot,
-      stdio: 'inherit'
-    });
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-cana-bundle.js'],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit'
+      }
+    );
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
     await waitForServer(server.port);
@@ -78,7 +93,7 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
 
   it('boots a fresh profile to an empty model with a guided empty state per tab', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     const consoleErrors: string[] = [];
     page.on('console', (message) => {
@@ -92,7 +107,10 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     const domainEmpty = await page.$('#domain-designer-empty-state');
     await expect(isVisible(domainEmpty)).resolves.toBe(true);
     await expect(page.$('#domain-designer-empty-load-sample-btn')).resolves.not.toBeNull();
-    const domainGuidance = await domainEmpty!.textContent();
+    if (!domainEmpty) {
+      throw new Error('expected #domain-designer-empty-state to be attached');
+    }
+    const domainGuidance = await domainEmpty.textContent();
     expect(domainGuidance).toContain('First action');
 
     // No domains on a fresh profile — the seed no longer pre-populates.
@@ -104,7 +122,10 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
       await page.click(`#tab-${tab.key}-btn`);
       const emptyState = await page.$(tab.emptyState);
       await expect(isVisible(emptyState)).resolves.toBe(true);
-      await expect(emptyState!.textContent()).resolves.toContain('First action');
+      if (!emptyState) {
+        throw new Error(`expected ${tab.emptyState} to be attached`);
+      }
+      await expect(emptyState.textContent()).resolves.toContain('First action');
     }
 
     expect(consoleErrors).toStrictEqual([]);
@@ -113,7 +134,7 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
 
   it('loads the sample in one action, marks it, and exports through the quality gate', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
@@ -127,9 +148,7 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     // ...which are marked as sample in the domain list...
     const badges = await page.$$('#domain-list .sample-badge');
     expect(badges).toHaveLength(2);
-    await Promise.all(badges.map((badge) => (
-      expect(badge.textContent()).resolves.toBe('sample')
-    )));
+    await Promise.all(badges.map((badge) => expect(badge.textContent()).resolves.toBe('sample')));
     // ...announced through the non-blocking status surface (JUM-543), never an alert.
     const statusText = await page.$eval('#status-region', (el) => el.textContent || '');
     expect(statusText).toContain('Sample model loaded');
@@ -150,7 +169,7 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
 
   it('requires explicit confirmation before replacing existing work with the sample', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 

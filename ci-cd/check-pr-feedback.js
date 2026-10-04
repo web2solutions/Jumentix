@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 
 const { isEntryPoint } = require('./lib/entry-point.js');
@@ -7,11 +6,16 @@ const API_URL = 'https://api.github.com/graphql';
 const MAX_PAGES = 100;
 const MAINTAINER_ASSOCIATIONS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
 const MARKER_PREFIX = '<!-- jumentix-pr-feedback:';
-const MARKER_PATTERN = /<!--\s*jumentix-pr-feedback:\s*(resolved|invalid)\s+comment=(\S+?)(?:\s+commit=([0-9a-fA-F]{7,40}))?\s*-->/g;
+const MARKER_PATTERN =
+  /<!--\s*jumentix-pr-feedback:\s*(resolved|invalid)\s+comment=(\S+?)(?:\s+commit=([0-9a-fA-F]{7,40}))?\s*-->/g;
 
 function isCursorUsageLimitNotice(comment) {
-  return comment?.author?.login === 'cursor'
-    && /(?:out of (?:credit|limit)|usage(?:\s+or\s+spend)?\s+limit|usage limit reached)/i.test(comment.body || '');
+  return (
+    comment?.author?.login === 'cursor' &&
+    /(?:out of (?:credit|limit)|usage(?:\s+or\s+spend)?\s+limit|usage limit reached)/i.test(
+      comment.body || ''
+    )
+  );
 }
 
 /**
@@ -39,7 +43,9 @@ function parseResolutionMarker(body) {
   const matches = [...body.matchAll(MARKER_PATTERN)];
   const prefixes = body.match(/<!--\s*jumentix-pr-feedback:/g) || [];
   if (matches.length !== 1 || matches.length !== prefixes.length) {
-    throw new Error('Resolution markers must contain exactly one well-formed jumentix-pr-feedback marker.');
+    throw new Error(
+      'Resolution markers must contain exactly one well-formed jumentix-pr-feedback marker.'
+    );
   }
 
   const [marker, kind, commentUrl, commit] = matches[0];
@@ -59,20 +65,29 @@ function parseResolutionMarker(body) {
 }
 
 function isAuthorizedResolver(comment, pullRequestAuthor) {
-  return comment?.author?.login === pullRequestAuthor
-    || MAINTAINER_ASSOCIATIONS.has(comment?.authorAssociation);
+  return (
+    comment?.author?.login === pullRequestAuthor ||
+    MAINTAINER_ASSOCIATIONS.has(comment?.authorAssociation)
+  );
 }
 
 function resolveCommit(commitPrefix, commits) {
   const matches = commits.filter((commit) => commit.toLowerCase().startsWith(commitPrefix));
   if (matches.length !== 1) {
-    throw new Error(`Resolution commit ${commitPrefix} must identify exactly one commit in this pull request.`);
+    throw new Error(
+      `Resolution commit ${commitPrefix} must identify exactly one commit in this pull request.`
+    );
   }
   return matches[0];
 }
 
 function validatePullRequestFeedback({ pullRequestAuthor, comments, reviewThreads, commits }) {
-  if (!pullRequestAuthor || !Array.isArray(comments) || !Array.isArray(reviewThreads) || !Array.isArray(commits)) {
+  if (
+    !pullRequestAuthor ||
+    !Array.isArray(comments) ||
+    !Array.isArray(reviewThreads) ||
+    !Array.isArray(commits)
+  ) {
     throw new Error('GitHub pull-request feedback response is incomplete.');
   }
 
@@ -99,11 +114,15 @@ function validatePullRequestFeedback({ pullRequestAuthor, comments, reviewThread
     if (!marker) continue;
 
     if (!isAuthorizedResolver(comment, pullRequestAuthor)) {
-      failures.push(`${comment.url}: resolution evidence must be authored by the PR author or a repository maintainer.`);
+      failures.push(
+        `${comment.url}: resolution evidence must be authored by the PR author or a repository maintainer.`
+      );
       continue;
     }
     if (!commentByUrl.has(marker.commentUrl)) {
-      failures.push(`${comment.url}: resolution marker references a comment that does not belong to this pull request.`);
+      failures.push(
+        `${comment.url}: resolution marker references a comment that does not belong to this pull request.`
+      );
       continue;
     }
     if (marker.commentUrl === comment.url) {
@@ -135,14 +154,19 @@ function validatePullRequestFeedback({ pullRequestAuthor, comments, reviewThread
     } catch {
       continue;
     }
-    if (marker || isCursorUsageLimitNotice(comment) || isAutomatedStatusDecoration(comment)) continue;
+    if (marker || isCursorUsageLimitNotice(comment) || isAutomatedStatusDecoration(comment))
+      continue;
     if (!evidenceByCommentUrl.has(comment.url)) {
-      failures.push(`${comment.url}: general PR feedback needs a valid resolved or invalid response marker.`);
+      failures.push(
+        `${comment.url}: general PR feedback needs a valid resolved or invalid response marker.`
+      );
     }
   }
 
   if (failures.length > 0) {
-    throw new Error(`PR feedback gate failed:\n${failures.map((failure) => `- ${failure}`).join('\n')}`);
+    throw new Error(
+      `PR feedback gate failed:\n${failures.map((failure) => `- ${failure}`).join('\n')}`
+    );
   }
 }
 
@@ -150,13 +174,20 @@ async function collectConnectionPages(fetchPage, maxPages = MAX_PAGES) {
   const nodes = [];
   let cursor = null;
   for (let page = 0; page < maxPages; page += 1) {
+    // eslint-disable-next-line no-await-in-loop -- pages must be fetched sequentially, each cursor depends on the previous page
     const connection = await fetchPage(cursor);
-    if (!connection || !Array.isArray(connection.nodes) || !connection.pageInfo || typeof connection.pageInfo.hasNextPage !== 'boolean') {
+    if (
+      !connection ||
+      !Array.isArray(connection.nodes) ||
+      !connection.pageInfo ||
+      typeof connection.pageInfo.hasNextPage !== 'boolean'
+    ) {
       throw new Error('GitHub GraphQL pagination response is incomplete.');
     }
     nodes.push(...connection.nodes);
     if (!connection.pageInfo.hasNextPage) return nodes;
-    if (!connection.pageInfo.endCursor) throw new Error('GitHub GraphQL pagination cursor is missing.');
+    if (!connection.pageInfo.endCursor)
+      throw new Error('GitHub GraphQL pagination cursor is missing.');
     cursor = connection.pageInfo.endCursor;
   }
   throw new Error(`GitHub GraphQL pagination exceeded ${maxPages} pages.`);
@@ -173,10 +204,13 @@ async function githubGraphql(token, query, variables, fetchFn = fetch) {
     },
     body: JSON.stringify({ query, variables })
   });
-  if (!response.ok) throw new Error(`GitHub GraphQL request failed: ${response.status} ${response.statusText}`);
+  if (!response.ok)
+    throw new Error(`GitHub GraphQL request failed: ${response.status} ${response.statusText}`);
   const payload = await response.json();
   if (payload.errors?.length || !payload.data) {
-    throw new Error(`GitHub GraphQL request failed: ${(payload.errors || []).map((error) => error.message).join('; ') || 'missing data'}`);
+    throw new Error(
+      `GitHub GraphQL request failed: ${(payload.errors || []).map((error) => error.message).join('; ') || 'missing data'}`
+    );
   }
   return payload.data;
 }
@@ -202,7 +236,8 @@ const COMMITS_QUERY = `query PullRequestCommits($owner: String!, $repo: String!,
 
 function pullRequestFrom(data) {
   const pullRequest = data?.repository?.pullRequest;
-  if (!pullRequest) throw new Error('GitHub GraphQL response did not contain the requested pull request.');
+  if (!pullRequest)
+    throw new Error('GitHub GraphQL response did not contain the requested pull request.');
   return pullRequest;
 }
 
@@ -212,10 +247,11 @@ async function loadPullRequestFeedback({ owner, repo, number, token, fetchFn = f
   const pullRequestAuthor = pullRequestFrom(authorData).author?.login;
   if (!pullRequestAuthor) throw new Error('GitHub pull request author is unavailable.');
 
-  const page = (query, field) => collectConnectionPages(async (cursor) => {
-    const data = await githubGraphql(token, query, { ...variables, cursor }, fetchFn);
-    return pullRequestFrom(data)[field];
-  });
+  const page = (query, field) =>
+    collectConnectionPages(async (cursor) => {
+      const data = await githubGraphql(token, query, { ...variables, cursor }, fetchFn);
+      return pullRequestFrom(data)[field];
+    });
   const [comments, reviewThreads, commitNodes] = await Promise.all([
     page(COMMENTS_QUERY, 'comments'),
     page(THREADS_QUERY, 'reviewThreads'),
@@ -223,11 +259,18 @@ async function loadPullRequestFeedback({ owner, repo, number, token, fetchFn = f
   ]);
   for (const thread of reviewThreads) {
     if (thread.comments?.pageInfo?.hasNextPage) {
-      throw new Error(`Review thread ${thread.id || 'without an id'} has more comments than the verified page size.`);
+      throw new Error(
+        `Review thread ${thread.id || 'without an id'} has more comments than the verified page size.`
+      );
     }
     thread.comments = thread.comments?.nodes || [];
   }
-  return { pullRequestAuthor, comments, reviewThreads, commits: commitNodes.map((node) => node?.commit?.oid).filter(Boolean) };
+  return {
+    pullRequestAuthor,
+    comments,
+    reviewThreads,
+    commits: commitNodes.map((node) => node?.commit?.oid).filter(Boolean)
+  };
 }
 
 function parseArguments(argv) {
@@ -257,13 +300,13 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
-  MAINTAINER_ASSOCIATIONS,
   collectConnectionPages,
   githubGraphql,
-  isAutomatedStatusDecoration,
   isAuthorizedResolver,
+  isAutomatedStatusDecoration,
   isCursorUsageLimitNotice,
   loadPullRequestFeedback,
+  MAINTAINER_ASSOCIATIONS,
   parseArguments,
   parseResolutionMarker,
   resolveCommit,

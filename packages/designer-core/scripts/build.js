@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Build `@jumentix/designer-core` (JUM-493).
@@ -18,9 +17,9 @@
  * `dist/`, and `test/packaging.test.ts` asserts the artifact contains exactly
  * the `src/` tree and nothing else.
  */
+const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
 
 const packageRoot = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(packageRoot, '..', '..');
@@ -29,18 +28,22 @@ const distRoot = path.join(packageRoot, 'dist');
 
 /** Every JavaScript module under `dir`, relative to it, sorted. */
 function listModules(dir, prefix = '') {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) return listModules(path.join(dir, rel), rel);
-    return entry.name.endsWith('.js') ? [rel] : [];
-  }).sort((left, right) => left.localeCompare(right));
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .flatMap((entry) => {
+      const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) return listModules(path.join(dir, rel), rel);
+      return entry.name.endsWith('.js') ? [rel] : [];
+    })
+    .sort((left, right) => left.localeCompare(right));
 }
 
 function main() {
   const modules = listModules(srcRoot);
   if (modules.length === 0) {
     console.error('[designer-core] src/ holds no modules; nothing to build.');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   fs.rmSync(distRoot, { recursive: true, force: true });

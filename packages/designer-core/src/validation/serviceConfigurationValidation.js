@@ -26,11 +26,11 @@
 
 import {
   CLOUD_PROVIDERS,
-  RUN_MODES,
-  SERVICE_KINDS,
   getActivePortNames,
   getSupportedProviders,
-  isRunModeSupportedByProvider
+  isRunModeSupportedByProvider,
+  RUN_MODES,
+  SERVICE_KINDS
 } from '../model/deployCapabilityMatrix.js';
 
 const PORT_LABELS = {
@@ -56,7 +56,7 @@ function isValidPort(value) {
  *   `staticAssetsPath` is unconstrained and not validated.
  * @returns {ModelIssue[]}
  */
-export function collectServiceConfigurationIssues(config) {
+function collectServiceConfigurationIssues(config) {
   const issues = [];
   const pushError = (message) => issues.push({ message, entityId: null, severity: 'error' });
   const candidate = config || {};
@@ -66,20 +66,26 @@ export function collectServiceConfigurationIssues(config) {
   const ports = candidate.ports || {};
 
   if (!SERVICE_KINDS.includes(serviceKind)) {
-    pushError(`Service kind "${serviceKind}" is not supported — choose one of: ${SERVICE_KINDS.join(', ')}.`);
+    pushError(
+      `Service kind "${serviceKind}" is not supported — choose one of: ${SERVICE_KINDS.join(', ')}.`
+    );
   }
   if (!RUN_MODES.includes(runMode)) {
     pushError(`Run mode "${runMode}" is not supported — choose one of: ${RUN_MODES.join(', ')}.`);
   }
   if (!CLOUD_PROVIDERS.includes(cloudProvider)) {
-    pushError(`Cloud provider "${cloudProvider}" is not supported — choose one of: ${CLOUD_PROVIDERS.join(', ')}.`);
+    pushError(
+      `Cloud provider "${cloudProvider}" is not supported — choose one of: ${CLOUD_PROVIDERS.join(', ')}.`
+    );
   }
 
   const activePortNames = getActivePortNames(serviceKind);
   const activePorts = activePortNames.map((name) => ({ name, value: ports[name] }));
   activePorts.forEach(({ name, value }) => {
     if (!isValidPort(value)) {
-      pushError(`${PORT_LABELS[name]} port must be an integer between 1 and 65535 (got "${value ?? ''}").`);
+      pushError(
+        `${PORT_LABELS[name]} port must be an integer between 1 and 65535 (got "${value ?? ''}").`
+      );
     }
   });
   const portOwners = new Map();
@@ -95,8 +101,11 @@ export function collectServiceConfigurationIssues(config) {
     portOwners.set(numeric, name);
   });
 
-  if (RUN_MODES.includes(runMode) && CLOUD_PROVIDERS.includes(cloudProvider)
-    && !isRunModeSupportedByProvider(runMode, cloudProvider)) {
+  if (
+    RUN_MODES.includes(runMode) &&
+    CLOUD_PROVIDERS.includes(cloudProvider) &&
+    !isRunModeSupportedByProvider(runMode, cloudProvider)
+  ) {
     pushError(
       `Run mode "${runMode}" cannot run on provider "${cloudProvider}" — the Requirement 059 deploy matrix supports it on: ${getSupportedProviders(runMode).join(', ')}.`
     );
@@ -104,3 +113,5 @@ export function collectServiceConfigurationIssues(config) {
 
   return issues;
 }
+
+export default collectServiceConfigurationIssues;

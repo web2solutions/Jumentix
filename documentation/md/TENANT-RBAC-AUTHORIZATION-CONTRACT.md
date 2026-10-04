@@ -10,27 +10,27 @@ otherwise permitted operation.
 
 ## Principal classes
 
-| Principal | Organization rule | Data boundary |
-|---|---|---|
-| `superadmin` | Optional | Global |
-| `admin` | Required | Own organization |
-| `user` | Required | Own user record and own organization |
+| Principal                     | Organization rule            | Data boundary                                                       |
+| ----------------------------- | ---------------------------- | ------------------------------------------------------------------- |
+| `superadmin`                  | Optional                     | Global                                                              |
+| `admin`                       | Required                     | Own organization                                                    |
+| `user`                        | Required                     | Own user record and own organization                                |
 | Legacy direct-scope principal | Not a normalized tenant role | Global backward-compatible boundary, constrained by explicit scopes |
-| Guest or missing identity | Not applicable | No protected access |
+| Guest or missing identity     | Not applicable               | No protected access                                                 |
 
 Legacy direct scopes remain supported with the global behavior defined by `Rbac.ts`.
 They do not acquire normalized `admin` or `user` tenant semantics implicitly.
 
 ## Operation decision table
 
-| Operation | `superadmin` | `admin` | `user` | Legacy direct scopes |
-|---|---|---|---|---|
-| Create organization | Allow | Allow through `create_organization` | Deny by role scopes | Allow when explicit `create_organization` scope exists |
-| List/read organization | Any organization | Own organization | Own organization when scope permits | Any organization when explicit scope permits |
-| Mutate/delete organization | Any organization | Own organization when scope permits | Deny by role scopes | Any organization when explicit scope permits |
-| Create user | Any organization or unbound | Own organization; missing organization is auto-bound | Deny by role scopes | Any organization or unbound when explicit scope permits |
-| List users | All users | Users in own organization | Own user only | All users when explicit scope permits |
-| Read/mutate one user | Any user | User in own organization when scope permits | Own user only when scope permits | Any user when explicit scope permits |
+| Operation                  | `superadmin`                | `admin`                                              | `user`                              | Legacy direct scopes                                    |
+| -------------------------- | --------------------------- | ---------------------------------------------------- | ----------------------------------- | ------------------------------------------------------- |
+| Create organization        | Allow                       | Allow through `create_organization`                  | Deny by role scopes                 | Allow when explicit `create_organization` scope exists  |
+| List/read organization     | Any organization            | Own organization                                     | Own organization when scope permits | Any organization when explicit scope permits            |
+| Mutate/delete organization | Any organization            | Own organization when scope permits                  | Deny by role scopes                 | Any organization when explicit scope permits            |
+| Create user                | Any organization or unbound | Own organization; missing organization is auto-bound | Deny by role scopes                 | Any organization or unbound when explicit scope permits |
+| List users                 | All users                   | Users in own organization                            | Own user only                       | All users when explicit scope permits                   |
+| Read/mutate one user       | Any user                    | User in own organization when scope permits          | Own user only when scope permits    | Any user when explicit scope permits                    |
 
 ## Denial rules
 

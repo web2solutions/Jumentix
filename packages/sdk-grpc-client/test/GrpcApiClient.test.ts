@@ -1,11 +1,13 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import * as grpc from '@grpc/grpc-js';
-import * as protoLoader from '@grpc/proto-loader';
-import {
-  GrpcApiClient, interopDefault, loadSpecs, resolveGrpcProtoPath
-} from '../src';
+
+import { loadPackageDefinition, Server, ServerCredentials, status } from '@grpc/grpc-js';
+import { loadSync } from '@grpc/proto-loader';
+
+import { GrpcApiClient, interopDefault, loadSpecs, resolveGrpcProtoPath } from '../src';
+
+import type { ServiceDefinition } from '@grpc/grpc-js';
 
 /**
  * Requirement 112 — this package owns its suite.
@@ -33,14 +35,14 @@ function scratch(prefix: string): string {
   return dir;
 }
 
-type ServerReply = {
+interface ServerReply {
   ok?: boolean;
   version?: string;
   operationId?: string;
   resultJson?: string;
   errorName?: string;
   errorMessage?: string;
-};
+}
 
 type Recorded = Record<string, string>;
 
@@ -62,18 +64,18 @@ type ServiceFailure = Error & { code: number };
 async function serving(
   handler: (request: Recorded) => ServerReply | ServiceFailure
 ): Promise<{ host: string; received: Recorded[]; stop: () => Promise<void> }> {
-  const loader = interopDefault(protoLoader) as typeof protoLoader;
-  const grpcLib = interopDefault(grpc) as typeof grpc;
-
-  const definition = loader.loadSync(PROTO_PATH, {
-    longs: String, enums: String, defaults: true, oneofs: true
+  const definition = loadSync(PROTO_PATH, {
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true
   });
-  const loaded = grpcLib.loadPackageDefinition(definition) as never as {
-    realtime: { AsyncApiGateway: { service: grpc.ServiceDefinition } };
+  const loaded = loadPackageDefinition(definition) as never as {
+    realtime: { AsyncApiGateway: { service: ServiceDefinition } };
   };
 
   const received: Recorded[] = [];
-  const server = new grpcLib.Server();
+  const server = new Server();
 
   server.addService(loaded.realtime.AsyncApiGateway.service, {
     request: (
@@ -91,7 +93,7 @@ async function serving(
   });
 
   const port = await new Promise<number>((resolve, reject) => {
-    server.bindAsync('127.0.0.1:0', grpcLib.ServerCredentials.createInsecure(), (error, bound) => {
+    server.bindAsync('127.0.0.1:0', ServerCredentials.createInsecure(), (error, bound) => {
       if (error) reject(error);
       else resolve(bound);
     });
@@ -104,7 +106,9 @@ async function serving(
     // client channel to drain, and a channel left open by a failed call never
     // does — the suite hung on teardown while the assertion itself had already
     // passed.
-    stop: async () => { server.forceShutdown(); }
+    stop: async () => {
+      server.forceShutdown();
+    }
   };
 }
 
@@ -180,8 +184,9 @@ describe('resolveGrpcProtoPath', () => {
 
     const missing = path.join(scratch('missing'), 'nope.proto');
 
-    expect(() => resolveGrpcProtoPath(missing))
-      .toThrow(`gRPC proto file not found at configured path: ${path.resolve(missing)}`);
+    expect(() => resolveGrpcProtoPath(missing)).toThrow(
+      `gRPC proto file not found at configured path: ${path.resolve(missing)}`
+    );
   });
 
   it('prefers the packaged proto next to the module', () => {
@@ -220,8 +225,9 @@ describe('resolveGrpcProtoPath', () => {
     // above it.
     const isolated = scratch('nothing');
 
-    expect(() => resolveGrpcProtoPath(undefined, isolated))
-      .toThrow(/spec\/asyncapi\/async-api\.proto.*proto\/async-api\.proto/s);
+    expect(() => resolveGrpcProtoPath(undefined, isolated)).toThrow(
+      /spec\/asyncapi\/async-api\.proto.*proto\/async-api\.proto/s
+    );
   });
 
   it('finds the repository proto from its own module directory', () => {
@@ -268,8 +274,7 @@ describe('loadSpecs', () => {
 
     // An isolated directory under the OS temp root has no `spec/asyncapi`
     // anywhere above it, so the default walk-up finds nothing.
-    expect(() => loadSpecs(undefined, scratch('nothing')))
-      .toThrow(/1\.0\.0\.grpc\.yml/);
+    expect(() => loadSpecs(undefined, scratch('nothing'))).toThrow(/1\.0\.0\.grpc\.yml/);
   });
 });
 
@@ -329,14 +334,16 @@ describe('the client against a real server', () => {
     try {
       await new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'listUsers' });
 
-      expect(server.received[0]).toStrictEqual(expect.objectContaining({
-        version: '',
-        authorization: '',
-        inputJson: '{}',
-        paramsJson: '{}',
-        queryStringJson: '{}',
-        metadataJson: '{}'
-      }));
+      expect(server.received[0]).toStrictEqual(
+        expect.objectContaining({
+          version: '',
+          authorization: '',
+          inputJson: '{}',
+          paramsJson: '{}',
+          queryStringJson: '{}',
+          metadataJson: '{}'
+        })
+      );
     } finally {
       await server.stop();
     }
@@ -348,8 +355,9 @@ describe('the client against a real server', () => {
     const server = await serving(() => complete({ resultJson: '' }));
 
     try {
-      const response = await new GrpcApiClient(server.host, PROTO_PATH)
-        .request({ operationId: 'listUsers' });
+      const response = await new GrpcApiClient(server.host, PROTO_PATH).request({
+        operationId: 'listUsers'
+      });
 
       // Not `JSON.parse('')`, which throws, and not `null`.
       expect(response.result).toBeUndefined();
@@ -369,8 +377,9 @@ describe('the client against a real server', () => {
     }));
 
     try {
-      await expect(new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'listUsers' }))
-        .rejects.toThrow('not your data');
+      await expect(
+        new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'listUsers' })
+      ).rejects.toThrow('not your data');
     } finally {
       await server.stop();
     }
@@ -383,8 +392,9 @@ describe('the client against a real server', () => {
     const server = await serving(() => ({ ok: false, operationId: 'listUsers' }));
 
     try {
-      await expect(new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'listUsers' }))
-        .rejects.toThrow('gRPC operation failed');
+      await expect(
+        new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'listUsers' })
+      ).rejects.toThrow('gRPC operation failed');
     } finally {
       await server.stop();
     }
@@ -393,15 +403,14 @@ describe('the client against a real server', () => {
   it('rejects when the call itself fails', async () => {
     expect.hasAssertions();
 
-    const grpcLib = interopDefault(grpc) as typeof grpc;
-    const server = await serving(() => Object.assign(
-      new Error('handler exploded'),
-      { code: grpcLib.status.INTERNAL }
-    ));
+    const server = await serving(() =>
+      Object.assign(new Error('handler exploded'), { code: status.INTERNAL })
+    );
 
     try {
-      await expect(new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'listUsers' }))
-        .rejects.toThrow('13 INTERNAL: handler exploded');
+      await expect(
+        new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'listUsers' })
+      ).rejects.toThrow('13 INTERNAL: handler exploded');
     } finally {
       await server.stop();
     }
@@ -424,14 +433,17 @@ describe('the client against a real server', () => {
   it('carries an error name and message through on a successful response', async () => {
     expect.hasAssertions();
 
-    const server = await serving(() => complete({
-      errorName: 'PartialFailure',
-      errorMessage: 'two of three'
-    }));
+    const server = await serving(() =>
+      complete({
+        errorName: 'PartialFailure',
+        errorMessage: 'two of three'
+      })
+    );
 
     try {
-      const response = await new GrpcApiClient(server.host, PROTO_PATH)
-        .request({ operationId: 'listUsers' });
+      const response = await new GrpcApiClient(server.host, PROTO_PATH).request({
+        operationId: 'listUsers'
+      });
 
       expect(response.error).toStrictEqual({
         name: 'PartialFailure',
@@ -452,8 +464,9 @@ describe('the client host', () => {
     try {
       // Reaching the server at all is the assertion: a client that ignored the
       // argument would talk to the spec's host instead.
-      await expect(new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'x' }))
-        .resolves.toBeDefined();
+      await expect(
+        new GrpcApiClient(server.host, PROTO_PATH).request({ operationId: 'x' })
+      ).resolves.toBeDefined();
     } finally {
       await server.stop();
     }

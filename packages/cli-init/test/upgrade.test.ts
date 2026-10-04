@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -7,12 +7,8 @@ import path from 'node:path';
 require('./ensure-built');
 
 const { parseArgv } = require('../dist/args');
-const { runUpgrade, printUpgradeHelp } = require('../dist/commands/upgrade');
-const {
-  planFileUpgrade,
-  threeWayMerge,
-  sha256Text
-} = require('../dist/upgrade/threeWay');
+const { printUpgradeHelp, runUpgrade } = require('../dist/commands/upgrade');
+const { planFileUpgrade, sha256Text, threeWayMerge } = require('../dist/upgrade/threeWay');
 
 function scratch(label: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), `cli-init-upgrade-${label}-`));
@@ -33,29 +29,37 @@ function writeProjectScaffold(root: string, files: Record<string, string>): void
   fs.mkdirSync(path.join(root, '.jumentix'), { recursive: true });
   fs.writeFileSync(
     path.join(root, '.jumentix', 'project.json'),
-    `${JSON.stringify({
-      schemaVersion: 1,
-      cliVersion: '0.0.0',
-      template: { version: 1, commit: 'test' },
-      mode: 'monolith',
-      plan: {
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        cliVersion: '0.0.0',
+        template: { version: 1, commit: 'test' },
         mode: 'monolith',
-        services: [],
-        domains: [],
-        contracts: { oasPerService: {} }
+        plan: {
+          mode: 'monolith',
+          services: [],
+          domains: [],
+          contracts: { oasPerService: {} }
+        },
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z'
       },
-      createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-01-01T00:00:00.000Z'
-    }, null, 2)}\n`,
+      null,
+      2
+    )}\n`,
     'utf8'
   );
   fs.writeFileSync(
     path.join(root, '.jumentix', 'manifest.json'),
-    `${JSON.stringify({
-      schemaVersion: 1,
-      generatedAt: '2026-01-01T00:00:00.000Z',
-      files: manifestFiles
-    }, null, 2)}\n`,
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        generatedAt: '2026-01-01T00:00:00.000Z',
+        files: manifestFiles
+      },
+      null,
+      2
+    )}\n`,
     'utf8'
   );
 }

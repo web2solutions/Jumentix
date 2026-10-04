@@ -1,7 +1,7 @@
-import { ref } from 'vue';
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-export type ColorMode = 'light' | 'dark' | 'auto'
+export type ColorMode = 'light' | 'dark' | 'auto';
 
 export const useThemeStore = defineStore('theme', () => {
   const theme = ref<ColorMode>('light');

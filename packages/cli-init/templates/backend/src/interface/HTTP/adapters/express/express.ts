@@ -1,21 +1,18 @@
-/* eslint-disable quote-props */
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
 
-import {
-  composeUsersAuthServices
-} from '@src/modules/Users';
-
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import JwtService from '@src/infra/jwt/JwtService';
+import compileMessageMediator from '@src/infra/messages/compileMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
 import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
+import { composeUsersAuthServices } from '@src/modules/Users';
+
+import type { Express } from 'express';
 
 const serverType = EHTTPFrameworks.express;
 const webServer = ExpressServer.compile();

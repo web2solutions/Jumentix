@@ -1,14 +1,15 @@
 /* eslint-disable jest/max-expects */
-import { OrganizationService } from '@src/modules/Users/service/OrganizationService';
-import { Organization } from '@src/modules/Users/domain/Model/Organization';
 import { ValidationError } from '@src/infra/exceptions';
+import Organization from '@src/modules/Users/domain/Model/Organization';
+import OrganizationService from '@src/modules/Users/service/OrganizationService';
 
-const domainOrganization = (name = 'Org') => new Organization({
-  id: '4fae5b16-261f-4de7-9cff-1429d5614e44',
-  name,
-  createdAt: '2026-01-01T00:00:00.000Z',
-  updatedAt: '2026-01-02T00:00:00.000Z'
-});
+const domainOrganization = (name = 'Org') =>
+  new Organization({
+    id: '4fae5b16-261f-4de7-9cff-1429d5614e44',
+    name,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-02T00:00:00.000Z'
+  });
 
 const setup = () => {
   const dataRepository = {
@@ -41,14 +42,16 @@ describe('organization service', () => {
     expect.hasAssertions();
     const { service } = setup();
     expect((await service.create({ name: 'Org' } as any)).result?.id).toBe('o1');
-    expect((await service.update('o1', { id: 'o1', name: 'Org Updated' } as any)).result?.name).toBe('Org Updated');
+    expect(
+      (await service.update('o1', { id: 'o1', name: 'Org Updated' } as any)).result?.name
+    ).toBe('Org Updated');
     expect((await service.getOneById('o1')).result?.id).toBe('o1');
   });
 
   it('delegates paging and deletion operations', async () => {
     expect.hasAssertions();
     const { service, dataRepository } = setup();
-    await service.create({ name: 'Org' } as any);
+    await service.create({ name: 'Org' });
     expect((await service.getAll({}, { page: 1, size: 10 })).result?.[0].id).toBe('o1');
     expect((await service.delete('o1')).result).toBe(true);
     expect(dataRepository.create).toHaveBeenCalledWith({ name: 'Org' });
@@ -78,7 +81,7 @@ describe('organization service', () => {
       services: { cacheService }
     } as any);
 
-    const created = (await service.create({ name: 'Org' } as any)).result;
+    const created = (await service.create({ name: 'Org' })).result;
     expect(created).toMatchObject({
       id: organization.id,
       name: 'Org',
@@ -120,7 +123,10 @@ describe('organization service', () => {
       })
     };
     const cacheService = {
-      get: jest.fn().mockResolvedValueOnce(undefined).mockResolvedValueOnce({ id: 'o1', name: 'Org' }),
+      get: jest
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce({ id: 'o1', name: 'Org' }),
       set: jest.fn().mockResolvedValue(undefined),
       getVersion: jest.fn().mockResolvedValue(1),
       bumpVersion: jest.fn().mockResolvedValue(2)
@@ -132,10 +138,10 @@ describe('organization service', () => {
 
     await service.getOneById('o1');
     expect(dataRepository.getOneById).toHaveBeenCalledTimes(1);
-    expect(cacheService.set).toHaveBeenCalledWith(
-      'organizations:v1:getOneById:o1',
-      { id: 'o1', name: 'Org' }
-    );
+    expect(cacheService.set).toHaveBeenCalledWith('organizations:v1:getOneById:o1', {
+      id: 'o1',
+      name: 'Org'
+    });
 
     await service.getOneById('o1');
     expect(dataRepository.getOneById).toHaveBeenCalledTimes(1);
@@ -158,7 +164,7 @@ describe('organization service', () => {
     expect.hasAssertions();
     const { service, dataRepository } = setup();
     dataRepository.create.mockRejectedValueOnce(new Error('boom'));
-    const response = await service.create({ name: 'Org' } as any);
+    const response = await service.create({ name: 'Org' });
     expect(response.error).toBeDefined();
   });
 
@@ -181,19 +187,41 @@ describe('organization service', () => {
     expect.hasAssertions();
     const { service, dataRepository } = setup();
 
-    expect((await service.createAddress('o1', { email: 'hq@org.dev', type: 'work' } as any)).result?.id).toBe('o1');
-    expect((await service.updateAddress('o1', 'a1', { email: 'new@org.dev' } as any)).result?.id).toBe('o1');
+    expect(
+      (await service.createAddress('o1', { email: 'hq@org.dev', type: 'work' } as any)).result?.id
+    ).toBe('o1');
+    expect(
+      (await service.updateAddress('o1', 'a1', { email: 'new@org.dev' } as any)).result?.id
+    ).toBe('o1');
     expect((await service.deleteAddress('o1', 'a1')).result?.id).toBe('o1');
 
-    expect((await service.createPhone('o1', { countryCode: '55', localCode: '11', number: '9999' } as any)).result?.id).toBe('o1');
-    expect((await service.updatePhone('o1', 'p1', { number: '8888' } as any)).result?.id).toBe('o1');
+    expect(
+      (
+        await service.createPhone('o1', {
+          countryCode: '55',
+          localCode: '11',
+          number: '9999'
+        } as any)
+      ).result?.id
+    ).toBe('o1');
+    expect((await service.updatePhone('o1', 'p1', { number: '8888' } as any)).result?.id).toBe(
+      'o1'
+    );
     expect((await service.deletePhone('o1', 'p1')).result?.id).toBe('o1');
 
-    expect((await service.createEmail('o1', { email: 'contact@org.dev', type: 'work' } as any)).result?.id).toBe('o1');
-    expect((await service.updateEmail('o1', 'e1', { email: 'new@org.dev' } as any)).result?.id).toBe('o1');
+    expect(
+      (await service.createEmail('o1', { email: 'contact@org.dev', type: 'work' } as any)).result
+        ?.id
+    ).toBe('o1');
+    expect(
+      (await service.updateEmail('o1', 'e1', { email: 'new@org.dev' } as any)).result?.id
+    ).toBe('o1');
     expect((await service.deleteEmail('o1', 'e1')).result?.id).toBe('o1');
 
-    expect(dataRepository.createAddress).toHaveBeenCalledWith('o1', { email: 'hq@org.dev', type: 'work' });
+    expect(dataRepository.createAddress).toHaveBeenCalledWith('o1', {
+      email: 'hq@org.dev',
+      type: 'work'
+    });
     expect(dataRepository.updatePhone).toHaveBeenCalledWith('o1', 'p1', { number: '8888' });
     expect(dataRepository.deleteEmail).toHaveBeenCalledWith('o1', 'e1');
   });
@@ -211,14 +239,34 @@ describe('organization service', () => {
     dataRepository.updateEmail.mockRejectedValueOnce(new Error('update-email-fail'));
     dataRepository.deleteEmail.mockRejectedValueOnce(new Error('delete-email-fail'));
 
-    expect((await service.createAddress('o1', { email: 'hq@org.dev', type: 'work' } as any)).error?.message).toBe('create-address-fail');
-    expect((await service.updateAddress('o1', 'a1', { email: 'new@org.dev' } as any)).error?.message).toBe('update-address-fail');
+    expect(
+      (await service.createAddress('o1', { email: 'hq@org.dev', type: 'work' } as any)).error
+        ?.message
+    ).toBe('create-address-fail');
+    expect(
+      (await service.updateAddress('o1', 'a1', { email: 'new@org.dev' } as any)).error?.message
+    ).toBe('update-address-fail');
     expect((await service.deleteAddress('o1', 'a1')).error?.message).toBe('delete-address-fail');
-    expect((await service.createPhone('o1', { countryCode: '55', localCode: '11', number: '9999' } as any)).error?.message).toBe('create-phone-fail');
-    expect((await service.updatePhone('o1', 'p1', { number: '8888' } as any)).error?.message).toBe('update-phone-fail');
+    expect(
+      (
+        await service.createPhone('o1', {
+          countryCode: '55',
+          localCode: '11',
+          number: '9999'
+        } as any)
+      ).error?.message
+    ).toBe('create-phone-fail');
+    expect((await service.updatePhone('o1', 'p1', { number: '8888' } as any)).error?.message).toBe(
+      'update-phone-fail'
+    );
     expect((await service.deletePhone('o1', 'p1')).error?.message).toBe('delete-phone-fail');
-    expect((await service.createEmail('o1', { email: 'contact@org.dev', type: 'work' } as any)).error?.message).toBe('create-email-fail');
-    expect((await service.updateEmail('o1', 'e1', { email: 'new@org.dev' } as any)).error?.message).toBe('update-email-fail');
+    expect(
+      (await service.createEmail('o1', { email: 'contact@org.dev', type: 'work' } as any)).error
+        ?.message
+    ).toBe('create-email-fail');
+    expect(
+      (await service.updateEmail('o1', 'e1', { email: 'new@org.dev' } as any)).error?.message
+    ).toBe('update-email-fail');
     expect((await service.deleteEmail('o1', 'e1')).error?.message).toBe('delete-email-fail');
   });
 });
@@ -276,7 +324,11 @@ describe('organization service metrics', () => {
     expect.hasAssertions();
     const { service, dataRepository } = setup();
 
-    const notGroupable = await service.metrics({}, { metric: 'groupBy', field: 'address' }, capabilities);
+    const notGroupable = await service.metrics(
+      {},
+      { metric: 'groupBy', field: 'address' },
+      capabilities
+    );
     expect(notGroupable.error).toBeInstanceOf(ValidationError);
     expect(String(notGroupable.error?.message)).toContain('Accepted: name.');
 

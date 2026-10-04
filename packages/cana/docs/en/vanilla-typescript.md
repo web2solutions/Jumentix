@@ -80,10 +80,7 @@ export const client = createClient({
 `src/main.ts`:
 
 ```ts
-import {
-  isCanaErrorCode,
-  type CanaChangeEvent
-} from '@jumentix/cana';
+import { isCanaErrorCode, type CanaChangeEvent } from '@jumentix/cana';
 import { client, type Category, type Task } from './cana';
 
 const categories = new Map<string, Category>();

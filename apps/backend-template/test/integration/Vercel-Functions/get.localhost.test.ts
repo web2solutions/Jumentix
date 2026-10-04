@@ -1,12 +1,15 @@
 /* global describe, it, expect, beforeAll, afterAll */
-import type { Server } from 'node:http';
 import request from 'supertest';
+
 import {
   closeSupertestServer,
   createSupertestServer,
   supertestServerUrl
 } from '@test/helpers/listenForSupertest';
+
 import { vercelListener } from '../../helpers/vercelRuntime';
+
+import type { Server } from 'node:http';
 
 /**
  * JUM-698 — this suite is under `test/integration/Vercel-Functions/`, and now
@@ -38,7 +41,7 @@ const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f
  * `VercelRequest`/`VercelResponse`, and a narrower annotation here fails under
  * Jest — which typechecks — while passing under Bun, which does not.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 let handler: (req: any, res: any) => Promise<void>;
 let server: Server;
 let serverUrl: string;
@@ -47,9 +50,8 @@ describe('vercel-functions -> /localhost suite', () => {
   beforeAll(async () => {
     process.env.JUMENTIX_KEYVALUESTORAGE_DRIVER = 'inmemory';
     process.env.JUMENTIX_DATABASE_DRIVER = 'inmemory';
-    ({ default: handler } = await import(
-      '@src/interface/HTTP/adapters/vercel-functions/vercel-functions'
-    ));
+    ({ default: handler } =
+      await import('@src/interface/HTTP/adapters/vercel-functions/vercel-functions'));
     server = await createSupertestServer(vercelListener(handler));
     serverUrl = supertestServerUrl(server);
   });
@@ -61,9 +63,7 @@ describe('vercel-functions -> /localhost suite', () => {
   it('answers the root route through the function entry point', async () => {
     expect.hasAssertions();
 
-    const response = await request(serverUrl)
-      .get('/')
-      .set('Accept', 'application/json');
+    const response = await request(serverUrl).get('/').set('Accept', 'application/json');
 
     expect(response.statusCode).toBe(200);
     expect(response.body.status).toBe('result');

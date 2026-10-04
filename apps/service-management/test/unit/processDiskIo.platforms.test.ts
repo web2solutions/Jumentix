@@ -1,4 +1,3 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 /*
  * processDiskIo platform backends: Linux /proc/<pid>/io reads and failures,
  * the Darwin FFI result with its 1s cache, the Windows PowerShell JSON
@@ -14,26 +13,32 @@
  * clock is driven by a Date.now spy).
  */
 
-const processDiskIoFs = require('fs');
-const processDiskIoChildProcess = require('child_process');
+const processDiskIoChildProcess = require('node:child_process');
+const processDiskIoFs = require('node:fs');
+
+// eslint-disable-next-line import-x/order -- the sibling require of the module under test must stay below the spy installation (it destructures execFile/readDarwinDiskIo at require time), which import-x/order reads as a split import group
 const darwinProcessDiskIoModule = require('../../src/runtime/darwinProcessDiskIo');
 
-const mockReadFileSync = jest.spyOn(processDiskIoFs, 'readFileSync') as jest.Mock;
+const mockReadFileSync = jest.spyOn(processDiskIoFs, 'readFileSync');
+// eslint-disable-next-line jest/prefer-jest-mocked -- () keeps execFile's strict overloads, which reject the loose ExecFileFake under ts-jest
 const mockExecFile = jest.spyOn(processDiskIoChildProcess, 'execFile') as unknown as jest.Mock;
-const mockReadDarwinDiskIoNative = jest.spyOn(darwinProcessDiskIoModule, 'readDarwinDiskIo') as jest.Mock;
+const mockReadDarwinDiskIoNative = jest.spyOn(darwinProcessDiskIoModule, 'readDarwinDiskIo');
 
 const {
   attachProcessDiskIo,
-  parseLinuxIoText,
-  readProcessDiskIo,
+  DARWIN_CACHE_TTL_MS,
   DEFAULT_TIMEOUT_MS,
-  DARWIN_CACHE_TTL_MS
+  parseLinuxIoText,
+  readProcessDiskIo
 } = require('../../src/runtime/processDiskIo');
 
 type ExecCallback = (error: unknown, stdout?: string, stderr?: string) => void;
 
 type ExecFileFake = (
-  command: string, args: string[], options: { timeout: number }, callback: ExecCallback
+  command: string,
+  args: string[],
+  options: { timeout: number },
+  callback: ExecCallback
 ) => void;
 
 function execFileSucceedingWith(stdout: string): ExecFileFake {
@@ -73,15 +78,17 @@ describe('service-management processDiskIo Linux backend', () => {
 
   it('reads /proc/<pid>/io for the requested pid and reports every counter', async () => {
     expect.hasAssertions();
-    mockReadFileSync.mockReturnValue([
-      'rchar: 10',
-      'wchar: 20',
-      'syscr: 1',
-      'syscw: 2',
-      'read_bytes: 4096',
-      'write_bytes: 8192',
-      'cancelled_write_bytes: 3'
-    ].join('\n'));
+    mockReadFileSync.mockReturnValue(
+      [
+        'rchar: 10',
+        'wchar: 20',
+        'syscr: 1',
+        'syscw: 2',
+        'read_bytes: 4096',
+        'write_bytes: 8192',
+        'cancelled_write_bytes: 3'
+      ].join('\n')
+    );
     const result = await readProcessDiskIo(42, { platform: 'linux' });
     expect(mockReadFileSync.mock.calls[0][0]).toBe('/proc/42/io');
     expect(result).toMatchObject({
@@ -116,7 +123,7 @@ describe('service-management processDiskIo Linux backend', () => {
   it('falls back to LINUX_IO_READ_ERROR when the failure carries no error code', async () => {
     expect.hasAssertions();
     mockReadFileSync.mockImplementation(() => {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberate bare-string throw: covers the no-error-code fallback branch
       throw 'disk gone';
     });
     const result = await readProcessDiskIo(42, { platform: 'linux' });
@@ -134,11 +141,9 @@ describe('service-management processDiskIo parseLinuxIoText edge cases', () => {
 
   it('ignores malformed lines and defaults every missing counter to zero', () => {
     expect.hasAssertions();
-    const parsed = parseLinuxIoText([
-      'not a field',
-      'read_bytes: 7 trailing garbage',
-      'write_bytes: 64'
-    ].join('\n'));
+    const parsed = parseLinuxIoText(
+      ['not a field', 'read_bytes: 7 trailing garbage', 'write_bytes: 64'].join('\n')
+    );
     expect(parsed).toMatchObject({
       supported: true,
       platform: 'linux',
@@ -161,17 +166,20 @@ describe('service-management processDiskIo parseLinuxIoText edge cases', () => {
 describe('service-management processDiskIo pid guard', () => {
   beforeEach(resetBackendSpies);
 
-  it.each([0, -3, 'abc', NaN])('refuses pid %s as INVALID_PID without touching any backend', async (pid) => {
-    expect.hasAssertions();
-    const result = await readProcessDiskIo(pid, { platform: 'linux' });
-    expect(result).toMatchObject({
-      supported: false,
-      platform: 'linux',
-      error: 'pid required',
-      code: 'INVALID_PID'
-    });
-    expect(mockReadFileSync).not.toHaveBeenCalled();
-  });
+  it.each([0, -3, 'abc', NaN])(
+    'refuses pid %s as INVALID_PID without touching any backend',
+    async (pid) => {
+      expect.hasAssertions();
+      const result = await readProcessDiskIo(pid, { platform: 'linux' });
+      expect(result).toMatchObject({
+        supported: false,
+        platform: 'linux',
+        error: 'pid required',
+        code: 'INVALID_PID'
+      });
+      expect(mockReadFileSync).not.toHaveBeenCalled();
+    }
+  );
 
   it('reports the host platform when no platform override is given', async () => {
     expect.hasAssertions();
@@ -189,7 +197,10 @@ describe('service-management processDiskIo Darwin backend and cache', () => {
     const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_000_000);
     try {
       mockReadDarwinDiskIoNative.mockReturnValue({
-        supported: true, platform: 'darwin', readBytes: 111, writeBytes: 222
+        supported: true,
+        platform: 'darwin',
+        readBytes: 111,
+        writeBytes: 222
       });
 
       const first = await readProcessDiskIo(7, { platform: 'darwin' });
@@ -199,7 +210,10 @@ describe('service-management processDiskIo Darwin backend and cache', () => {
       expect(mockReadDarwinDiskIoNative).toHaveBeenCalledTimes(1);
 
       mockReadDarwinDiskIoNative.mockReturnValue({
-        supported: true, platform: 'darwin', readBytes: 333, writeBytes: 444
+        supported: true,
+        platform: 'darwin',
+        readBytes: 333,
+        writeBytes: 444
       });
       nowSpy.mockReturnValue(1_000_000 + DARWIN_CACHE_TTL_MS + 1);
       const third = await readProcessDiskIo(7, { platform: 'darwin' });
@@ -217,34 +231,52 @@ describe('service-management processDiskIo Windows backend', () => {
   it('parses the PowerShell JSON payload into unified fields', async () => {
     expect.hasAssertions();
     const sink: { options?: { timeout: number } } = {};
-    mockExecFile.mockImplementation(execFileCapturingOptions(JSON.stringify({
-      supported: true, platform: 'win32', readBytes: 5000, writeBytes: 6000
-    }), sink));
+    mockExecFile.mockImplementation(
+      execFileCapturingOptions(
+        JSON.stringify({
+          supported: true,
+          platform: 'win32',
+          readBytes: 5000,
+          writeBytes: 6000
+        }),
+        sink
+      )
+    );
     const result = await readProcessDiskIo(99, { platform: 'win32', timeoutMs: 25 });
     expect(sink.options?.timeout).toBe(25);
     expect(result).toMatchObject({
-      supported: true, platform: 'win32', readBytes: 5000, writeBytes: 6000
+      supported: true,
+      platform: 'win32',
+      readBytes: 5000,
+      writeBytes: 6000
     });
   });
 
   it('uses DEFAULT_TIMEOUT_MS when the caller does not pass timeoutMs', async () => {
     expect.hasAssertions();
     const sink: { options?: { timeout: number } } = {};
-    mockExecFile.mockImplementation(execFileCapturingOptions('{"readBytes": 1, "writeBytes": 2}', sink));
+    mockExecFile.mockImplementation(
+      execFileCapturingOptions('{"readBytes": 1, "writeBytes": 2}', sink)
+    );
     await readProcessDiskIo(99, { platform: 'win32' });
     expect(sink.options?.timeout).toBe(DEFAULT_TIMEOUT_MS);
   });
 
   it('coerces missing or non-numeric payload counters to zero', async () => {
     expect.hasAssertions();
-    mockExecFile.mockImplementation(execFileSucceedingWith('{"readBytes": "oops", "writeBytes": 12}'));
+    mockExecFile.mockImplementation(
+      execFileSucceedingWith('{"readBytes": "oops", "writeBytes": 12}')
+    );
     const partial = await readProcessDiskIo(99, { platform: 'win32' });
     expect(partial).toMatchObject({ readBytes: 0, writeBytes: 12 });
 
     mockExecFile.mockImplementation(execFileSucceedingWith('null'));
     const empty = await readProcessDiskIo(99, { platform: 'win32' });
     expect(empty).toMatchObject({
-      supported: true, platform: 'win32', readBytes: 0, writeBytes: 0
+      supported: true,
+      platform: 'win32',
+      readBytes: 0,
+      writeBytes: 0
     });
   });
 
@@ -276,7 +308,10 @@ describe('service-management processDiskIo Windows backend', () => {
     mockExecFile.mockImplementation(execFileSucceedingWith(''));
     const result = await readProcessDiskIo(99, { platform: 'win32' });
     expect(result).toMatchObject({
-      supported: true, platform: 'win32', readBytes: 0, writeBytes: 0
+      supported: true,
+      platform: 'win32',
+      readBytes: 0,
+      writeBytes: 0
     });
   });
 
@@ -285,7 +320,7 @@ describe('service-management processDiskIo Windows backend', () => {
     // Defensive branch: JSON.parse normally throws SyntaxError, but the module
     // must still produce a clean result if a non-Error ever escapes.
     const parseSpy = jest.spyOn(JSON, 'parse').mockImplementation(() => {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberate bare-string throw: covers the non-Error JSON.parse defense branch
       throw 'weird parse failure';
     });
     try {
@@ -319,11 +354,10 @@ describe('service-management processDiskIo attachProcessDiskIo', () => {
   it('attaches a diskIo sample to every entry, including failures per entry', async () => {
     expect.hasAssertions();
     mockReadFileSync.mockReturnValue('read_bytes: 100\nwrite_bytes: 200\n');
-    const attached = await attachProcessDiskIo([
-      null,
-      { name: 'api', pid: 1 },
-      { name: 'pidless' }
-    ], { platform: 'linux' });
+    const attached = await attachProcessDiskIo(
+      [null, { name: 'api', pid: 1 }, { name: 'pidless' }],
+      { platform: 'linux' }
+    );
     expect(attached).toHaveLength(3);
     expect(attached[0].diskIo).toMatchObject({ supported: false, code: 'INVALID_PID' });
     expect(attached[1]).toMatchObject({ name: 'api', pid: 1 });
@@ -333,8 +367,8 @@ describe('service-management processDiskIo attachProcessDiskIo', () => {
 
   it('returns an empty list when the input is not an array', async () => {
     expect.hasAssertions();
-    await expect(attachProcessDiskIo(undefined)).resolves.toStrictEqual([]);
-    await expect(attachProcessDiskIo('nope')).resolves.toStrictEqual([]);
+    await expect(attachProcessDiskIo(undefined) as Promise<unknown>).resolves.toStrictEqual([]);
+    await expect(attachProcessDiskIo('nope') as Promise<unknown>).resolves.toStrictEqual([]);
   });
 });
 

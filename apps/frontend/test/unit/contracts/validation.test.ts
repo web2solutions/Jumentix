@@ -10,7 +10,6 @@ import {
   validateDocumentData,
   validatePhone
 } from '@/contracts/validation';
-
 import { setLocale } from '@/i18n';
 
 setLocale('pt-BR');
@@ -63,12 +62,14 @@ describe('validation module driven by the OAS x-validation (JUM-765)', () => {
 
   it('validateDocumentData blocks bad checksum before any HTTP', () => {
     expect.assertions(4);
-    expect(validateDocumentData('CPF', 'BR', '123.456.789-08'))
-      .toBe('CPF inválido — dígitos verificadores não conferem.');
+    expect(validateDocumentData('CPF', 'BR', '123.456.789-08')).toBe(
+      'CPF inválido — dígitos verificadores não conferem.'
+    );
     expect(validateDocumentData('CPF', 'BR', '123.456.789-09')).toBeNull();
     expect(validateDocumentData('CPF', 'BR', '12345678909')).toBeNull();
-    expect(validateDocumentData('CPF', 'BR', '12345678908'))
-      .toBe('CPF inválido — dígitos verificadores não conferem.');
+    expect(validateDocumentData('CPF', 'BR', '12345678908')).toBe(
+      'CPF inválido — dígitos verificadores não conferem.'
+    );
   });
 
   it('validateDocumentData enforces the SSN pattern', () => {

@@ -1,6 +1,6 @@
+/* eslint-disable no-console -- CLI sync script: stdout is its report channel. */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 // JUM-771: curated, real-file previews for the /architecture hexagonal map.
@@ -37,7 +37,8 @@ const SOURCES = [
   },
   {
     id: 'outbound',
-    repoPath: 'apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts'
+    repoPath:
+      'apps/backend-template/src/modules/Users/adapters/out/persistence/UserDataRepository.ts'
   },
   {
     id: 'composition',
@@ -48,7 +49,9 @@ const SOURCES = [
 function assertInsideMonorepo(resolvedPath) {
   const relative = path.relative(monorepoRoot, resolvedPath);
   if (relative.startsWith('..') || path.isAbsolute(relative)) {
-    throw new Error(`[sync-hex-map-snippets] refusing to read outside the monorepo: ${resolvedPath}`);
+    throw new Error(
+      `[sync-hex-map-snippets] refusing to read outside the monorepo: ${resolvedPath}`
+    );
   }
 }
 
@@ -59,9 +62,7 @@ async function loadSnippet({ id, repoPath }) {
   const lines = raw.replace(/\r\n/g, '\n').split('\n');
   const truncated = lines.length > MAX_LINES;
   const body = lines.slice(0, MAX_LINES).join('\n').replace(/\n+$/, '');
-  const code = truncated
-    ? `${body}\n\n// … truncated — full file at ${repoPath}`
-    : body;
+  const code = truncated ? `${body}\n\n// … truncated — full file at ${repoPath}` : body;
   return { id, path: repoPath, code };
 }
 
@@ -70,7 +71,9 @@ async function main() {
 
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.writeFile(outputPath, `${JSON.stringify(snippets, null, 2)}\n`, 'utf8');
-  console.log(`[sync-hex-map-snippets] wrote ${snippets.length} snippets to ${path.relative(appRoot, outputPath)}`);
+  console.log(
+    `[sync-hex-map-snippets] wrote ${snippets.length} snippets to ${path.relative(appRoot, outputPath)}`
+  );
 }
 
 main().catch((error) => {

@@ -7,7 +7,7 @@ const releaseGate = require(path.join(repoRoot, 'ci-cd/check-npm-package-release
   validateManifest: (manifest: Record<string, unknown>, directory: string) => string[];
   assertTarballContents: (
     manifest: { name: string },
-    packument: { files: Array<{ path: string }> }
+    packument: { files: { path: string }[] }
   ) => void;
   isForbiddenTarballPath: (filePath: string) => boolean;
 };
@@ -17,12 +17,17 @@ describe('public npm package release policy', () => {
     expect.hasAssertions();
 
     const packages = releaseGate.discoverPublishablePackages(repoRoot);
-    const validationFailures = packages.flatMap((directory) => releaseGate.validateManifest(
-      JSON.parse(fs.readFileSync(path.join(directory, 'package.json'), 'utf8')),
-      directory
-    ));
+    const validationFailures = packages.flatMap((directory) =>
+      releaseGate.validateManifest(
+        JSON.parse(fs.readFileSync(path.join(directory, 'package.json'), 'utf8')),
+        directory
+      )
+    );
     expect({
-      names: packages.map((directory) => JSON.parse(fs.readFileSync(path.join(directory, 'package.json'), 'utf8')).name),
+      names: packages.map(
+        (directory) =>
+          JSON.parse(fs.readFileSync(path.join(directory, 'package.json'), 'utf8')).name
+      ),
       validationFailures
     }).toStrictEqual({
       names: [
@@ -56,7 +61,9 @@ describe('public npm package release policy', () => {
 
     expect({
       templateEnv: releaseGate.isForbiddenTarballPath('templates/backend/src/config/.env.dev'),
-      templateExample: releaseGate.isForbiddenTarballPath('templates/backend/src/config/.env.dev.example'),
+      templateExample: releaseGate.isForbiddenTarballPath(
+        'templates/backend/src/config/.env.dev.example'
+      ),
       rootEnv: releaseGate.isForbiddenTarballPath('.env'),
       distEnv: releaseGate.isForbiddenTarballPath('dist/.env.local'),
       sourceTree: releaseGate.isForbiddenTarballPath('src/index.js')
@@ -68,37 +75,44 @@ describe('public npm package release policy', () => {
       sourceTree: true
     });
 
-    expect(() => releaseGate.assertTarballContents(
-      { name: '@jumentix/cli-init' },
-      {
-        files: [
-          { path: 'package.json' },
-          { path: 'README.md' },
-          { path: 'LICENSE.md' },
-          { path: 'dist/index.js' },
-          { path: 'templates/backend/src/config/.env.dev' }
-        ]
-      }
-    )).not.toThrow();
+    expect(() =>
+      releaseGate.assertTarballContents(
+        { name: '@jumentix/cli-init' },
+        {
+          files: [
+            { path: 'package.json' },
+            { path: 'README.md' },
+            { path: 'LICENSE.md' },
+            { path: 'dist/index.js' },
+            { path: 'templates/backend/src/config/.env.dev' }
+          ]
+        }
+      )
+    ).not.toThrow();
 
-    expect(() => releaseGate.assertTarballContents(
-      { name: '@jumentix/cana' },
-      {
-        files: [
-          { path: 'package.json' },
-          { path: 'README.md' },
-          { path: 'LICENSE.md' },
-          { path: 'dist/index.js' },
-          { path: '.env' }
-        ]
-      }
-    )).toThrow(/forbidden files: \.env/);
+    expect(() =>
+      releaseGate.assertTarballContents(
+        { name: '@jumentix/cana' },
+        {
+          files: [
+            { path: 'package.json' },
+            { path: 'README.md' },
+            { path: 'LICENSE.md' },
+            { path: 'dist/index.js' },
+            { path: '.env' }
+          ]
+        }
+      )
+    ).toThrow(/forbidden files: \.env/);
   });
 
   it('keeps publication manual, main-only, and token-scoped in GitHub Actions', () => {
     expect.hasAssertions();
 
-    const workflow = fs.readFileSync(path.join(repoRoot, '.github/workflows/npm-publish.yml'), 'utf8');
+    const workflow = fs.readFileSync(
+      path.join(repoRoot, '.github/workflows/npm-publish.yml'),
+      'utf8'
+    );
     const publishScript = fs.readFileSync(
       path.join(repoRoot, 'ci-cd/publish-npm-cohort.js'),
       'utf8'
@@ -108,7 +122,7 @@ describe('public npm package release policy', () => {
     const wiresGithubTokenForTags = /GITHUB_TOKEN:\s*\$\{\{\s*github\.token\s*\}\}/.test(workflow);
     expect({
       manual: workflow.includes('workflow_dispatch:'),
-      mainOnly: workflow.includes('github.ref == \'refs/heads/main\''),
+      mainOnly: workflow.includes("github.ref == 'refs/heads/main'"),
       protected: workflow.includes('environment: secrets'),
       artifactGate: workflow.includes('bun run npm:packages:check'),
       tokenMapping: /NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_CI_CD \}\}/.test(workflow),
@@ -118,9 +132,9 @@ describe('public npm package release policy', () => {
       publishCohort: invokesPublishUnderNode,
       publishUnderNode: setsNpmNodeExe,
       packageTagToken: wiresGithubTokenForTags,
-      publishesCli: publishScript.includes('\'cli-init\''),
-      publishesRuntime: publishScript.includes('\'persistence-contracts\''),
-      publishesSdks: publishScript.includes('\'sdk-rest-client\'')
+      publishesCli: publishScript.includes("'cli-init'"),
+      publishesRuntime: publishScript.includes("'persistence-contracts'"),
+      publishesSdks: publishScript.includes("'sdk-rest-client'")
     }).toStrictEqual({
       manual: true,
       mainOnly: true,

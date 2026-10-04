@@ -18,27 +18,27 @@ or pending result is not green.
 
 ## Provider map
 
-| Provider | Role | Required evidence |
-| --- | --- | --- |
-| CircleCI | Canonical branch-aware CI/CD gate for the full matrix | `branch-gate`, full-matrix jobs, JSON/LCOV/SARIF evidence |
-| GitHub Actions | Retained fallback, disabled by default behind `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`; always-on exceptions: `pr-feedback.yml`, `sync-changelog`/`pr-feedback` jobs, `npm-publish.yml` | Same context classifier, same job names when the flag is `true`, artifacts retained |
-| Codecov | Public file-by-file coverage map | LCOV upload from the full `coverage` job |
-| SonarQube Cloud | Public quality, reliability, security and coverage dashboard | Scanner run after repository coverage passes |
-| OSV.dev, Gitleaks, Semgrep | Repository-owned security checks | Terminal dependency/security results and SARIF artifacts |
+| Provider                   | Role                                                                                                                                                                               | Required evidence                                                                   |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| CircleCI                   | Canonical branch-aware CI/CD gate for the full matrix                                                                                                                              | `branch-gate`, full-matrix jobs, JSON/LCOV/SARIF evidence                           |
+| GitHub Actions             | Retained fallback, disabled by default behind `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`; always-on exceptions: `pr-feedback.yml`, `sync-changelog`/`pr-feedback` jobs, `npm-publish.yml` | Same context classifier, same job names when the flag is `true`, artifacts retained |
+| Codecov                    | Public file-by-file coverage map                                                                                                                                                   | LCOV upload from the full `coverage` job                                            |
+| SonarQube Cloud            | Public quality, reliability, security and coverage dashboard                                                                                                                       | Scanner run after repository coverage passes                                        |
+| OSV.dev, Gitleaks, Semgrep | Repository-owned security checks                                                                                                                                                   | Terminal dependency/security results and SARIF artifacts                            |
 
 ## Pull-request gate plan
 
 Task PRs target `dev`; only release promotion from `dev` targets `main`.
 
-| Gate | `dev` task PR | `dev` push | `dev -> main` promotion |
-| --- | --- | --- | --- |
-| Branch-aware build/test | required, layer-affected tests | required, unit health gate | required, strict matrix |
-| Third-party review | required | not required | required |
-| Repository coverage | deferred | deferred | required |
-| Codecov upload | deferred | deferred | required |
-| Sonar scan | deferred | deferred | required |
-| Website quality | only when selected by `test-map.json` | deferred | required |
-| Database matrix | deferred | deferred | required |
+| Gate                    | `dev` task PR                         | `dev` push                 | `dev -> main` promotion |
+| ----------------------- | ------------------------------------- | -------------------------- | ----------------------- |
+| Branch-aware build/test | required, layer-affected tests        | required, unit health gate | required, strict matrix |
+| Third-party review      | required                              | not required               | required                |
+| Repository coverage     | deferred                              | deferred                   | required                |
+| Codecov upload          | deferred                              | deferred                   | required                |
+| Sonar scan              | deferred                              | deferred                   | required                |
+| Website quality         | only when selected by `test-map.json` | deferred                   | required                |
+| Database matrix         | deferred                              | deferred                   | required                |
 
 Task PRs to `dev` have a ten-minute-or-less operating target. On CircleCI the
 `branch-gate` job classifies the context, reads `test-map.json`, and runs only

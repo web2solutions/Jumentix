@@ -1,38 +1,37 @@
-import type { TotalJsRequest, TotalJsResponse } from '@src/interface/HTTP/adapters/total-js/TotalJsServer';
-import { sendErrorResponse } from '@src/interface/HTTP/adapters/total-js/responses/sendErrorResponse';
+import sendErrorResponse from '@src/interface/HTTP/adapters/total-js/responses/sendErrorResponse';
+import UserDeleteRequestEvent from '@src/modules/Users/events/UserDeleteRequestEvent';
 
 import type {
-  IHandlerFactory,
-  IbaseHandler,
-  EndPointFactory
-} from '@src/interface/HTTP/ports';
+  TotalJsRequest,
+  TotalJsResponse
+} from '@src/interface/HTTP/adapters/total-js/TotalJsServer';
+import type { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
 
-import { UserDeleteRequestEvent } from '@src/modules/Users/events/UserDeleteRequestEvent';
-
-const deleteOne: EndPointFactory = (
-  {
-    endPointConfig,
-    controller
-  }: IHandlerFactory
-): IbaseHandler => {
-  return {
-    path: '/users/{id}',
-    method: 'delete',
-    async handler(req: TotalJsRequest, res: TotalJsResponse) {
-      try {
-        const params = req.params as Record<string, any>;
-        const { result, error } = await controller!.delete!(new UserDeleteRequestEvent({
+const deleteOne: EndPointFactory = ({
+  endPointConfig,
+  controller
+}: IHandlerFactory): IbaseHandler => ({
+  path: '/users/{id}',
+  method: 'delete',
+  async handler(req: TotalJsRequest, res: TotalJsResponse) {
+    try {
+      const params = req.params as Record<string, any>;
+      if (!controller?.delete) {
+        throw new Error('The deleteOne endpoint requires a controller implementing delete.');
+      }
+      const { result, error } = await controller.delete(
+        new UserDeleteRequestEvent({
           authorization: req.headers.authorization ?? '',
           schemaOAS: endPointConfig,
           params
-        }));
-        if (error) throw error;
-        return res.status(200).json(result);
-      } catch (error: any) {
-        return sendErrorResponse(error, res);
-      }
+        })
+      );
+      if (error) throw error;
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return sendErrorResponse(error, res);
     }
-  };
-};
+  }
+});
 
 export default deleteOne;

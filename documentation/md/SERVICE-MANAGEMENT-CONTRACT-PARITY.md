@@ -168,9 +168,9 @@ behind fixed expected outputs.
   `codeWorkspace` and `deployments` round-trip deep-equal, and the export is idempotent. The
   boundary is documented and asserted: selections and `idCounter` are not
   part of the document and are recomputed on import, and `runtimeEnvironment`
-  crosses as the environment *selection* only (see the JUM-547 section
+  crosses as the environment _selection_ only (see the JUM-547 section
   below). Pre-JUM-547 domain-only documents (`{ domains, relationships,
-  view }`, no `kind`/`version`) import cleanly with the missing sections
+view }`, no `kind`/`version`) import cleanly with the missing sections
   defaulted; a document with an unknown top-level section, a newer major
   `version`, or a `kind` other than `service-management-suite` fails clearly
   instead of half-importing.
@@ -303,7 +303,7 @@ a designer-side mirror of the Users domain implementation (`Rbac.ts`,
 recorded here rather than quietly fixed:
 
 - **The designer persisted `tenantScoped` as a free per-rule flag; the
-  runtime has no such knob.** Tenant scoping in the runtime is *derived* from
+  runtime has no such knob.** Tenant scoping in the runtime is _derived_ from
   the role set (`shouldRequireOrganization`: normalized `admin`/`user` roles
   constrain the principal to its organization; `superadmin` and legacy direct
   scopes keep a global boundary). A stored `tenantScoped` value that

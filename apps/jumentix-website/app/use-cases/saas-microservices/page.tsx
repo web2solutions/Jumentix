@@ -1,5 +1,7 @@
 import { CommercialUseCasePage } from '@/components/commercial/CommercialPages';
 
-export default function SaasMicroservicesUseCasePage() {
-  return <CommercialUseCasePage locale="en" name="saas-microservices" />;
-}
+const SaasMicroservicesUseCasePage = () => (
+  <CommercialUseCasePage locale="en" name="saas-microservices" />
+);
+
+export default SaasMicroservicesUseCasePage;

@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 
 /**
@@ -31,8 +30,9 @@
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { gitBinary } = require('./lib/git-binary.js');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const ALLOWLIST_PATH = path.join(__dirname, 'documentation-audience-allowlist.json');
@@ -41,12 +41,14 @@ const WEBSITE = 'apps/jumentix-website';
 const RULES = Object.freeze([
   Object.freeze({
     id: 'internal-ci-variable',
-    pattern: /\bJUMENTIX_(?:ENABLE_GITHUB_ACTIONS_CI|QUALITY_GATE_TARGET|GATE_V2(?:_SHADOW)?|TEST_RUNTIME)\b/,
+    pattern:
+      /\bJUMENTIX_(?:ENABLE_GITHUB_ACTIONS_CI|QUALITY_GATE_TARGET|GATE_V2(?:_SHADOW)?|TEST_RUNTIME)\b/,
     reason: 'internal CI/gate control variable'
   }),
   Object.freeze({
     id: 'ci-provider-mechanics',
-    pattern: /canonical CI (?:orchestrator|provider)|GitHub Actions (?:is )?retained|orquestrador can[oô]nico de CI|GitHub Actions (?:est[aá] )?retido/i,
+    pattern:
+      /canonical CI (?:orchestrator|provider)|GitHub Actions (?:is )?retained|orquestrador can[oô]nico de CI|GitHub Actions (?:est[aá] )?retido/i,
     reason: 'internal CI-provider canonical/fallback mechanics'
   }),
   Object.freeze({
@@ -66,25 +68,27 @@ const RULES = Object.freeze([
   })
 ]);
 
+function isWebsiteSource(file, dir) {
+  if (!file.startsWith(`${WEBSITE}/${dir}/`)) return false;
+  if (!/\.(?:tsx?|mdx?)$/.test(file)) return false;
+  return !/(?:\.test\.|\.spec\.|\.stories\.|\/__tests__\/)/.test(file);
+}
+
 /** Audience matrix: which tracked files belong to which public layer. */
 const LAYERS = Object.freeze([
   Object.freeze({
     id: 'prospect',
-    matches: (file) => file === 'README.md'
-      || file === 'README.pt-BR.md'
-      || (isWebsiteSource(file, 'components') || isWebsiteSource(file, 'app'))
+    matches: (file) =>
+      file === 'README.md' ||
+      file === 'README.pt-BR.md' ||
+      isWebsiteSource(file, 'components') ||
+      isWebsiteSource(file, 'app')
   }),
   Object.freeze({
     id: 'developer-site',
     matches: (file) => file.startsWith(`${WEBSITE}/content/`) && /\.mdx?$/.test(file)
   })
 ]);
-
-function isWebsiteSource(file, dir) {
-  if (!file.startsWith(`${WEBSITE}/${dir}/`)) return false;
-  if (!/\.(?:tsx?|mdx?)$/.test(file)) return false;
-  return !/(?:\.test\.|\.spec\.|\.stories\.|\/__tests__\/)/.test(file);
-}
 
 function layerFor(file) {
   const layer = LAYERS.find((candidate) => candidate.matches(file));
@@ -96,7 +100,9 @@ function layerFor(file) {
  * A `//` preceded by `:` is a URL scheme, not a comment.
  */
 function stripCodeComments(source) {
-  const withoutBlocks = source.replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ' '));
+  const withoutBlocks = source.replace(/\/\*[\s\S]*?\*\//g, (block) =>
+    block.replace(/[^\n]/g, ' ')
+  );
   return withoutBlocks.replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
@@ -120,10 +126,21 @@ function findViolations(file, contents) {
 }
 
 function trackedPublicFiles(rootDir = ROOT) {
-  return execFileSync(gitBinary(), ['ls-files', 'README.md', 'README.pt-BR.md', `${WEBSITE}/components`, `${WEBSITE}/app`, `${WEBSITE}/content`], {
-    cwd: rootDir,
-    encoding: 'utf8'
-  })
+  return execFileSync(
+    gitBinary(),
+    [
+      'ls-files',
+      'README.md',
+      'README.pt-BR.md',
+      `${WEBSITE}/components`,
+      `${WEBSITE}/app`,
+      `${WEBSITE}/content`
+    ],
+    {
+      cwd: rootDir,
+      encoding: 'utf8'
+    }
+  )
     .split('\n')
     .filter(Boolean)
     .filter((file) => layerFor(file) !== null)
@@ -135,7 +152,8 @@ function loadAllowlist(allowlistPath = ALLOWLIST_PATH) {
     throw new Error(`Documentation audience allow-list is missing: ${allowlistPath}`);
   }
   const entries = JSON.parse(fs.readFileSync(allowlistPath, 'utf8'));
-  if (!Array.isArray(entries)) throw new Error('Documentation audience allow-list must be a JSON array.');
+  if (!Array.isArray(entries))
+    throw new Error('Documentation audience allow-list must be a JSON array.');
   const ruleIds = new Set(RULES.map((rule) => rule.id));
   entries.forEach((entry, index) => {
     for (const field of ['file', 'rule', 'issue', 'reason']) {
@@ -143,13 +161,19 @@ function loadAllowlist(allowlistPath = ALLOWLIST_PATH) {
         throw new Error(`Allow-list entry ${index} is missing "${field}".`);
       }
     }
-    if (!ruleIds.has(entry.rule)) throw new Error(`Allow-list entry ${index} names unknown rule "${entry.rule}".`);
-    if (!/^JUM-\d+$/.test(entry.issue)) throw new Error(`Allow-list entry ${index} issue must be a JUM-NNN id.`);
+    if (!ruleIds.has(entry.rule))
+      throw new Error(`Allow-list entry ${index} names unknown rule "${entry.rule}".`);
+    if (!/^JUM-\d+$/.test(entry.issue))
+      throw new Error(`Allow-list entry ${index} issue must be a JUM-NNN id.`);
   });
   return entries;
 }
 
-function validateDocumentationAudience({ rootDir = ROOT, allowlistPath = ALLOWLIST_PATH, files } = {}) {
+function validateDocumentationAudience({
+  rootDir = ROOT,
+  allowlistPath = ALLOWLIST_PATH,
+  files
+} = {}) {
   const allowlist = loadAllowlist(allowlistPath);
   const allowed = new Set(allowlist.map((entry) => `${entry.file}::${entry.rule}`));
   const scanned = files || trackedPublicFiles(rootDir);
@@ -162,7 +186,9 @@ function validateDocumentationAudience({ rootDir = ROOT, allowlistPath = ALLOWLI
       const key = `${violation.file}::${violation.rule}`;
       hitKeys.add(key);
       if (!allowed.has(key)) {
-        failures.push(`${violation.file}:${violation.line}: [${violation.layer}] ${violation.reason} (${violation.rule})`);
+        failures.push(
+          `${violation.file}:${violation.line}: [${violation.layer}] ${violation.reason} (${violation.rule})`
+        );
       }
     }
   }
@@ -170,9 +196,13 @@ function validateDocumentationAudience({ rootDir = ROOT, allowlistPath = ALLOWLI
   for (const entry of allowlist) {
     const key = `${entry.file}::${entry.rule}`;
     if (!fs.existsSync(path.join(rootDir, entry.file))) {
-      failures.push(`${entry.file}: allow-list entry for ${entry.rule} names a file that no longer exists — remove it`);
+      failures.push(
+        `${entry.file}: allow-list entry for ${entry.rule} names a file that no longer exists — remove it`
+      );
     } else if (!hitKeys.has(key)) {
-      failures.push(`${entry.file}: allow-list entry for ${entry.rule} (${entry.issue}) no longer matches — remove it`);
+      failures.push(
+        `${entry.file}: allow-list entry for ${entry.rule} (${entry.issue}) no longer matches — remove it`
+      );
     }
   }
 
@@ -183,7 +213,9 @@ function main(rootDir = ROOT) {
   const failures = validateDocumentationAudience({ rootDir });
   if (failures.length > 0) {
     failures.forEach((failure) => console.error(failure));
-    console.error(`\n${failures.length} documentation audience violation(s). Public layers link to internal governance; they do not restate it (Requirement 066).`);
+    console.error(
+      `\n${failures.length} documentation audience violation(s). Public layers link to internal governance; they do not restate it (Requirement 066).`
+    );
     process.exitCode = 1;
     return failures;
   }
@@ -194,11 +226,11 @@ function main(rootDir = ROOT) {
 if (isEntryPoint(module)) main();
 
 module.exports = {
-  LAYERS,
-  RULES,
   findViolations,
   layerFor,
+  LAYERS,
   loadAllowlist,
+  RULES,
   stripCodeComments,
   trackedPublicFiles,
   validateDocumentationAudience

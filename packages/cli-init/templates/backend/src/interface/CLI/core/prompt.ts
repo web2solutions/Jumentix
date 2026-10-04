@@ -1,17 +1,17 @@
 /* eslint-disable no-await-in-loop */
-/* eslint-disable no-constant-condition */
-import readline from 'node:readline/promises';
-import { stdin as input, stdout as output } from 'node:process';
 
-export class Prompt {
+import readline from 'node:readline/promises';
+
+class Prompt {
   private readonly rl: readline.Interface;
 
   constructor(
     /* istanbul ignore next */
-    createInterface: () => readline.Interface = () => readline.createInterface({
-      input: input as unknown as NodeJS.ReadableStream,
-      output: output as unknown as NodeJS.WritableStream
-    })
+    createInterface: () => readline.Interface = () =>
+      readline.createInterface({
+        input: process.stdin as unknown as NodeJS.ReadableStream,
+        output: process.stdout
+      })
   ) {
     this.rl = createInterface();
   }
@@ -44,3 +44,5 @@ export class Prompt {
     this.rl.close();
   }
 }
+
+export default Prompt;

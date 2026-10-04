@@ -1,10 +1,4 @@
-const a11yRoutes = [
-  '/',
-  '/product',
-  '/docs/jumentix',
-  '/pt-BR',
-  '/docs/pt-BR/jumentix'
-];
+const a11yRoutes = ['/', '/product', '/docs/jumentix', '/pt-BR', '/docs/pt-BR/jumentix'];
 
 describe('accessibility baselines (axe)', () => {
   for (const path of a11yRoutes) {

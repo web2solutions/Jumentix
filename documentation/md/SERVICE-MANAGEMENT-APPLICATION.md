@@ -103,14 +103,14 @@ documentation chain — are documented in
      `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`; out-of-enum values are
      rejected with the accepted list and nothing is written.
    - Runtime env editor targets the selected environment file:
-    - `dev` -> `apps/backend-template/src/config/.env.dev`
-    - `staging` -> `apps/backend-template/src/config/.env.staging`
-    - `ci` -> `apps/backend-template/src/config/.env.ci`
+   - `dev` -> `apps/backend-template/src/config/.env.dev`
+   - `staging` -> `apps/backend-template/src/config/.env.staging`
+   - `ci` -> `apps/backend-template/src/config/.env.ci`
    - Runtime env editor targets the selected environment file under
      `apps/backend-template/src/config/`:
-    - `dev` -> `.env.dev` (`development` is an alias)
-    - `staging` -> `.env.staging`
-    - `ci` -> `.env.ci` (`test` is an alias)
+   - `dev` -> `.env.dev` (`development` is an alias)
+   - `staging` -> `.env.staging`
+   - `ci` -> `.env.ci` (`test` is an alias)
 4. **Deploy Management**
    - Tracks deploy targets and runtime deployment metadata.
    - Each target carries the Requirement 059 per-service metadata contract
@@ -189,8 +189,8 @@ sets, write semantics — is
   `ci`, and `test` are accepted (case-insensitive after trimming); unknown
   values are explicitly rejected with the accepted list, never coerced to
   `dev`.
-- **Classified key surface.** Every env key is exactly one of *editable*,
-  *read-only*, or *never exposed* (secrets); the per-key classification
+- **Classified key surface.** Every env key is exactly one of _editable_,
+  _read-only_, or _never exposed_ (secrets); the per-key classification
   decisions live in
   [Requirement 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
 - **Protected endpoint.** Loopback bind by default, optional bearer token for
@@ -212,7 +212,7 @@ sets, write semantics — is
 - Missing config directory at boot: server exits with clear error.
 - Missing environment file or other filesystem failure (permissions, full
   disk): `500 { "error": "Environment file operation failed.", "code": …,
-  "path": …, "details": … }` — `code` is `ENV_FILE_NOT_FOUND` or the
+"path": …, "details": … }` — `code` is `ENV_FILE_NOT_FOUND` or the
   underlying `fs` error code, `path` the resolved env-file path (JUM-543).
 - Malformed JSON payload: `400 { "error": "Invalid payload.", "details": … }`
   with the parse failure in `details` — told apart from filesystem failures,

@@ -1,22 +1,18 @@
-import type { IStore } from '@src/infra/ports/persistence/IStore';
-import {
-  throwIfNotFound,
-  canNotBeEmpty
-} from '@src/shared/validators';
+import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
 import { ConflictError } from '@src/infra/exceptions';
+import { BaseRepo } from '@src/modules/port';
+import { canNotBeEmpty, throwIfNotFound } from '@src/shared/validators';
+
+import Catalog from '@service-management-api/modules/Catalogs/domain/Model/Catalog';
+
+import type { IStore } from '@src/infra/ports/persistence/IStore';
+import type { IPagingRequest, IPagingResponse, IRepoConfig } from '@src/modules/port';
+
 import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
-import { Catalog } from '@service-management-api/modules/Catalogs/domain/Model/Catalog';
+import type { RequestCatalogListOptions } from '@service-management-api/modules/Catalogs/interface/dto/RequestCatalogListOptions';
 import type { RequestCreateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestCreateCatalog';
 import type { RequestUpdateCatalog } from '@service-management-api/modules/Catalogs/interface/dto/RequestUpdateCatalog';
-import type { RequestCatalogListOptions } from '@service-management-api/modules/Catalogs/interface/dto/RequestCatalogListOptions';
 import type { ICatalogRepository } from '@service-management-api/modules/Catalogs/service/ports/ICatalogRepository';
-import type {
-  IPagingRequest,
-  IPagingResponse,
-  IRepoConfig
-} from '@src/modules/port';
-import { BaseRepo } from '@src/modules/port';
-import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
 
 /**
  * Outbound persistence adapter for the Service Management shared catalog.
@@ -25,9 +21,10 @@ import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
  * drivers may push the same expected-version check into conditional writes, but
  * every driver must preserve this conflict payload shape for client recovery.
  */
-export class CatalogDataRepository
+class CatalogDataRepository
   extends BaseRepo<Catalog, RequestCreateCatalog, RequestUpdateCatalog>
-  implements ICatalogRepository {
+  implements ICatalogRepository
+{
   public store: IStore<ICatalog>;
 
   public limit: number;
@@ -61,7 +58,7 @@ export class CatalogDataRepository
     return model;
   }
 
-  public async update(id: string, data: RequestUpdateCatalog, actor: string = ''): Promise<Catalog> {
+  public async update(id: string, data: RequestUpdateCatalog, actor = ''): Promise<Catalog> {
     const current = await this.getOneById(id);
     CatalogDataRepository.throwIfStale(current, data.version);
     const next = new Catalog({
@@ -76,7 +73,7 @@ export class CatalogDataRepository
     return next;
   }
 
-  public async delete(id: string, expectedVersion?: number, actor: string = ''): Promise<boolean> {
+  public async delete(id: string, expectedVersion?: number, actor = ''): Promise<boolean> {
     const current = await this.getOneById(id);
     // An absent expectedVersion is the unconditional-delete sentinel; the
     // staleness check only guards optimistic-concurrency deletes.
@@ -89,7 +86,7 @@ export class CatalogDataRepository
     return true;
   }
 
-  public async restore(id: string, expectedVersion: number, actor: string = ''): Promise<Catalog> {
+  public async restore(id: string, expectedVersion: number, actor = ''): Promise<Catalog> {
     const current = await this.getOneById(id);
     CatalogDataRepository.throwIfStale(current, expectedVersion);
     const next = new Catalog({ ...current.serialize() });
@@ -101,15 +98,15 @@ export class CatalogDataRepository
   public async getOneById(id: string): Promise<Catalog> {
     const rawCatalog = await this.store.getOneById(id);
     throwIfNotFound(!!rawCatalog);
-    return new Catalog({ ...(rawCatalog as ICatalog) } as RequestCreateCatalog & ICatalog);
+    return new Catalog({ ...rawCatalog });
   }
 
   public async getAll(
-    filters: Record<string, string|number>,
+    filters: Record<string, string | number>,
     paging: IPagingRequest,
     options: RequestCatalogListOptions = {}
   ): Promise<IPagingResponse<Catalog[]>> {
-    const scopedFilters: Record<string, string|number> = { ...filters };
+    const scopedFilters: Record<string, string | number> = { ...filters };
     if (!options.includeDeleted) {
       scopedFilters.deletedAt = '';
     }
@@ -122,9 +119,7 @@ export class CatalogDataRepository
       page: paging?.page ?? 1,
       size: paging?.size ?? this.limit
     };
-    const {
-      result, page, size, total
-    } = await this.store.getAll(scopedFilters, effectivePaging);
+    const { result, page, size, total } = await this.store.getAll(scopedFilters, effectivePaging);
     const currentPage = page ?? effectivePaging.page;
     const currentSize = size ?? effectivePaging.size;
     const rows = result ?? [];
@@ -140,3 +135,5 @@ export class CatalogDataRepository
     return new CatalogDataRepository(config);
   }
 }
+
+export default CatalogDataRepository;

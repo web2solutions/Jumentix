@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /**
  * JUM-158 — enumerate every public route from the tree, not from a hand-list.
  *
@@ -25,6 +24,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const { process } = globalThis;
+
 const websiteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 /** A segment Next.js fills at request time: `[slug]`, `[...rest]`, `[[...opt]]`. */
@@ -50,7 +51,10 @@ function walk(dir, predicate, out = []) {
  */
 function routeFromPageFile(absolute) {
   const relative = path.relative(path.join(websiteRoot, 'app'), absolute);
-  const segments = path.dirname(relative).split(path.sep).filter((s) => s && s !== '.');
+  const segments = path
+    .dirname(relative)
+    .split(path.sep)
+    .filter((s) => s && s !== '.');
   if (segments.some((s) => s.startsWith('_'))) return null;
   if (segments.some(isDynamicSegment)) return null;
   const visible = segments.filter((s) => !(s.startsWith('(') && s.endsWith(')')));
@@ -87,10 +91,9 @@ function routeFromContentFile(absolute) {
   return `/docs/${segments.join('/')}`.replace(/\/+$/, '') || '/docs';
 }
 
-export function discoverRoutes() {
-  const staticRoutes = walk(
-    path.join(websiteRoot, 'app'),
-    (file) => /(^|[\\/])page\.(tsx|jsx|mdx)$/.test(file)
+function discoverRoutes() {
+  const staticRoutes = walk(path.join(websiteRoot, 'app'), (file) =>
+    /(^|[\\/])page\.(tsx|jsx|mdx)$/.test(file)
   )
     .map(routeFromPageFile)
     .filter(Boolean);
@@ -101,9 +104,12 @@ export function discoverRoutes() {
     (file) => /\.mdx?$/.test(file) && !/(^|[\\/])_meta\./.test(file)
   ).map(routeFromContentFile);
 
-  return [...new Set([...staticRoutes, ...docsRoutes, ...RESOLVER_ONLY_ROUTES])]
-    .sort((a, b) => a.localeCompare(b));
+  return [...new Set([...staticRoutes, ...docsRoutes, ...RESOLVER_ONLY_ROUTES])].sort((a, b) =>
+    a.localeCompare(b)
+  );
 }
+
+export default discoverRoutes;
 
 if (import.meta.main) {
   const routes = discoverRoutes();

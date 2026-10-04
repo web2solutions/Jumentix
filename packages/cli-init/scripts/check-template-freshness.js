@@ -8,15 +8,16 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+
 const {
-  DEFAULT_EXCLUSIONS,
-  REPO_ROOT,
-  SEEDS,
   buildManifest,
   collectExpectedFiles,
   collectPackageVersions,
+  DEFAULT_EXCLUSIONS,
   isExcluded,
+  REPO_ROOT,
   resolveSourceCommit,
+  SEEDS,
   sha256File
 } = require('./build-templates');
 
@@ -79,7 +80,9 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
   try {
     expected = collectExpectedFiles(root, exclusions);
   } catch (error) {
-    return [`[cli-init template-freshness] ${error instanceof Error ? error.message : String(error)}`];
+    return [
+      `[cli-init template-freshness] ${error instanceof Error ? error.message : String(error)}`
+    ];
   }
 
   const actual = readCommittedTemplates(packageDir, exclusions);
@@ -89,8 +92,8 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
   for (const templatePath of [...expectedPaths].sort((left, right) => left.localeCompare(right))) {
     if (!actualPaths.has(templatePath)) {
       failures.push(
-        `[cli-init template-freshness] missing packaged file: templates/${templatePath}`
-        + ' — run `bun run cli:build-templates`'
+        `[cli-init template-freshness] missing packaged file: templates/${templatePath}` +
+          ' — run `bun run cli:build-templates`'
       );
       continue;
     }
@@ -98,9 +101,9 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     const got = actual.get(templatePath);
     if (want !== got) {
       failures.push(
-        `[cli-init template-freshness] hash drift: templates/${templatePath}`
-        + ` (expected ${want.slice(0, 12)}…, got ${got.slice(0, 12)}…)`
-        + ' — run `bun run cli:build-templates`'
+        `[cli-init template-freshness] hash drift: templates/${templatePath}` +
+          ` (expected ${want.slice(0, 12)}…, got ${got.slice(0, 12)}…)` +
+          ' — run `bun run cli:build-templates`'
       );
     }
   }
@@ -108,8 +111,8 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
   for (const templatePath of [...actualPaths].sort((left, right) => left.localeCompare(right))) {
     if (!expectedPaths.has(templatePath)) {
       failures.push(
-        `[cli-init template-freshness] unexpected packaged file: templates/${templatePath}`
-        + ' — run `bun run cli:build-templates`'
+        `[cli-init template-freshness] unexpected packaged file: templates/${templatePath}` +
+          ' — run `bun run cli:build-templates`'
       );
     }
   }
@@ -117,8 +120,8 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
   const manifestResult = readManifest(manifestPath);
   if (manifestResult.status === 'missing') {
     failures.push(
-      '[cli-init template-freshness] missing packages/cli-init/templates.manifest.json'
-      + ' — run `bun run cli:build-templates`'
+      '[cli-init template-freshness] missing packages/cli-init/templates.manifest.json' +
+        ' — run `bun run cli:build-templates`'
     );
     return failures;
   }
@@ -133,9 +136,8 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
 
   // Manifest must describe the same file set and hashes the seeds produce.
   // sourceCommit is recorded at build time; freshness is content, not tip SHA.
-  const manifestFiles = manifest.files && typeof manifest.files === 'object'
-    ? manifest.files
-    : null;
+  const manifestFiles =
+    manifest.files && typeof manifest.files === 'object' ? manifest.files : null;
   if (!manifestFiles) {
     failures.push('[cli-init template-freshness] templates.manifest.json missing files map');
     return failures;
@@ -145,25 +147,27 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
     const recorded = manifestFiles[templatePath];
     if (!recorded) {
       failures.push(
-        `[cli-init template-freshness] manifest missing entry: ${templatePath}`
-        + ' — run `bun run cli:build-templates`'
+        `[cli-init template-freshness] manifest missing entry: ${templatePath}` +
+          ' — run `bun run cli:build-templates`'
       );
       continue;
     }
     const recordedHash = typeof recorded === 'string' ? recorded : recorded.sha256;
     if (recordedHash !== meta.sha256) {
       failures.push(
-        `[cli-init template-freshness] manifest hash drift: ${templatePath}`
-        + ' — run `bun run cli:build-templates`'
+        `[cli-init template-freshness] manifest hash drift: ${templatePath}` +
+          ' — run `bun run cli:build-templates`'
       );
     }
   }
 
-  for (const templatePath of Object.keys(manifestFiles).sort((left, right) => left.localeCompare(right))) {
+  for (const templatePath of Object.keys(manifestFiles).sort((left, right) =>
+    left.localeCompare(right)
+  )) {
     if (!expectedManifest.files[templatePath]) {
       failures.push(
-        `[cli-init template-freshness] manifest has stale entry: ${templatePath}`
-        + ' — run `bun run cli:build-templates`'
+        `[cli-init template-freshness] manifest has stale entry: ${templatePath}` +
+          ' — run `bun run cli:build-templates`'
       );
     }
   }
@@ -171,15 +175,18 @@ function validateTemplateFreshness(root = REPO_ROOT, options = {}) {
   // Generated projects pin each @jumentix/* dependency to these versions
   // (JUM-902); a stale map pins versions that were never published.
   const expectedVersions = collectPackageVersions(root);
-  const recordedVersions = manifest.packageVersions && typeof manifest.packageVersions === 'object'
-    ? manifest.packageVersions
-    : {};
-  for (const name of [...new Set([...Object.keys(expectedVersions), ...Object.keys(recordedVersions)])].sort((left, right) => left.localeCompare(right))) {
+  const recordedVersions =
+    manifest.packageVersions && typeof manifest.packageVersions === 'object'
+      ? manifest.packageVersions
+      : {};
+  for (const name of [
+    ...new Set([...Object.keys(expectedVersions), ...Object.keys(recordedVersions)])
+  ].sort((left, right) => left.localeCompare(right))) {
     if (expectedVersions[name] !== recordedVersions[name]) {
       failures.push(
-        `[cli-init template-freshness] package version drift: ${name}`
-        + ` (manifest ${recordedVersions[name] ?? 'missing'}, source ${expectedVersions[name] ?? 'missing'})`
-        + ' — run `bun run cli:build-templates`'
+        `[cli-init template-freshness] package version drift: ${name}` +
+          ` (manifest ${recordedVersions[name] ?? 'missing'}, source ${expectedVersions[name] ?? 'missing'})` +
+          ' — run `bun run cli:build-templates`'
       );
     }
   }
@@ -193,9 +200,7 @@ function run(root = REPO_ROOT, options = {}) {
     failures.forEach((line) => console.error(line));
     return 1;
   }
-  console.log(
-    'CLI template freshness check passed: packaged templates match seeds at HEAD.'
-  );
+  console.log('CLI template freshness check passed: packaged templates match seeds at HEAD.');
   return 0;
 }
 

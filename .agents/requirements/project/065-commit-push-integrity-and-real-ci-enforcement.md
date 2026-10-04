@@ -1,10 +1,12 @@
 # Requirement 065 - Commit/Push Integrity and Real CI Enforcement
 
 ## Context
+
 - Commits and pushes must never rely on bypass flags or fake test outcomes.
 - Local hooks must execute real validation so pushed code has a high probability of passing remote CI.
 
 ## Mandatory Rules
+
 1. Do not use `--no-verify` in any automated git workflow.
 2. Hook scripts must not auto-amend commits with bypass flags.
 3. Integration scripts must not use `--passWithNoTests` for required framework suites.
@@ -19,12 +21,14 @@
    not omit the full unit suite for `dev` PRs or required matrix cells for `main`.
 
 ## Implementation Notes
+
 - Husky `post-commit` is no-op for mutating operations.
 - Husky `pre-commit` executes the branch-aware gate without mutating generated files.
 - GitHub Actions owns changelog generation on `main` with a serialized, write-scoped job.
 - Required integration suites fail when no tests are found.
 
 ## Acceptance Criteria
+
 - No `--no-verify` usage remains in tracked automation files.
 - No `--passWithNoTests` remains in required integration scripts.
 - Task, `dev`, and `main` quality gates match their respective delivery boundary.

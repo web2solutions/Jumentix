@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Requirement 112 §4 — run the browser suites in a real browser, headless.
@@ -23,11 +22,15 @@
  * or its sources are newer than the bundle.
  */
 
+const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+
+const {
+  instrumentBundle,
+  writeBrowserCoverage
+} = require('../../../ci-cd/lib/browser-coverage.js');
 const { runWhenEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
-const { instrumentBundle, writeBrowserCoverage } = require('../../../ci-cd/lib/browser-coverage.js');
 
 const ROOT = process.cwd();
 const SPEC_ROOT = path.join(ROOT, 'packages');
@@ -60,10 +63,12 @@ const SUPPORTED_BROWSERS = Object.freeze(['chrome', 'firefox', 'webkit']);
 
 /** Which engine this process is running, `--browser` first, then env. */
 function requestedBrowser(options = {}) {
-  return options.browser
-    || process.env.JUMENTIX_BROWSER
-    || process.argv.find((arg, index) => process.argv[index - 1] === '--browser')
-    || 'chrome';
+  return (
+    options.browser ||
+    process.env.JUMENTIX_BROWSER ||
+    process.argv.find((arg, index) => process.argv[index - 1] === '--browser') ||
+    'chrome'
+  );
 }
 
 function isPackageCypressFile(specRoot, filePath, suffix) {
@@ -72,7 +77,11 @@ function isPackageCypressFile(specRoot, filePath, suffix) {
 }
 
 /** Every `*.cy.ts` directly under a workspace package's `cypress/` directory. */
-function findSpecs(root = SPEC_ROOT, list = fs.existsSync(root) ? fs.readdirSync(root) : [], specRoot = root) {
+function findSpecs(
+  root = SPEC_ROOT,
+  list = fs.existsSync(root) ? fs.readdirSync(root) : [],
+  specRoot = root
+) {
   return list.flatMap((name) => {
     const full = path.join(root, name);
     if (fs.statSync(full).isDirectory()) {
@@ -100,7 +109,8 @@ function findWorkerEntries(
       if (name === 'node_modules' || name === 'dist' || name === '.build') return [];
       return findWorkerEntries(full, undefined, specRoot);
     }
-    return isPackageCypressFile(specRoot, full, '-worker.ts') && full.includes(`${path.sep}cypress${path.sep}support${path.sep}`)
+    return isPackageCypressFile(specRoot, full, '-worker.ts') &&
+      full.includes(`${path.sep}cypress${path.sep}support${path.sep}`)
       ? [full]
       : [];
   });
@@ -120,13 +130,17 @@ function bundle(specPath, spawn = spawnSync, { instrument = true } = {}) {
   const result = spawn(
     'bun',
     [
-      'build', specPath,
-      '--target', 'browser',
-      '--format', 'iife',
+      'build',
+      specPath,
+      '--target',
+      'browser',
+      '--format',
+      'iife',
       // Inline, because the instrumenter reads the map out of the bundle to put
       // the coverage back on the TypeScript files it came from.
       '--sourcemap=inline',
-      '--outfile', output
+      '--outfile',
+      output
     ],
     { stdio: 'pipe', encoding: 'utf8' }
   );
@@ -158,11 +172,10 @@ function buildAll(specs, spawn = spawnSync, options = {}) {
 function runCypress(spawn, browser, env, attempts = 2) {
   let result;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    result = spawn(
-      'bun',
-      ['x', 'cypress', 'run', '--e2e', '--browser', browser],
-      { stdio: 'inherit', env }
-    );
+    result = spawn('bun', ['x', 'cypress', 'run', '--e2e', '--browser', browser], {
+      stdio: 'inherit',
+      env
+    });
     if (!result.error && result.status === 0) return result;
     if (attempt < attempts) {
       console.warn(`[browser] ${browser} did not start cleanly; retrying once.`);
@@ -200,8 +213,8 @@ function run(options = {}) {
   }
 
   console.log(
-    `[browser] bundled ${specs.length} spec(s) and ${workers.length} worker entr(y/ies) with Bun; `
-      + `handing specs to Cypress on ${browser}.`
+    `[browser] bundled ${specs.length} spec(s) and ${workers.length} worker entr(y/ies) with Bun; ` +
+      `handing specs to Cypress on ${browser}.`
   );
 
   // Bun exports ELECTRON_RUN_AS_NODE=1 into its children. Cypress's binary is
@@ -255,27 +268,28 @@ function main(io = console, execute = run) {
   return 1;
 }
 
-const runAsEntryPoint = ({ runMain = main, ...rest } = {}) => runWhenEntryPoint({
-  caller: module,
-  execute: runMain,
-  ...rest
-});
+const runAsEntryPoint = ({ runMain = main, ...rest } = {}) =>
+  runWhenEntryPoint({
+    caller: module,
+    execute: runMain,
+    ...rest
+  });
 
 runAsEntryPoint();
 
 module.exports = {
   BUILD_DIR,
-  EVIDENCE_PATH,
-  SUPPORTED_BROWSERS,
+  buildAll,
   bundle,
   bundlePath,
-  buildAll,
+  EVIDENCE_PATH,
   findSpecs,
   findWorkerEntries,
   isPackageCypressFile,
   main,
   requestedBrowser,
-  runCypress,
   run,
-  runAsEntryPoint
+  runAsEntryPoint,
+  runCypress,
+  SUPPORTED_BROWSERS
 };

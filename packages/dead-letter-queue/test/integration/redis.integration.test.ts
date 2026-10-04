@@ -2,11 +2,8 @@ import {
   RedisKeyValueStorageClient,
   resetRedisKeyValueStorageClientForTests
 } from '@jumentix/key-value-storage';
-import {
-  DeadLetterQueue,
-  DeadLetterReplayWorker,
-  KeyValueDeadLetterStore
-} from '../../src';
+
+import { DeadLetterQueue, DeadLetterReplayWorker, KeyValueDeadLetterStore } from '../../src';
 
 /**
  * The queue against a real Redis (JUM-53, Requirement 115).
@@ -76,7 +73,10 @@ suite('deadLetterQueue against a real Redis (JUM-53)', () => {
       store: new KeyValueDeadLetterStore(client as never, { prefix: scope })
     });
     await writer.enqueue({
-      entityName: 'User', resourceId: 'user-2', operation: 'delete', payload: {}
+      entityName: 'User',
+      resourceId: 'user-2',
+      operation: 'delete',
+      payload: {}
     });
 
     const worker = new DeadLetterQueue({
@@ -102,7 +102,10 @@ suite('deadLetterQueue against a real Redis (JUM-53)', () => {
       // which they were enqueued.
       // eslint-disable-next-line no-await-in-loop
       await queue.enqueue({
-        entityName: 'User', resourceId: 'user-3', operation: 'update', payload: { firstName }
+        entityName: 'User',
+        resourceId: 'user-3',
+        operation: 'update',
+        payload: { firstName }
       });
     }
 
@@ -123,12 +126,19 @@ suite('deadLetterQueue against a real Redis (JUM-53)', () => {
       store: new KeyValueDeadLetterStore(client as never, { prefix: `${prefix}:worker` })
     });
     await queue.enqueue({
-      entityName: 'User', resourceId: 'user-4', operation: 'update', payload: { firstName: 'Ada' }
+      entityName: 'User',
+      resourceId: 'user-4',
+      operation: 'update',
+      payload: { firstName: 'Ada' }
     });
     const applied: string[] = [];
     const worker = new DeadLetterReplayWorker({
       queue,
-      handlers: { update: async (record) => { applied.push(record.resourceId); } }
+      handlers: {
+        update: async (record) => {
+          applied.push(record.resourceId);
+        }
+      }
     });
 
     const report = await worker.tick();
@@ -146,9 +156,16 @@ suite('deadLetterQueue against a real Redis (JUM-53)', () => {
     const store = new KeyValueDeadLetterStore(client as never, { prefix: `${prefix}:abandon` });
     const queue = new DeadLetterQueue({ store, maxAttempts: 2 });
     const record = await queue.enqueue({
-      entityName: 'User', resourceId: 'user-5', operation: 'update', payload: {}
+      entityName: 'User',
+      resourceId: 'user-5',
+      operation: 'update',
+      payload: {}
     });
-    const alwaysLocked = { update: async () => { throw new Error('still locked'); } };
+    const alwaysLocked = {
+      update: async () => {
+        throw new Error('still locked');
+      }
+    };
 
     await queue.replay(alwaysLocked);
     await queue.replay(alwaysLocked);

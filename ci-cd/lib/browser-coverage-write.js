@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Writes the browser run's coverage report.
@@ -11,21 +10,24 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+
 const { collect } = require('./browser-coverage.js');
 
 const [rawDir, output] = process.argv.slice(2);
 
-collect(rawDir).then((result) => {
-  if (!result.ok) {
-    console.error(result.message);
-    process.exit(1);
-    return;
-  }
+collect(rawDir)
+  .then((result) => {
+    if (!result.ok) {
+      console.error(result.message);
+      process.exitCode = 1;
+      return;
+    }
 
-  fs.mkdirSync(path.dirname(output), { recursive: true });
-  fs.writeFileSync(output, JSON.stringify(result.coverage.toJSON()));
-  console.log(`Browser coverage written for ${result.coverage.files().length} source file(s).`);
-}).catch((error) => {
-  console.error(String(error?.stack ?? error));
-  process.exit(1);
-});
+    fs.mkdirSync(path.dirname(output), { recursive: true });
+    fs.writeFileSync(output, JSON.stringify(result.coverage.toJSON()));
+    console.log(`Browser coverage written for ${result.coverage.files().length} source file(s).`);
+  })
+  .catch((error) => {
+    console.error(String(error?.stack ?? error));
+    process.exitCode = 1;
+  });

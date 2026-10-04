@@ -6,10 +6,14 @@ describe('aws lambda -> / handler', () => {
   it('get /', async () => {
     expect.hasAssertions();
 
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/',
-      method: 'GET'
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/',
+        method: 'GET'
+      }),
+      composeContext(),
+      () => {}
+    );
 
     const { status } = JSON.parse(body);
 

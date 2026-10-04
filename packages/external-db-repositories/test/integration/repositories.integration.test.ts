@@ -25,13 +25,20 @@ import { CassandraRepository, MongoMongooseRepository } from '../../src';
  * that cannot see them can only assert that nothing threw, which is exactly the
  * kind of assertion this file exists to replace.
  */
-const state = (repository: object) => repository as unknown as {
-  connected: boolean;
-  client: { execute(cql: string, params?: unknown[]): Promise<{ rows: unknown[] }> } | null;
-  connection: { readyState: number } | null;
-};
+const state = (repository: object) =>
+  repository as unknown as {
+    connected: boolean;
+    client: { execute(cql: string, params?: unknown[]): Promise<{ rows: unknown[] }> } | null;
+    connection: { readyState: number } | null;
+  };
 
 const RUNNING = process.env.RUN_DB_REPOSITORIES_INTEGRATION === '1';
+
+/** Fails the test with a clear message instead of asserting away a null. */
+function requireSet<T>(value: T | null, what: string): T {
+  if (value === null) throw new Error(`expected ${what} to be set after connect()`);
+  return value;
+}
 
 /**
  * Skipped, not passed, when the servers are absent.
@@ -87,7 +94,7 @@ suite('the Cassandra repository against a real cluster', () => {
 
     expect(client).not.toBeNull();
 
-    const result = await client!.execute(
+    const result = await requireSet(client, 'cassandra client').execute(
       'SELECT keyspace_name FROM system_schema.keyspaces WHERE keyspace_name = ?',
       [keyspace]
     );
@@ -188,7 +195,7 @@ suite('the Mongo repository against a real server', () => {
     expect(connection).not.toBeNull();
     // 1 is mongoose's "connected" ready state. Asserted rather than trusting
     // the flag the repository sets itself.
-    expect(connection!.readyState).toBe(1);
+    expect(requireSet(connection, 'mongoose connection').readyState).toBe(1);
   }, 60000);
 
   it('disconnects and drops the connection it was holding', async () => {

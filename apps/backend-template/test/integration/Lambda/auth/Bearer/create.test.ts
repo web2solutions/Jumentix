@@ -1,33 +1,30 @@
 /* global  describe, it, expect */
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-
-import type {
-  IUser,
-  IAuthorizationHeader
-} from '@src/modules/Users';
+import createdUsers from '@seed/users';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
 import {
+  EAuthSchemaType,
   UserDataRepository,
-  UserService,
   UserProviderLocal,
-  EAuthSchemaType
+  UserService
 } from '@src/modules/Users';
-import { handler } from '@src/modules/Users/interface/restapi/frameworks/aws/lambda/handlers/create';
-
+import handler from '@src/modules/Users/interface/restapi/frameworks/aws/lambda/handlers/create';
+import AuthService from '@src/modules/Users/service/AuthService';
+import { composeContext, composeHttpEvent } from '@test/integration/Lambda/utils';
 import {
+  authenticateForHeader,
   BasicAuthorizationHeaderUserGuest,
   user1,
   // user2,
   user3
 } from '@test/mock';
-import createdUsers from '@seed/users';
-import { composeContext, composeHttpEvent } from '@test/integration/Lambda/utils';
+
+import type { IAuthorizationHeader, IUser } from '@src/modules/Users';
 
 const [createdUser1, createdUser2, createdUser3, createdUser4] = createdUsers;
 
@@ -50,11 +47,7 @@ const userService = UserService.compile({
 });
 const userProvider = UserProviderLocal.compile(userService);
 
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 let authorizationHeaderUser1: IAuthorizationHeader;
@@ -69,51 +62,48 @@ describe('aws lambda -> Auth -> Bearer suite', () => {
 
     const requests: Promise<IUser>[] = [];
     for (const user of createdUsers) {
-      requests.push(new Promise((resolve, reject) => {
-        (async () => {
-          try {
-            // await service.create(user);
-            const newUser = await userService.create(user);
-            if (newUser.error) throw newUser.error;
-            if (!newUser.result) throw new Error('User seed failed');
-            resolve(newUser.result);
-          } catch (error: any) {
-            // console.log(error.message);
-            reject(new Error(error.message));
-          }
-        })();
-      }));
+      requests.push(
+        new Promise((resolve, reject) => {
+          userService
+            .create(user)
+            .then((newUser) => {
+              if (newUser.error) throw newUser.error;
+              if (!newUser.result) throw new Error('User seed failed');
+              resolve(newUser.result);
+            })
+            .catch((error: any) => {
+              // console.log(error.message);
+              reject(new Error(error.message));
+            });
+        })
+      );
     }
     await Promise.all(requests);
 
-    authorizationHeaderUser1 = {
-      ...(await authService.authenticate(
-        createdUser1.username,
-        createdUser1.password,
-        EAuthSchemaType.Bearer
-      )).result!
-    };
-    authorizationHeaderUser2 = {
-      ...(await authService.authenticate(
-        createdUser2.username,
-        createdUser2.password,
-        EAuthSchemaType.Bearer
-      )).result!
-    };
-    authorizationHeaderUser3 = {
-      ...(await authService.authenticate(
-        createdUser3.username,
-        createdUser3.password,
-        EAuthSchemaType.Bearer
-      )).result!
-    };
-    authorizationHeaderUser4 = {
-      ...(await authService.authenticate(
-        createdUser4.username,
-        createdUser4.password,
-        EAuthSchemaType.Bearer
-      )).result!
-    };
+    authorizationHeaderUser1 = await authenticateForHeader(
+      authService,
+      createdUser1.username,
+      createdUser1.password,
+      EAuthSchemaType.Bearer
+    );
+    authorizationHeaderUser2 = await authenticateForHeader(
+      authService,
+      createdUser2.username,
+      createdUser2.password,
+      EAuthSchemaType.Bearer
+    );
+    authorizationHeaderUser3 = await authenticateForHeader(
+      authService,
+      createdUser3.username,
+      createdUser3.password,
+      EAuthSchemaType.Bearer
+    );
+    authorizationHeaderUser4 = await authenticateForHeader(
+      authService,
+      createdUser4.username,
+      createdUser4.password,
+      EAuthSchemaType.Bearer
+    );
   });
 
   afterAll(async () => {
@@ -124,14 +114,18 @@ describe('aws lambda -> Auth -> Bearer suite', () => {
   it('user1 must be able to create an user', async () => {
     expect.hasAssertions();
 
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: user1,
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser1.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: user1,
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser1.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
 
     const { result } = JSON.parse(body);
 
@@ -142,14 +136,18 @@ describe('aws lambda -> Auth -> Bearer suite', () => {
 
   it('user1 must not be able to create a duplicated username', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: user1,
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser1.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: user1,
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser1.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(message).toBe('Conflict - username already in use');
     expect(statusCode).toBe(409);
@@ -157,14 +155,18 @@ describe('aws lambda -> Auth -> Bearer suite', () => {
 
   it('user1 must not be able to create a user with empty username', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: { ...user1, username: '', password: '12345678' },
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser1.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: { ...user1, username: '', password: '12345678' },
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser1.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(message).toBe('Bad Request - username can not be empty');
     expect(statusCode).toBe(400);
@@ -172,14 +174,18 @@ describe('aws lambda -> Auth -> Bearer suite', () => {
 
   it('user1 must not be able to create a user with empty password', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: { ...user1, username: 'loginname', password: '' },
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser1.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: { ...user1, username: 'loginname', password: '' },
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser1.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(message).toBe('Bad Request - password must have at least 8 chars.');
     expect(statusCode).toBe(400);
@@ -187,14 +193,18 @@ describe('aws lambda -> Auth -> Bearer suite', () => {
 
   it('user1 must not be able to create a user with password having less than 8 chars', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: { ...user1, username: 'loginname', password: '1234567' },
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser1.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: { ...user1, username: 'loginname', password: '1234567' },
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser1.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(message).toBe('Bad Request - password must have at least 8 chars.');
     expect(statusCode).toBe(400);
@@ -202,14 +212,18 @@ describe('aws lambda -> Auth -> Bearer suite', () => {
 
   it('user1 must not be able to create an user with empty firstName', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: { ...user3, firstName: '' },
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser1.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: { ...user3, firstName: '' },
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser1.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(message).toBe('Bad Request - firstName can not be empty');
     expect(statusCode).toBe(400);
@@ -217,88 +231,120 @@ describe('aws lambda -> Auth -> Bearer suite', () => {
 
   it('user1 must not be able to create new user with unknown field', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: { invalidFieldName: 50 },
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser1.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: { invalidFieldName: 50 },
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser1.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
-    expect(message).toBe('Bad Request - The property invalidFieldName from input payload does not exist.');
+    expect(message).toBe(
+      'Bad Request - The property invalidFieldName from input payload does not exist.'
+    );
     expect(statusCode).toBe(400);
   });
 
   it('user1 must not be able to create new user with empty payload', async () => {
     expect.hasAssertions();
-    const { statusCode } = await handler(composeHttpEvent({
-      path: '/users',
-      body: {},
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser1.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: {},
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser1.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     // const { message } = JSON.parse(body);
     expect(statusCode).toBe(400);
   });
 
   it('user2 must not be able to create new user - Forbidden: the role create_user is required', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: user1,
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser2.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: user1,
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser2.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(statusCode).toBe(403);
-    expect(message).toBe('Forbidden - Insufficient permission - user must have the create_user role');
+    expect(message).toBe(
+      'Forbidden - Insufficient permission - user must have the create_user role'
+    );
   });
 
   it('user3 must not be able to create new user - Forbidden: the role create_user is required', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: user1,
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser3.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: user1,
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser3.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(statusCode).toBe(403);
-    expect(message).toBe('Forbidden - Insufficient permission - user must have the create_user role');
+    expect(message).toBe(
+      'Forbidden - Insufficient permission - user must have the create_user role'
+    );
   });
 
   it('user4 must not be able to create new user - Forbidden: the role create_user is required', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: user1,
-      method: 'POST',
-      headers: {
-        Authorization: `${authorizationHeaderUser4.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: user1,
+        method: 'POST',
+        headers: {
+          Authorization: authorizationHeaderUser4.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(statusCode).toBe(403);
-    expect(message).toBe('Forbidden - Insufficient permission - user must have the create_user role');
+    expect(message).toBe(
+      'Forbidden - Insufficient permission - user must have the create_user role'
+    );
   });
 
   it('guest must not be able to create new user - Unauthorized', async () => {
     expect.hasAssertions();
-    const { statusCode, body } = await handler(composeHttpEvent({
-      path: '/users',
-      body: user1,
-      method: 'POST',
-      headers: {
-        Authorization: `${BasicAuthorizationHeaderUserGuest.Authorization}`
-      }
-    }), composeContext(), () => {});
+    const { statusCode, body } = await handler(
+      composeHttpEvent({
+        path: '/users',
+        body: user1,
+        method: 'POST',
+        headers: {
+          Authorization: BasicAuthorizationHeaderUserGuest.Authorization
+        }
+      }),
+      composeContext(),
+      () => {}
+    );
     const { message } = JSON.parse(body);
     expect(statusCode).toBe(401);
     expect(message).toBe('Unauthorized - user not found');

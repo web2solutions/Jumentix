@@ -1,21 +1,13 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 
-import path from 'path';
+import path from 'node:path';
 
 /**
  * Req 126 path pin: resolve the runtime Rbac source by configured path, never
  * via `@src` / workspace-crossing module import (JUM-828 / Req 137).
  */
-const {
-  EUserRole,
-  resolveRoleScopes,
-  shouldRequireOrganization
-} = require(
-  path.resolve(
-    process.cwd(),
-    'apps/backend-template/src/modules/Users/domain/security/Rbac.ts'
-  )
+const { EUserRole, resolveRoleScopes, shouldRequireOrganization } = require(
+  path.resolve(process.cwd(), 'apps/backend-template/src/modules/Users/domain/security/Rbac.ts')
 );
 
 /**
@@ -31,33 +23,30 @@ const {
  */
 
 const {
-  LEGACY_DIRECT_SCOPES,
-  NORMALIZED_ROLES,
-  RBAC_ACTIONS,
+  buildDomainPackageDocument,
+  buildJsonExportDocument
+} = require('@jumentix/designer-core/exporters/designerExporters.js');
+const {
+  buildDomainFromPackage
+} = require('@jumentix/designer-core/importers/designerImporters.js');
+const {
   deriveTenantScoped,
   isContractRole,
   isNormalizedRole,
+  LEGACY_DIRECT_SCOPES,
+  NORMALIZED_ROLES,
   normalizeRbacRule,
+  RBAC_ACTIONS,
   validateRbacRule
-} = require(
-  '@jumentix/designer-core/model/rbacContract.js'
-);
+} = require('@jumentix/designer-core/model/rbacContract.js');
 const {
   getDefaultRbacPolicy,
   normalizeRbacPolicyInput,
   normalizeStatePayload
-} = require(
-  '@jumentix/designer-core/state/designerState.js'
-);
-const { collectModelIssues } = require(
-  '@jumentix/designer-core/validation/modelValidation.js'
-);
-const { buildDomainPackageDocument, buildJsonExportDocument } = require(
-  '@jumentix/designer-core/exporters/designerExporters.js'
-);
-const { buildDomainFromPackage } = require(
-  '@jumentix/designer-core/importers/designerImporters.js'
-);
+} = require('@jumentix/designer-core/state/designerState.js');
+const {
+  default: collectModelIssues
+} = require('@jumentix/designer-core/validation/modelValidation.js');
 
 function createEntity(overrides: Record<string, unknown> = {}): any {
   return {
@@ -65,16 +54,26 @@ function createEntity(overrides: Record<string, unknown> = {}): any {
     name: 'Invoice',
     x: 14,
     y: 14,
-    fields: [{
-      name: 'id', type: 'uuid', required: true, pk: true, fk: false, unique: true
-    }],
+    fields: [
+      {
+        name: 'id',
+        type: 'uuid',
+        required: true,
+        pk: true,
+        fk: false,
+        unique: true
+      }
+    ],
     meta: {
       aggregateRoot: false,
       invariants: [],
       rbac: getDefaultRbacPolicy(),
       contracts: [],
       oasComposition: {
-        mode: '', refs: [], externalRefs: [], discriminator: ''
+        mode: '',
+        refs: [],
+        externalRefs: [],
+        discriminator: ''
       }
     },
     ...overrides
@@ -83,15 +82,17 @@ function createEntity(overrides: Record<string, unknown> = {}): any {
 
 function createState(entityOverrides: Record<string, unknown> = {}) {
   return {
-    domains: [{
-      id: 'domain-1',
-      name: 'Billing',
-      color: '#60a5fa',
-      x: 120,
-      y: 90,
-      context: {},
-      entities: [createEntity(entityOverrides)]
-    }],
+    domains: [
+      {
+        id: 'domain-1',
+        name: 'Billing',
+        color: '#60a5fa',
+        x: 120,
+        y: 90,
+        context: {},
+        entities: [createEntity(entityOverrides)]
+      }
+    ],
     relationships: [],
     view: { zoom: 1 }
   };
@@ -153,49 +154,61 @@ describe('rbacContract module (JUM-477)', () => {
     it('treats a non-array input as an empty role set', () => {
       expect.hasAssertions();
       expect(deriveTenantScoped(undefined as unknown as string[])).toBe(false);
-      expect(deriveTenantScoped('admin' as unknown as string[])).toBe(false);
+      expect(deriveTenantScoped('admin')).toBe(false);
     });
   });
 
   describe('normalizeRbacRule', () => {
     it('trims, dedupes and derives tenantScoped from the roles', () => {
       expect.hasAssertions();
-      expect(normalizeRbacRule({ roles: [' admin ', 'admin', '', 'user'], tenantScoped: false }))
-        .toStrictEqual({ roles: ['admin', 'user'], tenantScoped: true });
+      expect(
+        normalizeRbacRule({ roles: [' admin ', 'admin', '', 'user'], tenantScoped: false })
+      ).toStrictEqual({ roles: ['admin', 'user'], tenantScoped: true });
     });
 
     it('repairs a stored tenantScoped flag the runtime could not honour', () => {
       expect.hasAssertions();
       // superadmin-only is a global boundary: a stored `true` had no runtime meaning.
-      expect(normalizeRbacRule({ roles: ['superadmin'], tenantScoped: true }))
-        .toStrictEqual({ roles: ['superadmin'], tenantScoped: false });
+      expect(normalizeRbacRule({ roles: ['superadmin'], tenantScoped: true })).toStrictEqual({
+        roles: ['superadmin'],
+        tenantScoped: false
+      });
     });
 
     it('keeps unknown roles for validation to reject instead of dropping them', () => {
       expect.hasAssertions();
-      expect(normalizeRbacRule({ roles: ['admin', 'owner'] }))
-        .toStrictEqual({ roles: ['admin', 'owner'], tenantScoped: true });
+      expect(normalizeRbacRule({ roles: ['admin', 'owner'] })).toStrictEqual({
+        roles: ['admin', 'owner'],
+        tenantScoped: true
+      });
     });
 
     it('inherits roles from the fallback when the stored roles are not an array', () => {
       expect.hasAssertions();
-      expect(normalizeRbacRule({ roles: 'nope' }, { roles: ['superadmin', 'admin'] }))
-        .toStrictEqual({ roles: ['superadmin', 'admin'], tenantScoped: true });
+      expect(
+        normalizeRbacRule({ roles: 'nope' }, { roles: ['superadmin', 'admin'] })
+      ).toStrictEqual({ roles: ['superadmin', 'admin'], tenantScoped: true });
     });
 
     it('defaults to empty roles without a fallback or with a roleless fallback', () => {
       expect.hasAssertions();
       expect(normalizeRbacRule({})).toStrictEqual({ roles: [], tenantScoped: false });
-      expect(normalizeRbacRule({ roles: null }, { tenantScoped: true }))
-        .toStrictEqual({ roles: [], tenantScoped: false });
+      expect(normalizeRbacRule({ roles: null }, { tenantScoped: true })).toStrictEqual({
+        roles: [],
+        tenantScoped: false
+      });
     });
   });
 
   describe('validateRbacRule (edit-time gate)', () => {
     it('accepts normalized roles and legacy direct scopes', () => {
       expect.hasAssertions();
-      expect(validateRbacRule({ roles: ['superadmin', 'admin', 'user'] })).toStrictEqual({ ok: true });
-      expect(validateRbacRule({ roles: ['read_user', 'delete_organization'] })).toStrictEqual({ ok: true });
+      expect(validateRbacRule({ roles: ['superadmin', 'admin', 'user'] })).toStrictEqual({
+        ok: true
+      });
+      expect(validateRbacRule({ roles: ['read_user', 'delete_organization'] })).toStrictEqual({
+        ok: true
+      });
       expect(validateRbacRule({ roles: [] })).toStrictEqual({ ok: true });
       expect(validateRbacRule({})).toStrictEqual({ ok: true });
     });
@@ -259,11 +272,14 @@ describe('rbacContract module (JUM-477)', () => {
         domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }],
         relationships: []
       });
-      expect(issues).toStrictEqual([{
-        message: 'Entity Billing/Invoice RBAC action "create" references role "owner", which the tenant authorization contract cannot enforce.',
-        entityId: 'entity-1',
-        severity: 'error'
-      }]);
+      expect(issues).toStrictEqual([
+        {
+          message:
+            'Entity Billing/Invoice RBAC action "create" references role "owner", which the tenant authorization contract cannot enforce.',
+          entityId: 'entity-1',
+          severity: 'error'
+        }
+      ]);
     });
 
     it('accepts legacy direct scopes as contract-expressible roles', () => {
@@ -293,8 +309,10 @@ describe('rbacContract module (JUM-477)', () => {
       const exported = JSON.parse(JSON.stringify(buildJsonExportDocument(state)));
       const restored = normalizeStatePayload(exported);
       expect(restored.domains[0].entities[0].meta.rbac).toStrictEqual(custom);
-      expect(restored.domains[0].entities[0].meta.rbac.create)
-        .toStrictEqual({ roles: ['superadmin'], tenantScoped: false });
+      expect(restored.domains[0].entities[0].meta.rbac.create).toStrictEqual({
+        roles: ['superadmin'],
+        tenantScoped: false
+      });
     });
 
     it('round-trips the policy through the domain-package export and import', () => {
@@ -308,8 +326,10 @@ describe('rbacContract module (JUM-477)', () => {
       const result = buildDomainFromPackage(exported, []);
       expect(result.ok).toBe(true);
       expect(result.domain.entities[0].meta.rbac).toStrictEqual(custom);
-      expect(result.domain.entities[0].meta.rbac.delete)
-        .toStrictEqual({ roles: ['user'], tenantScoped: true });
+      expect(result.domain.entities[0].meta.rbac.delete).toStrictEqual({
+        roles: ['user'],
+        tenantScoped: true
+      });
     });
   });
 });

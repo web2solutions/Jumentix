@@ -1,10 +1,12 @@
 # Requirement 032 - Entity Timestamps, Domain Object Mutation API, and OAS Sync
 
 ## Context
+
 All data entities must expose canonical lifecycle timestamps and domain-safe mutation methods for generic value-object arrays.
 Whenever entities/models/contracts/events/messages/errors change, documentation and OpenAPI must be updated together.
 
 ## Rules
+
 1. Every data entity must include:
    - `createdAt` (required, auto-generated on creation)
    - `updatedAt` (required, auto-generated on creation and auto-updated on model persistence updates)
@@ -19,6 +21,7 @@ Whenever entities/models/contracts/events/messages/errors change, documentation 
 5. Coverage and CI gates remain mandatory for approval.
 
 ## Implementation Notes
+
 - Canonical serialized fields are `createdAt` and `updatedAt` (not underscored variants).
 - Persistence adapters are responsible for updating `updatedAt` on update operations.
 - Domain models must avoid direct array mutation by callers and route all changes through behavior methods.

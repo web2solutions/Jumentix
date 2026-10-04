@@ -1,6 +1,6 @@
-/* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { unmappedTestFiles } = require('./mapped-suites.js');
 
 const DEFAULT_MANIFEST_PATH = path.resolve(__dirname, '../../test-map.json');
@@ -130,9 +130,9 @@ function validateTestMap(manifest, options = {}) {
     // visible in the map instead of reading as an oversight (Requirement 110).
     if (suite.runner === 'node' && !suite.reason) {
       errors.push(
-        `Suite ${suite.path} uses runner:"node" without a "reason". The local runner must be "bun" `
-          + '(Req 106); use ciRunner:"node" for a suite that merely prefers Node in CI. A suite that '
-          + 'genuinely cannot load under Bun must say why, in a "reason" field (Req 110).'
+        `Suite ${suite.path} uses runner:"node" without a "reason". The local runner must be "bun" ` +
+          '(Req 106); use ciRunner:"node" for a suite that merely prefers Node in CI. A suite that ' +
+          'genuinely cannot load under Bun must say why, in a "reason" field (Req 110).'
       );
     }
     if (!VALID_TYPES.has(suite.type)) {
@@ -169,10 +169,10 @@ function validateTestMap(manifest, options = {}) {
   const unmapped = (options.unmappedTestFiles || unmappedTestFiles)(manifest, root);
   if (unmapped.length > 0) {
     errors.push(
-      `Test files on disk with no entry in the manifest:\n${
-        unmapped.map((file) => `     ${file}`).join('\n')
-      }\n   These do not run — the map is the target list, not a description of it.`
-      + '\n   Register them with `bun run test-map:generate`.'
+      `Test files on disk with no entry in the manifest:\n${unmapped
+        .map((file) => `     ${file}`)
+        .join('\n')}\n   These do not run — the map is the target list, not a description of it.` +
+        '\n   Register them with `bun run test-map:generate`.'
     );
   }
 
@@ -183,8 +183,8 @@ function validateTestMap(manifest, options = {}) {
 }
 
 module.exports = {
-  DEFAULT_MANIFEST_PATH,
   assertAcyclic,
+  DEFAULT_MANIFEST_PATH,
   isQuarantined,
   layerNames,
   outwardClosure,

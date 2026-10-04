@@ -14,7 +14,7 @@
  * default scheduler under test, a broker delivering. Where the schedule can be
  * injected, inject it: this is the second-best answer.
  */
-export async function until(
+async function until(
   condition: () => boolean | Promise<boolean>,
   {
     timeoutMs = 5000,
@@ -31,6 +31,10 @@ export async function until(
       throw new Error(`Timed out after ${timeoutMs}ms waiting for ${describe}`);
     }
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve) => { setTimeout(resolve, stepMs); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, stepMs);
+    });
   }
 }
+
+export default until;

@@ -21,6 +21,26 @@
  * instead of pretending the replay was complete.
  */
 
+import { isCanaError, isCanaErrorCode } from '../contracts';
+import { openDatabase } from './database';
+import { assessDurability, DEFAULT_DURABILITY_POLICY } from './durability-policy';
+import { canaError } from './errors';
+import { notifyCommitted, notifyRolledBack } from './hooks';
+import { openLocalStorageBackend } from './local-storage-backend';
+import {
+  OPERATION_LEDGER_STORE,
+  recordOperation,
+  resolveOutcome,
+  withLedgerStore
+} from './reconciliation';
+import { browserStorageEnvironment, StorageDurability } from './storage';
+import { createTable } from './table';
+import { abortWithReason, createChangeBuffer, runTransaction } from './transaction';
+
+import type { DurabilityAssessment, DurabilityPolicy } from './durability-policy';
+import type { CanaHooks } from './hooks';
+import type { LocalStorageBackend, LocalStorageLike } from './local-storage-backend';
+import type { ResolvedOutcome } from './reconciliation';
 import type {
   CanaChangeEvent,
   CanaClient,
@@ -34,28 +54,6 @@ import type {
   CanaTransactionScope,
   CanaWriteOutcome
 } from '../contracts';
-import { isCanaError, isCanaErrorCode } from '../contracts';
-import { canaError } from './errors';
-import type { DurabilityAssessment, DurabilityPolicy } from './durability-policy';
-import { DEFAULT_DURABILITY_POLICY, assessDurability } from './durability-policy';
-import type { CanaHooks } from './hooks';
-import { notifyCommitted, notifyRolledBack } from './hooks';
-import { openDatabase } from './database';
-import {
-  LocalStorageBackend,
-  openLocalStorageBackend,
-  type LocalStorageLike
-} from './local-storage-backend';
-import {
-  OPERATION_LEDGER_STORE,
-  recordOperation,
-  resolveOutcome,
-  withLedgerStore
-} from './reconciliation';
-import type { ResolvedOutcome } from './reconciliation';
-import { StorageDurability, browserStorageEnvironment } from './storage';
-import { createTable } from './table';
-import { abortWithReason, createChangeBuffer, runTransaction } from './transaction';
 
 export interface ClientOptions {
   readonly name: string;
@@ -126,17 +124,19 @@ function createAutoCommitTable<TRecord, TKey extends CanaKey = CanaKey>(
 ): CanaTable<TRecord, TKey> {
   type Bound = CanaTable<TRecord, TKey>;
 
-  const read = <TResult>(body: (table: Bound) => Promise<TResult>): Promise<TResult> => client
-    .transaction('readonly', [name], (scope) => body(scope.table<TRecord, TKey>(name)))
-    .then(({ result }) => result as TResult);
+  const read = <TResult>(body: (table: Bound) => Promise<TResult>): Promise<TResult> =>
+    client
+      .transaction('readonly', [name], (scope) => body(scope.table<TRecord, TKey>(name)))
+      .then(({ result }) => result as TResult);
 
   const write = <TResult extends { outcome: CanaWriteOutcome }>(
     body: (table: Bound) => Promise<TResult>
-  ): Promise<TResult> => client
+  ): Promise<TResult> =>
+    client
       .transaction('readwrite', [name], (scope) => body(scope.table<TRecord, TKey>(name)))
-    // The per-operation result reports `committed` optimistically; the
-    // transaction's own outcome is the authoritative one, and the events only
-    // exist at all if it committed.
+      // The per-operation result reports `committed` optimistically; the
+      // transaction's own outcome is the authoritative one, and the events only
+      // exist at all if it committed.
       .then(({ outcome, result, events }) => ({ ...(result as TResult), outcome, events }));
 
   return {
@@ -198,6 +198,7 @@ export class Client implements CanaClient {
     // no collision guarantee, and eight base-36 characters make one plausible
     // across enough tabs and reloads. `crypto` is available in every browser
     // Cana targets and in Bun.
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- browser-global API in browser-targeted code; usage is guarded or browser-only by design
     this.originId = options.originId ?? `cana-${crypto.randomUUID()}`;
   }
 
@@ -217,7 +218,7 @@ export class Client implements CanaClient {
     if (!this.options.operationLedger) return this.options.schema;
     return {
       ...this.options.schema,
-      stores: withLedgerStore(this.options.schema.stores) as CanaSchema['stores']
+      stores: withLedgerStore(this.options.schema.stores)
     };
   }
 
@@ -240,16 +241,19 @@ export class Client implements CanaClient {
       // recorded nothing and `resolveWrite` answered `unresolvable` forever with
       // no indication why. That is exactly the silent no-op the ledger exists to
       // rule out, so it now fails loudly and says what to do.
-      if (this.options.operationLedger
-        && !opened.database.objectStoreNames.contains(OPERATION_LEDGER_STORE)) {
+      if (
+        this.options.operationLedger &&
+        !opened.database.objectStoreNames.contains(OPERATION_LEDGER_STORE)
+      ) {
         opened.database.close();
         this.database = undefined;
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
         throw canaError(
           'UpgradeFailed',
-          `The operation ledger is enabled for "${this.name}" but its store does not exist. The `
-            + `database is already at version ${this.version}, and IndexedDB applies schema changes `
-            + 'only when the version increases. Raise the schema version so the ledger store can be '
-            + 'created — leaving it as-is would record nothing and make every crash unresolvable.'
+          `The operation ledger is enabled for "${this.name}" but its store does not exist. The ` +
+            `database is already at version ${this.version}, and IndexedDB applies schema changes ` +
+            'only when the version increases. Raise the schema version so the ledger store can be ' +
+            'created — leaving it as-is would record nothing and make every crash unresolvable.'
         );
       }
 
@@ -258,8 +262,10 @@ export class Client implements CanaClient {
       // Asked for only when the application opted in. A persistence prompt fired
       // by a library at an arbitrary moment is one the user denies, and some
       // browsers make that denial sticky for the origin.
-      if (this.options.durabilityPolicy?.requestPersistenceOnOpen
-        ?? DEFAULT_DURABILITY_POLICY.requestPersistenceOnOpen) {
+      if (
+        this.options.durabilityPolicy?.requestPersistenceOnOpen ??
+        DEFAULT_DURABILITY_POLICY.requestPersistenceOnOpen
+      ) {
         await this.durability.requestPersistence();
       }
       return;
@@ -278,9 +284,7 @@ export class Client implements CanaClient {
       ...(this.options.operationLedger === undefined
         ? {}
         : { operationLedger: this.options.operationLedger }),
-      ...(this.options.localStorage === undefined
-        ? {}
-        : { storage: this.options.localStorage })
+      ...(this.options.localStorage === undefined ? {} : { storage: this.options.localStorage })
     });
     this.backend = 'localStorage';
   }
@@ -296,8 +300,9 @@ export class Client implements CanaClient {
       return {
         level: 'best-effort',
         evictionDetectable: false,
-        summary: 'Cana is using the localStorage fallback. Capacity and durability are '
-          + 'weaker than IndexedDB; treat this session as degraded.',
+        summary:
+          'Cana is using the localStorage fallback. Capacity and durability are ' +
+          'weaker than IndexedDB; treat this session as degraded.',
         advice: [
           'Export with exportAll() and restore once IndexedDB is available.',
           'Do not assume multi-megabyte imports will succeed on localStorage.'
@@ -318,11 +323,12 @@ export class Client implements CanaClient {
 
   private requireIndexedDb(): IDBDatabase {
     if (!this.database) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'InvalidRequest',
-        `Client for "${this.name}" is not open on IndexedDB. Call open() before using it — the `
-          + 'engine does not open implicitly, because an implicit open hides an upgrade behind '
-          + 'an unrelated call.'
+        `Client for "${this.name}" is not open on IndexedDB. Call open() before using it — the ` +
+          'engine does not open implicitly, because an implicit open hides an upgrade behind ' +
+          'an unrelated call.'
       );
     }
     return this.database;
@@ -330,10 +336,11 @@ export class Client implements CanaClient {
 
   private requireOpenBackend(): void {
     if (!this.backend) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'InvalidRequest',
-        `Client for "${this.name}" is not open. Call open() before using it — the engine does not `
-          + 'open implicitly, because an implicit open hides an upgrade behind an unrelated call.'
+        `Client for "${this.name}" is not open. Call open() before using it — the engine does not ` +
+          'open implicitly, because an implicit open hides an upgrade behind an unrelated call.'
       );
     }
   }
@@ -406,12 +413,7 @@ export class Client implements CanaClient {
 
     if (this.localBackend) {
       try {
-        const outcome = await this.localBackend.transaction(
-          mode,
-          stores,
-          body,
-          correlationId
-        );
+        const outcome = await this.localBackend.transaction(mode, stores, body, correlationId);
         if (outcome.outcome === 'committed') {
           this.publish(outcome.events);
           notifyCommitted(hooks, outcome.events);
@@ -435,9 +437,10 @@ export class Client implements CanaClient {
     // this no longer silently degrades when it is missing.
     const ledgered = this.options.operationLedger === true && mode === 'readwrite';
 
-    const scope = ledgered && !stores.includes(OPERATION_LEDGER_STORE)
-      ? [...stores, OPERATION_LEDGER_STORE]
-      : stores;
+    const scope =
+      ledgered && !stores.includes(OPERATION_LEDGER_STORE)
+        ? [...stores, OPERATION_LEDGER_STORE]
+        : stores;
 
     const attemptedAt = Date.now();
 
@@ -469,17 +472,13 @@ export class Client implements CanaClient {
           }
 
           return body({
-            table: <TRecord, TKey extends CanaKey = CanaKey>(
-              name: string
-            ) => createTable<TRecord, TKey>(
-              name,
-              {
+            table: <TRecord, TKey extends CanaKey = CanaKey>(name: string) =>
+              createTable<TRecord, TKey>(name, {
                 transaction,
                 buffer,
                 correlationId,
                 ...(hooks === undefined ? {} : { hooks })
-              }
-            ),
+              }),
             abort: (reason?: string) => abortWithReason(transaction, reason)
           });
         }
@@ -540,11 +539,12 @@ export class Client implements CanaClient {
       if (oldest !== undefined && since < oldest - 1) {
         // The gap is real and unrecoverable from memory. Replaying what is left
         // would look like a complete history and quietly omit the middle.
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
         throw canaError(
           'NotFound',
-          `Cannot replay from cursor ${since}: the retained window starts at ${oldest}. `
-            + `Only the last ${this.retainedEvents} events are replayable — reload from the `
-            + 'database rather than resuming from an incomplete stream.'
+          `Cannot replay from cursor ${since}: the retained window starts at ${oldest}. ` +
+            `Only the last ${this.retainedEvents} events are replayable — reload from the ` +
+            'database rather than resuming from an incomplete stream.'
         );
       }
     }

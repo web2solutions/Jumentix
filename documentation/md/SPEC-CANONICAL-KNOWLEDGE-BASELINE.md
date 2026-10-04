@@ -55,7 +55,7 @@ All known intent must be explicit, versioned, and traceable.
      - `.agents/requirements/project/*.md`
      - `.agents/requirements/software/*.md`
      - `.agents/NFR-REGISTRY.md`
-      - Linear Project: `https://linear.app/jumentix`
+     - Linear Project: `https://linear.app/jumentix`
 
 ## Spec Coverage Rule
 

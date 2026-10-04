@@ -1,19 +1,22 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const matrixFs = require('fs');
-const matrixPath = require('path');
+const matrixFs = require('node:fs');
+const matrixPath = require('node:path');
+
+const fullMatrixRootPackage = require('../../package.json');
 const {
-  FULL_TEST_MATRIX,
   executeMatrixCell,
+  FULL_TEST_MATRIX,
   resolveMatrixCells,
   runAsEntryPoint,
   runFullTestMatrix,
   validateMatrixManifest,
   writeMatrixEvidence
 } = require('../run-full-test-matrix');
-const fullMatrixRootPackage = require('../../package.json');
 
 const fullMatrixRootDir = matrixPath.resolve(__dirname, '../..');
-type FullMatrixTestCell = { id: string; script: string };
+interface FullMatrixTestCell {
+  id: string;
+  script: string;
+}
 
 const restoreEnv = (name: string, previous: string | undefined): void => {
   if (previous === undefined) {
@@ -29,8 +32,9 @@ describe('run-full-test-matrix', () => {
     expect.hasAssertions();
 
     const ciGate = fullMatrixRootPackage.scripts['ci:gate'];
-    const referenced = [...ciGate.matchAll(/\bbun run ([^\s&|]+)/g)]
-      .map((match: RegExpMatchArray) => match[1]);
+    const referenced = [...ciGate.matchAll(/\bbun run ([^\s&|]+)/g)].map(
+      (match: RegExpMatchArray) => match[1]
+    );
     const missing = referenced.filter((script: string) => !fullMatrixRootPackage.scripts[script]);
 
     expect(missing).toStrictEqual([]);
@@ -39,10 +43,12 @@ describe('run-full-test-matrix', () => {
   it('declares unique required cells backed by real package scripts', () => {
     expect.hasAssertions();
     expect(FULL_TEST_MATRIX.length).toBeGreaterThan(0);
-    expect(new Set(FULL_TEST_MATRIX.map((cell: FullMatrixTestCell) => cell.id)).size)
-      .toBe(FULL_TEST_MATRIX.length);
-    expect(new Set(FULL_TEST_MATRIX.map((cell: FullMatrixTestCell) => cell.script)).size)
-      .toBe(FULL_TEST_MATRIX.length);
+    expect(new Set(FULL_TEST_MATRIX.map((cell: FullMatrixTestCell) => cell.id)).size).toBe(
+      FULL_TEST_MATRIX.length
+    );
+    expect(new Set(FULL_TEST_MATRIX.map((cell: FullMatrixTestCell) => cell.script)).size).toBe(
+      FULL_TEST_MATRIX.length
+    );
 
     for (const cell of FULL_TEST_MATRIX as FullMatrixTestCell[]) {
       expect(fullMatrixRootPackage.scripts[cell.script]).toStrictEqual(expect.any(String));
@@ -59,13 +65,15 @@ describe('run-full-test-matrix', () => {
       'utf8'
     );
 
-    expect(ids).toStrictEqual(expect.not.arrayContaining([
-      'coverage',
-      'browser-coverage',
-      'browser-lcov',
-      'coverage-thresholds',
-      'patch-coverage'
-    ]));
+    expect(ids).toStrictEqual(
+      expect.not.arrayContaining([
+        'coverage',
+        'browser-coverage',
+        'browser-lcov',
+        'coverage-thresholds',
+        'patch-coverage'
+      ])
+    );
     expect(workflow).toContain('bun run test:coverage');
     expect(workflow).toContain('bun run coverage:check');
     expect(workflow).toContain('bun run coverage:patch');
@@ -81,7 +89,9 @@ describe('run-full-test-matrix', () => {
     const jestCoverageIndex = workflow.indexOf('name: Produce Jest coverage');
     const browserUnionIndex = workflow.indexOf('name: Union browser coverage engines');
     const fullCoverageCheckIndex = workflow.indexOf('name: Enforce full coverage thresholds');
-    const frontendCoverageIndex = workflow.indexOf('name: Produce frontend coverage for the patch report');
+    const frontendCoverageIndex = workflow.indexOf(
+      'name: Produce frontend coverage for the patch report'
+    );
     const patchCoverageIndex = workflow.indexOf('name: Enforce patch coverage');
 
     expect([
@@ -112,32 +122,37 @@ describe('run-full-test-matrix', () => {
   it('leaves the coverage scripts available for the GitHub Actions coverage gate', () => {
     expect.hasAssertions();
 
-    expect(fullMatrixRootPackage.scripts['test:coverage'])
-      .toContain('--coverageThreshold=\'{}\'');
-    expect(fullMatrixRootPackage.scripts['test:coverage'])
-      .not.toContain('apps/backend-template/test/integration/');
-    expect(fullMatrixRootPackage.scripts['coverage:browser-lcov'])
-      .toBe('bun packages/cana/scripts/write-browser-lcov.js');
-    expect(fullMatrixRootPackage.scripts['coverage:patch'])
-      .toBe('bun ci-cd/check-patch-coverage.js');
+    expect(fullMatrixRootPackage.scripts['test:coverage']).toContain("--coverageThreshold='{}'");
+    expect(fullMatrixRootPackage.scripts['test:coverage']).not.toContain(
+      'apps/backend-template/test/integration/'
+    );
+    expect(fullMatrixRootPackage.scripts['coverage:browser-lcov']).toBe(
+      'bun packages/cana/scripts/write-browser-lcov.js'
+    );
+    expect(fullMatrixRootPackage.scripts['coverage:patch']).toBe(
+      'bun ci-cd/check-patch-coverage.js'
+    );
   });
 
   it('allows GitHub Actions to delegate expensive cells to dedicated jobs', () => {
     expect.hasAssertions();
 
     const cells = resolveMatrixCells(FULL_TEST_MATRIX, {
-      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'workspace-builds,workspace-tests,website-prepublish,integration'
+      JUMENTIX_FULL_MATRIX_SKIP_CELLS:
+        'workspace-builds,workspace-tests,website-prepublish,integration'
     });
 
-    expect(cells).toStrictEqual(expect.not.arrayContaining([
-      expect.objectContaining({ id: 'workspace-builds' }),
-      expect.objectContaining({ id: 'workspace-tests' }),
-      expect.objectContaining({ id: 'website-prepublish' }),
-      expect.objectContaining({ id: 'integration' })
-    ]));
-    expect(cells).toStrictEqual(expect.arrayContaining([
-      expect.objectContaining({ id: 'backend-build' })
-    ]));
+    expect(cells).toStrictEqual(
+      expect.not.arrayContaining([
+        expect.objectContaining({ id: 'workspace-builds' }),
+        expect.objectContaining({ id: 'workspace-tests' }),
+        expect.objectContaining({ id: 'website-prepublish' }),
+        expect.objectContaining({ id: 'integration' })
+      ])
+    );
+    expect(cells).toStrictEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'backend-build' })])
+    );
   });
 
   it('uses the real environment when no explicit skip environment is injected', () => {
@@ -147,18 +162,20 @@ describe('run-full-test-matrix', () => {
 
     const cells = resolveMatrixCells(FULL_TEST_MATRIX);
 
-    expect(cells).toStrictEqual(expect.not.arrayContaining([
-      expect.objectContaining({ id: 'workspace-builds' })
-    ]));
+    expect(cells).toStrictEqual(
+      expect.not.arrayContaining([expect.objectContaining({ id: 'workspace-builds' })])
+    );
     restoreEnv('JUMENTIX_FULL_MATRIX_SKIP_CELLS', previous);
   });
 
   it('fails closed when the delegated matrix skip list names an unknown cell', () => {
     expect.hasAssertions();
 
-    expect(() => resolveMatrixCells(FULL_TEST_MATRIX, {
-      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'not-a-cell'
-    })).toThrow('unknown cell');
+    expect(() =>
+      resolveMatrixCells(FULL_TEST_MATRIX, {
+        JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'not-a-cell'
+      })
+    ).toThrow('unknown cell');
   });
 
   describe('writeMatrixEvidence', () => {
@@ -199,11 +216,13 @@ describe('run-full-test-matrix', () => {
       expect.hasAssertions();
       // A PATH without the bun executable makes spawnSync fail closed
       // (error, no status) — the `: 1` half of the status normalisation.
-      expect(executeMatrixCell({
-        id: 'unrunnable',
-        script: 'check-bun-version',
-        env: { PATH: '/nonexistent-bin-dir' }
-      })).toBe(1);
+      expect(
+        executeMatrixCell({
+          id: 'unrunnable',
+          script: 'check-bun-version',
+          env: { PATH: '/nonexistent-bin-dir' }
+        })
+      ).toBe(1);
     });
   });
 
@@ -282,7 +301,9 @@ describe('run-full-test-matrix', () => {
         entry,
         exit: (code: number) => exits.push(code),
         logger: { error: (message: unknown) => logged.push(message) },
-        run: () => { throw new Error('manifest is broken'); }
+        run: () => {
+          throw new Error('manifest is broken');
+        }
       });
 
       expect(exits).toStrictEqual([1]);
@@ -292,15 +313,24 @@ describe('run-full-test-matrix', () => {
 
   it('fails closed for an empty, duplicate, or missing-script manifest', () => {
     expect.hasAssertions();
-    expect(() => validateMatrixManifest([], fullMatrixRootPackage.scripts))
-      .toThrow('at least one required cell');
-    expect(() => validateMatrixManifest([
-      { id: 'same', script: 'lint' },
-      { id: 'same', script: 'test:unit' }
-    ], fullMatrixRootPackage.scripts)).toThrow('Duplicate full-matrix cell id');
-    expect(() => validateMatrixManifest([
-      { id: 'missing', script: 'test:does-not-exist' }
-    ], fullMatrixRootPackage.scripts)).toThrow('missing from package.json');
+    expect(() => validateMatrixManifest([], fullMatrixRootPackage.scripts)).toThrow(
+      'at least one required cell'
+    );
+    expect(() =>
+      validateMatrixManifest(
+        [
+          { id: 'same', script: 'lint' },
+          { id: 'same', script: 'test:unit' }
+        ],
+        fullMatrixRootPackage.scripts
+      )
+    ).toThrow('Duplicate full-matrix cell id');
+    expect(() =>
+      validateMatrixManifest(
+        [{ id: 'missing', script: 'test:does-not-exist' }],
+        fullMatrixRootPackage.scripts
+      )
+    ).toThrow('missing from package.json');
   });
 
   it('reports every cell and rejects a deliberate failure without stopping early', () => {
@@ -310,10 +340,7 @@ describe('run-full-test-matrix', () => {
       { id: 'deliberate-failure', script: 'test:unit' },
       { id: 'after', script: 'build:dev' }
     ];
-    const execute = jest.fn()
-      .mockReturnValueOnce(0)
-      .mockReturnValueOnce(17)
-      .mockReturnValueOnce(0);
+    const execute = jest.fn().mockReturnValueOnce(0).mockReturnValueOnce(17).mockReturnValueOnce(0);
     const logger = { log: jest.fn(), error: jest.fn() };
 
     const evidence = runFullTestMatrix({
@@ -325,11 +352,7 @@ describe('run-full-test-matrix', () => {
       resultFile: ''
     });
 
-    expect(execute.mock.calls).toStrictEqual([
-      [cells[0]],
-      [cells[1]],
-      [cells[2]]
-    ]);
+    expect(execute.mock.calls).toStrictEqual([[cells[0]], [cells[1]], [cells[2]]]);
     expect(evidence.outcome).toBe('failed');
     expect(evidence.requiredCellCount).toBe(3);
     expect(evidence.reportedCellCount).toBe(3);
@@ -361,8 +384,7 @@ describe('run-full-test-matrix', () => {
       });
 
       expect(evidence.outcome).toBe('passed');
-      expect(JSON.parse(matrixFs.readFileSync(resultFile, 'utf8')).outcome)
-        .toBe('passed');
+      expect(JSON.parse(matrixFs.readFileSync(resultFile, 'utf8')).outcome).toBe('passed');
     } finally {
       restoreEnv('JUMENTIX_CI_MATRIX_RESULT_FILE', previousResultFile);
       restoreEnv('JUMENTIX_FULL_MATRIX_SKIP_CELLS', previousSkipCells);
@@ -440,22 +462,25 @@ describe('run-full-test-matrix', () => {
 
   it('uses repository-owned workflows and keeps Storybook outside the full matrix', () => {
     expect.hasAssertions();
-    const read = (file: string) => matrixFs.readFileSync(
-      matrixPath.join(fullMatrixRootDir, file),
-      'utf8'
-    );
+    const read = (file: string) =>
+      matrixFs.readFileSync(matrixPath.join(fullMatrixRootDir, file), 'utf8');
 
-    expect(fullMatrixRootPackage.scripts['ci:gate:strict'])
-      .toBe('bun ci-cd/run-full-test-matrix.js');
-    expect(fullMatrixRootPackage.scripts['ci:gate:branch'])
-      .toBe('bun ci-cd/run-branch-quality-gate.js');
-    expect(fullMatrixRootPackage.scripts['ci:gate:task'])
-      .toBe('bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js');
+    expect(fullMatrixRootPackage.scripts['ci:gate:strict']).toBe(
+      'bun ci-cd/run-full-test-matrix.js'
+    );
+    expect(fullMatrixRootPackage.scripts['ci:gate:branch']).toBe(
+      'bun ci-cd/run-branch-quality-gate.js'
+    );
+    expect(fullMatrixRootPackage.scripts['ci:gate:task']).toBe(
+      'bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js'
+    );
     expect([
       fullMatrixRootPackage.scripts['mono:build'] === 'bun run workspace:build:packages',
-      fullMatrixRootPackage.scripts['mono:test'] === 'bun run workspace:build:packages && bun run workspace:test',
+      fullMatrixRootPackage.scripts['mono:test'] ===
+        'bun run workspace:build:packages && bun run workspace:test',
       fullMatrixRootPackage.scripts['mono:build:deps'] === 'bun run --filter @jumentix/cana build',
-      fullMatrixRootPackage.scripts['workspace:build:packages'] === 'bun ci-cd/build-workspace-packages.js',
+      fullMatrixRootPackage.scripts['workspace:build:packages'] ===
+        'bun ci-cd/build-workspace-packages.js',
       read('.husky/pre-commit').includes('bun run ci:gate:branch'),
       read('.husky/pre-push').includes('bun run ci:gate:branch'),
       read('.husky/pre-merge-commit').includes('bun run ci:gate:branch'),
@@ -465,9 +490,15 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/ci.yml').includes('JUMENTIX_TASK_TEST_MODE: range'),
       read('.github/workflows/ci.yml').includes('JUMENTIX_TASK_TEST_BASE: origin/dev'),
       read('.github/workflows/ci.yml').includes('full-test-matrix.json'),
-      read('.github/workflows/ci.yml').includes('JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json'),
-      read('.github/workflows/ci.yml').includes('JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json'),
-      read('.github/workflows/ci.yml').includes('JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration'),
+      read('.github/workflows/ci.yml').includes(
+        'JUMENTIX_CI_GATE_RESULT_FILE: artifacts/ci/branch-quality-gate.json'
+      ),
+      read('.github/workflows/ci.yml').includes(
+        'JUMENTIX_CI_MATRIX_RESULT_FILE: artifacts/ci/full-test-matrix.json'
+      ),
+      read('.github/workflows/ci.yml').includes(
+        'JUMENTIX_FULL_MATRIX_SKIP_CELLS: workspace-builds,workspace-tests,website-prepublish,integration'
+      ),
       read('.github/workflows/ci.yml').includes('name: Run workspace package builds'),
       read('.github/workflows/ci.yml').includes('bun run mono:build'),
       read('.github/workflows/ci.yml').includes('name: Run workspace package tests'),
@@ -485,16 +516,24 @@ describe('run-full-test-matrix', () => {
       read('.github/workflows/ci.yml').includes('bun run website:test:cypress'),
       read('.github/workflows/ci.yml').includes('bun run coverage:patch'),
       read('.github/workflows/ci.yml').includes('codecov/codecov-action@v5'),
-      read('.github/workflows/ci.yml').includes('codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac'),
+      read('.github/workflows/ci.yml').includes(
+        'codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac'
+      ),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'pr:governance:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'requirements:check'),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integrations:check'),
-      FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'ci:check-third-party-review'),
-      FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'integration-migration:check'),
+      FULL_TEST_MATRIX.some(
+        (cell: FullMatrixTestCell) => cell.script === 'ci:check-third-party-review'
+      ),
+      FULL_TEST_MATRIX.some(
+        (cell: FullMatrixTestCell) => cell.script === 'integration-migration:check'
+      ),
       FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'agent-registry:check'),
-      FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) => cell.script === 'website:test:prepublish'),
-      !FULL_TEST_MATRIX.some(
-        (cell: FullMatrixTestCell) => cell.script.startsWith('website:storybook')
+      FULL_TEST_MATRIX.some(
+        (cell: FullMatrixTestCell) => cell.script === 'website:test:prepublish'
+      ),
+      !FULL_TEST_MATRIX.some((cell: FullMatrixTestCell) =>
+        cell.script.startsWith('website:storybook')
       )
     ]).toStrictEqual(Array(42).fill(true));
   });
@@ -520,10 +559,12 @@ describe('full matrix manifest refusals (JUM-681)', () => {
   it('refuses a cell with no id or no script', () => {
     expect.hasAssertions();
 
-    expect(() => validateMatrixManifest([{ id: '', script: 'lint' }], scripts))
-      .toThrow('non-empty id and script');
-    expect(() => validateMatrixManifest([{ id: 'lint' }], scripts))
-      .toThrow('non-empty id and script');
+    expect(() => validateMatrixManifest([{ id: '', script: 'lint' }], scripts)).toThrow(
+      'non-empty id and script'
+    );
+    expect(() => validateMatrixManifest([{ id: 'lint' }], scripts)).toThrow(
+      'non-empty id and script'
+    );
   });
 
   it('refuses a duplicate id and a duplicate script separately', () => {
@@ -531,15 +572,25 @@ describe('full matrix manifest refusals (JUM-681)', () => {
 
     // Two names for one script is a cell that reports twice; two scripts under
     // one name is a cell that reports once for two things.
-    expect(() => validateMatrixManifest([
-      { id: 'lint', script: 'lint' },
-      { id: 'lint', script: 'test:unit' }
-    ], scripts)).toThrow('Duplicate full-matrix cell id: lint');
+    expect(() =>
+      validateMatrixManifest(
+        [
+          { id: 'lint', script: 'lint' },
+          { id: 'lint', script: 'test:unit' }
+        ],
+        scripts
+      )
+    ).toThrow('Duplicate full-matrix cell id: lint');
 
-    expect(() => validateMatrixManifest([
-      { id: 'lint', script: 'lint' },
-      { id: 'lint-again', script: 'lint' }
-    ], scripts)).toThrow('Duplicate full-matrix script: lint');
+    expect(() =>
+      validateMatrixManifest(
+        [
+          { id: 'lint', script: 'lint' },
+          { id: 'lint-again', script: 'lint' }
+        ],
+        scripts
+      )
+    ).toThrow('Duplicate full-matrix script: lint');
   });
 
   it('refuses a script that package.json does not define', () => {
@@ -547,8 +598,9 @@ describe('full matrix manifest refusals (JUM-681)', () => {
 
     // The failure mode this prevents: a renamed script leaves a matrix cell
     // pointing at nothing, and `bun run missing` is not a test that ran.
-    expect(() => validateMatrixManifest([{ id: 'gone', script: 'no:such:script' }], scripts))
-      .toThrow('missing from package.json: no:such:script');
+    expect(() =>
+      validateMatrixManifest([{ id: 'gone', script: 'no:such:script' }], scripts)
+    ).toThrow('missing from package.json: no:such:script');
   });
 });
 
@@ -570,7 +622,9 @@ describe('full matrix skip list and evidence (JUM-681)', () => {
     expect.hasAssertions();
 
     expect(resolveMatrixCells(cells, {})).toStrictEqual(cells);
-    expect(resolveMatrixCells(cells, { JUMENTIX_FULL_MATRIX_SKIP_CELLS: '   ' })).toStrictEqual(cells);
+    expect(resolveMatrixCells(cells, { JUMENTIX_FULL_MATRIX_SKIP_CELLS: '   ' })).toStrictEqual(
+      cells
+    );
   });
 
   it('drops only the named cells, ignoring blanks and spacing', () => {
@@ -588,15 +642,19 @@ describe('full matrix skip list and evidence (JUM-681)', () => {
 
     // The failure this prevents: a typo skips nothing, the matrix runs the cell
     // anyway, and whoever wrote the list believes it was excluded.
-    expect(() => resolveMatrixCells(cells, {
-      JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'lint,typo-cell'
-    })).toThrow('unknown cell(s): typo-cell');
+    expect(() =>
+      resolveMatrixCells(cells, {
+        JUMENTIX_FULL_MATRIX_SKIP_CELLS: 'lint,typo-cell'
+      })
+    ).toThrow('unknown cell(s): typo-cell');
   });
 
   it('writes evidence only when a destination is given, creating its directory', () => {
     expect.hasAssertions();
 
-    const root = matrixFs.mkdtempSync(matrixPath.join(require('os').tmpdir(), 'jum681-matrix-'));
+    const root = matrixFs.mkdtempSync(
+      matrixPath.join(require('node:os').tmpdir(), 'jum681-matrix-')
+    );
     const target = matrixPath.join(root, 'nested', 'matrix.json');
 
     // No destination: nothing written, and no crash for the caller that does
@@ -606,7 +664,8 @@ describe('full matrix skip list and evidence (JUM-681)', () => {
     writeMatrixEvidence({ outcome: 'passed', results: [] }, target);
 
     expect(JSON.parse(matrixFs.readFileSync(target, 'utf8'))).toStrictEqual({
-      outcome: 'passed', results: []
+      outcome: 'passed',
+      results: []
     });
 
     matrixFs.rmSync(root, { recursive: true, force: true });

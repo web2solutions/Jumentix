@@ -1,4 +1,5 @@
 import { Context } from '@src/infra/context/Context';
+
 import type { ISerializedError } from '@src/infra/exceptions/ISerializedError';
 
 /**
@@ -7,7 +8,7 @@ import type { ISerializedError } from '@src/infra/exceptions/ISerializedError';
  * @class BaseError
  * @extends {Error}
  */
-export abstract class BaseError extends Error {
+abstract class BaseError extends Error {
   abstract code: string;
 
   abstract name: string;
@@ -40,3 +41,5 @@ export abstract class BaseError extends Error {
     };
   }
 }
+
+export default BaseError;

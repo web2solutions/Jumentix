@@ -1,5 +1,5 @@
-import { ref } from 'vue';
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { appOperations } from '@/contracts/appOperations';
@@ -8,9 +8,9 @@ import { entityTable } from '@/data/canaSchema';
 import { getCanaClient, isCanaOpen } from '@/data/db';
 import { getLocal } from '@/data/localRepository';
 import { drainOutbox, enqueueMutation } from '@/data/outbox';
-import { usersCrudConfig } from '@/features/users/usersCrudConfig';
-import { useAuthStore } from '@/stores/auth';
+import usersCrudConfig from '@/features/users/usersCrudConfig';
 import { t } from '@/i18n';
+import { useAuthStore } from '@/stores/auth';
 
 export interface UserEmail {
   id: string;
@@ -81,10 +81,12 @@ export const useProfileStore = defineStore('profile', () => {
 
   const persistLocal = async (user: UserRecord): Promise<void> => {
     if (!isCanaOpen()) return;
-    await getCanaClient().table(entityTable('User').storeName).put({
-      ...JSON.parse(JSON.stringify(user)),
-      _sync: 'synced'
-    });
+    await getCanaClient()
+      .table(entityTable('User').storeName)
+      .put({
+        ...JSON.parse(JSON.stringify(user)),
+        _sync: 'synced'
+      });
   };
 
   /** GET /users/{id} (operationId getOneById). Concurrent callers share one flight. */
@@ -95,7 +97,7 @@ export const useProfileStore = defineStore('profile', () => {
     inflight = (async () => {
       try {
         if (isCanaOpen()) {
-          const local = await getLocal<Record<string, unknown>>('User', userId);
+          const local = await getLocal('User', userId);
           if (Array.isArray(local?.emails) && local.emails.length > 0) {
             record.value = asUserRecord(local);
             return;
@@ -136,7 +138,7 @@ export const useProfileStore = defineStore('profile', () => {
         operations: usersCrudConfig.operations
       });
       drainOutbox().catch(() => undefined);
-      const local = await getLocal<Record<string, unknown>>('User', userId);
+      const local = await getLocal('User', userId);
       if (local) record.value = asUserRecord(local);
       return;
     }
@@ -198,18 +200,16 @@ export const useProfileStore = defineStore('profile', () => {
     }
   };
 
-  const addEmail = (input: { email: string; type: string; isPrimary?: boolean }) => {
-    return reloadAfter('createEmail', {}, input);
-  };
+  const addEmail = (input: { email: string; type: string; isPrimary?: boolean }) =>
+    reloadAfter('createEmail', {}, input);
   const updateEmail = (
     emailId: string,
     input: { email?: string; type?: string; isPrimary?: boolean }
   ) => reloadAfter('updateEmail', { emailId }, { id: emailId, ...input });
   const removeEmail = (emailId: string) => reloadAfter('deleteEmail', { emailId });
 
-  const addDocument = (input: { type: string; countryIssue: string; data: string }) => {
-    return reloadAfter('createDocument', {}, input);
-  };
+  const addDocument = (input: { type: string; countryIssue: string; data: string }) =>
+    reloadAfter('createDocument', {}, input);
   const updateDocument = (
     documentId: string,
     input: { type?: string; countryIssue?: string; data?: string }

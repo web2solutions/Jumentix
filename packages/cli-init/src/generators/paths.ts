@@ -36,7 +36,9 @@ export function resolveFrontendTemplateRoot(packageRoot?: string): string {
  * quantified character-class regex (avoids ReDoS on long '-' runs).
  */
 export function sanitizeNpmNameSegment(value: string, fallback: string): string {
-  const source = String(value || '').trim().toLowerCase();
+  const source = String(value || '')
+    .trim()
+    .toLowerCase();
   let out = '';
   let pendingSep = false;
   for (let i = 0; i < source.length; i += 1) {
@@ -44,11 +46,11 @@ export function sanitizeNpmNameSegment(value: string, fallback: string): string 
     if (ch === '@' || ch === '/') {
       pendingSep = out.length > 0;
     } else if (
-      (ch >= 'a' && ch <= 'z')
-      || (ch >= '0' && ch <= '9')
-      || ch === '.'
-      || ch === '_'
-      || ch === '-'
+      (ch >= 'a' && ch <= 'z') ||
+      (ch >= '0' && ch <= '9') ||
+      ch === '.' ||
+      ch === '_' ||
+      ch === '-'
     ) {
       if (pendingSep && out.length > 0) {
         out += '-';

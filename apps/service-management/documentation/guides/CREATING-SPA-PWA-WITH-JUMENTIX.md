@@ -21,26 +21,26 @@ generates matching SDKs, and uses **Cana (IndexedDB)** for durable offline data.
 
 ## Prerequisites
 
-| Item | Required | Notes |
-| --- | --- | --- |
-| Bun 1.3.13+ | Yes | [Getting started](/docs/jumentix/concepts/getting-started) |
-| Factory CLI | Recommended | `npx @jumentix/cli-init init --mode=hybrid --frontend` (or `--mode=frontend`) |
-| Service Management app | Recommended | Domain Designer + Communication Interface Designer |
-| Backend contracts | Yes | OpenAPI and/or AsyncAPI from REST/realtime guides |
-| Browser with IndexedDB | Yes | Chrome, Firefox, Safari, Edge |
+| Item                   | Required    | Notes                                                                         |
+| ---------------------- | ----------- | ----------------------------------------------------------------------------- |
+| Bun 1.3.13+            | Yes         | [Getting started](/docs/jumentix/concepts/getting-started)                    |
+| Factory CLI            | Recommended | `npx @jumentix/cli-init init --mode=hybrid --frontend` (or `--mode=frontend`) |
+| Service Management app | Recommended | Domain Designer + Communication Interface Designer                            |
+| Backend contracts      | Yes         | OpenAPI and/or AsyncAPI from REST/realtime guides                             |
+| Browser with IndexedDB | Yes         | Chrome, Firefox, Safari, Edge                                                 |
 
 ## Glossary
 
-| Term | Meaning on this page |
-| --- | --- |
-| **SPA** | Single-page app — UI loads once; routing happens client-side. |
-| **PWA** | Web app installable/offline-capable via service worker + local storage. |
-| **Domain Designer** | Service Management tool for entities, relationships, bounded contexts. |
-| **Communication Interface Designer** | Tool picking REST-only vs WebSocket vs gRPC consumption. |
-| **designer-core** | `@jumentix/designer-core` — validates design documents (`domains`, `relationships`). |
-| **Cana** | `@jumentix/cana` — IndexedDB adapter; not the same as `localStorage`. |
-| **Conflict strategy** | Rule when offline edits sync — e.g. last-write-wins or domain merge. |
-| **Factory CLI** | `@jumentix/cli-init` — generates hybrid/frontend workspaces with baked OAS and modules. |
+| Term                                 | Meaning on this page                                                                    |
+| ------------------------------------ | --------------------------------------------------------------------------------------- |
+| **SPA**                              | Single-page app — UI loads once; routing happens client-side.                           |
+| **PWA**                              | Web app installable/offline-capable via service worker + local storage.                 |
+| **Domain Designer**                  | Service Management tool for entities, relationships, bounded contexts.                  |
+| **Communication Interface Designer** | Tool picking REST-only vs WebSocket vs gRPC consumption.                                |
+| **designer-core**                    | `@jumentix/designer-core` — validates design documents (`domains`, `relationships`).    |
+| **Cana**                             | `@jumentix/cana` — IndexedDB adapter; not the same as `localStorage`.                   |
+| **Conflict strategy**                | Rule when offline edits sync — e.g. last-write-wins or domain merge.                    |
+| **Factory CLI**                      | `@jumentix/cli-init` — generates hybrid/frontend workspaces with baked OAS and modules. |
 
 ## Numbered steps
 
@@ -81,11 +81,11 @@ repository docs `BOOTSTRAP-CLI-SCAFFOLDING.md` /
 
 Use **Communication Interface Designer** to choose how the SPA talks to backend:
 
-| Mode | Choose when | Client package |
-| --- | --- | --- |
-| REST only | CRUD screens, no live push | `@jumentix/sdk-rest-client` |
-| WebSocket + REST | Live dashboards, notifications | `@jumentix/sdk-websocket-client` + REST fallback |
-| gRPC + REST | Node-based BFF consuming backend | gRPC SDK (Node) + REST for browser |
+| Mode             | Choose when                      | Client package                                   |
+| ---------------- | -------------------------------- | ------------------------------------------------ |
+| REST only        | CRUD screens, no live push       | `@jumentix/sdk-rest-client`                      |
+| WebSocket + REST | Live dashboards, notifications   | `@jumentix/sdk-websocket-client` + REST fallback |
+| gRPC + REST      | Node-based BFF consuming backend | gRPC SDK (Node) + REST for browser               |
 
 Contracts become the source for SDK integration — do not hand-write fetch URLs that
 are not in OpenAPI.
@@ -141,13 +141,13 @@ await db.put('tasks', { id: '1', title: 'Draft offline', updatedAt: Date.now() }
 
 Run these gates before calling the PWA “done”:
 
-| Gate | Command / action |
-| --- | --- |
-| Contract alignment | OpenAPI/AsyncAPI diff vs designer export |
-| Backend CI | `bun run test:unit`, `bun run oas:check-routes` |
-| Frontend build | Production bundle builds without contract import errors |
-| Offline smoke | Load app offline; Cana records still readable |
-| Playgrounds | designer-core + Cana **Run** green below |
+| Gate               | Command / action                                        |
+| ------------------ | ------------------------------------------------------- |
+| Contract alignment | OpenAPI/AsyncAPI diff vs designer export                |
+| Backend CI         | `bun run test:unit`, `bun run oas:check-routes`         |
+| Frontend build     | Production bundle builds without contract import errors |
+| Offline smoke      | Load app offline; Cana records still readable           |
+| Playgrounds        | designer-core + Cana **Run** green below                |
 
 **Success check:** all gates pass; offline reload shows persisted entities.
 
@@ -165,14 +165,14 @@ Validate a design document, then persist records with Cana.
 
 ## Common errors
 
-| Symptom | Likely cause | Fix | Verify success |
-| --- | --- | --- | --- |
-| designer-core Run throws on `forEach` | Invalid payload shape (`entities` toy object) | Use `{ domains, relationships }` via `buildSampleModelPayload` pattern | Playground `{ ok: true }` |
-| `TransactionInactive` in Cana | Network I/O inside Cana transaction | Only IndexedDB awaits inside tx callback | Cana playground Run green |
-| SPA calls wrong URL | Hand-written paths bypass OpenAPI | Generate calls from `@jumentix/sdk-rest-client` | Network tab matches spec paths |
-| Offline data missing after reload | Used `localStorage` instead of Cana | Migrate stores to Cana IndexedDB | Reload retains records |
-| Realtime works locally, fails prod | WS URL not in AsyncAPI / env mismatch | Align Service Configuration env with deployment | WS connect + subscribe smoke |
-| Sync conflicts silently overwrite | No documented conflict strategy | Pick LWW or merge rules per entity | Test offline edit + online sync |
+| Symptom                               | Likely cause                                  | Fix                                                                    | Verify success                  |
+| ------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------- |
+| designer-core Run throws on `forEach` | Invalid payload shape (`entities` toy object) | Use `{ domains, relationships }` via `buildSampleModelPayload` pattern | Playground `{ ok: true }`       |
+| `TransactionInactive` in Cana         | Network I/O inside Cana transaction           | Only IndexedDB awaits inside tx callback                               | Cana playground Run green       |
+| SPA calls wrong URL                   | Hand-written paths bypass OpenAPI             | Generate calls from `@jumentix/sdk-rest-client`                        | Network tab matches spec paths  |
+| Offline data missing after reload     | Used `localStorage` instead of Cana           | Migrate stores to Cana IndexedDB                                       | Reload retains records          |
+| Realtime works locally, fails prod    | WS URL not in AsyncAPI / env mismatch         | Align Service Configuration env with deployment                        | WS connect + subscribe smoke    |
+| Sync conflicts silently overwrite     | No documented conflict strategy               | Pick LWW or merge rules per entity                                     | Test offline edit + online sync |
 
 ## Junior checklist (“I can …”)
 

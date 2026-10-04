@@ -3,23 +3,27 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
 import request from 'supertest';
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-
-import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import {
-  UserDataRepository, UserService, UserProviderLocal, AuthService
-} from '@src/modules/Users';
 
 import users from '@seed/users';
-import { closeServer } from '../closeServer';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import {
+  AuthService,
+  UserDataRepository,
+  UserProviderLocal,
+  UserService
+} from '@src/modules/Users';
+
+import closeServer from '../closeServer';
+
+import type { Express } from 'express';
 
 const [user1] = users;
 
@@ -43,11 +47,7 @@ const userService = UserService.compile({
 });
 const userProvider = UserProviderLocal.compile(userService);
 
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 const serverType = EHTTPFrameworks.express;
@@ -167,6 +167,8 @@ describe('express -> register suite', () => {
       .set('Accept', 'application/json; charset=utf-8');
     expect(response.statusCode).toBe(400);
     expect(response.body).toHaveProperty('error');
-    expect(response.body.message).toBe('Bad Request - The property usernames from input payload does not exist.');
+    expect(response.body.message).toBe(
+      'Bad Request - The property usernames from input payload does not exist.'
+    );
   });
 });

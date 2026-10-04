@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const {
-  evaluateNeedsFrontendPatchCoverage
-} = require('../needs-frontend-patch-coverage.js');
 const { isCoverageSubject } = require('../lib/coverage-subject.js');
+const { evaluateNeedsFrontendPatchCoverage } = require('../needs-frontend-patch-coverage.js');
 
 describe('needs-frontend-patch-coverage', () => {
   it('skips when the patch only changes package.json / release-policy', () => {
@@ -26,10 +23,7 @@ describe('needs-frontend-patch-coverage', () => {
     const verdict = evaluateNeedsFrontendPatchCoverage({
       rootDir: process.cwd(),
       baseRef: 'origin/main',
-      listFiles: () => [
-        'apps/frontend/src/data/sync.ts',
-        'package.json'
-      ]
+      listFiles: () => ['apps/frontend/src/data/sync.ts', 'package.json']
     });
     expect(verdict.needed).toBe(true);
     expect(verdict.subjects).toContain('apps/frontend/src/data/sync.ts');
@@ -52,12 +46,12 @@ describe('coverage-subject helpers in isolation', () => {
     expect.hasAssertions();
     // Local requires avoid colliding with other ci-cd test files under tsc
     // (TS2451 redeclare of fs/os/path across the suite graph).
-    // eslint-disable-next-line global-require
-    const fsLocal = require('fs');
-    // eslint-disable-next-line global-require
-    const osLocal = require('os');
-    // eslint-disable-next-line global-require
-    const pathLocal = require('path');
+
+    const fsLocal = require('node:fs');
+
+    const osLocal = require('node:os');
+
+    const pathLocal = require('node:path');
     const tmp = fsLocal.mkdtempSync(pathLocal.join(osLocal.tmpdir(), 'cov-subj-'));
     expect(isCoverageSubject('apps/frontend/src/missing.ts', { rootDir: tmp })).toBe(false);
   });

@@ -36,7 +36,6 @@ import {
   getDefaultRbacPolicy
 } from '../state/designerState.js';
 
-
 /**
  * Where an entity may sit inside its domain.
  *
@@ -51,27 +50,47 @@ export function entityWidth(entity) {
 }
 
 export function entityMinHeight(entity, compactEntities, largeCanvasMode) {
+  // eslint-disable-next-line no-use-before-define -- hoisted function declaration; the call runs after module evaluation
   return Math.max(ENTITY_MIN_HEIGHT, entityHeight(entity, compactEntities, largeCanvasMode));
 }
 
 export function entityBoxHeight(entity, compactEntities, largeCanvasMode) {
   return Number.isFinite(entity?.height)
-    ? Math.min(ENTITY_MAX_HEIGHT, Math.max(entityMinHeight(entity, compactEntities, largeCanvasMode), entity.height))
-    : entityHeight(entity, compactEntities, largeCanvasMode);
+    ? Math.min(
+        ENTITY_MAX_HEIGHT,
+        Math.max(entityMinHeight(entity, compactEntities, largeCanvasMode), entity.height)
+      )
+    : // eslint-disable-next-line no-use-before-define -- hoisted function declaration; the call runs after module evaluation
+      entityHeight(entity, compactEntities, largeCanvasMode);
 }
 
-export function resizeEntityBox(entity, width, height, compactEntities = false, largeCanvasMode = false) {
+export function resizeEntityBox(
+  entity,
+  width,
+  height,
+  compactEntities = false,
+  largeCanvasMode = false
+) {
   return {
     width: Math.min(ENTITY_MAX_WIDTH, Math.max(ENTITY_MIN_WIDTH, width)),
-    height: Math.min(ENTITY_MAX_HEIGHT, Math.max(entityMinHeight(entity, compactEntities, largeCanvasMode), height))
+    height: Math.min(
+      ENTITY_MAX_HEIGHT,
+      Math.max(entityMinHeight(entity, compactEntities, largeCanvasMode), height)
+    )
   };
 }
 
-export function clampEntityPosition(domain, x, y, entity = null, compactEntities = false, largeCanvasMode = false) {
-  void domain;
-  void entity;
-  void compactEntities;
-  void largeCanvasMode;
+export function clampEntityPosition(
+  domain,
+  x,
+  y,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- public signature contract: canvas callers pass the dragged entity; the clamp itself is size-agnostic
+  _entity = null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- public signature contract: mirrors entityMinHeight(resizeEntityBox) arity for canvas callers
+  _compactEntities = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- public signature contract: mirrors entityMinHeight(resizeEntityBox) arity for canvas callers
+  _largeCanvasMode = false
+) {
   return {
     x: Number.isFinite(x) ? x : 0,
     y: Number.isFinite(y) ? y : 0
@@ -117,17 +136,16 @@ export function minimumDomainSize(domain) {
     0
   );
   const neededWidth = entities.reduce(
-    (widest, entity) => Math.max(
-      widest,
-      (Number(entity?.x) || 0) - minEntityX + entityWidth(entity) + 16
-    ),
+    (widest, entity) =>
+      Math.max(widest, (Number(entity?.x) || 0) - minEntityX + entityWidth(entity) + 16),
     DOMAIN_MIN_WIDTH
   );
   const neededHeight = entities.reduce(
-    (tallest, entity) => Math.max(
-      tallest,
-      (Number(entity?.y) || 0) - minEntityY + entityBoxHeight(entity, false, false) + 24
-    ),
+    (tallest, entity) =>
+      Math.max(
+        tallest,
+        (Number(entity?.y) || 0) - minEntityY + entityBoxHeight(entity, false, false) + 24
+      ),
     DOMAIN_MIN_HEIGHT
   );
   return { width: neededWidth, height: neededHeight };
@@ -143,6 +161,7 @@ export function minimumDomainSize(domain) {
  * render outside the container they belong to.
  */
 export function domainBox(domain) {
+  // eslint-disable-next-line no-use-before-define -- hoisted function declaration; the call runs after module evaluation
   if (isDomainCollapsed(domain)) {
     const width = Number.isFinite(domain?.width) ? domain.width : DOMAIN_DEFAULT_WIDTH;
     return { width, height: DOMAIN_HEADER_HEIGHT };
@@ -178,9 +197,14 @@ export function isDomainCollapsed(domain) {
  * which is the same as no search at all.
  */
 export function searchModel(domains, query) {
-  const needle = String(query || '').trim().toLowerCase();
+  const needle = String(query || '')
+    .trim()
+    .toLowerCase();
   if (!needle) return [];
-  const matches = (value) => String(value || '').toLowerCase().includes(needle);
+  const matches = (value) =>
+    String(value || '')
+      .toLowerCase()
+      .includes(needle);
   const results = [];
 
   (domains || []).forEach((domain) => {
@@ -273,12 +297,8 @@ export function alignmentGuidesFor(domain, entity, x, y, options = {}) {
   siblings.forEach((sibling) => {
     const siblingHeight = entityHeight(sibling, compactEntities, largeCanvasMode);
     const siblingWidth = entityWidth(sibling);
-    const siblingVertical = [
-      sibling.x, sibling.x + siblingWidth / 2, sibling.x + siblingWidth
-    ];
-    const siblingHorizontal = [
-      sibling.y, sibling.y + siblingHeight / 2, sibling.y + siblingHeight
-    ];
+    const siblingVertical = [sibling.x, sibling.x + siblingWidth / 2, sibling.x + siblingWidth];
+    const siblingHorizontal = [sibling.y, sibling.y + siblingHeight / 2, sibling.y + siblingHeight];
 
     verticalEdges.forEach((edge, edgeIndex) => {
       siblingVertical.forEach((siblingEdge) => {
@@ -312,7 +332,9 @@ export function resizeDomainBox(domain, width, height) {
 }
 
 export function normalizedName(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 export function uniqueStrings(values) {
@@ -321,18 +343,24 @@ export function uniqueStrings(values) {
 
 export function isDomainNameTaken(domains, name, ignoredDomainId = null) {
   const value = normalizedName(name);
-  return domains.some((domain) => domain.id !== ignoredDomainId && normalizedName(domain.name) === value);
+  return domains.some(
+    (domain) => domain.id !== ignoredDomainId && normalizedName(domain.name) === value
+  );
 }
 
 export function isEntityNameTaken(domain, name, ignoredEntityId = null) {
   const value = normalizedName(name);
-  return domain.entities.some((entity) => entity.id !== ignoredEntityId && normalizedName(entity.name) === value);
+  return domain.entities.some(
+    (entity) => entity.id !== ignoredEntityId && normalizedName(entity.name) === value
+  );
 }
 
 export function isFieldNameTaken(entity, name, ignoredFieldName = null) {
   const value = normalizedName(name);
   return entity.fields.some(
-    (field) => normalizedName(field.name) !== normalizedName(ignoredFieldName) && normalizedName(field.name) === value
+    (field) =>
+      normalizedName(field.name) !== normalizedName(ignoredFieldName) &&
+      normalizedName(field.name) === value
   );
 }
 
@@ -348,7 +376,9 @@ export function findEntityByName(domains, name) {
   const normalized = normalizedName(name);
   if (!normalized) return null;
   for (const domain of domains) {
-    const entity = domain.entities.find((candidate) => normalizedName(candidate.name).includes(normalized));
+    const entity = domain.entities.find((candidate) =>
+      normalizedName(candidate.name).includes(normalized)
+    );
     if (entity) return { domain, entity };
   }
   return null;
@@ -370,7 +400,13 @@ export function fieldLabel(field) {
   return `${field.name}: ${field.type}${field.format ? `(${field.format})` : ''}${flags.length ? ` [${flags.join(', ')}]` : ''}`;
 }
 
-export function buildRelationshipName(domains, fromEntityId, toEntityId, fromCardinality, toCardinality) {
+export function buildRelationshipName(
+  domains,
+  fromEntityId,
+  toEntityId,
+  fromCardinality,
+  toCardinality
+) {
   const from = entityLabel(domains, fromEntityId);
   const to = entityLabel(domains, toEntityId);
   if (fromCardinality === 'N' && toCardinality === '1') return `${from} belongs to ${to}`;
@@ -386,7 +422,9 @@ export function severityRank(severity) {
 }
 
 export function getEntityRbacPolicy(entity) {
+  // eslint-disable-next-line no-param-reassign -- lazy default: the write-back onto the entity is the contract, so callers mutating the returned policy persist it
   if (!entity.meta) entity.meta = {};
+  // eslint-disable-next-line no-param-reassign -- lazy default: the write-back onto the entity is the contract, so callers mutating the returned policy persist it
   if (!entity.meta.rbac) entity.meta.rbac = getDefaultRbacPolicy();
   return entity.meta.rbac;
 }
@@ -437,8 +475,8 @@ export function oasFieldNameFlags(fieldName) {
 }
 
 export function fromOasType(schema = {}) {
-  const type = schema.type;
-  const format = schema.format;
+  const { type } = schema;
+  const { format } = schema;
   if (type === 'array') return 'array';
   if (type === 'object') return 'object';
   if (type === 'integer') return 'integer';
@@ -468,12 +506,13 @@ function trimEdgeCharRuns(value, char) {
 }
 
 export function toSchemaName(domainName, entityName) {
-  const normalize = (value) => trimEdgeCharRuns(
-    String(value || '')
-      .trim()
-      .replace(/[^a-zA-Z0-9]+/g, '_'),
-    '_'
-  );
+  const normalize = (value) =>
+    trimEdgeCharRuns(
+      String(value || '')
+        .trim()
+        .replace(/[^a-zA-Z0-9]+/g, '_'),
+      '_'
+    );
   const domainToken = normalize(domainName) || 'Domain';
   const entityToken = normalize(entityName) || 'Entity';
   return `${domainToken}_${entityToken}`;
@@ -564,7 +603,14 @@ export function entityFieldRowHeight(largeCanvasMode) {
  * into compact view) has no row to point at, and the caller falls back to the
  * side anchor rather than drawing a line to a row that is not on screen.
  */
-export function entityFieldAnchorPoint(domain, entity, fieldName, side, compactEntities, largeCanvasMode) {
+export function entityFieldAnchorPoint(
+  domain,
+  entity,
+  fieldName,
+  side,
+  compactEntities,
+  largeCanvasMode
+) {
   if (compactEntities) return null;
   const fields = Array.isArray(entity?.fields) ? entity.fields : [];
   const fieldIndex = fields.findIndex((field) => field.name === fieldName);
@@ -699,7 +745,10 @@ export function applyAutoLayout(domains) {
   const plannedDomainWidths = domains.map((domain) => {
     const entityCount = Math.max(1, domain.entities.length);
     const entityColumns = Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount))));
-    const widestEntity = Math.max(ENTITY_WIDTH, ...domain.entities.map((entity) => entityWidth(entity)));
+    const widestEntity = Math.max(
+      ENTITY_WIDTH,
+      ...domain.entities.map((entity) => entityWidth(entity))
+    );
     return padding * 2 + entityColumns * widestEntity + (entityColumns - 1) * entityGapX;
   });
   const widestDomain = Math.max(DOMAIN_MIN_WIDTH, ...plannedDomainWidths);
@@ -710,9 +759,8 @@ export function applyAutoLayout(domains) {
     const column = index % columns;
     const row = Math.floor(index / columns);
     const entityCount = domain.entities.length;
-    const entityColumns = entityCount > 0
-      ? Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount))))
-      : 1;
+    const entityColumns =
+      entityCount > 0 ? Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount)))) : 1;
     const rowTops = [];
     let nextTop = DOMAIN_HEADER_HEIGHT + padding;
     domain.entities.forEach((entity, entityIndex) => {
@@ -730,8 +778,13 @@ export function applyAutoLayout(domains) {
         nextTop += rowHeight + entityGapY;
       }
       const columnIndex = entityIndex % entityColumns;
-      const widestEntity = Math.max(ENTITY_WIDTH, ...domain.entities.map((member) => entityWidth(member)));
+      const widestEntity = Math.max(
+        ENTITY_WIDTH,
+        ...domain.entities.map((member) => entityWidth(member))
+      );
+      // eslint-disable-next-line no-param-reassign -- applyAutoLayout repositions the model in place by contract (see its doc comment)
       entity.x = padding + columnIndex * (widestEntity + entityGapX);
+      // eslint-disable-next-line no-param-reassign -- applyAutoLayout repositions the model in place by contract (see its doc comment)
       entity.y = rowTops[entityRow];
     });
 
@@ -739,9 +792,14 @@ export function applyAutoLayout(domains) {
     const domainWidth = Math.max(DOMAIN_MIN_WIDTH, plannedDomainWidths[index]);
     const domainHeight = Math.max(DOMAIN_MIN_HEIGHT, nextTop + padding);
     rowHeights[row] = Math.max(rowHeights[row] || 0, domainHeight);
+    // eslint-disable-next-line no-param-reassign -- applyAutoLayout repositions the model in place by contract (see its doc comment)
     domain.x = origin + column * (widestDomain + domainGapX);
-    domain.y = origin + rowHeights.slice(0, row).reduce((top, height) => top + height + domainGapY, 0);
+    // eslint-disable-next-line no-param-reassign -- applyAutoLayout repositions the model in place by contract (see its doc comment)
+    domain.y =
+      origin + rowHeights.slice(0, row).reduce((top, height) => top + height + domainGapY, 0);
+    // eslint-disable-next-line no-param-reassign -- applyAutoLayout repositions the model in place by contract (see its doc comment)
     domain.width = domainWidth;
+    // eslint-disable-next-line no-param-reassign -- applyAutoLayout repositions the model in place by contract (see its doc comment)
     domain.height = domainHeight;
   });
 }

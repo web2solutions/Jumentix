@@ -4,12 +4,12 @@ Raiz do tooling de CI/CD do repositório (Requisito 137).
 
 ## Layout
 
-| Caminho | Responsabilidade |
-| --- | --- |
-| `ci-cd/*.js` | Gates monorepo, runners, test-map, checks de release e governança |
-| `ci-cd/lib/` | Helpers compartilhados desses gates |
-| `ci-cd/test/` | Suites de prova dos scripts acima |
-| `ci-cd/ownership-placement-allowlist.json` | Registro shrink-only da dívida do Req 137 (estado estável: `[]`) |
+| Caminho                                    | Responsabilidade                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| `ci-cd/*.js`                               | Gates monorepo, runners, test-map, checks de release e governança |
+| `ci-cd/lib/`                               | Helpers compartilhados desses gates                               |
+| `ci-cd/test/`                              | Suites de prova dos scripts acima                                 |
+| `ci-cd/ownership-placement-allowlist.json` | Registro shrink-only da dívida do Req 137 (estado estável: `[]`)  |
 
 Scripts específicos de componente **não** ficam aqui. Pertencem a
 `apps/<A>/scripts/`, `packages/<P>/scripts/` ou `bin/`. O `package.json` raiz

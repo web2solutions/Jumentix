@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * A jsdom stand-in for `monaco-editor` (JUM-701).
  *
@@ -22,14 +21,14 @@
  */
 type Listener = () => void;
 
-export type MockModel = {
+export interface MockModel {
   getValue: () => string;
   setValue: (next: string) => void;
   dispose: () => void;
   language: string;
-};
+}
 
-export type MockEditor = {
+export interface MockEditor {
   onDidChangeModelContent: (listener: Listener) => { dispose: () => void };
   updateOptions: (options: Record<string, unknown>) => void;
   layout: () => void;
@@ -37,7 +36,7 @@ export type MockEditor = {
   getModel: () => MockModel;
   options: Record<string, unknown>;
   host: HTMLElement;
-};
+}
 
 /** Everything created during a test, so a suite can assert on the mount. */
 export const monacoTestState: {
@@ -63,7 +62,9 @@ function createModel(value: string, language: string): MockModel {
   let current = value;
   const model: MockModel = {
     getValue: () => current,
-    setValue: (next: string) => { current = next; },
+    setValue: (next: string) => {
+      current = next;
+    },
     dispose: () => {},
     language
   };
@@ -92,8 +93,12 @@ function create(host: HTMLElement, options: Record<string, unknown>): MockEditor
 export const editor = {
   create,
   createModel,
-  defineTheme: (name: string) => { monacoTestState.themes.push(name); },
-  setTheme: (name: string) => { monacoTestState.activeTheme = name; },
+  defineTheme: (name: string) => {
+    monacoTestState.themes.push(name);
+  },
+  setTheme: (name: string) => {
+    monacoTestState.activeTheme = name;
+  },
   setModelLanguage: (model: MockModel, language: string) => {
     // eslint-disable-next-line no-param-reassign
     model.language = language;

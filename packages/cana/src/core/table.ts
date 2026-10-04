@@ -22,23 +22,22 @@
  *    expects. `put` is available for callers who genuinely mean upsert.
  */
 
+import { canaError, requestToPromise, translateError } from './errors';
+import { applyBeforeWrite } from './hooks';
+import { planQuery, runCount, runCountWithMetrics, runQuery, runQueryWithMetrics } from './query';
+
 import type {
   CanaBulkWriteResult,
   CanaChangeType,
+  CanaCountMetrics,
   CanaKey,
   CanaQuery,
-  CanaCountMetrics,
   CanaQueryMetrics,
   CanaQueryPlan,
   CanaTable,
   CanaWriteResult
 } from '../contracts';
-import { canaError, requestToPromise, translateError } from './errors';
-import {
-  planQuery, runCount, runCountWithMetrics, runQuery, runQueryWithMetrics
-} from './query';
 import type { CanaHooks } from './hooks';
-import { applyBeforeWrite } from './hooks';
 import type { ChangeBuffer } from './transaction';
 
 export interface TableContext {
@@ -57,18 +56,20 @@ function assertKeyUsage(store: IDBObjectStore, key: CanaKey | undefined, operati
   if (key !== undefined && isInbound(store)) {
     // IndexedDB reports this as a bare DataError, which does not say that the
     // store's own keyPath is the reason the explicit key is unacceptable.
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError(
       'InvalidRequest',
-      `${operation} on "${store.name}" was given an explicit key, but the store has an inbound `
-        + `keyPath (${String(store.keyPath)}). The key must live inside the record.`,
+      `${operation} on "${store.name}" was given an explicit key, but the store has an inbound ` +
+        `keyPath (${String(store.keyPath)}). The key must live inside the record.`,
       { store: store.name, key }
     );
   }
   if (key === undefined && !isInbound(store) && !store.autoIncrement) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError(
       'InvalidRequest',
-      `${operation} on "${store.name}" needs an explicit key: the store uses outbound keys and `
-        + 'does not generate them.',
+      `${operation} on "${store.name}" needs an explicit key: the store uses outbound keys and ` +
+        'does not generate them.',
       { store: store.name }
     );
   }
@@ -78,16 +79,18 @@ function assertKeyUsage(store: IDBObjectStore, key: CanaKey | undefined, operati
 function extractKey(store: IDBObjectStore, record: unknown): CanaKey | undefined {
   // Callers only reach this behind `isInbound()`, which already requires a
   // non-null keyPath. Outbound stores never ask.
-  const path = store.keyPath as string | string[];
+  const path = store.keyPath;
 
-  const read = (segments: string): unknown => segments
-    .split('.')
-    .reduce<unknown>(
-      (value, segment) => (value === null || typeof value !== 'object'
-        ? undefined
-        : (value as Record<string, unknown>)[segment]),
-      record
-    );
+  const read = (segments: string): unknown =>
+    segments
+      .split('.')
+      .reduce<unknown>(
+        (value, segment) =>
+          value === null || typeof value !== 'object'
+            ? undefined
+            : (value as Record<string, unknown>)[segment],
+        record
+      );
 
   if (Array.isArray(path)) {
     const parts = path.map((segment) => read(segment));
@@ -114,6 +117,7 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       // Reached when the store was not in the transaction's scope, or when the
       // transaction has already finished — the auto-commit case, which is the
       // single most common misuse and deserves to say so.
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw translateError(error, { store: name });
     }
   };
@@ -125,7 +129,7 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       correlationId: context.correlationId,
       ...(key === undefined ? {} : { key }),
       ...(value === undefined ? {} : { record: value })
-    } as Parameters<ChangeBuffer['record']>[0]);
+    });
   };
 
   /**
@@ -134,23 +138,20 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
    * Called before the IndexedDB request is issued, so a veto costs nothing and a
    * transform is what lands on disk rather than something reconciled afterwards.
    */
-  const throughHooks = (
-    type: CanaChangeType,
-    key: CanaKey | undefined,
-    value: unknown
-  ): unknown => applyBeforeWrite(
-    context.hooks,
-    {
-      store: name,
-      type,
-      correlationId: context.correlationId,
-      // Callers only reach throughHooks for writes that carry a record. Delete
-      // uses `record()` directly and never asks the hook.
-      record: value,
-      ...(key === undefined ? {} : { key })
-    },
-    value
-  );
+  const throughHooks = (type: CanaChangeType, key: CanaKey | undefined, value: unknown): unknown =>
+    applyBeforeWrite(
+      context.hooks,
+      {
+        store: name,
+        type,
+        correlationId: context.correlationId,
+        // Callers only reach throughHooks for writes that carry a record. Delete
+        // uses `record()` directly and never asks the hook.
+        record: value,
+        ...(key === undefined ? {} : { key })
+      },
+      value
+    );
 
   // Generic over the request's result type because `IDBRequest<T>` is invariant:
   // `add`/`put` resolve to a key and `delete` resolves to undefined, and no
@@ -177,17 +178,13 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
 
       // Probed before the write, since afterwards every row exists.
       let itemType = type;
-      const probeKey = classifyPerItem && isInbound(target)
-        ? extractKey(target, source)
-        : undefined;
+      const probeKey =
+        classifyPerItem && isInbound(target) ? extractKey(target, source) : undefined;
       if (probeKey !== undefined) {
         // Sequential for the same reason the write below is: the probe belongs
         // to this row and must not race ahead of it.
         // eslint-disable-next-line no-await-in-loop
-        const existing = await requestToPromise(
-          target.count(probeKey as IDBValidKey),
-          { store: name }
-        );
+        const existing = await requestToPromise(target.count(probeKey), { store: name });
         itemType = existing > 0 ? 'updated' : 'created';
       } else if (classifyPerItem) {
         // Outbound or generated key: nothing to probe with, so the row can only
@@ -196,9 +193,7 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       }
 
       // A delete carries no record, so there is nothing for a hook to transform.
-      const item = itemType === 'deleted'
-        ? source
-        : throughHooks(itemType, undefined, source);
+      const item = itemType === 'deleted' ? source : throughHooks(itemType, undefined, source);
       // Sequential on purpose. Issuing every request up front and awaiting them
       // together reorders the writes relative to the input — which is precisely
       // the information a caller reconciling a partial import needs to be correct.
@@ -223,7 +218,7 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
 
     get(key: TKey): Promise<TRecord | undefined> {
       return requestToPromise<TRecord | undefined>(
-        store().get(key as IDBValidKey) as IDBRequest<TRecord | undefined>,
+        store().get(key) as IDBRequest<TRecord | undefined>,
         { store: name, key }
       );
     },
@@ -234,12 +229,12 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
 
       const writing = throughHooks('created', key, value) as TRecord;
       const written = await requestToPromise(
-        key === undefined ? target.add(writing) : target.add(writing, key as IDBValidKey),
+        key === undefined ? target.add(writing) : target.add(writing, key),
         { store: name, key }
       );
 
-      record('created', written as CanaKey, writing);
-      return { outcome: 'committed', key: written as CanaKey, events: [] };
+      record('created', written, writing);
+      return { outcome: 'committed', key: written, events: [] };
     },
 
     async put(value: TRecord, key?: TKey): Promise<CanaWriteResult> {
@@ -250,45 +245,47 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       // and subscribers depend on the distinction. The read is an IDB request in
       // the same transaction, so it costs a request, not the transaction.
       const probeKey = key ?? (isInbound(target) ? extractKey(target, value) : undefined);
-      const existed = probeKey === undefined
-        ? false
-        : (await requestToPromise(target.count(probeKey as IDBValidKey), { store: name })) > 0;
+      const existed =
+        probeKey === undefined
+          ? false
+          : (await requestToPromise(target.count(probeKey), { store: name })) > 0;
 
       const writing = throughHooks(existed ? 'updated' : 'created', key, value) as TRecord;
       const written = await requestToPromise(
-        key === undefined ? target.put(writing) : target.put(writing, key as IDBValidKey),
+        key === undefined ? target.put(writing) : target.put(writing, key),
         { store: name, key }
       );
 
-      record(existed ? 'updated' : 'created', written as CanaKey, writing);
-      return { outcome: 'committed', key: written as CanaKey, events: [] };
+      record(existed ? 'updated' : 'created', written, writing);
+      return { outcome: 'committed', key: written, events: [] };
     },
 
     async update(key: TKey, changes: Partial<TRecord>): Promise<CanaWriteResult> {
       const target = store();
 
       const current = await requestToPromise<TRecord | undefined>(
-        target.get(key as IDBValidKey) as IDBRequest<TRecord | undefined>,
+        target.get(key) as IDBRequest<TRecord | undefined>,
         { store: name, key }
       );
 
       if (current === undefined) {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
         throw canaError(
           'NotFound',
-          `Cannot update "${String(key)}" in "${name}": no such record. `
-            + 'update does not insert — use put when an upsert is intended.',
+          `Cannot update "${String(key)}" in "${name}": no such record. ` +
+            'update does not insert — use put when an upsert is intended.',
           { store: name, key }
         );
       }
 
       const merged = throughHooks('updated', key, { ...current, ...changes }) as TRecord;
       const written = await requestToPromise(
-        isInbound(target) ? target.put(merged) : target.put(merged, key as IDBValidKey),
+        isInbound(target) ? target.put(merged) : target.put(merged, key),
         { store: name, key }
       );
 
-      record('updated', written as CanaKey, merged);
-      return { outcome: 'committed', key: written as CanaKey, events: [] };
+      record('updated', written, merged);
+      return { outcome: 'committed', key: written, events: [] };
     },
 
     async delete(key: TKey): Promise<CanaWriteResult> {
@@ -297,9 +294,9 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       // Deleting a key that is not there succeeds silently in IndexedDB.
       // Checking first is what keeps a change event from claiming a deletion
       // that removed nothing, which a subscriber would otherwise act on.
-      const present = await requestToPromise(target.count(key as IDBValidKey), { store: name });
+      const present = await requestToPromise(target.count(key), { store: name });
 
-      await requestToPromise(target.delete(key as IDBValidKey), { store: name, key });
+      await requestToPromise(target.delete(key), { store: name, key });
 
       if (present > 0) record('deleted', key);
       return { outcome: 'committed', key, events: [] };
@@ -322,20 +319,14 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
     },
 
     bulkDelete(keys: readonly TKey[]): Promise<CanaBulkWriteResult> {
-      return bulk(
-        keys,
-        (target, item) => target.delete(item as IDBValidKey) as IDBRequest<undefined>,
-        'deleted'
-      );
+      return bulk(keys, (target, item) => target.delete(item as IDBValidKey), 'deleted');
     },
 
     count(query?: CanaQuery): Promise<number> {
       return runCount(store(), query);
     },
 
-    async explainCount(
-      query?: CanaQuery
-    ): Promise<{ count: number; metrics: CanaCountMetrics }> {
+    async explainCount(query?: CanaQuery): Promise<{ count: number; metrics: CanaCountMetrics }> {
       const { count, recordsExamined, usedNativeCount } = await runCountWithMetrics(store(), query);
       return { count, metrics: { recordsExamined, usedNativeCount } };
     },
@@ -344,9 +335,7 @@ export function createTable<TRecord, TKey extends CanaKey = CanaKey>(
       return runQuery<TRecord>(store(), query);
     },
 
-    async explain(
-      query?: CanaQuery
-    ): Promise<{
+    async explain(query?: CanaQuery): Promise<{
       records: readonly TRecord[];
       plan: CanaQueryPlan;
       metrics: CanaQueryMetrics;

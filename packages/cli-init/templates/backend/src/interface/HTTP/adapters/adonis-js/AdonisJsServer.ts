@@ -1,20 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable class-methods-use-this */
-import { createServer, Server } from 'http';
-import fs from 'fs';
-import path from 'path';
-import { createUuid } from '@src/modules/port/UUID';
-import { _HTTP_PORT_ } from '@src/config/constants';
+import fs from 'node:fs';
+import { createServer } from 'node:http';
+import path from 'node:path';
+
+import { HTTP_PORT } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
-import type {
-  IHTTPRequest,
-  IHTTPResponse,
-  IbaseHandler
-} from '@src/interface/HTTP/ports';
-import {
-  HTTPBaseServer
-} from '@src/interface/HTTP/ports';
+import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+import { createUuid } from '@src/modules/port/UUID';
+
+import type { Server } from 'node:http';
+
+import type { IbaseHandler, IHTTPRequest, IHTTPResponse } from '@src/interface/HTTP/ports';
 
 export type AdonisJsRequest = IHTTPRequest;
 export type AdonisJsResponse = {
@@ -80,13 +76,11 @@ class AdonisJsServer extends HTTPBaseServer<any> {
 
   constructor() {
     super();
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     const Router = require('find-my-way');
     this.router = Router();
 
     // Prime Adonis HTTP package if installed (kept optional for modular usage).
     try {
-      // eslint-disable-next-line global-require, import/no-extraneous-dependencies
       this.application.http = require('@adonisjs/http-server');
     } catch (error) {
       this.application.http = null;
@@ -193,7 +187,7 @@ class AdonisJsServer extends HTTPBaseServer<any> {
    *
    * Extracted rather than invented: `start` used to build this inline and then
    * bind it to a fixed port, which is why the suite named after this adapter
-   * never went near it. A suite that binds `_HTTP_PORT_` is also a suite that
+   * never went near it. A suite that binds `HTTP_PORT` is also a suite that
    * fails when anything else on the machine holds it (Requirement 134 §1).
    */
   public requestListener(): (req: any, res: any) => void {
@@ -221,23 +215,23 @@ class AdonisJsServer extends HTTPBaseServer<any> {
   }
 
   public async start(): Promise<void> {
-    this.server = createServer(this.requestListener());
+    const server = createServer(this.requestListener());
+    this.server = server;
     await new Promise<void>((resolve) => {
-      this.server!.listen(_HTTP_PORT_, resolve);
+      server.listen(HTTP_PORT, resolve);
     });
   }
 
   public async stop(): Promise<void> {
-    if (!this.server) return;
+    const { server } = this;
+    if (!server) return;
     await new Promise<void>((resolve) => {
-      this.server!.close(() => resolve());
+      server.close(() => resolve());
     });
   }
 
   public static compile(): HTTPBaseServer<any> {
-    if (!adonisJsServer) {
-      adonisJsServer = new AdonisJsServer();
-    }
+    adonisJsServer ??= new AdonisJsServer();
     return adonisJsServer;
   }
 }

@@ -1,32 +1,27 @@
 import { render, screen } from '@/test-utils';
-import {
-  BrandMark,
-  ActionLink,
-  SiteHeader,
-  SiteFooter,
-  Pagination,
-  LocaleSwitch,
-  DocsToolbar,
-  ArchitectureFlow,
-} from './index';
 
-const INVALID_LINK_PATTERNS = [
-  /href="\s*javascript:/i,
-  /href="\s*#\s*"/,
-  /href="\s*$/,
-];
+import {
+  ActionLink,
+  ArchitectureFlow,
+  BrandMark,
+  DocsToolbar,
+  LocaleSwitch,
+  Pagination,
+  SiteFooter,
+  SiteHeader
+} from '.';
+
+const INVALID_LINK_PATTERNS = [/href="\s*javascript:/i, /href="\s*#\s*"/, /href="\s*$/];
 
 const EXTERNAL_DOMAINS = ['github.com', 'vercel.com', 'mantine.dev', 'tabler.io'];
 
 function extractInternalLinks(html: string): string[] {
   const links: string[] = [];
-  const hrefRegex = /href="([^"]+)"/g;
-  let match;
-  while ((match = hrefRegex.exec(html)) !== null) {
+  for (const match of html.matchAll(/href="([^"]+)"/g)) {
     const href = match[1];
     if (!href) continue;
     if (href.startsWith('http://') || href.startsWith('https://')) {
-      const isExternal = EXTERNAL_DOMAINS.some(domain => href.includes(domain));
+      const isExternal = EXTERNAL_DOMAINS.some((domain) => href.includes(domain));
       if (!isExternal) {
         links.push(href);
       }
@@ -70,21 +65,29 @@ describe('Design System link quality', () => {
 
   it('ActionLink external has valid href', () => {
     expect.hasAssertions();
-    render(<ActionLink href="https://github.com/web2solutions/Jumentix" external>GitHub</ActionLink>);
+    render(
+      <ActionLink external href="https://github.com/web2solutions/Jumentix">
+        GitHub
+      </ActionLink>
+    );
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('href', 'https://github.com/web2solutions/Jumentix');
   });
 
   it('ActionLink quiet variant has valid href', () => {
     expect.hasAssertions();
-    render(<ActionLink href="/docs" variant="quiet">Docs</ActionLink>);
+    render(
+      <ActionLink href="/docs" variant="quiet">
+        Docs
+      </ActionLink>
+    );
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('href', '/docs');
   });
 
   it('SiteHeader has valid internal links (EN)', () => {
     expect.hasAssertions();
-    render(<SiteHeader locale="en" currentPath="/" />);
+    render(<SiteHeader currentPath="/" locale="en" />);
     const navLinks = screen.getAllByRole('link');
     for (const link of navLinks) {
       const href = link.getAttribute('href');
@@ -95,7 +98,7 @@ describe('Design System link quality', () => {
 
   it('SiteHeader has valid internal links (PT-BR)', () => {
     expect.hasAssertions();
-    render(<SiteHeader locale="pt-BR" currentPath="/produto" />);
+    render(<SiteHeader currentPath="/produto" locale="pt-BR" />);
     const navLinks = screen.getAllByRole('link');
     for (const link of navLinks) {
       const href = link.getAttribute('href');
@@ -128,7 +131,7 @@ describe('Design System link quality', () => {
 
   it('Pagination links have valid hrefs', () => {
     expect.hasAssertions();
-    render(<Pagination current={2} total={5} hrefBase="/test" />);
+    render(<Pagination current={2} hrefBase="/test" total={5} />);
     const links = screen.getAllByRole('link');
     for (const link of links) {
       const href = link.getAttribute('href');
@@ -138,7 +141,7 @@ describe('Design System link quality', () => {
 
   it('LocaleSwitch link has valid href', () => {
     expect.hasAssertions();
-    render(<LocaleSwitch locale="EN" href="/pt-BR" />);
+    render(<LocaleSwitch href="/pt-BR" locale="EN" />);
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('href', '/pt-BR');
   });
@@ -164,7 +167,6 @@ describe('Design System link quality', () => {
     // JUM-677: asserted as a set, not in a loop. `ArchitectureFlow` rendered
     // with one step has no links at all, so the loop never ran and this test
     // asserted nothing while passing.
-    expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null))
-      .toStrictEqual([]);
+    expect(internalLinks.filter((link) => hasInvalidPattern(link) !== null)).toStrictEqual([]);
   });
 });

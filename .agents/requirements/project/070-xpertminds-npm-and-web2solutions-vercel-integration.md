@@ -1,12 +1,14 @@
 # Requirement 070 - Jumentix NPM and web2solutions Vercel Integration
 
 ## Context
+
 - Jumentix public packages are published under npm organization `jumentix`.
 - Jumentix website deployment target is Vercel under scope/user `web2solutions`.
 - Setup must be prepared without immediate publish/deploy actions on a fresh
   workstation; CI on `main` owns production publish/deploy.
 
 ## Mandatory Rules
+
 1. Root npm configuration must include registry and auth-ready settings for `@jumentix`.
 2. Project must provide commands for:
    - npm identity/org validation
@@ -31,6 +33,7 @@
    operator recovery only and must not be the primary release path.
 
 ## Acceptance Criteria
+
 - `package.json` exposes npm and vercel integration commands.
 - `apps/jumentix-website` exposes scoped vercel commands.
 - Documentation exists for both integrations.

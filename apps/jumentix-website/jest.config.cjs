@@ -1,7 +1,7 @@
 const nextJest = require('next/jest');
 
 const createJestConfig = nextJest({
-  dir: './',
+  dir: './'
 });
 
 const customJestConfig = {
@@ -26,13 +26,13 @@ const customJestConfig = {
     // JUM-728: the theme package is ESM-only and does not resolve under jsdom.
     // `MDXMonacoPre` imports it for one thing — the `pre` it delegates shell
     // fences to — and the double provides exactly that.
-    '^nextra-theme-docs$': '<rootDir>/test/mocks/nextra-theme-docs.tsx',
+    '^nextra-theme-docs$': '<rootDir>/test/mocks/nextra-theme-docs.tsx'
   },
   testEnvironment: 'jest-environment-jsdom',
   // JUM-158: the route-discovery suite is ESM (.mjs) because the script it
   // guards is, and that script is also executed directly by the sweep. Without
   // this, next/jest silently matches nothing and the suite never runs.
-  testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)', '**/?(*.)+(spec|test).mjs'],
+  testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)', '**/?(*.)+(spec|test).mjs']
 };
 
 module.exports = createJestConfig(customJestConfig);

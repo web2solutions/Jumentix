@@ -1,9 +1,6 @@
-import { OpenAPIV3 } from 'openapi-types';
+import type { OpenAPIV3 } from 'openapi-types';
 
-const resolveRef = (
-  spec: OpenAPIV3.Document,
-  ref: string
-): Record<string, any> | undefined => {
+const resolveRef = (spec: OpenAPIV3.Document, ref: string): Record<string, any> | undefined => {
   if (!ref.startsWith('#/')) return undefined;
   const path = ref.slice(2).split('/');
   let current: any = spec;

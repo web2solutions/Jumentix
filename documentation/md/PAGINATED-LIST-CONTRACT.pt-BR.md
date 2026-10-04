@@ -14,20 +14,22 @@ escala. JUM-777 torna o comportamento de listagem parte do documento OpenAPI.
 
 ## Requisição
 
-| Parâmetro | Em | Tipo | Significado |
-| --- | --- | --- | --- |
-| `page` | query | inteiro ≥ 1, padrão 1 | número da página (base 1) |
-| `size` | query | inteiro 1…`maxSize`, padrão `defaultSize` | tamanho da página |
-| `filter` | query | string | base64 de um objeto JSON com chaves em campos **filterable** |
-| `sort` | query | string | pares `campo:asc\|desc` separados por vírgula sobre campos **sortable** |
-| `q` | query | string (≤ 200) | texto livre, sem distinção de caixa, sobre os campos **searchable** |
+| Parâmetro | Em    | Tipo                                      | Significado                                                             |
+| --------- | ----- | ----------------------------------------- | ----------------------------------------------------------------------- |
+| `page`    | query | inteiro ≥ 1, padrão 1                     | número da página (base 1)                                               |
+| `size`    | query | inteiro 1…`maxSize`, padrão `defaultSize` | tamanho da página                                                       |
+| `filter`  | query | string                                    | base64 de um objeto JSON com chaves em campos **filterable**            |
+| `sort`    | query | string                                    | pares `campo:asc\|desc` separados por vírgula sobre campos **sortable** |
+| `q`       | query | string (≤ 200)                            | texto livre, sem distinção de caixa, sobre os campos **searchable**     |
 
 Valores de `filter`: escalar significa igualdade (`{ "roles": "admin" }` casa com um campo array que
 contém o valor); objeto aplica um operador:
 
 ```json
-{ "firstName": { "operator": "contains", "value": "an" },
-  "createdAt": { "operator": "between", "value": ["2026-01-01", "2026-01-31T23:59:59.999Z"] } }
+{
+  "firstName": { "operator": "contains", "value": "an" },
+  "createdAt": { "operator": "between", "value": ["2026-01-01", "2026-01-31T23:59:59.999Z"] }
+}
 ```
 
 Operadores aceitos: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`, `contains`, `ilike`, `like`,
@@ -45,8 +47,16 @@ partir disso e o servidor rejeita tudo fora dele:
 ```yaml
 x-list-capabilities:
   sortable: [firstName, lastName, username, organization, createdAt, updatedAt]
-  filterable: { firstName: text, lastName: text, username: text, organization: uuid,
-                roles: enum, createdAt: date, updatedAt: date }
+  filterable:
+    {
+      firstName: text,
+      lastName: text,
+      username: text,
+      organization: uuid,
+      roles: enum,
+      createdAt: date,
+      updatedAt: date
+    }
   searchable: [firstName, lastName, username]
   defaultSize: 30
   maxSize: 100

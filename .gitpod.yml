@@ -8,5 +8,3 @@ tasks:
   - init: npm install
     name: Install Dependencies
   - command: npm run test && npm run dev:fastify
-
-

@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const REQUIREMENTS_DIRECTORY = '.agents/requirements';
@@ -56,52 +57,65 @@ function collectRequirementInventory(rootDir = process.cwd()) {
     .sort((a, b) => a.localeCompare(b));
   // The files behind each duplicate, so the failure can name them instead of
   // leaving the reader to grep two directories for a three-digit prefix.
-  const duplicateFiles = Object.fromEntries(duplicates.map((id) => [
-    id,
-    files.filter((file) => path.basename(file).startsWith(`${id}-`)).sort((a, b) => a.localeCompare(b))
-  ]));
+  const duplicateFiles = Object.fromEntries(
+    duplicates.map((id) => [
+      id,
+      files
+        .filter((file) => path.basename(file).startsWith(`${id}-`))
+        .sort((a, b) => a.localeCompare(b))
+    ])
+  );
 
   return {
-    files, ids, duplicates, duplicateFiles, invalidFiles
+    files,
+    ids,
+    duplicates,
+    duplicateFiles,
+    invalidFiles
   };
 }
 
 function extractIndexedFiles(contents) {
-  return [...String(contents || '').matchAll(/\(requirements\/(project|software)\/([^)]+\.md)\)/g)]
-    .map((match) => `${match[1]}/${match[2]}`);
+  return [
+    ...String(contents || '').matchAll(/\(requirements\/(project|software)\/([^)]+\.md)\)/g)
+  ].map((match) => `${match[1]}/${match[2]}`);
 }
 
 function extractLedgerIds(contents) {
-  const groups = String(contents || '').match(
-    /## Requirement Groups([\s\S]*?)## Governance Binding/
-  )?.[1] || '';
-  return [...new Set([...groups.matchAll(/`(\d{3})`/g)].map((match) => match[1]))]
-    .sort((a, b) => a.localeCompare(b));
+  const groups =
+    String(contents || '').match(/## Requirement Groups([\s\S]*?)## Governance Binding/)?.[1] || '';
+  return [...new Set([...groups.matchAll(/`(\d{3})`/g)].map((match) => match[1]))].sort((a, b) =>
+    a.localeCompare(b)
+  );
 }
 
 function extractBacktickedIds(contents) {
-  return [...new Set(
-    [...String(contents || '').matchAll(/`(\d{3})`/g)].map((match) => match[1])
-  )].sort((a, b) => a.localeCompare(b));
+  return [
+    ...new Set([...String(contents || '').matchAll(/`(\d{3})`/g)].map((match) => match[1]))
+  ].sort((a, b) => a.localeCompare(b));
 }
 
 function extractNfrRegistryIds(contents) {
   const ids = [];
-  String(contents || '').split('\n').forEach((line) => {
-    const entryPrefix = line.match(/^- ((?:`\d{3}`\/?)+)(?:\s|$)/)?.[1] || '';
-    ids.push(...extractBacktickedIds(entryPrefix));
-  });
+  String(contents || '')
+    .split('\n')
+    .forEach((line) => {
+      const entryPrefix = line.match(/^- ((?:`\d{3}`\/?)+)(?:\s|$)/)?.[1] || '';
+      ids.push(...extractBacktickedIds(entryPrefix));
+    });
   return [...new Set(ids)].sort((a, b) => a.localeCompare(b));
 }
 
 function extractCoverageClassification(contents) {
   const source = String(contents || '');
-  const nfrBlock = source.match(
-    /## (?:Non-Functional Requirements Coverage|Cobertura de requisitos não funcionais)([\s\S]*?)## (?:Functional Requirements Coverage|Cobertura de Requisitos Funcionais)/i
-  )?.[1] || '';
-  const functionalBlock = source.match(
-    /## (?:Functional Requirements Coverage|Cobertura de Requisitos Funcionais)([\s\S]*?)## (?:Binding Rule|Regra de vinculação)/i
-  )?.[1] || '';
+  const nfrBlock =
+    source.match(
+      /## (?:Non-Functional Requirements Coverage|Cobertura de requisitos não funcionais)([\s\S]*?)## (?:Functional Requirements Coverage|Cobertura de Requisitos Funcionais)/i
+    )?.[1] || '';
+  const functionalBlock =
+    source.match(
+      /## (?:Functional Requirements Coverage|Cobertura de Requisitos Funcionais)([\s\S]*?)## (?:Binding Rule|Regra de vinculação)/i
+    )?.[1] || '';
 
   return {
     nfrIds: extractBacktickedIds(nfrBlock),
@@ -148,8 +162,8 @@ function validateRequirementsRegistry(rootDir = process.cwd()) {
   inventory.duplicates.forEach((id) => {
     const owners = inventory.duplicateFiles[id] || [];
     failures.push(
-      `[requirements] duplicate requirement ID ${id} used by ${owners.length} files: `
-      + `${owners.join(', ')}`
+      `[requirements] duplicate requirement ID ${id} used by ${owners.length} files: ` +
+        `${owners.join(', ')}`
     );
   });
   inventory.files.forEach((file) => {
@@ -176,61 +190,63 @@ function validateRequirementsRegistry(rootDir = process.cwd()) {
   let canonicalClassification;
   COVERAGE_DOCUMENTS.forEach((documentPath) => {
     const classification = extractCoverageClassification(read(rootDir, documentPath));
-    const classifiedIds = [...new Set([
-      ...classification.nfrIds,
-      ...classification.functionalIds
-    ])].sort((a, b) => a.localeCompare(b));
-    const overlappingIds = classification.nfrIds.filter(
-      (id) => classification.functionalIds.includes(id)
+    const classifiedIds = [
+      ...new Set([...classification.nfrIds, ...classification.functionalIds])
+    ].sort((a, b) => a.localeCompare(b));
+    const overlappingIds = classification.nfrIds.filter((id) =>
+      classification.functionalIds.includes(id)
     );
     const missingClassifications = inventory.ids.filter((id) => !classifiedIds.includes(id));
     const staleClassifications = classifiedIds.filter((id) => !inventory.ids.includes(id));
 
     if (classification.declaredNfrCount !== classification.nfrIds.length) {
       failures.push(
-        `[requirements] NFR count mismatch in ${documentPath}: declared `
-        + `${String(classification.declaredNfrCount)}, found ${String(classification.nfrIds.length)}`
+        `[requirements] NFR count mismatch in ${documentPath}: declared ` +
+          `${String(classification.declaredNfrCount)}, found ${String(classification.nfrIds.length)}`
       );
     }
     if (classification.declaredFunctionalCount !== classification.functionalIds.length) {
       failures.push(
-        `[requirements] functional count mismatch in ${documentPath}: declared `
-        + `${String(classification.declaredFunctionalCount)}, `
-        + `found ${String(classification.functionalIds.length)}`
+        `[requirements] functional count mismatch in ${documentPath}: declared ` +
+          `${String(classification.declaredFunctionalCount)}, ` +
+          `found ${String(classification.functionalIds.length)}`
       );
     }
     if (missingClassifications.length > 0) {
       failures.push(
-        `[requirements] coverage classification missing IDs in ${documentPath}: `
-        + missingClassifications.join(', ')
+        `[requirements] coverage classification missing IDs in ${documentPath}: ${missingClassifications.join(
+          ', '
+        )}`
       );
     }
     if (staleClassifications.length > 0) {
       failures.push(
-        `[requirements] coverage classification contains stale IDs in ${documentPath}: `
-        + staleClassifications.join(', ')
+        `[requirements] coverage classification contains stale IDs in ${documentPath}: ${staleClassifications.join(
+          ', '
+        )}`
       );
     }
     if (overlappingIds.length > 0) {
       failures.push(
-        `[requirements] coverage classification overlaps in ${documentPath}: `
-        + overlappingIds.join(', ')
+        `[requirements] coverage classification overlaps in ${documentPath}: ${overlappingIds.join(
+          ', '
+        )}`
       );
     }
 
     if (!canonicalClassification) {
       canonicalClassification = classification;
     } else if (
-      canonicalClassification.nfrIds.join(',') !== classification.nfrIds.join(',')
-      || canonicalClassification.functionalIds.join(',')
-        !== classification.functionalIds.join(',')
+      canonicalClassification.nfrIds.join(',') !== classification.nfrIds.join(',') ||
+      canonicalClassification.functionalIds.join(',') !== classification.functionalIds.join(',')
     ) {
       failures.push(`[requirements] bilingual coverage classification drift: ${documentPath}`);
     }
   });
 
-  const missingNfrMappings = (canonicalClassification?.nfrIds || [])
-    .filter((id) => !nfrRegistryIds.includes(id));
+  const missingNfrMappings = (canonicalClassification?.nfrIds || []).filter(
+    (id) => !nfrRegistryIds.includes(id)
+  );
   if (missingNfrMappings.length > 0) {
     failures.push(`[requirements] NFR registry missing IDs: ${missingNfrMappings.join(', ')}`);
   }
@@ -255,8 +271,8 @@ function run(rootDir = process.cwd()) {
 
   const inventory = collectRequirementInventory(rootDir);
   console.log(
-    `Requirements registry is consistent: ${String(inventory.files.length)} files, `
-    + `${String(inventory.ids.length)} unique IDs, no duplicates.`
+    `Requirements registry is consistent: ${String(inventory.files.length)} files, ` +
+      `${String(inventory.ids.length)} unique IDs, no duplicates.`
   );
   return 0;
 }
@@ -266,18 +282,18 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
-  COVERAGE_DOCUMENTS,
-  INVENTORY_DOCUMENTS,
-  LEDGER_PATH,
-  NFR_REGISTRY_PATH,
-  REQUIREMENTS_DIRECTORY,
-  REQUIREMENTS_INDEX,
   collectRequirementInventory,
+  COVERAGE_DOCUMENTS,
   extractCoverageClassification,
   extractIndexedFiles,
   extractLedgerIds,
   extractNfrRegistryIds,
+  INVENTORY_DOCUMENTS,
   inventoryMarker,
+  LEDGER_PATH,
+  NFR_REGISTRY_PATH,
+  REQUIREMENTS_DIRECTORY,
+  REQUIREMENTS_INDEX,
   run,
   validateRequirementsRegistry
 };

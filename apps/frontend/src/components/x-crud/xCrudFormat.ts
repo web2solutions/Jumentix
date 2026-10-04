@@ -2,15 +2,15 @@
  * XCrudField — the single source of truth for "how to display/edit this OAS
  * field" (JUM-772). Shared by the 3 form modes, grid cells and inline edit.
  */
-import type { FieldDescriptor } from '@/contracts/formSchema';
 import { currentLocale, t } from '@/i18n';
 
+import type { FieldDescriptor } from '@/contracts/formSchema';
+
 /** `createdAt`/`updatedAt` render as timestamps even when a preview lacks the descriptor format. */
-export const isTimestampField = (descriptor: Pick<FieldDescriptor, 'name' | 'format'>): boolean => (
-  descriptor.format === 'date-time'
-  || descriptor.format === 'date'
-  || ['createdAt', 'updatedAt'].includes(descriptor.name)
-);
+export const isTimestampField = (descriptor: Pick<FieldDescriptor, 'name' | 'format'>): boolean =>
+  descriptor.format === 'date-time' ||
+  descriptor.format === 'date' ||
+  ['createdAt', 'updatedAt'].includes(descriptor.name);
 
 /** Readonly display of one value, formatted per OAS type/format and locale (JUM-780). */
 export const formatCellValue = (descriptor: FieldDescriptor, value: unknown): string => {
@@ -28,23 +28,29 @@ export const formatCellValue = (descriptor: FieldDescriptor, value: unknown): st
     if (descriptor.format === 'percent') return `${numeric}%`;
     return new Intl.NumberFormat(locale).format(numeric);
   }
-  if (descriptor.format === 'date-time' || descriptor.format === 'date' || isTimestampField(descriptor)) {
+  if (
+    descriptor.format === 'date-time' ||
+    descriptor.format === 'date' ||
+    isTimestampField(descriptor)
+  ) {
     const time = Date.parse(String(value));
     if (!Number.isNaN(time)) {
-      return new Date(time).toLocaleString(locale, descriptor.format === 'date'
-        ? { dateStyle: 'short' }
-        : { dateStyle: 'short', timeStyle: 'short' });
+      return new Date(time).toLocaleString(
+        locale,
+        descriptor.format === 'date'
+          ? { dateStyle: 'short' }
+          : { dateStyle: 'short', timeStyle: 'short' }
+      );
     }
   }
   return String(value);
 };
 
 /** True when the field is editable inline in the grid (scalars only). */
-export const isInlineEditable = (descriptor: FieldDescriptor): boolean => (
-  !['array', 'object'].includes(descriptor.type)
-  && descriptor.format !== 'password'
-  && !['id', 'createdAt', 'updatedAt'].includes(descriptor.name)
-);
+export const isInlineEditable = (descriptor: FieldDescriptor): boolean =>
+  !['array', 'object'].includes(descriptor.type) &&
+  descriptor.format !== 'password' &&
+  !['id', 'createdAt', 'updatedAt'].includes(descriptor.name);
 
 /** True for array-of-scalars fields (chips/checkbox groups). */
 export const isScalarArray = (descriptor: FieldDescriptor): boolean => descriptor.type === 'array';

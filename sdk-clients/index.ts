@@ -1,5 +1,4 @@
-/* eslint-disable import/export */
 export * from './spec/loadSpecs';
-export * from './rest/RestApiClient';
-export * from './websocket/WebSocketApiClient';
-export * from './grpc/GrpcApiClient';
+export { default as RestApiClient } from './rest/RestApiClient';
+export { default as WebSocketApiClient } from './websocket/WebSocketApiClient';
+export { default as GrpcApiClient } from './grpc/GrpcApiClient';

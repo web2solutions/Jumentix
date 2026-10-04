@@ -6,11 +6,7 @@
  * surfaces timeout/`Unavailable` when the worker is killed.
  */
 
-import {
-  createRouter,
-  createWorkerClient,
-  isCanaErrorCode
-} from '../src';
+import { createRouter, createWorkerClient, isCanaErrorCode } from '../src';
 import { rejection } from './harness';
 
 const WORKER_BUNDLE = '.browser-tests/cana/cana-real-worker.js';
@@ -18,6 +14,7 @@ const WORKER_BUNDLE = '.browser-tests/cana/cana-real-worker.js';
 describe('cana real dedicated Worker', () => {
   it('round-trips CRUD and broadcasts through a real Worker', () => {
     cy.readFile(WORKER_BUNDLE).then(async (source: string) => {
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
       const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
       const worker = new Worker(url);
       const broadcasts: unknown[] = [];
@@ -37,12 +34,15 @@ describe('cana real dedicated Worker', () => {
         const rows = await api.query<{ id: number }>('designs');
         expect(rows).to.have.length(1);
         // Change broadcasts are best-effort; give the host a turn to deliver.
-        await new Promise((resolve) => { setTimeout(resolve, 50); });
+        await new Promise((resolve) => {
+          setTimeout(resolve, 50);
+        });
         expect(broadcasts.length).to.be.greaterThan(0);
         await api.close();
       } finally {
         router.dispose();
         worker.terminate();
+        // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
         URL.revokeObjectURL(url);
       }
     });
@@ -50,6 +50,7 @@ describe('cana real dedicated Worker', () => {
 
   it('times out in-flight work when the Worker is terminated', () => {
     cy.readFile(WORKER_BUNDLE).then(async (source: string) => {
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
       const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
       const worker = new Worker(url);
       const router = createRouter({
@@ -63,11 +64,11 @@ describe('cana real dedicated Worker', () => {
         worker.terminate();
         const failure = await rejection(api.ping());
         expect(
-          isCanaErrorCode(failure, 'Unavailable')
-          || isCanaErrorCode(failure, 'UnknownOutcome')
+          isCanaErrorCode(failure, 'Unavailable') || isCanaErrorCode(failure, 'UnknownOutcome')
         ).to.equal(true);
       } finally {
         router.dispose();
+        // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
         URL.revokeObjectURL(url);
       }
     });

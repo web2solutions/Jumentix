@@ -59,7 +59,10 @@
   cursor: pointer;
   stroke: var(--jtx-line-strong);
   stroke-width: 1.25;
-  transition: stroke-width var(--jtx-motion-fast), stroke var(--jtx-motion-fast), fill var(--jtx-motion-fast);
+  transition:
+    stroke-width var(--jtx-motion-fast),
+    stroke var(--jtx-motion-fast),
+    fill var(--jtx-motion-fast);
 }
 
 .ring:focus-visible {
@@ -67,12 +70,24 @@
   outline-offset: 2px;
 }
 
-.ring0 { fill: color-mix(in srgb, var(--jtx-coral-500) 32%, var(--jtx-surface)); }
-.ring1 { fill: color-mix(in srgb, var(--jtx-coral-500) 18%, var(--jtx-surface)); }
-.ring2 { fill: color-mix(in srgb, var(--jtx-ink) 10%, var(--jtx-surface)); }
-.ring3 { fill: color-mix(in srgb, var(--jtx-green-500) 18%, var(--jtx-surface)); }
-.ring4 { fill: color-mix(in srgb, var(--jtx-ink) 7%, var(--jtx-surface)); }
-.ring5 { fill: var(--jtx-surface-raised); }
+.ring0 {
+  fill: color-mix(in srgb, var(--jtx-coral-500) 32%, var(--jtx-surface));
+}
+.ring1 {
+  fill: color-mix(in srgb, var(--jtx-coral-500) 18%, var(--jtx-surface));
+}
+.ring2 {
+  fill: color-mix(in srgb, var(--jtx-ink) 10%, var(--jtx-surface));
+}
+.ring3 {
+  fill: color-mix(in srgb, var(--jtx-green-500) 18%, var(--jtx-surface));
+}
+.ring4 {
+  fill: color-mix(in srgb, var(--jtx-ink) 7%, var(--jtx-surface));
+}
+.ring5 {
+  fill: var(--jtx-surface-raised);
+}
 
 .ringActive {
   stroke: var(--jtx-coral-500);
@@ -107,7 +122,10 @@
   padding: 6px 12px;
   font-size: 0.8rem;
   cursor: pointer;
-  transition: border-color var(--jtx-motion-fast), background var(--jtx-motion-fast), transform var(--jtx-motion-fast);
+  transition:
+    border-color var(--jtx-motion-fast),
+    background var(--jtx-motion-fast),
+    transform var(--jtx-motion-fast);
 }
 
 .pill:hover {

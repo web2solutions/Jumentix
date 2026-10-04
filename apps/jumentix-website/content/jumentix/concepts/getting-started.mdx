@@ -28,12 +28,12 @@ page gets you from zero to a verified first success in under 30 minutes.
 
 ## Prerequisites
 
-| Item | Minimum | How to verify |
-| --- | --- | --- |
-| **Bun** | 1.3.13+ (pinned in the monorepo) | `bun --version` prints `1.3.13` or higher |
-| **Terminal** | Any modern shell | You can run commands in your project folder |
-| **Editor** | VS Code, Cursor, or similar | You can open TypeScript files |
-| **Node.js** | 22.x (optional) | Only needed if a legacy tool still requires Node |
+| Item         | Minimum                          | How to verify                                    |
+| ------------ | -------------------------------- | ------------------------------------------------ |
+| **Bun**      | 1.3.13+ (pinned in the monorepo) | `bun --version` prints `1.3.13` or higher        |
+| **Terminal** | Any modern shell                 | You can run commands in your project folder      |
+| **Editor**   | VS Code, Cursor, or similar      | You can open TypeScript files                    |
+| **Node.js**  | 22.x (optional)                  | Only needed if a legacy tool still requires Node |
 
 Install Bun if you do not have it yet:
 
@@ -49,21 +49,21 @@ bun --version
 
 ## Glossary
 
-| Term | Plain meaning |
-| --- | --- |
-| **Contract** | A machine-readable description of an API shape — usually OpenAPI (REST) or AsyncAPI (realtime). |
-| **Adapter** | Code that connects your domain to a technology (Express, Socket.IO, IndexedDB, Redis, etc.). Adapters are swappable. |
-| **Domain** | Business entities, rules, and events — the code that should not change when you swap HTTP frameworks. |
-| **Use case** | Application-layer logic that orchestrates domain rules for one user-facing action. |
-| **Port** | An interface your domain defines; an adapter implements it. |
-| **Hexagonal architecture** | Domain at the center; adapters on the outside. Also called ports and adapters. |
-| **OpenAPI** | YAML/JSON spec describing REST endpoints, request bodies, and response shapes. |
-| **AsyncAPI** | Spec describing channels and message payloads for WebSocket or event streams. |
-| **Bun** | Fast JavaScript/TypeScript runtime and package manager used across Jumentix workspaces. |
-| **Factory CLI** | `@jumentix/cli-init` — `jumentix init|add|upgrade|doctor` generates a lean workspace for one factory mode. |
-| **GenerationPlan** | Normalized plan from designer export, OAS, catalog URL, or Users preset before files are written. |
-| **Cana** | `@jumentix/cana` — IndexedDB adapter for offline-first PWAs. |
-| **Service Management** | The Jumentix app where Domain Designer and service configuration live. |
+| Term                       | Plain meaning                                                                                                        |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Contract**               | A machine-readable description of an API shape — usually OpenAPI (REST) or AsyncAPI (realtime).                      |
+| **Adapter**                | Code that connects your domain to a technology (Express, Socket.IO, IndexedDB, Redis, etc.). Adapters are swappable. |
+| **Domain**                 | Business entities, rules, and events — the code that should not change when you swap HTTP frameworks.                |
+| **Use case**               | Application-layer logic that orchestrates domain rules for one user-facing action.                                   |
+| **Port**                   | An interface your domain defines; an adapter implements it.                                                          |
+| **Hexagonal architecture** | Domain at the center; adapters on the outside. Also called ports and adapters.                                       |
+| **OpenAPI**                | YAML/JSON spec describing REST endpoints, request bodies, and response shapes.                                       |
+| **AsyncAPI**               | Spec describing channels and message payloads for WebSocket or event streams.                                        |
+| **Bun**                    | Fast JavaScript/TypeScript runtime and package manager used across Jumentix workspaces.                              |
+| **Factory CLI**            | `@jumentix/cli-init` — `jumentix init                                                                                | add | upgrade | doctor` generates a lean workspace for one factory mode. |
+| **GenerationPlan**         | Normalized plan from designer export, OAS, catalog URL, or Users preset before files are written.                    |
+| **Cana**                   | `@jumentix/cana` — IndexedDB adapter for offline-first PWAs.                                                         |
+| **Service Management**     | The Jumentix app where Domain Designer and service configuration live.                                               |
 
 ## Numbered steps
 
@@ -78,11 +78,11 @@ bun --version
 
 Choose one path — do not try both on day one:
 
-| Path | When to use | First command after setup |
-| --- | --- | --- |
+| Path                             | When to use                                              | First command after setup                  |
+| -------------------------------- | -------------------------------------------------------- | ------------------------------------------ |
 | **Generate a product workspace** | You want a runnable Jumentix app (default first success) | `npx @jumentix/cli-init init` — see Step 3 |
-| **Consume published packages** | You build an app that calls Jumentix SDKs only | `bun add @jumentix/sdk-rest-client` |
-| **Work inside the monorepo** | You contribute to or extend the factory itself | `bun install` at the repo root |
+| **Consume published packages**   | You build an app that calls Jumentix SDKs only           | `bun add @jumentix/sdk-rest-client`        |
+| **Work inside the monorepo**     | You contribute to or extend the factory itself           | `bun install` at the repo root             |
 
 For product teams generating a workspace (recommended):
 
@@ -175,22 +175,22 @@ records created in the output panel.
 
 Complete these guides in order when you need each capability:
 
-| Order | Guide | You will |
-| --- | --- | --- |
-| 1 | [Create a REST API](/docs/jumentix/guides/rest-api) | Start a REST service, align OpenAPI, call it from `@jumentix/sdk-rest-client` |
-| 2 | [Create a Realtime API](/docs/jumentix/guides/realtime-api) | Enable WebSocket (or gRPC server-to-server) with REST fallback |
-| 3 | [Create a SPA or Offline PWA](/docs/jumentix/guides/spa-pwa) | Model domains in Service Management and persist offline with Cana |
-| 4 | [SaaS Monolith](/docs/jumentix/guides/saas-monolith) | Ship one deployment unit with modular boundaries |
-| 5 | [SaaS Microservices](/docs/jumentix/guides/saas-microservices) | Split bounded contexts when scale demands it |
+| Order | Guide                                                          | You will                                                                      |
+| ----- | -------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 1     | [Create a REST API](/docs/jumentix/guides/rest-api)            | Start a REST service, align OpenAPI, call it from `@jumentix/sdk-rest-client` |
+| 2     | [Create a Realtime API](/docs/jumentix/guides/realtime-api)    | Enable WebSocket (or gRPC server-to-server) with REST fallback                |
+| 3     | [Create a SPA or Offline PWA](/docs/jumentix/guides/spa-pwa)   | Model domains in Service Management and persist offline with Cana             |
+| 4     | [SaaS Monolith](/docs/jumentix/guides/saas-monolith)           | Ship one deployment unit with modular boundaries                              |
+| 5     | [SaaS Microservices](/docs/jumentix/guides/saas-microservices) | Split bounded contexts when scale demands it                                  |
 
 ### Step 7 — Full surface (when you need lookup, not tutorials)
 
-| Area | Path | Use when |
-| --- | --- | --- |
-| Packages | [/docs/jumentix/packages](/docs/jumentix/packages) | You need API docs or a **Try it** playground |
-| Adapters | [/docs/jumentix/adapters/http](/docs/jumentix/adapters/http) | You pick HTTP, database, or realtime adapters |
-| Reference | [/docs/jumentix/reference/errors-responses](/docs/jumentix/reference/errors-responses) | You debug status codes and error contracts |
-| AI maps | [/llms.txt](/llms.txt), [/docs-index.json](/docs-index.json) | Agents or search tools need a machine-readable index |
+| Area      | Path                                                                                   | Use when                                             |
+| --------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Packages  | [/docs/jumentix/packages](/docs/jumentix/packages)                                     | You need API docs or a **Try it** playground         |
+| Adapters  | [/docs/jumentix/adapters/http](/docs/jumentix/adapters/http)                           | You pick HTTP, database, or realtime adapters        |
+| Reference | [/docs/jumentix/reference/errors-responses](/docs/jumentix/reference/errors-responses) | You debug status codes and error contracts           |
+| AI maps   | [/llms.txt](/llms.txt), [/docs-index.json](/docs-index.json)                           | Agents or search tools need a machine-readable index |
 
 ## Examples
 
@@ -219,15 +219,15 @@ Use the Cana playground in Step 5 to run this pattern live.
 
 ## Common errors
 
-| Symptom | Likely cause | Fix | Verify success |
-| --- | --- | --- | --- |
-| `bun: command not found` | Bun not on PATH | Re-run the install script; restart the terminal | `bun --version` works |
-| `TransactionInactive` in Cana | `await fetch` (or other non-IndexedDB I/O) inside a Cana transaction | Only await IndexedDB work inside the transaction callback | Playground Run green; no transaction errors |
-| REST client cannot load specs | Node `fs` loader used in the browser | Inject the OpenAPI object (see REST guide playground) | Mock client returns `/health` |
-| Works in memory, fails in Redis | Wrong key-value adapter for the runtime | Start with InMemory in tests; use Redis adapter only in Node | Unit tests pass locally |
-| Lost offline data | Expecting `localStorage` to behave like IndexedDB | Use Cana; read `client.backend` after `open()` | Records survive page reload |
-| `jumentix init` exits 1 on missing answers | `--non-interactive` without full flags/config | Pass `--preset`/`--mode`/`--http`/`--db` or a `jumentix.init.json` via `--config` | Init writes `.jumentix/project.json` |
-| Cannot find adapters in generated app | Looking in the monorepo seed instead of the generated tree | `cd` into the `init` output and open `apps/<service>` | You can name one HTTP adapter file |
+| Symptom                                    | Likely cause                                                         | Fix                                                                               | Verify success                              |
+| ------------------------------------------ | -------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------- |
+| `bun: command not found`                   | Bun not on PATH                                                      | Re-run the install script; restart the terminal                                   | `bun --version` works                       |
+| `TransactionInactive` in Cana              | `await fetch` (or other non-IndexedDB I/O) inside a Cana transaction | Only await IndexedDB work inside the transaction callback                         | Playground Run green; no transaction errors |
+| REST client cannot load specs              | Node `fs` loader used in the browser                                 | Inject the OpenAPI object (see REST guide playground)                             | Mock client returns `/health`               |
+| Works in memory, fails in Redis            | Wrong key-value adapter for the runtime                              | Start with InMemory in tests; use Redis adapter only in Node                      | Unit tests pass locally                     |
+| Lost offline data                          | Expecting `localStorage` to behave like IndexedDB                    | Use Cana; read `client.backend` after `open()`                                    | Records survive page reload                 |
+| `jumentix init` exits 1 on missing answers | `--non-interactive` without full flags/config                        | Pass `--preset`/`--mode`/`--http`/`--db` or a `jumentix.init.json` via `--config` | Init writes `.jumentix/project.json`        |
+| Cannot find adapters in generated app      | Looking in the monorepo seed instead of the generated tree           | `cd` into the `init` output and open `apps/<service>`                             | You can name one HTTP adapter file          |
 
 ## Junior checklist (“I can …”)
 

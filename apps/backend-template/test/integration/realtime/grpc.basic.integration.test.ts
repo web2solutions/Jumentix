@@ -1,13 +1,14 @@
 /* global describe, it, expect, beforeAll, afterAll */
-import { GrpcAPI } from '@src/interface/gRPC/gRPCAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { composeUsersAuthServices } from '@src/modules/Users';
-import { InMemoryMessageMediator } from '@src/infra/messages/InMemoryMessageMediator';
 import { GrpcApiClient } from '@jumentix/sdk-grpc-client';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import InMemoryMessageMediator from '@src/infra/messages/InMemoryMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import { GrpcAPI } from '@src/interface/gRPC/gRPCAPI';
+import { composeUsersAuthServices } from '@src/modules/Users';
 
 const databaseClient = InMemoryDbClient;
 const passwordCryptoService = PasswordCryptoService.compile();
@@ -53,10 +54,12 @@ describe('realtime grpc integration', () => {
 
   it('responds with normalized error envelope for unknown operation', async () => {
     expect.hasAssertions();
-    await expect(client.request({
-      version: '1.0.0',
-      operationId: 'unknownOperation',
-      metadata: { requestId: 'grpc-int-1' }
-    })).rejects.toThrow('Operation "unknownOperation" not found.');
+    await expect(
+      client.request({
+        version: '1.0.0',
+        operationId: 'unknownOperation',
+        metadata: { requestId: 'grpc-int-1' }
+      })
+    ).rejects.toThrow('Operation "unknownOperation" not found.');
   });
 });

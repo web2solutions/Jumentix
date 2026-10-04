@@ -1,8 +1,9 @@
-import MetricWidget from '@/components/dashboard/MetricWidget.vue';
 import AdminUserRatioWidget from '@/components/dashboard/AdminUserRatioWidget.vue';
-import type { DashboardWidget } from '@/components/dashboard/types';
+import MetricWidget from '@/components/dashboard/MetricWidget.vue';
 import { metricsSpecForListOperation } from '@/contracts/metricsSchema';
-import { usersCrudConfig } from '@/features/users/usersCrudConfig';
+import usersCrudConfig from '@/features/users/usersCrudConfig';
+
+import type { DashboardWidget } from '@/components/dashboard/types';
 
 const usersMetrics = metricsSpecForListOperation(usersCrudConfig.operations.list);
 
@@ -12,7 +13,7 @@ const daysAgo = (days: number): string => {
   return date.toISOString();
 };
 
-export const usersDomainWidgets = (): DashboardWidget[] => {
+const usersDomainWidgets = (): DashboardWidget[] => {
   if (!usersMetrics) return [];
   return [
     {
@@ -57,3 +58,5 @@ export const usersDomainWidgets = (): DashboardWidget[] => {
     }
   ];
 };
+
+export default usersDomainWidgets;

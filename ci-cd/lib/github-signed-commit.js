@@ -3,7 +3,8 @@
  * Matches `.github/workflows/ci.yml` sync-changelog (createCommitOnBranch).
  * Required on `main` because branch protection demands PRs and verified commits.
  */
-const { execFileSync } = require('child_process');
+const { execFileSync } = require('node:child_process');
+
 const { ghBinary } = require('./gh-binary.js');
 
 function resolveToken(env = process.env) {
@@ -21,9 +22,7 @@ function resolveRepository(env = process.env) {
 function requireToken(env = process.env) {
   const token = resolveToken(env);
   if (!token) {
-    throw new Error(
-      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN (fail closed).'
-    );
+    throw new Error('Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN (fail closed).');
   }
   return token;
 }
@@ -100,7 +99,9 @@ function createSignedCommitOnBranchWithGh({
     input: payload,
     env: ghEnv(env),
     stdio: ['pipe', 'pipe', 'pipe']
-  }).toString().trim();
+  })
+    .toString()
+    .trim();
 
   const parsed = JSON.parse(stdout);
   if (parsed.errors?.length) {
@@ -125,33 +126,51 @@ function createAnnotatedTagRef({
   const binary = ghPath || ghBinary();
   const envWithToken = ghEnv(env);
 
-  const tagObject = JSON.parse(execFile(binary, [
-    'api',
-    `repos/${repository}/git/tags`,
-    '-f', `tag=${tag}`,
-    '-f', `message=${message}`,
-    '-f', `object=${commitSha}`,
-    '-f', 'type=commit'
-  ], {
-    encoding: 'utf8',
-    env: envWithToken,
-    stdio: ['ignore', 'pipe', 'pipe']
-  }).toString().trim());
+  const tagObject = JSON.parse(
+    execFile(
+      binary,
+      [
+        'api',
+        `repos/${repository}/git/tags`,
+        '-f',
+        `tag=${tag}`,
+        '-f',
+        `message=${message}`,
+        '-f',
+        `object=${commitSha}`,
+        '-f',
+        'type=commit'
+      ],
+      {
+        encoding: 'utf8',
+        env: envWithToken,
+        stdio: ['ignore', 'pipe', 'pipe']
+      }
+    )
+      .toString()
+      .trim()
+  );
 
   if (!tagObject.sha) {
     throw new Error(`Failed to create annotated tag object for ${tag}`);
   }
 
-  execFile(binary, [
-    'api',
-    `repos/${repository}/git/refs`,
-    '-f', `ref=refs/tags/${tag}`,
-    '-f', `sha=${tagObject.sha}`
-  ], {
-    encoding: 'utf8',
-    env: envWithToken,
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
+  execFile(
+    binary,
+    [
+      'api',
+      `repos/${repository}/git/refs`,
+      '-f',
+      `ref=refs/tags/${tag}`,
+      '-f',
+      `sha=${tagObject.sha}`
+    ],
+    {
+      encoding: 'utf8',
+      env: envWithToken,
+      stdio: ['ignore', 'pipe', 'pipe']
+    }
+  );
 
   return { tag, tagObjectSha: tagObject.sha, commitSha };
 }

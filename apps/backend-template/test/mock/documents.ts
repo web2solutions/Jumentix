@@ -1,7 +1,9 @@
 // import { UUID } from '@src/modules/port';
-import { DocumentValueObject, EDocumentType } from '@src/modules/ddd/valueObjects';
+import { EDocumentType } from '@src/modules/ddd/valueObjects';
 
-const documents: Array<DocumentValueObject> = [
+import type { DocumentValueObject } from '@src/modules/ddd/valueObjects';
+
+const documents: DocumentValueObject[] = [
   {
     data: '000-000-000',
     type: EDocumentType.SSN,

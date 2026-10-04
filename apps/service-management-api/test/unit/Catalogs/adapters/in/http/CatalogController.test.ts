@@ -1,21 +1,24 @@
-/* eslint-disable jest/max-expects, @typescript-eslint/no-var-requires */
-import fs from 'fs';
-import YAML from 'yaml';
-import { OpenAPIV3 } from 'openapi-types';
-import { CatalogController } from '@service-management-api/modules/Catalogs/adapters/in/http/controllers/CatalogController';
-import { CatalogDataRepository } from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
-import { CatalogService } from '@service-management-api/modules/Catalogs/service/CatalogService';
-import { CatalogUseCases } from '@service-management-api/modules/Catalogs/application/use-cases/CatalogUseCases';
-import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
-import { CatalogCreateRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogCreateRequestEvent';
-import { CatalogUpdateRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogUpdateRequestEvent';
-import { CatalogDeleteRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogDeleteRequestEvent';
-import { CatalogRestoreRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogRestoreRequestEvent';
-import { CatalogGetAllRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogGetAllRequestEvent';
-import { CatalogGetOneRequestEvent } from '@service-management-api/modules/Catalogs/events/CatalogGetOneRequestEvent';
-import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
-import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import fs from 'node:fs';
+
+import InMemoryRelationalStore from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
 import { TENANT_AUTHORIZATION_REASONS } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+import YAML from 'yaml';
+
+import CatalogController from '@service-management-api/modules/Catalogs/adapters/in/http/controllers/CatalogController';
+import CatalogDataRepository from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
+import CatalogUseCases from '@service-management-api/modules/Catalogs/application/use-cases/CatalogUseCases';
+import CatalogCreateRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogCreateRequestEvent';
+import CatalogDeleteRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogDeleteRequestEvent';
+import CatalogGetAllRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogGetAllRequestEvent';
+import CatalogGetOneRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogGetOneRequestEvent';
+import CatalogRestoreRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogRestoreRequestEvent';
+import CatalogUpdateRequestEvent from '@service-management-api/modules/Catalogs/events/CatalogUpdateRequestEvent';
+import CatalogService from '@service-management-api/modules/Catalogs/service/CatalogService';
+
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { OpenAPIV3 } from 'openapi-types';
+
+import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
 
 /**
  * Unit suite for the catalog inbound HTTP adapter (JUM-491): the REAL
@@ -57,32 +60,51 @@ const createStack = (principal: Record<string, any>) => {
     openApiSpecification: spec,
     databaseClient,
     catalogUseCases
-  } as any);
+  });
   return { controller, catalogUseCases };
 };
 
 const adminOrg1 = {
-  id: 'admin-1', username: 'admin@org1.dev', organization: 'org-1', roles: ['admin']
+  id: 'admin-1',
+  username: 'admin@org1.dev',
+  organization: 'org-1',
+  roles: ['admin']
 };
 const userOrg1 = {
-  id: 'user-1', username: 'user@org1.dev', organization: 'org-1', roles: ['user']
+  id: 'user-1',
+  username: 'user@org1.dev',
+  organization: 'org-1',
+  roles: ['user']
 };
 const adminOrg2 = {
-  id: 'admin-2', username: 'admin@org2.dev', organization: 'org-2', roles: ['admin']
+  id: 'admin-2',
+  username: 'admin@org2.dev',
+  organization: 'org-2',
+  roles: ['admin']
 };
 const superadmin = { id: 'root', username: 'root@xpertminds.dev', roles: ['superadmin'] };
 
 const design = { entities: [{ name: 'Invoice' }] };
 
+const seedBillingCatalog = async (catalogUseCases: ReturnType<typeof CatalogUseCases.compile>) => {
+  const created = await catalogUseCases.create({ organization: 'org-1', name: 'Billing', design });
+  if (!created.result) {
+    throw new Error('catalog seed failed');
+  }
+  return created.result;
+};
+
 describe('catalogController — TENANT-RBAC enforcement', () => {
   it('binds a tenant admin create to its own organization and stamps the actor', async () => {
     expect.hasAssertions();
     const { controller } = createStack(adminOrg1);
-    const { result, error } = await controller.create(new CatalogCreateRequestEvent({
-      authorization: 'Bearer token',
-      input: { name: 'Billing', design },
-      schemaOAS: operations['/catalogs'].post
-    }));
+    const { result, error } = await controller.create(
+      new CatalogCreateRequestEvent({
+        authorization: 'Bearer token',
+        input: { name: 'Billing', design },
+        schemaOAS: operations['/catalogs'].post
+      })
+    );
     expect(error).toBeUndefined();
     expect(result?.organization).toBe('org-1');
     expect(result?.createdBy).toBe('admin@org1.dev');
@@ -92,21 +114,27 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
   it('denies a tenant admin creating a record for another organization', async () => {
     expect.hasAssertions();
     const { controller } = createStack(adminOrg1);
-    await expect(controller.create(new CatalogCreateRequestEvent({
-      authorization: 'Bearer token',
-      input: { name: 'Billing', design, organization: 'org-2' },
-      schemaOAS: operations['/catalogs'].post
-    }))).rejects.toThrow(TENANT_AUTHORIZATION_REASONS.crossOrganization);
+    await expect(
+      controller.create(
+        new CatalogCreateRequestEvent({
+          authorization: 'Bearer token',
+          input: { name: 'Billing', design, organization: 'org-2' },
+          schemaOAS: operations['/catalogs'].post
+        })
+      )
+    ).rejects.toThrow(TENANT_AUTHORIZATION_REASONS.crossOrganization);
   });
 
   it('lets superadmin choose the organization explicitly', async () => {
     expect.hasAssertions();
     const { controller } = createStack(superadmin);
-    const { result, error } = await controller.create(new CatalogCreateRequestEvent({
-      authorization: 'Bearer token',
-      input: { name: 'Billing', design, organization: 'org-9' },
-      schemaOAS: operations['/catalogs'].post
-    }));
+    const { result, error } = await controller.create(
+      new CatalogCreateRequestEvent({
+        authorization: 'Bearer token',
+        input: { name: 'Billing', design, organization: 'org-9' },
+        schemaOAS: operations['/catalogs'].post
+      })
+    );
     expect(error).toBeUndefined();
     expect(result?.organization).toBe('org-9');
   });
@@ -114,7 +142,7 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
   it('denies reading a record of another organization — a client cannot grant itself access', async () => {
     expect.hasAssertions();
     const { catalogUseCases } = createStack(adminOrg1);
-    const created = (await catalogUseCases.create({ organization: 'org-1', name: 'Billing', design })).result!;
+    const created = await seedBillingCatalog(catalogUseCases);
 
     const foreignController = new CatalogController({
       authService: {
@@ -126,32 +154,40 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
       databaseClient: { stores: {} } as any,
       catalogUseCases
     } as any);
-    await expect(foreignController.getOneById(new CatalogGetOneRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: created.id },
-      schemaOAS: operations['/catalogs/{id}'].get
-    }))).rejects.toThrow(TENANT_AUTHORIZATION_REASONS.crossOrganization);
+    await expect(
+      foreignController.getOneById(
+        new CatalogGetOneRequestEvent({
+          authorization: 'Bearer token',
+          params: { id: created.id },
+          schemaOAS: operations['/catalogs/{id}'].get
+        })
+      )
+    ).rejects.toThrow(TENANT_AUTHORIZATION_REASONS.crossOrganization);
   });
 
   it('scopes the collection to the caller organization and honours includeDeleted', async () => {
     expect.hasAssertions();
     const { controller, catalogUseCases } = createStack(adminOrg1);
-    const own = (await catalogUseCases.create({ organization: 'org-1', name: 'Billing', design })).result!;
+    const own = await seedBillingCatalog(catalogUseCases);
     await catalogUseCases.create({ organization: 'org-2', name: 'Shipping', design });
     await catalogUseCases.delete(own.id, 1);
 
-    const activeOnly = await controller.getAll(new CatalogGetAllRequestEvent({
-      authorization: 'Bearer token',
-      queryString: { page: '1', size: '10' },
-      schemaOAS: operations['/catalogs'].get
-    }));
+    const activeOnly = await controller.getAll(
+      new CatalogGetAllRequestEvent({
+        authorization: 'Bearer token',
+        queryString: { page: '1', size: '10' },
+        schemaOAS: operations['/catalogs'].get
+      })
+    );
     expect(activeOnly.result).toHaveLength(0);
 
-    const withDeleted = await controller.getAll(new CatalogGetAllRequestEvent({
-      authorization: 'Bearer token',
-      queryString: { page: '1', size: '10', includeDeleted: 'true' },
-      schemaOAS: operations['/catalogs'].get
-    }));
+    const withDeleted = await controller.getAll(
+      new CatalogGetAllRequestEvent({
+        authorization: 'Bearer token',
+        queryString: { page: '1', size: '10', includeDeleted: 'true' },
+        schemaOAS: operations['/catalogs'].get
+      })
+    );
     expect(withDeleted.result).toHaveLength(1);
     expect(withDeleted.result?.[0].name).toBe('Billing');
     expect(withDeleted.result?.[0].deletedAt).not.toBe('');
@@ -160,7 +196,7 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
   it('updates with the current version for a same-team user role', async () => {
     expect.hasAssertions();
     const { catalogUseCases } = createStack(adminOrg1);
-    const created = (await catalogUseCases.create({ organization: 'org-1', name: 'Billing', design })).result!;
+    const created = await seedBillingCatalog(catalogUseCases);
 
     const teammate = new CatalogController({
       authService: {
@@ -172,12 +208,14 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
       databaseClient: { stores: {} } as any,
       catalogUseCases
     } as any);
-    const { result, error } = await teammate.update(new CatalogUpdateRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: created.id },
-      input: { version: 1, description: 'teammate edit' },
-      schemaOAS: operations['/catalogs/{id}'].put
-    }));
+    const { result, error } = await teammate.update(
+      new CatalogUpdateRequestEvent({
+        authorization: 'Bearer token',
+        params: { id: created.id },
+        input: { version: 1, description: 'teammate edit' },
+        schemaOAS: operations['/catalogs/{id}'].put
+      })
+    );
     expect(error).toBeUndefined();
     expect(result?.version).toBe(2);
     expect(result?.updatedBy).toBe('user@org1.dev');
@@ -186,15 +224,17 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
   it('propagates the stale-version conflict with the reconciliation metadata', async () => {
     expect.hasAssertions();
     const { controller, catalogUseCases } = createStack(adminOrg1);
-    const created = (await catalogUseCases.create({ organization: 'org-1', name: 'Billing', design })).result!;
+    const created = await seedBillingCatalog(catalogUseCases);
     await catalogUseCases.update(created.id, { version: 1, description: 'winner' });
 
-    const { result, error } = await controller.update(new CatalogUpdateRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: created.id },
-      input: { version: 1, description: 'stale' },
-      schemaOAS: operations['/catalogs/{id}'].put
-    }));
+    const { result, error } = await controller.update(
+      new CatalogUpdateRequestEvent({
+        authorization: 'Bearer token',
+        params: { id: created.id },
+        input: { version: 1, description: 'stale' },
+        schemaOAS: operations['/catalogs/{id}'].put
+      })
+    );
     expect(result).toBeUndefined();
     expect((error as any).code).toBe('GENERIC.CONFLICT');
     expect((error as any).metadata.currentVersion).toBe(2);
@@ -203,35 +243,43 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
   it('rejects a delete without a parseable version', async () => {
     expect.hasAssertions();
     const { controller, catalogUseCases } = createStack(adminOrg1);
-    const created = (await catalogUseCases.create({ organization: 'org-1', name: 'Billing', design })).result!;
-    await expect(controller.delete(new CatalogDeleteRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: created.id },
-      queryString: { version: 'not-a-number' },
-      schemaOAS: operations['/catalogs/{id}'].delete
-    }))).rejects.toThrow('version must be a positive integer');
+    const created = await seedBillingCatalog(catalogUseCases);
+    await expect(
+      controller.delete(
+        new CatalogDeleteRequestEvent({
+          authorization: 'Bearer token',
+          params: { id: created.id },
+          queryString: { version: 'not-a-number' },
+          schemaOAS: operations['/catalogs/{id}'].delete
+        })
+      )
+    ).rejects.toThrow('version must be a positive integer');
   });
 
   it('deletes and restores with the expected version', async () => {
     expect.hasAssertions();
     const { controller, catalogUseCases } = createStack(adminOrg1);
-    const created = (await catalogUseCases.create({ organization: 'org-1', name: 'Billing', design })).result!;
+    const created = await seedBillingCatalog(catalogUseCases);
 
-    const deleted = await controller.delete(new CatalogDeleteRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: created.id },
-      queryString: { version: '1' },
-      schemaOAS: operations['/catalogs/{id}'].delete
-    }));
+    const deleted = await controller.delete(
+      new CatalogDeleteRequestEvent({
+        authorization: 'Bearer token',
+        params: { id: created.id },
+        queryString: { version: '1' },
+        schemaOAS: operations['/catalogs/{id}'].delete
+      })
+    );
     expect(deleted.error).toBeUndefined();
     expect(deleted.result).toBe(true);
 
-    const restored = await controller.restore(new CatalogRestoreRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: created.id },
-      input: { version: 2 },
-      schemaOAS: operations['/catalogs/{id}/restore'].post
-    }));
+    const restored = await controller.restore(
+      new CatalogRestoreRequestEvent({
+        authorization: 'Bearer token',
+        params: { id: created.id },
+        input: { version: 2 },
+        schemaOAS: operations['/catalogs/{id}/restore'].post
+      })
+    );
     expect(restored.error).toBeUndefined();
     expect(restored.result?.deletedAt).toBe('');
     expect(restored.result?.version).toBe(3);
@@ -240,12 +288,14 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
   it('reads a record directly by id for a same-organization caller', async () => {
     expect.hasAssertions();
     const { controller, catalogUseCases } = createStack(adminOrg1);
-    const created = (await catalogUseCases.create({ organization: 'org-1', name: 'Billing', design })).result!;
-    const { result, error } = await controller.getOneById(new CatalogGetOneRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: created.id },
-      schemaOAS: operations['/catalogs/{id}'].get
-    }));
+    const created = await seedBillingCatalog(catalogUseCases);
+    const { result, error } = await controller.getOneById(
+      new CatalogGetOneRequestEvent({
+        authorization: 'Bearer token',
+        params: { id: created.id },
+        schemaOAS: operations['/catalogs/{id}'].get
+      })
+    );
     expect(error).toBeUndefined();
     expect(result?.id).toBe(created.id);
   });
@@ -253,11 +303,15 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
   it('propagates the not-found error for a missing record', async () => {
     expect.hasAssertions();
     const { controller } = createStack(adminOrg1);
-    await expect(controller.getOneById(new CatalogGetOneRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: '123e4567-e89b-42d3-a456-426614174000' },
-      schemaOAS: operations['/catalogs/{id}'].get
-    }))).rejects.toThrow('Record not found');
+    await expect(
+      controller.getOneById(
+        new CatalogGetOneRequestEvent({
+          authorization: 'Bearer token',
+          params: { id: '123e4567-e89b-42d3-a456-426614174000' },
+          schemaOAS: operations['/catalogs/{id}'].get
+        })
+      )
+    ).rejects.toThrow('Record not found');
   });
 
   it('compiles through the static factory like the route registration does', () => {
@@ -278,11 +332,14 @@ describe('catalogController — TENANT-RBAC enforcement', () => {
 
   it('fails closed when the use cases are not wired', () => {
     expect.hasAssertions();
-    expect(() => new CatalogController({
-      authService: { authenticate: () => Promise.resolve({}) } as any,
-      openApiSpecification: spec,
-      databaseClient: { stores: {} } as any
-    } as any)).toThrow('CatalogUseCases is not implemented');
+    expect(
+      () =>
+        new CatalogController({
+          authService: { authenticate: () => Promise.resolve({}) } as any,
+          openApiSpecification: spec,
+          databaseClient: { stores: {} } as any
+        } as any)
+    ).toThrow('CatalogUseCases is not implemented');
   });
 });
 
@@ -307,11 +364,13 @@ describe('catalogController actor stamping (JUM-721)', () => {
 
     const { controller } = createStack(machinePrincipal);
 
-    const { result, error } = await controller.create(new CatalogCreateRequestEvent({
-      authorization: 'Bearer token',
-      input: { name: 'Billing', design },
-      schemaOAS: operations['/catalogs'].post
-    }));
+    const { result, error } = await controller.create(
+      new CatalogCreateRequestEvent({
+        authorization: 'Bearer token',
+        input: { name: 'Billing', design },
+        schemaOAS: operations['/catalogs'].post
+      })
+    );
 
     expect(error).toBeUndefined();
     expect(result?.createdBy).toBe('svc-1');
@@ -322,11 +381,13 @@ describe('catalogController actor stamping (JUM-721)', () => {
 
     const { controller } = createStack({ organization: 'org-1', roles: ['admin'] });
 
-    const { result, error } = await controller.create(new CatalogCreateRequestEvent({
-      authorization: 'Bearer token',
-      input: { name: 'Billing', design },
-      schemaOAS: operations['/catalogs'].post
-    }));
+    const { result, error } = await controller.create(
+      new CatalogCreateRequestEvent({
+        authorization: 'Bearer token',
+        input: { name: 'Billing', design },
+        schemaOAS: operations['/catalogs'].post
+      })
+    );
 
     expect(error).toBeUndefined();
     expect(result?.createdBy).toBe('');
@@ -341,11 +402,15 @@ describe('catalogController actor stamping (JUM-721)', () => {
     // continue against nothing.
     const { controller } = createStack(adminOrg1);
 
-    await expect(controller.getOneById(new CatalogGetOneRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: '00000000-0000-4000-8000-0000000000ff' },
-      schemaOAS: operations['/catalogs/{id}'].get
-    }))).rejects.toThrow('Record not found');
+    await expect(
+      controller.getOneById(
+        new CatalogGetOneRequestEvent({
+          authorization: 'Bearer token',
+          params: { id: '00000000-0000-4000-8000-0000000000ff' },
+          schemaOAS: operations['/catalogs/{id}'].get
+        })
+      )
+    ).rejects.toThrow('Record not found');
   });
 });
 
@@ -358,25 +423,35 @@ describe('catalogController scope denial shapes (JUM-821)', () => {
     // clean 403 rather than a 500.
     const { controller } = createStack(undefined as never);
 
-    await expect(controller.create(new CatalogCreateRequestEvent({
-      authorization: 'Bearer token',
-      input: { name: 'Billing', design },
-      schemaOAS: operations['/catalogs'].post
-    }))).rejects.toThrow('missing Service Management scope create_catalog');
+    await expect(
+      controller.create(
+        new CatalogCreateRequestEvent({
+          authorization: 'Bearer token',
+          input: { name: 'Billing', design },
+          schemaOAS: operations['/catalogs'].post
+        })
+      )
+    ).rejects.toThrow('missing Service Management scope create_catalog');
   });
 
   it('denies a principal that carries no roles', async () => {
     expect.hasAssertions();
 
     const { controller } = createStack({
-      id: 'user-9', username: 'user@org1.dev', organization: 'org-1'
+      id: 'user-9',
+      username: 'user@org1.dev',
+      organization: 'org-1'
     });
 
-    await expect(controller.getAll(new CatalogGetAllRequestEvent({
-      authorization: 'Bearer token',
-      queryString: { page: '1' },
-      schemaOAS: operations['/catalogs'].get
-    }))).rejects.toThrow('missing Service Management scope read_catalog');
+    await expect(
+      controller.getAll(
+        new CatalogGetAllRequestEvent({
+          authorization: 'Bearer token',
+          queryString: { page: '1' },
+          schemaOAS: operations['/catalogs'].get
+        })
+      )
+    ).rejects.toThrow('missing Service Management scope read_catalog');
   });
 
   it('grants nothing for a role the catalog scope matrix does not know', async () => {
@@ -385,14 +460,21 @@ describe('catalogController scope denial shapes (JUM-821)', () => {
     // A role outside the matrix maps to no scopes at all — a new role must
     // fail closed, never inherit access by omission.
     const { controller } = createStack({
-      id: 'audit-1', username: 'auditor@org1.dev', organization: 'org-1', roles: ['auditor']
+      id: 'audit-1',
+      username: 'auditor@org1.dev',
+      organization: 'org-1',
+      roles: ['auditor']
     });
 
-    await expect(controller.getAll(new CatalogGetAllRequestEvent({
-      authorization: 'Bearer token',
-      queryString: { page: '1' },
-      schemaOAS: operations['/catalogs'].get
-    }))).rejects.toThrow('missing Service Management scope read_catalog');
+    await expect(
+      controller.getAll(
+        new CatalogGetAllRequestEvent({
+          authorization: 'Bearer token',
+          queryString: { page: '1' },
+          schemaOAS: operations['/catalogs'].get
+        })
+      )
+    ).rejects.toThrow('missing Service Management scope read_catalog');
   });
 
   it('refuses the read when the store answers with neither record nor error', async () => {
@@ -413,12 +495,16 @@ describe('catalogController scope denial shapes (JUM-821)', () => {
       openApiSpecification: spec,
       databaseClient: { stores: {} } as any,
       catalogUseCases: { getOneById: () => Promise.resolve({}) } as any
-    } as any);
+    });
 
-    await expect(controller.getOneById(new CatalogGetOneRequestEvent({
-      authorization: 'Bearer token',
-      params: { id: '123e4567-e89b-42d3-a456-426614174000' },
-      schemaOAS: operations['/catalogs/{id}'].get
-    }))).rejects.toThrow('target catalog not available');
+    await expect(
+      controller.getOneById(
+        new CatalogGetOneRequestEvent({
+          authorization: 'Bearer token',
+          params: { id: '123e4567-e89b-42d3-a456-426614174000' },
+          schemaOAS: operations['/catalogs/{id}'].get
+        })
+      )
+    ).rejects.toThrow('target catalog not available');
   });
 });

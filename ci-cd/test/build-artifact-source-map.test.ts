@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -29,11 +28,14 @@ function writeFixture(dir: string) {
   const jsPath = path.join(dir, 'thing.js');
   const mapPath = `${jsPath}.map`;
   fs.writeFileSync(jsPath, '// generated, not read directly by these tests\n');
-  fs.writeFileSync(mapPath, JSON.stringify({
-    version: 3,
-    sources: ['../src/thing.ts'],
-    mappings: FIXTURE_MAPPINGS
-  }));
+  fs.writeFileSync(
+    mapPath,
+    JSON.stringify({
+      version: 3,
+      sources: ['../src/thing.ts'],
+      mappings: FIXTURE_MAPPINGS
+    })
+  );
   return { jsPath, mapPath };
 }
 
@@ -157,11 +159,14 @@ describe('loadDistSourceMap', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dist-source-map-'));
     const jsPath = path.join(dir, 'bundle.js');
     fs.writeFileSync(jsPath, '// generated\n');
-    fs.writeFileSync(`${jsPath}.map`, JSON.stringify({
-      version: 3,
-      sources: ['a.ts', 'b.ts'],
-      mappings: FIXTURE_MAPPINGS
-    }));
+    fs.writeFileSync(
+      `${jsPath}.map`,
+      JSON.stringify({
+        version: 3,
+        sources: ['a.ts', 'b.ts'],
+        mappings: FIXTURE_MAPPINGS
+      })
+    );
 
     expect(loadDistSourceMap(jsPath, dir)).toBeNull();
     fs.rmSync(dir, { recursive: true, force: true });
@@ -172,11 +177,14 @@ describe('loadDistSourceMap', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dist-source-map-'));
     const jsPath = path.join(dir, 'copy.js');
     fs.writeFileSync(jsPath, '// generated\n');
-    fs.writeFileSync(`${jsPath}.map`, JSON.stringify({
-      version: 3,
-      sources: ['./copy-source.js'],
-      mappings: FIXTURE_MAPPINGS
-    }));
+    fs.writeFileSync(
+      `${jsPath}.map`,
+      JSON.stringify({
+        version: 3,
+        sources: ['./copy-source.js'],
+        mappings: FIXTURE_MAPPINGS
+      })
+    );
 
     expect(loadDistSourceMap(jsPath, dir)).toBeNull();
     fs.rmSync(dir, { recursive: true, force: true });
@@ -189,12 +197,15 @@ describe('loadDistSourceMap', () => {
     fs.mkdirSync(repoRoot);
     const jsPath = path.join(repoRoot, 'escapee.js');
     fs.writeFileSync(jsPath, '// generated\n');
-    fs.writeFileSync(`${jsPath}.map`, JSON.stringify({
-      version: 3,
-      // Escapes repoRoot entirely rather than landing under it.
-      sources: ['../outside/escapee.ts'],
-      mappings: FIXTURE_MAPPINGS
-    }));
+    fs.writeFileSync(
+      `${jsPath}.map`,
+      JSON.stringify({
+        version: 3,
+        // Escapes repoRoot entirely rather than landing under it.
+        sources: ['../outside/escapee.ts'],
+        mappings: FIXTURE_MAPPINGS
+      })
+    );
 
     expect(loadDistSourceMap(jsPath, repoRoot)).toBeNull();
     fs.rmSync(dir, { recursive: true, force: true });
@@ -300,11 +311,14 @@ describe('remapDistLcovRecord', () => {
     fs.mkdirSync(path.join(dir, 'src'));
     const jsPath = path.join(dir, 'dist', 'empty.js');
     fs.writeFileSync(jsPath, '"use strict";\n');
-    fs.writeFileSync(`${jsPath}.map`, JSON.stringify({
-      version: 3,
-      sources: ['../src/empty.ts'],
-      mappings: ''
-    }));
+    fs.writeFileSync(
+      `${jsPath}.map`,
+      JSON.stringify({
+        version: 3,
+        sources: ['../src/empty.ts'],
+        mappings: ''
+      })
+    );
     fs.writeFileSync(path.join(dir, 'src', 'empty.ts'), '');
     const record = ['SF:dist/empty.js', 'DA:1,0', 'end_of_record'].join('\n');
 

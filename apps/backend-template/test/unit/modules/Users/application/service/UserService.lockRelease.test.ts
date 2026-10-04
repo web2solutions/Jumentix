@@ -1,4 +1,4 @@
-import { UserService } from '@src/modules/Users/service/UserService';
+import UserService from '@src/modules/Users/service/UserService';
 
 /**
  * JUM-663 — a caller the mutex refused must not release the lock.
@@ -24,7 +24,7 @@ function setup(previouslyLocked: boolean) {
   const service = new UserService({
     dataRepository: dataRepository as never,
     services: { mutexService, passwordCryptoService: { hash: jest.fn(), compare: jest.fn() } }
-  } as never);
+  });
 
   return { service, mutexService };
 }
@@ -49,8 +49,9 @@ describe('userService lock release (JUM-663)', () => {
     // The other direction: a lock this caller *did* acquire has to come back,
     // or one bad write leaves the resource locked for ever.
     const { service, mutexService } = setup(false);
-    (service as unknown as { dataRepository: { getOneById: jest.Mock } })
-      .dataRepository.getOneById.mockRejectedValue(new Error('database down'));
+    (
+      service as unknown as { dataRepository: { getOneById: jest.Mock } }
+    ).dataRepository.getOneById.mockRejectedValue(new Error('database down'));
 
     const response = await service.update(RESOURCE, { firstName: 'Mary' } as never);
 

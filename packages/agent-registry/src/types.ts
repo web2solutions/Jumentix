@@ -87,7 +87,7 @@ export interface QueryDocumentSnapshot<T> {
 }
 
 export interface QuerySnapshot<T> {
-  docs: Array<QueryDocumentSnapshot<T>>;
+  docs: QueryDocumentSnapshot<T>[];
 }
 
 export interface CollectionReference<T> {
@@ -101,12 +101,7 @@ export interface FirestoreLike {
 
 /** Progress kinds published on the Firebase RTDB agent bus (Requirement 129). */
 export type AgentBusEventKind =
-  | 'started'
-  | 'progress'
-  | 'blocked'
-  | 'handoff'
-  | 'completed'
-  | 'conflict';
+  'started' | 'progress' | 'blocked' | 'handoff' | 'completed' | 'conflict';
 
 export interface AgentBusPresence {
   agentId: string;
@@ -153,7 +148,7 @@ export interface WatchBusInput {
 export interface BusStatusResult {
   epicId: string;
   presence: AgentBusPresence[];
-  recentEvents: Array<AgentBusEvent & { pushId: string }>;
+  recentEvents: (AgentBusEvent & { pushId: string })[];
 }
 
 export interface RtdbDataSnapshotLike {
@@ -173,10 +168,7 @@ export interface RtdbQueryLike {
     eventType: 'child_added',
     callback: (snapshot: RtdbDataSnapshotLike) => void
   ): (snapshot: RtdbDataSnapshotLike) => void;
-  off(
-    eventType?: 'child_added',
-    callback?: (snapshot: RtdbDataSnapshotLike) => void
-  ): void;
+  off(eventType?: 'child_added', callback?: (snapshot: RtdbDataSnapshotLike) => void): void;
   limitToLast(limit: number): RtdbQueryLike;
   orderByChild(path: string): RtdbQueryLike;
   orderByKey(): RtdbQueryLike;

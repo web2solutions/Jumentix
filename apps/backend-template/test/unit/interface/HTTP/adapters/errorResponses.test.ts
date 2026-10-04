@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, jest/max-expects */
-import { sendErrorResponse as sendDerbyErrorResponse } from '@src/interface/HTTP/adapters/derby-js/responses/sendErrorResponse';
-import { sendErrorResponse as sendFastifyErrorResponse } from '@src/interface/HTTP/adapters/fastify/responses/sendErrorResponse';
-import { sendErrorResponse as sendRestifyErrorResponse } from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
+/* eslint-disable jest/max-expects */
 import { ForbiddenError } from '@src/infra/exceptions';
+import sendDerbyErrorResponse from '@src/interface/HTTP/adapters/derby-js/responses/sendErrorResponse';
+import sendFastifyErrorResponse from '@src/interface/HTTP/adapters/fastify/responses/sendErrorResponse';
+import sendRestifyErrorResponse from '@src/interface/HTTP/adapters/restify/responses/sendErrorResponse';
 
 describe('http adapter error responses', () => {
   it('falls back to HTTP 500 when an error code has no mapping', () => {
@@ -27,16 +27,22 @@ describe('http adapter error responses', () => {
     sendDerbyErrorResponse(error, derbyResponse as never);
 
     expect(fastifyReply.code).toHaveBeenCalledWith(500);
-    expect(fastifyReply.send).toHaveBeenCalledWith(expect.objectContaining({
-      message: 'Forbidden - unknown mapped code'
-    }));
+    expect(fastifyReply.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Forbidden - unknown mapped code'
+      })
+    );
     expect(restifyResponse.status).toHaveBeenCalledWith(500);
-    expect(restifyResponse.json).toHaveBeenCalledWith(expect.objectContaining({
-      message: 'Forbidden - unknown mapped code'
-    }));
+    expect(restifyResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Forbidden - unknown mapped code'
+      })
+    );
     expect(derbyResponse.status).toHaveBeenCalledWith(500);
-    expect(derbyResponse.json).toHaveBeenCalledWith(expect.objectContaining({
-      message: 'Forbidden - unknown mapped code'
-    }));
+    expect(derbyResponse.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Forbidden - unknown mapped code'
+      })
+    );
   });
 });

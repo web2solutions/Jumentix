@@ -2,19 +2,16 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { writeInitConfig, type InitConfig } from '../config';
-import { mapLegacyServiceTypeToMode, type InitFlags } from '../args';
-import {
-  assembleWorkspace,
-  generateBackend,
-  generateFrontend
-} from '../generators';
+
+import { mapLegacyServiceTypeToMode } from '../args';
+import { writeInitConfig } from '../config';
+import { assembleWorkspace, generateBackend, generateFrontend } from '../generators';
 import { run as runLegacyBootstrap } from '../legacy/bootstrap';
-import {
-  printPlanSummary,
-  resolveSources,
-  SourceResolutionError
-} from '../sources';
+import { printPlanSummary, resolveSources, SourceResolutionError } from '../sources';
+
+import type { InitFlags } from '../args';
+import type { InitConfig } from '../config';
+import type { runCommand } from '../legacy/bootstrap';
 
 export function printInitHelp(log: (message?: string) => void = console.log): void {
   log(`
@@ -53,15 +50,10 @@ function wantsSourceResolution(flags: InitFlags): boolean {
 export async function runInit(options: {
   flags: InitFlags;
   log?: (message?: string) => void;
-  execute?: typeof import('../legacy/bootstrap').runCommand;
+  execute?: typeof runCommand;
   workingDirectory?: string;
 }): Promise<number> {
-  const {
-    flags,
-    log = console.log,
-    execute,
-    workingDirectory = process.cwd()
-  } = options;
+  const { flags, log = console.log, execute, workingDirectory = process.cwd() } = options;
 
   if (flags.help) {
     printInitHelp(log);
@@ -111,7 +103,9 @@ export async function runInit(options: {
       );
     }
     if (!(flags.dir || flags.projectName) && !wantsSourceResolution(flags)) {
-      throw new Error('Non-interactive init requires a target directory ([dir] or --project-name).');
+      throw new Error(
+        'Non-interactive init requires a target directory ([dir] or --project-name).'
+      );
     }
   }
 
@@ -134,9 +128,10 @@ export async function runInit(options: {
         ? projectName
         : path.resolve(workingDirectory, projectName);
 
-      const targetDir = (flags.dir || flags.projectName)
-        ? outputDir
-        : fs.mkdtempSync(path.join(os.tmpdir(), 'jumentix-init-'));
+      const targetDir =
+        flags.dir || flags.projectName
+          ? outputDir
+          : fs.mkdtempSync(path.join(os.tmpdir(), 'jumentix-init-'));
 
       if (plan.mode !== 'frontend') {
         const generated = await generateBackend({
@@ -146,8 +141,8 @@ export async function runInit(options: {
           log
         });
         log(
-          `Backend generation wrote ${generated.services.length} service(s) under `
-          + `${path.join(targetDir, 'apps')}.`
+          `Backend generation wrote ${generated.services.length} service(s) under ` +
+            `${path.join(targetDir, 'apps')}.`
         );
         for (const service of generated.services) {
           log(`  - ${service.packageName} (${service.root})`);
@@ -164,17 +159,15 @@ export async function runInit(options: {
           log
         });
         log(
-          `Frontend generation wrote ${frontend.packageName} at ${frontend.root} `
-          + `(modules=${frontend.modules.map((mod) => mod.moduleId).join(', ') || '(none)'}, `
-          + `offline=${frontend.offline ? 'yes' : 'no'}).`
+          `Frontend generation wrote ${frontend.packageName} at ${frontend.root} ` +
+            `(modules=${frontend.modules.map((mod) => mod.moduleId).join(', ') || '(none)'}, ` +
+            `offline=${frontend.offline ? 'yes' : 'no'}).`
         );
       } else {
         log('Skipping frontend generation (no --frontend / hybrid|frontend mode).');
       }
 
-      const usedUsersPreset = Boolean(
-        flags.preset === 'users' || (!flags.from && !flags.preset)
-      );
+      const usedUsersPreset = Boolean(flags.preset === 'users' || (!flags.from && !flags.preset));
       const assembled = await assembleWorkspace({
         outputDir: targetDir,
         projectName: path.basename(targetDir),
@@ -184,9 +177,10 @@ export async function runInit(options: {
           from: flags.from || undefined,
           preset: usedUsersPreset ? 'users' : undefined,
           http: (flags.http as InitConfig['http']) || plan.services[0]?.interfaces.http,
-          realtime: (flags.realtime as InitConfig['realtime'])
-            || plan.services[0]?.interfaces.realtime
-            || 'none',
+          realtime:
+            (flags.realtime as InitConfig['realtime']) ||
+            plan.services[0]?.interfaces.realtime ||
+            'none',
           db: (flags.db as InitConfig['db']) || plan.services[0]?.db || 'sqlite',
           frontend: Boolean(flags.frontend || plan.frontend),
           offline: Boolean(flags.offline || plan.frontend?.offline),
@@ -201,9 +195,9 @@ export async function runInit(options: {
         log
       });
       log(
-        `Workspace assembly complete (${assembled.fileCount} manifest entries`
-        + `${assembled.installed ? ', bun install' : ''}`
-        + `${assembled.gitInitialized ? ', git init' : ''}).`
+        `Workspace assembly complete (${assembled.fileCount} manifest entries${
+          assembled.installed ? ', bun install' : ''
+        }${assembled.gitInitialized ? ', git init' : ''}).`
       );
       return 0;
     } catch (error) {
@@ -244,7 +238,7 @@ export async function runInit(options: {
   }
 
   throw new Error(
-    `Factory generation for mode="${flags.mode || '(none)'}" is not implemented yet. `
-    + 'Pass --from or --preset to resolve a GenerationPlan.'
+    `Factory generation for mode="${flags.mode || '(none)'}" is not implemented yet. ` +
+      'Pass --from or --preset to resolve a GenerationPlan.'
   );
 }

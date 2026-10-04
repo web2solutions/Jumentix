@@ -1,17 +1,19 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const gateFs = require('fs');
-const gatePath = require('path');
+const gateFs = require('node:fs');
+const gatePath = require('node:path');
+
 const {
   FULL_MATRIX_QUALITY_GATE,
-  TASK_QUALITY_GATE,
-  UNIT_QUALITY_GATE,
   resolvePullRequestFlag,
   resolveTargetBranch,
   runBranchQualityGate,
-  selectQualityGate
+  selectQualityGate,
+  TASK_QUALITY_GATE,
+  UNIT_QUALITY_GATE
 } = require('../run-branch-quality-gate');
 
-type GateStep = { id: string };
+interface GateStep {
+  id: string;
+}
 
 /**
  * An `execute` that fails one named step and passes the rest.
@@ -35,8 +37,8 @@ function executeCrashing(crashingId: string) {
   return jest.fn((step: GateStep) => (behaviour[step.id] ?? pass)());
 }
 
-const stepIds = (execute: { mock: { calls: Array<[GateStep]> } }) => execute
-  .mock.calls.map(([step]) => step.id);
+const stepIds = (execute: { mock: { calls: [GateStep][] } }) =>
+  execute.mock.calls.map(([step]) => step.id);
 
 function runLocalBranchQualityGate(options: Record<string, unknown>) {
   return runBranchQualityGate({
@@ -98,16 +100,32 @@ describe('run-branch-quality-gate', () => {
     const execute = jest.fn().mockReturnValue(0);
     const logger = { log: jest.fn(), error: jest.fn() };
     const taskEvidence = runLocalBranchQualityGate({
-      targetBranch: 'codex/ci/191-example', isPullRequest: false, execute, logger, resultFile: ''
+      targetBranch: 'codex/ci/191-example',
+      isPullRequest: false,
+      execute,
+      logger,
+      resultFile: ''
     });
     const devEvidence = runLocalBranchQualityGate({
-      targetBranch: 'dev', isPullRequest: false, execute, logger, resultFile: ''
+      targetBranch: 'dev',
+      isPullRequest: false,
+      execute,
+      logger,
+      resultFile: ''
     });
     const mainEvidence = runLocalBranchQualityGate({
-      targetBranch: 'main', isPullRequest: false, execute, logger, resultFile: ''
+      targetBranch: 'main',
+      isPullRequest: false,
+      execute,
+      logger,
+      resultFile: ''
     });
     const devPrEvidence = runLocalBranchQualityGate({
-      targetBranch: 'dev', isPullRequest: true, execute, logger, resultFile: ''
+      targetBranch: 'dev',
+      isPullRequest: true,
+      execute,
+      logger,
+      resultFile: ''
     });
 
     // Lint runs ahead of the two gates that do not contain it, and not ahead of
@@ -115,13 +133,56 @@ describe('run-branch-quality-gate', () => {
     // integrity, workspace boundaries, and build:dev run ahead of all three,
     // including the strict matrix path used by release/main (JUM-683 / JUM-786).
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes',
-      'lint', 'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'unit',
-      'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'full-matrix',
-      'lint', 'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes'
+      'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
+      'test-integrity',
+      'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'task-changes',
+      'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
+      'test-integrity',
+      'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'unit',
+      'test-integrity',
+      'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'full-matrix',
+      'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
+      'test-integrity',
+      'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'task-changes'
     ]);
     const lintPassed = [
       { id: 'lint', script: 'lint', status: 0 },
+      { id: 'lint-frontend', script: 'lint:frontend', status: 0 },
+      { id: 'lint-website', script: 'lint:website', status: 0 },
+      { id: 'format-check', script: 'format:check', status: 0 },
       { id: 'test-integrity', script: 'test:integrity', status: 0 },
       { id: 'current-governance-docs', script: 'docs:check-current-governance', status: 0 },
       { id: 'documentation-audience', script: 'docs:check-audience', status: 0 },
@@ -213,18 +274,24 @@ describe('run-branch-quality-gate', () => {
     const {
       GENERATED_AUTOMATION_QUALITY_GATE: generatedGate
     } = require('../run-branch-quality-gate');
-    expect(selectQualityGate('main', {
-      context: 'release-pr-to-main',
-      headRef: 'chore/release-v0.2.15'
-    })).toBe(generatedGate);
-    expect(selectQualityGate('main', {
-      context: 'release-pr-to-main',
-      headRef: 'chore/changelog-sync-deadbeef'
-    })).toBe(generatedGate);
-    expect(selectQualityGate('main', {
-      context: 'release-pr-to-main',
-      headRef: 'chore/package-bump-deadbeef'
-    })).toBe(generatedGate);
+    expect(
+      selectQualityGate('main', {
+        context: 'release-pr-to-main',
+        headRef: 'chore/release-v0.2.15'
+      })
+    ).toBe(generatedGate);
+    expect(
+      selectQualityGate('main', {
+        context: 'release-pr-to-main',
+        headRef: 'chore/changelog-sync-deadbeef'
+      })
+    ).toBe(generatedGate);
+    expect(
+      selectQualityGate('main', {
+        context: 'release-pr-to-main',
+        headRef: 'chore/package-bump-deadbeef'
+      })
+    ).toBe(generatedGate);
   });
 
   it('runs only preflight plus the generated-automation script for release heads', () => {
@@ -238,11 +305,7 @@ describe('run-branch-quality-gate', () => {
       },
       spawn: jest.fn().mockReturnValue({
         status: 0,
-        stdout: [
-          'package.json',
-          'release-policy.json',
-          'apps/frontend/package.json'
-        ].join('\n')
+        stdout: ['package.json', 'release-policy.json', 'apps/frontend/package.json'].join('\n')
       }),
       execute,
       logger: { log: jest.fn(), error: jest.fn() },
@@ -259,6 +322,9 @@ describe('run-branch-quality-gate', () => {
     });
     expect(stepIds(execute)).toStrictEqual([
       'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
       'test-integrity',
       'current-governance-docs',
       'documentation-audience',
@@ -294,7 +360,18 @@ describe('run-branch-quality-gate', () => {
       script: 'ci:gate:task'
     });
     expect(stepIds(execute)).toStrictEqual([
-      'lint', 'test-integrity', 'current-governance-docs', 'documentation-audience', 'static-gates', 'workspace-boundaries', 'ownership-placement', 'build-dev', 'task-changes'
+      'lint',
+      'lint-frontend',
+      'lint-website',
+      'format-check',
+      'test-integrity',
+      'current-governance-docs',
+      'documentation-audience',
+      'static-gates',
+      'workspace-boundaries',
+      'ownership-placement',
+      'build-dev',
+      'task-changes'
     ]);
   });
 
@@ -390,6 +467,9 @@ describe('run-branch-quality-gate', () => {
 
     expect(TASK_QUALITY_GATE.preflight).toStrictEqual([
       { id: 'lint', script: 'lint' },
+      { id: 'lint-frontend', script: 'lint:frontend' },
+      { id: 'lint-website', script: 'lint:website' },
+      { id: 'format-check', script: 'format:check' },
       integrity,
       currentGovernanceDocs,
       documentationAudience,
@@ -400,6 +480,9 @@ describe('run-branch-quality-gate', () => {
     ]);
     expect(UNIT_QUALITY_GATE.preflight).toStrictEqual([
       { id: 'lint', script: 'lint' },
+      { id: 'lint-frontend', script: 'lint:frontend' },
+      { id: 'lint-website', script: 'lint:website' },
+      { id: 'format-check', script: 'format:check' },
       integrity,
       currentGovernanceDocs,
       documentationAudience,

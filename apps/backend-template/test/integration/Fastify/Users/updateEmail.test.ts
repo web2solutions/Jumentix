@@ -2,15 +2,19 @@
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
 import request from 'supertest';
-import type { Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { FastifyServer } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { AuthService } from '@src/modules/Users/service/AuthService';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 import {
   BasicAuthorizationHeaderUser1,
   BasicAuthorizationHeaderUser2,
@@ -18,18 +22,10 @@ import {
   BasicAuthorizationHeaderUser4,
   BasicAuthorizationHeaderUserGuest
 } from '@test/mock';
-import type {
-  IUser,
-  RequestUpdateEmail
-} from '@src/modules/Users';
-import {
-  UserDataRepository,
-  UserService
-} from '@src/modules/Users';
-import { EmailValueObject } from '@src/modules/ddd/valueObjects';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { JwtService } from '@src/infra/jwt/JwtService';
+
+import type { Fastify } from '@src/interface/HTTP/adapters/fastify/FastifyServer';
+import type { EmailValueObject } from '@src/modules/ddd/valueObjects';
+import type { IUser, RequestUpdateEmail } from '@src/modules/Users';
 
 const webServer = FastifyServer.compile();
 const databaseClient = InMemoryDbClient;
@@ -50,11 +46,7 @@ const userService = UserService.compile({
   }
 });
 const userProvider = UserProviderLocal.compile(userService);
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 
 const serverType = EHTTPFrameworks.fastify;
@@ -155,7 +147,9 @@ describe('fastify -> User updateEmail suite', () => {
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser1);
-    expect(response.body.message).toBe('Bad Request - The property invalidFieldName from input payload does not exist.');
+    expect(response.body.message).toBe(
+      'Bad Request - The property invalidFieldName from input payload does not exist.'
+    );
     expect(response.statusCode).toBe(400);
   });
 
@@ -180,7 +174,9 @@ describe('fastify -> User updateEmail suite', () => {
       .set('Accept', 'application/json; charset=utf-8')
       .set(BasicAuthorizationHeaderUser2);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the update_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the update_user role'
+    );
   });
 
   it('user3 must not be able to update a email for an user - Forbidden: the role update_user is required', async () => {
@@ -193,7 +189,9 @@ describe('fastify -> User updateEmail suite', () => {
       .set(BasicAuthorizationHeaderUser3);
     // console.log(response.body);
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the update_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the update_user role'
+    );
   });
 
   it('user4 must not be able to update a email for an user - Forbidden: the role update_user is required', async () => {
@@ -206,7 +204,9 @@ describe('fastify -> User updateEmail suite', () => {
       .set(BasicAuthorizationHeaderUser4);
     // console.log(response.body.message)
     expect(response.statusCode).toBe(403);
-    expect(response.body.message).toBe('Forbidden - Insufficient permission - user must have the update_user role');
+    expect(response.body.message).toBe(
+      'Forbidden - Insufficient permission - user must have the update_user role'
+    );
   });
 
   it('guest must not be able to update a email for an user - Unauthorized', async () => {

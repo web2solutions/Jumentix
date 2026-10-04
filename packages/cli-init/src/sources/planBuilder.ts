@@ -1,42 +1,49 @@
-/* eslint-disable no-continue */
+import SOURCE_MESSAGES from './messages';
 import {
   ALLOWED_DB,
   ALLOWED_HTTP,
   ALLOWED_MODES,
   ALLOWED_REALTIME,
-  type DbChoice,
-  type GenerationMode,
-  type GenerationPlan,
-  type HttpInterface,
-  type PlanDomain,
-  type PlanEntity,
-  type PlanService,
-  type RealtimeInterface,
   SourceResolutionError
 } from './types';
-import { SOURCE_MESSAGES } from './messages';
 
-export type InterfaceDefaults = {
+import type {
+  DbChoice,
+  GenerationMode,
+  GenerationPlan,
+  HttpInterface,
+  PlanDomain,
+  PlanEntity,
+  PlanService,
+  RealtimeInterface
+} from './types';
+
+export interface InterfaceDefaults {
   http: HttpInterface;
   realtime: RealtimeInterface;
   db: DbChoice;
   mode?: string;
   frontend?: boolean;
   offline?: boolean;
-};
+}
 
-type DesignerCore = typeof import('@jumentix/designer-core');
+async function importDesignerCore() {
+  return import('@jumentix/designer-core');
+}
+
+type DesignerCore = Awaited<ReturnType<typeof importDesignerCore>>;
 
 let designerCorePromise: Promise<DesignerCore> | undefined;
 
 export async function loadDesignerCore(): Promise<DesignerCore> {
-  if (!designerCorePromise) {
-    designerCorePromise = import('@jumentix/designer-core');
-  }
+  designerCorePromise ??= importDesignerCore();
   return designerCorePromise;
 }
 
-export function parseHttp(raw: string | undefined, fallback: HttpInterface = 'express'): HttpInterface {
+export function parseHttp(
+  raw: string | undefined,
+  fallback: HttpInterface = 'express'
+): HttpInterface {
   const value = (raw || fallback).toLowerCase() as HttpInterface;
   if (!ALLOWED_HTTP.includes(value)) {
     throw new SourceResolutionError(
@@ -62,9 +69,7 @@ export function parseRealtime(
 export function parseDb(raw: string | undefined, fallback: DbChoice = 'sqlite'): DbChoice {
   const value = (raw || fallback).toLowerCase() as DbChoice;
   if (!ALLOWED_DB.includes(value)) {
-    throw new SourceResolutionError(
-      `Source resolution failed: unsupported --db="${raw}".`
-    );
+    throw new SourceResolutionError(`Source resolution failed: unsupported --db="${raw}".`);
   }
   return value;
 }
@@ -94,15 +99,16 @@ function isPortObjectSchema(schemaKey: string, schemaValue: Record<string, unkno
 
 function primaryKeyFromSchema(
   schemaValue: Record<string, unknown>,
-  fields: Array<{ name: string; pk?: boolean }>
+  fields: { name: string; pk?: boolean }[]
 ): string {
   const explicit = schemaValue['x-primary-key'];
   if (typeof explicit === 'string' && explicit.trim()) return explicit.trim();
   const pkField = fields.find((field) => field.pk);
   if (pkField) return pkField.name;
-  const props = schemaValue.properties && typeof schemaValue.properties === 'object'
-    ? schemaValue.properties as Record<string, unknown>
-    : {};
+  const props =
+    schemaValue.properties && typeof schemaValue.properties === 'object'
+      ? (schemaValue.properties as Record<string, unknown>)
+      : {};
   if (props.id) return 'id';
   return '';
 }
@@ -112,9 +118,10 @@ function relationsFromSchema(
   schemaValue: Record<string, unknown>
 ): PlanEntity['relations'] {
   const relations: PlanEntity['relations'] = [];
-  const props = schemaValue.properties && typeof schemaValue.properties === 'object'
-    ? schemaValue.properties as Record<string, Record<string, unknown>>
-    : {};
+  const props =
+    schemaValue.properties && typeof schemaValue.properties === 'object'
+      ? (schemaValue.properties as Record<string, Record<string, unknown>>)
+      : {};
   for (const [fieldName, fieldSchema] of Object.entries(props)) {
     const rel = fieldSchema?.['x-relation'];
     if (!rel || typeof rel !== 'object' || Array.isArray(rel)) continue;
@@ -138,16 +145,18 @@ function operationsForEntity(
   schemaKey: string
 ): PlanEntity['operations'] {
   const operations: PlanEntity['operations'] = [];
-  const paths = (oas.paths && typeof oas.paths === 'object')
-    ? oas.paths as Record<string, Record<string, Record<string, unknown>>>
-    : {};
+  const paths =
+    oas.paths && typeof oas.paths === 'object'
+      ? (oas.paths as Record<string, Record<string, Record<string, unknown>>>)
+      : {};
   const needle = `#/components/schemas/${schemaKey}`;
   for (const [pathKey, methods] of Object.entries(paths)) {
     for (const [method, operation] of Object.entries(methods || {})) {
       if (!operation || typeof operation !== 'object') continue;
       const blob = JSON.stringify(operation);
-      const tagMatch = Array.isArray(operation.tags)
-        && operation.tags.some((tag) => String(tag).toLowerCase() === entityName.toLowerCase());
+      const tagMatch =
+        Array.isArray(operation.tags) &&
+        operation.tags.some((tag) => String(tag).toLowerCase() === entityName.toLowerCase());
       if (!blob.includes(needle) && !tagMatch) continue;
       operations.push({
         operationId: String(operation.operationId || `${method}_${pathKey}`),
@@ -186,22 +195,22 @@ export async function buildPlanFromOasDocument(
   oas: Record<string, unknown>,
   defaults: InterfaceDefaults,
   imported?: {
-    domains: Array<{
+    domains: {
       id: string;
       name: string;
-      entities: Array<{
+      entities: {
         id: string;
         name: string;
-        fields: Array<{ name: string; pk?: boolean }>;
-      }>;
-    }>;
+        fields: { name: string; pk?: boolean }[];
+      }[];
+    }[];
     architecture?: {
-      services: Array<{
+      services: {
         id: string;
         kind: string;
         url?: string;
         domains: string[];
-      }>;
+      }[];
     };
   }
 ): Promise<GenerationPlan> {
@@ -211,45 +220,47 @@ export async function buildPlanFromOasDocument(
     throw new SourceResolutionError(SOURCE_MESSAGES.INVALID_OAS);
   }
 
-  type ImportedModel = {
-    domains: Array<{
+  interface ImportedModel {
+    domains: {
       id: string;
       name: string;
-      entities: Array<{
+      entities: {
         id: string;
         name: string;
-        fields: Array<{ name: string; pk?: boolean }>;
-      }>;
-    }>;
+        fields: { name: string; pk?: boolean }[];
+      }[];
+    }[];
     architecture?: {
-      services: Array<{
+      services: {
         id: string;
         kind: string;
         url?: string;
         domains: string[];
-      }>;
+      }[];
     };
-  };
+  }
 
-  const fromImporter: ImportedModel = imported || (() => {
-    const result = buildDomainsFromOas(oas) as {
-      ok: boolean;
-      domains?: ImportedModel['domains'];
-      architecture?: ImportedModel['architecture'];
-      reason?: string;
-    };
-    if (!result.ok || !result.domains) {
-      throw new SourceResolutionError(SOURCE_MESSAGES.INVALID_OAS);
-    }
-    return {
-      domains: result.domains,
-      architecture: result.architecture
-    };
-  })();
+  const fromImporter: ImportedModel =
+    imported ??
+    (() => {
+      const result = buildDomainsFromOas(oas) as {
+        ok: boolean;
+        domains?: ImportedModel['domains'];
+        architecture?: ImportedModel['architecture'];
+        reason?: string;
+      };
+      if (!result.ok || !result.domains) {
+        throw new SourceResolutionError(SOURCE_MESSAGES.INVALID_OAS);
+      }
+      return {
+        domains: result.domains,
+        architecture: result.architecture
+      };
+    })();
 
   type SchemaMap = Record<string, Record<string, unknown>>;
   const components = oas.components as { schemas?: SchemaMap };
-  const schemas: SchemaMap = components.schemas || {};
+  const schemas: SchemaMap = components.schemas ?? {};
 
   const domains: PlanDomain[] = fromImporter.domains.map((domain) => {
     const entities: PlanEntity[] = domain.entities.map((entity) => {
@@ -275,7 +286,7 @@ export async function buildPlanFromOasDocument(
     };
   });
 
-  const architectureServices = fromImporter.architecture?.services || [];
+  const architectureServices = fromImporter.architecture?.services ?? [];
   let services: PlanService[];
   if (architectureServices.length) {
     services = architectureServices.map((service) => ({
@@ -290,14 +301,16 @@ export async function buildPlanFromOasDocument(
       db: defaults.db
     }));
   } else {
-    services = [{
-      id: 'core',
-      kind: 'core',
-      url: 'http://localhost:3000/api/1.0.0',
-      domains: domains.map((domain) => domain.id),
-      interfaces: { http: defaults.http, realtime: defaults.realtime },
-      db: defaults.db
-    }];
+    services = [
+      {
+        id: 'core',
+        kind: 'core',
+        url: 'http://localhost:3000/api/1.0.0',
+        domains: domains.map((domain) => domain.id),
+        interfaces: { http: defaults.http, realtime: defaults.realtime },
+        db: defaults.db
+      }
+    ];
   }
 
   if (services.length === 1 && services[0].domains.length === 0) {
@@ -308,7 +321,7 @@ export async function buildPlanFromOasDocument(
   const oasPerService: Record<string, Record<string, unknown>> = {};
   for (const service of services) {
     const filtered = filterOasDocumentForService(oas, service.id);
-    oasPerService[service.id] = filtered as Record<string, unknown>;
+    oasPerService[service.id] = filtered;
   }
   if (Object.keys(oasPerService).length === 0) {
     oasPerService.core = oas;
@@ -336,50 +349,46 @@ export async function buildPlanFromOasDocument(
  */
 export async function buildPlanFromDesignerState(
   state: {
-    domains: Array<{
+    domains: {
       id: string;
       name: string;
-      entities: Array<{
+      entities: {
         id: string;
         name: string;
-        fields: Array<{ name: string; pk?: boolean; type?: string }>;
+        fields: { name: string; pk?: boolean; type?: string }[];
         meta?: Record<string, unknown>;
-      }>;
-    }>;
-    relationships?: Array<{
+      }[];
+    }[];
+    relationships?: {
       id?: string;
       name?: string;
       fromEntityId: string;
       toEntityId: string;
-    }>;
+    }[];
     architecture?: {
-      services: Array<{
+      services: {
         id: string;
         kind: string;
         url?: string;
         domains: string[];
-      }>;
+      }[];
     };
-    interfaces?: Array<{ type?: string; framework?: string }>;
+    interfaces?: { type?: string; framework?: string }[];
   },
   defaults: InterfaceDefaults
 ): Promise<GenerationPlan> {
   const { buildOasDocumentSet } = await loadDesignerCore();
   const { merged, services: oasServices } = buildOasDocumentSet(state);
-  const plan = await buildPlanFromOasDocument(
-    merged as Record<string, unknown>,
-    defaults,
-    {
-      domains: state.domains,
-      architecture: state.architecture || {
-        services: Object.keys(oasServices || {}).map((id) => ({
-          id,
-          kind: id === 'core' ? 'core' : 'domain',
-          domains: []
-        }))
-      }
+  const plan = await buildPlanFromOasDocument(merged, defaults, {
+    domains: state.domains,
+    architecture: state.architecture ?? {
+      services: Object.keys(oasServices || {}).map((id) => ({
+        id,
+        kind: id === 'core' ? 'core' : 'domain',
+        domains: []
+      }))
     }
-  );
+  });
 
   const entityById = new Map<string, { domainId: string; entity: PlanEntity }>();
   for (const domain of plan.domains) {
@@ -390,13 +399,13 @@ export async function buildPlanFromDesignerState(
         entityById.set(sourceEntity.id, { domainId: domain.id, entity });
       }
       if (!entity.primaryKey) {
-        const pk = (sourceEntity?.fields || []).find((field) => field.pk);
+        const pk = (sourceEntity?.fields ?? []).find((field) => field.pk);
         entity.primaryKey = pk?.name || '';
       }
     }
   }
 
-  for (const relationship of state.relationships || []) {
+  for (const relationship of state.relationships ?? []) {
     const from = entityById.get(relationship.fromEntityId);
     const to = entityById.get(relationship.toEntityId);
     if (!from || !to) continue;
@@ -410,7 +419,7 @@ export async function buildPlanFromDesignerState(
   }
 
   if (oasServices && typeof oasServices === 'object') {
-    plan.contracts.oasPerService = oasServices as Record<string, Record<string, unknown>>;
+    plan.contracts.oasPerService = oasServices;
   }
 
   return plan;

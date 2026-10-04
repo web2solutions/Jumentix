@@ -8,12 +8,12 @@ on:
     branches:
       - main
     paths:
-      - 'apps/jumentix-website/**'
-      - 'packages/*/docs/**'
-      - 'packages/*/README.md'
-      - 'packages/*/README.pt-BR.md'
-      - 'packages/*/media/**'
-      - 'documentation/**'
+      - "apps/jumentix-website/**"
+      - "packages/*/docs/**"
+      - "packages/*/README.md"
+      - "packages/*/README.pt-BR.md"
+      - "packages/*/media/**"
+      - "documentation/**"
   workflow_dispatch:
 
 concurrency:

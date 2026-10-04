@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/DEVELOPER-AUTOMATION-CLI.md
 Idioma alvo: Português (Brasil)
 -->
+
 # CLI de automação do desenvolvedor
 
 Este projeto inclui um wrapper CLI voltado para o desenvolvedor para acelerar fluxos de trabalho de configuração de domínio e modelo de dados.

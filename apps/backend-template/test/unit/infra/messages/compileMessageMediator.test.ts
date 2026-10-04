@@ -1,7 +1,7 @@
-import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
-import { InMemoryMessageMediatorAdapter } from '@src/infra/messages/adapters/InMemoryMessageMediatorAdapter';
-import { RabbitMqMessageMediatorAdapter } from '@src/infra/messages/adapters/RabbitMqMessageMediatorAdapter';
-import { BullMqMessageMediatorAdapter } from '@src/infra/messages/adapters/BullMqMessageMediatorAdapter';
+import BullMqMessageMediatorAdapter from '@src/infra/messages/adapters/BullMqMessageMediatorAdapter';
+import InMemoryMessageMediatorAdapter from '@src/infra/messages/adapters/InMemoryMessageMediatorAdapter';
+import RabbitMqMessageMediatorAdapter from '@src/infra/messages/adapters/RabbitMqMessageMediatorAdapter';
+import compileMessageMediator from '@src/infra/messages/compileMessageMediator';
 
 describe('compileMessageMediator', () => {
   const originalEnv = { ...process.env };

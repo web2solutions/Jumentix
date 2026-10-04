@@ -1,9 +1,12 @@
+/* eslint-disable no-console */
 /**
  * Build machine-readable surfaces for AI agents: llms.txt + docs-index.json.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+const { process } = globalThis;
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, '..');
@@ -19,32 +22,32 @@ async function walkMdx(directory) {
   } catch {
     return out;
   }
-  for (const entry of entries) {
-    const full = path.join(directory, entry.name);
-    if (entry.isDirectory()) out.push(...(await walkMdx(full)));
-    else if (entry.name.endsWith('.mdx')) out.push(full);
-  }
-  return out;
+  const collected = await Promise.all(
+    entries.map(async (entry) => {
+      const full = path.join(directory, entry.name);
+      if (entry.isDirectory()) return walkMdx(full);
+      return entry.name.endsWith('.mdx') ? [full] : [];
+    })
+  );
+  return collected.flat();
 }
 
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n/);
   if (!match) return { title: '', description: '', body: raw };
   const block = match[1];
-  const title = block.match(/^title:\s*"(.*)"$/m)?.[1]
-    ?? block.match(/^title:\s*'(.*)'$/m)?.[1]
-    ?? '';
-  const description = block.match(/^description:\s*"(.*)"$/m)?.[1]
-    ?? block.match(/^description:\s*'(.*)'$/m)?.[1]
-    ?? '';
+  const title =
+    block.match(/^title:\s*"(.*)"$/m)?.[1] ?? block.match(/^title:\s*'(.*)'$/m)?.[1] ?? '';
+  const description =
+    block.match(/^description:\s*"(.*)"$/m)?.[1] ??
+    block.match(/^description:\s*'(.*)'$/m)?.[1] ??
+    '';
   return { title, description, body: raw.slice(match[0].length) };
 }
 
 function toRoute(file, localeRoot, routeBase) {
   const relative = path.relative(localeRoot, file).replaceAll('\\', '/');
-  const cleaned = relative
-    .replace(/(^|\/)index\.mdx$/, '')
-    .replace(/\.mdx$/, '');
+  const cleaned = relative.replace(/(^|\/)index\.mdx$/, '').replace(/\.mdx$/, '');
   return `${routeBase}${cleaned ? `/${cleaned}` : ''}`;
 }
 
@@ -62,35 +65,29 @@ async function main() {
   const enFiles = await walkMdx(enRoot);
   const ptFiles = await walkMdx(ptRoot);
 
-  const index = [];
-  for (const file of enFiles) {
+  const toIndexEntry = async (file, localeRoot, routeBase, locale) => {
     const raw = await fs.readFile(file, 'utf8');
     const { title, description, body } = parseFrontmatter(raw);
-    const url = `${SITE}${toRoute(file, enRoot, '/docs/jumentix')}`;
-    const section = path.relative(enRoot, file).split(path.sep)[0] ?? 'root';
-    index.push({
+    const url = `${SITE}${toRoute(file, localeRoot, routeBase)}`;
+    const section = path.relative(localeRoot, file).split(path.sep)[0] ?? 'root';
+    return {
       title: title || path.basename(file, '.mdx'),
       url,
       description,
       section,
-      locale: 'en',
+      locale,
       headings: extractHeadings(body)
-    });
-  }
-  for (const file of ptFiles) {
-    const raw = await fs.readFile(file, 'utf8');
-    const { title, description, body } = parseFrontmatter(raw);
-    const url = `${SITE}${toRoute(file, ptRoot, '/docs/pt-BR/jumentix')}`;
-    const section = path.relative(ptRoot, file).split(path.sep)[0] ?? 'root';
-    index.push({
-      title: title || path.basename(file, '.mdx'),
-      url,
-      description,
-      section,
-      locale: 'pt-BR',
-      headings: extractHeadings(body)
-    });
-  }
+    };
+  };
+
+  const index = [
+    ...(await Promise.all(
+      enFiles.map((file) => toIndexEntry(file, enRoot, '/docs/jumentix', 'en'))
+    )),
+    ...(await Promise.all(
+      ptFiles.map((file) => toIndexEntry(file, ptRoot, '/docs/pt-BR/jumentix', 'pt-BR'))
+    ))
+  ];
 
   await fs.mkdir(publicRoot, { recursive: true });
   await fs.writeFile(
@@ -117,10 +114,14 @@ async function main() {
     ...pick((i) => i.section === 'guides').map((i) => `- ${i.title}: ${i.url}`),
     '',
     '## Packages',
-    ...pick((i) => i.section === 'packages' || i.url.includes('/packages/')).slice(0, 40).map((i) => `- ${i.title}: ${i.url}`),
+    ...pick((i) => i.section === 'packages' || i.url.includes('/packages/'))
+      .slice(0, 40)
+      .map((i) => `- ${i.title}: ${i.url}`),
     '',
     '## Adapters',
-    ...pick((i) => i.section === 'adapters' || i.url.includes('/adapters/')).slice(0, 30).map((i) => `- ${i.title}: ${i.url}`),
+    ...pick((i) => i.section === 'adapters' || i.url.includes('/adapters/'))
+      .slice(0, 30)
+      .map((i) => `- ${i.title}: ${i.url}`),
     '',
     '## Reference',
     ...pick((i) => i.section === 'reference').map((i) => `- ${i.title}: ${i.url}`),
@@ -134,7 +135,10 @@ async function main() {
 
   const full = index
     .filter((item) => item.locale === 'en')
-    .map((item) => `# ${item.title}\n\nURL: ${item.url}\n\n${item.description}\n\nHeadings:\n${item.headings.map((h) => `- ${h}`).join('\n')}`)
+    .map(
+      (item) =>
+        `# ${item.title}\n\nURL: ${item.url}\n\n${item.description}\n\nHeadings:\n${item.headings.map((h) => `- ${h}`).join('\n')}`
+    )
     .join('\n\n---\n\n');
   await fs.writeFile(path.join(publicRoot, 'llms-full.txt'), `${full}\n`, 'utf8');
 
@@ -145,5 +149,5 @@ async function main() {
 
 main().catch((error) => {
   console.error(error);
-  process.exit(1);
+  process.exitCode = 1;
 });

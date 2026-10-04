@@ -1,3 +1,4 @@
+import { Context } from '@src/infra/context/Context';
 import {
   ConflictError,
   DataBaseNotFoundError,
@@ -11,8 +12,7 @@ import {
   UnauthorizedError,
   ValidationError
 } from '@src/infra/exceptions';
-import { NotImplemented } from '@src/infra/exceptions/NotImplemented';
-import { Context } from '@src/infra/context/Context';
+import NotImplemented from '@src/infra/exceptions/NotImplemented';
 import {
   buildErrorResponsePayload,
   formatErrorMessage,
@@ -27,8 +27,12 @@ describe('error exposure by environment', () => {
 
   it('exposes internal error details in dev/staging', () => {
     expect.assertions(2);
-    const devPayload = buildErrorResponsePayload(error, { NODE_ENV: 'dev' } as unknown as NodeJS.ProcessEnv);
-    const stagingPayload = buildErrorResponsePayload(error, { NODE_ENV: 'staging' } as unknown as NodeJS.ProcessEnv);
+    const devPayload = buildErrorResponsePayload(error, {
+      NODE_ENV: 'dev'
+    } as unknown as NodeJS.ProcessEnv);
+    const stagingPayload = buildErrorResponsePayload(error, {
+      NODE_ENV: 'staging'
+    } as unknown as NodeJS.ProcessEnv);
 
     expect(devPayload.error).toBe(error);
     expect(stagingPayload.error).toBe(error);
@@ -36,8 +40,12 @@ describe('error exposure by environment', () => {
 
   it('masks internal error details in production/prod', () => {
     expect.assertions(2);
-    const productionPayload = buildErrorResponsePayload(error, { NODE_ENV: 'production' } as unknown as NodeJS.ProcessEnv);
-    const prodPayload = buildErrorResponsePayload(error, { NODE_ENV: 'prod' } as unknown as NodeJS.ProcessEnv);
+    const productionPayload = buildErrorResponsePayload(error, {
+      NODE_ENV: 'production'
+    } as unknown as NodeJS.ProcessEnv);
+    const prodPayload = buildErrorResponsePayload(error, {
+      NODE_ENV: 'prod'
+    } as unknown as NodeJS.ProcessEnv);
 
     expect(productionPayload.error).toBeUndefined();
     expect(prodPayload.error).toBeUndefined();
@@ -49,12 +57,16 @@ describe('error exposure by environment', () => {
     expect(toHttpStatus('GENERIC.INVALID_INPUT' as any)).toBe(400);
     expect(isProductionEnv({ NODE_ENV: 'prod' } as unknown as NodeJS.ProcessEnv)).toBe(true);
     expect(isProductionEnv({ NODE_ENV: 'production' } as unknown as NodeJS.ProcessEnv)).toBe(true);
-    expect(shouldExposeInternalErrors({ NODE_ENV: 'dev' } as unknown as NodeJS.ProcessEnv)).toBe(true);
+    expect(shouldExposeInternalErrors({ NODE_ENV: 'dev' } as unknown as NodeJS.ProcessEnv)).toBe(
+      true
+    );
   });
 
   it('covers utility helpers for production env exposure gate', () => {
     expect.assertions(1);
-    expect(shouldExposeInternalErrors({ NODE_ENV: 'production' } as unknown as NodeJS.ProcessEnv)).toBe(false);
+    expect(
+      shouldExposeInternalErrors({ NODE_ENV: 'production' } as unknown as NodeJS.ProcessEnv)
+    ).toBe(false);
   });
 
   it('treats a missing NODE_ENV as non-production', () => {
@@ -65,7 +77,9 @@ describe('error exposure by environment', () => {
 
   it('normalizes NODE_ENV before production check', () => {
     expect.assertions(1);
-    expect(isProductionEnv({ NODE_ENV: ' PRODUCTION ' } as unknown as NodeJS.ProcessEnv)).toBe(true);
+    expect(isProductionEnv({ NODE_ENV: ' PRODUCTION ' } as unknown as NodeJS.ProcessEnv)).toBe(
+      true
+    );
   });
 
   it('covers bad-request and auth/lock message mapping branches', () => {
@@ -111,7 +125,9 @@ describe('error exposure by environment', () => {
   it('includes correlation id when available in context', () => {
     expect.assertions(1);
     Context.run(new Map([['correlationId', 'corr-123']]), () => {
-      const payload = buildErrorResponsePayload(new ValidationError('ctx'), { NODE_ENV: 'production' } as unknown as NodeJS.ProcessEnv);
+      const payload = buildErrorResponsePayload(new ValidationError('ctx'), {
+        NODE_ENV: 'production'
+      } as unknown as NodeJS.ProcessEnv);
       expect(payload.correlationId).toBe('corr-123');
     });
   });

@@ -26,45 +26,45 @@ rodapé do AdonisJS, além de páginas representativas da documentação.
 
 Capturas completas:
 
-| Página | Evidência |
-| --- | --- |
-| Home | [home.jpg](./adonisjs/pages/home.jpg) |
-| Pacotes | [packages.jpg](./adonisjs/pages/packages.jpg) |
-| Wall of love | [wall-of-love.jpg](./adonisjs/pages/wall-of-love.jpg) |
-| Blog | [blog.jpg](./adonisjs/pages/blog.jpg) |
-| Roadmap | [roadmap.jpg](./adonisjs/pages/roadmap.jpg) |
-| Patrocínio | [sponsor.jpg](./adonisjs/pages/sponsor.jpg) |
-| Sobre | [about.jpg](./adonisjs/pages/about.jpg) |
-| Histórias | [stories.jpg](./adonisjs/pages/stories.jpg) |
-| Releases | [releases.jpg](./adonisjs/pages/releases.jpg) |
-| Contribuidores | [contributors.jpg](./adonisjs/pages/contributors.jpg) |
-| Suporte | [support.jpg](./adonisjs/pages/support.jpg) |
-| Marca | [brand.jpg](./adonisjs/pages/brand.jpg) |
-| Time | [team.jpg](./adonisjs/pages/team.jpg) |
-| Início da documentação | [docs-home.jpg](./adonisjs/pages/docs-home.jpg) |
-| Introdução | [docs-introduction.jpg](./adonisjs/pages/docs-introduction.jpg) |
-| Guia de rotas | [docs-routing-guide.jpg](./adonisjs/pages/docs-routing-guide.jpg) |
+| Página                  | Evidência                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| Home                    | [home.jpg](./adonisjs/pages/home.jpg)                                          |
+| Pacotes                 | [packages.jpg](./adonisjs/pages/packages.jpg)                                  |
+| Wall of love            | [wall-of-love.jpg](./adonisjs/pages/wall-of-love.jpg)                          |
+| Blog                    | [blog.jpg](./adonisjs/pages/blog.jpg)                                          |
+| Roadmap                 | [roadmap.jpg](./adonisjs/pages/roadmap.jpg)                                    |
+| Patrocínio              | [sponsor.jpg](./adonisjs/pages/sponsor.jpg)                                    |
+| Sobre                   | [about.jpg](./adonisjs/pages/about.jpg)                                        |
+| Histórias               | [stories.jpg](./adonisjs/pages/stories.jpg)                                    |
+| Releases                | [releases.jpg](./adonisjs/pages/releases.jpg)                                  |
+| Contribuidores          | [contributors.jpg](./adonisjs/pages/contributors.jpg)                          |
+| Suporte                 | [support.jpg](./adonisjs/pages/support.jpg)                                    |
+| Marca                   | [brand.jpg](./adonisjs/pages/brand.jpg)                                        |
+| Time                    | [team.jpg](./adonisjs/pages/team.jpg)                                          |
+| Início da documentação  | [docs-home.jpg](./adonisjs/pages/docs-home.jpg)                                |
+| Introdução              | [docs-introduction.jpg](./adonisjs/pages/docs-introduction.jpg)                |
+| Guia de rotas           | [docs-routing-guide.jpg](./adonisjs/pages/docs-routing-guide.jpg)              |
 | Docs atuais do Jumentix | [current-production-docs-jumentix.jpg](./current-production-docs-jumentix.jpg) |
 
 ## Mapa da experiência pública
 
-| Superfície | Função de produto | Padrão aplicável ao Jumentix |
-| --- | --- | --- |
-| Home | Explicar e converter | Categoria clara, prova por código, ecossistema, evidência OSS e próximos passos |
-| Pacotes | Expor o ecossistema | Busca, distinção oficial/comunidade e metadados compactos |
-| Wall of love | Construir confiança | Prova da comunidade como destino próprio |
-| Blog | Manter narrativa ativa | Artigos de release, arquitetura, IA e engenharia |
-| Roadmap | Mostrar direção | Estados públicos, links para issues e participação |
-| Patrocínio | Explicar sustentabilidade | Propósito, níveis, contrapartidas e patrocinadores |
-| Sobre | Declarar filosofia | Problema do ecossistema, decisões e compromisso |
-| Histórias | Comprovar decisões | Casos com migração, escala, time e resultados |
-| Releases | Demonstrar manutenção | Fluxo cronológico por pacote |
-| Contribuidores | Reconhecer a comunidade | Atividade visível e vínculo ao repositório |
-| Suporte | Oferecer caminho profissional | Escopo, modelo de resposta e contratação |
-| Marca | Permitir reutilização correta | Assets, nomenclatura e exemplos de uso |
-| Time | Mostrar manutenção | Responsáveis, papéis e propriedade |
-| Início dos docs | Direcionar aprendizado | Busca, caminhos por tarefa, guia e referência |
-| Artigo dos docs | Navegar conteúdo denso | Sidebar, artigo, sumário, busca e breadcrumbs |
+| Superfície      | Função de produto             | Padrão aplicável ao Jumentix                                                    |
+| --------------- | ----------------------------- | ------------------------------------------------------------------------------- |
+| Home            | Explicar e converter          | Categoria clara, prova por código, ecossistema, evidência OSS e próximos passos |
+| Pacotes         | Expor o ecossistema           | Busca, distinção oficial/comunidade e metadados compactos                       |
+| Wall of love    | Construir confiança           | Prova da comunidade como destino próprio                                        |
+| Blog            | Manter narrativa ativa        | Artigos de release, arquitetura, IA e engenharia                                |
+| Roadmap         | Mostrar direção               | Estados públicos, links para issues e participação                              |
+| Patrocínio      | Explicar sustentabilidade     | Propósito, níveis, contrapartidas e patrocinadores                              |
+| Sobre           | Declarar filosofia            | Problema do ecossistema, decisões e compromisso                                 |
+| Histórias       | Comprovar decisões            | Casos com migração, escala, time e resultados                                   |
+| Releases        | Demonstrar manutenção         | Fluxo cronológico por pacote                                                    |
+| Contribuidores  | Reconhecer a comunidade       | Atividade visível e vínculo ao repositório                                      |
+| Suporte         | Oferecer caminho profissional | Escopo, modelo de resposta e contratação                                        |
+| Marca           | Permitir reutilização correta | Assets, nomenclatura e exemplos de uso                                          |
+| Time            | Mostrar manutenção            | Responsáveis, papéis e propriedade                                              |
+| Início dos docs | Direcionar aprendizado        | Busca, caminhos por tarefa, guia e referência                                   |
+| Artigo dos docs | Navegar conteúdo denso        | Sidebar, artigo, sumário, busca e breadcrumbs                                   |
 
 ## Padrões principais
 
@@ -346,11 +346,11 @@ interna de pesquisa e não serão assets do site público.
 
 ## Mapeamento de entrega
 
-| Achado | Tarefa |
-| --- | --- |
-| Composição e empacotamento dos docs quebrados | #169 |
-| Design system e stories incompletos | #170 |
-| Comunicação OSS e prova por código insuficientes | #171 |
-| Navegação incapaz de escalar | #172 |
-| Gates insuficientes | #173 |
-| Deploy exige evidência | #174 |
+| Achado                                           | Tarefa |
+| ------------------------------------------------ | ------ |
+| Composição e empacotamento dos docs quebrados    | #169   |
+| Design system e stories incompletos              | #170   |
+| Comunicação OSS e prova por código insuficientes | #171   |
+| Navegação incapaz de escalar                     | #172   |
+| Gates insuficientes                              | #173   |
+| Deploy exige evidência                           | #174   |

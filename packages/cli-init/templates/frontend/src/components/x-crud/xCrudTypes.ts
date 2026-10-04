@@ -7,6 +7,8 @@
  * pagination, inline editing, row context menu, aggregates and RBAC-driven
  * affordances — nothing entity-specific is hardcoded in the kit.
  */
+import type { FieldDescriptor } from '@/contracts/formSchema';
+
 export type XCrudMode = 'create' | 'update' | 'preview';
 
 export type XCrudPagination = 'pager' | 'scroll';
@@ -52,13 +54,16 @@ export interface XCrudEntityConfig {
   /** array-of-string fields editable as checkbox groups (e.g. roles). */
   arrayOptions?: Record<string, string[]>;
   /** Create-form shaping: exclude OAS fields, append synthetic ones (e.g. primaryEmail). */
-  createFields?: { exclude?: string[]; extra?: import('@/contracts/formSchema').FieldDescriptor[] };
+  createFields?: { exclude?: string[]; extra?: FieldDescriptor[] };
   /** Body mapping before submit (e.g. primary email → emails[0]). */
-  beforeSubmit?: (body: Record<string, unknown>, mode: 'create' | 'update') => Record<string, unknown>;
+  beforeSubmit?: (
+    body: Record<string, unknown>,
+    mode: 'create' | 'update'
+  ) => Record<string, unknown>;
   /** Row identity (default: row.id). */
   rowId?: (row: Record<string, unknown>) => string;
   /** Extra row-menu actions injected by the consuming app. */
-  rowActions?: Array<{ key: string; label: string; operationId?: string }>;
+  rowActions?: { key: string; label: string; operationId?: string }[];
   /** Short column labels (override the OAS description in the grid header). */
   columnLabels?: Record<string, string>;
   /** Quick context filter in the toolbar (e.g. organization select). */

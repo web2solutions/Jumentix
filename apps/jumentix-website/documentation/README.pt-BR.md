@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/documentation/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Índice de documentação do site Jumentix
 
 Documentação técnica para aplicação do site comercial.

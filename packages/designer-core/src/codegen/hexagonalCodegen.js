@@ -39,8 +39,8 @@
  * `apps/service-management/test/unit/hexagonalCodegen.test.ts`.
  */
 
-import { isBarePropertyKey } from '../model/propertyKeys.js';
 import { getEntityRbacPolicy, toSchemaName } from '../model/modelQueries.js';
+import { isBarePropertyKey } from '../model/propertyKeys.js';
 
 const MODULES_ROOT = 'src/modules';
 
@@ -109,9 +109,11 @@ export function tsTypeFromOasSchema(schema) {
 /** Find the OAS component schema the JUM-474 export produced for an entity. */
 function findEntitySchema(oasDocument, domainName, entityName) {
   const schemas = (oasDocument && oasDocument.components && oasDocument.components.schemas) || {};
-  return Object.values(schemas).find(
-    (schema) => schema['x-domain'] === domainName && schema['x-entity'] === entityName
-  ) || null;
+  return (
+    Object.values(schemas).find(
+      (schema) => schema['x-domain'] === domainName && schema['x-entity'] === entityName
+    ) || null
+  );
 }
 
 /** Flatten the OAS paths of the JUM-474 export into method/path/operationId rows. */
@@ -148,7 +150,10 @@ function findEntityRoutes(oasDocument, schemaName) {
     const hit = operations.find((operation) => operation.operationId === expected[action]);
     if (hit) {
       routes.push({
-        action, method: hit.method, path: hit.path, operationId: hit.operationId
+        action,
+        method: hit.method,
+        path: hit.path,
+        operationId: hit.operationId
       });
     }
   });
@@ -162,16 +167,17 @@ function findEntityRoutes(oasDocument, schemaName) {
  * come from the JUM-475 contract rather than from re-walking the model.
  */
 function toPascalCaseToken(value) {
-  const words = String(value || '').split(/[^a-zA-Z0-9]+/).filter(Boolean);
-  const name = words
-    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
-    .join('');
+  const words = String(value || '')
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean);
+  const name = words.map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join('');
   return name || 'Contract';
 }
 
 function findDomainEventChannels(oasDocument, asyncApiDocument, domainName) {
-  const contracts = ((oasDocument && oasDocument['x-message-contracts']) || [])
-    .filter((contract) => contract.domain === domainName);
+  const contracts = ((oasDocument && oasDocument['x-message-contracts']) || []).filter(
+    (contract) => contract.domain === domainName
+  );
   // AsyncAPI 3.0 (JUM-475): operations live top-level with send/receive
   // actions and a channel $ref; channels carry the address. The operationId
   // format is `<type>_<Domain>_<Entity>_<PascalCaseName>`.
@@ -182,7 +188,10 @@ function findDomainEventChannels(oasDocument, asyncApiDocument, domainName) {
     const wantedId = `${contract.type}_${toSchemaName(contract.domain, contract.entity)}_${toPascalCaseToken(contract.name)}`;
     Object.entries(operations).forEach(([operationId, operation]) => {
       if (operationId !== wantedId) return;
-      const channelKey = String((operation.channel && operation.channel.$ref) || '').replace('#/channels/', '');
+      const channelKey = String((operation.channel && operation.channel.$ref) || '').replace(
+        '#/channels/',
+        ''
+      );
       const channel = (channels[channelKey] && channels[channelKey].address) || channelKey;
       events.push({
         name: contract.name,
@@ -392,9 +401,10 @@ function entityFiles(domain, entity, oasDocument) {
     ''
   ].join('\n');
 
-  const routeLines = routes.map((route) => (
-    `    { action: '${route.action}', method: '${route.method}', path: '${route.path}', operationId: '${route.operationId}' }`
-  ));
+  const routeLines = routes.map(
+    (route) =>
+      `    { action: '${route.action}', method: '${route.method}', path: '${route.path}', operationId: '${route.operationId}' }`
+  );
   const controller = [
     `import type { I${entityToken} } from '../../../../domain/Entity/I${entityToken}';`,
     `import type { I${entityToken}UseCases } from '../../../../application/ports/I${entityToken}UseCases';`,
@@ -486,23 +496,35 @@ function compositionFile(domain, entityModules) {
   const domainToken = toTypeToken(domain.name, 'Domain');
   const modulePath = `${MODULES_ROOT}/${domainToken}`;
   const imports = [];
-  entityModules.forEach(({ entityToken, instanceToken }) => {
-    imports.push(`import { ${entityToken}DataRepository } from '../adapters/out/persistence/${entityToken}DataRepository';`);
-    imports.push(`import { ${entityToken}UseCases } from '../application/use-cases/${entityToken}UseCases';`);
-    imports.push(`import { ${entityToken}Controller } from '../adapters/in/http/controllers/${entityToken}Controller';`);
-    imports.push(`import type { I${entityToken}Repository } from '../application/ports/I${entityToken}Repository';`);
-    imports.push(`import type { I${entityToken}UseCases } from '../application/ports/I${entityToken}UseCases';`);
+  entityModules.forEach(({ entityToken }) => {
+    imports.push(
+      `import { ${entityToken}DataRepository } from '../adapters/out/persistence/${entityToken}DataRepository';`
+    );
+    imports.push(
+      `import { ${entityToken}UseCases } from '../application/use-cases/${entityToken}UseCases';`
+    );
+    imports.push(
+      `import { ${entityToken}Controller } from '../adapters/in/http/controllers/${entityToken}Controller';`
+    );
+    imports.push(
+      `import type { I${entityToken}Repository } from '../application/ports/I${entityToken}Repository';`
+    );
+    imports.push(
+      `import type { I${entityToken}UseCases } from '../application/ports/I${entityToken}UseCases';`
+    );
   });
-  const compositionFields = entityModules.map(({ entityToken, instanceToken }) => (
-    `  ${instanceToken}Repository: I${entityToken}Repository;\n`
-    + `  ${instanceToken}UseCases: I${entityToken}UseCases;\n`
-    + `  ${instanceToken}Controller: ${entityToken}Controller;`
-  ));
-  const wiring = entityModules.map(({ entityToken, instanceToken }) => (
-    `  const ${instanceToken}Repository = ${entityToken}DataRepository.compile();\n`
-    + `  const ${instanceToken}UseCases = ${entityToken}UseCases.compile(${instanceToken}Repository);\n`
-    + `  const ${instanceToken}Controller = ${entityToken}Controller.compile(${instanceToken}UseCases);`
-  ));
+  const compositionFields = entityModules.map(
+    ({ entityToken, instanceToken }) =>
+      `  ${instanceToken}Repository: I${entityToken}Repository;\n` +
+      `  ${instanceToken}UseCases: I${entityToken}UseCases;\n` +
+      `  ${instanceToken}Controller: ${entityToken}Controller;`
+  );
+  const wiring = entityModules.map(
+    ({ entityToken, instanceToken }) =>
+      `  const ${instanceToken}Repository = ${entityToken}DataRepository.compile();\n` +
+      `  const ${instanceToken}UseCases = ${entityToken}UseCases.compile(${instanceToken}Repository);\n` +
+      `  const ${instanceToken}Controller = ${entityToken}Controller.compile(${instanceToken}UseCases);`
+  );
   const returns = entityModules.flatMap(({ instanceToken }) => [
     `    ${instanceToken}Repository,`,
     `    ${instanceToken}UseCases,`,
@@ -543,15 +565,16 @@ function compositionFile(domain, entityModules) {
 function eventChannelsFile(domain, events) {
   const domainToken = toTypeToken(domain.name, 'Domain');
   const modulePath = `${MODULES_ROOT}/${domainToken}`;
-  const lines = events.map((event) => (
-    '    {'
-    + ` name: ${JSON.stringify(event.name)},`
-    + ` type: ${JSON.stringify(event.type)},`
-    + ` channel: ${JSON.stringify(event.channel)},`
-    + ` operation: '${event.operation}',`
-    + ` operationId: '${event.operationId}'`
-    + ' }'
-  ));
+  const lines = events.map(
+    (event) =>
+      '    {' +
+      ` name: ${JSON.stringify(event.name)},` +
+      ` type: ${JSON.stringify(event.type)},` +
+      ` channel: ${JSON.stringify(event.channel)},` +
+      ` operation: '${event.operation}',` +
+      ` operationId: '${event.operationId}'` +
+      ' }'
+  );
   const content = [
     '/**',
     ` * Message contract channels for the ${domainToken} module — consumed from`,
@@ -587,7 +610,9 @@ export function buildHexagonalBundle(state, contracts = {}) {
   const asyncApiDocument = contracts.asyncApiDocument || null;
   const modules = (state.domains || []).map((domain) => {
     const domainToken = toTypeToken(domain.name, 'Domain');
-    const entities = (domain.entities || []).map((entity) => entityFiles(domain, entity, oasDocument));
+    const entities = (domain.entities || []).map((entity) =>
+      entityFiles(domain, entity, oasDocument)
+    );
     const entityModules = entities.map(({ entity }) => ({
       entityToken: toTypeToken(entity, 'Entity'),
       instanceToken: toInstanceToken(entity, 'entity')

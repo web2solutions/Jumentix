@@ -1,44 +1,46 @@
 'use client';
 
 import React from 'react';
-import { IconCornerRightDown } from '@tabler/icons-react';
-import { Anchor, Group } from '@mantine/core';
 
-type FileTreeLabelProps = {
+import { Anchor, Group } from '@mantine/core';
+import { IconCornerRightDown } from '@tabler/icons-react';
+
+interface FileTreeLabelProps {
   name: string;
   type: 'folder' | 'file';
   children: React.ReactNode;
   color?: string;
   href?: string;
   target?: string;
-};
+}
 
-export function FileTreeLabel({
+// eslint-disable-next-line import-x/prefer-default-export -- single named export consumed via named imports/barrels; converting to default would change the module API
+export const FileTreeLabel = ({
   name,
   type = 'folder',
   children,
   color = 'green',
   href,
-  target = '_self',
-}: FileTreeLabelProps) {
-  return (
-    <Group>
-      {href ? (
-        <Anchor href={href} target={target} c="blue">
-          {name}
-        </Anchor>
-      ) : (
-        name
-      )}
-      {type === 'folder' && <IconCornerRightDown size={20} color="grey" />}
-      {children && (
-        <code
-          className="jtx-inline-code"
-          style={{ '--jtx-inline-code-accent': `var(--mantine-color-${color}-6)` } as React.CSSProperties}
-        >
-          {children}
-        </code>
-      )}
-    </Group>
-  );
-}
+  target = '_self'
+}: FileTreeLabelProps) => (
+  <Group>
+    {href ? (
+      <Anchor c="blue" href={href} target={target}>
+        {name}
+      </Anchor>
+    ) : (
+      name
+    )}
+    {type === 'folder' && <IconCornerRightDown color="grey" size={20} />}
+    {children ? (
+      <code
+        className="jtx-inline-code"
+        style={
+          { '--jtx-inline-code-accent': `var(--mantine-color-${color}-6)` } as React.CSSProperties
+        }
+      >
+        {children}
+      </code>
+    ) : null}
+  </Group>
+);

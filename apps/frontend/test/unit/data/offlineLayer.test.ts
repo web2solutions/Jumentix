@@ -1,23 +1,22 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
+import { resetSharedApiClient } from '@/contracts/apiClient';
 import { buildCanaSchema, deriveEntityTables, entityTable } from '@/data/canaSchema';
-import {
-  closeCana, getCanaClient, openCana, wipeCanaDatabase
-} from '@/data/db';
+import { closeCana, getCanaClient, openCana, wipeCanaDatabase } from '@/data/db';
 import { getLocal, listLocal, resolveRelations } from '@/data/localRepository';
 import { drainOutbox, enqueueMutation, listOutbox } from '@/data/outbox';
 import { fullLoad, isSynced, runSessionSync } from '@/data/sync';
-import { resetSharedApiClient } from '@/contracts/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
 
 const DB = 'jumentix-frontend-test-data';
 
 const userOps = {
-  create: 'create', update: 'update', delete: 'deleteOne'
+  create: 'create',
+  update: 'update',
+  delete: 'deleteOne'
 };
 
 describe('Cana schema from OAS (JUM-802)', () => {
@@ -82,14 +81,19 @@ describe('local repository (JUM-803)', () => {
       organization: 'org-1'
     });
     const searched = await listLocal('User', {
-      q: 'LIMA', searchFields: ['firstName'], page: 1, size: 30
+      q: 'LIMA',
+      searchFields: ['firstName'],
+      page: 1,
+      size: 30
     });
     expect(searched.result.map((row) => row.id)).toStrictEqual(['1']);
     const sorted = await listLocal('User', { sort: 'firstName:asc', page: 1, size: 30 });
     expect(sorted.usedIndex).toBe('firstName');
     expect(sorted.result[0].firstName).toBe('Ana Lima');
     const filtered = await listLocal('User', {
-      filter: { organization: 'org-1' }, page: 1, size: 30
+      filter: { organization: 'org-1' },
+      page: 1,
+      size: 30
     });
     expect(filtered.result.map((row) => row.id).sort()).toStrictEqual(['1', '3']);
   });
@@ -99,10 +103,15 @@ describe('local repository (JUM-803)', () => {
     const client = getCanaClient();
     await client.table('organizations').put({ id: 'org-1', name: 'ACME' });
     await client.table('users').put({
-      id: 'u1', firstName: 'Pat', username: 'pat', organization: 'org-1'
+      id: 'u1',
+      firstName: 'Pat',
+      username: 'pat',
+      organization: 'org-1'
     });
     const joined = await resolveRelations('User', {
-      id: 'u1', firstName: 'Pat', organization: 'org-1'
+      id: 'u1',
+      firstName: 'Pat',
+      organization: 'org-1'
     });
     expect(joined.organizationLabel).toBe('ACME');
     const found = await getLocal('User', 'u1');
@@ -135,8 +144,14 @@ describe('outbox (JUM-806/807)', () => {
     globalThis.fetch = (async (_url: string, init?: RequestInit) => ({
       ok: true,
       status: 201,
-      headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) },
-      json: async () => ({ id: JSON.parse(String(init?.body ?? '{}')).id, firstName: 'E2E', username: 'e2e@x.dev' }),
+      headers: {
+        get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null)
+      },
+      json: async () => ({
+        id: JSON.parse(String(init?.body ?? '{}')).id,
+        firstName: 'E2E',
+        username: 'e2e@x.dev'
+      }),
       text: async () => ''
     })) as unknown as typeof fetch;
     const record = await enqueueMutation({
@@ -157,7 +172,9 @@ describe('outbox (JUM-806/807)', () => {
     globalThis.fetch = (async () => ({
       ok: false,
       status: 400,
-      headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) },
+      headers: {
+        get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null)
+      },
       json: async () => ({ message: 'duplicate username' }),
       text: async () => JSON.stringify({ message: 'duplicate username' })
     })) as unknown as typeof fetch;
@@ -187,12 +204,17 @@ describe('sync (JUM-805)', () => {
     auth.username = 'eduardo@xpertminds.dev';
     auth.userId = 'user-1';
     const empty = {
-      result: [], total: 0, page: 1, size: 100
+      result: [],
+      total: 0,
+      page: 1,
+      size: 100
     };
     globalThis.fetch = (async () => ({
       ok: true,
       status: 200,
-      headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) },
+      headers: {
+        get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null)
+      },
       json: async () => empty,
       text: async () => JSON.stringify(empty)
     })) as unknown as typeof fetch;
@@ -213,24 +235,34 @@ describe('sync (JUM-805)', () => {
   it('hydrates list rows with GET-by-id so emails land in Cana', async () => {
     expect.hasAssertions();
     const listed = {
-      result: [{
-        id: 'user-1',
-        firstName: 'Abraham',
-        username: 'me@mydomain.com',
-        updatedAt: '2026-01-01T00:00:00.000Z'
-      }],
+      result: [
+        {
+          id: 'user-1',
+          firstName: 'Abraham',
+          username: 'me@mydomain.com',
+          updatedAt: '2026-01-01T00:00:00.000Z'
+        }
+      ],
       total: 1,
       page: 1,
       size: 100
     };
     const detail = {
       ...listed.result[0],
-      emails: [{
-        id: 'email-9', type: 'work', email: 'me@mydomain.com', isPrimary: true
-      }]
+      emails: [
+        {
+          id: 'email-9',
+          type: 'work',
+          email: 'me@mydomain.com',
+          isPrimary: true
+        }
+      ]
     };
     const empty = {
-      result: [], total: 0, page: 1, size: 100
+      result: [],
+      total: 0,
+      page: 1,
+      size: 100
     };
     const urls: string[] = [];
     globalThis.fetch = (async (input: RequestInfo | URL) => {
@@ -242,7 +274,9 @@ describe('sync (JUM-805)', () => {
       return {
         ok: true,
         status: 200,
-        headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null) },
+        headers: {
+          get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null)
+        },
         json: async () => body,
         text: async () => JSON.stringify(body)
       };

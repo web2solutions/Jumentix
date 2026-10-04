@@ -7,4 +7,6 @@
  * legitimately depend on; this file keeps the application's own import paths
  * working, so nothing else in `apps/backend-template` changed.
  */
-export { ConflictError } from '@jumentix/persistence-contracts';
+import { ConflictError } from '@jumentix/persistence-contracts';
+
+export default ConflictError;

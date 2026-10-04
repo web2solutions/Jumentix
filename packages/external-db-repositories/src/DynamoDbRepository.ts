@@ -1,7 +1,8 @@
-import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
-export class DynamoDbRepository extends BaseExternalDataRepository {
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+
+class DynamoDbRepository extends BaseExternalDataRepository {
   private client: any | null = null;
 
   constructor(options: IRepositoryConnectionOptions) {
@@ -13,9 +14,7 @@ export class DynamoDbRepository extends BaseExternalDataRepository {
 
   public async connect(): Promise<void> {
     const dynamoModule = await this.loadModule('@aws-sdk/client-dynamodb');
-    const DynamoDBClient = (
-      dynamoModule.DynamoDBClient || dynamoModule.default?.DynamoDBClient
-    );
+    const DynamoDBClient = dynamoModule.DynamoDBClient || dynamoModule.default?.DynamoDBClient;
 
     if (!DynamoDBClient) {
       throw new Error('Unable to resolve DynamoDBClient from "@aws-sdk/client-dynamodb".');
@@ -23,14 +22,13 @@ export class DynamoDbRepository extends BaseExternalDataRepository {
 
     this.client = new DynamoDBClient({
       region: this.options.region || this.getExtraOption<string>('region', 'us-east-1'),
-      endpoint: this.options.endpoint
-        || this.getExtraOption<string | undefined>('endpoint', undefined)
+      endpoint:
+        this.options.endpoint || this.getExtraOption<string | undefined>('endpoint', undefined)
     });
 
     if (this.getExtraOption<boolean>('healthCheckOnConnect', false)) {
-      const ListTablesCommand = (
-        dynamoModule.ListTablesCommand || dynamoModule.default?.ListTablesCommand
-      );
+      const ListTablesCommand =
+        dynamoModule.ListTablesCommand || dynamoModule.default?.ListTablesCommand;
       if (ListTablesCommand && typeof this.client.send === 'function') {
         await this.client.send(new ListTablesCommand({ Limit: 1 }));
       }
@@ -51,3 +49,5 @@ export class DynamoDbRepository extends BaseExternalDataRepository {
     return this.client;
   }
 }
+
+export default DynamoDbRepository;

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -89,8 +89,8 @@ describe('resolveJumentixPin', () => {
     const pin = resolveJumentixPin(root);
 
     expect(() => pin('@jumentix/unrecorded')).toThrow(
-      'No published version recorded for @jumentix/unrecorded in templates.manifest.json'
-      + ' (packageVersions). Rebuild templates with `bun run cli:build-templates`.'
+      'No published version recorded for @jumentix/unrecorded in templates.manifest.json' +
+        ' (packageVersions). Rebuild templates with `bun run cli:build-templates`.'
     );
   });
 });

@@ -5,8 +5,8 @@ cumpri-la.
 
 Duas poupanças distintas, uma regra cada:
 
-- **`rtk`** comprime o que as *ferramentas* te devolvem.
-- **Caveman** comprime o que *tu* devolves a quem lê.
+- **`rtk`** comprime o que as _ferramentas_ te devolvem.
+- **Caveman** comprime o que _tu_ devolves a quem lê.
 
 Nenhum dos dois pode comprimir evidência. É essa exclusão que torna o resto seguro.
 
@@ -14,19 +14,19 @@ Nenhum dos dois pode comprimir evidência. É essa exclusão que torna o resto s
 
 Substitui a coluna da esquerda pela da direita. É esta a mudança do dia a dia.
 
-| Em vez de | Usa |
-| --- | --- |
-| `bun run <script>` | `rtk proxy bun run <script>` |
-| `git <cmd>` | `rtk git <cmd>` |
-| `gh <cmd>` | `rtk gh <cmd>` |
-| `bunx jest <caminhos>` | `rtk jest <caminhos>` |
-| `eslint` / script de lint | `rtk lint` |
-| `tsc` | `rtk tsc` |
-| `docker <cmd>` | `rtk docker <cmd>` |
-| `grep` / `rg` | `rtk grep` / `rtk rg` |
-| `find` | `rtk find` |
-| `cat` / ler ficheiro para contexto | `rtk read` |
-| `curl` | `rtk curl` |
+| Em vez de                          | Usa                          |
+| ---------------------------------- | ---------------------------- |
+| `bun run <script>`                 | `rtk proxy bun run <script>` |
+| `git <cmd>`                        | `rtk git <cmd>`              |
+| `gh <cmd>`                         | `rtk gh <cmd>`               |
+| `bunx jest <caminhos>`             | `rtk jest <caminhos>`        |
+| `eslint` / script de lint          | `rtk lint`                   |
+| `tsc`                              | `rtk tsc`                    |
+| `docker <cmd>`                     | `rtk docker <cmd>`           |
+| `grep` / `rg`                      | `rtk grep` / `rtk rg`        |
+| `find`                             | `rtk find`                   |
+| `cat` / ler ficheiro para contexto | `rtk read`                   |
+| `curl`                             | `rtk curl`                   |
 
 Corre `rtk --help` para a lista completa; cobre pytest, cargo, go, mvn, kubectl e cerca de outros
 quarenta.

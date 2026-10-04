@@ -50,16 +50,12 @@
     {
       "file": "frontend-dashboard.png",
       "capturedAt": "987a5c50",
-      "watch": [
-        "apps/frontend/src"
-      ]
+      "watch": ["apps/frontend/src"]
     },
     {
       "file": "frontend-xcrud-users.png",
       "capturedAt": "987a5c50",
-      "watch": [
-        "apps/frontend/src"
-      ]
+      "watch": ["apps/frontend/src"]
     }
   ]
 }

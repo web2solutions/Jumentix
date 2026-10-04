@@ -5,14 +5,13 @@
  * so the suite can prove `new Worker(...)` — not only MessageChannel.
  */
 
-import type { CanaSchema } from '../../src';
 import { createWorkerHost } from '../../src';
+
+import type { CanaSchema } from '../../src';
 
 const schema: CanaSchema = {
   version: 1,
-  stores: [
-    { name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }
-  ]
+  stores: [{ name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }]
 };
 
 // Dedicated workers expose the global as `self`; the lint rule bans it in the

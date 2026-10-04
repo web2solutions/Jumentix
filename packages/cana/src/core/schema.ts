@@ -19,10 +19,9 @@
  *    by others. Rejected here so behaviour does not depend on the browser.
  */
 
-import type {
-  CanaIndexSchema, CanaKeyPath, CanaSchema, CanaStoreSchema
-} from '../contracts';
 import { canaError } from './errors';
+
+import type { CanaIndexSchema, CanaKeyPath, CanaSchema, CanaStoreSchema } from '../contracts';
 
 /** How a store's primary key is supplied. */
 export type KeyStrategy =
@@ -49,7 +48,9 @@ function isCompound(keyPath: CanaKeyPath): keyPath is readonly string[] {
 function validateKeyPath(keyPath: CanaKeyPath, where: string, problems: string[]): void {
   if (isCompound(keyPath)) {
     if (keyPath.length === 0) {
-      problems.push(`${where}: compound keyPath is empty; some browsers accept this and others reject it`);
+      problems.push(
+        `${where}: compound keyPath is empty; some browsers accept this and others reject it`
+      );
     }
     for (const segment of keyPath) {
       if (typeof segment !== 'string' || segment.length === 0) {
@@ -131,10 +132,8 @@ export function validateSchema(schema: CanaSchema): readonly string[] {
 export function assertSchema(schema: CanaSchema): void {
   const problems = validateSchema(schema);
   if (problems.length > 0) {
-    throw canaError(
-      'InvalidRequest',
-      `Schema is not applicable:\n  - ${problems.join('\n  - ')}`
-    );
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
+    throw canaError('InvalidRequest', `Schema is not applicable:\n  - ${problems.join('\n  - ')}`);
   }
 }
 
@@ -166,9 +165,9 @@ export function applySchema(
     const objectStore = exists
       ? transaction.objectStore(store.name)
       : database.createObjectStore(store.name, {
-        keyPath: domKeyPath(store.keyPath),
-        autoIncrement: store.autoIncrement ?? false
-      });
+          keyPath: domKeyPath(store.keyPath),
+          autoIncrement: store.autoIncrement ?? false
+        });
 
     const existingIndexes = new Set(Array.from(objectStore.indexNames));
 
@@ -180,11 +179,10 @@ export function applySchema(
     const missing = (store.indexes ?? []).filter((index) => !existingIndexes.has(index.name));
 
     for (const index of missing) {
-      objectStore.createIndex(
-        index.name,
-        domKeyPath(index.keyPath) as string | string[],
-        { unique: index.unique ?? false, multiEntry: index.multiEntry ?? false }
-      );
+      objectStore.createIndex(index.name, domKeyPath(index.keyPath) as string | string[], {
+        unique: index.unique ?? false,
+        multiEntry: index.multiEntry ?? false
+      });
     }
   }
 }

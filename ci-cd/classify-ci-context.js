@@ -1,8 +1,8 @@
-#!/usr/bin/env node
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const CONTEXTS = Object.freeze({
@@ -41,43 +41,51 @@ function normalizeRef(value) {
 }
 
 function truthy(value) {
-  return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+  return ['1', 'true', 'yes', 'on'].includes(
+    String(value || '')
+      .trim()
+      .toLowerCase()
+  );
 }
 
 function isScheduled(env = process.env) {
-  return truthy(env.JUMENTIX_CI_FORCE_FULL)
-    || truthy(env.JUMENTIX_CI_SCHEDULED_FULL)
-    || normalizeRef(env.GITHUB_EVENT_NAME) === 'schedule'
-    || normalizeRef(env.GITHUB_EVENT_NAME) === 'workflow_dispatch'
-    || normalizeRef(env.CIRCLE_SCHEDULE_NAME) !== ''
-    || normalizeRef(env.CIRCLE_PIPELINE_TRIGGER_SOURCE) === 'scheduled_pipeline';
+  return (
+    truthy(env.JUMENTIX_CI_FORCE_FULL) ||
+    truthy(env.JUMENTIX_CI_SCHEDULED_FULL) ||
+    normalizeRef(env.GITHUB_EVENT_NAME) === 'schedule' ||
+    normalizeRef(env.GITHUB_EVENT_NAME) === 'workflow_dispatch' ||
+    normalizeRef(env.CIRCLE_SCHEDULE_NAME) !== '' ||
+    normalizeRef(env.CIRCLE_PIPELINE_TRIGGER_SOURCE) === 'scheduled_pipeline'
+  );
 }
 
 function isPullRequest(env = process.env) {
-  return truthy(env.AAA_CI_IS_PULL_REQUEST)
-    || truthy(env.JUMENTIX_CI_IS_PULL_REQUEST)
-    || normalizeRef(env.CIRCLE_PULL_REQUEST) !== ''
-    || normalizeRef(env.CI_PULL_REQUEST) !== '';
+  return (
+    truthy(env.AAA_CI_IS_PULL_REQUEST) ||
+    truthy(env.JUMENTIX_CI_IS_PULL_REQUEST) ||
+    normalizeRef(env.CIRCLE_PULL_REQUEST) !== '' ||
+    normalizeRef(env.CI_PULL_REQUEST) !== ''
+  );
 }
 
 function resolveHeadRef(env = process.env) {
   return normalizeRef(
-    env.JUMENTIX_PR_HEAD_REF
-      || env.AAA_PR_HEAD_REF
-      || env.CIRCLE_BRANCH
-      || env.GITHUB_HEAD_REF
-      || env.GITHUB_REF_NAME
-      || env.BRANCH_NAME
+    env.JUMENTIX_PR_HEAD_REF ||
+      env.AAA_PR_HEAD_REF ||
+      env.CIRCLE_BRANCH ||
+      env.GITHUB_HEAD_REF ||
+      env.GITHUB_REF_NAME ||
+      env.BRANCH_NAME
   );
 }
 
 function resolveBaseRef(env = process.env) {
   return normalizeRef(
-    env.JUMENTIX_PR_BASE_REF
-      || env.AAA_PR_BASE_REF
-      || env.CIRCLE_PR_BASE_BRANCH
-      || env.GITHUB_BASE_REF
-      || env.JUMENTIX_QUALITY_GATE_TARGET
+    env.JUMENTIX_PR_BASE_REF ||
+      env.AAA_PR_BASE_REF ||
+      env.CIRCLE_PR_BASE_BRANCH ||
+      env.GITHUB_BASE_REF ||
+      env.JUMENTIX_QUALITY_GATE_TARGET
   );
 }
 
@@ -91,10 +99,14 @@ function readChangedFiles(baseRef, options = {}) {
     encoding: 'utf8'
   });
   if (result.status !== 0) return [];
-  return [...new Set(String(result.stdout || '')
-    .split('\n')
-    .map((file) => file.trim().replace(/\\/g, '/'))
-    .filter(Boolean))];
+  return [
+    ...new Set(
+      String(result.stdout || '')
+        .split('\n')
+        .map((file) => file.trim().replace(/\\/g, '/'))
+        .filter(Boolean)
+    )
+  ];
 }
 
 function resolveDiffBaseRef(baseRef) {
@@ -140,14 +152,12 @@ function classifyCiContext(options = {}) {
       throw new Error('[ci-context] pull request context is missing the base branch');
     }
     if (
-      baseRef === 'main'
-      && (
-        headRef === 'dev'
-        || isSignedDevPromotionBranch(headRef)
-        || isGeneratedChangelogSyncBranch(headRef)
-        || isGeneratedPackageBumpBranch(headRef)
-        || isGeneratedAppReleaseBranch(headRef)
-      )
+      baseRef === 'main' &&
+      (headRef === 'dev' ||
+        isSignedDevPromotionBranch(headRef) ||
+        isGeneratedChangelogSyncBranch(headRef) ||
+        isGeneratedPackageBumpBranch(headRef) ||
+        isGeneratedAppReleaseBranch(headRef))
     ) {
       context = CONTEXTS.RELEASE_PR_TO_MAIN;
     } else if (baseRef === 'dev') {
@@ -234,20 +244,20 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
+  classifyCiContext,
   CONTEXTS,
   FULL_JOBS,
-  JOBS_BY_CONTEXT,
-  classifyCiContext,
-  isPullRequest,
+  isGeneratedAppReleaseBranch,
   isGeneratedChangelogSyncBranch,
   isGeneratedPackageBumpBranch,
-  isGeneratedAppReleaseBranch,
+  isPullRequest,
   isScheduled,
+  JOBS_BY_CONTEXT,
   jobSelected,
   parseArgs,
   readChangedFiles,
-  resolveDiffBaseRef,
   resolveBaseRef,
+  resolveDiffBaseRef,
   resolveHeadRef,
   runCli,
   selectedJobsFor,

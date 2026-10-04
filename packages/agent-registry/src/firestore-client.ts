@@ -1,17 +1,10 @@
-/* eslint-disable no-console */
-import {
-  initializeApp,
-  cert,
-  getApps,
-  deleteApp
-} from 'firebase-admin/app';
+import { cert, deleteApp, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import {
-  loadServiceAccount,
-  resolveDatabaseUrl
-} from './firebase-credentials';
-import type { AgentRecord, AgentRegistrySnapshot, FirestoreLike } from './types';
+
+import { loadServiceAccount, resolveDatabaseUrl } from './firebase-credentials';
 import { assertValidAgentRecord, findIntegrityProblems } from './validation';
+
+import type { AgentRecord, AgentRegistrySnapshot, FirestoreLike } from './types';
 import type { IntegrityProblem } from './validation';
 
 const COLLECTION = 'agents';
@@ -84,7 +77,7 @@ export interface StoredAgent {
 export async function getStoredAgents(firestore: FirestoreLike): Promise<StoredAgent[]> {
   const snapshot = await firestore.collection(COLLECTION).get();
   return snapshot.docs.map((doc) => {
-    const record = doc.data() as AgentRecord;
+    const record = doc.data();
     // Exemptions honoured on read: the records they cover already exist, and
     // only each agent's own operator can replace them (JUM-614).
     return {

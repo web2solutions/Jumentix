@@ -84,13 +84,13 @@ console.log({
 
 ## Complexity quick map
 
-| Query shape | Complexity model | Notes |
-| --- | --- | --- |
-| Primary-key `get(key)` | Common IndexedDB key lookup model: `O(log n)`. | Browser implementation owns the tree details. |
-| Indexed `equals` | Common IndexedDB index model: `O(log n + matches)`. | Result size still matters. |
-| `limit: n` after cursor open | `O(limit)`. | Cana does not materialize the whole store. |
-| `offset + limit` | `O(offset + limit)`. | Cursor movement is the cost. |
-| Native `count()` | One native request. | Cana does not read every record into JS. |
+| Query shape                  | Complexity model                                    | Notes                                         |
+| ---------------------------- | --------------------------------------------------- | --------------------------------------------- |
+| Primary-key `get(key)`       | Common IndexedDB key lookup model: `O(log n)`.      | Browser implementation owns the tree details. |
+| Indexed `equals`             | Common IndexedDB index model: `O(log n + matches)`. | Result size still matters.                    |
+| `limit: n` after cursor open | `O(limit)`.                                         | Cana does not materialize the whole store.    |
+| `offset + limit`             | `O(offset + limit)`.                                | Cursor movement is the cost.                  |
+| Native `count()`             | One native request.                                 | Cana does not read every record into JS.      |
 
 ## Run it here
 

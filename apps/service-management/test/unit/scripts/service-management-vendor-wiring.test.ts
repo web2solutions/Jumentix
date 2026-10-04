@@ -1,6 +1,5 @@
-/* eslint-disable jest/prefer-expect-assertions */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 /**
  * JUM-734 — the entry points that start Service Management must vendor first.
@@ -25,9 +24,9 @@ describe('service management vendor wiring', () => {
   it('declares one script that generates both vendored bundles', () => {
     expect.hasAssertions();
 
+    expect(Object.keys(manifest.scripts)).toContain(VENDOR_SCRIPT);
     const vendor = manifest.scripts[VENDOR_SCRIPT];
 
-    expect(vendor).toBeDefined();
     expect(vendor).toContain('sync-service-management-cana-bundle.js');
     expect(vendor).toContain('sync-service-management-designer-core.js');
     expect(vendor).toContain('sync-service-management-d3.js');
@@ -37,8 +36,7 @@ describe('service management vendor wiring', () => {
   it('names generator scripts that exist on disk', () => {
     expect.hasAssertions();
 
-    const referenced = manifest.scripts[VENDOR_SCRIPT]
-      .split('&&')
+    const referenced = manifest.scripts[VENDOR_SCRIPT].split('&&')
       .map((part) => part.trim().replace(/^bun\s+/, ''))
       .filter((part) => part.endsWith('.js'));
 
@@ -51,8 +49,8 @@ describe('service management vendor wiring', () => {
   const startsDesigner = Object.entries(manifest.scripts).filter(([name, command]) => {
     const isVendorScript = name === VENDOR_SCRIPT;
     const launchesProcess = /pm2 start/.test(command);
-    const targetsDesigner = /jumentix-dev-service-management|apps\/service-management\/server\.js/
-      .test(command);
+    const targetsDesigner =
+      /jumentix-dev-service-management|apps\/service-management\/server\.js/.test(command);
     return !isVendorScript && launchesProcess && targetsDesigner;
   });
 

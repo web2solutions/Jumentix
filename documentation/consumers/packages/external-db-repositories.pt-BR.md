@@ -57,7 +57,6 @@ await repo.connect();
 // Use through your IStore / use-case ports — never call drivers from domain code.
 ```
 
-
 ### 3. Fluxos centrais
 
 ### 1. Connect with env options
@@ -71,7 +70,6 @@ Call repository methods from an application adapter, not from entities.
 ### 3. Disconnect on shutdown
 
 Hook process shutdown to `disconnect()` so pools do not leak.
-
 
 ### 4. Superfície prática (exports)
 
@@ -88,9 +86,9 @@ Use os exports nas camadas de aplicação/adaptadores — não em entidades de d
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
-| Connection refused / auth failed | Bad URI or secrets | Verify env vars locally; never commit credentials. |
+| Sintoma                                | Causa              | Correção                                                |
+| -------------------------------------- | ------------------ | ------------------------------------------------------- |
+| Connection refused / auth failed       | Bad URI or secrets | Verify env vars locally; never commit credentials.      |
 | Used repository inside a domain entity | Layering violation | Keep repositories in adapters; domain talks ports only. |
 
 **Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.

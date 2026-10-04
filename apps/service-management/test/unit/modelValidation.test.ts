@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-
 /**
  * Unit suite for the validation engine extracted from
  * `apps/service-management/script.js` by JUM-469
@@ -11,27 +8,39 @@
  * pre-refactor behaviour.
  */
 
-const { collectModelIssues } = require(
-  '@jumentix/designer-core/validation/modelValidation.js'
-);
-const { getDefaultRbacPolicy, normalizeField } = require(
-  '@jumentix/designer-core/state/designerState.js'
-);
+const {
+  getDefaultRbacPolicy,
+  normalizeField
+} = require('@jumentix/designer-core/state/designerState.js');
+const {
+  default: collectModelIssues
+} = require('@jumentix/designer-core/validation/modelValidation.js');
 
 function createEntity(overrides: Record<string, unknown> = {}): any {
   return {
     id: 'entity-1',
     name: 'Invoice',
-    fields: [normalizeField({
-      name: 'id', type: 'uuid', required: true, pk: true
-    }, 0)],
+    fields: [
+      normalizeField(
+        {
+          name: 'id',
+          type: 'uuid',
+          required: true,
+          pk: true
+        },
+        0
+      )
+    ],
     meta: {
       aggregateRoot: true,
       invariants: [],
       rbac: getDefaultRbacPolicy(),
       contracts: [],
       oasComposition: {
-        mode: '', refs: [], externalRefs: [], discriminator: ''
+        mode: '',
+        refs: [],
+        externalRefs: [],
+        discriminator: ''
       }
     },
     ...overrides
@@ -40,17 +49,19 @@ function createEntity(overrides: Record<string, unknown> = {}): any {
 
 function createState(overrides: Record<string, unknown> = {}) {
   return {
-    domains: [{
-      id: 'domain-1',
-      name: 'Billing',
-      entities: [createEntity()]
-    }],
+    domains: [
+      {
+        id: 'domain-1',
+        name: 'Billing',
+        entities: [createEntity()]
+      }
+    ],
     relationships: [],
     ...overrides
   };
 }
 
-function messages(issues: Array<{ message: string }>) {
+function messages(issues: { message: string }[]) {
   return issues.map((issue) => issue.message);
 }
 
@@ -62,13 +73,15 @@ describe('model validation engine (JUM-469)', () => {
 
   it('flags empty and duplicate domain names', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [
-        { id: 'domain-1', name: '', entities: [] },
-        { id: 'domain-2', name: 'Billing', entities: [] },
-        { id: 'domain-3', name: 'billing', entities: [] }
-      ]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          { id: 'domain-1', name: '', entities: [] },
+          { id: 'domain-2', name: 'Billing', entities: [] },
+          { id: 'domain-3', name: 'billing', entities: [] }
+        ]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Domain with empty name found.',
       'Duplicate domain name: billing'
@@ -85,17 +98,21 @@ describe('model validation engine (JUM-469)', () => {
 
   it('flags empty and duplicate entity names', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [
-          createEntity({ id: 'entity-1', name: '' }),
-          createEntity({ id: 'entity-2', name: 'Invoice' }),
-          createEntity({ id: 'entity-3', name: 'INVOICE' })
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({ id: 'entity-1', name: '' }),
+              createEntity({ id: 'entity-2', name: 'Invoice' }),
+              createEntity({ id: 'entity-3', name: 'INVOICE' })
+            ]
+          }
         ]
-      }]
-    }));
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Entity with empty name in domain Billing',
       'Duplicate entity name in domain Billing: INVOICE',
@@ -108,20 +125,26 @@ describe('model validation engine (JUM-469)', () => {
 
   it('flags empty and duplicated field names', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({
-          fields: [
-            normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
-            normalizeField({ name: 'total', type: 'number' }, 1),
-            normalizeField({ name: 'Total', type: 'number' }, 2),
-            { ...normalizeField({ name: 'notes', type: 'string' }, 3), name: '' }
-          ]
-        })]
-      }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({
+                fields: [
+                  normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
+                  normalizeField({ name: 'total', type: 'number' }, 1),
+                  normalizeField({ name: 'Total', type: 'number' }, 2),
+                  { ...normalizeField({ name: 'notes', type: 'string' }, 3), name: '' }
+                ]
+              })
+            ]
+          }
+        ]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Entity Billing/Invoice has duplicated field: Total',
       'Entity Billing/Invoice has an empty field name.'
@@ -139,46 +162,61 @@ describe('model validation engine (JUM-469)', () => {
    */
   it('warns about a field name the generator will have to quote', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({
-          fields: [
-            normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
-            normalizeField({ name: 'my field name!', type: 'string' }, 1)
-          ]
-        })]
-      }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({
+                fields: [
+                  normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
+                  normalizeField({ name: 'my field name!', type: 'string' }, 1)
+                ]
+              })
+            ]
+          }
+        ]
+      })
+    );
 
-    expect(issues).toStrictEqual([{
-      message: 'Field Billing/Invoice.my field name! will be emitted as '
-        + '"my field name!" in the OpenAPI schema and the generated code, '
-        + 'reachable only by index. A name starting with a letter, `_` or `$` '
-        + 'and continuing with letters, digits, `_` or `$` is emitted bare.',
-      entityId: 'entity-1',
-      severity: 'warn'
-    }]);
+    expect(issues).toStrictEqual([
+      {
+        message:
+          'Field Billing/Invoice.my field name! will be emitted as ' +
+          '"my field name!" in the OpenAPI schema and the generated code, ' +
+          'reachable only by index. A name starting with a letter, `_` or `$` ' +
+          'and continuing with letters, digits, `_` or `$` is emitted bare.',
+        entityId: 'entity-1',
+        severity: 'warn'
+      }
+    ]);
   });
 
   it('accepts the names the generator emits bare, including `_` and `$`', () => {
     expect.hasAssertions();
 
     // The rule must not fire on legitimate identifiers, or every model warns.
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({
-          fields: [
-            normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
-            normalizeField({ name: '_internal', type: 'string' }, 1),
-            normalizeField({ name: '$ref2', type: 'string' }, 2)
-          ]
-        })]
-      }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({
+                fields: [
+                  normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
+                  normalizeField({ name: '_internal', type: 'string' }, 1),
+                  normalizeField({ name: '$ref2', type: 'string' }, 2)
+                ]
+              })
+            ]
+          }
+        ]
+      })
+    );
 
     expect(messages(issues)).toStrictEqual([]);
   });
@@ -187,15 +225,21 @@ describe('model validation engine (JUM-469)', () => {
     expect.hasAssertions();
     const field = normalizeField({ name: 'tags', type: 'array', itemsType: 'string' }, 1);
     field.itemsType = '';
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({
-          fields: [normalizeField({ name: 'id', type: 'uuid', pk: true }, 0), field]
-        })]
-      }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({
+                fields: [normalizeField({ name: 'id', type: 'uuid', pk: true }, 0), field]
+              })
+            ]
+          }
+        ]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Field Billing/Invoice.tags is array but has no itemsType.'
     ]);
@@ -203,23 +247,41 @@ describe('model validation engine (JUM-469)', () => {
 
   it('flags inverted length and range constraints', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({
-          fields: [
-            normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
-            normalizeField({
-              name: 'code', type: 'string', minLength: 9, maxLength: 3
-            }, 1),
-            normalizeField({
-              name: 'total', type: 'number', minimum: 10, maximum: 2
-            }, 2)
-          ]
-        })]
-      }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({
+                fields: [
+                  normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
+                  normalizeField(
+                    {
+                      name: 'code',
+                      type: 'string',
+                      minLength: 9,
+                      maxLength: 3
+                    },
+                    1
+                  ),
+                  normalizeField(
+                    {
+                      name: 'total',
+                      type: 'number',
+                      minimum: 10,
+                      maximum: 2
+                    },
+                    2
+                  )
+                ]
+              })
+            ]
+          }
+        ]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Field Billing/Invoice.code has minLength > maxLength.',
       'Field Billing/Invoice.total has minimum > maximum.'
@@ -228,32 +290,50 @@ describe('model validation engine (JUM-469)', () => {
 
   it('flags entities without a primary key', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({ fields: [normalizeField({ name: 'name', type: 'string' }, 0)] })]
-      }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({ fields: [normalizeField({ name: 'name', type: 'string' }, 0)] })
+            ]
+          }
+        ]
+      })
+    );
     expect(messages(issues)).toContain('Entity Billing/Invoice has no primary key field.');
   });
 
   it('warns about fields that are required and nullable at once', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({
-          fields: [
-            normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
-            normalizeField({
-              name: 'name', type: 'string', required: true, nullable: true
-            }, 1)
-          ]
-        })]
-      }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({
+                fields: [
+                  normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
+                  normalizeField(
+                    {
+                      name: 'name',
+                      type: 'string',
+                      required: true,
+                      nullable: true
+                    },
+                    1
+                  )
+                ]
+              })
+            ]
+          }
+        ]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Field Billing/Invoice.name is required and nullable simultaneously.'
     ]);
@@ -262,21 +342,27 @@ describe('model validation engine (JUM-469)', () => {
 
   it('warns about invariants on entities that are not aggregate roots', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({
-          meta: {
-            aggregateRoot: false,
-            invariants: ['total must be positive'],
-            rbac: getDefaultRbacPolicy(),
-            contracts: [],
-            oasComposition: {}
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({
+                meta: {
+                  aggregateRoot: false,
+                  invariants: ['total must be positive'],
+                  rbac: getDefaultRbacPolicy(),
+                  contracts: [],
+                  oasComposition: {}
+                }
+              })
+            ]
           }
-        })]
-      }]
-    }));
+        ]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Entity Billing/Invoice has invariants but is not marked as aggregate root.'
     ]);
@@ -292,9 +378,11 @@ describe('model validation engine (JUM-469)', () => {
       update: { roles: [], tenantScoped: true },
       delete: { roles: [], tenantScoped: true }
     };
-    const issues = collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Entity Billing/Invoice has no RBAC roles for action "list".',
       'Entity Billing/Invoice has no RBAC roles for action "create".',
@@ -308,15 +396,27 @@ describe('model validation engine (JUM-469)', () => {
     const entity = createEntity();
     entity.meta.contracts = [
       {
-        id: 'c1', name: '', type: 'event', channel: '', version: '1.0.0', payloadSchema: {}
+        id: 'c1',
+        name: '',
+        type: 'event',
+        channel: '',
+        version: '1.0.0',
+        payloadSchema: {}
       },
       {
-        id: 'c2', name: 'issued', type: 'event', channel: '', version: '1.0.0', payloadSchema: {}
+        id: 'c2',
+        name: 'issued',
+        type: 'event',
+        channel: '',
+        version: '1.0.0',
+        payloadSchema: {}
       }
     ];
-    const issues = collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Entity Billing/Invoice has a contract without name.',
       'Contract Billing/Invoice.unknown has empty channel/topic.',
@@ -330,15 +430,23 @@ describe('model validation engine (JUM-469)', () => {
     expect.hasAssertions();
     const entity = createEntity();
     entity.meta.oasComposition = {
-      mode: 'oneOf', refs: ['Only'], externalRefs: [], discriminator: ''
+      mode: 'oneOf',
+      refs: ['Only'],
+      externalRefs: [],
+      discriminator: ''
     };
     const other = createEntity({ id: 'entity-2', name: 'Receipt' });
     other.meta.oasComposition = {
-      mode: '', refs: [], externalRefs: [], discriminator: 'kind'
+      mode: '',
+      refs: [],
+      externalRefs: [],
+      discriminator: 'kind'
     };
-    const issues = collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity, other] }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [{ id: 'domain-1', name: 'Billing', entities: [entity, other] }]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Entity Billing/Invoice composition "oneOf" should reference at least 2 schemas.',
       'Entity Billing/Receipt has discriminator without composition mode.'
@@ -367,22 +475,28 @@ describe('model validation engine (JUM-469)', () => {
       'Relationship "rel-1" has invalid cardinality.',
       'Relationship "rel-1" should define both bendX and bendY or none.'
     ]);
-    expect(issues.map((issue: { severity: string }) => issue.severity)).toStrictEqual(['error', 'error', 'warn']);
+    expect(issues.map((issue: { severity: string }) => issue.severity)).toStrictEqual([
+      'error',
+      'error',
+      'warn'
+    ]);
   });
 
   it('accepts relationships with both bend coordinates set', () => {
     expect.hasAssertions();
     const state = createState({
-      relationships: [{
-        id: 'rel-1',
-        name: 'self',
-        fromEntityId: 'entity-1',
-        toEntityId: 'entity-1',
-        fromCardinality: 'N',
-        toCardinality: '1',
-        bendX: 10,
-        bendY: 20
-      }]
+      relationships: [
+        {
+          id: 'rel-1',
+          name: 'self',
+          fromEntityId: 'entity-1',
+          toEntityId: 'entity-1',
+          fromCardinality: 'N',
+          toCardinality: '1',
+          bendX: 10,
+          bendY: 20
+        }
+      ]
     });
     expect(collectModelIssues(state)).toStrictEqual([]);
   });
@@ -402,16 +516,34 @@ describe('model validation severity contract (JUM-470)', () => {
     const broken = createEntity({ id: 'entity-broken', name: 'Invoice' });
     broken.fields = [
       { ...normalizeField({ name: 'tags', type: 'array' }, 0), itemsType: '' },
-      normalizeField({
-        name: 'code', type: 'string', minLength: 9, maxLength: 3
-      }, 1),
+      normalizeField(
+        {
+          name: 'code',
+          type: 'string',
+          minLength: 9,
+          maxLength: 3
+        },
+        1
+      ),
       normalizeField({ name: 'Code', type: 'string' }, 2),
-      normalizeField({
-        name: 'total', type: 'number', minimum: 10, maximum: 2
-      }, 3),
-      normalizeField({
-        name: 'name', type: 'string', required: true, nullable: true
-      }, 4),
+      normalizeField(
+        {
+          name: 'total',
+          type: 'number',
+          minimum: 10,
+          maximum: 2
+        },
+        3
+      ),
+      normalizeField(
+        {
+          name: 'name',
+          type: 'string',
+          required: true,
+          nullable: true
+        },
+        4
+      ),
       { ...normalizeField({ name: 'notes', type: 'string' }, 5), name: '' }
     ];
     broken.meta = {
@@ -420,19 +552,35 @@ describe('model validation severity contract (JUM-470)', () => {
       rbac: rbacEmpty,
       contracts: [
         {
-          id: 'c1', name: '', type: 'event', channel: '', version: '1.0.0', payloadSchema: {}
+          id: 'c1',
+          name: '',
+          type: 'event',
+          channel: '',
+          version: '1.0.0',
+          payloadSchema: {}
         },
         {
-          id: 'c2', name: 'issued', type: 'event', channel: '', version: '1.0.0', payloadSchema: {}
+          id: 'c2',
+          name: 'issued',
+          type: 'event',
+          channel: '',
+          version: '1.0.0',
+          payloadSchema: {}
         }
       ],
       oasComposition: {
-        mode: 'oneOf', refs: ['Only'], externalRefs: [], discriminator: ''
+        mode: 'oneOf',
+        refs: ['Only'],
+        externalRefs: [],
+        discriminator: ''
       }
     };
     const clean = createEntity({ id: 'entity-clean', name: 'Receipt' });
     clean.meta.oasComposition = {
-      mode: '', refs: [], externalRefs: [], discriminator: 'kind'
+      mode: '',
+      refs: [],
+      externalRefs: [],
+      discriminator: 'kind'
     };
 
     const state = createState({
@@ -441,25 +589,27 @@ describe('model validation severity contract (JUM-470)', () => {
         { id: 'domain-1', name: 'Billing', entities: [emptyNamed, broken, clean] },
         { id: 'domain-2', name: 'billing', entities: [] }
       ],
-      relationships: [{
-        id: 'rel-1',
-        name: '',
-        fromEntityId: 'entity-clean',
-        toEntityId: 'ghost',
-        fromCardinality: 'M',
-        toCardinality: '1',
-        bendX: 10,
-        bendY: null
-      }]
+      relationships: [
+        {
+          id: 'rel-1',
+          name: '',
+          fromEntityId: 'entity-clean',
+          toEntityId: 'ghost',
+          fromCardinality: 'M',
+          toCardinality: '1',
+          bendX: 10,
+          bendY: null
+        }
+      ]
     });
 
     const issues = collectModelIssues(state);
-    type Issue = { message: string; severity: string; entityId: string | null };
-    const shape = issues.map((issue: Issue) => [
-      issue.message,
-      issue.severity,
-      issue.entityId
-    ]);
+    interface Issue {
+      message: string;
+      severity: string;
+      entityId: string | null;
+    }
+    const shape = issues.map((issue: Issue) => [issue.message, issue.severity, issue.entityId]);
     expect(shape).toStrictEqual([
       ['Domain with empty name found.', 'error', null],
       ['Entity with empty name in domain Billing', 'error', 'entity-empty'],
@@ -467,10 +617,18 @@ describe('model validation severity contract (JUM-470)', () => {
       ['Field Billing/Invoice.code has minLength > maxLength.', 'error', 'entity-broken'],
       ['Entity Billing/Invoice has duplicated field: Code', 'error', 'entity-broken'],
       ['Field Billing/Invoice.total has minimum > maximum.', 'error', 'entity-broken'],
-      ['Field Billing/Invoice.name is required and nullable simultaneously.', 'warn', 'entity-broken'],
+      [
+        'Field Billing/Invoice.name is required and nullable simultaneously.',
+        'warn',
+        'entity-broken'
+      ],
       ['Entity Billing/Invoice has an empty field name.', 'error', 'entity-broken'],
       ['Entity Billing/Invoice has no primary key field.', 'error', 'entity-broken'],
-      ['Entity Billing/Invoice has invariants but is not marked as aggregate root.', 'warn', 'entity-broken'],
+      [
+        'Entity Billing/Invoice has invariants but is not marked as aggregate root.',
+        'warn',
+        'entity-broken'
+      ],
       ['Entity Billing/Invoice has no RBAC roles for action "list".', 'warn', 'entity-broken'],
       ['Entity Billing/Invoice has no RBAC roles for action "getById".', 'warn', 'entity-broken'],
       ['Entity Billing/Invoice has no RBAC roles for action "create".', 'warn', 'entity-broken'],
@@ -479,8 +637,16 @@ describe('model validation severity contract (JUM-470)', () => {
       ['Entity Billing/Invoice has a contract without name.', 'error', 'entity-broken'],
       ['Contract Billing/Invoice.unknown has empty channel/topic.', 'warn', 'entity-broken'],
       ['Contract Billing/Invoice.issued has empty channel/topic.', 'warn', 'entity-broken'],
-      ['Entity Billing/Invoice composition "oneOf" should reference at least 2 schemas.', 'warn', 'entity-broken'],
-      ['Entity Billing/Receipt has discriminator without composition mode.', 'warn', 'entity-clean'],
+      [
+        'Entity Billing/Invoice composition "oneOf" should reference at least 2 schemas.',
+        'warn',
+        'entity-broken'
+      ],
+      [
+        'Entity Billing/Receipt has discriminator without composition mode.',
+        'warn',
+        'entity-clean'
+      ],
       ['Duplicate domain name: billing', 'error', null],
       ['Relationship "rel-1" references missing entities.', 'error', null],
       ['Relationship "rel-1" has invalid cardinality.', 'error', null],
@@ -488,8 +654,9 @@ describe('model validation severity contract (JUM-470)', () => {
     ]);
     // The severity vocabulary is exactly error|warn here: no rule emits 'info',
     // so the export gate's `severity === 'error'` filter sees everything it must.
-    expect([...new Set(issues.map((issue: { severity: string }) => issue.severity))].sort())
-      .toStrictEqual(['error', 'warn']);
+    expect(
+      [...new Set(issues.map((issue: { severity: string }) => issue.severity))].sort()
+    ).toStrictEqual(['error', 'warn']);
   });
 });
 
@@ -502,9 +669,15 @@ describe('export quality gate boundary (JUM-470)', () => {
     const entity = createEntity({
       fields: [
         normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
-        normalizeField({
-          name: 'name', type: 'string', required: true, nullable: true
-        }, 1)
+        normalizeField(
+          {
+            name: 'name',
+            type: 'string',
+            required: true,
+            nullable: true
+          },
+          1
+        )
       ]
     });
     entity.meta.rbac = {
@@ -514,9 +687,11 @@ describe('export quality gate boundary (JUM-470)', () => {
       update: { roles: [], tenantScoped: true },
       delete: { roles: [], tenantScoped: true }
     };
-    const issues = collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
+      })
+    );
     expect(issues.length).toBeGreaterThan(0);
     expect(issues.every((issue: { severity: string }) => issue.severity === 'warn')).toBe(true);
     expect(issues.some((issue: { severity: string }) => issue.severity === 'error')).toBe(false);
@@ -524,13 +699,19 @@ describe('export quality gate boundary (JUM-470)', () => {
 
   it('a single error crosses the blocking threshold', () => {
     expect.hasAssertions();
-    const issues = collectModelIssues(createState({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [createEntity({ fields: [normalizeField({ name: 'name', type: 'string' }, 0)] })]
-      }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              createEntity({ fields: [normalizeField({ name: 'name', type: 'string' }, 0)] })
+            ]
+          }
+        ]
+      })
+    );
     const critical = issues.filter((issue: { severity: string }) => issue.severity === 'error');
     expect(critical).toHaveLength(1);
     expect(critical[0].message).toBe('Entity Billing/Invoice has no primary key field.');
@@ -542,9 +723,11 @@ describe('validation boundary inputs (JUM-470)', () => {
     expect.hasAssertions();
     const entity = createEntity();
     entity.meta.rbac = { list: { roles: 'oops', tenantScoped: true } };
-    const issues = collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
-    }));
+    const issues = collectModelIssues(
+      createState({
+        domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
+      })
+    );
     expect(messages(issues)).toStrictEqual([
       'Entity Billing/Invoice has no RBAC roles for action "list".',
       'Entity Billing/Invoice has no RBAC roles for action "getById".',
@@ -564,9 +747,13 @@ describe('validation boundary inputs (JUM-470)', () => {
       rbac: getDefaultRbacPolicy(),
       contracts: 'nope'
     };
-    expect(collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
-    }))).toStrictEqual([]);
+    expect(
+      collectModelIssues(
+        createState({
+          domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
+        })
+      )
+    ).toStrictEqual([]);
   });
 
   it('validates an entity without meta against the installed default RBAC policy', () => {
@@ -576,9 +763,13 @@ describe('validation boundary inputs (JUM-470)', () => {
       name: 'Invoice',
       fields: [normalizeField({ name: 'id', type: 'uuid', pk: true }, 0)]
     };
-    expect(collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
-    }))).toStrictEqual([]);
+    expect(
+      collectModelIssues(
+        createState({
+          domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
+        })
+      )
+    ).toStrictEqual([]);
   });
 
   it('does not flag a well-formed array field or a two-ref composition', () => {
@@ -590,11 +781,18 @@ describe('validation boundary inputs (JUM-470)', () => {
       ]
     });
     entity.meta.oasComposition = {
-      mode: 'allOf', refs: ['A', 'B'], externalRefs: [], discriminator: 'kind'
+      mode: 'allOf',
+      refs: ['A', 'B'],
+      externalRefs: [],
+      discriminator: 'kind'
     };
-    expect(collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
-    }))).toStrictEqual([]);
+    expect(
+      collectModelIssues(
+        createState({
+          domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
+        })
+      )
+    ).toStrictEqual([]);
   });
 
   it('does not flag equal or single-sided length and range constraints', () => {
@@ -602,32 +800,50 @@ describe('validation boundary inputs (JUM-470)', () => {
     const entity = createEntity({
       fields: [
         normalizeField({ name: 'id', type: 'uuid', pk: true }, 0),
-        normalizeField({
-          name: 'a', type: 'string', minLength: 3, maxLength: 3
-        }, 1),
-        normalizeField({
-          name: 'b', type: 'number', minimum: 2, maximum: 2
-        }, 2),
+        normalizeField(
+          {
+            name: 'a',
+            type: 'string',
+            minLength: 3,
+            maxLength: 3
+          },
+          1
+        ),
+        normalizeField(
+          {
+            name: 'b',
+            type: 'number',
+            minimum: 2,
+            maximum: 2
+          },
+          2
+        ),
         normalizeField({ name: 'c', type: 'string', minLength: 1 }, 3),
         normalizeField({ name: 'd', type: 'number', maximum: 5 }, 4)
       ]
     });
-    expect(collectModelIssues(createState({
-      domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
-    }))).toStrictEqual([]);
+    expect(
+      collectModelIssues(
+        createState({
+          domains: [{ id: 'domain-1', name: 'Billing', entities: [entity] }]
+        })
+      )
+    ).toStrictEqual([]);
   });
 
   it('does not flag a relationship with no bend coordinates', () => {
     expect.hasAssertions();
     const state = createState({
-      relationships: [{
-        id: 'rel-1',
-        name: 'link',
-        fromEntityId: 'entity-1',
-        toEntityId: 'entity-1',
-        fromCardinality: '1',
-        toCardinality: 'N'
-      }]
+      relationships: [
+        {
+          id: 'rel-1',
+          name: 'link',
+          fromEntityId: 'entity-1',
+          toEntityId: 'entity-1',
+          fromCardinality: '1',
+          toCardinality: 'N'
+        }
+      ]
     });
     expect(collectModelIssues(state)).toStrictEqual([]);
   });
@@ -685,21 +901,23 @@ describe('oas export gate collisions (JUM-474)', () => {
 
   it('does not flag entities whose names survive the OAS tokenisation intact', () => {
     expect.hasAssertions();
-    expect(collectModelIssues({
-      domains: [
-        {
-          id: 'domain-1',
-          name: 'Billing',
-          entities: [createEntity({ id: 'entity-1', name: 'Invoice' })]
-        },
-        {
-          id: 'domain-2',
-          name: 'Catalog',
-          entities: [createEntity({ id: 'entity-2', name: 'Invoice' })]
-        }
-      ],
-      relationships: []
-    })).toStrictEqual([]);
+    expect(
+      collectModelIssues({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [createEntity({ id: 'entity-1', name: 'Invoice' })]
+          },
+          {
+            id: 'domain-2',
+            name: 'Catalog',
+            entities: [createEntity({ id: 'entity-2', name: 'Invoice' })]
+          }
+        ],
+        relationships: []
+      })
+    ).toStrictEqual([]);
   });
 });
 

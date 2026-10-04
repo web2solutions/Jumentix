@@ -1,18 +1,23 @@
-import {
-  DeadLetterQueue,
-  InMemoryDeadLetterStore,
-  KeyValueDeadLetterStore,
-  type DeadLetterRecord
-} from '../src';
+import { DeadLetterQueue, InMemoryDeadLetterStore, KeyValueDeadLetterStore } from '../src';
+
+import type { DeadLetterRecord } from '../src';
 
 /** A key-value client with the surface the Redis one exposes: get/set/del only. */
 function fakeKeyValueClient() {
   const values = new Map<string, string>();
   return {
     values,
-    async get(key: string) { return { result: values.get(key) }; },
-    async set(key: string, value: unknown) { values.set(key, String(value)); return { result: 'OK' }; },
-    async del(key: string) { values.delete(key); return { result: 1 }; }
+    async get(key: string) {
+      return { result: values.get(key) };
+    },
+    async set(key: string, value: unknown) {
+      values.set(key, String(value));
+      return { result: 'OK' };
+    },
+    async del(key: string) {
+      values.delete(key);
+      return { result: 1 };
+    }
   };
 }
 
@@ -72,7 +77,9 @@ describe('deadLetterQueue (JUM-53)', () => {
     await lockedUserUpdate(queue);
 
     const report = await queue.replay({
-      update: async () => { throw new Error('User user-1 is locked'); }
+      update: async () => {
+        throw new Error('User user-1 is locked');
+      }
     });
 
     expect(report.retried).toHaveLength(1);
@@ -87,7 +94,11 @@ describe('deadLetterQueue (JUM-53)', () => {
 
     const queue = new DeadLetterQueue({ maxAttempts: 2 });
     await lockedUserUpdate(queue);
-    const alwaysLocked = { update: async () => { throw new Error('still locked'); } };
+    const alwaysLocked = {
+      update: async () => {
+        throw new Error('still locked');
+      }
+    };
 
     await queue.replay(alwaysLocked);
     const second = await queue.replay(alwaysLocked);
@@ -98,7 +109,11 @@ describe('deadLetterQueue (JUM-53)', () => {
     // The bound is the point: without it a permanently locked resource is
     // retried for ever, turning one stuck write into permanent load.
     let calls = 0;
-    const third = await queue.replay({ update: async () => { calls += 1; } });
+    const third = await queue.replay({
+      update: async () => {
+        calls += 1;
+      }
+    });
 
     expect(calls).toBe(0);
     expect(third.replayed).toStrictEqual([]);
@@ -109,7 +124,10 @@ describe('deadLetterQueue (JUM-53)', () => {
 
     const queue = new DeadLetterQueue();
     await queue.enqueue({
-      entityName: 'User', resourceId: 'user-2', operation: 'deletePhone', payload: {}
+      entityName: 'User',
+      resourceId: 'user-2',
+      operation: 'deletePhone',
+      payload: {}
     });
 
     const report = await queue.replay({ update: async () => undefined });
@@ -127,10 +145,16 @@ describe('deadLetterQueue (JUM-53)', () => {
     // the earlier value win, which is a silent data loss.
     const queue = new DeadLetterQueue();
     await queue.enqueue({
-      entityName: 'User', resourceId: 'user-1', operation: 'update', payload: { firstName: 'first' }
+      entityName: 'User',
+      resourceId: 'user-1',
+      operation: 'update',
+      payload: { firstName: 'first' }
     });
     await queue.enqueue({
-      entityName: 'User', resourceId: 'user-1', operation: 'update', payload: { firstName: 'second' }
+      entityName: 'User',
+      resourceId: 'user-1',
+      operation: 'update',
+      payload: { firstName: 'second' }
     });
 
     const applied: string[] = [];
@@ -148,15 +172,30 @@ describe('deadLetterQueue (JUM-53)', () => {
 
     const queue = new DeadLetterQueue();
 
-    await expect(queue.enqueue({
-      entityName: '', resourceId: 'user-1', operation: 'update', payload: {}
-    })).rejects.toThrow('entityName');
-    await expect(queue.enqueue({
-      entityName: 'User', resourceId: '', operation: 'update', payload: {}
-    })).rejects.toThrow('resourceId');
-    await expect(queue.enqueue({
-      entityName: 'User', resourceId: 'user-1', operation: '', payload: {}
-    })).rejects.toThrow('operation');
+    await expect(
+      queue.enqueue({
+        entityName: '',
+        resourceId: 'user-1',
+        operation: 'update',
+        payload: {}
+      })
+    ).rejects.toThrow('entityName');
+    await expect(
+      queue.enqueue({
+        entityName: 'User',
+        resourceId: '',
+        operation: 'update',
+        payload: {}
+      })
+    ).rejects.toThrow('resourceId');
+    await expect(
+      queue.enqueue({
+        entityName: 'User',
+        resourceId: 'user-1',
+        operation: '',
+        payload: {}
+      })
+    ).rejects.toThrow('operation');
   });
 
   it('rejects a queue configured never to attempt anything', async () => {
@@ -189,13 +228,18 @@ describe('keyValueDeadLetterStore (JUM-53)', () => {
     const queue = new DeadLetterQueue({ store: new KeyValueDeadLetterStore(client) });
     await lockedUserUpdate(queue);
     await queue.enqueue({
-      entityName: 'User', resourceId: 'user-2', operation: 'delete', payload: {}
+      entityName: 'User',
+      resourceId: 'user-2',
+      operation: 'delete',
+      payload: {}
     });
 
     const pending = await queue.pending();
 
-    expect(pending.map((record: DeadLetterRecord) => record.resourceId))
-      .toStrictEqual(['user-1', 'user-2']);
+    expect(pending.map((record: DeadLetterRecord) => record.resourceId)).toStrictEqual([
+      'user-1',
+      'user-2'
+    ]);
     expect([...client.values.keys()]).toContain('dlq:index');
   });
 
@@ -218,9 +262,15 @@ describe('keyValueDeadLetterStore (JUM-53)', () => {
     expect.hasAssertions();
 
     const failing = {
-      async get() { return { result: undefined }; },
-      async set() { return { error: new Error('redis unreachable') }; },
-      async del() { return { result: 1 }; }
+      async get() {
+        return { result: undefined };
+      },
+      async set() {
+        return { error: new Error('redis unreachable') };
+      },
+      async del() {
+        return { result: 1 };
+      }
     };
     const queue = new DeadLetterQueue({ store: new KeyValueDeadLetterStore(failing) });
 
@@ -265,30 +315,29 @@ describe('keyValueDeadLetterStore (JUM-53)', () => {
  * these are the refusals a real Redis produces and cannot be asked for.
  */
 describe('keyValueDeadLetterStore refusals (JUM-721)', () => {
-  const record = (id: string): DeadLetterRecord => ({
-    id,
-    entityName: 'User',
-    resourceId: 'user-1',
-    operation: 'update',
-    payload: { firstName: 'Ada' },
-    actorId: 'actor-1',
-    attempts: 0,
-    status: 'pending',
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z'
-  } as DeadLetterRecord);
+  const record = (id: string): DeadLetterRecord =>
+    ({
+      id,
+      entityName: 'User',
+      resourceId: 'user-1',
+      operation: 'update',
+      payload: { firstName: 'Ada' },
+      actorId: 'actor-1',
+      attempts: 0,
+      status: 'pending',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z'
+    }) as DeadLetterRecord;
 
   /** A client whose named operation answers with an error rather than a result. */
   const failingOn = (operation: 'get' | 'set') => {
     const client = fakeKeyValueClient();
     return {
       ...client,
-      get: async (key: string) => (
-        operation === 'get' ? { error: new Error('store unreachable') } : client.get(key)
-      ),
-      set: async (key: string, value: unknown) => (
+      get: async (key: string) =>
+        operation === 'get' ? { error: new Error('store unreachable') } : client.get(key),
+      set: async (key: string, value: unknown) =>
         operation === 'set' ? { error: new Error('store read-only') } : client.set(key, value)
-      )
     };
   };
 
@@ -315,7 +364,7 @@ describe('keyValueDeadLetterStore refusals (JUM-721)', () => {
     // The record landed and the index did not: the entry exists and nothing
     // lists it. Reporting success here is how a dead letter becomes invisible.
     const client = fakeKeyValueClient();
-    const behaviours: Array<(key: string, value: unknown) => Promise<unknown>> = [
+    const behaviours: ((key: string, value: unknown) => Promise<unknown>)[] = [
       client.set,
       async () => ({ error: new Error('index write refused') })
     ];

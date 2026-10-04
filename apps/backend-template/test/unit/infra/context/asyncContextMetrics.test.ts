@@ -1,5 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects,
-  jest/prefer-lowercase-title, jest/prefer-strict-equal */
+/* eslint-disable jest/max-expects */
 import {
   Context,
   redactSensitive,
@@ -20,11 +19,14 @@ describe('asyncLocalStorage context metrics + redact', () => {
       name: 'ok'
     });
 
-    runWithContext(new Map<unknown, unknown>([
-      ['correlationId', 'corr-abc'],
-      ['authorization', 'Bearer xyz'],
-      ['password', 'hunter2']
-    ]), () => 'done');
+    runWithContext(
+      new Map<unknown, unknown>([
+        ['correlationId', 'corr-abc'],
+        ['authorization', 'Bearer xyz'],
+        ['password', 'hunter2']
+      ]),
+      () => 'done'
+    );
 
     const snapshot = snapshotAsyncContextMetrics();
     expect(snapshot.enteredTotal).toBe(1);

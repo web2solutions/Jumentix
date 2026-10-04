@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/documentation/NPM-AND-VERCEL-INTEGRATION.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Integração NPM e Vercel
 
 ## Organização NPM

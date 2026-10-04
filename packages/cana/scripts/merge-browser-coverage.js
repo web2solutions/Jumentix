@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-/* eslint-disable no-console */
 /**
  * Requirement 112 §4 / JUM-417 — merge every engine's browser LCOV into the
  * single report Sonar and the threshold gate read.
@@ -26,7 +24,9 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+
 const libCoverage = require('istanbul-lib-coverage');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const ROOT = process.cwd();
@@ -40,7 +40,11 @@ const ENGINES = Object.freeze(['chrome', 'firefox', 'webkit']);
  * and existing consumers (`write-browser-lcov.js`, Sonar paths) keep working.
  */
 function engineLcovPath(coverageRoot, engine) {
-  return path.join(coverageRoot, engine === 'chrome' ? 'browser' : `browser-${engine}`, 'lcov.info');
+  return path.join(
+    coverageRoot,
+    engine === 'chrome' ? 'browser' : `browser-${engine}`,
+    'lcov.info'
+  );
 }
 
 /**
@@ -65,11 +69,12 @@ function inputFor(engine, dir) {
 
 /** LCOV inputs for a local run: per-engine dirs under coverage/. */
 function localInputs(root) {
-  return ENGINES
-    .map((engine) => inputFor(engine, path.join(
-      root, 'coverage', engine === 'chrome' ? 'browser' : `browser-${engine}`
-    )))
-    .filter(({ lcov }) => fs.existsSync(lcov));
+  return ENGINES.map((engine) =>
+    inputFor(
+      engine,
+      path.join(root, 'coverage', engine === 'chrome' ? 'browser' : `browser-${engine}`)
+    )
+  ).filter(({ lcov }) => fs.existsSync(lcov));
 }
 
 /**
@@ -195,7 +200,10 @@ function mergeEngineReports(root, inputs) {
   const resolved = inputs || localInputs(root);
 
   if (resolved.length === 0) {
-    return { ok: false, message: 'No browser LCOV found for any engine (coverage/browser*/lcov.info).' };
+    return {
+      ok: false,
+      message: 'No browser LCOV found for any engine (coverage/browser*/lcov.info).'
+    };
   }
 
   if (resolved.length === 1) {
@@ -245,8 +253,9 @@ function mergeEngineReports(root, inputs) {
       da: [...mergeCounters(versions.map((v) => countMap(v.da))).entries()]
         .sort((a, b) => Number(a[0]) - Number(b[0]))
         .map(([line, hits]) => `${line},${hits}`),
-      brda: [...mergeCounters(versions.map((v) => countMap(v.brda))).entries()]
-        .map(([key, hits]) => `${key},${hits}`)
+      brda: [...mergeCounters(versions.map((v) => countMap(v.brda))).entries()].map(
+        ([key, hits]) => `${key},${hits}`
+      )
     });
   }
 
@@ -289,13 +298,13 @@ function main(io = console, argv = process.argv.slice(2)) {
 }
 
 if (isEntryPoint(module)) {
-  process.exit(main());
+  process.exitCode = main();
 }
 
 module.exports = {
-  ENGINES,
   artifactInputs,
   engineLcovPath,
+  ENGINES,
   isHit,
   localInputs,
   mergeCounters,

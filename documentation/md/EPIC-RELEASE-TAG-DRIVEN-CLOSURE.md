@@ -6,16 +6,16 @@
 
 ## Shipped in this delivery
 
-| Piece | Path / surface |
-| --- | --- |
-| Req 060 tag conventions | `.agents/requirements/project/060-jumentix-release-versioning-policy-governance.md` |
-| Next version rule | `ci-cd/lib/next-version.js` + `ci-cd/test/next-version.test.ts` |
-| Application tag on `main` | `ci-cd/create-app-release-tag.js --github-api` + `.github/workflows/app-release.yml` |
-| GitHub Release from app tag | `ci-cd/create-github-release.js` (same workflow after tag) |
-| Package tags + re-publish guard | `ci-cd/publish-npm-cohort.js` + `.github/workflows/npm-publish.yml` |
-| Changelog app-tag filter | `ci-cd/update-changelog.js` (`/^v\d+\.\d+\.\d+$/`) |
-| Retired local bump scripts | removed `ci-cd/bumpTag.ts`, `ci-cd/bumpPackage.ts` |
-| Docs EN/PT | `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md` (+pt-BR), `NPM-PACKAGE-PUBLISHING.md` (+pt-BR) |
+| Piece                           | Path / surface                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Req 060 tag conventions         | `.agents/requirements/project/060-jumentix-release-versioning-policy-governance.md`                           |
+| Next version rule               | `ci-cd/lib/next-version.js` + `ci-cd/test/next-version.test.ts`                                               |
+| Application tag on `main`       | `ci-cd/create-app-release-tag.js --github-api` + `.github/workflows/app-release.yml`                          |
+| GitHub Release from app tag     | `ci-cd/create-github-release.js` (same workflow after tag)                                                    |
+| Package tags + re-publish guard | `ci-cd/publish-npm-cohort.js` + `.github/workflows/npm-publish.yml`                                           |
+| Changelog app-tag filter        | `ci-cd/update-changelog.js` (`/^v\d+\.\d+\.\d+$/`)                                                            |
+| Retired local bump scripts      | removed `ci-cd/bumpTag.ts`, `ci-cd/bumpPackage.ts`                                                            |
+| Docs EN/PT                      | `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md` (+pt-BR), `NPM-PACKAGE-PUBLISHING.md` (+pt-BR) |
 
 ## Why GitHub Actions owns application tags (not CircleCI)
 

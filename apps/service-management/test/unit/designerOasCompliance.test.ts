@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import path from 'node:path';
 
 /**
@@ -25,23 +24,16 @@ import path from 'node:path';
  */
 
 const repoRoot = path.resolve(__dirname, '../../../..');
-const { buildOasDocument } = require(
-  '@jumentix/designer-core/exporters/designerExporters.js'
-);
-const { buildDomainsFromOas } = require(
-  '@jumentix/designer-core/importers/designerImporters.js'
-);
-const { collectModelIssues } = require(
-  '@jumentix/designer-core/validation/modelValidation.js'
-);
-const { normalizeStatePayload } = require(
-  '@jumentix/designer-core/state/designerState.js'
-);
-
+const { buildOasDocument } = require('@jumentix/designer-core/exporters/designerExporters.js');
+const { buildDomainsFromOas } = require('@jumentix/designer-core/importers/designerImporters.js');
+const { normalizeStatePayload } = require('@jumentix/designer-core/state/designerState.js');
 const {
-  resolveSchemaByRef,
-  validatePortObjectContracts
-} = require(path.join(repoRoot, 'ci-cd', 'check-oas-route-resolution.js'));
+  default: collectModelIssues
+} = require('@jumentix/designer-core/validation/modelValidation.js');
+
+const { resolveSchemaByRef, validatePortObjectContracts } = require(
+  path.join(repoRoot, 'ci-cd', 'check-oas-route-resolution.js')
+);
 
 const HTTP_METHODS = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace'];
 
@@ -58,59 +50,94 @@ function createUiModelState() {
             name: 'Invoice',
             fields: [
               {
-                name: 'id', type: 'uuid', required: true, pk: true, unique: true
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true,
+                unique: true
               },
               {
-                name: 'total', type: 'number', required: true, minimum: 0
+                name: 'total',
+                type: 'number',
+                required: true,
+                minimum: 0
               },
               {
-                name: 'tags', type: 'array', itemsType: 'string', nullable: true
+                name: 'tags',
+                type: 'array',
+                itemsType: 'string',
+                nullable: true
               }
             ],
             meta: {
-              contracts: [{
-                id: 'contract-1', name: 'issued', type: 'event', channel: 'billing.issued', version: '1.0.0'
-              }],
+              contracts: [
+                {
+                  id: 'contract-1',
+                  name: 'issued',
+                  type: 'event',
+                  channel: 'billing.issued',
+                  version: '1.0.0'
+                }
+              ],
               oasComposition: {
-                mode: 'oneOf', refs: ['Base', 'Audited'], externalRefs: [], discriminator: 'kind'
+                mode: 'oneOf',
+                refs: ['Base', 'Audited'],
+                externalRefs: [],
+                discriminator: 'kind'
               }
             }
           },
           {
             id: 'entity-2',
             name: 'Receipt',
-            fields: [{
-              name: 'id', type: 'uuid', required: true, pk: true, unique: true
-            }]
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true,
+                unique: true
+              }
+            ]
           }
         ]
       },
       {
         id: 'domain-2',
         name: 'Catalog',
-        entities: [{
-          id: 'entity-3',
-          name: 'Product',
-          fields: [{
-            name: 'id', type: 'uuid', required: true, pk: true, unique: true
-          }]
-        }]
+        entities: [
+          {
+            id: 'entity-3',
+            name: 'Product',
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true,
+                unique: true
+              }
+            ]
+          }
+        ]
       }
     ],
-    relationships: [{
-      id: 'rel-1',
-      fromEntityId: 'entity-1',
-      toEntityId: 'entity-3',
-      name: 'invoice products',
-      fromCardinality: '1',
-      toCardinality: 'N'
-    }]
+    relationships: [
+      {
+        id: 'rel-1',
+        fromEntityId: 'entity-1',
+        toEntityId: 'entity-3',
+        name: 'invoice products',
+        fromCardinality: '1',
+        toCardinality: 'N'
+      }
+    ]
   });
 }
 
 /** Every [routePath, method, operation] triple of a document. */
 function operationsOf(document: any) {
-  const operations: Array<{ routePath: string; method: string; operation: any }> = [];
+  const operations: { routePath: string; method: string; operation: any }[] = [];
   Object.entries(document.paths || {}).forEach(([routePath, methods]: [string, any]) => {
     Object.entries(methods || {}).forEach(([method, operation]) => {
       if (HTTP_METHODS.includes(method.toLowerCase())) {
@@ -125,7 +152,14 @@ function operationsOf(document: any) {
 function validateDocumentOperations(document: any): string[] {
   const errors: string[] = [];
   operationsOf(document).forEach(({ routePath, method, operation }) => {
-    validatePortObjectContracts('domain-designer-oas-3.1.json', document, routePath, method, operation, errors);
+    validatePortObjectContracts(
+      'domain-designer-oas-3.1.json',
+      document,
+      routePath,
+      method,
+      operation,
+      errors
+    );
   });
   return errors;
 }
@@ -157,7 +191,7 @@ function resolvePortSchemaRefs(document: any, refs: string[]) {
 
 /** Every non-2xx response as `{ statusCode, description }`. */
 function collectErrorResponses(document: any) {
-  const errors: Array<{ statusCode: string; description: string }> = [];
+  const errors: { statusCode: string; description: string }[] = [];
   operationsOf(document).forEach(({ operation }) => {
     Object.entries(operation.responses || {}).forEach(([statusCode, response]: [string, any]) => {
       if (statusCode.startsWith('2')) return;
@@ -193,7 +227,9 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
     operationIds.forEach((operationId: string) => {
       // The canonical scheme (spec/1.0.0.yml): getAll*, create*, get*ById,
       // update*, delete* — camelCase, qualified so ids stay unique.
-      expect(operationId).toMatch(/^(getAll[A-Z]|create[A-Z]|get[A-Z].*ById$|update[A-Z]|delete[A-Z])/);
+      expect(operationId).toMatch(
+        /^(getAll[A-Z]|create[A-Z]|get[A-Z].*ById$|update[A-Z]|delete[A-Z])/
+      );
     });
   });
 
@@ -263,10 +299,13 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
     ]);
     const imported = buildDomainsFromOas(JSON.parse(JSON.stringify(document)));
     expect(imported.ok).toBe(true);
-    expect(imported.domains.map((domain: { name: string }) => domain.name))
-      .toStrictEqual(['Billing', 'Catalog']);
+    expect(imported.domains.map((domain: { name: string }) => domain.name)).toStrictEqual([
+      'Billing',
+      'Catalog'
+    ]);
     expect(
-      imported.domains.flatMap((domain: { entities: Array<{ name: string }> }) => domain.entities)
+      imported.domains
+        .flatMap((domain: { entities: { name: string }[] }) => domain.entities)
         .map((entity: { name: string }) => entity.name)
     ).toStrictEqual(['Invoice', 'Receipt', 'Product']);
   });
@@ -278,7 +317,11 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
     // block the export instead of emitting a document that fails downstream.
     const state = normalizeStatePayload({
       domains: [
-        { id: 'domain-1', name: 'Foo Bar', entities: [{ id: 'entity-1', name: 'Baz', fields: [] }] },
+        {
+          id: 'domain-1',
+          name: 'Foo Bar',
+          entities: [{ id: 'entity-1', name: 'Baz', fields: [] }]
+        },
         { id: 'domain-2', name: 'Foo-Bar', entities: [{ id: 'entity-2', name: 'Baz', fields: [] }] }
       ],
       relationships: []
@@ -286,7 +329,11 @@ describe('oas export compliance with Req 036 and the route-resolution check (JUM
     const issues = collectModelIssues(state);
     const critical = issues.filter((issue: { severity: string }) => issue.severity === 'error');
     expect(critical.length).toBeGreaterThan(0);
-    expect(critical.some((issue: { message: string }) => issue.message.includes('same OAS route path'))).toBe(true);
-    expect(critical.some((issue: { message: string }) => issue.message.includes('same OAS schema name'))).toBe(true);
+    expect(
+      critical.some((issue: { message: string }) => issue.message.includes('same OAS route path'))
+    ).toBe(true);
+    expect(
+      critical.some((issue: { message: string }) => issue.message.includes('same OAS schema name'))
+    ).toBe(true);
   });
 });

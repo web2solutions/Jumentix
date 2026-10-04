@@ -1,20 +1,24 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { PlanDomain, PlanEntity } from '../sources/types';
+
 import {
   entityTitleFromOas,
   fallbackSearchFields,
   resolveEntityOperations,
   resolveRequestSchemas,
-  searchableFieldsForOperation,
-  type LocalizedTitle
+  searchableFieldsForOperation
 } from './frontendOas';
+
+import type { LocalizedTitle } from './frontendOas';
+import type { PlanDomain, PlanEntity } from '../sources/types';
 
 type JsonObject = Record<string, unknown>;
 
 /** Kebab/camel-safe module or entity folder slug. */
 export function slugifyIdentifier(raw: string, fallback = 'module'): string {
-  const source = String(raw || '').trim().toLowerCase();
+  const source = String(raw || '')
+    .trim()
+    .toLowerCase();
   let out = '';
   let pendingSep = false;
   for (let i = 0; i < source.length; i += 1) {
@@ -39,11 +43,7 @@ export function camelCaseName(raw: string): string {
   const source = String(raw || '');
   for (let i = 0; i < source.length; i += 1) {
     const ch = source.charAt(i);
-    if (
-      (ch >= 'a' && ch <= 'z')
-      || (ch >= 'A' && ch <= 'Z')
-      || (ch >= '0' && ch <= '9')
-    ) {
+    if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')) {
       current += ch;
     } else if (current) {
       parts.push(current);
@@ -67,7 +67,7 @@ export function pascalCaseName(raw: string): string {
   return camel.charAt(0).toUpperCase() + camel.slice(1);
 }
 
-export type GeneratedEntityConfig = {
+export interface GeneratedEntityConfig {
   entityId: string;
   entityName: string;
   featureDir: string;
@@ -79,15 +79,15 @@ export type GeneratedEntityConfig = {
   operations: { list: string; create: string; update: string; delete: string };
   searchFields: string[];
   schemas: { create: string; update: string };
-};
+}
 
-export type GeneratedModuleResult = {
+export interface GeneratedModuleResult {
   moduleId: string;
   moduleFile: string;
   title: LocalizedTitle;
   icon: string;
   entities: GeneratedEntityConfig[];
-};
+}
 
 function iconForModule(moduleId: string): string {
   if (moduleId === 'users') return 'cil-people';
@@ -193,16 +193,23 @@ function renderModuleSource(
   entities: GeneratedEntityConfig[],
   widgetsExport: string
 ): string {
-  const entityImports = entities.map((entity) => (
-    `import { ${entity.configExport} } from '@/features/${entity.featureDir}/${entity.configFile.replace(/\.ts$/, '')}';`
-  )).join('\n');
+  const entityImports = entities
+    .map(
+      (entity) =>
+        `import { ${entity.configExport} } from '@/features/${entity.featureDir}/${entity.configFile.replace(/\.ts$/, '')}';`
+    )
+    .join('\n');
 
-  const entityEntries = entities.map((entity) => `    {
+  const entityEntries = entities
+    .map(
+      (entity) => `    {
       id: '${entity.entityId}',
       title: ${JSON.stringify(entity.title)},
       config: ${entity.configExport},
       load: () => import('@/features/${entity.featureDir}/${entity.viewExport}.vue')
-    }`).join(',\n');
+    }`
+    )
+    .join(',\n');
 
   const widgetsImport = `import { ${widgetsExport} } from '@/features/dashboard/${widgetsExport}';`;
 
@@ -225,10 +232,7 @@ ${entityEntries}
 `;
 }
 
-function buildEntityConfig(
-  entity: PlanEntity,
-  oas: JsonObject
-): GeneratedEntityConfig {
+function buildEntityConfig(entity: PlanEntity, oas: JsonObject): GeneratedEntityConfig {
   const entityName = entity.name;
   const entityId = slugifyIdentifier(entityName, 'entity');
   const featureDir = entityId;
@@ -237,9 +241,7 @@ function buildEntityConfig(
   const operations = resolveEntityOperations(oas, entityName);
   const schemas = resolveRequestSchemas(oas, entityName);
   const fromCaps = searchableFieldsForOperation(oas, operations.list);
-  const searchFields = fromCaps.length > 0
-    ? fromCaps
-    : fallbackSearchFields(entity.schema);
+  const searchFields = fromCaps.length > 0 ? fromCaps : fallbackSearchFields(entity.schema);
   const title = entityTitleFromOas(oas, entityName);
 
   return {
@@ -319,21 +321,22 @@ export function writeDomainModule(
 }
 
 /** Rewrite `src/modules/index.ts` to register generated modules. */
-export function writeModulesIndex(
-  frontendRoot: string,
-  modules: GeneratedModuleResult[]
-): void {
-  const imports = modules.map((mod) => {
-    const exportName = `${camelCaseName(mod.moduleId)}Module`;
-    return `import { ${exportName} } from '@/modules/${mod.moduleId}';`;
-  }).join('\n');
+export function writeModulesIndex(frontendRoot: string, modules: GeneratedModuleResult[]): void {
+  const imports = modules
+    .map((mod) => {
+      const exportName = `${camelCaseName(mod.moduleId)}Module`;
+      return `import { ${exportName} } from '@/modules/${mod.moduleId}';`;
+    })
+    .join('\n');
 
-  const registrations = modules.map((mod) => {
-    const exportName = `${camelCaseName(mod.moduleId)}Module`;
-    return `if (!findModule(${exportName}.id)) {
+  const registrations = modules
+    .map((mod) => {
+      const exportName = `${camelCaseName(mod.moduleId)}Module`;
+      return `if (!findModule(${exportName}.id)) {
   registerModule(${exportName});
 }`;
-  }).join('\n');
+    })
+    .join('\n');
 
   const source = `import { configureModules, findModule, registerModule } from '@/modules/manifest';
 ${imports}
@@ -347,10 +350,7 @@ configureModules();
 /**
  * Append `module.*` / `nav.*` titles into i18n messages for generated modules.
  */
-export function patchI18nTitles(
-  frontendRoot: string,
-  modules: GeneratedModuleResult[]
-): void {
+export function patchI18nTitles(frontendRoot: string, modules: GeneratedModuleResult[]): void {
   const messagesPath = path.join(frontendRoot, 'src', 'i18n', 'messages.ts');
   if (!fs.existsSync(messagesPath)) return;
 
@@ -376,9 +376,7 @@ export function patchI18nTitles(
   }
 
   const inject = (localeBlock: 'en' | 'ptBR', lines: string[]): void => {
-    const needle = localeBlock === 'en'
-      ? 'const en: Messages = {'
-      : 'const ptBR: Messages = {';
+    const needle = localeBlock === 'en' ? 'const en: Messages = {' : 'const ptBR: Messages = {';
     const idx = source.indexOf(needle);
     if (idx < 0) return;
     const insertAt = source.indexOf('\n', idx) + 1;
@@ -394,17 +392,11 @@ export function patchI18nTitles(
 /**
  * Point the default home redirect at the first generated module.
  */
-export function patchRouterHome(
-  frontendRoot: string,
-  firstModuleId: string | undefined
-): void {
+export function patchRouterHome(frontendRoot: string, firstModuleId: string | undefined): void {
   if (!firstModuleId) return;
   const routerPath = path.join(frontendRoot, 'src', 'router', 'index.ts');
   if (!fs.existsSync(routerPath)) return;
   let source = fs.readFileSync(routerPath, 'utf8');
-  source = source.replace(
-    /redirect:\s*'\/m\/[^']+'/g,
-    `redirect: '/m/${firstModuleId}/dashboard'`
-  );
+  source = source.replace(/redirect:\s*'\/m\/[^']+'/g, `redirect: '/m/${firstModuleId}/dashboard'`);
   fs.writeFileSync(routerPath, source, 'utf8');
 }

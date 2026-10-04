@@ -166,7 +166,7 @@ What this document adds is only the console-side behaviour of that contract:
   values are rejected with the accepted list and nothing is written), the
   write is atomic (temp file, `fsync`, rename), and the response returns the
   post-write state the panel confirms (`Environment "staging" saved to
-  .env.staging`).
+.env.staging`).
 
 ## The PM2 ecosystem preview (JUM-480) — by source, not by command string
 
@@ -185,7 +185,7 @@ from**:
   reality and the current Bun toolchain. That is why Contract 1b
   **forbids** any package-manager string (`pnpm run`, `bun run`, `npm run`) or
   `pm2:start:*` script name in the server and the designer: the reported
-  command is *derived from the ecosystem definition* (its path and the app
+  command is _derived from the ecosystem definition_ (its path and the app
   name), so it stays true whatever package manager invokes PM2. This document
   therefore describes the preview by its source, not by the literal command
   strings it currently produces.
@@ -361,7 +361,7 @@ JUM-546 section above.
 
 The reason this honest-gap section exists at all: the console's lists are the
 surfaces where a design becomes an operational intent, and an entry that only
-*becomes* valid after a reload — or a duplicated entry that nothing rejects —
+_becomes_ valid after a reload — or a duplicated entry that nothing rejects —
 is a rule the user cannot see. Naming the owning issues keeps the rule visible
 until the code catches up.
 
@@ -378,7 +378,7 @@ same model:
   gate.
 - **Inline status lines per panel** — the PM2 preview status, the Service
   Configuration status, the runtime-env status and the per-file targeting
-  line — carry failures *with environment, file and cause* where the user is
+  line — carry failures _with environment, file and cause_ where the user is
   looking, instead of a silent console error.
 - **Reachable help controls** — each static form, toolbar and action control
   exposes the same `?` help affordance used by the console surfaces. The text

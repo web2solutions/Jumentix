@@ -1,4 +1,4 @@
-import { IDesignerStore } from '@jumentix/designer-core/store/IDesignerStore.js';
+import IDesignerStore from '@jumentix/designer-core/store/IDesignerStore.js';
 
 /**
  * CanaDesignerStore — the `IDesignerStore` adapter over the Cana client
@@ -132,9 +132,10 @@ function writeFailureReason(error) {
   return describeFailure(error);
 }
 
-const EVICTED_REASON = 'evicted: Cana detected that designer data stored previously is gone '
-  + '(storage eviction or an external wipe). With no fallback store this is data loss, '
-  + 'distinct from an empty first run.';
+const EVICTED_REASON =
+  'evicted: Cana detected that designer data stored previously is gone ' +
+  '(storage eviction or an external wipe). With no fallback store this is data loss, ' +
+  'distinct from an empty first run.';
 
 export class CanaDesignerStore extends IDesignerStore {
   /**
@@ -146,9 +147,7 @@ export class CanaDesignerStore extends IDesignerStore {
    * @param {string} [options.stateKey] - state document key override (tests).
    * @param {string} [options.baselineKey] - baseline document key override (tests).
    */
-  constructor({
-    client, clientProvider, stateKey, baselineKey
-  } = {}) {
+  constructor({ client, clientProvider, stateKey, baselineKey } = {}) {
     super();
     this.client = client;
     this.clientProvider = clientProvider;
@@ -188,7 +187,7 @@ export class CanaDesignerStore extends IDesignerStore {
   async storageStateSafe() {
     try {
       return await this.client.storageState();
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -202,9 +201,10 @@ export class CanaDesignerStore extends IDesignerStore {
       return { status: 'lost', reason: EVICTED_REASON };
     }
     if (state && state.nearQuota === true) {
-      const usage = state.usageBytes !== undefined && state.quotaBytes !== undefined
-        ? ` (${state.usageBytes}/${state.quotaBytes} bytes)`
-        : '';
+      const usage =
+        state.usageBytes !== undefined && state.quotaBytes !== undefined
+          ? ` (${state.usageBytes}/${state.quotaBytes} bytes)`
+          : '';
       return {
         status: 'available',
         reason: `quota: storage usage is near the origin quota${usage}; writes may start failing.`
@@ -291,10 +291,8 @@ export class CanaDesignerStore extends IDesignerStore {
     }
     let tx;
     try {
-      tx = await this.client.transaction(
-        'readwrite',
-        [this.storeName],
-        (scope) => scope.table(this.storeName).put(json, key)
+      tx = await this.client.transaction('readwrite', [this.storeName], (scope) =>
+        scope.table(this.storeName).put(json, key)
       );
     } catch (error) {
       return { status: 'unknown', reason: writeFailureReason(error) };
@@ -302,13 +300,15 @@ export class CanaDesignerStore extends IDesignerStore {
     if (tx && tx.outcome === 'committed') {
       return { status: 'persisted' };
     }
-    const handles = tx && tx.correlationId !== undefined
-      ? ` (correlationId ${tx.correlationId}, attemptedAt ${tx.attemptedAt})`
-      : '';
+    const handles =
+      tx && tx.correlationId !== undefined
+        ? ` (correlationId ${tx.correlationId}, attemptedAt ${tx.attemptedAt})`
+        : '';
     return {
       status: 'unknown',
-      reason: `unknown-outcome: the write was dispatched but its outcome is indeterminate${handles}; `
-        + 'reconcile with client.resolveWrite() before retrying.'
+      reason:
+        `unknown-outcome: the write was dispatched but its outcome is indeterminate${handles}; ` +
+        'reconcile with client.resolveWrite() before retrying.'
     };
   }
 
@@ -329,10 +329,8 @@ export class CanaDesignerStore extends IDesignerStore {
     }
     let tx;
     try {
-      tx = await this.client.transaction(
-        'readwrite',
-        [this.storeName],
-        (scope) => scope.table(this.storeName).delete(key)
+      tx = await this.client.transaction('readwrite', [this.storeName], (scope) =>
+        scope.table(this.storeName).delete(key)
       );
     } catch (error) {
       return { status: 'unknown', reason: writeFailureReason(error) };
@@ -340,9 +338,10 @@ export class CanaDesignerStore extends IDesignerStore {
     if (tx && tx.outcome === 'committed') {
       return { status: 'persisted' };
     }
-    const handles = tx && tx.correlationId !== undefined
-      ? ` (correlationId ${tx.correlationId}, attemptedAt ${tx.attemptedAt})`
-      : '';
+    const handles =
+      tx && tx.correlationId !== undefined
+        ? ` (correlationId ${tx.correlationId}, attemptedAt ${tx.attemptedAt})`
+        : '';
     return {
       status: 'unknown',
       reason: `unknown-outcome: the delete was dispatched but its outcome is indeterminate${handles}.`

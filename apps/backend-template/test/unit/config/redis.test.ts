@@ -9,8 +9,8 @@ describe('redisConfig', () => {
   const loadRedisConfig = () => {
     const resolved = require.resolve('@src/config/redis');
     delete require.cache[resolved];
-    // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-    return require('@src/config/redis').redisConfig;
+
+    return require('@src/config/redis').default;
   };
 
   afterEach(() => {

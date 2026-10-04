@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires, global-require */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,7 +44,9 @@ async function waitForLockRelease(lockPath: string, deadline: number): Promise<v
   if (Date.now() > deadline) {
     throw new Error(`Timed out waiting for the designer-core build lock at ${lockPath}`);
   }
-  await new Promise((resolve) => { setTimeout(resolve, LOCK_RETRY_MS); });
+  await new Promise((resolve) => {
+    setTimeout(resolve, LOCK_RETRY_MS);
+  });
 }
 
 export async function ensureDesignerCoreBuilt(packageRoot: string): Promise<void> {
@@ -84,9 +85,8 @@ export async function ensureDesignerCoreBuilt(packageRoot: string): Promise<void
  */
 export function builtModuleList(packageRoot: string): string[] {
   const srcRoot = path.join(packageRoot, 'src');
-  const walk = (dir: string, prefix: string): string[] => fs
-    .readdirSync(dir, { withFileTypes: true })
-    .flatMap((entry) => {
+  const walk = (dir: string, prefix: string): string[] =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
       const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
       if (entry.isDirectory()) return walk(path.join(dir, rel), rel);
       return entry.name.endsWith('.js') && entry.name !== 'index.js' ? [rel] : [];

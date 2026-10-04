@@ -1,13 +1,11 @@
-/* eslint-disable class-methods-use-this */
-import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
-
+import type { IServiceResponse } from '@src/modules/port';
 import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
 import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
-import { UserService } from '@src/modules/Users/service/UserService';
-import type { IServiceResponse } from '@src/modules/port';
+import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
+import type UserService from '@src/modules/Users/service/UserService';
 
-export class UserProviderLocal implements IUserProvider {
+class UserProviderLocal implements IUserProvider {
   private readonly userService: UserService;
 
   constructor(userService: UserService) {
@@ -31,7 +29,7 @@ export class UserProviderLocal implements IUserProvider {
 
   public async findUser(username: string): Promise<IUser | null> {
     const { result } = await this.userService.getOneByUsernameForAuth(username);
-    const userFound = result || null;
+    const userFound = result ?? null;
     return userFound;
   }
 
@@ -43,3 +41,5 @@ export class UserProviderLocal implements IUserProvider {
     return new UserProviderLocal(userService);
   }
 }
+
+export default UserProviderLocal;

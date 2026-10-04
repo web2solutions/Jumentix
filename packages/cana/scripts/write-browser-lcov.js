@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Emit `coverage/browser/lcov.info` from the browser Istanbul JSON report.
@@ -15,7 +14,9 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+
 const libCoverage = require('istanbul-lib-coverage');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const ROOT = process.cwd();
@@ -29,7 +30,7 @@ function lineHitsFromFile(fileCoverage) {
   for (const [id, count] of Object.entries(s)) {
     const statement = statementMap[id];
     if (!statement?.start?.line) continue;
-    const line = statement.start.line;
+    const { line } = statement.start;
     const previous = hits.get(line) || 0;
     hits.set(line, previous + count);
   }
@@ -57,10 +58,7 @@ function toSonarSourcePath(filePath, root = ROOT) {
 function toLcovRecord(fileCoverage) {
   const { fnMap, f, branchMap, b } = fileCoverage;
   const functionIds = Object.keys(fnMap || {});
-  const lines = [
-    'TN:',
-    `SF:${toSonarSourcePath(fileCoverage.path)}`
-  ];
+  const lines = ['TN:', `SF:${toSonarSourcePath(fileCoverage.path)}`];
 
   for (const id of functionIds) {
     const fn = fnMap[id];
@@ -83,11 +81,11 @@ function toLcovRecord(fileCoverage) {
   for (const [id, locations] of Object.entries(b || {})) {
     const meta = branchMap[id];
     const line = meta?.loc?.start?.line || 0;
-    locations.forEach((count, index) => {
+    for (const [index, count] of locations.entries()) {
       branchFound += 1;
       if (count > 0) branchHit += 1;
       branchLines.push(`BRDA:${line},${id},${index},${count}`);
-    });
+    }
   }
   lines.push(...branchLines, `BRF:${branchFound}`, `BRH:${branchHit}`);
 
@@ -104,9 +102,7 @@ function toLcovRecord(fileCoverage) {
 
 function run() {
   if (!fs.existsSync(INPUT)) {
-    console.error(
-      `[browser-lcov] missing ${INPUT}. Run \`bun run test:browser\` first.`
-    );
+    console.error(`[browser-lcov] missing ${INPUT}. Run \`bun run test:browser\` first.`);
     return 1;
   }
 
@@ -127,7 +123,7 @@ function run() {
 }
 
 if (isEntryPoint(module)) {
-  process.exit(run());
+  process.exitCode = run();
 }
 
-module.exports = { run, toLcovRecord, lineHitsFromFile, toSonarSourcePath };
+module.exports = { lineHitsFromFile, run, toLcovRecord, toSonarSourcePath };

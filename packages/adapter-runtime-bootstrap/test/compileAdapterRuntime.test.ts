@@ -1,4 +1,5 @@
 import { compileAdapterRuntime } from '../src/compileAdapterRuntime';
+
 import type { ICompileAdapterRuntimeOptions } from '../src/compileAdapterRuntime';
 
 /**
@@ -15,13 +16,13 @@ import type { ICompileAdapterRuntimeOptions } from '../src/compileAdapterRuntime
  * composition — the only thing this file does — untested.
  */
 
-type Named = { id: string };
+interface Named {
+  id: string;
+}
 
 const env = (over: Record<string, string> = {}) => over as NodeJS.ProcessEnv;
 
-type Options = ICompileAdapterRuntimeOptions<
-  Named, Named, Named, Named, Named, Named, Named
->;
+type Options = ICompileAdapterRuntimeOptions<Named, Named, Named, Named, Named, Named, Named>;
 
 /** Compilers that hand back tagged singletons and record what they receive. */
 function harness(over: Partial<Options> = {}) {
@@ -77,7 +78,10 @@ function harness(over: Partial<Options> = {}) {
   };
 
   return {
-    options, made, seen, order
+    options,
+    made,
+    seen,
+    order
   };
 }
 

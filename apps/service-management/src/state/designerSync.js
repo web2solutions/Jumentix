@@ -96,6 +96,7 @@
  */
 
 import { normalizeStatePayload } from '@jumentix/designer-core/state/designerState.js';
+
 import { CANA_STATE_KEY } from '../store/CanaDesignerStore.js';
 
 /** BroadcastChannel name shared by every designer tab of this origin. */
@@ -130,7 +131,7 @@ function modelSliceOf(source) {
 function resolveDefaultCursorStorage() {
   try {
     return typeof globalThis !== 'undefined' ? globalThis.localStorage : undefined;
-  } catch (_) {
+  } catch {
     return undefined;
   }
 }
@@ -145,7 +146,7 @@ function resolveDefaultChannel(channelName) {
     if (typeof globalThis !== 'undefined' && typeof globalThis.BroadcastChannel === 'function') {
       return new globalThis.BroadcastChannel(channelName);
     }
-  } catch (_) {
+  } catch {
     // A throwing constructor (disabled channel API) is the same declared state.
   }
   return null;
@@ -157,7 +158,7 @@ function defaultOriginId() {
     if (typeof globalThis !== 'undefined' && typeof globalThis.crypto?.randomUUID === 'function') {
       return `designer-tab-${globalThis.crypto.randomUUID()}`;
     }
-  } catch (_) {
+  } catch {
     // Fall through to the Math.random spelling.
   }
   return `designer-tab-${Math.random().toString(36).slice(2, 10)}`;
@@ -175,18 +176,26 @@ function defaultOriginId() {
  */
 export function reconcileSelection(state) {
   const reconciled = [];
-  if (state.selectedRelationshipId
-    && !state.relationships.some((relationship) => relationship.id === state.selectedRelationshipId)) {
+  if (
+    state.selectedRelationshipId &&
+    !state.relationships.some((relationship) => relationship.id === state.selectedRelationshipId)
+  ) {
     state.selectedRelationshipId = null;
     reconciled.push('relationship');
   }
-  if (state.selectedEntityId
-    && !state.domains.some((domain) => domain.entities.some((entity) => entity.id === state.selectedEntityId))) {
+  if (
+    state.selectedEntityId &&
+    !state.domains.some((domain) =>
+      domain.entities.some((entity) => entity.id === state.selectedEntityId)
+    )
+  ) {
     state.selectedEntityId = null;
     reconciled.push('entity');
   }
-  if (state.selectedDomainId
-    && !state.domains.some((domain) => domain.id === state.selectedDomainId)) {
+  if (
+    state.selectedDomainId &&
+    !state.domains.some((domain) => domain.id === state.selectedDomainId)
+  ) {
     state.selectedDomainId = state.domains.length > 0 ? state.domains[0].id : null;
     reconciled.push('domain');
   }
@@ -271,6 +280,101 @@ export function createDesignerSync({
   let pendingFlush = null;
   let coalescedCount = 0;
 
+  /** User-facing summary of a remote apply (JUM-543 surface, never alert()). */
+  function describeRemoteApply(reconciled, applied) {
+    const base =
+      applied > 1
+        ? `${applied} changes from another tab were applied.`
+        : 'A change from another tab was applied.';
+    if (reconciled.includes('domain')) {
+      return `${base} The selected domain was deleted remotely; the selection moved to the first remaining domain.`;
+    }
+    if (reconciled.includes('entity')) {
+      return `${base} The selected entity was deleted remotely and the selection was cleared.`;
+    }
+    if (reconciled.includes('relationship')) {
+      return `${base} The selected relationship was deleted remotely and the selection was cleared.`;
+    }
+    return base;
+  }
+
+  /**
+   * Full resynchronisation by document read-back — the canonical catch-up for
+   * a cursor gap, a backgrounded tab resuming, or an undecodable remote
+   * record. Compares the model slice before applying so a resume with nothing
+   * missed costs no re-render. `'unavailable'`/`'lost'` are declared through
+   * the status region: there is no fallback store behind Cana.
+   */
+  async function resync(reason = 'resync') {
+    const result = await store.load();
+    if (result.status === 'ok') {
+      // Compare the NORMALISED payload: the in-memory model was normalised on
+      // load, so raw stored JSON and current state spell the same document
+      // differently and only the normalised comparison can be a no-op.
+      const parsed = normalizeStatePayload(result.payload);
+      if (
+        canonicalJson(modelSliceOf(parsed)) === canonicalJson(modelSliceOf(designerState.state))
+      ) {
+        return { resynced: false, reason: 'already-current' };
+      }
+      const { reconciled } = applyRemoteDocument(designerState, result.payload);
+      render();
+      notify(
+        reason === 'resume'
+          ? 'The designer caught up with changes made in another tab.'
+          : 'The designer resynchronised with the stored document.',
+        'info'
+      );
+      return { resynced: true, reconciled };
+    }
+    if (result.status === 'empty') {
+      return { resynced: false, reason: 'empty' };
+    }
+    notify(
+      `Multi-tab sync could not resynchronise: the stored document is ${result.status}` +
+        `${result.reason ? ` (${result.reason})` : ''}. With no fallback store, this tab keeps its ` +
+        'current state and retries on the next event; export your work as a precaution.',
+      'error'
+    );
+    return { resynced: false, reason: result.status };
+  }
+
+  /**
+   * Apply one remote channel message: decode the committed document, replace
+   * the model slice, re-render (focus-preserving at the UI layer) and announce
+   * through the status region. A record that does not decode triggers a full
+   * resync — never a partial apply.
+   */
+  function applyRemoteMessage(message, applied = 1) {
+    let payload;
+    try {
+      payload = JSON.parse(message.record);
+    } catch (error) {
+      notify(
+        `A change from another tab could not be decoded (${String((error && error.message) || error)}); ` +
+          'resynchronising from the store.',
+        'error'
+      );
+      resync('undecodable-remote');
+      return { applied: false, reason: 'undecodable-remote' };
+    }
+    const { reconciled } = applyRemoteDocument(designerState, payload);
+    render();
+    notify(describeRemoteApply(reconciled, applied), 'info');
+    return { applied: true, reconciled };
+  }
+
+  /** Apply the latest coalesced remote document, once. */
+  function flushPendingRemote() {
+    pendingFlush = null;
+    const message = pendingRemote;
+    const applied = coalescedCount;
+    pendingRemote = null;
+    coalescedCount = 0;
+    if (!message) return { applied: false, reason: 'no-pending-remote' };
+    return applyRemoteMessage(message, applied);
+  }
+
   function cursorStorageBackend() {
     return cursorStorage !== undefined ? cursorStorage : resolveDefaultCursorStorage();
   }
@@ -283,7 +387,7 @@ export function createDesignerSync({
       if (raw === null) return null;
       const value = Number(raw);
       return Number.isInteger(value) && value >= 0 ? value : null;
-    } catch (_) {
+    } catch {
       return null;
     }
   }
@@ -293,7 +397,7 @@ export function createDesignerSync({
     if (!storage) return;
     try {
       storage.setItem(DESIGNER_SYNC_CURSOR_KEY, String(cursor));
-    } catch (_) {
+    } catch {
       // Cursor persistence is best-effort bookkeeping; losing it only means
       // the next start resyncs by document, which is always correct.
     }
@@ -336,98 +440,6 @@ export function createDesignerSync({
     pendingFlush = schedule(() => flushPendingRemote(), coalesceWindowMs);
   }
 
-  /** Apply the latest coalesced remote document, once. */
-  function flushPendingRemote() {
-    pendingFlush = null;
-    const message = pendingRemote;
-    const applied = coalescedCount;
-    pendingRemote = null;
-    coalescedCount = 0;
-    if (!message) return { applied: false, reason: 'no-pending-remote' };
-    return applyRemoteMessage(message, applied);
-  }
-
-  /** User-facing summary of a remote apply (JUM-543 surface, never alert()). */
-  function describeRemoteApply(reconciled, applied) {
-    const base = applied > 1
-      ? `${applied} changes from another tab were applied.`
-      : 'A change from another tab was applied.';
-    if (reconciled.includes('domain')) {
-      return `${base} The selected domain was deleted remotely; the selection moved to the first remaining domain.`;
-    }
-    if (reconciled.includes('entity')) {
-      return `${base} The selected entity was deleted remotely and the selection was cleared.`;
-    }
-    if (reconciled.includes('relationship')) {
-      return `${base} The selected relationship was deleted remotely and the selection was cleared.`;
-    }
-    return base;
-  }
-
-  /**
-   * Apply one remote channel message: decode the committed document, replace
-   * the model slice, re-render (focus-preserving at the UI layer) and announce
-   * through the status region. A record that does not decode triggers a full
-   * resync — never a partial apply.
-   */
-  function applyRemoteMessage(message, applied = 1) {
-    let payload;
-    try {
-      payload = JSON.parse(message.record);
-    } catch (error) {
-      notify(
-        `A change from another tab could not be decoded (${String((error && error.message) || error)}); `
-          + 'resynchronising from the store.',
-        'error'
-      );
-      resync('undecodable-remote');
-      return { applied: false, reason: 'undecodable-remote' };
-    }
-    const { reconciled } = applyRemoteDocument(designerState, payload);
-    render();
-    notify(describeRemoteApply(reconciled, applied), 'info');
-    return { applied: true, reconciled };
-  }
-
-  /**
-   * Full resynchronisation by document read-back — the canonical catch-up for
-   * a cursor gap, a backgrounded tab resuming, or an undecodable remote
-   * record. Compares the model slice before applying so a resume with nothing
-   * missed costs no re-render. `'unavailable'`/`'lost'` are declared through
-   * the status region: there is no fallback store behind Cana.
-   */
-  async function resync(reason = 'resync') {
-    const result = await store.load();
-    if (result.status === 'ok') {
-      // Compare the NORMALISED payload: the in-memory model was normalised on
-      // load, so raw stored JSON and current state spell the same document
-      // differently and only the normalised comparison can be a no-op.
-      const parsed = normalizeStatePayload(result.payload);
-      if (canonicalJson(modelSliceOf(parsed)) === canonicalJson(modelSliceOf(designerState.state))) {
-        return { resynced: false, reason: 'already-current' };
-      }
-      const { reconciled } = applyRemoteDocument(designerState, result.payload);
-      render();
-      notify(
-        reason === 'resume'
-          ? 'The designer caught up with changes made in another tab.'
-          : 'The designer resynchronised with the stored document.',
-        'info'
-      );
-      return { resynced: true, reconciled };
-    }
-    if (result.status === 'empty') {
-      return { resynced: false, reason: 'empty' };
-    }
-    notify(
-      `Multi-tab sync could not resynchronise: the stored document is ${result.status}`
-        + `${result.reason ? ` (${result.reason})` : ''}. With no fallback store, this tab keeps its `
-        + 'current state and retries on the next event; export your work as a precaution.',
-      'error'
-    );
-    return { resynced: false, reason: result.status };
-  }
-
   /**
    * Subscribe to the local client's ordered write events, resuming from the
    * persisted cursor when one exists. A cursor the retained window no longer
@@ -435,11 +447,11 @@ export function createDesignerSync({
    * signal: resync by document, then subscribe fresh.
    */
   async function subscribeLocal() {
-    const client = store.client;
+    const { client } = store;
     if (!client || typeof client.subscribe !== 'function') {
       notify(
-        'Multi-tab sync could not start: the Cana client in this host exposes no ordered '
-          + 'listener API. This tab will not see changes from other tabs until it is reloaded.',
+        'Multi-tab sync could not start: the Cana client in this host exposes no ordered ' +
+          'listener API. This tab will not see changes from other tabs until it is reloaded.',
         'error'
       );
       return false;
@@ -449,7 +461,7 @@ export function createDesignerSync({
       try {
         unsubscribe = client.subscribe(onLocalEvent, { sinceCursor: persistedCursor });
         return true;
-      } catch (_) {
+      } catch {
         await resync('cursor-gap');
       }
     }
@@ -468,8 +480,8 @@ export function createDesignerSync({
     const open = await store.ensureOpen();
     if (!open.ok) {
       notify(
-        `Multi-tab sync could not start: ${open.reason} This tab will not see changes `
-          + 'from other tabs until it is reloaded.',
+        `Multi-tab sync could not start: ${open.reason} This tab will not see changes ` +
+          'from other tabs until it is reloaded.',
         'error'
       );
       return { started: false, reason: open.reason };
@@ -477,15 +489,16 @@ export function createDesignerSync({
     syncChannel = channel !== undefined ? channel : resolveDefaultChannel(channelName);
     if (!syncChannel) {
       notify(
-        'Multi-tab sync is unavailable in this browsing context (no BroadcastChannel). '
-          + 'The designer still saves to Cana, but changes made in other tabs will not '
-          + 'appear here and this tab\'s changes will not reach them until reload.',
+        'Multi-tab sync is unavailable in this browsing context (no BroadcastChannel). ' +
+          'The designer still saves to Cana, but changes made in other tabs will not ' +
+          "appear here and this tab's changes will not reach them until reload.",
         'error'
       );
     } else if (typeof syncChannel.addEventListener === 'function') {
       syncChannel.addEventListener('message', (event) => onChannelMessage(event?.data));
     } else {
-      syncChannel.onmessage = (event) => onChannelMessage(event && event.data !== undefined ? event.data : event);
+      syncChannel.onmessage = (event) =>
+        onChannelMessage(event && event.data !== undefined ? event.data : event);
     }
     const subscribed = await subscribeLocal();
     return { started: subscribed, channelAvailable: Boolean(syncChannel) };
@@ -514,14 +527,15 @@ export function createDesignerSync({
   async function reportSaveOutcome(result, attemptedPayload) {
     if (!result || result.status === 'persisted') return { confirmed: true };
     notify(
-      `A save could not be confirmed (${result.reason || 'unknown outcome'}); `
-        + 'reconciling with the stored document.',
+      `A save could not be confirmed (${result.reason || 'unknown outcome'}); ` +
+        'reconciling with the stored document.',
       'error'
     );
     const readBack = await store.load();
     if (readBack.status === 'ok') {
-      const confirmed = attemptedPayload !== undefined
-        && canonicalJson(readBack.payload) === canonicalJson(attemptedPayload);
+      const confirmed =
+        attemptedPayload !== undefined &&
+        canonicalJson(readBack.payload) === canonicalJson(attemptedPayload);
       if (confirmed) {
         notify('The save was confirmed after reconciliation.', 'info');
         return { confirmed: true, reconciled: 'read-back-match' };
@@ -535,8 +549,8 @@ export function createDesignerSync({
       return { confirmed: false, reconciled: 'reloaded' };
     }
     notify(
-      'The save outcome is unknown and the stored document could not be read back '
-        + `(${readBack.status}). There is no fallback store: export your work now as a precaution.`,
+      'The save outcome is unknown and the stored document could not be read back ' +
+        `(${readBack.status}). There is no fallback store: export your work now as a precaution.`,
       'error'
     );
     return { confirmed: false, reason: readBack.status };

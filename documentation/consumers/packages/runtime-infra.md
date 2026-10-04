@@ -51,7 +51,6 @@ Consumed via backend-template / monorepo composition.
 // then inspect how composition uses runtime helpers.
 ```
 
-
 ### 3. Core workflows
 
 ### 1. Follow REST guide first
@@ -66,7 +65,6 @@ Treat this as a support package under adapter-runtime-bootstrap.
 
 Never bundle into SPA code.
 
-
 ### 4. Full practical surface (exports)
 
 - `(see package barrel — runtime infra helpers)`
@@ -75,8 +73,8 @@ Use exports from application/adapters layers as described above — not from dom
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
+| Symptom              | Cause         | Fix                                         |
+| -------------------- | ------------- | ------------------------------------------- |
 | Imported in frontend | Wrong runtime | Remove the dependency from browser bundles. |
 
 **Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.

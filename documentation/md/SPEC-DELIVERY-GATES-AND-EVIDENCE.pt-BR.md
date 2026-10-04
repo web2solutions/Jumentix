@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-DELIVERY-GATES-AND-EVIDENCE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Portas de entrega de especificações e evidências
 
 Este documento converte regras orientadas ao desenvolvimento de especificações em portas executáveis ​​e evidências de auditoria.

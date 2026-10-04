@@ -87,10 +87,10 @@ to be resolved. With `operationLedger: true`, the operation id is written **into
 the same transaction as the data**. IndexedDB guarantees transaction atomicity,
 so the store cannot commit one without the other, and afterwards:
 
-| ledger state | meaning |
-|---|---|
-| id present | the write committed |
-| id absent, attempted inside the horizon | it did not commit |
+| ledger state                            | meaning                                          |
+| --------------------------------------- | ------------------------------------------------ |
+| id present                              | the write committed                              |
+| id absent, attempted inside the horizon | it did not commit                                |
 | id absent, attempted before the horizon | `unresolvable` — the record may have been pruned |
 
 The third row matters. Collapsing `unresolvable` into `rolled-back` would tell a
@@ -123,7 +123,7 @@ callers who mean upsert.
 
 There is no `commit()`. An IndexedDB transaction auto-commits as soon as the
 event loop yields with no pending request, so `await fetch(...)` inside a scope
-does not pause the transaction — it *ends* it. Exposing `commit()` would imply
+does not pause the transaction — it _ends_ it. Exposing `commit()` would imply
 control over a lifetime the caller does not have.
 
 **The usage rule:** awaiting an IndexedDB request inside a transaction is safe
@@ -183,9 +183,7 @@ const client = createClient({
   name: 'designer',
   schema: {
     version: 1,
-    stores: [
-      { name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }
-    ]
+    stores: [{ name: 'designs', keyPath: 'id', indexes: [{ name: 'byOwner', keyPath: 'owner' }] }]
   },
   operationLedger: true
 });
@@ -194,13 +192,9 @@ await client.open();
 
 await client.table('designs').add({ id: 1, name: 'first', owner: 'ana' });
 
-const { outcome, events } = await client.transaction(
-  'readwrite',
-  ['designs'],
-  async (scope) => {
-    await scope.table('designs').put({ id: 2, name: 'second', owner: 'bruno' });
-  }
-);
+const { outcome, events } = await client.transaction('readwrite', ['designs'], async (scope) => {
+  await scope.table('designs').put({ id: 2, name: 'second', owner: 'bruno' });
+});
 
 const stop = client.subscribe((event) => console.log(event.type), { sinceCursor: 0 });
 
@@ -217,15 +211,15 @@ if (health.level === 'lost') {
 Stated plainly, because the tests that exist could otherwise be mistaken for
 more coverage than they represent.
 
-| Area | Status |
-|---|---|
-| Lifecycle, CRUD, queries, transactions, events, hooks, ledger on real browser IndexedDB | **Tested** — Cana Cypress browser suite (Requirement 112 §4) |
-| Cross-browser matrix (Chrome / Firefox / WebKit) | **Tested** where the CI matrix runs those engines (JUM-417 / JUM-581) |
-| localStorage fallback when IndexedDB is unavailable | **Tested** — `cypress/localstorage-fallback.cy.ts` + conformance (JUM-615) |
-| Dedicated `Worker` hosting the engine | **Tested** — `cypress/real-worker.cy.ts` (JUM-615) |
-| Killed Worker → timeout / unresolved in-flight requests | **Tested** — real Worker terminate path |
-| Query performance at scale | **Not measured.** `explain()` proves the plan, not wall-clock cost |
-| Production quota exhaustion on a filled origin | Policy and mapping are tested; filling a real origin quota in CI is not |
+| Area                                                                                    | Status                                                                     |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Lifecycle, CRUD, queries, transactions, events, hooks, ledger on real browser IndexedDB | **Tested** — Cana Cypress browser suite (Requirement 112 §4)               |
+| Cross-browser matrix (Chrome / Firefox / WebKit)                                        | **Tested** where the CI matrix runs those engines (JUM-417 / JUM-581)      |
+| localStorage fallback when IndexedDB is unavailable                                     | **Tested** — `cypress/localstorage-fallback.cy.ts` + conformance (JUM-615) |
+| Dedicated `Worker` hosting the engine                                                   | **Tested** — `cypress/real-worker.cy.ts` (JUM-615)                         |
+| Killed Worker → timeout / unresolved in-flight requests                                 | **Tested** — real Worker terminate path                                    |
+| Query performance at scale                                                              | **Not measured.** `explain()` proves the plan, not wall-clock cost         |
+| Production quota exhaustion on a filled origin                                          | Policy and mapping are tested; filling a real origin quota in CI is not    |
 
 ### On Dexie (JUM-399 — closed)
 

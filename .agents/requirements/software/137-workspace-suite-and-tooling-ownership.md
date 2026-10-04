@@ -10,11 +10,11 @@
 
 ## Requirement
 
-1. **A suite lives in the workspace of the code it asserts.**  
+1. **A suite lives in the workspace of the code it asserts.**
    - `apps/<A>/test/**` asserts `apps/<A>` (or consumes `@jumentix/*` public
      APIs as consumer wiring without deep-importing `packages/*/src` as a unit
-     clone).  
-   - `packages/<P>/test/**` asserts `packages/<P>` only.  
+     clone).
+   - `packages/<P>/test/**` asserts `packages/<P>` only.
    - `ci-cd/test/**` asserts root `ci-cd/**` monorepo gates, runners, test-map
      and release tooling only.
 
@@ -26,7 +26,7 @@
 3. **Dual-home ban.** The same package behaviour must not be asserted from both
    `packages/<P>/test` and an app unit suite that only exercises a pure
    `@jumentix/<P>` re-export or deep-mocks `packages/<P>/src`. Template
-   *composition* suites that wire app adapters stay under the app.
+   _composition_ suites that wire app adapters stay under the app.
 
 4. **Machine gate.** `bun run arch:check-ownership-placement` runs
    `ci-cd/check-workspace-ownership-placement.js`. It fails closed on

@@ -21,13 +21,12 @@
  * generated-column precision, no names) — segment 0 of each generated line
  * gives the answer, so the decoder ends after that.
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const BASE64_VLQ_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 const VLQ_BASE_SHIFT = 5;
-const VLQ_BASE = 1 << VLQ_BASE_SHIFT;
-const VLQ_BASE_MASK = VLQ_BASE - 1;
+const VLQ_BASE = 2 ** VLQ_BASE_SHIFT;
 const VLQ_CONTINUATION_BIT = VLQ_BASE;
 
 const CHAR_TO_INT = new Map(BASE64_VLQ_CHARS.split('').map((char, index) => [char, index]));
@@ -44,11 +43,11 @@ function decodeVlq(segment, startAt) {
       throw new Error(`Invalid base64 VLQ character at offset ${index}`);
     }
     index += 1;
-    continues = Boolean(digit & VLQ_CONTINUATION_BIT);
-    result += (digit & VLQ_BASE_MASK) * (2 ** shift);
+    continues = digit >= VLQ_CONTINUATION_BIT;
+    result += (digit % VLQ_BASE) * 2 ** shift;
     shift += VLQ_BASE_SHIFT;
   }
-  const isNegative = (result & 1) === 1;
+  const isNegative = result % 2 === 1;
   const magnitude = Math.floor(result / 2);
   return { value: isNegative ? -magnitude : magnitude, endAt: index };
 }
@@ -175,7 +174,9 @@ function remapDistLcovRecord(record, repoRoot) {
   if (originalHits.size === 0) return record;
 
   const sortedLines = [...originalHits.keys()].sort((a, b) => a - b);
-  const daLines = sortedLines.map((lineNumber) => `DA:${lineNumber},${originalHits.get(lineNumber)}`);
+  const daLines = sortedLines.map(
+    (lineNumber) => `DA:${lineNumber},${originalHits.get(lineNumber)}`
+  );
   const hitLines = sortedLines.filter((lineNumber) => originalHits.get(lineNumber) > 0);
 
   // FN:/FNDA:/BRDA: carry generated line numbers this function does not
@@ -184,12 +185,18 @@ function remapDistLcovRecord(record, repoRoot) {
   // the wrong source line, so they are dropped rather than passed through
   // stale. FNF:/FNH:/BRF:/BRH: are plain counts with no line reference and
   // stay accurate regardless.
-  const passthroughLines = lines.filter((line) => (
-    line !== '' && line !== 'end_of_record'
-    && !line.startsWith('SF:') && !line.startsWith('DA:')
-    && !line.startsWith('LF:') && !line.startsWith('LH:')
-    && !line.startsWith('FN:') && !line.startsWith('FNDA:') && !line.startsWith('BRDA:')
-  ));
+  const passthroughLines = lines.filter(
+    (line) =>
+      line !== '' &&
+      line !== 'end_of_record' &&
+      !line.startsWith('SF:') &&
+      !line.startsWith('DA:') &&
+      !line.startsWith('LF:') &&
+      !line.startsWith('LH:') &&
+      !line.startsWith('FN:') &&
+      !line.startsWith('FNDA:') &&
+      !line.startsWith('BRDA:')
+  );
 
   return [
     `SF:${sourceMap.sourcePath}`,

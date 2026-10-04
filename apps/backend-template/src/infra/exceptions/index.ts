@@ -3,18 +3,18 @@
 // (JUM-601). Must run before any of them is constructed.
 import './registerPersistenceCorrelation';
 
-export * from './BaseError';
+export { default as BaseError } from './BaseError';
 export * from './error.codes';
-export * from './ComposeEventError';
-export * from './ConflictError';
-export * from './DataBaseNotFoundError';
-export * from './DatabasePagingError';
-export * from './DomainNotFoundError';
-export * from './DomainValidationError';
-export * from './ForbiddenError';
-export * from './InternalServerError';
-export * from './NotFoundError';
-export * from './ResourceLockedError';
-export * from './UnauthorizedError';
-export * from './ValidationError';
+export { default as ComposeEventError } from './ComposeEventError';
+export { default as ConflictError } from './ConflictError';
+export { default as DataBaseNotFoundError } from './DataBaseNotFoundError';
+export { default as DatabasePagingError } from './DatabasePagingError';
+export { default as DomainNotFoundError } from './DomainNotFoundError';
+export { default as DomainValidationError } from './DomainValidationError';
+export { default as ForbiddenError } from './ForbiddenError';
+export { default as InternalServerError } from './InternalServerError';
+export { default as NotFoundError } from './NotFoundError';
+export { default as ResourceLockedError } from './ResourceLockedError';
+export { default as UnauthorizedError } from './UnauthorizedError';
+export { default as ValidationError } from './ValidationError';
 export * from './ISerializedError';

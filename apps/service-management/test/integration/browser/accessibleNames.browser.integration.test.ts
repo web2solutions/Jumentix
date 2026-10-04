@@ -1,4 +1,3 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 /*
  * JUM-732 — every control a user can reach computes an accessible name, in a
  * REAL browser against the REAL server (Requirement 115).
@@ -16,23 +15,31 @@
  */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+
 import { webkit } from 'playwright-webkit';
-import type { Browser, Page } from 'playwright-webkit';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
-  envFileContent,
-  startServer,
   clickInPanels,
+  createTempConfigDir,
+  envFileContent,
   openDesignerPanels,
+  startServer,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
+import type { Browser, Page } from 'playwright-webkit';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
 const repoRoot = path.resolve(__dirname, '../../../../..');
 
-type UnnamedControl = { tag: string; id: string; type: string };
+interface UnnamedControl {
+  tag: string;
+  id: string;
+  type: string;
+}
 
 async function unnamedControls(page: Page): Promise<UnnamedControl[]> {
   return page.$$eval('input, select, textarea, button', (elements) => {
@@ -47,7 +54,7 @@ async function unnamedControls(page: Page): Promise<UnnamedControl[]> {
     const accessibleName = (element: Element): string => {
       const node = element as HTMLInputElement;
       const aria = node.getAttribute('aria-label');
-      if (aria && aria.trim()) return aria.trim();
+      if (aria?.trim()) return aria.trim();
       const labelledBy = node.getAttribute('aria-labelledby');
       if (labelledBy) {
         const referenced = labelledBy
@@ -62,7 +69,7 @@ async function unnamedControls(page: Page): Promise<UnnamedControl[]> {
       const labelText = firstLabel ? (firstLabel.textContent || '').trim() : '';
       if (labelText) return labelText;
       const title = node.getAttribute('title');
-      if (title && title.trim()) return title.trim();
+      if (title?.trim()) return title.trim();
       if (node.tagName === 'BUTTON' && (node.textContent || '').trim()) {
         return (node.textContent || '').trim();
       }
@@ -81,13 +88,15 @@ async function unnamedControls(page: Page): Promise<UnnamedControl[]> {
 }
 
 async function fieldRowAriaLabels(page: Page): Promise<string[][]> {
-  return page.$$eval('#entity-field-list .field-row', (rows) => rows.map((row) => {
-    const controls = Array.from(row.querySelectorAll('input, select, button'));
-    return controls.map((control) => {
-      const label = control.getAttribute('aria-label');
-      return label === null ? '' : label;
-    });
-  }));
+  return page.$$eval('#entity-field-list .field-row', (rows) =>
+    rows.map((row) => {
+      const controls = Array.from(row.querySelectorAll('input, select, button'));
+      return controls.map((control) => {
+        const label = control.getAttribute('aria-label');
+        return label ?? '';
+      });
+    })
+  );
 }
 
 describe('serviceManagement accessible names (JUM-732)', () => {
@@ -96,15 +105,30 @@ describe('serviceManagement accessible names (JUM-732)', () => {
   let browser: Browser | undefined;
   let baseUrl: string;
 
+  const launchedBrowser = (): Browser => {
+    if (!browser) {
+      throw new Error('browser was not launched by beforeAll');
+    }
+    return browser;
+  };
+
   beforeAll(async () => {
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], {
-      cwd: repoRoot,
-      stdio: 'inherit'
-    });
-    execFileSync('bun', ['apps/service-management/scripts/sync-service-management-designer-core.js'], {
-      cwd: repoRoot,
-      stdio: 'inherit'
-    });
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-cana-bundle.js'],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit'
+      }
+    );
+    execFileSync(
+      'bun',
+      ['apps/service-management/scripts/sync-service-management-designer-core.js'],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit'
+      }
+    );
     tempDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     server = await startServer(tempDir);
     await waitForServer(server.port);
@@ -120,7 +144,7 @@ describe('serviceManagement accessible names (JUM-732)', () => {
 
   it('names every reachable control on a first-run page', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
@@ -136,7 +160,7 @@ describe('serviceManagement accessible names (JUM-732)', () => {
 
   it('names every control in the generated field rows', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
@@ -158,7 +182,7 @@ describe('serviceManagement accessible names (JUM-732)', () => {
 
   it('names the row controls after the field they belong to', async () => {
     expect.hasAssertions();
-    const context = await browser!.newContext();
+    const context = await launchedBrowser().newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 

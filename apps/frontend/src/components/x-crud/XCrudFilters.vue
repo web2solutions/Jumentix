@@ -18,7 +18,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ set: [value: unknown] }>();
 
-const range = () => (Array.isArray(props.value) ? props.value as [string?, string?] : ['', '']);
+const range = () => (Array.isArray(props.value) ? (props.value as [string?, string?]) : ['', '']);
 </script>
 
 <template>
@@ -27,7 +27,10 @@ const range = () => (Array.isArray(props.value) ? props.value as [string?, strin
     size="sm"
     :aria-label="`filter-${descriptor.name}`"
     :model-value="String(value ?? '')"
-    :options="[{ label: t('app.all'), value: '' }, ...descriptor.enum.map((option) => ({ label: option, value: option }))]"
+    :options="[
+      { label: t('app.all'), value: '' },
+      ...descriptor.enum.map((option) => ({ label: option, value: option }))
+    ]"
     @update:model-value="emit('set', String($event))"
   />
   <CFormSelect

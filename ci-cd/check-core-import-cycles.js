@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const ROOT = process.cwd();
 const EXTENSIONS = ['.ts', '.tsx', '.js', '.mjs', '.cjs'];
@@ -38,7 +38,11 @@ const walk = (dirPath, files = []) => {
 const resolveImport = (sourceFile, specifier) => {
   let candidateBase;
   if (specifier.startsWith('@src/')) {
-    candidateBase = path.resolve(ROOT, 'apps/backend-template/src', specifier.slice('@src/'.length));
+    candidateBase = path.resolve(
+      ROOT,
+      'apps/backend-template/src',
+      specifier.slice('@src/'.length)
+    );
   } else if (specifier.startsWith('.')) {
     candidateBase = path.resolve(path.dirname(sourceFile), specifier);
   } else {
@@ -120,9 +124,13 @@ for (const node of graph.keys()) {
 if (cycles.length > 0) {
   console.error('Core import cycle(s) found:');
   cycles.forEach((cycle, idx) => {
-    console.error(`\n${idx + 1}. ${cycle.map((file) => toPosix(path.relative(ROOT, file))).join(' -> ')}`);
+    console.error(
+      `\n${idx + 1}. ${cycle.map((file) => toPosix(path.relative(ROOT, file))).join(' -> ')}`
+    );
   });
-  process.exit(1);
+  process.exitCode = 1;
 }
 
-console.log('Core import cycle check passed.');
+if (process.exitCode !== 1) {
+  console.log('Core import cycle check passed.');
+}

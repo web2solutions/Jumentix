@@ -1,11 +1,11 @@
-import { BaseController } from '@src/interface/HTTP/ports/BaseController';
+import BaseController from '@src/interface/HTTP/ports/BaseController';
 
 class ControllerUnderTest extends BaseController {}
 
 describe('base controller', () => {
   it('wires dependencies from factory', () => {
     expect.hasAssertions();
-    const controller = new ControllerUnderTest({
+    const dependencies = {
       authService: {
         authenticate: jest.fn(),
         authorize: jest.fn(),
@@ -13,14 +13,15 @@ describe('base controller', () => {
       } as any,
       databaseClient: { stores: {} } as any,
       openApiSpecification: { openapi: '3.0.0' },
-      passwordCryptoService: { hash: jest.fn(), compare: jest.fn() } as any,
+      passwordCryptoService: { hash: jest.fn(), compare: jest.fn() },
       mutexService: { lock: jest.fn(), unlock: jest.fn() } as any
-    });
+    };
+    const controller = new ControllerUnderTest(dependencies);
 
-    expect(controller.authService).toBeDefined();
-    expect(controller.databaseClient).toBeDefined();
-    expect(controller.passwordCryptoService).toBeDefined();
-    expect(controller.mutexService).toBeDefined();
+    expect(controller.authService).toBe(dependencies.authService);
+    expect(controller.databaseClient).toBe(dependencies.databaseClient);
+    expect(controller.passwordCryptoService).toBe(dependencies.passwordCryptoService);
+    expect(controller.mutexService).toBe(dependencies.mutexService);
   });
 
   it('throws infra not implemented errors on invalid dependencies', () => {
@@ -35,10 +36,18 @@ describe('base controller', () => {
       openApiSpecification: {}
     });
 
-    expect(() => { controller.authService = {} as any; }).toThrow('AuthService is not implemented');
-    expect(() => { controller.databaseClient = {} as any; }).toThrow('DatabaseClient is not implemented');
-    expect(() => { controller.passwordCryptoService = {} as any; }).toThrow('PasswordCryptoService is not implemented');
-    expect(() => { controller.mutexService = {} as any; }).toThrow('MutexService is not implemented');
+    expect(() => {
+      controller.authService = {} as any;
+    }).toThrow('AuthService is not implemented');
+    expect(() => {
+      controller.databaseClient = {} as any;
+    }).toThrow('DatabaseClient is not implemented');
+    expect(() => {
+      controller.passwordCryptoService = {} as any;
+    }).toThrow('PasswordCryptoService is not implemented');
+    expect(() => {
+      controller.mutexService = {} as any;
+    }).toThrow('MutexService is not implemented');
   });
 
   it('supports optional message mediator wiring and validates contract', () => {
@@ -60,9 +69,9 @@ describe('base controller', () => {
     expect(controller.messageMediator).toBeDefined();
     controller.messageMediator = undefined;
     expect(controller.messageMediator).toBeUndefined();
-    expect(() => { controller.messageMediator = { request: jest.fn() } as any; }).toThrow(
-      'MessageMediator is not implemented'
-    );
+    expect(() => {
+      controller.messageMediator = { request: jest.fn() } as any;
+    }).toThrow('MessageMediator is not implemented');
   });
 });
 
@@ -78,7 +87,7 @@ describe('base controller', () => {
 describe('http ports barrel', () => {
   it('exports the two runtime values and nothing type-only', async () => {
     expect.hasAssertions();
-    const barrel = await import('@src/interface/HTTP/ports') as Record<string, unknown>;
+    const barrel = (await import('@src/interface/HTTP/ports')) as Record<string, unknown>;
 
     // Enums and abstract classes survive to runtime; interfaces and type
     // aliases do not. A type name appearing here means it was moved out of

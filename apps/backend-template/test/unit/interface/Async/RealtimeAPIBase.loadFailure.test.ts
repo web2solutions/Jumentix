@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { RealtimeAPIBase } from '@src/interface/Async/RealtimeAPIBase';
 
 /**
@@ -15,17 +13,14 @@ import { RealtimeAPIBase } from '@src/interface/Async/RealtimeAPIBase';
  * value, since a broken module throws whatever it throws.
  */
 
-jest.mock(
-  '@src/modules/Users/interface/websocketapi/frameworks/socket-io/handlers/logout',
-  () => {
-    throw new TypeError('handler module exploded');
-  }
-);
+jest.mock('@src/modules/Users/interface/websocketapi/frameworks/socket-io/handlers/logout', () => {
+  throw new TypeError('handler module exploded');
+});
 
 jest.mock(
   '@src/modules/Users/interface/websocketapi/frameworks/socket-io/handlers/updateUserPassword',
   () => {
-    // eslint-disable-next-line no-throw-literal
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberately throws a bare value: a broken module throws whatever it throws, and the resolver must rethrow it (asserted below with toBe)
     throw 'handler module exploded without an Error';
   }
 );
@@ -38,24 +33,24 @@ jest.mock(
 // evaluation can fail honestly on both runners. A thrown value carries no
 // `message`; the resolver must still rethrow it rather than read it as
 // "module not found".
-jest.mock(
-  '@src/modules/Users/adapters/in/http/controllers/index',
-  () => {
-    // eslint-disable-next-line no-throw-literal
-    throw 'controller module exploded without an Error';
-  }
-);
+jest.mock('@src/modules/Users/adapters/in/http/controllers/index', () => {
+  // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberately throws a bare value: a broken module throws whatever it throws, and the resolver must rethrow it (asserted below with toBe)
+  throw 'controller module exploded without an Error';
+});
 
 class ProbeAPI extends RealtimeAPIBase {
   public constructor() {
-    super({
-      databaseClient: {
-        connect: jest.fn(),
-        disconnect: jest.fn()
-      } as any,
-      interfaceType: 'websocketapi',
-      frameworkName: 'socket-io'
-    }, false);
+    super(
+      {
+        databaseClient: {
+          connect: jest.fn(),
+          disconnect: jest.fn()
+        } as any,
+        interfaceType: 'websocketapi',
+        frameworkName: 'socket-io'
+      },
+      false
+    );
   }
 }
 
@@ -65,13 +60,15 @@ describe('realtime api base load-time module failures', () => {
 
     const api = new ProbeAPI();
 
-    expect(() => (api as any).getRuntimeHandlerFactory({
-      moduleName: 'Users',
-      operationId: 'logout',
-      controllerMethod: 'logout',
-      controller: {},
-      endPointConfig: {}
-    })).toThrow('handler module exploded');
+    expect(() =>
+      (api as any).getRuntimeHandlerFactory({
+        moduleName: 'Users',
+        operationId: 'logout',
+        controllerMethod: 'logout',
+        controller: {},
+        endPointConfig: {}
+      })
+    ).toThrow('handler module exploded');
   });
 
   it('rethrows a load-time non-Error from a runtime handler module', () => {

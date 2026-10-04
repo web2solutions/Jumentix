@@ -1,14 +1,16 @@
-import {
-  afterEach, beforeEach, describe, expect, it, mock
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { useXCrud } from '@/components/x-crud/useXCrud';
-import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
-import { usersCrudConfig } from '@/features/users/usersCrudConfig';
+import usersCrudConfig from '@/features/users/usersCrudConfig';
 import { setLocale } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
+
+import must from '../support';
+
+import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
 
 interface FixtureUser extends Record<string, unknown> {
   id: string;
@@ -22,22 +24,38 @@ interface FixtureUser extends Record<string, unknown> {
 
 const fixtureRows: FixtureUser[] = [
   {
-    id: 'u1', firstName: 'Zoe', username: 'zoe@x.dev', roles: ['admin'], emails: [{}], createdAt: '2026-01-02T00:00:00Z'
+    id: 'u1',
+    firstName: 'Zoe',
+    username: 'zoe@x.dev',
+    roles: ['admin'],
+    emails: [{}],
+    createdAt: '2026-01-02T00:00:00Z'
   },
   {
-    id: 'u2', firstName: 'Abraham', username: 'abe@x.dev', roles: ['user'], emails: [{}, {}], createdAt: '2026-01-01T00:00:00Z'
+    id: 'u2',
+    firstName: 'Abraham',
+    username: 'abe@x.dev',
+    roles: ['user'],
+    emails: [{}, {}],
+    createdAt: '2026-01-01T00:00:00Z'
   },
   {
-    id: 'u3', firstName: 'Mike', username: 'mike@x.dev', roles: ['user'], emails: [], createdAt: '2026-01-03T00:00:00Z'
+    id: 'u3',
+    firstName: 'Mike',
+    username: 'mike@x.dev',
+    roles: ['user'],
+    emails: [],
+    createdAt: '2026-01-03T00:00:00Z'
   }
 ];
 
-const recorded: Array<{ url: string; method: string; body?: unknown }> = [];
+const recorded: { url: string; method: string; body?: unknown }[] = [];
 
 /** Lets a triggered `load()` (fetch mock + awaits) settle. */
-const flush = () => new Promise<void>((resolve) => {
-  setTimeout(resolve, 0);
-});
+const flush = () =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, 0);
+  });
 
 /** Bounded poll on a condition — never a fixed wait (Requirement 134 §2). */
 const pollUntil = async (condition: () => boolean, attempts = 200): Promise<void> => {
@@ -51,7 +69,9 @@ const pollUntil = async (condition: () => boolean, attempts = 200): Promise<void
 
 /** The wire query of the last list request, decoded (filter is base64 JSON). */
 const lastListQuery = (): Record<string, unknown> => {
-  const call = [...recorded].reverse().find((entry) => entry.method === 'GET' && entry.url.includes('/users'));
+  const call = [...recorded]
+    .reverse()
+    .find((entry) => entry.method === 'GET' && entry.url.includes('/users'));
   const url = new URL(call?.url ?? 'http://x/');
   const query: Record<string, unknown> = Object.fromEntries(url.searchParams.entries());
   if (typeof query.filter === 'string') query.filter = JSON.parse(atob(query.filter));
@@ -70,18 +90,28 @@ const serverAnswer = (url: string): unknown => {
   const q = params.get('q');
   if (q) {
     const needle = q.toLowerCase();
-    rows = rows.filter((row) => ['firstName', 'lastName', 'username']
-      .some((field) => String(row[field] ?? '').toLowerCase().includes(needle)));
+    rows = rows.filter((row) =>
+      ['firstName', 'lastName', 'username'].some((field) =>
+        String(row[field] ?? '')
+          .toLowerCase()
+          .includes(needle)
+      )
+    );
   }
   const sort = params.get('sort');
   if (sort) {
     const [field, direction] = sort.split(':');
-    rows.sort((a, b) => String(a[field]).localeCompare(String(b[field])) * (direction === 'desc' ? -1 : 1));
+    rows.sort(
+      (a, b) => String(a[field]).localeCompare(String(b[field])) * (direction === 'desc' ? -1 : 1)
+    );
   }
   const page = Number(params.get('page') ?? 1);
   const size = Number(params.get('size') ?? 30);
   return {
-    result: rows.slice((page - 1) * size, page * size), page, size, total: rows.length
+    result: rows.slice((page - 1) * size, page * size),
+    page,
+    size,
+    total: rows.length
   };
 };
 
@@ -154,7 +184,11 @@ describe('useXCrud over the Users X-CRUD config', () => {
     crud.toggleSort('firstName');
     await flush();
     expect(lastListQuery().sort).toBe('firstName:asc');
-    expect(crud.visibleRows.value.map((r) => r.firstName)).toStrictEqual(['Abraham', 'Mike', 'Zoe']);
+    expect(crud.visibleRows.value.map((r) => r.firstName)).toStrictEqual([
+      'Abraham',
+      'Mike',
+      'Zoe'
+    ]);
     crud.toggleSort('firstName');
     await flush();
     expect(lastListQuery().sort).toBe('firstName:desc');
@@ -194,11 +228,14 @@ describe('useXCrud over the Users X-CRUD config', () => {
     await crud.load();
     crud.setFilter('firstName', 'zo');
     await flush();
-    expect(lastListQuery().filter).toStrictEqual({ firstName: { operator: 'contains', value: 'zo' } });
+    expect(lastListQuery().filter).toStrictEqual({
+      firstName: { operator: 'contains', value: 'zo' }
+    });
     crud.setFilter('createdAt', ['2026-01-01', '2026-01-02']);
     await flush();
     expect((lastListQuery().filter as Record<string, unknown>).createdAt).toStrictEqual({
-      operator: 'between', value: ['2026-01-01', '2026-01-02T23:59:59.999Z']
+      operator: 'between',
+      value: ['2026-01-01', '2026-01-02T23:59:59.999Z']
     });
     crud.setFilter('emails', 'x'); // not filterable per the OAS → never on the wire
     await flush();
@@ -226,7 +263,10 @@ describe('useXCrud over the Users X-CRUD config', () => {
   it('scroll mode appends pages instead of replacing them', async () => {
     expect.assertions(2);
     const crud = useXCrud({
-      ...usersCrudConfig, pagination: 'scroll', pageSize: 2, debounceMs: 0
+      ...usersCrudConfig,
+      pagination: 'scroll',
+      pageSize: 2,
+      debounceMs: 0
     });
     await crud.load();
     expect(crud.visibleRows.value).toHaveLength(2);
@@ -251,7 +291,10 @@ describe('useXCrud over the Users X-CRUD config', () => {
         status: beyond ? 400 : 200,
         headers: { get: () => 'application/json' },
         json: () => Promise.resolve(serverAnswer(String(url))),
-        text: () => Promise.resolve('{"message":"page number must be smaller than the number of total pages"}')
+        text: () =>
+          Promise.resolve(
+            '{"message":"page number must be smaller than the number of total pages"}'
+          )
       } as unknown as Response);
     });
     await crud.load();
@@ -263,7 +306,7 @@ describe('useXCrud over the Users X-CRUD config', () => {
     expect.assertions(4);
     const crud = useXCrud({ ...usersCrudConfig, pageSize: 2, debounceMs: 0 });
     await crud.load();
-    const [total, perOrg] = usersCrudConfig.aggregates!;
+    const [total, perOrg] = must(usersCrudConfig.aggregates, 'users aggregates');
     expect(crud.aggregateValue(total)).toBe(3);
     expect(crud.aggregateIsPartial(total)).toBe(false);
     expect(crud.aggregateIsPartial(perOrg)).toBe(true);
@@ -282,9 +325,13 @@ describe('useXCrud over the Users X-CRUD config', () => {
       roles: ['user']
     });
     const createCall = recorded.find((call) => call.method === 'POST');
-    expect((createCall?.body as Record<string, unknown>).emails).toStrictEqual([{
-      email: 'new@x.dev', type: 'work', isPrimary: true
-    }]);
+    expect((createCall?.body as Record<string, unknown>).emails).toStrictEqual([
+      {
+        email: 'new@x.dev',
+        type: 'work',
+        isPrimary: true
+      }
+    ]);
     expect((createCall?.body as Record<string, unknown>).primaryEmail).toBeUndefined();
   });
 
@@ -341,11 +388,18 @@ describe('useXCrud over the Users X-CRUD config', () => {
       recorded.push({ url: String(url), method: init.method });
       const payload = String(url).includes('/organizations')
         ? {
-          result: [{ id: 'org-1', name: 'ACME' }], page: 1, size: 100, total: 1
-        }
+            result: [{ id: 'org-1', name: 'ACME' }],
+            page: 1,
+            size: 100,
+            total: 1
+          }
         : serverAnswer(String(url));
       return Promise.resolve({
-        ok: true, status: 200, headers: { get: () => 'application/json' }, json: () => Promise.resolve(payload), text: () => Promise.resolve('')
+        ok: true,
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve(payload),
+        text: () => Promise.resolve('')
       } as unknown as Response);
     });
     await crud.loadReferences();
@@ -375,7 +429,11 @@ describe('useXCrud over an operation without x-list-capabilities', () => {
     globalThis.fetch = mock((url: string, init: { method: string }) => {
       recorded.push({ url: String(url), method: init.method });
       return Promise.resolve({
-        ok: true, status: 200, headers: { get: () => 'application/json' }, json: () => Promise.resolve(fixtureRows), text: () => Promise.resolve('')
+        ok: true,
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve(fixtureRows),
+        text: () => Promise.resolve('')
       } as unknown as Response);
     });
   });
@@ -480,13 +538,15 @@ describe('useXCrud wire controls and actions', () => {
 
   it('surfaces a failed action as errorMessage instead of a notice', async () => {
     expect.assertions(2);
-    globalThis.fetch = mock(() => Promise.resolve({
-      ok: false,
-      status: 400,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({ message: 'username can not be empty' }),
-      text: () => Promise.resolve('{"message":"username can not be empty"}')
-    } as unknown as Response));
+    globalThis.fetch = mock(() =>
+      Promise.resolve({
+        ok: false,
+        status: 400,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ message: 'username can not be empty' }),
+        text: () => Promise.resolve('{"message":"username can not be empty"}')
+      } as unknown as Response)
+    );
     const crud = useXCrud({ ...usersCrudConfig, pageSize: 2, debounceMs: 0 });
     await crud.load();
     await crud.submitCreate({ firstName: 'Bad' });
@@ -497,13 +557,15 @@ describe('useXCrud wire controls and actions', () => {
   it('surfaces a failed load as errorMessage', async () => {
     expect.assertions(2);
     const crud = useXCrud({ ...usersCrudConfig, debounceMs: 0 });
-    globalThis.fetch = mock(() => Promise.resolve({
-      ok: false,
-      status: 500,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({ message: '' }),
-      text: () => Promise.resolve('{}')
-    } as unknown as Response));
+    globalThis.fetch = mock(() =>
+      Promise.resolve({
+        ok: false,
+        status: 500,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ message: '' }),
+        text: () => Promise.resolve('{}')
+      } as unknown as Response)
+    );
     await crud.load();
     expect(crud.errorMessage.value).toBe('Internal server error — try again shortly.');
     expect(crud.loading.value).toBe(false);
@@ -598,7 +660,11 @@ describe('useXCrud memory-mode filter operators', () => {
     globalThis.fetch = mock((url: string, init: { method: string }) => {
       recorded.push({ url: String(url), method: init.method });
       return Promise.resolve({
-        ok: true, status: 200, headers: { get: () => 'application/json' }, json: () => Promise.resolve(fixtureRows), text: () => Promise.resolve('')
+        ok: true,
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve(fixtureRows),
+        text: () => Promise.resolve('')
       } as unknown as Response);
     });
   });
@@ -617,9 +683,17 @@ describe('useXCrud memory-mode filter operators', () => {
     expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1', 'u3']);
     crud.setFilter('createdAt', [undefined, '2026-01-01']);
     expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u2']);
-    crud.rows.value = [...crud.rows.value, {
-      id: 'u9', firstName: 'Nodate', username: 'nodate@x.dev', roles: ['user'], emails: [], createdAt: 'not-a-date'
-    }];
+    crud.rows.value = [
+      ...crud.rows.value,
+      {
+        id: 'u9',
+        firstName: 'Nodate',
+        username: 'nodate@x.dev',
+        roles: ['user'],
+        emails: [],
+        createdAt: 'not-a-date'
+      }
+    ];
     crud.setFilter('createdAt', ['2020-01-01', '2030-01-01']);
     expect(crud.filteredRows.value.map((r) => r.id)).toStrictEqual(['u1', 'u2', 'u3']);
   });

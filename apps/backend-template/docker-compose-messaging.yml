@@ -10,9 +10,9 @@ services:
     container_name: aaa-redis
     restart: unless-stopped
     ports:
-      - '6379:6379'
+      - "6379:6379"
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 2s
       timeout: 3s
       retries: 15
@@ -22,13 +22,13 @@ services:
     container_name: aaa-rabbitmq
     restart: unless-stopped
     ports:
-      - '5672:5672'
-      - '15672:15672'
+      - "5672:5672"
+      - "15672:15672"
     healthcheck:
       # `check_port_connectivity` is what the suite actually needs: the AMQP
       # listener accepting connections. A plain `ping` returns healthy while
       # the listener is still binding.
-      test: ['CMD', 'rabbitmq-diagnostics', 'check_port_connectivity']
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 3s
       timeout: 10s
       retries: 20

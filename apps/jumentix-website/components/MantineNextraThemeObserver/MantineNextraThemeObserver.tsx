@@ -1,6 +1,6 @@
-import { useTheme } from 'nextra-theme-docs';
 import { useMantineColorScheme } from '@mantine/core';
 import { useDidUpdate } from '@mantine/hooks';
+import { useTheme } from 'nextra-theme-docs';
 
 /**
  * This component is responsible for observing the theme changes in Nextra and Mantine.
@@ -12,13 +12,18 @@ import { useDidUpdate } from '@mantine/hooks';
  *
  * @see https://mantine.dev/docs/color-scheme/
  */
-export function MantineNextraThemeObserver() {
+// eslint-disable-next-line import-x/prefer-default-export -- single named export consumed via named imports/barrels; converting to default would change the module API
+export const MantineNextraThemeObserver = () => {
   const { setColorScheme } = useMantineColorScheme();
   const { theme } = useTheme();
 
   useDidUpdate(() => {
-    setColorScheme(theme === 'dark' ? 'dark' : theme === 'system' ? 'auto' : 'light');
+    if (theme === 'dark') {
+      setColorScheme('dark');
+      return;
+    }
+    setColorScheme(theme === 'system' ? 'auto' : 'light');
   }, [theme]);
 
   return null;
-}
+};

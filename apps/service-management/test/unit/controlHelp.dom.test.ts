@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 /*
  * JUM-733 / JUM-821 — behavioral suite for the control-help installer
  * (`apps/service-management/src/ui/controlHelp.js`).
@@ -69,9 +68,12 @@ function createFakeElement(doc: any, tagName: string, props: Record<string, any>
     attributes: new Map<string, string>(),
     children: [] as any[],
     parentNode: null as any,
-    listeners: new Map<string, Array<(event: any) => void>>(),
+    listeners: new Map<string, ((event: any) => void)[]>(),
     rect: {
-      left: 0, top: 0, width: 0, height: 0
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0
     },
     get classList() {
       return {
@@ -84,8 +86,14 @@ function createFakeElement(doc: any, tagName: string, props: Record<string, any>
       return el.attributes.has(name) ? el.attributes.get(name) : null;
     },
     setAttribute(name: string, value: string) {
-      if (name === 'id') { el.id = value; return; }
-      if (name === 'class') { el.className = value; return; }
+      if (name === 'id') {
+        el.id = value;
+        return;
+      }
+      if (name === 'class') {
+        el.className = value;
+        return;
+      }
       el.attributes.set(name, value);
     },
     removeAttribute(name: string) {
@@ -132,18 +140,25 @@ function createFakeElement(doc: any, tagName: string, props: Record<string, any>
       (el.listeners.get(type) || []).forEach((handler: (fakeEvent: any) => void) => handler(event));
     },
     getBoundingClientRect() {
-      const {
-        left, top, width, height
-      } = el.rect;
+      const { left, top, width, height } = el.rect;
       return {
-        left, top, width, height, right: left + width, bottom: top + height
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height
       };
     },
     click() {
       el.dispatch('click', {
         target: el,
-        preventDefault: () => { el.clickDefaultPrevented = true; },
-        stopPropagation: () => { el.clickPropagationStopped = true; }
+        preventDefault: () => {
+          el.clickDefaultPrevented = true;
+        },
+        stopPropagation: () => {
+          el.clickPropagationStopped = true;
+        }
       });
     },
     set innerHTML(html: string) {
@@ -161,25 +176,28 @@ function createFakeElement(doc: any, tagName: string, props: Record<string, any>
 }
 
 function createFakeView({ raf = true } = {}) {
-  const listeners = new Map<string, Array<() => void>>();
-  const rafQueue: Array<() => void> = [];
+  const listeners = new Map<string, (() => void)[]>();
+  const rafQueue: (() => void)[] = [];
   const view: any = {
     innerWidth: 800,
     innerHeight: 600,
     addEventListener(type: string, handler: () => void) {
-      const list = listeners.get(type) || [];
+      const list = listeners.get(type) ?? [];
       list.push(handler);
       listeners.set(type, list);
     },
     dispatch(type: string) {
-      (listeners.get(type) || []).forEach((handler) => handler());
+      (listeners.get(type) ?? []).forEach((handler) => handler());
     },
     pendingAnimationFrames: () => rafQueue.length,
     flushAnimationFrames() {
       rafQueue.splice(0, rafQueue.length).forEach((callback) => callback());
     }
   };
-  if (raf) view.requestAnimationFrame = (callback: () => void) => { rafQueue.push(callback); };
+  if (raf)
+    view.requestAnimationFrame = (callback: () => void) => {
+      rafQueue.push(callback);
+    };
   return view;
 }
 
@@ -211,7 +229,7 @@ class FakeMutationObserver {
 
   callback: () => void;
 
-  observed: Array<{ region: any; options: any }> = [];
+  observed: { region: any; options: any }[] = [];
 
   constructor(callback: () => void) {
     this.callback = callback;
@@ -277,14 +295,18 @@ describe('describeControlHelp fallback text', () => {
 
     const textarea = createFakeElement(doc, 'textarea', { id: 'notes-area' });
     textarea.setAttribute('aria-label', 'Notes');
-    expect(describeControlHelp(textarea).body)
-      .toBe('Edit the multi-line value used by this Service Management workflow.');
+    expect(describeControlHelp(textarea).body).toBe(
+      'Edit the multi-line value used by this Service Management workflow.'
+    );
 
     const checkbox = createFakeElement(doc, 'input', { id: 'flag-check', type: 'checkbox' });
     checkbox.setAttribute('aria-label', 'Flag');
     expect(describeControlHelp(checkbox).body).toBe('Toggle this option for the current workflow.');
 
-    const button = createFakeElement(doc, 'button', { id: 'do-thing', textContent: '  Do Thing  ' });
+    const button = createFakeElement(doc, 'button', {
+      id: 'do-thing',
+      textContent: '  Do Thing  '
+    });
     expect(describeControlHelp(button)).toStrictEqual({
       title: 'Do Thing',
       body: 'Runs this action for the current Service Management workflow.'
@@ -346,7 +368,9 @@ describe('installControlHelp installation rules', () => {
     const description = doc.getElementById('control-help-add-domain-btn');
     expect(description).not.toBeNull();
     expect(description.className).toBe('control-help-description');
-    expect(description.textContent).toBe('Add Domain. Creates a new bounded context on the canvas.');
+    expect(description.textContent).toBe(
+      'Add Domain. Creates a new bounded context on the canvas.'
+    );
     expect(control.getAttribute('aria-describedby')).toBe('control-help-add-domain-btn');
 
     const button = doc.getElementById('control-help-add-domain-btn-btn');
@@ -378,8 +402,9 @@ describe('installControlHelp installation rules', () => {
 
     installControlHelp(doc);
 
-    expect(control.getAttribute('aria-describedby'))
-      .toBe('domain-name-hint control-help-domain-name-input');
+    expect(control.getAttribute('aria-describedby')).toBe(
+      'domain-name-hint control-help-domain-name-input'
+    );
   });
 
   it('never decorates exempt, hidden, opted-out or blocklist-nested controls', () => {
@@ -435,10 +460,15 @@ describe('installControlHelp installation rules', () => {
     expect.hasAssertions();
     const doc = createFakeDocument();
     const label = addControl(doc, 'label', { className: 'check' });
-    const checkbox = addControl(doc, 'input', {
-      id: 'relationship-auto-fk-check',
-      type: 'checkbox'
-    }, label);
+    const checkbox = addControl(
+      doc,
+      'input',
+      {
+        id: 'relationship-auto-fk-check',
+        type: 'checkbox'
+      },
+      label
+    );
 
     installControlHelp(doc);
 
@@ -462,8 +492,9 @@ describe('installControlHelp installation rules', () => {
 
     const button = detachedLabel.getElementById('control-help-entity-pk-check-btn');
     expect(button).not.toBeNull();
-    expect(detachedLabel.children.indexOf(button))
-      .toBe(detachedLabel.children.indexOf(checkbox) + 1);
+    expect(detachedLabel.children.indexOf(button)).toBe(
+      detachedLabel.children.indexOf(checkbox) + 1
+    );
   });
 });
 
@@ -490,8 +521,9 @@ describe('control-help popover behavior', () => {
     expect(popover.getAttribute('hidden')).toBeNull();
     expect(popover.getAttribute('role')).toBe('tooltip');
     expect(popover.querySelector('strong').textContent).toBe('Add Domain');
-    expect(popover.querySelector('span').textContent)
-      .toBe('Creates a new bounded context on the canvas.');
+    expect(popover.querySelector('span').textContent).toBe(
+      'Creates a new bounded context on the canvas.'
+    );
     // Default geometry: clamped to the margin, directly below the button.
     expect(popover.style.left).toBe('10px');
     expect(popover.style.top).toBe('8px');
@@ -555,12 +587,18 @@ describe('control-help popover behavior', () => {
     button.click();
     const popover = doc.getElementById('control-help-popover');
     popover.rect = {
-      left: 0, top: 0, width: 100, height: 50
+      left: 0,
+      top: 0,
+      width: 100,
+      height: 50
     };
 
     // No room below (viewport 600 tall): flips above the button.
     control.rect = {
-      left: 100, top: 560, width: 20, height: 10
+      left: 100,
+      top: 560,
+      width: 20,
+      height: 10
     };
     button.rect = control.rect;
     button.click(); // close
@@ -571,7 +609,10 @@ describe('control-help popover behavior', () => {
     // No room below AND above: top clamps to the viewport margin.
     doc.defaultView.innerHeight = 60;
     button.rect = {
-      left: 0, top: 20, width: 10, height: 10
+      left: 0,
+      top: 20,
+      width: 10,
+      height: 10
     };
     button.click();
     button.click();
@@ -582,7 +623,10 @@ describe('control-help popover behavior', () => {
     // Near the right edge: left clamps to the right margin.
     doc.defaultView.innerHeight = 600;
     button.rect = {
-      left: 780, top: 20, width: 20, height: 10
+      left: 780,
+      top: 20,
+      width: 20,
+      height: 10
     };
     button.click();
     button.click();
@@ -623,8 +667,9 @@ describe('installControlHelp rescan and ambient wiring', () => {
       { region: sidebar, options: { childList: true, subtree: true } }
     ]);
     // Regions inside the canvas are deliberately not observed.
-    expect(observer.observed.map((entry: { region: any }) => entry.region))
-      .not.toContain(canvasExplorer);
+    expect(observer.observed.map((entry: { region: any }) => entry.region)).not.toContain(
+      canvasExplorer
+    );
 
     // A mutation burst queues a single rescan, no matter how many callbacks fire.
     const late = addControl(doc, 'button', { id: 'quick-undo-btn', textContent: 'Undo' }, sidebar);
@@ -654,7 +699,9 @@ describe('installControlHelp rescan and ambient wiring', () => {
     addControl(doc, 'button', { id: 'quick-redo-btn', textContent: 'Redo' }, sidebar);
     observer.trigger();
     // The fallback timer was scheduled before this one, so it has already run.
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
 
     expect(doc.getElementById('control-help-quick-redo-btn-btn')).not.toBeNull();
   });
@@ -705,7 +752,9 @@ describe('installControlHelp rescan and ambient wiring', () => {
     FakeMutationObserver.instances[0].trigger();
     expect(root.dataset.controlHelpScanQueued).toBe('true');
     // The root has no defaultView, so the rescan uses the setTimeout fallback.
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     expect(root.dataset.controlHelpScanQueued).toBe('false');
   });
 });

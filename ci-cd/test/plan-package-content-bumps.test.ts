@@ -21,10 +21,12 @@ describe('plan-package-content-bumps', () => {
       'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\trefs/tags/@jumentix/cana@0.1.0^{}'
     ].join('\n');
     expect(peelRemoteTagSha(annotated, tag)).toBe('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
-    expect(peelRemoteTagSha(
-      'cccccccccccccccccccccccccccccccccccccccc\trefs/tags/@jumentix/cana@0.1.0',
-      tag
-    )).toBe('cccccccccccccccccccccccccccccccccccccccc');
+    expect(
+      peelRemoteTagSha(
+        'cccccccccccccccccccccccccccccccccccccccc\trefs/tags/@jumentix/cana@0.1.0',
+        tag
+      )
+    ).toBe('cccccccccccccccccccccccccccccccccccccccc');
     expect(peelRemoteTagSha('', tag)).toBe('');
   });
 
@@ -84,22 +86,30 @@ describe('plan-package-content-bumps', () => {
 
   it('applies planned bumps to package.json manifests', () => {
     expect.hasAssertions();
-    const fs = require('fs');
-    const os = require('os');
-    const path = require('path');
+    const fs = require('node:fs');
+    const os = require('node:os');
+    const path = require('node:path');
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'pkg-bump-'));
     const pkgDir = path.join(root, 'packages', 'cana');
     fs.mkdirSync(pkgDir, { recursive: true });
     const pkgPath = path.join(pkgDir, 'package.json');
-    fs.writeFileSync(pkgPath, `${JSON.stringify({ name: '@jumentix/cana', version: '0.1.0' }, null, 2)}\n`);
-    applyPackageContentBumps([{
-      dirName: 'cana',
-      name: '@jumentix/cana',
-      from: '0.1.0',
-      to: '0.1.1',
-      packageJsonPath: 'packages/cana/package.json',
-      reason: 'test'
-    }], { root, syncCliManifest: false });
+    fs.writeFileSync(
+      pkgPath,
+      `${JSON.stringify({ name: '@jumentix/cana', version: '0.1.0' }, null, 2)}\n`
+    );
+    applyPackageContentBumps(
+      [
+        {
+          dirName: 'cana',
+          name: '@jumentix/cana',
+          from: '0.1.0',
+          to: '0.1.1',
+          packageJsonPath: 'packages/cana/package.json',
+          reason: 'test'
+        }
+      ],
+      { root, syncCliManifest: false }
+    );
     expect(JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version).toBe('0.1.1');
   });
 });

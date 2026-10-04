@@ -18,11 +18,26 @@ const documentationRoutes = [
   ['/docs/jumentix/packages/mutex-service/usage', ['mutex-service usage']],
   ['/docs/jumentix/packages/cana', ['@jumentix/cana', 'Try it in the browser']],
   ['/docs/jumentix/packages/cana/usage', ['Cana usage guide', 'Choose the next step']],
-  ['/docs/jumentix/packages/cana/usage/getting-started', ['Getting started with Cana', 'Complete minimal task app']],
-  ['/docs/jumentix/packages/cana/usage/workers-testing', ['Workers and testing', 'Worker request flow']],
-  ['/docs/jumentix/packages/cana/react-context', ['Cana with React Context API', 'React Context: Category and Task tables']],
-  ['/docs/jumentix/packages/cana/react-redux', ['Cana with React Redux', 'React Redux: store updated by Cana events']],
-  ['/docs/jumentix/packages/cana/vue-pinia', ['Cana with Vue 3 and Pinia', 'Vue 3 + Pinia: store patched from Cana']],
+  [
+    '/docs/jumentix/packages/cana/usage/getting-started',
+    ['Getting started with Cana', 'Complete minimal task app']
+  ],
+  [
+    '/docs/jumentix/packages/cana/usage/workers-testing',
+    ['Workers and testing', 'Worker request flow']
+  ],
+  [
+    '/docs/jumentix/packages/cana/react-context',
+    ['Cana with React Context API', 'React Context: Category and Task tables']
+  ],
+  [
+    '/docs/jumentix/packages/cana/react-redux',
+    ['Cana with React Redux', 'React Redux: store updated by Cana events']
+  ],
+  [
+    '/docs/jumentix/packages/cana/vue-pinia',
+    ['Cana with Vue 3 and Pinia', 'Vue 3 + Pinia: store patched from Cana']
+  ],
   ['/docs/jumentix/packages', ['Jumentix packages', 'consumer map']],
   ['/docs/jumentix/packages/external-db-repositories', ['Responsibility in context']],
   ['/docs/jumentix/packages/sdk-rest-client', ['@jumentix/sdk-rest-client']],
@@ -39,11 +54,26 @@ const documentationRoutes = [
   ['/docs/pt-BR/jumentix/packages/message-mediator', ['@jumentix/message-mediator']],
   ['/docs/pt-BR/jumentix/packages/cana', ['@jumentix/cana']],
   ['/docs/pt-BR/jumentix/packages/cana/usage', ['Guia de uso do Cana', 'Escolha o próximo passo']],
-  ['/docs/pt-BR/jumentix/packages/cana/usage/getting-started', ['Primeiros passos com Cana', 'App mínimo completo de tarefas']],
-  ['/docs/pt-BR/jumentix/packages/cana/usage/workers-testing', ['Workers e testes', 'Fluxo de requisição do worker']],
-  ['/docs/pt-BR/jumentix/packages/cana/react-context', ['Cana com React Context API', 'React Context: tabelas Category e Task']],
-  ['/docs/pt-BR/jumentix/packages/cana/react-redux', ['Cana com React Redux', 'React Redux: store atualizada por eventos Cana']],
-  ['/docs/pt-BR/jumentix/packages/cana/vue-pinia', ['Cana com Vue 3 e Pinia', 'Vue 3 + Pinia: store atualizada pelo Cana']]
+  [
+    '/docs/pt-BR/jumentix/packages/cana/usage/getting-started',
+    ['Primeiros passos com Cana', 'App mínimo completo de tarefas']
+  ],
+  [
+    '/docs/pt-BR/jumentix/packages/cana/usage/workers-testing',
+    ['Workers e testes', 'Fluxo de requisição do worker']
+  ],
+  [
+    '/docs/pt-BR/jumentix/packages/cana/react-context',
+    ['Cana com React Context API', 'React Context: tabelas Category e Task']
+  ],
+  [
+    '/docs/pt-BR/jumentix/packages/cana/react-redux',
+    ['Cana com React Redux', 'React Redux: store atualizada por eventos Cana']
+  ],
+  [
+    '/docs/pt-BR/jumentix/packages/cana/vue-pinia',
+    ['Cana com Vue 3 e Pinia', 'Vue 3 + Pinia: store atualizada pelo Cana']
+  ]
 ];
 
 function playgroundIds(runtime, id) {
@@ -54,6 +84,56 @@ function playgroundIds(runtime, id) {
     reset: `${root}-reset`,
     output: `${root}-output`
   };
+}
+
+function textNodeIsVisible(node) {
+  let element = node.parentElement;
+  while (element) {
+    const style = node.ownerDocument.defaultView.getComputedStyle(element);
+    if (
+      element.hidden ||
+      style.display === 'none' ||
+      style.visibility === 'hidden' ||
+      style.opacity === '0'
+    ) {
+      return false;
+    }
+    element = element.parentElement;
+  }
+  return true;
+}
+
+function assertNoVisibleAgentOnlyMetadata() {
+  cy.document().then((document) => {
+    const walker = document.createTreeWalker(
+      document.body,
+      document.defaultView.NodeFilter.SHOW_TEXT
+    );
+    const visibleMatches = [];
+    let node = walker.nextNode();
+    while (node) {
+      const text = node.nodeValue || '';
+      if (
+        (/Code \(copy for agents\/LLMs\)/i.test(text) || /^Source:\s*/i.test(text.trim())) &&
+        textNodeIsVisible(node)
+      ) {
+        visibleMatches.push(text.trim());
+      }
+      node = walker.nextNode();
+    }
+    expect(
+      visibleMatches,
+      'agent-only code labels and source metadata should be hidden'
+    ).to.deep.equal([]);
+  });
+}
+
+function assertAgentMarkdownPayload(rootSelector) {
+  cy.get(rootSelector)
+    .find('[data-agent-markdown="docs-playground-static-code"]')
+    .should('exist')
+    .and('not.be.visible')
+    .and('contain.text', '```ts');
 }
 
 describe('Cana playground', () => {
@@ -101,62 +181,16 @@ function assertDarkDocsThemeIsReadable() {
     const htmlBackground = win.getComputedStyle(document.documentElement).backgroundColor;
     const bodyBackground = win.getComputedStyle(document.body).backgroundColor;
     expect(document.documentElement.getAttribute('data-mantine-color-scheme')).to.equal('dark');
-    expect([htmlBackground, bodyBackground], 'docs page background should not flip to white')
-      .not.to.include('rgb(255, 255, 255)');
+    expect(
+      [htmlBackground, bodyBackground],
+      'docs page background should not flip to white'
+    ).not.to.include('rgb(255, 255, 255)');
   });
 }
 
 function assertMonacoMounted(scopeSelector) {
   cy.get(scopeSelector).find('.jtx-monaco-code').should('exist');
   cy.get(scopeSelector).find('.monaco-editor', { timeout: 20000 }).should('exist');
-}
-
-function textNodeIsVisible(node) {
-  let element = node.parentElement;
-  while (element) {
-    const style = node.ownerDocument.defaultView.getComputedStyle(element);
-    if (
-      element.hidden ||
-      style.display === 'none' ||
-      style.visibility === 'hidden' ||
-      style.opacity === '0'
-    ) {
-      return false;
-    }
-    element = element.parentElement;
-  }
-  return true;
-}
-
-function assertNoVisibleAgentOnlyMetadata() {
-  cy.document().then((document) => {
-    const walker = document.createTreeWalker(
-      document.body,
-      document.defaultView.NodeFilter.SHOW_TEXT
-    );
-    const visibleMatches = [];
-    let node = walker.nextNode();
-    while (node) {
-      const text = node.nodeValue || '';
-      if (
-        (/Code \(copy for agents\/LLMs\)/i.test(text) || /^Source:\s*/i.test(text.trim())) &&
-        textNodeIsVisible(node)
-      ) {
-        visibleMatches.push(text.trim());
-      }
-      node = walker.nextNode();
-    }
-    expect(visibleMatches, 'agent-only code labels and source metadata should be hidden')
-      .to.deep.equal([]);
-  });
-}
-
-function assertAgentMarkdownPayload(rootSelector) {
-  cy.get(rootSelector)
-    .find('[data-agent-markdown="docs-playground-static-code"]')
-    .should('exist')
-    .and('not.be.visible')
-    .and('contain.text', '```ts');
 }
 
 function assertFrameworkAgentMarkdownPayload(rootSelector) {
@@ -170,7 +204,10 @@ function assertFrameworkAgentMarkdownPayload(rootSelector) {
 
 describe('Cana framework tutorial playgrounds', () => {
   const tutorials = [
-    ['/docs/jumentix/packages/cana/react-context', ['react-context-basic', 'react-context-advanced']],
+    [
+      '/docs/jumentix/packages/cana/react-context',
+      ['react-context-basic', 'react-context-advanced']
+    ],
     ['/docs/jumentix/packages/cana/react-redux', ['react-redux-basic', 'react-redux-advanced']],
     ['/docs/jumentix/packages/cana/vue-pinia', ['vue-pinia-basic', 'vue-pinia-advanced']]
   ];
@@ -230,7 +267,6 @@ describe('Docs playground matrix', () => {
   });
 });
 
-
 describe('designer-core playground', () => {
   it('validates the sample design on spa-pwa', () => {
     const ids = playgroundIds('designer-core', 'getting-started');
@@ -260,15 +296,14 @@ describe('documentation routes and compatibility redirects', () => {
   it('keeps internal doc links resolvable from the docs hub', () => {
     cy.visitQuiet('/docs/jumentix');
     cy.get('a[href^="/docs/"]').then(($links) => {
-      const hrefs = [...new Set(
-        [...$links].map((el) => el.getAttribute('href')).filter(Boolean)
-      )].slice(0, 12);
+      const hrefs = [
+        ...new Set([...$links].map((el) => el.getAttribute('href')).filter(Boolean))
+      ].slice(0, 12);
 
       expect(hrefs.length, 'docs hub should expose internal links').to.be.greaterThan(0);
 
       for (const href of hrefs) {
-        cy.request({ url: href, failOnStatusCode: true }).its('status')
-          .should('be.lt', 400);
+        cy.request({ url: href, failOnStatusCode: true }).its('status').should('be.lt', 400);
       }
     });
   });
@@ -308,11 +343,15 @@ describe('Mermaid diagrams (JUM-664)', () => {
       // arrives, so a held reference detaches mid-assertion. Counting the
       // rendered ones against the total is also the stronger claim — `each`
       // over a stale collection would pass while a later diagram stayed blank.
-      cy.get('[data-testid="mermaid"]').its('length').then((total) => {
-        cy.get('[data-testid="mermaid"][data-rendered="true"]', { timeout: 20000 })
-          .should('have.length', total);
-        cy.get('[data-testid="mermaid"] svg').should('have.length.at.least', total);
-      });
+      cy.get('[data-testid="mermaid"]')
+        .its('length')
+        .then((total) => {
+          cy.get('[data-testid="mermaid"][data-rendered="true"]', { timeout: 20000 }).should(
+            'have.length',
+            total
+          );
+          cy.get('[data-testid="mermaid"] svg').should('have.length.at.least', total);
+        });
 
       // A diagram that fails to parse now renders its source instead of
       // nothing, which is visible — and must not be what ships.

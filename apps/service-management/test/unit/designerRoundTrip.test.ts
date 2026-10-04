@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -69,6 +68,7 @@ const {
   buildDomainsFromOas,
   buildStateFromSuiteExport
 } = require('@jumentix/designer-core/importers/designerImporters.js');
+const { packageContentsEqual } = require('@jumentix/designer-core/packages/packageVersioning.js');
 const {
   createDefaultView,
   createDesignerState,
@@ -76,16 +76,13 @@ const {
   getDefaultRbacPolicy,
   normalizeStatePayload
 } = require('@jumentix/designer-core/state/designerState.js');
-const {
-  packageContentsEqual
-} = require('@jumentix/designer-core/packages/packageVersioning.js');
-
-const {
-  MemoryDesignerStore
-} = require(path.join(repoRoot, 'apps', 'backend-template', 'test', 'helpers', 'MemoryDesignerStore.ts'));
 const YAML = require('yaml');
 
-type DesignerField = {
+const {
+  default: MemoryDesignerStore
+} = require('../../../backend-template/test/helpers/MemoryDesignerStore.ts');
+
+interface DesignerField {
   name: string;
   type: string;
   required: boolean;
@@ -102,25 +99,25 @@ type DesignerField = {
   minimum: number | null;
   maximum: number | null;
   itemsType: string;
-};
+}
 
-type ModelContract = {
+interface ModelContract {
   channel: string;
   type: string;
   name: string;
   payloadSchema: unknown;
-};
+}
 
-type ModelEntity = {
+interface ModelEntity {
   name: string;
   fields: DesignerField[];
   meta: { contracts: ModelContract[] };
-};
+}
 
-type ModelDomain = {
+interface ModelDomain {
   name: string;
   entities: ModelEntity[];
-};
+}
 
 /**
  * The reference model: two domains, every field type and facet, message
@@ -156,13 +153,24 @@ function createModelState() {
             y: 14,
             fields: [
               {
-                name: 'id', type: 'uuid', required: true, pk: true, unique: true
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true,
+                unique: true
               },
               {
-                name: 'total', type: 'number', required: true, minimum: 0, maximum: 10
+                name: 'total',
+                type: 'number',
+                required: true,
+                minimum: 0,
+                maximum: 10
               },
               {
-                name: 'tags', type: 'array', itemsType: 'string', nullable: true
+                name: 'tags',
+                type: 'array',
+                itemsType: 'string',
+                nullable: true
               },
               {
                 name: 'status',
@@ -178,7 +186,10 @@ function createModelState() {
               { name: 'email', type: 'string', format: 'email' },
               { name: 'code', type: 'string', unique: true },
               {
-                name: 'customerId', type: 'uuid', required: true, fk: true
+                name: 'customerId',
+                type: 'uuid',
+                required: true,
+                fk: true
               },
               { name: 'count', type: 'integer' },
               { name: 'active', type: 'boolean' },
@@ -187,14 +198,16 @@ function createModelState() {
             meta: {
               aggregateRoot: true,
               invariants: ['total must be positive'],
-              contracts: [{
-                id: 'contract-1',
-                name: 'issued',
-                type: 'event',
-                channel: 'billing.issued',
-                version: '1.0.0',
-                payloadSchema: { type: 'object' }
-              }],
+              contracts: [
+                {
+                  id: 'contract-1',
+                  name: 'issued',
+                  type: 'event',
+                  channel: 'billing.issued',
+                  version: '1.0.0',
+                  payloadSchema: { type: 'object' }
+                }
+              ],
               oasComposition: {
                 mode: 'oneOf',
                 refs: ['Base', 'Audited'],
@@ -204,30 +217,44 @@ function createModelState() {
             }
           },
           {
-            id: 'entity-2', name: 'Receipt', x: 220, y: 14, fields: []
+            id: 'entity-2',
+            name: 'Receipt',
+            x: 220,
+            y: 14,
+            fields: []
           }
         ]
       },
       {
         id: 'domain-2',
         name: 'Catalog',
-        entities: [{
-          id: 'entity-3',
-          name: 'Product',
-          fields: [{
-            name: 'id', type: 'uuid', required: true, pk: true, unique: true
-          }]
-        }]
+        entities: [
+          {
+            id: 'entity-3',
+            name: 'Product',
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true,
+                unique: true
+              }
+            ]
+          }
+        ]
       }
     ],
-    relationships: [{
-      id: 'rel-1',
-      fromEntityId: 'entity-1',
-      toEntityId: 'entity-3',
-      name: 'invoice products',
-      fromCardinality: '1',
-      toCardinality: 'N'
-    }],
+    relationships: [
+      {
+        id: 'rel-1',
+        fromEntityId: 'entity-1',
+        toEntityId: 'entity-3',
+        name: 'invoice products',
+        fromCardinality: '1',
+        toCardinality: 'N'
+      }
+    ],
     view: {
       zoom: 1.2,
       compactEntities: true,
@@ -250,39 +277,63 @@ function createModelState() {
  */
 function createJunctionState() {
   return normalizeStatePayload({
-    domains: [{
-      id: 'domain-1',
-      name: 'Billing',
-      entities: [
-        {
-          id: 'entity-1',
-          name: 'Invoice',
-          fields: [{
-            name: 'id', type: 'uuid', required: true, pk: true, unique: true
-          }]
-        },
-        {
-          id: 'entity-2',
-          name: 'Product',
-          fields: [{
-            name: 'id', type: 'uuid', required: true, pk: true, unique: true
-          }]
-        },
-        {
-          id: 'entity-3',
-          name: 'InvoiceProduct',
-          fields: [
-            ...defaultFields(),
-            {
-              name: 'invoiceId', type: 'uuid', required: true, pk: false, fk: true, unique: false
-            },
-            {
-              name: 'productId', type: 'uuid', required: true, pk: false, fk: true, unique: false
-            }
-          ]
-        }
-      ]
-    }],
+    domains: [
+      {
+        id: 'domain-1',
+        name: 'Billing',
+        entities: [
+          {
+            id: 'entity-1',
+            name: 'Invoice',
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true,
+                unique: true
+              }
+            ]
+          },
+          {
+            id: 'entity-2',
+            name: 'Product',
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true,
+                unique: true
+              }
+            ]
+          },
+          {
+            id: 'entity-3',
+            name: 'InvoiceProduct',
+            fields: [
+              ...defaultFields(),
+              {
+                name: 'invoiceId',
+                type: 'uuid',
+                required: true,
+                pk: false,
+                fk: true,
+                unique: false
+              },
+              {
+                name: 'productId',
+                type: 'uuid',
+                required: true,
+                pk: false,
+                fk: true,
+                unique: false
+              }
+            ]
+          }
+        ]
+      }
+    ],
     relationships: [
       {
         id: 'rel-1',
@@ -332,10 +383,16 @@ function createFullSuiteState() {
     ...base,
     interfaces: [
       {
-        type: 'grpc', framework: 'bun', entrypoint: 'src/grpc.ts', controller: 'BillingGrpcController'
+        type: 'grpc',
+        framework: 'bun',
+        entrypoint: 'src/grpc.ts',
+        controller: 'BillingGrpcController'
       },
       {
-        type: 'http-rest', framework: 'express', entrypoint: 'src/http.ts', controller: 'InvoiceController'
+        type: 'http-rest',
+        framework: 'express',
+        entrypoint: 'src/http.ts',
+        controller: 'InvoiceController'
       }
     ],
     serviceConfiguration: {
@@ -379,7 +436,10 @@ function createFullSuiteState() {
         pm2Profile: 'production'
       },
       {
-        name: 'edge', type: 'lambda', region: 'us-east-1', runtime: 'node22'
+        name: 'edge',
+        type: 'lambda',
+        region: 'us-east-1',
+        runtime: 'node22'
       }
     ]
   });
@@ -419,7 +479,11 @@ function diffPaths(a: unknown, b: unknown, base = ''): string[] {
  * from the importer's name heuristic — crosses verbatim.
  */
 function applyDocumentedOasFormatNormalization(field: DesignerField): DesignerField {
-  const typedFormats: Record<string, string> = { uuid: 'uuid', date: 'date', datetime: 'date-time' };
+  const typedFormats: Record<string, string> = {
+    uuid: 'uuid',
+    date: 'date',
+    datetime: 'date-time'
+  };
   return {
     ...field,
     format: field.format || typedFormats[field.type] || ''
@@ -427,7 +491,7 @@ function applyDocumentedOasFormatNormalization(field: DesignerField): DesignerFi
 }
 
 /** Ids the OAS importer recomputes, without the random fallback suffix. */
-function stripImportIds(domains: Array<{ entities: Array<{ id: string }> }>) {
+function stripImportIds(domains: { entities: { id: string }[] }[]) {
   return domains.map((domain) => ({
     ...domain,
     id: '<recomputed>',
@@ -447,7 +511,7 @@ function loadCanonicalSpec() {
 function countOperationIds(document: {
   paths?: Record<string, Record<string, { operationId?: string }>>;
 }) {
-  return Object.values(document.paths || {}).reduce(
+  return Object.values(document.paths ?? {}).reduce(
     (total, methods) => total + Object.values(methods).filter((op) => op?.operationId).length,
     0
   );
@@ -490,22 +554,21 @@ const UNSUPPORTED_SOURCE_FACETS = [
  * its own field labels, so it does not cross either.
  */
 function projectSourceProperties(properties: Record<string, Record<string, any>>) {
-  return Object.fromEntries(Object.entries(properties).map(([fieldName, schema]) => {
-    const projected = Object.fromEntries(
-      Object.entries(schema || {}).filter(([key]) => !UNSUPPORTED_SOURCE_FACETS.includes(key))
-    );
-    if (projected.items?.$ref) {
-      projected.items = { type: 'string' };
-    }
-    return [fieldName, projected];
-  }));
+  return Object.fromEntries(
+    Object.entries(properties).map(([fieldName, schema]) => {
+      const projected = Object.fromEntries(
+        Object.entries(schema || {}).filter(([key]) => !UNSUPPORTED_SOURCE_FACETS.includes(key))
+      );
+      if (projected.items?.$ref) {
+        projected.items = { type: 'string' };
+      }
+      return [fieldName, projected];
+    })
+  );
 }
 
 /** First entity with the given name across the imported domains. */
-function entityByName(
-  domains: Array<{ entities: Array<{ name: string }> }>,
-  entityName: string
-): any {
+function entityByName(domains: { entities: { name: string }[] }[], entityName: string): any {
   return domains.flatMap((domain) => domain.entities).find((entity) => entity.name === entityName);
 }
 
@@ -516,7 +579,7 @@ function fieldsByName(entity: { fields: DesignerField[] }) {
 }
 
 /** Relationships without their recomputed ids, for cross-import comparison. */
-function stripRelationshipIds(relationships: Array<Record<string, unknown>>) {
+function stripRelationshipIds(relationships: Record<string, unknown>[]) {
   return relationships.map((relationship) => {
     const stripped = { ...relationship };
     delete stripped.id;
@@ -528,7 +591,9 @@ function stripRelationshipIds(relationships: Array<Record<string, unknown>>) {
 
 /** The channel derivation of the AsyncAPI export, kept conditional-free for the test body. */
 function contractChannelName(domainName: string, entityName: string, contract: ModelContract) {
-  return contract.channel || `${domainName.toLowerCase()}/${entityName.toLowerCase()}/${contract.type}`;
+  return (
+    contract.channel || `${domainName.toLowerCase()}/${entityName.toLowerCase()}/${contract.type}`
+  );
 }
 
 /** The exporter's action mapping: responses are received, every other type is sent. */
@@ -543,11 +608,12 @@ function contractPayloadSchema(contract: ModelContract) {
 
 /** The exporter's message component name for a contract. */
 function contractMessageName(domainName: string, entityName: string, contract: ModelContract) {
-  const pascal = (value: string) => value
-    .split(/[^a-zA-Z0-9]+/)
-    .filter(Boolean)
-    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
-    .join('');
+  const pascal = (value: string) =>
+    value
+      .split(/[^a-zA-Z0-9]+/)
+      .filter(Boolean)
+      .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+      .join('');
   return `${domainName}_${entityName}_${pascal(contract.name)}`;
 }
 
@@ -556,8 +622,12 @@ function createCore() {
   const store = new MemoryDesignerStore({
     storage: {
       getItem: (key: string) => (storage.has(key) ? storage.get(key) : null),
-      setItem: (key: string, value: string) => { storage.set(key, String(value)); },
-      removeItem: (key: string) => { storage.delete(key); }
+      setItem: (key: string, value: string) => {
+        storage.set(key, String(value));
+      },
+      removeItem: (key: string) => {
+        storage.delete(key);
+      }
     }
   });
   return createDesignerState({ store, seed: () => {}, render: () => {} });
@@ -605,7 +675,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect(document.kind).toBe('service-management-suite');
       expect(document.version).toBe('2.0.0');
       // JUM-547 decision: the environment selection crosses; values never do.
-      expect(document.runtimeEnvironment).toStrictEqual({ environment: 'dev', fileName: '.env.dev' });
+      expect(document.runtimeEnvironment).toStrictEqual({
+        environment: 'dev',
+        fileName: '.env.dev'
+      });
       const imported = normalizeStatePayload(JSON.parse(JSON.stringify(document)));
       expect(imported.idCounter).toBe(1);
       expect(imported.selectedDomainId).toBe(state.domains[0].id);
@@ -619,9 +692,8 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const firstImport = normalizeStatePayload(JSON.parse(JSON.stringify(wire)));
       const secondImport = normalizeStatePayload(JSON.parse(JSON.stringify(wire)));
       expect(secondImport).toStrictEqual(firstImport);
-      const entityCount = (imported: { domains: Array<{ entities: unknown[] }> }) => (
-        imported.domains.reduce((total, domain) => total + domain.entities.length, 0)
-      );
+      const entityCount = (imported: { domains: { entities: unknown[] }[] }) =>
+        imported.domains.reduce((total, domain) => total + domain.entities.length, 0);
       expect(entityCount(secondImport)).toBe(3);
       expect(secondImport.relationships).toHaveLength(1);
     });
@@ -657,8 +729,7 @@ describe('designer export/import round-trip (JUM-471)', () => {
       document.runtimeEnvironment = { environment: 'dev', fileName: '.env.dev', values: null };
       const result = buildStateFromSuiteExport(document, state);
       expect(result.ok).toBe(true);
-      expect(result.state.runtimeEnvironment.values)
-        .toStrictEqual(state.runtimeEnvironment.values);
+      expect(result.state.runtimeEnvironment.values).toStrictEqual(state.runtimeEnvironment.values);
     });
 
     it('is idempotent at document level: a second export of the imported state is deep-equal to the first', () => {
@@ -677,7 +748,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect.hasAssertions();
       const state = createFullSuiteState();
       const document = buildJsonExportDocument(state);
-      expect(Object.keys(document.runtimeEnvironment).sort()).toStrictEqual(['environment', 'fileName']);
+      expect(Object.keys(document.runtimeEnvironment).sort()).toStrictEqual([
+        'environment',
+        'fileName'
+      ]);
       // A value that names an internal endpoint must not appear anywhere in
       // the wire document — the bundle cannot carry configuration (or a
       // secret) off the machine.
@@ -707,11 +781,13 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // Backward compatibility: the shape `exportAsJson` produced before the
       // full-suite change — no `kind`, no `version`, no suite sections.
       const legacy = {
-        domains: [{
-          id: 'domain-1',
-          name: 'Billing',
-          entities: [{ id: 'entity-1', name: 'Invoice', fields: [] }]
-        }],
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [{ id: 'entity-1', name: 'Invoice', fields: [] }]
+          }
+        ],
         relationships: [],
         view: { zoom: 1.5, edgeStyle: 'orthogonal' }
       };
@@ -732,7 +808,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
         ports: { rest: 3000, websocket: 3001, grpc: 3002 }
       });
       expect(result.state.runtimeEnvironment).toStrictEqual({
-        environment: 'dev', fileName: '.env.dev', values: {}
+        environment: 'dev',
+        fileName: '.env.dev',
+        values: {}
       });
       expect(result.state.deployments).toStrictEqual([]);
     });
@@ -766,7 +844,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
     it('refuses a different export kind fed to the suite import instead of "succeeding" as an empty model', () => {
       expect.hasAssertions();
       const state = createModelState();
-      const packageDocument = buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z');
+      const packageDocument = buildDomainPackageDocument(
+        state.domains[0],
+        '2026-08-05T00:00:00.000Z'
+      );
       const result = buildStateFromSuiteExport(JSON.parse(JSON.stringify(packageDocument)));
       expect(result.ok).toBe(false);
       expect(result.reason).toBe('wrong-document-kind');
@@ -775,7 +856,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
 
     it('refuses a non-object document', () => {
       expect.hasAssertions();
-      expect(buildStateFromSuiteExport(null)).toStrictEqual({ ok: false, reason: 'invalid-document' });
+      expect(buildStateFromSuiteExport(null)).toStrictEqual({
+        ok: false,
+        reason: 'invalid-document'
+      });
       expect(buildStateFromSuiteExport([1, 2, 3]).reason).toBe('invalid-document');
       expect(buildStateFromSuiteExport('text').reason).toBe('invalid-document');
     });
@@ -809,10 +893,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // block crosses verbatim and re-importing it is a no-op.
       const republished = buildDomainPackageDocument(result.domain, '2026-08-05T00:00:00.000Z');
       expect(republished.package).toStrictEqual(document.package);
-      const reimport = buildDomainFromPackage(
-        JSON.parse(JSON.stringify(republished)),
-        [result.domain]
-      );
+      const reimport = buildDomainFromPackage(JSON.parse(JSON.stringify(republished)), [
+        result.domain
+      ]);
       expect(reimport.noop).toBe(true);
     });
 
@@ -822,15 +905,19 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // (every re-import appended a `_2`-suffixed duplicate): importing the
       // same package version twice now changes nothing.
       const state = createModelState();
-      const wire = JSON.parse(JSON.stringify(
-        buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z')
-      ));
+      const wire = JSON.parse(
+        JSON.stringify(buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z'))
+      );
       const first = buildDomainFromPackage(JSON.parse(JSON.stringify(wire)), []);
       const second = buildDomainFromPackage(JSON.parse(JSON.stringify(wire)), [first.domain]);
       expect(second).toStrictEqual({
         ok: true,
         noop: true,
-        package: { name: 'Billing', version: '1.0.0', dependencies: [{ name: 'shared-kernel', range: '*' }] },
+        package: {
+          name: 'Billing',
+          version: '1.0.0',
+          dependencies: [{ name: 'shared-kernel', range: '*' }]
+        },
         domain: first.domain
       });
     });
@@ -838,9 +925,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
     it('refuses a conflicting re-import — same version, different content — and changes nothing (JUM-492)', () => {
       expect.hasAssertions();
       const state = createModelState();
-      const wire = JSON.parse(JSON.stringify(
-        buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z')
-      ));
+      const wire = JSON.parse(
+        JSON.stringify(buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z'))
+      );
       const first = buildDomainFromPackage(JSON.parse(JSON.stringify(wire)), []);
       const altered = JSON.parse(JSON.stringify(wire));
       altered.domain.entities[0].fields.push({ name: 'discount', type: 'number' });
@@ -859,9 +946,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
     it('a newer version merges deterministically: additive applies, RBAC keeps the existing policy (JUM-492)', () => {
       expect.hasAssertions();
       const state = createModelState();
-      const wire = JSON.parse(JSON.stringify(
-        buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z')
-      ));
+      const wire = JSON.parse(
+        JSON.stringify(buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z'))
+      );
       const first = buildDomainFromPackage(JSON.parse(JSON.stringify(wire)), []);
       const newer = JSON.parse(JSON.stringify(wire));
       newer.package.version = '2.0.0';
@@ -872,22 +959,28 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect(merged.merged).toBe(true);
       expect(merged.fromVersion).toBe('1.0.0');
       expect(merged.domain.id).toBe(first.domain.id);
-      const invoice = merged.domain.entities.find((entity: { name: string }) => entity.name === 'Invoice');
+      const invoice = merged.domain.entities.find(
+        (entity: { name: string }) => entity.name === 'Invoice'
+      );
       expect(invoice.fields.map((field: { name: string }) => field.name)).toContain('discount');
       // The RBAC conflict required a decision and kept the existing policy —
       // a merge algorithm never makes a security decision.
       expect(invoice.meta.rbac).toStrictEqual(getDefaultRbacPolicy());
       expect(merged.requiresDecision).toBe(1);
-      expect(merged.preview.some((item: { class: string }) => item.class === 'rbac-changed')).toBe(true);
+      expect(merged.preview.some((item: { class: string }) => item.class === 'rbac-changed')).toBe(
+        true
+      );
       // Provenance advanced to the merged version.
-      expect(merged.domain.context.provenance).toStrictEqual({ package: 'Billing', version: '2.0.0' });
+      expect(merged.domain.context.provenance).toStrictEqual({
+        package: 'Billing',
+        version: '2.0.0'
+      });
       // And the merged state re-exports as 2.0.0, idempotent on re-import.
       const republished = buildDomainPackageDocument(merged.domain, '2026-08-05T00:00:00.000Z');
       expect(republished.package.version).toBe('2.0.0');
-      const reimport = buildDomainFromPackage(
-        JSON.parse(JSON.stringify(republished)),
-        [merged.domain]
-      );
+      const reimport = buildDomainFromPackage(JSON.parse(JSON.stringify(republished)), [
+        merged.domain
+      ]);
       expect(reimport.noop).toBe(true);
     });
 
@@ -896,15 +989,15 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const state = createModelState();
       // The reference Billing domain declares `shared-kernel` (bare name —
       // presence-only). Importing the kernel first satisfies it.
-      const kernelWire = JSON.parse(JSON.stringify(
-        buildDomainPackageDocument(state.domains[1], '2026-08-05T00:00:00.000Z')
-      ));
+      const kernelWire = JSON.parse(
+        JSON.stringify(buildDomainPackageDocument(state.domains[1], '2026-08-05T00:00:00.000Z'))
+      );
       kernelWire.package = { name: 'shared-kernel', version: '1.4.0', dependencies: [] };
       const kernel = buildDomainFromPackage(kernelWire, []);
       expect(kernel.ok).toBe(true);
-      const billingWire = JSON.parse(JSON.stringify(
-        buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z')
-      ));
+      const billingWire = JSON.parse(
+        JSON.stringify(buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z'))
+      );
       const compatible = buildDomainFromPackage(billingWire, [kernel.domain]);
       expect(compatible.ok).toBe(true);
       expect(compatible.warnings).toStrictEqual([]);
@@ -913,13 +1006,16 @@ describe('designer export/import round-trip (JUM-471)', () => {
       demanding.package = {
         name: 'billing-strict',
         version: '1.0.0',
-        dependencies: [{ name: 'shared-kernel', range: '^2.0.0' }, { name: 'ghost', range: '*' }]
+        dependencies: [
+          { name: 'shared-kernel', range: '^2.0.0' },
+          { name: 'ghost', range: '*' }
+        ]
       };
       const incompatible = buildDomainFromPackage(demanding, [kernel.domain]);
       expect(incompatible.ok).toBe(true);
       expect(incompatible.warnings).toHaveLength(2);
-      expect(incompatible.warnings.join(' ')).toContain('\'shared-kernel@^2.0.0\'');
-      expect(incompatible.warnings.join(' ')).toContain('\'ghost@*\'');
+      expect(incompatible.warnings.join(' ')).toContain("'shared-kernel@^2.0.0'");
+      expect(incompatible.warnings.join(' ')).toContain("'ghost@*'");
     });
 
     it('recomputes colliding package ids when appending a different package (JUM-617 preserved)', () => {
@@ -932,9 +1028,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // recomputed. (Re-importing the SAME package no longer appends at all —
       // it is the idempotent no-op pinned above.)
       const state = createModelState();
-      const wire = JSON.parse(JSON.stringify(
-        buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z')
-      ));
+      const wire = JSON.parse(
+        JSON.stringify(buildDomainPackageDocument(state.domains[0], '2026-08-05T00:00:00.000Z'))
+      );
       const first = buildDomainFromPackage(JSON.parse(JSON.stringify(wire)), []);
       const secondWire = JSON.parse(JSON.stringify(wire));
       secondWire.package = { name: 'billing-copy', version: '1.0.0', dependencies: [] };
@@ -950,7 +1046,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
         expect(firstEntityIds).not.toContain(id);
       });
       // The appended copy is stamped with its own package identity.
-      expect(second.domain.context.provenance).toStrictEqual({ package: 'billing-copy', version: '1.0.0' });
+      expect(second.domain.context.provenance).toStrictEqual({
+        package: 'billing-copy',
+        version: '1.0.0'
+      });
     });
   });
 
@@ -999,8 +1098,8 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const first = buildOasDocument(state);
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
       const importedInvoice = firstImport.domains[0].entities[0];
-      const expectedFields = state.domains[0].entities[0].fields.map(
-        (field: DesignerField) => applyDocumentedOasFormatNormalization(field)
+      const expectedFields = state.domains[0].entities[0].fields.map((field: DesignerField) =>
+        applyDocumentedOasFormatNormalization(field)
       );
       expect(importedInvoice.fields).toStrictEqual(expectedFields);
       // PK/FK/unique cross through `x-field-flags` (JUM-478): `code` stays
@@ -1026,23 +1125,34 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect(catalog.name).toBe('Catalog');
       expect(Object.keys(billing)).toStrictEqual(['id', 'name', 'color', 'x', 'y', 'entities']);
       expect(billing.color).not.toBe(state.domains[0].color);
-      expect(Object.keys(billing.entities[0])).toStrictEqual(['id', 'name', 'x', 'y', 'fields', 'meta']);
-      expect(billing.entities.map((entity: { name: string }) => entity.name))
-        .toStrictEqual(['Invoice', 'Receipt']);
+      expect(Object.keys(billing.entities[0])).toStrictEqual([
+        'id',
+        'name',
+        'x',
+        'y',
+        'fields',
+        'meta'
+      ]);
+      expect(billing.entities.map((entity: { name: string }) => entity.name)).toStrictEqual([
+        'Invoice',
+        'Receipt'
+      ]);
       // Entity meta crosses normalized: aggregate declaration, invariants,
       // contracts, composition — and the RBAC policy (the default here).
       expect(billing.entities[0].meta).toStrictEqual({
         aggregateRoot: true,
         invariants: ['total must be positive'],
         rbac: getDefaultRbacPolicy(),
-        contracts: [{
-          id: 'contract-1',
-          name: 'issued',
-          type: 'event',
-          channel: 'billing.issued',
-          version: '1.0.0',
-          payloadSchema: { type: 'object' }
-        }],
+        contracts: [
+          {
+            id: 'contract-1',
+            name: 'issued',
+            type: 'event',
+            channel: 'billing.issued',
+            version: '1.0.0',
+            payloadSchema: { type: 'object' }
+          }
+        ],
         oasComposition: {
           mode: 'oneOf',
           refs: ['Base', 'Audited'],
@@ -1056,7 +1166,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
         rbac: getDefaultRbacPolicy(),
         contracts: [],
         oasComposition: {
-          mode: '', refs: [], externalRefs: [], discriminator: ''
+          mode: '',
+          refs: [],
+          externalRefs: [],
+          discriminator: ''
         }
       });
       // Relationships cross via `x-relations`, re-keyed to the imported ids.
@@ -1075,9 +1188,8 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const wire = JSON.parse(JSON.stringify(buildOasDocument(createModelState())));
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(wire)));
       const secondImport = buildDomainsFromOas(JSON.parse(JSON.stringify(wire)));
-      const collectIds = (domains: Array<{ id: string; entities: Array<{ id: string }> }>) => (
-        domains.flatMap((domain) => [domain.id, ...domain.entities.map((entity) => entity.id)])
-      );
+      const collectIds = (domains: { id: string; entities: { id: string }[] }[]) =>
+        domains.flatMap((domain) => [domain.id, ...domain.entities.map((entity) => entity.id)]);
       const firstIds = collectIds(firstImport.domains);
       const secondIds = collectIds(secondImport.domains);
       [...firstIds, ...secondIds].forEach((id) => {
@@ -1087,11 +1199,13 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const allIds = [...firstIds, ...secondIds];
       expect(new Set(allIds).size).toBe(allIds.length);
       // Modulo the recomputed ids, both imports of the same file are identical.
-      expect(stripImportIds(secondImport.domains))
-        .toStrictEqual(stripImportIds(firstImport.domains));
+      expect(stripImportIds(secondImport.domains)).toStrictEqual(
+        stripImportIds(firstImport.domains)
+      );
       // Relationships are idempotent too: same rows, recomputed ids.
-      expect(stripRelationshipIds(secondImport.relationships))
-        .toStrictEqual(stripRelationshipIds(firstImport.relationships));
+      expect(stripRelationshipIds(secondImport.relationships)).toStrictEqual(
+        stripRelationshipIds(firstImport.relationships)
+      );
     });
   });
 
@@ -1103,7 +1217,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const firstImport = normalizeStatePayload(JSON.parse(JSON.stringify(wire)));
       expect(firstImport.domains[0].entities).toHaveLength(3);
       expect(
-        firstImport.domains[0].entities.filter((entity: { name: string }) => entity.name === 'InvoiceProduct')
+        firstImport.domains[0].entities.filter(
+          (entity: { name: string }) => entity.name === 'InvoiceProduct'
+        )
       ).toHaveLength(1);
       expect(firstImport.relationships).toHaveLength(2);
       expect(firstImport.domains).toStrictEqual(state.domains);
@@ -1141,13 +1257,15 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // its two relationships come back re-keyed to the imported ids — inert
       // data, never a duplicated generated junction.
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(document)));
-      expect(firstImport.domains[0].entities.map((entity: { name: string }) => entity.name))
-        .toStrictEqual(['Invoice', 'Product', 'InvoiceProduct']);
+      expect(
+        firstImport.domains[0].entities.map((entity: { name: string }) => entity.name)
+      ).toStrictEqual(['Invoice', 'Product', 'InvoiceProduct']);
       expect(firstImport.relationships).toHaveLength(2);
       const idByName = Object.fromEntries(
-        firstImport.domains[0].entities.map(
-          (entity: { id: string; name: string }) => [entity.name, entity.id]
-        )
+        firstImport.domains[0].entities.map((entity: { id: string; name: string }) => [
+          entity.name,
+          entity.id
+        ])
       );
       expect(
         firstImport.relationships.map(
@@ -1170,17 +1288,23 @@ describe('designer export/import round-trip (JUM-471)', () => {
       // core and calls recomputeIdCounter — exercised here against the real
       // core and the real storage port, exactly as the glue does.
       const imported = normalizeStatePayload({
-        domains: [{
-          id: 'domain-1',
-          name: 'Billing',
-          entities: [
-            { id: 'entity-12', name: 'Invoice', fields: [] },
-            { id: 'entity-import-3-x7k2p9', name: 'Legacy', fields: [] }
-          ]
-        }],
-        relationships: [{
-          id: 'rel-7', fromEntityId: 'entity-12', toEntityId: 'entity-import-3-x7k2p9'
-        }]
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              { id: 'entity-12', name: 'Invoice', fields: [] },
+              { id: 'entity-import-3-x7k2p9', name: 'Legacy', fields: [] }
+            ]
+          }
+        ],
+        relationships: [
+          {
+            id: 'rel-7',
+            fromEntityId: 'entity-12',
+            toEntityId: 'entity-import-3-x7k2p9'
+          }
+        ]
       });
       const core = createCore();
       core.state.domains = imported.domains;
@@ -1231,8 +1355,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
       expect(result.ok).toBe(true);
       expect(result.domains).toHaveLength(1);
       expect(result.domains[0].name).toBe('Imported');
-      expect(result.domains[0].entities.map((entity: { name: string }) => entity.name))
-        .toStrictEqual(SPEC_ENTITY_NAMES);
+      expect(
+        result.domains[0].entities.map((entity: { name: string }) => entity.name)
+      ).toStrictEqual(SPEC_ENTITY_NAMES);
       expect(result.relationships).toStrictEqual([]);
       const user = entityByName(result.domains, 'User');
       // Full meta normalization: with no extension carriage in the source,
@@ -1243,32 +1368,55 @@ describe('designer export/import round-trip (JUM-471)', () => {
         rbac: getDefaultRbacPolicy(),
         contracts: [],
         oasComposition: {
-          mode: '', refs: [], externalRefs: [], discriminator: ''
+          mode: '',
+          refs: [],
+          externalRefs: [],
+          discriminator: ''
         }
       });
       const userFields = fieldsByName(user);
       expect(userFields.id).toMatchObject({
-        type: 'uuid', required: true, pk: true, unique: true
+        type: 'uuid',
+        required: true,
+        pk: true,
+        unique: true
       });
       expect(userFields.password).toMatchObject({
-        type: 'string', format: 'password', minLength: 8, required: true
+        type: 'string',
+        format: 'password',
+        minLength: 8,
+        required: true
       });
       expect(userFields.organization).toMatchObject({ type: 'uuid', nullable: true, fk: false });
       expect(userFields.lastName).toMatchObject({ type: 'string', nullable: true });
-      expect(userFields.createdAt).toMatchObject({ type: 'datetime', format: 'date-time', required: true });
+      expect(userFields.createdAt).toMatchObject({
+        type: 'datetime',
+        format: 'date-time',
+        required: true
+      });
       // Array item `$ref`s flatten into the designer's itemsType vocabulary —
       // a named remaining loss: the Email value-object linkage does not cross.
-      expect(userFields.emails).toMatchObject({ type: 'array', itemsType: 'string', required: true });
+      expect(userFields.emails).toMatchObject({
+        type: 'array',
+        itemsType: 'string',
+        required: true
+      });
       const documentEntity = entityByName(result.domains, 'Document');
-      expect(fieldsByName(documentEntity).type.enumValues).toStrictEqual(['CPF', 'RG', 'SSN', 'passport']);
+      expect(fieldsByName(documentEntity).type.enumValues).toStrictEqual([
+        'CPF',
+        'RG',
+        'SSN',
+        'passport'
+      ]);
     });
 
     it('is idempotent: importing the spec twice yields the same model modulo recomputed ids', () => {
       expect.hasAssertions();
       const firstImport = buildDomainsFromOas(specDocument);
       const secondImport = buildDomainsFromOas(specDocument);
-      expect(stripImportIds(secondImport.domains))
-        .toStrictEqual(stripImportIds(firstImport.domains));
+      expect(stripImportIds(secondImport.domains)).toStrictEqual(
+        stripImportIds(firstImport.domains)
+      );
       expect(secondImport.relationships).toStrictEqual(firstImport.relationships);
     });
 
@@ -1281,8 +1429,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
       });
       const secondImport = buildDomainsFromOas(JSON.parse(JSON.stringify(second)));
       expect(secondImport.ok).toBe(true);
-      expect(stripImportIds(secondImport.domains))
-        .toStrictEqual(stripImportIds(firstImport.domains));
+      expect(stripImportIds(secondImport.domains)).toStrictEqual(
+        stripImportIds(firstImport.domains)
+      );
       const third = buildOasDocument({
         domains: secondImport.domains,
         relationships: secondImport.relationships
@@ -1300,10 +1449,12 @@ describe('designer export/import round-trip (JUM-471)', () => {
       SPEC_ENTITY_NAMES.forEach((entityName) => {
         const sourceSchema = specDocument.components.schemas[entityName];
         const exportedSchema = exported.components.schemas[`Imported_${entityName}`];
-        expect(exportedSchema.properties)
-          .toStrictEqual(projectSourceProperties(sourceSchema.properties));
-        expect([...exportedSchema.required].sort())
-          .toStrictEqual([...sourceSchema.required].sort());
+        expect(exportedSchema.properties).toStrictEqual(
+          projectSourceProperties(sourceSchema.properties)
+        );
+        expect([...exportedSchema.required].sort()).toStrictEqual(
+          [...sourceSchema.required].sort()
+        );
       });
     });
 
@@ -1319,9 +1470,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
         domains: firstImport.domains,
         relationships: firstImport.relationships
       });
-      const operationIds = Object.values(exported.paths).flatMap(
-        (methods) => Object.values(methods as Record<string, { operationId: string }>)
-          .map((operation) => operation.operationId)
+      const operationIds = Object.values(exported.paths).flatMap((methods) =>
+        Object.values(methods as Record<string, { operationId: string }>).map(
+          (operation) => operation.operationId
+        )
       );
       const expected = SPEC_ENTITY_NAMES.flatMap((entityName) => [
         `getAllImported_${entityName}`,
@@ -1358,17 +1510,15 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const state = createModelState();
       const document = buildJsonSchemaDocument(state);
       expect(document.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
-      const expectedNames = state.domains.flatMap(
-        (domain: ModelDomain) => (
-          domain.entities.map((entity) => `${domain.name}_${entity.name}`)
-        )
+      const expectedNames = state.domains.flatMap((domain: ModelDomain) =>
+        domain.entities.map((entity) => `${domain.name}_${entity.name}`)
       );
       expect(Object.keys(document.definitions).sort()).toStrictEqual(expectedNames.sort());
-      type JsonSchemaDefinition = {
+      interface JsonSchemaDefinition {
         properties: Record<string, unknown>;
         required: string[];
         additionalProperties: boolean;
-      };
+      }
       Object.values(document.definitions).forEach((definition) => {
         const schema = definition as JsonSchemaDefinition;
         schema.required.forEach((requiredName) => {
@@ -1383,8 +1533,10 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const state = createModelState();
       const fileSet = buildAsyncApiFileSet(state);
       // The canonical naming: one <version>.<transport>.yml file per transport.
-      expect(fileSet.files.map((file: { fileName: string }) => file.fileName))
-        .toStrictEqual(['1.0.0.websocket.yml', '1.0.0.grpc.yml']);
+      expect(fileSet.files.map((file: { fileName: string }) => file.fileName)).toStrictEqual([
+        '1.0.0.websocket.yml',
+        '1.0.0.grpc.yml'
+      ]);
       ['websocket', 'grpc'].forEach((transport) => {
         const document = buildAsyncApiTransportDocument(state, transport);
         expect(document.asyncapi).toBe('3.0.0');
@@ -1396,14 +1548,16 @@ describe('designer export/import round-trip (JUM-471)', () => {
               expect(operation).toBeDefined();
               // Responses are received; every other contract type is sent.
               expect(operation.action).toBe(contractAction(contract));
-              expect(operation.channel.$ref)
-                .toBe(`#/channels/${contractChannelName(domain.name, entity.name, contract)}`);
+              expect(operation.channel.$ref).toBe(
+                `#/channels/${contractChannelName(domain.name, entity.name, contract)}`
+              );
               // Payloads are shared component refs, never inline duplicates.
               const payloadRef = document.components.messages[messageName].payload.$ref;
               expect(payloadRef.startsWith('#/components/schemas/')).toBe(true);
               const schemaName = payloadRef.slice('#/components/schemas/'.length);
-              expect(document.components.schemas[schemaName])
-                .toStrictEqual(contractPayloadSchema(contract));
+              expect(document.components.schemas[schemaName]).toStrictEqual(
+                contractPayloadSchema(contract)
+              );
             });
           });
         });
@@ -1416,8 +1570,9 @@ describe('designer export/import round-trip (JUM-471)', () => {
       const document = buildBoilerplateBundleDocument(state, '2026-08-05T00:00:00.000Z');
       expect(document.kind).toBe('boilerplate-bundle');
       expect(document.version).toBe('2.0.0');
-      expect(document.modules.map((module: { module: string }) => module.module))
-        .toStrictEqual(state.domains.map((domain: ModelDomain) => domain.name));
+      expect(document.modules.map((module: { module: string }) => module.module)).toStrictEqual(
+        state.domains.map((domain: ModelDomain) => domain.name)
+      );
       const entityRoles = [
         'controller',
         'entityInterface',
@@ -1428,29 +1583,33 @@ describe('designer export/import round-trip (JUM-471)', () => {
         'useCases',
         'useCasesPort'
       ];
-      document.modules.forEach((module: {
-        module: string;
-        path: string;
-        files: Record<string, { path: string; content: string }>;
-        entities: { entity: string; files: Record<string, { path: string; content: string }> }[];
-      }) => {
-        expect(module.path).toBe(`src/modules/${module.module}`);
-        expect(module.files.composition.path)
-          .toBe(`${module.path}/composition/compose${module.module}Services.ts`);
-        const domain = state.domains.find(
-          (candidate: ModelDomain) => candidate.name === module.module
-        );
-        expect(module.entities.map((entity) => entity.entity))
-          .toStrictEqual(domain.entities.map((entity: ModelEntity) => entity.name));
-        module.entities.forEach((entity) => {
-          expect(Object.keys(entity.files).sort()).toStrictEqual(entityRoles);
-          Object.values(entity.files).forEach((file) => {
-            expect(file.path.startsWith(`${module.path}/`)).toBe(true);
-            expect(file.path).toContain(entity.entity);
-            expect(file.content.length).toBeGreaterThan(0);
+      document.modules.forEach(
+        (module: {
+          module: string;
+          path: string;
+          files: Record<string, { path: string; content: string }>;
+          entities: { entity: string; files: Record<string, { path: string; content: string }> }[];
+        }) => {
+          expect(module.path).toBe(`src/modules/${module.module}`);
+          expect(module.files.composition.path).toBe(
+            `${module.path}/composition/compose${module.module}Services.ts`
+          );
+          const domain = state.domains.find(
+            (candidate: ModelDomain) => candidate.name === module.module
+          );
+          expect(module.entities.map((entity) => entity.entity)).toStrictEqual(
+            domain.entities.map((entity: ModelEntity) => entity.name)
+          );
+          module.entities.forEach((entity) => {
+            expect(Object.keys(entity.files).sort()).toStrictEqual(entityRoles);
+            Object.values(entity.files).forEach((file) => {
+              expect(file.path.startsWith(`${module.path}/`)).toBe(true);
+              expect(file.path).toContain(entity.entity);
+              expect(file.content.length).toBeGreaterThan(0);
+            });
           });
-        });
-      });
+        }
+      );
     });
   });
 });

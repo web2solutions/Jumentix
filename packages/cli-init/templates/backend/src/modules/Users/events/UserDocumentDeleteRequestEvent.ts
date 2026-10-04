@@ -1,9 +1,10 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import type { IEventMessage } from '@src/modules/port/IEventMessage';
-import { canNotBeEmpty } from '@src/shared/validators';
 import { ComposeEventError } from '@src/infra/exceptions';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import { canNotBeEmpty } from '@src/shared/validators';
 
-export class UserDocumentDeleteRequestEvent extends BaseDomainEvent {
+import type { IEventMessage } from '@src/modules/port/IEventMessage';
+
+class UserDocumentDeleteRequestEvent extends BaseDomainEvent {
   constructor(message: IEventMessage) {
     super(message);
     try {
@@ -17,3 +18,5 @@ export class UserDocumentDeleteRequestEvent extends BaseDomainEvent {
     }
   }
 }
+
+export default UserDocumentDeleteRequestEvent;

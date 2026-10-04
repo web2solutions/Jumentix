@@ -1,6 +1,9 @@
 import request from 'supertest';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
+
 import { InternalServerError } from '@src/infra/exceptions';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+
+import type { Express } from 'express';
 
 describe('expressServer', () => {
   const previousPort = process.env.JUMENTIX_HTTP_PORT;
@@ -22,7 +25,7 @@ describe('expressServer', () => {
     const second = ExpressServer.compile();
     expect(second).toBe(first);
 
-    const { application } = first as unknown as { application: import('express').Express };
+    const { application } = first as unknown as { application: Express };
     application.get('/express-lifecycle-probe', (_req, res) => {
       res.status(200).json({ ok: true });
     });
@@ -42,7 +45,9 @@ describe('expressServer', () => {
     (process.env as { NODE_ENV?: string }).NODE_ENV = 'dev';
     delete process.env.JUMENTIX_CORS_ALLOWED_ORIGINS;
 
-    const { application } = ExpressServer.compile() as unknown as { application: import('express').Express };
+    const { application } = ExpressServer.compile() as unknown as {
+      application: Express;
+    };
     application.get('/express-lifecycle-probe', (_req, res) => {
       res.status(200).json({ ok: true });
     });
@@ -75,14 +80,18 @@ describe('expressServer', () => {
     expect.hasAssertions();
     delete process.env.JUMENTIX_HTTP_PORT;
     const server = ExpressServer.compile() as any;
-    const listen = jest.spyOn(server.application, 'listen').mockImplementation(
-      (...args: unknown[]) => {
+    const listen = jest
+      .spyOn(server.application, 'listen')
+      .mockImplementation((...args: unknown[]) => {
         const callback = args[args.length - 1] as () => void;
         callback();
-        return { close: (cb: () => void) => { cb(); } };
-      }
-    );
-    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+        return {
+          close: (cb: () => void) => {
+            cb();
+          }
+        };
+      });
+    const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
     await server.start();
     expect(listen).toHaveBeenCalledWith(expect.any(Number), expect.any(Function));
     listen.mockRestore();
@@ -96,10 +105,10 @@ describe('expressServer', () => {
     const listen = jest.spyOn(server.application, 'listen').mockImplementation(() => {
       throw new Error('bind failed');
     });
-    await expect(server.start()).rejects.toBeInstanceOf(InternalServerError);
+    await expect(server.start() as Promise<void>).rejects.toBeInstanceOf(InternalServerError);
     listen.mockRestore();
 
     server.server = undefined;
-    await expect(server.stop()).resolves.toBeUndefined();
+    await expect(server.stop() as Promise<void>).resolves.toBeUndefined();
   });
 });

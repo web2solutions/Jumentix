@@ -97,6 +97,7 @@ See also:
 - [135-no-fake-tests](requirements/software/135-no-fake-tests.md)
 - [136-frontend-knows-backend-only-through-oas](requirements/software/136-frontend-knows-backend-only-through-oas.md)
 - [137-workspace-suite-and-tooling-ownership](requirements/software/137-workspace-suite-and-tooling-ownership.md)
+- [138-eslint-9-flat-config-governance](requirements/software/138-eslint-9-flat-config-governance.md)
 
 ## Software and Product Requirements
 

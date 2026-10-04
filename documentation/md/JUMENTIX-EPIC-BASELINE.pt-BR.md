@@ -16,14 +16,14 @@ centrada em épicos. A maior parte do seu trabalho é anterior ao Requisito `094
 isso que chegou a 102 issues concluídas sem nenhuma Issue de documentação dedicada — o
 portão não existia quando o épico começou.
 
-| natureza | entregue |
-| --- | --- |
-| sem prefixo (pré-taxonomia) | 88 |
-| Fix | 4 |
-| DOC | 4 |
-| Governance | 3 |
-| CI | 2 |
-| Release | 1 |
+| natureza                    | entregue |
+| --------------------------- | -------- |
+| sem prefixo (pré-taxonomia) | 88       |
+| Fix                         | 4        |
+| DOC                         | 4        |
+| Governance                  | 3        |
+| CI                          | 2        |
+| Release                     | 1        |
 
 Mais três issues resolvidas como duplicadas. Cinco issues que nunca chegaram a ser
 agendadas foram movidas antes da conclusão, em vez de fechadas como entregues:
@@ -63,10 +63,10 @@ um documento não obrigue a editar este ficheiro para ele continuar correto.
 
 Executada contra `dev` no momento em que este documento foi escrito:
 
-| verificação | resultado |
-| --- | --- |
-| `bun run requirements:check` | 129 ficheiros, 129 IDs únicos, sem duplicados |
-| suites de documentação e registo | passam |
+| verificação                               | resultado                                              |
+| ----------------------------------------- | ------------------------------------------------------ |
+| `bun run requirements:check`              | 129 ficheiros, 129 IDs únicos, sem duplicados          |
+| suites de documentação e registo          | passam                                                 |
 | paridade bilingue, documentação governada | EN e PT-BR presentes em todos os documentos governados |
 
 Cinco documentos em `documentation/md/` não têm par PT-BR:

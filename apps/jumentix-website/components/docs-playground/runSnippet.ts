@@ -1,9 +1,9 @@
 export type RuntimeApiBag = Record<string, unknown>;
 
-export type SnippetRunResult = {
+export interface SnippetRunResult {
   result: unknown;
   logs: string[];
-};
+}
 
 type ConsoleMethod = (...args: unknown[]) => void;
 
@@ -44,7 +44,6 @@ export async function runDocsSnippet(
     logs.push(args.map(formatLogArg).join(' '));
   };
 
-  /* eslint-disable no-console -- intentional console capture for playground UI */
   consoleRef.log = (...args: unknown[]) => {
     push(...args);
     originalLog(...args);
@@ -57,42 +56,40 @@ export async function runDocsSnippet(
     push(...args);
     originalWarn(...args);
   };
-  /* eslint-enable no-console */
 
   const extraKeys = Object.keys(extras);
   const extraDecls = extraKeys
-    .map((key) => `const ${key} = globalThis.__DOCS_PLAYGROUND_EXTRAS__[${JSON.stringify(key)}];`)
+    .map((key) => `const ${key} = globalThis.DOCS_PLAYGROUND_EXTRAS[${JSON.stringify(key)}];`)
     .join('\n');
 
   const source = `
-const ${apiGlobalName} = globalThis.__DOCS_PLAYGROUND_API__;
+const ${apiGlobalName} = globalThis.DOCS_PLAYGROUND_API;
 ${extraDecls}
 export default async function __docsPlaygroundMain() {
 ${code}
 }
 `;
   const blob = new Blob([source], { type: 'text/javascript' });
-  const blobUrl = URL.createObjectURL(blob);
+  const blobUrl = window.URL.createObjectURL(blob);
   const host = globalThis as typeof globalThis & {
-    __DOCS_PLAYGROUND_API__?: RuntimeApiBag;
-    __DOCS_PLAYGROUND_EXTRAS__?: Record<string, unknown>;
+    DOCS_PLAYGROUND_API?: RuntimeApiBag;
+    DOCS_PLAYGROUND_EXTRAS?: Record<string, unknown>;
   };
 
   try {
-    host.__DOCS_PLAYGROUND_API__ = api;
-    host.__DOCS_PLAYGROUND_EXTRAS__ = extras;
+    host.DOCS_PLAYGROUND_API = api;
+    host.DOCS_PLAYGROUND_EXTRAS = extras;
     const mod = await importBlobModule(blobUrl);
     const result = await mod.default();
     return { result, logs };
   } finally {
-    URL.revokeObjectURL(blobUrl);
-    delete host.__DOCS_PLAYGROUND_API__;
-    delete host.__DOCS_PLAYGROUND_EXTRAS__;
-    /* eslint-disable no-console -- restore captured console methods */
+    window.URL.revokeObjectURL(blobUrl);
+    delete host.DOCS_PLAYGROUND_API;
+    delete host.DOCS_PLAYGROUND_EXTRAS;
+
     consoleRef.log = originalLog;
     consoleRef.info = originalInfo;
     consoleRef.warn = originalWarn;
-    /* eslint-enable no-console */
   }
 }
 

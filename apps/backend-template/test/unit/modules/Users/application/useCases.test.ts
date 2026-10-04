@@ -1,7 +1,7 @@
 /* eslint-disable jest/prefer-called-with */
-import { AuthUseCases } from '@src/modules/Users/application/AuthUseCases';
-import { UserUseCases } from '@src/modules/Users/application/UserUseCases';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
+import AuthUseCases from '@src/modules/Users/application/AuthUseCases';
+import UserUseCases from '@src/modules/Users/application/UserUseCases';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
 
 describe('users application use cases', () => {
   it('delegates login and register in auth use cases', async () => {
@@ -134,7 +134,7 @@ describe('users application use cases', () => {
     await useCases.delete('u1');
     await useCases.getOneById('u1');
     await useCases.getAll({ active: 1 }, { page: 1, size: 10 });
-    await useCases.updatePassword('u1', { password: '12345678' } as any);
+    await useCases.updatePassword('u1', { password: '12345678' });
     await useCases.createDocument('u1', { type: 'cpf' } as any);
     await useCases.updateDocument('u1', 'd1', { type: 'cpf' } as any);
     await useCases.deleteDocument('u1', 'd1');

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: packages/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Pacotes do workspace Jumentix
 
 Esta pasta contém os pacotes npm reutilizáveis e os pacotes privados de configuração compartilhados

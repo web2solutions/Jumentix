@@ -1,41 +1,38 @@
-import type { IController, IControllerFactory } from '@src/interface/HTTP/ports';
-import { BaseController } from '@src/interface/HTTP/ports/BaseController';
-import { Security } from '@src/infra/security';
-import { _INFRA_NOT_IMPLEMENTED_ } from '@src/config/constants';
+import { INFRA_NOT_IMPLEMENTED } from '@src/config/constants';
 import { ForbiddenError } from '@src/infra/exceptions';
+import Security from '@src/infra/security';
+import BaseController from '@src/interface/HTTP/ports/BaseController';
 import { validateRequestAgainstOAS } from '@src/interface/HTTP/validators';
-import { Authorize } from '@src/shared/decorators/guard/Authorize';
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import type {
-  IServiceResponse
-} from '@src/modules/port';
 import { setListQuery, setMetricsQuery } from '@src/modules/port';
-import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
-import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
-import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
-import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
-import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
-import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
-import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
-import type {
-  ITenantAuthorizationDecision
-} from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
 import {
   decideOrganizationAccess,
   resolveOrganizationCollectionScope
 } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+import Authorize from '@src/shared/decorators/guard/Authorize';
 
-export class OrganizationController extends BaseController implements IController {
+import type { IController, IControllerFactory } from '@src/interface/HTTP/ports';
+import type { IServiceResponse } from '@src/modules/port';
+import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
+import type { IOrganization } from '@src/modules/Users/domain/Entity/IOrganization';
+import type { ITenantAuthorizationDecision } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestUpdateAddress } from '@src/modules/Users/interface/dto/RequestUpdateAddress';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestUpdateOrganization } from '@src/modules/Users/interface/dto/RequestUpdateOrganization';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+
+class OrganizationController extends BaseController implements IController {
   private readonly organizationUseCases: IOrganizationUseCases;
 
   constructor(factory: IControllerFactory) {
     super(factory);
     if (!factory.organizationUseCases) {
       const error = new Error('OrganizationUseCases is not implemented');
-      error.name = _INFRA_NOT_IMPLEMENTED_;
+      error.name = INFRA_NOT_IMPLEMENTED;
       throw error;
     }
     this.organizationUseCases = factory.organizationUseCases;
@@ -55,16 +52,11 @@ export class OrganizationController extends BaseController implements IControlle
 
   private enforceOrganizationScope(event: BaseDomainEvent, organizationId: string): void {
     const authenticatedUser = this.getAuthenticatedUser(event);
-    this.throwIfTenantAccessDenied(decideOrganizationAccess(
-      authenticatedUser,
-      organizationId
-    ));
+    this.throwIfTenantAccessDenied(decideOrganizationAccess(authenticatedUser, organizationId));
   }
 
   @Authorize()
-  public async create(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async create(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const requestCreateOrganization = event.input as RequestCreateOrganization;
     const { result, error } = await this.organizationUseCases.create(requestCreateOrganization);
@@ -72,9 +64,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async update(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async update(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const requestUpdateOrganization = event.input as RequestUpdateOrganization;
     const organizationId = Security.xss(event.params.id);
@@ -87,9 +77,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async delete(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<boolean>> {
+  public async delete(event: BaseDomainEvent): Promise<IServiceResponse<boolean>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -98,9 +86,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async getOneById(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async getOneById(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -109,25 +95,18 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async getAll(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization[]>> {
+  public async getAll(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization[]>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     // JUM-777: page/size/filter/sort/q validated against x-list-capabilities.
     const { filters, paging } = setListQuery(event);
     const authenticatedUser = this.getAuthenticatedUser(event);
     const tenantScope = resolveOrganizationCollectionScope(authenticatedUser);
     this.throwIfTenantAccessDenied(tenantScope.decision);
-    return this.organizationUseCases.getAll(
-      { ...filters, ...tenantScope.filters },
-      paging
-    );
+    return this.organizationUseCases.getAll({ ...filters, ...tenantScope.filters }, paging);
   }
 
   @Authorize()
-  public async getOrganizationsMetrics(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<unknown>> {
+  public async getOrganizationsMetrics(event: BaseDomainEvent): Promise<IServiceResponse<unknown>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const { query, filters, capabilities } = setMetricsQuery(event);
     const authenticatedUser = this.getAuthenticatedUser(event);
@@ -141,9 +120,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async createAddress(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async createAddress(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -156,9 +133,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async updateAddress(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async updateAddress(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -173,9 +148,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async deleteAddress(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async deleteAddress(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -188,9 +161,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async createPhone(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async createPhone(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -203,9 +174,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async updatePhone(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async updatePhone(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -220,24 +189,17 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async deletePhone(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async deletePhone(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
     const phoneId = Security.xss(event.params.phoneId);
-    const { result, error } = await this.organizationUseCases.deletePhone(
-      organizationId,
-      phoneId
-    );
+    const { result, error } = await this.organizationUseCases.deletePhone(organizationId, phoneId);
     return { result, error };
   }
 
   @Authorize()
-  public async createEmail(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async createEmail(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -250,9 +212,7 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async updateEmail(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async updateEmail(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
@@ -267,17 +227,12 @@ export class OrganizationController extends BaseController implements IControlle
   }
 
   @Authorize()
-  public async deleteEmail(
-    event: BaseDomainEvent
-  ): Promise<IServiceResponse<IOrganization>> {
+  public async deleteEmail(event: BaseDomainEvent): Promise<IServiceResponse<IOrganization>> {
     validateRequestAgainstOAS(this.openApiSpecification, event.schemaOAS, event);
     const organizationId = Security.xss(event.params.id);
     this.enforceOrganizationScope(event, organizationId);
     const emailId = Security.xss(event.params.emailId);
-    const { result, error } = await this.organizationUseCases.deleteEmail(
-      organizationId,
-      emailId
-    );
+    const { result, error } = await this.organizationUseCases.deleteEmail(organizationId, emailId);
     return { result, error };
   }
 
@@ -348,3 +303,5 @@ export class OrganizationController extends BaseController implements IControlle
     return new OrganizationController(factory);
   }
 }
+
+export default OrganizationController;

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/BOOTSTRAP-CLI-SCAFFOLDING.md
 Idioma alvo: Português (Brasil)
 -->
+
 # CLI geradora de fábrica (`@jumentix/cli-init`)
 
 O requisito `037` (v2) define `@jumentix/cli-init` como a **geradora de fábrica**:
@@ -36,30 +37,30 @@ Códigos de saída: `0` ok, `1` erro de usuário/projeto, `2` falha de ambiente
 
 ## Comandos
 
-| Comando | Propósito |
-| --- | --- |
-| `jumentix init [dir]` | Cria um workspace enxuto |
-| `jumentix add domain\|service\|frontend` | Estende um projeto já gerado |
-| `jumentix upgrade` | Merge de três vias do template (`--dry-run` suportado) |
-| `jumentix doctor` | Diagnóstico de ambiente e de projeto |
-| `jumentix help` | Mostra o uso de nível superior |
+| Comando                                  | Propósito                                              |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `jumentix init [dir]`                    | Cria um workspace enxuto                               |
+| `jumentix add domain\|service\|frontend` | Estende um projeto já gerado                           |
+| `jumentix upgrade`                       | Merge de três vias do template (`--dry-run` suportado) |
+| `jumentix doctor`                        | Diagnóstico de ambiente e de projeto                   |
+| `jumentix help`                          | Mostra o uso de nível superior                         |
 
 ### Flags de `init`
 
-| Flag | Valores / notas |
-| --- | --- |
-| `--mode` | `monolith` \| `services` \| `hybrid` \| `frontend` |
-| `--from` | Export JSON do designer, OAS 3.x YAML/JSON ou URL de catálogo |
-| `--preset` | `users` (padrão quando `--from` é omitido) |
-| `--http` | `express` \| `fastify` \| `restify` |
-| `--realtime` | `none` \| `websocket` \| `grpc` |
-| `--db` | `sqlite` \| `postgres` \| `mysql` \| `mongo` \| `inmemory` |
-| `--frontend` | Inclui `apps/frontend` (caminho hybrid) |
-| `--offline` | Mantém a camada Cana offline no frontend |
-| `--git` | `git init` + primeiro commit após a montagem |
-| `--install` | Roda `bun install` após a montagem |
-| `--config` | Caminho para respostas em `jumentix.init.json` |
-| `--non-interactive` | Exige todas as respostas por flags/config (sem prompts) |
+| Flag                | Valores / notas                                               |
+| ------------------- | ------------------------------------------------------------- |
+| `--mode`            | `monolith` \| `services` \| `hybrid` \| `frontend`            |
+| `--from`            | Export JSON do designer, OAS 3.x YAML/JSON ou URL de catálogo |
+| `--preset`          | `users` (padrão quando `--from` é omitido)                    |
+| `--http`            | `express` \| `fastify` \| `restify`                           |
+| `--realtime`        | `none` \| `websocket` \| `grpc`                               |
+| `--db`              | `sqlite` \| `postgres` \| `mysql` \| `mongo` \| `inmemory`    |
+| `--frontend`        | Inclui `apps/frontend` (caminho hybrid)                       |
+| `--offline`         | Mantém a camada Cana offline no frontend                      |
+| `--git`             | `git init` + primeiro commit após a montagem                  |
+| `--install`         | Roda `bun install` após a montagem                            |
+| `--config`          | Caminho para respostas em `jumentix.init.json`                |
+| `--non-interactive` | Exige todas as respostas por flags/config (sem prompts)       |
 
 Exemplo (preset Users, hybrid, offline):
 
@@ -71,12 +72,12 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 ### Modos (mapa para a matriz da fábrica)
 
-| `--mode` | Linha da matriz da fábrica | Layout |
-| --- | --- | --- |
-| `monolith` | Monólito Modular (Backend) | Um serviço Core; todos os domínios in-process |
-| `services` | Grupo de back-end multisserviço | Core (Users + auth) + serviços de domínio |
-| `hybrid` | Back-end híbrido + front-end | Apps de backend + `apps/frontend` |
-| `frontend` | SPA/PWA offline somente front-end | `apps/frontend` consumindo contratos |
+| `--mode`   | Linha da matriz da fábrica        | Layout                                        |
+| ---------- | --------------------------------- | --------------------------------------------- |
+| `monolith` | Monólito Modular (Backend)        | Um serviço Core; todos os domínios in-process |
+| `services` | Grupo de back-end multisserviço   | Core (Users + auth) + serviços de domínio     |
+| `hybrid`   | Back-end híbrido + front-end      | Apps de backend + `apps/frontend`             |
+| `frontend` | SPA/PWA offline somente front-end | `apps/frontend` consumindo contratos          |
 
 O modo é inferido da arquitetura (um serviço → `monolith`) salvo `--mode`.
 Veja
@@ -111,12 +112,12 @@ flags ou neste arquivo.
 `init --from` / `--preset` normalizam cada fonte aceita em um
 **GenerationPlan** antes de escrever arquivos:
 
-| Fonte | Flag | Loader |
-| --- | --- | --- |
+| Fonte                   | Flag                 | Loader                     |
+| ----------------------- | -------------------- | -------------------------- |
 | Export JSON do designer | `--from=export.json` | `loadDesignerExportSource` |
-| OpenAPI 3.x YAML/JSON | `--from=spec.yml` | `loadOasSource` |
-| URL de catálogo | `--from=https://…` | `loadCatalogSource` |
-| Preset Users | `--preset=users` | `loadPresetSource` |
+| OpenAPI 3.x YAML/JSON   | `--from=spec.yml`    | `loadOasSource`            |
+| URL de catálogo         | `--from=https://…`   | `loadCatalogSource`        |
+| Preset Users            | `--preset=users`     | `loadPresetSource`         |
 
 Validação falha fechada com mensagens nomeadas (exit `1`): sem serviço core;
 entidade sem chave primária; relação cruzando fronteira de serviço em
@@ -173,12 +174,12 @@ antes de abrir o PR.
 
 Todo workspace gerado inclui:
 
-| Artefato | Papel |
-| --- | --- |
-| `.jumentix/project.json` | Plano + mode + cohort de template; consumido por `add` / `upgrade` / `doctor` |
-| `.jumentix/manifest.json` | sha256 dos arquivos gerados (merge de upgrade) |
-| `.jumentix/objects/<sha256>` | Blobs de baseline para merge de três vias |
-| `jumentix.init.json` | Respostas para round-trips com `--config` |
+| Artefato                     | Papel                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| `.jumentix/project.json`     | Plano + mode + cohort de template; consumido por `add` / `upgrade` / `doctor` |
+| `.jumentix/manifest.json`    | sha256 dos arquivos gerados (merge de upgrade)                                |
+| `.jumentix/objects/<sha256>` | Blobs de baseline para merge de três vias                                     |
+| `jumentix.init.json`         | Respostas para round-trips com `--config`                                     |
 
 `.jumentix/service-profile.json` é aposentado e removido quando presente.
 
@@ -193,11 +194,11 @@ forma independente. Projetos gerados devem passar no próprio
 
 Execute dentro de um projeto gerado (exige `.jumentix/project.json`):
 
-| Comando | Efeito |
-| --- | --- |
+| Comando                                                  | Efeito                                                                                     |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `jumentix add domain <name> [--from …] [--service <id>]` | Injeta domínio hexagonal no Core (ou `--service`); atualiza módulos do frontend se existir |
-| `jumentix add service <name> --domains a,b` | Cria `apps/<name>` em modo services/hybrid; move a posse dos domínios |
-| `jumentix add frontend [--offline]` | Adiciona `apps/frontend` a um tree só-backend (mode → `hybrid`) |
+| `jumentix add service <name> --domains a,b`              | Cria `apps/<name>` em modo services/hybrid; move a posse dos domínios                      |
+| `jumentix add frontend [--offline]`                      | Adiciona `apps/frontend` a um tree só-backend (mode → `hybrid`)                            |
 
 Drift do manifesto é recusado sem `--force`. Metadados ausentes saem com código `1`.
 
@@ -207,11 +208,11 @@ Drift do manifesto é recusado sem `--force`. Metadados ausentes saem com códig
 templates usando hashes de `.jumentix/manifest.json` e baselines em
 `.jumentix/objects/<sha256>`:
 
-| Status | Significado |
-| --- | --- |
-| `updated` | Sem edição local → template, ou auto-merge limpo |
-| `conflicted` | Edições sobrepostas — marcadores de conflito no arquivo |
-| `skipped` | Sem mudança de template, ou só edições locais |
+| Status              | Significado                                                    |
+| ------------------- | -------------------------------------------------------------- |
+| `updated`           | Sem edição local → template, ou auto-merge limpo               |
+| `conflicted`        | Edições sobrepostas — marcadores de conflito no arquivo        |
+| `skipped`           | Sem mudança de template, ou só edições locais                  |
 | `added` / `removed` | Novos caminhos / aposentados (arquivos aposentados permanecem) |
 
 `--dry-run` só reporta. Git sujo exige `--force`. Upgrades aplicados gravam
@@ -221,10 +222,10 @@ templates usando hashes de `.jumentix/manifest.json` e baselines em
 
 `jumentix doctor` imprime diagnósticos de ambiente e do projeto:
 
-| Área | Verificações |
-| --- | --- |
-| environment | versão do bun (obrigatório), node ≥20 se presente, docker |
-| project | `.jumentix/project.json` + mode, versão do template vs `templates.manifest.json`, `apps/*` esperados, drift do manifesto |
+| Área        | Verificações                                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------ |
+| environment | versão do bun (obrigatório), node ≥20 se presente, docker                                                                |
+| project     | `.jumentix/project.json` + mode, versão do template vs `templates.manifest.json`, `apps/*` esperados, drift do manifesto |
 
 Saída `0` quando saudável, `1` para blockers de projeto, `2` para blockers de
 ambiente.

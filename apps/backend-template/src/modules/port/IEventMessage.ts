@@ -8,5 +8,5 @@ export interface IEventMessage<TPayload = any> {
   entity?: string;
   action?: string;
   schemaOAS?: any;
-  metadata?: IDomainEventMetadata
+  metadata?: IDomainEventMetadata;
 }

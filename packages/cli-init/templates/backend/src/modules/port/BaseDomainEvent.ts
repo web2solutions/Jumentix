@@ -1,11 +1,12 @@
 import { Context } from '@src/infra/context/Context';
+
 import type { IDomainEventMetadata } from './IDomainEventMetadata';
 import type { IEventMessage } from './IEventMessage';
 
-export abstract class BaseDomainEvent<TPayload = any> {
+abstract class BaseDomainEvent<TPayload = any> {
   public type: string = this.constructor.name;
 
-  public authorization: string = '';
+  public authorization = '';
 
   public input: TPayload = {} as TPayload;
 
@@ -13,9 +14,9 @@ export abstract class BaseDomainEvent<TPayload = any> {
 
   public queryString: any = {};
 
-  public entity: string = '';
+  public entity = '';
 
-  public action: string = '';
+  public action = '';
 
   public message: any;
 
@@ -26,16 +27,8 @@ export abstract class BaseDomainEvent<TPayload = any> {
   public readonly metadata: IDomainEventMetadata;
 
   constructor(message: IEventMessage) {
-    const {
-      input,
-      authorization,
-      entity,
-      action,
-      params,
-      queryString,
-      schemaOAS,
-      metadata
-    } = message;
+    const { input, authorization, entity, action, params, queryString, schemaOAS, metadata } =
+      message;
     this.input = input || {};
     if (typeof input === 'string') {
       this.input = JSON.parse(input);
@@ -68,3 +61,5 @@ export abstract class BaseDomainEvent<TPayload = any> {
     };
   }
 }
+
+export default BaseDomainEvent;

@@ -27,10 +27,11 @@ const GROUP_KEYS = ['model', 'inspector', 'quality', 'share'];
  * @param {Object} options.state - shared designer state (mutated in place).
  * @param {Function} options.saveState - persist after a group switch.
  */
-export function createSidebarGroups({ documentRef, state, saveState }) {
-  const buttons = GROUP_KEYS
-    .map((key) => ({ key, button: documentRef.querySelector(`[data-sidebar-tab="${key}"]`) }))
-    .filter((entry) => entry.button);
+function createSidebarGroups({ documentRef, state, saveState }) {
+  const buttons = GROUP_KEYS.map((key) => ({
+    key,
+    button: documentRef.querySelector(`[data-sidebar-tab="${key}"]`)
+  })).filter((entry) => entry.button);
   const panels = Array.from(documentRef.querySelectorAll('[data-sidebar-group]'));
   const drawer = documentRef.getElementById('designer-sidebar');
   const drawerToggle = documentRef.getElementById('toggle-sidebar-btn');
@@ -157,3 +158,5 @@ export function createSidebarGroups({ documentRef, state, saveState }) {
     revealGroupFor
   };
 }
+
+export default createSidebarGroups;

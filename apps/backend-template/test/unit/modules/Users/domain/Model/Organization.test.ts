@@ -1,25 +1,31 @@
-import { Organization } from '@src/modules/Users/domain/Model/Organization';
 import { EAddressType, EEmailType } from '@src/modules/ddd/valueObjects';
 import { getModelRelations } from '@src/modules/port';
+import Organization from '@src/modules/Users/domain/Model/Organization';
 
 const payload = () => ({
   name: 'ACME',
-  address: [{
-    email: 'hq@acme.dev',
-    type: EAddressType.work,
-    isPrimary: true
-  }],
-  phone: [{
-    countryCode: '55',
-    localCode: '11',
-    number: '999999',
-    isPrimary: true
-  }],
-  email: [{
-    email: 'contact@acme.dev',
-    type: EEmailType.work,
-    isPrimary: true
-  }],
+  address: [
+    {
+      email: 'hq@acme.dev',
+      type: EAddressType.work,
+      isPrimary: true
+    }
+  ],
+  phone: [
+    {
+      countryCode: '55',
+      localCode: '11',
+      number: '999999',
+      isPrimary: true
+    }
+  ],
+  email: [
+    {
+      email: 'contact@acme.dev',
+      type: EEmailType.work,
+      isPrimary: true
+    }
+  ],
   users: ['u1']
 });
 
@@ -28,9 +34,11 @@ describe('organization domain model', () => {
     expect.hasAssertions();
     expect(Organization.dataEntitySchema.name).toBe('Organization');
     const relations = getModelRelations(Organization as any);
-    expect(relations).toStrictEqual(expect.arrayContaining([
-      expect.objectContaining({ property: 'users', kind: 'hasMany', target: 'User' })
-    ]));
+    expect(relations).toStrictEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ property: 'users', kind: 'hasMany', target: 'User' })
+      ])
+    );
   });
 
   it('creates organization and enforces read-only mode', () => {
@@ -41,7 +49,9 @@ describe('organization domain model', () => {
     expect(organization.updatedAt).toBeInstanceOf(Date);
 
     const readOnly = new Organization({ ...payload(), readOnly: true });
-    expect(() => { readOnly.name = 'New Name'; }).toThrow('read only');
+    expect(() => {
+      readOnly.name = 'New Name';
+    }).toThrow('read only');
   });
 
   it('maps value-object collections at construction', () => {
@@ -94,21 +104,27 @@ describe('organization domain model', () => {
   it('creates new address/phone/email entries with explicit methods', () => {
     expect.hasAssertions();
     const organization = new Organization(payload());
-    expect(organization.createAddress({
-      email: 'branch@acme.dev',
-      type: EAddressType.home,
-      isPrimary: false
-    })).toBe(true);
-    expect(organization.createPhone({
-      countryCode: '55',
-      localCode: '11',
-      number: '123123',
-      isPrimary: false
-    } as any)).toBe(true);
-    expect(organization.createEmail({
-      email: 'branch-contact@acme.dev',
-      type: EEmailType.personal,
-      isPrimary: false
-    } as any)).toBe(true);
+    expect(
+      organization.createAddress({
+        email: 'branch@acme.dev',
+        type: EAddressType.home,
+        isPrimary: false
+      })
+    ).toBe(true);
+    expect(
+      organization.createPhone({
+        countryCode: '55',
+        localCode: '11',
+        number: '123123',
+        isPrimary: false
+      } as any)
+    ).toBe(true);
+    expect(
+      organization.createEmail({
+        email: 'branch-contact@acme.dev',
+        type: EEmailType.personal,
+        isPrimary: false
+      } as any)
+    ).toBe(true);
   });
 });

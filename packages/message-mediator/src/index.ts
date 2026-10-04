@@ -15,7 +15,7 @@ export type {
   MessageHandler
 } from './contracts';
 
-export { InMemoryMessageMediatorAdapter } from './InMemoryMessageMediatorAdapter';
-export { RabbitMqMessageMediatorAdapter } from './RabbitMqMessageMediatorAdapter';
-export { BullMqMessageMediatorAdapter } from './BullMqMessageMediatorAdapter';
-export { compileMessageMediator } from './compileMessageMediator';
+export { default as InMemoryMessageMediatorAdapter } from './InMemoryMessageMediatorAdapter';
+export { default as RabbitMqMessageMediatorAdapter } from './RabbitMqMessageMediatorAdapter';
+export { default as BullMqMessageMediatorAdapter } from './BullMqMessageMediatorAdapter';
+export { default as compileMessageMediator } from './compileMessageMediator';

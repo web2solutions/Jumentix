@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/REALTIME-API-TESTING.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Guia de teste de API em tempo real
 
 Este documento define a matriz de teste oficial para interfaces em tempo real (`WebSocketAPI` e `gRPCAPI`).
@@ -97,5 +98,3 @@ bun run smoke:realtime:redis-streams
 2. Mantenha portas fixas determinísticas para arquivos de teste isolados.
 3. Sempre feche os clientes de soquete e pare as instâncias do servidor em `afterAll`.
 4. Atualize este arquivo e os requisitos `.agents` sempre que o comportamento do transporte em tempo real mudar.
-
-

@@ -1,12 +1,13 @@
-import { _INFRA_NOT_IMPLEMENTED_ } from '@src/config/constants';
-import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import type { IControllerFactory } from '@src/interface/HTTP/ports/IControllerFactory';
-import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import type { IMessageMediator } from '@src/modules/port';
+import { INFRA_NOT_IMPLEMENTED } from '@src/config/constants';
 
-export abstract class BaseController {
+import type IMutexService from '@src/infra/mutex/port/IMutexService';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IControllerFactory } from '@src/interface/HTTP/ports/IControllerFactory';
+import type { IMessageMediator } from '@src/modules/port';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+
+abstract class BaseController {
   private _authService: IAuthService = {} as IAuthService;
 
   public _databaseClient: IDatabaseClient = {} as IDatabaseClient;
@@ -46,7 +47,7 @@ export abstract class BaseController {
   public set passwordCryptoService(service: IPasswordCryptoService) {
     if (!service.hash) {
       const error = new Error('PasswordCryptoService is not implemented');
-      error.name = _INFRA_NOT_IMPLEMENTED_;
+      error.name = INFRA_NOT_IMPLEMENTED;
       throw error;
     }
     this._passwordCryptoService = service;
@@ -59,7 +60,7 @@ export abstract class BaseController {
   public set mutexService(service: IMutexService) {
     if (!service.lock) {
       const error = new Error('MutexService is not implemented');
-      error.name = _INFRA_NOT_IMPLEMENTED_;
+      error.name = INFRA_NOT_IMPLEMENTED;
       throw error;
     }
     this._mutexService = service;
@@ -72,7 +73,7 @@ export abstract class BaseController {
   public set authService(service: IAuthService) {
     if (!service.authenticate) {
       const error = new Error('AuthService is not implemented');
-      error.name = _INFRA_NOT_IMPLEMENTED_;
+      error.name = INFRA_NOT_IMPLEMENTED;
       throw error;
     }
     this._authService = service;
@@ -89,7 +90,7 @@ export abstract class BaseController {
     }
     if (!service.request || !service.registerHandler) {
       const error = new Error('MessageMediator is not implemented');
-      error.name = _INFRA_NOT_IMPLEMENTED_;
+      error.name = INFRA_NOT_IMPLEMENTED;
       throw error;
     }
     this._messageMediator = service;
@@ -102,9 +103,11 @@ export abstract class BaseController {
   public set databaseClient(service: IDatabaseClient) {
     if (!service.stores) {
       const error = new Error('DatabaseClient is not implemented');
-      error.name = _INFRA_NOT_IMPLEMENTED_;
+      error.name = INFRA_NOT_IMPLEMENTED;
       throw error;
     }
     this._databaseClient = service;
   }
 }
+
+export default BaseController;

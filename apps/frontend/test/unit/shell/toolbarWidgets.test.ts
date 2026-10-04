@@ -1,6 +1,5 @@
-import {
-  beforeEach, describe, expect, it
-} from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
+
 import { defineComponent } from 'vue';
 
 import {
@@ -27,7 +26,9 @@ describe('toolbar widget registry (JUM-798)', () => {
       moduleId: 'users',
       requiredScopes: ['read_user']
     });
-    expect(listToolbarWidgets(['user'], 'users', 'right').map((item) => item.id)).toStrictEqual(['fixture']);
+    expect(listToolbarWidgets(['user'], 'users', 'right').map((item) => item.id)).toStrictEqual([
+      'fixture'
+    ]);
     expect(listToolbarWidgets(['user'], 'other', 'right')).toStrictEqual([]);
     expect(listToolbarWidgets(['user'], 'users', 'left')).toStrictEqual([]);
   });
@@ -35,10 +36,16 @@ describe('toolbar widget registry (JUM-798)', () => {
   it('replaces a widget registered twice with the same id', () => {
     expect.hasAssertions();
     registerToolbarWidget({
-      id: 'fixture', component: Dummy, placement: 'left', order: 1
+      id: 'fixture',
+      component: Dummy,
+      placement: 'left',
+      order: 1
     });
     registerToolbarWidget({
-      id: 'fixture', component: Dummy, placement: 'right', order: 5
+      id: 'fixture',
+      component: Dummy,
+      placement: 'right',
+      order: 5
     });
     const listed = listToolbarWidgets([], null, 'right');
     expect(listed).toHaveLength(1);
@@ -49,7 +56,10 @@ describe('toolbar widget registry (JUM-798)', () => {
   it('unregisters a widget by id', () => {
     expect.hasAssertions();
     registerToolbarWidget({
-      id: 'fixture', component: Dummy, placement: 'right', order: 1
+      id: 'fixture',
+      component: Dummy,
+      placement: 'right',
+      order: 1
     });
     unregisterToolbarWidget('fixture');
     expect(listToolbarWidgets([], null, 'right')).toStrictEqual([]);

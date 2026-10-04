@@ -1,30 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Hono } from 'hono';
-import type { Context } from 'hono';
-import fs from 'fs';
-import path from 'path';
-import { createUuid } from '@src/modules/port/UUID';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import type {
-  IHTTPRequest,
-  IHTTPResponse,
-  IbaseHandler
-} from '@src/interface/HTTP/ports';
-import {
-  EHTTPFrameworks,
-  HTTPBaseServer
-} from '@src/interface/HTTP/ports';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { Context as RequestContext } from '@src/infra/context/Context';
-import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
-import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { composeUsersAuthServices } from '@src/modules/Users';
 import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
+import { Hono } from 'hono';
+
+import { Context as RequestContext } from '@src/infra/context/Context';
+import JwtService from '@src/infra/jwt/JwtService';
+import compileMessageMediator from '@src/infra/messages/compileMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks, HTTPBaseServer } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { createUuid } from '@src/modules/port/UUID';
+import { composeUsersAuthServices } from '@src/modules/Users';
+
+import type { Context } from 'hono';
+
+import type { IbaseHandler, IHTTPRequest, IHTTPResponse } from '@src/interface/HTTP/ports';
 
 type HonoRouteMethod = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options' | 'head';
 
@@ -94,9 +89,7 @@ class CloudflareWorkersServer extends HTTPBaseServer<Hono> {
     };
     register('/OASdoc', 'apps/backend-template/OASdoc');
     register('/AsyncAPIdoc', 'apps/backend-template/AsyncAPIdoc');
-    this.application.get('/docs/asyncapi', async (c: Context) => {
-      return c.redirect('/AsyncAPIdoc', 302);
-    });
+    this.application.get('/docs/asyncapi', async (c: Context) => c.redirect('/AsyncAPIdoc', 302));
   }
 
   private static normalizeBody(raw: string): any {
@@ -254,12 +247,10 @@ const API = new RestAPI<Hono>({
 let initialized: Promise<void> | undefined;
 
 const ensureInitialized = async (): Promise<void> => {
-  if (!initialized) {
-    initialized = (async () => {
-      await API.start();
-      await API.seedData();
-    })();
-  }
+  initialized ??= (async () => {
+    await API.start();
+    await API.seedData();
+  })();
   await initialized;
 };
 

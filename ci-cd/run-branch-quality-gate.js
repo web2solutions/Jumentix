@@ -1,8 +1,7 @@
-/* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
-const { isEntryPoint } = require('./lib/entry-point.js');
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const {
   classifyCiContext,
   CONTEXTS,
@@ -10,6 +9,7 @@ const {
   isGeneratedChangelogSyncBranch,
   isGeneratedPackageBumpBranch
 } = require('./classify-ci-context.js');
+const { isEntryPoint } = require('./lib/entry-point.js');
 
 /**
  * Lint runs before every gate that does not already contain it (JUM-596).
@@ -23,6 +23,13 @@ const {
  * twenty minutes of tests.
  */
 const LINT_PREFLIGHT = Object.freeze({ id: 'lint', script: 'lint' });
+// The frontend and website are separate lint consumers with their own flat
+// configs (Requirement 138): the root run says nothing about them, so they
+// preflight alongside it — same fail-fast rationale as the root lint above.
+// format:check joins them: Prettier is a ci:gate step no other CI path runs.
+const LINT_FRONTEND_PREFLIGHT = Object.freeze({ id: 'lint-frontend', script: 'lint:frontend' });
+const LINT_WEBSITE_PREFLIGHT = Object.freeze({ id: 'lint-website', script: 'lint:website' });
+const FORMAT_CHECK_PREFLIGHT = Object.freeze({ id: 'format-check', script: 'format:check' });
 
 /**
  * Test integrity runs before every gate, including the strict matrix (JUM-683).
@@ -121,6 +128,9 @@ const GENERATED_AUTOMATION_QUALITY_GATE = Object.freeze({
   script: 'ci:gate:generated-automation',
   preflight: Object.freeze([
     LINT_PREFLIGHT,
+    LINT_FRONTEND_PREFLIGHT,
+    LINT_WEBSITE_PREFLIGHT,
+    FORMAT_CHECK_PREFLIGHT,
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     DOCUMENTATION_AUDIENCE_PREFLIGHT,
@@ -135,6 +145,9 @@ const UNIT_QUALITY_GATE = Object.freeze({
   script: 'test:unit',
   preflight: Object.freeze([
     LINT_PREFLIGHT,
+    LINT_FRONTEND_PREFLIGHT,
+    LINT_WEBSITE_PREFLIGHT,
+    FORMAT_CHECK_PREFLIGHT,
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     DOCUMENTATION_AUDIENCE_PREFLIGHT,
@@ -149,6 +162,9 @@ const TASK_QUALITY_GATE = Object.freeze({
   script: 'ci:gate:task',
   preflight: Object.freeze([
     LINT_PREFLIGHT,
+    LINT_FRONTEND_PREFLIGHT,
+    LINT_WEBSITE_PREFLIGHT,
+    FORMAT_CHECK_PREFLIGHT,
     TEST_INTEGRITY_PREFLIGHT,
     CURRENT_GOVERNANCE_DOCS_PREFLIGHT,
     DOCUMENTATION_AUDIENCE_PREFLIGHT,
@@ -160,22 +176,28 @@ const TASK_QUALITY_GATE = Object.freeze({
 });
 
 function resolveTargetBranch(value = process.env.JUMENTIX_QUALITY_GATE_TARGET) {
-  const branch = String(value || '').trim().toLowerCase();
+  const branch = String(value || '')
+    .trim()
+    .toLowerCase();
   return branch || 'dev';
 }
 
 function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
   if (typeof value === 'boolean') return value;
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
   if (['1', 'true', 'yes'].includes(normalized)) return true;
   if (['0', 'false', 'no'].includes(normalized)) return false;
   return Boolean(process.env.CIRCLE_PULL_REQUEST);
 }
 
 function isGeneratedAutomationHead(headRef) {
-  return isGeneratedAppReleaseBranch(headRef)
-    || isGeneratedChangelogSyncBranch(headRef)
-    || isGeneratedPackageBumpBranch(headRef);
+  return (
+    isGeneratedAppReleaseBranch(headRef) ||
+    isGeneratedChangelogSyncBranch(headRef) ||
+    isGeneratedPackageBumpBranch(headRef)
+  );
 }
 
 function selectQualityGate(targetBranch, options = {}) {
@@ -184,9 +206,9 @@ function selectQualityGate(targetBranch, options = {}) {
   }
   if (options.context) {
     if (
-      options.context === CONTEXTS.RELEASE_PR_TO_MAIN
-      || options.context === CONTEXTS.MAIN_PUSH
-      || options.context === CONTEXTS.SCHEDULED_FULL
+      options.context === CONTEXTS.RELEASE_PR_TO_MAIN ||
+      options.context === CONTEXTS.MAIN_PUSH ||
+      options.context === CONTEXTS.SCHEDULED_FULL
     ) {
       return FULL_MATRIX_QUALITY_GATE;
     }
@@ -226,12 +248,12 @@ function runBranchQualityGate(options = {}) {
   const logger = options.logger || console;
   const resultFile = options.resultFile ?? process.env.JUMENTIX_CI_GATE_RESULT_FILE;
   const hasCiSignal = Boolean(
-    env.CIRCLE_BRANCH
-      || env.CIRCLE_PULL_REQUEST
-      || env.CIRCLE_PR_BASE_BRANCH
-      || env.GITHUB_BASE_REF
-      || env.JUMENTIX_CI_FORCE_FULL
-      || env.JUMENTIX_CI_SCHEDULED_FULL
+    env.CIRCLE_BRANCH ||
+    env.CIRCLE_PULL_REQUEST ||
+    env.CIRCLE_PR_BASE_BRANCH ||
+    env.GITHUB_BASE_REF ||
+    env.JUMENTIX_CI_FORCE_FULL ||
+    env.JUMENTIX_CI_SCHEDULED_FULL
   );
   if (!ciContext && options.useCiContext !== false && hasCiSignal) {
     try {
@@ -243,7 +265,9 @@ function runBranchQualityGate(options = {}) {
     } catch (error) {
       const evidence = {
         schemaVersion: 2,
-        targetBranch: resolveTargetBranch(options.targetBranch || env.CIRCLE_PR_BASE_BRANCH || env.CIRCLE_BRANCH),
+        targetBranch: resolveTargetBranch(
+          options.targetBranch || env.CIRCLE_PR_BASE_BRANCH || env.CIRCLE_BRANCH
+        ),
         isPullRequest: resolvePullRequestFlag(options.isPullRequest),
         context: null,
         selectedJobs: null,
@@ -327,15 +351,15 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
+  executeQualityGate,
   FULL_MATRIX_QUALITY_GATE,
   GENERATED_AUTOMATION_QUALITY_GATE,
-  TASK_QUALITY_GATE,
-  UNIT_QUALITY_GATE,
-  executeQualityGate,
   isGeneratedAutomationHead,
   resolvePullRequestFlag,
   resolveTargetBranch,
   runBranchQualityGate,
   selectQualityGate,
+  TASK_QUALITY_GATE,
+  UNIT_QUALITY_GATE,
   writeGateEvidence
 };

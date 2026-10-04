@@ -1,4 +1,5 @@
 import { buildDatabaseClientCompilers } from '../src';
+
 import type { IDatabaseClientLike } from '../src';
 
 /**
@@ -55,7 +56,8 @@ async function withEnvironment<T>(
   body: () => T | Promise<T>
 ): Promise<T> {
   const previous = Object.keys(values).map((name): [string, string | undefined] => [
-    name, process.env[name]
+    name,
+    process.env[name]
   ]);
 
   for (const [name, value] of Object.entries(values)) {
@@ -73,10 +75,11 @@ async function withEnvironment<T>(
   }
 }
 
-const compilers = (indexedDbClient?: () => IDatabaseClientLike) => buildDatabaseClientCompilers({
-  inMemoryClient,
-  indexedDbClient
-});
+const compilers = (indexedDbClient?: () => IDatabaseClientLike) =>
+  buildDatabaseClientCompilers({
+    inMemoryClient,
+    indexedDbClient
+  });
 
 describe('driver aliases', () => {
   /**
@@ -106,11 +109,7 @@ describe('driver aliases', () => {
     ['firebase', 'Firebase', 'firebase'],
     ['aurora', 'Aurora', 'amazon-aurora'],
     ['rds', 'RDS', 'amazon-rds']
-  ])('routes %p to the %s driver on %s', (
-    alias: string,
-    driver: string,
-    provider: string
-  ) => {
+  ])('routes %p to the %s driver on %s', (alias: string, driver: string, provider: string) => {
     expect.hasAssertions();
 
     const client = compilers().compileDatabaseClientByDriver(alias);
@@ -134,23 +133,24 @@ describe('driver aliases', () => {
    * for a template or the worst possible one — but either way it should not
    * change by accident.
    */
-  it.each([['', 'empty'], ['   ', 'blank'], ['postgre', 'a typo'], ['couchdb', 'an unsupported driver']])(
-    'falls back to in-memory for %p (%s)',
-    (alias: string) => {
-      expect.hasAssertions();
+  it.each([
+    ['', 'empty'],
+    ['   ', 'blank'],
+    ['postgre', 'a typo'],
+    ['couchdb', 'an unsupported driver']
+  ])('falls back to in-memory for %p (%s)', (alias: string) => {
+    expect.hasAssertions();
 
-      expect(compilers().compileDatabaseClientByDriver(alias)).toBe(inMemoryClient);
-    }
-  );
+    expect(compilers().compileDatabaseClientByDriver(alias)).toBe(inMemoryClient);
+  });
 });
 
 describe('reading the driver from the environment', () => {
   it('uses JUMENTIX_DATABASE_DRIVER', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      { JUMENTIX_DATABASE_DRIVER: 'cassandra' },
-      () => compilers().compileDatabaseClient()
+    const client = await withEnvironment({ JUMENTIX_DATABASE_DRIVER: 'cassandra' }, () =>
+      compilers().compileDatabaseClient()
     );
 
     expect(chosen(client).driver).toBe('Cassandra');
@@ -159,9 +159,8 @@ describe('reading the driver from the environment', () => {
   it('falls back to in-memory when the variable is unset', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      { JUMENTIX_DATABASE_DRIVER: undefined },
-      () => compilers().compileDatabaseClient()
+    const client = await withEnvironment({ JUMENTIX_DATABASE_DRIVER: undefined }, () =>
+      compilers().compileDatabaseClient()
     );
 
     expect(client).toBe(inMemoryClient);
@@ -197,8 +196,10 @@ describe('the named compilers', () => {
   it('gives every external client a User and an Organization store', () => {
     expect.hasAssertions();
 
-    expect(Object.keys(compilers().compileMongoDbClient().stores))
-      .toStrictEqual(['User', 'Organization']);
+    expect(Object.keys(compilers().compileMongoDbClient().stores)).toStrictEqual([
+      'User',
+      'Organization'
+    ]);
   });
 
   /**
@@ -273,8 +274,8 @@ describe('the IndexedDB driver', () => {
   it('builds the injected client when the runtime has indexedDB', () => {
     expect.hasAssertions();
 
-    const built = withIndexedDbGlobal(
-      () => compilers(() => indexedDbClient).compileIndexedDbClient()
+    const built = withIndexedDbGlobal(() =>
+      compilers(() => indexedDbClient).compileIndexedDbClient()
     );
 
     expect(built).toBe(indexedDbClient);
@@ -284,7 +285,10 @@ describe('the IndexedDB driver', () => {
     expect.hasAssertions();
 
     let built = 0;
-    const factory = () => { built += 1; return indexedDbClient; };
+    const factory = () => {
+      built += 1;
+      return indexedDbClient;
+    };
 
     const compile = compilers(factory);
 
@@ -305,15 +309,17 @@ describe('the IndexedDB driver', () => {
   it('refuses to fall back when no factory was provided', () => {
     expect.hasAssertions();
 
-    expect(() => withIndexedDbGlobal(() => compilers().compileIndexedDbClient()))
-      .toThrow('no indexedDbClient factory was provided');
+    expect(() => withIndexedDbGlobal(() => compilers().compileIndexedDbClient())).toThrow(
+      'no indexedDbClient factory was provided'
+    );
   });
 
   it('names the driver and the fix in that message', () => {
     expect.hasAssertions();
 
-    expect(() => withIndexedDbGlobal(() => compilers().compileIndexedDbClient()))
-      .toThrow(/createCanaDatabaseClient from @jumentix\/cana/);
+    expect(() => withIndexedDbGlobal(() => compilers().compileIndexedDbClient())).toThrow(
+      /createCanaDatabaseClient from @jumentix\/cana/
+    );
   });
 
   /**
@@ -324,9 +330,9 @@ describe('the IndexedDB driver', () => {
   it('refuses when the runtime has no indexedDB global', () => {
     expect.hasAssertions();
 
-    expect(() => withoutIndexedDbGlobal(
-      () => compilers(() => indexedDbClient).compileIndexedDbClient()
-    )).toThrow('this runtime has no indexedDB global');
+    expect(() =>
+      withoutIndexedDbGlobal(() => compilers(() => indexedDbClient).compileIndexedDbClient())
+    ).toThrow('this runtime has no indexedDB global');
   });
 
   it.each(['indexeddb', 'indexed-db', 'cana', 'IndexedDB'])(
@@ -334,8 +340,8 @@ describe('the IndexedDB driver', () => {
     (alias: string) => {
       expect.hasAssertions();
 
-      const built = withIndexedDbGlobal(
-        () => compilers(() => indexedDbClient).compileDatabaseClientByDriver(alias)
+      const built = withIndexedDbGlobal(() =>
+        compilers(() => indexedDbClient).compileDatabaseClientByDriver(alias)
       );
 
       expect(built).toBe(indexedDbClient);
@@ -347,16 +353,23 @@ describe('connector configuration', () => {
   it('passes the pool settings through to a SQL connector', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment({
-      JUMENTIX_DATABASE_POOL_MAX: '42',
-      JUMENTIX_DATABASE_POOL_MIN: '7',
-      JUMENTIX_DATABASE_POOL_ACQUIRE_MS: '1000',
-      JUMENTIX_DATABASE_POOL_IDLE_MS: '2000',
-      JUMENTIX_DATABASE_POOL_EVICT_MS: '3000'
-    }, () => compilers().compilePostgreSqlDbClient());
+    const client = await withEnvironment(
+      {
+        JUMENTIX_DATABASE_POOL_MAX: '42',
+        JUMENTIX_DATABASE_POOL_MIN: '7',
+        JUMENTIX_DATABASE_POOL_ACQUIRE_MS: '1000',
+        JUMENTIX_DATABASE_POOL_IDLE_MS: '2000',
+        JUMENTIX_DATABASE_POOL_EVICT_MS: '3000'
+      },
+      () => compilers().compilePostgreSqlDbClient()
+    );
 
     expect(chosen(client).options.extra).toMatchObject({
-      poolMax: 42, poolMin: 7, poolAcquireMs: 1000, poolIdleMs: 2000, poolEvictMs: 3000
+      poolMax: 42,
+      poolMin: 7,
+      poolAcquireMs: 1000,
+      poolIdleMs: 2000,
+      poolEvictMs: 3000
     });
   });
 
@@ -370,9 +383,8 @@ describe('connector configuration', () => {
     async (value: string) => {
       expect.hasAssertions();
 
-      const client = await withEnvironment(
-        { JUMENTIX_DATABASE_POOL_MAX: value },
-        () => compilers().compilePostgreSqlDbClient()
+      const client = await withEnvironment({ JUMENTIX_DATABASE_POOL_MAX: value }, () =>
+        compilers().compilePostgreSqlDbClient()
       );
 
       expect(chosen(client).options.extra).toMatchObject({ poolMax: 15 });
@@ -382,9 +394,8 @@ describe('connector configuration', () => {
   it('defaults the region for DynamoDB', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      { JUMENTIX_DATABASE_REGION: undefined },
-      () => compilers().compileDynamoDbClient()
+    const client = await withEnvironment({ JUMENTIX_DATABASE_REGION: undefined }, () =>
+      compilers().compileDynamoDbClient()
     );
 
     expect(chosen(client).options.region).toBe('us-east-1');
@@ -393,9 +404,8 @@ describe('connector configuration', () => {
   it('uses the configured region for DynamoDB', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      { JUMENTIX_DATABASE_REGION: 'sa-east-1' },
-      () => compilers().compileDynamoDbClient()
+    const client = await withEnvironment({ JUMENTIX_DATABASE_REGION: 'sa-east-1' }, () =>
+      compilers().compileDynamoDbClient()
     );
 
     expect(chosen(client).options.region).toBe('sa-east-1');
@@ -460,13 +470,13 @@ describe('connector configuration', () => {
     async (value: string) => {
       expect.hasAssertions();
 
-      const client = await withEnvironment(
-        { JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON: value },
-        () => compilers().compileFirebaseDbClient()
+      const client = await withEnvironment({ JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON: value }, () =>
+        compilers().compileFirebaseDbClient()
       );
 
-      expect((chosen(client).options.extra as { serviceAccount?: unknown }).serviceAccount)
-        .toBeUndefined();
+      expect(
+        (chosen(client).options.extra as { serviceAccount?: unknown }).serviceAccount
+      ).toBeUndefined();
     }
   );
 
@@ -486,13 +496,13 @@ describe('connector configuration', () => {
   it('refuses a JSON array as a service account', async () => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      { JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON: '[1,2]' },
-      () => compilers().compileFirebaseDbClient()
+    const client = await withEnvironment({ JUMENTIX_FIREBASE_SERVICE_ACCOUNT_JSON: '[1,2]' }, () =>
+      compilers().compileFirebaseDbClient()
     );
 
-    expect((chosen(client).options.extra as { serviceAccount?: unknown }).serviceAccount)
-      .toBeUndefined();
+    expect(
+      (chosen(client).options.extra as { serviceAccount?: unknown }).serviceAccount
+    ).toBeUndefined();
   });
 
   it('still accepts a JSON object as a service account', async () => {
@@ -503,8 +513,9 @@ describe('connector configuration', () => {
       () => compilers().compileFirebaseDbClient()
     );
 
-    expect((chosen(client).options.extra as { serviceAccount?: unknown }).serviceAccount)
-      .toStrictEqual({ project_id: 'jumentix-test' });
+    expect(
+      (chosen(client).options.extra as { serviceAccount?: unknown }).serviceAccount
+    ).toStrictEqual({ project_id: 'jumentix-test' });
   });
 
   it('defaults the Oracle credentials', async () => {
@@ -528,9 +539,8 @@ describe('connector configuration', () => {
   ])('reads the RDS dialect %p as %p', async (configured: string, expected: string) => {
     expect.hasAssertions();
 
-    const client = await withEnvironment(
-      { JUMENTIX_DATABASE_DIALECT: configured },
-      () => compilers().compileRdsDbClient()
+    const client = await withEnvironment({ JUMENTIX_DATABASE_DIALECT: configured }, () =>
+      compilers().compileRdsDbClient()
     );
 
     expect(chosen(client).options.extra).toMatchObject({ dialect: expected });
@@ -541,9 +551,8 @@ describe('connector configuration', () => {
     async (value) => {
       expect.hasAssertions();
 
-      const client = await withEnvironment(
-        { JUMENTIX_DATABASE_DIALECT: value },
-        () => compilers().compileRdsDbClient()
+      const client = await withEnvironment({ JUMENTIX_DATABASE_DIALECT: value }, () =>
+        compilers().compileRdsDbClient()
       );
 
       expect(chosen(client).options.extra).toMatchObject({ dialect: 'postgres' });

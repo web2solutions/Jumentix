@@ -52,7 +52,6 @@ bun run release:dry-run:packages
 
 Publication is automated. After every application release on `main`, `.github/workflows/app-release.yml` calls the `Publish npm packages` workflow (`.github/workflows/npm-publish.yml`) with the `all` cohort, so bumping a package's `version` and promoting it to `main` is what publishes it. The same workflow stays available through `workflow_dispatch` for a manual cohort re-run. It uses the `secrets` environment. The workflow verifies `@jumentix` org access, runs the artifact gate, then runs `node ci-cd/publish-npm-cohort.js <cohort>` (after `setup-node`; packing still uses Bun via `bun pm pack`), which skips already-tagged or already-published versions, rewrites `workspace:*` ranges to concrete versions, publishes that tarball under Node so npm provenance can attest, and creates each package tag through the GitHub API (`createAnnotatedTagRef`) — `git push` of package tags from Actions hung after the first publish (JUM-913). Running the publish step under Bun makes `resolveNpmCommand` use Bun as `execPath` and fails provenance with `ERR_OSSL_NO_DEFAULT_DIGEST`. It maps the GitHub secret `NPM_CI_CD` to `NODE_AUTH_TOKEN` for org check and `npm publish`, grants `id-token: write` so npm provenance (root `.npmrc` `provenance=true`) can attest the GitHub Actions run, and grants `contents: write` so package tags can be created.
 
-
 Never print, commit, or store the token in a project file.
 
 Install the CLI after a successful publish:

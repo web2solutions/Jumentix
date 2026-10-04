@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-var-requires, global-require, jest/max-expects */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { builtModuleList, ensureDesignerCoreBuilt } from './helpers/build-artifact';
 
 /**
@@ -18,9 +18,7 @@ import { builtModuleList, ensureDesignerCoreBuilt } from './helpers/build-artifa
  */
 
 const packageRoot = path.resolve(__dirname, '..');
-const manifest = JSON.parse(
-  fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
-) as {
+const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')) as {
   name: string;
   version: string;
   type?: string;
@@ -39,19 +37,21 @@ const manifest = JSON.parse(
 
 const exists = (relative: string): boolean => fs.existsSync(path.join(packageRoot, relative));
 
-const readDist = (relative: string): string => fs.readFileSync(path.join(packageRoot, 'dist', relative), 'utf8');
+const readDist = (relative: string): string =>
+  fs.readFileSync(path.join(packageRoot, 'dist', relative), 'utf8');
 
 /** Paths that must never appear in the published tarball. */
-const isNonArtifactPath = (file: string): boolean => file.startsWith('src/')
-  || file.startsWith('test/')
-  || file.startsWith('scripts/')
-  || file.endsWith('tsconfig.build.json');
+const isNonArtifactPath = (file: string): boolean =>
+  file.startsWith('src/') ||
+  file.startsWith('test/') ||
+  file.startsWith('scripts/') ||
+  file.endsWith('tsconfig.build.json');
 
 const runtimeDependencies = Object.keys(manifest.dependencies ?? {});
 
 /** Whether a script command publishes for real (anything but `--dry-run`). */
-const isRealPublishCommand = (command: string): boolean => command.includes('publish')
-  && !command.includes('--dry-run');
+const isRealPublishCommand = (command: string): boolean =>
+  command.includes('publish') && !command.includes('--dry-run');
 
 const listDistFiles = (): string[] => {
   const out: string[] = [];
@@ -196,8 +196,9 @@ describe('designer-core packaging manifest', () => {
     expect(manifest.private).toBeUndefined();
     // Req 070: no automatic publish. No script in this manifest may publish
     // for real; the only publish verb allowed anywhere is a dry run.
-    const realPublishScripts = Object.entries(manifest.scripts)
-      .filter(([, command]) => isRealPublishCommand(command));
+    const realPublishScripts = Object.entries(manifest.scripts).filter(([, command]) =>
+      isRealPublishCommand(command)
+    );
     expect(realPublishScripts).toStrictEqual([]);
   });
 
@@ -207,8 +208,13 @@ describe('designer-core packaging manifest', () => {
     // If they drift, the published entry stops naming part of the package —
     // or names a module that is not there.
     const barrel = fs.readFileSync(path.join(packageRoot, 'src', 'index.js'), 'utf8');
-    const barrelModules = [...barrel.matchAll(/export \* from '\.\/([a-z]+\/[A-Za-z0-9]+\.js)'/g)]
-      .map((match) => match[1]).sort();
+    const barrelModules = [
+      ...barrel.matchAll(
+        /export (?:\*|\{ default as [A-Za-z0-9]+ \}) from '\.\/([a-z]+\/[A-Za-z0-9]+\.js)'/g
+      )
+    ]
+      .map((match) => match[1])
+      .sort();
 
     expect(barrelModules).toStrictEqual([...builtModuleList(packageRoot)].sort());
   });
@@ -252,9 +258,14 @@ describe('designer-core built output', () => {
     expect.hasAssertions();
     // The issue's "out" list, restated as an absence proof on the artifact.
     const excludedNeedles = [
-      'ui/', 'pwa/', 'script.js',
-      'designerSync', 'catalogSyncClient',
-      'CanaDesignerStore', 'canaMigration', 'designerStoreFactory'
+      'ui/',
+      'pwa/',
+      'script.js',
+      'designerSync',
+      'catalogSyncClient',
+      'CanaDesignerStore',
+      'canaMigration',
+      'designerStoreFactory'
     ];
     const shipped = listDistFiles();
 
@@ -267,8 +278,9 @@ describe('designer-core built output', () => {
     // prose from code (the AST-level proof lives in dom-free.test.ts).
     for (const rel of builtModuleList(packageRoot)) {
       const source = readDist(rel);
-      const specifiers = [...source.matchAll(/(?:import|export)[^'"]*?from\s*'([^']+)'/g)]
-        .map((match) => match[1]);
+      const specifiers = [...source.matchAll(/(?:import|export)[^'"]*?from\s*'([^']+)'/g)].map(
+        (match) => match[1]
+      );
       for (const specifier of specifiers) {
         for (const needle of excludedNeedles) {
           expect(specifier).not.toContain(needle);
@@ -294,7 +306,9 @@ describe('designer-core built output', () => {
     // catch. Specifiers are extracted from `export … from` statements so the
     // barrel's doc comment is not mistaken for code.
     const entry = readDist('index.js');
-    const specifiers = [...entry.matchAll(/export \* from '([^']+)'/g)].map((match) => match[1]);
+    const specifiers = [
+      ...entry.matchAll(/export (?:\*|\{ default as [A-Za-z0-9]+ \}) from '([^']+)'/g)
+    ].map((match) => match[1]);
 
     expect(specifiers).toHaveLength(builtModuleList(packageRoot).length);
     for (const specifier of specifiers) {
@@ -322,16 +336,20 @@ describe('designer-core publish dry run', () => {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    const [packument] = JSON.parse(output) as Array<{
+    const [packument] = JSON.parse(output) as {
       name: string;
-      files: Array<{ path: string }>;
-    }>;
+      files: { path: string }[];
+    }[];
     const packed = packument.files.map((file) => file.path);
 
     expect(packument.name).toBe('@jumentix/designer-core');
     const requiredPaths = [
-      'dist/index.js', 'dist/index.d.ts',
-      'README.md', 'README.pt-BR.md', 'LICENSE.md', 'package.json'
+      'dist/index.js',
+      'dist/index.d.ts',
+      'README.md',
+      'README.pt-BR.md',
+      'LICENSE.md',
+      'package.json'
     ];
     for (const required of requiredPaths) {
       expect(packed).toContain(required);

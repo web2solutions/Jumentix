@@ -50,24 +50,24 @@ Primary Codex runtime instructions for this repository:
     `.agents/requirements/` set and `.agents/NFR-REGISTRY.md` on **both** tips, record drift,
     avoid rework, refresh registry branch-check evidence, and do not execute until
     Requirements `099` and `116` are satisfied.
-24a. **Onboard worktree layout (Requirement `114`):** confirm the filesystem root with the
+    24a. **Onboard worktree layout (Requirement `114`):** confirm the filesystem root with the
     human operator (this host: `/Users/eduardoalmeida/apps/XpertMinds`), then work only under
     `<root>/<agent-identifier>/Jumentix` (clone of the canonical repo).
-24b. **Tests (Requirement `115`):** mandatory, functional, Jumentix-valued — no fake/vacuous
+    24b. **Tests (Requirement `115`):** mandatory, functional, Jumentix-valued — no fake/vacuous
     suites and no suites that primarily test third-party implementation APIs.
-24c. **New features (Requirement `117`):** update software docs and add feature documentation
+    24c. **New features (Requirement `117`):** update software docs and add feature documentation
     (EN/PT) in the same delivery.
-24d. **Smoke/integration (Requirement `118`):** use Docker to start real services and exercise
+    24d. **Smoke/integration (Requirement `118`):** use Docker to start real services and exercise
     the declared surface; silent skips are not green.
-24e. **Service orchestration (Requirement `119`):** prefer APIs over browser/app automation
+    24e. **Service orchestration (Requirement `119`):** prefer APIs over browser/app automation
     for Linear, GitHub, and other services; GitHub must always use `gh`.
-24f. **Linear agent visibility (Requirement `120`):** every executable Linear Issue and
+    24f. **Linear agent visibility (Requirement `120`):** every executable Linear Issue and
     Project/Epic must identify the active `agent_identifier`, synchronized with the canonical
     Agent Registry and local mirror before implementation begins.
-24g. **Coordinated agent delivery (Requirement `121`):** registered agents must refresh
+    24g. **Coordinated agent delivery (Requirement `121`):** registered agents must refresh
     sibling-agent progress, blockers, branches, PRs, and Linear Project Updates before starting
     or resuming work, and coordinate any overlapping scope before editing files.
-24h. **Firebase RTDB agent bus (Requirement `129`):** publish material progress with
+    24h. **Firebase RTDB agent bus (Requirement `129`):** publish material progress with
     `bun run agent-bus:publish` and consume sibling progress with `agent-bus:status` /
     `agent-bus:watch` before start/resume and while waiting on remote checks. Reuse the
     existing `jumentix-service-registry` credentials (`FIREBASE_SERVICE_ACCOUNT_KEY` or
@@ -98,15 +98,15 @@ Requirement `099` obliges every agent to read the full inventory before acting. 
 most recent additions, listed here because an agent resuming from an older checkout will not
 otherwise know they exist.
 
-| requirement | obligation | enforced by |
-| --- | --- | --- |
-| `127` | Repository commands through `rtk`; agent prose compressed. Never compress code, commands, paths, identifiers, error messages, counts, timings or CI states. Bun scripts run as `rtk proxy bun run <script>`. | attestation |
-| `128` | A merged change under `.agents/requirements/` takes precedence in the release queue. Precedence is **sequence only** and grants no exemption from any gate. | attestation + `065` |
-| `129` | Publish material progress to the Firebase RTDB agent bus and consume it before starting or resuming a task. Firestore stays the ownership SSOT. | `agent-bus:publish` / `agent-bus:status` |
-| `130` | Measured claims and bounded work: no number without the command that produced it, no proxy stated as a cause, corrections published where the claim was published, partial delivery reported as partial. | attestation |
-| `131` | Every built entrypoint must carry every runtime export its source barrel declares. A stale `dist` loads cleanly and fails only at call time. | `bun run packages:check-build-freshness` |
-| `132` | No orphaned published artifacts: content must resolve to a servable route, or be declared with the issue that owns the decision. The register fails in both directions. | `bun run website:check-content-routes` |
-| `137` | Suites and component scripts live with their owner; monorepo gates stay in `ci-cd/`; `arch:check-ownership-placement` fails closed with a shrink-only allow-list. | `bun run arch:check-ownership-placement` |
+| requirement | obligation                                                                                                                                                                                                   | enforced by                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `127`       | Repository commands through `rtk`; agent prose compressed. Never compress code, commands, paths, identifiers, error messages, counts, timings or CI states. Bun scripts run as `rtk proxy bun run <script>`. | attestation                              |
+| `128`       | A merged change under `.agents/requirements/` takes precedence in the release queue. Precedence is **sequence only** and grants no exemption from any gate.                                                  | attestation + `065`                      |
+| `129`       | Publish material progress to the Firebase RTDB agent bus and consume it before starting or resuming a task. Firestore stays the ownership SSOT.                                                              | `agent-bus:publish` / `agent-bus:status` |
+| `130`       | Measured claims and bounded work: no number without the command that produced it, no proxy stated as a cause, corrections published where the claim was published, partial delivery reported as partial.     | attestation                              |
+| `131`       | Every built entrypoint must carry every runtime export its source barrel declares. A stale `dist` loads cleanly and fails only at call time.                                                                 | `bun run packages:check-build-freshness` |
+| `132`       | No orphaned published artifacts: content must resolve to a servable route, or be declared with the issue that owns the decision. The register fails in both directions.                                      | `bun run website:check-content-routes`   |
+| `137`       | Suites and component scripts live with their owner; monorepo gates stay in `ci-cd/`; `arch:check-ownership-placement` fails closed with a shrink-only allow-list.                                            | `bun run arch:check-ownership-placement` |
 
 Both new gates run inside `ci:gate`. Requirements `127`, `128` and `130` are attestation-based
 and say so in their own text — do not mistake them for gates.

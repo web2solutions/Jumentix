@@ -1,0 +1,6 @@
+{
+  "name": "config-eslint-external-fixture",
+  "private": true,
+  "type": "module",
+  "description": "Throwaway external-consumption fixture for @jumentix/config-eslint contract tests (JUM-7/JUM-14). Not a workspace member."
+}

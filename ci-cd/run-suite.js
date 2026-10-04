@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Unified suite path runner (Req 106).
@@ -9,12 +8,13 @@
  *   bun ci-cd/run-suite.js <path> [<path>...]
  *   bun ci-cd/run-suite.js --script-label express apps/backend-template/test/integration/Express
  */
-const path = require('path');
-const { spawnSync } = require('child_process');
-const { resolveTestRuntime } = require('./lib/test-runtime');
-const { readTestMap } = require('./lib/test-map');
-const { listTestFiles } = require('./lib/mapped-suites.js');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
+
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
+const { listTestFiles } = require('./lib/mapped-suites.js');
+const { readTestMap } = require('./lib/test-map');
+const { resolveTestRuntime } = require('./lib/test-runtime');
 
 /**
  * Whether the map pins these paths to Node.
@@ -41,9 +41,10 @@ function mapPinsToNode(paths, readMap = readTestMap) {
   }
 
   return (manifest.suites || []).some(
-    (suite) => suite.runner === 'node'
-      && Boolean(suite.reason)
-      && paths.some((given) => suite.path === given || suite.path.startsWith(`${given}/`))
+    (suite) =>
+      suite.runner === 'node' &&
+      Boolean(suite.reason) &&
+      paths.some((given) => suite.path === given || suite.path.startsWith(`${given}/`))
   );
 }
 
@@ -53,9 +54,13 @@ function parseArgs(argv) {
   let timeoutMs = null;
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === '--script-label') label = argv[++i];
-    else if (arg === '--timeout') timeoutMs = Number(argv[++i]);
-    else if (!arg.startsWith('-')) paths.push(arg);
+    if (arg === '--script-label') {
+      i += 1;
+      label = argv[i];
+    } else if (arg === '--timeout') {
+      i += 1;
+      timeoutMs = Number(argv[i]);
+    } else if (!arg.startsWith('-')) paths.push(arg);
   }
   return { paths, label, timeoutMs };
 }
@@ -99,6 +104,16 @@ function canonicalSuitePaths(paths, root = process.cwd()) {
 }
 
 /**
+ * Every `*.test.ts` at or below `target`, as repository-relative paths.
+ *
+ * Re-exported from `lib/mapped-suites.js`, where `check-test-map` asks the same
+ * question over the whole tree. It was defined here first, and leaving a second
+ * copy behind would give the two checks slightly different ideas of what a suite
+ * is — the one that drifted being the one that kept reporting success.
+ */
+const defaultListTestFiles = listTestFiles;
+
+/**
  * Turn the requested paths into suite paths read from the test map.
  *
  * The arguments arrive from `process.argv` and end up as arguments to a spawned
@@ -131,9 +146,7 @@ function resolveMappedSuitePaths(paths, options = {}) {
 
   for (const request of canonicalSuitePaths(paths, root)) {
     // Elements of `mapped`, never the request itself.
-    const matches = mapped.filter(
-      (suite) => suite === request || suite.startsWith(`${request}/`)
-    );
+    const matches = mapped.filter((suite) => suite === request || suite.startsWith(`${request}/`));
 
     if (matches.length === 0) {
       unmatched.push(request);
@@ -149,16 +162,6 @@ function resolveMappedSuitePaths(paths, options = {}) {
 
   return { resolved: [...new Set(resolved)], unmatched, unmapped };
 }
-
-/**
- * Every `*.test.ts` at or below `target`, as repository-relative paths.
- *
- * Re-exported from `lib/mapped-suites.js`, where `check-test-map` asks the same
- * question over the whole tree. It was defined here first, and leaving a second
- * copy behind would give the two checks slightly different ideas of what a suite
- * is — the one that drifted being the one that kept reporting success.
- */
-const defaultListTestFiles = listTestFiles;
 
 function runSuitePaths(paths, options = {}) {
   const spawn = options.spawn || spawnSync;
@@ -176,25 +179,26 @@ function runSuitePaths(paths, options = {}) {
   }
 
   // The paths that actually execute come from the test map, not from argv.
-  const { resolved, unmatched, unmapped } = (options.resolveMappedSuitePaths
-    || resolveMappedSuitePaths)(paths, options);
+  const { resolved, unmatched, unmapped } = (
+    options.resolveMappedSuitePaths || resolveMappedSuitePaths
+  )(paths, options);
 
   if (unmatched.length > 0) {
     console.error(
-      `[suite] no mapped suite matches: ${unmatched.join(', ')}\n`
-        + '  Suite paths are resolved through test-map.json. A path that matches nothing\n'
-        + '  would otherwise run zero tests and report success. Check the spelling, or\n'
-        + '  register the suite with `bun run test-map:generate`.'
+      `[suite] no mapped suite matches: ${unmatched.join(', ')}\n` +
+        '  Suite paths are resolved through test-map.json. A path that matches nothing\n' +
+        '  would otherwise run zero tests and report success. Check the spelling, or\n' +
+        '  register the suite with `bun run test-map:generate`.'
     );
     return 1;
   }
 
   if (unmapped.length > 0) {
     console.error(
-      `[suite] test files present on disk but absent from test-map.json:\n`
-        + unmapped.map((file) => `    ${file}`).join('\n')
-        + '\n  Running the requested path would skip them while reporting the whole\n'
-        + '  directory as covered. Register them with `bun run test-map:generate`.'
+      `[suite] test files present on disk but absent from test-map.json:\n${unmapped
+        .map((file) => `    ${file}`)
+        .join('\n')}\n  Running the requested path would skip them while reporting the whole\n` +
+        `  directory as covered. Register them with \`bun run test-map:generate\`.`
     );
     return 1;
   }
@@ -204,8 +208,8 @@ function runSuitePaths(paths, options = {}) {
   // A map pin wins over environment resolution: it exists because the suite
   // cannot run under Bun at all, so "prefer bun locally" is not a choice here.
   const pinned = (options.mapPinsToNode || mapPinsToNode)(paths);
-  const runtime = options.runtime
-    || (pinned ? 'node' : resolveTestRuntime(options.env || process.env));
+  const runtime =
+    options.runtime || (pinned ? 'node' : resolveTestRuntime(options.env || process.env));
 
   if (runtime === 'node') {
     console.log(`[suite] runtime=node/jest${label}: ${paths.length} path(s)`);

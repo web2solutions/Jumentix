@@ -8,8 +8,9 @@ describe('offline boot', () => {
     cy.window().then(async (win) => {
       const dbs = await win.indexedDB.databases();
       expect(dbs.map((item) => item.name)).to.include('jumentix-frontend');
-      const stores = (win as Window & { __jumentixObjectStores?: () => string[] })
-        .__jumentixObjectStores?.() ?? [];
+      const stores =
+        (win as Window & { __jumentixObjectStores?: () => string[] }).__jumentixObjectStores?.() ??
+        [];
       expect(stores).to.include.members(['users', 'organizations', 'meta', 'outbox']);
     });
   });

@@ -53,7 +53,6 @@ Used from the monorepo/backend-template composition — prefer following the RES
 // Follow the REST guide for the full walkthrough.
 ```
 
-
 ### 3. Fluxos centrais
 
 ### 1. Read env contracts
@@ -68,7 +67,6 @@ Bootstrap at process start.
 
 HTTP/realtime adapters receive compiled deps.
 
-
 ### 4. Superfície prática (exports)
 
 - `(see package barrel — bootstrap compilers/helpers)`
@@ -77,8 +75,8 @@ Use os exports nas camadas de aplicação/adaptadores — não em entidades de d
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
+| Sintoma     | Causa           | Correção                                  |
+| ----------- | --------------- | ----------------------------------------- |
 | Missing env | Incomplete .env | Compare with runtime contracts reference. |
 
 **Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.

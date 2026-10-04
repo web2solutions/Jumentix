@@ -64,8 +64,7 @@ export default {
    * Nextra Layout component configuration
    */
   nextraLayout: {
-    docsRepositoryBase:
-      'https://github.com/web2solutions/Jumentix/tree/dev/apps/jumentix-website',
+    docsRepositoryBase: 'https://github.com/web2solutions/Jumentix/tree/dev/apps/jumentix-website',
     sidebar: {
       defaultMenuCollapseLevel: 1
     }

@@ -1,11 +1,11 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { gitBinary } = require('./lib/git-binary.js');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const EXCLUDED_FILES = new Set([
@@ -47,9 +47,13 @@ function missingLanguageTwins(files) {
   for (const file of files) {
     if (!file.startsWith('documentation/md/') || !file.endsWith('.md')) continue;
     const isPortuguese = file.endsWith('.pt-BR.md');
-    const twin = isPortuguese ? file.replace(/\.pt-BR\.md$/, '.md') : file.replace(/\.md$/, '.pt-BR.md');
+    const twin = isPortuguese
+      ? file.replace(/\.pt-BR\.md$/, '.md')
+      : file.replace(/\.md$/, '.pt-BR.md');
     if (!present.has(twin)) {
-      failures.push(`${file}: missing ${isPortuguese ? 'English' : 'Portuguese'} counterpart ${twin} (Requirement 076)`);
+      failures.push(
+        `${file}: missing ${isPortuguese ? 'English' : 'Portuguese'} counterpart ${twin} (Requirement 076)`
+      );
     }
   }
   return failures;
@@ -70,11 +74,16 @@ function validateCurrentGovernanceDocs(rootDir = ROOT) {
       if (/CircleCI is disabled/i.test(line)) {
         failures.push(`${location}: CircleCI is the canonical CI orchestrator, not disabled`);
       }
-      if (/GitHub Project/i.test(line) && /single source of truth|canonical planning|authoritative planning/i.test(line)) {
+      if (
+        /GitHub Project/i.test(line) &&
+        /single source of truth|canonical planning|authoritative planning/i.test(line)
+      ) {
         failures.push(`${location}: Linear is the only planning source of truth`);
       }
       if (line.includes(RETIRED_REPOSITORY_SLUG)) {
-        failures.push(`${location}: active documentation must use web2solutions/Jumentix, not ${RETIRED_REPOSITORY_SLUG}`);
+        failures.push(
+          `${location}: active documentation must use web2solutions/Jumentix, not ${RETIRED_REPOSITORY_SLUG}`
+        );
       }
       for (const retiredPath of RETIRED_PATHS) {
         if (line.includes(retiredPath)) {
@@ -101,4 +110,10 @@ function main(rootDir = ROOT) {
 
 if (isEntryPoint(module)) main();
 
-module.exports = { RETIRED_PATHS, missingLanguageTwins, RETIRED_REPOSITORY_SLUG, trackedMarkdownFiles, validateCurrentGovernanceDocs };
+module.exports = {
+  missingLanguageTwins,
+  RETIRED_PATHS,
+  RETIRED_REPOSITORY_SLUG,
+  trackedMarkdownFiles,
+  validateCurrentGovernanceDocs
+};

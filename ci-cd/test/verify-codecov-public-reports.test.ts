@@ -38,11 +38,13 @@ describe('verify-codecov-public-reports', () => {
   it('fails after the configured retry budget when Codecov does not return SVG', async () => {
     expect.hasAssertions();
 
-    await expect(verifier.verifyCodecovReports({
-      branch: 'main',
-      fetchFn: jest.fn().mockResolvedValue(svgResponse(404, 'text/html')),
-      attempts: 1,
-      delay: async () => undefined
-    })).rejects.toThrow('did not publish an SVG report');
+    await expect(
+      verifier.verifyCodecovReports({
+        branch: 'main',
+        fetchFn: jest.fn().mockResolvedValue(svgResponse(404, 'text/html')),
+        attempts: 1,
+        delay: async () => undefined
+      })
+    ).rejects.toThrow('did not publish an SVG report');
   });
 });

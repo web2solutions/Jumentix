@@ -100,26 +100,25 @@ const DOM_EXCEPTION_MAP: Readonly<Record<string, CanaErrorCode>> = {
  */
 export function translateError(thrown: unknown, details: ErrorDetails = {}): CanaError {
   if (
-    typeof thrown === 'object'
-    && thrown !== null
-    && (thrown as { canaError?: unknown }).canaError === true
+    typeof thrown === 'object' &&
+    thrown !== null &&
+    (thrown as { canaError?: unknown }).canaError === true
   ) {
     return thrown as CanaError;
   }
 
-  const name = typeof thrown === 'object' && thrown !== null
-    ? (thrown as { name?: unknown }).name
-    : undefined;
+  const name =
+    typeof thrown === 'object' && thrown !== null ? (thrown as { name?: unknown }).name : undefined;
 
-  const code = typeof name === 'string' && name in DOM_EXCEPTION_MAP
-    ? DOM_EXCEPTION_MAP[name]
-    : 'Internal';
+  const code =
+    typeof name === 'string' && name in DOM_EXCEPTION_MAP ? DOM_EXCEPTION_MAP[name] : 'Internal';
 
-  const message = typeof thrown === 'object'
-    && thrown !== null
-    && typeof (thrown as { message?: unknown }).message === 'string'
-    ? (thrown as { message: string }).message
-    : 'Unclassified failure';
+  const message =
+    typeof thrown === 'object' &&
+    thrown !== null &&
+    typeof (thrown as { message?: unknown }).message === 'string'
+      ? (thrown as { message: string }).message
+      : 'Unclassified failure';
 
   return canaError(code, message, { ...details, cause: thrown });
 }

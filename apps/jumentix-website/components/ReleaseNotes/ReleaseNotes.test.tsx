@@ -1,6 +1,7 @@
 import { render, screen } from '@/test-utils';
-import { useReleaseNotes } from './use-release-notes';
+
 import { ReleaseNotes } from './ReleaseNotes';
+import { useReleaseNotes } from './use-release-notes';
 
 jest.mock('./use-release-notes', () => ({
   useReleaseNotes: jest.fn()
@@ -31,7 +32,10 @@ describe('ReleaseNotes (JUM-719)', () => {
     render(<ReleaseNotes />);
     expect(screen.queryByText('Loading releases...')).not.toBeInTheDocument();
     expect(screen.getByText(/No tagged releases yet/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open the changelog' })).toHaveAttribute('href', '/changelog');
+    expect(screen.getByRole('link', { name: 'Open the changelog' })).toHaveAttribute(
+      'href',
+      '/changelog'
+    );
   });
 
   it('shows the error alert when loading fails', () => {

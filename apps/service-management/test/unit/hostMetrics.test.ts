@@ -1,4 +1,3 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 import path from 'node:path';
 
 const { collectHostMetrics } = require('../../src/runtime/hostMetrics');

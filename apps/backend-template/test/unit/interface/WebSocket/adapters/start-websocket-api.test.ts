@@ -1,5 +1,3 @@
-/* eslint-disable jest/no-untyped-mock-factory */
-
 const websocketLoaderAdapterStart = jest.fn().mockResolvedValue(undefined);
 const clusterForkMock = jest.fn();
 const clusterOnMock = jest.fn();
@@ -40,7 +38,8 @@ describe('start-websocket-api loader', () => {
 
   it('starts websocket runtime when realtime protocol is websocket', async () => {
     expect.assertions(2);
-    const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
+    const { default: startWebSocketApiAdapter } =
+      await import('@src/interface/WebSocket/adapters/start-websocket-api');
     const started = await startWebSocketApiAdapter({
       JUMENTIX_REALTIME_API: 'yes',
       JUMENTIX_REALTIME_API_PROTOCOL: 'websocket'
@@ -51,20 +50,22 @@ describe('start-websocket-api loader', () => {
 
   it('does not start websocket runtime when realtime protocol is grpc', async () => {
     expect.assertions(2);
-    const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
+    const { default: startWebSocketApiAdapter } =
+      await import('@src/interface/WebSocket/adapters/start-websocket-api');
     const started = await startWebSocketApiAdapter({
       JUMENTIX_REALTIME_API: 'yes',
       JUMENTIX_REALTIME_API_PROTOCOL: 'grpc'
     } as unknown as NodeJS.ProcessEnv);
     expect(started).toBe(false);
-    expect(websocketLoaderAdapterStart).toHaveBeenCalledTimes(0);
+    expect(websocketLoaderAdapterStart).not.toHaveBeenCalled();
   });
 
   it('uses process env when env argument is omitted', async () => {
     expect.assertions(2);
     process.env.JUMENTIX_REALTIME_API = 'yes';
     process.env.JUMENTIX_REALTIME_API_PROTOCOL = 'websocket';
-    const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
+    const { default: startWebSocketApiAdapter } =
+      await import('@src/interface/WebSocket/adapters/start-websocket-api');
     const started = await startWebSocketApiAdapter();
     expect(started).toBe(true);
     expect(websocketLoaderAdapterStart).toHaveBeenCalledTimes(1);
@@ -72,12 +73,13 @@ describe('start-websocket-api loader', () => {
 
   it('starts in cluster primary mode and forks workers', async () => {
     expect.hasAssertions();
-    const clusterModule = await import('cluster');
+    const clusterModule = await import('node:cluster');
     (clusterModule.default as any).isPrimary = true;
     isClusterSocketIoEnabledMock.mockReturnValue(true);
     resolveWebSocketClusterWorkersMock.mockReturnValue(3);
 
-    const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
+    const { default: startWebSocketApiAdapter } =
+      await import('@src/interface/WebSocket/adapters/start-websocket-api');
     await startWebSocketApiAdapter({
       JUMENTIX_REALTIME_API: 'yes',
       JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',
@@ -87,19 +89,22 @@ describe('start-websocket-api loader', () => {
     expect(setupSocketIoClusterPrimaryMock).toHaveBeenCalledTimes(1);
     expect(clusterForkMock).toHaveBeenCalledTimes(3);
     expect(clusterOnMock).toHaveBeenCalledWith('exit', expect.any(Function));
-    const onExitCallback = clusterOnMock.mock.calls.find((call) => call[0] === 'exit')?.[1] as (() => void);
+    const onExitCallback = clusterOnMock.mock.calls.find(
+      (call) => call[0] === 'exit'
+    )?.[1] as () => void;
     onExitCallback();
     expect(clusterForkMock).toHaveBeenCalledTimes(4);
-    expect(websocketLoaderAdapterStart).toHaveBeenCalledTimes(0);
+    expect(websocketLoaderAdapterStart).not.toHaveBeenCalled();
   });
 
   it('starts websocket adapter in cluster worker mode', async () => {
     expect.assertions(2);
-    const clusterModule = await import('cluster');
+    const clusterModule = await import('node:cluster');
     (clusterModule.default as any).isPrimary = false;
     isClusterSocketIoEnabledMock.mockReturnValue(true);
 
-    const { startWebSocketApiAdapter } = await import('@src/interface/WebSocket/adapters/start-websocket-api');
+    const { default: startWebSocketApiAdapter } =
+      await import('@src/interface/WebSocket/adapters/start-websocket-api');
     const started = await startWebSocketApiAdapter({
       JUMENTIX_REALTIME_API: 'yes',
       JUMENTIX_REALTIME_API_PROTOCOL: 'websocket',

@@ -51,7 +51,6 @@ Consumed via backend-template / monorepo composition.
 // then inspect how composition uses runtime helpers.
 ```
 
-
 ### 3. Fluxos centrais
 
 ### 1. Follow REST guide first
@@ -66,7 +65,6 @@ Treat this as a support package under adapter-runtime-bootstrap.
 
 Never bundle into SPA code.
 
-
 ### 4. Superfície prática (exports)
 
 - `(see package barrel — runtime infra helpers)`
@@ -75,8 +73,8 @@ Use os exports nas camadas de aplicação/adaptadores — não em entidades de d
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
+| Sintoma              | Causa         | Correção                                    |
+| -------------------- | ------------- | ------------------------------------------- |
 | Imported in frontend | Wrong runtime | Remove the dependency from browser bundles. |
 
 **Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.

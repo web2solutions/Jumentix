@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * JUM-871 — level-parallel topological workspace build.
  *
@@ -19,9 +18,10 @@
  * Pure pieces (discovery, graph, levels) are exported and take injected
  * fs/spawn so the suite drives synthetic fixtures.
  */
+const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawn } = require('node:child_process');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const DEPENDENCY_FIELDS = Object.freeze(['dependencies', 'peerDependencies', 'devDependencies']);
@@ -83,7 +83,39 @@ function workspaceEdges(pkg, knownNames) {
  * @param {Map<string, { name: string, dir: string, dependencies: string[] }>} packages
  * @returns {string[][]} level N is the array of package names built at step N
  */
-const byName = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const byName = (a, b) => {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+};
+
+/** One concrete cycle path through `candidates`, for the error message. */
+function findCycle(packages, candidates) {
+  const knownNames = new Set(packages.keys());
+  const state = new Map(); // name → 'visiting' | 'done'
+  const stack = [];
+  let found = null;
+  const visit = (name) => {
+    if (found || state.get(name) === 'done') return;
+    if (state.get(name) === 'visiting') {
+      found = [...stack.slice(stack.indexOf(name)), name];
+      return;
+    }
+    state.set(name, 'visiting');
+    stack.push(name);
+    for (const dep of workspaceEdges(packages.get(name), knownNames)) {
+      if (candidates.has(dep)) visit(dep);
+      if (found) return;
+    }
+    stack.pop();
+    state.set(name, 'done');
+  };
+  for (const name of candidates) {
+    visit(name);
+    if (found) return found;
+  }
+  return null;
+}
 
 function computeBuildLevels(packages) {
   const knownNames = new Set(packages.keys());
@@ -121,39 +153,12 @@ function computeBuildLevels(packages) {
     const remaining = [...packages.keys()].filter((name) => !levels.flat().includes(name));
     const cycle = findCycle(packages, new Set(remaining));
     throw new Error(
-      'Workspace dependency cycle detected; cannot compute a build order: '
-        + (cycle ? cycle.join(' -> ') : remaining.join(', '))
+      `Workspace dependency cycle detected; cannot compute a build order: ${
+        cycle ? cycle.join(' -> ') : remaining.join(', ')
+      }`
     );
   }
   return levels;
-}
-
-/** One concrete cycle path through `candidates`, for the error message. */
-function findCycle(packages, candidates) {
-  const knownNames = new Set(packages.keys());
-  const state = new Map(); // name → 'visiting' | 'done'
-  const stack = [];
-  let found = null;
-  const visit = (name) => {
-    if (found || state.get(name) === 'done') return;
-    if (state.get(name) === 'visiting') {
-      found = [...stack.slice(stack.indexOf(name)), name];
-      return;
-    }
-    state.set(name, 'visiting');
-    stack.push(name);
-    for (const dep of workspaceEdges(packages.get(name), knownNames)) {
-      if (candidates.has(dep)) visit(dep);
-      if (found) return;
-    }
-    stack.pop();
-    state.set(name, 'done');
-  };
-  for (const name of candidates) {
-    visit(name);
-    if (found) return found;
-  }
-  return null;
 }
 
 function spawnPackageBuild(pkg, options = {}) {
@@ -190,10 +195,13 @@ async function buildWorkspacePackages(options = {}) {
   for (let index = 0; index < levels.length; index += 1) {
     const level = levels[index];
     logger.log(`[build] level ${index + 1}/${levels.length}: ${level.join(', ')}`);
-    const results = await Promise.all(level.map(async (name) => ({
-      name,
-      status: await spawnPackageBuild(packages.get(name), options)
-    })));
+    // eslint-disable-next-line no-await-in-loop -- levels are topologically ordered: level N+1 depends on level N and must wait for it
+    const results = await Promise.all(
+      level.map(async (name) => ({
+        name,
+        status: await spawnPackageBuild(packages.get(name), options)
+      }))
+    );
     const failed = results.find((result) => result.status !== 0);
     if (failed) {
       logger.error(
@@ -216,11 +224,13 @@ function main({ execute = buildWorkspacePackages, logger = console } = {}) {
 const runAsEntryPoint = ({
   caller = module,
   entry = require.main,
-  exit = (status) => { process.exitCode = status; },
+  exit = (status) => {
+    process.exitCode = status;
+  },
   runMain = main
 } = {}) => {
   if (!isEntryPoint(caller, entry)) return false;
-  void runMain().then(exit);
+  runMain().then(exit);
   return true;
 };
 

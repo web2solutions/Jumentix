@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { inject, onBeforeMount } from 'vue'
-import { useColorModes } from '@coreui/vue'
+import { inject, onBeforeMount } from 'vue';
+import { useColorModes } from '@coreui/vue';
 
-import BootErrorView from '@/views/BootErrorView.vue'
-import { useThemeStore } from '@/stores/theme'
+import BootErrorView from '@/views/BootErrorView.vue';
+import { useThemeStore } from '@/stores/theme';
 
-const canaBoot = inject<'ok' | 'unavailable'>('canaBoot', 'ok')
+const canaBoot = inject<'ok' | 'unavailable'>('canaBoot', 'ok');
 
-const { isColorModeSet, setColorMode } = useColorModes('jumentix-frontend-theme')
-const currentTheme = useThemeStore()
+const { isColorModeSet, setColorMode } = useColorModes('jumentix-frontend-theme');
+const currentTheme = useThemeStore();
 
 onBeforeMount(() => {
   if (isColorModeSet()) {
-    return
+    return;
   }
-  setColorMode(currentTheme.theme)
-})
+  setColorMode(currentTheme.theme);
+});
 </script>
 
 <template>

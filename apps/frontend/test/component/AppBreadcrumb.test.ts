@@ -1,6 +1,5 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue';
@@ -21,7 +20,10 @@ const routes = [
     meta: { titleKey: 'nav.home' },
     children: [
       {
-        path: '/m/:moduleId/:tab?', name: 'Module', component: { template: '<div />' }, meta: { titleKey: 'nav.home' }
+        path: '/m/:moduleId/:tab?',
+        name: 'Module',
+        component: { template: '<div />' },
+        meta: { titleKey: 'nav.home' }
       }
     ]
   }

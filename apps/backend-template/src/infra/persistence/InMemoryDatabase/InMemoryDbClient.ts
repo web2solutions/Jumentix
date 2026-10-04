@@ -1,9 +1,10 @@
 // import { Account } from '@src/domains/Accounts';
-import type { IDatabaseClient, IDbStores } from '../port/IDatabaseClient';
-import { UserStoreAPI } from './Stores/UserStoreAPI';
-import { OrganizationStoreAPI } from './Stores/OrganizationStoreAPI';
+import OrganizationStoreAPI from './Stores/OrganizationStoreAPI';
+import UserStoreAPI from './Stores/UserStoreAPI';
 
-export const InMemoryDbClient: IDatabaseClient = ((): IDatabaseClient => {
+import type { IDatabaseClient, IDbStores } from '../port/IDatabaseClient';
+
+const InMemoryDbClient: IDatabaseClient = ((): IDatabaseClient => {
   const stores: IDbStores = {
     User: UserStoreAPI,
     Organization: OrganizationStoreAPI
@@ -12,5 +13,7 @@ export const InMemoryDbClient: IDatabaseClient = ((): IDatabaseClient => {
   const disconnect = () => Promise.resolve();
   return { stores, connect, disconnect };
 })();
+
+export default InMemoryDbClient;
 
 // mongoose and sequelize

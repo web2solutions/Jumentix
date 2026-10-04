@@ -15,11 +15,11 @@ Does `bun test --coverage` emit trustworthy BRDA/BRF/BRH records adequate for th
 
 ## Verdict
 
-| Check | Result |
-| --- | --- |
-| LCOV file produced | Yes |
-| Line (`DA:`) records | Present |
-| Branch (`BRDA`/`BRF`/`BRH`) records | **Present on Bun 1.3.13 for this subset** |
+| Check                                     | Result                                                                                                            |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| LCOV file produced                        | Yes                                                                                                               |
+| Line (`DA:`) records                      | Present                                                                                                           |
+| Branch (`BRDA`/`BRF`/`BRH`) records       | **Present on Bun 1.3.13 for this subset**                                                                         |
 | Threshold fail-closed on branch shortfall | Enforce via merged LCOV + existing Jest/Codecov thresholds until Bun-native threshold flags are adopted repo-wide |
 
 **Decision for JUM-437:** keep the 90% branch bar. Merge Bun + Node LCOV with first-seen-file wins (`ci-cd/merge-coverage-reports.js`) so Codecov/Sonar do not double-count. If a future Bun release drops BRDA, reopen this spike before lowering the bar.

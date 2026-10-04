@@ -1,7 +1,5 @@
-import {
-  BullMqMessageMediatorAdapter,
-  RabbitMqMessageMediatorAdapter
-} from '../../src';
+import { BullMqMessageMediatorAdapter, RabbitMqMessageMediatorAdapter } from '../../src';
+
 import type { IMessage, IMessageResponse } from '../../src';
 
 /**
@@ -25,7 +23,9 @@ async function until(
       throw new Error(`Timed out after ${timeoutMs}ms waiting for ${describe}`);
     }
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve) => { setTimeout(resolve, stepMs); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, stepMs);
+    });
   }
 }
 
@@ -178,18 +178,25 @@ suite('RabbitMQ mediator against a real broker', () => {
 
     const name = contract('event');
     const delivered: unknown[] = [];
-    mediator.subscribe(name, (event) => { delivered.push(event.payload); });
+    mediator.subscribe(name, (event) => {
+      delivered.push(event.payload);
+    });
 
     // Subscription is asynchronous on a broker: the binding has to exist before
     // the publish, which is a step the in-memory mediator does not have. The
     // publish is retried until one lands rather than waiting a flat second for
     // the binding to appear (JUM-679).
-    await until(async () => {
-      await mediator.publish({
-        name, payload: { id: 1 }, occurredAt: new Date().toISOString()
-      });
-      return delivered.length > 0;
-    }, { describe: 'the broker to bind the subscription and deliver' });
+    await until(
+      async () => {
+        await mediator.publish({
+          name,
+          payload: { id: 1 },
+          occurredAt: new Date().toISOString()
+        });
+        return delivered.length > 0;
+      },
+      { describe: 'the broker to bind the subscription and deliver' }
+    );
 
     expect(delivered).toStrictEqual([{ id: 1 }]);
   }, 60000);
@@ -202,10 +209,9 @@ suite('RabbitMQ mediator against a real broker', () => {
   it('reports a timeout when no handler is listening', async () => {
     expect.hasAssertions();
 
-    const response: IMessageResponse = await mediator.request(
-      message(contract('unclaimed')),
-      { timeoutMs: 2000 }
-    );
+    const response: IMessageResponse = await mediator.request(message(contract('unclaimed')), {
+      timeoutMs: 2000
+    });
 
     expect(response.error).toBeDefined();
   }, 60000);
@@ -225,11 +231,10 @@ suite('RabbitMQ mediator against a real broker', () => {
 
     const name = contract('routed');
     const queueName = `integration-routed-${Date.now().toString(36)}`;
-    mediator.registerHandler(
-      name,
-      async () => ({ contract: name, result: 'routed' }),
-      { routeKey: `${name}.key`, queueName }
-    );
+    mediator.registerHandler(name, async () => ({ contract: name, result: 'routed' }), {
+      routeKey: `${name}.key`,
+      queueName
+    });
 
     const response = await mediator.request(message(name), {
       timeoutMs: 20000,
@@ -253,11 +258,11 @@ suite('RabbitMQ mediator against a real broker', () => {
     expect((response.error as { message?: string }).message).toMatch(/rabbit handler failed/);
 
     const nonErrorName = contract('rabbit-throw-non-error');
-    mediator.registerHandler(nonErrorName, async () => {
+    mediator.registerHandler(nonErrorName, async () =>
       // Intentional: covers the adapter branch for non-Error rejections.
-      // eslint-disable-next-line prefer-promise-reject-errors
-      return Promise.reject('rabbit string failure');
-    });
+
+      Promise.reject('rabbit string failure')
+    );
     const nonError = await mediator.request(message(nonErrorName), { timeoutMs: 20000 });
     expect((nonError.error as { message?: string }).message).toMatch(/rabbit string failure/);
   }, 60000);
@@ -298,7 +303,7 @@ suite('RabbitMQ mediator against a real broker', () => {
     });
 
     const name = contract('rabbit-sparse-response');
-    mediator.registerHandler(name, async () => ({ result: 'sparse' } as IMessageResponse));
+    mediator.registerHandler(name, async () => ({ result: 'sparse' }) as IMessageResponse);
     const response = await mediator.request(message(name), { timeoutMs: 20000 });
     expect(response.contract).toBe(name);
     expect(response.result).toBe('sparse');
@@ -309,9 +314,11 @@ suite('RabbitMQ mediator against a real broker', () => {
 
     // Private helper, exercised through the real adapter class so the catch
     // branch that keeps a corrupt frame from crashing the consumer is measured.
-    const parsed = (RabbitMqMessageMediatorAdapter as unknown as {
-      parseMessage: (content: Buffer, fallback: unknown) => unknown;
-    }).parseMessage(Buffer.from('not-json{'), { contract: 'fallback' });
+    const parsed = (
+      RabbitMqMessageMediatorAdapter as unknown as {
+        parseMessage: (content: Buffer, fallback: unknown) => unknown;
+      }
+    ).parseMessage(Buffer.from('not-json{'), { contract: 'fallback' });
 
     expect(parsed).toStrictEqual({ contract: 'fallback' });
   });
@@ -322,11 +329,7 @@ suite('RabbitMQ mediator against a real broker', () => {
     const { replyQueue } = mediator as unknown as { replyQueue: string };
     const { channel } = mediator as unknown as {
       channel: {
-        sendToQueue: (
-          queue: string,
-          content: Buffer,
-          options?: Record<string, unknown>
-        ) => boolean;
+        sendToQueue: (queue: string, content: Buffer, options?: Record<string, unknown>) => boolean;
       };
     };
 
@@ -353,11 +356,9 @@ suite('RabbitMQ mediator against a real broker', () => {
 
     const name = contract('rabbit-queue-only');
     const queueName = `integration-rabbit-queue-only-${Date.now().toString(36)}`;
-    mediator.registerHandler(
-      name,
-      async () => ({ contract: name, result: 'rabbit-queue-only' }),
-      { queueName }
-    );
+    mediator.registerHandler(name, async () => ({ contract: name, result: 'rabbit-queue-only' }), {
+      queueName
+    });
 
     const response = await mediator.request(message(name), {
       timeoutMs: 20000,
@@ -456,7 +457,9 @@ suite('BullMQ mediator against a real Redis', () => {
     expect.hasAssertions();
 
     const name = contract('bull-failure');
-    mediator.registerHandler(name, async () => { throw new Error('handler failed'); });
+    mediator.registerHandler(name, async () => {
+      throw new Error('handler failed');
+    });
 
     const response = await mediator.request(message(name), { timeoutMs: 20000 });
 
@@ -464,11 +467,11 @@ suite('BullMQ mediator against a real Redis', () => {
     expect((response.error as { message?: string }).message).toMatch(/handler failed/);
 
     const nonErrorName = contract('bull-throw-non-error');
-    mediator.registerHandler(nonErrorName, async () => {
+    mediator.registerHandler(nonErrorName, async () =>
       // Intentional: covers the adapter branch for non-Error rejections.
-      // eslint-disable-next-line prefer-promise-reject-errors
-      return Promise.reject('bull string failure');
-    });
+
+      Promise.reject('bull string failure')
+    );
     const nonError = await mediator.request(message(nonErrorName), { timeoutMs: 20000 });
     expect((nonError.error as { message?: string }).message).toMatch(/bull string failure/);
   }, 60000);
@@ -494,7 +497,9 @@ suite('BullMQ mediator against a real Redis', () => {
     // sleep. A minute-long timer left running is a handle the runner has to
     // survive, and the number was only ever "much larger than 500ms".
     let releaseHandler: () => void = () => undefined;
-    const handlerWork = new Promise<void>((resolve) => { releaseHandler = resolve; });
+    const handlerWork = new Promise<void>((resolve) => {
+      releaseHandler = resolve;
+    });
     mediator.registerHandler(name, async () => {
       await handlerWork;
       return { contract: name, result: 'late' };
@@ -522,7 +527,9 @@ suite('BullMQ mediator against a real Redis', () => {
 
     const name = contract('bull-event');
     const delivered: unknown[] = [];
-    mediator.subscribe(name, (event) => { delivered.push(event.payload); });
+    mediator.subscribe(name, (event) => {
+      delivered.push(event.payload);
+    });
     mediator.subscribe(name, () => undefined);
 
     await mediator.publish({
@@ -539,11 +546,10 @@ suite('BullMQ mediator against a real Redis', () => {
 
     const name = contract('bull-routed');
     const queueName = `integration-bull-routed-${Date.now().toString(36)}`;
-    mediator.registerHandler(
-      name,
-      async () => ({ contract: name, result: 'bull-routed' }),
-      { routeKey: `${name}.key`, queueName }
-    );
+    mediator.registerHandler(name, async () => ({ contract: name, result: 'bull-routed' }), {
+      routeKey: `${name}.key`,
+      queueName
+    });
 
     const byRoute = await mediator.request(message(name), {
       timeoutMs: 20000,
@@ -572,17 +578,23 @@ suite('BullMQ mediator against a real Redis', () => {
 
     const name = contract('bull-missing-handler');
     mediator.registerHandler(name, async () => ({ contract: name, result: 'x' }));
-    (mediator as unknown as {
-      handlersByContract: Record<string, unknown>;
-      handlersByRouteKey: Record<string, unknown>;
-      handlersByQueueName: Record<string, unknown>;
-    }).handlersByContract = {};
-    (mediator as unknown as {
-      handlersByRouteKey: Record<string, unknown>;
-    }).handlersByRouteKey = {};
-    (mediator as unknown as {
-      handlersByQueueName: Record<string, unknown>;
-    }).handlersByQueueName = {};
+    (
+      mediator as unknown as {
+        handlersByContract: Record<string, unknown>;
+        handlersByRouteKey: Record<string, unknown>;
+        handlersByQueueName: Record<string, unknown>;
+      }
+    ).handlersByContract = {};
+    (
+      mediator as unknown as {
+        handlersByRouteKey: Record<string, unknown>;
+      }
+    ).handlersByRouteKey = {};
+    (
+      mediator as unknown as {
+        handlersByQueueName: Record<string, unknown>;
+      }
+    ).handlersByQueueName = {};
 
     const response = await mediator.request(message(name), { timeoutMs: 20000 });
     // Wire form is `{ name, message }` so the reason survives Redis JSON.
@@ -600,9 +612,13 @@ suite('BullMQ mediator against a real Redis', () => {
     });
 
     const name = contract('bull-correlation');
-    mediator.registerHandler(name, async (incoming) => ({
-      result: incoming.metadata?.correlationId
-    } as IMessageResponse));
+    mediator.registerHandler(
+      name,
+      async (incoming) =>
+        ({
+          result: incoming.metadata?.correlationId
+        }) as IMessageResponse
+    );
 
     const correlationId = `corr-${Date.now().toString(36)}`;
     const response = await mediator.request(

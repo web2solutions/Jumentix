@@ -29,7 +29,9 @@ describe('architecture tab surfaces (JUM-905)', () => {
   it('keeps the sidebar dark', () => {
     expect.hasAssertions();
 
-    expect(ruleBody('.architecture-shell .sidebar')).toContain('background: rgba(18, 19, 23, 0.97);');
+    expect(ruleBody('.architecture-shell .sidebar')).toContain(
+      'background: rgba(18, 19, 23, 0.97);'
+    );
   });
 
   it('overlays the mini-map on a positioned workspace instead of stacking it below', () => {
@@ -40,32 +42,54 @@ describe('architecture tab surfaces (JUM-905)', () => {
   });
 });
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { architectureLinkGeometry, architectureLinkLabel } = require('../../src/ui/architectureCanvas.js');
+const {
+  architectureLinkGeometry,
+  architectureLinkLabel
+} = require('../../src/ui/architectureCanvas.js');
 
 describe('architecture links (JUM-905)', () => {
   const core = {
-    id: 'core', name: 'Core', x: 80, y: 80, width: 270, height: 190
+    id: 'core',
+    name: 'Core',
+    x: 80,
+    y: 80,
+    width: 270,
+    height: 190
   };
   const tasks = {
-    id: 'service-import-2', name: 'Tasks API', x: 390, y: 80, width: 270, height: 190
+    id: 'service-import-2',
+    name: 'Tasks API',
+    x: 390,
+    y: 80,
+    width: 270,
+    height: 190
   };
 
   it('joins facing card edges at mid-height instead of crossing the titles', () => {
     expect.hasAssertions();
 
     expect(architectureLinkGeometry(core, tasks)).toStrictEqual({
-      x1: 350, y1: 175, x2: 390, y2: 175
+      x1: 350,
+      y1: 175,
+      x2: 390,
+      y2: 175
     });
     expect(architectureLinkGeometry(tasks, core)).toStrictEqual({
-      x1: 350, y1: 175, x2: 390, y2: 175
+      x1: 350,
+      y1: 175,
+      x2: 390,
+      y2: 175
     });
   });
 
   it('labels links with service names, not internal ids', () => {
     expect.hasAssertions();
 
-    expect(architectureLinkLabel({ from: 'core', to: 'service-import-2', protocol: 'rest' }, [core, tasks]))
-      .toBe('Core —rest→ Tasks API');
+    expect(
+      architectureLinkLabel({ from: 'core', to: 'service-import-2', protocol: 'rest' }, [
+        core,
+        tasks
+      ])
+    ).toBe('Core —rest→ Tasks API');
   });
 });

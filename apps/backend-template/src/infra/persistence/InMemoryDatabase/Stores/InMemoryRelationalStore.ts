@@ -1,10 +1,11 @@
-import type { IStore } from '@src/infra/ports/persistence/IStore';
+import { runListQuery } from '@jumentix/persistence-contracts';
+
 import { ConflictError, DataBaseNotFoundError } from '@src/infra/exceptions';
+
+import type { IIdReservationLedger } from '@jumentix/persistence-contracts';
+
+import type { IStore } from '@src/infra/ports/persistence/IStore';
 import type { IPagingRequest, IPagingResponse } from '@src/modules/port';
-import {
-  runListQuery,
-  type IIdReservationLedger
-} from '@jumentix/persistence-contracts';
 
 type Primitive = string | number | boolean | null | undefined;
 
@@ -20,7 +21,7 @@ interface IStoreOptions<T extends Record<string, any>> {
 
 const stringifyPrimitive = (value: Primitive): string => String(value ?? '');
 
-export class InMemoryRelationalStore<T extends Record<string, any>> implements IStore<T> {
+class InMemoryRelationalStore<T extends Record<string, any>> implements IStore<T> {
   private readonly records = new Map<string, T>();
 
   private readonly uniqueIndexes: Record<string, Map<string, string>> = {};
@@ -31,20 +32,20 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
 
   constructor(options: IStoreOptions<T> = {}) {
     this.options = options;
-    const unique = options.uniqueIndexes || [];
-    const ciUnique = options.caseInsensitiveUniqueIndexes || [];
+    const unique = options.uniqueIndexes ?? [];
+    const ciUnique = options.caseInsensitiveUniqueIndexes ?? [];
     [...unique, ...ciUnique].forEach((field) => {
       this.uniqueIndexes[field.toString()] = new Map<string, string>();
     });
-    (options.relationIndexes || []).forEach((field) => {
+    (options.relationIndexes ?? []).forEach((field) => {
       this.relationIndexes[field.toString()] = new Map<string, Set<string>>();
     });
   }
 
   private normalizeUniqueValue(field: string, value: Primitive): string {
     const raw = stringifyPrimitive(value);
-    const ci = this.options.caseInsensitiveUniqueIndexes || [];
-    if (ci.includes(field as keyof T)) return raw.toLowerCase();
+    const ci = this.options.caseInsensitiveUniqueIndexes ?? [];
+    if (ci.includes(field)) return raw.toLowerCase();
     return raw;
   }
 
@@ -81,7 +82,7 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
       }
 
       if (nextRef !== '') {
-        const existing = index.get(nextRef) || new Set<string>();
+        const existing = index.get(nextRef) ?? new Set<string>();
         existing.add(id);
         index.set(nextRef, existing);
       }
@@ -183,14 +184,10 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
   ): Promise<IPagingResponse<T[]>> {
     // The contracts' response type marks `page`/`size` optional; `paginateList`
     // always sets them, so the application's stricter shape holds.
-    const effectivePaging = this.options.softDelete
-      ? paging
-      : { ...paging, includeDeleted: true };
-    return runListQuery(
-      [...this.records.values()],
-      filters,
-      effectivePaging
-    ) as IPagingResponse<T[]>;
+    const effectivePaging = this.options.softDelete ? paging : { ...paging, includeDeleted: true };
+    return runListQuery([...this.records.values()], filters, effectivePaging) as IPagingResponse<
+      T[]
+    >;
   }
 
   public async getByRelation(field: keyof T, referenceId: string): Promise<T[]> {
@@ -207,3 +204,5 @@ export class InMemoryRelationalStore<T extends Record<string, any>> implements I
       });
   }
 }
+
+export default InMemoryRelationalStore;

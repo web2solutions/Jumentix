@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const guardDefaultsPath = require('path');
-const guardDefaultsFs = require('fs');
-const guardDefaultsOs = require('os');
+const guardDefaultsFs = require('node:fs');
+const guardDefaultsOs = require('node:os');
+const guardDefaultsPath = require('node:path');
 
 /**
  * The guards called the way CI calls them: with no injection at all (JUM-681).
@@ -23,13 +22,13 @@ const guardDefaultsOs = require('os');
  * expensive (`check-bun-version`), and the paths are real suites that already
  * exist in the map.
  */
-const guardDefaultsMatrix = require('../run-full-test-matrix');
-const guardDefaultsSuiteRunner = require('../run-suite');
+const guardDefaultsToolchain = require('../check-bun-version');
+const guardDefaultsAuthorship = require('../check-commit-authorship');
 const guardDefaultsCoverage = require('../check-coverage-thresholds');
 const guardDefaultsOverrides = require('../check-dependency-override-integrity');
-const guardDefaultsAuthorship = require('../check-commit-authorship');
 const guardDefaultsPackageSuites = require('../check-package-suites');
-const guardDefaultsToolchain = require('../check-bun-version');
+const guardDefaultsMatrix = require('../run-full-test-matrix');
+const guardDefaultsSuiteRunner = require('../run-suite');
 
 const guardDefaultsRepoRoot = guardDefaultsPath.resolve(__dirname, '../..');
 
@@ -39,10 +38,14 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
 
     // `executeMatrixCell` with its own `spawnSync`: the pinned-toolchain guard
     // is the cheapest script in the manifest and answers 0 on a healthy tree.
-    expect(guardDefaultsMatrix.executeMatrixCell({ id: 'version', script: 'check-bun-version' })).toBe(0);
+    expect(
+      guardDefaultsMatrix.executeMatrixCell({ id: 'version', script: 'check-bun-version' })
+    ).toBe(0);
 
     // And a script that does not exist must not be read as success.
-    expect(guardDefaultsMatrix.executeMatrixCell({ id: 'missing', script: 'no:such:script' })).not.toBe(0);
+    expect(
+      guardDefaultsMatrix.executeMatrixCell({ id: 'missing', script: 'no:such:script' })
+    ).not.toBe(0);
   });
 
   it('passes a cell environment through to the child', () => {
@@ -52,11 +55,13 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     // is merged over `process.env` inside the real spawn, so a cell that
     // declares one and never gets it would run the wrong configuration and
     // still report the exit status of the run it did do.
-    expect(guardDefaultsMatrix.executeMatrixCell({
-      id: 'version',
-      script: 'check-bun-version',
-      env: { JUMENTIX_MATRIX_CELL: 'jum681' }
-    })).toBe(0);
+    expect(
+      guardDefaultsMatrix.executeMatrixCell({
+        id: 'version',
+        script: 'check-bun-version',
+        env: { JUMENTIX_MATRIX_CELL: 'jum681' }
+      })
+    ).toBe(0);
   });
 
   it('runs the matrix with every option defaulted', () => {
@@ -82,9 +87,14 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
       outcome: 'passed',
       requiredCellCount: 1,
       reportedCellCount: 1,
-      results: [{
-        id: 'version', script: 'check-bun-version', state: 'passed', status: 0
-      }]
+      results: [
+        {
+          id: 'version',
+          script: 'check-bun-version',
+          state: 'passed',
+          status: 0
+        }
+      ]
     });
   });
 
@@ -101,9 +111,9 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
 
     expect(guardDefaultsMatrix.FULL_TEST_MATRIX.length).toBeGreaterThan(0);
     expect(resolved.length).toBeLessThanOrEqual(guardDefaultsMatrix.FULL_TEST_MATRIX.length);
-    expect(declaredIds).toStrictEqual(expect.arrayContaining(
-      resolved.map((cell: { id: string }) => cell.id)
-    ));
+    expect(declaredIds).toStrictEqual(
+      expect.arrayContaining(resolved.map((cell: { id: string }) => cell.id))
+    );
   });
 
   it('validates the real matrix against the real package.json', () => {
@@ -111,10 +121,12 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
 
     // Both defaults at once: the manifest CI runs, checked against the scripts
     // that actually exist. A renamed script fails here without any fixture.
-    expect(() => guardDefaultsMatrix.validateMatrixManifest(
-      guardDefaultsMatrix.FULL_TEST_MATRIX,
-      require('../../package.json').scripts
-    )).not.toThrow();
+    expect(() =>
+      guardDefaultsMatrix.validateMatrixManifest(
+        guardDefaultsMatrix.FULL_TEST_MATRIX,
+        require('../../package.json').scripts
+      )
+    ).not.toThrow();
   });
 
   it('resolves suite paths against the real test map', () => {
@@ -123,9 +135,7 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     // No `readTestMap`, no `listTestFiles`, no `root`: the resolver reads
     // `test-map.json` from disk and walks the tree, which is what the runner
     // does for every gate invocation.
-    const resolved = guardDefaultsSuiteRunner.resolveMappedSuitePaths([
-      'ci-cd/test'
-    ]);
+    const resolved = guardDefaultsSuiteRunner.resolveMappedSuitePaths(['ci-cd/test']);
 
     expect(resolved.resolved.length).toBeGreaterThan(5);
     expect(resolved.unmatched).toStrictEqual([]);
@@ -135,16 +145,18 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
   it('canonicalises against the real working directory', () => {
     expect.hasAssertions();
 
-    expect(guardDefaultsSuiteRunner.canonicalSuitePaths(['ci-cd/./run-suite.js']))
-      .toStrictEqual(['ci-cd/run-suite.js']);
+    expect(guardDefaultsSuiteRunner.canonicalSuitePaths(['ci-cd/./run-suite.js'])).toStrictEqual([
+      'ci-cd/run-suite.js'
+    ]);
   });
 
   it('reads the real map when asked whether a path is pinned to node', () => {
     expect.hasAssertions();
 
     // The default `readTestMap`, against the manifest as it stands today.
-    expect(guardDefaultsSuiteRunner.mapPinsToNode(['ci-cd/test']))
-      .toStrictEqual(expect.any(Boolean));
+    expect(guardDefaultsSuiteRunner.mapPinsToNode(['ci-cd/test'])).toStrictEqual(
+      expect.any(Boolean)
+    );
   });
 
   it('spawns the real runner for a real suite', () => {
@@ -226,7 +238,9 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     // `require.resolve` throws for a package that is not there. Answering null
     // rather than throwing is what lets the guard report "no longer depends on"
     // as a failure instead of crashing the whole check.
-    expect(guardDefaultsOverrides.readInstalledDependentRange('jum681-not-a-package', 'send')).toBeNull();
+    expect(
+      guardDefaultsOverrides.readInstalledDependentRange('jum681-not-a-package', 'send')
+    ).toBeNull();
   });
 
   it('checks major compatibility against a manifest with no overrides at all', () => {
@@ -253,7 +267,7 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
 
     // `main` with neither an io nor an execute: the exit code CI reads comes
     // from the same pair of defaults.
-    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
 
     const code = guardDefaultsPackageSuites.main();
 
@@ -303,7 +317,9 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     // check would be asserting the runner's configuration.
     const io = { log: jest.fn(), error: jest.fn() };
 
-    const history = guardDefaultsAuthorship.main([], io, { run: () => ({ ok: true, message: 'clean' }) });
+    const history = guardDefaultsAuthorship.main([], io, {
+      run: () => ({ ok: true, message: 'clean' })
+    });
     const identity = guardDefaultsAuthorship.main(['--identity'], io, {
       checkConfiguredIdentity: () => ({ ok: false, message: 'unauthorized identity' })
     });
@@ -323,8 +339,9 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
 
     guardDefaultsMatrix.writeMatrixEvidence({ outcome: 'passed' }, target);
 
-    expect(JSON.parse(guardDefaultsFs.readFileSync(target, 'utf8')))
-      .toStrictEqual({ outcome: 'passed' });
+    expect(JSON.parse(guardDefaultsFs.readFileSync(target, 'utf8'))).toStrictEqual({
+      outcome: 'passed'
+    });
 
     guardDefaultsFs.rmSync(root, { recursive: true, force: true });
   });
@@ -347,28 +364,24 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     // Keep this path deterministic regardless of the Bun version running the
     // suite: the no-argument/default path is covered above, while this case
     // proves the refusal logic with an explicit mismatch.
-    const exit = jest.spyOn(process, 'exit').mockImplementation(((code: number): never => {
-      throw new Error(`exit:${String(code)}`);
-    }) as never);
-    const error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = jest.spyOn(console, 'error').mockReturnValue(undefined);
+    const previousExitCode = process.exitCode;
 
-    const raised = (() => {
-      try {
-        guardDefaultsToolchain.main({
-          ...guardDefaultsToolchain.readToolchainInput(),
-          runningBunVersion: '0.0.0'
-        });
-        return null;
-      } catch (thrown) {
-        return thrown as Error;
-      }
-    })();
+    let exitCode: typeof process.exitCode;
+    try {
+      guardDefaultsToolchain.main({
+        ...guardDefaultsToolchain.readToolchainInput(),
+        runningBunVersion: '0.0.0'
+      });
+      exitCode = process.exitCode;
+    } finally {
+      process.exitCode = previousExitCode;
+    }
     const reported = error.mock.calls.map((call) => String(call[0])).join('\n');
 
-    exit.mockRestore();
     error.mockRestore();
 
-    expect(raised?.message).toBe('exit:1');
+    expect(exitCode).toBe(1);
     expect(reported).toContain('Bun toolchain guard failed');
   });
 
@@ -388,7 +401,13 @@ describe('ci-cd guards, no injection (JUM-681)', () => {
     // One message, on the channel the exit code names: [1, 0] for a refusal,
     // [0, 1] for a pass. Anything else is a guard whose report and whose exit
     // code disagree.
-    expect([[1, 0], [0, 1]]).toContainEqual([channels.failures, channels.successes]);
-    expect([[1, 1], [0, 0]]).toContainEqual([code, channels.failures]);
+    expect([
+      [1, 0],
+      [0, 1]
+    ]).toContainEqual([channels.failures, channels.successes]);
+    expect([
+      [1, 1],
+      [0, 0]
+    ]).toContainEqual([code, channels.failures]);
   }, 120_000);
 });

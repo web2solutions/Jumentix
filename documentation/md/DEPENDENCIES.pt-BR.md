@@ -2,15 +2,17 @@
 Arquivo gerado automaticamente a partir de: documentation/md/DEPENDENCIES.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Dependências
 
 ## Aplicativo
 
 -bcryptjs
 -jsonwebtoken
+
 - tipos openapi
 - refletir metadados
--uuid
+  -uuid
 - xss
 - yaml
 

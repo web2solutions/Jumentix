@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function collectHandlerPaths(serverlessSource) {
   const handlerRegex = /handler:\s*'([^']+)'/g;
@@ -24,7 +24,10 @@ function buildCandidatePaths(handlerPathWithoutExtension) {
   const legacyApiPath = withoutAppPrefix.replace('/interface/restapi/', '/interface/api/');
   candidates.add(`${legacyApiPath}.ts`);
 
-  const legacyApiWithAppPrefix = handlerPathWithoutExtension.replace('/interface/restapi/', '/interface/api/');
+  const legacyApiWithAppPrefix = handlerPathWithoutExtension.replace(
+    '/interface/restapi/',
+    '/interface/api/'
+  );
   candidates.add(`${legacyApiWithAppPrefix}.ts`);
 
   return Array.from(candidates);
@@ -36,7 +39,8 @@ function validateServerlessHandlers() {
 
   if (!fs.existsSync(serverlessFile)) {
     console.error(`Missing serverless file: ${serverlessFile}`);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const source = fs.readFileSync(serverlessFile, 'utf8');
@@ -44,14 +48,17 @@ function validateServerlessHandlers() {
 
   if (handlers.length === 0) {
     console.error('No handlers were found in serverless.ts');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const missing = handlers
     .map((handlerPath) => handlerPath.split('.').slice(0, -1).join('.'))
     .map((handlerPathWithoutExtension) => {
       const candidates = buildCandidatePaths(handlerPathWithoutExtension);
-      const hasAnyCandidate = candidates.some((candidate) => fs.existsSync(path.join(root, candidate)));
+      const hasAnyCandidate = candidates.some((candidate) =>
+        fs.existsSync(path.join(root, candidate))
+      );
       return hasAnyCandidate ? null : `${handlerPathWithoutExtension}.ts`;
     })
     .filter(Boolean);
@@ -59,7 +66,8 @@ function validateServerlessHandlers() {
   if (missing.length > 0) {
     console.error('Serverless handler path validation failed. Missing files:');
     missing.forEach((missingPath) => console.error(`- ${missingPath}`));
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log(`Serverless handler path validation passed (${handlers.length} handlers).`);

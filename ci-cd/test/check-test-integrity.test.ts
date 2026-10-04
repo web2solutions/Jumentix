@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import integrityFs from 'fs';
-import integrityOs from 'os';
-import integrityPath from 'path';
+import integrityFs from 'node:fs';
+import integrityOs from 'node:os';
+import integrityPath from 'node:path';
 
 const {
   ACCEPTED_MOCK_ONLY,
@@ -10,9 +9,7 @@ const {
   fixedSleeps,
   validateTestIntegrity
 } = require('../check-test-integrity');
-const {
-  testsWithoutDeclarations
-} = require('../lib/test-assertions');
+const { testsWithoutDeclarations } = require('../lib/test-assertions');
 
 const repoRoot = integrityPath.resolve(__dirname, '../..');
 
@@ -52,7 +49,7 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     // free, and only the declaration turns that into a failure.
     const suite = 'packages/sample/test/sample.test.ts';
     const root = scratchRepo('jum677-noassert-', {
-      [suite]: 'it(\'does something\', () => { expect(1).toBe(1); });\n',
+      [suite]: "it('does something', () => { expect(1).toBe(1); });\n",
       'test-map.json': mapFor([suite])
     });
 
@@ -73,9 +70,9 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     const suite = 'packages/sample/test/partial.test.ts';
     const root = scratchRepo('jum702-partial-', {
       [suite]: [
-        'describe(\'group\', () => {',
-        '  it(\'declares\', () => { expect.hasAssertions(); expect(1).toBe(1); });',
-        '  it(\'does not\', () => { expect(2).toBe(2); });',
+        "describe('group', () => {",
+        "  it('declares', () => { expect.hasAssertions(); expect(1).toBe(1); });",
+        "  it('does not', () => { expect(2).toBe(2); });",
         '});'
       ].join('\n'),
       'test-map.json': mapFor([suite])
@@ -99,9 +96,9 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     const suite = 'packages/sample/test/hooked.test.ts';
     const root = scratchRepo('jum702-hook-', {
       [suite]: [
-        'describe(\'group\', () => {',
+        "describe('group', () => {",
         '  beforeEach(() => { expect.hasAssertions(); });',
-        '  it(\'inherits\', () => { expect(1).toBe(1); });',
+        "  it('inherits', () => { expect(1).toBe(1); });",
         '});'
       ].join('\n'),
       'test-map.json': mapFor([suite])
@@ -120,9 +117,9 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     const suite = 'packages/sample/test/payload.test.ts';
     const root = scratchRepo('jum678-with-', {
       [suite]: [
-        'it(\'answers\', () => {',
+        "it('answers', () => {",
         '  expect.hasAssertions();',
-        '  expect(response.json).toHaveBeenCalledWith({ status: \'result\' });',
+        "  expect(response.json).toHaveBeenCalledWith({ status: 'result' });",
         '});'
       ].join('\n'),
       'test-map.json': mapFor([suite])
@@ -139,7 +136,7 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     const suite = 'packages/sample/test/mocked.test.ts';
     const root = scratchRepo('jum678-mockonly-', {
       [suite]: [
-        'it(\'writes\', () => {',
+        "it('writes', () => {",
         '  expect.hasAssertions();',
         '  expect(repository.save).toHaveBeenCalled();',
         '});'
@@ -163,10 +160,10 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     const suite = 'packages/sample/test/both.test.ts';
     const root = scratchRepo('jum678-both-', {
       [suite]: [
-        'it(\'writes\', () => {',
+        "it('writes', () => {",
         '  expect.hasAssertions();',
         '  expect(repository.save).toHaveBeenCalled();',
-        '  expect(table.get(\'user-1\')).toStrictEqual({ firstName: \'Ada\' });',
+        "  expect(table.get('user-1')).toStrictEqual({ firstName: 'Ada' });",
         '});'
       ].join('\n'),
       'test-map.json': mapFor([suite])
@@ -180,8 +177,9 @@ describe('test integrity check (Requirements 134 and 135)', () => {
   it('reads the sleeps a test uses to synchronise, and ignores a zero flush', () => {
     expect.hasAssertions();
 
-    expect(fixedSleeps(`await new Promise((resolve) => { ${sleepSource(40)} });`))
-      .toStrictEqual([40]);
+    expect(fixedSleeps(`await new Promise((resolve) => { ${sleepSource(40)} });`)).toStrictEqual([
+      40
+    ]);
     expect(fixedSleeps(resolveAfter(25))).toStrictEqual([25]);
     // A zero-delay flush is a scheduling assumption, not a wall-clock wait.
     expect(fixedSleeps(sleepSource(0))).toStrictEqual([0]);
@@ -193,7 +191,7 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     const suite = 'packages/sample/test/sleepy.test.ts';
     const root = scratchRepo('jum679-sleep-', {
       [suite]: [
-        'it(\'eventually\', async () => {',
+        "it('eventually', async () => {",
         '  expect.hasAssertions();',
         `  await new Promise((resolve) => { ${sleepSource(40)} });`,
         '  expect(store.value).toBe(1);',
@@ -216,7 +214,7 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     // A suite outside the map is a suite nothing runs, reporting nothing.
     const suite = 'packages/sample/test/unmapped.test.ts';
     const root = scratchRepo('jum680-unmapped-', {
-      [suite]: 'it(\'x\', () => { expect.hasAssertions(); expect(1).toBe(1); });\n',
+      [suite]: "it('x', () => { expect.hasAssertions(); expect(1).toBe(1); });\n",
       'test-map.json': mapFor([])
     });
 
@@ -235,7 +233,7 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     // register stops meaning anything.
     const suite = 'packages/sample/test/fixed.test.ts';
     const root = scratchRepo('jum677-stale-', {
-      [suite]: 'it(\'x\', () => { expect.hasAssertions(); expect(1).toBe(1); });\n',
+      [suite]: "it('x', () => { expect.hasAssertions(); expect(1).toBe(1); });\n",
       'test-map.json': mapFor([suite])
     });
 
@@ -256,10 +254,12 @@ describe('test integrity check (Requirements 134 and 135)', () => {
     // `it.each([...])(...)` is a call whose callee is a call; a rule written
     // against the text `it(` misses it, and the one finding in the repository
     // was exactly this shape.
-    expect(testsWithoutDeclarations('it.each([1])(\'case %s\', (n) => { expect(n).toBe(1); });'))
-      .toStrictEqual([{ title: 'case %s', line: 1 }]);
-    expect(testsWithoutDeclarations('it.only(\'x\', () => { expect(1).toBe(1); });'))
-      .toStrictEqual([{ title: 'x', line: 1 }]);
+    expect(
+      testsWithoutDeclarations("it.each([1])('case %s', (n) => { expect(n).toBe(1); });")
+    ).toStrictEqual([{ title: 'case %s', line: 1 }]);
+    expect(testsWithoutDeclarations("it.only('x', () => { expect(1).toBe(1); });")).toStrictEqual([
+      { title: 'x', line: 1 }
+    ]);
   });
 
   it('says nothing about tests with no body to run', () => {
@@ -267,8 +267,9 @@ describe('test integrity check (Requirements 134 and 135)', () => {
 
     // A declaration inside a body that never executes asserts nothing about
     // anything. `it.todo` has no body at all.
-    expect(testsWithoutDeclarations('it.todo(\'later\');\nit.skip(\'x\', () => {});'))
-      .toStrictEqual([]);
+    expect(testsWithoutDeclarations("it.todo('later');\nit.skip('x', () => {});")).toStrictEqual(
+      []
+    );
   });
 
   it('passes against the repository, with every finding on a register', () => {

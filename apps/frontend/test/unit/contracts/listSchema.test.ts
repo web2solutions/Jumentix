@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 
-import {
-  asListPage, listCapabilities, toQueryParams
-} from '@/contracts/listSchema';
+import { asListPage, listCapabilities, toQueryParams } from '@/contracts/listSchema';
+
+import must from '../support';
 
 /**
  * JUM-778 — the frontend reads `x-list-capabilities` from the bundled OAS and
@@ -12,7 +12,7 @@ import {
 describe('listCapabilities', () => {
   it('reads sortable/filterable/searchable and sizes for getAll and getAllOrganizations', () => {
     expect.hasAssertions();
-    const users = listCapabilities('getAll')!;
+    const users = must(listCapabilities('getAll'), 'getAll capabilities');
     expect(users.sortable).toContain('firstName');
     expect(users.filterable.roles).toBe('enum');
     expect(users.filterable.createdAt).toBe('date');
@@ -33,30 +33,51 @@ describe('toQueryParams / asListPage', () => {
   it('encodes the filter as base64 JSON and omits empty parts', () => {
     expect.hasAssertions();
     const params = toQueryParams({
-      page: 2, size: 10, sort: 'name:desc', q: '', filter: { name: { operator: 'contains', value: 'ac' } }
+      page: 2,
+      size: 10,
+      sort: 'name:desc',
+      q: '',
+      filter: { name: { operator: 'contains', value: 'ac' } }
     });
     expect(params.page).toBe(2);
     expect(params.size).toBe(10);
     expect(params.sort).toBe('name:desc');
     expect(params.q).toBeUndefined();
-    expect(JSON.parse(atob(String(params.filter)))).toStrictEqual({ name: { operator: 'contains', value: 'ac' } });
+    expect(JSON.parse(atob(String(params.filter)))).toStrictEqual({
+      name: { operator: 'contains', value: 'ac' }
+    });
     expect(toQueryParams({ includeDeleted: true }).includeDeleted).toBe('true');
   });
 
   it('normalizes envelopes and bare arrays to one page shape', () => {
     expect.hasAssertions();
-    expect(asListPage({
-      result: [{ id: 1 }], page: 3, size: 1, total: 9
-    }, { page: 1, size: 30 }))
-      .toStrictEqual({
-        result: [{ id: 1 }], page: 3, size: 1, total: 9
-      });
-    expect(asListPage([{ id: 1 }, { id: 2 }], { page: 1, size: 30 }))
-      .toStrictEqual({
-        result: [{ id: 1 }, { id: 2 }], page: 1, size: 2, total: 2
-      });
+    expect(
+      asListPage(
+        {
+          result: [{ id: 1 }],
+          page: 3,
+          size: 1,
+          total: 9
+        },
+        { page: 1, size: 30 }
+      )
+    ).toStrictEqual({
+      result: [{ id: 1 }],
+      page: 3,
+      size: 1,
+      total: 9
+    });
+    expect(asListPage([{ id: 1 }, { id: 2 }], { page: 1, size: 30 })).toStrictEqual({
+      result: [{ id: 1 }, { id: 2 }],
+      page: 1,
+      size: 2,
+      total: 2
+    });
     expect(asListPage(undefined, { page: 1, size: 30 })).toStrictEqual({
-      result: [], page: 1, size: 30, total: 0
+      result: [],
+      page: 1,
+      size: 30,
+      total: 0
     });
   });
 });

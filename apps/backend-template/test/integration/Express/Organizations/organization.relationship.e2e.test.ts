@@ -1,22 +1,26 @@
 /* global describe, it, expect */
 /* eslint-disable jest/max-expects */
 import request from 'supertest';
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { UserDataRepository, UserService } from '@src/modules/Users';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+
 import createdUsers from '@seed/users';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-import { closeServer } from '../closeServer';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
+import { authenticateForHeader } from '@test/mock';
+
+import closeServer from '../closeServer';
+
+import type { Express } from 'express';
 
 const webServer = ExpressServer.compile();
 const passwordCryptoService = PasswordCryptoService.compile();
@@ -35,11 +39,7 @@ const userService = UserService.compile({
   }
 });
 const userProvider = UserProviderLocal.compile(userService);
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 
 const serverType = EHTTPFrameworks.express;
 const API: RestAPI<Express> = new RestAPI<Express>({
@@ -60,13 +60,12 @@ describe('express -> organizations relationship e2e', () => {
   beforeAll(async () => {
     await API.seedData();
     const [createdUser1] = createdUsers;
-    authorizationHeaderUser1 = {
-      ...(await authService.authenticate(
-        createdUser1.username,
-        createdUser1.password,
-        EAuthSchemaType.Basic
-      )).result!
-    };
+    authorizationHeaderUser1 = await authenticateForHeader(
+      authService,
+      createdUser1.username,
+      createdUser1.password,
+      EAuthSchemaType.Basic
+    );
   });
 
   afterAll(async () => {
@@ -84,12 +83,14 @@ describe('express -> organizations relationship e2e', () => {
         name: `Tenant-${marker}`,
         address: [{ email: `hq-${marker}@tenant.dev`, type: 'work', isPrimary: true }],
         email: [{ email: `contact-${marker}@tenant.dev`, type: 'work', isPrimary: true }],
-        phone: [{
-          countryCode: '+55',
-          localCode: '11',
-          number: `9${marker.slice(-8)}`,
-          isPrimary: true
-        }]
+        phone: [
+          {
+            countryCode: '+55',
+            localCode: '11',
+            number: `9${marker.slice(-8)}`,
+            isPrimary: true
+          }
+        ]
       })
       .set('Content-Type', 'application/json; charset=utf-8')
       .set('Accept', 'application/json; charset=utf-8')

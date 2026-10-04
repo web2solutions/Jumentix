@@ -46,7 +46,7 @@
    over nothing, and finds no violations.
 
 5. **The check's scope is anchored to history itself, not to a base branch.**
-   A base-relative range (`origin/dev..HEAD`) is *empty* whenever the check runs
+   A base-relative range (`origin/dev..HEAD`) is _empty_ whenever the check runs
    on the branch the work was merged into — and an empty range passes while
    verifying nothing. `historyCutoff.commit` takes either `ROOT`, meaning every
    commit back to the first, or a 40-character SHA to start after. Nothing else

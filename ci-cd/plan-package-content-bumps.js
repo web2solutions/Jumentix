@@ -7,11 +7,12 @@
  * bump; npm-publish then skips. This planner lists the patch bumps required so
  * automation can open a PR and the existing publish path ships the content.
  */
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
-const { gitBinary } = require('./lib/git-binary.js');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 const { COHORTS, packageTagName, readPackageMeta } = require('./publish-npm-cohort.js');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -20,9 +21,13 @@ function runGit(args, options = {}) {
   try {
     return execFileSync(gitBinary(), args, {
       encoding: 'utf8',
-      stdio: options.inherit ? 'inherit' : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
+      stdio: options.inherit
+        ? 'inherit'
+        : ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
       cwd: options.cwd || ROOT
-    }).toString().trim();
+    })
+      .toString()
+      .trim();
   } catch (error) {
     if (options.allowFailure) return '';
     throw error;
@@ -54,15 +59,6 @@ function publishedPaths(dirName, pkg) {
     paths.add(`packages/${dirName}/${normalized}`);
   }
   return [...paths];
-}
-
-function tagExists(tagName) {
-  const local = runGit(['rev-parse', '--verify', `refs/tags/${tagName}`], { allowFailure: true });
-  if (local) return true;
-  const remote = runGit(['ls-remote', '--tags', 'origin', `refs/tags/${tagName}`], {
-    allowFailure: true
-  });
-  return Boolean(remote && remote.includes(tagName));
 }
 
 /**
@@ -97,7 +93,9 @@ function resolveTagCommit(tagName) {
   runGit(['fetch', '--no-tags', 'origin', `refs/tags/${tagName}:refs/tags/${tagName}`], {
     allowFailure: true
   });
-  const afterFetch = runGit(['rev-parse', '--verify', `${tagName}^{commit}`], { allowFailure: true });
+  const afterFetch = runGit(['rev-parse', '--verify', `${tagName}^{commit}`], {
+    allowFailure: true
+  });
   if (afterFetch) return afterFetch;
 
   const remote = runGit(['ls-remote', '--tags', 'origin', `refs/tags/${tagName}`], {
@@ -125,21 +123,29 @@ function contentChangedSinceTag(tagName, watchPaths) {
 function planPackageContentBumps(options = {}) {
   const dirs = options.dirs || COHORTS.all;
   const readMeta = options.readMeta || readPackageMeta;
-  const versionPublished = options.versionPublished || ((name, version) => {
-    try {
-      const { resolveNpmCommand } = require('./check-npm-org-integration.js');
-      const npm = resolveNpmCommand();
-      const out = execFileSync(npm.command, [...npm.argsPrefix, 'view', `${name}@${version}`, 'version'], {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe']
-      }).toString().trim();
-      return out === version;
-    } catch (error) {
-      const stderr = String(error.stderr || '');
-      if (/E404|404 Not Found|is not in this registry|No match found/i.test(stderr)) return false;
-      throw error;
-    }
-  });
+  const versionPublished =
+    options.versionPublished ||
+    ((name, version) => {
+      try {
+        const { resolveNpmCommand } = require('./check-npm-org-integration.js');
+        const npm = resolveNpmCommand();
+        const out = execFileSync(
+          npm.command,
+          [...npm.argsPrefix, 'view', `${name}@${version}`, 'version'],
+          {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'pipe']
+          }
+        )
+          .toString()
+          .trim();
+        return out === version;
+      } catch (error) {
+        const stderr = String(error.stderr || '');
+        if (/E404|404 Not Found|is not in this registry|No match found/i.test(stderr)) return false;
+        throw error;
+      }
+    });
 
   const bumps = [];
   for (const dirName of dirs) {
@@ -221,12 +227,12 @@ module.exports = {
   applyPackageContentBumps,
   bumpPatch,
   contentChangedSinceTag,
+  main,
   peelRemoteTagSha,
   planPackageContentBumps,
   publishedPaths,
   readBumpPlan,
-  resolveTagCommit,
-  main
+  resolveTagCommit
 };
 
 if (isEntryPoint(module)) {

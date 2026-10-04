@@ -4,12 +4,17 @@
  */
 
 export const ROLE_HELP = {
-  restapi: 'HTTP RestAPI process — OpenAPI REST surface (CRUD, auth, infra routes including /async-context-metrics).',
-  websocketapi: 'WebSocket realtime API process — Socket.IO / realtime protocol on JUMENTIX_WEBSOCKET_PORT.',
+  restapi:
+    'HTTP RestAPI process — OpenAPI REST surface (CRUD, auth, infra routes including /async-context-metrics).',
+  websocketapi:
+    'WebSocket realtime API process — Socket.IO / realtime protocol on JUMENTIX_WEBSOCKET_PORT.',
   grpcapi: 'gRPC realtime API process — gRPC listeners on JUMENTIX_GRPC_PORT.',
-  'service-management-api': 'Service Management catalog API — shared domain-catalog HTTP service for designer sync.',
-  'service-management': 'Service Management console (designer + monitoring UI) — static SPA and local ops APIs on JUMENTIX_SERVICE_MANAGEMENT_PORT.',
-  'purge-tombstones': 'Opt-in tombstone purge worker (JUM-822). dev default is dry-run via loopback; never the REST DELETE path.'
+  'service-management-api':
+    'Service Management catalog API — shared domain-catalog HTTP service for designer sync.',
+  'service-management':
+    'Service Management console (designer + monitoring UI) — static SPA and local ops APIs on JUMENTIX_SERVICE_MANAGEMENT_PORT.',
+  'purge-tombstones':
+    'Opt-in tombstone purge worker (JUM-822). dev default is dry-run via loopback; never the REST DELETE path.'
 };
 
 export const EXACT_HELP = {

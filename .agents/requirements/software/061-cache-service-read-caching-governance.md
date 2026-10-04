@@ -19,4 +19,3 @@ Read endpoints for Users and Organizations can benefit from contract-based cachi
 - Unit tests cover cache envelope behavior, namespace versioning, and service-level cache integration.
 - Documentation exists and is linked from README:
   - `documentation/md/CACHE-SERVICE-AND-ENDPOINT-CACHING.md`
-

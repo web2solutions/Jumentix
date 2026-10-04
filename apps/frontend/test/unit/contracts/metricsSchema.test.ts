@@ -6,9 +6,14 @@ describe('metricsSchema (JUM-812)', () => {
   it('normalizes a missing buckets array', () => {
     expect.hasAssertions();
     expect(asMetricsResult(null)).toStrictEqual({
-      metric: 'count', field: undefined, interval: undefined, buckets: []
+      metric: 'count',
+      field: undefined,
+      interval: undefined,
+      buckets: []
     });
-    expect(asMetricsResult({ metric: 'groupBy', field: 'roles', buckets: [{ key: 'admin', count: 2 }] })).toMatchObject({
+    expect(
+      asMetricsResult({ metric: 'groupBy', field: 'roles', buckets: [{ key: 'admin', count: 2 }] })
+    ).toMatchObject({
       metric: 'groupBy',
       field: 'roles',
       buckets: [{ key: 'admin', count: 2 }]
@@ -17,8 +22,10 @@ describe('metricsSchema (JUM-812)', () => {
 
   it('keeps a contract interval verbatim', () => {
     expect.hasAssertions();
-    expect(asMetricsResult({ metric: 'series', interval: 'week', buckets: [] }))
-      .toMatchObject({ metric: 'series', interval: 'week' });
+    expect(asMetricsResult({ metric: 'series', interval: 'week', buckets: [] })).toMatchObject({
+      metric: 'series',
+      interval: 'week'
+    });
   });
 
   it('returns undefined when the list operation has no metrics sibling', () => {

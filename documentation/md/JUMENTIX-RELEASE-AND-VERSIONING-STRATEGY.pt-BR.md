@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Estratégia de lançamento e versionamento do Jumentix
 
 ## Política
@@ -25,10 +26,10 @@ Valores atuais:
 
 Duas famílias de tags anotadas, ambas criadas por CI — nunca a partir de uma máquina de desenvolvedor:
 
-| Família | Formato | Quando | Dono |
-| --- | --- | --- | --- |
+| Família   | Formato                               | Quando                                | Dono                                                                                  |
+| --------- | ------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------- |
 | Aplicação | `v<appLockedVersion>` (ex.: `v0.0.3`) | Após cada bump bem-sucedido em `main` | GitHub Actions `app-release.yml` → `bun ci-cd/create-app-release-tag.js --github-api` |
-| Pacote | `@jumentix/<pkg>@<version>` | Após cada `npm publish` bem-sucedido | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
+| Pacote    | `@jumentix/<pkg>@<version>`           | Após cada `npm publish` bem-sucedido  | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort`                   |
 
 Commits assinados de release que incluem templates CLI reconstruídos devem
 codificar conteúdos como bytes brutos → base64 (nunca binários decodificados

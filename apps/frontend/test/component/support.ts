@@ -1,19 +1,44 @@
-import { mount, type MountingOptions } from '@vue/test-utils';
-import { createPinia, setActivePinia, type Pinia } from 'pinia';
+import {
+  cilArrowBottom,
+  cilArrowTop,
+  cilCheck,
+  cilCloudDownload,
+  cilCloudUpload,
+  cilFeaturedPlaylist,
+  cilFilter,
+  cilInbox,
+  cilLockLocked,
+  cilMenu,
+  cilPencil,
+  cilPeople,
+  cilPlus,
+  cilReload,
+  cilSave,
+  cilSearch,
+  cilSpeedometer,
+  cilSquare,
+  cilSwapVertical,
+  cilTask,
+  cilTrash,
+  cilUser,
+  cilViewColumn,
+  cilX
+} from '@coreui/icons';
 import CIcon from '@coreui/icons-vue';
 import CoreuiVue from '@coreui/vue';
-import {
-  cilArrowBottom, cilArrowTop, cilCheck, cilCloudDownload, cilCloudUpload,
-  cilFeaturedPlaylist, cilFilter, cilInbox, cilLockLocked, cilMenu, cilPencil,
-  cilPeople, cilPlus, cilReload, cilSave, cilSearch, cilSpeedometer, cilSquare,
-  cilSwapVertical, cilTask, cilTrash, cilUser, cilViewColumn, cilX
-} from '@coreui/icons';
-import type { Component } from 'vue';
+import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 
 import { resetSharedApiClient } from '@/contracts/apiClient';
-import { setLocale, type Locale } from '@/i18n';
+import { setLocale } from '@/i18n';
 import { useAuthStore } from '@/stores/auth';
 import { useProfileStore } from '@/stores/profile';
+
+import type { MountingOptions } from '@vue/test-utils';
+import type { Pinia } from 'pinia';
+import type { Component } from 'vue';
+
+import type { Locale } from '@/i18n';
 
 /**
  * Shared harness for component suites (JUM-776): real CoreUI plugin, the
@@ -65,7 +90,10 @@ export type Responder = (url: URL, init: { method: string; body?: string }) => A
 /** Installs a fetch mock; the responder decides status/body per call (default: 200 `{}`). */
 export const mockFetch = (responder: Responder = () => undefined): void => {
   recorded.length = 0;
-  globalThis.fetch = ((url: string, init: { method: string; body?: string } = { method: 'GET' }) => {
+  globalThis.fetch = ((
+    url: string,
+    init: { method: string; body?: string } = { method: 'GET' }
+  ) => {
     recorded.push({
       url: String(url),
       method: init.method,
@@ -98,7 +126,11 @@ export interface Session {
   locale?: Locale;
 }
 
-export const freshSession = ({ roles = ['superadmin'], organization, locale = 'en' }: Session = {}): Pinia => {
+export const freshSession = ({
+  roles = ['superadmin'],
+  organization,
+  locale = 'en'
+}: Session = {}): Pinia => {
   resetSharedApiClient();
   setLocale(locale);
   const pinia = createPinia();
@@ -136,18 +168,32 @@ export const mountWithShell = <T extends Component>(
       provide: { icons },
       components: { CIcon },
       stubs: {
-        RouterLink: { template: '<a><slot :href="\'#\'" :navigate="() => {}" :isActive="false" /></a>' },
+        RouterLink: {
+          template: '<a><slot :href="\'#\'" :navigate="() => {}" :isActive="false" /></a>'
+        },
         // Chart.js needs a real <canvas> 2D context, which happy-dom does not
         // provide; the chart's inputs are asserted through `aggregateBreakdown`
         // in the unit suite, and the browser e2e renders the real canvas.
-        XCrudChart: { props: ['title', 'breakdown'], template: '<div class="xcrud-chart-stub">{{ title }}</div>' },
+        XCrudChart: {
+          props: ['title', 'breakdown'],
+          template: '<div class="xcrud-chart-stub">{{ title }}</div>'
+        },
         ChartCard: {
           props: ['title', 'buckets', 'kind'],
-          template: '<div class="chart-card-stub" data-chart-table>{{ title }} {{ buckets && buckets.length }}</div>'
+          template:
+            '<div class="chart-card-stub" data-chart-table>{{ title }} {{ buckets && buckets.length }}</div>'
         },
         ...(options.global?.stubs ?? {})
       }
     },
     attachTo: document.body
   });
+};
+
+/** Unwrap a lookup the spec/DOM guarantees; throws a readable failure otherwise. */
+export const must = <T>(value: T | null | undefined, hint: string): T => {
+  if (value === null || value === undefined) {
+    throw new Error(`expected ${hint} to exist`);
+  }
+  return value;
 };

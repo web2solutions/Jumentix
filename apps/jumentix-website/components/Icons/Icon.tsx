@@ -12,8 +12,8 @@
  * <Icon src={myIcon} noFill width={32} height={32} />
  * ```
  */
-import { type ComponentProps } from 'react';
-import { type StaticImageData } from 'next/image';
+import type { StaticImageData } from 'next/image';
+import type { ComponentProps } from 'react';
 
 type IconProps = Omit<ComponentProps<'img'>, 'src'> & {
   /* Icon path and dimensions */
@@ -24,7 +24,8 @@ type IconProps = Omit<ComponentProps<'img'>, 'src'> & {
 
 const EMPTY_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E`;
 
-export function Icon({ src, noFill, width, height, alt, style, ...props }: IconProps) {
+// eslint-disable-next-line import-x/prefer-default-export -- single named export consumed via named imports/barrels; converting to default would change the module API
+export const Icon = ({ src, noFill, width, height, alt, style, ...props }: IconProps) => {
   const mainSrc = noFill ? src.src : EMPTY_SVG;
   const finalWidth = width ?? src.width;
   const finalHeight = height ?? src.height;
@@ -34,17 +35,18 @@ export function Icon({ src, noFill, width, height, alt, style, ...props }: IconP
     : {
         ...style,
         backgroundColor: `currentcolor`,
-        mask: `url("${src.src}") no-repeat center / contain`,
+        mask: `url("${src.src}") no-repeat center / contain`
       };
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element -- renders an empty SVG whose visible pixels come from a CSS mask; next/image would break the mask-based icon pattern
     <img
-      src={mainSrc}
-      width={finalWidth}
-      height={finalHeight}
       alt={finalAlt}
+      height={finalHeight}
+      src={mainSrc}
       style={finalStyle}
+      width={finalWidth}
       {...props}
     />
   );
-}
+};

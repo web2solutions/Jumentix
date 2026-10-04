@@ -14,14 +14,16 @@ describe('createWebSocketOperationHandler', () => {
       metadata: {}
     } as any);
 
-    expect(invoke).toHaveBeenCalledWith(expect.objectContaining({
-      operationId: 'login',
-      metadata: expect.objectContaining({
-        channel: 'api:login:response',
-        requestId: '',
-        clientId: ''
+    expect(invoke).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operationId: 'login',
+        metadata: expect.objectContaining({
+          channel: 'api:login:response',
+          requestId: '',
+          clientId: ''
+        })
       })
-    }));
+    );
     expect(response.metadata).toStrictEqual({
       channel: 'api:login:response',
       requestId: '',

@@ -1,6 +1,7 @@
 # Requirement 124 - Monorepo Root Layout Governance
 
 ## Status
+
 Implemented
 
 ## Requirement

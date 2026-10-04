@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: sdk-clients/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # sdk-clients (camada de compatibilidade)
 
 Superfície de compatibilidade legada para importações de SDK.

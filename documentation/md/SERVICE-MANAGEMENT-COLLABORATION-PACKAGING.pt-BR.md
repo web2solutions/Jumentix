@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SERVICE-MANAGEMENT-COLLABORATION-PACKAGING.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Colaboração e empacotamento do Service Management
 
 Este é o documento E8 da cadeia de documentação E1–E8 do Service Management
@@ -111,7 +112,7 @@ de manter uma segunda explicação divergente.
   sincronização de abas do JUM-485 assina. Commits locais agendam um push
   com debounce dos domínios compartilhados modificados (modificação decidida
   pelo marcador durável `domain.context.catalog = { id, version,
-  contentHash }`, carregado aditivamente pelo padrão do JUM-492); a
+contentHash }`, carregado aditivamente pelo padrão do JUM-492); a
   convergência é um **read-back do documento** por polling, diferenciado por
   `(id, version)` — a regra de ressincronização do Cana aplicada através da
   rede: uma lacuna é um sinal de recarga, nunca um replay de eventos, porque
@@ -159,7 +160,7 @@ forma de o trabalho sair da máquina** — o documento E6,
 [Adoção do Cana, migração e comportamento offline do Service Management](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md),
 é o dono dessa história de dados e este documento não a repete. O catálogo
 compartilhado adiciona a via que faltava: o trabalho que o usuário
-*compartilha* agora vive no servidor e converge entre máquinas. Duas
+_compartilha_ agora vive no servidor e converge entre máquinas. Duas
 fronteiras honestas permanecem, afirmadas de antemão:
 
 - **Um alvo de sincronização não é um backup.** Ele propaga exclusões; não
@@ -319,9 +320,9 @@ no monorepo.
   fixam o pacote: `packaging.test.ts` valida o manifesto (pontos de entrada
   no output construído, mapa de exports com types primeiro, `files`, licença,
   `sideEffects`, scripts somente dry-run, no estilo da suíte de packaging do
-  cana), afirma que o conjunto de arquivos construído é *exatamente* o
+  cana), afirma que o conjunto de arquivos construído é _exatamente_ o
   fechamento declarado e afirma o conteúdo do tarball empacotado via `npm
-  pack --dry-run --json`; `dom-free.test.ts` varre a AST do artefato
+pack --dry-run --json`; `dom-free.test.ts` varre a AST do artefato
   construído em busca de qualquer referência a `window`, `document`,
   `localStorage`, `indexedDB`, `alert()` ou FileReader/DOMParser e de
   qualquer import que cruze a fronteira do pacote; `consumer-smoke.test.ts`
@@ -339,7 +340,7 @@ no monorepo.
   limpo antes de o npm montar o tarball de release.
 - **Política de versionamento.** O pacote segue semver sobre seu barrel
   público: patch para correções internas, minor para exportações aditivas,
-  major para superfície removida ou estreitada. Os contratos de *dados* que
+  major para superfície removida ou estreitada. Os contratos de _dados_ que
   ele lê e escreve (exportação full-suite, documento de pacote de domínio)
   permanecem versionados no payload sob a política do JUM-492 (Requisito 126,
   Contrato 3) — a versão do pacote não os repete. O versionamento de pacotes
@@ -349,7 +350,7 @@ A consequência prática para o usuário permanece a do documento E6:
 **a exportação é como o trabalho sai da máquina** — como documento
 full-suite ou como pacote de domínio versionado — e o catálogo
 compartilhado (acima) é a única segunda cópia contínua. O pacote muda quem
-pode *depender* do núcleo, não como o trabalho do usuário do designer é
+pode _depender_ do núcleo, não como o trabalho do usuário do designer é
 armazenado.
 
 ### A exportação full-suite (JUM-547), o pacote portátil
@@ -382,15 +383,15 @@ documentação E2 existe no projeto** (uma auditoria da lista de issues do
 projeto confirma que nenhuma foi criada), então o portão fecha sobre os sete
 documentos publicados:
 
-| Elo | Issue | Documento | Estado |
-|---|---|---|---|
-| E1 | [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths) | [Contratos de ambiente de runtime](./RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md) | Done |
-| E3 | [JUM-473](https://linear.app/jumentix/issue/JUM-473/docs-e3-documentation-module-architecture-and-storage-port-contract) | [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md) | Done |
-| E4 | [JUM-479](https://linear.app/jumentix/issue/JUM-479/docs-e4-documentation-contract-parity-guarantees) | [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md) | Done |
-| E5 | [JUM-482](https://linear.app/jumentix/issue/JUM-482/docs-e5-documentation-operations-console) | [Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md) | Done |
-| E6 | [JUM-487](https://linear.app/jumentix/issue/JUM-487/docs-e6-documentation-cana-adoption-migration-and-offline-behavior) | [Adoção do Cana, migração e comportamento offline do Service Management](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md) | Done |
-| E7 | [JUM-490](https://linear.app/jumentix/issue/JUM-490/docs-e7-documentation-design-system-and-pwa-shell) | [Design system e shell PWA do Service Management](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md) | Done |
-| E8 | [JUM-494](https://linear.app/jumentix/issue/JUM-494/docs-e8-documentation-collaboration-and-packaging) | este documento | este PR |
+| Elo | Issue                                                                                                                    | Documento                                                                                                             | Estado  |
+| --- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | ------- |
+| E1  | [JUM-464](https://linear.app/jumentix/issue/JUM-464/docs-e1-documentation-enpt-runtime-env-contract-and-fixed-paths)     | [Contratos de ambiente de runtime](./RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md)                                          | Done    |
+| E3  | [JUM-473](https://linear.app/jumentix/issue/JUM-473/docs-e3-documentation-module-architecture-and-storage-port-contract) | [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md)                     | Done    |
+| E4  | [JUM-479](https://linear.app/jumentix/issue/JUM-479/docs-e4-documentation-contract-parity-guarantees)                    | [Garantias de paridade de contratos do Service Management](./SERVICE-MANAGEMENT-CONTRACT-PARITY.pt-BR.md)             | Done    |
+| E5  | [JUM-482](https://linear.app/jumentix/issue/JUM-482/docs-e5-documentation-operations-console)                            | [Console de operações do Service Management](./SERVICE-MANAGEMENT-OPERATIONS-CONSOLE.pt-BR.md)                        | Done    |
+| E6  | [JUM-487](https://linear.app/jumentix/issue/JUM-487/docs-e6-documentation-cana-adoption-migration-and-offline-behavior)  | [Adoção do Cana, migração e comportamento offline do Service Management](./SERVICE-MANAGEMENT-CANA-ADOPTION.pt-BR.md) | Done    |
+| E7  | [JUM-490](https://linear.app/jumentix/issue/JUM-490/docs-e7-documentation-design-system-and-pwa-shell)                   | [Design system e shell PWA do Service Management](./SERVICE-MANAGEMENT-DESIGN-SYSTEM-PWA.pt-BR.md)                    | Done    |
+| E8  | [JUM-494](https://linear.app/jumentix/issue/JUM-494/docs-e8-documentation-collaboration-and-packaging)                   | este documento                                                                                                        | este PR |
 
 Cada elo é publicado em EN e PT-BR, sincronizados conforme o
 [Requisito 076](../../.agents/requirements/project/076-task-documentation-and-bilingual-governance.md)

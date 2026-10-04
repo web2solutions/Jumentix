@@ -1,12 +1,12 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+
 import { defineComponent } from 'vue';
 
 import DashboardGrid from '@/components/dashboard/DashboardGrid.vue';
-import type { DashboardWidget } from '@/components/dashboard/types';
 
 import { flush, mountWithShell } from './support';
+
+import type { DashboardWidget } from '@/components/dashboard/types';
 
 const Stub = defineComponent({
   props: { widget: { type: Object, required: true } },
@@ -22,16 +22,25 @@ describe('DashboardGrid (JUM-811)', () => {
     expect.hasAssertions();
     const widgets: DashboardWidget[] = [
       {
-        id: 'alpha', title: { en: 'Alpha' }, size: 'sm', component: Stub
+        id: 'alpha',
+        title: { en: 'Alpha' },
+        size: 'sm',
+        component: Stub
       },
       {
-        id: 'beta', title: { en: 'Beta' }, size: 'lg', component: Stub
+        id: 'beta',
+        title: { en: 'Beta' },
+        size: 'lg',
+        component: Stub
       }
     ];
     const wrapper = mountWithShell(DashboardGrid, { props: { widgets } });
     await flush(1);
     const cards = wrapper.findAll('[data-widget-card]');
-    expect(cards.map((card) => card.attributes('data-widget-card'))).toStrictEqual(['alpha', 'beta']);
+    expect(cards.map((card) => card.attributes('data-widget-card'))).toStrictEqual([
+      'alpha',
+      'beta'
+    ]);
     expect(wrapper.find('[data-widget-size="sm"]').exists()).toBe(true);
     expect(wrapper.find('[data-widget-size="lg"]').exists()).toBe(true);
     expect(wrapper.find('.stub-body').text()).toContain('alpha');

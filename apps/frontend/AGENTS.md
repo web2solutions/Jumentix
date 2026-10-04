@@ -21,7 +21,7 @@ Referência normativa: `.agents/requirements/software/136-frontend-knows-backend
 ## 1. Propósito
 
 `@jumentix/frontend` é o **seed dos frontends gerados pela fábrica Jumentix** — os modos
-*Hybrid Backend + Frontend* e *Frontend-only SPA/PWA* da
+_Hybrid Backend + Frontend_ e _Frontend-only SPA/PWA_ da
 `documentation/md/JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.md`. Ele demonstra, sobre o
 domínio Users/Organizations do `backend-template`, o padrão que qualquer domínio gerado
 (pagamentos, estoque, CRM…) deve seguir: tudo renderizado em runtime a partir da OAS empacotada.
@@ -130,3 +130,11 @@ bun run build && bun run preview
 
 Contas seed: `eduardo@xpertminds.dev` / `eduardo@123456` (superadmin), `admin@xpertminds.dev`
 / `admin@123456`, `user@xpertminds.dev` / `user@123456`.
+
+## 9. Lint e formatação (Requisito 138)
+
+Este app consome `@jumentix/config-eslint` (perfis `baseStrict` + `typescriptStrict` + `vueStrict` +
+`test` + `stylistic`) — nunca edite regras em `eslint.config.mjs`; os perfis vivem em
+`packages/config-eslint/src/profiles/`. O mirror em `packages/cli-init/templates/frontend/` é
+regenerado com `bun run cli:build-templates` e validado por `cli:check-template-freshness`.
+Guia completo: `documentation/md/ESLINT-AND-FORMATTING-GUIDE.md` (+ `.pt-BR.md`).

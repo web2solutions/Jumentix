@@ -1,14 +1,15 @@
 /* istanbul ignore file */
 import {
-  ConflictError,
-  DataBaseNotFoundError,
   applyListFilters,
   applyListSearch,
   applyListSort,
+  ConflictError,
+  DataBaseNotFoundError,
   paginateList
 } from '@jumentix/persistence-contracts';
+
+import type { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 import type { IPagingRequest, IPagingResponse, IStore } from '@jumentix/persistence-contracts';
-import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
 type TDriverName =
   | 'Mongo'
@@ -79,19 +80,15 @@ const applyFilters = (
   filters: Record<string, string | number>
 ): Record<string, any>[] => applyListFilters(records, filters);
 
-const buildPaging = <T>(
-  records: T[],
-  paging: IPagingRequest
-): IPagingResponse<T[]> => {
+const buildPaging = <T>(records: T[], paging: IPagingRequest): IPagingResponse<T[]> => {
   const rows = records as unknown as Record<string, unknown>[];
   const searched = applyListSearch(rows, paging.q, paging.searchFields);
   const sorted = applyListSort(searched, paging.sort);
   return paginateList(sorted as unknown as T[], paging);
 };
 
-const unsupportedDriverError = (driver: string, entity: string): Error => new Error(
-  `[Database:${driver}] Store "${entity}" is not supported by ExternalStoreProxy yet.`
-);
+const unsupportedDriverError = (driver: string, entity: string): Error =>
+  new Error(`[Database:${driver}] Store "${entity}" is not supported by ExternalStoreProxy yet.`);
 
 export class ExternalStoreProxy<T extends Record<string, any>> implements IStore<T> {
   private readonly driver: TDriverName;
@@ -104,11 +101,7 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
 
   private sqlModel: any | null = null;
 
-  constructor(
-    driver: TDriverName,
-    entity: string,
-    connector: BaseExternalDataRepository
-  ) {
+  constructor(driver: TDriverName, entity: string, connector: BaseExternalDataRepository) {
     this.driver = driver;
     this.entity = entity;
     this.connector = connector;
@@ -141,7 +134,7 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   public async delete(id: string): Promise<boolean> {
     try {
       const existing = await this.getOneById(id, { includeDeleted: true });
-      await this.update(id, { ...existing, deletedAt: new Date().toISOString() } as T);
+      await this.update(id, { ...existing, deletedAt: new Date().toISOString() });
       return true;
     } catch (error) {
       if (error instanceof DataBaseNotFoundError) return false;
@@ -170,7 +163,7 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
       throw new DataBaseNotFoundError('Record not found');
     }
     const page = await this.getAll({ [field]: name }, { page: 1, size: 1 });
-    const record = (page.result || [])[0];
+    const record = (page.result ?? [])[0];
     if (!record) {
       throw new DataBaseNotFoundError('Record not found');
     }
@@ -178,11 +171,8 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   public async getByRelation(field: keyof T, referenceId: string): Promise<T[]> {
-    const result = await this.getAll(
-      { [field as string]: referenceId },
-      { page: 1, size: 5000 }
-    );
-    return result.result || [];
+    const result = await this.getAll({ [field as string]: referenceId }, { page: 1, size: 5000 });
+    return result.result ?? [];
   }
 
   public async getAll(
@@ -239,12 +229,14 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
       await client.send(new sdk.DescribeTableCommand({ TableName: tableName }));
     } catch (error: any) {
       if (error?.name !== 'ResourceNotFoundException') throw error;
-      await client.send(new sdk.CreateTableCommand({
-        TableName: tableName,
-        BillingMode: 'PAY_PER_REQUEST',
-        KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
-        AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }]
-      }));
+      await client.send(
+        new sdk.CreateTableCommand({
+          TableName: tableName,
+          BillingMode: 'PAY_PER_REQUEST',
+          KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
+          AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }]
+        })
+      );
     }
   }
 
@@ -283,74 +275,88 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   private async validateDynamoUnique(id: string, value: T): Promise<void> {
-    const fields = this.config.uniqueFields || [];
+    const fields = this.config.uniqueFields ?? [];
     const all = await this.dynamoGetAllRaw();
-    await Promise.all(fields.map(async (field) => {
-      const ci = (this.config.caseInsensitiveUniqueFields || []).includes(field);
-      const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
-      const duplicated = all.find((doc: any) => {
-        if (doc.id === id) return false;
-        const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
-        return docValue === recordValue;
-      });
-      if (duplicated) {
-        throw new ConflictError(`${field} already in use`);
-      }
-    }));
+    await Promise.all(
+      fields.map(async (field) => {
+        const ci = (this.config.caseInsensitiveUniqueFields ?? []).includes(field);
+        const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
+        const duplicated = all.find((doc: any) => {
+          if (doc.id === id) return false;
+          const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
+          return docValue === recordValue;
+        });
+        if (duplicated) {
+          throw new ConflictError(`${field} already in use`);
+        }
+      })
+    );
   }
 
   private async dynamoCreate(key: string, value: T): Promise<T> {
     await this.ensureDynamoTable();
     await this.validateDynamoUnique(key, value);
     const { client, sdk, tableName } = await this.getDynamoContext();
-    const existing = await client.send(new sdk.GetItemCommand({
-      TableName: tableName,
-      Key: { id: { S: key } }
-    }));
+    const existing = await client.send(
+      new sdk.GetItemCommand({
+        TableName: tableName,
+        Key: { id: { S: key } }
+      })
+    );
     if (existing.Item) throw new ConflictError('Duplicated id');
-    await client.send(new sdk.PutItemCommand({
-      TableName: tableName,
-      Item: ExternalStoreProxy.toDynamoItem(key, value)
-    }));
+    await client.send(
+      new sdk.PutItemCommand({
+        TableName: tableName,
+        Item: ExternalStoreProxy.toDynamoItem(key, value)
+      })
+    );
     return value;
   }
 
   private async dynamoUpdate(key: string, value: T): Promise<T> {
     await this.ensureDynamoTable();
     const { client, sdk, tableName } = await this.getDynamoContext();
-    const existing = await client.send(new sdk.GetItemCommand({
-      TableName: tableName,
-      Key: { id: { S: key } }
-    }));
+    const existing = await client.send(
+      new sdk.GetItemCommand({
+        TableName: tableName,
+        Key: { id: { S: key } }
+      })
+    );
     const current = ExternalStoreProxy.fromDynamoItem<T>(existing.Item);
     if (!current) throw new DataBaseNotFoundError('Record not found');
     const merged = ExternalStoreProxy.mergePayload<T>(current as any, value) as T;
     await this.validateDynamoUnique(key, merged);
-    await client.send(new sdk.PutItemCommand({
-      TableName: tableName,
-      Item: ExternalStoreProxy.toDynamoItem(key, merged)
-    }));
+    await client.send(
+      new sdk.PutItemCommand({
+        TableName: tableName,
+        Item: ExternalStoreProxy.toDynamoItem(key, merged)
+      })
+    );
     return merged;
   }
 
   private async dynamoDelete(id: string): Promise<boolean> {
     await this.ensureDynamoTable();
     const { client, sdk, tableName } = await this.getDynamoContext();
-    const result = await client.send(new sdk.DeleteItemCommand({
-      TableName: tableName,
-      Key: { id: { S: id } },
-      ReturnValues: 'ALL_OLD'
-    }));
+    const result = await client.send(
+      new sdk.DeleteItemCommand({
+        TableName: tableName,
+        Key: { id: { S: id } },
+        ReturnValues: 'ALL_OLD'
+      })
+    );
     return !!result.Attributes;
   }
 
   private async dynamoGetOneById(id: string): Promise<T> {
     await this.ensureDynamoTable();
     const { client, sdk, tableName } = await this.getDynamoContext();
-    const found = await client.send(new sdk.GetItemCommand({
-      TableName: tableName,
-      Key: { id: { S: id } }
-    }));
+    const found = await client.send(
+      new sdk.GetItemCommand({
+        TableName: tableName,
+        Key: { id: { S: id } }
+      })
+    );
     const parsed = ExternalStoreProxy.fromDynamoItem<T>(found.Item);
     if (!parsed) throw new DataBaseNotFoundError('Record not found');
     return parsed;
@@ -405,20 +411,22 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   private async validateCassandraUnique(id: string, value: T): Promise<void> {
-    const fields = this.config.uniqueFields || [];
+    const fields = this.config.uniqueFields ?? [];
     const all = await this.cassandraGetAllRaw();
-    await Promise.all(fields.map(async (field) => {
-      const ci = (this.config.caseInsensitiveUniqueFields || []).includes(field);
-      const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
-      const duplicated = all.find((doc: any) => {
-        if (doc.id === id) return false;
-        const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
-        return docValue === recordValue;
-      });
-      if (duplicated) {
-        throw new ConflictError(`${field} already in use`);
-      }
-    }));
+    await Promise.all(
+      fields.map(async (field) => {
+        const ci = (this.config.caseInsensitiveUniqueFields ?? []).includes(field);
+        const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
+        const duplicated = all.find((doc: any) => {
+          if (doc.id === id) return false;
+          const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
+          return docValue === recordValue;
+        });
+        if (duplicated) {
+          throw new ConflictError(`${field} already in use`);
+        }
+      })
+    );
   }
 
   private async cassandraCreate(key: string, value: T): Promise<T> {
@@ -474,15 +482,16 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   private async cassandraDelete(id: string): Promise<boolean> {
-    const exists = await this.cassandraGetAll({}, { page: 1, size: 1 })
-      .then(() => this.cassandraGetOneById(id).then(() => true).catch(() => false));
+    const exists = await this.cassandraGetAll({}, { page: 1, size: 1 }).then(() =>
+      this.cassandraGetOneById(id)
+        .then(() => true)
+        .catch(() => false)
+    );
     if (!exists) return false;
     const client = await this.getCassandraClient();
-    await client.execute(
-      `DELETE FROM ${this.getCassandraTableName()} WHERE id = ?`,
-      [id],
-      { prepare: true }
-    );
+    await client.execute(`DELETE FROM ${this.getCassandraTableName()} WHERE id = ?`, [id], {
+      prepare: true
+    });
     return true;
   }
 
@@ -528,18 +537,20 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   private async validateFirebaseUnique(id: string, value: T): Promise<void> {
-    const fields = this.config.uniqueFields || [];
+    const fields = this.config.uniqueFields ?? [];
     const all = await this.firebaseGetAllRaw();
-    await Promise.all(fields.map(async (field) => {
-      const ci = (this.config.caseInsensitiveUniqueFields || []).includes(field);
-      const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
-      const duplicated = all.find((doc: any) => {
-        if (doc.id === id) return false;
-        const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
-        return docValue === recordValue;
-      });
-      if (duplicated) throw new ConflictError(`${field} already in use`);
-    }));
+    await Promise.all(
+      fields.map(async (field) => {
+        const ci = (this.config.caseInsensitiveUniqueFields ?? []).includes(field);
+        const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
+        const duplicated = all.find((doc: any) => {
+          if (doc.id === id) return false;
+          const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
+          return docValue === recordValue;
+        });
+        if (duplicated) throw new ConflictError(`${field} already in use`);
+      })
+    );
   }
 
   private async firebaseCreate(key: string, value: T): Promise<T> {
@@ -557,10 +568,9 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
     const merged = ExternalStoreProxy.mergePayload<T>(current as any, value) as T;
     await this.validateFirebaseUnique(key, merged);
     const collection = await this.getFirebaseCollection();
-    await collection.doc(key).set(
-      ExternalStoreProxy.buildPersistedPayload(key, merged),
-      { merge: true }
-    );
+    await collection
+      .doc(key)
+      .set(ExternalStoreProxy.buildPersistedPayload(key, merged), { merge: true });
     return merged;
   }
 
@@ -629,9 +639,7 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   private async oracleGetAllRaw(): Promise<T[]> {
     await this.ensureOracleTable();
     const connection = await this.getOracleConnection();
-    const result = await connection.execute(
-      `SELECT payload FROM ${this.getOracleTableName()}`
-    );
+    const result = await connection.execute(`SELECT payload FROM ${this.getOracleTableName()}`);
     const rows = result.rows || [];
     return rows
       .map((row: any) => {
@@ -642,18 +650,20 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   private async validateOracleUnique(id: string, value: T): Promise<void> {
-    const fields = this.config.uniqueFields || [];
+    const fields = this.config.uniqueFields ?? [];
     const all = await this.oracleGetAllRaw();
-    await Promise.all(fields.map(async (field) => {
-      const ci = (this.config.caseInsensitiveUniqueFields || []).includes(field);
-      const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
-      const duplicated = all.find((doc: any) => {
-        if (doc.id === id) return false;
-        const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
-        return docValue === recordValue;
-      });
-      if (duplicated) throw new ConflictError(`${field} already in use`);
-    }));
+    await Promise.all(
+      fields.map(async (field) => {
+        const ci = (this.config.caseInsensitiveUniqueFields ?? []).includes(field);
+        const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
+        const duplicated = all.find((doc: any) => {
+          if (doc.id === id) return false;
+          const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
+          return docValue === recordValue;
+        });
+        if (duplicated) throw new ConflictError(`${field} already in use`);
+      })
+    );
   }
 
   private async oracleCreate(key: string, value: T): Promise<T> {
@@ -805,22 +815,24 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
 
   private async validateMongoUnique(id: string, value: T): Promise<void> {
     const collection = await this.getMongoCollection();
-    const fields = this.config.uniqueFields || [];
-    await Promise.all(fields.map(async (field) => {
-      const ci = (this.config.caseInsensitiveUniqueFields || []).includes(field);
-      const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
-      const all = await collection.find({}).toArray();
-      const duplicated = all
-        .map((item: any) => item.payload || item)
-        .find((doc: any) => {
-          if (doc.id === id) return false;
-          const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
-          return docValue === recordValue;
-        });
-      if (duplicated) {
-        throw new ConflictError(`${field} already in use`);
-      }
-    }));
+    const fields = this.config.uniqueFields ?? [];
+    await Promise.all(
+      fields.map(async (field) => {
+        const ci = (this.config.caseInsensitiveUniqueFields ?? []).includes(field);
+        const recordValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
+        const all = await collection.find({}).toArray();
+        const duplicated = all
+          .map((item: any) => item.payload || item)
+          .find((doc: any) => {
+            if (doc.id === id) return false;
+            const docValue = ci ? normalizeCI(doc[field]) : normalize(doc[field]);
+            return docValue === recordValue;
+          });
+        if (duplicated) {
+          throw new ConflictError(`${field} already in use`);
+        }
+      })
+    );
   }
 
   private async getSqlModel(): Promise<any> {
@@ -834,44 +846,46 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
 
     const DataTypes = sequelize.Sequelize?.DataTypes || (await import('sequelize')).DataTypes;
     const modelName = `External${this.entity}`;
-    this.sqlModel = sequelize.models?.[modelName] || sequelize.define(
-      modelName,
-      {
-        id: {
-          type: DataTypes.STRING,
-          primaryKey: true,
-          allowNull: false
+    this.sqlModel =
+      sequelize.models?.[modelName] ||
+      sequelize.define(
+        modelName,
+        {
+          id: {
+            type: DataTypes.STRING,
+            primaryKey: true,
+            allowNull: false
+          },
+          payload: {
+            type: DataTypes.JSON,
+            allowNull: false
+          },
+          username: {
+            type: DataTypes.STRING,
+            allowNull: true
+          },
+          username_ci: {
+            type: DataTypes.STRING,
+            allowNull: true
+          },
+          name: {
+            type: DataTypes.STRING,
+            allowNull: true
+          },
+          name_ci: {
+            type: DataTypes.STRING,
+            allowNull: true
+          },
+          organization: {
+            type: DataTypes.STRING,
+            allowNull: true
+          }
         },
-        payload: {
-          type: DataTypes.JSON,
-          allowNull: false
-        },
-        username: {
-          type: DataTypes.STRING,
-          allowNull: true
-        },
-        username_ci: {
-          type: DataTypes.STRING,
-          allowNull: true
-        },
-        name: {
-          type: DataTypes.STRING,
-          allowNull: true
-        },
-        name_ci: {
-          type: DataTypes.STRING,
-          allowNull: true
-        },
-        organization: {
-          type: DataTypes.STRING,
-          allowNull: true
+        {
+          tableName: this.config.tableName,
+          timestamps: false
         }
-      },
-      {
-        tableName: this.config.tableName,
-        timestamps: false
-      }
-    );
+      );
 
     await this.sqlModel.sync();
     return this.sqlModel;
@@ -897,10 +911,9 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
     const raw = existing.get({ plain: true });
     const merged = ExternalStoreProxy.mergePayload<T>(raw.payload || raw, value);
     await this.validateSqlUnique(model, key, merged as T);
-    await model.update(
-      ExternalStoreProxy.buildPersistedPayload(key, merged as T),
-      { where: { id: key } }
-    );
+    await model.update(ExternalStoreProxy.buildPersistedPayload(key, merged as T), {
+      where: { id: key }
+    });
     return merged as T;
   }
 
@@ -935,20 +948,22 @@ export class ExternalStoreProxy<T extends Record<string, any>> implements IStore
   }
 
   private async validateSqlUnique(model: any, id: string, value: T): Promise<void> {
-    const fields = this.config.uniqueFields || [];
-    await Promise.all(fields.map(async (field) => {
-      const ci = (this.config.caseInsensitiveUniqueFields || []).includes(field);
-      const whereKey = ci ? `${field}_ci` : field;
-      const whereValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
-      const duplicated = await model.findOne({
-        where: {
-          [whereKey]: whereValue
+    const fields = this.config.uniqueFields ?? [];
+    await Promise.all(
+      fields.map(async (field) => {
+        const ci = (this.config.caseInsensitiveUniqueFields ?? []).includes(field);
+        const whereKey = ci ? `${field}_ci` : field;
+        const whereValue = ci ? normalizeCI(value[field]) : normalize(value[field]);
+        const duplicated = await model.findOne({
+          where: {
+            [whereKey]: whereValue
+          }
+        });
+        if (duplicated && duplicated.get('id') !== id) {
+          throw new ConflictError(`${field} already in use`);
         }
-      });
-      if (duplicated && duplicated.get('id') !== id) {
-        throw new ConflictError(`${field} already in use`);
-      }
-    }));
+      })
+    );
   }
 
   private static buildPersistedPayload<TRecord extends Record<string, any>>(

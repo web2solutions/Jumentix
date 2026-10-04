@@ -13,7 +13,7 @@ export type RealtimeInterface = 'none' | 'websocket' | 'grpc';
 
 export type DbChoice = 'sqlite' | 'postgres' | 'mysql' | 'mongo' | 'inmemory';
 
-export type EntityRelation = {
+export interface EntityRelation {
   name: string;
   entity: string;
   match?: string;
@@ -21,30 +21,30 @@ export type EntityRelation = {
   kind?: string;
   /** Owning property name when the relation is declared on a field. */
   field?: string;
-};
+}
 
-export type EntityOperation = {
+export interface EntityOperation {
   operationId: string;
   method: string;
   path: string;
   summary?: string;
-};
+}
 
-export type PlanEntity = {
+export interface PlanEntity {
   name: string;
   schema: Record<string, unknown>;
   primaryKey: string;
   relations: EntityRelation[];
   operations: EntityOperation[];
-};
+}
 
-export type PlanDomain = {
+export interface PlanDomain {
   id: string;
   name?: string;
   entities: PlanEntity[];
-};
+}
 
-export type PlanService = {
+export interface PlanService {
   id: string;
   kind: ServiceKind;
   url?: string;
@@ -54,9 +54,9 @@ export type PlanService = {
     realtime: RealtimeInterface;
   };
   db: DbChoice;
-};
+}
 
-export type GenerationPlan = {
+export interface GenerationPlan {
   mode: GenerationMode;
   services: PlanService[];
   domains: PlanDomain[];
@@ -68,9 +68,9 @@ export type GenerationPlan = {
     oasPerService: Record<string, Record<string, unknown>>;
     asyncapi?: Record<string, unknown>;
   };
-};
+}
 
-export type SourceResolveOptions = {
+export interface SourceResolveOptions {
   from?: string;
   preset?: string;
   mode?: string;
@@ -83,12 +83,17 @@ export type SourceResolveOptions = {
   fetchImpl?: typeof fetch;
   /** Override Users preset OAS path (tests). */
   presetPath?: string;
-};
+}
 
 export const ALLOWED_HTTP: readonly HttpInterface[] = ['express', 'fastify', 'restify'];
 export const ALLOWED_REALTIME: readonly RealtimeInterface[] = ['none', 'websocket', 'grpc'];
 export const ALLOWED_DB: readonly DbChoice[] = ['sqlite', 'postgres', 'mysql', 'mongo', 'inmemory'];
-export const ALLOWED_MODES: readonly GenerationMode[] = ['monolith', 'services', 'hybrid', 'frontend'];
+export const ALLOWED_MODES: readonly GenerationMode[] = [
+  'monolith',
+  'services',
+  'hybrid',
+  'frontend'
+];
 
 export class SourceResolutionError extends Error {
   readonly exitCode = 1;

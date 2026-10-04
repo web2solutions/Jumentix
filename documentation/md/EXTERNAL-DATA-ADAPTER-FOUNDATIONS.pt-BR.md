@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/EXTERNAL-DATA-ADAPTER-FOUNDATIONS.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Fundações do adaptador de dados externos
 
 Para suportar topologias de implantação heterogêneas, o projeto inclui bases iniciais de adaptadores para provedores de persistência externos.

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const { resolveCiPlan, resolveInputFiles } = require('../run-monorepo-ci');
 
 describe('run-monorepo-ci', () => {
@@ -38,9 +37,7 @@ describe('run-monorepo-ci', () => {
 
   it('reads changed files from git base ref when argv is empty', () => {
     expect.hasAssertions();
-    const readChangedFiles = jest.fn().mockReturnValue([
-      'apps/backend-template/src/index.ts'
-    ]);
+    const readChangedFiles = jest.fn().mockReturnValue(['apps/backend-template/src/index.ts']);
 
     const files = resolveInputFiles([], { baseRef: 'origin/main', readChangedFiles });
     expect(files).toStrictEqual(['apps/backend-template/src/index.ts']);

@@ -49,7 +49,6 @@ Launch a modular monolith with clear service boundaries ready to extract later.
 - [Backend Template Hub](/docs/jumentix/guides/rest-api)
 - Deploy Target and Packaging Matrix
 
-
 ## Next steps
 
 1. [Getting started](/docs/jumentix/concepts/getting-started)

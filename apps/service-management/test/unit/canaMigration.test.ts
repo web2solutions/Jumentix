@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
+/* eslint-disable jest/max-expects, jest/no-conditional-in-test */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -37,38 +36,42 @@ const {
   migrateLocalStorageToCana,
   readRetainedMigrationSource
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'canaMigration.js'));
-const {
-  CANA_MODULE_SPECIFIER
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'designerStoreFactory.js'));
+const { CANA_MODULE_SPECIFIER } = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'designerStoreFactory.js')
+);
 
 const FIXED_NOW = new Date('2026-08-01T12:00:00.000Z');
 const now = () => new Date(FIXED_NOW.getTime());
 
-type FakeStorage = {
+interface FakeStorage {
   getItem: (key: string) => string | null;
   setItem: (key: string, value: string) => void;
   removeItem: (key: string) => void;
   map: Map<string, string>;
-};
+}
 
 function createFakeStorage(initial: Record<string, string> = {}): FakeStorage {
   const map = new Map<string, string>(Object.entries(initial));
   return {
     getItem: (key) => (map.has(key) ? (map.get(key) as string) : null),
-    setItem: (key, value) => { map.set(key, String(value)); },
-    removeItem: (key) => { map.delete(key); },
+    setItem: (key, value) => {
+      map.set(key, String(value));
+    },
+    removeItem: (key) => {
+      map.delete(key);
+    },
     map
   };
 }
 
-type StoreScript = {
+interface StoreScript {
   saveError?: string;
   baselineSaveError?: string;
   tamperLoad?: (raw: string) => string;
   tamperBaselineLoad?: (raw: string) => string;
   noClient?: boolean;
   openError?: string;
-};
+}
 
 /**
  * Declared port-level double of the migration target. Records are keyed by
@@ -116,7 +119,10 @@ function createStoreStub(initial: Record<string, string> = {}) {
       events.push('load');
       const raw = records.get(stateKey);
       if (raw === undefined) return { status: 'empty', payload: null };
-      return { status: 'ok', payload: JSON.parse(script.tamperLoad ? script.tamperLoad(raw) : raw) };
+      return {
+        status: 'ok',
+        payload: JSON.parse(script.tamperLoad ? script.tamperLoad(raw) : raw)
+      };
     },
     async saveBaseline(snapshot: unknown) {
       events.push('saveBaseline');
@@ -139,19 +145,28 @@ function createStoreStub(initial: Record<string, string> = {}) {
   // false` rather than fail the migration.
   Object.defineProperty(store, 'ensureOpen', {
     configurable: true,
-    get() { return script.noClient ? undefined : ensureOpenImpl; }
+    get() {
+      return script.noClient ? undefined : ensureOpenImpl;
+    }
   });
   Object.defineProperty(store, 'client', {
     configurable: true,
-    get() { return script.noClient ? undefined : clientImpl; }
+    get() {
+      return script.noClient ? undefined : clientImpl;
+    }
   });
   return {
-    store, records, events, script
+    store,
+    records,
+    events,
+    script
   };
 }
 
 const PINNED_PAYLOAD = {
-  domains: [{ id: 'domain-1', name: 'Billing', entities: [{ id: 'entity-1', name: 'Invoice', fields: [] }] }],
+  domains: [
+    { id: 'domain-1', name: 'Billing', entities: [{ id: 'entity-1', name: 'Invoice', fields: [] }] }
+  ],
   relationships: [],
   selectedDomainId: 'domain-1',
   selectedEntityId: null,
@@ -166,9 +181,15 @@ const PINNED_PAYLOAD = {
 };
 
 const PINNED_BASELINE = {
-  domains: [{
-    id: 'domain-1', name: 'Billing', color: '#fff', context: {}, entities: []
-  }],
+  domains: [
+    {
+      id: 'domain-1',
+      name: 'Billing',
+      color: '#fff',
+      context: {},
+      entities: []
+    }
+  ],
   relationships: []
 };
 
@@ -211,7 +232,9 @@ describe('cana migration — no source', () => {
   it('reports no-source with the cause when the backend throws on read', async () => {
     expect.hasAssertions();
     const storage = createFakeStorage();
-    storage.getItem = () => { throw new Error('SecurityError'); };
+    storage.getItem = () => {
+      throw new Error('SecurityError');
+    };
     const { store } = createStoreStub();
     const result = await migrateLocalStorageToCana({ storage, store, now });
     expect(result.status).toBe('no-source');
@@ -224,7 +247,7 @@ describe('cana migration — verified happy path', () => {
     expect.hasAssertions();
     const storage = seededStorage();
     const { store, records } = createStoreStub();
-    const backups: Array<[string, string]> = [];
+    const backups: [string, string][] = [];
     const result = await migrateLocalStorageToCana({
       storage,
       store,
@@ -247,8 +270,9 @@ describe('cana migration — verified happy path', () => {
     // One-way: the source stays in localStorage, unused, for the retention
     // period — a manual recovery path, never a fallback.
     expect(storage.map.get(CANA_MIGRATION_SOURCE_STATE_KEY)).toBe(JSON.stringify(PINNED_PAYLOAD));
-    expect(storage.map.get(CANA_MIGRATION_SOURCE_BASELINE_KEY))
-      .toBe(JSON.stringify(PINNED_BASELINE));
+    expect(storage.map.get(CANA_MIGRATION_SOURCE_BASELINE_KEY)).toBe(
+      JSON.stringify(PINNED_BASELINE)
+    );
 
     // The verified marker carries the retention window.
     const marker = JSON.parse(storage.map.get(CANA_MIGRATION_MARKER_KEY) as string);
@@ -321,7 +345,11 @@ describe('cana migration — verified happy path', () => {
     const storage = createFakeStorage({ 'legacy.state': JSON.stringify(PINNED_PAYLOAD) });
     const { store, records } = createStoreStub();
     const result = await migrateLocalStorageToCana({
-      storage, store, now, stateKey: 'legacy.state', baselineKey: 'legacy.baseline'
+      storage,
+      store,
+      now,
+      stateKey: 'legacy.state',
+      baselineKey: 'legacy.baseline'
     });
     expect(result.status).toBe('migrated');
     expect(records.get(CANA_MIGRATION_SOURCE_STATE_KEY)).toBe(JSON.stringify(PINNED_PAYLOAD));
@@ -335,7 +363,12 @@ describe('cana migration — declared failures, source always preserved', () => 
     const { store, records, events } = createStoreStub();
     let backups = 0;
     const result = await migrateLocalStorageToCana({
-      storage, store, now, downloadBackup: () => { backups += 1; }
+      storage,
+      store,
+      now,
+      downloadBackup: () => {
+        backups += 1;
+      }
     });
     expect(result.status).toBe('failed');
     expect(result.reason).toContain('corrupt-source');
@@ -440,7 +473,12 @@ describe('cana migration — idempotence and retention', () => {
     let backups = 0;
     const eventsBefore = records.size;
     const second = await migrateLocalStorageToCana({
-      storage, store, now, downloadBackup: () => { backups += 1; }
+      storage,
+      store,
+      now,
+      downloadBackup: () => {
+        backups += 1;
+      }
     });
     expect(second.status).toBe('already-migrated');
     expect(second.sourceRetained).toBe(true);
@@ -525,7 +563,10 @@ describe('cana migration — idempotence and retention', () => {
 describe('declared storage-environment states (no fallback — decision 2026-07-29)', () => {
   it('declares an unsupported environment when IndexedDB does not exist at all', () => {
     expect.hasAssertions();
-    const state = describeDesignerStorageEnvironment({ indexedDbPresent: false, probeStatus: 'unavailable' });
+    const state = describeDesignerStorageEnvironment({
+      indexedDbPresent: false,
+      probeStatus: 'unavailable'
+    });
     expect(state.kind).toBe('unsupported-environment');
     expect(state.severity).toBe('error');
     expect(state.message).toContain('IndexedDB');
@@ -548,7 +589,10 @@ describe('declared storage-environment states (no fallback — decision 2026-07-
 
   it('declares data loss distinctly from an empty first run', () => {
     expect.hasAssertions();
-    const state = describeDesignerStorageEnvironment({ indexedDbPresent: true, probeStatus: 'lost' });
+    const state = describeDesignerStorageEnvironment({
+      indexedDbPresent: true,
+      probeStatus: 'lost'
+    });
     expect(state.kind).toBe('data-lost');
     expect(state.severity).toBe('error');
     expect(state.message).toContain('no longer readable');
@@ -569,7 +613,10 @@ describe('declared storage-environment states (no fallback — decision 2026-07-
 
   it('declares nothing when storage is healthy', () => {
     expect.hasAssertions();
-    const state = describeDesignerStorageEnvironment({ indexedDbPresent: true, probeStatus: 'available' });
+    const state = describeDesignerStorageEnvironment({
+      indexedDbPresent: true,
+      probeStatus: 'available'
+    });
     expect(state.kind).toBe('ok');
     expect(state.message).toBeNull();
   });
@@ -614,13 +661,19 @@ describe('load-time data-lost declaration (JUM-626)', () => {
   it('reads a retained source only inside its retention window, with the payload still present', () => {
     expect.hasAssertions();
     const retainedUntil = new Date(FIXED_NOW.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString();
-    const marker = JSON.stringify({ status: 'verified', migratedAt: FIXED_NOW.toISOString(), sourceRetainedUntil: retainedUntil });
+    const marker = JSON.stringify({
+      status: 'verified',
+      migratedAt: FIXED_NOW.toISOString(),
+      sourceRetainedUntil: retainedUntil
+    });
     const storage = createFakeStorage({
       [CANA_MIGRATION_MARKER_KEY]: marker,
       [CANA_MIGRATION_SOURCE_STATE_KEY]: JSON.stringify({ domains: [] })
     });
-    expect(readRetainedMigrationSource({ storage, now }))
-      .toStrictEqual({ retained: true, retainedUntil });
+    expect(readRetainedMigrationSource({ storage, now })).toStrictEqual({
+      retained: true,
+      retainedUntil
+    });
 
     // Past the retention window the source is no longer a recovery path.
     const expired = createFakeStorage({
@@ -628,20 +681,25 @@ describe('load-time data-lost declaration (JUM-626)', () => {
       [CANA_MIGRATION_SOURCE_STATE_KEY]: JSON.stringify({ domains: [] })
     });
     const later = () => new Date(FIXED_NOW.getTime() + 31 * 24 * 60 * 60 * 1000);
-    expect(readRetainedMigrationSource({ storage: expired, now: later }))
-      .toStrictEqual({ retained: false });
+    expect(readRetainedMigrationSource({ storage: expired, now: later })).toStrictEqual({
+      retained: false
+    });
 
     // No marker (never migrated, or marker unreadable) means no retained source.
-    expect(readRetainedMigrationSource({
-      storage: createFakeStorage({ [CANA_MIGRATION_SOURCE_STATE_KEY]: '{}' }),
-      now
-    })).toStrictEqual({ retained: false });
+    expect(
+      readRetainedMigrationSource({
+        storage: createFakeStorage({ [CANA_MIGRATION_SOURCE_STATE_KEY]: '{}' }),
+        now
+      })
+    ).toStrictEqual({ retained: false });
 
     // Marker inside the window but the payload itself already gone.
-    expect(readRetainedMigrationSource({
-      storage: createFakeStorage({ [CANA_MIGRATION_MARKER_KEY]: marker }),
-      now
-    })).toStrictEqual({ retained: false });
+    expect(
+      readRetainedMigrationSource({
+        storage: createFakeStorage({ [CANA_MIGRATION_MARKER_KEY]: marker }),
+        now
+      })
+    ).toStrictEqual({ retained: false });
   });
 
   it('resolves the ambient storage defensively when none is injected — none exists off-DOM', () => {
@@ -661,8 +719,10 @@ describe('load-time data-lost declaration (JUM-626)', () => {
       }),
       [CANA_MIGRATION_SOURCE_STATE_KEY]: '{}'
     });
-    expect(readRetainedMigrationSource({ storage }))
-      .toStrictEqual({ retained: true, retainedUntil: '2099-01-01T00:00:00.000Z' });
+    expect(readRetainedMigrationSource({ storage })).toStrictEqual({
+      retained: true,
+      retainedUntil: '2099-01-01T00:00:00.000Z'
+    });
   });
 
   it('treats a marker without a parseable retention date as not retained', () => {
@@ -708,7 +768,9 @@ describe('browser wiring — the Cana bundle is servable by the zero-build SPA (
     expect(importMapMatch).not.toBeNull();
     const importMap = JSON.parse((importMapMatch as RegExpMatchArray)[1]);
     expect(importMap.imports[CANA_MODULE_SPECIFIER]).toBe('./vendor/cana/index.js');
-    const scriptMatch = html.match(/<script type="module" src="\.\/script\.js(?:\?v=[^"]+)?"><\/script>/);
+    const scriptMatch = html.match(
+      /<script type="module" src="\.\/script\.js(?:\?v=[^"]+)?"><\/script>/
+    );
     expect(scriptMatch).not.toBeNull();
     // The import map must precede the module script that triggers the import.
     expect(html.indexOf('type="importmap"')).toBeLessThan(scriptMatch?.index ?? -1);
@@ -718,9 +780,13 @@ describe('browser wiring — the Cana bundle is servable by the zero-build SPA (
     expect.hasAssertions();
     const gitignore = fs.readFileSync(path.join(repoRoot, '.gitignore'), 'utf-8');
     expect(gitignore).toContain('apps/service-management/vendor/');
-    expect(fs.existsSync(path.join(
-      repoRoot,
-      'apps/service-management/scripts/sync-service-management-cana-bundle.js'
-    ))).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(
+          repoRoot,
+          'apps/service-management/scripts/sync-service-management-cana-bundle.js'
+        )
+      )
+    ).toBe(true);
   });
 });

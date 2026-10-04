@@ -1,35 +1,36 @@
 /* global describe, it, expect, beforeAll, beforeEach, afterAll, jest */
 // file deepcode ignore NoHardcodedPasswords: <mocked passwords>
 // file deepcode ignore NoHardcodedCredentials/test: <fake credential>
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/max-expects, jest/prefer-expect-assertions */
+
+/* eslint-disable jest/max-expects */
 import path from 'node:path';
-import request from 'supertest';
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { EEmailType, EmailValueObject } from '@src/modules/ddd/valueObjects';
-import createdUsers from '@seed/users';
-import organizations from '@seed/organizations';
-import { UserDataRepository, UserService } from '@src/modules/Users';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
-// eslint-disable-next-line import/no-unresolved
+
 import { InMemoryMessageMediatorAdapter } from '@jumentix/message-mediator';
+import organizations from '@seed/organizations';
+import createdUsers from '@seed/users';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { EEmailType } from '@src/modules/ddd/valueObjects';
+import { UserDataRepository, UserService } from '@src/modules/Users';
+import AuthService from '@src/modules/Users/service/AuthService';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
+import request from 'supertest';
+
+import { createServiceManagementCatalogDbClient } from '@service-management-api/infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
 import { CatalogIntegrationEventName } from '@service-management-api/modules/Catalogs/events/contracts/CatalogIntegrationEventName';
 import { ServiceManagementCatalogAPI } from '@service-management-api/ServiceManagementCatalogAPI';
-import {
-  createServiceManagementCatalogDbClient
-} from '@service-management-api/infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
+
+import type { EmailValueObject } from '@src/modules/ddd/valueObjects';
+import type { IAuthorizationHeader } from '@src/modules/Users/service/ports/IAuthorizationHeader';
+import type { Express } from 'express';
 
 /**
  * Multi-user convergence integration suite (JUM-491) — the issue's headline
@@ -54,17 +55,16 @@ jest.setTimeout(60000);
 
 const repoRoot = path.resolve(__dirname, '../../../..');
 const {
-  createDesignerState,
-  createDefaultView
+  createDefaultView,
+  createDesignerState
 } = require('@jumentix/designer-core/state/designerState.js');
 
-const {
-  createCatalogSyncClient,
-  createCatalogHttpTransport
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js'));
-const {
-  CanaDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js'));
+const { createCatalogSyncClient, createCatalogHttpTransport } = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js')
+);
+const { CanaDesignerStore } = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js')
+);
 
 const STORE_NAME = 'designerDocuments';
 
@@ -96,9 +96,11 @@ let aliceHeader: IAuthorizationHeader;
 let bobHeader: IAuthorizationHeader;
 /* eslint-enable jest/require-hook */
 
-// eslint-disable-next-line jest/require-hook
 const observedEvents: Record<string, any[]> = {
-  created: [], updated: [], deleted: [], restored: []
+  created: [],
+  updated: [],
+  deleted: [],
+  restored: []
 };
 
 /** The declared in-memory Cana double (as in the designerSync suite). */
@@ -107,7 +109,9 @@ function createCanaClientDouble(backend: { records: Map<string, string> }, clien
   let cursor = 0;
   let txSeq = 0;
   return {
-    async open() { return undefined; },
+    async open() {
+      return undefined;
+    },
     table(name: string) {
       return {
         name,
@@ -121,11 +125,15 @@ function createCanaClientDouble(backend: { records: Map<string, string> }, clien
       _stores: readonly string[],
       body: (scope: any) => Promise<unknown>
     ) {
-      const staged: Array<{ op: 'put' | 'delete'; key: string; value?: string }> = [];
+      const staged: { op: 'put' | 'delete'; key: string; value?: string }[] = [];
       const scope = {
         table: () => ({
-          async put(value: string, key: string) { staged.push({ op: 'put', key, value }); },
-          async delete(key: string) { staged.push({ op: 'delete', key }); }
+          async put(value: string, key: string) {
+            staged.push({ op: 'put', key, value });
+          },
+          async delete(key: string) {
+            staged.push({ op: 'delete', key });
+          }
         }),
         abort: () => undefined
       };
@@ -148,12 +156,18 @@ function createCanaClientDouble(backend: { records: Map<string, string> }, clien
         listeners.forEach((canaListener) => canaListener(event));
       });
       return {
-        outcome: 'committed', result, events: [], correlationId: `${clientId}:${txSeq}`, attemptedAt: 1722000000000 + txSeq
+        outcome: 'committed',
+        result,
+        events: [],
+        correlationId: `${clientId}:${txSeq}`,
+        attemptedAt: 1722000000000 + txSeq
       };
     },
     subscribe(canaListener: (event: any) => void) {
       listeners.add(canaListener);
-      return () => { listeners.delete(canaListener); };
+      return () => {
+        listeners.delete(canaListener);
+      };
     },
     async storageState() {
       return { persistent: true, nearQuota: false, evicted: false };
@@ -169,14 +183,24 @@ function makeEntity(id: string, name: string) {
     y: 14,
     fields: [],
     meta: {
-      aggregateRoot: false, invariants: [], rbac: {}, contracts: [], oasComposition: {}
+      aggregateRoot: false,
+      invariants: [],
+      rbac: {},
+      contracts: [],
+      oasComposition: {}
     }
   };
 }
 
 function makeDomain(id: string, name: string, entities: any[] = []) {
   return {
-    id, name, color: '#60a5fa', x: 10, y: 10, context: {}, entities
+    id,
+    name,
+    color: '#60a5fa',
+    x: 10,
+    y: 10,
+    context: {},
+    entities
   };
 }
 
@@ -188,7 +212,7 @@ async function createHost(seedDomains: any[], header: IAuthorizationHeader) {
   const backend = { records: new Map<string, string>() };
   const client = createCanaClientDouble(backend, `host-${hostSeq}`);
   const store = new CanaDesignerStore({ client });
-  const notifications: Array<{ message: string; severity: string }> = [];
+  const notifications: { message: string; severity: string }[] = [];
   const timers: Map<number, { fn: () => unknown }> = new Map();
   let timerSeq = 0;
   let core: any;
@@ -231,7 +255,12 @@ async function createHost(seedDomains: any[], header: IAuthorizationHeader) {
     }
   };
   return {
-    backend, core, syncClient, notifications, endpoint, flushTimers
+    backend,
+    core,
+    syncClient,
+    notifications,
+    endpoint,
+    flushTimers
   };
 }
 
@@ -261,28 +290,35 @@ describe('jum-491 — two designer clients converge over the real backend', () =
     });
     await API.seedData();
 
-    const superadminHeader = {
-      ...(await authService.authenticate(
-        createdUser1.username,
-        createdUser1.password,
-        EAuthSchemaType.Basic
-      )).result!
-    };
+    const superadminAuth = await authService.authenticate(
+      createdUser1.username,
+      createdUser1.password,
+      EAuthSchemaType.Basic
+    );
+    if (!superadminAuth.result) {
+      throw new Error('superadmin authentication failed during seed');
+    }
+    const superadminHeader = { ...superadminAuth.result };
     const app = API.server.application;
     const buildUser = (username: string, roles: string[]) => ({
       firstName: 'Sync',
       lastName: username,
-      emails: [{
-        email: `${username}@xpertminds.dev`,
-        type: EEmailType.work,
-        isPrimary: true
-      } as EmailValueObject],
+      emails: [
+        {
+          email: `${username}@xpertminds.dev`,
+          type: EEmailType.work,
+          isPrimary: true
+        } as EmailValueObject
+      ],
       username: `${username}@xpertminds.dev`,
       password: `sync-${username}-A1!`,
       organization: orgZero.id,
       roles
     });
-    for (const [username, roles] of [['sync-alice', ['admin']], ['sync-bob', ['user']]] as Array<[string, string[]]>) {
+    for (const [username, roles] of [
+      ['sync-alice', ['admin']],
+      ['sync-bob', ['user']]
+    ] as [string, string[]][]) {
       const payload = buildUser(username, roles);
       // eslint-disable-next-line no-await-in-loop
       const created = await request(app)
@@ -295,32 +331,42 @@ describe('jum-491 — two designer clients converge over the real backend', () =
         throw new Error(`tenant user seed failed: ${created.statusCode}`);
       }
     }
-    aliceHeader = {
-      ...(await authService.authenticate('sync-alice@xpertminds.dev', 'sync-sync-alice-A1!', EAuthSchemaType.Basic)).result!
-    };
-    bobHeader = {
-      ...(await authService.authenticate('sync-bob@xpertminds.dev', 'sync-sync-bob-A1!', EAuthSchemaType.Basic)).result!
-    };
+    const aliceAuth = await authService.authenticate(
+      'sync-alice@xpertminds.dev',
+      'sync-sync-alice-A1!',
+      EAuthSchemaType.Basic
+    );
+    if (!aliceAuth.result) {
+      throw new Error('sync-alice authentication failed during seed');
+    }
+    aliceHeader = { ...aliceAuth.result };
+    const bobAuth = await authService.authenticate(
+      'sync-bob@xpertminds.dev',
+      'sync-sync-bob-A1!',
+      EAuthSchemaType.Basic
+    );
+    if (!bobAuth.result) {
+      throw new Error('sync-bob authentication failed during seed');
+    }
+    bobHeader = { ...bobAuth.result };
 
-    messageMediator.subscribe(
-      CatalogIntegrationEventName.Created,
-      (event) => { observedEvents.created.push(event); }
-    );
-    messageMediator.subscribe(
-      CatalogIntegrationEventName.Updated,
-      (event) => { observedEvents.updated.push(event); }
-    );
-    messageMediator.subscribe(
-      CatalogIntegrationEventName.Deleted,
-      (event) => { observedEvents.deleted.push(event); }
-    );
-    messageMediator.subscribe(
-      CatalogIntegrationEventName.Restored,
-      (event) => { observedEvents.restored.push(event); }
-    );
+    messageMediator.subscribe(CatalogIntegrationEventName.Created, (event) => {
+      observedEvents.created.push(event);
+    });
+    messageMediator.subscribe(CatalogIntegrationEventName.Updated, (event) => {
+      observedEvents.updated.push(event);
+    });
+    messageMediator.subscribe(CatalogIntegrationEventName.Deleted, (event) => {
+      observedEvents.deleted.push(event);
+    });
+    messageMediator.subscribe(CatalogIntegrationEventName.Restored, (event) => {
+      observedEvents.restored.push(event);
+    });
 
     listener = app.listen(0, '127.0.0.1');
-    await new Promise<void>((resolve) => { listener.once('listening', resolve); });
+    await new Promise<void>((resolve) => {
+      listener.once('listening', resolve);
+    });
     baseUrl = `http://127.0.0.1:${listener.address().port}`;
   });
 
@@ -333,7 +379,9 @@ describe('jum-491 — two designer clients converge over the real backend', () =
 
   afterAll(async () => {
     if (listener) {
-      await new Promise<void>((resolve) => { listener.close(() => resolve()); });
+      await new Promise<void>((resolve) => {
+        listener.close(() => resolve());
+      });
     }
     await catalogAPI.stop();
     await databaseClient.disconnect();
@@ -342,7 +390,10 @@ describe('jum-491 — two designer clients converge over the real backend', () =
 
   it('alice publishes; Bob converges from the shared catalog on his first read-back', async () => {
     expect.hasAssertions();
-    const alice = await createHost([makeDomain('domain-a', 'Billing', [makeEntity('entity-a1', 'Invoice')])], aliceHeader);
+    const alice = await createHost(
+      [makeDomain('domain-a', 'Billing', [makeEntity('entity-a1', 'Invoice')])],
+      aliceHeader
+    );
     const started = await alice.syncClient.start();
     expect(started.converged).toBe(true);
 
@@ -361,7 +412,10 @@ describe('jum-491 — two designer clients converge over the real backend', () =
 
   it('bob edits the shared domain; Alice converges on her next read-back', async () => {
     expect.hasAssertions();
-    const alice = await createHost([makeDomain('domain-a', 'Billing', [makeEntity('entity-a1', 'Invoice')])], aliceHeader);
+    const alice = await createHost(
+      [makeDomain('domain-a', 'Billing', [makeEntity('entity-a1', 'Invoice')])],
+      aliceHeader
+    );
     await alice.syncClient.start();
     const { record } = await alice.syncClient.publishDomain('domain-a');
 
@@ -378,10 +432,14 @@ describe('jum-491 — two designer clients converge over the real backend', () =
       .set('Accept', 'application/json; charset=utf-8')
       .set(aliceHeader);
     expect(serverRecord.body.version).toBe(2);
-    expect(serverRecord.body.design.domain.entities.map((entity: any) => entity.name)).toContain('Payment');
+    expect(serverRecord.body.design.domain.entities.map((entity: any) => entity.name)).toContain(
+      'Payment'
+    );
 
     await alice.syncClient.syncNow();
-    expect(alice.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain('Payment');
+    expect(alice.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain(
+      'Payment'
+    );
     expect(alice.core.state.domains[0].context.catalog.version).toBe(2);
     await bob.syncClient.stop();
     await alice.syncClient.stop();
@@ -389,7 +447,10 @@ describe('jum-491 — two designer clients converge over the real backend', () =
 
   it('partition: Bob disconnected (real ECONNREFUSED), both edit — Bob heals into a reviewable conflict and converges', async () => {
     expect.hasAssertions();
-    const alice = await createHost([makeDomain('domain-a', 'Billing', [makeEntity('entity-a1', 'Invoice')])], aliceHeader);
+    const alice = await createHost(
+      [makeDomain('domain-a', 'Billing', [makeEntity('entity-a1', 'Invoice')])],
+      aliceHeader
+    );
     await alice.syncClient.start();
     const { record } = await alice.syncClient.publishDomain('domain-a');
 
@@ -414,7 +475,9 @@ describe('jum-491 — two designer clients converge over the real backend', () =
     await alice.core.saveState();
     await alice.flushTimers();
     // Alice also shares a second domain during the partition.
-    alice.core.state.domains.push(makeDomain('domain-a3', 'Shipping', [makeEntity('entity-a3', 'Shipment')]));
+    alice.core.state.domains.push(
+      makeDomain('domain-a3', 'Shipping', [makeEntity('entity-a3', 'Shipment')])
+    );
     await alice.core.saveState();
     await alice.syncClient.publishDomain('domain-a3');
 
@@ -453,7 +516,10 @@ describe('jum-491 — two designer clients converge over the real backend', () =
 
   it('deletion propagates as a tombstone and restore recovers it — and Bob (user role) cannot delete', async () => {
     expect.hasAssertions();
-    const alice = await createHost([makeDomain('domain-a', 'Billing', [makeEntity('entity-a1', 'Invoice')])], aliceHeader);
+    const alice = await createHost(
+      [makeDomain('domain-a', 'Billing', [makeEntity('entity-a1', 'Invoice')])],
+      aliceHeader
+    );
     await alice.syncClient.start();
     const { record } = await alice.syncClient.publishDomain('domain-a');
 

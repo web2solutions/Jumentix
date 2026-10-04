@@ -26,7 +26,6 @@ function emitsNoJavaScript(absolutePath, readFile = (file) => fs.readFileSync(fi
   if (absolutePath.endsWith('.d.ts')) return true;
 
   try {
-    // eslint-disable-next-line global-require
     const ts = require('typescript');
     const emitted = ts.transpileModule(readFile(absolutePath), {
       compilerOptions: {

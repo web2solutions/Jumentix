@@ -6,18 +6,15 @@
     "incremental": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "noEmit": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      // The designer is a zero-build sibling app; its stylesheets are mounted
+      // by the ServiceManagementDesigner stories (JUM-488).
+      "@jumentix/service-management/*": ["../service-management/*"]
     },
     "plugins": [
       {
@@ -28,9 +25,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2015",
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
   "exclude": [
     "node_modules",

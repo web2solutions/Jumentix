@@ -19,7 +19,7 @@ import { findEntity } from '../model/modelQueries.js';
  * @property {'error'|'warn'|'info'} severity
  */
 
-export function collectArchitectureIssues(state) {
+function collectArchitectureIssues(state) {
   const issues = [];
   const pushIssue = (message, entityId = null, severity = 'error') => {
     issues.push({ message, entityId, severity });
@@ -60,7 +60,11 @@ export function collectArchitectureIssues(state) {
       pushIssue(`Domain "${domain.name}" is not assigned to a service.`, domain.id, 'error');
     }
     if (count > 1) {
-      pushIssue(`Domain "${domain.name}" is assigned to more than one service.`, domain.id, 'error');
+      pushIssue(
+        `Domain "${domain.name}" is assigned to more than one service.`,
+        domain.id,
+        'error'
+      );
     }
   });
 
@@ -104,3 +108,5 @@ export function collectArchitectureIssues(state) {
 
   return issues;
 }
+
+export default collectArchitectureIssues;

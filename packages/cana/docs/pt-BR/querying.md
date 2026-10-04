@@ -80,13 +80,13 @@ console.log({
 
 ## Mapa rápido de complexidade
 
-| Forma de query | Modelo de complexidade | Observações |
-| --- | --- | --- |
-| `get(key)` por chave primária | Modelo comum de lookup por chave no IndexedDB: `O(log n)`. | O browser controla os detalhes da árvore. |
-| `equals` indexado | Modelo comum de índice IndexedDB: `O(log n + matches)`. | O tamanho do resultado ainda importa. |
-| `limit: n` depois do cursor abrir | `O(limit)`. | O Cana não materializa a store inteira. |
-| `offset + limit` | `O(offset + limit)`. | Movimento de cursor é o custo. |
-| `count()` nativo | Uma requisição nativa. | O Cana não lê cada registro para JavaScript. |
+| Forma de query                    | Modelo de complexidade                                     | Observações                                  |
+| --------------------------------- | ---------------------------------------------------------- | -------------------------------------------- |
+| `get(key)` por chave primária     | Modelo comum de lookup por chave no IndexedDB: `O(log n)`. | O browser controla os detalhes da árvore.    |
+| `equals` indexado                 | Modelo comum de índice IndexedDB: `O(log n + matches)`.    | O tamanho do resultado ainda importa.        |
+| `limit: n` depois do cursor abrir | `O(limit)`.                                                | O Cana não materializa a store inteira.      |
+| `offset + limit`                  | `O(offset + limit)`.                                       | Movimento de cursor é o custo.               |
+| `count()` nativo                  | Uma requisição nativa.                                     | O Cana não lê cada registro para JavaScript. |
 
 ## Execute aqui
 

@@ -49,10 +49,9 @@ bun add @jumentix/persistence-contracts
 import type { IStore } from '@jumentix/persistence-contracts';
 
 export async function listItems(store: IStore) {
-  return store.query({ /* paging / filter per contract */ });
+  return store.query({/* paging / filter per contract */});
 }
 ```
-
 
 ### 3. Core workflows
 
@@ -68,7 +67,6 @@ Only adapters import mongoose/sequelize.
 
 Use `IPagingRequest` / `IPagingResponse` across HTTP and DB.
 
-
 ### 4. Full practical surface (exports)
 
 - `IStore`
@@ -80,8 +78,8 @@ Use exports from application/adapters layers as described above — not from dom
 
 ## Common errors
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
+| Symptom                 | Cause       | Fix                                |
+| ----------------------- | ----------- | ---------------------------------- |
 | Domain imports mongoose | Wrong layer | Depend on these contracts instead. |
 
 **Verify success:** the first-success snippet runs (or typechecks against your service) and your use-case depends only on ports.

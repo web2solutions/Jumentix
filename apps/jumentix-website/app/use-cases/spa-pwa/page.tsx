@@ -1,5 +1,5 @@
 import { CommercialUseCasePage } from '@/components/commercial/CommercialPages';
 
-export default function SpaPwaUseCasePage() {
-  return <CommercialUseCasePage locale="en" name="spa-pwa" />;
-}
+const SpaPwaUseCasePage = () => <CommercialUseCasePage locale="en" name="spa-pwa" />;
+
+export default SpaPwaUseCasePage;

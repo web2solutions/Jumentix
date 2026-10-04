@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-OPERATING-MODEL-BY-COMPONENT.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Especificação do modelo operacional por componente
 
 Este documento define como cada componente Jumentix participa da execução orientada ao desenvolvimento de especificações.

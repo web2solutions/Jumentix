@@ -15,11 +15,11 @@ O `bun test --coverage` emite registros BRDA/BRF/BRH confiáveis o suficiente pa
 
 ## Veredito
 
-| Verificação | Resultado |
-| --- | --- |
-| Arquivo LCOV gerado | Sim |
-| Registros de linha (`DA:`) | Presentes |
-| Registros de branch (`BRDA`/`BRF`/`BRH`) | **Presentes no Bun 1.3.13 para este subconjunto** |
+| Verificação                                 | Resultado                                                                                                                           |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Arquivo LCOV gerado                         | Sim                                                                                                                                 |
+| Registros de linha (`DA:`)                  | Presentes                                                                                                                           |
+| Registros de branch (`BRDA`/`BRF`/`BRH`)    | **Presentes no Bun 1.3.13 para este subconjunto**                                                                                   |
 | Limite falha fechado quando faltam branches | Aplicar via LCOV mesclado + limites existentes de Jest/Codecov até que flags nativas de limite do Bun sejam adotadas no repositório |
 
 **Decisão para o JUM-437:** manter a barra de 90% de branches. Mesclar LCOV de Bun + Node com a regra "primeiro arquivo visto vence" (`ci-cd/merge-coverage-reports.js`) para que Codecov/Sonar não contem em dobro. Se uma versão futura do Bun deixar de emitir BRDA, reabrir este spike antes de baixar a barra.

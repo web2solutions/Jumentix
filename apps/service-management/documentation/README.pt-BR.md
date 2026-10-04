@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/service-management/documentation/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Hub de documentação de gerenciamento de serviços
 
 `apps/service-management` é a UI do espaço de trabalho de engenharia para projetar domínios, interfaces, configuração de tempo de execução e destinos de implantação.
@@ -60,4 +61,3 @@ ou perfil de desenvolvimento completo:
 ```bash
 bun run dev
 ```
-

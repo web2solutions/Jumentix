@@ -1,7 +1,8 @@
+import { DEFAULT_PAGE_SIZE } from '@src/config/constants';
+import Security from '@src/infra/security';
+
+import type BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
 import type { IPagingRequest } from '@src/modules/port/IPagingRequest';
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
-import { Security } from '@src/infra/security';
 
 const toPositiveInteger = (raw: unknown): number | undefined => {
   if (raw === undefined || raw === null || raw === '') return undefined;
@@ -16,10 +17,12 @@ const toPositiveInteger = (raw: unknown): number | undefined => {
  * non-positive values fall back to the defaults here — the OAS parameter
  * schema (`integer`, `minimum: 1`) rejects them earlier for validated routes.
  */
-export const setPaging = (
+const setPaging = (
   event: BaseDomainEvent,
-  defaultSize: number = _DEFAULT_PAGE_SIZE_
+  defaultSize: number = DEFAULT_PAGE_SIZE
 ): IPagingRequest => ({
   page: toPositiveInteger(event.queryString?.page) ?? 1,
   size: toPositiveInteger(event.queryString?.size) ?? defaultSize
 });
+
+export default setPaging;

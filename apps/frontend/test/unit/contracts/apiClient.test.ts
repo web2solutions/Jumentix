@@ -1,6 +1,4 @@
-import {
-  afterEach, beforeEach, describe, expect, it, mock
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { createApiClient } from '@/contracts/apiClient';
 
@@ -24,25 +22,30 @@ describe('apiClient contract mapping (OAS bundled, JUM-760)', () => {
     responseBody = { Authorization: 'Bearer test-token' };
     // mock() lives inside the hook (jest/require-hook): the jest plugin rules
     // also guard this bun:test suite under the monorepo lint.
-    globalThis.fetch = mock((url: string, init: {
-      method: string;
-      headers: Record<string, string>;
-      body?: string;
-    }) => {
-      recorded.push({
-        url: String(url),
-        method: init.method,
-        body: init.body ? JSON.parse(init.body) : undefined,
-        headers: init.headers
-      });
-      return Promise.resolve({
-        ok: responseStatus >= 200 && responseStatus < 300,
-        status: responseStatus,
-        headers: { get: (name: string) => (name === 'content-type' ? 'application/json' : null) },
-        json: () => Promise.resolve(responseBody),
-        text: () => Promise.resolve(JSON.stringify(responseBody))
-      } as unknown as Response);
-    });
+    globalThis.fetch = mock(
+      (
+        url: string,
+        init: {
+          method: string;
+          headers: Record<string, string>;
+          body?: string;
+        }
+      ) => {
+        recorded.push({
+          url: String(url),
+          method: init.method,
+          body: init.body ? JSON.parse(init.body) : undefined,
+          headers: init.headers
+        });
+        return Promise.resolve({
+          ok: responseStatus >= 200 && responseStatus < 300,
+          status: responseStatus,
+          headers: { get: (name: string) => (name === 'content-type' ? 'application/json' : null) },
+          json: () => Promise.resolve(responseBody),
+          text: () => Promise.resolve(JSON.stringify(responseBody))
+        } as unknown as Response);
+      }
+    );
   });
 
   afterEach(() => {

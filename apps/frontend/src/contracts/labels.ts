@@ -1,5 +1,6 @@
-import type { FieldDescriptor } from '@/contracts/formSchema';
 import { currentLocale } from '@/i18n';
+
+import type { FieldDescriptor } from '@/contracts/formSchema';
 
 /**
  * Field labels from the contract (JUM-780). Order of precedence:
@@ -36,6 +37,5 @@ export const fieldLabel = (
 };
 
 /** Help text: the OAS description, shown under the control, never as its label. */
-export const fieldHelp = (descriptor: Pick<FieldDescriptor, 'description'>): string | undefined => (
-  descriptor.description
-);
+export const fieldHelp = (descriptor: Pick<FieldDescriptor, 'description'>): string | undefined =>
+  descriptor.description;

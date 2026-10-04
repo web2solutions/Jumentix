@@ -19,7 +19,9 @@ Private queue for transactions the mutex refused.
 already locked, it refuses:
 
 ```ts
-const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+const {
+  result: { previouslyLocked }
+} = await this.mutexService.lock(this.entityName, id);
 if (previouslyLocked) await this.rejectLocked('update', id, data);
 ```
 
@@ -124,12 +126,12 @@ happened, and a client told otherwise would act on a lie.
   </g>
 </svg>
 
-| Piece | Responsibility |
-|---|---|
-| `DeadLetterQueue` | Records, statuses, attempt bound, replay ordering |
-| `DeadLetterReplayWorker` | Calls `replay` on an interval, without overlapping |
-| `InMemoryDeadLetterStore` | Process-local; tests and single-process runtimes |
-| `KeyValueDeadLetterStore` | Redis, through the client the mutex already uses |
+| Piece                         | Responsibility                                     |
+| ----------------------------- | -------------------------------------------------- |
+| `DeadLetterQueue`             | Records, statuses, attempt bound, replay ordering  |
+| `DeadLetterReplayWorker`      | Calls `replay` on an interval, without overlapping |
+| `InMemoryDeadLetterStore`     | Process-local; tests and single-process runtimes   |
+| `KeyValueDeadLetterStore`     | Redis, through the client the mutex already uses   |
 | `composeUserDeadLetterReplay` | Maps operation names back to `UserService` methods |
 
 ---
@@ -170,11 +172,11 @@ happened, and a client told otherwise would act on a lie.
   </g>
 </svg>
 
-| Status | Meaning | Picked by `replay`? |
-|---|---|---|
-| `pending` | Refused, replayable | yes |
-| `succeeded` | A handler performed the write | no |
-| `abandoned` | Attempt bound reached | no, ever |
+| Status      | Meaning                       | Picked by `replay`? |
+| ----------- | ----------------------------- | ------------------- |
+| `pending`   | Refused, replayable           | yes                 |
+| `succeeded` | A handler performed the write | no                  |
+| `abandoned` | Attempt bound reached         | no, ever            |
 
 ---
 
@@ -217,7 +219,7 @@ Two things this diagram is defending:
 
 **Through the service, not the repository.** The service re-acquires the mutex,
 so a record whose lock has not cleared is refused again and stays queued. A
-repository-level replay would write *past* the lock, which is exactly the
+repository-level replay would write _past_ the lock, which is exactly the
 corruption the mutex exists to prevent.
 
 **`orThrow` is not decoration.** `UserService` reports failure in
@@ -236,18 +238,18 @@ through `orThrow`.
 new DeadLetterQueue({ store?, maxAttempts?, now?, newId? })
 ```
 
-| Option | Default | Notes |
-|---|---|---|
-| `store` | `InMemoryDeadLetterStore` | Use `KeyValueDeadLetterStore` in a real runtime |
-| `maxAttempts` | `5` | Must be at least 1; a queue that never attempts is refused at construction |
-| `now` | `() => new Date()` | Injected for deterministic tests |
-| `newId` | timestamp + counter | The counter is why two records in the same millisecond do not collide |
+| Option        | Default                   | Notes                                                                      |
+| ------------- | ------------------------- | -------------------------------------------------------------------------- |
+| `store`       | `InMemoryDeadLetterStore` | Use `KeyValueDeadLetterStore` in a real runtime                            |
+| `maxAttempts` | `5`                       | Must be at least 1; a queue that never attempts is refused at construction |
+| `now`         | `() => new Date()`        | Injected for deterministic tests                                           |
+| `newId`       | timestamp + counter       | The counter is why two records in the same millisecond do not collide      |
 
-| Method | Returns |
-|---|---|
-| `enqueue(input)` | The stored `pending` record |
-| `pending()` | Replayable records, in rejection order |
-| `find(id)` | One record, whatever its status |
+| Method             | Returns                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| `enqueue(input)`   | The stored `pending` record                                   |
+| `pending()`        | Replayable records, in rejection order                        |
+| `find(id)`         | One record, whatever its status                               |
 | `replay(handlers)` | `{ replayed, retried, abandoned, skipped }` — ids, not counts |
 
 `enqueue` refuses input that could not be replayed: `entityName`, `resourceId`
@@ -259,12 +261,12 @@ and `operation` are all required.
 new DeadLetterReplayWorker({ queue, handlers, intervalMs?, onReport?, onError? })
 ```
 
-| Member | Behaviour |
-|---|---|
+| Member    | Behaviour                                                         |
+| --------- | ----------------------------------------------------------------- |
 | `start()` | Begins the interval (default `30_000` ms). The timer is `unref`ed |
-| `stop()` | Ends it; no tick runs afterwards |
-| `tick()` | Forces one drain — on shutdown, or on the unlock of a resource |
-| `running` | Whether the interval is active |
+| `stop()`  | Ends it; no tick runs afterwards                                  |
+| `tick()`  | Forces one drain — on shutdown, or on the unlock of a resource    |
+| `running` | Whether the interval is active                                    |
 
 Three properties, each a way a naive timer loop goes wrong:
 
@@ -277,9 +279,9 @@ Three properties, each a way a naive timer loop goes wrong:
 
 ### Stores
 
-| Store | Use |
-|---|---|
-| `InMemoryDeadLetterStore` | Tests, single-process runtimes |
+| Store                                         | Use                             |
+| --------------------------------------------- | ------------------------------- |
+| `InMemoryDeadLetterStore`                     | Tests, single-process runtimes  |
 | `KeyValueDeadLetterStore(client, { prefix })` | Redis, prefix defaults to `dlq` |
 
 The Redis client this repository uses exposes `get`, `set` and `del` — **no
@@ -322,8 +324,10 @@ under one key, which is also what preserves replay order.
 Pass the queue as a service. Without it, behaviour is **exactly** as before.
 
 ```ts
-import { composeUserDeadLetterQueue, composeUserDeadLetterWorker }
-  from '@src/modules/Users/composition/composeUserDeadLetterReplay';
+import {
+  composeUserDeadLetterQueue,
+  composeUserDeadLetterWorker
+} from '@src/modules/Users/composition/composeUserDeadLetterReplay';
 
 const deadLetterQueue = composeUserDeadLetterQueue(keyValueStorageClient);
 const userService = UserService.compile({
@@ -364,12 +368,17 @@ import { DeadLetterQueue } from '@jumentix/dead-letter-queue';
 
 const queue = new DeadLetterQueue({ maxAttempts: 2 });
 await queue.enqueue({
-  entityName: 'User', resourceId: 'user-1', operation: 'update', payload: { firstName: 'Ada' }
+  entityName: 'User',
+  resourceId: 'user-1',
+  operation: 'update',
+  payload: { firstName: 'Ada' }
 });
 
 let locked = true;
 const handlers = {
-  update: async () => { if (locked) throw new Error('User user-1 is locked'); }
+  update: async () => {
+    if (locked) throw new Error('User user-1 is locked');
+  }
 };
 
 await queue.replay(handlers); // retried: [ 'dlq-...' ]
@@ -381,12 +390,12 @@ await queue.replay(handlers); // replayed: [ 'dlq-...' ]
 
 ## 8. Operating it
 
-| Symptom | What it means | What to do |
-|---|---|---|
-| `pending()` grows | Locks are not clearing, or the worker is not started | Check `worker.running` and the mutex TTL |
-| Records reach `abandoned` | A resource stayed locked for `maxAttempts` drains | Read `lastError`; the write is lost and the record is the evidence |
-| `skipped` in a report | An operation has no registered handler | A wiring mistake — the record is kept, not discarded |
-| `onError` fires | The drain itself failed, for example Redis down | The worker keeps ticking; fix the store |
+| Symptom                   | What it means                                        | What to do                                                         |
+| ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| `pending()` grows         | Locks are not clearing, or the worker is not started | Check `worker.running` and the mutex TTL                           |
+| Records reach `abandoned` | A resource stayed locked for `maxAttempts` drains    | Read `lastError`; the write is lost and the record is the evidence |
+| `skipped` in a report     | An operation has no registered handler               | A wiring mistake — the record is kept, not discarded               |
+| `onError` fires           | The drain itself failed, for example Redis down      | The worker keeps ticking; fix the store                            |
 
 The report returns **ids**, not counts, so an operator can look a record up
 rather than infer from a total.

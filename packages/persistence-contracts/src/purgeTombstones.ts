@@ -3,9 +3,8 @@ import type { IIdReservationLedger } from './idReservationLedger';
 export const TOMBSTONE_PURGE_TTL_DAYS = 90;
 export const MS_PER_DAY = 86_400_000;
 
-export const SEED_PURGED_ID_MESSAGE = (entity: string, id: string): string => (
-  `Seed id ${id} (${entity}) was purged; cannot recreate. Restart dev or exclude seed ids from purge (--protect-seed).`
-);
+export const SEED_PURGED_ID_MESSAGE = (entity: string, id: string): string =>
+  `Seed id ${id} (${entity}) was purged; cannot recreate. Restart dev or exclude seed ids from purge (--protect-seed).`;
 
 export function assertSeedIdNotPurged(
   ledger: IIdReservationLedger,
@@ -75,9 +74,8 @@ export interface IPurgeReport {
   skippedTooYoung: number;
 }
 
-const asDeletedAt = (value: unknown): string => (
-  value instanceof Date ? value.toISOString() : String(value)
-);
+const asDeletedAt = (value: unknown): string =>
+  value instanceof Date ? value.toISOString() : String(value);
 
 const collectEligible = (
   store: IPurgeStore,
@@ -120,28 +118,32 @@ export async function purgeTombstones(input: IPurgeTombstonesInput): Promise<IPu
   const exclude = new Set(input.excludeIds ?? []);
   const purgedAt = now.toISOString();
 
-  const scanned = await Promise.all(input.stores.map(async (store) => {
-    const rows = await store.listTombstones();
-    return { store, ...collectEligible(store, rows, cutoff, exclude, commit, purgedAt) };
-  }));
+  const scanned = await Promise.all(
+    input.stores.map(async (store) => {
+      const rows = await store.listTombstones();
+      return { store, ...collectEligible(store, rows, cutoff, exclude, commit, purgedAt) };
+    })
+  );
 
   const events = scanned.flatMap((item) => item.events);
   const skippedProtected = scanned.reduce((sum, item) => sum + item.skippedProtected, 0);
   const skippedTooYoung = scanned.reduce((sum, item) => sum + item.skippedTooYoung, 0);
 
   if (commit) {
-    await Promise.all(events.map(async (event) => {
-      const store = input.stores.find((item) => item.entity === event.entity);
-      if (!store) return;
-      const removed = await store.hardDelete(event.id);
-      if (removed) {
-        input.ledger.reserve({
-          entity: event.entity,
-          id: event.id,
-          purgedAt
-        });
-      }
-    }));
+    await Promise.all(
+      events.map(async (event) => {
+        const store = input.stores.find((item) => item.entity === event.entity);
+        if (!store) return;
+        const removed = await store.hardDelete(event.id);
+        if (removed) {
+          input.ledger.reserve({
+            entity: event.entity,
+            id: event.id,
+            purgedAt
+          });
+        }
+      })
+    );
   }
 
   return {

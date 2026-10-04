@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-TEMPLATES-AND-CHECKLISTS.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Modelos de especificações e listas de verificação
 
 Use esses modelos para todas as alterações que priorizam as especificações.
@@ -12,44 +13,52 @@ Use esses modelos para todas as alterações que priorizam as especificações.
 # Feature Spec - <title>
 
 ## Context
+
 - Business objective:
 - User impact:
 - Scope:
 
 ## Contracts
+
 - OpenAPI operations affected:
 - AsyncAPI channels/events affected:
 - Message/Event contracts affected:
 - Error contracts affected:
 
 ## Architecture Impact
+
 - Domains:
 - Use cases:
 - Ports/adapters:
 - Boundary risks:
 
 ## Data Impact
+
 - Entities/models/value objects changed:
 - Validation/type/format updates:
 - Migration/compatibility notes:
 
 ## Runtime/Deployment Impact
+
 - Env vars:
 - PM2/runtime changes:
 - Cloud/deploy implications:
 
 ## Security and Compliance
+
 - RBAC/tenant scope impact:
 - Secret/sensitive data handling:
 - Error exposure behavior:
 
 ## Test Strategy
+
 - Unit:
 - Integration:
 - Smoke:
 - Coverage target confirmation:
 
 ## Governance
+
 - Issue do Linear:
 - Project focado no Linear:
 - Project Update:
@@ -63,20 +72,25 @@ Use esses modelos para todas as alterações que priorizam as especificações.
 # Contract Change Spec - <title>
 
 ## Contract Type
+
 - OpenAPI / AsyncAPI / Message Contract / Error Contract
 
 ## Previous Behavior
+
 - ...
 
 ## New Behavior
+
 - ...
 
 ## Compatibility
+
 - Backward compatible? yes/no
 - Consumer impact:
 - SDK impact:
 
 ## Validation
+
 - Route/channel resolution evidence:
 - Contract test evidence:
 ```
@@ -87,17 +101,21 @@ Use esses modelos para todas as alterações que priorizam as especificações.
 # NFR Spec - <title>
 
 ## NFR Category
+
 - performance / security / compliance / reliability / governance / operability
 
 ## Requirement Statement
+
 - ...
 
 ## Enforcement
+
 - CI/CD checks:
 - Runtime controls:
 - Process controls:
 
 ## Evidence
+
 - Metrics/logs/tests:
 - Required docs updates:
 - Required registry updates:
@@ -139,6 +157,7 @@ quando a atualização cobrir várias tarefas ou agentes.
 
 ```md
 ### Task: JUM-XXXX — <título curto>
+
 - Task: https://linear.app/jumentix/issue/JUM-XXXX/...
 - Agent: <agent_id ou nome humano>
 - Status: <Backlog | Todo | In Progress | In Review | Done | Blocked>
@@ -157,9 +176,11 @@ quando a atualização cobrir várias tarefas ou agentes.
 **Agent(s):** <lista>
 
 ### Task: JUM-AAAA — ...
+
 - ...
 
 ### Task: JUM-BBBB — ...
+
 - ...
 ```
 
@@ -170,4 +191,3 @@ quando a atualização cobrir várias tarefas ou agentes.
 3. Mudança de bloqueio ou risco material
 4. PR pronto para revisão
 5. Transferência final / Done (vincular commit de merge; sem bloqueio não resolvido nem gate obrigatório incompleto)
-

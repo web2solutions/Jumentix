@@ -1,14 +1,15 @@
-import type { CanaSchema } from '../src';
 import {
-  StorageDurability,
   createClient,
   isCanaError,
   isCanaErrorCode,
   openDatabase,
   pruneLedger,
-  runConformance
+  runConformance,
+  StorageDurability
 } from '../src';
 import { uniqueName } from './harness';
+
+import type { CanaSchema } from '../src';
 
 /**
  * The branches a green run never reaches, covered on purpose (JUM-417).
@@ -153,12 +154,18 @@ describe('empty-database and upgrade guards', () => {
     const abort = { called: false };
     const store = {
       objectStoreNames: { contains: () => false },
-      createObjectStore: () => { throw new DOMException('refused', 'InvalidAccessError'); },
+      createObjectStore: () => {
+        throw new DOMException('refused', 'InvalidAccessError');
+      },
       close: () => undefined
     };
     const transaction = {
-      abort: () => { abort.called = true; },
-      objectStore: () => { throw new DOMException('no store', 'NotFoundError'); }
+      abort: () => {
+        abort.called = true;
+      },
+      objectStore: () => {
+        throw new DOMException('no store', 'NotFoundError');
+      }
     };
 
     const factory = {
@@ -174,8 +181,7 @@ describe('empty-database and upgrade guards', () => {
       databases: async () => []
     } as unknown as IDBFactory;
 
-    const failure = await openDatabase({ name, schema, factory })
-      .catch((error: unknown) => error);
+    const failure = await openDatabase({ name, schema, factory }).catch((error: unknown) => error);
 
     expect(abort.called).to.equal(true);
     expect(isCanaError(failure)).to.equal(true);
@@ -200,7 +206,11 @@ describe('empty-database and upgrade guards', () => {
       open: () => {
         // The success lands only after the 20ms timeout has already rejected.
         setTimeout(() => {
-          request.result = { close: () => { close.called = true; } };
+          request.result = {
+            close: () => {
+              close.called = true;
+            }
+          };
           request.onsuccess?.();
         }, 40);
         return request;
@@ -209,12 +219,17 @@ describe('empty-database and upgrade guards', () => {
     } as unknown as IDBFactory;
 
     const failure = await openDatabase({
-      name, schema, factory, blockedTimeoutMs: 20
+      name,
+      schema,
+      factory,
+      blockedTimeoutMs: 20
     }).catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'UpgradeBlocked')).to.equal(true);
     // Give the late success its chance to arrive and be closed.
-    await new Promise((resolve) => { setTimeout(resolve, 60); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 60);
+    });
     expect(close.called).to.equal(true);
   });
 });
@@ -230,8 +245,7 @@ describe('outbound-key and ledger edge paths', () => {
     });
     await client.open();
 
-    const { events } = await client.table<{ name: string }>('designs')
-      .bulkPut([{ name: 'a' }]);
+    const { events } = await client.table<{ name: string }>('designs').bulkPut([{ name: 'a' }]);
 
     expect(events[0].type).to.equal('created');
     await client.close();
@@ -262,8 +276,9 @@ describe('outbound-key and ledger edge paths', () => {
       transaction: () => transaction
     } as unknown as IDBDatabase;
 
-    const failure = await pruneLedger(database, { now: Date.now() })
-      .catch((error: unknown) => error);
+    const failure = await pruneLedger(database, { now: Date.now() }).catch(
+      (error: unknown) => error
+    );
 
     expect(failure).to.have.property('name', 'UnknownError');
   });
@@ -294,7 +309,9 @@ describe('unknown transaction outcome through the client', () => {
       onabort: null as (() => void) | null,
       onerror: null as (() => void) | null,
       error: null,
-      abort() { /* already committed; too late */ },
+      abort() {
+        /* already committed; too late */
+      },
       objectStore: () => ({ name: 'designs' })
     };
     const database = {

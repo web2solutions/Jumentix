@@ -1,6 +1,8 @@
-import type { FieldDescriptor } from './formSchema';
-import { fieldLabel } from './labels';
 import { t } from '@/i18n';
+
+import { fieldLabel } from './labels';
+
+import type { FieldDescriptor } from './formSchema';
 
 /**
  * Collects the request body from descriptor names (JUM-766): the OAS field

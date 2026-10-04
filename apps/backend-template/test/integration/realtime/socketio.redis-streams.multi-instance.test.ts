@@ -1,10 +1,14 @@
 /* global describe, it, expect, beforeAll, afterAll */
-import http from 'http';
-import { AddressInfo } from 'net';
+import http from 'node:http';
+
+import { createAdapter } from '@socket.io/redis-streams-adapter';
 import { createClient } from 'redis';
 import { Server as SocketIOServer } from 'socket.io';
-import { io as createSocketClient, Socket } from 'socket.io-client';
-import { createAdapter } from '@socket.io/redis-streams-adapter';
+import { io as createSocketClient } from 'socket.io-client';
+
+import type { AddressInfo } from 'node:net';
+
+import type { Socket } from 'socket.io-client';
 
 const REDIS_PASSWORD = process.env.JUMENTIX_REDIS_PASSWORD || 'eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81';
 const REDIS_HOST = process.env.JUMENTIX_REDIS_HOST || '127.0.0.1';
@@ -39,39 +43,41 @@ const emitWithAck = (
   eventName: string,
   payload: Record<string, any>,
   timeoutMs = 10000
-): Promise<any> => new Promise((resolve, reject) => {
-  const timeout = setTimeout(() => reject(new Error(`ack timeout for ${eventName}`)), timeoutMs);
-  socket.emit(eventName, payload, (arg1: any, arg2: any) => {
-    clearTimeout(timeout);
-    const hasErrorArg = arg2 !== undefined;
-    const error = hasErrorArg ? arg1 : undefined;
-    const ackPayload = hasErrorArg ? arg2 : arg1;
-    if (error) {
-      reject(error);
-      return;
-    }
-    resolve(ackPayload);
+): Promise<any> =>
+  new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error(`ack timeout for ${eventName}`)), timeoutMs);
+    socket.emit(eventName, payload, (arg1: any, arg2: any) => {
+      clearTimeout(timeout);
+      const hasErrorArg = arg2 !== undefined;
+      const error = hasErrorArg ? arg1 : undefined;
+      const ackPayload = hasErrorArg ? arg2 : arg1;
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(ackPayload);
+    });
   });
-});
 
 const waitForClusterResponse = (
   socket: Socket,
   requestId: string,
   timeoutMs = 15000
-): Promise<any> => new Promise((resolve, reject) => {
-  let timeout: NodeJS.Timeout;
-  const onClusterResponse = (payload: any) => {
-    if (payload?.requestId !== requestId) return;
-    clearTimeout(timeout);
-    socket.off('cluster:response', onClusterResponse);
-    resolve(payload);
-  };
-  timeout = setTimeout(() => {
-    socket.off('cluster:response', onClusterResponse);
-    reject(new Error('cross-node response timeout'));
-  }, timeoutMs);
-  socket.on('cluster:response', onClusterResponse);
-});
+): Promise<any> =>
+  new Promise((resolve, reject) => {
+    let timeout: NodeJS.Timeout;
+    const onClusterResponse = (payload: any) => {
+      if (payload?.requestId !== requestId) return;
+      clearTimeout(timeout);
+      socket.off('cluster:response', onClusterResponse);
+      resolve(payload);
+    };
+    timeout = setTimeout(() => {
+      socket.off('cluster:response', onClusterResponse);
+      reject(new Error('cross-node response timeout'));
+    }, timeoutMs);
+    socket.on('cluster:response', onClusterResponse);
+  });
 
 const startNode = async (name: string): Promise<IRunningNode> => {
   const httpServer = http.createServer();
@@ -126,9 +132,7 @@ const startNode = async (name: string): Promise<IRunningNode> => {
 };
 
 const stopNode = async (node: IRunningNode): Promise<void> => {
-  await new Promise<void>((resolve) => {
-    node.io.close(() => resolve());
-  });
+  await node.io.close();
   await new Promise<void>((resolve) => {
     node.httpServer.close(() => resolve());
   });
@@ -165,16 +169,14 @@ describe('socket.io redis-streams multi-instance resilience', () => {
 
   it('should handle request/response independently on each node', async () => {
     expect.hasAssertions();
-    const responseOne = await emitWithAck(
-      clientOne,
-      'api:request',
-      { operationId: 'ping', input: { value: 1 } }
-    );
-    const responseTwo = await emitWithAck(
-      clientTwo,
-      'api:request',
-      { operationId: 'ping', input: { value: 2 } }
-    );
+    const responseOne = await emitWithAck(clientOne, 'api:request', {
+      operationId: 'ping',
+      input: { value: 1 }
+    });
+    const responseTwo = await emitWithAck(clientTwo, 'api:request', {
+      operationId: 'ping',
+      input: { value: 2 }
+    });
 
     expect(responseOne.result.servedBy).toBe('node-one');
     expect(responseTwo.result.servedBy).toBe('node-two');
@@ -185,14 +187,10 @@ describe('socket.io redis-streams multi-instance resilience', () => {
     const requestId = `cross-${Date.now()}`;
     const crossNodeEvent = waitForClusterResponse(clientTwo, requestId);
 
-    const ack = await emitWithAck(
-      clientOne,
-      'api:request',
-      {
-        operationId: 'crossNodeBroadcast',
-        metadata: { requestId }
-      }
-    );
+    const ack = await emitWithAck(clientOne, 'api:request', {
+      operationId: 'crossNodeBroadcast',
+      metadata: { requestId }
+    });
     expect(ack.ok).toBe(true);
 
     const payload = await crossNodeEvent;

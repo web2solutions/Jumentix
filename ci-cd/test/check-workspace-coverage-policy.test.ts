@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const {
   MINIMUM_GLOBAL_THRESHOLDS,
   validateGlobalCoverageThreshold,
@@ -41,7 +40,6 @@ describe('check-workspace-coverage-policy', () => {
     ]);
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const exceptionRegister = require('../check-coverage-thresholds')
     .ACCEPTED_BELOW_THRESHOLD as Record<string, { floor: number } | undefined>;
 

@@ -15,9 +15,7 @@
     "x-rbac": {
       "description": "Role-to-scope matrix enforced by the backend and mirrored here for OAS-driven clients.",
       "roles": {
-        "superadmin": [
-          "*"
-        ],
+        "superadmin": ["*"],
         "admin": [
           "access_allow",
           "read_user",
@@ -27,10 +25,7 @@
           "read_organization",
           "update_organization"
         ],
-        "user": [
-          "access_allow",
-          "read_user"
-        ]
+        "user": ["access_allow", "read_user"]
       }
     }
   },
@@ -78,9 +73,7 @@
   "paths": {
     "/auth/login": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Do login",
         "description": "Do login",
         "operationId": "login",
@@ -117,9 +110,7 @@
     },
     "/auth/logout": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Do logout",
         "description": "Do logout",
         "operationId": "logout",
@@ -154,18 +145,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "access_allow"
-            ]
+            "bearerAuth": ["access_allow"]
           }
         ]
       }
     },
     "/auth/updateUserPassword": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Update password",
         "description": "Update password",
         "operationId": "updateUserPassword",
@@ -200,18 +187,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "access_allow"
-            ]
+            "bearerAuth": ["access_allow"]
           }
         ]
       }
     },
     "/auth/register": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Register an account",
         "description": "Register an account",
         "operationId": "register",
@@ -245,9 +228,7 @@
     },
     "/users": {
       "get": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Get all users",
         "description": "Returns a page of users. Delta sync page: sort=`updatedAt:asc,id:asc`, filter `{\"updatedAt\":{\"operator\":\"gt\",\"value\":\"<iso>\"}}`, page through `page`/`size`, set `includeDeleted=true` so tombstones travel with the cursor (`x-sync`).",
         "operationId": "getAll",
@@ -275,24 +256,14 @@
             "createdAt": "date",
             "updatedAt": "date"
           },
-          "searchable": [
-            "firstName",
-            "lastName",
-            "username"
-          ],
+          "searchable": ["firstName", "lastName", "username"],
           "defaultSize": 30,
           "maxSize": 100,
           "includeDeleted": true
         },
         "x-metrics-capabilities": {
-          "groupable": [
-            "roles",
-            "organization"
-          ],
-          "series": [
-            "createdAt",
-            "updatedAt"
-          ]
+          "groupable": ["roles", "organization"],
+          "series": ["createdAt", "updatedAt"]
         },
         "parameters": [
           {
@@ -386,16 +357,12 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "read_user"
-            ]
+            "bearerAuth": ["read_user"]
           }
         ]
       },
       "post": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Add a new user to the store",
         "description": "Add a new user to the store",
         "operationId": "create",
@@ -436,31 +403,21 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "create_user"
-            ]
+            "bearerAuth": ["create_user"]
           }
         ]
       }
     },
     "/users/metrics": {
       "get": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "User metrics",
         "description": "Generic aggregates for User (count, groupBy, time series).",
         "operationId": "getUsersMetrics",
         "x-service": "core",
         "x-metrics-capabilities": {
-          "groupable": [
-            "roles",
-            "organization"
-          ],
-          "series": [
-            "createdAt",
-            "updatedAt"
-          ]
+          "groupable": ["roles", "organization"],
+          "series": ["createdAt", "updatedAt"]
         },
         "parameters": [
           {
@@ -469,11 +426,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": [
-                "count",
-                "groupBy",
-                "series"
-              ]
+              "enum": ["count", "groupBy", "series"]
             }
           },
           {
@@ -490,11 +443,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "day",
-                "week",
-                "month"
-              ]
+              "enum": ["day", "week", "month"]
             }
           },
           {
@@ -530,18 +479,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "read_user"
-            ]
+            "bearerAuth": ["read_user"]
           }
         ]
       }
     },
     "/users/{id}": {
       "delete": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Delete user",
         "description": "Deletes a single user",
         "operationId": "deleteOne",
@@ -582,16 +527,12 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "delete_user"
-            ]
+            "bearerAuth": ["delete_user"]
           }
         ]
       },
       "put": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Update user",
         "description": "Updates a single user",
         "operationId": "update",
@@ -646,16 +587,12 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_user"
-            ]
+            "bearerAuth": ["update_user"]
           }
         ]
       },
       "get": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Get an user by ID",
         "description": "Returns a single user",
         "operationId": "getOneById",
@@ -696,18 +633,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "read_user"
-            ]
+            "bearerAuth": ["read_user"]
           }
         ]
       }
     },
     "/users/{id}/updatePassword": {
       "put": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Updates user password",
         "description": "Updates user password",
         "operationId": "updatePassword",
@@ -762,18 +695,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_user"
-            ]
+            "bearerAuth": ["update_user"]
           }
         ]
       }
     },
     "/users/{id}/createEmail": {
       "post": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Create email address for a given user",
         "description": "Create email address for a given user",
         "operationId": "createEmail",
@@ -828,18 +757,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_user"
-            ]
+            "bearerAuth": ["update_user"]
           }
         ]
       }
     },
     "/users/{id}/updateEmail/{emailId}": {
       "put": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Update email address for a given user",
         "description": "Update email address for a given user",
         "operationId": "updateEmail",
@@ -903,18 +828,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_user"
-            ]
+            "bearerAuth": ["update_user"]
           }
         ]
       }
     },
     "/users/{id}/deleteEmail/{emailId}": {
       "delete": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Delete email address of an user",
         "description": "Deletes email address of an user",
         "operationId": "deleteEmail",
@@ -964,18 +885,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "delete_user"
-            ]
+            "bearerAuth": ["delete_user"]
           }
         ]
       }
     },
     "/users/{id}/createDocument": {
       "post": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Create document for a given user",
         "description": "Create document for a given user",
         "operationId": "createDocument",
@@ -1030,18 +947,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_user"
-            ]
+            "bearerAuth": ["update_user"]
           }
         ]
       }
     },
     "/users/{id}/updateDocument/{documentId}": {
       "put": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Update document for a given user",
         "description": "Update document for a given user",
         "operationId": "updateDocument",
@@ -1105,18 +1018,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_user"
-            ]
+            "bearerAuth": ["update_user"]
           }
         ]
       }
     },
     "/users/{id}/deleteDocument/{documentId}": {
       "delete": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Delete document of an user",
         "description": "Deletes document of an user",
         "operationId": "deleteDocument",
@@ -1166,18 +1075,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "delete_user"
-            ]
+            "bearerAuth": ["delete_user"]
           }
         ]
       }
     },
     "/users/{id}/createPhone": {
       "post": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Create phone address for a given user",
         "description": "Create phone address for a given user",
         "operationId": "createPhone",
@@ -1232,18 +1137,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_user"
-            ]
+            "bearerAuth": ["update_user"]
           }
         ]
       }
     },
     "/users/{id}/updatePhone/{phoneId}": {
       "put": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Update phone address for a given user",
         "description": "Update phone address for a given user",
         "operationId": "updatePhone",
@@ -1307,18 +1208,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_user"
-            ]
+            "bearerAuth": ["update_user"]
           }
         ]
       }
     },
     "/users/{id}/deletePhone/{phoneId}": {
       "delete": {
-        "tags": [
-          "user"
-        ],
+        "tags": ["user"],
         "summary": "Delete phone of an user",
         "description": "Deletes phone of an user",
         "operationId": "deletePhone",
@@ -1368,18 +1265,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "delete_user"
-            ]
+            "bearerAuth": ["delete_user"]
           }
         ]
       }
     },
     "/organizations": {
       "get": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Get all organizations",
         "description": "Returns a page of organizations. Delta sync page: sort=`updatedAt:asc,id:asc`, filter `{\"updatedAt\":{\"operator\":\"gt\",\"value\":\"<iso>\"}}`, page through `page`/`size`, set `includeDeleted=true` so tombstones travel with the cursor (`x-sync`).",
         "operationId": "getAllOrganizations",
@@ -1389,30 +1282,20 @@
           "includeDeletedParam": "includeDeleted"
         },
         "x-list-capabilities": {
-          "sortable": [
-            "name",
-            "createdAt",
-            "updatedAt",
-            "id"
-          ],
+          "sortable": ["name", "createdAt", "updatedAt", "id"],
           "filterable": {
             "name": "text",
             "createdAt": "date",
             "updatedAt": "date"
           },
-          "searchable": [
-            "name"
-          ],
+          "searchable": ["name"],
           "defaultSize": 30,
           "maxSize": 100,
           "includeDeleted": true
         },
         "x-metrics-capabilities": {
           "groupable": [],
-          "series": [
-            "createdAt",
-            "updatedAt"
-          ]
+          "series": ["createdAt", "updatedAt"]
         },
         "parameters": [
           {
@@ -1502,16 +1385,12 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "read_organization"
-            ]
+            "bearerAuth": ["read_organization"]
           }
         ]
       },
       "post": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Add a new organization",
         "description": "Add a new organization",
         "operationId": "createOrganization",
@@ -1552,28 +1431,21 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "create_organization"
-            ]
+            "bearerAuth": ["create_organization"]
           }
         ]
       }
     },
     "/organizations/metrics": {
       "get": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Organization metrics",
         "description": "Generic aggregates for Organization (count, groupBy, time series).",
         "operationId": "getOrganizationsMetrics",
         "x-service": "core",
         "x-metrics-capabilities": {
           "groupable": [],
-          "series": [
-            "createdAt",
-            "updatedAt"
-          ]
+          "series": ["createdAt", "updatedAt"]
         },
         "parameters": [
           {
@@ -1582,11 +1454,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": [
-                "count",
-                "groupBy",
-                "series"
-              ]
+              "enum": ["count", "groupBy", "series"]
             }
           },
           {
@@ -1603,11 +1471,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "day",
-                "week",
-                "month"
-              ]
+              "enum": ["day", "week", "month"]
             }
           },
           {
@@ -1643,18 +1507,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "read_organization"
-            ]
+            "bearerAuth": ["read_organization"]
           }
         ]
       }
     },
     "/organizations/{id}": {
       "get": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Get organization by ID",
         "description": "Returns a single organization",
         "operationId": "getOrganizationById",
@@ -1695,16 +1555,12 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "read_organization"
-            ]
+            "bearerAuth": ["read_organization"]
           }
         ]
       },
       "put": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Update organization",
         "description": "Updates a single organization",
         "operationId": "updateOrganization",
@@ -1759,16 +1615,12 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       },
       "delete": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Delete organization",
         "description": "Deletes a single organization",
         "operationId": "deleteOrganization",
@@ -1809,18 +1661,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "delete_organization"
-            ]
+            "bearerAuth": ["delete_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/createAddress": {
       "post": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Create organization address entry",
         "description": "Creates an address value object entry for an organization",
         "operationId": "createOrganizationAddress",
@@ -1872,18 +1720,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/updateAddress/{addressId}": {
       "put": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Update organization address entry",
         "description": "Updates an address value object entry from an organization",
         "operationId": "updateOrganizationAddress",
@@ -1944,18 +1788,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/deleteAddress/{addressId}": {
       "delete": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Delete organization address entry",
         "description": "Deletes an address value object entry from an organization",
         "operationId": "deleteOrganizationAddress",
@@ -2005,18 +1845,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/createPhone": {
       "post": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Create organization phone entry",
         "description": "Creates a phone value object entry for an organization",
         "operationId": "createOrganizationPhone",
@@ -2068,18 +1904,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/updatePhone/{phoneId}": {
       "put": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Update organization phone entry",
         "description": "Updates a phone value object entry from an organization",
         "operationId": "updateOrganizationPhone",
@@ -2140,18 +1972,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/deletePhone/{phoneId}": {
       "delete": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Delete organization phone entry",
         "description": "Deletes a phone value object entry from an organization",
         "operationId": "deleteOrganizationPhone",
@@ -2201,18 +2029,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/createEmail": {
       "post": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Create organization email entry",
         "description": "Creates an email value object entry for an organization",
         "operationId": "createOrganizationEmail",
@@ -2264,18 +2088,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/updateEmail/{emailId}": {
       "put": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Update organization email entry",
         "description": "Updates an email value object entry from an organization",
         "operationId": "updateOrganizationEmail",
@@ -2336,18 +2156,14 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
     },
     "/organizations/{id}/deleteEmail/{emailId}": {
       "delete": {
-        "tags": [
-          "organization"
-        ],
+        "tags": ["organization"],
         "summary": "Delete organization email entry",
         "description": "Deletes an email value object entry from an organization",
         "operationId": "deleteOrganizationEmail",
@@ -2397,9 +2213,7 @@
         },
         "security": [
           {
-            "bearerAuth": [
-              "update_organization"
-            ]
+            "bearerAuth": ["update_organization"]
           }
         ]
       }
@@ -2409,9 +2223,7 @@
     "schemas": {
       "ResourceDeleteResponse": {
         "description": "Port output object for delete operations.",
-        "required": [
-          "data"
-        ],
+        "required": ["data"],
         "type": "object",
         "properties": {
           "data": {
@@ -2427,10 +2239,7 @@
       },
       "RequestLogin": {
         "description": "Port input object for authentication login endpoint.",
-        "required": [
-          "username",
-          "password"
-        ],
+        "required": ["username", "password"],
         "type": "object",
         "properties": {
           "username": {
@@ -2463,18 +2272,13 @@
             "default": "Bearer",
             "description": "HTTP token schema type",
             "x-hide": true,
-            "enum": [
-              "Basic",
-              "Bearer"
-            ]
+            "enum": ["Basic", "Bearer"]
           }
         }
       },
       "RequestLogout": {
         "description": "Port input object for logout endpoint.",
-        "required": [
-          "username"
-        ],
+        "required": ["username"],
         "type": "object",
         "properties": {
           "username": {
@@ -2491,11 +2295,7 @@
       },
       "RequestRegister": {
         "description": "Port input object for user registration endpoint.",
-        "required": [
-          "firstName",
-          "username",
-          "password"
-        ],
+        "required": ["firstName", "username", "password"],
         "type": "object",
         "properties": {
           "firstName": {
@@ -2547,9 +2347,7 @@
       },
       "AuthorizationHeader": {
         "description": "Port output object containing authorization header response contract.",
-        "required": [
-          "Authorization"
-        ],
+        "required": ["Authorization"],
         "type": "object",
         "properties": {
           "Authorization": {
@@ -2561,12 +2359,7 @@
       },
       "RequestCreateUser": {
         "description": "Port input object for user creation endpoint.",
-        "required": [
-          "firstName",
-          "username",
-          "password",
-          "emails"
-        ],
+        "required": ["firstName", "username", "password", "emails"],
         "type": "object",
         "properties": {
           "id": {
@@ -2694,9 +2487,7 @@
       "RequestUpdateUser": {
         "description": "Port input object for user update endpoint.",
         "type": "object",
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "properties": {
           "id": {
             "x-label": {
@@ -2810,9 +2601,7 @@
       },
       "RequestCreateOrganization": {
         "description": "Port input object for organization creation endpoint.",
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "type": "object",
         "properties": {
           "id": {
@@ -2875,9 +2664,7 @@
       },
       "RequestUpdateOrganization": {
         "description": "Port input object for organization update endpoint.",
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "type": "object",
         "properties": {
           "id": {
@@ -2941,11 +2728,7 @@
       "RequestCreatePhone": {
         "description": "Port input object for phone create endpoint.",
         "type": "object",
-        "required": [
-          "countryCode",
-          "localCode",
-          "number"
-        ],
+        "required": ["countryCode", "localCode", "number"],
         "properties": {
           "countryCode": {
             "x-label": {
@@ -3159,9 +2942,7 @@
       "RequestUpdatePhone": {
         "description": "Port input object for phone update endpoint.",
         "type": "object",
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "properties": {
           "id": {
             "x-label": {
@@ -3381,10 +3162,7 @@
       "RequestCreateAddress": {
         "description": "Port input object for address create endpoint.",
         "type": "object",
-        "required": [
-          "email",
-          "type"
-        ],
+        "required": ["email", "type"],
         "properties": {
           "email": {
             "x-label": {
@@ -3400,11 +3178,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "work",
-              "home",
-              "vacation"
-            ]
+            "enum": ["work", "home", "vacation"]
           },
           "isPrimary": {
             "x-label": {
@@ -3419,9 +3193,7 @@
       "RequestUpdateAddress": {
         "description": "Port input object for address update endpoint.",
         "type": "object",
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "properties": {
           "id": {
             "x-label": {
@@ -3445,11 +3217,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "work",
-              "home",
-              "vacation"
-            ]
+            "enum": ["work", "home", "vacation"]
           },
           "isPrimary": {
             "x-label": {
@@ -3463,10 +3231,7 @@
       "RequestCreateEmail": {
         "description": "Port input object for email create endpoint.",
         "type": "object",
-        "required": [
-          "email",
-          "type"
-        ],
+        "required": ["email", "type"],
         "properties": {
           "email": {
             "x-label": {
@@ -3484,10 +3249,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "work",
-              "personal"
-            ]
+            "enum": ["work", "personal"]
           },
           "isPrimary": {
             "x-label": {
@@ -3504,9 +3266,7 @@
       "RequestUpdateEmail": {
         "description": "Port input object for email update endpoint.",
         "type": "object",
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "properties": {
           "id": {
             "x-label": {
@@ -3531,10 +3291,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "work",
-              "personal"
-            ]
+            "enum": ["work", "personal"]
           },
           "isPrimary": {
             "x-label": {
@@ -3550,11 +3307,7 @@
       "RequestCreateDocument": {
         "description": "Port input object for document create endpoint.",
         "type": "object",
-        "required": [
-          "data",
-          "type",
-          "countryIssue"
-        ],
+        "required": ["data", "type", "countryIssue"],
         "properties": {
           "type": {
             "x-label": {
@@ -3562,12 +3315,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "CPF",
-              "RG",
-              "SSN",
-              "passport"
-            ],
+            "enum": ["CPF", "RG", "SSN", "passport"],
             "example": "CPF",
             "description": "Type of document"
           },
@@ -3595,9 +3343,7 @@
       "RequestUpdateDocument": {
         "description": "Port input object for document update endpoint.",
         "type": "object",
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "properties": {
           "id": {
             "x-label": {
@@ -3612,12 +3358,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "CPF",
-              "RG",
-              "SSN",
-              "passport"
-            ],
+            "enum": ["CPF", "RG", "SSN", "passport"],
             "example": "CPF",
             "description": "Type of document"
           },
@@ -3645,9 +3386,7 @@
       "RequestUpdatePassword": {
         "description": "Port input object for password update endpoint.",
         "type": "object",
-        "required": [
-          "password"
-        ],
+        "required": ["password"],
         "properties": {
           "password": {
             "x-label": {
@@ -3663,12 +3402,7 @@
       "UserArrayOf": {
         "description": "Port output page of users: the `result` slice selected by `page`/`size`/`filter`/`sort`/`q` plus the matching `total` (JUM-777).",
         "type": "object",
-        "required": [
-          "result",
-          "page",
-          "size",
-          "total"
-        ],
+        "required": ["result", "page", "size", "total"],
         "properties": {
           "result": {
             "type": "array",
@@ -3694,12 +3428,7 @@
       "OrganizationArrayOf": {
         "description": "Port output page of organizations: the `result` slice selected by `page`/`size`/`filter`/`sort`/`q` plus the matching `total` (JUM-777).",
         "type": "object",
-        "required": [
-          "result",
-          "page",
-          "size",
-          "total"
-        ],
+        "required": ["result", "page", "size", "total"],
         "properties": {
           "result": {
             "type": "array",
@@ -3725,10 +3454,7 @@
       "Document": {
         "description": "Value object contract for Document.",
         "type": "object",
-        "required": [
-          "data",
-          "type"
-        ],
+        "required": ["data", "type"],
         "properties": {
           "id": {
             "x-label": {
@@ -3743,12 +3469,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "CPF",
-              "RG",
-              "SSN",
-              "passport"
-            ],
+            "enum": ["CPF", "RG", "SSN", "passport"],
             "example": "CPF",
             "description": "Type of document"
           },
@@ -3812,10 +3533,7 @@
       "Email": {
         "description": "Value object contract for Email.",
         "type": "object",
-        "required": [
-          "email",
-          "type"
-        ],
+        "required": ["email", "type"],
         "properties": {
           "id": {
             "x-label": {
@@ -3840,10 +3558,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "work",
-              "personal"
-            ]
+            "enum": ["work", "personal"]
           },
           "isPrimary": {
             "x-label": {
@@ -3860,10 +3575,7 @@
       "Address": {
         "description": "Value object contract for Address.",
         "type": "object",
-        "required": [
-          "email",
-          "type"
-        ],
+        "required": ["email", "type"],
         "properties": {
           "id": {
             "x-label": {
@@ -3886,11 +3598,7 @@
               "pt-BR": "Tipo"
             },
             "type": "string",
-            "enum": [
-              "work",
-              "home",
-              "vacation"
-            ]
+            "enum": ["work", "home", "vacation"]
           },
           "isPrimary": {
             "x-label": {
@@ -3905,11 +3613,7 @@
       "Phone": {
         "description": "Value object contract for Phone.",
         "type": "object",
-        "required": [
-          "countryCode",
-          "localCode",
-          "number"
-        ],
+        "required": ["countryCode", "localCode", "number"],
         "properties": {
           "id": {
             "x-label": {
@@ -4152,15 +3856,7 @@
         "description": "Port output object for User resource.",
         "x-primary-key": "id",
         "x-service": "core",
-        "required": [
-          "id",
-          "createdAt",
-          "updatedAt",
-          "firstName",
-          "username",
-          "password",
-          "emails"
-        ],
+        "required": ["id", "createdAt", "updatedAt", "firstName", "username", "password", "emails"],
         "type": "object",
         "properties": {
           "id": {
@@ -4304,12 +4000,7 @@
         "description": "Port output object for Organization resource.",
         "x-primary-key": "id",
         "x-service": "core",
-        "required": [
-          "id",
-          "createdAt",
-          "updatedAt",
-          "name"
-        ],
+        "required": ["id", "createdAt", "updatedAt", "name"],
         "type": "object",
         "properties": {
           "id": {
@@ -4405,39 +4096,25 @@
       },
       "EntityMetricsResponse": {
         "description": "Generic entity metrics envelope (JUM-793).",
-        "required": [
-          "metric",
-          "buckets"
-        ],
+        "required": ["metric", "buckets"],
         "type": "object",
         "properties": {
           "metric": {
             "type": "string",
-            "enum": [
-              "count",
-              "groupBy",
-              "series"
-            ]
+            "enum": ["count", "groupBy", "series"]
           },
           "field": {
             "type": "string"
           },
           "interval": {
             "type": "string",
-            "enum": [
-              "day",
-              "week",
-              "month"
-            ]
+            "enum": ["day", "week", "month"]
           },
           "buckets": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "key",
-                "count"
-              ],
+              "required": ["key", "count"],
               "properties": {
                 "key": {
                   "type": "string"

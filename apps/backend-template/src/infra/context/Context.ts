@@ -5,7 +5,7 @@ const MAX_CORRELATION_IDS = 20;
 const MAX_RECENT_STORES = 20;
 const SENSITIVE_KEY = /password|token|secret|authorization|cookie/i;
 
-type MetricsState = {
+interface MetricsState {
   active: number;
   enteredTotal: number;
   exitedTotal: number;
@@ -14,8 +14,8 @@ type MetricsState = {
   durationCount: number;
   durations: number[];
   lastCorrelationIds: string[];
-  recentStores: Array<{ collectedAt: string; entries: Record<string, unknown> }>;
-};
+  recentStores: { collectedAt: string; entries: Record<string, unknown> }[];
+}
 
 const state: MetricsState = {
   active: 0,
@@ -115,9 +115,7 @@ function recordDuration(durationMs: number): void {
 }
 
 export function snapshotAsyncContextMetrics() {
-  const avgDurationMs = state.durationCount > 0
-    ? state.durationSumMs / state.durationCount
-    : 0;
+  const avgDurationMs = state.durationCount > 0 ? state.durationSumMs / state.durationCount : 0;
   const current = storage.getStore();
   return {
     active: state.active,

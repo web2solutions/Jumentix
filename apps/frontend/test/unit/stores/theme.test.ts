@@ -1,9 +1,8 @@
-import {
-  beforeEach, describe, expect, it
-} from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
-import { useSidebarStore } from '@/stores/sidebar';
+import useSidebarStore from '@/stores/sidebar';
 import { useThemeStore } from '@/stores/theme';
 
 /** Shell chrome stores: theme color mode and sidebar toggles (JUM-796). */

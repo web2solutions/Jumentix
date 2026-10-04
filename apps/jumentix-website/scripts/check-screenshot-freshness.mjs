@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+/* eslint-disable no-console -- CLI freshness check: stdout is its report channel. */
 /**
  * Screenshot freshness.
  *
@@ -16,9 +16,9 @@
  * Recapture: `bun run --filter @jumentix/website screenshots:capture`, which
  * rewrites every entry's `capturedAt` to the commit it captured.
  */
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const websiteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -27,7 +27,11 @@ const productDir = path.join(websiteRoot, 'public', 'product');
 export const MANIFEST_PATH = path.join(productDir, 'screenshots.json');
 
 function git(args) {
-  return execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  return execFileSync('git', args, {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe']
+  }).trim();
 }
 
 export const defaultIo = {
@@ -66,8 +70,15 @@ export function checkScreenshotFreshness(io = defaultIo) {
   }
   const images = new Set(io.listImages());
   for (const entry of entries) {
-    if (!entry.file || !entry.capturedAt || !Array.isArray(entry.watch) || entry.watch.length === 0) {
-      failures.push(`${entry.file ?? '<unnamed>'}: needs "file", "capturedAt" and a non-empty "watch" list`);
+    if (
+      !entry.file ||
+      !entry.capturedAt ||
+      !Array.isArray(entry.watch) ||
+      entry.watch.length === 0
+    ) {
+      failures.push(
+        `${entry.file ?? '<unnamed>'}: needs "file", "capturedAt" and a non-empty "watch" list`
+      );
       continue;
     }
     if (!images.has(entry.file)) {
@@ -78,17 +89,22 @@ export function checkScreenshotFreshness(io = defaultIo) {
       // A shallow clone may simply not hold the commit; only a full history can
       // prove the manifest wrong.
       if (io.isShallow()) {
-        warnings.push(`${entry.file}: capturedAt ${entry.capturedAt} is outside this shallow clone; freshness not checked`);
+        warnings.push(
+          `${entry.file}: capturedAt ${entry.capturedAt} is outside this shallow clone; freshness not checked`
+        );
       } else {
-        failures.push(`${entry.file}: capturedAt ${entry.capturedAt} is not a commit in this repository`);
+        failures.push(
+          `${entry.file}: capturedAt ${entry.capturedAt} is not a commit in this repository`
+        );
       }
       continue;
     }
     const commits = io.commitsSince(entry.capturedAt, entry.watch);
     if (commits.length > 0) {
       warnings.push(
-        `${entry.file} may be stale — ${commits.length} commit(s) touched ${entry.watch.join(', ')} since ${entry.capturedAt}: `
-        + commits.slice(0, 3).join('; ')
+        `${entry.file} may be stale — ${commits.length} commit(s) touched ${entry.watch.join(', ')} since ${entry.capturedAt}: ${commits
+          .slice(0, 3)
+          .join('; ')}`
       );
     }
   }

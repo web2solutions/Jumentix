@@ -19,7 +19,9 @@ O `UserService` protege cada mutação com o mutex. Quando o recurso já está
 bloqueado, recusa:
 
 ```ts
-const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+const {
+  result: { previouslyLocked }
+} = await this.mutexService.lock(this.entityName, id);
 if (previouslyLocked) await this.rejectLocked('update', id, data);
 ```
 
@@ -124,12 +126,12 @@ aconteceu, e um cliente informado do contrário agiria sobre uma mentira.
   </g>
 </svg>
 
-| Peça | Responsabilidade |
-|---|---|
-| `DeadLetterQueue` | Registos, estados, limite de tentativas, ordem de replay |
-| `DeadLetterReplayWorker` | Chama `replay` num intervalo, sem sobreposição |
-| `InMemoryDeadLetterStore` | Local ao processo; testes e runtimes de processo único |
-| `KeyValueDeadLetterStore` | Redis, através do cliente que o mutex já usa |
+| Peça                          | Responsabilidade                                                |
+| ----------------------------- | --------------------------------------------------------------- |
+| `DeadLetterQueue`             | Registos, estados, limite de tentativas, ordem de replay        |
+| `DeadLetterReplayWorker`      | Chama `replay` num intervalo, sem sobreposição                  |
+| `InMemoryDeadLetterStore`     | Local ao processo; testes e runtimes de processo único          |
+| `KeyValueDeadLetterStore`     | Redis, através do cliente que o mutex já usa                    |
 | `composeUserDeadLetterReplay` | Mapeia nomes de operação de volta para métodos do `UserService` |
 
 ---
@@ -170,11 +172,11 @@ aconteceu, e um cliente informado do contrário agiria sobre uma mentira.
   </g>
 </svg>
 
-| Estado | Significado | Escolhido pelo `replay`? |
-|---|---|---|
-| `pending` | Recusada, reexecutável | sim |
-| `succeeded` | Um handler executou a escrita | não |
-| `abandoned` | Limite de tentativas atingido | nunca |
+| Estado      | Significado                   | Escolhido pelo `replay`? |
+| ----------- | ----------------------------- | ------------------------ |
+| `pending`   | Recusada, reexecutável        | sim                      |
+| `succeeded` | Um handler executou a escrita | não                      |
+| `abandoned` | Limite de tentativas atingido | nunca                    |
 
 ---
 
@@ -217,7 +219,7 @@ Duas coisas que este diagrama defende:
 
 **Pelo serviço, não pelo repositório.** O serviço readquire o mutex, por isso um
 registo cujo lock não libertou é recusado outra vez e continua em fila. Um replay
-ao nível do repositório escreveria *por cima* do lock, que é exatamente a
+ao nível do repositório escreveria _por cima_ do lock, que é exatamente a
 corrupção que o mutex existe para prevenir.
 
 **`orThrow` não é decoração.** O `UserService` reporta falha em
@@ -236,18 +238,18 @@ por `orThrow`.
 new DeadLetterQueue({ store?, maxAttempts?, now?, newId? })
 ```
 
-| Opção | Omissão | Notas |
-|---|---|---|
-| `store` | `InMemoryDeadLetterStore` | Usar `KeyValueDeadLetterStore` num runtime real |
-| `maxAttempts` | `5` | Mínimo 1; uma fila que nunca tenta é recusada na construção |
-| `now` | `() => new Date()` | Injetado para testes determinísticos |
-| `newId` | timestamp + contador | O contador é o que evita colisão entre dois registos no mesmo milissegundo |
+| Opção         | Omissão                   | Notas                                                                      |
+| ------------- | ------------------------- | -------------------------------------------------------------------------- |
+| `store`       | `InMemoryDeadLetterStore` | Usar `KeyValueDeadLetterStore` num runtime real                            |
+| `maxAttempts` | `5`                       | Mínimo 1; uma fila que nunca tenta é recusada na construção                |
+| `now`         | `() => new Date()`        | Injetado para testes determinísticos                                       |
+| `newId`       | timestamp + contador      | O contador é o que evita colisão entre dois registos no mesmo milissegundo |
 
-| Método | Devolve |
-|---|---|
-| `enqueue(input)` | O registo `pending` guardado |
-| `pending()` | Registos reexecutáveis, por ordem de recusa |
-| `find(id)` | Um registo, qualquer que seja o estado |
+| Método             | Devolve                                                          |
+| ------------------ | ---------------------------------------------------------------- |
+| `enqueue(input)`   | O registo `pending` guardado                                     |
+| `pending()`        | Registos reexecutáveis, por ordem de recusa                      |
+| `find(id)`         | Um registo, qualquer que seja o estado                           |
 | `replay(handlers)` | `{ replayed, retried, abandoned, skipped }` — ids, não contagens |
 
 O `enqueue` recusa entrada que não poderia ser reexecutada: `entityName`,
@@ -259,12 +261,12 @@ O `enqueue` recusa entrada que não poderia ser reexecutada: `entityName`,
 new DeadLetterReplayWorker({ queue, handlers, intervalMs?, onReport?, onError? })
 ```
 
-| Membro | Comportamento |
-|---|---|
+| Membro    | Comportamento                                                  |
+| --------- | -------------------------------------------------------------- |
 | `start()` | Inicia o intervalo (omissão `30_000` ms). O timer leva `unref` |
-| `stop()` | Termina; nenhum tick corre depois |
-| `tick()` | Força uma drenagem — no shutdown, ou ao libertar um recurso |
-| `running` | Se o intervalo está ativo |
+| `stop()`  | Termina; nenhum tick corre depois                              |
+| `tick()`  | Força uma drenagem — no shutdown, ou ao libertar um recurso    |
+| `running` | Se o intervalo está ativo                                      |
 
 Três propriedades, cada uma um modo de um ciclo de timer ingénuo correr mal:
 
@@ -278,10 +280,10 @@ Três propriedades, cada uma um modo de um ciclo de timer ingénuo correr mal:
 
 ### Stores
 
-| Store | Uso |
-|---|---|
-| `InMemoryDeadLetterStore` | Testes, runtimes de processo único |
-| `KeyValueDeadLetterStore(client, { prefix })` | Redis, prefixo por omissão `dlq` |
+| Store                                         | Uso                                |
+| --------------------------------------------- | ---------------------------------- |
+| `InMemoryDeadLetterStore`                     | Testes, runtimes de processo único |
+| `KeyValueDeadLetterStore(client, { prefix })` | Redis, prefixo por omissão `dlq`   |
 
 O cliente Redis que este repositório usa expõe `get`, `set` e `del` — **sem
 `SCAN`, sem `KEYS`**. Por isso a store mantém um índice explícito dos ids dos
@@ -323,8 +325,10 @@ registos sob uma chave, que é também o que preserva a ordem de replay.
 Passar a fila como serviço. Sem ela, o comportamento é **exatamente** o anterior.
 
 ```ts
-import { composeUserDeadLetterQueue, composeUserDeadLetterWorker }
-  from '@src/modules/Users/composition/composeUserDeadLetterReplay';
+import {
+  composeUserDeadLetterQueue,
+  composeUserDeadLetterWorker
+} from '@src/modules/Users/composition/composeUserDeadLetterReplay';
 
 const deadLetterQueue = composeUserDeadLetterQueue(keyValueStorageClient);
 const userService = UserService.compile({
@@ -365,12 +369,17 @@ import { DeadLetterQueue } from '@jumentix/dead-letter-queue';
 
 const queue = new DeadLetterQueue({ maxAttempts: 2 });
 await queue.enqueue({
-  entityName: 'User', resourceId: 'user-1', operation: 'update', payload: { firstName: 'Ada' }
+  entityName: 'User',
+  resourceId: 'user-1',
+  operation: 'update',
+  payload: { firstName: 'Ada' }
 });
 
 let locked = true;
 const handlers = {
-  update: async () => { if (locked) throw new Error('User user-1 is locked'); }
+  update: async () => {
+    if (locked) throw new Error('User user-1 is locked');
+  }
 };
 
 await queue.replay(handlers); // retried: [ 'dlq-...' ]
@@ -382,12 +391,12 @@ await queue.replay(handlers); // replayed: [ 'dlq-...' ]
 
 ## 8. Operação
 
-| Sintoma | O que significa | O que fazer |
-|---|---|---|
-| `pending()` cresce | Locks não libertam, ou o worker não arrancou | Verificar `worker.running` e o TTL do mutex |
+| Sintoma                       | O que significa                                            | O que fazer                                                |
+| ----------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| `pending()` cresce            | Locks não libertam, ou o worker não arrancou               | Verificar `worker.running` e o TTL do mutex                |
 | Registos chegam a `abandoned` | Um recurso ficou bloqueado durante `maxAttempts` drenagens | Ler `lastError`; a escrita perdeu-se e o registo é a prova |
-| `skipped` num relatório | Uma operação não tem handler registado | Erro de ligação — o registo é mantido, não descartado |
-| `onError` dispara | A própria drenagem falhou, por exemplo Redis em baixo | O worker continua a tiquetaquear; corrigir a store |
+| `skipped` num relatório       | Uma operação não tem handler registado                     | Erro de ligação — o registo é mantido, não descartado      |
+| `onError` dispara             | A própria drenagem falhou, por exemplo Redis em baixo      | O worker continua a tiquetaquear; corrigir a store         |
 
 O relatório devolve **ids**, não contagens, para que um operador possa procurar o
 registo em vez de inferir de um total.

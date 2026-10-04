@@ -1,4 +1,4 @@
-import { ServiceResponse } from '../src/ServiceResponse';
+import ServiceResponse from '../src/ServiceResponse';
 
 /**
  * Requirement 112 — this package owns its suite.

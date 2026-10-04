@@ -1,15 +1,18 @@
-import fastify, { FastifyRequest, FastifyReply } from 'fastify';
+import path from 'node:path';
+
 import cors from '@fastify/cors';
+import formBody from '@fastify/formbody';
 import helmet from '@fastify/helmet';
 import fastifyStatic from '@fastify/static';
-import formBody from '@fastify/formbody';
-import path from 'node:path';
+import fastify from 'fastify';
 import { v4 } from 'uuid';
 
 import { _HTTP_PORT_ } from '@src/config/constants';
-import { isCorsOriginAllowed } from '@src/config/security';
-import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+import isCorsOriginAllowed from '@src/config/security';
 import { Context } from '@src/infra/context/Context';
+import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 const fastifyApp = fastify({
   bodyLimit: 1048576 * 100 // 100mb
@@ -37,19 +40,22 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
       contentSecurityPolicy: false
     });
     this.application.register(formBody);
-    (this.application as any).addHook('preHandler', (req: FastifyRequest, res: FastifyReply, next: any) => {
-      const store = new Map();
-      Context.run(store, () => {
-        store.set('correlationId', v4());
-        store.set('timeStart', +new Date());
-        store.set('request', req);
-        store.set('authorization', req.headers.authorization || '');
+    (this.application as any).addHook(
+      'preHandler',
+      (req: FastifyRequest, res: FastifyReply, next: any) => {
+        const store = new Map();
+        Context.run(store, () => {
+          store.set('correlationId', v4());
+          store.set('timeStart', +new Date());
+          store.set('request', req);
+          store.set('authorization', req.headers.authorization || '');
 
-        // requestLogger('request started');
-        next();
-      });
-    });
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+          // requestLogger('request started');
+          next();
+        });
+      }
+    );
+
     /* await this.application.register(require('middie'));
 
     this.application.use((req: FastifyRequest, res: FastifyReply, next: any) => {
@@ -78,9 +84,7 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
       prefix: '/AsyncAPIdoc/',
       decorateReply: false
     });
-    this.application.get('/docs/asyncapi', async (_, reply) => {
-      return reply.redirect('/AsyncAPIdoc/');
-    });
+    this.application.get('/docs/asyncapi', async (_, reply) => reply.redirect('/AsyncAPIdoc/'));
   }
 
   public async start(): Promise<void> {
@@ -96,7 +100,6 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
   public async stop(): Promise<void> {
     await Promise.resolve(this.application.close());
     // process.exit(0);

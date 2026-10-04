@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import path from 'node:path';
 
 /**
@@ -24,7 +23,14 @@ import path from 'node:path';
  * The migration itself is real.
  */
 const repoRoot = path.resolve(__dirname, '../../../..');
-const migrationPath = path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'canaMigration.js');
+const migrationPath = path.join(
+  repoRoot,
+  'apps',
+  'service-management',
+  'src',
+  'store',
+  'canaMigration.js'
+);
 const {
   migrateLocalStorageToCana,
   readRetainedMigrationSource,
@@ -38,17 +44,20 @@ const MARKER_KEY = 'service-management.v1.cana-migration';
 const STATE = JSON.stringify({ domains: [{ id: 'd1', name: 'Domain' }] });
 
 /** A `Storage`-shaped double whose reads and writes can be made to throw. */
-function storageDouble(entries: Record<string, string> = {}, faults: {
-  readThrows?: boolean;
-  writeThrows?: boolean;
-  removeThrows?: boolean;
-} = {}) {
+function storageDouble(
+  entries: Record<string, string> = {},
+  faults: {
+    readThrows?: boolean;
+    writeThrows?: boolean;
+    removeThrows?: boolean;
+  } = {}
+) {
   const items = new Map(Object.entries(entries));
   return {
     items,
     getItem(key: string) {
       if (faults.readThrows) throw new Error('storage read denied');
-      return items.has(key) ? items.get(key) as string : null;
+      return items.has(key) ? (items.get(key) as string) : null;
     },
     setItem(key: string, value: string) {
       if (faults.writeThrows) throw new Error('quota exceeded');
@@ -92,12 +101,14 @@ function throwingForKey(deniedKey: string, entries: Record<string, string> = {})
 }
 
 /** The designer store port, scripted per call. */
-function storeDouble(script: {
-  save?: { status: string; reason?: string };
-  saveBaseline?: { status: string; reason?: string };
-  load?: { status: string; payload?: unknown; reason?: string };
-  loadBaseline?: { status: string; payload?: unknown };
-} = {}) {
+function storeDouble(
+  script: {
+    save?: { status: string; reason?: string };
+    saveBaseline?: { status: string; reason?: string };
+    load?: { status: string; payload?: unknown; reason?: string };
+    loadBaseline?: { status: string; payload?: unknown };
+  } = {}
+) {
   return {
     save: async () => script.save ?? { status: 'persisted' },
     saveBaseline: async () => script.saveBaseline ?? { status: 'persisted' },
@@ -191,13 +202,16 @@ describe('migrateLocalStorageToCana refusals (JUM-681)', () => {
 
     // Housekeeping that throws must not break boot: the migration is done
     // either way, and the alternative is an app that cannot start.
-    const storage = storageDouble({
-      [MARKER_KEY]: JSON.stringify({
-        status: 'verified',
-        migratedAt: '2026-01-01T00:00:00.000Z',
-        sourceRetainedUntil: '2026-02-01T00:00:00.000Z'
-      })
-    }, { removeThrows: true });
+    const storage = storageDouble(
+      {
+        [MARKER_KEY]: JSON.stringify({
+          status: 'verified',
+          migratedAt: '2026-01-01T00:00:00.000Z',
+          sourceRetainedUntil: '2026-02-01T00:00:00.000Z'
+        })
+      },
+      { removeThrows: true }
+    );
 
     const result = await migrateLocalStorageToCana({
       storage,
@@ -220,7 +234,9 @@ describe('migrateLocalStorageToCana refusals (JUM-681)', () => {
     });
 
     expect(result.status).toBe('failed');
-    expect(result.reason).toContain('save-failed: the payload could not be written to Cana (quota)');
+    expect(result.reason).toContain(
+      'save-failed: the payload could not be written to Cana (quota)'
+    );
     expect(storage.items.get(CANA_MIGRATION_SOURCE_STATE_KEY)).toBe(STATE);
   });
 
@@ -344,7 +360,9 @@ describe('migrateLocalStorageToCana refusals (JUM-681)', () => {
     const result = await migrateLocalStorageToCana({
       storage: {
         ...storageDouble({ [CANA_MIGRATION_SOURCE_STATE_KEY]: STATE }),
-        setItem: () => { throw new Error('quota exceeded'); }
+        setItem: () => {
+          throw new Error('quota exceeded');
+        }
       },
       store: storeDouble()
     });
@@ -370,7 +388,7 @@ describe('migrateLocalStorageToCana refusals (JUM-681)', () => {
   it('writes the provenance record when the store exposes a transaction', async () => {
     expect.hasAssertions();
 
-    const written: Array<{ key: string; value: string }> = [];
+    const written: { key: string; value: string }[] = [];
     const store = {
       ...storeDouble(),
       storeName: 'designerDocuments',
@@ -383,7 +401,9 @@ describe('migrateLocalStorageToCana refusals (JUM-681)', () => {
         ) => {
           await body({
             table: () => ({
-              put: async (value: string, key: string) => { written.push({ key, value }); }
+              put: async (value: string, key: string) => {
+                written.push({ key, value });
+              }
             })
           });
           return { outcome: 'committed' };
@@ -420,7 +440,11 @@ describe('migrateLocalStorageToCana refusals (JUM-681)', () => {
         ...storeDouble(),
         storeName: 'designerDocuments',
         ensureOpen: async () => ({ ok: true }),
-        client: { transaction: async () => { throw new Error('transaction aborted'); } }
+        client: {
+          transaction: async () => {
+            throw new Error('transaction aborted');
+          }
+        }
       }
     });
 
@@ -429,11 +453,12 @@ describe('migrateLocalStorageToCana refusals (JUM-681)', () => {
 });
 
 describe('readRetainedMigrationSource (JUM-681)', () => {
-  const marker = (retainedUntil: string) => JSON.stringify({
-    status: 'verified',
-    migratedAt: '2026-01-01T00:00:00.000Z',
-    sourceRetainedUntil: retainedUntil
-  });
+  const marker = (retainedUntil: string) =>
+    JSON.stringify({
+      status: 'verified',
+      migratedAt: '2026-01-01T00:00:00.000Z',
+      sourceRetainedUntil: retainedUntil
+    });
 
   it('reports nothing retained without a storage backend', () => {
     expect.hasAssertions();
@@ -444,8 +469,9 @@ describe('readRetainedMigrationSource (JUM-681)', () => {
   it('reports nothing retained without a verified marker', () => {
     expect.hasAssertions();
 
-    expect(readRetainedMigrationSource({ storage: storageDouble() }))
-      .toStrictEqual({ retained: false });
+    expect(readRetainedMigrationSource({ storage: storageDouble() })).toStrictEqual({
+      retained: false
+    });
   });
 
   it('reports the retained copy inside its window', () => {
@@ -456,10 +482,12 @@ describe('readRetainedMigrationSource (JUM-681)', () => {
       [CANA_MIGRATION_SOURCE_STATE_KEY]: STATE
     });
 
-    expect(readRetainedMigrationSource({
-      storage,
-      now: () => new Date('2026-03-01T00:00:00.000Z')
-    })).toStrictEqual({ retained: true, retainedUntil: '2026-06-01T00:00:00.000Z' });
+    expect(
+      readRetainedMigrationSource({
+        storage,
+        now: () => new Date('2026-03-01T00:00:00.000Z')
+      })
+    ).toStrictEqual({ retained: true, retainedUntil: '2026-06-01T00:00:00.000Z' });
   });
 
   it('reports nothing retained once the window has passed', () => {
@@ -470,10 +498,12 @@ describe('readRetainedMigrationSource (JUM-681)', () => {
       [CANA_MIGRATION_SOURCE_STATE_KEY]: STATE
     });
 
-    expect(readRetainedMigrationSource({
-      storage,
-      now: () => new Date('2026-03-01T00:00:00.000Z')
-    })).toStrictEqual({ retained: false });
+    expect(
+      readRetainedMigrationSource({
+        storage,
+        now: () => new Date('2026-03-01T00:00:00.000Z')
+      })
+    ).toStrictEqual({ retained: false });
   });
 
   it('reports nothing retained when the marker carries no window', () => {
@@ -494,21 +524,25 @@ describe('readRetainedMigrationSource (JUM-681)', () => {
     // one key by hand must not be told a recovery copy exists.
     const storage = storageDouble({ [MARKER_KEY]: marker('2026-06-01T00:00:00.000Z') });
 
-    expect(readRetainedMigrationSource({
-      storage,
-      now: () => new Date('2026-03-01T00:00:00.000Z')
-    })).toStrictEqual({ retained: false });
+    expect(
+      readRetainedMigrationSource({
+        storage,
+        now: () => new Date('2026-03-01T00:00:00.000Z')
+      })
+    ).toStrictEqual({ retained: false });
   });
 
   it('reports nothing retained when reading the copy throws', () => {
     expect.hasAssertions();
 
-    expect(readRetainedMigrationSource({
-      storage: throwingForKey(CANA_MIGRATION_SOURCE_STATE_KEY, {
-        [MARKER_KEY]: marker('2026-06-01T00:00:00.000Z')
-      }),
-      now: () => new Date('2026-03-01T00:00:00.000Z')
-    })).toStrictEqual({ retained: false });
+    expect(
+      readRetainedMigrationSource({
+        storage: throwingForKey(CANA_MIGRATION_SOURCE_STATE_KEY, {
+          [MARKER_KEY]: marker('2026-06-01T00:00:00.000Z')
+        }),
+        now: () => new Date('2026-03-01T00:00:00.000Z')
+      })
+    ).toStrictEqual({ retained: false });
   });
 });
 
@@ -543,7 +577,10 @@ describe('describeDesignerStorageEnvironment (JUM-681)', () => {
   it('names lost data, with and without a cause', () => {
     expect.hasAssertions();
 
-    const bare = describeDesignerStorageEnvironment({ indexedDbPresent: true, probeStatus: 'lost' });
+    const bare = describeDesignerStorageEnvironment({
+      indexedDbPresent: true,
+      probeStatus: 'lost'
+    });
     const caused = describeDesignerStorageEnvironment({
       indexedDbPresent: true,
       probeStatus: 'lost',
@@ -671,7 +708,9 @@ describe('migration inputs at their edges (JUM-721)', () => {
     messageless.message = '';
     const storage = {
       ...storageDouble(),
-      getItem: () => { throw messageless; }
+      getItem: () => {
+        throw messageless;
+      }
     };
 
     const result = await migrateLocalStorageToCana({ storage, store: storeDouble() });

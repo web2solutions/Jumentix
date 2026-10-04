@@ -1,34 +1,35 @@
-import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
-import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import type { IJwtService } from '@src/infra/jwt/IJwtService';
-import type { IKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
-import type { IEventBus, IMessageMediator } from '@src/modules/port';
 import { InMemorySecurityAuditRepository } from '@src/infra/audit';
 import { CacheService } from '@src/infra/cache';
-
+import OrganizationDataRepository from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
 import { UserDataRepository } from '@src/modules/Users/adapters/out/persistence/UserDataRepository';
-import { OrganizationDataRepository } from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
-import { UserService } from '@src/modules/Users/service/UserService';
-import { OrganizationService } from '@src/modules/Users/service/OrganizationService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { UserUseCases } from '@src/modules/Users/application/use-cases/UserUseCases';
-import { OrganizationUseCases } from '@src/modules/Users/application/use-cases/OrganizationUseCases';
-import { AuthUseCases } from '@src/modules/Users/application/use-cases/AuthUseCases';
-import type { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
-import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
-import type { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
-import type { IUserEventListeners } from '@src/modules/Users/events/contracts/IUserEventListeners';
-import { registerUserEventListeners } from '@src/modules/Users/events/listeners/registerUserEventListeners';
-import { registerUserMessageHandlers } from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
-import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
-import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
-import type { DeadLetterQueue, DeadLetterReplayWorker } from '@jumentix/dead-letter-queue';
+import AuthUseCases from '@src/modules/Users/application/use-cases/AuthUseCases';
+import OrganizationUseCases from '@src/modules/Users/application/use-cases/OrganizationUseCases';
+import UserUseCases from '@src/modules/Users/application/use-cases/UserUseCases';
 import {
   composeUserDeadLetterQueue,
   composeUserDeadLetterWorker
 } from '@src/modules/Users/composition/composeUserDeadLetterReplay';
+import registerUserEventListeners from '@src/modules/Users/events/listeners/registerUserEventListeners';
+import registerUserMessageHandlers from '@src/modules/Users/events/listeners/registerUserMessageHandlers';
+import AuthService from '@src/modules/Users/service/AuthService';
+import OrganizationService from '@src/modules/Users/service/OrganizationService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
+import UserService from '@src/modules/Users/service/UserService';
+
+import type { DeadLetterQueue, DeadLetterReplayWorker } from '@jumentix/dead-letter-queue';
+
+import type { IJwtService } from '@src/infra/jwt/IJwtService';
+import type IMutexService from '@src/infra/mutex/port/IMutexService';
+import type IKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/IKeyValueStorageClient';
+import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type { IEventBus, IMessageMediator } from '@src/modules/port';
+import type { IAuthUseCases } from '@src/modules/Users/application/ports/IAuthUseCases';
+import type { IOrganizationUseCases } from '@src/modules/Users/application/ports/IOrganizationUseCases';
+import type { IUserUseCases } from '@src/modules/Users/application/ports/IUserUseCases';
+import type { IUserEventListeners } from '@src/modules/Users/events/contracts/IUserEventListeners';
+import type { IAuthService } from '@src/modules/Users/service/ports/IAuthService';
+import type { IUserProvider } from '@src/modules/Users/service/ports/IUserProvider';
 
 interface IUsersAuthCompositionConfig {
   databaseClient: IDatabaseClient;
@@ -56,9 +57,7 @@ interface IUsersAuthComposition {
   deadLetterWorker?: DeadLetterReplayWorker;
 }
 
-export const composeUsersAuthServices = (
-  config: IUsersAuthCompositionConfig
-): IUsersAuthComposition => {
+const composeUsersAuthServices = (config: IUsersAuthCompositionConfig): IUsersAuthComposition => {
   const {
     databaseClient,
     passwordCryptoService,
@@ -143,3 +142,5 @@ export const composeUsersAuthServices = (
     deadLetterWorker
   };
 };
+
+export default composeUsersAuthServices;

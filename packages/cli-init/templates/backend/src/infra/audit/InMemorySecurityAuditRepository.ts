@@ -2,7 +2,7 @@ import type { ISecurityAuditEvent, ISecurityAuditRepository } from './ISecurityA
 
 let securityAuditRepository: ISecurityAuditRepository | undefined;
 
-export class InMemorySecurityAuditRepository implements ISecurityAuditRepository {
+class InMemorySecurityAuditRepository implements ISecurityAuditRepository {
   private readonly events: ISecurityAuditEvent[] = [];
 
   public async record(event: ISecurityAuditEvent): Promise<void> {
@@ -18,9 +18,9 @@ export class InMemorySecurityAuditRepository implements ISecurityAuditRepository
   }
 
   public static compile(): ISecurityAuditRepository {
-    if (!securityAuditRepository) {
-      securityAuditRepository = new InMemorySecurityAuditRepository();
-    }
+    securityAuditRepository ??= new InMemorySecurityAuditRepository();
     return securityAuditRepository;
   }
 }
+
+export default InMemorySecurityAuditRepository;

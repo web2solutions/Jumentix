@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/documentation/WEBSITE-IA-AND-CONVERSION-PLAN.md
 Idioma alvo: Português (Brasil)
 -->
+
 # IA do site Jumentix e plano de conversão
 
 Rastreamento de problemas:
@@ -105,19 +106,19 @@ Contato:
 
 ## 7. Mapeamento da fonte para o site do Markdown
 
-| Seção do site | Remarcação de origem |
-| --- | --- |
-| Posicionamento do produto | `/README.md` |
-| Narrativa de arquitetura | `/documentação/md/ARQUITETURA-E-ESTRUTURA.md` |
-| Visão/governança do projeto | `/documentation/md/PROJECT-OVERVIEW.md`, `/documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md` |
-| Caso de uso REST | `/apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md` |
-| Caso de uso em tempo real | `/apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md` |
-| Caso de uso SPA/PWA | `/apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md` |
-| Caso de uso monolítico SaaS | `/documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md` |
-| Caso de uso de microsserviços SaaS | `/documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md` |
-| Matriz de integrações | `/documentação/md/adapters/http/README.md`, `/documentação/md/adapters/databases/README.md` |
-| Segurança/conformidade | `/documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`, `/documentation/md/SECURITY-RUNBOOK-PCI.md` |
-| Portal de documentos técnicos | `/documentação/README.md` |
+| Seção do site                      | Remarcação de origem                                                                                  |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Posicionamento do produto          | `/README.md`                                                                                          |
+| Narrativa de arquitetura           | `/documentação/md/ARQUITETURA-E-ESTRUTURA.md`                                                         |
+| Visão/governança do projeto        | `/documentation/md/PROJECT-OVERVIEW.md`, `/documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`           |
+| Caso de uso REST                   | `/apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md`                      |
+| Caso de uso em tempo real          | `/apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md`                  |
+| Caso de uso SPA/PWA                | `/apps/service-management/documentation/guides/CREATING-SPA-PWA-WITH-JUMENTIX.md`                     |
+| Caso de uso monolítico SaaS        | `/documentation/md/guides/CREATING-SAAS-MONOLITH-WITH-JUMENTIX.md`                                    |
+| Caso de uso de microsserviços SaaS | `/documentation/md/guides/CREATING-SAAS-MICROSERVICES-WITH-JUMENTIX.md`                               |
+| Matriz de integrações              | `/documentação/md/adapters/http/README.md`, `/documentação/md/adapters/databases/README.md`           |
+| Segurança/conformidade             | `/documentation/md/PCI-REMEDIATION-PLAN-AND-EVIDENCE.md`, `/documentation/md/SECURITY-RUNBOOK-PCI.md` |
+| Portal de documentos técnicos      | `/documentação/README.md`                                                                             |
 
 ## 8. Notas de Governança e Execução
 

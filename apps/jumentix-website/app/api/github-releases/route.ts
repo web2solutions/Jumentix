@@ -8,6 +8,7 @@ import releases from '@/content/releases.json';
  * without a valid GITHUB_TOKEN. The data is now bundled by Next.js, so the
  * route has no runtime secret or network dependency.
  */
+
 export function GET(request: Request) {
   const userAgent = request.headers.get('user-agent');
 

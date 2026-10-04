@@ -1,4 +1,8 @@
-import type { DeadLetterReplayHandler, DeadLetterReplayReport, IDeadLetterQueue } from './contracts';
+import type {
+  DeadLetterReplayHandler,
+  DeadLetterReplayReport,
+  IDeadLetterQueue
+} from './contracts';
 
 export interface IDeadLetterReplayWorkerOptions {
   queue: IDeadLetterQueue;
@@ -82,7 +86,9 @@ export class DeadLetterReplayWorker {
 
   public start(): void {
     if (this.timer) return;
-    this.timer = this.setIntervalFn(() => { this.tick().catch(() => undefined); }, this.intervalMs);
+    this.timer = this.setIntervalFn(() => {
+      this.tick().catch(() => undefined);
+    }, this.intervalMs);
     // Node keeps the process alive for a pending timer. A background drain is
     // not a reason for a CLI or a test runner to hang, which is the leaked
     // handle this repository has been bitten by before.

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+/* eslint-disable no-console */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -8,23 +8,91 @@ const outEn = path.join(ROOT, 'documentation/md/PACKAGE-SCRIPTS-REFERENCE.md');
 const outPt = path.join(ROOT, 'documentation/md/PACKAGE-SCRIPTS-REFERENCE.pt-BR.md');
 
 const PREFIX_HINTS = [
-  { prefix: 'ci:', en: 'Use in CI validation and delivery gates.', pt: 'Use em validações de CI e gates de entrega.' },
-  { prefix: 'mono:', en: 'Run workspace-wide recursive operations.', pt: 'Execute operações recursivas no workspace inteiro.' },
-  { prefix: 'website:', en: 'Operate the commercial website lifecycle.', pt: 'Opera o ciclo de vida do site comercial.' },
-  { prefix: 'pm2:', en: 'Manage PM2 runtime processes.', pt: 'Gerencia processos de runtime com PM2.' },
-  { prefix: 'test:', en: 'Run tests for specific scope or profile.', pt: 'Roda testes para escopo ou perfil específico.' },
-  { prefix: 'smoke:', en: 'Run smoke checks for fast environment validation.', pt: 'Executa smoke checks para validação rápida de ambiente.' },
-  { prefix: 'docker:', en: 'Start/stop containerized dependencies and services.', pt: 'Sobe/derruba dependências e serviços em containers.' },
-  { prefix: 'dev:', en: 'Start development runtime mode.', pt: 'Inicia o modo de runtime para desenvolvimento.' },
-  { prefix: 'prod:', en: 'Start production runtime profile.', pt: 'Inicia o perfil de runtime de produção.' },
-  { prefix: 'staging:', en: 'Start staging runtime profile.', pt: 'Inicia o perfil de runtime de staging.' },
-  { prefix: 'release:', en: 'Run release governance and dry-run routines.', pt: 'Executa governança de release e rotinas de dry-run.' },
-  { prefix: 'changelog:', en: 'Generate or verify changelog from git history.', pt: 'Gera ou valida changelog a partir do histórico git.' },
-  { prefix: 'docs:', en: 'Generate or synchronize documentation artifacts.', pt: 'Gera ou sincroniza artefatos de documentação.' },
-  { prefix: 'arch:', en: 'Validate architecture boundaries and constraints.', pt: 'Valida limites e restrições de arquitetura.' },
-  { prefix: 'workspace:', en: 'Validate workspace-level policies.', pt: 'Valida políticas em nível de workspace.' },
-  { prefix: 'npm:', en: 'Execute npm organization and publish helper commands.', pt: 'Executa comandos auxiliares de organização e publicação npm.' },
-  { prefix: 'oas:', en: 'Validate OpenAPI contracts and route resolution.', pt: 'Valida contratos OpenAPI e resolução de rotas.' }
+  {
+    prefix: 'ci:',
+    en: 'Use in CI validation and delivery gates.',
+    pt: 'Use em validações de CI e gates de entrega.'
+  },
+  {
+    prefix: 'mono:',
+    en: 'Run workspace-wide recursive operations.',
+    pt: 'Execute operações recursivas no workspace inteiro.'
+  },
+  {
+    prefix: 'website:',
+    en: 'Operate the commercial website lifecycle.',
+    pt: 'Opera o ciclo de vida do site comercial.'
+  },
+  {
+    prefix: 'pm2:',
+    en: 'Manage PM2 runtime processes.',
+    pt: 'Gerencia processos de runtime com PM2.'
+  },
+  {
+    prefix: 'test:',
+    en: 'Run tests for specific scope or profile.',
+    pt: 'Roda testes para escopo ou perfil específico.'
+  },
+  {
+    prefix: 'smoke:',
+    en: 'Run smoke checks for fast environment validation.',
+    pt: 'Executa smoke checks para validação rápida de ambiente.'
+  },
+  {
+    prefix: 'docker:',
+    en: 'Start/stop containerized dependencies and services.',
+    pt: 'Sobe/derruba dependências e serviços em containers.'
+  },
+  {
+    prefix: 'dev:',
+    en: 'Start development runtime mode.',
+    pt: 'Inicia o modo de runtime para desenvolvimento.'
+  },
+  {
+    prefix: 'prod:',
+    en: 'Start production runtime profile.',
+    pt: 'Inicia o perfil de runtime de produção.'
+  },
+  {
+    prefix: 'staging:',
+    en: 'Start staging runtime profile.',
+    pt: 'Inicia o perfil de runtime de staging.'
+  },
+  {
+    prefix: 'release:',
+    en: 'Run release governance and dry-run routines.',
+    pt: 'Executa governança de release e rotinas de dry-run.'
+  },
+  {
+    prefix: 'changelog:',
+    en: 'Generate or verify changelog from git history.',
+    pt: 'Gera ou valida changelog a partir do histórico git.'
+  },
+  {
+    prefix: 'docs:',
+    en: 'Generate or synchronize documentation artifacts.',
+    pt: 'Gera ou sincroniza artefatos de documentação.'
+  },
+  {
+    prefix: 'arch:',
+    en: 'Validate architecture boundaries and constraints.',
+    pt: 'Valida limites e restrições de arquitetura.'
+  },
+  {
+    prefix: 'workspace:',
+    en: 'Validate workspace-level policies.',
+    pt: 'Valida políticas em nível de workspace.'
+  },
+  {
+    prefix: 'npm:',
+    en: 'Execute npm organization and publish helper commands.',
+    pt: 'Executa comandos auxiliares de organização e publicação npm.'
+  },
+  {
+    prefix: 'oas:',
+    en: 'Validate OpenAPI contracts and route resolution.',
+    pt: 'Valida contratos OpenAPI e resolução de rotas.'
+  }
 ];
 
 const SPECIAL_HINTS = {
@@ -101,10 +169,12 @@ const main = async () => {
   const scripts = pkg.scripts || {};
   await fs.writeFile(outEn, buildEn(scripts), 'utf-8');
   await fs.writeFile(outPt, buildPt(scripts), 'utf-8');
-  console.log(`Generated consumer package scripts references (${Object.keys(scripts).length} commands).`);
+  console.log(
+    `Generated consumer package scripts references (${Object.keys(scripts).length} commands).`
+  );
 };
 
 main().catch((error) => {
   console.error(error);
-  process.exit(1);
+  process.exitCode = 1;
 });

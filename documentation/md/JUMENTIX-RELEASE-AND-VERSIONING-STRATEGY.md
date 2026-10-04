@@ -21,10 +21,10 @@ Current values:
 
 Two annotated tag families, both created by CI — never from a developer machine:
 
-| Family | Format | When | Owner |
-| --- | --- | --- | --- |
+| Family      | Format                                | When                                         | Owner                                                                                 |
+| ----------- | ------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Application | `v<appLockedVersion>` (e.g. `v0.0.3`) | After each successful version bump on `main` | GitHub Actions `app-release.yml` → `bun ci-cd/create-app-release-tag.js --github-api` |
-| Package | `@jumentix/<pkg>@<version>` | After each successful `npm publish` | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort` |
+| Package     | `@jumentix/<pkg>@<version>`           | After each successful `npm publish`          | GitHub Actions `npm-publish.yml` → `bun run release:publish-cohort`                   |
 
 Signed release commits that include rebuilt CLI templates must encode file
 contents as raw bytes → base64 (never utf8-decoded binaries). Otherwise PNG/ICO

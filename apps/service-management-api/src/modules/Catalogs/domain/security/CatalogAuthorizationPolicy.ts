@@ -2,12 +2,11 @@ import {
   hasSuperadminRole,
   shouldRequireOrganization
 } from '@src/modules/Users/domain/security/Rbac';
+import { TENANT_AUTHORIZATION_REASONS } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
+
 import type {
   ITenantAuthorizationDecision,
   ITenantPrincipal
-} from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
-import {
-  TENANT_AUTHORIZATION_REASONS
 } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
 
 /**

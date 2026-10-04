@@ -1,7 +1,6 @@
-/* eslint-disable no-console */
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 let previousCpuSample = null;
 
@@ -29,10 +28,7 @@ function computeCpuUsage(previous, current) {
 }
 
 function resolveDiskPaths(projectRoot) {
-  const defaults = [
-    path.resolve(projectRoot),
-    os.tmpdir()
-  ];
+  const defaults = [path.resolve(projectRoot), os.tmpdir()];
   const extra = String(process.env.JUMENTIX_SERVICE_MANAGEMENT_DISK_PATHS || '')
     .split(',')
     .map((entry) => entry.trim())

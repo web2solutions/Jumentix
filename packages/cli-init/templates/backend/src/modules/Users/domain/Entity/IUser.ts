@@ -1,6 +1,6 @@
-import {
-  EmailValueObject,
+import type {
   DocumentValueObject,
+  EmailValueObject,
   PhoneValueObject
 } from '@src/modules/ddd/valueObjects';
 

@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const https = require('https');
+const https = require('node:https');
 
 const {
-  PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE,
   buildBranchRevisionUrl,
   buildContentsApiUrl,
   buildRawUrl,
@@ -14,6 +12,7 @@ const {
   hasGithubToken,
   mirrorsMatch,
   normalize,
+  PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE,
   resolveBranchRevision,
   resolveGithubToken
 } = require('../check-agent-registry-source');
@@ -26,48 +25,57 @@ describe('check-agent-registry-source', () => {
   it('builds an immutable raw-content URL with encoded path segments', () => {
     expect.hasAssertions();
     const revision = '0123456789abcdef0123456789abcdef01234567';
-    expect(buildRawUrl({
-      repository: 'XpertMinds/jumentix-agent-registry',
-      revision,
-      remotePath: '/registry files/AGENT-REGISTRY.md'
-    })).toBe(
+    expect(
+      buildRawUrl({
+        repository: 'XpertMinds/jumentix-agent-registry',
+        revision,
+        remotePath: '/registry files/AGENT-REGISTRY.md'
+      })
+    ).toBe(
       `https://raw.githubusercontent.com/XpertMinds/jumentix-agent-registry/${revision}/registry%20files/AGENT-REGISTRY.md`
     );
   });
 
   it('rejects invalid repository coordinates', () => {
     expect.hasAssertions();
-    expect(() => buildRawUrl({ repository: 'invalid', branch: 'main', remotePath: 'AGENT-REGISTRY.md' }))
-      .toThrow('Invalid repository format');
+    expect(() =>
+      buildRawUrl({ repository: 'invalid', branch: 'main', remotePath: 'AGENT-REGISTRY.md' })
+    ).toThrow('Invalid repository format');
   });
 
   it('uses an immutable configured revision when building the canonical content URL', () => {
     expect.hasAssertions();
     const revision = '0123456789abcdef0123456789abcdef01234567';
-    expect(buildRawUrl({
-      repository: 'XpertMinds/jumentix-agent-registry',
-      branch: 'main',
-      revision,
-      remotePath: 'AGENT-REGISTRY.md'
-    })).toContain(`/${revision}/AGENT-REGISTRY.md`);
+    expect(
+      buildRawUrl({
+        repository: 'XpertMinds/jumentix-agent-registry',
+        branch: 'main',
+        revision,
+        remotePath: 'AGENT-REGISTRY.md'
+      })
+    ).toContain(`/${revision}/AGENT-REGISTRY.md`);
   });
 
   it('rejects mutable refs and unsafe registry paths', () => {
     expect.hasAssertions();
-    expect(() => buildRawUrl({
-      repository: 'XpertMinds/jumentix-agent-registry',
-      revision: 'main',
-      remotePath: 'AGENT-REGISTRY.md'
-    })).toThrow('full immutable commit SHA');
+    expect(() =>
+      buildRawUrl({
+        repository: 'XpertMinds/jumentix-agent-registry',
+        revision: 'main',
+        remotePath: 'AGENT-REGISTRY.md'
+      })
+    ).toThrow('full immutable commit SHA');
     expect(() => encodeRawPath('../AGENT-REGISTRY.md')).toThrow('Invalid registry remote path');
   });
 
   it('builds the branch revision URL used by synchronization', () => {
     expect.hasAssertions();
-    expect(buildBranchRevisionUrl({
-      repository: 'XpertMinds/jumentix-agent-registry',
-      branch: 'main/next'
-    })).toBe('https://api.github.com/repos/XpertMinds/jumentix-agent-registry/commits/main%2Fnext');
+    expect(
+      buildBranchRevisionUrl({
+        repository: 'XpertMinds/jumentix-agent-registry',
+        branch: 'main/next'
+      })
+    ).toBe('https://api.github.com/repos/XpertMinds/jumentix-agent-registry/commits/main%2Fnext');
   });
 
   it('normalizes line endings and trailing whitespace before comparing registry mirrors', () => {
@@ -106,8 +114,10 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchText('https://raw.githubusercontent.com/XpertMinds/jumentix-agent-registry/revision/AGENT-REGISTRY.md'))
-      .resolves.toBe('canonical');
+    const fetched: Promise<unknown> = fetchText(
+      'https://raw.githubusercontent.com/XpertMinds/jumentix-agent-registry/revision/AGENT-REGISTRY.md'
+    );
+    await expect(fetched).resolves.toBe('canonical');
   });
 
   it('fetches private canonical content through the authenticated Contents API when a token is present', async () => {
@@ -134,28 +144,41 @@ describe('check-agent-registry-source', () => {
         { headers: Record<string, string> },
         (value: object) => void
       ];
-      expect(url).toBe(buildContentsApiUrl({
-        repository: 'XpertMinds/jumentix-agent-registry',
-        revision,
-        remotePath: 'AGENT-REGISTRY.md'
-      }, revision));
+      expect(url).toBe(
+        buildContentsApiUrl(
+          {
+            repository: 'XpertMinds/jumentix-agent-registry',
+            revision,
+            remotePath: 'AGENT-REGISTRY.md'
+          },
+          revision
+        )
+      );
       expect(options.headers.Authorization).toBe('Bearer private-token');
       expect(options.headers.Accept).toBe('application/vnd.github.raw');
       callback(response);
       return request as never;
     });
 
-    await expect(fetchCanonicalText({
-      repository: 'XpertMinds/jumentix-agent-registry',
-      revision,
-      remotePath: 'AGENT-REGISTRY.md'
-    }, revision, { GITHUB_TOKEN: 'private-token' })).resolves.toStrictEqual({
-      content: 'private-canonical',
-      sourceUrl: buildContentsApiUrl({
+    const fetched: Promise<unknown> = fetchCanonicalText(
+      {
         repository: 'XpertMinds/jumentix-agent-registry',
         revision,
         remotePath: 'AGENT-REGISTRY.md'
-      }, revision)
+      },
+      revision,
+      { GITHUB_TOKEN: 'private-token' }
+    );
+    await expect(fetched).resolves.toStrictEqual({
+      content: 'private-canonical',
+      sourceUrl: buildContentsApiUrl(
+        {
+          repository: 'XpertMinds/jumentix-agent-registry',
+          revision,
+          remotePath: 'AGENT-REGISTRY.md'
+        },
+        revision
+      )
     });
     expect(hasGithubToken({ GITHUB_TOKEN: 'private-token' })).toBe(true);
   });
@@ -179,11 +202,16 @@ describe('check-agent-registry-source', () => {
 
     getRequest.mockImplementationOnce((...args: unknown[]) => {
       const [url, , callback] = args as [string, object, (value: object) => void];
-      expect(url).toBe(buildRawUrl({
-        repository: 'XpertMinds/jumentix-agent-registry',
-        revision,
-        remotePath: 'AGENT-REGISTRY.md'
-      }, revision));
+      expect(url).toBe(
+        buildRawUrl(
+          {
+            repository: 'XpertMinds/jumentix-agent-registry',
+            revision,
+            remotePath: 'AGENT-REGISTRY.md'
+          },
+          revision
+        )
+      );
       const response = {
         statusCode: 200,
         setEncoding: jest.fn(),
@@ -201,17 +229,25 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchCanonicalText({
-      repository: 'XpertMinds/jumentix-agent-registry',
-      revision,
-      remotePath: 'AGENT-REGISTRY.md'
-    }, revision, { GITHUB_TOKEN: 'stale-token' })).resolves.toStrictEqual({
-      content: 'public-canonical',
-      sourceUrl: buildRawUrl({
+    const fetched: Promise<unknown> = fetchCanonicalText(
+      {
         repository: 'XpertMinds/jumentix-agent-registry',
         revision,
         remotePath: 'AGENT-REGISTRY.md'
-      }, revision)
+      },
+      revision,
+      { GITHUB_TOKEN: 'stale-token' }
+    );
+    await expect(fetched).resolves.toStrictEqual({
+      content: 'public-canonical',
+      sourceUrl: buildRawUrl(
+        {
+          repository: 'XpertMinds/jumentix-agent-registry',
+          revision,
+          remotePath: 'AGENT-REGISTRY.md'
+        },
+        revision
+      )
     });
     expect(getRequest).toHaveBeenCalledTimes(2);
   });
@@ -231,11 +267,16 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchCanonicalText({
-      repository: 'XpertMinds/jumentix-agent-registry',
+    const fetched: Promise<unknown> = fetchCanonicalText(
+      {
+        repository: 'XpertMinds/jumentix-agent-registry',
+        revision,
+        remotePath: 'AGENT-REGISTRY.md'
+      },
       revision,
-      remotePath: 'AGENT-REGISTRY.md'
-    }, revision, {})).rejects.toThrow(PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE);
+      {}
+    );
+    await expect(fetched).rejects.toThrow(PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE);
   });
 
   it('still points unauthenticated 401/403 failures at token-backed private access', async () => {
@@ -253,11 +294,16 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchCanonicalText({
-      repository: 'XpertMinds/jumentix-agent-registry',
+    const fetched: Promise<unknown> = fetchCanonicalText(
+      {
+        repository: 'XpertMinds/jumentix-agent-registry',
+        revision,
+        remotePath: 'AGENT-REGISTRY.md'
+      },
       revision,
-      remotePath: 'AGENT-REGISTRY.md'
-    }, revision, {})).rejects.toThrow(PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE);
+      {}
+    );
+    await expect(fetched).rejects.toThrow(PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE);
   });
 
   it('keeps token-access guidance when Contents API auth fails and raw returns 404', async () => {
@@ -286,11 +332,16 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchCanonicalText({
-      repository: 'XpertMinds/jumentix-agent-registry',
+    const fetched: Promise<unknown> = fetchCanonicalText(
+      {
+        repository: 'XpertMinds/jumentix-agent-registry',
+        revision,
+        remotePath: 'AGENT-REGISTRY.md'
+      },
       revision,
-      remotePath: 'AGENT-REGISTRY.md'
-    }, revision, { GITHUB_TOKEN: 'bad-token' })).rejects.toThrow(
+      { GITHUB_TOKEN: 'bad-token' }
+    );
+    await expect(fetched).rejects.toThrow(
       /Authenticated Contents API failed and diagnostic raw fetch returned HTTP 404/
     );
     expect(getRequest).toHaveBeenCalledTimes(2);
@@ -318,8 +369,10 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchText('https://api.github.com/repos/XpertMinds/jumentix-agent-registry/contents/missing'))
-      .rejects.toThrow('HTTP 404');
+    const fetched: Promise<unknown> = fetchText(
+      'https://api.github.com/repos/XpertMinds/jumentix-agent-registry/contents/missing'
+    );
+    await expect(fetched).rejects.toThrow('HTTP 404');
   });
 
   it('wraps canonical registry transport failures without leaking credentials', async () => {
@@ -330,10 +383,14 @@ describe('check-agent-registry-source', () => {
       handler(new Error('socket unavailable'));
       return request;
     });
-    jest.spyOn(https, 'get').mockReturnValue(request as never);
+    jest.spyOn(https, 'get').mockReturnValue(request);
 
-    await expect(fetchText('https://raw.githubusercontent.com/example/revision/file'))
-      .rejects.toThrow('immutable canonical registry content: socket unavailable');
+    const fetched: Promise<unknown> = fetchText(
+      'https://raw.githubusercontent.com/example/revision/file'
+    );
+    await expect(fetched).rejects.toThrow(
+      'immutable canonical registry content: socket unavailable'
+    );
   });
 
   it('adds API authentication only when branch resolution has an available token', () => {
@@ -378,8 +435,10 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(fetchJson('https://api.github.com/example', {}))
-      .resolves.toStrictEqual({ sha: '0123456789abcdef0123456789abcdef01234567' });
+    const fetched: Promise<unknown> = fetchJson('https://api.github.com/example', {});
+    await expect(fetched).resolves.toStrictEqual({
+      sha: '0123456789abcdef0123456789abcdef01234567'
+    });
   });
 
   it('resolves the immutable revision for the configured canonical branch', async () => {
@@ -406,10 +465,11 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(resolveBranchRevision({
+    const resolved: Promise<unknown> = resolveBranchRevision({
       repository: 'XpertMinds/jumentix-agent-registry',
       branch: 'main'
-    })).resolves.toBe(revision);
+    });
+    await expect(resolved).resolves.toBe(revision);
   });
 
   it('fails closed when branch resolution does not return a full commit SHA', async () => {
@@ -435,9 +495,10 @@ describe('check-agent-registry-source', () => {
       return request as never;
     });
 
-    await expect(resolveBranchRevision({
+    const resolved: Promise<unknown> = resolveBranchRevision({
       repository: 'XpertMinds/jumentix-agent-registry',
       branch: 'main'
-    })).rejects.toThrow('Could not resolve canonical registry revision');
+    });
+    await expect(resolved).rejects.toThrow('Could not resolve canonical registry revision');
   });
 });

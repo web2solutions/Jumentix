@@ -36,11 +36,12 @@ import {
  */
 
 /** Reaches the protected connection state that every repository shares. */
-const state = (repository: object) => repository as unknown as {
-  isConnected(): boolean;
-  getProviderName(): string;
-  getClient(): unknown;
-};
+const state = (repository: object) =>
+  repository as unknown as {
+    isConnected(): boolean;
+    getProviderName(): string;
+    getClient(): unknown;
+  };
 
 describe('provider names', () => {
   /**
@@ -71,8 +72,9 @@ describe('provider names', () => {
   it('overrides a provider supplied by the caller', () => {
     expect.hasAssertions();
 
-    expect(state(new DynamoDbRepository({ provider: 'not-dynamo' })).getProviderName())
-      .toBe('aws-dynamodb');
+    expect(state(new DynamoDbRepository({ provider: 'not-dynamo' })).getProviderName()).toBe(
+      'aws-dynamodb'
+    );
   });
 });
 
@@ -106,10 +108,13 @@ describe('the state every repository starts in', () => {
 
     const repositories = built();
 
-    await Promise.all(repositories.map(
-      (repository) => expect((repository as { disconnect(): Promise<void> }).disconnect())
-        .resolves.toBeUndefined()
-    ));
+    await Promise.all(
+      repositories.map((repository) =>
+        expect(
+          (repository as { disconnect(): Promise<void> }).disconnect()
+        ).resolves.toBeUndefined()
+      )
+    );
 
     for (const repository of repositories) {
       expect(state(repository).isConnected()).toBe(false);
@@ -133,11 +138,12 @@ describe('the state every repository starts in', () => {
  * test marginally more direct is not a trade worth making.
  */
 describe('the Sequelize repository', () => {
-  const deferred = (extra: Record<string, unknown> = {}) => new SqlSequelizeRepository({
-    dialect: 'postgres',
-    connectionUrl: 'postgres://user:pass@127.0.0.1:5999/ledger',
-    extra: { sequelizeAuthenticateOnConnect: false, ...extra }
-  });
+  const deferred = (extra: Record<string, unknown> = {}) =>
+    new SqlSequelizeRepository({
+      dialect: 'postgres',
+      connectionUrl: 'postgres://user:pass@127.0.0.1:5999/ledger',
+      extra: { sequelizeAuthenticateOnConnect: false, ...extra }
+    });
 
   it('builds a client and reports connected', async () => {
     expect.hasAssertions();
@@ -193,10 +199,15 @@ describe('the Sequelize repository', () => {
     try {
       await repository.connect();
 
-      expect((repository.getClient() as { options: { pool: unknown } }).options.pool)
-        .toMatchObject({
-          max: 3, min: 1, acquire: 111, idle: 222, evict: 333
-        });
+      expect((repository.getClient() as { options: { pool: unknown } }).options.pool).toMatchObject(
+        {
+          max: 3,
+          min: 1,
+          acquire: 111,
+          idle: 222,
+          evict: 333
+        }
+      );
     } finally {
       await repository.disconnect();
     }
@@ -210,10 +221,15 @@ describe('the Sequelize repository', () => {
     try {
       await repository.connect();
 
-      expect((repository.getClient() as { options: { pool: unknown } }).options.pool)
-        .toMatchObject({
-          max: 15, min: 0, acquire: 30000, idle: 10000, evict: 1000
-        });
+      expect((repository.getClient() as { options: { pool: unknown } }).options.pool).toMatchObject(
+        {
+          max: 15,
+          min: 0,
+          acquire: 30000,
+          idle: 10000,
+          evict: 1000
+        }
+      );
     } finally {
       await repository.disconnect();
     }
@@ -239,8 +255,9 @@ describe('the Sequelize repository', () => {
       // No server was reached, and the default connection URL was assembled
       // from the dialect and the database name.
       expect(repository.isConnected()).toBe(true);
-      expect((repository.getClient() as { config: { database: string } }).config.database)
-        .toBe('orders');
+      expect((repository.getClient() as { config: { database: string } }).config.database).toBe(
+        'orders'
+      );
     } finally {
       await repository.disconnect();
     }
@@ -257,8 +274,9 @@ describe('the Sequelize repository', () => {
     try {
       await repository.connect();
 
-      expect((repository.getClient() as { config: { database: string } }).config.database)
-        .toBe('app');
+      expect((repository.getClient() as { config: { database: string } }).config.database).toBe(
+        'app'
+      );
     } finally {
       await repository.disconnect();
     }
@@ -311,8 +329,9 @@ describe('the RDS repository', () => {
 
       // 20, not 15: RDS carries a larger default and the difference is
       // deliberate.
-      expect((repository.getClient() as { options: { pool: { max: number } } }).options.pool.max)
-        .toBe(20);
+      expect(
+        (repository.getClient() as { options: { pool: { max: number } } }).options.pool.max
+      ).toBe(20);
     } finally {
       await repository.disconnect();
     }
@@ -329,8 +348,9 @@ describe('the RDS repository', () => {
     try {
       await repository.connect();
 
-      expect((repository.getClient() as { options: { dialect: string } }).options.dialect)
-        .toBe('postgres');
+      expect((repository.getClient() as { options: { dialect: string } }).options.dialect).toBe(
+        'postgres'
+      );
     } finally {
       await repository.disconnect();
     }
@@ -564,7 +584,9 @@ describe('the Aurora repository', () => {
       extra: { poolMax: 7 }
     });
     jest.spyOn(repository as any, 'loadModule').mockResolvedValue(jest.fn());
-    jest.spyOn(repository as any, 'loadOptionalModule').mockResolvedValue({ default: { createClient } });
+    jest
+      .spyOn(repository as any, 'loadOptionalModule')
+      .mockResolvedValue({ default: { createClient } });
 
     await repository.connect();
 
@@ -595,12 +617,14 @@ describe('the Aurora repository', () => {
 
     await repository.connect();
 
-    expect(createClient).toHaveBeenCalledWith(expect.objectContaining({
-      region: 'eu-west-1',
-      endpoint: 'fallback.example.test',
-      database: 'orders',
-      max: 20
-    }));
+    expect(createClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        region: 'eu-west-1',
+        endpoint: 'fallback.example.test',
+        database: 'orders',
+        max: 20
+      })
+    );
     await repository.disconnect();
   });
 
@@ -612,8 +636,9 @@ describe('the Aurora repository', () => {
   it('refuses to connect with neither a DSQL connector nor a url', async () => {
     expect.hasAssertions();
 
-    await expect(new AuroraRepository({}).connect())
-      .rejects.toThrow('AuroraRepository requires a "connectionUrl"');
+    await expect(new AuroraRepository({}).connect()).rejects.toThrow(
+      'AuroraRepository requires a "connectionUrl"'
+    );
   });
 
   it('leaves nothing behind when it refuses', async () => {
@@ -708,11 +733,16 @@ describe('the Oracle connection url', () => {
    * it fails to authenticate otherwise, with an error that says nothing about
    * encoding.
    */
-  const parse = (url?: string) => (OracleRepository as unknown as {
-    parseConnectionUrl(connectionUrl?: string): {
-      user?: string; password?: string; connectString?: string;
-    };
-  }).parseConnectionUrl(url);
+  const parse = (url?: string) =>
+    (
+      OracleRepository as unknown as {
+        parseConnectionUrl(connectionUrl?: string): {
+          user?: string;
+          password?: string;
+          connectString?: string;
+        };
+      }
+    ).parseConnectionUrl(url);
 
   it('splits a url into user, password and connect string', () => {
     expect.hasAssertions();
@@ -727,15 +757,17 @@ describe('the Oracle connection url', () => {
   it('decodes a percent-encoded password', () => {
     expect.hasAssertions();
 
-    expect(parse('oracle://scott:p%40ss%2Fword@db.internal:1522/ORCLPDB1').password)
-      .toBe('p@ss/word');
+    expect(parse('oracle://scott:p%40ss%2Fword@db.internal:1522/ORCLPDB1').password).toBe(
+      'p@ss/word'
+    );
   });
 
   it('defaults the port to 1521', () => {
     expect.hasAssertions();
 
-    expect(parse('oracle://scott:tiger@db.internal/ORCLPDB1').connectString)
-      .toBe('db.internal:1521/ORCLPDB1');
+    expect(parse('oracle://scott:tiger@db.internal/ORCLPDB1').connectString).toBe(
+      'db.internal:1521/ORCLPDB1'
+    );
   });
 
   it.each([[undefined], [''], ['   ']])('reads %p as nothing configured', (url) => {
@@ -891,22 +923,24 @@ function withModuleResolver(
 const emptyModule: ModuleResolver = () => ({});
 
 /** Answers `postgres` with a working client and everything else by throwing. */
-const dsqlOnly = (created: Array<Record<string, unknown>>): ModuleResolver => (moduleName) => {
-  if (moduleName.startsWith('@aws/aurora-dsql')) {
-    return {
-      createClient: async (config: Record<string, unknown>) => {
-        created.push(config);
-        return { end: async () => undefined };
-      }
-    };
-  }
-  // Aurora loads `postgres` before it looks for a DSQL connector, so this has
-  // to answer even though the test never reaches the fallback that uses it.
-  if (moduleName === 'postgres') {
-    return { default: () => ({ end: async () => undefined }) };
-  }
-  throw new Error(`not installed: ${moduleName}`);
-};
+const dsqlOnly =
+  (created: Record<string, unknown>[]): ModuleResolver =>
+  (moduleName) => {
+    if (moduleName.startsWith('@aws/aurora-dsql')) {
+      return {
+        createClient: async (config: Record<string, unknown>) => {
+          created.push(config);
+          return { end: async () => undefined };
+        }
+      };
+    }
+    // Aurora loads `postgres` before it looks for a DSQL connector, so this has
+    // to answer even though the test never reaches the fallback that uses it.
+    if (moduleName === 'postgres') {
+      return { default: () => ({ end: async () => undefined }) };
+    }
+    throw new Error(`not installed: ${moduleName}`);
+  };
 
 /** A postgres client exposing `close` rather than `end`, and a count of calls. */
 function postgresWithCloseOnly(): { resolve: ModuleResolver; closes(): number } {
@@ -914,7 +948,13 @@ function postgresWithCloseOnly(): { resolve: ModuleResolver; closes(): number } 
   return {
     resolve: (moduleName) => {
       if (moduleName === 'postgres') {
-        return { default: () => ({ close: async () => { closes += 1; } }) };
+        return {
+          default: () => ({
+            close: async () => {
+              closes += 1;
+            }
+          })
+        };
       }
       throw new Error(`not installed: ${moduleName}`);
     },
@@ -925,7 +965,11 @@ function postgresWithCloseOnly(): { resolve: ModuleResolver; closes(): number } 
 /** Firebase's app module resolves; its firestore module does not carry getFirestore. */
 const firebaseAppOnly: ModuleResolver = (moduleName) => {
   if (moduleName === 'firebase-admin/app') {
-    return { initializeApp: () => ({ name: 'test-app' }), getApps: () => [], cert: (v: unknown) => v };
+    return {
+      initializeApp: () => ({ name: 'test-app' }),
+      getApps: () => [],
+      cert: (v: unknown) => v
+    };
   }
   return {};
 };
@@ -933,16 +977,20 @@ const firebaseAppOnly: ModuleResolver = (moduleName) => {
 /** An oracledb whose `getConnection` records what it was given. */
 function oracleDriver(): {
   resolve: ModuleResolver;
-  received(): Array<Record<string, unknown>>;
+  received(): Record<string, unknown>[];
   closes(): number;
-  } {
-  const received: Array<Record<string, unknown>> = [];
+} {
+  const received: Record<string, unknown>[] = [];
   let closes = 0;
   return {
     resolve: () => ({
       getConnection: async (config: Record<string, unknown>) => {
         received.push(config);
-        return { close: async () => { closes += 1; } };
+        return {
+          close: async () => {
+            closes += 1;
+          }
+        };
       }
     }),
     received: () => received,
@@ -957,20 +1005,19 @@ describe('the guards against a driver that resolves but exports the wrong thing'
     ['oracle', OracleRepository, /getConnection/],
     ['rds', RdsRepository, /Sequelize constructor/],
     ['sequelize', SqlSequelizeRepository, /Sequelize constructor/]
-  ])('%s reports which export it could not resolve', async (
-    _name: string,
-    RepositoryClass: unknown,
-    expected: RegExp
-  ) => {
-    expect.hasAssertions();
+  ])(
+    '%s reports which export it could not resolve',
+    async (_name: string, RepositoryClass: unknown, expected: RegExp) => {
+      expect.hasAssertions();
 
-    const repository = withModuleResolver(RepositoryClass, emptyModule, {
-      connectionUrl: 'postgres://127.0.0.1:59999/x',
-      database: 'x'
-    });
+      const repository = withModuleResolver(RepositoryClass, emptyModule, {
+        connectionUrl: 'postgres://127.0.0.1:59999/x',
+        database: 'x'
+      });
 
-    await expect(repository.connect()).rejects.toThrow(expected);
-  });
+      await expect(repository.connect()).rejects.toThrow(expected);
+    }
+  );
 
   it('firebase reports a missing initializeApp', async () => {
     expect.hasAssertions();
@@ -1004,7 +1051,7 @@ describe('the branches a particular driver shape reaches', () => {
   it('aurora uses the DSQL connector when one resolves', async () => {
     expect.hasAssertions();
 
-    const created: Array<Record<string, unknown>> = [];
+    const created: Record<string, unknown>[] = [];
     const repository = withModuleResolver(AuroraRepository, dsqlOnly(created), {
       region: 'eu-west-1',
       endpoint: 'dsql.example.test',
@@ -1034,11 +1081,9 @@ describe('the branches a particular driver shape reaches', () => {
     expect.hasAssertions();
 
     const driver = postgresWithCloseOnly();
-    const repository = withModuleResolver(
-      AuroraRepository,
-      driver.resolve,
-      { connectionUrl: 'postgres://127.0.0.1:59999/x' }
-    );
+    const repository = withModuleResolver(AuroraRepository, driver.resolve, {
+      connectionUrl: 'postgres://127.0.0.1:59999/x'
+    });
 
     await repository.connect();
     await repository.disconnect();
@@ -1050,16 +1095,15 @@ describe('the branches a particular driver shape reaches', () => {
     expect.hasAssertions();
 
     const driver = oracleDriver();
-    const repository = withModuleResolver(
-      OracleRepository,
-      driver.resolve,
-      { extra: { user: 'scott', password: 'tiger', connectString: 'localhost/XEPDB1' } }
-    );
+    const repository = withModuleResolver(OracleRepository, driver.resolve, {
+      extra: { user: 'scott', password: 'tiger', connectString: 'localhost/XEPDB1' }
+    });
 
     await repository.connect();
 
     expect(driver.received()[0]).toMatchObject({
-      user: 'scott', connectString: 'localhost/XEPDB1'
+      user: 'scott',
+      connectString: 'localhost/XEPDB1'
     });
 
     await repository.disconnect();

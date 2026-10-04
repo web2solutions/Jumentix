@@ -1,31 +1,21 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react';
-import type {
-  CanaChangeEvent,
-  CanaClient,
-  CanaQuery
-} from '@jumentix/cana';
-import {
-  applyCanaEventToRecords,
-  type CanaCollectionOptions,
-  type CanaRecordKeyReader
-} from './collection';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { applyCanaEventToRecords } from './collection';
+
+import type { CanaChangeEvent, CanaClient, CanaQuery } from '@jumentix/cana';
+
+import type { CanaCollectionOptions, CanaRecordKeyReader } from './collection';
 
 export type { CanaCollectionOptions, CanaRecordKeyReader };
 export { applyCanaEventToRecords };
 
 export type CanaHookStatus = 'idle' | 'opening' | 'loading' | 'ready' | 'error';
 
-export type UseCanaClientResult<TClient extends CanaClient> = {
+export interface UseCanaClientResult<TClient extends CanaClient> {
   client: TClient | null;
   status: CanaHookStatus;
   error: unknown;
-};
+}
 
 export function useCanaClient<TClient extends CanaClient>(
   create: () => TClient | Promise<TClient>,
@@ -71,11 +61,11 @@ export function useCanaClient<TClient extends CanaClient>(
   return { client, status, error };
 }
 
-export type UseCanaSubscriptionOptions = {
+export interface UseCanaSubscriptionOptions {
   enabled?: boolean;
   sinceCursor?: number;
   onError?: (error: unknown) => void;
-};
+}
 
 export function useCanaSubscription(
   client: CanaClient | null | undefined,
@@ -99,7 +89,7 @@ export function useCanaSubscription(
   }, [client, options.enabled, options.sinceCursor, options.onError]);
 }
 
-export type UseCanaLiveQueryOptions<TRecord> = {
+export interface UseCanaLiveQueryOptions<TRecord> {
   client: CanaClient | null | undefined;
   store: string;
   query?: CanaQuery;
@@ -108,26 +98,19 @@ export type UseCanaLiveQueryOptions<TRecord> = {
   sort?: (a: TRecord, b: TRecord) => number;
   reloadOnEvent?: boolean;
   onError?: (error: unknown) => void;
-};
+}
 
-export type UseCanaLiveQueryResult<TRecord> = {
+export interface UseCanaLiveQueryResult<TRecord> {
   records: TRecord[];
   status: CanaHookStatus;
   error: unknown;
   reload: () => Promise<TRecord[]>;
-};
+}
 
 export function useCanaLiveQuery<TRecord>(
   options: UseCanaLiveQueryOptions<TRecord>
 ): UseCanaLiveQueryResult<TRecord> {
-  const {
-    client,
-    store,
-    enabled = true,
-    getKey,
-    sort,
-    onError
-  } = options;
+  const { client, store, enabled = true, getKey, sort, onError } = options;
   const queryKey = JSON.stringify(options.query ?? null);
   const query = useMemo(() => options.query, [queryKey]);
   const reloadOnEvent = options.reloadOnEvent ?? Boolean(options.query);
@@ -140,7 +123,7 @@ export function useCanaLiveQuery<TRecord>(
     setStatus('loading');
     setError(null);
     try {
-      const next = [...await client.table<TRecord>(store).query(query)];
+      const next = [...(await client.table<TRecord>(store).query(query))];
       if (sort) next.sort(sort);
       setRecords(next);
       setStatus('ready');

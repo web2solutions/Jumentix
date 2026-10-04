@@ -1,25 +1,28 @@
 'use client';
 
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+
 import { Alert, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { MonacoCodeBlock } from '../code/MonacoCodeBlock';
-import { trimTrailingBlankCodeLines } from '../code/normalizeCode';
-import { getDocsSnippet } from './catalogs';
-import { runDocsSnippet } from './runSnippet';
-import { getRuntime } from './runtimes';
-import type { DocsRuntimeId } from './types';
-import classes from './DocsPlayground.module.css';
-import { docsPlaygroundAnchor } from './anchors';
 
-export type DocsPlaygroundProps = {
+import docsPlaygroundAnchor from './anchors';
+import { getDocsSnippet } from './catalogs';
+import classes from './DocsPlayground.module.css';
+import { runDocsSnippet } from './runSnippet';
+import getRuntime from './runtimes';
+import { MonacoCodeBlock } from '../code/MonacoCodeBlock';
+import trimTrailingBlankCodeLines from '../code/normalizeCode';
+
+import type { DocsRuntimeId } from './types';
+
+export interface DocsPlaygroundProps {
   runtime: DocsRuntimeId;
   id?: string;
   code?: string;
-};
+}
 
 type Locale = 'en' | 'pt-BR';
-type BulkDlqOutput = {
+interface BulkDlqOutput {
   databaseAdapter?: string;
   databaseBackend?: string;
   requestMode?: string;
@@ -49,8 +52,8 @@ type BulkDlqOutput = {
   storageUsageSamples?: IndexedDbStorageSample[];
   totalTimelineEvents?: number;
   totalCanaEvents?: number;
-};
-type BulkDlqTimelineEntry = {
+}
+interface BulkDlqTimelineEntry {
   step?: string;
   taskId?: string;
   recordId?: string;
@@ -58,15 +61,25 @@ type BulkDlqTimelineEntry = {
   categoryId?: string;
   clientId?: string;
   workerId?: string;
-};
-type BulkDlqFlowKind = 'client' | 'context' | 'submitted' | 'accepted' | 'rejected' | 'interrupted' | 'replay' | 'retry' | 'contextReturn' | 'clientReturn';
-type BulkDlqFlowEvent = {
+}
+type BulkDlqFlowKind =
+  | 'client'
+  | 'context'
+  | 'submitted'
+  | 'accepted'
+  | 'rejected'
+  | 'interrupted'
+  | 'replay'
+  | 'retry'
+  | 'contextReturn'
+  | 'clientReturn';
+interface BulkDlqFlowEvent {
   key: string;
   kind: BulkDlqFlowKind;
   taskId: string;
   label: string;
-};
-type BulkDlqFlowState = {
+}
+interface BulkDlqFlowState {
   attempted: number;
   submitted: number;
   accepted: number;
@@ -79,8 +92,8 @@ type BulkDlqFlowState = {
   reactClients: ReactClientSnapshot[];
   events: BulkDlqFlowEvent[];
   hasRun: boolean;
-};
-type CanaCanvasEvent = {
+}
+interface CanaCanvasEvent {
   cursor?: number;
   type?: string;
   store?: string;
@@ -90,29 +103,29 @@ type CanaCanvasEvent = {
   source?: string;
   workerId?: string;
   clientId?: string;
-};
-type ReactClientSnapshot = {
+}
+interface ReactClientSnapshot {
   id?: string;
   taskCount?: number;
   accepted?: number;
   rejected?: number;
   interrupted?: number;
-};
-type CanaWorkerShardSnapshot = {
+}
+interface CanaWorkerShardSnapshot {
   id?: string;
   database?: string;
   status?: string;
   handledRequests?: number;
   events?: number;
-};
-type IndexedDbStorageSample = {
+}
+interface IndexedDbStorageSample {
   label?: string;
   usage?: number;
   quota?: number;
   percent?: number;
   tasks?: number;
-};
-type CanaDatabaseSnapshot = {
+}
+interface CanaDatabaseSnapshot {
   adapter?: string;
   backend?: string;
   indexedDbDatabase?: string;
@@ -127,8 +140,8 @@ type CanaDatabaseSnapshot = {
   };
   categoryIds?: string[];
   taskIds?: string[];
-};
-type CanaCanvasState = {
+}
+interface CanaCanvasState {
   events: CanaCanvasEvent[];
   workers: CanaWorkerShardSnapshot[];
   storageSamples: IndexedDbStorageSample[];
@@ -142,21 +155,21 @@ type CanaCanvasState = {
   categories: number;
   tasks: number;
   hasRun: boolean;
-};
-type RealtimeBulkMetricSample = {
+}
+interface RealtimeBulkMetricSample {
   processed: number;
   rejected: number;
   replayed: number;
   timestamp: number;
-};
-type RealtimeBulkRequestSignal = {
+}
+interface RealtimeBulkRequestSignal {
   taskId: string;
   clientId: string;
   workerId: string;
   phase: string;
   timestamp: number;
-};
-type RealtimeBulkMetrics = {
+}
+interface RealtimeBulkMetrics {
   attempted: number;
   processed: number;
   rejected: number;
@@ -164,7 +177,7 @@ type RealtimeBulkMetrics = {
   phase?: string;
   samples: RealtimeBulkMetricSample[];
   requestSignals: RealtimeBulkRequestSignal[];
-};
+}
 
 function resolveLocale(pathname: string | null): Locale {
   return pathname?.includes('/pt-BR/') ? 'pt-BR' : 'en';
@@ -181,13 +194,7 @@ function formatOutput(value: unknown): string {
 }
 
 function agentMarkdownForCode(title: string, source: string): string {
-  return [
-    `### ${title}`,
-    '',
-    '```ts',
-    trimTrailingBlankCodeLines(source),
-    '```'
-  ].join('\n');
+  return [`### ${title}`, '', '```ts', trimTrailingBlankCodeLines(source), '```'].join('\n');
 }
 
 function parseBulkDlqOutput(output: string): BulkDlqOutput | null {
@@ -228,16 +235,13 @@ function emptyRealtimeMetrics(): RealtimeBulkMetrics {
     rejected: 0,
     replayed: 0,
     samples: [],
-    requestSignals: [],
+    requestSignals: []
   };
 }
 
 function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState {
-  const timeline = Array.isArray(metrics?.requestTimeline)
-    ? metrics.requestTimeline
-    : Array.isArray(metrics?.timeline)
-      ? metrics.timeline
-      : [];
+  const requestTimeline = Array.isArray(metrics?.requestTimeline) ? metrics.requestTimeline : null;
+  const timeline = requestTimeline ?? (Array.isArray(metrics?.timeline) ? metrics.timeline : []);
   const events: BulkDlqFlowEvent[] = [];
 
   for (const [index, entry] of timeline.entries()) {
@@ -247,7 +251,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-client-${entry.clientId ?? 'batch'}`,
         kind: 'client',
         taskId: entry.clientId ?? 'batch',
-        label: `${entry.clientId ?? 'client'} click`,
+        label: `${entry.clientId ?? 'client'} click`
       });
     }
     if (entry.step === 'react-context-submit') {
@@ -255,7 +259,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-context-${entry.clientId ?? 'batch'}`,
         kind: 'context',
         taskId: entry.clientId ?? 'batch',
-        label: `${entry.clientId ?? 'client'} context`,
+        label: `${entry.clientId ?? 'client'} context`
       });
     }
     if (entry.step === 'bulk-import-controller') {
@@ -263,7 +267,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-bulk-controller`,
         kind: 'submitted',
         taskId: 'batch',
-        label: 'bulk controller',
+        label: 'bulk controller'
       });
     }
     if (entry.step === 'controller-create') {
@@ -271,7 +275,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-submitted-${taskId}`,
         kind: 'submitted',
         taskId,
-        label: `submit ${taskId}`,
+        label: `submit ${taskId}`
       });
     }
     if (entry.step === 'lock-acquired') {
@@ -279,7 +283,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-accepted-${taskId}`,
         kind: 'accepted',
         taskId,
-        label: `store ${taskId}`,
+        label: `store ${taskId}`
       });
     }
     if (entry.step === 'dead-letter-listener-received') {
@@ -287,7 +291,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-rejected-${taskId}`,
         kind: 'rejected',
         taskId,
-        label: `reject ${taskId}`,
+        label: `reject ${taskId}`
       });
     }
     if (entry.step === 'client-request-interrupted') {
@@ -295,7 +299,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-interrupted-${taskId}`,
         kind: 'interrupted',
         taskId,
-        label: `interrupt ${taskId}`,
+        label: `interrupt ${taskId}`
       });
     }
     if (entry.step === 'client-ingestion-stopped') {
@@ -303,7 +307,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-stream-stopped-${entry.clientId ?? 'client'}`,
         kind: 'interrupted',
         taskId: entry.clientId ?? 'stream',
-        label: `${entry.clientId ?? 'client'} stopped`,
+        label: `${entry.clientId ?? 'client'} stopped`
       });
     }
     if (entry.step === 'controller-replay') {
@@ -311,13 +315,13 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-replay-${taskId}`,
         kind: 'replay',
         taskId,
-        label: `replay ${taskId}`,
+        label: `replay ${taskId}`
       });
       events.push({
         key: `${index}-retry-${taskId}`,
         kind: 'retry',
         taskId,
-        label: `retry ${taskId}`,
+        label: `retry ${taskId}`
       });
     }
     if (entry.step === 'react-context-complete') {
@@ -325,7 +329,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-context-return-${entry.clientId ?? 'batch'}`,
         kind: 'contextReturn',
         taskId: entry.clientId ?? 'state',
-        label: `${entry.clientId ?? 'client'} state`,
+        label: `${entry.clientId ?? 'client'} state`
       });
     }
     if (entry.step === 'react-component-render') {
@@ -333,7 +337,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
         key: `${index}-client-return-${entry.clientId ?? 'batch'}`,
         kind: 'clientReturn',
         taskId: entry.clientId ?? 'render',
-        label: `${entry.clientId ?? 'client'} render`,
+        label: `${entry.clientId ?? 'client'} render`
       });
     }
   }
@@ -344,9 +348,7 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
       .map((entry) => entry.taskId ?? '')
   );
   const acceptedFromTimeline = uniqueCount(
-    timeline
-      .filter((entry) => entry.step === 'lock-acquired')
-      .map((entry) => entry.taskId ?? '')
+    timeline.filter((entry) => entry.step === 'lock-acquired').map((entry) => entry.taskId ?? '')
   );
   const interruptedFromTimeline = uniqueCount(
     timeline
@@ -376,27 +378,33 @@ function buildBulkDlqFlowState(metrics: BulkDlqOutput | null): BulkDlqFlowState 
     noLostJobs: metrics?.shutdownReport?.noLostJobs ?? false,
     reactClients: Array.isArray(metrics?.reactClients) ? metrics.reactClients : [],
     events,
-    hasRun: Boolean(metrics),
+    hasRun: Boolean(metrics)
   };
 }
 
 function buildCanaCanvasState(metrics: BulkDlqOutput | null): CanaCanvasState {
   const events = Array.isArray(metrics?.canaEvents) ? metrics.canaEvents : [];
   const workers = Array.isArray(metrics?.workerShards) ? metrics.workerShards : [];
-  const storageSamples = Array.isArray(metrics?.storageUsageSamples) ? metrics.storageUsageSamples : [];
+  const storageSamples = Array.isArray(metrics?.storageUsageSamples)
+    ? metrics.storageUsageSamples
+    : [];
   const snapshot = metrics?.databaseSnapshot;
-  const categoriesFromEvents = uniqueCount(events
-    .filter((event) => event.store === 'categories')
-    .map((event) => String(event.key ?? event.categoryId ?? '')));
-  const tasksFromEvents = uniqueCount(events
-    .filter((event) => event.store === 'tasks')
-    .map((event) => String(event.key ?? event.taskId ?? '')));
+  const categoriesFromEvents = uniqueCount(
+    events
+      .filter((event) => event.store === 'categories')
+      .map((event) => String(event.key ?? event.categoryId ?? ''))
+  );
+  const tasksFromEvents = uniqueCount(
+    events
+      .filter((event) => event.store === 'tasks')
+      .map((event) => String(event.key ?? event.taskId ?? ''))
+  );
   const latestStorage = storageSamples[storageSamples.length - 1];
   const quotaBytes = Number(latestStorage?.quota ?? 0);
   const quotaUsageBytes = Number(latestStorage?.usage ?? 0);
-  const quotaUsagePercent = Number(latestStorage?.percent ?? (
-    quotaBytes > 0 ? (quotaUsageBytes / quotaBytes) * 100 : 0
-  ));
+  const quotaUsagePercent = Number(
+    latestStorage?.percent ?? (quotaBytes > 0 ? (quotaUsageBytes / quotaBytes) * 100 : 0)
+  );
 
   return {
     events,
@@ -411,17 +419,17 @@ function buildCanaCanvasState(metrics: BulkDlqOutput | null): CanaCanvasState {
     queueDrained: metrics?.shutdownReport?.deadLetterQueueFullyProcessed ?? false,
     categories: snapshot?.stores?.categories ?? categoriesFromEvents,
     tasks: snapshot?.stores?.tasks ?? tasksFromEvents,
-    hasRun: Boolean(metrics),
+    hasRun: Boolean(metrics)
   };
 }
 
-function BulkDlqMetricsCharts({
+const BulkDlqMetricsCharts = ({
   metrics,
   flowState,
   canaState,
   liveMetrics,
   locale,
-  testId,
+  testId
 }: {
   metrics: BulkDlqOutput | null;
   flowState: BulkDlqFlowState;
@@ -429,7 +437,7 @@ function BulkDlqMetricsCharts({
   liveMetrics: RealtimeBulkMetrics;
   locale: Locale;
   testId: string;
-}) {
+}) => {
   const hasFinalMetrics = flowState.hasRun;
   const attempted = hasFinalMetrics
     ? flowState.attempted
@@ -442,23 +450,73 @@ function BulkDlqMetricsCharts({
   const rejected = hasFinalMetrics ? flowState.rejected : liveMetrics.rejected;
   const interrupted = hasFinalMetrics ? flowState.interrupted : 0;
   const replayed = hasFinalMetrics ? flowState.replayed : liveMetrics.replayed;
-  const finalTaskCount = hasFinalMetrics ? flowState.finalTaskCount : liveMetrics.processed + liveMetrics.replayed;
-  const durationSeconds = Math.max(1, Number(metrics?.actualRunDurationMs ?? metrics?.streamDurationMs ?? 30000) / 1000);
+  const finalTaskCount = hasFinalMetrics
+    ? flowState.finalTaskCount
+    : liveMetrics.processed + liveMetrics.replayed;
+  const durationSeconds = Math.max(
+    1,
+    Number(metrics?.actualRunDurationMs ?? metrics?.streamDurationMs ?? 30000) / 1000
+  );
   const throughput = attempted / durationSeconds;
   const outcomeBars = [
-    { key: 'accepted', label: locale === 'pt-BR' ? 'Criadas direto' : 'Created directly', value: accepted, tone: 'accepted' },
+    {
+      key: 'accepted',
+      label: locale === 'pt-BR' ? 'Criadas direto' : 'Created directly',
+      value: accepted,
+      tone: 'accepted'
+    },
     { key: 'rejected', label: 'Lock -> DLQ', value: rejected, tone: 'rejected' },
-    { key: 'interrupted', label: locale === 'pt-BR' ? 'Interrompidas' : 'Interrupted', value: interrupted, tone: 'interrupted' },
-    { key: 'replayed', label: locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed', value: replayed, tone: 'replay' },
+    {
+      key: 'interrupted',
+      label: locale === 'pt-BR' ? 'Interrompidas' : 'Interrupted',
+      value: interrupted,
+      tone: 'interrupted'
+    },
+    {
+      key: 'replayed',
+      label: locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed',
+      value: replayed,
+      tone: 'replay'
+    }
   ];
   const comparisonTotal = Math.max(1, attempted, finalTaskCount, replayed);
   const comparisonBars = [
-    { key: 'attempted', label: locale === 'pt-BR' ? 'Entrada total' : 'Total input', value: attempted, tone: 'cana' },
-    { key: 'admitted', label: locale === 'pt-BR' ? 'Admitidas no controller' : 'Controller admitted', value: submitted, tone: 'cana' },
-    { key: 'direct', label: locale === 'pt-BR' ? 'Criadas sem retry' : 'Created without retry', value: accepted, tone: 'accepted' },
-    { key: 'dlq', label: locale === 'pt-BR' ? 'Rejeitadas para DLQ' : 'Rejected to DLQ', value: rejected, tone: 'rejected' },
-    { key: 'replayed', label: locale === 'pt-BR' ? 'Recuperadas por replay' : 'Recovered by replay', value: replayed, tone: 'replay' },
-    { key: 'final', label: locale === 'pt-BR' ? 'Persistidas no IndexedDB' : 'Persisted in IndexedDB', value: finalTaskCount, tone: 'accepted' },
+    {
+      key: 'attempted',
+      label: locale === 'pt-BR' ? 'Entrada total' : 'Total input',
+      value: attempted,
+      tone: 'cana'
+    },
+    {
+      key: 'admitted',
+      label: locale === 'pt-BR' ? 'Admitidas no controller' : 'Controller admitted',
+      value: submitted,
+      tone: 'cana'
+    },
+    {
+      key: 'direct',
+      label: locale === 'pt-BR' ? 'Criadas sem retry' : 'Created without retry',
+      value: accepted,
+      tone: 'accepted'
+    },
+    {
+      key: 'dlq',
+      label: locale === 'pt-BR' ? 'Rejeitadas para DLQ' : 'Rejected to DLQ',
+      value: rejected,
+      tone: 'rejected'
+    },
+    {
+      key: 'replayed',
+      label: locale === 'pt-BR' ? 'Recuperadas por replay' : 'Recovered by replay',
+      value: replayed,
+      tone: 'replay'
+    },
+    {
+      key: 'final',
+      label: locale === 'pt-BR' ? 'Persistidas no IndexedDB' : 'Persisted in IndexedDB',
+      value: finalTaskCount,
+      tone: 'accepted'
+    }
   ];
   const firstPassTotal = Math.max(1, accepted + rejected + interrupted);
   const unresolvedAfterReplay = Math.max(0, rejected - replayed);
@@ -468,72 +526,132 @@ function BulkDlqMetricsCharts({
   const recoveryRate = percentOf(replayed, Math.max(1, rejected));
   const persistedRate = percentOf(finalTaskCount, comparisonTotal);
   const firstPassSegments = [
-    { key: 'accepted', label: locale === 'pt-BR' ? 'aceitas' : 'accepted', value: accepted, tone: 'accepted' },
-    { key: 'rejected', label: locale === 'pt-BR' ? 'lock rejeitou' : 'lock rejected', value: rejected, tone: 'rejected' },
-    { key: 'interrupted', label: locale === 'pt-BR' ? 'interrompidas' : 'interrupted', value: interrupted, tone: 'interrupted' },
+    {
+      key: 'accepted',
+      label: locale === 'pt-BR' ? 'aceitas' : 'accepted',
+      value: accepted,
+      tone: 'accepted'
+    },
+    {
+      key: 'rejected',
+      label: locale === 'pt-BR' ? 'lock rejeitou' : 'lock rejected',
+      value: rejected,
+      tone: 'rejected'
+    },
+    {
+      key: 'interrupted',
+      label: locale === 'pt-BR' ? 'interrompidas' : 'interrupted',
+      value: interrupted,
+      tone: 'interrupted'
+    }
   ];
   const finalOutcomeSegments = [
-    { key: 'persisted', label: locale === 'pt-BR' ? 'persistidas' : 'persisted', value: finalTaskCount, tone: 'accepted' },
+    {
+      key: 'persisted',
+      label: locale === 'pt-BR' ? 'persistidas' : 'persisted',
+      value: finalTaskCount,
+      tone: 'accepted'
+    },
     { key: 'recovered', label: 'via replay', value: replayed, tone: 'replay' },
-    { key: 'unresolved', label: locale === 'pt-BR' ? 'não recuperadas' : 'not recovered', value: unresolvedAfterReplay, tone: 'rejected' },
-    { key: 'interrupted', label: locale === 'pt-BR' ? 'interrompidas' : 'interrupted', value: interrupted, tone: 'interrupted' },
+    {
+      key: 'unresolved',
+      label: locale === 'pt-BR' ? 'não recuperadas' : 'not recovered',
+      value: unresolvedAfterReplay,
+      tone: 'rejected'
+    },
+    {
+      key: 'interrupted',
+      label: locale === 'pt-BR' ? 'interrompidas' : 'interrupted',
+      value: interrupted,
+      tone: 'interrupted'
+    }
   ];
-  const maxClientTotal = Math.max(1, ...flowState.reactClients.map((client) => Number(client.taskCount ?? 0)));
-  const maxWorkerTotal = Math.max(1, ...canaState.workers.map((worker) => Number(worker.handledRequests ?? 0)));
+  const maxClientTotal = Math.max(
+    1,
+    ...flowState.reactClients.map((client) => Number(client.taskCount ?? 0))
+  );
+  const maxWorkerTotal = Math.max(
+    1,
+    ...canaState.workers.map((worker) => Number(worker.handledRequests ?? 0))
+  );
   const samples = canaState.storageSamples.length > 0 ? canaState.storageSamples : [{ percent: 0 }];
-  const liveSamples = liveMetrics.samples.length > 0
-    ? liveMetrics.samples
-    : [{
-        processed: liveMetrics.processed || flowState.accepted,
-        rejected: liveMetrics.rejected || flowState.rejected,
-        replayed: liveMetrics.replayed || flowState.replayed,
-        timestamp: Date.now()
-      }];
+  const liveSamples =
+    liveMetrics.samples.length > 0
+      ? liveMetrics.samples
+      : [
+          {
+            processed: liveMetrics.processed || flowState.accepted,
+            rejected: liveMetrics.rejected || flowState.rejected,
+            replayed: liveMetrics.replayed || flowState.replayed,
+            timestamp: 0
+          }
+        ];
   const maxLiveValue = Math.max(
     1,
     ...liveSamples.flatMap((sample) => [sample.processed, sample.rejected, sample.replayed])
   );
-  const liveLinePoints = (field: keyof Pick<RealtimeBulkMetricSample, 'processed' | 'rejected' | 'replayed'>) => (
-    liveSamples.map((sample, index) => {
-      const x = (index / Math.max(liveSamples.length - 1, 1)) * 100;
-      const y = 42 - (Math.min(maxLiveValue, Math.max(0, Number(sample[field] ?? 0))) / maxLiveValue) * 36;
+  const liveLinePoints = (
+    field: keyof Pick<RealtimeBulkMetricSample, 'processed' | 'rejected' | 'replayed'>
+  ) =>
+    liveSamples
+      .map((sample, index) => {
+        const x = (index / Math.max(liveSamples.length - 1, 1)) * 100;
+        const y =
+          42 -
+          (Math.min(maxLiveValue, Math.max(0, Number(sample[field] ?? 0))) / maxLiveValue) * 36;
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(' ');
+  const samplePoints = samples
+    .map((sample, index) => {
+      const x = (index / Math.max(samples.length - 1, 1)) * 100;
+      const y = 40 - (Math.min(100, Math.max(0, Number(sample.percent ?? 0))) / 100) * 34;
       return `${x.toFixed(2)},${y.toFixed(2)}`;
-    }).join(' ')
-  );
-  const samplePoints = samples.map((sample, index) => {
-    const x = (index / Math.max(samples.length - 1, 1)) * 100;
-    const y = 40 - (Math.min(100, Math.max(0, Number(sample.percent ?? 0))) / 100) * 34;
-    return `${x.toFixed(2)},${y.toFixed(2)}`;
-  }).join(' ');
+    })
+    .join(' ');
   const healthBars = [
     {
       label: locale === 'pt-BR' ? 'DLQ drenada' : 'DLQ drained',
       value: flowState.dlqProcessed ? 100 : 0,
       text: flowState.dlqProcessed ? 'yes' : 'no',
-      tone: flowState.dlqProcessed ? 'accepted' : 'rejected',
+      tone: flowState.dlqProcessed ? 'accepted' : 'rejected'
     },
     {
       label: locale === 'pt-BR' ? 'Sem jobs perdidos' : 'No lost jobs',
       value: flowState.noLostJobs ? 100 : 0,
       text: flowState.noLostJobs ? 'yes' : 'no',
-      tone: flowState.noLostJobs ? 'accepted' : 'rejected',
-    },
+      tone: flowState.noLostJobs ? 'accepted' : 'rejected'
+    }
   ];
 
   return (
     <section className={classes.metricsCharts} data-testid={`${testId}-metrics-charts`}>
       <article className={classes.metricsChart}>
         <h6>{locale === 'pt-BR' ? 'Fluxo realtime' : 'Realtime flow'}</h6>
-        <svg className={classes.realtimeChart} viewBox="0 0 100 46" role="img" aria-label="processed rejected replayed realtime chart">
+        <svg
+          aria-label="processed rejected replayed realtime chart"
+          className={classes.realtimeChart}
+          role="img"
+          viewBox="0 0 100 46"
+        >
           <path d="M 0 42 H 100" />
           <polyline data-tone="processed" points={liveLinePoints('processed')} />
           <polyline data-tone="rejected" points={liveLinePoints('rejected')} />
           <polyline data-tone="replayed" points={liveLinePoints('replayed')} />
         </svg>
         <div className={classes.realtimeTotals}>
-          <span><i data-tone="processed" />processed <b>{formatCount(liveMetrics.processed || flowState.accepted)}</b></span>
-          <span><i data-tone="rejected" />rejected <b>{formatCount(liveMetrics.rejected || flowState.rejected)}</b></span>
-          <span><i data-tone="replayed" />replayed <b>{formatCount(liveMetrics.replayed || flowState.replayed)}</b></span>
+          <span>
+            <i data-tone="processed" />
+            processed <b>{formatCount(liveMetrics.processed || flowState.accepted)}</b>
+          </span>
+          <span>
+            <i data-tone="rejected" />
+            rejected <b>{formatCount(liveMetrics.rejected || flowState.rejected)}</b>
+          </span>
+          <span>
+            <i data-tone="replayed" />
+            replayed <b>{formatCount(liveMetrics.replayed || flowState.replayed)}</b>
+          </span>
         </div>
       </article>
 
@@ -557,7 +675,11 @@ function BulkDlqMetricsCharts({
             <strong>{persistedRate.toFixed(1)}%</strong>
           </span>
         </div>
-        <div className={classes.comparisonFunnel} role="img" aria-label="pipeline comparison stacked bars">
+        <div
+          aria-label="pipeline comparison stacked bars"
+          className={classes.comparisonFunnel}
+          role="img"
+        >
           <div className={classes.comparisonFunnelRow}>
             <span>{locale === 'pt-BR' ? 'Primeira passagem pelo lock' : 'First lock pass'}</span>
             <div className={classes.comparisonRail}>
@@ -572,7 +694,9 @@ function BulkDlqMetricsCharts({
             </div>
           </div>
           <div className={classes.comparisonFunnelRow}>
-            <span>{locale === 'pt-BR' ? 'Estado final depois do replay' : 'Final state after replay'}</span>
+            <span>
+              {locale === 'pt-BR' ? 'Estado final depois do replay' : 'Final state after replay'}
+            </span>
             <div className={classes.comparisonRail}>
               {finalOutcomeSegments.map((segment) => (
                 <i
@@ -599,7 +723,9 @@ function BulkDlqMetricsCharts({
             return (
               <div key={bar.key} className={classes.metricBarRow}>
                 <span>{bar.label}</span>
-                <b>{formatCount(bar.value)} · {width.toFixed(1)}%</b>
+                <b>
+                  {formatCount(bar.value)} · {width.toFixed(1)}%
+                </b>
                 <i data-tone={bar.tone} style={{ width: `${width}%` }} />
               </div>
             );
@@ -615,7 +741,10 @@ function BulkDlqMetricsCharts({
       <article className={classes.metricsChart}>
         <h6>Throughput</h6>
         <strong>{formatCount(throughput)} req/s</strong>
-        <span>{formatCount(attempted)} {locale === 'pt-BR' ? 'requisições em' : 'requests in'} {durationSeconds.toFixed(1)}s</span>
+        <span>
+          {formatCount(attempted)} {locale === 'pt-BR' ? 'requisições em' : 'requests in'}{' '}
+          {durationSeconds.toFixed(1)}s
+        </span>
       </article>
 
       <article className={classes.metricsChart}>
@@ -625,7 +754,12 @@ function BulkDlqMetricsCharts({
             <div key={bar.key} className={classes.metricBarRow}>
               <span>{bar.label}</span>
               <b>{formatCount(bar.value)}</b>
-              <i data-tone={bar.tone} style={{ width: `${percentOf(bar.value, Math.max(attempted, flowState.replayed))}%` }} />
+              <i
+                data-tone={bar.tone}
+                style={{
+                  width: `${percentOf(bar.value, Math.max(attempted, flowState.replayed))}%`
+                }}
+              />
             </div>
           ))}
         </div>
@@ -634,16 +768,18 @@ function BulkDlqMetricsCharts({
       <article className={classes.metricsChart}>
         <h6>{locale === 'pt-BR' ? 'Clientes React' : 'React clients'}</h6>
         <div className={classes.barList}>
-          {flowState.reactClients.length > 0 ? flowState.reactClients.map((client) => {
-            const total = Number(client.taskCount ?? 0);
-            return (
-              <div key={client.id ?? total} className={classes.metricBarRow}>
-                <span>{client.id ?? 'client'}</span>
-                <b>{formatCount(total)}</b>
-                <i data-tone="cana" style={{ width: `${percentOf(total, maxClientTotal)}%` }} />
-              </div>
-            );
-          }) : (
+          {flowState.reactClients.length > 0 ? (
+            flowState.reactClients.map((client) => {
+              const total = Number(client.taskCount ?? 0);
+              return (
+                <div key={client.id ?? total} className={classes.metricBarRow}>
+                  <span>{client.id ?? 'client'}</span>
+                  <b>{formatCount(total)}</b>
+                  <i data-tone="cana" style={{ width: `${percentOf(total, maxClientTotal)}%` }} />
+                </div>
+              );
+            })
+          ) : (
             <div className={classes.metricBarRow}>
               <span>{locale === 'pt-BR' ? 'Aguardando execução' : 'Waiting for run'}</span>
               <b>0</b>
@@ -656,16 +792,18 @@ function BulkDlqMetricsCharts({
       <article className={classes.metricsChart}>
         <h6>{locale === 'pt-BR' ? 'Workers do Cana' : 'Cana workers'}</h6>
         <div className={classes.barList}>
-          {canaState.workers.length > 0 ? canaState.workers.map((worker) => {
-            const total = Number(worker.handledRequests ?? 0);
-            return (
-              <div key={worker.id ?? total} className={classes.metricBarRow}>
-                <span>{worker.id ?? 'worker'}</span>
-                <b>{formatCount(total)}</b>
-                <i data-tone="replay" style={{ width: `${percentOf(total, maxWorkerTotal)}%` }} />
-              </div>
-            );
-          }) : (
+          {canaState.workers.length > 0 ? (
+            canaState.workers.map((worker) => {
+              const total = Number(worker.handledRequests ?? 0);
+              return (
+                <div key={worker.id ?? total} className={classes.metricBarRow}>
+                  <span>{worker.id ?? 'worker'}</span>
+                  <b>{formatCount(total)}</b>
+                  <i data-tone="replay" style={{ width: `${percentOf(total, maxWorkerTotal)}%` }} />
+                </div>
+              );
+            })
+          ) : (
             <div className={classes.metricBarRow}>
               <span>{locale === 'pt-BR' ? 'Aguardando workers' : 'Waiting for workers'}</span>
               <b>0</b>
@@ -677,11 +815,18 @@ function BulkDlqMetricsCharts({
 
       <article className={classes.metricsChart}>
         <h6>IndexedDB quota</h6>
-        <svg className={classes.quotaChart} viewBox="0 0 100 44" role="img" aria-label="IndexedDB quota chart">
+        <svg
+          aria-label="IndexedDB quota chart"
+          className={classes.quotaChart}
+          role="img"
+          viewBox="0 0 100 44"
+        >
           <path d="M 0 40 H 100" />
           <polyline points={samplePoints} />
         </svg>
-        <span>{canaState.quotaUsagePercent.toFixed(4)}% · {formatBytes(canaState.quotaUsageBytes)}</span>
+        <span>
+          {canaState.quotaUsagePercent.toFixed(4)}% · {formatBytes(canaState.quotaUsageBytes)}
+        </span>
       </article>
 
       <article className={classes.metricsChart}>
@@ -698,21 +843,21 @@ function BulkDlqMetricsCharts({
       </article>
     </section>
   );
-}
+};
 
-function BulkDeadLetterFlowCanvas({
+const BulkDeadLetterFlowCanvas = ({
   output,
   running,
   liveMetrics,
   locale,
-  testId,
+  testId
 }: {
   output: string;
   running: boolean;
   liveMetrics: RealtimeBulkMetrics;
   locale: Locale;
   testId: string;
-}) {
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const metrics = useMemo(() => parseBulkDlqOutput(output), [output]);
   const flowState = useMemo(() => buildBulkDlqFlowState(metrics), [metrics]);
@@ -746,7 +891,7 @@ function BulkDeadLetterFlowCanvas({
       { id: 'table', label: 'Table API', x: 855, y: 145 },
       { id: 'indexeddb', label: 'IndexedDB', x: 855, y: 300 },
       { id: 'events', label: 'Change Events', x: 700, y: 390 },
-      { id: 'subscriber', label: 'Canvas Subscriber', x: 540, y: 390 },
+      { id: 'subscriber', label: 'Canvas Subscriber', x: 540, y: 390 }
     ];
     const nodeById = new Map(nodes.map((node) => [node.id, node]));
     const node = (id: string) => nodeById.get(id) ?? nodes[1];
@@ -762,12 +907,15 @@ function BulkDeadLetterFlowCanvas({
       if (workerId.endsWith('-c')) return node('worker-c');
       return node('worker-b');
     };
-    const flowRoutes: Record<BulkDlqFlowKind, {
-      from: { x: number; y: number };
-      to: { x: number; y: number };
-      color: string;
-      label: string;
-    }> = {
+    const flowRoutes: Record<
+      BulkDlqFlowKind,
+      {
+        from: { x: number; y: number };
+        to: { x: number; y: number };
+        color: string;
+        label: string;
+      }
+    > = {
       client: { from: nodes[1], to: nodes[3], color: '#38bdf8', label: 'component click' },
       context: { from: nodes[3], to: nodes[4], color: '#38bdf8', label: 'context action' },
       submitted: { from: nodes[4], to: nodes[5], color: '#2563eb', label: 'controller request' },
@@ -777,12 +925,12 @@ function BulkDeadLetterFlowCanvas({
       replay: { from: nodes[10], to: nodes[11], color: '#ea580c', label: 'dlq event' },
       retry: { from: nodes[11], to: nodes[4], color: '#ea580c', label: 'controller retry' },
       contextReturn: { from: nodes[4], to: nodes[3], color: '#a78bfa', label: 'context state' },
-      clientReturn: { from: nodes[3], to: nodes[1], color: '#a78bfa', label: 'component render' },
+      clientReturn: { from: nodes[3], to: nodes[1], color: '#a78bfa', label: 'component render' }
     };
     const mediatorRoutes = [
       { from: nodes[9], to: nodes[10], color: '#fb7185', label: 'dead-letter.enqueued' },
       { from: nodes[10], to: nodes[11], color: '#ea580c', label: 'replay dispatch' },
-      { from: nodes[10], to: nodes[14], color: '#f59e0b', label: 'publish/subscribe' },
+      { from: nodes[10], to: nodes[14], color: '#f59e0b', label: 'publish/subscribe' }
     ];
     const canaRoutes = [
       { from: nodes[6], to: nodes[12], color: '#a78bfa', label: 'worker shard' },
@@ -791,24 +939,25 @@ function BulkDeadLetterFlowCanvas({
       { from: nodes[12], to: nodes[13], color: '#22c55e', label: 'store commit' },
       { from: nodes[13], to: nodes[14], color: '#f59e0b', label: 'commit event' },
       { from: nodes[14], to: nodes[15], color: '#f59e0b', label: 'subscribe()' },
-      { from: nodes[15], to: nodes[3], color: '#a78bfa', label: 'render state' },
+      { from: nodes[15], to: nodes[3], color: '#a78bfa', label: 'render state' }
     ];
     const activeKinds = new Set(flowState.events.map((event) => event.kind));
-    const animationsActive = running || !flowState.hasRun || !flowState.dlqProcessed || !canaState.queueDrained;
+    const animationsActive =
+      running || !flowState.hasRun || !flowState.dlqProcessed || !canaState.queueDrained;
     const liveRequestSignals = liveMetrics.requestSignals.slice(-260);
     const recentLiveSignals = liveMetrics.requestSignals.slice(-900);
     const liveActivePhases = new Set(recentLiveSignals.map((signal) => signal.phase));
-    const liveRejectedSignals = recentLiveSignals.filter((signal) => signal.phase === 'rejected').slice(-120);
+    const liveRejectedSignals = recentLiveSignals
+      .filter((signal) => signal.phase === 'rejected')
+      .slice(-120);
     const liveCanaSignals = recentLiveSignals
       .filter((signal) => signal.phase === 'processed' || signal.phase === 'replayed')
       .slice(-180);
     const dlqLiveActive = running && (liveMetrics.rejected > 0 || liveRejectedSignals.length > 0);
     const replayLiveActive = liveMetrics.replayed > 0 || liveActivePhases.has('replayed');
-    const storageLiveActive = running && (
-      liveMetrics.processed > 0
-      || liveMetrics.replayed > 0
-      || liveCanaSignals.length > 0
-    );
+    const storageLiveActive =
+      running &&
+      (liveMetrics.processed > 0 || liveMetrics.replayed > 0 || liveCanaSignals.length > 0);
 
     const resize = () => {
       const ratio = window.devicePixelRatio || 1;
@@ -858,7 +1007,7 @@ function BulkDeadLetterFlowCanvas({
     ) => {
       const pulseCount = Math.max(1, Math.min(count, 18));
       for (let index = 0; index < pulseCount; index += 1) {
-        const progress = ((timeOffset / 1050) + index / pulseCount) % 1;
+        const progress = (timeOffset / 1050 + index / pulseCount) % 1;
         const x = from.x + (to.x - from.x) * progress;
         const y = from.y + (to.y - from.y) * progress;
         context.globalAlpha = 0.38 + progress * 0.44;
@@ -880,31 +1029,29 @@ function BulkDeadLetterFlowCanvas({
         from: node(fromId),
         to: node(toId),
         color,
-        label,
+        label
       });
-      const phase = signal.phase;
+      const { phase } = signal;
       if (phase === 'submitted') {
         return [
           { from: sourceClient, to: node('context'), color: '#38bdf8', label: 'client -> context' },
           route('context', 'controller', '#38bdf8', 'context -> controller'),
-          route('controller', 'mutex', '#2563eb', 'controller -> mutex'),
+          route('controller', 'mutex', '#2563eb', 'controller -> mutex')
         ];
       }
       if (phase === 'accepted') {
-        return [
-          route('mutex', targetWorker.id, '#16a34a', 'lock -> worker'),
-        ];
+        return [route('mutex', targetWorker.id, '#16a34a', 'lock -> worker')];
       }
       if (phase === 'rejected') {
         return [
           route('mutex', 'dlq', '#dc2626', 'lock -> DLQ'),
-          route('dlq', 'mediator', '#fb7185', 'DLQ -> mediator'),
+          route('dlq', 'mediator', '#fb7185', 'DLQ -> mediator')
         ];
       }
       if (phase === 'interrupted') {
         return [
           route('controller', 'context', '#facc15', 'controller -> context'),
-          { from: node('context'), to: targetClient, color: '#facc15', label: 'context -> client' },
+          { from: node('context'), to: targetClient, color: '#facc15', label: 'context -> client' }
         ];
       }
       if (phase === 'replayed') {
@@ -919,7 +1066,7 @@ function BulkDeadLetterFlowCanvas({
           route('indexeddb', 'events', '#f59e0b', 'IndexedDB -> events'),
           route('events', 'subscriber', '#f59e0b', 'events -> subscriber'),
           route('subscriber', 'context', '#a78bfa', 'subscriber -> context'),
-          { from: node('context'), to: targetClient, color: '#a78bfa', label: 'context -> client' },
+          { from: node('context'), to: targetClient, color: '#a78bfa', label: 'context -> client' }
         ];
       }
       return [
@@ -928,7 +1075,7 @@ function BulkDeadLetterFlowCanvas({
         route('indexeddb', 'events', '#f59e0b', 'IndexedDB -> events'),
         route('events', 'subscriber', '#f59e0b', 'events -> subscriber'),
         route('subscriber', 'context', '#a78bfa', 'subscriber -> context'),
-        { from: node('context'), to: targetClient, color: '#a78bfa', label: 'context -> client' },
+        { from: node('context'), to: targetClient, color: '#a78bfa', label: 'context -> client' }
       ];
     };
 
@@ -942,7 +1089,10 @@ function BulkDeadLetterFlowCanvas({
       const designWidth = 930;
       const designHeight = 445;
       const flowViewportHeight = Math.max(360, height - 145);
-      const flowScale = Math.max(0.36, Math.min((width - 24) / designWidth, flowViewportHeight / designHeight, 1));
+      const flowScale = Math.max(
+        0.36,
+        Math.min((width - 24) / designWidth, flowViewportHeight / designHeight, 1)
+      );
       const flowOffsetX = Math.max(12, (width - designWidth * flowScale) / 2);
       context.save();
       context.translate(flowOffsetX, 14);
@@ -979,11 +1129,12 @@ function BulkDeadLetterFlowCanvas({
 
       context.font = '700 12px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
       Object.entries(flowRoutes).forEach(([kind, flow]) => {
-        const active = activeKinds.has(kind as BulkDlqFlowKind)
-          || liveActivePhases.has(kind)
-          || (kind === 'rejected' && dlqLiveActive)
-          || (kind === 'replay' && replayLiveActive)
-          || (kind === 'accepted' && liveActivePhases.has('processed'));
+        const active =
+          activeKinds.has(kind as BulkDlqFlowKind) ||
+          liveActivePhases.has(kind) ||
+          (kind === 'rejected' && dlqLiveActive) ||
+          (kind === 'replay' && replayLiveActive) ||
+          (kind === 'accepted' && liveActivePhases.has('processed'));
         drawArrow(flow.from, flow.to, flow.color, active);
       });
       canaRoutes.forEach((route) => {
@@ -991,31 +1142,94 @@ function BulkDeadLetterFlowCanvas({
         drawArrow(route.from, route.to, route.color, active);
       });
       mediatorRoutes.forEach((route) => {
-        const active = route.label === 'dead-letter.enqueued'
-          ? dlqLiveActive || activeKinds.has('rejected')
-          : route.label === 'replay dispatch'
-            ? replayLiveActive || activeKinds.has('replay')
-            : activeKinds.has('accepted') || canaState.hasRun || liveActivePhases.has('processed') || storageLiveActive;
+        let active =
+          activeKinds.has('accepted') ||
+          canaState.hasRun ||
+          liveActivePhases.has('processed') ||
+          storageLiveActive;
+        if (route.label === 'dead-letter.enqueued') {
+          active = dlqLiveActive || activeKinds.has('rejected');
+        } else if (route.label === 'replay dispatch') {
+          active = replayLiveActive || activeKinds.has('replay');
+        }
         drawArrow(route.from, route.to, route.color, active);
       });
 
       if (dlqLiveActive) {
-        drawTrafficPulse(node('mutex'), node('dlq'), '#dc2626', Math.max(6, Math.ceil(liveRejectedSignals.length / 12)), time);
-        drawTrafficPulse(node('dlq'), node('mediator'), '#fb7185', Math.max(4, Math.ceil(liveRejectedSignals.length / 18)), time + 360);
+        drawTrafficPulse(
+          node('mutex'),
+          node('dlq'),
+          '#dc2626',
+          Math.max(6, Math.ceil(liveRejectedSignals.length / 12)),
+          time
+        );
+        drawTrafficPulse(
+          node('dlq'),
+          node('mediator'),
+          '#fb7185',
+          Math.max(4, Math.ceil(liveRejectedSignals.length / 18)),
+          time + 360
+        );
         context.fillStyle = '#fecaca';
         context.font = '900 11px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
         context.textAlign = 'center';
-        context.fillText(`receiving ${formatCount(liveMetrics.rejected)}`, node('dlq').x, node('dlq').y + 38);
+        context.fillText(
+          `receiving ${formatCount(liveMetrics.rejected)}`,
+          node('dlq').x,
+          node('dlq').y + 38
+        );
       }
       if (storageLiveActive) {
         const storagePulseCount = Math.max(5, Math.ceil(liveCanaSignals.length / 14));
-        drawTrafficPulse(node('worker-a'), node('table'), '#a78bfa', Math.ceil(storagePulseCount / 3), time + 90);
-        drawTrafficPulse(node('worker-b'), node('table'), '#a78bfa', Math.ceil(storagePulseCount / 3), time + 260);
-        drawTrafficPulse(node('worker-c'), node('table'), '#a78bfa', Math.ceil(storagePulseCount / 3), time + 430);
-        drawTrafficPulse(node('table'), node('indexeddb'), '#22c55e', storagePulseCount, time + 180);
-        drawTrafficPulse(node('indexeddb'), node('events'), '#f59e0b', storagePulseCount, time + 360);
-        drawTrafficPulse(node('events'), node('subscriber'), '#f59e0b', Math.ceil(storagePulseCount / 2), time + 520);
-        drawTrafficPulse(node('subscriber'), node('context'), '#a78bfa', Math.ceil(storagePulseCount / 2), time + 680);
+        drawTrafficPulse(
+          node('worker-a'),
+          node('table'),
+          '#a78bfa',
+          Math.ceil(storagePulseCount / 3),
+          time + 90
+        );
+        drawTrafficPulse(
+          node('worker-b'),
+          node('table'),
+          '#a78bfa',
+          Math.ceil(storagePulseCount / 3),
+          time + 260
+        );
+        drawTrafficPulse(
+          node('worker-c'),
+          node('table'),
+          '#a78bfa',
+          Math.ceil(storagePulseCount / 3),
+          time + 430
+        );
+        drawTrafficPulse(
+          node('table'),
+          node('indexeddb'),
+          '#22c55e',
+          storagePulseCount,
+          time + 180
+        );
+        drawTrafficPulse(
+          node('indexeddb'),
+          node('events'),
+          '#f59e0b',
+          storagePulseCount,
+          time + 360
+        );
+        drawTrafficPulse(
+          node('events'),
+          node('subscriber'),
+          '#f59e0b',
+          Math.ceil(storagePulseCount / 2),
+          time + 520
+        );
+        drawTrafficPulse(
+          node('subscriber'),
+          node('context'),
+          '#a78bfa',
+          Math.ceil(storagePulseCount / 2),
+          time + 680
+        );
         context.fillStyle = '#bbf7d0';
         context.font = '900 11px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
         context.textAlign = 'center';
@@ -1026,70 +1240,73 @@ function BulkDeadLetterFlowCanvas({
         );
       }
 
-      nodes.forEach((node) => {
-        const isStorage = node.id === 'indexeddb';
-        const isEvents = node.id === 'events' || node.id === 'subscriber';
-        const isMediator = node.id === 'mediator';
-        const isWorker = node.id.startsWith('worker');
-        const isClientSide = node.id.startsWith('react') || node.id === 'context';
-        const isLiveDlq = node.id === 'dlq' && dlqLiveActive;
-        const isLiveMediator = node.id === 'mediator' && dlqLiveActive;
-        context.fillStyle = node.id === 'dlq'
-          ? isLiveDlq ? '#3b0b0b' : '#220b0b'
-          : isMediator
-            ? isLiveMediator ? '#3a1320' : '#24120d'
-          : isStorage
-            ? '#102214'
-            : isEvents
-              ? '#221707'
-              : isWorker
-                ? '#171339'
-                : '#0f1b2d';
-        context.strokeStyle = node.id === 'dlq'
-          ? '#dc2626'
-          : isMediator
-            ? '#fb7185'
-          : isClientSide
-            ? '#38bdf8'
-            : isStorage
-              ? '#22c55e'
-              : isEvents
-                ? '#f59e0b'
-                : isWorker
-                  ? '#a78bfa'
-                  : '#334155';
-        context.lineWidth = node.id === 'dlq' || isMediator || isClientSide || isWorker || isStorage || isEvents ? 2.5 : 1.5;
+      nodes.forEach((flowNode) => {
+        const isStorage = flowNode.id === 'indexeddb';
+        const isEvents = flowNode.id === 'events' || flowNode.id === 'subscriber';
+        const isMediator = flowNode.id === 'mediator';
+        const isWorker = flowNode.id.startsWith('worker');
+        const isClientSide = flowNode.id.startsWith('react') || flowNode.id === 'context';
+        const isLiveDlq = flowNode.id === 'dlq' && dlqLiveActive;
+        const isLiveMediator = flowNode.id === 'mediator' && dlqLiveActive;
+        const nodeFill = () => {
+          if (flowNode.id === 'dlq') return isLiveDlq ? '#3b0b0b' : '#220b0b';
+          if (isMediator) return isLiveMediator ? '#3a1320' : '#24120d';
+          if (isStorage) return '#102214';
+          if (isEvents) return '#221707';
+          if (isWorker) return '#171339';
+          return '#0f1b2d';
+        };
+        context.fillStyle = nodeFill();
+        const nodeStroke = () => {
+          if (flowNode.id === 'dlq') return '#dc2626';
+          if (isMediator) return '#fb7185';
+          if (isClientSide) return '#38bdf8';
+          if (isStorage) return '#22c55e';
+          if (isEvents) return '#f59e0b';
+          if (isWorker) return '#a78bfa';
+          return '#334155';
+        };
+        context.strokeStyle = nodeStroke();
+        context.lineWidth =
+          flowNode.id === 'dlq' || isMediator || isClientSide || isWorker || isStorage || isEvents
+            ? 2.5
+            : 1.5;
         const isLiveStorage = storageLiveActive && (isStorage || isEvents);
         if (isLiveDlq || isLiveMediator || isLiveStorage) {
-          context.shadowColor = node.id === 'dlq'
-            ? '#dc2626'
-            : isLiveStorage
-              ? isStorage ? '#22c55e' : '#f59e0b'
-              : '#fb7185';
+          const shadowColor = () => {
+            if (flowNode.id === 'dlq') return '#dc2626';
+            if (!isLiveStorage) return '#fb7185';
+            return isStorage ? '#22c55e' : '#f59e0b';
+          };
+          context.shadowColor = shadowColor();
           context.shadowBlur = 14;
         }
         context.beginPath();
-        context.roundRect(node.x - 58, node.y - 24, 116, 48, 9);
+        context.roundRect(flowNode.x - 58, flowNode.y - 24, 116, 48, 9);
         context.fill();
         context.stroke();
         context.shadowBlur = 0;
         context.fillStyle = '#e2e8f0';
         context.textAlign = 'center';
-        context.fillText(node.label, node.x, node.y + 4);
+        context.fillText(flowNode.label, flowNode.x, flowNode.y + 4);
       });
       canaState.workers.forEach((worker, index) => {
-        const node = nodes[index + 6] ?? nodes[7];
+        const workerNode = nodes[index + 6] ?? nodes[7];
         context.textAlign = 'center';
         context.font = '700 10px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
         context.fillStyle = '#c4b5fd';
-        context.fillText(`${worker.status ?? 'ready'} · ${worker.handledRequests ?? 0} req`, node.x, node.y + 35);
+        context.fillText(
+          `${worker.status ?? 'ready'} · ${worker.handledRequests ?? 0} req`,
+          workerNode.x,
+          workerNode.y + 35
+        );
       });
 
       if (!running && liveRequestSignals.length === 0) {
         flowState.events.forEach((event, index) => {
           const route = flowRoutes[event.kind];
           const progress = animationsActive
-            ? ((time / 1500 + index / Math.max(flowState.events.length, 1)) % 1)
+            ? (time / 1500 + index / Math.max(flowState.events.length, 1)) % 1
             : 1;
           const pulseX = route.from.x + (route.to.x - route.from.x) * progress;
           const pulseY = route.from.y + (route.to.y - route.from.y) * progress;
@@ -1098,20 +1315,25 @@ function BulkDeadLetterFlowCanvas({
           context.globalAlpha = isRejected ? 0.98 : 0.86;
           context.fillStyle = route.color;
           context.beginPath();
-          context.arc(pulseX, pulseY, isRejected ? 6.75 : isInterrupted ? 6 : 5.25, 0, Math.PI * 2);
+          const pulseRadius = isRejected ? 6.75 : 5.25;
+          context.arc(
+            pulseX,
+            pulseY,
+            isInterrupted && !isRejected ? 6 : pulseRadius,
+            0,
+            Math.PI * 2
+          );
           context.fill();
           context.globalAlpha = 1;
         });
       }
       canaState.events.slice(-90).forEach((event, index) => {
         const eventProgress = animationsActive
-          ? ((time / 1700 + index / Math.max(Math.min(canaState.events.length, 90), 1)) % 1)
+          ? (time / 1700 + index / Math.max(Math.min(canaState.events.length, 90), 1)) % 1
           : 1;
         const routeIndex = Math.floor(eventProgress * canaRoutes.length);
         const route = canaRoutes[Math.min(routeIndex, canaRoutes.length - 1)];
-        const localProgress = animationsActive
-          ? (eventProgress * canaRoutes.length) % 1
-          : 1;
+        const localProgress = animationsActive ? (eventProgress * canaRoutes.length) % 1 : 1;
         const pulseX = route.from.x + (route.to.x - route.from.x) * localProgress;
         const pulseY = route.from.y + (route.to.y - route.from.y) * localProgress;
         const isTask = event.store === 'tasks';
@@ -1155,11 +1377,12 @@ function BulkDeadLetterFlowCanvas({
           const pulseY = route.from.y + (route.to.y - route.from.y) * localProgress + laneOffset;
           const isRejected = signal.phase === 'rejected';
           const isReplay = signal.phase === 'replayed';
-          const radius = isRejected ? 5.8 : isReplay ? 5.2 : 4.8;
+          const radius = isRejected ? 5.8 : 4.8;
+          const pulseRadius = isReplay && !isRejected ? 5.2 : radius;
           context.globalAlpha = Math.max(0.35, 1 - ageMs / 3200);
           context.fillStyle = route.color;
           context.beginPath();
-          context.arc(pulseX, pulseY, radius, 0, Math.PI * 2);
+          context.arc(pulseX, pulseY, pulseRadius, 0, Math.PI * 2);
           context.fill();
           context.strokeStyle = '#e2e8f0';
           context.lineWidth = 1;
@@ -1191,8 +1414,16 @@ function BulkDeadLetterFlowCanvas({
         { label: 'live tokens', value: formatCount(liveRequestSignals.length), color: '#bfdbfe' },
         { label: 'attempted', value: formatCount(attempted), color: '#e2e8f0' },
         { label: 'admitted', value: formatCount(admitted), color: '#bbf7d0' },
-        { label: 'workers/events', value: `${canaState.workers.length}/${canaState.events.length}`, color: '#c4b5fd' },
-        { label: 'dlq drained', value: flowState.dlqProcessed ? 'yes' : 'running', color: flowState.dlqProcessed ? '#bbf7d0' : '#fecaca' },
+        {
+          label: 'workers/events',
+          value: `${canaState.workers.length}/${canaState.events.length}`,
+          color: '#c4b5fd'
+        },
+        {
+          label: 'dlq drained',
+          value: flowState.dlqProcessed ? 'yes' : 'running',
+          color: flowState.dlqProcessed ? '#bbf7d0' : '#fecaca'
+        }
       ];
       context.fillStyle = 'rgba(7, 17, 31, 0.92)';
       context.strokeStyle = '#223047';
@@ -1229,9 +1460,8 @@ function BulkDeadLetterFlowCanvas({
       context.roundRect(chartX, chartY, chartWidth, chartHeight, 7);
       context.fill();
       context.stroke();
-      const samples = canaState.storageSamples.length > 0
-        ? canaState.storageSamples
-        : [{ percent: 0 }];
+      const samples =
+        canaState.storageSamples.length > 0 ? canaState.storageSamples : [{ percent: 0 }];
       context.beginPath();
       samples.forEach((sample, index) => {
         const percent = Math.min(100, Math.max(0, Number(sample.percent ?? 0)));
@@ -1255,7 +1485,9 @@ function BulkDeadLetterFlowCanvas({
         context.fillStyle = running ? '#bfdbfe' : '#94a3b8';
         context.font = '800 14px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
         context.fillText(
-          running ? 'executing 30s concurrent stream...' : 'run the playground to capture real request flow',
+          running
+            ? 'executing 30s concurrent stream...'
+            : 'run the playground to capture real request flow',
           18,
           28
         );
@@ -1276,12 +1508,13 @@ function BulkDeadLetterFlowCanvas({
   }, [flowState, canaState, liveMetrics, running]);
 
   return (
-    <section className={classes.flowPanel} aria-label={locale === 'pt-BR' ? 'Fluxo visual de mutex e DLQ' : 'Mutex and DLQ visual flow'}>
+    <section
+      aria-label={locale === 'pt-BR' ? 'Fluxo visual de mutex e DLQ' : 'Mutex and DLQ visual flow'}
+      className={classes.flowPanel}
+    >
       <div>
-        <Title order={5}>
-          {locale === 'pt-BR' ? 'Fluxo em tempo real' : 'Live data flow'}
-        </Title>
-        <Text size="sm" c="dimmed">
+        <Title order={5}>{locale === 'pt-BR' ? 'Fluxo em tempo real' : 'Live data flow'}</Title>
+        <Text c="dimmed" size="sm">
           {locale === 'pt-BR'
             ? 'Um canvas único acompanha requisições concorrentes por 30 segundos: cada request recente vira um token próprio atravessando cliente React, Context API, controller, mutex, DLQ, Message Mediator, replay, workers do Cana, commits no IndexedDB, eventos de subscribe e retorno ao cliente. Rejeições pelo lock aparecem em vermelho.'
             : 'One merged canvas follows concurrent requests for 30 seconds: each recent request becomes its own token across the React client, Context API, controller, mutex, DLQ, Message Mediator, replay, Cana workers, IndexedDB commits, subscribe events, and the return path to the client. Lock rejections are red.'}
@@ -1290,105 +1523,185 @@ function BulkDeadLetterFlowCanvas({
       <canvas
         ref={canvasRef}
         className={classes.flowCanvas}
-        role="img"
-        aria-label={locale === 'pt-BR'
-          ? 'Canvas mostrando requests aceitos, requests rejeitados pelo lock em vermelho, DLQ e replay'
-          : 'Canvas showing accepted requests, lock-rejected requests in red, DLQ, and replay'}
         data-testid={`${testId}-flow-canvas`}
+        // eslint-disable-next-line jsx-a11y/no-interactive-element-to-noninteractive-role -- static flow visualization with an accessible text alternative, not an interactive canvas
+        role="img"
+        aria-label={
+          locale === 'pt-BR'
+            ? 'Canvas mostrando requests aceitos, requests rejeitados pelo lock em vermelho, DLQ e replay'
+            : 'Canvas showing accepted requests, lock-rejected requests in red, DLQ, and replay'
+        }
       />
       <div className={classes.flowLegend}>
-        <span><i data-tone="accepted" />{locale === 'pt-BR' ? 'Aceito' : 'Accepted'}</span>
-        <span><i data-tone="rejected" />{locale === 'pt-BR' ? 'Rejeitado pelo lock' : 'Rejected by lock'}</span>
-        <span><i data-tone="interrupted" />{locale === 'pt-BR' ? 'Entrada interrompida' : 'Input stopped'}</span>
-        <span><i data-tone="replay" />Replay</span>
-        <span><i data-tone="mediator" />Message Mediator</span>
-        <span><i data-tone="cana" />Cana workers</span>
-        <span><i data-tone="events" />{locale === 'pt-BR' ? 'Eventos Cana' : 'Cana events'}</span>
-        <span><i data-tone="quota" />IndexedDB quota</span>
+        <span>
+          <i data-tone="accepted" />
+          {locale === 'pt-BR' ? 'Aceito' : 'Accepted'}
+        </span>
+        <span>
+          <i data-tone="rejected" />
+          {locale === 'pt-BR' ? 'Rejeitado pelo lock' : 'Rejected by lock'}
+        </span>
+        <span>
+          <i data-tone="interrupted" />
+          {locale === 'pt-BR' ? 'Entrada interrompida' : 'Input stopped'}
+        </span>
+        <span>
+          <i data-tone="replay" />
+          Replay
+        </span>
+        <span>
+          <i data-tone="mediator" />
+          Message Mediator
+        </span>
+        <span>
+          <i data-tone="cana" />
+          Cana workers
+        </span>
+        <span>
+          <i data-tone="events" />
+          {locale === 'pt-BR' ? 'Eventos Cana' : 'Cana events'}
+        </span>
+        <span>
+          <i data-tone="quota" />
+          IndexedDB quota
+        </span>
       </div>
       <div className={classes.flowStats} data-testid={`${testId}-flow-state`}>
-        <span>{locale === 'pt-BR' ? 'Clientes React' : 'React clients'}: {flowState.reactClients.length}</span>
-        <span>{locale === 'pt-BR' ? 'Workers Cana' : 'Cana workers'}: {canaState.workers.length}</span>
-        <span>{locale === 'pt-BR' ? 'Tentadas' : 'Attempted'}: {flowState.attempted}</span>
-        <span>{locale === 'pt-BR' ? 'Admitidas no controller' : 'Admitted to controller'}: {flowState.submitted}</span>
-        <span>{locale === 'pt-BR' ? 'Aceitas no bulk' : 'Accepted in bulk'}: {flowState.accepted}</span>
-        <span>{locale === 'pt-BR' ? 'Rejeitadas pelo lock' : 'Rejected by lock'}: {flowState.rejected}</span>
-        <span>{locale === 'pt-BR' ? 'Interrompidas antes do controller' : 'Interrupted before controller'}: {flowState.interrupted}</span>
-        <span>{locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed'}: {flowState.replayed}</span>
-        <span>{locale === 'pt-BR' ? 'DLQ drenada' : 'DLQ drained'}: {flowState.dlqProcessed ? 'yes' : 'no'}</span>
-        <span>{locale === 'pt-BR' ? 'Sem jobs perdidos' : 'No lost jobs'}: {flowState.noLostJobs ? 'yes' : 'no'}</span>
-        <span>{locale === 'pt-BR' ? 'Tasks finais' : 'Final tasks'}: {flowState.finalTaskCount}</span>
-        <span>{locale === 'pt-BR' ? 'Eventos reais' : 'Real events'}: {flowState.events.length}</span>
-        <span>{locale === 'pt-BR' ? 'Eventos Cana' : 'Cana events'}: {canaState.events.length}</span>
-        <span>{locale === 'pt-BR' ? 'Tokens vivos de request' : 'Live request tokens'}: {liveMetrics.requestSignals.length}</span>
+        <span>
+          {locale === 'pt-BR' ? 'Clientes React' : 'React clients'}: {flowState.reactClients.length}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Workers Cana' : 'Cana workers'}: {canaState.workers.length}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Tentadas' : 'Attempted'}: {flowState.attempted}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Admitidas no controller' : 'Admitted to controller'}:{' '}
+          {flowState.submitted}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Aceitas no bulk' : 'Accepted in bulk'}: {flowState.accepted}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Rejeitadas pelo lock' : 'Rejected by lock'}: {flowState.rejected}
+        </span>
+        <span>
+          {locale === 'pt-BR'
+            ? 'Interrompidas antes do controller'
+            : 'Interrupted before controller'}
+          : {flowState.interrupted}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Reprocessadas' : 'Replayed'}: {flowState.replayed}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'DLQ drenada' : 'DLQ drained'}:{' '}
+          {flowState.dlqProcessed ? 'yes' : 'no'}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Sem jobs perdidos' : 'No lost jobs'}:{' '}
+          {flowState.noLostJobs ? 'yes' : 'no'}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Tasks finais' : 'Final tasks'}: {flowState.finalTaskCount}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Eventos reais' : 'Real events'}: {flowState.events.length}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Eventos Cana' : 'Cana events'}: {canaState.events.length}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Tokens vivos de request' : 'Live request tokens'}:{' '}
+          {liveMetrics.requestSignals.length}
+        </span>
         <span>IndexedDB quota: {canaState.quotaUsagePercent.toFixed(4)}%</span>
-        <span>{locale === 'pt-BR' ? 'Uso IndexedDB' : 'IndexedDB usage'}: {formatBytes(canaState.quotaUsageBytes)}</span>
-        <span>{locale === 'pt-BR' ? 'Amostras quota' : 'Quota samples'}: {canaState.storageSamples.length}</span>
-        <span>{locale === 'pt-BR' ? 'Janela' : 'Window'}: {metrics?.streamDurationMs ? `${Math.round(metrics.streamDurationMs / 1000)}s` : '30s'}</span>
-        <span>{locale === 'pt-BR' ? 'Concorrência/cliente' : 'Concurrency/client'}: {metrics?.maxConcurrentRequestsPerClient ?? 12}</span>
+        <span>
+          {locale === 'pt-BR' ? 'Uso IndexedDB' : 'IndexedDB usage'}:{' '}
+          {formatBytes(canaState.quotaUsageBytes)}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Amostras quota' : 'Quota samples'}:{' '}
+          {canaState.storageSamples.length}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Janela' : 'Window'}:{' '}
+          {metrics?.streamDurationMs ? `${Math.round(metrics.streamDurationMs / 1000)}s` : '30s'}
+        </span>
+        <span>
+          {locale === 'pt-BR' ? 'Concorrência/cliente' : 'Concurrency/client'}:{' '}
+          {metrics?.maxConcurrentRequestsPerClient ?? 12}
+        </span>
       </div>
       <BulkDlqMetricsCharts
-        metrics={metrics}
-        flowState={flowState}
         canaState={canaState}
+        flowState={flowState}
         liveMetrics={liveMetrics}
         locale={locale}
+        metrics={metrics}
         testId={testId}
       />
     </section>
   );
-}
+};
 
-export function DocsPlayground({
-  runtime,
-  id = 'getting-started',
-  code
-}: DocsPlaygroundProps) {
+export const DocsPlayground = ({ runtime, id = 'getting-started', code }: DocsPlaygroundProps) => {
   const pathname = usePathname();
   const locale = resolveLocale(pathname);
   const snippet = getDocsSnippet(runtime, id);
   const initialCode = trimTrailingBlankCodeLines(code ?? snippet?.code ?? '');
-  const sessionKey = useMemo(
-    () => `${id}-${typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID().slice(0, 8)
-      : String(Date.now())}`,
-    [id]
-  );
+  const sessionKeyRef = useRef<{ id: string; key: string } | undefined>(undefined);
+  function sessionKey() {
+    let entry = sessionKeyRef.current;
+    if (entry?.id !== id) {
+      const suffix =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID().slice(0, 8)
+          : String(Date.now());
+      entry = { id, key: `${id}-${suffix}` };
+      sessionKeyRef.current = entry;
+    }
+    return entry.key;
+  }
 
   const resetRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const realtimeSamplesRef = useRef<RealtimeBulkMetricSample[]>([]);
   const realtimeRequestSignalsRef = useRef<RealtimeBulkRequestSignal[]>([]);
   const realtimeLastUpdateRef = useRef(0);
   const [draft, setDraft] = useState(initialCode);
+  const [previousInitialCode, setPreviousInitialCode] = useState(initialCode);
+
+  if (previousInitialCode !== initialCode) {
+    setPreviousInitialCode(initialCode);
+    setDraft(initialCode);
+  }
   const [running, setRunning] = useState(false);
   const [output, setOutput] = useState('');
   const [logs, setLogs] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [liveMetrics, setLiveMetrics] = useState<RealtimeBulkMetrics>(() => emptyRealtimeMetrics());
 
-  useEffect(() => {
-    setDraft(initialCode);
-  }, [initialCode]);
-
-  const labels = locale === 'pt-BR'
-    ? {
-        run: 'Executar',
-        reset: 'Resetar',
-        output: 'Resultado',
-        logs: 'Console',
-        missing: 'Snippet não encontrado.',
-        title: snippet?.title['pt-BR'] ?? id,
-        description: snippet?.description['pt-BR'] ?? ''
-      }
-    : {
-        run: 'Run',
-        reset: 'Reset',
-        output: 'Result',
-        logs: 'Console',
-        missing: 'Snippet not found.',
-        title: snippet?.title.en ?? id,
-        description: snippet?.description.en ?? ''
-      };
+  const labels =
+    locale === 'pt-BR'
+      ? {
+          run: 'Executar',
+          reset: 'Resetar',
+          output: 'Resultado',
+          logs: 'Console',
+          missing: 'Snippet não encontrado.',
+          title: snippet?.title['pt-BR'] ?? id,
+          description: snippet?.description['pt-BR'] ?? ''
+        }
+      : {
+          run: 'Run',
+          reset: 'Reset',
+          output: 'Result',
+          logs: 'Console',
+          missing: 'Snippet not found.',
+          title: snippet?.title.en ?? id,
+          description: snippet?.description.en ?? ''
+        };
 
   const testId = `docs-playground-${runtime}-${id}`;
   const canaCompat = runtime === 'cana';
@@ -1425,13 +1738,14 @@ export function DocsPlayground({
           clientId: typeof progress.clientId === 'string' ? progress.clientId : 'client',
           workerId: typeof progress.workerId === 'string' ? progress.workerId : 'worker',
           phase,
-          timestamp,
-        },
+          timestamp
+        }
       ].slice(-900);
     }
-    const shouldUpdate = phase === 'complete'
-      || phase === 'replayed'
-      || timestamp - realtimeLastUpdateRef.current >= 80;
+    const shouldUpdate =
+      phase === 'complete' ||
+      phase === 'replayed' ||
+      timestamp - realtimeLastUpdateRef.current >= 80;
     if (!shouldUpdate) return;
     realtimeLastUpdateRef.current = timestamp;
 
@@ -1439,7 +1753,7 @@ export function DocsPlayground({
       processed: Number(progress.processed ?? 0),
       rejected: Number(progress.rejected ?? 0),
       replayed: Number(progress.replayed ?? 0),
-      timestamp,
+      timestamp
     };
     realtimeSamplesRef.current = [...realtimeSamplesRef.current, sample].slice(-120);
     setLiveMetrics({
@@ -1449,14 +1763,12 @@ export function DocsPlayground({
       replayed: sample.replayed,
       phase,
       samples: realtimeSamplesRef.current,
-      requestSignals: realtimeRequestSignalsRef.current,
+      requestSignals: realtimeRequestSignalsRef.current
     });
   }
 
   function playgroundExtras(extras: Record<string, unknown> = {}) {
-    return isBulkDlqPlayground
-      ? { ...extras, reportPlaygroundProgress }
-      : extras;
+    return isBulkDlqPlayground ? { ...extras, reportPlaygroundProgress } : extras;
   }
 
   async function handleRun() {
@@ -1467,7 +1779,7 @@ export function DocsPlayground({
     resetLiveMetrics();
     try {
       const rt = getRuntime(runtime);
-      const loaded = await rt.load(sessionKey);
+      const loaded = await rt.load(sessionKey());
       resetRef.current = loaded.reset;
       const source = trimTrailingBlankCodeLines(draft);
       if (source !== draft) setDraft(source);
@@ -1495,7 +1807,7 @@ export function DocsPlayground({
     try {
       if (resetRef.current) await resetRef.current();
       const rt = getRuntime(runtime);
-      const loaded = await rt.load(sessionKey);
+      const loaded = await rt.load(sessionKey());
       resetRef.current = loaded.reset;
       const source = trimTrailingBlankCodeLines(draft);
       if (source !== draft) setDraft(source);
@@ -1533,26 +1845,30 @@ export function DocsPlayground({
   if (!snippet && !code) {
     return (
       <Alert color="red" my="md" title={labels.missing}>
-        <Text component="code" className="jtx-inline-code">{runtime}/{id}</Text>
+        <Text className="jtx-inline-code" component="code">
+          {runtime}/{id}
+        </Text>
       </Alert>
     );
   }
 
   return (
     <Paper
-      id={docsPlaygroundAnchor(runtime, id)}
       withBorder
-      p="md"
-      my="md"
-      style={{ scrollMarginTop: 96 }}
       data-testid={testId}
+      id={docsPlaygroundAnchor(runtime, id)}
+      my="md"
+      p="md"
+      style={{ scrollMarginTop: 96 }}
       {...(canaCompat ? { 'data-testid-cana': `cana-playground-${id}` } : {})}
     >
       <Stack gap="sm">
         <div>
           <Title order={4}>{labels.title}</Title>
           {labels.description ? (
-            <Text size="sm" c="dimmed">{labels.description}</Text>
+            <Text c="dimmed" size="sm">
+              {labels.description}
+            </Text>
           ) : null}
         </div>
 
@@ -1565,23 +1881,23 @@ export function DocsPlayground({
         </pre>
 
         <MonacoCodeBlock
-          value={draft}
-          language="typescript"
-          readOnly={false}
-          onChange={setDraft}
-          minHeight={200}
-          maxHeight={420}
           ariaLabel={`${labels.title} editable playground code`}
+          language="typescript"
+          maxHeight={420}
+          minHeight={200}
+          onChange={setDraft}
+          readOnly={false}
           testId={`${testId}-editor`}
+          value={draft}
           {...(canaCompat ? { 'data-cana-editor': `cana-playground-editor-${id}` } : {})}
         />
 
         {isBulkDlqPlayground ? (
           <BulkDeadLetterFlowCanvas
-            output={output}
-            running={running}
             liveMetrics={liveMetrics}
             locale={locale}
+            output={output}
+            running={running}
             testId={testId}
           />
         ) : null}
@@ -1591,25 +1907,31 @@ export function DocsPlayground({
             data-testid={`${testId}-run`}
             {...(canaCompat ? { 'data-cana-run': `cana-playground-run-${id}` } : {})}
             id={canaCompat ? `cana-playground-run-${id}` : undefined}
-            onClick={() => void handleRun()}
             loading={running}
+            onClick={() => {
+              handleRun().catch(() => undefined);
+            }}
           >
             {labels.run}
           </Button>
           <Button
             data-testid={`${testId}-reset`}
-            variant="default"
-            onClick={() => void handleReset()}
             disabled={running}
+            variant="default"
+            onClick={() => {
+              handleReset().catch(() => undefined);
+            }}
           >
             {labels.reset}
           </Button>
           {isBulkDlqPlayground && output ? (
             <Button
               data-testid={`${testId}-start-again`}
-              variant="light"
-              onClick={() => void handleStartAgain()}
               disabled={running}
+              variant="light"
+              onClick={() => {
+                handleStartAgain().catch(() => undefined);
+              }}
             >
               {locale === 'pt-BR' ? 'Iniciar novamente' : 'Start again'}
             </Button>
@@ -1618,40 +1940,54 @@ export function DocsPlayground({
 
         {/* Backward-compat hooks for existing Cypress selectors */}
         {canaCompat ? (
-          <>
+          <Fragment>
             <span data-testid={`cana-playground-${id}`} style={{ display: 'none' }} />
             <button
-              type="button"
+              aria-label={labels.run}
               data-testid={`cana-playground-run-${id}`}
               style={{ display: 'none' }}
-              onClick={() => void handleRun()}
+              type="button"
+              onClick={() => {
+                handleRun().catch(() => undefined);
+              }}
             />
             <button
-              type="button"
+              aria-label={labels.reset}
               data-testid={`cana-playground-reset-${id}`}
               style={{ display: 'none' }}
-              onClick={() => void handleReset()}
+              type="button"
+              onClick={() => {
+                handleReset().catch(() => undefined);
+              }}
             />
-          </>
+          </Fragment>
         ) : null}
 
         {error ? (
           <Alert color="red" title="Error">
-            <MonacoCodeBlock value={error} language="text" readOnly minHeight={100} maxHeight={260} />
+            <MonacoCodeBlock
+              readOnly
+              language="text"
+              maxHeight={260}
+              minHeight={100}
+              value={error}
+            />
           </Alert>
         ) : null}
 
         {output ? (
           <Stack gap={4}>
-            <Text fw={600} size="sm">{labels.output}</Text>
+            <Text fw={600} size="sm">
+              {labels.output}
+            </Text>
             <MonacoCodeBlock
-              value={output}
-              language="json"
               readOnly
-              minHeight={120}
-              maxHeight={320}
               ariaLabel={`${labels.title} output`}
+              language="json"
+              maxHeight={320}
+              minHeight={120}
               testId={`${testId}-output`}
+              value={output}
               {...(canaCompat ? { 'data-testid-alias': `cana-playground-output-${id}` } : {})}
             />
             {canaCompat ? (
@@ -1664,19 +2000,21 @@ export function DocsPlayground({
 
         {logs.length > 0 ? (
           <Stack gap={4}>
-            <Text fw={600} size="sm">{labels.logs}</Text>
+            <Text fw={600} size="sm">
+              {labels.logs}
+            </Text>
             <MonacoCodeBlock
-              value={logs.join('\n')}
-              language="text"
               readOnly
-              minHeight={100}
-              maxHeight={260}
               ariaLabel={`${labels.title} console logs`}
+              language="text"
+              maxHeight={260}
+              minHeight={100}
               testId={`${testId}-logs`}
+              value={logs.join('\n')}
             />
           </Stack>
         ) : null}
       </Stack>
     </Paper>
   );
-}
+};

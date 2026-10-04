@@ -14,17 +14,17 @@
  * 2026-07-29). Nothing under `apps/` may import this file.
  */
 
-type StorageLike = {
+interface StorageLike {
   getItem: (key: string) => string | null;
   setItem: (key: string, value: string) => void;
   removeItem: (key: string) => void;
-};
+}
 
 function errorReason(error: unknown): string {
   return String((error as Error)?.message || error);
 }
 
-export class MemoryDesignerStore {
+class MemoryDesignerStore {
   storage: StorageLike;
 
   stateKey: string;
@@ -46,7 +46,8 @@ export class MemoryDesignerStore {
   }
 
   probe(): Promise<{ status: string; reason?: string }> {
-    if (!this.storage) return Promise.resolve({ status: 'unavailable', reason: 'no storage backend' });
+    if (!this.storage)
+      return Promise.resolve({ status: 'unavailable', reason: 'no storage backend' });
     try {
       const probeKey = `${this.stateKey}.probe`;
       this.storage.setItem(probeKey, '1');
@@ -106,3 +107,5 @@ export class MemoryDesignerStore {
     return Promise.resolve({ status: 'persisted' });
   }
 }
+
+export default MemoryDesignerStore;

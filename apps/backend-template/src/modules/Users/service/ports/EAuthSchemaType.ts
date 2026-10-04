@@ -1,5 +1,6 @@
-/* eslint-disable no-shadow */
-export enum EAuthSchemaType {
+enum EAuthSchemaType {
   Basic = 'Basic',
-  Bearer = 'Bearer',
+  Bearer = 'Bearer'
 }
+
+export default EAuthSchemaType;

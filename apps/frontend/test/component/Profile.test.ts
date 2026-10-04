@@ -1,22 +1,19 @@
-import {
-  afterEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+
 import { createMemoryHistory, createRouter } from 'vue-router';
 
-import ProfileView from '@/features/profile/ProfileView.vue';
+import AppHeader from '@/components/AppHeader.vue';
+import NetworkActivity from '@/components/NetworkActivity.vue';
 import RegisterView from '@/features/auth/RegisterView.vue';
 import NotFoundView from '@/features/dashboard/NotFoundView.vue';
 import OrganizationsView from '@/features/organizations/OrganizationsView.vue';
+import ProfileView from '@/features/profile/ProfileView.vue';
 import UsersView from '@/features/users/UsersView.vue';
-import NetworkActivity from '@/components/NetworkActivity.vue';
-import AppHeader from '@/components/AppHeader.vue';
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
 import { useAuthStore } from '@/stores/auth';
 
 import { backend, users } from './fixtures';
-import {
-  flush, freshSession, mockFetch, mountWithShell, recorded
-} from './support';
+import { flush, freshSession, mockFetch, mountWithShell, must, recorded } from './support';
 
 const originalFetch = globalThis.fetch;
 
@@ -51,14 +48,19 @@ describe('ProfileView', () => {
     expect.hasAssertions();
     const pinia = freshSession();
     mockFetch(backend);
-    const wrapper = mountWithShell(ProfileView, { pinia, global: { plugins: [pinia, routerFor('/profile')] } });
+    const wrapper = mountWithShell(ProfileView, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/profile')] }
+    });
     await flush(5);
     expect(wrapper.text()).toContain('Account details');
     expect(wrapper.text()).toContain('Email addresses');
     expect(wrapper.text()).toContain('Documents');
     expect(wrapper.text()).toContain('Phone numbers');
     expect(wrapper.find('#oas-field-firstName').exists()).toBe(true);
-    const emailHeaders = wrapper.findAll('table').at(0)!.findAll('th').map((th) => th.text());
+    const emailHeaders = must(wrapper.findAll('table').at(0), 'emails table')
+      .findAll('th')
+      .map((th) => th.text());
     expect(emailHeaders).toStrictEqual(['Email', 'Type', 'Primary', 'Actions']);
     wrapper.unmount();
   });
@@ -67,12 +69,18 @@ describe('ProfileView', () => {
     expect.hasAssertions();
     const pinia = freshSession();
     mockFetch(backend);
-    const wrapper = mountWithShell(ProfileView, { pinia, global: { plugins: [pinia, routerFor('/profile')] } });
+    const wrapper = mountWithShell(ProfileView, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/profile')] }
+    });
     await flush(5);
     await wrapper.find('#oas-field-lastName').setValue('Almeida');
-    await wrapper.findAll('form').at(0)!.trigger('submit');
+    await must(wrapper.findAll('form').at(0), 'profile form').trigger('submit');
     await flush(4);
-    const put = recorded.find((c) => c.method === 'PUT' && c.url.endsWith('/users/u1'))!;
+    const put = must(
+      recorded.find((c) => c.method === 'PUT' && c.url.endsWith('/users/u1')),
+      'PUT /users/u1 call'
+    );
     expect((put.body as Record<string, unknown>).lastName).toBe('Almeida');
     expect((put.body as Record<string, unknown>).username).toBe('zoe@x.dev');
     expect(wrapper.text()).toContain('Profile saved.');
@@ -83,19 +91,34 @@ describe('ProfileView', () => {
     expect.hasAssertions();
     const pinia = freshSession();
     mockFetch(backend);
-    const wrapper = mountWithShell(ProfileView, { pinia, global: { plugins: [pinia, routerFor('/profile')] } });
+    const wrapper = mountWithShell(ProfileView, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/profile')] }
+    });
     await flush(5);
     await wrapper.find('#oas-field-email').setValue('second@x.dev');
-    await wrapper.findAll('button').find((b) => b.text() === 'Add')!.trigger('click');
+    await must(
+      wrapper.findAll('button').find((b) => b.text() === 'Add'),
+      'Add button'
+    ).trigger('click');
     await flush(4);
-    const post = recorded.find((c) => c.method === 'POST' && c.url.includes('/createEmail'))!;
+    const post = must(
+      recorded.find((c) => c.method === 'POST' && c.url.includes('/createEmail')),
+      'POST /createEmail call'
+    );
     expect(post.body).toMatchObject({ email: 'second@x.dev', type: 'work' });
     expect(Object.keys(post.body as object).sort()).toStrictEqual(['email', 'isPrimary', 'type']);
-    const phoneRow = wrapper.findAll('table').at(2)!.find('tbody tr');
+    const phoneRow = must(wrapper.findAll('table').at(2), 'phones table').find('tbody tr');
     await phoneRow.find('input[aria-label="Phone 99999-0000"]').setValue('98888-0000');
-    await phoneRow.findAll('button').find((b) => b.text() === 'Save')!.trigger('click');
+    await must(
+      phoneRow.findAll('button').find((b) => b.text() === 'Save'),
+      'Save button'
+    ).trigger('click');
     await flush(4);
-    const put = recorded.find((c) => c.method === 'PUT' && /updatePhone|phones\/p1/.test(c.url))!;
+    const put = must(
+      recorded.find((c) => c.method === 'PUT' && /updatePhone|phones\/p1/.test(c.url)),
+      'PUT updatePhone call'
+    );
     expect((put.body as Record<string, unknown>).number).toBe('98888-0000');
     wrapper.unmount();
   });
@@ -104,11 +127,14 @@ describe('ProfileView', () => {
     expect.hasAssertions();
     const pinia = freshSession();
     mockFetch(backend);
-    const wrapper = mountWithShell(ProfileView, { pinia, global: { plugins: [pinia, routerFor('/profile')] } });
+    const wrapper = mountWithShell(ProfileView, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/profile')] }
+    });
     await flush(5);
     await wrapper.find('#oas-field-password').setValue('longenough1');
     await wrapper.find('#profile-password-repeat').setValue('different1');
-    await wrapper.findAll('form').at(1)!.trigger('submit');
+    await must(wrapper.findAll('form').at(1), 'password form').trigger('submit');
     await flush(2);
     expect(wrapper.text()).toContain('Passwords do not match.');
     expect(recorded.filter((c) => c.url.includes('updatePassword'))).toHaveLength(0);
@@ -138,7 +164,10 @@ describe('RegisterView', () => {
     expect.hasAssertions();
     const pinia = freshSession();
     mockFetch(backend);
-    const wrapper = mountWithShell(RegisterView, { pinia, global: { plugins: [pinia, routerFor('/register')] } });
+    const wrapper = mountWithShell(RegisterView, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/register')] }
+    });
     expect(wrapper.find('#oas-field-firstName').exists()).toBe(true);
     await wrapper.find('#oas-field-firstName').setValue('New');
     await wrapper.find('#oas-field-username').setValue('new@x.dev');
@@ -160,9 +189,15 @@ describe('shell views', () => {
 
   it('UsersView restricts the organization reference for non-superadmins and protects self-delete', async () => {
     expect.hasAssertions();
-    const pinia = freshSession({ roles: ['admin'], organization: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' });
+    const pinia = freshSession({
+      roles: ['admin'],
+      organization: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+    });
     mockFetch(backend);
-    const wrapper = mountWithShell(UsersView, { pinia, global: { plugins: [pinia, routerFor('/users')] } });
+    const wrapper = mountWithShell(UsersView, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/users')] }
+    });
     await flush(5);
     expect(wrapper.find('h3').text()).toBe('Users');
     expect(wrapper.find('button[aria-label="delete u1"]').exists()).toBe(false);
@@ -174,7 +209,10 @@ describe('shell views', () => {
     expect.hasAssertions();
     const pinia = freshSession({ locale: 'pt-BR' });
     mockFetch(backend);
-    const wrapper = mountWithShell(OrganizationsView, { pinia, global: { plugins: [pinia, routerFor('/organizations')] } });
+    const wrapper = mountWithShell(OrganizationsView, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/organizations')] }
+    });
     await flush(5);
     expect(wrapper.find('h3').text()).toBe('Organizações');
     expect(wrapper.findAll('tbody tr').length).toBe(2);
@@ -184,7 +222,10 @@ describe('shell views', () => {
   it('NotFoundView renders without a session', () => {
     expect.hasAssertions();
     const pinia = freshSession();
-    const wrapper = mountWithShell(NotFoundView, { pinia, global: { plugins: [pinia, routerFor('/nope')] } });
+    const wrapper = mountWithShell(NotFoundView, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/nope')] }
+    });
     expect(wrapper.text()).toContain('404');
     wrapper.unmount();
   });
@@ -195,7 +236,10 @@ describe('shell views', () => {
     mockFetch(backend);
     const wrapper = mountWithShell(NetworkActivity, { pinia });
     const { getSharedApiClient } = await import('@/contracts/apiClient');
-    await getSharedApiClient().request({ operationId: 'getAll', headers: { Authorization: 'Bearer x' } });
+    await getSharedApiClient().request({
+      operationId: 'getAll',
+      headers: { Authorization: 'Bearer x' }
+    });
     await flush(2);
     expect(wrapper.text()).toContain('getAll');
     expect(wrapper.find('.badge').text()).toBe('200');
@@ -206,7 +250,10 @@ describe('shell views', () => {
     expect.hasAssertions();
     const pinia = freshSession({ roles: ['admin'] });
     mockFetch(backend);
-    const wrapper = mountWithShell(DefaultLayout, { pinia, global: { plugins: [pinia, routerFor('/dashboard')] } });
+    const wrapper = mountWithShell(DefaultLayout, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/dashboard')] }
+    });
     await flush(4);
     expect(wrapper.find('.sidebar').exists()).toBe(true);
     expect(wrapper.find('.header').exists()).toBe(true);
@@ -219,7 +266,10 @@ describe('shell views', () => {
     expect.hasAssertions();
     const pinia = freshSession({ locale: 'pt-BR' });
     mockFetch(backend);
-    const wrapper = mountWithShell(AppHeader, { pinia, global: { plugins: [pinia, routerFor('/dashboard')] } });
+    const wrapper = mountWithShell(AppHeader, {
+      pinia,
+      global: { plugins: [pinia, routerFor('/dashboard')] }
+    });
     await flush(1);
     expect(wrapper.find('button[aria-label="Alternar navegação"]').exists()).toBe(true);
     expect(wrapper.find('[data-shell-header]').exists()).toBe(true);

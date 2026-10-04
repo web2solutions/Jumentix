@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
+/* eslint-disable jest/max-expects, jest/no-conditional-in-test */
 import path from 'node:path';
 
 /**
@@ -30,23 +29,27 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(__dirname, '../../../..');
 const {
-  createDesignerState,
-  createDefaultView
+  createDefaultView,
+  createDesignerState
 } = require('@jumentix/designer-core/state/designerState.js');
 
 const {
   createCatalogSyncClient,
   CATALOG_SYNC_POLL_INTERVAL_MS,
   CATALOG_SYNC_PUSH_DEBOUNCE_MS
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js'));
-const {
-  CanaDesignerStore
-} = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js'));
+} = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js')
+);
+const { CanaDesignerStore } = require(
+  path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js')
+);
 
 const STATE_KEY = 'service-management.v1';
 const STORE_NAME = 'designerDocuments';
 
-type Backend = { records: Map<string, string> };
+interface Backend {
+  records: Map<string, string>;
+}
 
 /** The same declared Cana double as designerSync.test.ts, reduced to what
  * this suite drives: committed `put` events to this client's listeners. */
@@ -55,7 +58,9 @@ function createCanaClientDouble(backend: Backend, clientId: string) {
   let cursor = 0;
   let txSeq = 0;
   const client = {
-    async open() { return undefined; },
+    async open() {
+      return undefined;
+    },
     table(name: string) {
       return {
         name,
@@ -69,11 +74,15 @@ function createCanaClientDouble(backend: Backend, clientId: string) {
       _stores: readonly string[],
       body: (scope: any) => Promise<unknown>
     ) {
-      const staged: Array<{ op: 'put' | 'delete'; key: string; value?: string }> = [];
+      const staged: { op: 'put' | 'delete'; key: string; value?: string }[] = [];
       const scope = {
         table: () => ({
-          async put(value: string, key: string) { staged.push({ op: 'put', key, value }); },
-          async delete(key: string) { staged.push({ op: 'delete', key }); }
+          async put(value: string, key: string) {
+            staged.push({ op: 'put', key, value });
+          },
+          async delete(key: string) {
+            staged.push({ op: 'delete', key });
+          }
         }),
         abort: () => undefined
       };
@@ -96,12 +105,18 @@ function createCanaClientDouble(backend: Backend, clientId: string) {
         listeners.forEach((listener) => listener(event));
       });
       return {
-        outcome: 'committed', result, events: [], correlationId: `${clientId}:${txSeq}`, attemptedAt: 1722000000000 + txSeq
+        outcome: 'committed',
+        result,
+        events: [],
+        correlationId: `${clientId}:${txSeq}`,
+        attemptedAt: 1722000000000 + txSeq
       };
     },
     subscribe(listener: (event: any) => void) {
       listeners.add(listener);
-      return () => { listeners.delete(listener); };
+      return () => {
+        listeners.delete(listener);
+      };
     },
     async storageState() {
       return { persistent: true, nearQuota: false, evicted: false };
@@ -218,14 +233,24 @@ function makeEntity(id: string, name: string) {
     y: 14,
     fields: [],
     meta: {
-      aggregateRoot: false, invariants: [], rbac: {}, contracts: [], oasComposition: {}
+      aggregateRoot: false,
+      invariants: [],
+      rbac: {},
+      contracts: [],
+      oasComposition: {}
     }
   };
 }
 
 function makeDomain(id: string, name: string, entities: any[] = []) {
   return {
-    id, name, color: '#60a5fa', x: 10, y: 10, context: {}, entities
+    id,
+    name,
+    color: '#60a5fa',
+    x: 10,
+    y: 10,
+    context: {},
+    entities
   };
 }
 
@@ -240,7 +265,7 @@ async function createHost(seedDomains: any[] = []) {
   const store = new CanaDesignerStore({ client });
   const transport = createCatalogTransportDouble();
   const renders: string[] = [];
-  const notifications: Array<{ message: string; severity: string }> = [];
+  const notifications: { message: string; severity: string }[] = [];
   const timers: Map<number, { fn: () => unknown; ms: number }> = new Map();
   let timerSeq = 0;
   let core: any;
@@ -261,7 +286,9 @@ async function createHost(seedDomains: any[] = []) {
     timers.set(timerSeq, { fn, ms });
     return timerSeq;
   };
-  const cancelSchedule = (handle: number) => { timers.delete(handle); };
+  const cancelSchedule = (handle: number) => {
+    timers.delete(handle);
+  };
   const syncClient = createCatalogSyncClient({
     designerState: core,
     store,
@@ -280,7 +307,15 @@ async function createHost(seedDomains: any[] = []) {
     }
   };
   return {
-    backend, store, transport, core, syncClient, renders, notifications, timers, flushTimers
+    backend,
+    store,
+    transport,
+    core,
+    syncClient,
+    renders,
+    notifications,
+    timers,
+    flushTimers
   };
 }
 
@@ -295,7 +330,9 @@ function teammateWritesDomain(transport: any, domain: any, name?: string) {
 describe('catalogSyncClient — publish and outbound push', () => {
   it('publishDomain creates the remote record at version 1 and persists the marker', async () => {
     expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
     await host.syncClient.start();
     host.timers.clear();
 
@@ -316,7 +353,9 @@ describe('catalogSyncClient — publish and outbound push', () => {
 
   it('a committed local edit is pushed after the debounce and the marker rebases', async () => {
     expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
     await host.syncClient.start();
     host.timers.clear();
     const { record } = await host.syncClient.publishDomain('domain-1');
@@ -356,7 +395,10 @@ describe('catalogSyncClient — inbound read-back and convergence', () => {
     await host.syncClient.start();
     host.timers.clear();
 
-    await teammateWritesDomain(host.transport, makeDomain('domain-remote', 'Shipping', [makeEntity('entity-9', 'Shipment')]));
+    await teammateWritesDomain(
+      host.transport,
+      makeDomain('domain-remote', 'Shipping', [makeEntity('entity-9', 'Shipment')])
+    );
     const result = await host.syncClient.syncNow();
 
     expect(result.synced).toBe(true);
@@ -384,7 +426,9 @@ describe('catalogSyncClient — inbound read-back and convergence', () => {
     });
     await host.syncClient.syncNow();
 
-    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain('CreditNote');
+    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain(
+      'CreditNote'
+    );
     expect(host.core.state.domains[0].context.catalog.version).toBe(2);
     await host.syncClient.stop();
   });
@@ -430,7 +474,9 @@ describe('catalogSyncClient — inbound read-back and convergence', () => {
 describe('catalogSyncClient — conflicts are reviewable, never destructive', () => {
   it('a stale push raises a conflict and keeps the local edit', async () => {
     expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
     await host.syncClient.start();
     host.timers.clear();
     const { record } = await host.syncClient.publishDomain('domain-1');
@@ -439,7 +485,11 @@ describe('catalogSyncClient — conflicts are reviewable, never destructive', ()
     // A teammate moves the server to version 2 while the local marker is at 1.
     await host.transport.updateCatalog(record.id, {
       version: 1,
-      design: { kind: 'domain-package', version: '2.0.0', domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'TeammateEntity')]) }
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'TeammateEntity')])
+      }
     });
     host.core.state.domains[0].entities.push(makeEntity('entity-3', 'LocalEntity'));
     await host.core.saveState();
@@ -448,72 +498,32 @@ describe('catalogSyncClient — conflicts are reviewable, never destructive', ()
     const conflicts = host.syncClient.getConflicts();
     expect(conflicts).toHaveLength(1);
     expect(conflicts[0]).toMatchObject({
-      catalogId: record.id, domainId: 'domain-1', reason: 'stale-write', serverVersion: 2, baseVersion: 1
+      catalogId: record.id,
+      domainId: 'domain-1',
+      reason: 'stale-write',
+      serverVersion: 2,
+      baseVersion: 1
     });
     // The local edit survives; the server still holds the teammate's version.
-    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain('LocalEntity');
+    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain(
+      'LocalEntity'
+    );
     const remote = await host.transport.getCatalog(record.id);
     expect(remote.version).toBe(2);
     expect(remote.design.domain.entities[0].name).toBe('TeammateEntity');
-    expect(host.notifications.some((entry) => entry.severity === 'error' && entry.message.includes('conflicts'))).toBe(true);
+    expect(
+      host.notifications.some(
+        (entry) => entry.severity === 'error' && entry.message.includes('conflicts')
+      )
+    ).toBe(true);
     await host.syncClient.stop();
   });
 
   it('take-local re-pushes the local design against the current server version', async () => {
     expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
-    await host.syncClient.start();
-    host.timers.clear();
-    const { record } = await host.syncClient.publishDomain('domain-1');
-    host.timers.clear();
-
-    await host.transport.updateCatalog(record.id, {
-      version: 1,
-      design: { kind: 'domain-package', version: '2.0.0', domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'TeammateEntity')]) }
-    });
-    host.core.state.domains[0].entities.push(makeEntity('entity-3', 'LocalEntity'));
-    await host.core.saveState();
-    await host.flushTimers();
-    expect(host.syncClient.getConflicts()).toHaveLength(1);
-
-    const { resolved } = await host.syncClient.resolveConflict(record.id, 'take-local');
-    expect(resolved).toBe(true);
-    const remote = await host.transport.getCatalog(record.id);
-    expect(remote.version).toBe(3);
-    expect(remote.design.domain.entities.map((entity: any) => entity.name)).toContain('LocalEntity');
-    expect(host.core.state.domains[0].context.catalog.version).toBe(3);
-    expect(host.syncClient.getConflicts()).toHaveLength(0);
-    await host.syncClient.stop();
-  });
-
-  it('take-server replaces the local domain with the server design', async () => {
-    expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
-    await host.syncClient.start();
-    host.timers.clear();
-    const { record } = await host.syncClient.publishDomain('domain-1');
-    host.timers.clear();
-
-    await host.transport.updateCatalog(record.id, {
-      version: 1,
-      design: { kind: 'domain-package', version: '2.0.0', domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'TeammateEntity')]) }
-    });
-    host.core.state.domains[0].entities.push(makeEntity('entity-3', 'LocalEntity'));
-    await host.core.saveState();
-    await host.flushTimers();
-    expect(host.syncClient.getConflicts()).toHaveLength(1);
-
-    const { resolved } = await host.syncClient.resolveConflict(record.id, 'take-server');
-    expect(resolved).toBe(true);
-    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toStrictEqual(['TeammateEntity']);
-    expect(host.core.state.domains[0].context.catalog.version).toBe(2);
-    expect(host.syncClient.getConflicts()).toHaveLength(0);
-    await host.syncClient.stop();
-  });
-
-  it('take-server tolerates a context-less server domain while rebasing the marker', async () => {
-    expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
     await host.syncClient.start();
     host.timers.clear();
     const { record } = await host.syncClient.publishDomain('domain-1');
@@ -524,7 +534,79 @@ describe('catalogSyncClient — conflicts are reviewable, never destructive', ()
       design: {
         kind: 'domain-package',
         version: '2.0.0',
-        domain: { id: 'remote-domain', name: 'Billing', entities: [makeEntity('entity-2', 'RemoteOnly')] }
+        domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'TeammateEntity')])
+      }
+    });
+    host.core.state.domains[0].entities.push(makeEntity('entity-3', 'LocalEntity'));
+    await host.core.saveState();
+    await host.flushTimers();
+    expect(host.syncClient.getConflicts()).toHaveLength(1);
+
+    const { resolved } = await host.syncClient.resolveConflict(record.id, 'take-local');
+    expect(resolved).toBe(true);
+    const remote = await host.transport.getCatalog(record.id);
+    expect(remote.version).toBe(3);
+    expect(remote.design.domain.entities.map((entity: any) => entity.name)).toContain(
+      'LocalEntity'
+    );
+    expect(host.core.state.domains[0].context.catalog.version).toBe(3);
+    expect(host.syncClient.getConflicts()).toHaveLength(0);
+    await host.syncClient.stop();
+  });
+
+  it('take-server replaces the local domain with the server design', async () => {
+    expect.hasAssertions();
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
+    await host.syncClient.start();
+    host.timers.clear();
+    const { record } = await host.syncClient.publishDomain('domain-1');
+    host.timers.clear();
+
+    await host.transport.updateCatalog(record.id, {
+      version: 1,
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'TeammateEntity')])
+      }
+    });
+    host.core.state.domains[0].entities.push(makeEntity('entity-3', 'LocalEntity'));
+    await host.core.saveState();
+    await host.flushTimers();
+    expect(host.syncClient.getConflicts()).toHaveLength(1);
+
+    const { resolved } = await host.syncClient.resolveConflict(record.id, 'take-server');
+    expect(resolved).toBe(true);
+    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toStrictEqual([
+      'TeammateEntity'
+    ]);
+    expect(host.core.state.domains[0].context.catalog.version).toBe(2);
+    expect(host.syncClient.getConflicts()).toHaveLength(0);
+    await host.syncClient.stop();
+  });
+
+  it('take-server tolerates a context-less server domain while rebasing the marker', async () => {
+    expect.hasAssertions();
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
+    await host.syncClient.start();
+    host.timers.clear();
+    const { record } = await host.syncClient.publishDomain('domain-1');
+    host.timers.clear();
+
+    await host.transport.updateCatalog(record.id, {
+      version: 1,
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: {
+          id: 'remote-domain',
+          name: 'Billing',
+          entities: [makeEntity('entity-2', 'RemoteOnly')]
+        }
       }
     });
     host.core.state.domains[0].entities.push(makeEntity('entity-3', 'LocalEntity'));
@@ -534,13 +616,17 @@ describe('catalogSyncClient — conflicts are reviewable, never destructive', ()
     const { resolved } = await host.syncClient.resolveConflict(record.id, 'take-server');
     expect(resolved).toBe(true);
     expect(host.core.state.domains[0].context.catalog.version).toBe(2);
-    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toStrictEqual(['RemoteOnly']);
+    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toStrictEqual([
+      'RemoteOnly'
+    ]);
     await host.syncClient.stop();
   });
 
   it('a remote delete over a dirty local copy raises a conflict instead of deleting', async () => {
     expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
     await host.syncClient.start();
     host.timers.clear();
     const { record } = await host.syncClient.publishDomain('domain-1');
@@ -556,7 +642,9 @@ describe('catalogSyncClient — conflicts are reviewable, never destructive', ()
     expect(conflicts).toHaveLength(1);
     expect(conflicts[0].reason).toBe('deleted-remotely');
     expect(host.core.state.domains).toHaveLength(1);
-    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain('LocalEntity');
+    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain(
+      'LocalEntity'
+    );
     await host.syncClient.stop();
   });
 });
@@ -591,10 +679,12 @@ describe('catalogSyncClient — declared boundaries and edge paths', () => {
     const host = await createHost([makeDomain('domain-1', 'Billing')]);
     await host.syncClient.start();
     host.timers.clear();
-    await expect(host.syncClient.resolveConflict('catalog-1', 'merge-magic'))
-      .resolves.toStrictEqual({ resolved: false, reason: 'unknown-strategy' });
-    await expect(host.syncClient.resolveConflict('catalog-1', 'take-server'))
-      .resolves.toStrictEqual({ resolved: false, reason: 'no-conflict' });
+    await expect(
+      host.syncClient.resolveConflict('catalog-1', 'merge-magic') as Promise<unknown>
+    ).resolves.toStrictEqual({ resolved: false, reason: 'unknown-strategy' });
+    await expect(
+      host.syncClient.resolveConflict('catalog-1', 'take-server') as Promise<unknown>
+    ).resolves.toStrictEqual({ resolved: false, reason: 'no-conflict' });
     await host.syncClient.stop();
   });
 
@@ -608,7 +698,11 @@ describe('catalogSyncClient — declared boundaries and edge paths', () => {
 
     await host.transport.updateCatalog(record.id, {
       version: 1,
-      design: { kind: 'domain-package', version: '2.0.0', domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'Teammate')]) }
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'Teammate')])
+      }
     });
     host.transport.script.readError = true;
     host.core.state.domains[0].entities.push(makeEntity('entity-3', 'Local'));
@@ -624,7 +718,9 @@ describe('catalogSyncClient — declared boundaries and edge paths', () => {
 
   it('take-local on a tombstoned record restores it before writing', async () => {
     expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
     await host.syncClient.start();
     host.timers.clear();
     const { record } = await host.syncClient.publishDomain('domain-1');
@@ -648,7 +744,9 @@ describe('catalogSyncClient — declared boundaries and edge paths', () => {
 
   it('take-server on a tombstoned record removes the local domain', async () => {
     expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
     await host.syncClient.start();
     host.timers.clear();
     const { record } = await host.syncClient.publishDomain('domain-1');
@@ -723,7 +821,9 @@ describe('catalogSyncClient — declared boundaries and edge paths', () => {
     delete host.core.state.domains[0].context;
     host.core.state.domains[0].context = { catalog: marker };
 
-    await expect(host.syncClient.unpublishDomain('domain-1')).resolves.toStrictEqual({ unpublished: true });
+    await expect(
+      host.syncClient.unpublishDomain('domain-1') as Promise<unknown>
+    ).resolves.toStrictEqual({ unpublished: true });
     expect(host.core.state.domains[0].context.catalog).toBeUndefined();
     expect((await host.transport.getCatalog(record.id)).deletedAt).not.toBe('');
     await host.syncClient.stop();
@@ -738,7 +838,11 @@ describe('catalogSyncClient — more declared edges', () => {
     host.timers.clear();
     await host.transport.createCatalog({
       name: 'Bare',
-      design: { kind: 'domain-package', version: '2.0.0', domain: { id: 'domain-bare', name: 'Bare', entities: [] } }
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: { id: 'domain-bare', name: 'Bare', entities: [] }
+      }
     });
     await host.syncClient.syncNow();
     expect(host.core.state.domains[0].name).toBe('Bare');
@@ -765,7 +869,7 @@ describe('catalogSyncClient — more declared edges', () => {
     const { client } = createCanaClientDouble(backend, 'host-ambient');
     const store = new CanaDesignerStore({ client });
     const transport = createCatalogTransportDouble();
-    const notifications: Array<{ message: string; severity: string }> = [];
+    const notifications: { message: string; severity: string }[] = [];
     const core: any = createDesignerState({
       store,
       seed: () => {
@@ -795,7 +899,9 @@ describe('catalogSyncClient — more declared edges', () => {
         timers.set(timerSeq, { fn });
         return timerSeq;
       },
-      cancelSchedule: (handle: number) => { timers.delete(handle); }
+      cancelSchedule: (handle: number) => {
+        timers.delete(handle);
+      }
     });
     await syncClient.start();
     await syncClient.publishDomain('domain-1');
@@ -828,8 +934,13 @@ describe('catalogSyncClient — more declared edges', () => {
     await host.flushTimers();
 
     expect(host.syncClient.getStatus().degraded).toBe(true);
-    expect(host.notifications.some((entry) => entry.severity === 'error'
-      && entry.message.includes('Pushing to the shared catalog failed'))).toBe(true);
+    expect(
+      host.notifications.some(
+        (entry) =>
+          entry.severity === 'error' &&
+          entry.message.includes('Pushing to the shared catalog failed')
+      )
+    ).toBe(true);
     expect(host.core.state.domains[0].entities).toHaveLength(1);
     await host.syncClient.stop();
   });
@@ -844,7 +955,11 @@ describe('catalogSyncClient — more declared edges', () => {
 
     await host.transport.updateCatalog(record.id, {
       version: 1,
-      design: { kind: 'domain-package', version: '2.0.0', domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'Teammate')]) }
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'Teammate')])
+      }
     });
     host.core.state.domains[0].entities.push(makeEntity('entity-3', 'Local'));
     await host.core.saveState();
@@ -852,8 +967,9 @@ describe('catalogSyncClient — more declared edges', () => {
     expect(host.syncClient.getConflicts()).toHaveLength(1);
 
     host.core.state.domains = [];
-    await expect(host.syncClient.resolveConflict(record.id, 'take-local'))
-      .resolves.toStrictEqual({ resolved: false, reason: 'domain-not-found' });
+    await expect(
+      host.syncClient.resolveConflict(record.id, 'take-local') as Promise<unknown>
+    ).resolves.toStrictEqual({ resolved: false, reason: 'domain-not-found' });
     await host.syncClient.stop();
   });
 
@@ -867,7 +983,11 @@ describe('catalogSyncClient — more declared edges', () => {
 
     await host.transport.updateCatalog(record.id, {
       version: 1,
-      design: { kind: 'domain-package', version: '2.0.0', domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'Teammate')]) }
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-2', 'Teammate')])
+      }
     });
     host.core.state.domains[0].entities.push(makeEntity('entity-3', 'Local'));
     await host.core.saveState();
@@ -891,8 +1011,9 @@ describe('createCatalogHttpTransport — the HTTP mapping of the port', () => {
     const ambient = globalThis.fetch;
     try {
       (globalThis as any).fetch = undefined;
-      expect(() => createTransport({ baseUrl: 'http://x' }))
-        .toThrow('createCatalogHttpTransport requires a fetch implementation.');
+      expect(() => createTransport({ baseUrl: 'http://x' })).toThrow(
+        'createCatalogHttpTransport requires a fetch implementation.'
+      );
     } finally {
       (globalThis as any).fetch = ambient;
     }
@@ -908,13 +1029,20 @@ describe('createCatalogHttpTransport — the HTTP mapping of the port', () => {
     const fetchImpl = async () => ({
       ok: false,
       status: 409,
-      text: async () => JSON.stringify({
-        message: 'Conflict - Stale catalog version',
-        error: { metadata: { currentVersion: 3 } }
-      })
+      text: async () =>
+        JSON.stringify({
+          message: 'Conflict - Stale catalog version',
+          error: { metadata: { currentVersion: 3 } }
+        })
     });
-    const transport = createTransport({ baseUrl: 'http://backend', tokenProvider: () => 'Bearer t', fetchImpl });
-    await expect(transport.updateCatalog('id-1', { version: 1 })).rejects.toMatchObject({
+    const transport = createTransport({
+      baseUrl: 'http://backend',
+      tokenProvider: () => 'Bearer t',
+      fetchImpl
+    });
+    await expect(
+      transport.updateCatalog('id-1', { version: 1 }) as Promise<unknown>
+    ).rejects.toMatchObject({
       status: 409,
       body: { message: 'Conflict - Stale catalog version' }
     });
@@ -934,10 +1062,16 @@ describe('createCatalogHttpTransport — the HTTP mapping of the port', () => {
         text: async () => JSON.stringify({ result: [{ id: 'catalog-1', version: 1 }], total: 1 })
       };
     };
-    const transport = createTransport({ baseUrl: 'http://backend/', tokenProvider: () => 'Bearer t', fetchImpl });
+    const transport = createTransport({
+      baseUrl: 'http://backend/',
+      tokenProvider: () => 'Bearer t',
+      fetchImpl
+    });
     const records = await transport.listCatalogs({ includeDeleted: true });
     expect(records).toHaveLength(1);
-    expect(calls[0].url).toBe('http://backend/api/1.0.0/catalogs?page=1&size=500&includeDeleted=true');
+    expect(calls[0].url).toBe(
+      'http://backend/api/1.0.0/catalogs?page=1&size=500&includeDeleted=true'
+    );
     expect(calls[0].init.headers.Authorization).toBe('Bearer t');
 
     await transport.restoreCatalog('catalog-1', 2);
@@ -951,9 +1085,13 @@ describe('createCatalogHttpTransport — the HTTP mapping of the port', () => {
     const { createCatalogHttpTransport: createTransport } = require(
       path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'catalogSyncClient.js')
     );
-    const fetchImpl = async () => ({ ok: true, status: 200, text: async () => '<html>oops</html>' });
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      text: async () => '<html>oops</html>'
+    });
     const transport = createTransport({ baseUrl: 'http://backend', fetchImpl });
-    await expect(transport.getCatalog('id-1')).resolves.toBeNull();
+    await expect(transport.getCatalog('id-1') as Promise<unknown>).resolves.toBeNull();
   });
 
   it('maps every remaining verb to its route and encodes path parameters', async () => {
@@ -1055,7 +1193,9 @@ describe('createCatalogHttpTransport — the HTTP mapping of the port', () => {
 describe('catalogSyncClient — partition and convergence', () => {
   it('a partition is declared (never silent) and the client converges after healing', async () => {
     expect.hasAssertions();
-    const host = await createHost([makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])]);
+    const host = await createHost([
+      makeDomain('domain-1', 'Billing', [makeEntity('entity-1', 'Invoice')])
+    ]);
     await host.syncClient.start();
     host.timers.clear();
     const { record } = await host.syncClient.publishDomain('domain-1');
@@ -1066,7 +1206,11 @@ describe('catalogSyncClient — partition and convergence', () => {
     expect(partitioned.synced).toBe(false);
     expect(partitioned.reason).toBe('transport-unavailable');
     expect(host.syncClient.getStatus().degraded).toBe(true);
-    expect(host.notifications.some((entry) => entry.severity === 'error' && entry.message.includes('unreachable'))).toBe(true);
+    expect(
+      host.notifications.some(
+        (entry) => entry.severity === 'error' && entry.message.includes('unreachable')
+      )
+    ).toBe(true);
 
     // The user keeps working through the partition; the local edit is durable.
     host.core.state.domains[0].entities.push(makeEntity('entity-4', 'PartitionEntity'));
@@ -1076,11 +1220,19 @@ describe('catalogSyncClient — partition and convergence', () => {
     host.transport.script.down = false;
     await host.transport.createCatalog({
       name: 'Catalog',
-      design: { kind: 'domain-package', version: '2.0.0', domain: makeDomain('domain-remote-2', 'Catalog', [makeEntity('entity-8', 'Product')]) }
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: makeDomain('domain-remote-2', 'Catalog', [makeEntity('entity-8', 'Product')])
+      }
     });
     await host.transport.updateCatalog(record.id, {
       version: 1,
-      design: { kind: 'domain-package', version: '2.0.0', domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-9', 'TeammateEntity')]) }
+      design: {
+        kind: 'domain-package',
+        version: '2.0.0',
+        domain: makeDomain('domain-1', 'Billing', [makeEntity('entity-9', 'TeammateEntity')])
+      }
     });
     host.transport.script.down = true;
 
@@ -1148,7 +1300,9 @@ describe('catalogSyncClient — partition and convergence', () => {
     const { record } = await host.syncClient.publishDomain('domain-1');
     host.timers.clear();
 
-    const contextless = makeDomain('domain-1', 'Billing', [makeEntity('entity-8', 'CreditNote')]) as any;
+    const contextless = makeDomain('domain-1', 'Billing', [
+      makeEntity('entity-8', 'CreditNote')
+    ]) as any;
     delete contextless.context;
     await host.transport.updateCatalog(record.id, {
       version: 1,
@@ -1156,7 +1310,9 @@ describe('catalogSyncClient — partition and convergence', () => {
     });
     await host.syncClient.syncNow();
 
-    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain('CreditNote');
+    expect(host.core.state.domains[0].entities.map((entity: any) => entity.name)).toContain(
+      'CreditNote'
+    );
     expect(host.core.state.domains[0].context.catalog.id).toBe(record.id);
     expect(host.core.state.domains[0].context.catalog.version).toBe(2);
     await host.syncClient.stop();
@@ -1171,14 +1327,21 @@ describe('catalogSyncClient — partition and convergence', () => {
     await host.syncClient.start();
 
     let releaseRead!: () => void;
-    const gate = new Promise<void>((resolve) => { releaseRead = resolve; });
-    const { listCatalogs } = host.transport;
-    host.transport.listCatalogs = async (args: any) => { await gate; return listCatalogs(args); };
+    const gate = new Promise<void>((resolve) => {
+      releaseRead = resolve;
+    });
+    const originalListCatalogs = host.transport.listCatalogs.bind(host.transport);
+    host.transport.listCatalogs = async (args: any) => {
+      await gate;
+      return originalListCatalogs(args);
+    };
 
     // Fire the pending poll cycle without awaiting it: it is now inside syncNow.
     const [pollHandle, pollTimer] = [...host.timers.entries()][0];
     host.timers.delete(pollHandle);
-    const inFlight = (async () => { await pollTimer.fn(); })();
+    const inFlight = (async () => {
+      await pollTimer.fn();
+    })();
 
     host.syncClient.stop();
     await host.syncClient.start();

@@ -16,14 +16,14 @@ used when the project runs a database server or Redis.
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `jumentix init [dir]` | Create a project (`--mode`, `--from`, `--preset`, `--http`, `--realtime`, `--db`, `--frontend`, `--offline`, `--git`, `--install`, `--config`, `--non-interactive`) |
-| `jumentix add domain <name>` | Add a domain to a service and refresh the frontend modules |
-| `jumentix add service <name> --domains a,b` | Split domains into a new service |
-| `jumentix add frontend` | Add `apps/frontend` to a backend-only project |
-| `jumentix upgrade [--dry-run]` | Three-way merge the installed CLI's templates into the project |
-| `jumentix doctor` | Check the environment and the project |
+| Command                                     | What it does                                                                                                                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jumentix init [dir]`                       | Create a project (`--mode`, `--from`, `--preset`, `--http`, `--realtime`, `--db`, `--frontend`, `--offline`, `--git`, `--install`, `--config`, `--non-interactive`) |
+| `jumentix add domain <name>`                | Add a domain to a service and refresh the frontend modules                                                                                                          |
+| `jumentix add service <name> --domains a,b` | Split domains into a new service                                                                                                                                    |
+| `jumentix add frontend`                     | Add `apps/frontend` to a backend-only project                                                                                                                       |
+| `jumentix upgrade [--dry-run]`              | Three-way merge the installed CLI's templates into the project                                                                                                      |
+| `jumentix doctor`                           | Check the environment and the project                                                                                                                               |
 
 The package installs the `jumentix` command (also `cli-init`, so
 `npx @jumentix/cli-init` resolves). Every command has `--help`. Exit codes:

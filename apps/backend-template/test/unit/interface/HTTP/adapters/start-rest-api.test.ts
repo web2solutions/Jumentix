@@ -19,7 +19,7 @@ import { resolveHTTPFramework } from '@src/interface/runtime/RuntimeEnvironment'
 function recordingAdapters(): {
   adapters: Record<string, () => Promise<unknown>>;
   loaded: string[];
-  } {
+} {
   const loaded: string[] = [];
   const adapters = Object.fromEntries(
     Object.keys(REST_API_ADAPTERS).map((name) => [
@@ -41,28 +41,33 @@ describe('start-rest-api adapter loader', () => {
     else process.env.JUMENTIX_HTTP_FRAMEWORK = previousFramework;
   });
 
-  it.each(Object.keys(REST_API_ADAPTERS))('loads the %s adapter and no other', async (framework) => {
-    expect.hasAssertions();
-    const { adapters, loaded } = recordingAdapters();
+  it.each(Object.keys(REST_API_ADAPTERS))(
+    'loads the %s adapter and no other',
+    async (framework) => {
+      expect.hasAssertions();
+      const { adapters, loaded } = recordingAdapters();
 
-    await startRestApiAdapter(
-      { JUMENTIX_HTTP_FRAMEWORK: framework } as unknown as NodeJS.ProcessEnv,
-      adapters
-    );
+      await startRestApiAdapter(
+        { JUMENTIX_HTTP_FRAMEWORK: framework } as unknown as NodeJS.ProcessEnv,
+        adapters
+      );
 
-    // Asserting the whole list, not just that the right one ran: a loader that
-    // started every adapter would satisfy a `toContain`.
-    expect(loaded).toStrictEqual([framework]);
-  });
+      // Asserting the whole list, not just that the right one ran: a loader that
+      // started every adapter would satisfy a `toContain`.
+      expect(loaded).toStrictEqual([framework]);
+    }
+  );
 
   it('throws for an unsupported framework', async () => {
     expect.hasAssertions();
     const { adapters } = recordingAdapters();
 
-    await expect(startRestApiAdapter(
-      { JUMENTIX_HTTP_FRAMEWORK: 'unknown-http' } as unknown as NodeJS.ProcessEnv,
-      adapters
-    )).rejects.toThrow('Unsupported JUMENTIX_HTTP_FRAMEWORK');
+    await expect(
+      startRestApiAdapter(
+        { JUMENTIX_HTTP_FRAMEWORK: 'unknown-http' } as unknown as NodeJS.ProcessEnv,
+        adapters
+      )
+    ).rejects.toThrow('Unsupported JUMENTIX_HTTP_FRAMEWORK');
   });
 
   it('uses process env when the env argument is omitted', async () => {
@@ -80,10 +85,12 @@ describe('start-rest-api adapter loader', () => {
     // The drift case. `resolveHTTPFramework` and `REST_API_ADAPTERS` are two
     // lists that must agree; where they did not, the old if-chain fell off the
     // end and resolved successfully with no server running.
-    await expect(startRestApiAdapter(
-      { JUMENTIX_HTTP_FRAMEWORK: 'express' } as unknown as NodeJS.ProcessEnv,
-      {}
-    )).rejects.toThrow('No adapter registered');
+    await expect(
+      startRestApiAdapter(
+        { JUMENTIX_HTTP_FRAMEWORK: 'express' } as unknown as NodeJS.ProcessEnv,
+        {}
+      )
+    ).rejects.toThrow('No adapter registered');
   });
 
   it('registers an adapter for every framework RuntimeEnvironment accepts', () => {
@@ -91,9 +98,9 @@ describe('start-rest-api adapter loader', () => {
     // The standing guard against that drift, rather than a test of one instance
     // of it: every name the environment resolver admits must have a row.
     const unregistered = Object.keys(REST_API_ADAPTERS).filter((framework) => {
-      const resolved = resolveHTTPFramework(
-        { JUMENTIX_HTTP_FRAMEWORK: framework } as unknown as NodeJS.ProcessEnv
-      );
+      const resolved = resolveHTTPFramework({
+        JUMENTIX_HTTP_FRAMEWORK: framework
+      } as unknown as NodeJS.ProcessEnv);
       return REST_API_ADAPTERS[resolved] === undefined;
     });
 

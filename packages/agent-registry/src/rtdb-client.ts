@@ -1,15 +1,8 @@
-/* eslint-disable no-console */
-import {
-  initializeApp,
-  cert,
-  getApps,
-  deleteApp
-} from 'firebase-admin/app';
+import { cert, deleteApp, getApps, initializeApp } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
-import {
-  loadServiceAccount,
-  resolveDatabaseUrl
-} from './firebase-credentials';
+
+import { loadServiceAccount, resolveDatabaseUrl } from './firebase-credentials';
+
 import type { RtdbLike } from './types';
 
 /**
@@ -26,16 +19,14 @@ function ensureAppWithDatabaseUrl(databaseURL: string): void {
     const existingUrl = existing.options?.databaseURL;
     if (!existingUrl) {
       throw new Error(
-        'Firebase app is already initialized without a Realtime Database URL. '
-        + 'Create the RTDB client before Firestore, or set FIREBASE_DATABASE_URL '
-        + '(or rely on the project_id-derived default) before the first Firebase '
-        + 'initialize call.'
+        'Firebase app is already initialized without a Realtime Database URL. ' +
+          'Create the RTDB client before Firestore, or set FIREBASE_DATABASE_URL ' +
+          '(or rely on the project_id-derived default) before the first Firebase ' +
+          'initialize call.'
       );
     }
     if (existingUrl !== databaseURL) {
-      throw new Error(
-        'Firebase app databaseURL does not match the resolved RTDB URL.'
-      );
+      throw new Error('Firebase app databaseURL does not match the resolved RTDB URL.');
     }
     return;
   }

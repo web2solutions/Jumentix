@@ -1,19 +1,19 @@
 /* eslint-disable no-console */
-import { Express } from 'express';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { composeUsersAuthServices } from '@src/modules/Users';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
 import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
-import { ServiceManagementCatalogAPI } from '@service-management-api/ServiceManagementCatalogAPI';
-import {
-  createServiceManagementCatalogDbClient
-} from '@service-management-api/infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
+import JwtService from '@src/infra/jwt/JwtService';
+import compileMessageMediator from '@src/infra/messages/compileMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import { composeUsersAuthServices } from '@src/modules/Users';
+
+import { createServiceManagementCatalogDbClient } from '@service-management-api/infra/persistence/InMemoryDatabase/InMemoryCatalogDbClient';
 import { applyCatalogCorsDefaults } from '@service-management-api/runtime/catalogCors';
+import { ServiceManagementCatalogAPI } from '@service-management-api/ServiceManagementCatalogAPI';
+
+import type { Express } from 'express';
 
 applyCatalogCorsDefaults();
 
@@ -46,19 +46,26 @@ const catalogAPI = new ServiceManagementCatalogAPI<Express>({
   await catalogAPI.start();
   console.log('Service Management catalog API started.');
 })().catch((error: unknown) => {
-  // eslint-disable-next-line no-console
   console.error(error);
   process.exitCode = 1;
 });
 
 const stop = async () => {
   await catalogAPI.stop();
-  await keyValueStorageClient.disconnect?.();
+  await keyValueStorageClient?.disconnect?.();
 };
 
 process.once('SIGTERM', () => {
-  stop().finally(() => process.exit(0)).catch(() => undefined);
+  stop()
+    .finally(() => {
+      process.exitCode = 0;
+    })
+    .catch(() => undefined);
 });
 process.once('SIGINT', () => {
-  stop().finally(() => process.exit(0)).catch(() => undefined);
+  stop()
+    .finally(() => {
+      process.exitCode = 0;
+    })
+    .catch(() => undefined);
 });

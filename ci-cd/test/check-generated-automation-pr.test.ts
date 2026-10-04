@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const {
   isAllowedReleasePath,
   validateGeneratedAutomationPr
@@ -70,8 +69,8 @@ describe('check-generated-automation-pr', () => {
       changedFiles: ['packages/cana/package.json', 'README.md']
     });
     expect(bad.failures).toStrictEqual([
-      '[generated-automation] package-bump PR must only touch package manifests'
-        + ' (+ cli-init templates.manifest.json); unexpected file: README.md'
+      '[generated-automation] package-bump PR must only touch package manifests' +
+        ' (+ cli-init templates.manifest.json); unexpected file: README.md'
     ]);
   });
 

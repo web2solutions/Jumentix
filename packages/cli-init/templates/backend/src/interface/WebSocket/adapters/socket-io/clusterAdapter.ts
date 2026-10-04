@@ -1,20 +1,19 @@
-import cluster from 'cluster';
-import os from 'os';
+import cluster from 'node:cluster';
+import os from 'node:os';
+
 import { createAdapter, setupPrimary } from '@socket.io/cluster-adapter';
-import { Server } from 'socket.io';
+
+import type { Server } from 'socket.io';
 
 export interface IClusterSocketIoAdapter {
   configure: (io: Server) => Promise<void>;
   cleanup: () => Promise<void>;
 }
 
-export const isClusterSocketIoEnabled = (
-  env: NodeJS.ProcessEnv = process.env
-): boolean => env.JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER === 'cluster';
+export const isClusterSocketIoEnabled = (env: NodeJS.ProcessEnv = process.env): boolean =>
+  env.JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER === 'cluster';
 
-export const resolveWebSocketClusterWorkers = (
-  env: NodeJS.ProcessEnv = process.env
-): number => {
+export const resolveWebSocketClusterWorkers = (env: NodeJS.ProcessEnv = process.env): number => {
   const parsed = Number(env.JUMENTIX_WEBSOCKET_CLUSTER_WORKERS || '');
   if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed);
   return Math.max(1, os.cpus().length);

@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const YAML = require('yaml');
+
 const { runWhenEntryPoint } = require('./lib/entry-point.js');
 
 const ENTITY_SCHEMAS = ['User', 'Organization'];
@@ -108,7 +110,9 @@ function collectRelationErrors({ document, sources }) {
   for (const [key, model] of modelByKey) {
     const spec = oasByKey.get(key);
     if (!spec) {
-      errors.push(`${key}: model relation has no x-relation, expected entity=${model.entity} kind=${model.kind}`);
+      errors.push(
+        `${key}: model relation has no x-relation, expected entity=${model.entity} kind=${model.kind}`
+      );
       continue;
     }
     if (spec.entity !== model.entity) {
@@ -124,7 +128,9 @@ function collectRelationErrors({ document, sources }) {
 
   for (const [key, spec] of oasByKey) {
     if (!modelByKey.has(key)) {
-      errors.push(`${key}: x-relation has no model decorator, expected entity=${spec.entity} kind=${spec.kind}`);
+      errors.push(
+        `${key}: x-relation has no model decorator, expected entity=${spec.entity} kind=${spec.kind}`
+      );
     }
   }
 
@@ -157,8 +163,8 @@ function main() {
 runWhenEntryPoint({ caller: module, execute: main });
 
 module.exports = {
-  collectOasRelations,
   collectModelRelations,
+  collectOasRelations,
   collectRelationErrors,
   main
 };

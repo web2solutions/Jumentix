@@ -1,1 +1,3 @@
-export { DynamoDbRepository } from '@jumentix/external-db-repositories';
+import { DynamoDbRepository } from '@jumentix/external-db-repositories';
+
+export default DynamoDbRepository;

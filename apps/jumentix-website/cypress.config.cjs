@@ -1,5 +1,7 @@
 const { defineConfig } = require('cypress');
 
+const { process } = globalThis;
+
 /**
  * JUM-396 — website quality gates.
  *
@@ -24,6 +26,7 @@ module.exports = defineConfig({
     setupNodeEvents(on) {
       on('task', {
         log(message) {
+          // eslint-disable-next-line no-console -- Cypress task handler: forwards browser log output to the runner terminal
           console.log(message);
           return null;
         }

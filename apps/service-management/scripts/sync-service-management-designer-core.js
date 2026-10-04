@@ -1,6 +1,6 @@
-/* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 /**
@@ -29,11 +29,13 @@ const VENDORED_DIR = path.join('apps', 'service-management', 'vendor', 'designer
 
 /** Every JavaScript module under `dir`, relative to it, sorted. */
 function listModules(dir, readDir, prefix = '') {
-  return readDir(dir).flatMap((entry) => {
-    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) return listModules(path.join(dir, rel), readDir, rel);
-    return entry.name.endsWith('.js') ? [rel] : [];
-  }).sort();
+  return readDir(dir)
+    .flatMap((entry) => {
+      const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) return listModules(path.join(dir, rel), readDir, rel);
+      return entry.name.endsWith('.js') ? [rel] : [];
+    })
+    .sort();
 }
 
 function syncServiceManagementDesignerCore(options = {}) {
@@ -41,11 +43,14 @@ function syncServiceManagementDesignerCore(options = {}) {
   const exists = options.exists || fs.existsSync;
   const readDir = options.readDir || ((dir) => fs.readdirSync(dir, { withFileTypes: true }));
   const readFile = options.readFile || fs.readFileSync;
-  const writeFile = options.writeFile || ((target, contents) => {
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(target, contents);
-  });
-  const removeDir = options.removeDir || ((target) => fs.rmSync(target, { recursive: true, force: true }));
+  const writeFile =
+    options.writeFile ||
+    ((target, contents) => {
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, contents);
+    });
+  const removeDir =
+    options.removeDir || ((target) => fs.rmSync(target, { recursive: true, force: true }));
   const logger = options.logger || console;
 
   const sourceDir = path.join(root, PACKAGE_SRC);
@@ -78,6 +83,6 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   PACKAGE_SRC,
-  VENDORED_DIR,
-  syncServiceManagementDesignerCore
+  syncServiceManagementDesignerCore,
+  VENDORED_DIR
 };

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-GOVERNANCE-AND-TRACEABILITY.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Governança e rastreabilidade de especificações
 
 O desenvolvimento de especificações orientado no Jumentix é aplicado por meio de governança de projetos e links auditáveis.
@@ -263,7 +264,7 @@ Conjunto mínimo de evidências:
 11. Prova de propagação mostrando que teste obrigatório ausente ou com falha não pode produzir
     resultado verde
 12. Testes de transporte do Agent Registry cobrindo construção da URL raw imutável, codificação
-   segura do caminho, autenticação opcional da resolução de branch, falhas de transporte e
-   divergência do espelho
+    segura do caminho, autenticação opcional da resolução de branch, falhas de transporte e
+    divergência do espelho
 13. Status, prioridade, datas, rótulos, responsável, alinhamento de milestone e histórico de
     Project Updates atuais da tarefa/Project

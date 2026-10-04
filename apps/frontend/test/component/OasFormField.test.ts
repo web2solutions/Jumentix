@@ -1,6 +1,4 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 
 import OasFormField from '@/components/OasFormField.vue';
 import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
@@ -27,9 +25,11 @@ describe('OasFormField', () => {
   it('renders the x-label of the active locale and the description as help text', async () => {
     expect.hasAssertions();
     const [firstName] = fieldDescriptors('RequestCreateUser').filter((d) => d.name === 'firstName');
-    const wrapper = mountWithShell(OasFormField, { props: { descriptor: firstName, modelValue: '' } });
+    const wrapper = mountWithShell(OasFormField, {
+      props: { descriptor: firstName, modelValue: '' }
+    });
     expect(wrapper.find('label').text()).toBe('First name *');
-    expect(wrapper.find('.form-text').text()).toBe('User\'s first name');
+    expect(wrapper.find('.form-text').text()).toBe("User's first name");
     setLocale('pt-BR');
     await wrapper.vm.$nextTick();
     expect(wrapper.find('label').text()).toBe('Nome *');
@@ -39,7 +39,10 @@ describe('OasFormField', () => {
   it('humanizes a property with no x-label and no title', () => {
     expect.hasAssertions();
     const wrapper = mountWithShell(OasFormField, {
-      props: { descriptor: { name: 'customerSegmentCode', type: 'string', required: false }, modelValue: '' }
+      props: {
+        descriptor: { name: 'customerSegmentCode', type: 'string', required: false },
+        modelValue: ''
+      }
     });
     expect(wrapper.find('label').text()).toBe('Customer segment code');
     wrapper.unmount();
@@ -50,7 +53,10 @@ describe('OasFormField', () => {
     const wrapper = mountWithShell(OasFormField, {
       props: {
         descriptor: {
-          name: 'username', type: 'string', required: true, maxLength: 12
+          name: 'username',
+          type: 'string',
+          required: true,
+          maxLength: 12
         },
         modelValue: ''
       }
@@ -67,7 +73,10 @@ describe('OasFormField', () => {
     const wrapper = mountWithShell(OasFormField, {
       props: {
         descriptor: {
-          name: 'username', type: 'string', required: true, description: 'help'
+          name: 'username',
+          type: 'string',
+          required: true,
+          description: 'help'
         },
         modelValue: '',
         invalid: 'Username is required.'
@@ -90,14 +99,20 @@ describe('SearchableEnumInput', () => {
       props: {
         id: 'org',
         modelValue: 'org-1',
-        options: [{ value: 'org-1', label: 'ACME' }, { value: 'org-2', label: 'Umbrella' }]
+        options: [
+          { value: 'org-1', label: 'ACME' },
+          { value: 'org-2', label: 'Umbrella' }
+        ]
       }
     });
     const input = wrapper.find('input');
     expect((input.element as HTMLInputElement).value).toBe('ACME');
     await input.setValue('Umbrella');
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toStrictEqual(['org-2']);
-    expect(wrapper.findAll('option').map((o) => o.attributes('value'))).toStrictEqual(['ACME', 'Umbrella']);
+    expect(wrapper.findAll('option').map((o) => o.attributes('value'))).toStrictEqual([
+      'ACME',
+      'Umbrella'
+    ]);
     wrapper.unmount();
   });
 
@@ -117,13 +132,16 @@ describe('SearchableEnumInput', () => {
       props: {
         id: 'org',
         modelValue: '',
-        options: [] as Array<{ value: string; label: string }>
+        options: [] as { value: string; label: string }[]
       }
     });
     await wrapper.find('input').setValue('ACME');
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toStrictEqual(['ACME']);
     await wrapper.setProps({
-      options: [{ value: 'org-1', label: 'ACME' }, { value: 'org-2', label: 'Umbrella' }]
+      options: [
+        { value: 'org-1', label: 'ACME' },
+        { value: 'org-2', label: 'Umbrella' }
+      ]
     });
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toStrictEqual(['org-1']);
     wrapper.unmount();

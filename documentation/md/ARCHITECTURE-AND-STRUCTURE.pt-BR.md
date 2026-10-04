@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/ARCHITECTURE-AND-STRUCTURE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Arquitetura e Estrutura
 
 ## Estrutura do Projeto (Atual)

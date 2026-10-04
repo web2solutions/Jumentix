@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/contracts/WEBSOCKET-REALTIME-CONTRACTS.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Contratos em tempo real WebSocket
 
 Contratos canônicos para transporte em tempo real do Socket.IO.
@@ -83,11 +84,13 @@ Quando `ok=false`, a resposta inclui:
 ```
 
 A semântica do erro deve seguir:
+
 - [Contratos e respostas de erro](../ERROR-CONTRACTS-AND-RESPONSES.md)
 
 ## Registro de Operação
 
 `operationId` deve corresponder à lista de operações permitidas em:
+
 - `spec/asyncapi/1.0.0.websocket.yml` (`components.schemas.ApiRequest.properties.operationId.enum`)
 
 ## Política de Alteração de Contrato

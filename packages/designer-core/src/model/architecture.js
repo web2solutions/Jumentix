@@ -75,10 +75,12 @@ export function buildMonolithArchitecture(domains, options = {}) {
 export function normalizeArchitectureService(entry, index, knownDomainIds) {
   const source = entry || {};
   const kind = ARCHITECTURE_SERVICE_KINDS.includes(source.kind) ? source.kind : 'domain';
-  const id = String(source.id || '').trim()
-    || (kind === 'core' ? CORE_SERVICE_ID : fallbackId('service', index));
-  const domainIds = parseCommaSeparated(source.domains || [])
-    .filter((domainId) => !knownDomainIds || knownDomainIds.has(domainId));
+  const id =
+    String(source.id || '').trim() ||
+    (kind === 'core' ? CORE_SERVICE_ID : fallbackId('service', index));
+  const domainIds = parseCommaSeparated(source.domains || []).filter(
+    (domainId) => !knownDomainIds || knownDomainIds.has(domainId)
+  );
   return {
     id,
     name: String(source.name || '').trim() || (kind === 'core' ? 'Core' : `Service_${index + 1}`),
@@ -126,7 +128,9 @@ export function normalizeArchitectureInput(architecture, domains) {
   if (!rawServices.length) {
     return buildMonolithArchitecture(list);
   }
-  const services = rawServices.map((entry, index) => normalizeArchitectureService(entry, index, knownDomainIds));
+  const services = rawServices.map((entry, index) =>
+    normalizeArchitectureService(entry, index, knownDomainIds)
+  );
   const assigned = new Set(services.flatMap((service) => service.domains));
   const core = services.find((service) => service.kind === 'core') || services[0];
   list.forEach((domain) => {
@@ -143,7 +147,9 @@ export function normalizeArchitectureInput(architecture, domains) {
 }
 
 export function serviceForDomain(architecture, domainId) {
-  return (architecture?.services || []).find((service) => service.domains.includes(domainId)) || null;
+  return (
+    (architecture?.services || []).find((service) => service.domains.includes(domainId)) || null
+  );
 }
 
 export function protocolInterfaceType(protocol) {
@@ -209,9 +215,10 @@ export function buildArchitectureFromOas(parsed, domains) {
     if (serviceId && server.url) urlByService.set(serviceId, String(server.url));
   });
   const schemaDomainNames = new Map();
-  const schemas = parsed?.components?.schemas && typeof parsed.components.schemas === 'object'
-    ? parsed.components.schemas
-    : {};
+  const schemas =
+    parsed?.components?.schemas && typeof parsed.components.schemas === 'object'
+      ? parsed.components.schemas
+      : {};
   Object.values(schemas).forEach((schema) => {
     const serviceId = String(schema?.['x-service'] || '').trim();
     const domainName = String(schema?.['x-domain'] || '').trim();
@@ -225,16 +232,22 @@ export function buildArchitectureFromOas(parsed, domains) {
     const domainIds = list
       .filter((domain) => ownedNames.has(normalizedName(domain.name)))
       .map((domain) => domain.id);
-    return normalizeArchitectureService({
-      ...entry,
-      id,
-      url: urlByService.get(id) || entry?.url,
-      domains: domainIds.length ? domainIds : (entry?.domains || [])
-    }, index, new Set(list.map((domain) => domain.id)));
+    return normalizeArchitectureService(
+      {
+        ...entry,
+        id,
+        url: urlByService.get(id) || entry?.url,
+        domains: domainIds.length ? domainIds : entry?.domains || []
+      },
+      index,
+      new Set(list.map((domain) => domain.id))
+    );
   });
   if (!services.length) {
     return normalizeArchitectureInput(null, list);
   }
-  const linksInput = Array.isArray(parsed?.['x-architecture-links']) ? parsed['x-architecture-links'] : [];
+  const linksInput = Array.isArray(parsed?.['x-architecture-links'])
+    ? parsed['x-architecture-links']
+    : [];
   return normalizeArchitectureInput({ services, links: linksInput }, list);
 }

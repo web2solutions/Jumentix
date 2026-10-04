@@ -4,7 +4,7 @@ export interface IPagingRequest {
   page?: number;
   size?: number;
   /** Ordered sort fields (JUM-777); see `parseListSort` for the wire form. */
-  sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  sort?: { field: string; direction: 'asc' | 'desc' }[];
   /** Free-text search term applied over `searchFields` (JUM-777). */
   q?: string;
   /** Fields `q` is matched against; declared by the operation's `x-list-capabilities`. */
@@ -46,9 +46,7 @@ export type TStorePrimitive = string | number | boolean | Date | null;
  * deliberate cost: the alternative is the type saying fifteen operators and
  * meaning any string.
  */
-export type TStoreScalar =
-  | TStorePrimitive
-  | (Record<string, unknown> & { operator?: never });
+export type TStoreScalar = TStorePrimitive | (Record<string, unknown> & { operator?: never });
 
 export type TFilterOperator =
   | 'eq'
@@ -73,17 +71,14 @@ export interface IStoreFilterExpression {
 }
 
 export type TStoreFilterValue =
-  | TStoreScalar
-  | TStoreScalar[]
-  | IStoreFilterExpression
-  | Array<IStoreFilterExpression>;
+  TStoreScalar | TStoreScalar[] | IStoreFilterExpression | IStoreFilterExpression[];
 
 export type TStoreFilters<T> = Partial<Record<Extract<keyof T, string>, TStoreFilterValue>>;
 
 export interface IStoreLogicalFilters<T> {
-  and?: Array<TStoreFilters<T>>;
-  or?: Array<TStoreFilters<T>>;
-  not?: Array<TStoreFilters<T>>;
+  and?: TStoreFilters<T>[];
+  or?: TStoreFilters<T>[];
+  not?: TStoreFilters<T>[];
 }
 
 export interface IStoreSortField<T> {
@@ -101,8 +96,8 @@ export interface IStoreRelationInclude {
 export interface IStoreQuery<T> {
   filters?: TStoreFilters<T>;
   logical?: IStoreLogicalFilters<T>;
-  fields?: Array<Extract<keyof T, string>>;
-  sort?: Array<IStoreSortField<T>>;
+  fields?: Extract<keyof T, string>[];
+  sort?: IStoreSortField<T>[];
   include?: IStoreRelationInclude[];
   paging?: IPagingRequest;
   cursor?: string;
@@ -145,7 +140,7 @@ export interface IStoreTransaction {
 
 export interface IStoreIndexDefinition<T> {
   name: string;
-  fields: Array<Extract<keyof T, string>>;
+  fields: Extract<keyof T, string>[];
   unique?: boolean;
   sparse?: boolean;
   caseInsensitive?: boolean;
@@ -187,5 +182,5 @@ export interface IStore<T> {
   ): Promise<TResult[]>;
   bulkWrite?(items: IStoreBulkWriteItem<T>[]): Promise<IStoreBulkWriteResult<T>>;
   beginTransaction?(): Promise<IStoreTransaction>;
-  ensureIndexes?(indexes: Array<IStoreIndexDefinition<T>>): Promise<void>;
+  ensureIndexes?(indexes: IStoreIndexDefinition<T>[]): Promise<void>;
 }

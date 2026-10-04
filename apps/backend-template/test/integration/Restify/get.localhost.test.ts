@@ -1,21 +1,23 @@
 /* global  describe, it, expect */
+
 import request from 'supertest';
 
-import { Server as Restify } from 'restify';
-import { RestifyServer } from '@src/interface/HTTP/adapters/restify/RestifyServer';
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { infraHandlers } from '@src/interface/HTTP/adapters/restify/handlers/infraHandlers';
-import { BasicAuthorizationHeaderUser1 } from '@test/mock';
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/restify/handlers/infraHandlers';
+import RestifyServer from '@src/interface/HTTP/adapters/restify/RestifyServer';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
 import { UserDataRepository, UserService } from '@src/modules/Users';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { UserProviderLocal } from '@src/modules/Users/service/UserProviderLocal';
+import AuthService from '@src/modules/Users/service/AuthService';
+import UserProviderLocal from '@src/modules/Users/service/UserProviderLocal';
 import { listenForSupertest } from '@test/helpers/listenForSupertest';
+import { BasicAuthorizationHeaderUser1 } from '@test/mock';
+
+import type { Server as Restify } from 'restify';
 
 const passwordCryptoService = PasswordCryptoService.compile();
 const jwtService = JwtService.compile();
@@ -34,11 +36,7 @@ const userService = UserService.compile({
   }
 });
 const userProvider = UserProviderLocal.compile(userService);
-const authService = AuthService.compile(
-  userProvider,
-  passwordCryptoService,
-  jwtService
-);
+const authService = AuthService.compile(userProvider, passwordCryptoService, jwtService);
 // LOCAL IDENTITY PROVIDER
 const serverType = EHTTPFrameworks.restify;
 const webServer = RestifyServer.compile();

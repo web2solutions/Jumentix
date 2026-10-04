@@ -32,14 +32,14 @@ server-side tests see identical behaviour.
 
 ## Glossary
 
-| Term | Meaning |
-| --- | --- |
-| **Domain model** | The `{ domains, relationships }` slice describing bounded contexts, entities, fields, and links between entities. |
-| **State** | The full designer state after `normalizeStatePayload` — model slice plus view, deployments, interfaces, and configuration sections. |
-| **Normalise** | `normalizeStatePayload` fills defaults, clamps values, and drops invalid relationships so every consumer sees the same shape. |
-| **Model issue** | One validation finding from `collectModelIssues` — `{ message, entityId, severity }` where severity is `error`, `warn`, or `info`. |
-| **Sample model** | `buildSampleModelPayload()` — a realistic starter domain (Users/Organization) marked with the `sample-` id prefix. |
-| **Suite export** | Full JSON document (`kind: service-management-suite`) produced by `buildJsonExportDocument`. |
+| Term             | Meaning                                                                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Domain model** | The `{ domains, relationships }` slice describing bounded contexts, entities, fields, and links between entities.                   |
+| **State**        | The full designer state after `normalizeStatePayload` — model slice plus view, deployments, interfaces, and configuration sections. |
+| **Normalise**    | `normalizeStatePayload` fills defaults, clamps values, and drops invalid relationships so every consumer sees the same shape.       |
+| **Model issue**  | One validation finding from `collectModelIssues` — `{ message, entityId, severity }` where severity is `error`, `warn`, or `info`.  |
+| **Sample model** | `buildSampleModelPayload()` — a realistic starter domain (Users/Organization) marked with the `sample-` id prefix.                  |
+| **Suite export** | Full JSON document (`kind: service-management-suite`) produced by `buildJsonExportDocument`.                                        |
 
 ## Steps
 
@@ -93,10 +93,7 @@ document `version` when you add export fields your store cannot ignore.
 Prove your design survives export → parse → normalise:
 
 ```js
-import {
-  buildJsonExportDocument,
-  buildStateFromSuiteExport
-} from '@jumentix/designer-core';
+import { buildJsonExportDocument, buildStateFromSuiteExport } from '@jumentix/designer-core';
 
 const document = buildJsonExportDocument(state);
 const parsed = JSON.parse(JSON.stringify(document));
@@ -114,14 +111,14 @@ const roundTripIssues = collectModelIssues(roundTrip);
 
 ### 5. Full surface — public API map
 
-| Area | Key exports | Use when |
-| --- | --- | --- |
-| Model | `buildSampleModelPayload`, `isSampleDomain`, model queries | Bootstrapping or marking sample content |
-| State | `normalizeStatePayload`, `createDesignerState` | Load/save pipelines (store injected by app) |
-| Validation | `collectModelIssues`, `collectDeployTargetIssues`, … | Pre-save and export gates |
-| Exporters | `buildJsonExportDocument`, `buildOasDocument`, `buildMarkdownExport`, … | Download / codegen |
-| Importers | `buildStateFromSuiteExport`, `buildDomainFromPackage`, `buildDomainsFromOas` | File upload paths |
-| Codegen | `buildHexagonalBundle`, `buildAsyncApiFileSet` | Boilerplate generation |
+| Area       | Key exports                                                                  | Use when                                    |
+| ---------- | ---------------------------------------------------------------------------- | ------------------------------------------- |
+| Model      | `buildSampleModelPayload`, `isSampleDomain`, model queries                   | Bootstrapping or marking sample content     |
+| State      | `normalizeStatePayload`, `createDesignerState`                               | Load/save pipelines (store injected by app) |
+| Validation | `collectModelIssues`, `collectDeployTargetIssues`, …                         | Pre-save and export gates                   |
+| Exporters  | `buildJsonExportDocument`, `buildOasDocument`, `buildMarkdownExport`, …      | Download / codegen                          |
+| Importers  | `buildStateFromSuiteExport`, `buildDomainFromPackage`, `buildDomainsFromOas` | File upload paths                           |
+| Codegen    | `buildHexagonalBundle`, `buildAsyncApiFileSet`                               | Boilerplate generation                      |
 
 Import only what you need — tree-shaking friendly in bundlers that support it.
 
@@ -143,13 +140,13 @@ Do **not** pass a toy `{ version, name, entities }` shape — validation expects
 
 ## Common errors
 
-| Symptom | Cause | Fix | Verify success |
-| --- | --- | --- | --- |
-| `domains.forEach is not a function` | Raw payload skipped `normalizeStatePayload` | Call `normalizeStatePayload` first | `Array.isArray(state.domains)` |
-| Many “Duplicate entity name” errors | Copy-pasted entities in one domain | Rename entities or remove duplicates | Re-run `collectModelIssues`; errors gone |
-| Export gate blocks on RBAC | Role outside contract vocabulary | Use roles from the tenant RBAC contract | No error-severity RBAC issues |
-| `buildStateFromSuiteExport` returns `{ ok: false }` | Wrong `kind`/`version` or legacy shape mismatch | Check `reason`; use suite export v2 | `imported.ok === true` |
-| Circular structure in JSON.stringify | Class instances or DOM nodes in state | Keep only plain data | Serialisation succeeds |
+| Symptom                                             | Cause                                           | Fix                                     | Verify success                           |
+| --------------------------------------------------- | ----------------------------------------------- | --------------------------------------- | ---------------------------------------- |
+| `domains.forEach is not a function`                 | Raw payload skipped `normalizeStatePayload`     | Call `normalizeStatePayload` first      | `Array.isArray(state.domains)`           |
+| Many “Duplicate entity name” errors                 | Copy-pasted entities in one domain              | Rename entities or remove duplicates    | Re-run `collectModelIssues`; errors gone |
+| Export gate blocks on RBAC                          | Role outside contract vocabulary                | Use roles from the tenant RBAC contract | No error-severity RBAC issues            |
+| `buildStateFromSuiteExport` returns `{ ok: false }` | Wrong `kind`/`version` or legacy shape mismatch | Check `reason`; use suite export v2     | `imported.ok === true`                   |
+| Circular structure in JSON.stringify                | Class instances or DOM nodes in state           | Keep only plain data                    | Serialisation succeeds                   |
 
 ## Junior checklist (“I can …”)
 

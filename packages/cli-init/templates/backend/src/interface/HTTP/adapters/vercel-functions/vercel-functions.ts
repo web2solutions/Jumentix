@@ -1,59 +1,52 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { createUuid } from '@src/modules/port/UUID';
-
-import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { Context as RequestContext } from '@src/infra/context/Context';
-import type {
-  IHTTPRequest,
-  IHTTPResponse,
-  IbaseHandler
-} from '@src/interface/HTTP/ports';
-import {
-  EHTTPFrameworks,
-  HTTPBaseServer
-} from '@src/interface/HTTP/ports';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
-import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { composeUsersAuthServices } from '@src/modules/Users';
 import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
+
+import { Context as RequestContext } from '@src/infra/context/Context';
+import JwtService from '@src/infra/jwt/JwtService';
+import compileMessageMediator from '@src/infra/messages/compileMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import { EHTTPFrameworks, HTTPBaseServer } from '@src/interface/HTTP/ports';
+import { RestAPI } from '@src/interface/HTTP/RestAPI';
+import { createUuid } from '@src/modules/port/UUID';
+import { composeUsersAuthServices } from '@src/modules/Users';
+
 import {
   escapeText,
   isStaticDocsPath,
   STATIC_DOCS_UNAVAILABLE_MESSAGE
 } from './vercelFunctionsSecurity';
 
-type RouteMatch = {
+import type { IbaseHandler, IHTTPRequest, IHTTPResponse } from '@src/interface/HTTP/ports';
+
+interface RouteMatch {
   matched: boolean;
   params: Record<string, string>;
-};
+}
 
-type RegisteredRoute = {
+interface RegisteredRoute {
   method: string;
   path: string;
   handler: IbaseHandler['handler'];
-};
+}
 
-type VercelRequest = {
+interface VercelRequest {
   method?: string;
   url?: string;
   headers: Record<string, string | string[] | number | undefined>;
   body?: unknown;
-};
+}
 
-type VercelResponse = {
+interface VercelResponse {
   writableEnded?: boolean;
   setHeader: (key: string, value: string) => void;
   status: (statusCode: number) => VercelResponse;
   json: (payload: any) => any;
   send: (payload: any) => any;
   end: () => void;
-};
+}
 
 export type VercelFunctionsRequest = IHTTPRequest;
 export type VercelFunctionsResponse = {
@@ -237,12 +230,10 @@ const API = new RestAPI<Record<string, never>>({
 let initialized: Promise<void> | undefined;
 
 const ensureInitialized = async (): Promise<void> => {
-  if (!initialized) {
-    initialized = (async () => {
-      await API.start();
-      await API.seedData();
-    })();
-  }
+  initialized ??= (async () => {
+    await API.start();
+    await API.seedData();
+  })();
   await initialized;
 };
 

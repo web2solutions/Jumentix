@@ -1,6 +1,5 @@
-import {
-  beforeEach, describe, expect, it
-} from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { useTaskStore, visibleTaskSlice } from '@/stores/tasks';
@@ -30,10 +29,13 @@ describe('task store (JUM-796)', () => {
 
   it('hydrates the taskbar from sessionStorage', () => {
     expect.hasAssertions();
-    sessionStorage.setItem('jumentix-frontend-tasks', JSON.stringify({
-      open: ['users', 'billing'],
-      active: 'billing'
-    }));
+    sessionStorage.setItem(
+      'jumentix-frontend-tasks',
+      JSON.stringify({
+        open: ['users', 'billing'],
+        active: 'billing'
+      })
+    );
     const tasks = useTaskStore();
     tasks.hydrate();
     expect(tasks.open.join(',')).toBe('users,billing');

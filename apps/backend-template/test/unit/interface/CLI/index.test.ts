@@ -1,14 +1,15 @@
+import type cliIndexModule from '@src/interface/CLI/index';
 import type { ISubApplication, IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 const loadCatalogMock = jest.fn();
 const saveCatalogMock = jest.fn();
 
-jest.mock<typeof import('@src/interface/CLI/core/catalogStorage')>('@src/interface/CLI/core/catalogStorage', () => ({
+jest.mock('@src/interface/CLI/core/catalogStorage', () => ({
   getCatalogFilePath: jest.fn(() => '/tmp/workspace-catalog.json'),
   loadCatalog: () => loadCatalogMock(),
   saveCatalog: (catalog: unknown) => saveCatalogMock(catalog)
 }));
-let runCli: typeof import('@src/interface/CLI/index').runCli;
+let runCli: typeof cliIndexModule;
 
 describe('cli index', () => {
   const baseCatalog: IWorkspaceCatalog = {
@@ -31,7 +32,7 @@ describe('cli index', () => {
   };
 
   beforeAll(async () => {
-    ({ runCli } = await import('@src/interface/CLI/index'));
+    ({ default: runCli } = await import('@src/interface/CLI/index'));
   });
 
   beforeEach(() => {

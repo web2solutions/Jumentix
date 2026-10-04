@@ -1,4 +1,5 @@
-import { InMemoryDeadLetterStore } from './InMemoryDeadLetterStore';
+import InMemoryDeadLetterStore from './InMemoryDeadLetterStore';
+
 import type {
   DeadLetterInput,
   DeadLetterRecord,
@@ -52,10 +53,12 @@ export class DeadLetterQueue implements IDeadLetterQueue {
     this.now = now;
     // Two records enqueued in the same millisecond must not collide, so the
     // default id carries a counter rather than the timestamp alone.
-    this.newId = newId ?? (() => {
-      this.sequence += 1;
-      return `dlq-${this.now().getTime()}-${this.sequence}`;
-    });
+    this.newId =
+      newId ??
+      (() => {
+        this.sequence += 1;
+        return `dlq-${this.now().getTime()}-${this.sequence}`;
+      });
   }
 
   public async enqueue<TPayload>(
@@ -79,7 +82,7 @@ export class DeadLetterQueue implements IDeadLetterQueue {
       ...(input.actorId ? { actorId: input.actorId } : {})
     };
 
-    await this.store.put(record as DeadLetterRecord);
+    await this.store.put(record);
     return record;
   }
 
@@ -104,7 +107,10 @@ export class DeadLetterQueue implements IDeadLetterQueue {
     handlers: Record<string, DeadLetterReplayHandler>
   ): Promise<DeadLetterReplayReport> {
     const report: DeadLetterReplayReport = {
-      replayed: [], retried: [], abandoned: [], skipped: []
+      replayed: [],
+      retried: [],
+      abandoned: [],
+      skipped: []
     };
 
     /* eslint-disable no-await-in-loop --
@@ -143,7 +149,10 @@ export class DeadLetterQueue implements IDeadLetterQueue {
         return;
       }
       await this.store.put({
-        ...record, attempts, updatedAt: this.now().toISOString(), lastError: detail
+        ...record,
+        attempts,
+        updatedAt: this.now().toISOString(),
+        lastError: detail
       });
       report.retried.push(record.id);
     }

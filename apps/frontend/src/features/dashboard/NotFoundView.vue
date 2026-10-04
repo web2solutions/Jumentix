@@ -11,5 +11,5 @@
 </template>
 
 <script setup lang="ts">
-import { CCol, CRow } from '@coreui/vue'
+import { CCol, CRow } from '@coreui/vue';
 </script>

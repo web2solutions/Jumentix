@@ -1,7 +1,10 @@
-import { CatalogDataRepository } from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
-import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
-import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
+import InMemoryRelationalStore from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
+
+import CatalogDataRepository from '@service-management-api/modules/Catalogs/adapters/out/persistence/CatalogDataRepository';
+
 import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
+
+import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
 
 /**
  * The catalog repository called the way the service calls it (JUM-681/JUM-491).
@@ -28,16 +31,17 @@ const makeRepository = (limit?: number) => {
     disconnect: () => Promise.resolve()
   } as unknown as IDatabaseClient;
 
-  return CatalogDataRepository.compile({ databaseClient, limit }) as CatalogDataRepository;
+  return CatalogDataRepository.compile({ databaseClient, limit });
 };
 
-const seed = (repository: CatalogDataRepository) => repository.create({
-  organization: 'org-1',
-  name: 'Billing',
-  description: 'the billing domain',
-  design: { kind: 'domain-package', version: 1 },
-  provenance: { author: 'a' }
-} as never);
+const seed = (repository: CatalogDataRepository) =>
+  repository.create({
+    organization: 'org-1',
+    name: 'Billing',
+    description: 'the billing domain',
+    design: { kind: 'domain-package', version: 1 },
+    provenance: { author: 'a' }
+  });
 
 describe('catalog repository fallbacks (JUM-681)', () => {
   it('keeps every field the update did not mention', async () => {
@@ -46,7 +50,7 @@ describe('catalog repository fallbacks (JUM-681)', () => {
     const repository = makeRepository();
     const created = await seed(repository);
 
-    const updated = await repository.update(created.id, { version: 1 } as never);
+    const updated = await repository.update(created.id, { version: 1 });
 
     expect(updated.name).toBe('Billing');
     expect(updated.description).toBe('the billing domain');
@@ -63,7 +67,7 @@ describe('catalog repository fallbacks (JUM-681)', () => {
 
     const updated = await repository.update(
       created.id,
-      { version: 1, name: 'Invoicing' } as never,
+      { version: 1, name: 'Invoicing' },
       'actor-1'
     );
 
@@ -77,7 +81,8 @@ describe('catalog repository fallbacks (JUM-681)', () => {
     const repository = makeRepository();
     const created = await seed(repository);
 
-    const conflict = await repository.update(created.id, { version: 9 } as never)
+    const conflict = await repository
+      .update(created.id, { version: 9 })
       .then(() => null)
       .catch((error: unknown) => error as Error & { metadata?: { currentVersion?: number } });
 
@@ -174,15 +179,17 @@ describe('catalog repository fallbacks (JUM-681)', () => {
   it('refuses to create a catalog with no name', async () => {
     expect.hasAssertions();
 
-    await expect(makeRepository().create({ organization: 'org-1', name: '' } as never))
-      .rejects.toThrow('name can not be empty');
+    await expect(
+      makeRepository().create({ organization: 'org-1', name: '' } as never)
+    ).rejects.toThrow('name can not be empty');
   });
 
   it('reports a missing record rather than returning an empty one', async () => {
     expect.hasAssertions();
 
-    await expect(makeRepository().getOneById('00000000-0000-4000-8000-000000000000'))
-      .rejects.toThrow('Record not found');
+    await expect(
+      makeRepository().getOneById('00000000-0000-4000-8000-000000000000')
+    ).rejects.toThrow('Record not found');
   });
 });
 

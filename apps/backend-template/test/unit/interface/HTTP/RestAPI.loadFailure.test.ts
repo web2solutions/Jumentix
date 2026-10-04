@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
 
 /**
  * Load-time module failures in the resolver (JUM-698's other half, REST side).
@@ -29,43 +27,31 @@ import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemo
  * back to the real module, while a non-Error propagates.
  */
 
-jest.mock(
-  '@src/modules/Users/interface/restapi/frameworks/express/handlers/login',
-  () => ({
-    __esModule: true,
-    get default(): unknown {
-      throw new TypeError('handler module exploded');
-    }
-  })
-);
-
-jest.mock(
-  '@src/modules/Users/interface/restapi/frameworks/express/handlers/logout',
-  () => ({
-    __esModule: true
-    // No default export: the module loads, but holds no handler factory, so
-    // the resolver moves on to the next framework candidate.
-  })
-);
-
-jest.mock(
-  '@src/modules/Users/interface/restapi/frameworks/express/handlers/register',
-  () => ({
-    __esModule: true,
-    get default(): unknown {
-      // eslint-disable-next-line no-throw-literal
-      throw 'register handler exploded without an Error';
-    }
-  })
-);
-
-jest.mock(
-  '@src/modules/Users/adapters/in/http/controllers/index',
-  () => {
-    // eslint-disable-next-line no-throw-literal
-    throw 'controller module exploded';
+jest.mock('@src/modules/Users/interface/restapi/frameworks/express/handlers/login', () => ({
+  __esModule: true,
+  get default(): unknown {
+    throw new TypeError('handler module exploded');
   }
-);
+}));
+
+jest.mock('@src/modules/Users/interface/restapi/frameworks/express/handlers/logout', () => ({
+  __esModule: true
+  // No default export: the module loads, but holds no handler factory, so
+  // the resolver moves on to the next framework candidate.
+}));
+
+jest.mock('@src/modules/Users/interface/restapi/frameworks/express/handlers/register', () => ({
+  __esModule: true,
+  get default(): unknown {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberately throws a bare value: the suite asserts the resolver rethrows the exact non-Error value
+    throw 'register handler exploded without an Error';
+  }
+}));
+
+jest.mock('@src/modules/Users/adapters/in/http/controllers/index', () => {
+  // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberately throws a bare value: the suite asserts the resolver rethrows the exact non-Error value
+  throw 'controller module exploded';
+});
 
 describe('restAPI resolver load-time failures', () => {
   let cwd: string;
@@ -90,26 +76,29 @@ describe('restAPI resolver load-time failures', () => {
     fs.rmSync(tmp, { recursive: true, force: true });
   });
 
-  const bareApi = () => new RestAPI<any>({
-    databaseClient: InMemoryDbClient,
-    webServer: {
-      endPointRegister: jest.fn(),
-      start: jest.fn(),
-      stop: jest.fn()
-    } as any,
-    infraHandlers
-  }) as any;
+  const bareApi = () =>
+    new RestAPI<any>({
+      databaseClient: InMemoryDbClient,
+      webServer: {
+        endPointRegister: jest.fn(),
+        start: jest.fn(),
+        stop: jest.fn()
+      } as any,
+      infraHandlers
+    }) as any;
 
   it('rethrows a load-time failure from a handler module instead of falling back', () => {
     expect.hasAssertions();
 
     const api = bareApi();
 
-    expect(() => api.getHandlerFactory({
-      moduleName: 'Users',
-      operationId: 'login',
-      endPointConfig: { operationId: 'login' }
-    })).toThrow('handler module exploded');
+    expect(() =>
+      api.getHandlerFactory({
+        moduleName: 'Users',
+        operationId: 'login',
+        endPointConfig: { operationId: 'login' }
+      })
+    ).toThrow('handler module exploded');
   });
 
   it('moves past a handler module with no default export and fails when none remains', () => {
@@ -117,11 +106,13 @@ describe('restAPI resolver load-time failures', () => {
 
     const api = bareApi();
 
-    expect(() => api.getHandlerFactory({
-      moduleName: 'Users',
-      operationId: 'logout',
-      endPointConfig: { operationId: 'logout' }
-    })).toThrow('Handler not found for module Users, operation logout, framework express.');
+    expect(() =>
+      api.getHandlerFactory({
+        moduleName: 'Users',
+        operationId: 'logout',
+        endPointConfig: { operationId: 'logout' }
+      })
+    ).toThrow('Handler not found for module Users, operation logout, framework express.');
   });
 
   it('rethrows a load-time failure from a controller module', () => {

@@ -6,13 +6,13 @@ Make the Node/CI boundary explicit and fail-closed. Locally these suites still r
 
 ## Inventory
 
-| Suite / surface | Why platform-dependent | Local (`runner`) | CI (`ciRunner`) | Tier |
-| --- | --- | --- | --- | --- |
-| `test/integration/mutex/*` | Real Redis | bun | node | nightly |
-| `realtime/socketio.redis-streams.multi-instance.test.ts` | Multi-instance Redis Streams | bun | node | nightly |
-| `test/smoke/database/*` | DB driver matrix / docker | bun | node | nightly |
-| HTTP framework integration (`Express`…`Total-JS`) | Framework + Nest harness quirks | bun | node | gate |
-| Restify | Historically Node-major sensitive | bun | node | gate |
+| Suite / surface                                          | Why platform-dependent            | Local (`runner`) | CI (`ciRunner`) | Tier    |
+| -------------------------------------------------------- | --------------------------------- | ---------------- | --------------- | ------- |
+| `test/integration/mutex/*`                               | Real Redis                        | bun              | node            | nightly |
+| `realtime/socketio.redis-streams.multi-instance.test.ts` | Multi-instance Redis Streams      | bun              | node            | nightly |
+| `test/smoke/database/*`                                  | DB driver matrix / docker         | bun              | node            | nightly |
+| HTTP framework integration (`Express`…`Total-JS`)        | Framework + Nest harness quirks   | bun              | node            | gate    |
+| Restify                                                  | Historically Node-major sensitive | bun              | node            | gate    |
 
 ## Former silent skips (removed as the source of truth)
 

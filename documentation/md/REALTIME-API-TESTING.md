@@ -93,4 +93,3 @@ bun run smoke:realtime:redis-streams
 2. Maintain deterministic fixed ports for isolated test files.
 3. Always close socket clients and stop server instances in `afterAll`.
 4. Update this file and `.agents` requirements whenever realtime transport behavior changes.
-

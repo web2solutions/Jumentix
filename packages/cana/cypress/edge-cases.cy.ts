@@ -1,6 +1,4 @@
-import type { CanaSchema } from '../src';
 import {
-  StorageDurability,
   browserStorageEnvironment,
   canaError,
   classifyOpen,
@@ -13,11 +11,14 @@ import {
   keyStrategyOf,
   openDatabase,
   planQuery,
+  StorageDurability,
   toKeyRange,
   translateError,
   validateSchema
 } from '../src';
 import { rejection } from './harness';
+
+import type { CanaSchema } from '../src';
 
 /**
  * The paths the happy-path suites do not reach: failure branches, boundary
@@ -28,7 +29,11 @@ import { rejection } from './harness';
  * ones nobody exercises by hand.
  */
 
-interface Design { id: number; name: string; size?: number }
+interface Design {
+  id: number;
+  name: string;
+  size?: number;
+}
 
 const schema = (over: Partial<CanaSchema> = {}): CanaSchema => ({
   version: 1,
@@ -43,8 +48,12 @@ function memoryTombstone() {
     backing,
     tombstone: {
       get: (key: string) => (backing.has(key) ? (backing.get(key) as string) : null),
-      set: (key: string, value: string) => { backing.set(key, value); },
-      remove: (key: string) => { backing.delete(key); }
+      set: (key: string, value: string) => {
+        backing.set(key, value);
+      },
+      remove: (key: string) => {
+        backing.delete(key);
+      }
     }
   };
 }
@@ -115,8 +124,9 @@ describe('error translation edge cases', () => {
 
 describe('schema validation edge cases', () => {
   it('rejects a store with no name', () => {
-    expect(validateSchema(schema({ stores: [{ name: '', keyPath: 'id' }] })))
-      .to.include('a store has no name');
+    expect(validateSchema(schema({ stores: [{ name: '', keyPath: 'id' }] }))).to.include(
+      'a store has no name'
+    );
   });
 
   it('rejects an empty schema', () => {
@@ -124,9 +134,11 @@ describe('schema validation edge cases', () => {
   });
 
   it('rejects an empty segment inside a compound keyPath', () => {
-    const problems = validateSchema(schema({
-      stores: [{ name: 'designs', keyPath: ['tenantId', ''] }]
-    }));
+    const problems = validateSchema(
+      schema({
+        stores: [{ name: 'designs', keyPath: ['tenantId', ''] }]
+      })
+    );
 
     expect(problems.some((entry) => entry.includes('empty segment'))).to.equal(true);
   });
@@ -138,9 +150,11 @@ describe('schema validation edge cases', () => {
   });
 
   it('rejects an index with no name', () => {
-    const problems = validateSchema(schema({
-      stores: [{ name: 'designs', keyPath: 'id', indexes: [{ name: '', keyPath: 'x' }] }]
-    }));
+    const problems = validateSchema(
+      schema({
+        stores: [{ name: 'designs', keyPath: 'id', indexes: [{ name: '', keyPath: 'x' }] }]
+      })
+    );
 
     expect(problems.some((entry) => entry.includes('an index has no name'))).to.equal(true);
   });
@@ -153,8 +167,9 @@ describe('schema validation edge cases', () => {
     // The four shapes drive whether an explicit key is legal at call time.
     expect(keyStrategyOf({ name: 'a', keyPath: 'id' })).to.equal('inbound');
     expect(keyStrategyOf({ name: 'a' })).to.equal('outbound');
-    expect(keyStrategyOf({ name: 'a', keyPath: 'id', autoIncrement: true }))
-      .to.equal('generated-inbound');
+    expect(keyStrategyOf({ name: 'a', keyPath: 'id', autoIncrement: true })).to.equal(
+      'generated-inbound'
+    );
     expect(keyStrategyOf({ name: 'a', autoIncrement: true })).to.equal('generated-outbound');
   });
 });
@@ -213,11 +228,13 @@ describe('query planning edge cases', () => {
     const client = createClient({
       name: 'designer',
       schema: schema({
-        stores: [{
-          name: 'designs',
-          keyPath: 'id',
-          indexes: [{ name: 'bySize', keyPath: 'size' }]
-        }]
+        stores: [
+          {
+            name: 'designs',
+            keyPath: 'id',
+            indexes: [{ name: 'bySize', keyPath: 'size' }]
+          }
+        ]
       })
     });
     await client.open();
@@ -249,8 +266,9 @@ describe('database lifecycle edge cases', () => {
     const saved = Reflect.get(globalThis, 'indexedDB');
     Reflect.deleteProperty(globalThis as object, 'indexedDB');
     try {
-      const failure = await openDatabase({ name: 'designer', schema: schema() })
-        .catch((error: unknown) => error);
+      const failure = await openDatabase({ name: 'designer', schema: schema() }).catch(
+        (error: unknown) => error
+      );
 
       expect(isCanaErrorCode(failure, 'Unavailable')).to.equal(true);
       expect((failure as { message: string }).message).to.include('No usable IndexedDB');
@@ -299,11 +317,13 @@ describe('database lifecycle edge cases', () => {
       factory,
       schema: schema({
         version: 2,
-        stores: [{
-          name: 'designs',
-          keyPath: 'id',
-          indexes: [{ name: 'byName', keyPath: 'name' }]
-        }]
+        stores: [
+          {
+            name: 'designs',
+            keyPath: 'id',
+            indexes: [{ name: 'byName', keyPath: 'name' }]
+          }
+        ]
       })
     }).catch((error: unknown) => error);
 
@@ -326,7 +346,10 @@ describe('storage durability edge cases', () => {
     let persistCalls = 0;
     const durability = new StorageDurability({
       persisted: async () => true,
-      persist: async () => { persistCalls += 1; return true; }
+      persist: async () => {
+        persistCalls += 1;
+        return true;
+      }
     });
 
     expect(await durability.requestPersistence()).to.equal(true);
@@ -335,7 +358,9 @@ describe('storage durability edge cases', () => {
 
   it('falls back to unknown when the persistence API throws', async () => {
     const durability = new StorageDurability({
-      persisted: async () => { throw new Error('blocked'); }
+      persisted: async () => {
+        throw new Error('blocked');
+      }
     });
 
     expect(await durability.requestPersistence()).to.equal('unknown');
@@ -345,7 +370,9 @@ describe('storage durability edge cases', () => {
   it('reports no usage when estimate is absent or throws', async () => {
     const absent = new StorageDurability({});
     const throwing = new StorageDurability({
-      estimate: async () => { throw new Error('denied'); }
+      estimate: async () => {
+        throw new Error('denied');
+      }
     });
 
     expect(await absent.state()).to.deep.include({ nearQuota: false });
@@ -358,7 +385,9 @@ describe('storage durability edge cases', () => {
     });
 
     expect(await durability.state()).to.deep.include({
-      nearQuota: true, usageBytes: 90, quotaBytes: 100
+      nearQuota: true,
+      usageBytes: 90,
+      quotaBytes: 100
     });
   });
 
@@ -375,7 +404,9 @@ describe('storage durability edge cases', () => {
     const durability = new StorageDurability({
       tombstone: {
         get: () => null,
-        set: () => { throw new Error('private mode'); },
+        set: () => {
+          throw new Error('private mode');
+        },
         remove: () => undefined
       }
     });
@@ -386,14 +417,18 @@ describe('storage durability edge cases', () => {
   it('treats a tombstone that throws on read as absent', () => {
     const durability = new StorageDurability({
       tombstone: {
-        get: () => { throw new Error('blocked'); },
+        get: () => {
+          throw new Error('blocked');
+        },
         set: () => undefined,
         remove: () => undefined
       }
     });
 
     const verdict = durability.evaluateOpen({
-      databaseName: 'designer', foundVersion: 0, isEmpty: true
+      databaseName: 'designer',
+      foundVersion: 0,
+      isEmpty: true
     });
 
     expect(verdict.reason).to.equal('first-run');
@@ -402,9 +437,13 @@ describe('storage durability edge cases', () => {
   it('reports undetectable when there is no tombstone at all', () => {
     const durability = new StorageDurability({});
 
-    expect(durability.evaluateOpen({
-      databaseName: 'designer', foundVersion: 0, isEmpty: true
-    })).to.deep.equal({ evicted: false, reason: 'undetectable-no-tombstone' });
+    expect(
+      durability.evaluateOpen({
+        databaseName: 'designer',
+        foundVersion: 0,
+        isEmpty: true
+      })
+    ).to.deep.equal({ evicted: false, reason: 'undetectable-no-tombstone' });
   });
 
   it('clears the eviction flag once acknowledged', async () => {
@@ -450,7 +489,7 @@ describe('storage durability edge cases', () => {
    * That is the behaviour eviction detection depends on, and it could not be
    * tested at all before this suite ran in a browser.
    */
-  it('builds a tombstone over the browser\'s own localStorage', () => {
+  it("builds a tombstone over the browser's own localStorage", () => {
     const { tombstone } = browserStorageEnvironment();
 
     expect(tombstone).to.not.equal(undefined);
@@ -458,6 +497,7 @@ describe('storage durability edge cases', () => {
     tombstone?.set('cana-tombstone-probe', 'written');
 
     expect(tombstone?.get('cana-tombstone-probe')).to.equal('written');
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Cypress specs execute in a real browser, not Node; browser globals are intentional
     expect(localStorage.getItem('cana-tombstone-probe')).to.equal('written');
 
     tombstone?.remove('cana-tombstone-probe');
@@ -474,7 +514,8 @@ describe('table edge cases', () => {
     });
     await client.open();
 
-    const failure = await client.table<Design>('designs')
+    const failure = await client
+      .table<Design>('designs')
       .add({ id: 1, name: 'a' })
       .catch((error: unknown) => error);
 
@@ -518,7 +559,11 @@ describe('table edge cases', () => {
       schema: schema({ stores: [{ name: 'designs', keyPath: ['tenant', 'id'] }] })
     });
     await client.open();
-    type Row = { tenant: string; id: number; name: string };
+    interface Row {
+      tenant: string;
+      id: number;
+      name: string;
+    }
     const table = client.table<Row>('designs');
     await table.add({ tenant: 't1', id: 1, name: 'first' });
 
@@ -535,13 +580,20 @@ describe('table edge cases', () => {
     // The most common misuse after the auto-commit one.
     const client = createClient({
       name: 'designer',
-      schema: schema({ stores: [{ name: 'designs', keyPath: 'id' }, { name: 'notes', keyPath: 'id' }] })
+      schema: schema({
+        stores: [
+          { name: 'designs', keyPath: 'id' },
+          { name: 'notes', keyPath: 'id' }
+        ]
+      })
     });
     await client.open();
 
-    const failure = await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table('notes').add({ id: 1 });
-    }).catch((error: unknown) => error);
+    const failure = await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table('notes').add({ id: 1 });
+      })
+      .catch((error: unknown) => error);
 
     expect(isCanaError(failure)).to.equal(true);
     await client.close();
@@ -550,7 +602,10 @@ describe('table edge cases', () => {
   it('clears a store and reports one cleared event', async () => {
     const client = createClient({ name: 'designer', schema: schema() });
     await client.open();
-    await client.table<Design>('designs').bulkAdd([{ id: 1, name: 'a' }, { id: 2, name: 'b' }]);
+    await client.table<Design>('designs').bulkAdd([
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' }
+    ]);
 
     const cleared = await client.table<Design>('designs').clear();
 
@@ -583,7 +638,8 @@ describe('client edge cases', () => {
 
   it('exposes name and version from the schema', () => {
     const client = createClient({
-      name: 'designer', schema: schema({ version: 7 })
+      name: 'designer',
+      schema: schema({ version: 7 })
     });
 
     expect(client.name).to.equal('designer');
@@ -592,7 +648,9 @@ describe('client edge cases', () => {
 
   it('tags events with the configured originId so a tab can ignore its own echo', async () => {
     const client = createClient({
-      name: 'designer', schema: schema(), originId: 'tab-a'
+      name: 'designer',
+      schema: schema(),
+      originId: 'tab-a'
     });
     await client.open();
 
@@ -647,7 +705,9 @@ describe('router edge cases', () => {
     const router = createRouter({
       port: {
         postMessage: () => undefined,
-        addEventListener: (_type, handler) => { listener = handler; },
+        addEventListener: (_type, handler) => {
+          listener = handler;
+        },
         removeEventListener: () => undefined
       }
     });
@@ -662,8 +722,12 @@ describe('router edge cases', () => {
     const sent: { requestId: string }[] = [];
     const router = createRouter({
       port: {
-        postMessage: (message) => { sent.push(message as { requestId: string }); },
-        addEventListener: (_type, handler) => { listener = handler; },
+        postMessage: (message) => {
+          sent.push(message as { requestId: string });
+        },
+        addEventListener: (_type, handler) => {
+          listener = handler;
+        },
         removeEventListener: () => undefined
       }
     });
@@ -687,7 +751,9 @@ describe('router edge cases', () => {
     const router = createRouter({
       port: {
         postMessage: () => undefined,
-        addEventListener: (_type, handler) => { listener = handler; },
+        addEventListener: (_type, handler) => {
+          listener = handler;
+        },
         removeEventListener: () => undefined
       }
     });

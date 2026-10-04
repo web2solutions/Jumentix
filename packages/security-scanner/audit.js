@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 /**
  * Dependency vulnerability audit (JUM-540).
  *
@@ -23,9 +25,10 @@
  * installed — not a compatibility lockfile translation or partial dependency view.
  */
 
-import { readdirSync, existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { evaluatePackages } from './src/index.js';
+
+import { evaluatePackages } from './src';
 
 const repoRoot = process.cwd();
 const storeDir = join(repoRoot, 'node_modules', '.bun');
@@ -40,8 +43,8 @@ const storeDir = join(repoRoot, 'node_modules', '.bun');
 function readResolvedPackages() {
   if (!existsSync(storeDir)) {
     throw new Error(
-      `Cannot audit: ${storeDir} does not exist. Run \`bun install\` first — auditing `
-        + 'a tree that was never resolved would report a clean result for an empty set.',
+      `Cannot audit: ${storeDir} does not exist. Run \`bun install\` first — auditing ` +
+        'a tree that was never resolved would report a clean result for an empty set.'
     );
   }
 
@@ -61,29 +64,28 @@ function readResolvedPackages() {
 const packages = readResolvedPackages();
 if (packages.length === 0) {
   console.error('Cannot audit: the resolved store is empty. Refusing to report a clean audit.');
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log(`[deps:audit] scanning ${packages.length} resolved packages via OSV.dev`);
+  const advisories = await evaluatePackages(packages);
+
+  const fatal = advisories.filter((entry) => entry.level === 'fatal');
+  const warn = advisories.filter((entry) => entry.level !== 'fatal');
+
+  for (const advisory of [...fatal, ...warn]) {
+    const marker = advisory.level === 'fatal' ? 'FATAL' : 'WARN ';
+    console.log(`  ${marker}  ${advisory.package}`);
+    console.log(`         ${advisory.description}`);
+    console.log(`         ${advisory.url}`);
+  }
+
+  if (advisories.length === 0) {
+    console.log('[deps:audit] no blocking advisories.');
+  } else {
+    console.error(
+      `\n[deps:audit] ${fatal.length} fatal and ${warn.length} warning advisory(ies). ` +
+        'Raise the pin, or record the advisory id in ACCEPTED_RISK with an expiry and a reason.'
+    );
+    process.exitCode = 1;
+  }
 }
-
-console.log(`[deps:audit] scanning ${packages.length} resolved packages via OSV.dev`);
-const advisories = await evaluatePackages(packages);
-
-const fatal = advisories.filter((entry) => entry.level === 'fatal');
-const warn = advisories.filter((entry) => entry.level !== 'fatal');
-
-for (const advisory of [...fatal, ...warn]) {
-  const marker = advisory.level === 'fatal' ? 'FATAL' : 'WARN ';
-  console.log(`  ${marker}  ${advisory.package}`);
-  console.log(`         ${advisory.description}`);
-  console.log(`         ${advisory.url}`);
-}
-
-if (advisories.length === 0) {
-  console.log('[deps:audit] no blocking advisories.');
-  process.exit(0);
-}
-
-console.error(
-  `\n[deps:audit] ${fatal.length} fatal and ${warn.length} warning advisory(ies). `
-    + 'Raise the pin, or record the advisory id in ACCEPTED_RISK with an expiry and a reason.',
-);
-process.exit(1);

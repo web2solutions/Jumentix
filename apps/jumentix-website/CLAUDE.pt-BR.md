@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/jumentix-website/CLAUDE.md
 Idioma alvo: Português (Brasil)
 -->
+
 #CLAUDE.md
 
 Este arquivo fornece orientação para Claude Code (claude.ai/code) ao trabalhar com código neste repositório.
@@ -12,20 +13,20 @@ Este é um modelo **Next.js 16 + Mantine 9 + Nextra 4** usado como base do site 
 
 ## Comandos
 
-| Comando | Finalidade |
-|--------|---------|
-| `desenvolvimento de fios` | Inicie o servidor de desenvolvimento Next.js |
-| `construção de fios` | Construção de produção (Next.js + índice de pesquisa pagefind) |
-| `teste de fio` | Suíte completa: typegen, oxfmt, lint, typecheck, jest |
-| `brincadeira de fio` | Execute apenas testes Jest |
-| `brincadeira do fio:assistir` | Brincadeira no modo relógio |
-| `yarn jest -- caminho/para/arquivo` | Execute um único arquivo de teste |
-| `verificação de tipo de fio` | Verificação de tipo TypeScript (`tsc --noEmit`) |
-| `fiapo de fio` | oxlint + Stylelint |
-| `formato do fio:write` | Formatar automaticamente todos os arquivos TS/TSX/CSS (oxfmt) |
-| `formato do fio:teste` | Verifique a formatação (oxfmt) |
-| `livro de histórias de fios` | Servidor de desenvolvimento do Storybook na porta 6006 |
-| `análise de fios` | Análise de pacote com `@next/bundle-analyzer` |
+| Comando                             | Finalidade                                                     |
+| ----------------------------------- | -------------------------------------------------------------- |
+| `desenvolvimento de fios`           | Inicie o servidor de desenvolvimento Next.js                   |
+| `construção de fios`                | Construção de produção (Next.js + índice de pesquisa pagefind) |
+| `teste de fio`                      | Suíte completa: typegen, oxfmt, lint, typecheck, jest          |
+| `brincadeira de fio`                | Execute apenas testes Jest                                     |
+| `brincadeira do fio:assistir`       | Brincadeira no modo relógio                                    |
+| `yarn jest -- caminho/para/arquivo` | Execute um único arquivo de teste                              |
+| `verificação de tipo de fio`        | Verificação de tipo TypeScript (`tsc --noEmit`)                |
+| `fiapo de fio`                      | oxlint + Stylelint                                             |
+| `formato do fio:write`              | Formatar automaticamente todos os arquivos TS/TSX/CSS (oxfmt)  |
+| `formato do fio:teste`              | Verifique a formatação (oxfmt)                                 |
+| `livro de histórias de fios`        | Servidor de desenvolvimento do Storybook na porta 6006         |
+| `análise de fios`                   | Análise de pacote com `@next/bundle-analyzer`                  |
 
 ## Arquitetura
 
@@ -63,6 +64,7 @@ A pesquisa usa [pagefind](https://pagefind.app/). O índice é construído pós-
 ### Ordem de importação de CSS
 
 Em `app/layout.tsx`, as importações de CSS devem seguir esta ordem:
+
 1. `@mantine/core/styles.css`
 2. Estilos de extensão Mantine (por exemplo, letreiro, texto animado)
 3. Estilos globais

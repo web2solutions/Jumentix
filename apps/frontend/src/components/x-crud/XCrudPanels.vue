@@ -14,27 +14,36 @@ const props = defineProps<{ crud: ReturnType<typeof useXCrud> }>();
 
 const WIDGET_COLORS = ['primary', 'info', 'warning', 'danger', 'success'];
 
-const widgets = computed(() => (props.crud.config.aggregates ?? []).map((aggregate, index) => ({
-  aggregate,
-  color: WIDGET_COLORS[index % WIDGET_COLORS.length],
-  value: props.crud.aggregateValue(aggregate),
-  // Server mode computes over the loaded page; the widget says so (JUM-778/781).
-  partial: props.crud.aggregateIsPartial(aggregate)
-})));
-
-const formatValue = (value: number): string => (
-  Number.isInteger(value) ? String(value) : value.toFixed(2)
+const widgets = computed(() =>
+  (props.crud.config.aggregates ?? []).map((aggregate, index) => ({
+    aggregate,
+    color: WIDGET_COLORS[index % WIDGET_COLORS.length],
+    value: props.crud.aggregateValue(aggregate),
+    // Server mode computes over the loaded page; the widget says so (JUM-778/781).
+    partial: props.crud.aggregateIsPartial(aggregate)
+  }))
 );
+
+const formatValue = (value: number): string =>
+  Number.isInteger(value) ? String(value) : value.toFixed(2);
 </script>
 
 <template>
   <div class="row g-3 mb-3 xcrud-panels">
-    <div v-for="widget in widgets" :key="widget.aggregate.field + widget.aggregate.op" class="col-6 col-md-3">
+    <div
+      v-for="widget in widgets"
+      :key="widget.aggregate.field + widget.aggregate.op"
+      class="col-6 col-md-3"
+    >
       <div class="card text-white border-0 shadow-sm" :class="`bg-${widget.color}`">
         <div class="card-body pb-2">
           <div class="fs-3 fw-semibold">{{ formatValue(widget.value) }}</div>
           <div class="small text-white-50">
-            {{ widget.aggregate.label ? localized(widget.aggregate.label) : `${widget.aggregate.op} ${widget.aggregate.field}` }}
+            {{
+              widget.aggregate.label
+                ? localized(widget.aggregate.label)
+                : `${widget.aggregate.op} ${widget.aggregate.field}`
+            }}
             <span v-if="widget.partial">{{ t('crud.thisPage') }}</span>
           </div>
         </div>

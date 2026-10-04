@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import { sanitizeRtdbKey } from './rtdb-client';
+
 import type {
   AgentBusEvent,
   AgentBusEventKind,
@@ -9,7 +11,6 @@ import type {
   RtdbLike,
   WatchBusInput
 } from './types';
-import { sanitizeRtdbKey } from './rtdb-client';
 
 const BUS_ROOT = 'agent-bus';
 const EVENT_KINDS: AgentBusEventKind[] = [
@@ -45,9 +46,7 @@ function omitUndefined<T extends Record<string, unknown>>(value: T): T {
 
 function assertEventKind(kind: string): AgentBusEventKind {
   if (!EVENT_KINDS.includes(kind as AgentBusEventKind)) {
-    throw new Error(
-      `Field "kind" must be one of: ${EVENT_KINDS.join(', ')}. Got "${kind}".`
-    );
+    throw new Error(`Field "kind" must be one of: ${EVENT_KINDS.join(', ')}. Got "${kind}".`);
   }
   return kind as AgentBusEventKind;
 }
@@ -61,12 +60,12 @@ function isBusEvent(value: unknown): value is AgentBusEvent {
   if (!value || typeof value !== 'object') return false;
   const event = value as Record<string, unknown>;
   return (
-    typeof event.agentId === 'string'
-    && typeof event.taskId === 'string'
-    && typeof event.epicId === 'string'
-    && typeof event.kind === 'string'
-    && typeof event.summary === 'string'
-    && typeof event.ts === 'string'
+    typeof event.agentId === 'string' &&
+    typeof event.taskId === 'string' &&
+    typeof event.epicId === 'string' &&
+    typeof event.kind === 'string' &&
+    typeof event.summary === 'string' &&
+    typeof event.ts === 'string'
   );
 }
 
@@ -74,12 +73,12 @@ function isPresence(value: unknown): value is AgentBusPresence {
   if (!value || typeof value !== 'object') return false;
   const presence = value as Record<string, unknown>;
   return (
-    typeof presence.agentId === 'string'
-    && typeof presence.status === 'string'
-    && typeof presence.epicId === 'string'
-    && typeof presence.taskId === 'string'
-    && typeof presence.machineId === 'string'
-    && typeof presence.updatedAt === 'string'
+    typeof presence.agentId === 'string' &&
+    typeof presence.status === 'string' &&
+    typeof presence.epicId === 'string' &&
+    typeof presence.taskId === 'string' &&
+    typeof presence.machineId === 'string' &&
+    typeof presence.updatedAt === 'string'
   );
 }
 
@@ -102,15 +101,12 @@ export function presenceFromAgent(
  * Mirror non-authoritative presence into RTDB.
  * Ownership / assignment remain Firestore SSOT (Requirement 089).
  */
-export async function upsertPresence(
-  rtdb: RtdbLike,
-  presence: AgentBusPresence
-): Promise<void> {
+export async function upsertPresence(rtdb: RtdbLike, presence: AgentBusPresence): Promise<void> {
   const agentKey = sanitizeRtdbKey(presence.agentId);
   try {
-    await rtdb.ref(`${BUS_ROOT}/presence/${agentKey}`).set(
-      omitUndefined(presence as unknown as Record<string, unknown>)
-    );
+    await rtdb
+      .ref(`${BUS_ROOT}/presence/${agentKey}`)
+      .set(omitUndefined(presence as unknown as Record<string, unknown>));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`RTDB presence upsert failed: ${message}`);
@@ -160,9 +156,7 @@ export async function publishProgress(
     if (!pushId) {
       throw new Error('RTDB push did not return a key.');
     }
-    await pushRef.set(
-      omitUndefined(event as unknown as Record<string, unknown>)
-    );
+    await pushRef.set(omitUndefined(event as unknown as Record<string, unknown>));
     console.log(`[agent-bus] published ${kind} for ${agentId} on epic ${epicId}`);
     return { ...event, pushId };
   } catch (error) {
@@ -233,7 +227,7 @@ export async function busStatus(
       .limitToLast(recentLimit)
       .once('value');
 
-    const recentEvents: Array<AgentBusEvent & { pushId: string }> = [];
+    const recentEvents: (AgentBusEvent & { pushId: string })[] = [];
     eventsSnap.forEach((child) => {
       const value = child.val();
       if (isBusEvent(value)) {

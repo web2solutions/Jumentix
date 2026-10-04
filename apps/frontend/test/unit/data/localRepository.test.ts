@@ -1,14 +1,14 @@
-import {
-  afterEach, beforeEach, describe, expect, it
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { entityTable, entityTableByStore } from '@/data/canaSchema';
+import { closeCana, getCanaClient, openCana, wipeCanaDatabase } from '@/data/db';
 import {
-  closeCana, getCanaClient, openCana, wipeCanaDatabase
-} from '@/data/db';
-import {
-  countLocal, resolveRelations, storeForChange, subscribeLocal
+  countLocal,
+  resolveRelations,
+  storeForChange,
+  subscribeLocal
 } from '@/data/localRepository';
 
 const DB = 'jumentix-frontend-test-local-repo';
@@ -29,13 +29,23 @@ describe('local repository extras (JUM-803)', () => {
     expect.hasAssertions();
     const users = getCanaClient().table('users');
     await users.put({
-      id: 'u1', firstName: 'Ana', username: 'ana', updatedAt: '2026-01-01T00:00:00.000Z'
+      id: 'u1',
+      firstName: 'Ana',
+      username: 'ana',
+      updatedAt: '2026-01-01T00:00:00.000Z'
     });
     await users.put({
-      id: 'u2', firstName: 'Bia', username: 'bia', updatedAt: '2026-01-02T00:00:00.000Z'
+      id: 'u2',
+      firstName: 'Bia',
+      username: 'bia',
+      updatedAt: '2026-01-02T00:00:00.000Z'
     });
     await users.put({
-      id: 'u3', firstName: 'Cia', username: 'cia', updatedAt: '2026-01-03T00:00:00.000Z', deletedAt: '2026-01-04T00:00:00.000Z'
+      id: 'u3',
+      firstName: 'Cia',
+      username: 'cia',
+      updatedAt: '2026-01-03T00:00:00.000Z',
+      deletedAt: '2026-01-04T00:00:00.000Z'
     });
     expect(await countLocal('User')).toBe(2);
   });
@@ -45,7 +55,10 @@ describe('local repository extras (JUM-803)', () => {
     const client = getCanaClient();
     await client.table('organizations').put({ id: 'org-1', name: 'ACME' });
     await client.table('users').put({
-      id: 'u1', firstName: 'Ana', username: 'ana', organization: 'org-1'
+      id: 'u1',
+      firstName: 'Ana',
+      username: 'ana',
+      organization: 'org-1'
     });
     const joined = await resolveRelations('Organization', { id: 'org-1', name: 'ACME' });
     expect(Array.isArray(joined.users)).toBe(true);

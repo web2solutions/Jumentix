@@ -3,14 +3,14 @@ name: CI
 on:
   push:
     branches:
-      - '**'
+      - "**"
   pull_request:
     branches:
       - dev
       - main
   workflow_dispatch:
   schedule:
-    - cron: '17 3 * * *'
+    - cron: "17 3 * * *"
 
 env:
   BUN_VERSION: 1.3.13
@@ -509,9 +509,9 @@ jobs:
     env:
       AAA_JWT_TOKEN_SECRET_KEY: ci_jwt_secret_key
       AAA_REDIS_HOST: 127.0.0.1
-      AAA_REDIS_PORT: '6379'
+      AAA_REDIS_PORT: "6379"
       AAA_BULLMQ_REDIS_HOST: 127.0.0.1
-      AAA_BULLMQ_REDIS_PORT: '6379'
+      AAA_BULLMQ_REDIS_PORT: "6379"
       AAA_RABBITMQ_URL: amqp://127.0.0.1:5672
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
@@ -692,7 +692,7 @@ jobs:
       )))
     runs-on: ubuntu-latest
     env:
-      JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: '1'
+      JUMENTIX_WEBSITE_CYPRESS_SKIP_BUILD: "1"
       JUMENTIX_WEBSITE_CYPRESS_BROWSER: chrome
     steps:
       - name: Checkout repository

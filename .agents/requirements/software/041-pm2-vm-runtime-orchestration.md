@@ -21,11 +21,10 @@ VM-hosted environments (`dev`, `staging`, `production`) must use PM2 as the offi
    - `apps/backend-template/src/interface/HTTP/adapters`
    - `apps/backend-template/src/interface/gRPC/adapters`
    - `apps/backend-template/src/interface/WebSocket/adapters`
-   must use PM2-based startup flow.
+     must use PM2-based startup flow.
 
 ## Validation
 
 - PM2 profile commands start the expected process sets and separated ports.
 - Runtime docs and Service Management docs reflect PM2 orchestration.
 - `ci:gate` and patch coverage requirements remain green after changes.
-

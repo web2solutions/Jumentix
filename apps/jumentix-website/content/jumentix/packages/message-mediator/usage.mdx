@@ -38,15 +38,15 @@ a broker — without rewriting business logic.
 
 ## Glossary
 
-| Term | Meaning |
-| --- | --- |
+| Term                  | Meaning                                                                   |
+| --------------------- | ------------------------------------------------------------------------- |
 | **Integration event** | Fire-and-forget notification: `{ name, payload, occurredAt, metadata? }`. |
-| **Message** | Request payload: `{ contract, version?, payload, metadata? }`. |
-| **Handler** | Function registered for a `contract` — returns `IMessageResponse`. |
-| **Mediator** | Object implementing publish/subscribe **and** registerHandler/request. |
-| **Contract** | Stable string id for a command or query (e.g. `users.create`). |
-| **In-memory adapter** | `InMemoryMessageMediatorAdapter` — no durability, same process only. |
-| **Broker adapter** | RabbitMQ or BullMQ — multi-process, survives restarts (Node only). |
+| **Message**           | Request payload: `{ contract, version?, payload, metadata? }`.            |
+| **Handler**           | Function registered for a `contract` — returns `IMessageResponse`.        |
+| **Mediator**          | Object implementing publish/subscribe **and** registerHandler/request.    |
+| **Contract**          | Stable string id for a command or query (e.g. `users.create`).            |
+| **In-memory adapter** | `InMemoryMessageMediatorAdapter` — no durability, same process only.      |
+| **Broker adapter**    | RabbitMQ or BullMQ — multi-process, survives restarts (Node only).        |
 
 ## Steps
 
@@ -110,11 +110,11 @@ import { compileMessageMediator } from '@jumentix/message-mediator';
 const mediator = compileMessageMediator();
 ```
 
-| Adapter env | When to use |
-| --- | --- |
-| `inmemory` (default) | Local dev, browser demos, unit tests |
-| `rabbitmq` / `rabbit` | Multi-service async messaging |
-| `bullmq` / `bull` | Job queues backed by Redis |
+| Adapter env           | When to use                          |
+| --------------------- | ------------------------------------ |
+| `inmemory` (default)  | Local dev, browser demos, unit tests |
+| `rabbitmq` / `rabbit` | Multi-service async messaging        |
+| `bullmq` / `bull`     | Job queues backed by Redis           |
 
 Broker adapters require the documented env vars; missing URL throws at compile
 time with a clear message.
@@ -134,14 +134,14 @@ contract.
 
 ### 6. Full surface — API map
 
-| Export | Role |
-| --- | --- |
-| `IMessageMediator` | Full port type |
-| `IEventBus` | `publish` + `subscribe` only |
-| `InMemoryMessageMediatorAdapter.compile()` | In-process mediator |
-| `RabbitMqMessageMediatorAdapter` | RabbitMQ (Node) |
-| `BullMqMessageMediatorAdapter` | BullMQ (Node) |
-| `compileMessageMediator()` | Env-driven factory |
+| Export                                                                       | Role                         |
+| ---------------------------------------------------------------------------- | ---------------------------- |
+| `IMessageMediator`                                                           | Full port type               |
+| `IEventBus`                                                                  | `publish` + `subscribe` only |
+| `InMemoryMessageMediatorAdapter.compile()`                                   | In-process mediator          |
+| `RabbitMqMessageMediatorAdapter`                                             | RabbitMQ (Node)              |
+| `BullMqMessageMediatorAdapter`                                               | BullMQ (Node)                |
+| `compileMessageMediator()`                                                   | Env-driven factory           |
 | Types: `IMessage`, `IMessageResponse`, `IIntegrationEvent`, `MessageHandler` | Typing handlers and payloads |
 
 ## Try it in the docs playground
@@ -153,7 +153,9 @@ The playground stub uses topic-style subscribe/publish:
 ```js
 const seen = [];
 const mediator = api.createInMemory();
-await mediator.subscribe('demo.ping', async (msg) => { seen.push(msg); });
+await mediator.subscribe('demo.ping', async (msg) => {
+  seen.push(msg);
+});
 await mediator.publish('demo.ping', { hello: true });
 ```
 
@@ -170,13 +172,13 @@ Keep broker adapters out of browser bundles.
 
 ## Common errors
 
-| Symptom | Cause | Fix | Verify success |
-| --- | --- | --- | --- |
-| Handler never runs | Wrong event `name` or `contract` string | Match strings exactly; log registrations | `seen` or `response.result` populated |
-| `No handler registered for contract …` | Missing `registerHandler` | Register before `request` | `response.error` absent |
-| Request hangs until timeout | Handler never resolves | Return or reject from handler; set `timeoutMs` | Response within timeout |
-| Events lost after refresh | In-memory adapter | Switch to broker adapter in Node | Event survives process restart |
-| `JUMENTIX_RABBITMQ_URL is required` | Rabbit adapter without URL | Set env or use `inmemory` locally | `compileMessageMediator()` succeeds |
+| Symptom                                | Cause                                   | Fix                                            | Verify success                        |
+| -------------------------------------- | --------------------------------------- | ---------------------------------------------- | ------------------------------------- |
+| Handler never runs                     | Wrong event `name` or `contract` string | Match strings exactly; log registrations       | `seen` or `response.result` populated |
+| `No handler registered for contract …` | Missing `registerHandler`               | Register before `request`                      | `response.error` absent               |
+| Request hangs until timeout            | Handler never resolves                  | Return or reject from handler; set `timeoutMs` | Response within timeout               |
+| Events lost after refresh              | In-memory adapter                       | Switch to broker adapter in Node               | Event survives process restart        |
+| `JUMENTIX_RABBITMQ_URL is required`    | Rabbit adapter without URL              | Set env or use `inmemory` locally              | `compileMessageMediator()` succeeds   |
 
 ## Junior checklist (“I can …”)
 

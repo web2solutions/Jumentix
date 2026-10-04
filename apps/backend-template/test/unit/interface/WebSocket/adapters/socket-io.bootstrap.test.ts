@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-untyped-mock-factory */
 import type { IDatabaseClient } from '@src/infra/persistence/port/IDatabaseClient';
 
 const websocketAdapterStart = jest.fn().mockResolvedValue(undefined);
@@ -20,23 +19,25 @@ const createRedisStreamsSocketIoAdapterMock = jest.fn().mockReturnValue({
 });
 
 jest.mock('@src/interface/WebSocket/WebSocketAPI', () => ({
-  WebSocketAPI: jest.fn().mockImplementation(() => ({
+  WebSocketAPI: jest.fn().mockReturnValue({
     start: websocketAdapterStart
-  }))
+  })
 }));
 
 jest.mock('@src/interface/HTTP/RestAPI', () => ({
-  RestAPI: jest.fn().mockImplementation(() => ({
+  RestAPI: jest.fn().mockReturnValue({
     start: websocketFallbackRestStart
-  }))
+  })
 }));
 
 jest.mock('@src/interface/HTTP/adapters/express/ExpressServer', () => ({
-  ExpressServer: { compile: jest.fn().mockReturnValue({}) }
+  __esModule: true,
+  default: { compile: jest.fn().mockReturnValue({}) }
 }));
 
 jest.mock('@src/interface/HTTP/adapters/express/handlers/infraHandlers', () => ({
-  infraHandlers: []
+  __esModule: true,
+  default: []
 }));
 
 jest.mock('@src/interface/HTTP/ports', () => ({
@@ -48,23 +49,28 @@ jest.mock('@src/modules/Users', () => ({
 }));
 
 jest.mock('@src/infra/messages/compileMessageMediator', () => ({
-  compileMessageMediator: jest.fn().mockReturnValue({})
+  __esModule: true,
+  default: jest.fn().mockReturnValue({})
 }));
 
 jest.mock('@src/infra/security/PasswordCryptoService', () => ({
-  PasswordCryptoService: { compile: jest.fn().mockReturnValue({}) }
+  __esModule: true,
+  default: { compile: jest.fn().mockReturnValue({}) }
 }));
 
 jest.mock('@src/infra/jwt/JwtService', () => ({
-  JwtService: { compile: jest.fn().mockReturnValue({}) }
+  __esModule: true,
+  default: { compile: jest.fn().mockReturnValue({}) }
 }));
 
 jest.mock('@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient', () => ({
-  compileKeyValueStorageClient: jest.fn().mockReturnValue({})
+  __esModule: true,
+  default: jest.fn().mockReturnValue({})
 }));
 
 jest.mock('@src/infra/mutex/adapter/MutexService', () => ({
-  MutexService: { compile: jest.fn().mockReturnValue({}) }
+  __esModule: true,
+  default: { compile: jest.fn().mockReturnValue({}) }
 }));
 
 jest.mock('@src/infra/persistence/compileDatabaseClient', () => ({
@@ -80,9 +86,8 @@ jest.mock('@src/interface/WebSocket/adapters/socket-io/clusterAdapter', () => ({
 
 jest.mock('@src/interface/WebSocket/adapters/socket-io/redisStreamsAdapter', () => ({
   isRedisStreamsSocketIoEnabled: (...args: any[]) => isRedisStreamsSocketIoEnabledMock(...args),
-  createRedisStreamsSocketIoAdapter: (...args: any[]) => (
+  createRedisStreamsSocketIoAdapter: (...args: any[]) =>
     createRedisStreamsSocketIoAdapterMock(...args)
-  )
 }));
 
 describe('websocket socket-io adapter bootstrap', () => {
@@ -106,25 +111,32 @@ describe('websocket socket-io adapter bootstrap', () => {
 
   it('resolves fallback strategy from env', async () => {
     expect.assertions(3);
-    const { shouldStartFallbackRestApi } = await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
-    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'true' } as any)).toBe(false);
-    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'false' } as any)).toBe(true);
+    const { shouldStartFallbackRestApi } =
+      await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
+    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'true' } as any)).toBe(
+      false
+    );
+    expect(shouldStartFallbackRestApi({ JUMENTIX_DISABLE_FALLBACK_REST: 'false' } as any)).toBe(
+      true
+    );
     expect(shouldStartFallbackRestApi({} as any)).toBe(true);
   });
 
   it('starts only websocket api when fallback rest is disabled', async () => {
     expect.assertions(2);
     process.env.JUMENTIX_DISABLE_FALLBACK_REST = 'true';
-    const { startWebSocketAdapter } = await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
+    const { startWebSocketAdapter } =
+      await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
     await startWebSocketAdapter();
     expect(websocketAdapterStart).toHaveBeenCalledTimes(1);
-    expect(websocketFallbackRestStart).toHaveBeenCalledTimes(0);
+    expect(websocketFallbackRestStart).not.toHaveBeenCalled();
   });
 
   it('starts websocket and fallback rest when fallback is enabled', async () => {
     expect.assertions(2);
     delete process.env.JUMENTIX_DISABLE_FALLBACK_REST;
-    const { startWebSocketAdapter } = await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
+    const { startWebSocketAdapter } =
+      await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
     await startWebSocketAdapter();
     expect(websocketFallbackRestStart).toHaveBeenCalledTimes(1);
     expect(websocketAdapterStart).toHaveBeenCalledTimes(1);
@@ -133,19 +145,21 @@ describe('websocket socket-io adapter bootstrap', () => {
   it('selects cluster socket.io adapter when cluster mode is enabled', async () => {
     expect.assertions(2);
     isClusterSocketIoEnabledMock.mockReturnValue(true);
-    const { startWebSocketAdapter } = await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
+    const { startWebSocketAdapter } =
+      await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
     await startWebSocketAdapter();
     expect(createClusterSocketIoAdapterMock).toHaveBeenCalledTimes(1);
-    expect(createRedisStreamsSocketIoAdapterMock).toHaveBeenCalledTimes(0);
+    expect(createRedisStreamsSocketIoAdapterMock).not.toHaveBeenCalled();
   });
 
   it('selects redis-streams socket.io adapter when enabled and cluster is disabled', async () => {
     expect.assertions(2);
     isClusterSocketIoEnabledMock.mockReturnValue(false);
     isRedisStreamsSocketIoEnabledMock.mockReturnValue(true);
-    const { startWebSocketAdapter } = await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
+    const { startWebSocketAdapter } =
+      await import('@src/interface/WebSocket/adapters/socket-io/socket-io');
     await startWebSocketAdapter();
     expect(createRedisStreamsSocketIoAdapterMock).toHaveBeenCalledTimes(1);
-    expect(createClusterSocketIoAdapterMock).toHaveBeenCalledTimes(0);
+    expect(createClusterSocketIoAdapterMock).not.toHaveBeenCalled();
   });
 });

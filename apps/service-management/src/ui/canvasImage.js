@@ -28,7 +28,10 @@ const ROW_HEIGHT = 22;
 /** The bounding box of everything drawn, in canvas coordinates. */
 export function modelBounds(state) {
   const bounds = {
-    minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity
+    minX: Infinity,
+    minY: Infinity,
+    maxX: -Infinity,
+    maxY: -Infinity
   };
   const grow = (x, y, width, height) => {
     bounds.minX = Math.min(bounds.minX, x);
@@ -167,9 +170,12 @@ export function drawModel(canvasElement, state, endpointFor, options = {}) {
     context.stroke();
     context.fillStyle = '#0f172a';
     context.font = '11px system-ui, sans-serif';
-    String(note.text || '').split('\n').slice(0, 7).forEach((line, index) => {
-      context.fillText(line, note.x + 10, note.y + 24 + index * 15, 180);
-    });
+    String(note.text || '')
+      .split('\n')
+      .slice(0, 7)
+      .forEach((line, index) => {
+        context.fillText(line, note.x + 10, note.y + 24 + index * 15, 180);
+      });
   });
 
   return canvasElement;

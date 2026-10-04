@@ -1,5 +1,5 @@
 export * from './contracts';
 export * from './DeadLetterQueue';
 export * from './DeadLetterReplayWorker';
-export * from './InMemoryDeadLetterStore';
+export { default as InMemoryDeadLetterStore } from './InMemoryDeadLetterStore';
 export * from './KeyValueDeadLetterStore';

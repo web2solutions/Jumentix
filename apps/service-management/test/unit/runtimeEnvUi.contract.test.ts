@@ -1,6 +1,5 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const CANONICAL_HTTP_FRAMEWORKS = [
   'express',
@@ -39,9 +38,9 @@ describe('service management runtime env UI contract (JUM-461)', () => {
     // never write a key other than the one its label shows.
     expect(script).toContain('label.textContent = isEditable ? key :');
     // The realtime driver carries its own context hint, distinct from the main one.
-    const hint = hintsBlock(script).match(/JUMENTIX_REALTIME_API_DATABASE_DRIVER: '([^']+)'/);
+    const hint = hintsBlock(script).match(/JUMENTIX_REALTIME_API_DATABASE_DRIVER:\s*'([^']+)'/);
     expect(hint).not.toBeNull();
-    expect(hint![1]).toContain('Realtime');
+    expect(hint?.[1]).toContain('Realtime');
   });
 
   it('exposes the main database driver as a separately editable key with its own hint', () => {
@@ -51,9 +50,9 @@ describe('service management runtime env UI contract (JUM-461)', () => {
     expect(values).toContain('InMemory');
     expect(values).toContain('Mongo');
     expect(values).not.toContain('MS SQL');
-    const hint = hintsBlock(script).match(/JUMENTIX_DATABASE_DRIVER: '([^']+)'/);
+    const hint = hintsBlock(script).match(/JUMENTIX_DATABASE_DRIVER:\s*'([^']+)'/);
     expect(hint).not.toBeNull();
-    expect(hint![1]).toContain('Main application database');
+    expect(hint?.[1]).toContain('Main application database');
   });
 
   it('offers exactly the canonical HTTP framework set, without aliases', () => {
@@ -70,7 +69,10 @@ describe('service management runtime env UI contract (JUM-461)', () => {
     expect.hasAssertions();
     const script = fs.readFileSync(scriptPath, 'utf-8');
     const runtimeSource = fs.readFileSync(
-      path.resolve(process.cwd(), 'apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts'),
+      path.resolve(
+        process.cwd(),
+        'apps/backend-template/src/interface/runtime/RuntimeEnvironment.ts'
+      ),
       'utf-8'
     );
     enumValuesFor(script, 'JUMENTIX_HTTP_FRAMEWORK').forEach((value) => {
@@ -83,9 +85,9 @@ describe('service management runtime env UI contract (JUM-461)', () => {
     const script = fs.readFileSync(scriptPath, 'utf-8');
     const server = fs.readFileSync(serverPath, 'utf-8');
     // The save path collects every rendered editable field by its own key.
-    expect(script).toContain('querySelectorAll(\'[data-runtime-key]\')');
+    expect(script).toContain("querySelectorAll('[data-runtime-key]')");
     expect(script).toContain('values[key] = field.value');
-    expect(server).toContain('\'JUMENTIX_DATABASE_DRIVER\'');
-    expect(server).toContain('\'JUMENTIX_REALTIME_API_DATABASE_DRIVER\'');
+    expect(server).toContain("'JUMENTIX_DATABASE_DRIVER'");
+    expect(server).toContain("'JUMENTIX_REALTIME_API_DATABASE_DRIVER'");
   });
 });

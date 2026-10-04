@@ -1,10 +1,8 @@
-import type {
-  IUser
-} from '@src/modules/Users/domain/Entity/IUser';
-import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
+import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
 
-export const createDocument = async (
+const createDocument = async (
   userId: string,
   payload: RequestCreateDocument,
   userDataRepository: IUserRepository
@@ -12,3 +10,5 @@ export const createDocument = async (
   const model = await userDataRepository.createDocument(userId, payload);
   return model.serialize();
 };
+
+export default createDocument;

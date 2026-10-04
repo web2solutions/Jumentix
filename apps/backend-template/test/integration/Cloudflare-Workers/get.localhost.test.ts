@@ -28,16 +28,15 @@ describe('cloudflare-workers -> /localhost suite', () => {
   beforeAll(async () => {
     process.env.JUMENTIX_KEYVALUESTORAGE_DRIVER = 'inmemory';
     process.env.JUMENTIX_DATABASE_DRIVER = 'inmemory';
-    ({ fetch: workerFetch } = await import(
-      '@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers'
-    ));
+    ({ fetch: workerFetch } =
+      await import('@src/interface/HTTP/adapters/cloudflare-workers/cloudflare-workers'));
   });
 
   it('answers the root route through the worker fetch handler', async () => {
     expect.hasAssertions();
 
     const response = await workerFetch(new Request('http://localhost/'));
-    const body = await response.json() as { status: string; correlationId: string };
+    const body = (await response.json()) as { status: string; correlationId: string };
 
     expect(response.status).toBe(200);
     expect(body.status).toBe('result');
@@ -49,10 +48,10 @@ describe('cloudflare-workers -> /localhost suite', () => {
   it('gives each request its own correlation id', async () => {
     expect.hasAssertions();
 
-    const first = await (await workerFetch(new Request('http://localhost/'))).json() as {
+    const first = (await (await workerFetch(new Request('http://localhost/'))).json()) as {
       correlationId: string;
     };
-    const second = await (await workerFetch(new Request('http://localhost/'))).json() as {
+    const second = (await (await workerFetch(new Request('http://localhost/'))).json()) as {
       correlationId: string;
     };
 

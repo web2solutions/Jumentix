@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 /**
  * Per-layer Bun watch mode derived from test-map.json (JUM-500).
@@ -7,13 +6,14 @@
  *   bun ci-cd/run-tdd.js domain          # watch domain unit suites
  *   bun ci-cd/run-tdd.js adapters/in
  */
-const { spawnSync } = require('child_process');
-const path = require('path');
-const { readTestMap, suitesForLayers } = require('./lib/test-map');
-const { createLayerAwarePlan } = require('./lib/layer-resolver');
-const { runBunTestFiles } = require('./lib/suite-runner');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 const { gitBinary } = require('./lib/git-binary.js');
+const { createLayerAwarePlan } = require('./lib/layer-resolver');
+const { runBunTestFiles } = require('./lib/suite-runner');
+const { readTestMap, suitesForLayers } = require('./lib/test-map');
 
 function listLayers(manifest) {
   return Object.keys(manifest.layers || {});
@@ -44,7 +44,10 @@ function readDiffFiles() {
     encoding: 'utf8'
   });
   if (result.status !== 0) return [];
-  return String(result.stdout || '').split('\n').map((l) => l.trim()).filter(Boolean);
+  return String(result.stdout || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
 }
 
 function unitPathsForLayer(manifest, layer) {
@@ -80,11 +83,12 @@ function main() {
 
   if (paths.length === 0) {
     console.error('[tdd] no Bun unit suites selected');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const status = runBunTestFiles(paths, { watch: true });
-  process.exit(status);
+  process.exitCode = status;
 }
 
 if (isEntryPoint(module)) {

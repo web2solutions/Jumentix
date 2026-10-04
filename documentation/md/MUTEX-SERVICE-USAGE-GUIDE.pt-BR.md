@@ -35,14 +35,14 @@ o resto da stack já usa.
 
 ## Glossário
 
-| Termo | Significado |
-| --- | --- |
-| **Nome do recurso** | Nome lógico do que você protege (ex.: `invoice-42`, `design-sync`). |
-| **Uuid do lock** | Id único de uma tentativa; armazenado como marcador no KV. |
-| **Previously locked** | Resultado de `lock()` quando outro holder já possui o recurso. |
-| **Prefixo** | Namespace das chaves de mutex; padrão `mutex:` (configurável via `IMutexServiceOptions`). |
-| **Seção crítica** | Código entre `lock` bem-sucedido e `unlock` — mantenha curta. |
-| **ServiceResponse** | `{ result?, error? }` — inspecione `error` antes de confiar em `result`. |
+| Termo                 | Significado                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| **Nome do recurso**   | Nome lógico do que você protege (ex.: `invoice-42`, `design-sync`).                       |
+| **Uuid do lock**      | Id único de uma tentativa; armazenado como marcador no KV.                                |
+| **Previously locked** | Resultado de `lock()` quando outro holder já possui o recurso.                            |
+| **Prefixo**           | Namespace das chaves de mutex; padrão `mutex:` (configurável via `IMutexServiceOptions`). |
+| **Seção crítica**     | Código entre `lock` bem-sucedido e `unlock` — mantenha curta.                             |
+| **ServiceResponse**   | `{ result?, error? }` — inspecione `error` antes de confiar em `result`.                  |
 
 ## Passos
 
@@ -131,13 +131,13 @@ Use prefixo dedicado por serviço para chaves de lock não colidirem com cache.
 
 ### 6. Superfície completa — mapa da API
 
-| Membro | Retorna | Notas |
-| --- | --- | --- |
-| `MutexService.compile(kv, options?)` | Singleton `MutexService` | Exige client KV conectado |
-| `lock(resourceName, uuid)` | `ServiceResponse` com `{ locked, previouslyLocked }` | Não bloqueia esperando; retorna estado ocupado |
-| `isLocked(resourceName, uuid)` | `ServiceResponse<boolean>` | Verifica marcador no KV |
-| `unlock(resourceName, uuid)` | `ServiceResponse` | Delete idempotente da chave de lock |
-| `MutexService.reset()` | `void` | Helper de teste — limpa singleton |
+| Membro                               | Retorna                                              | Notas                                          |
+| ------------------------------------ | ---------------------------------------------------- | ---------------------------------------------- |
+| `MutexService.compile(kv, options?)` | Singleton `MutexService`                             | Exige client KV conectado                      |
+| `lock(resourceName, uuid)`           | `ServiceResponse` com `{ locked, previouslyLocked }` | Não bloqueia esperando; retorna estado ocupado |
+| `isLocked(resourceName, uuid)`       | `ServiceResponse<boolean>`                           | Verifica marcador no KV                        |
+| `unlock(resourceName, uuid)`         | `ServiceResponse`                                    | Delete idempotente da chave de lock            |
+| `MutexService.reset()`               | `void`                                               | Helper de teste — limpa singleton              |
 
 Este pacote **não** implementa fila nem renovação de lease — quem chama repete ou
 recua quando `locked: false`.
@@ -159,13 +159,13 @@ real.
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção | Verificar sucesso |
-| --- | --- | --- | --- |
-| `locked: false` sempre | Mesmo recurso já lockado | Espere ou use outro nome; chame `unlock` no fluxo anterior | Segunda tentativa após unlock funciona |
-| Lock nunca liberado | Falta `finally` / return antecipado | Envolva corpo em `try/finally` com `unlock` | `isLocked` false após fluxo |
-| Lock obsoleto após crash | Processo morreu antes de `unlock` | Estratégia TTL fora deste pacote ou `unlock` manual com uuid conhecido | Recurso gravável de novo |
-| `MutexService depends on KeyValueStorageClient` | Passou client KV nulo | Compile KV primeiro | `MutexService.compile(kv)` funciona |
-| Testes interferem | Mutex singleton + KV compartilhado | `MutexService.reset()` entre testes | Resultados de lock isolados por teste |
+| Sintoma                                         | Causa                               | Correção                                                               | Verificar sucesso                      |
+| ----------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------- | -------------------------------------- |
+| `locked: false` sempre                          | Mesmo recurso já lockado            | Espere ou use outro nome; chame `unlock` no fluxo anterior             | Segunda tentativa após unlock funciona |
+| Lock nunca liberado                             | Falta `finally` / return antecipado | Envolva corpo em `try/finally` com `unlock`                            | `isLocked` false após fluxo            |
+| Lock obsoleto após crash                        | Processo morreu antes de `unlock`   | Estratégia TTL fora deste pacote ou `unlock` manual com uuid conhecido | Recurso gravável de novo               |
+| `MutexService depends on KeyValueStorageClient` | Passou client KV nulo               | Compile KV primeiro                                                    | `MutexService.compile(kv)` funciona    |
+| Testes interferem                               | Mutex singleton + KV compartilhado  | `MutexService.reset()` entre testes                                    | Resultados de lock isolados por teste  |
 
 ## Checklist júnior (“Eu consigo …”)
 

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SERVICE-MANAGEMENT-APPLICATION.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Aplicativo de gerenciamento de serviços
 
 O aplicativo estático `domaindesigner` anterior foi consolidado em:
@@ -109,13 +110,13 @@ fechando a cadeia de documentação E1–E8 — estão documentados em
      `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`; valores fora do enum são
      rejeitados com a lista de aceitos e nada é escrito.
    - O editor de ambiente de tempo de execução tem como alvo o arquivo de ambiente selecionado:
-    - `dev` -> `apps/backend-template/src/config/.env.dev`
-    - `staging` -> `apps/backend-template/src/config/.env.staging`
-    - `ci` -> `apps/backend-template/src/config/.env.ci`
+   - `dev` -> `apps/backend-template/src/config/.env.dev`
+   - `staging` -> `apps/backend-template/src/config/.env.staging`
+   - `ci` -> `apps/backend-template/src/config/.env.ci`
      `apps/backend-template/src/config/`:
-    - `dev` -> `.env.dev` (`development` é um alias)
-    - `staging` -> `.env.staging`
-    - `ci` -> `.env.ci` (`test` é um alias)
+   - `dev` -> `.env.dev` (`development` é um alias)
+   - `staging` -> `.env.staging`
+   - `ci` -> `.env.ci` (`test` é um alias)
 4. **Gerenciamento de implantação**
    - Rastreia alvos de implantação e metadados de implantação em tempo de execução.
    - Cada alvo carrega o contrato de metadados por serviço do Requisito 059
@@ -200,7 +201,7 @@ de enum, semântica de escrita — é
   valores desconhecidos são explicitamente rejeitados com a lista de aceitos,
   nunca convertidos para `dev`.
 - **Superfície de chaves classificada.** Cada chave de ambiente é exatamente uma
-  de *editável*, *somente leitura* ou *nunca exposta* (segredos); as decisões de
+  de _editável_, _somente leitura_ ou _nunca exposta_ (segredos); as decisões de
   classificação por chave estão no
   [Requisito 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
 - **Endpoint protegido.** Bind loopback por padrão, token bearer opcional para
@@ -222,7 +223,7 @@ de enum, semântica de escrita — é
 - Diretório de configuração ausente na inicialização: servidor encerra com erro claro.
 - Arquivo de ambiente ausente ou outra falha de filesystem (permissões, disco
   cheio): `500 { "error": "Environment file operation failed.", "code": …,
-  "path": …, "details": … }` — `code` é `ENV_FILE_NOT_FOUND` ou o código de
+"path": …, "details": … }` — `code` é `ENV_FILE_NOT_FOUND` ou o código de
   erro do `fs` subjacente, `path` o path resolvido do arquivo env (JUM-543).
 - Payload JSON malformado: `400 { "error": "Invalid payload.", "details": … }`
   com a falha de parse em `details` — diferenciado de falhas de filesystem,
@@ -265,4 +266,3 @@ Fumaça da unidade para presença de recurso de roteiro:
 ```bash
 NODE_ENV=dev bun x jest apps/service-management/test/unit/mvp.roadmap.features.test.ts --runInBand
 ```
-

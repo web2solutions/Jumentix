@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+/* eslint-disable no-console -- CLI provider check: stdout/stderr is its report channel. */
 /** Requirement 113 — public open-source CI provider contract. */
 
 const fs = require('node:fs');
@@ -11,7 +11,12 @@ const circleciPath = path.join(root, '.circleci', 'config.yml');
 const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
 const feedbackWorkflowPath = path.join(root, '.github', 'workflows', 'pr-feedback.yml');
 const appReleaseWorkflowPath = path.join(root, '.github', 'workflows', 'app-release.yml');
-const sonarReliabilityWorkflowPath = path.join(root, '.github', 'workflows', 'sonar-reliability.yml');
+const sonarReliabilityWorkflowPath = path.join(
+  root,
+  '.github',
+  'workflows',
+  'sonar-reliability.yml'
+);
 const browserMatrixWorkflowPath = path.join(root, '.github', 'workflows', 'browser-matrix.yml');
 const preCommitPath = path.join(root, '.husky', 'pre-commit');
 const packagePath = path.join(root, 'package.json');
@@ -30,9 +35,13 @@ if (!fs.existsSync(workflowPath)) {
   const servicesPath = path.join(root, 'ci-cd', 'ensure-local-ci-services.sh');
   const dockerRuntimePath = path.join(root, 'ci-cd', 'ensure-docker-runtime.sh');
   const serviceContents = fs.existsSync(servicesPath) ? fs.readFileSync(servicesPath, 'utf8') : '';
-  const dockerRuntimeContents = fs.existsSync(dockerRuntimePath) ? fs.readFileSync(dockerRuntimePath, 'utf8') : '';
+  const dockerRuntimeContents = fs.existsSync(dockerRuntimePath)
+    ? fs.readFileSync(dockerRuntimePath, 'utf8')
+    : '';
   const packageContents = fs.existsSync(packagePath) ? fs.readFileSync(packagePath, 'utf8') : '';
-  const unitRunnerContents = fs.existsSync(unitRunnerPath) ? fs.readFileSync(unitRunnerPath, 'utf8') : '';
+  const unitRunnerContents = fs.existsSync(unitRunnerPath)
+    ? fs.readFileSync(unitRunnerPath, 'utf8')
+    : '';
   const ciContents = `${contents}\n${serviceContents}\n${dockerRuntimeContents}\n${packageContents}\n${unitRunnerContents}`;
   const requiredMarkers = [
     /name:\s*CI/,
@@ -149,30 +158,55 @@ if (!fs.existsSync(workflowPath)) {
   const workspaceBuild = packageScripts['workspace:build:packages'];
   const taskGate = packageScripts['ci:gate:task'];
   if (workspaceBuild !== 'bun ci-cd/build-workspace-packages.js') {
-    failures.push('Workspace package build must run the topological level-parallel builder (JUM-871)');
+    failures.push(
+      'Workspace package build must run the topological level-parallel builder (JUM-871)'
+    );
   }
   if (monorepoBuild !== 'bun run workspace:build:packages') {
-    failures.push('Monorepo build must delegate to the topological workspace package builder (JUM-871)');
+    failures.push(
+      'Monorepo build must delegate to the topological workspace package builder (JUM-871)'
+    );
   }
   if (monorepoTest !== 'bun run workspace:build:packages && bun run workspace:test') {
-    failures.push('Monorepo tests must build workspace package dependencies before execution (JUM-871)');
+    failures.push(
+      'Monorepo tests must build workspace package dependencies before execution (JUM-871)'
+    );
   }
   if (!fs.existsSync(path.join(root, 'ci-cd', 'build-workspace-packages.js'))) {
-    failures.push('Missing ci-cd/build-workspace-packages.js referenced by workspace:build:packages');
+    failures.push(
+      'Missing ci-cd/build-workspace-packages.js referenced by workspace:build:packages'
+    );
   }
   if (taskGate !== 'bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js') {
-    failures.push('Task quality gate must build publishable workspace packages before running selected tests');
+    failures.push(
+      'Task quality gate must build publishable workspace packages before running selected tests'
+    );
   }
 
-  if (!/slug:\s*web2solutions\/Jumentix/.test(contents) || !/disable_search:\s*true/.test(contents)) {
-    failures.push('GitHub Actions Codecov upload must set slug=web2solutions/Jumentix and disable_search=true');
+  if (
+    !/slug:\s*web2solutions\/Jumentix/.test(contents) ||
+    !/disable_search:\s*true/.test(contents)
+  ) {
+    failures.push(
+      'GitHub Actions Codecov upload must set slug=web2solutions/Jumentix and disable_search=true'
+    );
   }
 
-  const heavyContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+  const heavyContextGuard =
+    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   // Coverage (Codecov + Sonar) must also run on pushes to `dev`.
-  const coverageContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
-  for (const job of ['workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
-    const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
+  const coverageContextGuard =
+    /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+  for (const job of [
+    'workspace-builds',
+    'workspace-tests',
+    'integration',
+    'coverage',
+    'website',
+    'database-matrix'
+  ]) {
+    const jobBlock =
+      contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
     const guard = job === 'coverage' ? coverageContextGuard : heavyContextGuard;
     const expected = job === 'coverage' ? 'main/dev/release contexts' : 'release/full contexts';
     if (!guard.test(jobBlock)) {
@@ -186,39 +220,54 @@ if (!fs.existsSync(workflowPath)) {
   // pr-feedback.yml, app-release.yml, npm-publish.yml) are intentionally absent
   // from this list.
   const disableFlagGuard = /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/;
-  for (const job of ['branch-gate', 'third-party-review', 'workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
-    const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
+  for (const job of [
+    'branch-gate',
+    'third-party-review',
+    'workspace-builds',
+    'workspace-tests',
+    'integration',
+    'coverage',
+    'website',
+    'database-matrix'
+  ]) {
+    const jobBlock =
+      contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
     if (!disableFlagGuard.test(jobBlock)) {
-      failures.push(`.github/workflows/ci.yml must gate ${job} behind vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' (JUM-876)`);
+      failures.push(
+        `.github/workflows/ci.yml must gate ${job} behind vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true' (JUM-876)`
+      );
     }
   }
 
-  const databaseMatrixBlock = contents.match(/\n  database-matrix:\n[\s\S]*?(?=\n  [a-z-]+:\n|\n?$)/)?.[0] || '';
+  const databaseMatrixBlock =
+    contents.match(/\n {2}database-matrix:\n[\s\S]*?(?=\n {2}[a-z-]+:\n|\n?$)/)?.[0] || '';
   if (!/Build workspace package dependencies[\s\S]*bun run mono:build/.test(databaseMatrixBlock)) {
-    failures.push('Database matrix must build workspace package dependencies before running isolated smoke tests');
+    failures.push(
+      'Database matrix must build workspace package dependencies before running isolated smoke tests'
+    );
   }
 
-  const coverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z-]+:\n|\n?$)/)?.[0] || '';
+  const coverageBlock =
+    contents.match(/\n {2}coverage:\n[\s\S]*?(?=\n {2}[a-z-]+:\n|\n?$)/)?.[0] || '';
   if (/RUN_(BROKER|REDIS)_INTEGRATION:\s*'1'/.test(coverageBlock)) {
     failures.push(
       '.github/workflows/ci.yml coverage job must keep real broker/Redis integration suites in dedicated jobs'
     );
   }
-  if (!/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(coverageBlock)) {
+  if (
+    !/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(
+      coverageBlock
+    )
+  ) {
     failures.push(
       'Coverage job must build workspace package dependencies before frontend patch coverage'
     );
   }
   if (!/needs-frontend-patch-coverage\.js/.test(coverageBlock)) {
-    failures.push(
-      'Coverage job must gate frontend coverage with needs-frontend-patch-coverage.js'
-    );
+    failures.push('Coverage job must gate frontend coverage with needs-frontend-patch-coverage.js');
   }
 
-  [
-    /\n\s+codecov:\s*\n/,
-    /\n\s+sonarqube:\s*\n/
-  ].forEach((marker) => {
+  [/\n\s+codecov:\s*\n/, /\n\s+sonarqube:\s*\n/].forEach((marker) => {
     if (marker.test(contents)) {
       failures.push(
         `Codecov and Sonar must run inside the coverage job, not as separate GitHub Actions jobs: ${String(marker)}`
@@ -227,21 +276,29 @@ if (!fs.existsSync(workflowPath)) {
   });
 
   if (/runs-on:\s*\[self-hosted,\s*jumentix\]/.test(contents)) {
-    failures.push('.github/workflows/ci.yml must use GitHub-hosted ubuntu-latest runners for the public open-source repository');
+    failures.push(
+      '.github/workflows/ci.yml must use GitHub-hosted ubuntu-latest runners for the public open-source repository'
+    );
   }
 
   if (/Checkout repository without JavaScript Actions/.test(contents)) {
-    failures.push('.github/workflows/ci.yml must not keep the old self-hosted manual checkout path');
+    failures.push(
+      '.github/workflows/ci.yml must not keep the old self-hosted manual checkout path'
+    );
   }
 
   if (/curl -fsSL https:\/\/bun\.sh\/install \| bash/.test(contents)) {
-    failures.push('.github/workflows/ci.yml Bun installation must fail closed instead of masking curl failures in a pipeline.');
+    failures.push(
+      '.github/workflows/ci.yml Bun installation must fail closed instead of masking curl failures in a pipeline.'
+    );
   }
 }
 
 function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMarkers) {
   if (!fs.existsSync(workflowPathToCheck)) {
-    failures.push(`Missing required trusted pull-request workflow: ${path.relative(root, workflowPathToCheck)}`);
+    failures.push(
+      `Missing required trusted pull-request workflow: ${path.relative(root, workflowPathToCheck)}`
+    );
     return;
   }
   const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
@@ -259,7 +316,9 @@ function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMar
     if (!marker.test(contents)) failures.push(`${label} is missing ${String(marker)}`);
   }
   if (/curl -fsSL https:\/\/bun\.sh\/install \| bash/.test(contents)) {
-    failures.push(`${label} Bun installation must fail closed instead of masking curl failures in a pipeline.`);
+    failures.push(
+      `${label} Bun installation must fail closed instead of masking curl failures in a pipeline.`
+    );
   }
   if (/(?:contents|issues|pull-requests|actions|checks):\s*write/.test(contents)) {
     failures.push(`${label} must retain read-only GitHub token permissions.`);
@@ -296,8 +355,18 @@ if (!fs.existsSync(appReleaseWorkflowPath)) {
   }
 }
 
-const packageContentBumpWorkflowPath = path.join(root, '.github', 'workflows', 'package-content-bump.yml');
-const websiteDeployVerifyWorkflowPath = path.join(root, '.github', 'workflows', 'website-deploy-verify.yml');
+const packageContentBumpWorkflowPath = path.join(
+  root,
+  '.github',
+  'workflows',
+  'package-content-bump.yml'
+);
+const websiteDeployVerifyWorkflowPath = path.join(
+  root,
+  '.github',
+  'workflows',
+  'website-deploy-verify.yml'
+);
 
 if (!fs.existsSync(packageContentBumpWorkflowPath)) {
   failures.push('Missing required always-on workflow: .github/workflows/package-content-bump.yml');
@@ -334,7 +403,9 @@ if (!fs.existsSync(websiteDeployVerifyWorkflowPath)) {
 
 function checkSonarReliabilityWorkflow(workflowPathToCheck) {
   if (!fs.existsSync(workflowPathToCheck)) {
-    failures.push(`Missing required Sonar reliability workflow: ${path.relative(root, workflowPathToCheck)}`);
+    failures.push(
+      `Missing required Sonar reliability workflow: ${path.relative(root, workflowPathToCheck)}`
+    );
     return;
   }
   const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
@@ -358,10 +429,17 @@ function checkSonarReliabilityWorkflow(workflowPathToCheck) {
     /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/
   ];
   for (const marker of requiredMarkers) {
-    if (!marker.test(contents)) failures.push(`Sonar reliability workflow is missing ${String(marker)}`);
+    if (!marker.test(contents))
+      failures.push(`Sonar reliability workflow is missing ${String(marker)}`);
   }
-  if (/pull_request_target:|git worktree add|refs\/pull\/\$\{SONAR_PULL_REQUEST\}\/merge/.test(contents)) {
-    failures.push('Sonar reliability must analyze PR code only in the unprivileged pull_request workflow.');
+  if (
+    /pull_request_target:|git worktree add|refs\/pull\/\$\{SONAR_PULL_REQUEST\}\/merge/.test(
+      contents
+    )
+  ) {
+    failures.push(
+      'Sonar reliability must analyze PR code only in the unprivileged pull_request workflow.'
+    );
   }
   if (/(?:contents|issues|pull-requests|actions|checks):\s*write/.test(contents)) {
     failures.push('Sonar reliability workflow must retain read-only GitHub token permissions.');
@@ -372,7 +450,9 @@ checkSonarReliabilityWorkflow(sonarReliabilityWorkflowPath);
 
 function checkBrowserMatrixWorkflow(workflowPathToCheck) {
   if (!fs.existsSync(workflowPathToCheck)) {
-    failures.push(`Missing required browser matrix workflow: ${path.relative(root, workflowPathToCheck)}`);
+    failures.push(
+      `Missing required browser matrix workflow: ${path.relative(root, workflowPathToCheck)}`
+    );
     return;
   }
   const contents = fs.readFileSync(workflowPathToCheck, 'utf8');
@@ -396,10 +476,13 @@ function checkBrowserMatrixWorkflow(workflowPathToCheck) {
     /vars\.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'/
   ];
   for (const marker of requiredMarkers) {
-    if (!marker.test(contents)) failures.push(`Browser matrix workflow is missing ${String(marker)}`);
+    if (!marker.test(contents))
+      failures.push(`Browser matrix workflow is missing ${String(marker)}`);
   }
   if (/pull_request_target:|secrets\./.test(contents)) {
-    failures.push('Browser matrix must run untrusted PR code without privileged events or secrets.');
+    failures.push(
+      'Browser matrix must run untrusted PR code without privileged events or secrets.'
+    );
   }
 }
 
@@ -410,7 +493,9 @@ if (!fs.existsSync(preCommitPath)) {
 } else {
   const contents = fs.readFileSync(preCommitPath, 'utf8');
   if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
+    failures.push(
+      'Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.'
+    );
   }
 }
 
@@ -419,7 +504,9 @@ if (!fs.existsSync(preCommitPath)) {
 } else {
   const contents = fs.readFileSync(preCommitPath, 'utf8');
   if (/changelog:update|git add CHANGELOG\.md/.test(contents)) {
-    failures.push('Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.');
+    failures.push(
+      'Local pre-commit must not mutate CHANGELOG.md; GitHub Actions owns main synchronization.'
+    );
   }
 }
 
@@ -469,19 +556,29 @@ if (fs.existsSync(circleciPath)) {
     failures.push('CircleCI PR metadata must shell-quote values before writing BASH_ENV');
   }
 
-  const browserMatrixBlock = contents.match(/\n  browser-matrix:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  const browserMatrixBlock =
+    contents.match(/\n {2}browser-matrix:\n[\s\S]*?(?=\n {2}[a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] ||
+    '';
   if (!/require_ci_job:\s*\n\s*job:\s*browser-matrix/.test(browserMatrixBlock)) {
-    failures.push('CircleCI browser-matrix job must gate on the shared context classifier via require_ci_job');
+    failures.push(
+      'CircleCI browser-matrix job must gate on the shared context classifier via require_ci_job'
+    );
   }
-  const ciWorkflowBlock = contents.match(/\n  ci:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\n?$)/)?.[0] || '';
+  const ciWorkflowBlock =
+    contents.match(/\n {2}ci:\n[\s\S]*?(?=\n {2}[a-z_-]+:\n|\n?$)/)?.[0] || '';
   if (!/- browser-matrix/.test(ciWorkflowBlock)) {
     failures.push('CircleCI workflows.ci.jobs must include browser-matrix');
   }
-  const nightlyBlock = contents.match(/\n  nightly:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\n?$)/)?.[0] || '';
-  if (!/triggers:[\s\S]*?schedule:[\s\S]*?cron:\s*"17 3 \* \* \*"/.test(nightlyBlock)
-    || !/only:\s*\n\s*- main\s*\n\s*- dev/.test(nightlyBlock)
-    || !/- browser-matrix/.test(nightlyBlock)) {
-    failures.push('CircleCI nightly workflow must own the 17 3 * * * schedule on main and dev and run the full matrix including browser-matrix');
+  const nightlyBlock =
+    contents.match(/\n {2}nightly:\n[\s\S]*?(?=\n {2}[a-z_-]+:\n|\n?$)/)?.[0] || '';
+  if (
+    !/triggers:[\s\S]*?schedule:[\s\S]*?cron:\s*"17 3 \* \* \*"/.test(nightlyBlock) ||
+    !/only:\s*\n\s*- main\s*\n\s*- dev/.test(nightlyBlock) ||
+    !/- browser-matrix/.test(nightlyBlock)
+  ) {
+    failures.push(
+      'CircleCI nightly workflow must own the 17 3 * * * schedule on main and dev and run the full matrix including browser-matrix'
+    );
   }
   if (/setup_remote_docker/.test(contents)) {
     failures.push(
@@ -489,17 +586,31 @@ if (fs.existsSync(circleciPath)) {
     );
   }
 
-  const databaseMatrixBlock = contents.match(/\n  database-matrix:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  const databaseMatrixBlock =
+    contents.match(
+      /\n {2}database-matrix:\n[\s\S]*?(?=\n {2}[a-z_-]+:\n|\nworkflows:|\n?$)/
+    )?.[0] || '';
   if (!/Build workspace package dependencies[\s\S]*bun run mono:build/.test(databaseMatrixBlock)) {
-    failures.push('CircleCI database-matrix must build workspace package dependencies before running isolated smoke tests');
+    failures.push(
+      'CircleCI database-matrix must build workspace package dependencies before running isolated smoke tests'
+    );
   }
 
-  const circleCoverageBlock = contents.match(/\n  coverage:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
-  if (!/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(circleCoverageBlock)) {
-    failures.push('CircleCI coverage must build workspace package dependencies before frontend patch coverage');
+  const circleCoverageBlock =
+    contents.match(/\n {2}coverage:\n[\s\S]*?(?=\n {2}[a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (
+    !/Build workspace package dependencies for frontend coverage[\s\S]*bun run mono:build[\s\S]*Produce frontend coverage for the patch report/.test(
+      circleCoverageBlock
+    )
+  ) {
+    failures.push(
+      'CircleCI coverage must build workspace package dependencies before frontend patch coverage'
+    );
   }
   if (!/needs-frontend-patch-coverage\.js/.test(circleCoverageBlock)) {
-    failures.push('CircleCI coverage must gate frontend coverage with needs-frontend-patch-coverage.js');
+    failures.push(
+      'CircleCI coverage must gate frontend coverage with needs-frontend-patch-coverage.js'
+    );
   }
   if (!/JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/.test(circleCoverageBlock)) {
     failures.push(
@@ -519,11 +630,16 @@ if (fs.existsSync(circleciPath)) {
   }
 
   if (!/node_bun_services:[\s\S]*redis:7\.2-alpine[\s\S]*rabbitmq:3\.13-alpine/.test(contents)) {
-    failures.push('CircleCI must provide Redis and RabbitMQ as executor services for localhost jobs');
+    failures.push(
+      'CircleCI must provide Redis and RabbitMQ as executor services for localhost jobs'
+    );
   }
 
   for (const job of ['integration', 'coverage']) {
-    const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\nworkflows:|\\n?$)`))?.[0] || '';
+    const jobBlock =
+      contents.match(
+        new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\nworkflows:|\\n?$)`)
+      )?.[0] || '';
     if (!/executor:\s*node_bun_services/.test(jobBlock)) {
       failures.push(`CircleCI ${job} must use the executor-local Redis and RabbitMQ services`);
     }
@@ -550,7 +666,9 @@ if (!fs.existsSync(sonarPath)) {
   ];
   for (const marker of requiredMarkers) {
     if (!marker.test(sonarContents)) {
-      failures.push(`Sonar configuration is missing encoding-safe source scan marker: ${String(marker)}`);
+      failures.push(
+        `Sonar configuration is missing encoding-safe source scan marker: ${String(marker)}`
+      );
     }
   }
 }
@@ -564,12 +682,12 @@ for (const retired of ['codecov.yml']) {
 if (failures.length > 0) {
   console.error('CI provider check failed (Requirement 113):\n');
   failures.forEach((failure) => console.error(`- ${failure}`));
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 console.log(
-  'CI provider check passed: CircleCI is the canonical orchestrator (branch gate, browser matrix, full '
-    + 'promotion matrix, coverage, website, third-party review, Codecov/Sonar publishing, nightly schedule); '
-    + 'GitHub Actions retains the same surface disabled-by-default behind JUMENTIX_ENABLE_GITHUB_ACTIONS_CI, '
-    + 'with pr-feedback, sync-changelog, app-release, and npm-publish always-on.'
+  'CI provider check passed: CircleCI is the canonical orchestrator (branch gate, browser matrix, full ' +
+    'promotion matrix, coverage, website, third-party review, Codecov/Sonar publishing, nightly schedule); ' +
+    'GitHub Actions retains the same surface disabled-by-default behind JUMENTIX_ENABLE_GITHUB_ACTIONS_CI, ' +
+    'with pr-feedback, sync-changelog, app-release, and npm-publish always-on.'
 );

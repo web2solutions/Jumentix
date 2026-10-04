@@ -1,5 +1,6 @@
-import { UserService } from '@src/modules/Users/service/UserService';
 import { DeadLetterQueue } from '@jumentix/dead-letter-queue';
+
+import UserService from '@src/modules/Users/service/UserService';
 
 /**
  * JUM-53 — a write the mutex refuses is recorded, and still refused.
@@ -27,7 +28,7 @@ function setup(deadLetterQueue?: unknown) {
       passwordCryptoService: { hash: jest.fn(), compare: jest.fn() },
       ...(deadLetterQueue ? { deadLetterQueue } : {})
     }
-  } as never);
+  });
 
   return { service, mutexService };
 }

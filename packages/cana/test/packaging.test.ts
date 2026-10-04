@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires, global-require */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,9 +22,7 @@ import path from 'node:path';
 // the kind of path that breaks silently the moment anything moves, as this one
 // did.
 const packageRoot = path.resolve(__dirname, '..');
-const manifest = JSON.parse(
-  fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
-) as {
+const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')) as {
   name: string;
   version: string;
   main: string;
@@ -45,19 +42,23 @@ const exists = (relative: string): boolean => fs.existsSync(path.join(packageRoo
 const runtimeDependencies = Object.keys(manifest.dependencies ?? {});
 
 /** The text of every `export { … }` statement in an ESM bundle. */
-const exportStatements = (bundle: string): string[] => [...bundle.matchAll(/export\s*\{([^}]*)\}/gs)].map((statement) => statement[1]);
+const exportStatements = (bundle: string): string[] =>
+  [...bundle.matchAll(/export\s*\{([^}]*)\}/gs)].map((statement) => statement[1]);
 
 /** One entry of an export clause, whitespace and empties removed. */
-const exportEntries = (statement: string): string[] => statement
-  .split(',')
-  .map((part) => part.trim())
-  .filter((name) => name !== '');
+const exportEntries = (statement: string): string[] =>
+  statement
+    .split(',')
+    .map((part) => part.trim())
+    .filter((name) => name !== '');
 
 /** The local binding an export entry references: `x` for `x`, `y` for `y as x`. */
-const localBindingOf = (entry: string): string => /^([\w$]+)\s+as\s+[\w$]+$/.exec(entry)?.[1] ?? entry;
+const localBindingOf = (entry: string): string =>
+  /^([\w$]+)\s+as\s+[\w$]+$/.exec(entry)?.[1] ?? entry;
 
 /** The name a consumer sees for an export entry: `x` for `x`, `x` for `y as x`. */
-const exportedNameOf = (entry: string): string => /^[\w$]+\s+as\s+([\w$]+)$/.exec(entry)?.[1] ?? entry;
+const exportedNameOf = (entry: string): string =>
+  /^[\w$]+\s+as\s+([\w$]+)$/.exec(entry)?.[1] ?? entry;
 
 const localBindingsOf = (bundle: string): string[] => {
   const entries = exportStatements(bundle).flatMap(exportEntries);
@@ -73,24 +74,56 @@ const exportedNamesOf = (bundle: string): string[] => {
  * Whether a binding's definition survived bundling: a defined local occurs at
  * least twice (definition plus export reference), a dangling one exactly once.
  */
-const isDefinedIn = (bundle: string, name: string): boolean => (bundle.match(new RegExp(`\\b${name}\\b`, 'g')) ?? []).length >= 2;
+const isDefinedIn = (bundle: string, name: string): boolean =>
+  (bundle.match(new RegExp(`\\b${name}\\b`, 'g')) ?? []).length >= 2;
 
 const expectedEsmSurface = [
-  'canaError', 'translateError', 'requestToPromise',
-  'isCanaError', 'isCanaErrorCode',
-  'StorageDurability', 'browserStorageEnvironment', 'classifyOpen',
-  'applySchema', 'assertSchema', 'keyStrategyOf', 'validateSchema',
-  'openDatabase', 'closeDatabase', 'deleteDatabase',
-  'createClient', 'Client', 'createTable', 'createCanaDatabaseClient',
-  'runTransaction', 'runQuery', 'runCount', 'toKeyRange', 'planQuery',
-  'applyBeforeWrite', 'notifyCommitted', 'notifyRolledBack',
-  'assessDurability', 'requiresUserAttention', 'DEFAULT_DURABILITY_POLICY',
-  'withLedgerStore', 'recordOperation', 'resolveOutcome', 'pruneLedger',
-  'OPERATION_LEDGER_STORE', 'DEFAULT_LEDGER_HORIZON_MS',
-  'createRouter', 'isBroadcast', 'DEFAULT_REQUEST_TIMEOUT_MS',
-  'createWorkerHost', 'createWorkerClient', 'serve',
-  'runConformance', 'describeCoverage',
-  'createChangeBuffer', 'abortWithReason'
+  'canaError',
+  'translateError',
+  'requestToPromise',
+  'isCanaError',
+  'isCanaErrorCode',
+  'StorageDurability',
+  'browserStorageEnvironment',
+  'classifyOpen',
+  'applySchema',
+  'assertSchema',
+  'keyStrategyOf',
+  'validateSchema',
+  'openDatabase',
+  'closeDatabase',
+  'deleteDatabase',
+  'createClient',
+  'Client',
+  'createTable',
+  'createCanaDatabaseClient',
+  'runTransaction',
+  'runQuery',
+  'runCount',
+  'toKeyRange',
+  'planQuery',
+  'applyBeforeWrite',
+  'notifyCommitted',
+  'notifyRolledBack',
+  'assessDurability',
+  'requiresUserAttention',
+  'DEFAULT_DURABILITY_POLICY',
+  'withLedgerStore',
+  'recordOperation',
+  'resolveOutcome',
+  'pruneLedger',
+  'OPERATION_LEDGER_STORE',
+  'DEFAULT_LEDGER_HORIZON_MS',
+  'createRouter',
+  'isBroadcast',
+  'DEFAULT_REQUEST_TIMEOUT_MS',
+  'createWorkerHost',
+  'createWorkerClient',
+  'serve',
+  'runConformance',
+  'describeCoverage',
+  'createChangeBuffer',
+  'abortWithReason'
 ];
 
 describe('cana packaging manifest', () => {
@@ -170,11 +203,13 @@ describe('cana packaging manifest', () => {
 
   it('keeps README image refs package-local so npm and GitHub render them', () => {
     expect.hasAssertions();
-    const bodies = ['README.md', 'README.pt-BR.md'].map(
-      (name) => fs.readFileSync(path.join(packageRoot, name), 'utf8')
+    const bodies = ['README.md', 'README.pt-BR.md'].map((name) =>
+      fs.readFileSync(path.join(packageRoot, name), 'utf8')
     );
     expect(bodies.every((body) => !body.includes('/images/cana/'))).toBe(true);
-    expect(bodies.every((body) => body.includes('./media/jumentix-eating-sugarcane.png'))).toBe(true);
+    expect(bodies.every((body) => body.includes('./media/jumentix-eating-sugarcane.png'))).toBe(
+      true
+    );
     expect(bodies.every((body) => body.includes('./media/cana-worker-model.svg'))).toBe(true);
     expect(bodies.every((body) => body.includes('./media/cana-performance-ladder.svg'))).toBe(true);
   });

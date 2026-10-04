@@ -1,8 +1,7 @@
-import type { IHTTPServer } from './IHTTPServer';
 import type { IbaseHandler } from './IbaseHandler';
+import type { IHTTPServer } from './IHTTPServer';
 
-export abstract class HTTPBaseServer<T> implements IHTTPServer<T> {
-  // eslint-disable-next-line no-useless-constructor, no-empty-function
+abstract class HTTPBaseServer<T> implements IHTTPServer<T> {
   // constructor() { }
 
   /**
@@ -23,15 +22,12 @@ export abstract class HTTPBaseServer<T> implements IHTTPServer<T> {
    */
   public endPointRegister(handlerFactory: IbaseHandler): void {
     try {
-      (this.application as any)[handlerFactory.method](
-        handlerFactory.path,
-        handlerFactory.handler
-      );
+      (this.application as any)[handlerFactory.method](handlerFactory.path, handlerFactory.handler);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       throw new Error(
-        `Endpoint registration failed for ${String(handlerFactory.method).toUpperCase()} `
-          + `${handlerFactory.path}: ${reason}`
+        `Endpoint registration failed for ${String(handlerFactory.method).toUpperCase()} ` +
+          `${handlerFactory.path}: ${reason}`
       );
     }
   }
@@ -44,3 +40,5 @@ export abstract class HTTPBaseServer<T> implements IHTTPServer<T> {
 
   public static compile() {}
 }
+
+export default HTTPBaseServer;

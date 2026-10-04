@@ -1,11 +1,15 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
+/* eslint-disable jest/require-hook */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 require('./ensure-built');
 
-const { parseArgv, looksLikeLegacyInvocation, mapLegacyServiceTypeToMode } = require('../dist/args');
+const {
+  looksLikeLegacyInvocation,
+  mapLegacyServiceTypeToMode,
+  parseArgv
+} = require('../dist/args');
 const { main, printRootHelp } = require('../dist/cli');
 const { readInitConfig, writeInitConfig } = require('../dist/config');
 

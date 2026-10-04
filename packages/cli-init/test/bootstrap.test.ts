@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook */
-import { PassThrough } from 'node:stream';
+/* eslint-disable jest/require-hook */
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { PassThrough } from 'node:stream';
 
 /**
  * Requirement 112 — this package owns its suite.
@@ -86,7 +86,8 @@ function gitRepository(branch = 'main'): string {
   const env = Object.fromEntries(
     Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_'))
   ) as NodeJS.ProcessEnv;
-  const git = (...args: string[]) => execFileSync('/usr/bin/git', args, { cwd: dir, env, stdio: 'pipe' });
+  const git = (...args: string[]) =>
+    execFileSync('/usr/bin/git', args, { cwd: dir, env, stdio: 'pipe' });
 
   git('init', '--quiet', `--initial-branch=${branch}`);
   git('config', 'user.email', 'web2solucoes@gmail.com');
@@ -100,7 +101,7 @@ function gitRepository(branch = 'main'): string {
 
 /** Records the calls a test does not want to actually perform. */
 function recorder() {
-  const calls: Array<{ command: string; args: string[]; cwd: string }> = [];
+  const calls: { command: string; args: string[]; cwd: string }[] = [];
   return {
     calls,
     execute: (command: string, args: string[], cwd: string) => {
@@ -117,7 +118,9 @@ function answers(...scripted: string[]) {
     closeCount: () => closed,
     createPrompt: () => ({
       ask: async () => remaining.shift() ?? '',
-      close: () => { closed += 1; }
+      close: () => {
+        closed += 1;
+      }
     })
   };
 }
@@ -151,13 +154,15 @@ describe('argument parsing', () => {
   it('reads every value option', () => {
     expect.hasAssertions();
 
-    expect(parseCliArgs([
-      '--non-interactive',
-      '--service-type=grpc',
-      '--project-name=svc',
-      '--git-branch=release',
-      '--repo=https://example.test/x.git'
-    ])).toMatchObject({
+    expect(
+      parseCliArgs([
+        '--non-interactive',
+        '--service-type=grpc',
+        '--project-name=svc',
+        '--git-branch=release',
+        '--repo=https://example.test/x.git'
+      ])
+    ).toMatchObject({
       nonInteractive: true,
       serviceTypeId: 'grpc',
       projectName: 'svc',
@@ -171,8 +176,18 @@ describe('argument parsing', () => {
    * is worth pinning rather than inferring from the implementation.
    */
   it.each([
-    ['y', true], ['yes', true], ['true', true], ['1', true], ['Y', true], ['TRUE', true],
-    ['n', false], ['no', false], ['false', false], ['0', false], ['', false], ['maybe', false]
+    ['y', true],
+    ['yes', true],
+    ['true', true],
+    ['1', true],
+    ['Y', true],
+    ['TRUE', true],
+    ['n', false],
+    ['no', false],
+    ['false', false],
+    ['0', false],
+    ['', false],
+    ['maybe', false]
   ])('reads --install-deps=%s as %s', (value: string, expected: boolean) => {
     expect.hasAssertions();
 
@@ -188,7 +203,9 @@ describe('argument parsing', () => {
   it('treats an option given without a value as absent', () => {
     expect.hasAssertions();
 
-    expect(parseCliArgs(['--project-name=', '--repo=', '--git-branch=', '--service-type='])).toMatchObject({
+    expect(
+      parseCliArgs(['--project-name=', '--repo=', '--git-branch=', '--service-type='])
+    ).toMatchObject({
       projectName: '',
       repository: '',
       gitBranch: '',
@@ -209,8 +226,9 @@ describe('service types', () => {
   it('refuses an id it does not know', () => {
     expect.hasAssertions();
 
-    expect(() => resolveServiceTypeById('carrier-pigeon'))
-      .toThrow('Invalid service type "carrier-pigeon".');
+    expect(() => resolveServiceTypeById('carrier-pigeon')).toThrow(
+      'Invalid service type "carrier-pigeon".'
+    );
   });
 
   it('lists every choice before asking', async () => {
@@ -226,7 +244,10 @@ describe('service types', () => {
   it('accepts the last number in the list', async () => {
     expect.hasAssertions();
 
-    const chosen = await chooseServiceType(async () => String(SERVICE_TYPES.length), () => {});
+    const chosen = await chooseServiceType(
+      async () => String(SERVICE_TYPES.length),
+      () => {}
+    );
 
     expect(chosen).toStrictEqual(SERVICE_TYPES[SERVICE_TYPES.length - 1]);
   });
@@ -237,8 +258,12 @@ describe('service types', () => {
     async (selection: string) => {
       expect.hasAssertions();
 
-      await expect(chooseServiceType(async () => selection, () => {}))
-        .rejects.toThrow('Invalid service type selection.');
+      await expect(
+        chooseServiceType(
+          async () => selection,
+          () => {}
+        )
+      ).rejects.toThrow('Invalid service type selection.');
     }
   );
 });
@@ -317,8 +342,7 @@ describe('runCommand', () => {
     const dir = scratch('run');
 
     expect(() => runCommand('/bin/sh', ['-c', 'pwd > where.txt'], dir)).not.toThrow();
-    expect(fs.readFileSync(path.join(dir, 'where.txt'), 'utf8').trim())
-      .toBe(fs.realpathSync(dir));
+    expect(fs.readFileSync(path.join(dir, 'where.txt'), 'utf8').trim()).toBe(fs.realpathSync(dir));
   });
 
   /**
@@ -328,8 +352,9 @@ describe('runCommand', () => {
   it('throws with the command and its exit code when it fails', () => {
     expect.hasAssertions();
 
-    expect(() => runCommand('/bin/sh', ['-c', 'exit 3'], scratch('fail')))
-      .toThrow('/bin/sh -c exit 3 failed with exit code 3');
+    expect(() => runCommand('/bin/sh', ['-c', 'exit 3'], scratch('fail'))).toThrow(
+      '/bin/sh -c exit 3 failed with exit code 3'
+    );
   });
 
   /**
@@ -341,10 +366,9 @@ describe('runCommand', () => {
   it('refuses bare commands that are not on the resolved registry', () => {
     expect.hasAssertions();
 
-    expect(() => runCommand('definitely-not-a-real-tool', ['--help'], scratch('refused')))
-      .toThrow(
-        'Refusing to spawn unlisted command "definitely-not-a-real-tool" without an absolute path.'
-      );
+    expect(() => runCommand('definitely-not-a-real-tool', ['--help'], scratch('refused'))).toThrow(
+      'Refusing to spawn unlisted command "definitely-not-a-real-tool" without an absolute path.'
+    );
   });
 });
 
@@ -361,8 +385,9 @@ describe('the environment git is given', () => {
   it.each(GIT_LOCATION_VARIABLES as string[])('drops %s', (name: string) => {
     expect.hasAssertions();
 
-    expect(environmentWithoutRepositoryLocation({ [name]: '/somewhere/.git', PATH: '/usr/bin' }))
-      .toStrictEqual({ PATH: '/usr/bin' });
+    expect(
+      environmentWithoutRepositoryLocation({ [name]: '/somewhere/.git', PATH: '/usr/bin' })
+    ).toStrictEqual({ PATH: '/usr/bin' });
   });
 
   /**
@@ -375,7 +400,9 @@ describe('the environment git is given', () => {
     (name: string) => {
       expect.hasAssertions();
 
-      expect(environmentWithoutRepositoryLocation({ [name]: 'value' })).toStrictEqual({ [name]: 'value' });
+      expect(environmentWithoutRepositoryLocation({ [name]: 'value' })).toStrictEqual({
+        [name]: 'value'
+      });
     }
   );
 
@@ -441,8 +468,13 @@ describe('printHelp', () => {
 
     // Undocumented flags are flags nobody uses.
     for (const flag of [
-      '--help', '--non-interactive', '--service-type', '--project-name',
-      '--git-branch', '--install-deps', '--repo'
+      '--help',
+      '--non-interactive',
+      '--service-type',
+      '--project-name',
+      '--git-branch',
+      '--install-deps',
+      '--repo'
     ]) {
       expect(help).toContain(flag);
     }
@@ -460,7 +492,9 @@ describe('the console default', () => {
   function capturingConsole<T>(body: () => T): { result: T; out: string[] } {
     const out: string[] = [];
     const original = console.log;
-    console.log = (message?: unknown) => { out.push(String(message)); };
+    console.log = (message?: unknown) => {
+      out.push(String(message));
+    };
 
     try {
       return { result: body(), out };
@@ -482,7 +516,9 @@ describe('the console default', () => {
 
     const out: string[] = [];
     const original = console.log;
-    console.log = (message?: unknown) => { out.push(String(message)); };
+    console.log = (message?: unknown) => {
+      out.push(String(message));
+    };
 
     try {
       await chooseServiceType(async () => '1');
@@ -511,15 +547,17 @@ describe('run', () => {
   it('refuses non-interactive mode without a service type', async () => {
     expect.hasAssertions();
 
-    await expect(run({ argv: ['--non-interactive', '--project-name=svc'], log: () => {} }))
-      .rejects.toThrow('Non-interactive mode requires --service-type and --project-name.');
+    await expect(
+      run({ argv: ['--non-interactive', '--project-name=svc'], log: () => {} })
+    ).rejects.toThrow('Non-interactive mode requires --service-type and --project-name.');
   });
 
   it('refuses non-interactive mode without a project name', async () => {
     expect.hasAssertions();
 
-    await expect(run({ argv: ['--non-interactive', '--service-type=rest'], log: () => {} }))
-      .rejects.toThrow('Non-interactive mode requires --service-type and --project-name.');
+    await expect(
+      run({ argv: ['--non-interactive', '--service-type=rest'], log: () => {} })
+    ).rejects.toThrow('Non-interactive mode requires --service-type and --project-name.');
   });
 
   /**
@@ -584,9 +622,11 @@ describe('run', () => {
       workingDirectory: workspace
     });
 
-    expect(JSON.parse(
-      fs.readFileSync(path.join(workspace, 'svc', '.jumentix', 'service-profile.json'), 'utf8')
-    ).branch).toBe('release-9');
+    expect(
+      JSON.parse(
+        fs.readFileSync(path.join(workspace, 'svc', '.jumentix', 'service-profile.json'), 'utf8')
+      ).branch
+    ).toBe('release-9');
   });
 
   it('installs dependencies when asked to', async () => {
@@ -596,9 +636,7 @@ describe('run', () => {
     const commands = recorder();
 
     await run({
-      argv: [
-        '--non-interactive', '--service-type=rest', '--project-name=svc', '--install-deps=y'
-      ],
+      argv: ['--non-interactive', '--service-type=rest', '--project-name=svc', '--install-deps=y'],
       log: () => {},
       execute: commands.execute,
       workingDirectory: workspace
@@ -617,16 +655,19 @@ describe('run', () => {
     const commands = recorder();
 
     await run({
-      argv: [
-        '--non-interactive', '--service-type=rest', '--project-name=svc', '--install-deps=n'
-      ],
+      argv: ['--non-interactive', '--service-type=rest', '--project-name=svc', '--install-deps=n'],
       log: () => {},
       execute: commands.execute,
       workingDirectory: workspace
     });
 
     expect(commands.calls[0].args).toStrictEqual([
-      'clone', '--branch', 'dev', '--', BOILERPLATE_REPOSITORY, 'svc'
+      'clone',
+      '--branch',
+      'dev',
+      '--',
+      BOILERPLATE_REPOSITORY,
+      'svc'
     ]);
   });
 
@@ -647,12 +688,21 @@ describe('run', () => {
     });
 
     expect(commands.calls[0].args).toStrictEqual([
-      'clone', '--branch', 'develop', '--', BOILERPLATE_REPOSITORY,
+      'clone',
+      '--branch',
+      'develop',
+      '--',
+      BOILERPLATE_REPOSITORY,
       'from-prompts'
     ]);
-    expect(JSON.parse(
-      fs.readFileSync(path.join(workspace, 'from-prompts', '.jumentix', 'service-profile.json'), 'utf8')
-    ).serviceType).toBe(SERVICE_TYPES[1].id);
+    expect(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(workspace, 'from-prompts', '.jumentix', 'service-profile.json'),
+          'utf8'
+        )
+      ).serviceType
+    ).toBe(SERVICE_TYPES[1].id);
   });
 
   it('falls back to dev and to installing with Bun when the prompts are left blank', async () => {
@@ -679,12 +729,14 @@ describe('run', () => {
 
     const prompt = answers('1', '');
 
-    await expect(run({
-      argv: [],
-      log: () => {},
-      execute: () => {},
-      createPrompt: prompt.createPrompt
-    })).rejects.toThrow('Project folder name is required.');
+    await expect(
+      run({
+        argv: [],
+        log: () => {},
+        execute: () => {},
+        createPrompt: prompt.createPrompt
+      })
+    ).rejects.toThrow('Project folder name is required.');
   });
 
   /**
@@ -696,12 +748,14 @@ describe('run', () => {
 
     const prompt = answers('1', '');
 
-    await expect(run({
-      argv: [],
-      log: () => {},
-      execute: () => {},
-      createPrompt: prompt.createPrompt
-    })).rejects.toThrow('Project folder name is required.');
+    await expect(
+      run({
+        argv: [],
+        log: () => {},
+        execute: () => {},
+        createPrompt: prompt.createPrompt
+      })
+    ).rejects.toThrow('Project folder name is required.');
 
     expect(prompt.closeCount()).toBe(1);
   });
@@ -727,14 +781,19 @@ describe('run', () => {
 
     const workspace = scratch('workspace');
 
-    await expect(run({
-      argv: [
-        '--non-interactive', '--service-type=rest', '--project-name=svc',
-        '--install-deps=n', '--repo=/nonexistent/repository.git'
-      ],
-      log: () => {},
-      workingDirectory: workspace
-    })).rejects.toThrow(/failed with exit code/);
+    await expect(
+      run({
+        argv: [
+          '--non-interactive',
+          '--service-type=rest',
+          '--project-name=svc',
+          '--install-deps=n',
+          '--repo=/nonexistent/repository.git'
+        ],
+        log: () => {},
+        workingDirectory: workspace
+      })
+    ).rejects.toThrow(/failed with exit code/);
 
     expect(fs.existsSync(path.join(workspace, 'svc', '.jumentix'))).toBe(false);
   });
@@ -795,11 +854,13 @@ describe('bootstrap defaults (JUM-681)', () => {
 
     try {
       process.argv = ['node', 'jumentix-init'];
-      await expect(bootstrap.run({
-        createPrompt: () => ({ ask: async () => '', close: () => undefined }),
-        execute: () => undefined,
-        workingDirectory: os.tmpdir()
-      })).rejects.toThrow('Invalid service type selection.');
+      await expect(
+        bootstrap.run({
+          createPrompt: () => ({ ask: async () => '', close: () => undefined }),
+          execute: () => undefined,
+          workingDirectory: os.tmpdir()
+        })
+      ).rejects.toThrow('Invalid service type selection.');
     } finally {
       process.argv = previousArgv;
       log.mockRestore();

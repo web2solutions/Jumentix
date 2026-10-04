@@ -18,7 +18,9 @@ const DEFAULT_HTTP_FRAMEWORK: HTTPFramework = 'express';
 const DEFAULT_REALTIME_PROTOCOL: RealtimeApiProtocol = 'websocket';
 
 function normalize(value: string | undefined): string {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 /** Prefer JUMENTIX_*; fall back to legacy AAA_* during env migration. */
@@ -36,21 +38,20 @@ export function resolveHTTPFramework(env: NodeJS.ProcessEnv = process.env): HTTP
   const raw = readProductEnv(env, 'JUMENTIX_HTTP_FRAMEWORK');
   const framework = normalize(raw) || DEFAULT_HTTP_FRAMEWORK;
   if (
-    framework === 'express'
-    || framework === 'fastify'
-    || framework === 'restify'
-    || framework === 'cloudflare-workers'
-    || framework === 'vercel-functions'
-    || framework === 'loopback'
-    || framework === 'sails-js'
-    || framework === 'feathers'
-    || framework === 'derby-js'
-    || framework === 'adonis-js'
-    || framework === 'total-js'
-  ) return framework;
-  throw new Error(
-    `Unsupported JUMENTIX_HTTP_FRAMEWORK "${raw}".`
-  );
+    framework === 'express' ||
+    framework === 'fastify' ||
+    framework === 'restify' ||
+    framework === 'cloudflare-workers' ||
+    framework === 'vercel-functions' ||
+    framework === 'loopback' ||
+    framework === 'sails-js' ||
+    framework === 'feathers' ||
+    framework === 'derby-js' ||
+    framework === 'adonis-js' ||
+    framework === 'total-js'
+  )
+    return framework;
+  throw new Error(`Unsupported JUMENTIX_HTTP_FRAMEWORK "${raw}".`);
 }
 
 export function isRealtimeApiEnabled(env: NodeJS.ProcessEnv = process.env): boolean {

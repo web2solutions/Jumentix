@@ -1,4 +1,4 @@
-import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
+import InMemoryRelationalStore from '@src/infra/persistence/InMemoryDatabase/Stores/InMemoryRelationalStore';
 
 /**
  * The store's indexes as records move between values (JUM-681).
@@ -17,18 +17,19 @@ import { InMemoryRelationalStore } from '@src/infra/persistence/InMemoryDatabase
  *
  * The store is real. There is nothing to double: it is the double.
  */
-type Row = {
+interface Row {
   id: string;
   username: string;
   organization: string;
   label?: string;
-};
+}
 
-const makeStore = () => new InMemoryRelationalStore<Row>({
-  uniqueIndexes: ['username'],
-  caseInsensitiveUniqueIndexes: ['username'],
-  relationIndexes: ['organization']
-} as never);
+const makeStore = () =>
+  new InMemoryRelationalStore<Row>({
+    uniqueIndexes: ['username'],
+    caseInsensitiveUniqueIndexes: ['username'],
+    relationIndexes: ['organization']
+  } as never);
 
 describe('in-memory relational store indexes (JUM-681)', () => {
   it('releases the old unique value when a record is renamed', async () => {
@@ -40,8 +41,9 @@ describe('in-memory relational store indexes (JUM-681)', () => {
     await store.update('r1', { id: 'r1', username: 'alice2', organization: 'org-1' });
 
     // The freed name has to be claimable, or a rename permanently burns it.
-    await expect(store.create('r2', { id: 'r2', username: 'alice', organization: 'org-1' }))
-      .resolves.toBeDefined();
+    await expect(
+      store.create('r2', { id: 'r2', username: 'alice', organization: 'org-1' })
+    ).resolves.toBeDefined();
   });
 
   it('holds the unique value against a different record, case-insensitively', async () => {
@@ -50,8 +52,9 @@ describe('in-memory relational store indexes (JUM-681)', () => {
     const store = makeStore();
     await store.create('r1', { id: 'r1', username: 'alice', organization: 'org-1' });
 
-    await expect(store.create('r2', { id: 'r2', username: 'ALICE', organization: 'org-1' }))
-      .rejects.toThrow('username');
+    await expect(
+      store.create('r2', { id: 'r2', username: 'ALICE', organization: 'org-1' })
+    ).rejects.toThrow('username');
   });
 
   it('holds unique values case-sensitively when the field has no case-insensitive index', async () => {
@@ -62,10 +65,12 @@ describe('in-memory relational store indexes (JUM-681)', () => {
     const store = new InMemoryRelationalStore<Row>({ uniqueIndexes: ['username'] } as never);
     await store.create('r1', { id: 'r1', username: 'alice', organization: 'org-1' });
 
-    await expect(store.create('r2', { id: 'r2', username: 'ALICE', organization: 'org-1' }))
-      .resolves.toBeDefined();
-    await expect(store.create('r3', { id: 'r3', username: 'alice', organization: 'org-1' }))
-      .rejects.toThrow('username');
+    await expect(
+      store.create('r2', { id: 'r2', username: 'ALICE', organization: 'org-1' })
+    ).resolves.toBeDefined();
+    await expect(
+      store.create('r3', { id: 'r3', username: 'alice', organization: 'org-1' })
+    ).rejects.toThrow('username');
   });
 
   it('lets a record keep its own unique value across an unrelated edit', async () => {
@@ -77,7 +82,10 @@ describe('in-memory relational store indexes (JUM-681)', () => {
     await store.create('r1', { id: 'r1', username: 'alice', organization: 'org-1' });
 
     await store.update('r1', {
-      id: 'r1', username: 'alice', organization: 'org-1', label: 'edited'
+      id: 'r1',
+      username: 'alice',
+      organization: 'org-1',
+      label: 'edited'
     });
 
     expect((await store.getOneById('r1'))?.label).toBe('edited');
@@ -92,8 +100,9 @@ describe('in-memory relational store indexes (JUM-681)', () => {
     await store.update('r1', { id: 'r1', username: 'alice', organization: 'org-2' });
 
     await expect(store.getByRelation('organization', 'org-1')).resolves.toStrictEqual([]);
-    expect((await store.getByRelation('organization', 'org-2')).map((row) => row.id))
-      .toStrictEqual(['r1']);
+    expect((await store.getByRelation('organization', 'org-2')).map((row) => row.id)).toStrictEqual(
+      ['r1']
+    );
   });
 
   it('drops the relation key once its last member is deleted', async () => {
@@ -120,7 +129,7 @@ describe('in-memory relational store indexes (JUM-681)', () => {
     // Neither is an error: a listing for an organization with no records and a
     // listing on a field nobody indexed are both empty, not a crash.
     await expect(store.getByRelation('organization', 'org-404')).resolves.toStrictEqual([]);
-    await expect(store.getByRelation('username' as keyof Row, 'alice')).resolves.toStrictEqual([]);
+    await expect(store.getByRelation('username', 'alice')).resolves.toStrictEqual([]);
   });
 
   it('treats a missing relation value as no parent, not as the empty key', async () => {

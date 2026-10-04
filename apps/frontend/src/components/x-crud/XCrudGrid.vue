@@ -5,6 +5,7 @@ import {
   CButton,
   CFormCheck,
   CFormInput,
+  CFormLabel,
   CFormSelect,
   CPlaceholder,
   CTable,
@@ -19,7 +20,11 @@ import SearchableEnumInput from '@/components/SearchableEnumInput.vue';
 import XCrudColumnFilter from '@/components/x-crud/XCrudFilters.vue';
 import XCrudRowMenu from '@/components/x-crud/XCrudRowMenu.vue';
 import {
-  badgeColorFor, formatCellValue, isInlineEditable, pageWindow, shortId
+  badgeColorFor,
+  formatCellValue,
+  isInlineEditable,
+  pageWindow,
+  shortId
 } from '@/components/x-crud/xCrudFormat';
 import type { useXCrud } from '@/components/x-crud/useXCrud';
 import type { FieldDescriptor } from '@/contracts/formSchema';
@@ -51,12 +56,24 @@ const editingValue = ref('');
 
 const columnLabel = (d: FieldDescriptor): string => fieldLabel(d, props.crud.config.columnLabels);
 
-const isId = (d: FieldDescriptor): boolean => d.name === 'id' || (d.format === 'uuid' && !d.relation);
+const isId = (d: FieldDescriptor): boolean =>
+  d.name === 'id' || (d.format === 'uuid' && !d.relation);
 
 const startInlineEdit = (id: string, d: FieldDescriptor, row: Record<string, unknown>): void => {
   if (!props.crud.config.inlineEdit || !isInlineEditable(d) || !props.canUpdate(row)) return;
   editingCell.value = { id, field: d.name };
-  editingValue.value = String(row[d.name] ?? '');
+  const cell = row[d.name];
+  // Inline-editable fields are scalar (isInlineEditable gate); serialize
+  // explicitly so nothing ever degrades to '[object Object]'.
+  if (cell === undefined || cell === null) {
+    editingValue.value = '';
+  } else if (typeof cell === 'string') {
+    editingValue.value = cell;
+  } else if (typeof cell === 'number' || typeof cell === 'boolean' || typeof cell === 'bigint') {
+    editingValue.value = String(cell);
+  } else {
+    editingValue.value = JSON.stringify(cell) ?? '';
+  }
 };
 
 const commitInlineEdit = (): void => {
@@ -86,9 +103,8 @@ const pageNumbers = (): number[] => {
 };
 
 /** Array-of-reference cells (members) show resolved labels, not a count of uuids. */
-const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
-  Array.isArray(value) ? value.map((entry) => props.crud.referenceLabel(d.name, entry)) : []
-);
+const referenceList = (d: FieldDescriptor, value: unknown): string[] =>
+  Array.isArray(value) ? value.map((entry) => props.crud.referenceLabel(d.name, entry)) : [];
 </script>
 
 <template>
@@ -113,7 +129,13 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
             :role="crud.canSort(d.name) ? 'button' : undefined"
             class="small text-uppercase fw-semibold text-body-secondary"
             :class="{ 'xcrud-sortable': crud.canSort(d.name) }"
-            :aria-sort="crud.sort.value?.field === d.name ? (crud.sort.value.direction === 'asc' ? 'ascending' : 'descending') : 'none'"
+            :aria-sort="
+              crud.sort.value?.field === d.name
+                ? crud.sort.value.direction === 'asc'
+                  ? 'ascending'
+                  : 'descending'
+                : 'none'
+            "
             @click="crud.toggleSort(d.name)"
           >
             {{ columnLabel(d) }}
@@ -126,7 +148,9 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
               <CIcon v-else icon="cil-swap-vertical" size="sm" class="text-body-tertiary" />
             </template>
           </CTableHeaderCell>
-          <CTableHeaderCell class="text-end xcrud-actions-col xcrud-sticky-end small text-uppercase fw-semibold text-body-secondary">
+          <CTableHeaderCell
+            class="text-end xcrud-actions-col xcrud-sticky-end small text-uppercase fw-semibold text-body-secondary"
+          >
             {{ t('crud.actions') }}
           </CTableHeaderCell>
         </CTableRow>
@@ -147,7 +171,9 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
         <template v-if="crud.loading.value && crud.visibleRows.value.length === 0">
           <CTableRow v-for="index in 5" :key="index">
             <CTableDataCell :colspan="crud.visibleColumns.value.length + 2">
-              <CPlaceholder component="span" animation="glow" class="d-block w-100">&nbsp;</CPlaceholder>
+              <CPlaceholder component="span" animation="glow" class="d-block w-100"
+                >&nbsp;</CPlaceholder
+              >
             </CTableDataCell>
           </CTableRow>
         </template>
@@ -178,7 +204,9 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
                 :key="d.name"
                 @dblclick.stop="startInlineEdit(crud.rowId(row), d, row)"
               >
-                <template v-if="editingCell?.id === crud.rowId(row) && editingCell?.field === d.name">
+                <template
+                  v-if="editingCell?.id === crud.rowId(row) && editingCell?.field === d.name"
+                >
                   <div class="d-flex gap-1 align-items-center">
                     <SearchableEnumInput
                       v-if="d.enum"
@@ -197,10 +225,22 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
                       @keyup.enter="commitInlineEdit"
                       @keyup.esc="editingCell = null"
                     />
-                    <CButton color="success" variant="outline" size="sm" :aria-label="t('crud.inlineConfirm')" @click="commitInlineEdit">
+                    <CButton
+                      color="success"
+                      variant="outline"
+                      size="sm"
+                      :aria-label="t('crud.inlineConfirm')"
+                      @click="commitInlineEdit"
+                    >
                       <CIcon icon="cil-check" size="sm" />
                     </CButton>
-                    <CButton color="secondary" variant="outline" size="sm" :aria-label="t('crud.inlineCancel')" @click="editingCell = null">
+                    <CButton
+                      color="secondary"
+                      variant="outline"
+                      size="sm"
+                      :aria-label="t('crud.inlineCancel')"
+                      @click="editingCell = null"
+                    >
                       <CIcon icon="cil-x" size="sm" />
                     </CButton>
                   </div>
@@ -213,8 +253,12 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
                     v-for="label in referenceList(d, row[d.name]).slice(0, 3)"
                     :key="label"
                     class="badge text-bg-light me-1"
-                  >{{ label }}</span>
-                  <span v-if="referenceList(d, row[d.name]).length > 3" class="badge text-bg-secondary">
+                    >{{ label }}</span
+                  >
+                  <span
+                    v-if="referenceList(d, row[d.name]).length > 3"
+                    class="badge text-bg-secondary"
+                  >
                     +{{ referenceList(d, row[d.name]).length - 3 }}
                   </span>
                   <span v-if="referenceList(d, row[d.name]).length === 0">—</span>
@@ -231,7 +275,8 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
                   v-else-if="d.enum"
                   class="badge"
                   :class="`text-bg-${badgeColorFor(row[d.name])}`"
-                >{{ formatCellValue(d, row[d.name]) }}</span>
+                  >{{ formatCellValue(d, row[d.name]) }}</span
+                >
                 <span v-else-if="d.type === 'array'" class="badge text-bg-light">
                   {{ formatCellValue(d, row[d.name]) }}
                 </span>
@@ -300,9 +345,13 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
       <span class="text-body-secondary small">
         {{ pageWindow(crud.page.value, crud.pageSize.value, crud.total.value) }}
       </span>
-      <label class="small text-body-secondary mb-0 d-flex align-items-center gap-1">
+      <CFormLabel
+        class="small text-body-secondary mb-0 d-flex align-items-center gap-1"
+        for="xcrud-page-size"
+      >
         {{ t('crud.rowsPerPage') }}
         <CFormSelect
+          id="xcrud-page-size"
           size="sm"
           class="w-auto"
           aria-label="rows per page"
@@ -310,11 +359,13 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
           :options="['5', '10', '20', '50']"
           @update:model-value="crud.setPageSize(Number($event))"
         />
-      </label>
+      </CFormLabel>
       <nav class="ms-auto" aria-label="pagination">
         <ul class="pagination pagination-sm mb-0">
           <li class="page-item" :class="{ disabled: crud.page.value <= 1 }">
-            <button class="page-link" :aria-label="t('crud.previous')" @click="crud.prevPage()">‹</button>
+            <button class="page-link" :aria-label="t('crud.previous')" @click="crud.prevPage()">
+              ‹
+            </button>
           </li>
           <li
             v-for="number in pageNumbers()"
@@ -325,20 +376,26 @@ const referenceList = (d: FieldDescriptor, value: unknown): string[] => (
             <button class="page-link" @click="crud.goToPage(number)">{{ number }}</button>
           </li>
           <li class="page-item" :class="{ disabled: !crud.hasMore.value }">
-            <button class="page-link" :aria-label="t('crud.next')" @click="crud.nextPage()">›</button>
+            <button class="page-link" :aria-label="t('crud.next')" @click="crud.nextPage()">
+              ›
+            </button>
           </li>
         </ul>
       </nav>
-      <label class="small text-body-secondary mb-0 d-flex align-items-center gap-1">
+      <CFormLabel
+        class="small text-body-secondary mb-0 d-flex align-items-center gap-1"
+        for="xcrud-go-to"
+      >
         {{ t('crud.goTo') }}
         <CFormInput
+          id="xcrud-go-to"
           v-model="goTo"
           size="sm"
           class="xcrud-goto"
           aria-label="go to page"
           @keyup.enter="goToPage"
         />
-      </label>
+      </CFormLabel>
     </div>
   </div>
 </template>

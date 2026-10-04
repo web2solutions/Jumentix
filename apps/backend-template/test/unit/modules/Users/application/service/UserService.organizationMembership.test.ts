@@ -1,4 +1,4 @@
-import { UserService } from '@src/modules/Users/service/UserService';
+import UserService from '@src/modules/Users/service/UserService';
 
 /**
  * Concurrent membership edits, and the update they used to lose (JUM-687).
@@ -19,7 +19,11 @@ import { UserService } from '@src/modules/Users/service/UserService';
  * JUM-687. Those have never reproduced locally, and this is hardening on the
  * path whose symptoms match, not a demonstrated fix.
  */
-type Organization = { id: string; name: string; users: string[] };
+interface Organization {
+  id: string;
+  name: string;
+  users: string[];
+}
 
 function slowOrganizationRepository(organization: Organization) {
   const state: Organization = { ...organization, users: [...organization.users] };
@@ -47,11 +51,12 @@ function slowOrganizationRepository(organization: Organization) {
 function syncFor(repository: unknown) {
   const service = Object.create(UserService.prototype) as Record<string, unknown>;
   service.organizationDataRepository = repository;
-  return (userId: string, previous: string, next: string): Promise<void> => (
-    service as unknown as {
-      syncOrganizationUsers: (u: string, p: string, n: string) => Promise<void>;
-    }
-  ).syncOrganizationUsers.call(service, userId, previous, next);
+  return (userId: string, previous: string, next: string): Promise<void> =>
+    (
+      service as unknown as {
+        syncOrganizationUsers: (u: string, p: string, n: string) => Promise<void>;
+      }
+    ).syncOrganizationUsers.call(service, userId, previous, next);
 }
 
 describe('organization membership under concurrency (JUM-687)', () => {
@@ -74,7 +79,9 @@ describe('organization membership under concurrency (JUM-687)', () => {
 
     // The other direction: a move out of an organization races the moves in.
     const repository = slowOrganizationRepository({
-      id: 'org-1', name: 'Acme', users: ['leaving']
+      id: 'org-1',
+      name: 'Acme',
+      users: ['leaving']
     });
     const sync = syncFor(repository);
 
@@ -98,8 +105,10 @@ describe('organization membership under concurrency (JUM-687)', () => {
     // The first write fails and every later one succeeds, expressed as a queue
     // of behaviours rather than a branch — the lint rule against conditionals in
     // tests is right that a branch here can hide which case actually ran.
-    const behaviours: Array<(id: string, data: { users: string[] }) => Promise<unknown>> = [
-      async () => { throw new Error('store unavailable'); },
+    const behaviours: ((id: string, data: { users: string[] }) => Promise<unknown>)[] = [
+      async () => {
+        throw new Error('store unavailable');
+      },
       originalUpdate
     ];
     repository.update = async (id: string, data: { users: string[] }) => {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const { missingLanguageTwins } = require('../check-current-governance-docs.js');
 
 /**
@@ -11,8 +10,8 @@ describe('documentation language twins (JUM-895)', () => {
     expect.hasAssertions();
 
     expect(missingLanguageTwins(['documentation/md/BUN-BRANCH-COVERAGE-SPIKE.md'])).toStrictEqual([
-      'documentation/md/BUN-BRANCH-COVERAGE-SPIKE.md: missing Portuguese counterpart '
-        + 'documentation/md/BUN-BRANCH-COVERAGE-SPIKE.pt-BR.md (Requirement 076)'
+      'documentation/md/BUN-BRANCH-COVERAGE-SPIKE.md: missing Portuguese counterpart ' +
+        'documentation/md/BUN-BRANCH-COVERAGE-SPIKE.pt-BR.md (Requirement 076)'
     ]);
   });
 
@@ -27,11 +26,13 @@ describe('documentation language twins (JUM-895)', () => {
   it('accepts complete pairs and ignores files outside documentation/md', () => {
     expect.hasAssertions();
 
-    expect(missingLanguageTwins([
-      'documentation/md/A.md',
-      'documentation/md/A.pt-BR.md',
-      'README.md',
-      'apps/x/README.md'
-    ])).toStrictEqual([]);
+    expect(
+      missingLanguageTwins([
+        'documentation/md/A.md',
+        'documentation/md/A.pt-BR.md',
+        'README.md',
+        'apps/x/README.md'
+      ])
+    ).toStrictEqual([]);
   });
 });

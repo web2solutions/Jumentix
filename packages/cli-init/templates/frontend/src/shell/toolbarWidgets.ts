@@ -1,6 +1,6 @@
-import type { Component } from 'vue';
-
 import { effectiveScopes } from '@/contracts/rbac';
+
+import type { Component } from 'vue';
 
 export type ToolbarPlacement = 'left' | 'right';
 

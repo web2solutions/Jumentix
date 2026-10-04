@@ -9,7 +9,7 @@ import XCrudRowDetail from '@/components/x-crud/XCrudRowDetail.vue';
 import XCrudToolbar from '@/components/x-crud/XCrudToolbar.vue';
 import { useXCrud } from '@/components/x-crud/useXCrud';
 import type { XCrudEntityConfig } from '@/components/x-crud/xCrudTypes';
-import { usePermissions } from '@/contracts/usePermissions';
+import usePermissions from '@/contracts/usePermissions';
 import { t } from '@/i18n';
 import { useNotificationStore } from '@/stores/notifications';
 
@@ -38,12 +38,10 @@ const canCreate = permissions.canOp(props.config.operations.create);
 const canUpdateOp = permissions.canOp(props.config.operations.update);
 const canDeleteOp = permissions.canOp(props.config.operations.delete);
 
-const canUpdateRow = (row: Record<string, unknown>) => (
-  canUpdateOp.value && (props.canUpdateRow ? props.canUpdateRow(row) : true)
-);
-const canDeleteRow = (row: Record<string, unknown>) => (
-  canDeleteOp.value && (props.canDeleteRow ? props.canDeleteRow(row) : true)
-);
+const canUpdateRow = (row: Record<string, unknown>) =>
+  canUpdateOp.value && (props.canUpdateRow ? props.canUpdateRow(row) : true);
+const canDeleteRow = (row: Record<string, unknown>) =>
+  canDeleteOp.value && (props.canDeleteRow ? props.canDeleteRow(row) : true);
 
 const expand = (id: string, tab: 'preview' | 'edit'): void => {
   detailTab.value = tab;
@@ -65,12 +63,15 @@ onMounted(async () => {
   await Promise.all([crud.load(), crud.loadReferences()]);
 });
 
-watch(() => notifications.reopenTarget, (target) => {
-  if (!target?.reopen || target.entity !== props.config.entity) return;
-  reopenRecord.value = target.reopen;
-  view.value = 'new';
-  notifications.clearReopen();
-});
+watch(
+  () => notifications.reopenTarget,
+  (target) => {
+    if (!target?.reopen || target.entity !== props.config.entity) return;
+    reopenRecord.value = target.reopen;
+    view.value = 'new';
+    notifications.clearReopen();
+  }
+);
 </script>
 
 <template>
@@ -144,7 +145,10 @@ watch(() => notifications.reopenTarget, (target) => {
           :record="reopenRecord"
           :reference-restrictions="referenceRestrictions"
           @submit="submitCreate"
-          @cancel="view = 'listing'; reopenRecord = undefined"
+          @cancel="
+            view = 'listing';
+            reopenRecord = undefined;
+          "
         />
       </template>
     </CCardBody>

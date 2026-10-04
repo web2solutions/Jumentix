@@ -1,6 +1,7 @@
-import { UserService } from '@src/modules/Users/service/UserService';
-import type { IUser } from '@src/modules/Users';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
+import UserService from '@src/modules/Users/service/UserService';
+
+import type { IUser } from '@src/modules/Users';
 
 const userWithSecrets = (id: string): IUser & { salt: string } => ({
   id,
@@ -55,7 +56,7 @@ describe('user service secret sanitization', () => {
       mutexService,
       eventBus
     }
-  } as any);
+  });
 
   it('should remove password and salt from getOneById', async () => {
     expect.hasAssertions();
@@ -81,8 +82,10 @@ describe('user service secret sanitization', () => {
   it('should publish integration event on create', async () => {
     expect.hasAssertions();
     await service.create({ password: '12345678' } as any);
-    expect(eventBus.publish).toHaveBeenCalledWith(expect.objectContaining({
-      name: UserIntegrationEventName.Created
-    }));
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: UserIntegrationEventName.Created
+      })
+    );
   });
 });

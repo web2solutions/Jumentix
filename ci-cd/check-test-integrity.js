@@ -35,8 +35,9 @@
  * these were. A mechanism with nothing in it costs a few lines; re-inventing
  * one under pressure costs the audit trail.
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 const { testsWithoutDeclarations } = require('./lib/test-assertions.js');
 
@@ -62,7 +63,8 @@ const SKIP_DIRECTORIES = new Set(['node_modules', 'dist', 'build', 'coverage', '
  * What stays reportable is the bare form: `toHaveBeenCalled()` and
  * `toHaveBeenCalledTimes(n)` say a function ran and nothing about what it did.
  */
-const STATE_ASSERTIONS = /\.(toBe|toEqual|toStrictEqual|toMatchObject|toContain|toHaveLength|toThrow|toBeTruthy|toBeFalsy|toBeDefined|toBeUndefined|toBeNull|toBeGreaterThan|toBeLessThan|toMatchSnapshot|toHaveBeenCalledWith|toHaveBeenLastCalledWith|resolves|rejects)\b/;
+const STATE_ASSERTIONS =
+  /\.(toBe|toEqual|toStrictEqual|toMatchObject|toContain|toHaveLength|toThrow|toBeTruthy|toBeFalsy|toBeDefined|toBeUndefined|toBeNull|toBeGreaterThan|toBeLessThan|toMatchSnapshot|toHaveBeenCalledWith|toHaveBeenLastCalledWith|resolves|rejects)\b/;
 
 /** `setTimeout(resolve, 40)` and friends: a sleep, not a timeout. */
 const FIXED_SLEEP = /setTimeout\(\s*(?:resolve|\(\)\s*=>\s*resolve\([^)]*\))\s*,\s*(\d+)/g;
@@ -161,9 +163,9 @@ function validateTestIntegrity(rootDir = process.cwd(), options = {}) {
       else {
         for (const test of undeclared) {
           failures.push(
-            `[test-integrity] ${relative}:${test.line} "${test.title}" declares no assertions.`
-            + ' Add `expect.hasAssertions()`: an expect that never runs is a test that'
-            + ' passes for free (Requirement 135 §2).'
+            `[test-integrity] ${relative}:${test.line} "${test.title}" declares no assertions.` +
+              ' Add `expect.hasAssertions()`: an expect that never runs is a test that' +
+              ' passes for free (Requirement 135 §2).'
           );
         }
       }
@@ -174,9 +176,9 @@ function validateTestIntegrity(rootDir = process.cwd(), options = {}) {
       if (exemption) seenMock.add(relative);
       else {
         failures.push(
-          `[test-integrity] ${relative} asserts only that functions were called.`
-          + ' Assert the effect — the row, the response, the state — not the call'
-          + ' (Requirement 135 §1).'
+          `[test-integrity] ${relative} asserts only that functions were called.` +
+            ' Assert the effect — the row, the response, the state — not the call' +
+            ' (Requirement 135 §1).'
         );
       }
     }
@@ -187,17 +189,17 @@ function validateTestIntegrity(rootDir = process.cwd(), options = {}) {
       if (exemption) seenSleep.add(relative);
       else {
         failures.push(
-          `[test-integrity] ${relative} sleeps ${sleeps.join('ms, ')}ms as synchronisation.`
-          + ' Wait on the event or poll the condition; a fixed wait is a race with a'
-          + ' margin, and the margin is whatever CI has left (Requirement 134 §2).'
+          `[test-integrity] ${relative} sleeps ${sleeps.join('ms, ')}ms as synchronisation.` +
+            ' Wait on the event or poll the condition; a fixed wait is a race with a' +
+            ' margin, and the margin is whatever CI has left (Requirement 134 §2).'
         );
       }
     }
 
     if (mapped && !mapped.has(relative)) {
       failures.push(
-        `[test-integrity] ${relative} is not in test-map.json. The map is the target`
-        + ' list, so a suite outside it is a suite nothing runs (Requirement 135 §6).'
+        `[test-integrity] ${relative} is not in test-map.json. The map is the target` +
+          ' list, so a suite outside it is a suite nothing runs (Requirement 135 §6).'
       );
     }
   }
@@ -206,29 +208,29 @@ function validateTestIntegrity(rootDir = process.cwd(), options = {}) {
   for (const [file, entry] of sleepRegister) {
     if (!present.has(file)) {
       failures.push(
-        `[test-integrity] ACCEPTED_SLEEPS lists ${file} (${entry.issue}), which no longer`
-        + ' exists. Remove the entry — a stale exemption hides the next real one.'
+        `[test-integrity] ACCEPTED_SLEEPS lists ${file} (${entry.issue}), which no longer` +
+          ' exists. Remove the entry — a stale exemption hides the next real one.'
       );
     } else if (!seenSleep.has(file)) {
       failures.push(
-        `[test-integrity] ACCEPTED_SLEEPS lists ${file} (${entry.issue}), which no longer`
-        + ' sleeps. Remove the entry.'
+        `[test-integrity] ACCEPTED_SLEEPS lists ${file} (${entry.issue}), which no longer` +
+          ' sleeps. Remove the entry.'
       );
     }
   }
   for (const [file, entry] of assertRegister) {
     if (!seenAssert.has(file)) {
       failures.push(
-        `[test-integrity] ACCEPTED_NO_ASSERTIONS lists ${file} (${entry.issue}), which now`
-        + ' declares assertions or no longer exists. Remove the entry.'
+        `[test-integrity] ACCEPTED_NO_ASSERTIONS lists ${file} (${entry.issue}), which now` +
+          ' declares assertions or no longer exists. Remove the entry.'
       );
     }
   }
   for (const [file, entry] of mockRegister) {
     if (!seenMock.has(file)) {
       failures.push(
-        `[test-integrity] ACCEPTED_MOCK_ONLY lists ${file} (${entry.issue}), which no`
-        + ' longer matches. Remove the entry.'
+        `[test-integrity] ACCEPTED_MOCK_ONLY lists ${file} (${entry.issue}), which no` +
+          ' longer matches. Remove the entry.'
       );
     }
   }
@@ -243,7 +245,9 @@ function run(rootDir = process.cwd()) {
     console.error(`\n[test-integrity] ${failures.length} finding(s).`);
     return 1;
   }
-  console.log('Test integrity check passed: every suite declares assertions, asserts state, waits on events and is mapped.');
+  console.log(
+    'Test integrity check passed: every suite declares assertions, asserts state, waits on events and is mapped.'
+  );
   return 0;
 }
 
@@ -252,9 +256,9 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
-  ACCEPTED_SLEEPS,
   ACCEPTED_MOCK_ONLY,
   ACCEPTED_NO_ASSERTIONS,
+  ACCEPTED_SLEEPS,
   fixedSleeps,
   run,
   validateTestIntegrity

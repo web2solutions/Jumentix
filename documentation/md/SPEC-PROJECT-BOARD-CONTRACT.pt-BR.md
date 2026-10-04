@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SPEC-PROJECT-BOARD-CONTRACT.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Contrato de diretoria do projeto de especificações (Projeto Linear Jumentix)
 
 Este documento define como o quadro do projeto Linear faz parte da execução orientada ao desenvolvimento de especificações.
@@ -59,13 +60,13 @@ Os rótulos de fluxo estratégico são aditivos (por exemplo `todo-mvp`, `epic`,
    parent/sub-issue do Linear quando disponíveis.
 9. A associação ao milestone deve usar os metadados de milestone da Issue e do Project no Linear.
 10. As tarefas são agrupadas por natureza principal dentro do épico. Trabalho de suporte com
-   natureza diferente é rastreado como tarefa filha separada sob o mesmo resultado coeso.
+    natureza diferente é rastreado como tarefa filha separada sob o mesmo resultado coeso.
 11. O planejamento do épico define milestone, prioridade, limites de escopo, datas, estimativa,
     responsável e delegação de agentes.
 12. Tarefas filhas mantêm estimativas independentes de no máximo oito pontos, responsáveis,
-   branches, commits, pull requests e evidências.
+    branches, commits, pull requests e evidências.
 13. Um épico só é concluído quando todas as tarefas filhas obrigatórias e suas evidências estão
-   completas.
+    completas.
 14. Um milestone só é encerrado depois que seus épicos forem concluídos ou o trabalho incompleto
     for formalmente transferido para outro milestone aberto.
 

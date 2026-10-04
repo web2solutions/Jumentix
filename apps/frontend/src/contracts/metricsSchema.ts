@@ -65,9 +65,8 @@ export const metricsSpecForListOperation = (
 export const asMetricsResult = (response: unknown): MetricsResult => {
   const raw = (response ?? {}) as Partial<MetricsResult>;
   const buckets = Array.isArray(raw.buckets) ? raw.buckets : [];
-  const metric: MetricsKind = raw.metric === 'groupBy' || raw.metric === 'series'
-    ? raw.metric
-    : 'count';
+  const metric: MetricsKind =
+    raw.metric === 'groupBy' || raw.metric === 'series' ? raw.metric : 'count';
   let interval: MetricsResult['interval'];
   if (raw.interval === 'week' || raw.interval === 'month' || raw.interval === 'day') {
     interval = raw.interval;

@@ -31,30 +31,30 @@ also use `1`/`2` as below).
 
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `jumentix init [dir]` | Create a lean workspace |
-| `jumentix add domain\|service\|frontend` | Extend an existing generated project |
-| `jumentix upgrade` | Template three-way merge (`--dry-run` supported) |
-| `jumentix doctor` | Environment and project diagnostics |
-| `jumentix help` | Show top-level usage |
+| Command                                  | Purpose                                          |
+| ---------------------------------------- | ------------------------------------------------ |
+| `jumentix init [dir]`                    | Create a lean workspace                          |
+| `jumentix add domain\|service\|frontend` | Extend an existing generated project             |
+| `jumentix upgrade`                       | Template three-way merge (`--dry-run` supported) |
+| `jumentix doctor`                        | Environment and project diagnostics              |
+| `jumentix help`                          | Show top-level usage                             |
 
 ### `init` flags
 
-| Flag | Values / notes |
-| --- | --- |
-| `--mode` | `monolith` \| `services` \| `hybrid` \| `frontend` |
-| `--from` | Designer export JSON, OAS 3.x YAML/JSON, or catalog URL |
-| `--preset` | `users` (default when `--from` is omitted) |
-| `--http` | `express` \| `fastify` \| `restify` |
-| `--realtime` | `none` \| `websocket` \| `grpc` |
-| `--db` | `sqlite` \| `postgres` \| `mysql` \| `mongo` \| `inmemory` |
-| `--frontend` | Include `apps/frontend` (hybrid path) |
-| `--offline` | Keep Cana offline layer on the frontend |
-| `--git` | `git init` + first commit after assembly |
-| `--install` | Run `bun install` after assembly |
-| `--config` | Path to `jumentix.init.json` answers |
-| `--non-interactive` | Require every answer from flags/config (no prompts) |
+| Flag                | Values / notes                                             |
+| ------------------- | ---------------------------------------------------------- |
+| `--mode`            | `monolith` \| `services` \| `hybrid` \| `frontend`         |
+| `--from`            | Designer export JSON, OAS 3.x YAML/JSON, or catalog URL    |
+| `--preset`          | `users` (default when `--from` is omitted)                 |
+| `--http`            | `express` \| `fastify` \| `restify`                        |
+| `--realtime`        | `none` \| `websocket` \| `grpc`                            |
+| `--db`              | `sqlite` \| `postgres` \| `mysql` \| `mongo` \| `inmemory` |
+| `--frontend`        | Include `apps/frontend` (hybrid path)                      |
+| `--offline`         | Keep Cana offline layer on the frontend                    |
+| `--git`             | `git init` + first commit after assembly                   |
+| `--install`         | Run `bun install` after assembly                           |
+| `--config`          | Path to `jumentix.init.json` answers                       |
+| `--non-interactive` | Require every answer from flags/config (no prompts)        |
 
 Example (Users preset, hybrid, offline):
 
@@ -66,12 +66,12 @@ bun ./packages/cli-init/bin/jumentix.js init demo \
 
 ### Modes (map to factory matrix)
 
-| `--mode` | Factory matrix row | Layout |
-| --- | --- | --- |
-| `monolith` | Modular Monolith (Backend) | One Core service; all domains in-process |
-| `services` | Multi-service Backend Group | Core (Users + auth) + domain services |
-| `hybrid` | Hybrid Backend + Frontend | Backend apps + `apps/frontend` |
-| `frontend` | Frontend-only SPA/PWA Offline | `apps/frontend` consuming contracts |
+| `--mode`   | Factory matrix row            | Layout                                   |
+| ---------- | ----------------------------- | ---------------------------------------- |
+| `monolith` | Modular Monolith (Backend)    | One Core service; all domains in-process |
+| `services` | Multi-service Backend Group   | Core (Users + auth) + domain services    |
+| `hybrid`   | Hybrid Backend + Frontend     | Backend apps + `apps/frontend`           |
+| `frontend` | Frontend-only SPA/PWA Offline | `apps/frontend` consuming contracts      |
 
 Mode is inferred from architecture (one service → `monolith`) unless `--mode`
 is set. See
@@ -106,12 +106,12 @@ or this file.
 `init --from` / `--preset` normalize every accepted source into one
 **GenerationPlan** before any files are written:
 
-| Source | Flag | Loader |
-| --- | --- | --- |
+| Source                     | Flag                 | Loader                     |
+| -------------------------- | -------------------- | -------------------------- |
 | Designer suite export JSON | `--from=export.json` | `loadDesignerExportSource` |
-| OpenAPI 3.x YAML/JSON | `--from=spec.yml` | `loadOasSource` |
-| Catalog URL | `--from=https://…` | `loadCatalogSource` |
-| Users preset | `--preset=users` | `loadPresetSource` |
+| OpenAPI 3.x YAML/JSON      | `--from=spec.yml`    | `loadOasSource`            |
+| Catalog URL                | `--from=https://…`   | `loadCatalogSource`        |
+| Users preset               | `--preset=users`     | `loadPresetSource`         |
 
 Validation fails closed with named exit-`1` messages for: no core service;
 entity without primary key; relation crossing a service boundary in monolith
@@ -164,12 +164,12 @@ before the PR opens.
 
 Every generated workspace includes:
 
-| Artifact | Role |
-| --- | --- |
-| `.jumentix/project.json` | Plan + mode + template cohort; consumed by `add` / `upgrade` / `doctor` |
-| `.jumentix/manifest.json` | sha256 of generated files (upgrade merge) |
-| `.jumentix/objects/<sha256>` | Baseline blobs for three-way merge |
-| `jumentix.init.json` | Answers for `--config` round-trips |
+| Artifact                     | Role                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `.jumentix/project.json`     | Plan + mode + template cohort; consumed by `add` / `upgrade` / `doctor` |
+| `.jumentix/manifest.json`    | sha256 of generated files (upgrade merge)                               |
+| `.jumentix/objects/<sha256>` | Baseline blobs for three-way merge                                      |
+| `jumentix.init.json`         | Answers for `--config` round-trips                                      |
 
 `.jumentix/service-profile.json` is retired and removed when present.
 
@@ -184,11 +184,11 @@ independently. Generated projects must pass their own
 
 Run inside a generated project (requires `.jumentix/project.json`):
 
-| Command | Effect |
-| --- | --- |
+| Command                                                  | Effect                                                                                    |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `jumentix add domain <name> [--from …] [--service <id>]` | Inject hexagonal domain into Core (or `--service`); refresh frontend modules when present |
-| `jumentix add service <name> --domains a,b` | Create `apps/<name>` in services/hybrid mode; move domain ownership |
-| `jumentix add frontend [--offline]` | Add `apps/frontend` to a backend-only tree (mode → `hybrid`) |
+| `jumentix add service <name> --domains a,b`              | Create `apps/<name>` in services/hybrid mode; move domain ownership                       |
+| `jumentix add frontend [--offline]`                      | Add `apps/frontend` to a backend-only tree (mode → `hybrid`)                              |
 
 Manifest drift is refused unless `--force`. Missing project metadata exits `1`.
 
@@ -198,11 +198,11 @@ Manifest drift is refused unless `--force`. Missing project metadata exits `1`.
 cohort using `.jumentix/manifest.json` hashes and `.jumentix/objects/<sha256>`
 baselines:
 
-| Status | Meaning |
-| --- | --- |
-| `updated` | Unchanged locally → take template, or clean auto-merge |
-| `conflicted` | Overlapping edits — conflict markers left in the file |
-| `skipped` | No template change, or only local edits |
+| Status              | Meaning                                                 |
+| ------------------- | ------------------------------------------------------- |
+| `updated`           | Unchanged locally → take template, or clean auto-merge  |
+| `conflicted`        | Overlapping edits — conflict markers left in the file   |
+| `skipped`           | No template change, or only local edits                 |
 | `added` / `removed` | New template paths / retired paths (retired files kept) |
 
 `--dry-run` reports without writing. Dirty git requires `--force`. Applied
@@ -212,10 +212,10 @@ upgrades write `.jumentix/upgrade-<version>.md`.
 
 `jumentix doctor` prints environment and project diagnostics:
 
-| Area | Checks |
-| --- | --- |
-| environment | bun version (required), node ≥20 when present, docker availability |
-| project | `.jumentix/project.json` + mode, template version vs packaged `templates.manifest.json`, expected `apps/*`, manifest drift |
+| Area        | Checks                                                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------- |
+| environment | bun version (required), node ≥20 when present, docker availability                                                         |
+| project     | `.jumentix/project.json` + mode, template version vs packaged `templates.manifest.json`, expected `apps/*`, manifest drift |
 
 Exit `0` when healthy, `1` for project blockers, `2` for environment blockers.
 

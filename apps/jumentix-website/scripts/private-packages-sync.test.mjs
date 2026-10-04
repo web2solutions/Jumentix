@@ -19,7 +19,12 @@ function isPrivate(pkgDir) {
 }
 
 const NEVER = new Set([
-  'config-eslint', 'config-jest', 'config-ts', 'agent-registry', 'security-scanner', 'cli-init'
+  'config-eslint',
+  'config-jest',
+  'config-ts',
+  'agent-registry',
+  'security-scanner',
+  'cli-init'
 ]);
 
 describe('public site package policy', () => {

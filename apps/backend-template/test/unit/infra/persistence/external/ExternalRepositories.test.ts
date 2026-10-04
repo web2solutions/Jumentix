@@ -1,6 +1,6 @@
 import {
-  BaseExternalDataRepository,
   AuroraRepository,
+  BaseExternalDataRepository,
   CassandraRepository,
   DynamoDbRepository,
   FirebaseRepository,
@@ -23,7 +23,9 @@ class TestableExternalRepository extends BaseExternalDataRepository {
     this.connected = false;
   }
 
-  public readRequiredOption(key: 'provider' | 'connectionUrl' | 'database' | 'region' | 'endpoint'): string {
+  public readRequiredOption(
+    key: 'provider' | 'connectionUrl' | 'database' | 'region' | 'endpoint'
+  ): string {
     return this.getRequiredOption(key);
   }
 
@@ -57,10 +59,10 @@ describe('external data repository foundations', () => {
 
   beforeEach(() => {
     moduleMocks.sequelize = {
-      Sequelize: jest.fn().mockImplementation(() => ({
+      Sequelize: jest.fn().mockReturnValue({
         authenticate: jest.fn().mockResolvedValue(undefined),
         close: jest.fn().mockResolvedValue(undefined)
-      }))
+      })
     };
 
     moduleMocks.mongoose = {
@@ -74,30 +76,30 @@ describe('external data repository foundations', () => {
     };
 
     moduleMocks['@aws-sdk/client-dynamodb'] = {
-      DynamoDBClient: jest.fn().mockImplementation(() => ({
+      DynamoDBClient: jest.fn().mockReturnValue({
         send: jest.fn().mockResolvedValue({}),
         destroy: jest.fn()
-      })),
+      }),
       ListTablesCommand: jest.fn().mockImplementation((input) => ({ input }))
     };
 
     moduleMocks['cassandra-driver'] = {
-      Client: jest.fn().mockImplementation(() => ({
+      Client: jest.fn().mockReturnValue({
         connect: jest.fn().mockResolvedValue(undefined),
         shutdown: jest.fn().mockResolvedValue(undefined)
-      }))
+      })
     };
 
     moduleMocks['firebase-admin/app'] = {
-      initializeApp: jest.fn().mockImplementation(() => ({
+      initializeApp: jest.fn().mockReturnValue({
         delete: jest.fn().mockResolvedValue(undefined)
-      })),
+      }),
       cert: jest.fn().mockReturnValue('firebase-credential')
     };
     moduleMocks['firebase-admin/firestore'] = {
-      getFirestore: jest.fn().mockImplementation(() => ({
+      getFirestore: jest.fn().mockReturnValue({
         collection: jest.fn()
-      }))
+      })
     };
 
     moduleMocks.oracledb = {
@@ -107,12 +109,22 @@ describe('external data repository foundations', () => {
     };
 
     moduleMocks.postgres = {
-      default: jest.fn().mockImplementation(() => ({
+      default: jest.fn().mockReturnValue({
         end: jest.fn().mockResolvedValue(undefined)
-      }))
+      })
     };
 
-    loadModuleSpy = jest.spyOn(BaseExternalDataRepository.prototype as any, 'loadModule')
+    // Spy through the runtime prototype of a real instance: the repository
+    // classes and the test's imported base can resolve to different module
+    // instances (conditional exports + isolated installs), which made a
+    // direct BaseExternalDataRepository.prototype spy silently miss.
+    const prototypeProbe = new CassandraRepository({ provider: 'cassandra' });
+    const runtimeBasePrototype = Object.getPrototypeOf(Object.getPrototypeOf(prototypeProbe));
+    const spyTarget = runtimeBasePrototype as {
+      loadModule: (moduleName: string) => Promise<unknown>;
+    };
+    loadModuleSpy = jest
+      .spyOn(spyTarget, 'loadModule')
       .mockImplementation(createLoadModuleMock(moduleMocks));
   });
 
@@ -125,28 +137,54 @@ describe('external data repository foundations', () => {
     expect.hasAssertions();
 
     const repositories = [
-      new SqlSequelizeRepository({ dialect: 'postgres', extra: { sequelizeAuthenticateOnConnect: false } }),
-      new SqlSequelizeRepository({ dialect: 'mysql', extra: { sequelizeAuthenticateOnConnect: false } }),
-      new SqlSequelizeRepository({ dialect: 'mssql', extra: { sequelizeAuthenticateOnConnect: false } }),
-      new SqlSequelizeRepository({ dialect: 'oracle', extra: { sequelizeAuthenticateOnConnect: false } }),
-      new SqlSequelizeRepository({ dialect: 'sqlite', extra: { sequelizeAuthenticateOnConnect: false } }),
+      new SqlSequelizeRepository({
+        dialect: 'postgres',
+        extra: { sequelizeAuthenticateOnConnect: false }
+      }),
+      new SqlSequelizeRepository({
+        dialect: 'mysql',
+        extra: { sequelizeAuthenticateOnConnect: false }
+      }),
+      new SqlSequelizeRepository({
+        dialect: 'mssql',
+        extra: { sequelizeAuthenticateOnConnect: false }
+      }),
+      new SqlSequelizeRepository({
+        dialect: 'oracle',
+        extra: { sequelizeAuthenticateOnConnect: false }
+      }),
+      new SqlSequelizeRepository({
+        dialect: 'sqlite',
+        extra: { sequelizeAuthenticateOnConnect: false }
+      }),
       new MongoMongooseRepository({ provider: 'mongoose-mongo' }),
       new DynamoDbRepository({ provider: 'aws-dynamodb' }),
       new CassandraRepository({ provider: 'cassandra' }),
       new FirebaseRepository({ provider: 'firebase' }),
-      new OracleRepository({ provider: 'oracle', connectionUrl: 'oracle://jumentix:jumentix@127.0.0.1:1521/FREEPDB1' }),
-      new AuroraRepository({ provider: 'amazon-aurora', connectionUrl: 'postgres://localhost:5432/app' }),
-      new RdsRepository({ provider: 'amazon-rds', extra: { dialect: 'postgres', sequelizeAuthenticateOnConnect: false } })
+      new OracleRepository({
+        provider: 'oracle',
+        connectionUrl: 'oracle://jumentix:jumentix@127.0.0.1:1521/FREEPDB1'
+      }),
+      new AuroraRepository({
+        provider: 'amazon-aurora',
+        connectionUrl: 'postgres://localhost:5432/app'
+      }),
+      new RdsRepository({
+        provider: 'amazon-rds',
+        extra: { dialect: 'postgres', sequelizeAuthenticateOnConnect: false }
+      })
     ];
 
-    await Promise.all(repositories.map(async (repository) => {
-      expect(repository.isConnected()).toBe(false);
-      await repository.connect();
-      expect(repository.isConnected()).toBe(true);
-      await repository.disconnect();
-      expect(repository.isConnected()).toBe(false);
-      expect(repository.getProviderName()).toBeTruthy();
-    }));
+    await Promise.all(
+      repositories.map(async (repository) => {
+        expect(repository.isConnected()).toBe(false);
+        await repository.connect();
+        expect(repository.isConnected()).toBe(true);
+        await repository.disconnect();
+        expect(repository.isConnected()).toBe(false);
+        expect(repository.getProviderName()).toBeTruthy();
+      })
+    );
   });
 
   it('keeps sql dialect metadata accessible and configures sequelize pool', async () => {
@@ -166,16 +204,19 @@ describe('external data repository foundations', () => {
     expect(repository.getDialect()).toBe('postgres');
     await repository.connect();
     expect(repository.getProviderName()).toBe('sequelize-postgres');
-    expect(moduleMocks.sequelize.Sequelize).toHaveBeenCalledWith('postgres://localhost/test', expect.objectContaining({
-      dialect: 'postgres',
-      pool: expect.objectContaining({
-        max: 25,
-        min: 1,
-        acquire: 5000,
-        idle: 3000,
-        evict: 1000
+    expect(moduleMocks.sequelize.Sequelize).toHaveBeenCalledWith(
+      'postgres://localhost/test',
+      expect.objectContaining({
+        dialect: 'postgres',
+        pool: expect.objectContaining({
+          max: 25,
+          min: 1,
+          acquire: 5000,
+          idle: 3000,
+          evict: 1000
+        })
       })
-    }));
+    );
   });
 
   it('configures mongoose connection pooling options', async () => {
@@ -232,10 +273,12 @@ describe('external data repository foundations', () => {
     const repository = new TestableExternalRepository({
       provider: 'test-provider'
     });
-    await expect(repository.importModule('module-that-does-not-exist-aaa'))
-      .rejects.toThrow('Missing optional dependency');
-    await expect(repository.importOptionalModule('module-that-does-not-exist-bbb'))
-      .resolves.toBeNull();
+    await expect(repository.importModule('module-that-does-not-exist-aaa')).rejects.toThrow(
+      'Missing optional dependency'
+    );
+    await expect(
+      repository.importOptionalModule('module-that-does-not-exist-bbb')
+    ).resolves.toBeNull();
   });
 
   it('covers base repository loadModule catch branch directly', async () => {
@@ -244,9 +287,20 @@ describe('external data repository foundations', () => {
     const repository = new TestableExternalRepository({
       provider: 'test-provider'
     });
-    await expect(repository.importModule('module-that-does-not-exist-directly'))
-      .rejects.toThrow('Install it before connecting');
-    loadModuleSpy = jest.spyOn(BaseExternalDataRepository.prototype as any, 'loadModule')
+    await expect(repository.importModule('module-that-does-not-exist-directly')).rejects.toThrow(
+      'Install it before connecting'
+    );
+    // Spy through the runtime prototype of a real instance: the repository
+    // classes and the test's imported base can resolve to different module
+    // instances (conditional exports + isolated installs), which made a
+    // direct BaseExternalDataRepository.prototype spy silently miss.
+    const prototypeProbe = new CassandraRepository({ provider: 'cassandra' });
+    const runtimeBasePrototype = Object.getPrototypeOf(Object.getPrototypeOf(prototypeProbe));
+    const spyTarget = runtimeBasePrototype as {
+      loadModule: (moduleName: string) => Promise<unknown>;
+    };
+    loadModuleSpy = jest
+      .spyOn(spyTarget, 'loadModule')
       .mockImplementation(createLoadModuleMock(moduleMocks));
   });
 
@@ -254,9 +308,9 @@ describe('external data repository foundations', () => {
     expect.hasAssertions();
     const close = jest.fn().mockResolvedValue(undefined);
     moduleMocks.postgres = {
-      default: jest.fn().mockImplementation(() => ({
+      default: jest.fn().mockReturnValue({
         close
-      }))
+      })
     };
     moduleMocks['@aws/aurora-dsql-postgresjs'] = {
       createClient: jest.fn().mockResolvedValue({
@@ -270,8 +324,9 @@ describe('external data repository foundations', () => {
     });
 
     await repository.connect();
-    expect(moduleMocks['@aws/aurora-dsql-postgresjs'].createClient)
-      .toHaveBeenCalledWith(expect.any(Object));
+    expect(moduleMocks['@aws/aurora-dsql-postgresjs'].createClient).toHaveBeenCalledWith(
+      expect.any(Object)
+    );
     await repository.disconnect();
     expect(close).toHaveBeenCalledWith();
   });
@@ -321,27 +376,29 @@ describe('external data repository foundations', () => {
 
   it('covers cassandra keyspace auto-create fallback branch', async () => {
     expect.hasAssertions();
-    const connectWithKeyspace = jest.fn()
+    const connectWithKeyspace = jest
+      .fn()
       .mockRejectedValueOnce(new Error('Keyspace does not exist'))
       .mockResolvedValue(undefined);
     const adminConnect = jest.fn().mockResolvedValue(undefined);
     const adminExecute = jest.fn().mockResolvedValue(undefined);
     const adminShutdown = jest.fn().mockResolvedValue(undefined);
     moduleMocks['cassandra-driver'] = {
-      Client: jest.fn()
-        .mockImplementationOnce(() => ({
+      Client: jest
+        .fn()
+        .mockReturnValueOnce({
           connect: connectWithKeyspace,
           shutdown: jest.fn().mockResolvedValue(undefined)
-        }))
-        .mockImplementationOnce(() => ({
+        })
+        .mockReturnValueOnce({
           connect: adminConnect,
           execute: adminExecute,
           shutdown: adminShutdown
-        }))
-        .mockImplementationOnce(() => ({
+        })
+        .mockReturnValueOnce({
           connect: jest.fn().mockResolvedValue(undefined),
           shutdown: jest.fn().mockResolvedValue(undefined)
-        }))
+        })
     };
 
     const repository = new CassandraRepository({
@@ -350,7 +407,9 @@ describe('external data repository foundations', () => {
     });
     await repository.connect();
     expect(adminConnect).toHaveBeenCalledWith();
-    expect(adminExecute).toHaveBeenCalledWith(expect.stringContaining('CREATE KEYSPACE IF NOT EXISTS jumentix'));
+    expect(adminExecute).toHaveBeenCalledWith(
+      expect.stringContaining('CREATE KEYSPACE IF NOT EXISTS jumentix')
+    );
     expect(adminShutdown).toHaveBeenCalledWith();
   });
 
@@ -366,9 +425,9 @@ describe('external data repository foundations', () => {
 
   it('covers firebase repository firestore missing branch and option mapping', async () => {
     expect.hasAssertions();
-    const initializeApp = jest.fn().mockImplementation(() => ({
+    const initializeApp = jest.fn().mockReturnValue({
       delete: jest.fn().mockResolvedValue(undefined)
-    }));
+    });
     const cert = jest.fn().mockReturnValue('cert-object');
     moduleMocks['firebase-admin/app'] = { initializeApp, cert };
     moduleMocks['firebase-admin/firestore'] = {};
@@ -381,10 +440,12 @@ describe('external data repository foundations', () => {
         }
       }).connect()
     ).rejects.toThrow('Unable to resolve getFirestore');
-    expect(initializeApp).toHaveBeenCalledWith(expect.objectContaining({
-      projectId: 'demo-project',
-      credential: 'cert-object'
-    }));
+    expect(initializeApp).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectId: 'demo-project',
+        credential: 'cert-object'
+      })
+    );
   });
 
   it('covers oracle repository error branch when connector is malformed', async () => {
@@ -412,10 +473,10 @@ describe('external data repository foundations', () => {
     const auth = jest.fn().mockResolvedValue(undefined);
     const close = jest.fn().mockResolvedValue(undefined);
     moduleMocks.sequelize = {
-      Sequelize: jest.fn().mockImplementation(() => ({
+      Sequelize: jest.fn().mockReturnValue({
         authenticate: auth,
         close
-      }))
+      })
     };
 
     const sqlRepository = new SqlSequelizeRepository({
@@ -434,10 +495,10 @@ describe('external data repository foundations', () => {
   it('covers rds client getter branch', async () => {
     expect.hasAssertions();
     moduleMocks.sequelize = {
-      Sequelize: jest.fn().mockImplementation(() => ({
+      Sequelize: jest.fn().mockReturnValue({
         authenticate: jest.fn().mockResolvedValue(undefined),
         close: jest.fn().mockResolvedValue(undefined)
-      }))
+      })
     };
     const rdsRepository = new RdsRepository({
       provider: 'amazon-rds',
@@ -455,10 +516,10 @@ describe('external data repository foundations', () => {
     expect.hasAssertions();
     const send = jest.fn().mockResolvedValue(undefined);
     moduleMocks['@aws-sdk/client-dynamodb'] = {
-      DynamoDBClient: jest.fn().mockImplementation(() => ({
+      DynamoDBClient: jest.fn().mockReturnValue({
         send,
         destroy: jest.fn()
-      })),
+      }),
       ListTablesCommand: jest.fn().mockImplementation((input) => ({ input }))
     };
 

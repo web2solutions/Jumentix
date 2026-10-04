@@ -6,16 +6,16 @@
 
 ## Entregue
 
-| Peça | Caminho / superfície |
-| --- | --- |
-| Convenções de tag do Req 060 | `.agents/requirements/project/060-jumentix-release-versioning-policy-governance.md` |
-| Regra da próxima versão | `ci-cd/lib/next-version.js` + `ci-cd/test/next-version.test.ts` |
-| Tag de aplicação em `main` | `ci-cd/create-app-release-tag.js --github-api` + `.github/workflows/app-release.yml` |
-| GitHub Release a partir da tag | `ci-cd/create-github-release.js` (mesmo workflow, após a tag) |
-| Tags de pacote + guarda contra republicação | `ci-cd/publish-npm-cohort.js` + `.github/workflows/npm-publish.yml` |
-| Filtro de tag de aplicação no changelog | `ci-cd/update-changelog.js` (`/^v\d+\.\d+\.\d+$/`) |
-| Scripts locais de bump aposentados | removidos `ci-cd/bumpTag.ts`, `ci-cd/bumpPackage.ts` |
-| Docs EN/PT | `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md` (+pt-BR), `NPM-PACKAGE-PUBLISHING.md` (+pt-BR) |
+| Peça                                        | Caminho / superfície                                                                                          |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Convenções de tag do Req 060                | `.agents/requirements/project/060-jumentix-release-versioning-policy-governance.md`                           |
+| Regra da próxima versão                     | `ci-cd/lib/next-version.js` + `ci-cd/test/next-version.test.ts`                                               |
+| Tag de aplicação em `main`                  | `ci-cd/create-app-release-tag.js --github-api` + `.github/workflows/app-release.yml`                          |
+| GitHub Release a partir da tag              | `ci-cd/create-github-release.js` (mesmo workflow, após a tag)                                                 |
+| Tags de pacote + guarda contra republicação | `ci-cd/publish-npm-cohort.js` + `.github/workflows/npm-publish.yml`                                           |
+| Filtro de tag de aplicação no changelog     | `ci-cd/update-changelog.js` (`/^v\d+\.\d+\.\d+$/`)                                                            |
+| Scripts locais de bump aposentados          | removidos `ci-cd/bumpTag.ts`, `ci-cd/bumpPackage.ts`                                                          |
+| Docs EN/PT                                  | `documentation/md/JUMENTIX-RELEASE-AND-VERSIONING-STRATEGY.md` (+pt-BR), `NPM-PACKAGE-PUBLISHING.md` (+pt-BR) |
 
 ## Por que o GitHub Actions é dono das tags de aplicação (e não a CircleCI)
 

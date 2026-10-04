@@ -6,48 +6,48 @@ export {
   type GeneratedServiceResult
 } from './backend';
 export {
-  generateFrontend,
-  bakeMergedOas,
-  writeFrontendEnv,
   applyOfflineFlag,
+  bakeMergedOas,
+  generateFrontend,
+  writeFrontendEnv,
   type GenerateFrontendOptions,
   type GenerateFrontendResult
 } from './frontend';
 export {
+  entityTitleFromOas,
   mergeServiceOas,
   oasPathCount,
   resolveEntityOperations,
-  searchableFieldsForOperation,
   resolveRequestSchemas,
-  entityTitleFromOas,
+  searchableFieldsForOperation,
   type ResolvedCrudOperations
 } from './frontendOas';
 export {
-  slugifyIdentifier,
   camelCaseName,
   pascalCaseName,
-  writeDomainModule,
-  writeModulesIndex,
   patchI18nTitles,
   patchRouterHome,
-  type GeneratedModuleResult,
-  type GeneratedEntityConfig
+  slugifyIdentifier,
+  writeDomainModule,
+  writeModulesIndex,
+  type GeneratedEntityConfig,
+  type GeneratedModuleResult
 } from './frontendModules';
 export {
-  renderEnvDev,
   mapDbChoiceToDriver,
   mapRealtimeToEnv,
-  type EnvRenderInput,
-  type EnvDatabaseDriver
+  renderEnvDev,
+  type EnvDatabaseDriver,
+  type EnvRenderInput
 } from './env';
 export {
-  computeUnusedPaths,
-  shouldKeepRelativePath,
-  HTTP_INTEGRATION_SUITES,
-  ALL_HTTP_INTEGRATION_SUITES,
-  DB_COMPOSE_FILES,
   ALL_DB_COMPOSE_FILES,
+  ALL_HTTP_INTEGRATION_SUITES,
   ALWAYS_KEEP_COMPOSE_FILES,
+  computeUnusedPaths,
+  DB_COMPOSE_FILES,
+  HTTP_INTEGRATION_SUITES,
+  shouldKeepRelativePath,
   type SlicePlan
 } from './slice';
 export {
@@ -56,11 +56,11 @@ export {
   type PackageJsonInput
 } from './packageJson';
 export {
-  injectDesignerDomains,
   domainsForService,
+  injectDesignerDomains,
   isUsersDomain,
-  renderCompositionRoot,
   planDomainsToDesignerState,
+  renderCompositionRoot,
   type InjectedDomainResult
 } from './domains';
 export {
@@ -71,18 +71,18 @@ export {
 } from './paths';
 export {
   assembleWorkspace,
-  buildRootPackageJson,
-  buildGitignore,
   buildDockerCompose,
-  buildReadme,
-  buildProjectJson,
+  buildGitignore,
   buildManifestJson,
-  writeBaselineObjects,
-  readBaselineObject,
+  buildProjectJson,
+  buildReadme,
+  buildRootPackageJson,
   listGeneratedFiles,
-  sha256File,
-  resolvePrimaryDb,
   needsRealtimeRedis,
+  readBaselineObject,
+  resolvePrimaryDb,
+  sha256File,
+  writeBaselineObjects,
   type AssembleWorkspaceOptions,
   type AssembleWorkspaceResult,
   type WorkspaceAnswers

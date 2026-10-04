@@ -1,15 +1,19 @@
 # Requirement 098 - Commit, Push, and Merge Authorization
 
 ## Status
+
 Implemented
 
 ## Context
+
 Jumentix requires explicit authorization control over who can commit, push, and merge to the repository to maintain auditability and prevent unauthorized changes.
 
 ## Policy
+
 Only emails declared in `.agents/AUTHORIZED-COMMITTERS.json` and explicitly authorized by the project owner may perform commit, push, and merge operations in the Jumentix repository. Every commit accepted by protected branches must also carry a verified signature recognized by GitHub.
 
 ## Operational Rules
+
 1. The authorized email allowlist for commit, push, and merge operations is `.agents/AUTHORIZED-COMMITTERS.json`.
 2. Additional individuals may be explicitly authorized by the project owner through:
    - a documented grant recorded in a Linear Issue or Project Update, or
@@ -23,6 +27,7 @@ Only emails declared in `.agents/AUTHORIZED-COMMITTERS.json` and explicitly auth
 9. GitHub branch protection rules and repository settings must enforce this policy at the platform level.
 
 ## Enforcement
+
 1. GitHub branch protection and rulesets on `main` and `dev` require the destination-appropriate
    checks and block force pushes/deletions. PR review is optional and no approval count is
    required.
@@ -37,12 +42,14 @@ Only emails declared in `.agents/AUTHORIZED-COMMITTERS.json` and explicitly auth
 5. Automated CI/CD workflows must not bypass authorization checks.
 
 ## Evidence
+
 - Requirement registered in `.agents/README.md`.
 - NFR registry updated.
 - Repository settings enforce the authorization policy.
 - Governance docs reference this requirement.
 
 ## Acceptance Criteria
+
 - Only declared and explicitly authorized identities can push to or merge PRs in `main` and `dev`.
 - Protected branches reject unsigned commits and commits whose signatures are not verified by GitHub.
 - Authorization grants are documented in Linear.

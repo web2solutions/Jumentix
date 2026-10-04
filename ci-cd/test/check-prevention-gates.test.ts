@@ -1,21 +1,16 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 // Imported rather than required so this file is a module: two `fs`/`path`
 // declarations at global scope collide across the ci-cd suites (TS2451), and
 // that only surfaces when the whole set compiles together.
-import gateFs from 'fs';
-import gateOs from 'os';
-import gatePath from 'path';
+import gateFs from 'node:fs';
+import gateOs from 'node:os';
+import gatePath from 'node:path';
 
-const {
-  sourceExports,
-  validatePackageBuilds
-} = require('../check-package-build-freshness');
 const {
   ACCEPTED_UNREACHABLE,
   isReachable,
   validateWebsiteContentRoutes
 } = require('../../apps/jumentix-website/scripts/check-content-routes');
+const { sourceExports, validatePackageBuilds } = require('../check-package-build-freshness');
 
 const repoRoot = gatePath.resolve(__dirname, '../..');
 
@@ -27,18 +22,27 @@ describe('package build freshness (JUM-655, Requirement 131)', () => {
   it('reads the export forms these barrels actually use', () => {
     expect.hasAssertions();
 
-    const names = sourceExports([
-      'export { createRtdbClient, publishProgress } from \'./rtdb\';',
-      'export { internal as publicName } from \'./x\';',
-      'export type { OnlyAType } from \'./types\';',
-      'export async function heartbeat() {}',
-      'export const registryPath = 1;',
-      'export class AgentRegistry {}'
-    ].join('\n'));
+    const names = sourceExports(
+      [
+        "export { createRtdbClient, publishProgress } from './rtdb';",
+        "export { internal as publicName } from './x';",
+        "export type { OnlyAType } from './types';",
+        'export async function heartbeat() {}',
+        'export const registryPath = 1;',
+        'export class AgentRegistry {}'
+      ].join('\n')
+    );
 
-    expect(names).toStrictEqual(expect.arrayContaining([
-      'createRtdbClient', 'publishProgress', 'publicName', 'heartbeat', 'registryPath', 'AgentRegistry'
-    ]));
+    expect(names).toStrictEqual(
+      expect.arrayContaining([
+        'createRtdbClient',
+        'publishProgress',
+        'publicName',
+        'heartbeat',
+        'registryPath',
+        'AgentRegistry'
+      ])
+    );
     // Erased at runtime, so it can never appear in the built output. Asserting
     // on it would make the gate fail on every correctly built package.
     expect(names).not.toContain('OnlyAType');
@@ -63,7 +67,7 @@ describe('package build freshness (JUM-655, Requirement 131)', () => {
     );
     gateFs.writeFileSync(
       gatePath.join(pkg, 'src', 'index.ts'),
-      'export { createRtdbClient, stillHere } from \'./x\';\n'
+      "export { createRtdbClient, stillHere } from './x';\n"
     );
     // The JUM-654 shape exactly: valid module, one export short.
     gateFs.writeFileSync(gatePath.join(pkg, 'dist', 'index.js'), 'exports.stillHere = 1;\n');
@@ -89,7 +93,7 @@ describe('package build freshness (JUM-655, Requirement 131)', () => {
       gatePath.join(pkg, 'package.json'),
       JSON.stringify({ name: '@jumentix/sample', main: 'dist/index.js' })
     );
-    gateFs.writeFileSync(gatePath.join(pkg, 'src', 'index.ts'), 'export { a } from \'./x\';\n');
+    gateFs.writeFileSync(gatePath.join(pkg, 'src', 'index.ts'), "export { a } from './x';\n");
 
     expect(validatePackageBuilds(root)).toStrictEqual([]);
 

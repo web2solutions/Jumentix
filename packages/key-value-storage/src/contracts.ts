@@ -5,9 +5,9 @@ export interface IServiceResponse<T = any> {
 
 export interface IKeyValueStorageClient {
   connected: boolean;
-  get(key: string): Promise<IServiceResponse<any>>;
-  del(key: string): Promise<IServiceResponse<any>>;
-  set(key: string, value: any): Promise<IServiceResponse<any>>;
-  connect(): Promise<IServiceResponse<any>>;
-  disconnect(): Promise<IServiceResponse<any>>;
+  get(key: string): Promise<IServiceResponse>;
+  del(key: string): Promise<IServiceResponse>;
+  set(key: string, value: any): Promise<IServiceResponse>;
+  connect(): Promise<IServiceResponse>;
+  disconnect(): Promise<IServiceResponse>;
 }

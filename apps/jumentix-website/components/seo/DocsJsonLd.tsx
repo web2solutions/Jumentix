@@ -1,20 +1,22 @@
+import { Fragment } from 'react';
+
 import { JsonLd } from './JsonLd';
 
 const SITE = 'https://jumentix-website.vercel.app';
 
-export type DocsJsonLdProps = {
+export interface DocsJsonLdProps {
   title: string;
   description: string;
   pathSegments: string[];
   locale?: 'en' | 'pt-BR';
-};
+}
 
-export function DocsJsonLd({
+export const DocsJsonLd = ({
   title,
   description,
   pathSegments,
   locale = 'en'
-}: DocsJsonLdProps) {
+}: DocsJsonLdProps) => {
   const isPt = locale === 'pt-BR' || pathSegments[0] === 'pt-BR';
   const docsBase = isPt ? `${SITE}/docs/pt-BR/jumentix` : `${SITE}/docs/jumentix`;
   const pagePath = pathSegments
@@ -96,10 +98,10 @@ export function DocsJsonLd({
     : null;
 
   return (
-    <>
+    <Fragment>
       <JsonLd data={breadcrumb} />
       <JsonLd data={article} />
       {howTo ? <JsonLd data={howTo} /> : null}
-    </>
+    </Fragment>
   );
-}
+};

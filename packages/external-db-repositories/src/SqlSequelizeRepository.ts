@@ -1,9 +1,6 @@
-import type {
-  IRepositoryConnectionOptions
-} from '@jumentix/external-persistence-core';
-import {
-  BaseExternalDataRepository
-} from '@jumentix/external-persistence-core';
+import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
+
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
 
 export type ESqlDialect = 'postgres' | 'mysql' | 'mssql' | 'oracle' | 'sqlite';
 
@@ -26,16 +23,16 @@ export class SqlSequelizeRepository extends BaseExternalDataRepository {
 
   public async connect(): Promise<void> {
     const sequelizeModule = await this.loadModule('sequelize');
-    const Sequelize = (
-      sequelizeModule.Sequelize || sequelizeModule.default?.Sequelize || sequelizeModule.default
-    );
+    const Sequelize =
+      sequelizeModule.Sequelize || sequelizeModule.default?.Sequelize || sequelizeModule.default;
 
     if (!Sequelize) {
       throw new Error('Unable to resolve Sequelize constructor from "sequelize" package.');
     }
 
-    const connectionUrl = this.options.connectionUrl
-      || `${this.dialect}://localhost:5432/${this.options.database || 'app'}`;
+    const connectionUrl =
+      this.options.connectionUrl ||
+      `${this.dialect}://localhost:5432/${this.options.database || 'app'}`;
     this.sequelize = new Sequelize(connectionUrl, {
       dialect: this.dialect,
       pool: {
@@ -49,8 +46,8 @@ export class SqlSequelizeRepository extends BaseExternalDataRepository {
     });
 
     if (
-      this.getExtraOption<boolean>('sequelizeAuthenticateOnConnect', true)
-      && typeof this.sequelize.authenticate === 'function'
+      this.getExtraOption<boolean>('sequelizeAuthenticateOnConnect', true) &&
+      typeof this.sequelize.authenticate === 'function'
     ) {
       await this.sequelize.authenticate();
     }

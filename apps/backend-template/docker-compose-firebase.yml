@@ -14,8 +14,8 @@ services:
       firebase emulators:start --project demo-project --only firestore
       --config /home/node/firebase.json"
     ports:
-      - '8080:8080'
-      - '4000:4000'
+      - "8080:8080"
+      - "4000:4000"
     healthcheck:
       test:
         - CMD-SHELL
@@ -31,4 +31,3 @@ services:
 
 volumes:
   firebase_data:
-

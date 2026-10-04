@@ -1,13 +1,16 @@
 /* global describe, it, expect, beforeAll, afterAll */
-import { io as createSocketClient, Socket } from 'socket.io-client';
+import { io as createSocketClient } from 'socket.io-client';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import InMemoryMessageMediator from '@src/infra/messages/InMemoryMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
 import { WebSocketAPI } from '@src/interface/WebSocket/WebSocketAPI';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
 import { composeUsersAuthServices } from '@src/modules/Users';
-import { InMemoryMessageMediator } from '@src/infra/messages/InMemoryMessageMediator';
+
+import type { Socket } from 'socket.io-client';
 
 const databaseClient = InMemoryDbClient;
 const passwordCryptoService = PasswordCryptoService.compile();
@@ -26,16 +29,14 @@ const { authService } = composeUsersAuthServices({
 
 jest.setTimeout(30000);
 
-const emitWithAck = (
-  socket: Socket,
-  payload: Record<string, any>
-): Promise<any> => new Promise((resolve, reject) => {
-  socket.timeout(10000).emit(
-    'api:request',
-    payload,
-    (ackError: any, ackPayload: any) => (ackError ? reject(ackError) : resolve(ackPayload))
-  );
-});
+const emitWithAck = (socket: Socket, payload: Record<string, any>): Promise<any> =>
+  new Promise((resolve, reject) => {
+    socket
+      .timeout(10000)
+      .emit('api:request', payload, (ackError: any, ackPayload: any) =>
+        ackError ? reject(ackError) : resolve(ackPayload)
+      );
+  });
 
 describe('realtime websocket integration', () => {
   const port = 33201;

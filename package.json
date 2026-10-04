@@ -83,7 +83,7 @@
     "ci:smoke": "JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun apps/backend-template/scripts/run-api-smoke.js",
     "ci:integration": "JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js",
     "ci:security-smoke": "NODE_ENV=ci bun apps/backend-template/scripts/run-security-smoke.js",
-    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-ownership-placement && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run docs:check-current-governance && bun run docs:check-audience && bun run packages:check-suites && bun run packages:check-build-freshness && bun run cli:check-template-freshness && bun run website:check-content-routes && bun run website:check-screenshot-freshness && bun run rtdb:check-indexes && bun run test:integrity && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run frontend:test:coverage && bun run frontend:coverage:check && bun run ci:security-smoke && bun run oas:check-routes && bun run oas:check-relations && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
+    "ci:gate": "bun run check-bun-version && bun run deps:check-overrides && bun run deps:audit && bun run lint && bun run lint:frontend && bun run lint:website && bun run format:check && bun run deps:check-cycles && bun run arch:check-boundaries && bun run arch:check-users-legacy-imports && bun run arch:check-workspace-boundaries && bun run arch:check-ownership-placement && bun run arch:check-http-adapters && bun run workspace:check-quality && bun run workspace:check-coverage-policy && bun run release:governance:check && bun run governance:check-authorship && bun run requirements:check && bun run docs:check-current-governance && bun run docs:check-audience && bun run packages:check-suites && bun run packages:check-build-freshness && bun run cli:check-template-freshness && bun run website:check-content-routes && bun run website:check-screenshot-freshness && bun run rtdb:check-indexes && bun run test:integrity && bun run test-map:check && bun run ci:check-provider && bun run ci:check-third-party-review && bun run integrations:check && bun run integration-migration:check && bun run agent-registry:check && bun run test:unit && bun run frontend:test:coverage && bun run frontend:coverage:check && bun run ci:security-smoke && bun run oas:check-routes && bun run oas:check-relations && bun run serverless:check-handlers && bun run build:dev && bun run ci:smoke",
     "ci:gate:branch": "bun ci-cd/run-branch-quality-gate.js",
     "ci:gate:task": "bun run workspace:build:packages && bun ci-cd/run-task-change-tests.js",
     "ci:gate:static": "bun run deps:check-overrides && bun run deps:audit && bun run arch:check-http-adapters && bun run governance:check-authorship && bun run packages:check-suites && bun run packages:check-build-freshness && bun run cli:check-template-freshness && bun run website:check-content-routes && bun run website:check-screenshot-freshness && bun run rtdb:check-indexes && bun run test-map:check && bun run ci:check-provider && bun run oas:check-relations",
@@ -128,8 +128,8 @@
     "pm2:start:prod:websocket-rest": "pm2 start ./pm2/ecosystem.production.config.cjs --only jumentix-prod-service-management,jumentix-prod-restapi,jumentix-prod-websocketapi --update-env",
     "pm2:start:prod:grpc-rest": "pm2 start ./pm2/ecosystem.production.config.cjs --only jumentix-prod-service-management,jumentix-prod-restapi,jumentix-prod-grpcapi --update-env",
     "commit": "bun run lint && bun run test && git add . && git-cz",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "lint": "bun ci-cd/run-lint.js",
+    "lint:fix": "eslint . --fix",
     "build:dev": "NODE_ENV=dev tsc -p tsconfig.build.json",
     "build:prod": "NODE_ENV=prod tsc -p tsconfig.build.json",
     "tdd": "NODE_ENV=dev bun ci-cd/run-tdd.js",
@@ -323,7 +323,11 @@
     "frontend:test:unit": "bun run --filter @jumentix/frontend test",
     "frontend:test:coverage": "bun run --filter @jumentix/frontend test:coverage",
     "frontend:coverage:check": "bun apps/frontend/scripts/check-coverage.js",
-    "frontend:test:e2e": "bun run --filter @jumentix/frontend test:e2e"
+    "frontend:test:e2e": "bun run --filter @jumentix/frontend test:e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint:frontend": "bun ci-cd/run-lint.js frontend",
+    "lint:website": "bun ci-cd/run-lint.js website"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.940.0",
@@ -402,13 +406,9 @@
     "cz-conventional-changelog": "^3.3.0",
     "derby": "^4.2.3",
     "dexie": "^4.4.4",
-    "eslint": "^8.57.1",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-import-resolver-alias": "^1.1.2",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-jest": "^27.9.0",
-    "eslint-plugin-module-resolver": "^1.5.0",
-    "eslint-plugin-no-async-foreach": "^0.1.1",
+    "eslint": "9.39.5",
+    "@jumentix/config-eslint": "workspace:*",
+    "globals": "17.12.0",
     "husky": "^9.1.7",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-instrument": "^6.0.3",
@@ -422,7 +422,8 @@
     "supertest": "^7.2.2",
     "ts-jest": "^29.2.5",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "prettier": "3.9.9"
   },
   "resolutions": {
     "serverless": "^4.41.0",
@@ -475,7 +476,8 @@
     "hono": "^4.13.12",
     "vue-eslint-parser": {
       "eslint-scope": "^9.1.2"
-    }
+    },
+    "basic-ftp": "^6.2.1"
   },
   "repository": {
     "type": "git",

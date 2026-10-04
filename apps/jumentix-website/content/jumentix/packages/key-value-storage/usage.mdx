@@ -37,14 +37,14 @@ configuration — without changing call sites.
 
 ## Glossary
 
-| Term | Meaning |
-| --- | --- |
-| **Port** | `IKeyValueStorageClient` — the interface every adapter implements. |
-| **Adapter** | A concrete client (`InMemoryKeyValueStorageClient`, `RedisKeyValueStorageClient`). |
-| **ServiceResponse** | Wrapper `{ result?, error? }` returned by every method — check `error` before using `result`. |
-| **Prefix** | Keys are stored as `{prefix}:{keyName}`; default prefix comes from `JUMENTIX_KV_KEY_PREFIX` or `jumentix__`. |
-| **Driver** | Value of `JUMENTIX_KEYVALUESTORAGE_DRIVER` passed to `compileKeyValueStorageClient`. |
-| **Connected** | Boolean flag set by `connect()`; adapters expect `connect()` before reads/writes in server code. |
+| Term                | Meaning                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Port**            | `IKeyValueStorageClient` — the interface every adapter implements.                                           |
+| **Adapter**         | A concrete client (`InMemoryKeyValueStorageClient`, `RedisKeyValueStorageClient`).                           |
+| **ServiceResponse** | Wrapper `{ result?, error? }` returned by every method — check `error` before using `result`.                |
+| **Prefix**          | Keys are stored as `{prefix}:{keyName}`; default prefix comes from `JUMENTIX_KV_KEY_PREFIX` or `jumentix__`. |
+| **Driver**          | Value of `JUMENTIX_KEYVALUESTORAGE_DRIVER` passed to `compileKeyValueStorageClient`.                         |
+| **Connected**       | Boolean flag set by `connect()`; adapters expect `connect()` before reads/writes in server code.             |
 
 ## Steps
 
@@ -89,10 +89,10 @@ const client = compileKeyValueStorageClient();
 await client.connect();
 ```
 
-| Driver value | Adapter | Environment |
-| --- | --- | --- |
+| Driver value                      | Adapter  | Environment               |
+| --------------------------------- | -------- | ------------------------- |
 | `inmemory`, `in-memory`, `memory` | InMemory | Browser demos, unit tests |
-| *(default / redis)* | Redis | Node servers |
+| _(default / redis)_               | Redis    | Node servers              |
 
 ### 4. Core workflow — error-safe reads
 
@@ -114,14 +114,14 @@ and pass it to `MutexService.compile` (see
 
 ### 6. Full surface — API map
 
-| Export | Role |
-| --- | --- |
-| `IKeyValueStorageClient` | Type of every adapter |
-| `InMemoryKeyValueStorageClient.compile()` | Singleton in-memory Map |
-| `RedisKeyValueStorageClient.compile()` | Redis-backed client (Node) |
-| `compileKeyValueStorageClient(driver?)` | Env-driven factory |
-| `ServiceResponse` | Standard `{ result, error }` helper |
-| `BaseKeyValueStorageClient` | Shared prefix/connect logic for custom adapters |
+| Export                                    | Role                                            |
+| ----------------------------------------- | ----------------------------------------------- |
+| `IKeyValueStorageClient`                  | Type of every adapter                           |
+| `InMemoryKeyValueStorageClient.compile()` | Singleton in-memory Map                         |
+| `RedisKeyValueStorageClient.compile()`    | Redis-backed client (Node)                      |
+| `compileKeyValueStorageClient(driver?)`   | Env-driven factory                              |
+| `ServiceResponse`                         | Standard `{ result, error }` helper             |
+| `BaseKeyValueStorageClient`               | Shared prefix/connect logic for custom adapters |
 
 ## Try it in the docs playground
 
@@ -140,13 +140,13 @@ In real apps, use `InMemoryKeyValueStorageClient.compile()` and handle
 
 ## Common errors
 
-| Symptom | Cause | Fix | Verify success |
-| --- | --- | --- | --- |
-| `result` is `undefined` but no error | Key never set or was deleted | Call `set` first; confirm key spelling | `get` returns expected value |
-| Redis connection refused | Redis not running or wrong host/port | Start Redis; check env vars | `connect()` returns without `error` |
-| Wrong value under load tests | Singleton InMemory client reused | Call `InMemoryKeyValueStorageClient` fresh per test suite or reset keys | Isolated keys per test |
-| Keys collide between apps | Same prefix on shared Redis | Set `JUMENTIX_KV_KEY_PREFIX` per service | Keys namespaced in Redis CLI |
-| `connected` stays false | Skipped `connect()` | Await `connect()` before I/O | `client.connected === true` |
+| Symptom                              | Cause                                | Fix                                                                     | Verify success                      |
+| ------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------- |
+| `result` is `undefined` but no error | Key never set or was deleted         | Call `set` first; confirm key spelling                                  | `get` returns expected value        |
+| Redis connection refused             | Redis not running or wrong host/port | Start Redis; check env vars                                             | `connect()` returns without `error` |
+| Wrong value under load tests         | Singleton InMemory client reused     | Call `InMemoryKeyValueStorageClient` fresh per test suite or reset keys | Isolated keys per test              |
+| Keys collide between apps            | Same prefix on shared Redis          | Set `JUMENTIX_KV_KEY_PREFIX` per service                                | Keys namespaced in Redis CLI        |
+| `connected` stays false              | Skipped `connect()`                  | Await `connect()` before I/O                                            | `client.connected === true`         |
 
 ## Junior checklist (“I can …”)
 

@@ -50,9 +50,9 @@ watch(
       text.value = optionLabel(selected);
       return;
     }
-    const typed = props.options.find((option) => (
-      optionLabel(option) === props.modelValue || optionLabel(option) === text.value
-    ));
+    const typed = props.options.find(
+      (option) => optionLabel(option) === props.modelValue || optionLabel(option) === text.value
+    );
     if (typed) {
       text.value = optionLabel(typed);
       const value = optionValue(typed);
@@ -91,11 +91,7 @@ const placeholderText = computed(() => props.placeholder ?? t('crud.typeToFilter
     />
     <span class="oas-enum-caret" aria-hidden="true">▾</span>
     <datalist :id="`${id}-list`">
-      <option
-        v-for="option in options"
-        :key="optionValue(option)"
-        :value="optionLabel(option)"
-      />
+      <option v-for="option in options" :key="optionValue(option)" :value="optionLabel(option)" />
     </datalist>
   </div>
 </template>

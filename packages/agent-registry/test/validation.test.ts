@@ -10,6 +10,7 @@ import {
   isAgentStatus,
   workspacePathProblem
 } from '../src';
+
 import type { AgentRecord } from '../src';
 
 /**
@@ -209,18 +210,16 @@ describe('findIntegrityProblems', () => {
     });
   });
 
-  it.each([
-    [null],
-    [undefined],
-    ['a string'],
-    [[]]
-  ])('reports %p as not being a document', (value) => {
-    expect.hasAssertions();
+  it.each([[null], [undefined], ['a string'], [[]]])(
+    'reports %p as not being a document',
+    (value) => {
+      expect.hasAssertions();
 
-    expect(findIntegrityProblems(value)).toStrictEqual([
-      { agent_id: '(unknown)', field: '(document)', problem: 'is not an object' }
-    ]);
-  });
+      expect(findIntegrityProblems(value)).toStrictEqual([
+        { agent_id: '(unknown)', field: '(document)', problem: 'is not an object' }
+      ]);
+    }
+  );
 
   it('reports a required field that is missing', () => {
     expect.hasAssertions();
@@ -273,9 +272,7 @@ describe('findIntegrityProblems', () => {
   it('reports a branch ref of the wrong type', () => {
     expect.hasAssertions();
 
-    const problems = findIntegrityProblems(
-      buildAgent({ dev_ref_checked: 5 as unknown as string })
-    );
+    const problems = findIntegrityProblems(buildAgent({ dev_ref_checked: 5 as unknown as string }));
 
     expect(problems[0].problem).toBe('must be a string, found number');
   });
@@ -339,11 +336,13 @@ describe('duplicateCanonicalIds', () => {
   it('sees a formatted id and a clean one as the same agent', () => {
     expect.hasAssertions();
 
-    expect(duplicateCanonicalIds([
-      '`kimi-code-primary-001`',
-      'kimi-code-primary-001',
-      'codex-primary-001'
-    ])).toStrictEqual(['kimi-code-primary-001']);
+    expect(
+      duplicateCanonicalIds([
+        '`kimi-code-primary-001`',
+        'kimi-code-primary-001',
+        'codex-primary-001'
+      ])
+    ).toStrictEqual(['kimi-code-primary-001']);
   });
 
   it('finds nothing when every id is distinct', () => {
@@ -369,15 +368,17 @@ describe('assertValidAgentRecord', () => {
   it('refuses a record the migration would have written', () => {
     expect.hasAssertions();
 
-    expect(() => assertValidAgentRecord(buildMigratedAgent()))
-      .toThrow(/Refusing to write an invalid agent registry record/);
+    expect(() => assertValidAgentRecord(buildMigratedAgent())).toThrow(
+      /Refusing to write an invalid agent registry record/
+    );
   });
 
   it('names the offending fields in the failure', () => {
     expect.hasAssertions();
 
-    expect(() => assertValidAgentRecord(buildAgent({ agent_name: '' })))
-      .toThrow(/agent_name is required and cannot be empty/);
+    expect(() => assertValidAgentRecord(buildAgent({ agent_name: '' }))).toThrow(
+      /agent_name is required and cannot be empty/
+    );
   });
 });
 
@@ -385,10 +386,12 @@ describe('describeProblems', () => {
   it('renders one indented line per problem', () => {
     expect.hasAssertions();
 
-    expect(describeProblems([
-      { agent_id: 'a', field: 'status', problem: 'is wrong' },
-      { agent_id: 'b', field: 'platform', problem: 'is missing' }
-    ])).toBe('  a — status is wrong\n  b — platform is missing');
+    expect(
+      describeProblems([
+        { agent_id: 'a', field: 'status', problem: 'is wrong' },
+        { agent_id: 'b', field: 'platform', problem: 'is missing' }
+      ])
+    ).toBe('  a — status is wrong\n  b — platform is missing');
   });
 
   it('renders an empty list as an empty string', () => {
@@ -410,8 +413,9 @@ describe('workspacePathProblem', () => {
   it('accepts a declared absolute path', () => {
     expect.hasAssertions();
 
-    expect(workspacePathProblem('/Users/e/apps/XpertMinds/claude-governance-001/Jumentix'))
-      .toBeUndefined();
+    expect(
+      workspacePathProblem('/Users/e/apps/XpertMinds/claude-governance-001/Jumentix')
+    ).toBeUndefined();
   });
 
   it.each(['unknown', 'UNKNOWN', '  Unknown  ', 'n/a', 'none', 'tbd', '-'])(
@@ -433,7 +437,10 @@ describe('workspacePathProblem', () => {
     expect(workspacePathProblem('apps/Jumentix')).toMatch(/absolute path/);
   });
 
-  it.each([['', 'empty'], ['   ', 'blank']])('rejects %p (%s)', (value: string) => {
+  it.each([
+    ['', 'empty'],
+    ['   ', 'blank']
+  ])('rejects %p (%s)', (value: string) => {
     expect.hasAssertions();
 
     expect(workspacePathProblem(value)).toMatch(/cannot be empty/);
@@ -457,11 +464,12 @@ describe('requiring a declared workspace', () => {
   it('refuses to write a placeholder, exemption or not', () => {
     expect.hasAssertions();
 
-    expect(() => assertValidAgentRecord(buildAgent({ workspace_path: 'unknown' })))
-      .toThrow(/placeholder/);
-    expect(() => assertValidAgentRecord(
-      buildAgent({ agent_id: exempt, workspace_path: 'unknown' })
-    )).toThrow(/placeholder/);
+    expect(() => assertValidAgentRecord(buildAgent({ workspace_path: 'unknown' }))).toThrow(
+      /placeholder/
+    );
+    expect(() =>
+      assertValidAgentRecord(buildAgent({ agent_id: exempt, workspace_path: 'unknown' }))
+    ).toThrow(/placeholder/);
   });
 
   it('reports a placeholder on read for an agent that is not exempt', () => {
@@ -484,10 +492,11 @@ describe('requiring a declared workspace', () => {
   it('tolerates the placeholder on read for an exempt agent', () => {
     expect.hasAssertions();
 
-    expect(findIntegrityProblems(
-      buildAgent({ agent_id: exempt, workspace_path: 'unknown' }),
-      { honourExemptions: true }
-    )).toStrictEqual([]);
+    expect(
+      findIntegrityProblems(buildAgent({ agent_id: exempt, workspace_path: 'unknown' }), {
+        honourExemptions: true
+      })
+    ).toStrictEqual([]);
   });
 
   /**
@@ -502,10 +511,12 @@ describe('requiring a declared workspace', () => {
   it('treats a declared path on an exempt agent as sound at the record level', () => {
     expect.hasAssertions();
 
-    expect(findIntegrityProblems(
-      buildAgent({ agent_id: exempt, workspace_path: '/Users/e/apps/XpertMinds/x/Jumentix' }),
-      { honourExemptions: true }
-    )).toStrictEqual([]);
+    expect(
+      findIntegrityProblems(
+        buildAgent({ agent_id: exempt, workspace_path: '/Users/e/apps/XpertMinds/x/Jumentix' }),
+        { honourExemptions: true }
+      )
+    ).toStrictEqual([]);
   });
 
   it('every exemption carries a date, an issue and a reason', () => {

@@ -44,9 +44,7 @@
   width: clamp(210px, 28vw, 360px);
   height: auto;
   object-fit: contain;
-  filter:
-    drop-shadow(0 28px 44px rgb(0 0 0 / 54%))
-    drop-shadow(0 0 28px rgb(208 154 82 / 24%));
+  filter: drop-shadow(0 28px 44px rgb(0 0 0 / 54%)) drop-shadow(0 0 28px rgb(208 154 82 / 24%));
   pointer-events: none;
 }
 
@@ -451,7 +449,11 @@
   border: 1px solid var(--jtx-line);
   border-radius: var(--jtx-radius-md);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--jtx-blue-50) 34%, transparent), transparent 58%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--jtx-blue-50) 34%, transparent),
+      transparent 58%
+    ),
     var(--jtx-surface);
 }
 
@@ -556,7 +558,11 @@
   border: 1px solid var(--jtx-line);
   border-radius: var(--jtx-radius-md);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--jtx-blue-50) 42%, transparent), transparent 48%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--jtx-blue-50) 42%, transparent),
+      transparent 48%
+    ),
     var(--jtx-surface);
 }
 
@@ -881,7 +887,12 @@
   }
 
   .heroMedia::after {
-    background: linear-gradient(0deg, rgb(7 12 19 / 96%) 0%, rgb(7 12 19 / 78%) 72%, rgb(7 12 19 / 55%) 100%);
+    background: linear-gradient(
+      0deg,
+      rgb(7 12 19 / 96%) 0%,
+      rgb(7 12 19 / 78%) 72%,
+      rgb(7 12 19 / 55%) 100%
+    );
   }
 
   .heroMascot {

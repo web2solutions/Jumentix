@@ -1,24 +1,25 @@
+import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
+
+import JwtService from '@src/infra/jwt/JwtService';
+import compileMessageMediator from '@src/infra/messages/compileMessageMediator';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
 import { compileDatabaseClient } from '@src/infra/persistence/compileDatabaseClient';
-import { JwtService } from '@src/infra/jwt/JwtService';
-import { compileKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { compileMessageMediator } from '@src/infra/messages/compileMessageMediator';
-import { composeUsersAuthServices } from '@src/modules/Users';
-import { WebSocketAPI } from '@src/interface/WebSocket/WebSocketAPI';
-import { ExpressServer } from '@src/interface/HTTP/adapters/express/ExpressServer';
-import { infraHandlers } from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
+import compileKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/compileKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
+import ExpressServer from '@src/interface/HTTP/adapters/express/ExpressServer';
+import infraHandlers from '@src/interface/HTTP/adapters/express/handlers/infraHandlers';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
 import { RestAPI } from '@src/interface/HTTP/RestAPI';
-import {
-  createRedisStreamsSocketIoAdapter,
-  isRedisStreamsSocketIoEnabled
-} from '@src/interface/WebSocket/adapters/socket-io/redisStreamsAdapter';
 import {
   createClusterSocketIoAdapter,
   isClusterSocketIoEnabled
 } from '@src/interface/WebSocket/adapters/socket-io/clusterAdapter';
-import { compileAdapterRuntime } from '@jumentix/adapter-runtime-bootstrap';
+import {
+  createRedisStreamsSocketIoAdapter,
+  isRedisStreamsSocketIoEnabled
+} from '@src/interface/WebSocket/adapters/socket-io/redisStreamsAdapter';
+import { WebSocketAPI } from '@src/interface/WebSocket/WebSocketAPI';
+import { composeUsersAuthServices } from '@src/modules/Users';
 
 export function shouldStartFallbackRestApi(env: NodeJS.ProcessEnv = process.env): boolean {
   return env.JUMENTIX_DISABLE_FALLBACK_REST !== 'true';

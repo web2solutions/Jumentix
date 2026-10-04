@@ -1,10 +1,10 @@
 import { createElement } from 'react';
-// React's own renderer, a devDependency of this package rather than of the
-// workspace root, which is what the rule below is reacting to.
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { act, create } from 'react-test-renderer';
-import type { CanaChangeEvent } from '@jumentix/cana';
+
 import { useCanaClient, useCanaLiveQuery, useCanaSubscription } from '../src';
+
+import type { CanaChangeEvent } from '@jumentix/cana';
 
 /**
  * The hooks, rendered by React rather than called as functions (JUM-681).
@@ -32,15 +32,20 @@ import { useCanaClient, useCanaLiveQuery, useCanaSubscription } from '../src';
 // might be reading a component mid-update.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-type Row = { id: string; name: string };
+interface Row {
+  id: string;
+  name: string;
+}
 
 /** A change broker double: records subscriptions, replays events on demand. */
-function brokerDouble(options: {
-  rows?: Row[];
-  failQuery?: boolean;
-  failSubscribe?: boolean;
-  failOpen?: boolean;
-} = {}) {
+function brokerDouble(
+  options: {
+    rows?: Row[];
+    failQuery?: boolean;
+    failSubscribe?: boolean;
+    failOpen?: boolean;
+  } = {}
+) {
   const calls: { sinceCursor?: number }[] = [];
   let listener: ((event: CanaChangeEvent) => void) | undefined;
   let stopped = 0;
@@ -52,12 +57,16 @@ function brokerDouble(options: {
       opens += 1;
       if (options.failOpen) throw new Error('open refused');
     },
-    async close() { closes += 1; },
+    async close() {
+      closes += 1;
+    },
     subscribe(next: (event: CanaChangeEvent) => void, subscribeOptions?: { sinceCursor: number }) {
       if (options.failSubscribe) throw new Error('subscribe refused');
       calls.push({ sinceCursor: subscribeOptions?.sinceCursor });
       listener = next;
-      return () => { stopped += 1; };
+      return () => {
+        stopped += 1;
+      };
     },
     table() {
       return {
@@ -75,17 +84,18 @@ function brokerDouble(options: {
     stops: () => stopped,
     opens: () => opens,
     closes: () => closes,
-    emit: (event: Partial<CanaChangeEvent<Row>>) => listener?.({
-      type: 'created',
-      store: 'rows',
-      key: 'a',
-      record: { id: 'a', name: 'A' },
-      cursor: 1,
-      correlationId: 'corr',
-      at: 1,
-      originId: 'test',
-      ...event
-    } as CanaChangeEvent)
+    emit: (event: Partial<CanaChangeEvent<Row>>) =>
+      listener?.({
+        type: 'created',
+        store: 'rows',
+        key: 'a',
+        record: { id: 'a', name: 'A' },
+        cursor: 1,
+        correlationId: 'corr',
+        at: 1,
+        originId: 'test',
+        ...event
+      } as CanaChangeEvent)
   };
 }
 
@@ -111,12 +121,20 @@ async function renderHook<TResult>(hook: () => TResult) {
   return {
     latest,
     rerender: async () => {
-      await act(async () => { renderer.update(createElement(Probe)); });
+      await act(async () => {
+        renderer.update(createElement(Probe));
+      });
     },
     unmount: async () => {
-      await act(async () => { renderer.unmount(); });
+      await act(async () => {
+        renderer.unmount();
+      });
     },
-    flush: async () => { await act(async () => { await Promise.resolve(); }); }
+    flush: async () => {
+      await act(async () => {
+        await Promise.resolve();
+      });
+    }
   };
 }
 
@@ -175,9 +193,10 @@ describe('useCanaClient (JUM-681)', () => {
     const openedClient = broker.client as any;
     const slowClient = {
       ...openedClient,
-      open: async () => new Promise<void>((resolve) => {
-        releaseOpen = resolve;
-      }),
+      open: async () =>
+        new Promise<void>((resolve) => {
+          releaseOpen = resolve;
+        }),
       close: openedClient.close
     };
     const { unmount, flush } = await renderHook(() => useCanaClient(() => slowClient as never));
@@ -194,9 +213,10 @@ describe('useCanaClient (JUM-681)', () => {
 
     let rejectOpen!: (error: Error) => void;
     const client = {
-      open: async () => new Promise<void>((_resolve, reject) => {
-        rejectOpen = reject;
-      }),
+      open: async () =>
+        new Promise<void>((_resolve, reject) => {
+          rejectOpen = reject;
+        }),
       close: async () => undefined
     };
     const { latest, unmount, flush } = await renderHook(() => useCanaClient(() => client as never));
@@ -236,11 +256,9 @@ describe('useCanaSubscription (JUM-681)', () => {
     expect.hasAssertions();
 
     const disabled = brokerDouble();
-    await renderHook(() => useCanaSubscription(
-      disabled.client,
-      () => undefined,
-      { enabled: false }
-    ));
+    await renderHook(() =>
+      useCanaSubscription(disabled.client, () => undefined, { enabled: false })
+    );
     await renderHook(() => useCanaSubscription(null, () => undefined));
 
     expect(disabled.calls).toStrictEqual([]);
@@ -255,10 +273,9 @@ describe('useCanaSubscription (JUM-681)', () => {
     const broker = brokerDouble();
     const seen: number[] = [];
     let generation = 1;
-    const { rerender } = await renderHook(() => useCanaSubscription(
-      broker.client,
-      (event) => seen.push(generation * 100 + event.cursor)
-    ));
+    const { rerender } = await renderHook(() =>
+      useCanaSubscription(broker.client, (event) => seen.push(generation * 100 + event.cursor))
+    );
 
     generation = 2;
     await rerender();
@@ -274,9 +291,11 @@ describe('useCanaSubscription (JUM-681)', () => {
     const broker = brokerDouble({ failSubscribe: true });
     const errors: unknown[] = [];
 
-    await renderHook(() => useCanaSubscription(broker.client, () => undefined, {
-      onError: (error) => errors.push(error)
-    }));
+    await renderHook(() =>
+      useCanaSubscription(broker.client, () => undefined, {
+        onError: (error) => errors.push(error)
+      })
+    );
 
     expect(errors).toHaveLength(1);
     expect((errors[0] as Error).message).toBe('subscribe refused');
@@ -299,13 +318,20 @@ describe('useCanaLiveQuery (JUM-681)', () => {
   it('loads on mount, sorted, and reports ready', async () => {
     expect.hasAssertions();
 
-    const broker = brokerDouble({ rows: [{ id: 'b', name: 'B' }, { id: 'a', name: 'A' }] });
+    const broker = brokerDouble({
+      rows: [
+        { id: 'b', name: 'B' },
+        { id: 'a', name: 'A' }
+      ]
+    });
     const sort = (left: Row, right: Row) => left.id.localeCompare(right.id);
-    const { latest } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      sort
-    }));
+    const { latest } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        sort
+      })
+    );
 
     expect(latest.current.status).toBe('ready');
     expect(latest.current.records.map((row) => row.id)).toStrictEqual(['a', 'b']);
@@ -316,12 +342,16 @@ describe('useCanaLiveQuery (JUM-681)', () => {
 
     const broker = brokerDouble({ failQuery: true });
     const errors: unknown[] = [];
-    const onError = (error: unknown) => { errors.push(error); };
-    const { latest } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      onError
-    }));
+    const onError = (error: unknown) => {
+      errors.push(error);
+    };
+    const { latest } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        onError
+      })
+    );
 
     expect(latest.current.status).toBe('error');
     expect((latest.current.error as Error).message).toBe('query refused');
@@ -332,11 +362,13 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     expect.hasAssertions();
 
     const broker = brokerDouble({ rows: [{ id: 'a', name: 'A' }] });
-    const off = await renderHook(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      enabled: false
-    }));
+    const off = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        enabled: false
+      })
+    );
     const none = await renderHook(() => useCanaLiveQuery<Row>({ client: null, store: 'rows' }));
 
     await expect(off.latest.current.reload()).resolves.toStrictEqual([]);
@@ -350,13 +382,17 @@ describe('useCanaLiveQuery (JUM-681)', () => {
 
     const broker = brokerDouble({ rows: [] });
     const getKey = (row: Row) => row.id;
-    const { latest, flush } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      getKey
-    }));
+    const { latest, flush } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        getKey
+      })
+    );
 
-    await act(async () => { broker.emit({ record: { id: 'c', name: 'C' } }); });
+    await act(async () => {
+      broker.emit({ record: { id: 'c', name: 'C' } });
+    });
     await flush();
 
     expect(latest.current.records).toStrictEqual([{ id: 'c', name: 'C' }]);
@@ -366,12 +402,16 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     expect.hasAssertions();
 
     const broker = brokerDouble({ rows: [] });
-    const { latest, flush } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows'
-    }));
+    const { latest, flush } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows'
+      })
+    );
 
-    await act(async () => { broker.emit({ store: 'other', record: { id: 'z', name: 'Z' } }); });
+    await act(async () => {
+      broker.emit({ store: 'other', record: { id: 'z', name: 'Z' } });
+    });
     await flush();
 
     expect(latest.current.records).toStrictEqual([]);
@@ -385,21 +425,30 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     let served: Row[] = [{ id: 'a', name: 'A' }];
     const broker = brokerDouble();
     const client = {
-      subscribe: (broker.client as unknown as {
-        subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
-      }).subscribe,
+      subscribe: (
+        broker.client as unknown as {
+          subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
+        }
+      ).subscribe,
       table: () => ({ query: async () => served })
     };
     const query = { limit: 10 };
 
-    const { latest, flush } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows',
-      query
-    }));
+    const { latest, flush } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows',
+        query
+      })
+    );
 
-    served = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
-    await act(async () => { broker.emit({}); });
+    served = [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' }
+    ];
+    await act(async () => {
+      broker.emit({});
+    });
     await flush();
 
     expect(latest.current.records).toHaveLength(2);
@@ -414,14 +463,21 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     let queries = 0;
     const client = {
       subscribe: () => () => undefined,
-      table: () => ({ query: async () => { queries += 1; return []; } })
+      table: () => ({
+        query: async () => {
+          queries += 1;
+          return [];
+        }
+      })
     };
 
-    const { rerender } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows',
-      query: { limit: 10 }
-    }));
+    const { rerender } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows',
+        query: { limit: 10 }
+      })
+    );
 
     await rerender();
     await rerender();
@@ -438,14 +494,21 @@ describe('useCanaLiveQuery (JUM-681)', () => {
       table: () => ({ query: async () => served })
     };
 
-    const { latest } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows'
-    }));
+    const { latest } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows'
+      })
+    );
 
-    served = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
+    served = [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' }
+    ];
     let reloaded: Row[] = [];
-    await act(async () => { reloaded = await latest.current.reload(); });
+    await act(async () => {
+      reloaded = await latest.current.reload();
+    });
 
     expect(reloaded).toHaveLength(2);
     expect(latest.current.records).toHaveLength(2);
@@ -455,10 +518,12 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     expect.hasAssertions();
 
     const broker = brokerDouble({ rows: [] });
-    const { unmount } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows'
-    }));
+    const { unmount } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows'
+      })
+    );
 
     await unmount();
 
@@ -471,9 +536,11 @@ describe('useCanaLiveQuery (JUM-681)', () => {
     let queries = 0;
     const broker = brokerDouble();
     const client = {
-      subscribe: (broker.client as unknown as {
-        subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
-      }).subscribe,
+      subscribe: (
+        broker.client as unknown as {
+          subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
+        }
+      ).subscribe,
       table: () => ({
         query: async () => {
           queries += 1;
@@ -481,15 +548,19 @@ describe('useCanaLiveQuery (JUM-681)', () => {
         }
       })
     };
-    const { unmount, flush } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows',
-      query: { limit: 1 }
-    }));
+    const { unmount, flush } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows',
+        query: { limit: 1 }
+      })
+    );
     expect(queries).toBe(1);
 
     await unmount();
-    await act(async () => { broker.emit({}); });
+    await act(async () => {
+      broker.emit({});
+    });
     await flush();
 
     expect(queries).toBe(1);
@@ -505,7 +576,10 @@ describe('failure paths at the effect boundary (JUM-821)', () => {
     let closes = 0;
     const client = {
       open: async () => undefined,
-      close: async () => { closes += 1; throw new Error('close refused'); },
+      close: async () => {
+        closes += 1;
+        throw new Error('close refused');
+      },
       subscribe: () => () => undefined,
       table: () => ({ query: async () => [] })
     };
@@ -524,19 +598,26 @@ describe('failure paths at the effect boundary (JUM-821)', () => {
     // call throws, the rejection crosses to the effect's `.catch`, which reports
     // the reporter's failure — the load error is never dropped silently.
     const broker = brokerDouble({ failQuery: true });
-    const onError = jest.fn()
-      .mockImplementationOnce(() => { throw new Error('reporting failed'); })
-      .mockImplementation(() => undefined);
+    const onError = jest
+      .fn()
+      .mockImplementationOnce(() => {
+        throw new Error('reporting failed');
+      })
+      .mockReturnValue(undefined);
 
-    const { latest } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: broker.client,
-      store: 'rows',
-      onError
-    }));
+    const { latest } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: broker.client,
+        store: 'rows',
+        onError
+      })
+    );
 
     expect(latest.current.status).toBe('error');
-    expect(onError.mock.calls.map(([error]) => (error as Error).message))
-      .toStrictEqual(['query refused', 'reporting failed']);
+    expect(onError.mock.calls.map(([error]) => (error as Error).message)).toStrictEqual([
+      'query refused',
+      'reporting failed'
+    ]);
   });
 
   it('surfaces a failed event-triggered reload even when the error reporter throws', async () => {
@@ -545,33 +626,45 @@ describe('failure paths at the effect boundary (JUM-821)', () => {
     // Same boundary, one level down: the subscription callback's own
     // `safeReload().catch(...)` is what must not lose the failure.
     const broker = brokerDouble();
-    const query = jest.fn()
+    const query = jest
+      .fn()
       .mockResolvedValueOnce([{ id: 'a', name: 'A' }])
       .mockRejectedValue(new Error('query refused'));
     const client = {
-      subscribe: (broker.client as unknown as {
-        subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
-      }).subscribe,
+      subscribe: (
+        broker.client as unknown as {
+          subscribe: (next: (event: CanaChangeEvent) => void) => () => void;
+        }
+      ).subscribe,
       table: () => ({ query })
     };
-    const onError = jest.fn()
-      .mockImplementationOnce(() => { throw new Error('reporting failed'); })
-      .mockImplementation(() => undefined);
+    const onError = jest
+      .fn()
+      .mockImplementationOnce(() => {
+        throw new Error('reporting failed');
+      })
+      .mockReturnValue(undefined);
 
-    const { latest, flush } = await renderHook(() => useCanaLiveQuery<Row>({
-      client: client as never,
-      store: 'rows',
-      query: { limit: 10 },
-      onError
-    }));
+    const { latest, flush } = await renderHook(() =>
+      useCanaLiveQuery<Row>({
+        client: client as never,
+        store: 'rows',
+        query: { limit: 10 },
+        onError
+      })
+    );
     expect(latest.current.status).toBe('ready');
     expect(onError).not.toHaveBeenCalled();
 
-    await act(async () => { broker.emit({}); });
+    await act(async () => {
+      broker.emit({});
+    });
     await flush();
 
-    expect(onError.mock.calls.map(([error]) => (error as Error).message))
-      .toStrictEqual(['query refused', 'reporting failed']);
+    expect(onError.mock.calls.map(([error]) => (error as Error).message)).toStrictEqual([
+      'query refused',
+      'reporting failed'
+    ]);
     expect(latest.current.status).toBe('error');
   });
 });

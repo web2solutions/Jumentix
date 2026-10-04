@@ -1,11 +1,13 @@
-import { AuthService } from '@src/modules/Users/service/AuthService';
-import { EAuthSchemaType } from '@src/modules/Users/service/ports/EAuthSchemaType';
 import { EUserRole } from '@src/modules/Users/domain/security/Rbac';
+import AuthService from '@src/modules/Users/service/AuthService';
+import EAuthSchemaType from '@src/modules/Users/service/ports/EAuthSchemaType';
 
-const setup = (options: {
-  keyValueStorageClient?: Record<string, any>;
-  eventBus?: Record<string, any>;
-} = {}) => {
+const setup = (
+  options: {
+    keyValueStorageClient?: Record<string, any>;
+    eventBus?: Record<string, any>;
+  } = {}
+) => {
   const userProvider = {
     findUser: jest.fn().mockResolvedValue({
       id: 'u1',
@@ -29,9 +31,9 @@ const setup = (options: {
   };
 
   const service = new AuthService(
-    userProvider as any,
-    passwordCryptoService as any,
-    jwtService as any,
+    userProvider,
+    passwordCryptoService,
+    jwtService,
     options.keyValueStorageClient as any,
     options.eventBus as any
   );
@@ -88,14 +90,18 @@ describe('auth service extra branches', () => {
     const { service, userProvider } = setup();
 
     await service.register({ username: 'admin@corp.test', organization: 'org-1' });
-    expect(userProvider.register).toHaveBeenCalledWith(expect.objectContaining({
-      roles: [EUserRole.user]
-    }));
+    expect(userProvider.register).toHaveBeenCalledWith(
+      expect.objectContaining({
+        roles: [EUserRole.user]
+      })
+    );
 
     await service.register({ username: 'legacy@test.dev' });
-    expect(userProvider.register).toHaveBeenCalledWith(expect.objectContaining({
-      roles: ['access_allow']
-    }));
+    expect(userProvider.register).toHaveBeenCalledWith(
+      expect.objectContaining({
+        roles: ['access_allow']
+      })
+    );
   });
 
   it('covers updatePassword not-found branch and logout', async () => {
@@ -117,28 +123,32 @@ describe('auth service extra branches', () => {
       'there is no security schema defined'
     );
 
-    expect(() => service.throwIfUserHasNoAccessToResource(
-      {
-        id: 'u1',
-        username: 'john',
-        firstName: 'john',
-        avatar: '',
-        organization: 'org-1'
-      } as any,
-      { security: [{ bearerAuth: ['read_user'] }] } as any
-    )).toThrow('user.roles is missing');
+    expect(() =>
+      service.throwIfUserHasNoAccessToResource(
+        {
+          id: 'u1',
+          username: 'john',
+          firstName: 'john',
+          avatar: '',
+          organization: 'org-1'
+        } as any,
+        { security: [{ bearerAuth: ['read_user'] }] } as any
+      )
+    ).toThrow('user.roles is missing');
 
-    expect(() => service.throwIfUserHasNoAccessToResource(
-      {
-        id: 'u2',
-        username: 'john',
-        firstName: 'john',
-        avatar: '',
-        organization: 'org-1',
-        roles: ['read_user']
-      } as any,
-      { security: [{ bearerAuth: ['delete_user'] }] } as any
-    )).toThrow('Insufficient permission - user must have the delete_user role');
+    expect(() =>
+      service.throwIfUserHasNoAccessToResource(
+        {
+          id: 'u2',
+          username: 'john',
+          firstName: 'john',
+          avatar: '',
+          organization: 'org-1',
+          roles: ['read_user']
+        } as any,
+        { security: [{ bearerAuth: ['delete_user'] }] } as any
+      )
+    ).toThrow('Insufficient permission - user must have the delete_user role');
   });
 
   it('covers authorizeBasedInTokenType bearer path', async () => {
@@ -207,18 +217,19 @@ describe('auth service extra branches', () => {
     const eventBus = {
       publish: jest.fn().mockResolvedValue(true)
     };
-    const {
-      service,
-      userProvider,
-      passwordCryptoService
-    } = setup({ keyValueStorageClient, eventBus });
+    const { service, userProvider, passwordCryptoService } = setup({
+      keyValueStorageClient,
+      eventBus
+    });
     store.set('auth:locked:john', { expiresAt: Date.now() + 10_000 });
 
     const blocked = await service.authenticate('john', 'invalid', EAuthSchemaType.Bearer);
     expect(blocked.error?.message).toBe('authentication temporarily locked');
-    expect(eventBus.publish).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'users.auth.login.blocked'
-    }));
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'users.auth.login.blocked'
+      })
+    );
 
     store.clear();
     userProvider.findUser.mockResolvedValueOnce({
@@ -326,10 +337,12 @@ describe('auth service extra branches', () => {
     const { service, userProvider, jwtService } = setup();
 
     const basicToken = Buffer.from('john:secret', 'utf8').toString('base64');
-    await expect(service.authorizeBasedInTokenType({
-      type: EAuthSchemaType.Basic,
-      token: basicToken
-    })).rejects.toThrow('invalid schema');
+    await expect(
+      service.authorizeBasedInTokenType({
+        type: EAuthSchemaType.Basic,
+        token: basicToken
+      })
+    ).rejects.toThrow('invalid schema');
     await expect(service.decodeToken(`Basic ${basicToken}`)).resolves.toBeNull();
 
     userProvider.updatePassword.mockResolvedValueOnce({ result: true });

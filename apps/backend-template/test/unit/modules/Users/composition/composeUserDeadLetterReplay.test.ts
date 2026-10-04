@@ -1,4 +1,5 @@
 import { DeadLetterQueue } from '@jumentix/dead-letter-queue';
+
 import {
   composeUserDeadLetterQueue,
   composeUserDeadLetterWorker,
@@ -16,11 +17,13 @@ import {
 const RESOURCE = '00000000-0000-4000-8000-000000000001';
 
 function serviceDouble(response: { error?: unknown } = {}) {
-  const calls: Array<{ method: string; args: unknown[] }> = [];
-  const record = (method: string) => (...args: unknown[]) => {
-    calls.push({ method, args });
-    return Promise.resolve(response);
-  };
+  const calls: { method: string; args: unknown[] }[] = [];
+  const record =
+    (method: string) =>
+    (...args: unknown[]) => {
+      calls.push({ method, args });
+      return Promise.resolve(response);
+    };
   return {
     calls,
     update: record('update'),
@@ -47,9 +50,18 @@ describe('user dead-letter replay composition (JUM-53)', () => {
     const handlers = userReplayHandlers(serviceDouble() as never);
 
     expect(Object.keys(handlers).sort()).toStrictEqual([
-      'createDocument', 'createEmail', 'createPhone', 'delete', 'deleteDocument',
-      'deleteEmail', 'deletePhone', 'update', 'updateDocument', 'updateEmail',
-      'updatePassword', 'updatePhone'
+      'createDocument',
+      'createEmail',
+      'createPhone',
+      'delete',
+      'deleteDocument',
+      'deleteEmail',
+      'deletePhone',
+      'update',
+      'updateDocument',
+      'updateEmail',
+      'updatePassword',
+      'updatePhone'
     ]);
   });
 
@@ -59,7 +71,10 @@ describe('user dead-letter replay composition (JUM-53)', () => {
     const service = serviceDouble();
     const queue = new DeadLetterQueue();
     await queue.enqueue({
-      entityName: 'User', resourceId: RESOURCE, operation: 'update', payload: { firstName: 'Ada' }
+      entityName: 'User',
+      resourceId: RESOURCE,
+      operation: 'update',
+      payload: { firstName: 'Ada' }
     });
 
     const report = await queue.replay(userReplayHandlers(service as never));
@@ -78,7 +93,10 @@ describe('user dead-letter replay composition (JUM-53)', () => {
     const service = serviceDouble({ error: new Error('User is locked') });
     const queue = new DeadLetterQueue();
     await queue.enqueue({
-      entityName: 'User', resourceId: RESOURCE, operation: 'update', payload: { firstName: 'Ada' }
+      entityName: 'User',
+      resourceId: RESOURCE,
+      operation: 'update',
+      payload: { firstName: 'Ada' }
     });
 
     const report = await queue.replay(userReplayHandlers(service as never));
@@ -97,7 +115,10 @@ describe('user dead-letter replay composition (JUM-53)', () => {
     const service = serviceDouble({ error: 'locked as text' });
     const queue = new DeadLetterQueue();
     await queue.enqueue({
-      entityName: 'User', resourceId: RESOURCE, operation: 'delete', payload: null
+      entityName: 'User',
+      resourceId: RESOURCE,
+      operation: 'delete',
+      payload: null
     });
 
     const report = await queue.replay(userReplayHandlers(service as never));
@@ -119,7 +140,10 @@ describe('user dead-letter replay composition (JUM-53)', () => {
       payload: { phoneId: 'phone-1', data: { number: '123' } }
     });
     await queue.enqueue({
-      entityName: 'User', resourceId: RESOURCE, operation: 'deleteEmail', payload: { emailId: 'email-1' }
+      entityName: 'User',
+      resourceId: RESOURCE,
+      operation: 'deleteEmail',
+      payload: { emailId: 'email-1' }
     });
 
     await queue.replay(userReplayHandlers(service as never));
@@ -136,7 +160,10 @@ describe('user dead-letter replay composition (JUM-53)', () => {
     const service = serviceDouble();
     const queue = new DeadLetterQueue();
     await queue.enqueue({
-      entityName: 'User', resourceId: RESOURCE, operation: 'updateDocument', payload: null
+      entityName: 'User',
+      resourceId: RESOURCE,
+      operation: 'updateDocument',
+      payload: null
     });
 
     await queue.replay(userReplayHandlers(service as never));

@@ -10,14 +10,14 @@ import { createClient, isCanaErrorCode, type CanaChangeEvent } from '@jumentix/c
 
 const client = createClient({
   name: 'tasks-app',
-  schema: { /* versioned stores */ },
+  schema: {/* versioned stores */},
   originId: 'ui-main'
 });
 
 await client.open();
 
 // Writes
-await client.table('tasks').add({ /* record */ });
+await client.table('tasks').add({/* record */});
 await client.transaction('readwrite', ['categories', 'tasks'], async (tx) => {
   // Only Cana/IndexedDB awaits inside this callback
 });
@@ -30,13 +30,13 @@ client.subscribe((event: CanaChangeEvent) => {
 
 That is the whole integration surface:
 
-| Step | Cana API | Your job |
-| --- | --- | --- |
-| 1. Create | `createClient({ name, schema, originId? })` | Pick DB name and schema once |
-| 2. Open | `await client.open()` | Call before any table access |
-| 3. Write | `table().add/put/update/delete` or `transaction()` | Call from UI actions |
-| 4. Commit | IndexedDB `oncomplete` | Cana buffers events until commit |
-| 5. Sync UI | `client.subscribe(...)` | Map `CanaChangeEvent` into your store |
+| Step       | Cana API                                           | Your job                              |
+| ---------- | -------------------------------------------------- | ------------------------------------- |
+| 1. Create  | `createClient({ name, schema, originId? })`        | Pick DB name and schema once          |
+| 2. Open    | `await client.open()`                              | Call before any table access          |
+| 3. Write   | `table().add/put/update/delete` or `transaction()` | Call from UI actions                  |
+| 4. Commit  | IndexedDB `oncomplete`                             | Cana buffers events until commit      |
+| 5. Sync UI | `client.subscribe(...)`                            | Map `CanaChangeEvent` into your store |
 
 ```mermaid
 flowchart LR
@@ -64,12 +64,12 @@ flowchart LR
 
 ## Manual wiring vs helper packages
 
-| Situation | Use |
-| --- | --- |
-| Vanilla JS/TS, Svelte, Solid, Angular, custom store | Manual `subscribe` → patch state (this guide + [Vanilla TypeScript](./vanilla-typescript.md)) |
-| React with Context | Optional [`@jumentix/cana-react`](/docs/jumentix/packages/cana-react) or manual Context ([tutorial](/docs/jumentix/packages/cana/react-context)) |
-| React with Redux | Optional `connectCanaToRedux` from `@jumentix/cana-react/redux` ([tutorial](/docs/jumentix/packages/cana/react-redux)) |
-| Vue 3 with Pinia | Optional [`@jumentix/cana-vue`](/docs/jumentix/packages/cana-vue) ([tutorial](/docs/jumentix/packages/cana/vue-pinia)) |
+| Situation                                           | Use                                                                                                                                              |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Vanilla JS/TS, Svelte, Solid, Angular, custom store | Manual `subscribe` → patch state (this guide + [Vanilla TypeScript](./vanilla-typescript.md))                                                    |
+| React with Context                                  | Optional [`@jumentix/cana-react`](/docs/jumentix/packages/cana-react) or manual Context ([tutorial](/docs/jumentix/packages/cana/react-context)) |
+| React with Redux                                    | Optional `connectCanaToRedux` from `@jumentix/cana-react/redux` ([tutorial](/docs/jumentix/packages/cana/react-redux))                           |
+| Vue 3 with Pinia                                    | Optional [`@jumentix/cana-vue`](/docs/jumentix/packages/cana-vue) ([tutorial](/docs/jumentix/packages/cana/vue-pinia))                           |
 
 Helper packages only translate committed events into framework state. They do
 not replace `createClient`, schema design, or transaction discipline.
@@ -97,11 +97,11 @@ export function connectCanaToUi(
 
 Map event kinds consistently:
 
-| `event.type` | Typical UI patch |
-| --- | --- |
-| `created` / `updated` | Upsert record by key |
-| `deleted` | Remove record by key |
-| `cleared` | Empty that store's in-memory collection |
+| `event.type`          | Typical UI patch                        |
+| --------------------- | --------------------------------------- |
+| `created` / `updated` | Upsert record by key                    |
+| `deleted`             | Remove record by key                    |
+| `cleared`             | Empty that store's in-memory collection |
 
 ## Checklist for a new framework
 

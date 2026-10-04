@@ -74,21 +74,25 @@ function collectContracts(state) {
 
 /** Channel address: the explicit channel or the `<domain>/<entity>/<type>` fallback. */
 function channelAddress(domain, entity, contract) {
-  return String(contract.channel || '').trim()
-    || `${toPathToken(domain.name)}/${toPathToken(entity.name)}/${contract.type}`;
+  return (
+    String(contract.channel || '').trim() ||
+    `${toPathToken(domain.name)}/${toPathToken(entity.name)}/${contract.type}`
+  );
 }
 
 /** AsyncAPI map keys allow letters, digits and `._-/` — everything else becomes `-`. */
 function toMapKey(value) {
-  return String(value).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_.\-/]/g, '-');
+  return String(value)
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9_.\-/]/g, '-');
 }
 
 /** PascalCase identifier for proto/AsyncAPI component names. */
 function toPascalCase(value) {
-  const words = String(value || '').split(/[^a-zA-Z0-9]+/).filter(Boolean);
-  const name = words
-    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
-    .join('');
+  const words = String(value || '')
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean);
+  const name = words.map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join('');
   return name || 'Contract';
 }
 
@@ -98,18 +102,18 @@ function messageComponentName(domain, entity, contract) {
 }
 
 /**
- * Registers `payloadSchema` under `components.schemas` and returns the schema
- * name. Structurally identical payloads share the first registered entry —
- * the shared-reference discipline instead of inline duplicates.
+ * Resolves the `components.schemas` registration for `payloadSchema`: the
+ * schema name, normalized payload, and whether it still needs registering.
+ * Structurally identical payloads share the first registered entry — the
+ * shared-reference discipline instead of inline duplicates.
  */
-function registerPayloadSchema(schemas, messageName, payloadSchema) {
+function findPayloadSchemaRegistration(schemas, messageName, payloadSchema) {
   const payload = payloadSchema && typeof payloadSchema === 'object' ? payloadSchema : {};
   const fingerprint = JSON.stringify(payload);
-  const existing = Object.keys(schemas).find((name) => JSON.stringify(schemas[name]) === fingerprint);
-  if (existing) return existing;
-  const schemaName = `${messageName}Payload`;
-  schemas[schemaName] = payload;
-  return schemaName;
+  const existing = Object.keys(schemas).find(
+    (name) => JSON.stringify(schemas[name]) === fingerprint
+  );
+  return { schemaName: existing || `${messageName}Payload`, payload, isNew: !existing };
 }
 
 /**
@@ -135,7 +139,12 @@ export function buildAsyncApiTransportDocument(state, transport, options = {}) {
     const channelKey = toMapKey(address);
     const messageName = messageComponentName(domain, entity, contract);
     const messageKey = toMapKey(contract.name || messageName);
-    const schemaName = registerPayloadSchema(schemas, messageName, contract.payloadSchema);
+    const { schemaName, payload, isNew } = findPayloadSchemaRegistration(
+      schemas,
+      messageName,
+      contract.payloadSchema
+    );
+    if (isNew) schemas[schemaName] = payload;
 
     if (!channels[channelKey]) {
       channels[channelKey] = { address, messages: {} };
@@ -219,8 +228,11 @@ function toYamlLines(value, indent) {
     if (!entries.length) return [`${pad}{}`];
     return entries.flatMap(([key, entryValue]) => {
       const renderedKey = toYamlScalar(key);
-      if (entryValue !== null && typeof entryValue === 'object'
-        && (Array.isArray(entryValue) ? entryValue.length : Object.keys(entryValue).length)) {
+      if (
+        entryValue !== null &&
+        typeof entryValue === 'object' &&
+        (Array.isArray(entryValue) ? entryValue.length : Object.keys(entryValue).length)
+      ) {
         return [`${pad}${renderedKey}:`, ...toYamlLines(entryValue, indent + 2)];
       }
       if (entryValue !== null && typeof entryValue === 'object') {
@@ -293,10 +305,13 @@ function toProtoFieldLine(propertyName, propertySchema, fieldNumber) {
 
 /** One proto message per contract, fields derived from the payload schema. */
 function buildProtoMessage(messageName, payloadSchema) {
-  const properties = payloadSchema && typeof payloadSchema === 'object'
-    && payloadSchema.properties && typeof payloadSchema.properties === 'object'
-    ? payloadSchema.properties
-    : {};
+  const properties =
+    payloadSchema &&
+    typeof payloadSchema === 'object' &&
+    payloadSchema.properties &&
+    typeof payloadSchema.properties === 'object'
+      ? payloadSchema.properties
+      : {};
   const lines = [`message ${messageName} {`];
   Object.keys(properties).forEach((propertyName, index) => {
     lines.push(toProtoFieldLine(propertyName, properties[propertyName], index + 1));
@@ -358,7 +373,9 @@ export function buildGrpcProto(state, options = {}) {
   if (!entries.length) {
     sections.push(`service ${serviceName} {`);
     sections.push(`  rpc Request (${PROTO_REQUEST_MESSAGE}) returns (${PROTO_RESPONSE_MESSAGE});`);
-    sections.push(`  rpc Exchange (stream ${PROTO_REQUEST_MESSAGE}) returns (stream ${PROTO_RESPONSE_MESSAGE});`);
+    sections.push(
+      `  rpc Exchange (stream ${PROTO_REQUEST_MESSAGE}) returns (stream ${PROTO_RESPONSE_MESSAGE});`
+    );
     sections.push('}');
     sections.push('');
     sections.push(canonicalEnvelopeMessages());
@@ -370,19 +387,22 @@ export function buildGrpcProto(state, options = {}) {
   let usesRequestEnvelope = false;
   let usesResponseEnvelope = false;
 
-  const messageNameFor = ({ domain, entity, contract }) => (
-    `${toPascalCase(toSchemaName(domain.name, entity.name))}${toPascalCase(contract.name)}`
-  );
-  const pairedResponse = (entry) => entries.find((candidate) => (
-    candidate.contract.type === 'response'
-    && channelAddress(candidate.domain, candidate.entity, candidate.contract)
-      === channelAddress(entry.domain, entry.entity, entry.contract)
-  ));
-  const hasRequestPair = (entry) => entries.some((candidate) => (
-    candidate.contract.type === 'request'
-    && channelAddress(candidate.domain, candidate.entity, candidate.contract)
-      === channelAddress(entry.domain, entry.entity, entry.contract)
-  ));
+  const messageNameFor = ({ domain, entity, contract }) =>
+    `${toPascalCase(toSchemaName(domain.name, entity.name))}${toPascalCase(contract.name)}`;
+  const pairedResponse = (entry) =>
+    entries.find(
+      (candidate) =>
+        candidate.contract.type === 'response' &&
+        channelAddress(candidate.domain, candidate.entity, candidate.contract) ===
+          channelAddress(entry.domain, entry.entity, entry.contract)
+    );
+  const hasRequestPair = (entry) =>
+    entries.some(
+      (candidate) =>
+        candidate.contract.type === 'request' &&
+        channelAddress(candidate.domain, candidate.entity, candidate.contract) ===
+          channelAddress(entry.domain, entry.entity, entry.contract)
+    );
 
   entries.forEach((entry) => {
     const rpcName = toPascalCase(entry.contract.name);

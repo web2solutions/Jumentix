@@ -32,8 +32,8 @@ describe('restAPI handler resolution across runtimes (JUM-698)', () => {
     // The message Jest produced, minus its quoting — the lint rule owns the
     // quotes here, and the substring the check matches on is unchanged.
     const error = new Error(
-      'Cannot find module @src/modules/Users/interface/restapi/frameworks/total-js/handlers/x'
-      + ' from apps/backend-template/src/interface/HTTP/RestAPI.ts'
+      'Cannot find module @src/modules/Users/interface/restapi/frameworks/total-js/handlers/x' +
+        ' from apps/backend-template/src/interface/HTTP/RestAPI.ts'
     );
 
     expect((error as { code?: string }).code).toBeUndefined();

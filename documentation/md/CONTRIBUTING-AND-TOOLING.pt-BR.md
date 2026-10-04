@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/CONTRIBUTING-AND-TOOLING.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Contribuição e ferramentas
 
 ## Contribuindo
@@ -53,12 +54,12 @@ Codecov, deve ser resolvido ou respondido com esta evidência.
 Cada arquivo de documentação serve um único leitor. Nomeie esse leitor antes de escrever e
 mantenha cada fato em exatamente uma camada — as demais camadas apontam para ele.
 
-| Camada | Arquivos | Leitor |
-| --- | --- | --- |
-| Prospect | `README.md` / `README.pt-BR.md` da raiz, páginas comerciais do site | quem está decidindo se experimenta o Jumentix |
-| Desenvolvedor | páginas `/docs/**` do site (`apps/jumentix-website/content/**`) | quem integra o Jumentix |
-| Contribuidor | `documentation/md/**`, `README.md` de cada componente | quem constrói o Jumentix |
-| Agente / interno | `.agents/**` | um agente executando governança |
+| Camada           | Arquivos                                                            | Leitor                                        |
+| ---------------- | ------------------------------------------------------------------- | --------------------------------------------- |
+| Prospect         | `README.md` / `README.pt-BR.md` da raiz, páginas comerciais do site | quem está decidindo se experimenta o Jumentix |
+| Desenvolvedor    | páginas `/docs/**` do site (`apps/jumentix-website/content/**`)     | quem integra o Jumentix                       |
+| Contribuidor     | `documentation/md/**`, `README.md` de cada componente               | quem constrói o Jumentix                      |
+| Agente / interno | `.agents/**`                                                        | um agente executando governança               |
 
 Páginas de prospect e de desenvolvedor nunca trazem variáveis de controle de CI/gate
 (`JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`, `JUMENTIX_QUALITY_GATE_TARGET`, `JUMENTIX_GATE_V2`,

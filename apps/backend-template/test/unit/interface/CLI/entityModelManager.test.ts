@@ -1,4 +1,5 @@
-import { entityModelManagerSubApplication } from '@src/interface/CLI/subapps/entityModelManager';
+import entityModelManagerSubApplication from '@src/interface/CLI/subapps/entityModelManager';
+
 import type { IWorkspaceCatalog } from '@src/interface/CLI/types';
 
 describe('cli entity/model manager', () => {
@@ -35,35 +36,41 @@ describe('cli entity/model manager', () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
-      entities: [{
-        id: 'e1',
-        name: 'Task',
-        domain: 'Users',
-        kind: 'entity',
-        description: '',
-        fields: [{
-          name: 'id',
-          type: 'string',
-          required: true,
-          format: 'uuid',
-          defaultValue: '',
-          validations: ['minLength:1'],
-          behavior: 'immutable'
-        }],
-        behaviors: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }]
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      entities: [
+        {
+          id: 'e1',
+          name: 'Task',
+          domain: 'Users',
+          kind: 'entity',
+          description: '',
+          fields: [
+            {
+              name: 'id',
+              type: 'string',
+              required: true,
+              format: 'uuid',
+              defaultValue: '',
+              validations: ['minLength:1'],
+              behavior: 'immutable'
+            }
+          ],
+          behaviors: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ]
     };
 
     const run = createContext(
@@ -83,52 +90,52 @@ describe('cli entity/model manager', () => {
         8, // back field manager
         6 // back main manager
       ],
-      [
-        'system-managed',
-        'title',
-        'y',
-        '',
-        'human-readable'
-      ]
+      ['system-managed', 'title', 'y', '', 'human-readable']
     );
 
-    await entityModelManagerSubApplication.run(run.context as any);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.saveCatalog.mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(run.logs).toStrictEqual(expect.arrayContaining([
-      'Field: id',
-      '  type: string',
-      '  format: uuid',
-      'Field "id" behavior updated.',
-      'Field "title" added.'
-    ]));
+    expect(run.logs).toStrictEqual(
+      expect.arrayContaining([
+        'Field: id',
+        '  type: string',
+        '  format: uuid',
+        'Field "id" behavior updated.',
+        'Field "title" added.'
+      ])
+    );
   });
 
   it('handles empty field branches and allows adding validated field rules', async () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
-      entities: [{
-        id: 'e1',
-        name: 'Task',
-        domain: 'Users',
-        kind: 'entity',
-        description: '',
-        fields: [],
-        behaviors: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }]
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      entities: [
+        {
+          id: 'e1',
+          name: 'Task',
+          domain: 'Users',
+          kind: 'entity',
+          description: '',
+          fields: [],
+          behaviors: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ]
     };
 
     const run = createContext(
@@ -149,40 +156,38 @@ describe('cli entity/model manager', () => {
         8, // back field manager
         6 // back manager
       ],
-      [
-        'title',
-        'y',
-        '',
-        '',
-        '3'
-      ]
+      ['title', 'y', '', '', '3']
     );
 
-    await entityModelManagerSubApplication.run(run.context as any);
+    await entityModelManagerSubApplication.run(run.context);
 
-    expect(run.logs).toStrictEqual(expect.arrayContaining([
-      'No fields defined.',
-      'No fields to update.',
-      'No fields to update behavior.',
-      'No fields to delete.',
-      'Field "title" added.'
-    ]));
+    expect(run.logs).toStrictEqual(
+      expect.arrayContaining([
+        'No fields defined.',
+        'No fields to update.',
+        'No fields to update behavior.',
+        'No fields to delete.',
+        'Field "title" added.'
+      ])
+    );
   });
 
   it('covers list/search/create/update/delete entity flow under openapi-compliant schema', async () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
       entities: []
     };
 
@@ -218,16 +223,18 @@ describe('cli entity/model manager', () => {
       ]
     );
 
-    await entityModelManagerSubApplication.run(run.context as any);
+    await entityModelManagerSubApplication.run(run.context);
 
-    expect(run.logs).toStrictEqual(expect.arrayContaining([
-      'No entities/models registered.',
-      'No matching entities/models.',
-      'Entity/model "Task" created.',
-      'Found 1 item(s):',
-      'Entity/model "TaskModel" updated.',
-      'Entity/model removed.'
-    ]));
+    expect(run.logs).toStrictEqual(
+      expect.arrayContaining([
+        'No entities/models registered.',
+        'No matching entities/models.',
+        'Entity/model "Task" created.',
+        'Found 1 item(s):',
+        'Entity/model "TaskModel" updated.',
+        'Entity/model removed.'
+      ])
+    );
   });
 
   it('handles required name and required domain on creation', async () => {
@@ -239,11 +246,11 @@ describe('cli entity/model manager', () => {
     };
 
     const missingName = createContext(emptyCatalog, [2, 6], ['']);
-    await entityModelManagerSubApplication.run(missingName.context as any);
+    await entityModelManagerSubApplication.run(missingName.context);
     expect(missingName.logs).toContain('Name is required.');
 
     const missingDomain = createContext(emptyCatalog, [2, 0, 6], ['Task', '']);
-    await entityModelManagerSubApplication.run(missingDomain.context as any);
+    await entityModelManagerSubApplication.run(missingDomain.context);
     expect(missingDomain.logs).toContain('Domain is required.');
   });
 
@@ -251,27 +258,31 @@ describe('cli entity/model manager', () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
-      entities: [{
-        id: 'e1',
-        name: 'Task',
-        domain: 'Users',
-        kind: 'entity',
-        description: '',
-        fields: [],
-        behaviors: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }]
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      entities: [
+        {
+          id: 'e1',
+          name: 'Task',
+          domain: 'Users',
+          kind: 'entity',
+          description: '',
+          fields: [],
+          behaviors: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ]
     };
 
     const run = createContext(
@@ -301,33 +312,20 @@ describe('cli entity/model manager', () => {
         8, // back field manager
         6 // back manager
       ],
-      [
-        'title',
-        'y',
-        '',
-        '',
-        '',
-        'title',
-        'y',
-        '',
-        '',
-        '',
-        '',
-        '5',
-        'indexed',
-        '1'
-      ]
+      ['title', 'y', '', '', '', 'title', 'y', '', '', '', '', '5', 'indexed', '1']
     );
 
-    await entityModelManagerSubApplication.run(run.context as any);
+    await entityModelManagerSubApplication.run(run.context);
 
-    expect(run.logs).toStrictEqual(expect.arrayContaining([
-      'Validation "minLength" skipped because value is empty.',
-      'Field "title" added.',
-      'Field "title" already exists.',
-      'Field "title" updated.',
-      'Field "title" deleted.'
-    ]));
+    expect(run.logs).toStrictEqual(
+      expect.arrayContaining([
+        'Validation "minLength" skipped because value is empty.',
+        'Field "title" added.',
+        'Field "title" already exists.',
+        'Field "title" updated.',
+        'Field "title" deleted.'
+      ])
+    );
     expect(run.saveCatalog.mock.calls.length).toBeGreaterThan(0);
   });
 
@@ -335,31 +333,35 @@ describe('cli entity/model manager', () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
-      entities: [{
-        id: 'e1',
-        name: 'Task',
-        domain: 'Users',
-        kind: 'entity',
-        description: '',
-        fields: [],
-        behaviors: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }]
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      entities: [
+        {
+          id: 'e1',
+          name: 'Task',
+          domain: 'Users',
+          kind: 'entity',
+          description: '',
+          fields: [],
+          behaviors: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ]
     };
 
     const run = createContext(catalog, [4, 0, 6], ['not-task']);
-    await entityModelManagerSubApplication.run(run.context as any);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs).toContain('Delete cancelled.');
     expect(run.saveCatalog).not.toHaveBeenCalled();
@@ -369,35 +371,41 @@ describe('cli entity/model manager', () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
-      entities: [{
-        id: 'e1',
-        name: 'Task',
-        domain: 'Users',
-        kind: 'entity',
-        description: '',
-        fields: [{
-          name: 'title',
-          type: 'string',
-          required: true,
-          format: '',
-          defaultValue: '',
-          validations: ['minLength:3'],
-          behavior: ''
-        }],
-        behaviors: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }]
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      entities: [
+        {
+          id: 'e1',
+          name: 'Task',
+          domain: 'Users',
+          kind: 'entity',
+          description: '',
+          fields: [
+            {
+              name: 'title',
+              type: 'string',
+              required: true,
+              format: '',
+              defaultValue: '',
+              validations: ['minLength:3'],
+              behavior: ''
+            }
+          ],
+          behaviors: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ]
     };
 
     const run = createContext(
@@ -412,20 +420,18 @@ describe('cli entity/model manager', () => {
         8, // back field manager
         6 // back manager
       ],
-      [
-        '{"title":"hello"}',
-        '',
-        '{broken-json'
-      ]
+      ['{"title":"hello"}', '', '{broken-json']
     );
 
-    await entityModelManagerSubApplication.run(run.context as any);
+    await entityModelManagerSubApplication.run(run.context);
 
     expect(run.logs.some((line) => line.includes('"required"'))).toBe(true);
-    expect(run.logs).toStrictEqual(expect.arrayContaining([
-      'Payload is valid against generated OpenAPI schema.',
-      'Sample payload is required.'
-    ]));
+    expect(run.logs).toStrictEqual(
+      expect.arrayContaining([
+        'Payload is valid against generated OpenAPI schema.',
+        'Sample payload is required.'
+      ])
+    );
     expect(run.logs.some((line) => line.startsWith('Validation failed:'))).toBe(true);
   });
 
@@ -459,52 +465,60 @@ describe('cli entity/model manager', () => {
       ]
     );
 
-    await entityModelManagerSubApplication.run(run.context as any);
+    await entityModelManagerSubApplication.run(run.context);
 
-    expect(run.logs).toStrictEqual(expect.arrayContaining([
-      'No entities/models registered yet.',
-      'Field name is required.',
-      'Entity/model "Task" created.'
-    ]));
+    expect(run.logs).toStrictEqual(
+      expect.arrayContaining([
+        'No entities/models registered yet.',
+        'Field name is required.',
+        'Entity/model "Task" created.'
+      ])
+    );
   });
 
   it('covers field-based search branch explicitly', async () => {
     expect.hasAssertions();
     const catalog: IWorkspaceCatalog = {
       version: 1,
-      domains: [{
-        id: 'd1',
-        name: 'Users',
-        description: '',
-        boundedContext: '',
-        status: 'active',
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }],
-      entities: [{
-        id: 'e1',
-        name: 'Task',
-        domain: 'Users',
-        kind: 'entity',
-        description: '',
-        fields: [{
-          name: 'ticketCode',
-          type: 'string',
-          required: true,
-          format: '',
-          defaultValue: '',
-          validations: [],
-          behavior: ''
-        }],
-        behaviors: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }]
+      domains: [
+        {
+          id: 'd1',
+          name: 'Users',
+          description: '',
+          boundedContext: '',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      entities: [
+        {
+          id: 'e1',
+          name: 'Task',
+          domain: 'Users',
+          kind: 'entity',
+          description: '',
+          fields: [
+            {
+              name: 'ticketCode',
+              type: 'string',
+              required: true,
+              format: '',
+              defaultValue: '',
+              validations: [],
+              behavior: ''
+            }
+          ],
+          behaviors: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ]
     };
 
     const run = createContext(catalog, [1, 6], ['ticket']);
-    await entityModelManagerSubApplication.run(run.context as any);
+    await entityModelManagerSubApplication.run(run.context);
     expect(run.logs).toContain('Found 1 item(s):');
   });
 });

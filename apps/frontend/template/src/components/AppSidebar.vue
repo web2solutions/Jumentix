@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router'
 import { logo } from '@/assets/brand/logo'
 import { sygnet } from '@/assets/brand/sygnet'
 import { AppSidebarNav } from '@/components/AppSidebarNav'
-import { useSidebarStore } from '@/stores/sidebar'
+import useSidebarStore from '@/stores/sidebar';
 
 const sidebar = useSidebarStore()
 

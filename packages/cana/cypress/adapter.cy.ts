@@ -1,5 +1,6 @@
-import type { CanaSchema, CanaTable } from '../src';
 import { createCanaDatabaseClient } from '../src';
+
+import type { CanaSchema, CanaTable } from '../src';
 
 /**
  * Requirement 112 §4 — the Jumentix adapter, in a real browser.
@@ -14,7 +15,10 @@ import { createCanaDatabaseClient } from '../src';
  * assumption a suite happens to make.
  */
 
-interface Design { id: number; name: string }
+interface Design {
+  id: number;
+  name: string;
+}
 
 const schema: CanaSchema = {
   version: 1,

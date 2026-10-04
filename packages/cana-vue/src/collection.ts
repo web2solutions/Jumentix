@@ -2,11 +2,11 @@ import type { CanaChangeEvent, CanaKey } from '@jumentix/cana';
 
 export type CanaRecordKeyReader<TRecord> = (record: TRecord) => CanaKey | undefined;
 
-export type CanaCollectionOptions<TRecord> = {
+export interface CanaCollectionOptions<TRecord> {
   store: string;
   getKey?: CanaRecordKeyReader<TRecord>;
   sort?: (a: TRecord, b: TRecord) => number;
-};
+}
 
 function defaultGetKey<TRecord>(record: TRecord): CanaKey | undefined {
   if (record && typeof record === 'object' && 'id' in record) {

@@ -1,5 +1,8 @@
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
+
 import { loadSpecs } from './spec/loadSpecs';
+
+import type { Socket } from 'socket.io-client';
 
 export interface IWebSocketApiRequest {
   operationId: string;
@@ -32,8 +35,10 @@ export interface IWebSocketApiResponse {
  * property (Requirement 110, JUM-583). A parameter works identically in both,
  * and it costs the production caller nothing — the default is `io`.
  */
-export type SocketFactory = (url: string, options: { path: string; transports: string[] })
-=> Socket;
+export type SocketFactory = (
+  url: string,
+  options: { path: string; transports: string[] }
+) => Socket;
 
 export interface IWebSocketApiClientOptions {
   socketFactory?: SocketFactory;
@@ -54,11 +59,11 @@ export class WebSocketApiClient {
   private socket?: Socket;
 
   constructor(url?: string, options: IWebSocketApiClientOptions = {}) {
-    const { asyncApiWebSocket } = (options.loadSpecs || loadSpecs)();
+    const { asyncApiWebSocket } = (options.loadSpecs ?? loadSpecs)();
     const host = asyncApiWebSocket?.servers?.local?.host || 'localhost:3001';
     this.url = url || `ws://${host}`;
     this.path = '/ws';
-    this.createSocket = options.socketFactory || ((target, settings) => io(target, settings));
+    this.createSocket = options.socketFactory ?? ((target, settings) => io(target, settings));
   }
 
   public connect(): void {
@@ -80,9 +85,13 @@ export class WebSocketApiClient {
     if (!this.socket) {
       this.connect();
     }
+    const { socket } = this;
+    if (!socket) {
+      throw new Error('WebSocket socket factory did not produce a socket.');
+    }
 
     return new Promise((resolve, reject) => {
-      this.socket!.timeout(30000).emit('api:request', request, (response: IWebSocketApiResponse) => {
+      socket.timeout(30000).emit('api:request', request, (response: IWebSocketApiResponse) => {
         if (!response) {
           reject(new Error('WebSocket timeout/no response'));
           return;

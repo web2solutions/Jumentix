@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-const { execSync } = require('child_process');
+const { execSync } = require('node:child_process');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const ROOT_MARKERS = [
@@ -13,7 +14,9 @@ const ROOT_MARKERS = [
 ];
 
 function normalizePath(value) {
-  return String(value || '').replace(/\\/g, '/').trim();
+  return String(value || '')
+    .replace(/\\/g, '/')
+    .trim();
 }
 
 function isDocsOnlyPath(filePath) {
@@ -66,7 +69,10 @@ function computeAffectedWorkspaces(files) {
 
 function readChangedFiles(baseRef = 'origin/dev') {
   const output = execSync(`git diff --name-only ${baseRef}...HEAD`, { encoding: 'utf8' });
-  return output.split('\n').map((line) => line.trim()).filter(Boolean);
+  return output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function run() {

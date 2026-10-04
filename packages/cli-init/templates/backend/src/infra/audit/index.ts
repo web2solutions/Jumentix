@@ -1,2 +1,2 @@
 export * from './ISecurityAuditRepository';
-export * from './InMemorySecurityAuditRepository';
+export { default as InMemorySecurityAuditRepository } from './InMemorySecurityAuditRepository';

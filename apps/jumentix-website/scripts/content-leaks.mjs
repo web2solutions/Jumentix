@@ -2,15 +2,14 @@
  * Site-wide content leak guards for published documentation bodies.
  */
 
-const GITHUB_CONTENT =
-  /https?:\/\/github\.com\/XpertMinds\/Jumentix\/(?:blob|tree)\b/i;
+const GITHUB_CONTENT = /https?:\/\/github\.com\/XpertMinds\/Jumentix\/(?:blob|tree)\b/i;
 const GITHUB_ANY = /https?:\/\/github\.com\/XpertMinds\/Jumentix\b/i;
 
 export function assertNoContentLeaks(markdown, sourceLabel) {
   if (GITHUB_CONTENT.test(markdown) || GITHUB_ANY.test(markdown)) {
     throw new Error(
-      `Published docs leak GitHub content links (${sourceLabel}). `
-      + 'Import or rewrite content onto in-site routes instead.'
+      `Published docs leak GitHub content links (${sourceLabel}). ` +
+        'Import or rewrite content onto in-site routes instead.'
     );
   }
 }
@@ -30,15 +29,19 @@ export function stripGitHubContentLinks(markdown) {
  * (Requirement 066 audience matrix, Requirement 093 rule 4 — JUM-895).
  */
 const ISSUE = String.raw`\[?JUM-\d+\]?(?:\([^)\s]*\))?`;
-const REQUIREMENT = String.raw`(?:Requirements?|Requisitos?|Req\.?)\s*` + '`?\\d{3}`?' + String.raw`(?:\s*(?:§|rule|regra)\s*\d+)?`;
+const REQUIREMENT = `${String.raw`(?:Requirements?|Requisitos?|Req\.?)\s*`}\`?\\d{3}\`?${String.raw`(?:\s*(?:§|rule|regra)\s*\d+)?`}`;
 const PULL_REQUEST = String.raw`PR\s*#\d+`;
 const TOKEN = new RegExp(`(?:${ISSUE}|${REQUIREMENT}|${PULL_REQUEST})`, 'g');
 /** Words that may accompany provenance inside a parenthetical without carrying meaning. */
-const CONNECTORS = /\b(?:and|e|or|ou|per|por|see|veja|landed|entregue|by|em|in|merged|mesclado|via|amended|emendado|from|de|do|da|pinned|fixado|issue|epic|épico|tracked|rastreado|pelo|pela|no|na)\b/gi;
+const CONNECTORS =
+  /\b(?:and|e|or|ou|per|por|see|veja|landed|entregue|by|em|in|merged|mesclado|via|amended|emendado|from|de|do|da|pinned|fixado|issue|epic|épico|tracked|rastreado|pelo|pela|no|na)\b/gi;
 
 function isProvenanceOnly(inner) {
   if (!new RegExp(TOKEN.source).test(inner)) return false;
-  const rest = inner.replace(TOKEN, '').replace(CONNECTORS, '').replace(/[\s,;/…–—.:&+-]/g, '');
+  const rest = inner
+    .replace(TOKEN, '')
+    .replace(CONNECTORS, '')
+    .replace(/[\s,;/…–—.:&+-]/g, '');
   return rest.length === 0;
 }
 

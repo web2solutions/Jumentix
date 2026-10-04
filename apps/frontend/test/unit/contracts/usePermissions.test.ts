@@ -1,21 +1,27 @@
-import {
-  afterEach, beforeEach, describe, expect, it, mock
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
 import { resetSharedApiClient } from '@/contracts/apiClient';
-import { usePermissions } from '@/contracts/usePermissions';
+import usePermissions from '@/contracts/usePermissions';
 import { useAuthStore } from '@/stores/auth';
-import { useProfileStore, type UserRecord } from '@/stores/profile';
+import { useProfileStore } from '@/stores/profile';
+
+import type { UserRecord } from '@/stores/profile';
 
 const recordFixture: UserRecord = {
   id: 'user-1',
   firstName: 'Abraham',
   username: 'me@mydomain.com',
   roles: ['user'],
-  emails: [{
-    id: 'e1', type: 'work', email: 'me@mydomain.com', isPrimary: true
-  }],
+  emails: [
+    {
+      id: 'e1',
+      type: 'work',
+      email: 'me@mydomain.com',
+      isPrimary: true
+    }
+  ],
   documents: [],
   phones: []
 };
@@ -46,8 +52,8 @@ describe('usePermissions (JUM-772)', () => {
 
   it('loads the profile on demand and exposes role-based checks', async () => {
     expect.hasAssertions();
-    globalThis.fetch = mock(
-      async () => jsonResponse(200, recordFixture)
+    globalThis.fetch = mock(async () =>
+      jsonResponse(200, recordFixture)
     ) as unknown as typeof fetch;
     const { roles, ensure, canOp } = usePermissions();
     expect([...roles.value]).toStrictEqual([]);
@@ -59,7 +65,9 @@ describe('usePermissions (JUM-772)', () => {
 
   it('fails closed when the profile cannot be loaded', async () => {
     expect.hasAssertions();
-    globalThis.fetch = mock(async () => jsonResponse(500, { message: 'boom' })) as unknown as typeof fetch;
+    globalThis.fetch = mock(async () =>
+      jsonResponse(500, { message: 'boom' })
+    ) as unknown as typeof fetch;
     const { roles, ensure, canOp } = usePermissions();
     await ensure();
     expect([...roles.value]).toStrictEqual([]);

@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/contracts/GRPC-REALTIME-CONTRACTS.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Contratos em tempo real gRPC
 
 Contratos canônicos para transporte em tempo real gRPC.
@@ -70,11 +71,13 @@ Quando `ok=false`, a resposta carrega:
 ```
 
 A semântica do erro deve seguir:
+
 - [Contratos e respostas de erro](../ERROR-CONTRACTS-AND-RESPONSES.md)
 
 ## Registro de Operação
 
 `operaçãoId` deve ser de:
+
 - `spec/asyncapi/1.0.0.grpc.yml` (`components.schemas.GrpcRequest.properties.operationId.enum`)
 
 ## Semântica de fluxo

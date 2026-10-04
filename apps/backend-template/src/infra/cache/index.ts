@@ -1,2 +1,2 @@
 export * from './ICacheService';
-export * from './CacheService';
+export { default as CacheService } from './CacheService';

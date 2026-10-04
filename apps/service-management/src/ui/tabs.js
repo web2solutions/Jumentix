@@ -22,7 +22,7 @@
  * @param {Function} [options.beforeTabChange] - (previous, next) side effects before switch.
  * @param {Function} [options.afterTabChange] - (previous, next) side effects after switch.
  */
-export function createTabs({ dom, state, saveState, beforeTabChange, afterTabChange }) {
+function createTabs({ dom, state, saveState, beforeTabChange, afterTabChange }) {
   const tabMap = [
     {
       key: 'architecture',
@@ -122,3 +122,5 @@ export function createTabs({ dom, state, saveState, beforeTabChange, afterTabCha
     setActiveTab
   };
 }
+
+export default createTabs;

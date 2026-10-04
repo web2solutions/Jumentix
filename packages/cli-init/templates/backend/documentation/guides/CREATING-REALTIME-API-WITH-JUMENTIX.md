@@ -21,25 +21,25 @@ the same controllers and use cases as REST, and degraded realtime falls back to 
 
 ## Prerequisites
 
-| Item | Required | Notes |
-| --- | --- | --- |
-| Bun 1.3.13+ | Yes | [Getting started](/docs/jumentix/concepts/getting-started) |
+| Item                 | Required    | Notes                                                       |
+| -------------------- | ----------- | ----------------------------------------------------------- |
+| Bun 1.3.13+          | Yes         | [Getting started](/docs/jumentix/concepts/getting-started)  |
 | Working REST profile | Recommended | Complete [REST guide](/docs/jumentix/guides/rest-api) first |
-| AsyncAPI specs | Yes | Under `spec/` alongside OpenAPI |
-| Env file | Yes | `apps/backend-template/src/config/.env.dev` |
+| AsyncAPI specs       | Yes         | Under `spec/` alongside OpenAPI                             |
+| Env file             | Yes         | `apps/backend-template/src/config/.env.dev`                 |
 
 ## Glossary
 
-| Term | Meaning on this page |
-| --- | --- |
-| **Realtime API** | Non-HTTP primary interface — WebSocket or gRPC — for push/pull messaging. |
-| **AsyncAPI** | Spec describing channels, messages, and payload schemas for realtime. |
-| **WebSocket** | Browser-friendly persistent connection; default protocol for SPAs. |
-| **gRPC** | Binary RPC protocol; use for service-to-service, not browser clients. |
-| **REST fallback** | HTTP endpoints still available when realtime channel is down or unsupported. |
-| **Message handler** | Adapter code receiving a message, calling a controller, replying on same correlation id. |
-| **Correlation id** | Token linking a client request to its response on the same socket. |
-| **JUMENTIX_REALTIME_API** | Env flag `yes`/`no` enabling realtime startup profile. |
+| Term                      | Meaning on this page                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| **Realtime API**          | Non-HTTP primary interface — WebSocket or gRPC — for push/pull messaging.                |
+| **AsyncAPI**              | Spec describing channels, messages, and payload schemas for realtime.                    |
+| **WebSocket**             | Browser-friendly persistent connection; default protocol for SPAs.                       |
+| **gRPC**                  | Binary RPC protocol; use for service-to-service, not browser clients.                    |
+| **REST fallback**         | HTTP endpoints still available when realtime channel is down or unsupported.             |
+| **Message handler**       | Adapter code receiving a message, calling a controller, replying on same correlation id. |
+| **Correlation id**        | Token linking a client request to its response on the same socket.                       |
+| **JUMENTIX_REALTIME_API** | Env flag `yes`/`no` enabling realtime startup profile.                                   |
 
 ## Numbered steps
 
@@ -149,14 +149,14 @@ sub.on('message', (msg) => console.log(msg.payload));
 
 ## Common errors
 
-| Symptom | Likely cause | Fix | Verify success |
-| --- | --- | --- | --- |
-| Realtime starts but REST 404 | HTTP adapter not loaded in combined profile | Keep `JUMENTIX_HTTP_FRAMEWORK=express`; use `dev:websocket` not raw socket only | `/health` returns 200 |
-| Handler never replies | Missing correlation id on response | Echo client message id in adapter reply | Integration test green |
-| Browser cannot use gRPC | gRPC is not a browser protocol | Use WebSocket for SPA; gRPC for backend services | WS playground Run green |
-| `test:integration:realtime` fails on grpc | Wrong `JUMENTIX_REALTIME_API_PROTOCOL` | Match env to script (`websocket` vs `grpc`) | Target protocol test passes |
-| Duplicate message handling | Handler registered twice | One registration per channel in adapter bootstrap | Single response per send |
-| Redis streams test skipped | `RUN_REDIS_INTEGRATION` not set | Start redis compose; set env flag | redis-streams integration green |
+| Symptom                                   | Likely cause                                | Fix                                                                             | Verify success                  |
+| ----------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------- |
+| Realtime starts but REST 404              | HTTP adapter not loaded in combined profile | Keep `JUMENTIX_HTTP_FRAMEWORK=express`; use `dev:websocket` not raw socket only | `/health` returns 200           |
+| Handler never replies                     | Missing correlation id on response          | Echo client message id in adapter reply                                         | Integration test green          |
+| Browser cannot use gRPC                   | gRPC is not a browser protocol              | Use WebSocket for SPA; gRPC for backend services                                | WS playground Run green         |
+| `test:integration:realtime` fails on grpc | Wrong `JUMENTIX_REALTIME_API_PROTOCOL`      | Match env to script (`websocket` vs `grpc`)                                     | Target protocol test passes     |
+| Duplicate message handling                | Handler registered twice                    | One registration per channel in adapter bootstrap                               | Single response per send        |
+| Redis streams test skipped                | `RUN_REDIS_INTEGRATION` not set             | Start redis compose; set env flag                                               | redis-streams integration green |
 
 ## Junior checklist (“I can …”)
 

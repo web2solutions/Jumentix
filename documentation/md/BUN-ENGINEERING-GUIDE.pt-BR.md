@@ -11,14 +11,13 @@ antes que ela esteja Done.
 O Bun é pinado exatamente. Uma versão, idêntica localmente e no CI — uma faixa de versões é como
 "funciona na minha máquina" acaba commitado.
 
-| Fonte de verdade | Valor |
-| --- | --- |
-| `.bun-version` | `1.3.13` |
+| Fonte de verdade              | Valor        |
+| ----------------------------- | ------------ |
+| `.bun-version`                | `1.3.13`     |
 | `package.json#packageManager` | `bun@1.3.13` |
-| `package.json#engines.bun` | `>=1.3.13` |
+| `package.json#engines.bun`    | `>=1.3.13`   |
 
 > **Por que 1.3.13 e não o release mais novo.** O Bun 1.3.14 rejeita um lockfile que ele mesmo acabou de escrever para certas árvores de dependência — `bun install` passa, `bun install --frozen-lockfile` falha no mesmo arquivo, e um lock escrito pelo 1.3.13 também é rejeitado. 1.3.13, 1.3.11 e 1.3.9 aceitam. O pin sobe de volta quando um release corrigir (JUM-708).
-
 
 O `ci-cd/check-bun-version.js` valida as três e falha fechado. Ele roda como `preinstall`, então é
 propositalmente livre de dependências: num clone frio o `node_modules` ainda não existe, e exigir `semver`
@@ -69,12 +68,12 @@ todos os dependentes, não a um.
 
 ## 3. Executando comandos
 
-| Objetivo | Comando |
-| --- | --- |
-| Script do repositório | `bun run <script>` |
-| Binário de pacote | `bun x <binário>` |
-| Todos os workspaces | `bun run --filter '*' <script>` |
-| Um workspace | `bun run --filter @jumentix/website <script>` |
+| Objetivo              | Comando                                       |
+| --------------------- | --------------------------------------------- |
+| Script do repositório | `bun run <script>`                            |
+| Binário de pacote     | `bun x <binário>`                             |
+| Todos os workspaces   | `bun run --filter '*' <script>`               |
+| Um workspace          | `bun run --filter @jumentix/website <script>` |
 
 O `bun run --filter` substitui o `pnpm -r --if-present`. Note que a ordem dos argumentos difere do pnpm, e o
 comportamento é **melhor**: ele sai com 1 quando nenhum pacote casa com o filtro, onde o `--if-present` saía
@@ -82,18 +81,18 @@ com 0. Aquele silêncio era um falso verde.
 
 ## 4. `[run] bun = false` — leia antes de mudar
 
-O `bunfig.toml` define `[run] bun = false`, deliberadamente. Colocar `true` redireciona *todo* binário com
+O `bunfig.toml` define `[run] bun = false`, deliberadamente. Colocar `true` redireciona _todo_ binário com
 shebang Node dentro do `node_modules` para o Bun, incluindo os de terceiros. O Jest não é compatível com
 Bun: o `jest-runtime` atribui a uma propriedade que o Bun trata como readonly.
 
 Medido nesta árvore:
 
-| `[run] bun` | Resultado |
-| --- | --- |
-| `true` | 97 suítes falharam, **0 testes rodaram** |
-| `false` | 97 suítes passaram, **547 testes passaram** |
+| `[run] bun` | Resultado                                   |
+| ----------- | ------------------------------------------- |
+| `true`      | 97 suítes falharam, **0 testes rodaram**    |
+| `false`     | 97 suítes passaram, **547 testes passaram** |
 
-O que torna isso perigoso, e não apenas errado, é o *modo* de falha: toda suíte morre no carregamento com
+O que torna isso perigoso, e não apenas errado, é o _modo_ de falha: toda suíte morre no carregamento com
 `TypeError: Attempted to assign to readonly property`, o que se parece com um bug do repositório e não com
 uma configuração de runtime.
 
@@ -123,12 +122,12 @@ Qualquer outra invocação de Node dentro do tooling interno é um defeito.
 O `bun test` ainda não é o runner do gate, mas é medido, porque a diferença é o trabalho restante da
 migração:
 
-| | Baseline | Após o codemod `import type` |
-| --- | --- | --- |
-| pass | 344 | **471** |
-| erros de carregamento | 30 | **3** |
-| testes descobertos | 399 | **531** |
-| tempo | 0,79 s | 1,72 s |
+|                       | Baseline | Após o codemod `import type` |
+| --------------------- | -------- | ---------------------------- |
+| pass                  | 344      | **471**                      |
+| erros de carregamento | 30       | **3**                        |
+| testes descobertos    | 399      | **531**                      |
+| tempo                 | 0,79 s   | 1,72 s                       |
 
 O Jest leva cerca de 28 s para as mesmas suítes.
 
@@ -137,8 +136,8 @@ As falhas restantes são lacunas de API do `bun:test` — `jest.resetModules` (1
 
 ### Imports de tipo são uma questão de runtime no Bun
 
-O runtime ESM do Bun resolve bindings nomeados em tempo de execução, então um tipo TypeScript importado *ou
-re-exportado* como valor não tem export em runtime e o Bun rejeita o módulo inteiro:
+O runtime ESM do Bun resolve bindings nomeados em tempo de execução, então um tipo TypeScript importado _ou
+re-exportado_ como valor não tem export em runtime e o Bun rejeita o módulo inteiro:
 
 ```
 SyntaxError: export 'IMessageResponse' not found in './contracts'
@@ -182,8 +181,8 @@ partir do lockfile, que lê o manifesto original. Tentar remover uma dependênci
 
 ## 8. CI
 
-| Sistema | Setup |
-| --- | --- |
+| Sistema        | Setup                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
 | GitHub Actions | `oven-sh/setup-bun` pinado por SHA de commit; eixo de matriz `bun-version`; caches chaveados em `bun.lock` |
 
 O workflow instala com `--frozen-lockfile` e valida o guard de toolchain antes de qualquer outra coisa.
@@ -220,20 +219,20 @@ uma sem a outra reintroduz exatamente a divergência tripla (`postcss` em `^8.5.
 
 ## 11. Lacunas conhecidas
 
-| Lacuna | Responsável |
-| --- | --- |
-| Suítes unitárias ainda no Jest; `[run] bun` não pode ser `true` ainda | Test Pyramid JUM-434–436 |
-| 60 falhas de `bun test` por lacunas de API do `bun:test` | Test Pyramid JUM-434–436 |
-| Cobertura de branch não é aplicada pelo `bun test` (ele não tem essa métrica) | JUM-437 / §5 deste guia |
-| 4 scripts `test` de workspace são placeholders `echo`; outros 15 apenas chamam `typecheck` | Test Pyramid JUM-557 |
-| O artefato buildado do backend não carrega sob Node (abaixo) | JUM-37, em aberto |
+| Lacuna                                                                                     | Responsável              |
+| ------------------------------------------------------------------------------------------ | ------------------------ |
+| Suítes unitárias ainda no Jest; `[run] bun` não pode ser `true` ainda                      | Test Pyramid JUM-434–436 |
+| 60 falhas de `bun test` por lacunas de API do `bun:test`                                   | Test Pyramid JUM-434–436 |
+| Cobertura de branch não é aplicada pelo `bun test` (ele não tem essa métrica)              | JUM-437 / §5 deste guia  |
+| 4 scripts `test` de workspace são placeholders `echo`; outros 15 apenas chamam `typecheck` | Test Pyramid JUM-557     |
+| O artefato buildado do backend não carrega sob Node (abaixo)                               | JUM-37, em aberto        |
 
 A quarta linha é um falso verde ativo: o `mono:test` reporta sucesso enquanto quase nenhum workspace roda
 teste.
 
 ### O artefato buildado não carrega sob Node — e nunca carregou
 
-O Requisito 096 §4 mantém o Node como alvo voltado ao consumidor *validado independentemente*. Medido, essa
+O Requisito 096 §4 mantém o Node como alvo voltado ao consumidor _validado independentemente_. Medido, essa
 validação não se sustenta hoje, e a causa é anterior a esta migração:
 
 ```

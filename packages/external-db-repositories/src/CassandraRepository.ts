@@ -1,7 +1,8 @@
-import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
-export class CassandraRepository extends BaseExternalDataRepository {
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+
+class CassandraRepository extends BaseExternalDataRepository {
   private client: any | null = null;
 
   constructor(options: IRepositoryConnectionOptions) {
@@ -21,7 +22,8 @@ export class CassandraRepository extends BaseExternalDataRepository {
 
     const contactPoints = this.getExtraOption<string[]>('contactPoints', ['127.0.0.1']);
     const localDataCenter = this.getExtraOption<string>('localDataCenter', 'datacenter1');
-    const keyspace = this.options.database || this.getExtraOption<string | undefined>('keyspace', undefined);
+    const keyspace =
+      this.options.database || this.getExtraOption<string | undefined>('keyspace', undefined);
 
     const baseConfig = {
       contactPoints,
@@ -70,3 +72,5 @@ export class CassandraRepository extends BaseExternalDataRepository {
     return this.client;
   }
 }
+
+export default CassandraRepository;

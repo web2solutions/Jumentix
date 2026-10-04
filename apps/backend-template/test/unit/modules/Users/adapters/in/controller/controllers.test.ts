@@ -1,8 +1,8 @@
 /* eslint-disable jest/max-expects, jest/prefer-called-with, jest/require-to-throw-message */
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
-import { AuthController } from '@src/modules/Users/adapters/in/http/controllers/AuthController';
-import { OrganizationController } from '@src/modules/Users/adapters/in/http/controllers/OrganizationController';
-import { UserController } from '@src/modules/Users/adapters/in/http/controllers/UserController';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
+import AuthController from '@src/modules/Users/adapters/in/http/controllers/AuthController';
+import OrganizationController from '@src/modules/Users/adapters/in/http/controllers/OrganizationController';
+import UserController from '@src/modules/Users/adapters/in/http/controllers/UserController';
 
 // The validators module used to be replaced here so that
 // `throwIfOASInputValidationFails` and `validateRequestParams` were inert.
@@ -29,7 +29,10 @@ const makeFactory = (overrides: Record<string, any> = {}) => {
       delete: jest.fn().mockResolvedValue({ result: true }),
       getOneById: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
       getAll: jest.fn().mockResolvedValue({
-        result: [], page: 1, size: 10, total: 0
+        result: [],
+        page: 1,
+        size: 10,
+        total: 0
       }),
       createDocument: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
       updateDocument: jest.fn().mockResolvedValue({ result: { id: 'u1' } }),
@@ -48,7 +51,10 @@ const makeFactory = (overrides: Record<string, any> = {}) => {
       delete: jest.fn().mockResolvedValue({ result: true }),
       getOneById: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } }),
       getAll: jest.fn().mockResolvedValue({
-        result: [], page: 1, size: 10, total: 0
+        result: [],
+        page: 1,
+        size: 10,
+        total: 0
       }),
       createAddress: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } }),
       updateAddress: jest.fn().mockResolvedValue({ result: { id: 'o1', name: 'Org 1' } }),
@@ -71,20 +77,25 @@ const makeFactory = (overrides: Record<string, any> = {}) => {
   };
 };
 
-const makeEvent = (overrides: Record<string, any> = {}) => new TestEvent({
-  authorization: 'Bearer token',
-  input: { username: 'john', password: '12345678' },
-  params: {
-    id: 'u1', documentId: 'd1', phoneId: 'p1', emailId: 'e1', addressId: 'a1'
-  },
-  queryString: {
-    filter: Buffer.from(JSON.stringify({ username: 'john' })).toString('base64'),
-    page: '1',
-    size: '10'
-  },
-  schemaOAS: { operationId: 'usersCreate' },
-  ...overrides
-});
+const makeEvent = (overrides: Record<string, any> = {}) =>
+  new TestEvent({
+    authorization: 'Bearer token',
+    input: { username: 'john', password: '12345678' },
+    params: {
+      id: 'u1',
+      documentId: 'd1',
+      phoneId: 'p1',
+      emailId: 'e1',
+      addressId: 'a1'
+    },
+    queryString: {
+      filter: Buffer.from(JSON.stringify({ username: 'john' })).toString('base64'),
+      page: '1',
+      size: '10'
+    },
+    schemaOAS: { operationId: 'usersCreate' },
+    ...overrides
+  });
 
 describe('users controllers', () => {
   it('covers auth controller public methods', async () => {
@@ -127,9 +138,11 @@ describe('users controllers', () => {
     await controller.createEmail(event);
     await controller.updateEmail(event);
     await controller.deleteEmail(event);
-    await controller.getUsersMetrics(makeEvent({
-      queryString: { metric: 'count' }
-    }));
+    await controller.getUsersMetrics(
+      makeEvent({
+        queryString: { metric: 'count' }
+      })
+    );
 
     expect(factory.userUseCases.create).toHaveBeenCalled();
     expect(factory.userUseCases.update).toHaveBeenCalledWith('u1', event.input);
@@ -150,9 +163,11 @@ describe('users controllers', () => {
     await controller.delete(event);
     await controller.getOneById(event);
     await controller.getAll(event);
-    await controller.getOrganizationsMetrics(makeEvent({
-      queryString: { metric: 'count' }
-    }));
+    await controller.getOrganizationsMetrics(
+      makeEvent({
+        queryString: { metric: 'count' }
+      })
+    );
     await controller.createAddress(event);
     await controller.updateAddress(event);
     await controller.deleteAddress(event);
@@ -183,7 +198,11 @@ describe('users controllers', () => {
     expect(factory.organizationUseCases.getOneById).toHaveBeenCalledWith('u1');
     expect(factory.organizationUseCases.getAll).toHaveBeenCalled();
     expect(factory.organizationUseCases.createAddress).toHaveBeenCalledWith('u1', event.input);
-    expect(factory.organizationUseCases.updateAddress).toHaveBeenCalledWith('u1', 'a1', event.input);
+    expect(factory.organizationUseCases.updateAddress).toHaveBeenCalledWith(
+      'u1',
+      'a1',
+      event.input
+    );
     expect(factory.organizationUseCases.deleteAddress).toHaveBeenCalledWith('u1', 'a1');
     expect(factory.organizationUseCases.createPhone).toHaveBeenCalledWith('u1', event.input);
     expect(factory.organizationUseCases.updatePhone).toHaveBeenCalledWith('u1', 'p1', event.input);
@@ -200,16 +219,21 @@ describe('users controllers', () => {
     const factory = makeFactory();
     expect(() => new AuthController({ ...factory, authUseCases: undefined } as any)).toThrow();
     expect(() => new UserController({ ...factory, userUseCases: undefined } as any)).toThrow();
-    expect(() => new OrganizationController({
-      ...factory,
-      organizationUseCases: undefined
-    } as any)).toThrow();
+    expect(
+      () =>
+        new OrganizationController({
+          ...factory,
+          organizationUseCases: undefined
+        } as any)
+    ).toThrow();
   });
 
   it('throws infra not implemented when organization use cases are missing for organization operations', () => {
     expect.hasAssertions();
     const factory = makeFactory({ organizationUseCases: undefined });
-    expect(() => new OrganizationController(factory as any)).toThrow('OrganizationUseCases is not implemented');
+    expect(() => new OrganizationController(factory as any)).toThrow(
+      'OrganizationUseCases is not implemented'
+    );
   });
 
   it('uses message mediator in authorization decorator when available', async () => {
@@ -225,9 +249,11 @@ describe('users controllers', () => {
 
     await controller.delete(makeEvent());
 
-    expect(messageMediator.request).toHaveBeenCalledWith(expect.objectContaining({
-      contract: 'users.auth.ensure-access'
-    }));
+    expect(messageMediator.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contract: 'users.auth.ensure-access'
+      })
+    );
     expect(factory.authService.authorize).not.toHaveBeenCalled();
   });
 
@@ -250,8 +276,12 @@ describe('users controllers', () => {
     const userController = new UserController(factory as any);
     const organizationController = new OrganizationController(factory as any);
 
-    await expect(userController.update(makeEvent())).rejects.toThrow('cross organization access is forbidden');
-    await expect(organizationController.update(makeEvent())).rejects.toThrow('cross organization access is forbidden');
+    await expect(userController.update(makeEvent())).rejects.toThrow(
+      'cross organization access is forbidden'
+    );
+    await expect(organizationController.update(makeEvent())).rejects.toThrow(
+      'cross organization access is forbidden'
+    );
   });
 
   it('enforces organization requirements for non-superadmin operations', async () => {
@@ -269,9 +299,15 @@ describe('users controllers', () => {
     const userController = new UserController(factory as any);
     const organizationController = new OrganizationController(factory as any);
 
-    await expect(userController.create(makeEvent())).rejects.toThrow('organization scope is required');
-    await expect(userController.getAll(makeEvent())).rejects.toThrow('organization scope is required');
-    await expect(organizationController.getAll(makeEvent())).rejects.toThrow('organization scope is required');
+    await expect(userController.create(makeEvent())).rejects.toThrow(
+      'organization scope is required'
+    );
+    await expect(userController.getAll(makeEvent())).rejects.toThrow(
+      'organization scope is required'
+    );
+    await expect(organizationController.getAll(makeEvent())).rejects.toThrow(
+      'organization scope is required'
+    );
     await organizationController.create(makeEvent());
     expect(factory.organizationUseCases.create).toHaveBeenCalled();
   });
@@ -291,12 +327,14 @@ describe('users controllers', () => {
     });
     const userController = new UserController(factory as any);
     const organizationController = new OrganizationController(factory as any);
-    await userController.getAll(makeEvent({
-      queryString: {
-        page: '1',
-        size: '10'
-      }
-    }));
+    await userController.getAll(
+      makeEvent({
+        queryString: {
+          page: '1',
+          size: '10'
+        }
+      })
+    );
     expect(factory.userUseCases.getAll).toHaveBeenCalledWith(
       expect.objectContaining({
         organization: 'org-1',
@@ -305,12 +343,14 @@ describe('users controllers', () => {
       expect.objectContaining({ page: 1, size: 10 })
     );
 
-    await organizationController.getAll(makeEvent({
-      queryString: {
-        page: '1',
-        size: '10'
-      }
-    }));
+    await organizationController.getAll(
+      makeEvent({
+        queryString: {
+          page: '1',
+          size: '10'
+        }
+      })
+    );
     expect(factory.organizationUseCases.getAll).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'org-1' }),
       expect.objectContaining({ page: 1, size: 10 })
@@ -342,17 +382,23 @@ describe('users controllers', () => {
       }
     });
     await controller.create(event);
-    expect(factory.userUseCases.create).toHaveBeenCalledWith(expect.objectContaining({
-      organization: 'org-1'
-    }));
+    expect(factory.userUseCases.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organization: 'org-1'
+      })
+    );
 
-    await expect(controller.create(makeEvent({
-      input: {
-        username: 'john',
-        password: '12345678',
-        organization: 'org-2'
-      }
-    }))).rejects.toThrow('cross organization access is forbidden');
+    await expect(
+      controller.create(
+        makeEvent({
+          input: {
+            username: 'john',
+            password: '12345678',
+            organization: 'org-2'
+          }
+        })
+      )
+    ).rejects.toThrow('cross organization access is forbidden');
 
     await controller.update(makeEvent());
     expect(factory.userUseCases.update).toHaveBeenCalledWith('u1', expect.any(Object));
@@ -387,8 +433,12 @@ describe('users controllers', () => {
     const userController = new UserController(factory as any);
     const organizationController = new OrganizationController(factory as any);
 
-    await expect(userController.update(makeEvent())).rejects.toThrow('organization scope is required');
-    await expect(organizationController.update(makeEvent())).rejects.toThrow('organization scope is required');
+    await expect(userController.update(makeEvent())).rejects.toThrow(
+      'organization scope is required'
+    );
+    await expect(organizationController.update(makeEvent())).rejects.toThrow(
+      'organization scope is required'
+    );
   });
 
   it('covers target-user-unavailable guard branch in scoped user operations', async () => {
@@ -430,9 +480,13 @@ describe('users controllers', () => {
     });
     const controller = new UserController(factory as any);
 
-    expect((controller as any).getAuthenticatedUser(makeEvent({
-      authenticatedUser: undefined
-    }))).toStrictEqual({});
+    expect(
+      (controller as any).getAuthenticatedUser(
+        makeEvent({
+          authenticatedUser: undefined
+        })
+      )
+    ).toStrictEqual({});
 
     await expect(controller.update(makeEvent())).rejects.toThrow(
       'Insufficient permission - target user not available'
@@ -472,12 +526,14 @@ describe('users controllers', () => {
     });
     const controller = new OrganizationController(factory as any);
 
-    await controller.getAll(makeEvent({
-      queryString: {
-        page: '1',
-        size: '10'
-      }
-    }));
+    await controller.getAll(
+      makeEvent({
+        queryString: {
+          page: '1',
+          size: '10'
+        }
+      })
+    );
 
     expect(factory.organizationUseCases.getAll).toHaveBeenCalledWith(
       expect.not.objectContaining({ id: expect.any(String) }),
@@ -498,15 +554,21 @@ describe('users controllers', () => {
       }
     });
     const controller = new OrganizationController(factory as any);
-    const authUser = (controller as any).getAuthenticatedUser(makeEvent({
-      authenticatedUser: undefined
-    }));
+    const authUser = (controller as any).getAuthenticatedUser(
+      makeEvent({
+        authenticatedUser: undefined
+      })
+    );
     expect(authUser).toStrictEqual({});
 
-    await controller.update(makeEvent({
-      params: { id: 'org-1' },
-      input: { name: 'Org Updated' }
-    }));
-    expect(factory.organizationUseCases.update).toHaveBeenCalledWith('org-1', { name: 'Org Updated' });
+    await controller.update(
+      makeEvent({
+        params: { id: 'org-1' },
+        input: { name: 'Org Updated' }
+      })
+    );
+    expect(factory.organizationUseCases.update).toHaveBeenCalledWith('org-1', {
+      name: 'Org Updated'
+    });
   });
 });

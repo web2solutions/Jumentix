@@ -13,13 +13,13 @@ mature open-source framework with source-level traceability to the monorepo.
 
 ## Information Architecture
 
-| Section | Reader question | Typical content |
-| --- | --- | --- |
-| Concepts | Why does Jumentix work this way? | Architecture, domains, contracts, event-driven design |
-| Guides | How do I build a product? | REST, realtime, SPA/PWA, monolith, microservices |
-| Adapters | Which runtime or infrastructure should I use? | HTTP, database, and realtime adapters |
-| Packages | Which reusable library should I install? | Message mediator, runtime bootstrap, SDK packages |
-| Reference | What is the exact behavior? | Runtime contracts, commands, security, entities, events |
+| Section   | Reader question                               | Typical content                                         |
+| --------- | --------------------------------------------- | ------------------------------------------------------- |
+| Concepts  | Why does Jumentix work this way?              | Architecture, domains, contracts, event-driven design   |
+| Guides    | How do I build a product?                     | REST, realtime, SPA/PWA, monolith, microservices        |
+| Adapters  | Which runtime or infrastructure should I use? | HTTP, database, and realtime adapters                   |
+| Packages  | Which reusable library should I install?      | Message mediator, runtime bootstrap, SDK packages       |
+| Reference | What is the exact behavior?                   | Runtime contracts, commands, security, entities, events |
 
 Canonical English routes start at `/docs/jumentix`. Portuguese routes preserve the same hierarchy
 under `/docs/pt-BR/jumentix`.
@@ -74,7 +74,7 @@ requirement numbers as provenance. The sync keeps the two apart:
 
 - `stripMaintainerProvenance` (`scripts/content-leaks.mjs`) removes parentheticals that only cite
   issues, requirements or PRs — `(JUM-468)`, `([JUM-493](…))`, `(Requirement \`059\`)`,
-  `(landed by JUM-460; Requirement 126 §3)` — and Linear link reference definitions. Write
+`(landed by JUM-460; Requirement 126 §3)` — and Linear link reference definitions. Write
   provenance in parentheses so contributor docs keep it and the site drops it.
 - Provenance cited inline in prose is not rewritten; `bun run docs:check-audience` reports it at
   the generated page and the source is fixed.

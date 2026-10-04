@@ -46,12 +46,14 @@ const colors = computed(() => props.buckets.map((_, index) => PALETTE[index % PA
         :type="kind === 'line' ? 'line' : 'bar'"
         :data="{
           labels,
-          datasets: [{
-            label: title,
-            data: values,
-            backgroundColor: colors,
-            borderColor: colors
-          }]
+          datasets: [
+            {
+              label: title,
+              data: values,
+              backgroundColor: colors,
+              borderColor: colors
+            }
+          ]
         }"
         :options="{
           responsive: true,
@@ -70,7 +72,11 @@ const colors = computed(() => props.buckets.map((_, index) => PALETTE[index % PA
       :class="{ 'visually-hidden': buckets.length > 0 && !tableVisible }"
       data-chart-table
     >
-      <caption class="visually-hidden">{{ title }}</caption>
+      <caption class="visually-hidden">
+        {{
+          title
+        }}
+      </caption>
       <thead>
         <tr>
           <th scope="col">{{ t('dashboard.bucket') }}</th>

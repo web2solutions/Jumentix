@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -17,16 +15,20 @@ import path from 'node:path';
 const repoRoot = path.resolve(__dirname, '../../../..');
 const model = require('@jumentix/designer-core/model/modelQueries.js');
 
-type LayoutBox = { left: number; top: number; right: number; bottom: number };
+interface LayoutBox {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
 
-function boxesOverlap(
-  box: LayoutBox,
-  other: LayoutBox
-) {
-  return box.left < other.right
-    && box.right > other.left
-    && box.top < other.bottom
-    && box.bottom > other.top;
+function boxesOverlap(box: LayoutBox, other: LayoutBox) {
+  return (
+    box.left < other.right &&
+    box.right > other.left &&
+    box.top < other.bottom &&
+    box.bottom > other.top
+  );
 }
 
 function createDomains() {
@@ -39,10 +41,18 @@ function createDomains() {
       y: 50,
       entities: [
         {
-          id: 'entity-1', name: 'Invoice', x: 14, y: 14, fields: []
+          id: 'entity-1',
+          name: 'Invoice',
+          x: 14,
+          y: 14,
+          fields: []
         },
         {
-          id: 'entity-2', name: 'Payment Method', x: 220, y: 14, fields: []
+          id: 'entity-2',
+          name: 'Payment Method',
+          x: 220,
+          y: 14,
+          fields: []
         }
       ]
     },
@@ -54,7 +64,11 @@ function createDomains() {
       y: 200,
       entities: [
         {
-          id: 'entity-3', name: 'User', x: 14, y: 14, fields: []
+          id: 'entity-3',
+          name: 'User',
+          x: 14,
+          y: 14,
+          fields: []
         }
       ]
     }
@@ -77,9 +91,7 @@ describe('model queries (JUM-469)', () => {
       );
       // Strip comments so prose about the modules cannot false-positive;
       // what remains must not reach the DOM globals.
-      const code = source
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+      const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
       expect(code).not.toMatch(/\bdocument\s*\./);
       expect(code).not.toMatch(/\bwindow\s*\./);
     });
@@ -152,31 +164,46 @@ describe('model queries (JUM-469)', () => {
   describe('labels and names', () => {
     it('renders field labels with flags and format', () => {
       expect.hasAssertions();
-      expect(model.fieldLabel({
-        name: 'id', type: 'uuid', pk: true, unique: true, required: true
-      }))
-        .toBe('id: uuid [PK, UQ, REQ]');
-      expect(model.fieldLabel({
-        name: 'email', type: 'string', format: 'email', nullable: true
-      }))
-        .toBe('email: string(email) [NULL]');
-      expect(model.fieldLabel({ name: 'total', type: 'number', fk: true }))
-        .toBe('total: number [FK]');
-      expect(model.fieldLabel({ name: 'slug', type: 'string', indexed: true }))
-        .toBe('slug: string [IDX]');
+      expect(
+        model.fieldLabel({
+          name: 'id',
+          type: 'uuid',
+          pk: true,
+          unique: true,
+          required: true
+        })
+      ).toBe('id: uuid [PK, UQ, REQ]');
+      expect(
+        model.fieldLabel({
+          name: 'email',
+          type: 'string',
+          format: 'email',
+          nullable: true
+        })
+      ).toBe('email: string(email) [NULL]');
+      expect(model.fieldLabel({ name: 'total', type: 'number', fk: true })).toBe(
+        'total: number [FK]'
+      );
+      expect(model.fieldLabel({ name: 'slug', type: 'string', indexed: true })).toBe(
+        'slug: string [IDX]'
+      );
     });
 
     it('builds relationship names per cardinality pair', () => {
       expect.hasAssertions();
       const domains = createDomains();
-      expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', 'N', '1'))
-        .toBe('Billing/Invoice belongs to Billing/Payment Method');
-      expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', '1', 'N'))
-        .toBe('Billing/Invoice has many Billing/Payment Method');
-      expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', '1', '1'))
-        .toBe('Billing/Invoice is linked to Billing/Payment Method');
-      expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', 'N', 'N'))
-        .toBe('Billing/Invoice relates to Billing/Payment Method');
+      expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', 'N', '1')).toBe(
+        'Billing/Invoice belongs to Billing/Payment Method'
+      );
+      expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', '1', 'N')).toBe(
+        'Billing/Invoice has many Billing/Payment Method'
+      );
+      expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', '1', '1')).toBe(
+        'Billing/Invoice is linked to Billing/Payment Method'
+      );
+      expect(model.buildRelationshipName(domains, 'entity-1', 'entity-2', 'N', 'N')).toBe(
+        'Billing/Invoice relates to Billing/Payment Method'
+      );
     });
 
     it('ranks severities with unknown values at the bottom', () => {
@@ -192,14 +219,16 @@ describe('model queries (JUM-469)', () => {
     it('uses the midpoint until a relationship bend is explicitly placed', () => {
       expect.hasAssertions();
 
-      expect(model.relationshipControlPoint({}, { x: 10, y: 20 }, { x: 110, y: 80 }))
-        .toStrictEqual({ x: 60, y: 50, explicit: false });
-      expect(model.relationshipControlPoint(
-        { bendX: 140, bendY: 72 },
-        { x: 10, y: 20 },
-        { x: 110, y: 80 }
-      ))
-        .toStrictEqual({ x: 140, y: 72, explicit: true });
+      expect(model.relationshipControlPoint({}, { x: 10, y: 20 }, { x: 110, y: 80 })).toStrictEqual(
+        { x: 60, y: 50, explicit: false }
+      );
+      expect(
+        model.relationshipControlPoint(
+          { bendX: 140, bendY: 72 },
+          { x: 10, y: 20 },
+          { x: 110, y: 80 }
+        )
+      ).toStrictEqual({ x: 140, y: 72, explicit: true });
     });
   });
 
@@ -281,12 +310,16 @@ describe('model queries (JUM-469)', () => {
 
     it('defaults array items to string and omits absent constraints', () => {
       expect.hasAssertions();
-      expect(model.toOasFieldSchema({ name: 'tags', type: 'array' }))
-        .toStrictEqual({ type: 'array', items: { type: 'string' } });
-      expect(model.toOasFieldSchema({ name: 'tags', type: 'array', itemsType: 'uuid' }))
-        .toStrictEqual({ type: 'array', items: { type: 'string', format: 'uuid' } });
-      expect(model.toOasFieldSchema({ name: 'total', type: 'number' }))
-        .toStrictEqual({ type: 'number' });
+      expect(model.toOasFieldSchema({ name: 'tags', type: 'array' })).toStrictEqual({
+        type: 'array',
+        items: { type: 'string' }
+      });
+      expect(
+        model.toOasFieldSchema({ name: 'tags', type: 'array', itemsType: 'uuid' })
+      ).toStrictEqual({ type: 'array', items: { type: 'string', format: 'uuid' } });
+      expect(model.toOasFieldSchema({ name: 'total', type: 'number' })).toStrictEqual({
+        type: 'number'
+      });
     });
   });
 
@@ -310,17 +343,27 @@ describe('model queries (JUM-469)', () => {
     it('builds example values per field type and format', () => {
       expect.hasAssertions();
       expect(model.buildExampleValueForField({ name: 's', enumValues: ['a', 'b'] })).toBe('a');
-      expect(model.buildExampleValueForField({ name: 'id', type: 'uuid' })).toBe('00000000-0000-4000-8000-000000000001');
-      expect(model.buildExampleValueForField({ name: 'at', type: 'datetime' })).toBe('2026-01-01T00:00:00.000Z');
+      expect(model.buildExampleValueForField({ name: 'id', type: 'uuid' })).toBe(
+        '00000000-0000-4000-8000-000000000001'
+      );
+      expect(model.buildExampleValueForField({ name: 'at', type: 'datetime' })).toBe(
+        '2026-01-01T00:00:00.000Z'
+      );
       expect(model.buildExampleValueForField({ name: 'day', type: 'date' })).toBe('2026-01-01');
       expect(model.buildExampleValueForField({ name: 'n', type: 'integer' })).toBe(1);
       expect(model.buildExampleValueForField({ name: 'n', type: 'number' })).toBe(10.5);
       expect(model.buildExampleValueForField({ name: 'b', type: 'boolean' })).toBe(true);
       expect(model.buildExampleValueForField({ name: 'a', type: 'array' })).toStrictEqual([]);
       expect(model.buildExampleValueForField({ name: 'o', type: 'object' })).toStrictEqual({});
-      expect(model.buildExampleValueForField({ name: 'e', type: 'string', format: 'email' })).toBe('user@example.com');
-      expect(model.buildExampleValueForField({ name: 'u', type: 'string', format: 'uri' })).toBe('https://example.com/resource');
-      expect(model.buildExampleValueForField({ name: 'title', type: 'string' })).toBe('title_example');
+      expect(model.buildExampleValueForField({ name: 'e', type: 'string', format: 'email' })).toBe(
+        'user@example.com'
+      );
+      expect(model.buildExampleValueForField({ name: 'u', type: 'string', format: 'uri' })).toBe(
+        'https://example.com/resource'
+      );
+      expect(model.buildExampleValueForField({ name: 'title', type: 'string' })).toBe(
+        'title_example'
+      );
       expect(model.buildExampleValueForField({ type: 'string' })).toBe('value_example');
     });
 
@@ -329,7 +372,10 @@ describe('model queries (JUM-469)', () => {
       const entity = {
         fields: [
           {
-            name: 'id', type: 'uuid', pk: true, required: true
+            name: 'id',
+            type: 'uuid',
+            pk: true,
+            required: true
           },
           { name: 'name', type: 'string', required: true },
           { name: 'organizationId', type: 'uuid', fk: true },
@@ -348,13 +394,16 @@ describe('model queries (JUM-469)', () => {
         organizationId: '00000000-0000-4000-8000-000000000001',
         code: 'code_example'
       });
-      expect(model.buildEntityRequestExample(entity)).toStrictEqual(model.buildEntityRequestExample(entity, 'create'));
+      expect(model.buildEntityRequestExample(entity)).toStrictEqual(
+        model.buildEntityRequestExample(entity, 'create')
+      );
     });
 
     it('builds a response example with every field', () => {
       expect.hasAssertions();
-      expect(model.buildEntityResponseExample({ fields: [{ name: 'id', type: 'uuid' }] }))
-        .toStrictEqual({ id: '00000000-0000-4000-8000-000000000001' });
+      expect(
+        model.buildEntityResponseExample({ fields: [{ name: 'id', type: 'uuid' }] })
+      ).toStrictEqual({ id: '00000000-0000-4000-8000-000000000001' });
       expect(model.buildEntityResponseExample({})).toStrictEqual({});
     });
   });
@@ -387,16 +436,26 @@ describe('model queries (JUM-469)', () => {
       const height = model.entityHeight(entity, false, false);
 
       expect(height).toBe(32 + 2 * 22 + 26 + 8);
-      expect(model.entityCenterPoint(domain, entity, false, false))
-        .toStrictEqual({ x: originX + width / 2, y: originY + height / 2 });
-      expect(model.entityAnchorPoint(domain, entity, 'left', false, false))
-        .toStrictEqual({ x: originX, y: originY + height / 2 });
-      expect(model.entityAnchorPoint(domain, entity, 'right', false, false))
-        .toStrictEqual({ x: originX + width, y: originY + height / 2 });
-      expect(model.entityAnchorPoint(domain, entity, 'top', false, false))
-        .toStrictEqual({ x: originX + width / 2, y: originY });
-      expect(model.entityAnchorPoint(domain, entity, 'bottom', false, false))
-        .toStrictEqual({ x: originX + width / 2, y: originY + height });
+      expect(model.entityCenterPoint(domain, entity, false, false)).toStrictEqual({
+        x: originX + width / 2,
+        y: originY + height / 2
+      });
+      expect(model.entityAnchorPoint(domain, entity, 'left', false, false)).toStrictEqual({
+        x: originX,
+        y: originY + height / 2
+      });
+      expect(model.entityAnchorPoint(domain, entity, 'right', false, false)).toStrictEqual({
+        x: originX + width,
+        y: originY + height / 2
+      });
+      expect(model.entityAnchorPoint(domain, entity, 'top', false, false)).toStrictEqual({
+        x: originX + width / 2,
+        y: originY
+      });
+      expect(model.entityAnchorPoint(domain, entity, 'bottom', false, false)).toStrictEqual({
+        x: originX + width / 2,
+        y: originY + height
+      });
     });
 
     it('clamps custom entity dimensions and resize requests to supported bounds', () => {
@@ -432,24 +491,55 @@ describe('model queries (JUM-469)', () => {
       expect.hasAssertions();
 
       expect(model.clampEntityPosition(null, Number.NaN, Infinity)).toStrictEqual({ x: 0, y: 0 });
-      expect(model.minimumDomainSize({ entities: [{ x: Number.NaN, y: Number.NaN }] }))
-        .toStrictEqual({ width: 356, height: 160 });
+      expect(
+        model.minimumDomainSize({ entities: [{ x: Number.NaN, y: Number.NaN }] })
+      ).toStrictEqual({ width: 356, height: 160 });
       expect(model.searchModel(null, 'anything')).toStrictEqual([]);
-      expect(model.searchModel([
-        { id: 'domain-without-name' },
-        { id: 'domain-1', name: 'Billing', entities: [{ id: 'entity-without-fields', name: 'Invoice' }] },
-        { id: 'domain-2', name: 'Empty', entities: [{ id: 'entity-1', fields: [{}] }] }
-      ], 'billing')).toStrictEqual([
-        { kind: 'domain', domainId: 'domain-1', label: 'Billing' }
-      ]);
-      expect(model.entitiesInMarquee(null, {
-        x1: 0, y1: 0, x2: 10, y2: 10
-      }, false, false)).toStrictEqual([]);
-      expect(model.entitiesInMarquee([{ x: 0, y: 0 }], {
-        x1: 0, y1: 0, x2: 10, y2: 10
-      }, false, false)).toStrictEqual([]);
-      expect(model.alignmentGuidesFor({}, { id: 'entity', fields: [] }, 12, 20))
-        .toStrictEqual({ x: 12, y: 20, guides: [] });
+      expect(
+        model.searchModel(
+          [
+            { id: 'domain-without-name' },
+            {
+              id: 'domain-1',
+              name: 'Billing',
+              entities: [{ id: 'entity-without-fields', name: 'Invoice' }]
+            },
+            { id: 'domain-2', name: 'Empty', entities: [{ id: 'entity-1', fields: [{}] }] }
+          ],
+          'billing'
+        )
+      ).toStrictEqual([{ kind: 'domain', domainId: 'domain-1', label: 'Billing' }]);
+      expect(
+        model.entitiesInMarquee(
+          null,
+          {
+            x1: 0,
+            y1: 0,
+            x2: 10,
+            y2: 10
+          },
+          false,
+          false
+        )
+      ).toStrictEqual([]);
+      expect(
+        model.entitiesInMarquee(
+          [{ x: 0, y: 0 }],
+          {
+            x1: 0,
+            y1: 0,
+            x2: 10,
+            y2: 10
+          },
+          false,
+          false
+        )
+      ).toStrictEqual([]);
+      expect(model.alignmentGuidesFor({}, { id: 'entity', fields: [] }, 12, 20)).toStrictEqual({
+        x: 12,
+        y: 20,
+        guides: []
+      });
     });
 
     it('collapses to the header height in compact view', () => {
@@ -461,8 +551,10 @@ describe('model queries (JUM-469)', () => {
       // else — an anchor placed as if the rows were still there would point at
       // empty canvas below it.
       expect(model.entityHeight(entity, true, false)).toBe(40);
-      expect(model.entityAnchorPoint(domain, entity, 'left', true, false))
-        .toStrictEqual({ x: 114, y: 84 });
+      expect(model.entityAnchorPoint(domain, entity, 'left', true, false)).toStrictEqual({
+        x: 114,
+        y: 84
+      });
       expect(model.entityHeight(entity, false, true)).toBe(72);
       expect(model.entityFieldRowHeight(true)).toBe(16);
     });
@@ -472,8 +564,9 @@ describe('model queries (JUM-469)', () => {
       const domain = { x: 100, y: 50 };
       const entity = { x: 14, y: 14, fields: [{ name: 'id' }] };
 
-      expect(model.entityAnchorPoint(domain, entity, 'diagonal', false, false))
-        .toStrictEqual(model.entityCenterPoint(domain, entity, false, false));
+      expect(model.entityAnchorPoint(domain, entity, 'diagonal', false, false)).toStrictEqual(
+        model.entityCenterPoint(domain, entity, false, false)
+      );
     });
 
     /*
@@ -494,10 +587,12 @@ describe('model queries (JUM-469)', () => {
       };
 
       // Second row: header, one row above it, and half a row down.
-      expect(model.entityFieldAnchorPoint(domain, entity, 'organizationId', 'left', false, false))
-        .toStrictEqual({ x: 114, y: 64 + 32 + 22 + 11 });
-      expect(model.entityFieldAnchorPoint(domain, entity, 'organizationId', 'right', false, false))
-        .toStrictEqual({ x: 114 + model.entityWidth(entity), y: 64 + 32 + 22 + 11 });
+      expect(
+        model.entityFieldAnchorPoint(domain, entity, 'organizationId', 'left', false, false)
+      ).toStrictEqual({ x: 114, y: 64 + 32 + 22 + 11 });
+      expect(
+        model.entityFieldAnchorPoint(domain, entity, 'organizationId', 'right', false, false)
+      ).toStrictEqual({ x: 114 + model.entityWidth(entity), y: 64 + 32 + 22 + 11 });
     });
 
     it('reports no field anchor when the row is not on screen', () => {
@@ -510,8 +605,16 @@ describe('model queries (JUM-469)', () => {
       // there; the caller falls back to the side anchor instead.
       expect(model.entityFieldAnchorPoint(domain, entity, 'gone', 'left', false, false)).toBeNull();
       expect(model.entityFieldAnchorPoint(domain, entity, 'id', 'left', true, false)).toBeNull();
-      expect(model.entityFieldAnchorPoint(domain, { ...entity, fields: null }, 'id', 'left', false, false))
-        .toBeNull();
+      expect(
+        model.entityFieldAnchorPoint(
+          domain,
+          { ...entity, fields: null },
+          'id',
+          'left',
+          false,
+          false
+        )
+      ).toBeNull();
     });
 
     it('picks the side of the target that faces the origin', () => {
@@ -528,9 +631,15 @@ describe('model queries (JUM-469)', () => {
       const from = { x: 1, y: 2 };
       const to = { x: 100, y: 200 };
       expect(model.buildEdgePathD(from, to, 50, 100, false)).toBe('M 1 2 C 50 2, 50 200, 100 200');
-      expect(model.buildEdgePathD(from, to, 50, 100, true)).toBe('M 1 2 L 50 2 L 50 100 L 50 200 L 100 200');
-      expect(model.buildPreviewEdgePathD(from, to, false)).toBe('M 1 2 C 50.5 2, 50.5 200, 100 200');
-      expect(model.buildPreviewEdgePathD(from, to, true)).toBe('M 1 2 L 50.5 2 L 50.5 200 L 100 200');
+      expect(model.buildEdgePathD(from, to, 50, 100, true)).toBe(
+        'M 1 2 L 50 2 L 50 100 L 50 200 L 100 200'
+      );
+      expect(model.buildPreviewEdgePathD(from, to, false)).toBe(
+        'M 1 2 C 50.5 2, 50.5 200, 100 200'
+      );
+      expect(model.buildPreviewEdgePathD(from, to, true)).toBe(
+        'M 1 2 L 50.5 2 L 50.5 200 L 100 200'
+      );
     });
 
     it('allows entities to move freely outside the domain origin without snapping back', () => {
@@ -544,10 +653,12 @@ describe('model queries (JUM-469)', () => {
         ]
       };
 
-      expect(model.clampEntityPosition(domain, -1600, -320, domain.entities[0], false, false))
-        .toMatchObject({ x: -1600, y: -320 });
-      expect(model.minimumDomainSize(domain).width)
-        .toBeGreaterThanOrEqual(340 - (-120) + model.entityWidth(domain.entities[1]) + 16);
+      expect(
+        model.clampEntityPosition(domain, -1600, -320, domain.entities[0], false, false)
+      ).toMatchObject({ x: -1600, y: -320 });
+      expect(model.minimumDomainSize(domain).width).toBeGreaterThanOrEqual(
+        340 - -120 + model.entityWidth(domain.entities[1]) + 16
+      );
     });
 
     it('computes fit-view zoom and scroll for the empty and populated canvas', () => {
@@ -558,7 +669,10 @@ describe('model queries (JUM-469)', () => {
       expect(fit.zoom).toBe(1);
       expect(fit.left).toBe(0);
       expect(fit.top).toBe(0);
-      const spread = [{ x: 0, y: 0 }, { x: 5000, y: 4000 }];
+      const spread = [
+        { x: 0, y: 0 },
+        { x: 5000, y: 4000 }
+      ];
       const clamped = model.computeFitView(spread, 800, 600);
       expect(clamped.zoom).toBe(0.25);
       expect(clamped.left).toBe(0);
@@ -572,7 +686,7 @@ describe('model queries (JUM-469)', () => {
 
     it('packs fifteen domains densely enough for overview fit', () => {
       expect.hasAssertions();
-      const domains: Array<Record<string, any>> = Array.from({ length: 15 }, (_, index) => ({
+      const domains: Record<string, any>[] = Array.from({ length: 15 }, (_, index) => ({
         id: `domain-${index}`,
         name: `Domain ${index}`,
         entities: [
@@ -596,7 +710,7 @@ describe('model queries (JUM-469)', () => {
       // `applyAutoLayout` writes `width` and `height` onto each domain, so the
       // fixture declares them: without it the literal's inferred type has no
       // such properties and the suite does not compile.
-      const domains: Array<Record<string, any>> = [
+      const domains: Record<string, any>[] = [
         {
           x: 0,
           y: 0,
@@ -623,15 +737,19 @@ describe('model queries (JUM-469)', () => {
 
     it('spaces entities evenly inside the domain without overlap', () => {
       expect.hasAssertions();
-      const domains: Array<Record<string, any>> = [{
-        x: 0,
-        y: 0,
-        entities: Array.from({ length: 5 }, (_, index) => ({
+      const domains: Record<string, any>[] = [
+        {
           x: 0,
           y: 0,
-          fields: Array.from({ length: index + 1 }, (__, fieldIndex) => ({ name: `f${fieldIndex}` }))
-        }))
-      }];
+          entities: Array.from({ length: 5 }, (_, index) => ({
+            x: 0,
+            y: 0,
+            fields: Array.from({ length: index + 1 }, (__, fieldIndex) => ({
+              name: `f${fieldIndex}`
+            }))
+          }))
+        }
+      ];
 
       model.applyAutoLayout(domains);
 
@@ -663,11 +781,13 @@ describe('model queries (JUM-469)', () => {
       const manyFields = Array.from({ length: 8 }, (_, index) => ({ name: `f${String(index)}` }));
       const tall = { x: 0, y: 0, fields: manyFields };
       const short = { x: 0, y: 0, fields: [{ name: 'id' }] };
-      const domains: Array<Record<string, any>> = [{
-        x: 0,
-        y: 0,
-        entities: [tall, short, { x: 0, y: 0, fields: [{ name: 'id' }] }]
-      }];
+      const domains: Record<string, any>[] = [
+        {
+          x: 0,
+          y: 0,
+          entities: [tall, short, { x: 0, y: 0, fields: [{ name: 'id' }] }]
+        }
+      ];
 
       model.applyAutoLayout(domains);
 

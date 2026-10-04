@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires, jest/no-conditional-in-test */
+/* eslint-disable jest/no-conditional-in-test */
 import path from 'node:path';
 
 const {
@@ -44,16 +44,18 @@ describe('run-service-management-integration', () => {
     expect.hasAssertions();
     const spawn = jest.fn().mockReturnValue({ status: 0 });
 
-    expect(runServiceManagementIntegration({
-      root: '/workspace',
-      exists: (candidate: string) => [
-        `/workspace/${CANDIDATE_TEST_DIRS[0]}`,
-        `/workspace/${CANDIDATE_TEST_DIRS[1]}`
-      ].includes(candidate),
-      discover: oneTestFile,
-      spawn,
-      logger: { log: jest.fn(), error: jest.fn() }
-    })).toBe(0);
+    expect(
+      runServiceManagementIntegration({
+        root: '/workspace',
+        exists: (candidate: string) =>
+          [`/workspace/${CANDIDATE_TEST_DIRS[0]}`, `/workspace/${CANDIDATE_TEST_DIRS[1]}`].includes(
+            candidate
+          ),
+        discover: oneTestFile,
+        spawn,
+        logger: { log: jest.fn(), error: jest.fn() }
+      })
+    ).toBe(0);
     expect(spawn.mock.calls[0][1].slice(0, 2)).toStrictEqual([
       CANDIDATE_TEST_DIRS[0],
       CANDIDATE_TEST_DIRS[1]
@@ -67,22 +69,26 @@ describe('run-service-management-integration', () => {
       error: jest.fn()
     };
 
-    expect(runServiceManagementIntegration({
-      root: '/workspace',
-      exists: () => false,
-      logger
-    })).toBe(1);
+    expect(
+      runServiceManagementIntegration({
+        root: '/workspace',
+        exists: () => false,
+        logger
+      })
+    ).toBe(1);
     expect(logger.error).toHaveBeenCalledWith(
       '[ci] service-management integration: no test directories found.'
     );
 
-    expect(runServiceManagementIntegration({
-      root: '/workspace',
-      exists: () => true,
-      discover: oneTestFile,
-      spawn: jest.fn().mockReturnValue({ status: null }),
-      logger
-    })).toBe(1);
+    expect(
+      runServiceManagementIntegration({
+        root: '/workspace',
+        exists: () => true,
+        discover: oneTestFile,
+        spawn: jest.fn().mockReturnValue({ status: null }),
+        logger
+      })
+    ).toBe(1);
   });
 
   it('fails closed when the target directory contains zero test files (JUM-557)', () => {
@@ -114,11 +120,13 @@ describe('run-service-management-integration', () => {
     try {
       // root '' is falsy, so the runner resolves against process.cwd(); the
       // injected exists denies everything under /workspace either way.
-      expect(runServiceManagementIntegration({
-        root: '',
-        exists: () => false,
-        logger: undefined
-      })).toBe(1);
+      expect(
+        runServiceManagementIntegration({
+          root: '',
+          exists: () => false,
+          logger: undefined
+        })
+      ).toBe(1);
       // Omitting exists exercises the real fs.existsSync default against a
       // nonexistent workspace root, exiting before any spawn.
       expect(runServiceManagementIntegration({ root: '/workspace' })).toBe(1);
@@ -129,12 +137,13 @@ describe('run-service-management-integration', () => {
 
   it('defaults NODE_ENV to dev and tolerates a missing PATH when spawning jest', () => {
     expect.hasAssertions();
-    const NODE_ENV_KEY: string = 'NODE_ENV';
-    const PATH_KEY: string = 'PATH';
-    const originalNodeEnv = process.env[NODE_ENV_KEY];
-    const originalPath = process.env[PATH_KEY];
-    delete process.env[NODE_ENV_KEY];
-    delete process.env[PATH_KEY];
+    const NODE_ENV_KEY = 'NODE_ENV';
+    const PATH_KEY = 'PATH';
+    const env = process.env as Record<string, string | undefined>;
+    const originalNodeEnv = env[NODE_ENV_KEY];
+    const originalPath = env[PATH_KEY];
+    delete env[NODE_ENV_KEY];
+    delete env[PATH_KEY];
     try {
       const spawn = jest.fn().mockReturnValue({ status: 0 });
       const status = runServiceManagementIntegration({
@@ -147,22 +156,25 @@ describe('run-service-management-integration', () => {
       expect(status).toBe(0);
       const spawnEnv = spawn.mock.calls[0][2].env;
       expect(spawnEnv.NODE_ENV).toBe('dev');
-      expect(spawnEnv.PATH.startsWith(`${path.join('/workspace', 'node_modules', '.bin')}${path.delimiter}`))
-        .toBe(true);
+      expect(
+        spawnEnv.PATH.startsWith(
+          `${path.join('/workspace', 'node_modules', '.bin')}${path.delimiter}`
+        )
+      ).toBe(true);
       expect(spawnEnv.PATH.endsWith(path.delimiter)).toBe(true);
     } finally {
-      if (originalNodeEnv === undefined) delete process.env[NODE_ENV_KEY];
-      else process.env[NODE_ENV_KEY] = originalNodeEnv;
-      if (originalPath === undefined) delete process.env[PATH_KEY];
-      else process.env[PATH_KEY] = originalPath;
+      if (originalNodeEnv === undefined) delete env[NODE_ENV_KEY];
+      else env[NODE_ENV_KEY] = originalNodeEnv;
+      if (originalPath === undefined) delete env[PATH_KEY];
+      else env[PATH_KEY] = originalPath;
     }
   });
 
   it('discovers real test files on disk and ignores helper modules', () => {
     expect.hasAssertions();
-    const fs = require('fs');
-    const os = require('os');
-    const nodePath = require('path');
+    const fs = require('node:fs');
+    const os = require('node:os');
+    const nodePath = require('node:path');
 
     const dir = fs.mkdtempSync(nodePath.join(os.tmpdir(), 'sm-discovery-'));
     try {
@@ -172,7 +184,9 @@ describe('run-service-management-integration', () => {
       fs.mkdirSync(nodePath.join(dir, 'nested'));
       fs.writeFileSync(nodePath.join(dir, 'nested', 'c.test.ts'), 'it("c", () => {});');
 
-      const found = discoverTestFiles(dir).map((entry: string) => nodePath.basename(entry)).sort();
+      const found = discoverTestFiles(dir)
+        .map((entry: string) => nodePath.basename(entry))
+        .sort();
       expect(found).toStrictEqual(['a.test.ts', 'b.spec.js', 'c.test.ts']);
       expect(discoverTestFiles(nodePath.join(dir, 'missing'))).toStrictEqual([]);
     } finally {

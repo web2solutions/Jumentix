@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jest/no-untyped-mock-factory */
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable jest/max-expects */
 /* eslint-disable jest/prefer-spy-on */
 
@@ -37,6 +34,13 @@ jest.mock('@grpc/proto-loader', () => ({
   }
 }));
 
+const requireRegistered = <T>(handler: T | undefined, event: string): T => {
+  if (!handler) {
+    throw new Error(`Expected a ${event} stream handler to be registered.`);
+  }
+  return handler;
+};
+
 describe('grpc api', () => {
   const databaseClient = {
     connect: jest.fn().mockResolvedValue(undefined),
@@ -52,11 +56,9 @@ describe('grpc api', () => {
     keyValueStorageClient.connect.mockClear();
     keyValueStorageClient.disconnect.mockClear();
     grpcMockState.addService = jest.fn();
-    grpcMockState.bindAsync = jest.fn((
-      address: string,
-      credentials: unknown,
-      callback: Function
-    ) => callback());
+    grpcMockState.bindAsync = jest.fn((address: string, credentials: unknown, callback: Function) =>
+      callback()
+    );
     grpcMockState.start = jest.fn();
     grpcMockState.tryShutdown = jest.fn((callback: Function) => callback());
     grpcMockState.Server = jest.fn(() => ({
@@ -86,10 +88,7 @@ describe('grpc api', () => {
     await api.start();
     await api.stop();
 
-    expect(protoMockState.loadSync).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.any(Object)
-    );
+    expect(protoMockState.loadSync).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
     expect(grpcMockState.addService).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
     expect(grpcMockState.bindAsync).toHaveBeenCalledWith(
       expect.stringContaining('0.0.0.0'),
@@ -138,20 +137,30 @@ describe('grpc api', () => {
       write,
       end
     });
-    await streamHandlers.get('data')!({
+    const dataHandler = streamHandlers.get('data');
+    const endHandler = streamHandlers.get('end');
+    await requireRegistered(
+      dataHandler,
+      'data'
+    )({
       operationId: 'login',
       inputJson: '{"username":"john"}'
     });
-    streamHandlers.get('end')!();
+    requireRegistered(endHandler, 'end')();
 
-    expect(callback).toHaveBeenCalledWith(null, expect.objectContaining({
-      ok: true,
-      operationId: 'login'
-    }));
-    expect(write).toHaveBeenCalledWith(expect.objectContaining({
-      ok: true,
-      operationId: 'login'
-    }));
+    expect(callback).toHaveBeenCalledWith(
+      null,
+      expect.objectContaining({
+        ok: true,
+        operationId: 'login'
+      })
+    );
+    expect(write).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ok: true,
+        operationId: 'login'
+      })
+    );
     expect(end).toHaveBeenCalledWith();
   });
 
@@ -162,13 +171,11 @@ describe('grpc api', () => {
       keyValueStorageClient,
       specDir: './spec/asyncapi'
     });
-    const executeOperation = jest
-      .spyOn(api as any, 'executeOperation')
-      .mockResolvedValue({
-        ok: true,
-        operationId: 'login',
-        result: { token: 'abc' }
-      });
+    const executeOperation = jest.spyOn(api as any, 'executeOperation').mockResolvedValue({
+      ok: true,
+      operationId: 'login',
+      result: { token: 'abc' }
+    });
 
     await api.start();
     await api.start();
@@ -185,9 +192,11 @@ describe('grpc api', () => {
       callback
     );
 
-    expect(executeOperation).toHaveBeenCalledWith(expect.objectContaining({
-      input: {}
-    }));
+    expect(executeOperation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: {}
+      })
+    );
 
     await api.stop();
     await api.stop();
@@ -198,11 +207,9 @@ describe('grpc api', () => {
 
   it('rejects startup when grpc bindAsync returns an error', async () => {
     expect.hasAssertions();
-    grpcMockState.bindAsync = jest.fn((
-      address: string,
-      credentials: unknown,
-      callback: Function
-    ) => callback(new Error('bind failed')));
+    grpcMockState.bindAsync = jest.fn((address: string, credentials: unknown, callback: Function) =>
+      callback(new Error('bind failed'))
+    );
     grpcMockState.Server = jest.fn(() => ({
       addService: grpcMockState.addService,
       bindAsync: grpcMockState.bindAsync,
@@ -218,9 +225,17 @@ describe('grpc api', () => {
   });
 
   it.each([
-    ['a namespace whose default holds the exports', { default: { loadSync: 'real' } }, { loadSync: 'real' }],
+    [
+      'a namespace whose default holds the exports',
+      { default: { loadSync: 'real' } },
+      { loadSync: 'real' }
+    ],
     ['a namespace that is the exports', { loadSync: 'real' }, { loadSync: 'real' }],
-    ['a namespace with an undefined default', { default: undefined, loadSync: 'real' }, { default: undefined, loadSync: 'real' }]
+    [
+      'a namespace with an undefined default',
+      { default: undefined, loadSync: 'real' },
+      { default: undefined, loadSync: 'real' }
+    ]
   ])('unwraps %s', (_case, namespace, expected) => {
     expect.hasAssertions();
     // `@grpc/grpc-js` and `@grpc/proto-loader` are CommonJS, and interop hands

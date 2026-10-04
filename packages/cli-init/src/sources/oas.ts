@@ -1,10 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { parse as parseYaml } from 'yaml';
-import type { GenerationPlan } from './types';
+
+import SOURCE_MESSAGES from './messages';
+import { buildPlanFromOasDocument } from './planBuilder';
 import { SourceResolutionError } from './types';
-import { SOURCE_MESSAGES } from './messages';
-import { buildPlanFromOasDocument, type InterfaceDefaults } from './planBuilder';
+
+import type { InterfaceDefaults } from './planBuilder';
+import type { GenerationPlan } from './types';
 
 export function isHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value.trim());
@@ -21,9 +25,7 @@ export function parseDocumentText(raw: string, hintPath = ''): Record<string, un
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       const where = hintPath ? ` in ${hintPath}` : '';
-      throw new SourceResolutionError(
-        `Source resolution failed: invalid JSON${where}: ${detail}`
-      );
+      throw new SourceResolutionError(`Source resolution failed: invalid JSON${where}: ${detail}`);
     }
   }
   try {
@@ -31,9 +33,7 @@ export function parseDocumentText(raw: string, hintPath = ''): Record<string, un
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     const where = hintPath ? ` in ${hintPath}` : '';
-    throw new SourceResolutionError(
-      `Source resolution failed: invalid YAML${where}: ${detail}`
-    );
+    throw new SourceResolutionError(`Source resolution failed: invalid YAML${where}: ${detail}`);
   }
 }
 

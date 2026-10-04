@@ -1,42 +1,42 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, jest/max-expects,
+/* eslint-disable jest/max-expects,
   jest/no-conditional-in-test */
 
 import { ValidationError } from '@src/infra/exceptions';
-import type { EndPointFactory } from '@src/interface/HTTP/ports';
-
+import create from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/create';
+import createDocument from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createDocument';
+import createEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createEmail';
+import createOrganization from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createOrganization';
+import createOrganizationAddress from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createOrganizationAddress';
+import createOrganizationEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createOrganizationEmail';
+import createOrganizationPhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createOrganizationPhone';
+import createPhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createPhone';
+import deleteDocument from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteDocument';
+import deleteEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteEmail';
+import deleteOne from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOne';
+import deleteOrganization from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOrganization';
+import deleteOrganizationAddress from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOrganizationAddress';
+import deleteOrganizationEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOrganizationEmail';
+import deleteOrganizationPhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOrganizationPhone';
+import deletePhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deletePhone';
+import getAll from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/getAll';
+import getAllOrganizations from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/getAllOrganizations';
+import getOneById from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/getOneById';
+import getOrganizationById from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/getOrganizationById';
 import login from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/login';
 import logout from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/logout';
 import register from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/register';
-import updateUserPassword from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateUserPassword';
-import getAll from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/getAll';
-import create from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/create';
 import update from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/update';
-import deleteOne from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOne';
-import getOneById from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/getOneById';
-import updatePassword from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updatePassword';
-import createEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createEmail';
-import updateEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateEmail';
-import deleteEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteEmail';
-import createPhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createPhone';
-import updatePhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updatePhone';
-import deletePhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deletePhone';
-import createOrganization from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createOrganization';
-import getAllOrganizations from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/getAllOrganizations';
-import getOrganizationById from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/getOrganizationById';
-import updateOrganization from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateOrganization';
-import deleteOrganization from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOrganization';
-import createDocument from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createDocument';
-import deleteDocument from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteDocument';
 import updateDocument from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateDocument';
+import updateEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateEmail';
+import updateOrganization from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateOrganization';
 import updateOrganizationAddress from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateOrganizationAddress';
-import createOrganizationEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createOrganizationEmail';
 import updateOrganizationEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateOrganizationEmail';
-import deleteOrganizationEmail from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOrganizationEmail';
-import createOrganizationPhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createOrganizationPhone';
 import updateOrganizationPhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateOrganizationPhone';
-import deleteOrganizationPhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOrganizationPhone';
-import createOrganizationAddress from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/createOrganizationAddress';
-import deleteOrganizationAddress from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/deleteOrganizationAddress';
+import updatePassword from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updatePassword';
+import updatePhone from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updatePhone';
+import updateUserPassword from '@src/modules/Users/interface/restapi/frameworks/derby-js/handlers/updateUserPassword';
+
+import type { EndPointFactory } from '@src/interface/HTTP/ports';
 
 /**
  * The derby-js REST handlers, driven as the derby adapter drives them.
@@ -68,7 +68,7 @@ const makeReq = (overrides: Record<string, any> = {}): any => ({
   ...overrides
 });
 
-type HandlerCase = {
+interface HandlerCase {
   name: string;
   factory: EndPointFactory;
   method: string;
@@ -82,7 +82,7 @@ type HandlerCase = {
   expectedBody?: (result: any) => any;
   readsAuth: boolean;
   authEnforced?: boolean;
-};
+}
 
 const withBody = { input: { name: 'payload' } };
 const withParams = { params: { id: 'user-1' } };
@@ -377,7 +377,8 @@ describe('derby-js restapi handlers', () => {
 
         const controller = {
           [entry.controllerMethod]: jest.fn().mockResolvedValue({
-            result: entry.result, ...PAGING
+            result: entry.result,
+            ...PAGING
           })
         };
         const endpoint = entry.factory({ endPointConfig: SCHEMA_OAS, controller } as any);
@@ -388,9 +389,7 @@ describe('derby-js restapi handlers', () => {
         const res = makeRes();
         await endpoint.handler(entry.req(), res);
 
-        const expected = entry.expectedBody
-          ? entry.expectedBody(entry.result)
-          : entry.result;
+        const expected = entry.expectedBody ? entry.expectedBody(entry.result) : entry.result;
         expect(res.status).toHaveBeenCalledWith(entry.status);
         expect(res.json).toHaveBeenCalledWith(expected);
 
@@ -407,7 +406,8 @@ describe('derby-js restapi handlers', () => {
           // rejected before the use case runs, and the handler maps it.
           const controller = {
             [entry.controllerMethod]: jest.fn().mockResolvedValue({
-              result: entry.result, ...PAGING
+              result: entry.result,
+              ...PAGING
             })
           };
           const endpoint = entry.factory({ endPointConfig: SCHEMA_OAS, controller } as any);
@@ -417,9 +417,11 @@ describe('derby-js restapi handlers', () => {
 
           expect(controller[entry.controllerMethod]).not.toHaveBeenCalled();
           expect(res.status).toHaveBeenCalledWith(400);
-          expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-            message: expect.stringContaining('authorization can not be empty')
-          }));
+          expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({
+              message: expect.stringContaining('authorization can not be empty')
+            })
+          );
         });
       }
 
@@ -429,7 +431,8 @@ describe('derby-js restapi handlers', () => {
 
           const controller = {
             [entry.controllerMethod]: jest.fn().mockResolvedValue({
-              result: entry.result, ...PAGING
+              result: entry.result,
+              ...PAGING
             })
           };
           const endpoint = entry.factory({ endPointConfig: SCHEMA_OAS, controller } as any);
@@ -457,16 +460,23 @@ describe('derby-js restapi handlers', () => {
         await endpoint.handler(entry.req(), res);
 
         expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-          message: expect.stringContaining('invalid payload')
-        }));
+        expect(res.json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: expect.stringContaining('invalid payload')
+          })
+        );
       });
     }
   );
 
   describe.each([
     ['getAll', getAll, 'getAll', 'UserGetAllRequestEvent'],
-    ['getAllOrganizations', getAllOrganizations, 'getAllOrganizations', 'OrganizationGetAllRequestEvent']
+    [
+      'getAllOrganizations',
+      getAllOrganizations,
+      'getAllOrganizations',
+      'OrganizationGetAllRequestEvent'
+    ]
   ] as const)('%s pagination', (_name, factory, controllerMethod, eventType) => {
     it('defaults the page to 1 and keeps explicit paging and filters', async () => {
       expect.hasAssertions();
@@ -554,9 +564,11 @@ describe('derby-js restapi handlers', () => {
       await endpoint.handler(makeReq(), res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.stringContaining('document refused')
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('document refused')
+        })
+      );
     });
 
     it('maps an unexpected failure without a known code to HTTP 500', async () => {
@@ -571,9 +583,11 @@ describe('derby-js restapi handlers', () => {
       await endpoint.handler(makeReq(), res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.any(String)
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.any(String)
+        })
+      );
     });
 
     it('builds the update-document endpoint with its configured route', async () => {
@@ -588,10 +602,7 @@ describe('derby-js restapi handlers', () => {
       expect(endpoint.path).toBe('/users/{id}/updateDocument/{documentId}');
 
       const res = makeRes();
-      await endpoint.handler(
-        makeReq({ params: { id: 'user-1', documentId: 'doc-1' } }),
-        res
-      );
+      await endpoint.handler(makeReq({ params: { id: 'user-1', documentId: 'doc-1' } }), res);
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ id: 'doc-1' });
@@ -620,9 +631,11 @@ describe('derby-js restapi handlers', () => {
 
       expect(controller.createDocument).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.stringContaining('can not be empty')
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('can not be empty')
+        })
+      );
     });
   });
 
@@ -691,9 +704,11 @@ describe('derby-js restapi handlers', () => {
       await endpoint.handler(makeReq({ params: { id: 'org-1' } }), res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.stringContaining('address refused')
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('address refused')
+        })
+      );
     });
 
     it('maps an unexpected failure without a known code to HTTP 500', async () => {
@@ -710,9 +725,11 @@ describe('derby-js restapi handlers', () => {
       await endpoint.handler(makeReq({ params: { id: 'org-1' } }), res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.any(String)
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.any(String)
+        })
+      );
     });
 
     it('rejects sub-resource requests without params or headers through event validation', async () => {
@@ -728,35 +745,86 @@ describe('derby-js restapi handlers', () => {
 
       expect(controller.deleteOrganizationAddress).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.stringContaining('can not be empty')
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('can not be empty')
+        })
+      );
     });
   });
 
   describe('organization email/phone sub-resource wrappers', () => {
     const SUBRESOURCE_WRAPPERS = [
-      ['updateOrganizationAddress', updateOrganizationAddress, 'put',
-        '/organizations/{id}/updateAddress/{addressId}', 200, 'OrganizationAddressUpdateRequestEvent',
-        { id: 'org-1', addressId: 'addr-1' }, { street: 'main' }],
-      ['createOrganizationEmail', createOrganizationEmail, 'post',
-        '/organizations/{id}/createEmail', 201, 'OrganizationEmailCreateRequestEvent',
-        { id: 'org-1' }, { email: 'ops@example.com' }],
-      ['updateOrganizationEmail', updateOrganizationEmail, 'put',
-        '/organizations/{id}/updateEmail/{emailId}', 200, 'OrganizationEmailUpdateRequestEvent',
-        { id: 'org-1', emailId: 'email-1' }, { email: 'ops@example.com' }],
-      ['deleteOrganizationEmail', deleteOrganizationEmail, 'delete',
-        '/organizations/{id}/deleteEmail/{emailId}', 200, 'OrganizationEmailDeleteRequestEvent',
-        { id: 'org-1', emailId: 'email-1' }, undefined],
-      ['createOrganizationPhone', createOrganizationPhone, 'post',
-        '/organizations/{id}/createPhone', 201, 'OrganizationPhoneCreateRequestEvent',
-        { id: 'org-1' }, { number: '999' }],
-      ['updateOrganizationPhone', updateOrganizationPhone, 'put',
-        '/organizations/{id}/updatePhone/{phoneId}', 200, 'OrganizationPhoneUpdateRequestEvent',
-        { id: 'org-1', phoneId: 'phone-1' }, { number: '999' }],
-      ['deleteOrganizationPhone', deleteOrganizationPhone, 'delete',
-        '/organizations/{id}/deletePhone/{phoneId}', 200, 'OrganizationPhoneDeleteRequestEvent',
-        { id: 'org-1', phoneId: 'phone-1' }, undefined]
+      [
+        'updateOrganizationAddress',
+        updateOrganizationAddress,
+        'put',
+        '/organizations/{id}/updateAddress/{addressId}',
+        200,
+        'OrganizationAddressUpdateRequestEvent',
+        { id: 'org-1', addressId: 'addr-1' },
+        { street: 'main' }
+      ],
+      [
+        'createOrganizationEmail',
+        createOrganizationEmail,
+        'post',
+        '/organizations/{id}/createEmail',
+        201,
+        'OrganizationEmailCreateRequestEvent',
+        { id: 'org-1' },
+        { email: 'ops@example.com' }
+      ],
+      [
+        'updateOrganizationEmail',
+        updateOrganizationEmail,
+        'put',
+        '/organizations/{id}/updateEmail/{emailId}',
+        200,
+        'OrganizationEmailUpdateRequestEvent',
+        { id: 'org-1', emailId: 'email-1' },
+        { email: 'ops@example.com' }
+      ],
+      [
+        'deleteOrganizationEmail',
+        deleteOrganizationEmail,
+        'delete',
+        '/organizations/{id}/deleteEmail/{emailId}',
+        200,
+        'OrganizationEmailDeleteRequestEvent',
+        { id: 'org-1', emailId: 'email-1' },
+        undefined
+      ],
+      [
+        'createOrganizationPhone',
+        createOrganizationPhone,
+        'post',
+        '/organizations/{id}/createPhone',
+        201,
+        'OrganizationPhoneCreateRequestEvent',
+        { id: 'org-1' },
+        { number: '999' }
+      ],
+      [
+        'updateOrganizationPhone',
+        updateOrganizationPhone,
+        'put',
+        '/organizations/{id}/updatePhone/{phoneId}',
+        200,
+        'OrganizationPhoneUpdateRequestEvent',
+        { id: 'org-1', phoneId: 'phone-1' },
+        { number: '999' }
+      ],
+      [
+        'deleteOrganizationPhone',
+        deleteOrganizationPhone,
+        'delete',
+        '/organizations/{id}/deletePhone/{phoneId}',
+        200,
+        'OrganizationPhoneDeleteRequestEvent',
+        { id: 'org-1', phoneId: 'phone-1' },
+        undefined
+      ]
     ] as const;
 
     it.each(SUBRESOURCE_WRAPPERS)(

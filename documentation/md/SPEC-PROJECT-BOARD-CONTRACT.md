@@ -52,11 +52,11 @@ Strategic stream labels are additive (for example `todo-mvp`, `epic`, `iteration
    when available.
 9. Milestone association must use Linear Issue and Project milestone metadata.
 10. Tasks are grouped by primary nature inside the epic. Supporting work with a different nature
-   is tracked as a separate child task under the same cohesive outcome.
+    is tracked as a separate child task under the same cohesive outcome.
 11. Epic planning defines milestone, priority, scope boundaries, dates, estimate, owner, and
     agent delegation.
 12. Child tasks retain independent estimates of no more than eight points, assignees, branches,
-   commits, pull requests, and evidence.
+    commits, pull requests, and evidence.
 13. An epic is complete only when its required child tasks and audit evidence are complete.
 14. A milestone closes only after its epics complete or incomplete work is formally carried to
     another open milestone.

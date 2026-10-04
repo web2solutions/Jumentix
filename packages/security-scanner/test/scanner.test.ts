@@ -1,14 +1,17 @@
 import http from 'node:http';
-import type { AddressInfo } from 'node:net';
+
 import {
   ACCEPTED_RISK,
-  FATAL_SEVERITIES,
-  NON_BLOCKING_SEVERITIES,
   evaluatePackages,
+  FATAL_SEVERITIES,
   isAcceptedRisk,
+  NON_BLOCKING_SEVERITIES,
   scanner,
   severityOf
 } from '../src/index.js';
+
+import type { AddressInfo } from 'node:net';
+
 import type { IAdvisory, IOsvVulnerability } from '../src/index.js';
 
 /**
@@ -29,7 +32,9 @@ import type { IAdvisory, IOsvVulnerability } from '../src/index.js';
  * body behave here as they would against OSV.
  */
 
-type OsvBatchResponse = { results?: Array<{ vulns?: Array<{ id?: string }> }> };
+interface OsvBatchResponse {
+  results?: { vulns?: { id?: string }[] }[];
+}
 
 const pkg = (name: string, version = '1.0.0') => ({ name, version });
 
@@ -41,9 +46,11 @@ const vulnerability = (severity: string, over: IOsvVulnerability = {}): IOsvVuln
 });
 
 /** Answers the batch lookup with the given ids for the first package. */
-const batchReturning = (...ids: string[]) => async (): Promise<OsvBatchResponse> => ({
-  results: [{ vulns: ids.map((id) => ({ id })) }]
-});
+const batchReturning =
+  (...ids: string[]) =>
+  async (): Promise<OsvBatchResponse> => ({
+    results: [{ vulns: ids.map((id) => ({ id })) }]
+  });
 
 describe('severity mapping', () => {
   it.each([
@@ -188,7 +195,10 @@ describe('evaluating a package set', () => {
 
     let asked = 0;
     const advisories = await evaluatePackages([], {
-      batch: async () => { asked += 1; return {}; }
+      batch: async () => {
+        asked += 1;
+        return {};
+      }
     });
 
     expect(advisories).toStrictEqual([]);
@@ -207,7 +217,10 @@ describe('evaluating a package set', () => {
     ] as never;
 
     const advisories = await evaluatePackages(incomplete, {
-      batch: async () => { asked += 1; return {}; }
+      batch: async () => {
+        asked += 1;
+        return {};
+      }
     });
 
     expect(advisories).toStrictEqual([]);
@@ -219,7 +232,10 @@ describe('evaluating a package set', () => {
 
     let asked: unknown;
     await evaluatePackages([pkg('left-pad', '1.3.0')], {
-      batch: async (queries) => { asked = queries; return { results: [{}] }; }
+      batch: async (queries) => {
+        asked = queries;
+        return { results: [{}] };
+      }
     });
 
     expect(asked).toStrictEqual([
@@ -235,12 +251,14 @@ describe('evaluating a package set', () => {
       detail: async () => vulnerability('CRITICAL', { summary: 'remote code execution' })
     });
 
-    expect(advisories).toStrictEqual([{
-      level: 'fatal',
-      package: 'left-pad@1.0.0',
-      url: 'https://osv.dev/vulnerability/GHSA-aaaa-bbbb-cccc',
-      description: 'CRITICAL: remote code execution'
-    }]);
+    expect(advisories).toStrictEqual([
+      {
+        level: 'fatal',
+        package: 'left-pad@1.0.0',
+        url: 'https://osv.dev/vulnerability/GHSA-aaaa-bbbb-cccc',
+        description: 'CRITICAL: remote code execution'
+      }
+    ]);
   });
 
   it('reports a moderate advisory as warn', async () => {
@@ -311,7 +329,10 @@ describe('evaluating a package set', () => {
       batch: async (queries) => ({
         results: queries.map(() => ({ vulns: [{ id: 'GHSA-shared' }] }))
       }),
-      detail: async (id) => { fetched.push(id); return vulnerability('HIGH'); }
+      detail: async (id) => {
+        fetched.push(id);
+        return vulnerability('HIGH');
+      }
     });
 
     // Two packages, one advisory, one request. The cache is what keeps the
@@ -356,7 +377,10 @@ describe('evaluating a package set', () => {
     let fetched = 0;
     const advisories = await evaluatePackages([pkg('a')], {
       batch: async () => ({ results: [{ vulns: [] }] }),
-      detail: async () => { fetched += 1; return vulnerability('HIGH'); }
+      detail: async () => {
+        fetched += 1;
+        return vulnerability('HIGH');
+      }
     });
 
     expect(advisories).toStrictEqual([]);
@@ -381,25 +405,34 @@ describe('refusing to guess', () => {
   ])('refuses a batch response with %s', async (_case: string, payload: unknown) => {
     expect.hasAssertions();
 
-    await expect(evaluatePackages([pkg('a')], { batch: async () => payload as never }))
-      .rejects.toThrow('refusing to treat an unverifiable result as clean');
+    await expect(
+      evaluatePackages([pkg('a')], { batch: async () => payload as never })
+    ).rejects.toThrow('refusing to treat an unverifiable result as clean');
   });
 
   it('lets a network failure through rather than reporting clean', async () => {
     expect.hasAssertions();
 
-    await expect(evaluatePackages([pkg('a')], {
-      batch: async () => { throw new Error('getaddrinfo ENOTFOUND api.osv.dev'); }
-    })).rejects.toThrow('ENOTFOUND');
+    await expect(
+      evaluatePackages([pkg('a')], {
+        batch: async () => {
+          throw new Error('getaddrinfo ENOTFOUND api.osv.dev');
+        }
+      })
+    ).rejects.toThrow('ENOTFOUND');
   });
 
   it('lets a failure fetching an advisory through', async () => {
     expect.hasAssertions();
 
-    await expect(evaluatePackages([pkg('a')], {
-      batch: batchReturning('GHSA-aaaa-bbbb-cccc'),
-      detail: async () => { throw new Error('HTTP 503'); }
-    })).rejects.toThrow('HTTP 503');
+    await expect(
+      evaluatePackages([pkg('a')], {
+        batch: batchReturning('GHSA-aaaa-bbbb-cccc'),
+        detail: async () => {
+          throw new Error('HTTP 503');
+        }
+      })
+    ).rejects.toThrow('HTTP 503');
   });
 });
 
@@ -423,7 +456,10 @@ describe('the Bun scanner contract', () => {
  * this repository's runners unlike module substitution (JUM-583). Everything
  * past that point is real: a real request, a real status line, a real body.
  */
-type TReply = { status: number; body: string };
+interface TReply {
+  status: number;
+  body: string;
+}
 
 const ok = (payload: unknown): TReply => ({ status: 200, body: JSON.stringify(payload) });
 const failing = (status: number): TReply => ({ status, body: 'the server said no' });
@@ -448,19 +484,21 @@ describe('the OSV transport', () => {
       response.end(body);
     });
 
-    await new Promise<void>((resolve) => { server.listen(0, '127.0.0.1', resolve); });
+    await new Promise<void>((resolve) => {
+      server.listen(0, '127.0.0.1', resolve);
+    });
     origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 
     originalFetch = globalThis.fetch;
-    globalThis.fetch = ((input: string, init?: RequestInit) => originalFetch(
-      String(input).replace('https://api.osv.dev', origin),
-      init
-    )) as typeof fetch;
+    globalThis.fetch = ((input: string, init?: RequestInit) =>
+      originalFetch(String(input).replace('https://api.osv.dev', origin), init)) as typeof fetch;
   });
 
   afterEach(async () => {
     globalThis.fetch = originalFetch;
-    await new Promise<void>((resolve) => { server.close(() => resolve()); });
+    await new Promise<void>((resolve) => {
+      server.close(() => resolve());
+    });
   });
 
   it('posts the batch query and reads the response back', async () => {
@@ -473,12 +511,14 @@ describe('the OSV transport', () => {
 
     const advisories = await evaluatePackages([pkg('left-pad')]);
 
-    expect(advisories).toStrictEqual([{
-      level: 'fatal',
-      package: 'left-pad@1.0.0',
-      url: 'https://osv.dev/vulnerability/GHSA-x',
-      description: 'HIGH: over the wire'
-    }]);
+    expect(advisories).toStrictEqual([
+      {
+        level: 'fatal',
+        package: 'left-pad@1.0.0',
+        url: 'https://osv.dev/vulnerability/GHSA-x',
+        description: 'HIGH: over the wire'
+      }
+    ]);
   });
 
   /**
@@ -491,8 +531,9 @@ describe('the OSV transport', () => {
 
     routes = { batch: failing(503), detail: failing(503) };
 
-    await expect(evaluatePackages([pkg('left-pad')]))
-      .rejects.toThrow(/OSV request failed: HTTP 503 .*querybatch/);
+    await expect(evaluatePackages([pkg('left-pad')])).rejects.toThrow(
+      /OSV request failed: HTTP 503 .*querybatch/
+    );
   });
 
   it('throws, naming the status, when an advisory lookup fails', async () => {
@@ -500,8 +541,9 @@ describe('the OSV transport', () => {
 
     routes = { batch: oneVulnerability('GHSA-x'), detail: failing(404) };
 
-    await expect(evaluatePackages([pkg('left-pad')]))
-      .rejects.toThrow(/OSV request failed: HTTP 404 .*vulns\/GHSA-x/);
+    await expect(evaluatePackages([pkg('left-pad')])).rejects.toThrow(
+      /OSV request failed: HTTP 404 .*vulns\/GHSA-x/
+    );
   });
 
   it('percent-encodes an advisory id into the lookup url', async () => {

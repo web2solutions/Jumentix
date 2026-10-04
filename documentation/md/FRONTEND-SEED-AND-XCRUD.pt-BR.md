@@ -8,7 +8,7 @@ The English version is at [FRONTEND-SEED-AND-XCRUD.md](./FRONTEND-SEED-AND-XCRUD
 ## O que é
 
 `apps/frontend` (`@jumentix/frontend`) é o **seed dos frontends que a fábrica Jumentix gera** —
-os modos *Hybrid Backend + Frontend* e *Frontend-only SPA/PWA* da
+os modos _Hybrid Backend + Frontend_ e _Frontend-only SPA/PWA_ da
 [Matriz de Capacidades da Fábrica](./JUMENTIX-SERVICE-FACTORY-CAPABILITIES-MATRIX.pt-BR.md). Está
 para os frontends como `apps/backend-template` está para os backends: um produto funcional sobre o
 domínio Users / Organizations que mostra o padrão que qualquer domínio gerado segue.
@@ -20,15 +20,15 @@ backend.
 
 ## Renderização dirigida pelo contrato
 
-| Superfície OAS | Módulo do frontend | Renderiza |
-| --- | --- | --- |
-| `components.schemas.*.properties` (+ `allOf`, `$ref`) | `contracts/formSchema.ts` | um `FieldDescriptor` por propriedade: formulários, colunas, filtros |
-| `x-label` (`{ en, pt-BR }`) → `title` → nome humanizado | `contracts/labels.ts` | todo rótulo; `description` vira texto de ajuda sob o controle |
-| `x-hide` | `formSchema.ts` | propriedade fica no contrato, nunca renderiza |
-| `x-relation` (`entity`, `match`, `display`, `kind`) | `XCrudReferenceInput`, `useXCrud.loadReferences` | selects de FK que mostram o label e emitem o id; lista via `<Entity>ArrayOf`; arrays de ids (membros) resolvidos igual |
-| `x-validation` | `contracts/validation.ts` | máscaras/checksums (CPF, SSN, telefones) antes de qualquer HTTP |
-| `x-list-capabilities` | `contracts/listSchema.ts` | paginação/ordenação/filtro/busca no servidor (abaixo) |
-| `info.x-rbac` + `security` por operação | `contracts/rbac.ts`, guards, `modules/nav.ts` | quais rotas, itens de menu e botões cada papel vê |
+| Superfície OAS                                          | Módulo do frontend                               | Renderiza                                                                                                              |
+| ------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `components.schemas.*.properties` (+ `allOf`, `$ref`)   | `contracts/formSchema.ts`                        | um `FieldDescriptor` por propriedade: formulários, colunas, filtros                                                    |
+| `x-label` (`{ en, pt-BR }`) → `title` → nome humanizado | `contracts/labels.ts`                            | todo rótulo; `description` vira texto de ajuda sob o controle                                                          |
+| `x-hide`                                                | `formSchema.ts`                                  | propriedade fica no contrato, nunca renderiza                                                                          |
+| `x-relation` (`entity`, `match`, `display`, `kind`)     | `XCrudReferenceInput`, `useXCrud.loadReferences` | selects de FK que mostram o label e emitem o id; lista via `<Entity>ArrayOf`; arrays de ids (membros) resolvidos igual |
+| `x-validation`                                          | `contracts/validation.ts`                        | máscaras/checksums (CPF, SSN, telefones) antes de qualquer HTTP                                                        |
+| `x-list-capabilities`                                   | `contracts/listSchema.ts`                        | paginação/ordenação/filtro/busca no servidor (abaixo)                                                                  |
+| `info.x-rbac` + `security` por operação                 | `contracts/rbac.ts`, guards, `modules/nav.ts`    | quais rotas, itens de menu e botões cada papel vê                                                                      |
 
 Os ids de operação do shell (login, register, logout, perfil) ficam em
 `contracts/appOperations.ts` e são validados no boot: um app gerado com operações renomeadas falha
@@ -78,7 +78,7 @@ dois locales declaram as mesmas chaves.
   substituído por stub — precisa de canvas real — e o harness diz isso.
 - `bun run test:coverage` + `bun run frontend:coverage:check` (raiz) — lcov do bun sobre `src/`
   com gate em linhas e funções (`apps/frontend/scripts/check-coverage.js`); fontes não tocadas contam
-  zero; branches aparecem como *não medidos* porque o Bun não emite registros de branch
+  zero; branches aparecem como _não medidos_ porque o Bun não emite registros de branch
   (Requisito `110` §2). O gate roda dentro do `ci:gate`; o lcov alimenta o Sonar.
 - `bun run test:e2e` — `scripts/run-e2e.mjs` constrói e sobe a REST API Express real em Docker
   (`e2e/docker-compose.yml`, imagem `oven/bun` a partir da raiz do monorepo, InMemory, com seeds),

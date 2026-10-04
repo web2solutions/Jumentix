@@ -18,13 +18,13 @@ Requisitos:
 
 `test-map.json` é a fonte de verdade:
 
-| Campo | Significado |
-| --- | --- |
-| `layers.*.dependsOn` | Dependências hexagonais para dentro |
-| `suites[].runner` | Runner **local** — sempre `bun` (Req 106) |
-| `suites[].ciRunner` | Runner opcional de CI (`node` quando o Jest ainda é necessário remotamente) |
-| `suites[].tier` | `gate` ou `nightly` |
-| `quarantine[]` | Exceções explícitas com issue Linear |
+| Campo                | Significado                                                                 |
+| -------------------- | --------------------------------------------------------------------------- |
+| `layers.*.dependsOn` | Dependências hexagonais para dentro                                         |
+| `suites[].runner`    | Runner **local** — sempre `bun` (Req 106)                                   |
+| `suites[].ciRunner`  | Runner opcional de CI (`node` quando o Jest ainda é necessário remotamente) |
+| `suites[].tier`      | `gate` ou `nightly`                                                         |
+| `quarantine[]`       | Exceções explícitas com issue Linear                                        |
 
 ```bash
 bun run test-map:check

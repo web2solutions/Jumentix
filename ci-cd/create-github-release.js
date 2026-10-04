@@ -3,12 +3,13 @@
  * Create a GitHub Release from an application tag (JUM-885).
  * Notes come from the matching CHANGELOG.md section — one source of truth.
  */
-const fs = require('fs');
-const path = require('path');
-const { execFileSync, spawnSync } = require('child_process');
-const { gitBinary } = require('./lib/git-binary.js');
-const { ghBinary } = require('./lib/gh-binary.js');
+const { execFileSync, spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { ghBinary } = require('./lib/gh-binary.js');
+const { gitBinary } = require('./lib/git-binary.js');
 const { APP_TAG_RE } = require('./lib/next-version.js');
 
 function runGit(args, options = {}) {
@@ -70,22 +71,17 @@ function releaseExists(tagName, env = process.env) {
 function createGithubRelease(options = {}) {
   const dryRun = Boolean(options.dryRun);
   const rootDir = options.rootDir || getRepoRoot();
-  const tagName = options.tagName
-    || process.env.CIRCLE_TAG
-    || options.argvTag
-    || '';
+  const tagName = options.tagName || process.env.CIRCLE_TAG || options.argvTag || '';
 
   if (!APP_TAG_RE.test(tagName)) {
     throw new Error(
-      `Refusing to create a GitHub Release for non-application tag "${tagName}". `
-      + 'Expected format vX.Y.Z.'
+      `Refusing to create a GitHub Release for non-application tag "${tagName}". ` +
+        'Expected format vX.Y.Z.'
     );
   }
 
   const changelogPath = path.join(rootDir, 'CHANGELOG.md');
-  const changelogText = fs.existsSync(changelogPath)
-    ? fs.readFileSync(changelogPath, 'utf8')
-    : '';
+  const changelogText = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
   const { title, body } = extractChangelogSection(changelogText, tagName);
   const version = tagName.slice(1);
   const [major] = version.split('.');
@@ -110,25 +106,22 @@ function createGithubRelease(options = {}) {
     };
   }
 
-  const token = (options.env || process.env).GH_TOKEN
-    || (options.env || process.env).GITHUB_TOKEN
-    || (options.env || process.env).CHANGELOG_GH_TOKEN
-    || '';
+  const token =
+    (options.env || process.env).GH_TOKEN ||
+    (options.env || process.env).GITHUB_TOKEN ||
+    (options.env || process.env).CHANGELOG_GH_TOKEN ||
+    '';
   if (!token) {
     throw new Error(
-      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN. '
-      + 'CI must provide a token that can create GitHub Releases (fail closed).'
+      'Missing GH_TOKEN, GITHUB_TOKEN, or CHANGELOG_GH_TOKEN. ' +
+        'CI must provide a token that can create GitHub Releases (fail closed).'
     );
   }
 
   const notesPath = path.join(rootDir, `.github-release-notes-${tagName}.md`);
   fs.writeFileSync(notesPath, body);
   try {
-    const args = [
-      'release', 'create', tagName,
-      '--title', title,
-      '--notes-file', notesPath
-    ];
+    const args = ['release', 'create', tagName, '--title', title, '--notes-file', notesPath];
     if (prerelease) args.push('--prerelease');
     execFileSync(ghBinary(), args, {
       cwd: rootDir,
@@ -167,8 +160,8 @@ function main(argv = process.argv.slice(2)) {
 module.exports = {
   createGithubRelease,
   extractChangelogSection,
-  releaseExists,
-  main
+  main,
+  releaseExists
 };
 
 if (isEntryPoint(module)) {

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+/* eslint-disable no-console */
 /**
  * JUM-396 — start the production website, run Cypress, tear down.
  *
@@ -7,12 +7,14 @@
  * so Cypress does not inherit a Node-as-Electron misconfiguration from CI.
  */
 import { spawn } from 'node:child_process';
-import { setTimeout as delay } from 'node:timers/promises';
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const websiteRoot = path.resolve(__dirname, '..');
+const { process } = globalThis;
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const websiteRoot = path.resolve(scriptDir, '..');
 const repoRoot = path.resolve(websiteRoot, '../..');
 const sitePort = Number(process.env.JUMENTIX_WEBSITE_PORT ?? '3010');
 const baseUrl = process.env.JUMENTIX_WEBSITE_BASE_URL || `http://127.0.0.1:${sitePort}`;
@@ -37,6 +39,7 @@ const waitForServer = async () => {
   let lastError = 'not started';
   while (Date.now() < deadline) {
     try {
+      // eslint-disable-next-line no-await-in-loop -- readiness polling: each probe must finish before the next one starts
       const response = await fetch(baseUrl, {
         signal: AbortSignal.timeout(5_000),
         headers: { Accept: 'text/html' }
@@ -46,6 +49,7 @@ const waitForServer = async () => {
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error);
     }
+    // eslint-disable-next-line no-await-in-loop -- polling interval: the delay between probes is the point of the loop
     await delay(1000);
   }
   throw new Error(`Website not ready at ${baseUrl}: ${lastError}`);
@@ -98,7 +102,7 @@ const main = async () => {
     if (!server.killed) server.kill('SIGKILL');
   }
 
-  process.exit(exitCode);
+  process.exitCode = exitCode;
 };
 
 main();

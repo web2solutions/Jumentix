@@ -1,9 +1,11 @@
-import { BaseError } from '@src/infra/exceptions/BaseError';
+import { VALIDATION_ERROR_NAME } from '@src/config/constants';
+import BaseError from '@src/infra/exceptions/BaseError';
 import { EErrorStringCodes } from '@src/infra/exceptions/error.codes';
-import { _VALIDATION_ERROR_NAME_ } from '@src/config/constants';
 
-export class ValidationError extends BaseError {
+class ValidationError extends BaseError {
   readonly code = EErrorStringCodes.INVALID_INPUT;
 
-  readonly name = _VALIDATION_ERROR_NAME_;
+  readonly name = VALIDATION_ERROR_NAME;
 }
+
+export default ValidationError;

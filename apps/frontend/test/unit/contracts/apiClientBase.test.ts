@@ -1,6 +1,4 @@
-import {
-  afterEach, beforeEach, describe, expect, it, mock
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { createApiClient } from '@/contracts/apiClient';
 
@@ -10,13 +8,15 @@ describe('apiClient base URL resolution', () => {
   const originalEnv = process.env.VITE_API_BASE_URL;
 
   beforeEach(() => {
-    globalThis.fetch = mock(() => Promise.resolve({
-      ok: true,
-      status: 200,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({ Authorization: 'Bearer t' }),
-      text: () => Promise.resolve('{}')
-    } as unknown as Response));
+    globalThis.fetch = mock(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ Authorization: 'Bearer t' }),
+        text: () => Promise.resolve('{}')
+      } as unknown as Response)
+    );
   });
 
   afterEach(() => {
@@ -40,7 +40,10 @@ describe('apiClient base URL resolution', () => {
       } as unknown as Response);
     });
     const client = createApiClient();
-    await client.request({ operationId: 'login', body: { username: 'a@b.c', password: 'x'.repeat(8) } });
+    await client.request({
+      operationId: 'login',
+      body: { username: 'a@b.c', password: 'x'.repeat(8) }
+    });
     expect(calls[0]).toBe('http://env.example/api/1.0.0/auth/login');
   });
 
@@ -59,7 +62,10 @@ describe('apiClient base URL resolution', () => {
       } as unknown as Response);
     });
     const client = createApiClient();
-    await client.request({ operationId: 'login', body: { username: 'a@b.c', password: 'x'.repeat(8) } });
+    await client.request({
+      operationId: 'login',
+      body: { username: 'a@b.c', password: 'x'.repeat(8) }
+    });
     expect(calls[0]).toBe('http://localhost:3001/api/1.0.0/auth/login');
   });
 
@@ -67,7 +73,7 @@ describe('apiClient base URL resolution', () => {
     expect.assertions(1);
     delete process.env.VITE_API_BASE_URL;
     const windowBackup = globalThis.window;
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+
     delete (globalThis as Record<string, unknown>).window;
     try {
       const client = createApiClient();
@@ -82,7 +88,10 @@ describe('apiClient base URL resolution', () => {
           text: () => Promise.resolve('{}')
         } as unknown as Response);
       });
-      await client.request({ operationId: 'login', body: { username: 'a@b.c', password: 'x'.repeat(8) } });
+      await client.request({
+        operationId: 'login',
+        body: { username: 'a@b.c', password: 'x'.repeat(8) }
+      });
       expect(calls[0]).toBe('http://localhost:3001/api/1.0.0/auth/login');
     } finally {
       globalThis.window = windowBackup;

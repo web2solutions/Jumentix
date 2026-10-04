@@ -1,16 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import {
-  CAlert,
-  CButton,
-  CCard,
-  CCardBody,
-  CCol,
-  CContainer,
-  CForm,
-  CRow
-} from '@coreui/vue';
+import { CAlert, CButton, CCard, CCardBody, CCol, CContainer, CForm, CRow } from '@coreui/vue';
 
 import OasFormField from '@/components/OasFormField.vue';
 import { fieldDescriptors } from '@/contracts/formSchema';
@@ -72,21 +63,23 @@ const submit = async () => {
                   :descriptor="descriptor"
                 />
                 <div class="mb-4">
-                  <label class="form-label" for="register-password-repeat">{{ t('auth.register.repeatPassword') }}</label>
-                  <input
-                    id="register-password-repeat"
-                    v-model="repeatPassword"
-                    type="password"
-                    class="form-control"
-                    autocomplete="new-password"
-                    required
-                  />
+                  <label class="form-label" for="register-password-repeat">
+                    {{ t('auth.register.repeatPassword') }}
+                    <input
+                      id="register-password-repeat"
+                      v-model="repeatPassword"
+                      type="password"
+                      class="form-control"
+                      autocomplete="new-password"
+                      required
+                    />
+                  </label>
                 </div>
                 <div class="d-grid gap-2">
                   <CButton color="success" type="submit" :disabled="submitting">
                     {{ submitting ? t('auth.register.submitting') : t('auth.register.submit') }}
                   </CButton>
-                  <RouterLink to="/login" custom v-slot="{ href, navigate }">
+                  <RouterLink v-slot="{ href, navigate }" to="/login" custom>
                     <CButton color="link" :href="href" @click="navigate">
                       {{ t('auth.register.haveAccount') }}
                     </CButton>

@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
-/* eslint-disable no-constant-condition */
+
 import { randomUUID } from 'node:crypto';
+
 import type {
   IDomainDefinition,
   ISubApplication,
@@ -23,12 +24,14 @@ const askDomainData = async (
   const name = await context.ask(`Domain name (${initial?.name || ''}): `);
   const description = await context.ask(`Description (${initial?.description || ''}): `);
   const boundedContext = await context.ask(`Bounded context (${initial?.boundedContext || ''}): `);
-  const statusRaw = await context.ask(`Status draft|active|deprecated (${initial?.status || 'draft'}): `);
-  const tagsRaw = await context.ask(`Tags comma-separated (${(initial?.tags || []).join(',')}): `);
+  const statusRaw = await context.ask(
+    `Status draft|active|deprecated (${initial?.status || 'draft'}): `
+  );
+  const tagsRaw = await context.ask(`Tags comma-separated (${(initial?.tags ?? []).join(',')}): `);
 
   const status = (statusRaw || initial?.status || 'draft') as IDomainDefinition['status'];
   const validStatus = ['draft', 'active', 'deprecated'].includes(status) ? status : 'draft';
-  const tags = (tagsRaw || (initial?.tags || []).join(','))
+  const tags = (tagsRaw || (initial?.tags ?? []).join(','))
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
@@ -73,14 +76,13 @@ const searchDomains = async (
   catalog: IWorkspaceCatalog
 ): Promise<void> => {
   const term = (await context.ask('Search term: ')).toLowerCase();
-  const results = catalog.domains.filter((item) => {
-    return (
-      item.name.toLowerCase().includes(term)
-      || (item.description || '').toLowerCase().includes(term)
-      || (item.boundedContext || '').toLowerCase().includes(term)
-      || item.tags.some((tag) => tag.toLowerCase().includes(term))
-    );
-  });
+  const results = catalog.domains.filter(
+    (item) =>
+      item.name.toLowerCase().includes(term) ||
+      (item.description || '').toLowerCase().includes(term) ||
+      (item.boundedContext || '').toLowerCase().includes(term) ||
+      item.tags.some((tag) => tag.toLowerCase().includes(term))
+  );
 
   if (results.length === 0) {
     context.log('No matching domains.');
@@ -98,7 +100,8 @@ const createDomain = async (context: ISubApplicationContext): Promise<void> => {
     context.log('Domain name is required.');
     return;
   }
-  if (catalog.domains.some((item) => item.name.toLowerCase() === data.name!.toLowerCase())) {
+  const domainName = data.name.toLowerCase();
+  if (catalog.domains.some((item) => item.name.toLowerCase() === domainName)) {
     context.log(`Domain "${data.name}" already exists.`);
     return;
   }
@@ -109,8 +112,8 @@ const createDomain = async (context: ISubApplicationContext): Promise<void> => {
     name: data.name,
     description: data.description || '',
     boundedContext: data.boundedContext || '',
-    status: (data.status || 'draft') as IDomainDefinition['status'],
-    tags: data.tags || [],
+    status: data.status ?? 'draft',
+    tags: data.tags ?? [],
     createdAt: now,
     updatedAt: now
   });
@@ -136,7 +139,7 @@ const updateDomain = async (context: ISubApplicationContext): Promise<void> => {
     ...target,
     ...data,
     updatedAt: new Date().toISOString()
-  } as IDomainDefinition;
+  };
 
   await context.saveCatalog(catalog);
   context.log(`Domain "${catalog.domains[index].name}" updated.`);
@@ -152,10 +155,12 @@ const deleteDomain = async (context: ISubApplicationContext): Promise<void> => {
   const selected = catalog.domains[index];
   const isUsedByEntities = catalog.entities.some((item) => item.domain === selected.name);
   if (isUsedByEntities) {
-    context.log([
-      `Domain "${selected.name}" has related entities/models.`,
-      'Remove or reassign them before deleting the domain.'
-    ].join(' '));
+    context.log(
+      [
+        `Domain "${selected.name}" has related entities/models.`,
+        'Remove or reassign them before deleting the domain.'
+      ].join(' ')
+    );
     return;
   }
 
@@ -170,7 +175,7 @@ const deleteDomain = async (context: ISubApplicationContext): Promise<void> => {
   context.log('Domain removed.');
 };
 
-export const domainManagerSubApplication: ISubApplication = {
+const domainManagerSubApplication: ISubApplication = {
   id: 'domains-crud',
   title: 'Domains CRUD (list/search/create/update/delete)',
   run: async (context) => {
@@ -200,3 +205,5 @@ export const domainManagerSubApplication: ISubApplication = {
     }
   }
 };
+
+export default domainManagerSubApplication;

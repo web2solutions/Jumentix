@@ -7,7 +7,10 @@ import { RestApiClient } from '../src';
  * package's routing suite.
  */
 
-type Recorded = { url: string; init: RequestInit };
+interface Recorded {
+  url: string;
+  init: RequestInit;
+}
 
 function withFetch(response: Response | (() => Response)) {
   const calls: Recorded[] = [];
@@ -20,18 +23,21 @@ function withFetch(response: Response | (() => Response)) {
 
   return {
     calls,
-    restore: () => { globalThis.fetch = original; }
+    restore: () => {
+      globalThis.fetch = original;
+    }
   };
 }
 
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
-  status,
-  headers: { 'content-type': 'application/json' }
-});
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json' }
+  });
 
 describe('request lifecycle events (JUM-765)', () => {
   const collect = (client: RestApiClient) => {
-    const events: Array<Record<string, unknown>> = [];
+    const events: Record<string, unknown>[] = [];
     const push = (event: unknown) => events.push(event as Record<string, unknown>);
     return { events, unsubscribe: client.subscribe(push) };
   };
@@ -43,16 +49,26 @@ describe('request lifecycle events (JUM-765)', () => {
 
     const stub = withFetch(json({ ok: true }, 201));
     try {
-      await client.request({ operationId: 'register', body: { firstName: 'A', username: 'a@b.c', password: 'StrongPass#1' } });
+      await client.request({
+        operationId: 'register',
+        body: { firstName: 'A', username: 'a@b.c', password: 'StrongPass#1' }
+      });
     } finally {
       stub.restore();
     }
     unsubscribe();
 
     expect(events).toHaveLength(2);
-    expect(events[0]).toMatchObject({ type: 'request:start', operationId: 'register', method: 'post' });
+    expect(events[0]).toMatchObject({
+      type: 'request:start',
+      operationId: 'register',
+      method: 'post'
+    });
     expect(events[1]).toMatchObject({
-      type: 'request:success', operationId: 'register', method: 'post', status: 201
+      type: 'request:success',
+      operationId: 'register',
+      method: 'post',
+      status: 201
     });
     expect(typeof events[1].durationMs).toBe('number');
   });
@@ -81,7 +97,8 @@ describe('request lifecycle events (JUM-765)', () => {
     const { events } = collect(client);
 
     const original = globalThis.fetch;
-    globalThis.fetch = (() => Promise.reject(new TypeError('fetch failed'))) as unknown as typeof fetch;
+    globalThis.fetch = (() =>
+      Promise.reject(new TypeError('fetch failed'))) as unknown as typeof fetch;
     try {
       await expect(
         client.request({ operationId: 'login', body: { username: 'a@b.c', password: 'x' } })

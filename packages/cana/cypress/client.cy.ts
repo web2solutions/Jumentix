@@ -1,6 +1,7 @@
-import type { CanaChangeEvent, CanaSchema } from '../src';
 import { createClient, isCanaErrorCode } from '../src';
 import { thrownBy } from './harness';
+
+import type { CanaChangeEvent, CanaSchema } from '../src';
 
 /**
  * Run against a real IndexedDB implementation. The claims under test here —
@@ -96,9 +97,12 @@ describe('cana crud', () => {
     // structured clone and does not carry the realm's Object.prototype. See the
     // dedicated test below — this is a real property of the storage layer, not a
     // quirk of the shim being worked around here.
-    // eslint-disable-next-line jest/prefer-strict-equal -- see the prototype test below
+
     expect(await table.get(1)).to.deep.equal({
-      id: 1, name: 'renamed', owner: 'ana', size: 99
+      id: 1,
+      name: 'renamed',
+      owner: 'ana',
+      size: 99
     });
     await client.close();
   });
@@ -136,7 +140,6 @@ describe('cana crud', () => {
 
     const read = await client.table<Design>('designs').get(1);
 
-    // eslint-disable-next-line jest/prefer-strict-equal -- the lost identity IS the assertion
     expect(read).to.deep.equal(design(1));
     expect(original).to.be.instanceOf(Design_);
     expect(read).not.to.be.instanceOf(Design_);
@@ -170,7 +173,8 @@ describe('cana crud', () => {
 
   it('rejects an explicit key on a store with an inbound keyPath', async () => {
     const client = await openClient();
-    const failure = await client.table<Design>('designs')
+    const failure = await client
+      .table<Design>('designs')
       .add(design(1), 5)
       .catch((error: unknown) => error);
 
@@ -195,8 +199,7 @@ describe('cana crud', () => {
 describe('cana bulk writes', () => {
   it('writes a batch and reports every key in input order', async () => {
     const client = await openClient();
-    const result = await client.table<Design>('designs')
-      .bulkAdd([design(1), design(2), design(3)]);
+    const result = await client.table<Design>('designs').bulkAdd([design(1), design(2), design(3)]);
 
     expect(result.outcome).to.equal('committed');
     expect(result.keys).to.deep.equal([1, 2, 3]);
@@ -238,10 +241,14 @@ describe('cana transactions', () => {
   it('commits every write in the scope together', async () => {
     const client = await openClient();
 
-    const { outcome, events } = await client.transaction('readwrite', ['designs', 'notes'], async (scope) => {
-      await scope.table<Design>('designs').add(design(1));
-      await scope.table<{ text: string }>('notes').add({ text: 'linked' });
-    });
+    const { outcome, events } = await client.transaction(
+      'readwrite',
+      ['designs', 'notes'],
+      async (scope) => {
+        await scope.table<Design>('designs').add(design(1));
+        await scope.table<{ text: string }>('notes').add({ text: 'linked' });
+      }
+    );
 
     expect(outcome).to.equal('committed');
     expect(events).to.have.lengthOf(2);
@@ -254,11 +261,13 @@ describe('cana transactions', () => {
     const table = client.table<Design>('designs');
     await table.add(design(1));
 
-    const failure = await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add(design(2));
-      await scope.table<Design>('designs').add(design(3));
-      scope.abort('changed my mind');
-    }).catch((error: unknown) => error);
+    const failure = await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add(design(2));
+        await scope.table<Design>('designs').add(design(3));
+        scope.abort('changed my mind');
+      })
+      .catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'TransactionAborted')).to.equal(true);
     expect((failure as { message: string }).message).to.include('changed my mind');
@@ -274,10 +283,12 @@ describe('cana transactions', () => {
     const seen: CanaChangeEvent[] = [];
     client.subscribe((event) => seen.push(event));
 
-    await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add(design(1));
-      scope.abort();
-    }).catch(() => undefined);
+    await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add(design(1));
+        scope.abort();
+      })
+      .catch(() => undefined);
 
     expect(seen).to.deep.equal([]);
     await client.close();
@@ -286,10 +297,12 @@ describe('cana transactions', () => {
   it('rolls back when the body throws, not just when it aborts', async () => {
     const client = await openClient();
 
-    await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add(design(1));
-      throw new Error('application failure');
-    }).catch(() => undefined);
+    await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add(design(1));
+        throw new Error('application failure');
+      })
+      .catch(() => undefined);
 
     expect(await client.table<Design>('designs').count()).to.equal(0);
     await client.close();
@@ -298,7 +311,10 @@ describe('cana transactions', () => {
   it('refuses to work before open()', async () => {
     const client = createClient({ name: 'designer', schema });
 
-    const failure = await client.table<Design>('designs').get(1).catch((error: unknown) => error);
+    const failure = await client
+      .table<Design>('designs')
+      .get(1)
+      .catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'InvalidRequest')).to.equal(true);
   });
@@ -307,13 +323,15 @@ describe('cana transactions', () => {
 describe('cana queries', () => {
   const seed = async () => {
     const client = await openClient();
-    await client.table<Design>('designs').bulkAdd([
-      design(1, { owner: 'ana', size: 10 }),
-      design(2, { owner: 'bruno', size: 20 }),
-      design(3, { owner: 'ana', size: 30 }),
-      design(4, { owner: 'ana', size: 40 }),
-      design(5, { owner: 'bruno', size: 50 })
-    ]);
+    await client
+      .table<Design>('designs')
+      .bulkAdd([
+        design(1, { owner: 'ana', size: 10 }),
+        design(2, { owner: 'bruno', size: 20 }),
+        design(3, { owner: 'ana', size: 30 }),
+        design(4, { owner: 'ana', size: 40 }),
+        design(5, { owner: 'bruno', size: 50 })
+      ]);
     return client;
   };
 
@@ -322,7 +340,10 @@ describe('cana queries', () => {
     const { plan, records } = await client.table<Design>('designs').explain();
 
     expect(plan).to.deep.equal({
-      store: 'designs', fullScan: true, boundedByRange: false, appliedOffsetInCursor: false
+      store: 'designs',
+      fullScan: true,
+      boundedByRange: false,
+      appliedOffsetInCursor: false
     });
     expect(records).to.have.lengthOf(5);
     await client.close();
@@ -332,7 +353,8 @@ describe('cana queries', () => {
     // The criterion that separates a real index lookup from an in-memory filter
     // that returns the same rows and collapses at scale.
     const client = await seed();
-    const { plan, records } = await client.table<Design>('designs')
+    const { plan, records } = await client
+      .table<Design>('designs')
       .explain({ index: 'byOwner', equals: 'ana' });
 
     expect(plan.usedIndex).to.equal('byOwner');
@@ -344,7 +366,8 @@ describe('cana queries', () => {
 
   it('applies a bounded range on an index', async () => {
     const client = await seed();
-    const records = await client.table<Design>('designs')
+    const records = await client
+      .table<Design>('designs')
       .query({ index: 'bySize', range: { lower: 20, upper: 40 } });
 
     expect(records.map((record) => record.size)).to.deep.equal([20, 30, 40]);
@@ -353,7 +376,8 @@ describe('cana queries', () => {
 
   it('honours an open upper bound', async () => {
     const client = await seed();
-    const records = await client.table<Design>('designs')
+    const records = await client
+      .table<Design>('designs')
       .query({ index: 'bySize', range: { lower: 20, upper: 40, upperOpen: true } });
 
     expect(records.map((record) => record.size)).to.deep.equal([20, 30]);
@@ -362,7 +386,8 @@ describe('cana queries', () => {
 
   it('applies offset and limit through the cursor', async () => {
     const client = await seed();
-    const { plan, records } = await client.table<Design>('designs')
+    const { plan, records } = await client
+      .table<Design>('designs')
       .explain({ offset: 1, limit: 2 });
 
     expect(plan.appliedOffsetInCursor).to.equal(true);
@@ -392,7 +417,8 @@ describe('cana queries', () => {
 
   it('names the store and index when the index does not exist', async () => {
     const client = await seed();
-    const failure = await client.table<Design>('designs')
+    const failure = await client
+      .table<Design>('designs')
       .query({ index: 'byNothing' })
       .catch((error: unknown) => error);
 
@@ -420,7 +446,9 @@ describe('cana change notification', () => {
     // nowhere near its cause.
     const client = await openClient();
     const reached: string[] = [];
-    client.subscribe(() => { throw new Error('subscriber is broken'); });
+    client.subscribe(() => {
+      throw new Error('subscriber is broken');
+    });
     client.subscribe(() => reached.push('still called'));
 
     await client.table<Design>('designs').add(design(1));
@@ -471,13 +499,16 @@ describe('cana change notification', () => {
   it('refuses a replay it cannot serve in full', async () => {
     // Replaying what remains would look complete and quietly omit the middle.
     const client = createClient({
-      name: 'designer', schema, retainedEvents: 2
+      name: 'designer',
+      schema,
+      retainedEvents: 2
     });
     await client.open();
     await client.table<Design>('designs').bulkAdd([design(1), design(2), design(3), design(4)]);
 
-    expect(thrownBy(() => client.subscribe(() => undefined, { sinceCursor: 0 })))
-      .to.deep.include({ code: 'NotFound' });
+    expect(thrownBy(() => client.subscribe(() => undefined, { sinceCursor: 0 }))).to.deep.include({
+      code: 'NotFound'
+    });
     await client.close();
   });
 
@@ -506,7 +537,7 @@ describe('cana export', () => {
 
     expect(Object.keys(dump).sort()).to.deep.equal(['designs', 'notes']);
     expect(dump.designs).to.have.lengthOf(2);
-    // eslint-disable-next-line jest/prefer-strict-equal -- exported records are structured clones
+
     expect(dump.notes).to.deep.equal([{ text: 'kept' }]);
     await client.close();
   });

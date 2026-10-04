@@ -5,7 +5,7 @@ import { onMounted, ref } from 'vue';
 import { formatApiError } from '@/contracts/errors';
 import type { MetricsResult } from '@/contracts/metricsSchema';
 import { can } from '@/contracts/rbac';
-import { usePermissions } from '@/contracts/usePermissions';
+import usePermissions from '@/contracts/usePermissions';
 import { useI18n } from '@/i18n';
 import { useProfileStore } from '@/stores/profile';
 
@@ -24,8 +24,9 @@ const error = ref('');
 const result = ref<MetricsResult>({ metric: 'count', buckets: [] });
 const pending = ref(0);
 
-const total = (): number => result.value.buckets.find((bucket) => bucket.key === 'total')?.count
-  ?? result.value.buckets.reduce((sum, bucket) => sum + bucket.count, 0);
+const total = (): number =>
+  result.value.buckets.find((bucket) => bucket.key === 'total')?.count ??
+  result.value.buckets.reduce((sum, bucket) => sum + bucket.count, 0);
 
 onMounted(async () => {
   await permissions.ensure();
@@ -50,11 +51,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
-    class="metric-widget"
-    :data-metric="widget.query?.metricKey"
-    :data-widget="widget.id"
-  >
+  <div class="metric-widget" :data-metric="widget.query?.metricKey" :data-widget="widget.id">
     <CSpinner v-if="loading && allowed" size="sm" />
     <template v-else-if="!allowed">
       <div class="fs-3 fw-semibold">—</div>

@@ -3,8 +3,9 @@
  * coverage production. Kept in one place so exclusions cannot drift between
  * check-patch-coverage and needs-frontend-patch-coverage (Req 065).
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { emitsNoJavaScript } = require('./emits-javascript.js');
 
 // Cypress specs live under `**/cypress/**` / `*.cy.ts(js)` and are the
@@ -21,10 +22,10 @@ const ISTANBUL_IGNORE_FILE = /\/\*\s*istanbul\s+ignore\s+file\b/;
 
 function loadCoverageIgnorePatterns(rootDir) {
   try {
-    // eslint-disable-next-line global-require, import/no-dynamic-require
     const jestConfig = require(path.join(rootDir, 'jest.config.js'));
-    return (jestConfig.coveragePathIgnorePatterns || [])
-      .map((pattern) => new RegExp(pattern.replace('<rootDir>', rootDir)));
+    return (jestConfig.coveragePathIgnorePatterns || []).map(
+      (pattern) => new RegExp(pattern.replace('<rootDir>', rootDir))
+    );
   } catch {
     // No config to read: measure everything rather than assume an exclusion.
     return [];
@@ -44,8 +45,7 @@ function isCoverageSubject(file, options = {}) {
   if (WEBSITE_CONTENT_META.test(file)) return false;
   const rootDir = options.rootDir || process.cwd();
   const absolute = path.join(rootDir, file);
-  const patterns = options.coverageIgnorePatterns
-    || loadCoverageIgnorePatterns(rootDir);
+  const patterns = options.coverageIgnorePatterns || loadCoverageIgnorePatterns(rootDir);
   if (patterns.some((pattern) => pattern.test(absolute))) return false;
   if (!fs.existsSync(absolute)) return false;
   if (ISTANBUL_IGNORE_FILE.test(fs.readFileSync(absolute, 'utf8'))) return false;
@@ -53,9 +53,9 @@ function isCoverageSubject(file, options = {}) {
 }
 
 module.exports = {
-  ISTANBUL_IGNORE_FILE,
-  TEST_FILE,
-  WEBSITE_CONTENT_META,
   isCoverageSubject,
-  loadCoverageIgnorePatterns
+  ISTANBUL_IGNORE_FILE,
+  loadCoverageIgnorePatterns,
+  TEST_FILE,
+  WEBSITE_CONTENT_META
 };

@@ -18,12 +18,12 @@ feature tasks with their own adapters, tests, and docs (EN + PT-BR).
 
 ## Hexagonal placement
 
-| Asset | Layer |
-| --- | --- |
-| `GUI/web/*`, `GUI/desktop/*` | Inbound / driving (presentation clients) |
-| `interface/HTTP|WebSocket|gRPC|…` | Inbound adapters that GUIs typically call |
-| `modules/*/application` + `domain` | Core — never imported by GUI UI code |
-| `infra/*` | Outbound — not used directly from GUI |
+| Asset                              | Layer                                    |
+| ---------------------------------- | ---------------------------------------- |
+| `GUI/web/*`, `GUI/desktop/*`       | Inbound / driving (presentation clients) |
+| `interface/HTTP                    | WebSocket                                | gRPC | …`  | Inbound adapters that GUIs typically call |
+| `modules/*/application` + `domain` | Core — never imported by GUI UI code     |
+| `infra/*`                          | Outbound — not used directly from GUI    |
 
 Call order remains:
 

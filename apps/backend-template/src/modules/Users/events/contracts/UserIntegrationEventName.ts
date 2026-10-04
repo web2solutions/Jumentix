@@ -5,6 +5,5 @@ export const UserIntegrationEventName = {
   CredentialChanged: 'users.user.credentialsUpdated'
 } as const;
 
-export type UserIntegrationEventNameType = (
-  typeof UserIntegrationEventName
-)[keyof typeof UserIntegrationEventName];
+export type UserIntegrationEventNameType =
+  (typeof UserIntegrationEventName)[keyof typeof UserIntegrationEventName];

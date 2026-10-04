@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 import { parseArgv } from './args';
-import { readInitConfig } from './config';
 import { runAdd } from './commands/add';
 import { runDoctor } from './commands/doctor';
 import { runInit } from './commands/init';
 import { runUpgrade } from './commands/upgrade';
+import { readInitConfig } from './config';
 
 export function printRootHelp(log: (message?: string) => void = console.log): void {
   log(`

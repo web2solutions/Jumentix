@@ -1,9 +1,8 @@
-import {
-  afterEach, beforeEach, describe, expect, it, mock
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import { createPinia, setActivePinia } from 'pinia';
 
-import { useAuthStore, decodeJwtUserId } from '@/stores/auth';
+import { decodeJwtUserId, useAuthStore } from '@/stores/auth';
 
 const calls: string[] = [];
 let responseStatus = 200;
@@ -42,7 +41,11 @@ describe('auth store (JUM-760)', () => {
     const auth = useAuthStore();
     // Field-level validation moved to the OAS-driven form layer (JUM-766):
     // the store is transport + session, and never re-shapes the contract body.
-    await auth.register({ firstName: 'Abraham', username: 'me@mydomain.com', password: 'StrongPass#123' });
+    await auth.register({
+      firstName: 'Abraham',
+      username: 'me@mydomain.com',
+      password: 'StrongPass#123'
+    });
     expect(calls.some((url) => url.endsWith('/auth/register'))).toBe(true);
   });
 
@@ -136,10 +139,13 @@ describe('auth store (JUM-760)', () => {
 
   it('drops a persisted session whose user id cannot be recovered', () => {
     expect.assertions(2);
-    localStorage.setItem('jumentix-frontend-auth', JSON.stringify({
-      token: 'Bearer deadbeef',
-      username: 'me@mydomain.com'
-    }));
+    localStorage.setItem(
+      'jumentix-frontend-auth',
+      JSON.stringify({
+        token: 'Bearer deadbeef',
+        username: 'me@mydomain.com'
+      })
+    );
     setActivePinia(createPinia());
     const auth = useAuthStore();
     expect(auth.userId).toBe('');
@@ -149,7 +155,7 @@ describe('auth store (JUM-760)', () => {
   it('survives an environment without localStorage', () => {
     expect.assertions(3);
     const backup = globalThis.localStorage;
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+
     delete (globalThis as Record<string, unknown>).localStorage;
     try {
       setActivePinia(createPinia());

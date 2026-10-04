@@ -1,6 +1,7 @@
-import { EHTTPFrameworks } from './EHTTPFrameworks';
+import EHTTPFrameworks from './EHTTPFrameworks';
+import HTTPBaseServer from './HTTPBaseServer';
+
 import type { EndPointFactory } from './EndPointFactory';
-import { HTTPBaseServer } from './HTTPBaseServer';
 import type { IAPIFactory } from './IAPIFactory';
 import type { IbaseHandler } from './IbaseHandler';
 import type { IbaseHandlerFactory } from './IbaseHandlerFactory';
@@ -33,7 +34,4 @@ export type {
   IHTTPServer
 };
 
-export {
-  EHTTPFrameworks,
-  HTTPBaseServer
-};
+export { EHTTPFrameworks, HTTPBaseServer };

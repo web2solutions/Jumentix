@@ -1,5 +1,4 @@
-/* eslint-disable import/no-relative-packages */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
+/* eslint-disable jest/max-expects, jest/no-conditional-in-test */
 /*
  * JUM-628 — unit contract for the ServiceManagement harness port allocator
  * (`runWithPortRetry`): bounded retry with a fresh random port on EADDRINUSE,
@@ -15,11 +14,12 @@
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+
 import {
-  DEFAULT_PORT_ATTEMPTS,
   allocatePort,
   cleanupTempConfigDir,
   createTempConfigDir,
+  DEFAULT_PORT_ATTEMPTS,
   envFileContent,
   firstNonLoopbackAddress,
   isAddrInUseError,
@@ -31,6 +31,7 @@ import {
   stopServer,
   waitForServer
 } from '../helpers/serverHarness';
+
 import type { StartedServer } from '../helpers/serverHarness';
 
 function addrInUse(port: number): NodeJS.ErrnoException {
@@ -46,7 +47,7 @@ describe('serverHarness port allocation (JUM-628)', () => {
     expect.hasAssertions();
     const candidates = [3301, 3302, 3303];
     const triedPorts: number[] = [];
-    const retries: Array<{ port: number; attempt: number; maxAttempts: number }> = [];
+    const retries: { port: number; attempt: number; maxAttempts: number }[] = [];
 
     const result = await runWithPortRetry({
       pickPort: () => candidates[triedPorts.length],
@@ -143,8 +144,9 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
     expect.hasAssertions();
     const dir = createTempConfigDir({ '.env.dev': envFileContent('fastify') });
     try {
-      expect(fs.readFileSync(path.join(dir, '.env.dev'), 'utf-8'))
-        .toContain('JUMENTIX_HTTP_FRAMEWORK=fastify');
+      expect(fs.readFileSync(path.join(dir, '.env.dev'), 'utf-8')).toContain(
+        'JUMENTIX_HTTP_FRAMEWORK=fastify'
+      );
     } finally {
       cleanupTempConfigDir(dir);
     }
@@ -242,11 +244,14 @@ describe('serverHarness runtime helpers against the real server (JUM-628)', () =
     });
     const dir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     try {
-      await expect(startServer(dir, {}, { pinnedPort: busyPort }))
-        .rejects.toThrow(`pinned port ${String(busyPort)} is already in use`);
+      await expect(startServer(dir, {}, { pinnedPort: busyPort })).rejects.toThrow(
+        `pinned port ${String(busyPort)} is already in use`
+      );
     } finally {
       cleanupTempConfigDir(dir);
-      await new Promise<void>((resolve) => { blocker.close(() => resolve()); });
+      await new Promise<void>((resolve) => {
+        blocker.close(() => resolve());
+      });
     }
   }, 30000);
 });

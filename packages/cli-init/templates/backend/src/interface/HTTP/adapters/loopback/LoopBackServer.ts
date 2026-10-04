@@ -1,17 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable class-methods-use-this */
-import { createUuid } from '@src/modules/port/UUID';
 import { _HTTP_PORT_ } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
-import type {
-  IHTTPRequest,
-  IHTTPResponse,
-  IbaseHandler
-} from '@src/interface/HTTP/ports';
-import {
-  HTTPBaseServer
-} from '@src/interface/HTTP/ports';
+import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+import { createUuid } from '@src/modules/port/UUID';
+
+import type { IbaseHandler, IHTTPRequest, IHTTPResponse } from '@src/interface/HTTP/ports';
 
 export type LoopBackRequest = IHTTPRequest;
 export type LoopBackResponse = {
@@ -40,14 +33,12 @@ class LoopBackServer extends HTTPBaseServer<any> {
   private mounted = false;
 
   private static loopbackExpress(): any {
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     return require(require.resolve('express', { paths: [require.resolve('@loopback/rest')] }));
   }
 
   constructor() {
     super();
     // Lazy require keeps compilation independent from optional framework install.
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     const { RestApplication } = require('@loopback/rest');
     this.application = new RestApplication({
       rest: { port: _HTTP_PORT_ }
@@ -79,7 +70,7 @@ class LoopBackServer extends HTTPBaseServer<any> {
    * broken helper without loosening the override. What the caller receives is
    * the same JSON.
    */
-  // eslint-disable-next-line class-methods-use-this
+
   private createResponseAdapter(response: any): any {
     let statusCode = 200;
 
@@ -120,19 +111,23 @@ class LoopBackServer extends HTTPBaseServer<any> {
    * need `req`/`res`, which these do.
    */
   public endPointRegister(handlerFactory: IbaseHandler): void {
-    const method = handlerFactory.method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete';
+    const method = handlerFactory.method.toLowerCase() as
+      'get' | 'post' | 'put' | 'patch' | 'delete';
     this.router[method](handlerFactory.path, (req: any, res: any) => {
       const store = new Map();
-      Promise.resolve(RequestContext.run(store, () => {
-        store.set('correlationId', createUuid());
-        store.set('timeStart', +new Date());
-        store.set('request', req);
-        store.set('authorization', req.headers?.authorization || '');
-        return Promise.resolve(handlerFactory.handler(req, this.createResponseAdapter(res)))
-          .catch(() => {
+      Promise.resolve(
+        RequestContext.run(store, () => {
+          store.set('correlationId', createUuid());
+          store.set('timeStart', +new Date());
+          store.set('request', req);
+          store.set('authorization', req.headers?.authorization || '');
+          return Promise.resolve(
+            handlerFactory.handler(req, this.createResponseAdapter(res))
+          ).catch(() => {
             if (!res.headersSent) res.status(500).json({ message: '' });
           });
-      })).catch(() => undefined);
+        })
+      ).catch(() => undefined);
     });
   }
 
@@ -155,9 +150,7 @@ class LoopBackServer extends HTTPBaseServer<any> {
   }
 
   public static compile(): HTTPBaseServer<any> {
-    if (!loopBackServer) {
-      loopBackServer = new LoopBackServer();
-    }
+    loopBackServer ??= new LoopBackServer();
     return loopBackServer;
   }
 }

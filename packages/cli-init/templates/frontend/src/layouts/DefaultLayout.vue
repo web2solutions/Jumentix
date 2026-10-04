@@ -9,7 +9,7 @@ import AppSidebar from '@/components/AppSidebar.vue';
 import AppTaskbar from '@/components/AppTaskbar.vue';
 import ModuleLayout from '@/components/ModuleLayout.vue';
 import { expireIfStaleSession } from '@/contracts/sessionGuard';
-import { usePermissions } from '@/contracts/usePermissions';
+import usePermissions from '@/contracts/usePermissions';
 import { findModule, firstAllowedTab } from '@/modules/manifest';
 import { useAuthStore } from '@/stores/auth';
 import { useTaskStore } from '@/stores/tasks';
@@ -24,30 +24,37 @@ const { viewport } = useShellViewport();
 let expiryTimer: ReturnType<typeof setInterval> | undefined;
 
 const isProfile = computed(() => route.name === 'Profile');
-const moduleId = computed(() => (
+const moduleId = computed(() =>
   typeof route.params.moduleId === 'string' ? route.params.moduleId : null
-));
+);
 
-watch(moduleId, (id) => {
-  if (id) tasks.openModule(id);
-}, { immediate: true });
+watch(
+  moduleId,
+  (id) => {
+    if (id) tasks.openModule(id);
+  },
+  { immediate: true }
+);
 
-watch(() => tasks.active, (id) => {
-  if (!id || isProfile.value || route.path === '/profile') return;
-  const current = moduleId.value;
-  if (current === id) return;
-  const mod = findModule(id);
-  const tab = mod ? firstAllowedTab(mod, permissions.roles.value) : 'dashboard';
-  if (route.path.startsWith(`/m/${id}`)) return;
-  router.push(`/m/${id}/${tab}`);
-});
+watch(
+  () => tasks.active,
+  (id) => {
+    if (!id || isProfile.value || route.path === '/profile') return;
+    const current = moduleId.value;
+    if (current === id) return;
+    const mod = findModule(id);
+    const tab = mod ? firstAllowedTab(mod, permissions.roles.value) : 'dashboard';
+    if (route.path.startsWith(`/m/${id}`)) return;
+    void router.push(`/m/${id}/${tab}`);
+  }
+);
 
 onMounted(() => {
-  permissions.ensure();
+  void permissions.ensure();
   tasks.hydrate();
   expiryTimer = setInterval(() => {
     if (expireIfStaleSession(auth)) {
-      router.push('/login');
+      void router.push('/login');
     }
   }, 30000);
 });

@@ -1,6 +1,8 @@
 import { computed, ref } from 'vue';
 
-import { LOCALES, messages, type Locale } from './messages';
+import { LOCALES, messages } from './messages';
+
+import type { Locale } from './messages';
 
 /**
  * Minimal i18n (JUM-780): no dependency, one reactive locale, `t(key, params)`
@@ -18,9 +20,10 @@ const detectLocale = (): Locale => {
   } catch {
     // storage unavailable (private mode, SSR) — fall through to navigator
   }
-  const navigatorLocale = typeof navigator !== 'undefined' && typeof navigator.language === 'string'
-    ? navigator.language
-    : '';
+  const navigatorLocale =
+    typeof navigator !== 'undefined' && typeof navigator.language === 'string'
+      ? navigator.language
+      : '';
   return navigatorLocale.toLowerCase().startsWith('pt') ? 'pt-BR' : 'en';
 };
 
@@ -48,11 +51,11 @@ export const resetLocale = (): void => {
   locale.value = detectLocale();
 };
 
-const interpolate = (template: string, params?: Record<string, unknown>): string => (
-  template.replace(/\{(\w+)\}/g, (_match, key: string) => (
-    params && params[key] !== undefined ? String(params[key]) : `{${key}}`
-  ))
-);
+const interpolate = (template: string, params?: Record<string, unknown>): string =>
+  template.replace(/\{(\w+)\}/g, (_match, key: string) => {
+    const value = params?.[key];
+    return value !== undefined ? String(value) : `{${key}}`;
+  });
 
 /**
  * Translates `key` in the active locale. A missing key returns the key itself
@@ -72,7 +75,9 @@ export type Localized = string | Partial<Record<Locale, string>>;
 export const localized = (value: Localized | undefined): string => {
   if (value === undefined) return '';
   if (typeof value === 'string') return value;
-  return value[locale.value] ?? value.en ?? Object.values(value).find((entry) => Boolean(entry)) ?? '';
+  return (
+    value[locale.value] ?? value.en ?? Object.values(value).find((entry) => Boolean(entry)) ?? ''
+  );
 };
 
 /** Component composable: reactive locale + `t`. */

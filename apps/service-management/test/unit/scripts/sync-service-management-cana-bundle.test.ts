@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 import path from 'node:path';
 
 /**
@@ -20,26 +19,30 @@ const {
   VENDORED_FILE,
   VENDORED_HEADER,
   syncServiceManagementCanaBundle
-} = require(path.join(repoRoot, 'apps/service-management/scripts/sync-service-management-cana-bundle.js'));
+} = require(
+  path.join(repoRoot, 'apps/service-management/scripts/sync-service-management-cana-bundle.js')
+);
 
-function createHarness(options: {
-  sourceExists?: boolean;
-  buildStatus?: number;
-  distExists?: boolean;
-  distContents?: string;
-} = {}) {
+function createHarness(
+  options: {
+    sourceExists?: boolean;
+    buildStatus?: number;
+    distExists?: boolean;
+    distContents?: string;
+  } = {}
+) {
   const {
     sourceExists = true,
     buildStatus = 0,
     distExists = true,
-    distContents = 'function createCanaDatabaseClient(options) { return options; }\n'
-      + 'export { createCanaDatabaseClient };\n'
+    distContents = 'function createCanaDatabaseClient(options) { return options; }\n' +
+      'export { createCanaDatabaseClient };\n'
   } = options;
   const build = { status: buildStatus as number | null };
   const logs: string[] = [];
   const errors: string[] = [];
-  const written: Array<{ target: string; contents: string }> = [];
-  const spawnCalls: Array<{ command: string; args: string[] }> = [];
+  const written: { target: string; contents: string }[] = [];
+  const spawnCalls: { command: string; args: string[] }[] = [];
   const harness = {
     root: '/repo',
     exists: (target: string) => {
@@ -52,14 +55,20 @@ function createHarness(options: {
       return build;
     },
     readFile: () => distContents,
-    writeFile: (target: string, contents: string) => { written.push({ target, contents }); },
+    writeFile: (target: string, contents: string) => {
+      written.push({ target, contents });
+    },
     logger: {
       log: (line: string) => logs.push(String(line)),
       error: (line: string) => errors.push(String(line))
     }
   };
   return {
-    harness, logs, errors, written, spawnCalls
+    harness,
+    logs,
+    errors,
+    written,
+    spawnCalls
   };
 }
 
@@ -67,8 +76,12 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
   it('pins the source, dist and vendored paths', () => {
     expect.hasAssertions();
     expect(CANA_SOURCE_ENTRY).toBe(path.join('packages', 'cana', 'src', 'adapter.ts'));
-    expect(CANA_DIST_FILE).toBe(path.join('packages', 'cana', 'dist', 'service-management-cana.mjs'));
-    expect(VENDORED_FILE).toBe(path.join('apps', 'service-management', 'vendor', 'cana', 'index.js'));
+    expect(CANA_DIST_FILE).toBe(
+      path.join('packages', 'cana', 'dist', 'service-management-cana.mjs')
+    );
+    expect(VENDORED_FILE).toBe(
+      path.join('apps', 'service-management', 'vendor', 'cana', 'index.js')
+    );
     expect(REQUIRED_BINDING).toBe('createCanaDatabaseClient');
     expect(VENDORED_HEADER).toContain('do not edit');
   });
@@ -83,9 +96,7 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
 
   it('fails closed when the bun build fails, writing nothing', () => {
     expect.hasAssertions();
-    const {
-      harness, errors, written, spawnCalls
-    } = createHarness({ buildStatus: 2 });
+    const { harness, errors, written, spawnCalls } = createHarness({ buildStatus: 2 });
     expect(syncServiceManagementCanaBundle(harness)).toBe(2);
     expect(errors.join('\n')).toContain('bun build failed');
     expect(written).toStrictEqual([]);
@@ -122,9 +133,7 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
 
   it('builds the browser ESM artifact and vendors it with the generated-file header', () => {
     expect.hasAssertions();
-    const {
-      harness, logs, written, spawnCalls
-    } = createHarness();
+    const { harness, logs, written, spawnCalls } = createHarness();
     expect(syncServiceManagementCanaBundle(harness)).toBe(0);
 
     expect(spawnCalls).toHaveLength(1);
@@ -153,7 +162,7 @@ describe('sync-service-management-cana-bundle (JUM-484)', () => {
     // the same bun build + vendor copy the CI script performs, targeted at
     // the gitignored vendor directory.
     expect(syncServiceManagementCanaBundle()).toBe(0);
-    const fs = require('fs');
+    const fs = require('node:fs');
     const vendored = fs.readFileSync(path.join(repoRootDir, VENDORED_FILE), 'utf8');
     expect(vendored).toContain(VENDORED_HEADER);
     expect(vendored).toContain(REQUIRED_BINDING);

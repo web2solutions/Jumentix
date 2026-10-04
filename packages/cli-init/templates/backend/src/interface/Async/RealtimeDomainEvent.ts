@@ -1,3 +1,5 @@
-import { BaseDomainEvent } from '@src/modules/port/BaseDomainEvent';
+import BaseDomainEvent from '@src/modules/port/BaseDomainEvent';
 
-export class RealtimeDomainEvent extends BaseDomainEvent {}
+class RealtimeDomainEvent extends BaseDomainEvent {}
+
+export default RealtimeDomainEvent;

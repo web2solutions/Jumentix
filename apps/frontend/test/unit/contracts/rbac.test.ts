@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
-  can, effectiveScopes, hasSuperadmin, requiredScopes, rbacRoleNames
+  can,
+  effectiveScopes,
+  hasSuperadmin,
+  rbacRoleNames,
+  requiredScopes
 } from '@/contracts/rbac';
 
 /** JUM-772: the UI reads RBAC from the bundled OAS — never from backend code. */

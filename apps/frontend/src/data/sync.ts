@@ -1,19 +1,15 @@
 /* Sequential IndexedDB + REST: one page / one outbox intent at a time. */
-/* eslint-disable no-await-in-loop, no-continue */
+/* eslint-disable no-await-in-loop */
 import { reactive } from 'vue';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { apiErrorStatus } from '@/contracts/errors';
-import { asListPage, listCapabilities, toQueryParams } from '@/contracts/listSchema';
 import { fieldDescriptors } from '@/contracts/formSchema';
-import { useAuthStore } from '@/stores/auth';
-import {
-  META_STORE, SESSION_META_ID, deriveEntityTables, entityTable
-} from '@/data/canaSchema';
-import {
-  bootCana, getCanaClient, isCanaOpen, wipeCanaDatabase
-} from '@/data/db';
+import { asListPage, listCapabilities, toQueryParams } from '@/contracts/listSchema';
+import { deriveEntityTables, entityTable, META_STORE, SESSION_META_ID } from '@/data/canaSchema';
+import { bootCana, getCanaClient, isCanaOpen, wipeCanaDatabase } from '@/data/db';
 import { drainOutbox } from '@/data/outbox';
+import { useAuthStore } from '@/stores/auth';
 
 export interface SyncProgress {
   running: boolean;
@@ -51,11 +47,10 @@ const withSyncGate = async <T>(work: () => Promise<T>): Promise<T> => {
   }
 };
 
-const toStorable = (record: Record<string, unknown>): Record<string, unknown> => (
-  JSON.parse(JSON.stringify(record, (_key, value) => (
-    value instanceof Date ? value.toISOString() : value
-  ))) as Record<string, unknown>
-);
+const toStorable = (record: Record<string, unknown>): Record<string, unknown> =>
+  JSON.parse(
+    JSON.stringify(record, (_key, value) => (value instanceof Date ? value.toISOString() : value))
+  ) as Record<string, unknown>;
 
 const authHeaders = (): { Authorization: string } => {
   const auth = useAuthStore();
@@ -63,9 +58,8 @@ const authHeaders = (): { Authorization: string } => {
   return { Authorization: auth.token };
 };
 
-const readMeta = async (id: string): Promise<Record<string, unknown> | undefined> => (
-  getCanaClient().table(META_STORE).get(id) as Promise<Record<string, unknown> | undefined>
-);
+const readMeta = async (id: string): Promise<Record<string, unknown> | undefined> =>
+  getCanaClient().table(META_STORE).get(id) as Promise<Record<string, unknown> | undefined>;
 
 export const isSynced = async (): Promise<boolean> => {
   if (!isCanaOpen()) return false;
@@ -74,10 +68,12 @@ export const isSynced = async (): Promise<boolean> => {
 };
 
 const putLastSync = async (storeName: string, iso: string): Promise<void> => {
-  await getCanaClient().table(META_STORE).put({
-    id: `${LAST_SYNC_PREFIX}${storeName}`,
-    lastSync: iso
-  });
+  await getCanaClient()
+    .table(META_STORE)
+    .put({
+      id: `${LAST_SYNC_PREFIX}${storeName}`,
+      lastSync: iso
+    });
 };
 
 const getLastSync = async (storeName: string): Promise<string | undefined> => {
@@ -105,11 +101,10 @@ const applyPage = async (
   return newest;
 };
 
-const needsDetailRow = (schemaName: string, record: Record<string, unknown>): boolean => (
+const needsDetailRow = (schemaName: string, record: Record<string, unknown>): boolean =>
   fieldDescriptors(schemaName)
     .filter((descriptor) => descriptor.type === 'array')
-    .some((descriptor) => !Array.isArray(record[descriptor.name]))
-);
+    .some((descriptor) => !Array.isArray(record[descriptor.name]));
 
 const hydrateDetails = async (schemaName: string): Promise<void> => {
   const table = entityTable(schemaName);
@@ -117,7 +112,7 @@ const hydrateDetails = async (schemaName: string): Promise<void> => {
   const api = getSharedApiClient();
   const headers = authHeaders();
   const store = getCanaClient().table(table.storeName);
-  const rows = [...await store.query()] as Record<string, unknown>[];
+  const rows = [...(await store.query())] as Record<string, unknown>[];
   for (const row of rows) {
     if (row.deletedAt || !needsDetailRow(schemaName, row)) continue;
     const key = String(row[table.keyPath] ?? row.id ?? '');
@@ -152,7 +147,7 @@ const loadEntityPages = async (
     const filter = options.deltaFrom
       ? { updatedAt: { operator: 'gt', value: options.deltaFrom } }
       : undefined;
-    const response = await api.request<unknown>({
+    const response = await api.request({
       operationId: table.listOperationId,
       query: toQueryParams({
         page,
@@ -237,32 +232,33 @@ export const deltaSync = async (): Promise<void> => {
   }
 };
 
-export const runSessionSync = async (): Promise<void> => withSyncGate(async () => {
-  if (!isCanaOpen()) {
-    await bootCana();
-  }
-  if (!isCanaOpen()) {
-    throw new Error('IndexedDB is not available.');
-  }
-  const auth = useAuthStore();
-  const session = await readMeta(SESSION_META_ID);
-  const previousUser = typeof session?.username === 'string' ? session.username : '';
-  if (previousUser && previousUser !== auth.username) {
-    await wipeCanaDatabase();
-    await fullLoad();
-  } else if (!session?.lastSyncAt) {
-    await fullLoad();
-  } else {
-    await deltaSync();
-  }
-  await getCanaClient().table(META_STORE).put({
-    id: SESSION_META_ID,
-    username: auth.username,
-    userId: auth.userId,
-    lastSyncAt: new Date().toISOString()
+export const runSessionSync = async (): Promise<void> =>
+  withSyncGate(async () => {
+    if (!isCanaOpen()) {
+      await bootCana();
+    }
+    if (!isCanaOpen()) {
+      throw new Error('IndexedDB is not available.');
+    }
+    const auth = useAuthStore();
+    const session = await readMeta(SESSION_META_ID);
+    const previousUser = typeof session?.username === 'string' ? session.username : '';
+    if (previousUser && previousUser !== auth.username) {
+      await wipeCanaDatabase();
+      await fullLoad();
+    } else if (!session?.lastSyncAt) {
+      await fullLoad();
+    } else {
+      await deltaSync();
+    }
+    await getCanaClient().table(META_STORE).put({
+      id: SESSION_META_ID,
+      username: auth.username,
+      userId: auth.userId,
+      lastSyncAt: new Date().toISOString()
+    });
+    await drainOutbox();
   });
-  await drainOutbox();
-});
 
 /**
  * Bind a one-shot online → session-sync listener. Returns an unbind so unit

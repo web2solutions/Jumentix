@@ -4,7 +4,8 @@ module.exports = {
       name: 'jumentix-dev-restapi',
       script: './apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts',
       interpreter: 'bun',
-      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
+      interpreter_args:
+        '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
       env: {
         NODE_ENV: 'dev',
         JUMENTIX_HTTP_PORT: '3000'
@@ -14,7 +15,8 @@ module.exports = {
       name: 'jumentix-dev-websocketapi',
       script: './apps/backend-template/src/interface/WebSocket/adapters/start-websocket-api.ts',
       interpreter: 'bun',
-      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
+      interpreter_args:
+        '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
       env: {
         NODE_ENV: 'dev',
         JUMENTIX_WEBSOCKET_PORT: '3001',
@@ -27,7 +29,8 @@ module.exports = {
       name: 'jumentix-dev-grpcapi',
       script: './apps/backend-template/src/interface/gRPC/adapters/start-grpc-api.ts',
       interpreter: 'bun',
-      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
+      interpreter_args:
+        '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
       env: {
         NODE_ENV: 'dev',
         JUMENTIX_GRPC_PORT: '3002',
@@ -40,7 +43,8 @@ module.exports = {
       name: 'jumentix-dev-service-management-api',
       script: './apps/service-management-api/src/start-service-management-catalog-api.ts',
       interpreter: 'bun',
-      interpreter_args: '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
+      interpreter_args:
+        '-r tsconfig-paths/register --env-file=./apps/backend-template/src/config/.env.dev',
       env: {
         NODE_ENV: 'dev',
         JUMENTIX_HTTP_PORT: '3003'

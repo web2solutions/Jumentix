@@ -1,11 +1,12 @@
 import type { IPagingRequest } from '@src/modules/port/IPagingRequest';
 import type { IServiceResponse } from '@src/modules/port/IServiceResponse';
+
+import type { ICatalogUseCases } from '@service-management-api/modules/Catalogs/application/ports/ICatalogUseCases';
 import type { ICatalog } from '@service-management-api/modules/Catalogs/domain/Entity/ICatalog';
 import type { RequestCatalogListOptions } from '@service-management-api/modules/Catalogs/interface/dto/RequestCatalogListOptions';
-import type { ICatalogUseCases } from '@service-management-api/modules/Catalogs/application/ports/ICatalogUseCases';
-import type { CatalogService } from '@service-management-api/modules/Catalogs/service/CatalogService';
+import type CatalogService from '@service-management-api/modules/Catalogs/service/CatalogService';
 
-export class CatalogUseCases implements ICatalogUseCases {
+class CatalogUseCases implements ICatalogUseCases {
   private readonly catalogService: CatalogService;
 
   constructor(catalogService: CatalogService) {
@@ -48,7 +49,7 @@ export class CatalogUseCases implements ICatalogUseCases {
   }
 
   public async getAll(
-    filters: Record<string, string|number>,
+    filters: Record<string, string | number>,
     paging: IPagingRequest,
     options?: RequestCatalogListOptions
   ): Promise<IServiceResponse<ICatalog[]>> {
@@ -59,3 +60,5 @@ export class CatalogUseCases implements ICatalogUseCases {
     return new CatalogUseCases(catalogService);
   }
 }
+
+export default CatalogUseCases;

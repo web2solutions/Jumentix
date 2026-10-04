@@ -11,14 +11,13 @@ until it is Done.
 Bun is pinned exactly. One version, identical locally and in CI — a range is how "works on my machine" gets
 committed.
 
-| Source of truth | Value |
-| --- | --- |
-| `.bun-version` | `1.3.13` |
+| Source of truth               | Value        |
+| ----------------------------- | ------------ |
+| `.bun-version`                | `1.3.13`     |
 | `package.json#packageManager` | `bun@1.3.13` |
-| `package.json#engines.bun` | `>=1.3.13` |
+| `package.json#engines.bun`    | `>=1.3.13`   |
 
 > **Why 1.3.13 and not the newest release.** Bun 1.3.14 rejects a lockfile it has just written for some dependency trees — `bun install` succeeds, `bun install --frozen-lockfile` then fails on the same file, and a lock written by 1.3.13 is rejected too. 1.3.13, 1.3.11 and 1.3.9 all accept it. The pin moves back up when a release fixes it (JUM-708).
-
 
 `ci-cd/check-bun-version.js` enforces all three and fails closed. It runs as `preinstall`, so it is
 dependency-free by design: on a cold clone `node_modules` does not exist yet, and requiring `semver` there
@@ -66,12 +65,12 @@ is strictly stronger: a flat override applies to every dependent rather than one
 
 ## 3. Running commands
 
-| Purpose | Command |
-| --- | --- |
-| Repository script | `bun run <script>` |
-| Package binary | `bun x <binary>` |
-| All workspaces | `bun run --filter '*' <script>` |
-| One workspace | `bun run --filter @jumentix/website <script>` |
+| Purpose           | Command                                       |
+| ----------------- | --------------------------------------------- |
+| Repository script | `bun run <script>`                            |
+| Package binary    | `bun x <binary>`                              |
+| All workspaces    | `bun run --filter '*' <script>`               |
+| One workspace     | `bun run --filter @jumentix/website <script>` |
 
 `bun run --filter` replaces `pnpm -r --if-present`. Note the argument order differs from pnpm, and the
 behaviour is **better**: it exits 1 when no package matches the filter, where `--if-present` exited 0. That
@@ -79,16 +78,16 @@ former silence was a false green.
 
 ## 4. `[run] bun = false` — read this before changing it
 
-`bunfig.toml` sets `[run] bun = false`, deliberately. Setting it to `true` reroutes *every* Node-shebang
+`bunfig.toml` sets `[run] bun = false`, deliberately. Setting it to `true` reroutes _every_ Node-shebang
 binary in `node_modules` onto Bun, including third-party ones. Jest is not Bun-compatible: `jest-runtime`
 assigns to a property Bun treats as readonly.
 
 Measured on this tree:
 
-| `[run] bun` | Result |
-| --- | --- |
-| `true` | 97 suites failed, **0 tests ran** |
-| `false` | 97 suites passed, **547 tests passed** |
+| `[run] bun` | Result                                 |
+| ----------- | -------------------------------------- |
+| `true`      | 97 suites failed, **0 tests ran**      |
+| `false`     | 97 suites passed, **547 tests passed** |
 
 The failure mode is what makes this dangerous rather than merely wrong: every suite dies at load with
 `TypeError: Attempted to assign to readonly property`, which reads like a repository bug and not like a
@@ -118,12 +117,12 @@ Anything else invoking Node inside internal tooling is a defect.
 
 `bun test` is not yet the gate runner, but it is measured, because the gap is the migration's remaining work:
 
-| | Baseline | After the `import type` codemod |
-| --- | --- | --- |
-| pass | 344 | **471** |
-| load errors | 30 | **3** |
-| tests discovered | 399 | **531** |
-| wall time | 0.79 s | 1.72 s |
+|                  | Baseline | After the `import type` codemod |
+| ---------------- | -------- | ------------------------------- |
+| pass             | 344      | **471**                         |
+| load errors      | 30       | **3**                           |
+| tests discovered | 399      | **531**                         |
+| wall time        | 0.79 s   | 1.72 s                          |
 
 Jest takes roughly 28 s for the same suites.
 
@@ -132,7 +131,7 @@ The remaining failures are `bun:test` API gaps — `jest.resetModules` (13), `je
 
 ### Type-only imports are a runtime concern under Bun
 
-Bun's ESM runtime resolves named bindings at runtime, so a TypeScript type imported *or re-exported* as a
+Bun's ESM runtime resolves named bindings at runtime, so a TypeScript type imported _or re-exported_ as a
 value has no runtime export and Bun rejects the whole module:
 
 ```
@@ -175,8 +174,8 @@ parent's `package.json` has no effect on resolution — verified.
 
 ## 8. CI
 
-| System | Setup |
-| --- | --- |
+| System         | Setup                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------- |
 | GitHub Actions | `oven-sh/setup-bun` pinned by commit SHA; matrix axis `bun-version`; caches keyed on `bun.lock` |
 
 The workflow installs with `--frozen-lockfile` and asserts the toolchain guard before anything else.
@@ -213,19 +212,19 @@ without the other reintroduces exactly the three-way disagreement (`postcss` at 
 
 ## 11. Known gaps
 
-| Gap | Owner |
-| --- | --- |
-| Unit suites still on Jest; `[run] bun` cannot be `true` yet | Test Pyramid JUM-434–436 |
-| 60 `bun test` failures from `bun:test` API gaps | Test Pyramid JUM-434–436 |
-| Branch coverage is not enforced by `bun test` (it has no branch metric) | JUM-437 / this guide §5 |
-| 4 workspace `test` scripts are `echo` placeholders; 15 more alias `typecheck` | Test Pyramid JUM-557 |
-| The built backend artifact is not loadable under Node (below) | JUM-37, unresolved |
+| Gap                                                                           | Owner                    |
+| ----------------------------------------------------------------------------- | ------------------------ |
+| Unit suites still on Jest; `[run] bun` cannot be `true` yet                   | Test Pyramid JUM-434–436 |
+| 60 `bun test` failures from `bun:test` API gaps                               | Test Pyramid JUM-434–436 |
+| Branch coverage is not enforced by `bun test` (it has no branch metric)       | JUM-437 / this guide §5  |
+| 4 workspace `test` scripts are `echo` placeholders; 15 more alias `typecheck` | Test Pyramid JUM-557     |
+| The built backend artifact is not loadable under Node (below)                 | JUM-37, unresolved       |
 
 The fourth row is a live false green: `mono:test` reports success while almost no workspace runs a test.
 
 ### The built artifact is not Node-loadable — and never was
 
-Requirement 096 §4 keeps Node as an *independently validated* consumer-facing target. Measured, that
+Requirement 096 §4 keeps Node as an _independently validated_ consumer-facing target. Measured, that
 validation does not currently hold, and the cause predates this migration:
 
 ```

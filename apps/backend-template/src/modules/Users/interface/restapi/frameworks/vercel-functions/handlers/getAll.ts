@@ -1,45 +1,46 @@
-import type { VercelFunctionsRequest, VercelFunctionsResponse } from '@src/interface/HTTP/adapters/vercel-functions/vercel-functions';
-import { sendErrorResponse } from '@src/interface/HTTP/adapters/vercel-functions/responses/sendErrorResponse';
+import sendErrorResponse from '@src/interface/HTTP/adapters/vercel-functions/responses/sendErrorResponse';
+import UserGetAllRequestEvent from '@src/modules/Users/events/UserGetAllRequestEvent';
 
 import type {
-  IHandlerFactory,
-  IbaseHandler,
-  EndPointFactory
-} from '@src/interface/HTTP/ports';
+  VercelFunctionsRequest,
+  VercelFunctionsResponse
+} from '@src/interface/HTTP/adapters/vercel-functions/vercel-functions';
+import type { EndPointFactory, IbaseHandler, IHandlerFactory } from '@src/interface/HTTP/ports';
 
-import { UserGetAllRequestEvent } from '@src/modules/Users/events/UserGetAllRequestEvent';
+const getAll: EndPointFactory = ({
+  endPointConfig,
+  controller
+}: IHandlerFactory): IbaseHandler => ({
+  path: '/users',
+  method: 'get',
 
-const getAll: EndPointFactory = (
-  {
-    endPointConfig,
-    controller
-  }: IHandlerFactory
-): IbaseHandler => {
-  return {
-    path: '/users',
-    method: 'get',
-
-    async handler(req: VercelFunctionsRequest, res: VercelFunctionsResponse) {
-      try {
-        const queryString = req.query as Record<string, any> || {};
-        if (!queryString.page) queryString.page = 1;
-        const {
-          result, error, page, size, total
-        } = await controller!.getAll!(new UserGetAllRequestEvent({
+  async handler(req: VercelFunctionsRequest, res: VercelFunctionsResponse) {
+    try {
+      const queryString = (req.query as Record<string, any>) || {};
+      if (!queryString.page) queryString.page = 1;
+      if (!controller?.getAll) {
+        throw new Error('The getAll endpoint requires a controller implementing getAll.');
+      }
+      const { result, error, page, size, total } = await controller.getAll(
+        new UserGetAllRequestEvent({
           authorization: req.headers.authorization ?? '',
           schemaOAS: endPointConfig,
           queryString
-        }));
-        // console.log({ error });
-        if (error) throw error;
-        return res.status(200).json({
-          result, error, page, size, total
-        });
-      } catch (error: any) {
-        return sendErrorResponse(error, res);
-      }
+        })
+      );
+      // console.log({ error });
+      if (error) throw error;
+      return res.status(200).json({
+        result,
+        error,
+        page,
+        size,
+        total
+      });
+    } catch (error: any) {
+      return sendErrorResponse(error, res);
     }
-  };
-};
+  }
+});
 
 export default getAll;

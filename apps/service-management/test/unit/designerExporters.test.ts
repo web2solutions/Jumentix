@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 
 /**
  * Unit suite for the export builders extracted from
@@ -27,67 +26,90 @@ const {
   buildMarkdownExport,
   buildOasDocument
 } = require('@jumentix/designer-core/exporters/designerExporters.js');
-const { normalizeStatePayload } = require(
-  '@jumentix/designer-core/state/designerState.js'
-);
+const { normalizeStatePayload } = require('@jumentix/designer-core/state/designerState.js');
 
 function createState() {
   return normalizeStatePayload({
-    domains: [{
-      id: 'domain-1',
-      name: 'Billing',
-      color: '#86efac',
-      x: 1,
-      y: 2,
-      context: {
-        ubiquitousLanguage: 'en',
-        upstreamDependencies: ['erp'],
-        packageDependencies: ['shared-kernel']
-      },
-      entities: [{
-        id: 'entity-1',
-        name: 'Invoice',
-        x: 0,
-        y: 0,
-        fields: [
+    domains: [
+      {
+        id: 'domain-1',
+        name: 'Billing',
+        color: '#86efac',
+        x: 1,
+        y: 2,
+        context: {
+          ubiquitousLanguage: 'en',
+          upstreamDependencies: ['erp'],
+          packageDependencies: ['shared-kernel']
+        },
+        entities: [
           {
-            name: 'id', type: 'uuid', required: true, pk: true, unique: true
-          },
-          {
-            name: 'total', type: 'number', required: true, minimum: 0, maximum: 10
-          },
-          {
-            name: 'tags', type: 'array', itemsType: 'string', nullable: true
-          },
-          {
-            name: 'status', type: 'string', enum: ['open', 'paid'], pattern: '^[a-z]+$'
+            id: 'entity-1',
+            name: 'Invoice',
+            x: 0,
+            y: 0,
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true,
+                unique: true
+              },
+              {
+                name: 'total',
+                type: 'number',
+                required: true,
+                minimum: 0,
+                maximum: 10
+              },
+              {
+                name: 'tags',
+                type: 'array',
+                itemsType: 'string',
+                nullable: true
+              },
+              {
+                name: 'status',
+                type: 'string',
+                enum: ['open', 'paid'],
+                pattern: '^[a-z]+$'
+              }
+            ],
+            meta: {
+              aggregateRoot: true,
+              invariants: ['total must be positive'],
+              contracts: [
+                {
+                  id: 'contract-1',
+                  name: 'issued',
+                  type: 'event',
+                  channel: 'billing.issued',
+                  version: '1.0.0',
+                  payloadSchema: { type: 'object' }
+                }
+              ],
+              oasComposition: {
+                mode: 'oneOf',
+                refs: ['Base', 'Audited'],
+                externalRefs: ['common.yaml#Money'],
+                discriminator: 'kind'
+              }
+            }
           }
-        ],
-        meta: {
-          aggregateRoot: true,
-          invariants: ['total must be positive'],
-          contracts: [{
-            id: 'contract-1',
-            name: 'issued',
-            type: 'event',
-            channel: 'billing.issued',
-            version: '1.0.0',
-            payloadSchema: { type: 'object' }
-          }],
-          oasComposition: {
-            mode: 'oneOf', refs: ['Base', 'Audited'], externalRefs: ['common.yaml#Money'], discriminator: 'kind'
-          }
-        }
-      }]
-    }],
-    relationships: [{
-      id: 'rel-1',
-      fromEntityId: 'entity-1',
-      toEntityId: 'entity-1',
-      name: 'self link',
-      fromCardinality: 'N',
-      toCardinality: '1'
-    }],
+        ]
+      }
+    ],
+    relationships: [
+      {
+        id: 'rel-1',
+        fromEntityId: 'entity-1',
+        toEntityId: 'entity-1',
+        name: 'self link',
+        fromCardinality: 'N',
+        toCardinality: '1'
+      }
+    ],
     view: { zoom: 1.2 }
   });
 }
@@ -105,7 +127,10 @@ describe('designer exporters (JUM-469)', () => {
     const state = createState();
     state.interfaces = [
       {
-        type: 'grpc', framework: 'bun', entrypoint: 'src/grpc.ts', controller: 'BillingGrpc'
+        type: 'grpc',
+        framework: 'bun',
+        entrypoint: 'src/grpc.ts',
+        controller: 'BillingGrpc'
       }
     ];
     state.serviceConfiguration = {
@@ -120,17 +145,19 @@ describe('designer exporters (JUM-469)', () => {
       fileName: '.env.staging',
       values: { JUMENTIX_HTTP_FRAMEWORK: 'fastify' }
     };
-    state.deployments = [{
-      name: 'prod-eu',
-      region: 'eu-west-1',
-      runtime: 'node22',
-      serviceType: 'restapi',
-      deployTarget: 'ec2',
-      runtimeProtocol: 'http',
-      databaseDriver: 'Mongo',
-      keyValueDriver: 'redis',
-      pm2Profile: 'production'
-    }];
+    state.deployments = [
+      {
+        name: 'prod-eu',
+        region: 'eu-west-1',
+        runtime: 'node22',
+        serviceType: 'restapi',
+        deployTarget: 'ec2',
+        runtimeProtocol: 'http',
+        databaseDriver: 'Mongo',
+        keyValueDriver: 'redis',
+        pm2Profile: 'production'
+      }
+    ];
     const document = buildJsonExportDocument(state);
     expect(document).toStrictEqual({
       kind: 'service-management-suite',
@@ -144,18 +171,20 @@ describe('designer exporters (JUM-469)', () => {
       codeWorkspace: state.codeWorkspace,
       deployments: state.deployments,
       architecture: {
-        services: [{
-          id: 'core',
-          name: 'Core',
-          kind: 'core',
-          url: 'http://localhost:3000/api/1.0.0',
-          domains: ['domain-1'],
-          deployTargetId: '',
-          x: 80,
-          y: 80,
-          width: 280,
-          height: 200
-        }],
+        services: [
+          {
+            id: 'core',
+            name: 'Core',
+            kind: 'core',
+            url: 'http://localhost:3000/api/1.0.0',
+            domains: ['domain-1'],
+            deployTargetId: '',
+            x: 80,
+            y: 80,
+            width: 280,
+            height: 200
+          }
+        ],
         links: []
       },
       view: state.view
@@ -183,7 +212,9 @@ describe('designer exporters (JUM-469)', () => {
   it('defaults the suite sections when the state predates the five-tab shape', () => {
     expect.hasAssertions();
     const document = buildJsonExportDocument({
-      domains: [], relationships: [], view: { zoom: 1 }
+      domains: [],
+      relationships: [],
+      view: { zoom: 1 }
     });
     expect(document.kind).toBe('service-management-suite');
     expect(document.version).toBe('2.0.0');
@@ -240,19 +271,27 @@ describe('designer exporters (JUM-469)', () => {
 
   it('builds the markdown export for an empty model', () => {
     expect.hasAssertions();
-    expect(buildMarkdownExport({ domains: [], relationships: [] })).toBe('# Domain Designer Model\n');
+    expect(buildMarkdownExport({ domains: [], relationships: [] })).toBe(
+      '# Domain Designer Model\n'
+    );
   });
 
   it('builds the markdown export for entities without contracts', () => {
     expect.hasAssertions();
-    const markdown = buildMarkdownExport(normalizeStatePayload({
-      domains: [{
-        id: 'domain-1',
-        name: 'Solo',
-        entities: [{ id: 'entity-1', name: 'Thing', fields: [{ name: 'id', type: 'uuid', pk: true }] }]
-      }],
-      relationships: []
-    }));
+    const markdown = buildMarkdownExport(
+      normalizeStatePayload({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Solo',
+            entities: [
+              { id: 'entity-1', name: 'Thing', fields: [{ name: 'id', type: 'uuid', pk: true }] }
+            ]
+          }
+        ],
+        relationships: []
+      })
+    );
     expect(markdown).toContain('Message Contracts:\n- none');
     expect(markdown).not.toContain('## Relationships');
   });
@@ -289,10 +328,12 @@ describe('designer exporters (JUM-469)', () => {
     expect(module.module).toBe('Billing');
     expect(module.path).toBe('src/modules/Billing');
     expect(Object.keys(module.files)).toStrictEqual(['composition', 'eventChannels']);
-    expect(module.files.composition.path)
-      .toBe('src/modules/Billing/composition/composeBillingServices.ts');
-    expect(module.files.eventChannels.path)
-      .toBe('src/modules/Billing/events/contracts/BillingEventChannels.ts');
+    expect(module.files.composition.path).toBe(
+      'src/modules/Billing/composition/composeBillingServices.ts'
+    );
+    expect(module.files.eventChannels.path).toBe(
+      'src/modules/Billing/events/contracts/BillingEventChannels.ts'
+    );
     expect(module.entities).toHaveLength(1);
     const [entity] = module.entities;
     expect(entity.entity).toBe('Invoice');
@@ -309,16 +350,21 @@ describe('designer exporters (JUM-469)', () => {
     expect(entity.files.entityInterface.path).toBe('src/modules/Billing/domain/Entity/IInvoice.ts');
     expect(entity.files.model.path).toBe('src/modules/Billing/domain/Model/Invoice.ts');
     expect(entity.files.security.path).toBe('src/modules/Billing/domain/security/InvoiceRbac.ts');
-    expect(entity.files.repositoryPort.path)
-      .toBe('src/modules/Billing/application/ports/IInvoiceRepository.ts');
-    expect(entity.files.useCasesPort.path)
-      .toBe('src/modules/Billing/application/ports/IInvoiceUseCases.ts');
-    expect(entity.files.useCases.path)
-      .toBe('src/modules/Billing/application/use-cases/InvoiceUseCases.ts');
-    expect(entity.files.persistenceAdapter.path)
-      .toBe('src/modules/Billing/adapters/out/persistence/InvoiceDataRepository.ts');
-    expect(entity.files.controller.path)
-      .toBe('src/modules/Billing/adapters/in/http/controllers/InvoiceController.ts');
+    expect(entity.files.repositoryPort.path).toBe(
+      'src/modules/Billing/application/ports/IInvoiceRepository.ts'
+    );
+    expect(entity.files.useCasesPort.path).toBe(
+      'src/modules/Billing/application/ports/IInvoiceUseCases.ts'
+    );
+    expect(entity.files.useCases.path).toBe(
+      'src/modules/Billing/application/use-cases/InvoiceUseCases.ts'
+    );
+    expect(entity.files.persistenceAdapter.path).toBe(
+      'src/modules/Billing/adapters/out/persistence/InvoiceDataRepository.ts'
+    );
+    expect(entity.files.controller.path).toBe(
+      'src/modules/Billing/adapters/in/http/controllers/InvoiceController.ts'
+    );
     const moduleFiles = module.files as Record<string, { path: string; content: string }>;
     const entityFiles = entity.files as Record<string, { path: string; content: string }>;
     Object.values(moduleFiles).forEach((file) => {
@@ -396,9 +442,16 @@ describe('designer exporters (JUM-469)', () => {
       version: '1.0.0',
       dependencies: [{ name: 'shared-kernel', range: '*' }]
     });
-    expect(Object.keys(document)).toStrictEqual(['kind', 'version', 'exportedAt', 'package', 'domain']);
-    expect(buildDomainPackageDocument(state.domains[0]).exportedAt)
-      .toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    expect(Object.keys(document)).toStrictEqual([
+      'kind',
+      'version',
+      'exportedAt',
+      'package',
+      'domain'
+    ]);
+    expect(buildDomainPackageDocument(state.domains[0]).exportedAt).toMatch(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+    );
   });
 
   it('builds the OAS 3.1 document with schemas, paths and x- extensions', () => {
@@ -410,10 +463,12 @@ describe('designer exporters (JUM-469)', () => {
       description: 'REST API designed with the Jumentix Domain Designer',
       version: '1.0.0'
     });
-    expect(document.servers).toStrictEqual([{
-      url: 'http://localhost:3000/api/1.0.0',
-      'x-service-id': 'core'
-    }]);
+    expect(document.servers).toStrictEqual([
+      {
+        url: 'http://localhost:3000/api/1.0.0',
+        'x-service-id': 'core'
+      }
+    ]);
 
     expect(document.components.schemas.Billing_Invoice).toStrictEqual({
       type: 'object',
@@ -423,23 +478,22 @@ describe('designer exporters (JUM-469)', () => {
       'x-domain': 'Billing',
       'x-entity': 'Invoice',
       'x-service': 'core',
-      'x-message-contracts': [{
-        id: 'contract-1',
-        name: 'issued',
-        type: 'event',
-        channel: 'billing.issued',
-        version: '1.0.0',
-        payloadSchema: { type: 'object' }
-      }],
+      'x-message-contracts': [
+        {
+          id: 'contract-1',
+          name: 'issued',
+          type: 'event',
+          channel: 'billing.issued',
+          version: '1.0.0',
+          payloadSchema: { type: 'object' }
+        }
+      ],
       // JUM-478 meta carriage: the default RBAC policy is not emitted (an
       // absent x-rbac normalizes back to it), and no field diverges from the
       // importer's name heuristic, so no x-field-flags either.
       'x-aggregate-root': true,
       'x-invariants': ['total must be positive'],
-      oneOf: [
-        { $ref: '#/components/schemas/Base' },
-        { $ref: '#/components/schemas/Audited' }
-      ],
+      oneOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Audited' }],
       'x-external-refs': ['common.yaml#Money'],
       discriminator: {
         propertyName: 'kind',
@@ -493,9 +547,15 @@ describe('designer exporters (JUM-469)', () => {
     });
 
     const entityRef = { $ref: '#/components/schemas/Billing_Invoice' };
-    const idParam = [{
-      name: 'id', in: 'path', description: 'ID of Invoice', required: true, schema: { type: 'string' }
-    }];
+    const idParam = [
+      {
+        name: 'id',
+        in: 'path',
+        description: 'ID of Invoice',
+        required: true,
+        schema: { type: 'string' }
+      }
+    ];
     expect(document.paths['/billing/invoice']).toStrictEqual({
       get: {
         operationId: 'getAllBilling_Invoice',
@@ -503,7 +563,11 @@ describe('designer exporters (JUM-469)', () => {
         responses: {
           200: {
             description: 'successful operation',
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/Billing_InvoiceArrayOf' } } }
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Billing_InvoiceArrayOf' }
+              }
+            }
           },
           400: { description: 'Invalid request' },
           401: { description: 'Unauthorized' },
@@ -515,11 +579,18 @@ describe('designer exporters (JUM-469)', () => {
         'x-service': 'core',
         requestBody: {
           description: 'Create a new Invoice',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/RequestCreateBilling_Invoice' } } },
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/RequestCreateBilling_Invoice' }
+            }
+          },
           required: true
         },
         responses: {
-          201: { description: 'Invoice created successfully', content: { 'application/json': { schema: entityRef } } },
+          201: {
+            description: 'Invoice created successfully',
+            content: { 'application/json': { schema: entityRef } }
+          },
           400: { description: 'Invalid request' },
           401: { description: 'Unauthorized' },
           403: { description: 'Forbidden' },
@@ -533,7 +604,10 @@ describe('designer exporters (JUM-469)', () => {
         'x-service': 'core',
         parameters: idParam,
         responses: {
-          200: { description: 'successful operation', content: { 'application/json': { schema: entityRef } } },
+          200: {
+            description: 'successful operation',
+            content: { 'application/json': { schema: entityRef } }
+          },
           400: { description: 'Invalid ID supplied' },
           401: { description: 'Unauthorized' },
           403: { description: 'Forbidden' },
@@ -546,11 +620,18 @@ describe('designer exporters (JUM-469)', () => {
         parameters: idParam,
         requestBody: {
           description: 'Update an existing Invoice',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/RequestUpdateBilling_Invoice' } } },
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/RequestUpdateBilling_Invoice' }
+            }
+          },
           required: true
         },
         responses: {
-          200: { description: 'successful operation', content: { 'application/json': { schema: entityRef } } },
+          200: {
+            description: 'successful operation',
+            content: { 'application/json': { schema: entityRef } }
+          },
           400: { description: 'Invalid ID supplied' },
           401: { description: 'Unauthorized' },
           403: { description: 'Forbidden' },
@@ -565,7 +646,11 @@ describe('designer exporters (JUM-469)', () => {
         responses: {
           200: {
             description: 'successful operation',
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/ResourceDeleteResponse' } } }
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ResourceDeleteResponse' }
+              }
+            }
           },
           400: { description: 'Invalid ID supplied' },
           401: { description: 'Unauthorized' },
@@ -575,25 +660,29 @@ describe('designer exporters (JUM-469)', () => {
       }
     });
 
-    expect(document['x-message-contracts']).toStrictEqual([{
-      id: 'contract-1',
-      name: 'issued',
-      type: 'event',
-      channel: 'billing.issued',
-      version: '1.0.0',
-      payloadSchema: { type: 'object' },
-      domain: 'Billing',
-      entity: 'Invoice'
-    }]);
-    expect(document['x-relations']).toStrictEqual([{
-      // JUM-478: schema names, not model ids — ids are recomputed on import
-      // and would break the export → import → export fixed point.
-      name: 'self link',
-      fromSchema: 'Billing_Invoice',
-      toSchema: 'Billing_Invoice',
-      fromCardinality: 'N',
-      toCardinality: '1'
-    }]);
+    expect(document['x-message-contracts']).toStrictEqual([
+      {
+        id: 'contract-1',
+        name: 'issued',
+        type: 'event',
+        channel: 'billing.issued',
+        version: '1.0.0',
+        payloadSchema: { type: 'object' },
+        domain: 'Billing',
+        entity: 'Invoice'
+      }
+    ]);
+    expect(document['x-relations']).toStrictEqual([
+      {
+        // JUM-478: schema names, not model ids — ids are recomputed on import
+        // and would break the export → import → export fixed point.
+        name: 'self link',
+        fromSchema: 'Billing_Invoice',
+        toSchema: 'Billing_Invoice',
+        fromCardinality: 'N',
+        toCardinality: '1'
+      }
+    ]);
   });
 
   it('omits composition extensions for entities without OAS composition', () => {
@@ -601,31 +690,45 @@ describe('designer exporters (JUM-469)', () => {
     // Literal state (not normalizeStatePayload, which drops dangling
     // relationships) so the x-relations null-schema branch is reachable.
     const state = {
-      domains: [{
-        id: 'domain-1',
-        name: 'Solo',
-        entities: [{
-          id: 'entity-1',
-          name: 'Thing',
-          fields: [{
-            name: 'id', type: 'uuid', required: true, pk: true
-          }],
-          meta: {
-            contracts: [],
-            oasComposition: {
-              mode: '', refs: [], externalRefs: [], discriminator: ''
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Solo',
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'Thing',
+              fields: [
+                {
+                  name: 'id',
+                  type: 'uuid',
+                  required: true,
+                  pk: true
+                }
+              ],
+              meta: {
+                contracts: [],
+                oasComposition: {
+                  mode: '',
+                  refs: [],
+                  externalRefs: [],
+                  discriminator: ''
+                }
+              }
             }
-          }
-        }]
-      }],
-      relationships: [{
-        id: 'rel-9',
-        name: 'ghost link',
-        fromEntityId: 'ghost-a',
-        toEntityId: 'ghost-b',
-        fromCardinality: '1',
-        toCardinality: 'N'
-      }]
+          ]
+        }
+      ],
+      relationships: [
+        {
+          id: 'rel-9',
+          name: 'ghost link',
+          fromEntityId: 'ghost-a',
+          toEntityId: 'ghost-b',
+          fromCardinality: '1',
+          toCardinality: 'N'
+        }
+      ]
     };
     const document = buildOasDocument(state);
     const schema = document.components.schemas.Solo_Thing;
@@ -641,35 +744,43 @@ describe('designer exporters (JUM-469)', () => {
 
   it('carries the JUM-478 meta extensions: x-rbac only when non-default, x-fieldless, x-field-flags', () => {
     expect.hasAssertions();
-    const document = buildOasDocument(normalizeStatePayload({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [
+    const document = buildOasDocument(
+      normalizeStatePayload({
+        domains: [
           {
-            id: 'entity-1',
-            name: 'Invoice',
-            fields: [
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
               {
-                name: 'id', type: 'uuid', required: true, pk: true, unique: true
+                id: 'entity-1',
+                name: 'Invoice',
+                fields: [
+                  {
+                    name: 'id',
+                    type: 'uuid',
+                    required: true,
+                    pk: true,
+                    unique: true
+                  },
+                  { name: 'code', type: 'string', unique: true }
+                ],
+                meta: {
+                  rbac: {
+                    list: { roles: ['superadmin'] }
+                  }
+                }
               },
-              { name: 'code', type: 'string', unique: true }
-            ],
-            meta: {
-              rbac: {
-                list: { roles: ['superadmin'] }
+              {
+                id: 'entity-2',
+                name: 'Receipt',
+                fields: []
               }
-            }
-          },
-          {
-            id: 'entity-2',
-            name: 'Receipt',
-            fields: []
+            ]
           }
-        ]
-      }],
-      relationships: []
-    }));
+        ],
+        relationships: []
+      })
+    );
     const invoice = document.components.schemas.Billing_Invoice;
     // A divergent policy crosses verbatim (normalized), with tenantScoped
     // derived from the roles exactly as the runtime derives it.
@@ -699,23 +810,32 @@ describe('designer exporters (JUM-469)', () => {
 
   it('emits discriminator mapping only for declared refs', () => {
     expect.hasAssertions();
-    const document = buildOasDocument(normalizeStatePayload({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [{
-          id: 'entity-1',
-          name: 'Invoice',
-          fields: [],
-          meta: {
-            oasComposition: {
-              mode: 'allOf', refs: [], externalRefs: [], discriminator: 'kind'
-            }
+    const document = buildOasDocument(
+      normalizeStatePayload({
+        domains: [
+          {
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [
+              {
+                id: 'entity-1',
+                name: 'Invoice',
+                fields: [],
+                meta: {
+                  oasComposition: {
+                    mode: 'allOf',
+                    refs: [],
+                    externalRefs: [],
+                    discriminator: 'kind'
+                  }
+                }
+              }
+            ]
           }
-        }]
-      }],
-      relationships: []
-    }));
+        ],
+        relationships: []
+      })
+    );
     const schema = document.components.schemas.Billing_Invoice;
     expect(schema.allOf).toBeUndefined();
     expect(schema.discriminator).toStrictEqual({ propertyName: 'kind', mapping: {} });
@@ -724,25 +844,41 @@ describe('designer exporters (JUM-469)', () => {
   it('renders markdown for sparse entities: no context, partial meta, fallbacks', () => {
     expect.hasAssertions();
     const markdown = buildMarkdownExport({
-      domains: [{
-        id: 'domain-1',
-        name: 'Sparse',
-        context: null,
-        entities: [{
-          id: 'entity-1',
-          name: 'Shell',
-          fields: [{ name: 'email', type: 'string', format: 'email' }],
-          meta: {
-            rbac: { list: { roles: ['admin'], tenantScoped: false } },
-            contracts: [{
-              type: 'event', name: 'ping', channel: '', version: '1.0.0', payloadSchema: null
-            }]
-          }
-        }]
-      }],
-      relationships: [{
-        id: 'rel-7', fromEntityId: 'entity-1', toEntityId: 'entity-1', fromCardinality: '1', toCardinality: 'N'
-      }]
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Sparse',
+          context: null,
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'Shell',
+              fields: [{ name: 'email', type: 'string', format: 'email' }],
+              meta: {
+                rbac: { list: { roles: ['admin'], tenantScoped: false } },
+                contracts: [
+                  {
+                    type: 'event',
+                    name: 'ping',
+                    channel: '',
+                    version: '1.0.0',
+                    payloadSchema: null
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      relationships: [
+        {
+          id: 'rel-7',
+          fromEntityId: 'entity-1',
+          toEntityId: 'entity-1',
+          fromCardinality: '1',
+          toCardinality: 'N'
+        }
+      ]
     });
     // No context block between the domain header and the entity.
     expect(markdown).toContain('## Domain: Sparse\n\n### Entity: Shell');
@@ -758,28 +894,33 @@ describe('designer exporters (JUM-469)', () => {
   it('ignores unknown composition modes and parses string refs in OAS export', () => {
     expect.hasAssertions();
     const document = buildOasDocument({
-      domains: [{
-        id: 'domain-1',
-        name: 'Billing',
-        entities: [
-          {
-            id: 'entity-1',
-            name: 'Invoice',
-            fields: [],
-            meta: {
-              oasComposition: {
-                mode: 'bogus', refs: 'A, B', externalRefs: 'x.yaml#T', discriminator: ''
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'Invoice',
+              fields: [],
+              meta: {
+                oasComposition: {
+                  mode: 'bogus',
+                  refs: 'A, B',
+                  externalRefs: 'x.yaml#T',
+                  discriminator: ''
+                }
               }
+            },
+            {
+              id: 'entity-2',
+              name: 'Receipt',
+              fields: [],
+              meta: { oasComposition: {} }
             }
-          },
-          {
-            id: 'entity-2',
-            name: 'Receipt',
-            fields: [],
-            meta: { oasComposition: {} }
-          }
-        ]
-      }],
+          ]
+        }
+      ],
       relationships: []
     });
     const invoice = document.components.schemas.Billing_Invoice;
@@ -796,11 +937,13 @@ describe('designer exporters (JUM-469)', () => {
   it('tolerates entities without meta in the jsonschema and OAS builders', () => {
     expect.hasAssertions();
     const state = {
-      domains: [{
-        id: 'domain-1',
-        name: 'Sparse',
-        entities: [{ id: 'entity-1', name: 'Bare', fields: [] }]
-      }],
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Sparse',
+          entities: [{ id: 'entity-1', name: 'Bare', fields: [] }]
+        }
+      ],
       relationships: []
     };
     expect(buildJsonSchemaDocument(state).definitions.Sparse_Bare.properties).toStrictEqual({});
@@ -812,25 +955,29 @@ describe('designer exporters (JUM-469)', () => {
   it('renders markdown context lines and partial RBAC rules verbatim', () => {
     expect.hasAssertions();
     const markdown = buildMarkdownExport({
-      domains: [{
-        id: 'domain-1',
-        name: 'Sparse',
-        context: {
-          ubiquitousLanguage: 'en',
-          ownerTeam: 'payments',
-          upstreamDependencies: [],
-          downstreamDependencies: ['crm'],
-          integrationChannel: 'events',
-          packageDependencies: [],
-          sharedValueObjects: ['money']
-        },
-        entities: [{
-          id: 'entity-1',
-          name: 'RbacOnly',
-          fields: [],
-          meta: { rbac: { list: { tenantScoped: false } } }
-        }]
-      }],
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Sparse',
+          context: {
+            ubiquitousLanguage: 'en',
+            ownerTeam: 'payments',
+            upstreamDependencies: [],
+            downstreamDependencies: ['crm'],
+            integrationChannel: 'events',
+            packageDependencies: [],
+            sharedValueObjects: ['money']
+          },
+          entities: [
+            {
+              id: 'entity-1',
+              name: 'RbacOnly',
+              fields: [],
+              meta: { rbac: { list: { tenantScoped: false } } }
+            }
+          ]
+        }
+      ],
       relationships: []
     });
     expect(markdown).toContain('- Owner Team: payments');
@@ -847,9 +994,16 @@ describe('sparse-input exporter fallbacks (JUM-493)', () => {
   it('renders dashes for absent domain context fields in markdown', () => {
     expect.hasAssertions();
     const markdown = buildMarkdownExport({
-      domains: [{
-        name: 'D', color: '#60a5fa', x: 0, y: 0, entities: [], context: {}
-      }],
+      domains: [
+        {
+          name: 'D',
+          color: '#60a5fa',
+          x: 0,
+          y: 0,
+          entities: [],
+          context: {}
+        }
+      ],
       relationships: []
     });
     expect(markdown).toContain('Ubiquitous Language: -');

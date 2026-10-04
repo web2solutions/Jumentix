@@ -11,7 +11,7 @@ import {
   normalizeArchitectureInput,
   removeArchitectureService
 } from '@jumentix/designer-core/model/architecture.js';
-import { collectArchitectureIssues } from '@jumentix/designer-core/validation/architectureValidation.js';
+import collectArchitectureIssues from '@jumentix/designer-core/validation/architectureValidation.js';
 
 function fillSelect(select, items, selected) {
   if (!select) return;
@@ -99,17 +99,24 @@ export function createArchitectureCanvas({ dom, state, actions }) {
   }
 
   function renderInspector() {
-    const selected = architecture().services.find((service) => service.id === state.selectedArchitectureServiceId)
-      || architecture().services[0];
+    const selected =
+      architecture().services.find(
+        (service) => service.id === state.selectedArchitectureServiceId
+      ) || architecture().services[0];
     if (!selected) return;
     state.selectedArchitectureServiceId = selected.id;
     if (dom.architectureInspectName) dom.architectureInspectName.value = selected.name;
     if (dom.architectureInspectKind) dom.architectureInspectKind.value = selected.kind;
     if (dom.architectureInspectUrl) dom.architectureInspectUrl.value = selected.url;
-    if (dom.architectureInspectDeploy) dom.architectureInspectDeploy.value = selected.deployTargetId || '';
+    if (dom.architectureInspectDeploy)
+      dom.architectureInspectDeploy.value = selected.deployTargetId || '';
     fillSelect(dom.architectureInspectDomain, state.domains || [], (state.domains || [])[0]?.id);
     fillSelect(dom.architectureLinkFrom, architecture().services, selected.id);
-    fillSelect(dom.architectureLinkTo, architecture().services, architecture().services[1]?.id || selected.id);
+    fillSelect(
+      dom.architectureLinkTo,
+      architecture().services,
+      architecture().services[1]?.id || selected.id
+    );
     if (dom.architectureServiceList) {
       dom.architectureServiceList.innerHTML = '';
       architecture().services.forEach((service) => {
@@ -263,11 +270,15 @@ export function createArchitectureCanvas({ dom, state, actions }) {
       dom.architectureAddServiceBtn.addEventListener('click', () => {
         const name = String(dom.architectureServiceNameInput?.value || '').trim() || 'Service';
         withPersist(() => {
-          state.architecture = addArchitectureService(architecture(), {
-            name,
-            kind: 'domain',
-            url: 'http://localhost:3001/api/1.0.0'
-          }, state.domains);
+          state.architecture = addArchitectureService(
+            architecture(),
+            {
+              name,
+              kind: 'domain',
+              url: 'http://localhost:3001/api/1.0.0'
+            },
+            state.domains
+          );
         });
         if (dom.architectureServiceNameInput) dom.architectureServiceNameInput.value = '';
         renderArchitecture();
@@ -275,7 +286,9 @@ export function createArchitectureCanvas({ dom, state, actions }) {
     }
     if (dom.architectureSaveServiceBtn) {
       dom.architectureSaveServiceBtn.addEventListener('click', () => {
-        const selected = architecture().services.find((service) => service.id === state.selectedArchitectureServiceId);
+        const selected = architecture().services.find(
+          (service) => service.id === state.selectedArchitectureServiceId
+        );
         if (!selected) return;
         withPersist(() => {
           selected.name = String(dom.architectureInspectName?.value || selected.name);
@@ -313,11 +326,15 @@ export function createArchitectureCanvas({ dom, state, actions }) {
           ? dom.architectureLinkProtocol.value
           : 'rest';
         withPersist(() => {
-          state.architecture = addArchitectureLink(architecture(), {
-            from: dom.architectureLinkFrom?.value,
-            to: dom.architectureLinkTo?.value,
-            protocol
-          }, state.domains);
+          state.architecture = addArchitectureLink(
+            architecture(),
+            {
+              from: dom.architectureLinkFrom?.value,
+              to: dom.architectureLinkTo?.value,
+              protocol
+            },
+            state.domains
+          );
         });
         renderArchitecture();
       });

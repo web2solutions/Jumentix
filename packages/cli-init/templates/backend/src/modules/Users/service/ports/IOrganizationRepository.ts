@@ -1,5 +1,5 @@
 import type { IPagingRequest, IPagingResponse } from '@src/modules/port';
-import { Organization } from '@src/modules/Users/domain/Model/Organization';
+import type Organization from '@src/modules/Users/domain/Model/Organization';
 import type { RequestCreateAddress } from '@src/modules/Users/interface/dto/RequestCreateAddress';
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
 import type { RequestCreateOrganization } from '@src/modules/Users/interface/dto/RequestCreateOrganization';

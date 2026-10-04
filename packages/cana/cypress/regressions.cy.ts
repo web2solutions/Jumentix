@@ -1,15 +1,16 @@
-import type { CanaChangeEvent, CanaSchema } from '../src';
 import {
-  OPERATION_LEDGER_STORE,
-  StorageDurability,
   browserStorageEnvironment,
   classifyOpen,
   createClient,
   deleteDatabase,
   isCanaErrorCode,
-  openDatabase
+  openDatabase,
+  OPERATION_LEDGER_STORE,
+  StorageDurability
 } from '../src';
 import { rejection, thrownBy } from './harness';
+
+import type { CanaChangeEvent, CanaSchema } from '../src';
 
 /**
  * Regression tests for the seven defects found in review of PR #15.
@@ -19,7 +20,10 @@ import { rejection, thrownBy } from './harness';
  * the decision — so a future revert is caught rather than silently accepted.
  */
 
-interface Design { id: number; name: string }
+interface Design {
+  id: number;
+  name: string;
+}
 
 /**
  * Wait for a condition rather than for a duration (JUM-679, Requirement 134 §3).
@@ -30,16 +34,14 @@ interface Design { id: number; name: string }
  * the bound exists only so a condition that never holds fails as a named
  * timeout instead of hanging the suite.
  */
-async function until(
-  condition: () => boolean,
-  what: string,
-  timeoutMs = 2_000
-): Promise<void> {
+async function until(condition: () => boolean, what: string, timeoutMs = 2_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (condition()) return;
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve) => { setTimeout(resolve, 5); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 5);
+    });
   }
   throw new Error(`Timed out after ${timeoutMs}ms waiting for: ${what}`);
 }
@@ -54,8 +56,12 @@ const tombstoneEnvironment = () => {
   return {
     tombstone: {
       get: (key: string) => store.get(key) ?? null,
-      set: (key: string, value: string) => { store.set(key, value); },
-      remove: (key: string) => { store.delete(key); }
+      set: (key: string, value: string) => {
+        store.set(key, value);
+      },
+      remove: (key: string) => {
+        store.delete(key);
+      }
     }
   };
 };
@@ -91,7 +97,10 @@ describe('regression: false eviction when the version probe cannot answer', () =
     const durability = new StorageDurability(tombstoneEnvironment());
 
     const first = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
     await new Promise<void>((resolve, reject) => {
       const transaction = first.database.transaction('designs', 'readwrite');
@@ -117,7 +126,10 @@ describe('regression: false eviction when the version probe cannot answer', () =
     } as unknown as IDBFactory;
 
     const second = await openDatabase({
-      name: 'designer', factory: blind, schema: schema(), durability
+      name: 'designer',
+      factory: blind,
+      schema: schema(),
+      durability
     });
 
     expect(second.eviction.evicted).to.equal(false);
@@ -133,8 +145,10 @@ describe('regression: bulkPut labelled every row as updated', () => {
     await client.open();
     await client.table<Design>('designs').add({ id: 1, name: 'existing' });
 
-    const { events } = await client.table<Design>('designs')
-      .bulkPut([{ id: 1, name: 'changed' }, { id: 2, name: 'brand new' }]);
+    const { events } = await client.table<Design>('designs').bulkPut([
+      { id: 1, name: 'changed' },
+      { id: 2, name: 'brand new' }
+    ]);
 
     expect(events.map((event) => event.type)).to.deep.equal(['updated', 'created']);
     await client.close();
@@ -145,14 +159,20 @@ describe('regression: bulkPut labelled every row as updated', () => {
     const client = createClient({
       name: 'designer',
       schema: schema(),
-      hooks: { beforeWrite: (context) => { seen.push(context.type); } }
+      hooks: {
+        beforeWrite: (context) => {
+          seen.push(context.type);
+        }
+      }
     });
     await client.open();
     await client.table<Design>('designs').add({ id: 1, name: 'existing' });
     seen.length = 0;
 
-    await client.table<Design>('designs')
-      .bulkPut([{ id: 1, name: 'changed' }, { id: 2, name: 'brand new' }]);
+    await client.table<Design>('designs').bulkPut([
+      { id: 1, name: 'changed' },
+      { id: 2, name: 'brand new' }
+    ]);
 
     expect(seen).to.deep.equal(['updated', 'created']);
     await client.close();
@@ -206,7 +226,10 @@ describe('regression: ledger silently did nothing without a version bump', () =>
     await plain.close();
 
     const ledgered = createClient({
-      name: 'designer', schema: schema(1), factory, operationLedger: true
+      name: 'designer',
+      schema: schema(1),
+      factory,
+      operationLedger: true
     });
 
     const failure = await ledgered.open().catch((error: unknown) => error);
@@ -223,7 +246,10 @@ describe('regression: ledger silently did nothing without a version bump', () =>
     await plain.close();
 
     const ledgered = createClient({
-      name: 'designer', schema: schema(2), factory, operationLedger: true
+      name: 'designer',
+      schema: schema(2),
+      factory,
+      operationLedger: true
     });
     await ledgered.open();
 
@@ -237,7 +263,9 @@ describe('regression: unknown outcome could not be reconciled', () => {
     // The result previously carried neither, so a caller handed 'unknown' — the
     // one outcome that must be reconciled — had nothing to pass to resolveWrite.
     const client = createClient({
-      name: 'designer', schema: schema(), operationLedger: true
+      name: 'designer',
+      schema: schema(),
+      operationLedger: true
     });
     await client.open();
 
@@ -247,7 +275,9 @@ describe('regression: unknown outcome could not be reconciled', () => {
 
     expect(typeof result.correlationId).to.equal('string');
     expect(typeof result.attemptedAt).to.equal('number');
-    expect(await client.resolveWrite(result.correlationId, result.attemptedAt)).to.equal('committed');
+    expect(await client.resolveWrite(result.correlationId, result.attemptedAt)).to.equal(
+      'committed'
+    );
     await client.close();
   });
 
@@ -260,7 +290,9 @@ describe('regression: unknown outcome could not be reconciled', () => {
     // Recording first is observable: the row is present even for a transaction
     // whose body did nothing else.
     const client = createClient({
-      name: 'designer', schema: schema(), operationLedger: true
+      name: 'designer',
+      schema: schema(),
+      operationLedger: true
     });
     await client.open();
 
@@ -276,14 +308,18 @@ describe('regression: unknown outcome could not be reconciled', () => {
     // Recording first must not have broken the other direction: the shared
     // transaction is what guarantees the row rolls back with the data.
     const client = createClient({
-      name: 'designer', schema: schema(), operationLedger: true
+      name: 'designer',
+      schema: schema(),
+      operationLedger: true
     });
     await client.open();
 
-    await client.transaction('readwrite', ['designs'], async (scope) => {
-      await scope.table<Design>('designs').add({ id: 1, name: 'a' });
-      scope.abort();
-    }).catch(() => undefined);
+    await client
+      .transaction('readwrite', ['designs'], async (scope) => {
+        await scope.table<Design>('designs').add({ id: 1, name: 'a' });
+        scope.abort();
+      })
+      .catch(() => undefined);
 
     expect(await client.table(OPERATION_LEDGER_STORE).count()).to.equal(0);
     expect(await client.table<Design>('designs').count()).to.equal(0);
@@ -302,8 +338,12 @@ describe('regression: eviction detection was off by default', () => {
       configurable: true,
       value: {
         getItem: (key: string) => backing.get(key) ?? null,
-        setItem: (key: string, value: string) => { backing.set(key, String(value)); },
-        removeItem: (key: string) => { backing.delete(key); }
+        setItem: (key: string, value: string) => {
+          backing.set(key, String(value));
+        },
+        removeItem: (key: string) => {
+          backing.delete(key);
+        }
       }
     });
     return backing;
@@ -375,7 +415,11 @@ describe('regression: orphaned connection after a blocked timeout', () => {
       onerror: null as (() => void) | null,
       onupgradeneeded: null as (() => void) | null,
       onblocked: null as (() => void) | null,
-      result: { close: () => { closed = true; } },
+      result: {
+        close: () => {
+          closed = true;
+        }
+      },
       error: null,
       transaction: null
     };
@@ -388,9 +432,16 @@ describe('regression: orphaned connection after a blocked timeout', () => {
       databases: async () => []
     } as unknown as IDBFactory;
 
-    expect(await rejection(openDatabase({
-      name: 'designer', schema: schema(), factory, blockedTimeoutMs: 20
-    }))).to.deep.include({ code: 'UpgradeBlocked' });
+    expect(
+      await rejection(
+        openDatabase({
+          name: 'designer',
+          schema: schema(),
+          factory,
+          blockedTimeoutMs: 20
+        })
+      )
+    ).to.deep.include({ code: 'UpgradeBlocked' });
 
     // The connection arrives late; what is asserted is that it gets closed, not
     // how long that takes.
@@ -410,12 +461,18 @@ describe('regression: false eviction for a database never written to', () => {
     const durability = new StorageDurability(tombstoneEnvironment());
 
     const first = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
     first.database.close();
 
     const second = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
 
     expect(second.eviction.evicted).to.equal(false);
@@ -428,7 +485,10 @@ describe('regression: false eviction for a database never written to', () => {
     const durability = new StorageDurability(tombstoneEnvironment());
 
     const first = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
     await new Promise<void>((resolve, reject) => {
       const transaction = first.database.transaction('designs', 'readwrite');
@@ -440,13 +500,19 @@ describe('regression: false eviction for a database never written to', () => {
 
     // Reopen so `hadData` is recorded from the observed contents.
     const seen = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
     seen.database.close();
 
     await deleteDatabase('designer', { factory });
     const third = await openDatabase({
-      name: 'designer', factory, schema: schema(), durability
+      name: 'designer',
+      factory,
+      schema: schema(),
+      durability
     });
 
     expect(third.eviction.evicted).to.equal(true);
@@ -460,15 +526,21 @@ describe('regression: subscribe leaked a listener when replay was refused', () =
     // the array with no unsubscribe function to remove it. A caller retrying in
     // a loop grew the list without bound.
     const client = createClient({
-      name: 'designer', schema: schema(), retainedEvents: 2
+      name: 'designer',
+      schema: schema(),
+      retainedEvents: 2
     });
     await client.open();
-    await client.table<Design>('designs')
-      .bulkAdd([{ id: 1, name: 'a' }, { id: 2, name: 'b' }, { id: 3, name: 'c' }]);
+    await client.table<Design>('designs').bulkAdd([
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' },
+      { id: 3, name: 'c' }
+    ]);
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
-      expect(thrownBy(() => client.subscribe(() => undefined, { sinceCursor: 0 })))
-        .to.deep.include({ code: 'NotFound' });
+      expect(thrownBy(() => client.subscribe(() => undefined, { sinceCursor: 0 }))).to.deep.include(
+        { code: 'NotFound' }
+      );
     }
 
     // A working subscriber must still receive exactly one event per write, which

@@ -201,7 +201,7 @@ Failure and edge states follow the same honesty discipline as the env-file API:
   as "no ecosystem for this environment", not a silently empty preview.
 - Unreadable or syntactically broken ecosystem file:
   `500 { "error": "PM2 ecosystem file operation failed.", "code", "path",
-  "details" }`.
+"details" }`.
 
 ### Env file location
 
@@ -298,7 +298,7 @@ UI.
   interface is an explicit opt-in via `JUMENTIX_SERVICE_MANAGEMENT_HOST`.
 - Port defaults to `3200`, overridable via `JUMENTIX_SERVICE_MANAGEMENT_PORT`.
 - When `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` is set, `POST
-  /api/runtime/env` requires `Authorization: Bearer <token>` and rejects
+/api/runtime/env` requires `Authorization: Bearer <token>` and rejects
   anything else with `401 { "error": "Unauthorized." }`; when unset,
   loopback-only operation is allowed without a token.
 - Mutation audit log records timestamp, environment, and changed keys (not values).
@@ -312,11 +312,11 @@ JUM-543; Requirement 126 §3):
   The parse `try` is narrowed to `JSON.parse` only, so this envelope can never
   report a filesystem failure.
 - Unsupported environment: `400 { "error": "Invalid environment request.",
-  "details": … }` whose `details` name the unsupported value and the accepted
+"details": … }` whose `details` name the unsupported value and the accepted
   list — on GET and POST alike; no file is written.
 - Filesystem failures — missing env file (error code `ENV_FILE_NOT_FOUND`),
   permission errors, full disk: `500 { "error": "Environment file operation
-  failed.", "code": …, "path": …, "details": … }`, where `code` is
+failed.", "code": …, "path": …, "details": … }`, where `code` is
   `ENV_FILE_NOT_FOUND` or the underlying `fs` error code and `path` is the
   resolved env-file path. A broken installation is a distinct, identifiable
   failure class — never `400 Invalid payload.`.

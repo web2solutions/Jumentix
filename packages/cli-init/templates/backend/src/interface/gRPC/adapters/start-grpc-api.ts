@@ -1,7 +1,9 @@
-import { shouldStartRealtimeApi } from '@src/interface/runtime/RuntimeEnvironment';
 import { startGrpcAdapter } from '@src/interface/gRPC/adapters/grpc/grpc';
+import { shouldStartRealtimeApi } from '@src/interface/runtime/RuntimeEnvironment';
 
-export async function startGrpcApiAdapter(env: NodeJS.ProcessEnv = process.env): Promise<boolean> {
+export default async function startGrpcApiAdapter(
+  env: NodeJS.ProcessEnv = process.env
+): Promise<boolean> {
   if (!shouldStartRealtimeApi('grpc', env)) return false;
   await startGrpcAdapter();
   return true;

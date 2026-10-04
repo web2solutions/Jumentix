@@ -1,10 +1,10 @@
 export type {
-  AgentRecord,
-  AgentRegistrySnapshot,
-  AgentStatus,
   AgentBusEvent,
   AgentBusEventKind,
   AgentBusPresence,
+  AgentRecord,
+  AgentRegistrySnapshot,
+  AgentStatus,
   AssignTaskInput,
   BusStatusResult,
   CompleteTaskInput,
@@ -22,21 +22,17 @@ export type { RepairAction, RepairResult } from './commands';
 export type { IntegrityProblem } from './validation';
 
 export {
+  closeFirestore,
   createFirestoreClient,
-  getAgent,
-  upsertAgent,
   deleteAgent,
+  generateSnapshot,
+  getAgent,
   getAllAgents,
   getStoredAgents,
-  generateSnapshot,
-  closeFirestore
+  upsertAgent
 } from './firestore-client';
 
-export {
-  createRtdbClient,
-  closeRtdb,
-  sanitizeRtdbKey
-} from './rtdb-client';
+export { closeRtdb, createRtdbClient, sanitizeRtdbKey } from './rtdb-client';
 
 export {
   defaultDatabaseUrl,
@@ -47,22 +43,22 @@ export {
 } from './firebase-credentials';
 
 export {
-  publishProgress,
-  watchBus,
   busStatus,
-  upsertPresence,
+  EVENT_KINDS,
   presenceFromAgent,
-  EVENT_KINDS
+  publishProgress,
+  upsertPresence,
+  watchBus
 } from './bus-commands';
 
 export {
-  registerAgent,
-  heartbeat,
   assignTask,
+  checkSnapshot,
   completeTask,
+  heartbeat,
+  registerAgent,
   repairRegistry,
-  syncSnapshot,
-  checkSnapshot
+  syncSnapshot
 } from './commands';
 
 export type { WorkspaceExemption } from './validation';

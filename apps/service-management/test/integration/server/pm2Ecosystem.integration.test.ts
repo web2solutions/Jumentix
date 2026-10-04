@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test, jest/max-expects */
+/* eslint-disable jest/no-conditional-in-test, jest/max-expects */
 /*
  * JUM-480 — Contract assertions for `GET /api/runtime/pm2-ecosystem`.
  *
@@ -15,42 +15,44 @@
  *  - unknown environments are rejected, never silently coerced (JUM-558).
  */
 import fs from 'node:fs';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
+
 import {
-  createTempConfigDir,
   cleanupTempConfigDir,
+  createTempConfigDir,
   envFileContent,
   requestJson,
   startServer,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
+
 import type { StartedServer } from '../../helpers/serverHarness';
 
-type Pm2EcosystemApp = {
+interface Pm2EcosystemApp {
   name: string;
   script: string;
   interpreter: string;
   interpreterArgs: string;
   env: Record<string, string>;
   command: string;
-};
+}
 
-type Pm2EcosystemPayload = {
+interface Pm2EcosystemPayload {
   environment: string;
   fileName: string;
   path: string;
   exists: boolean;
   apps: Pm2EcosystemApp[];
-};
+}
 
-type ErrorEnvelope = {
+interface ErrorEnvelope {
   error: string;
   code?: string;
   path?: string;
   details?: string;
-};
+}
 
 function createTempPm2Dir(files: Record<string, string>) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jumentix-pm2-ecosystem-'));
@@ -60,7 +62,7 @@ function createTempPm2Dir(files: Record<string, string>) {
   return dir;
 }
 
-function ecosystemSource(apps: Array<{ name: string; marker: string }>) {
+function ecosystemSource(apps: { name: string; marker: string }[]) {
   const entries = apps
     .map(
       (app) => `    {
@@ -115,6 +117,13 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   let pm2Dir: string;
   let server: StartedServer | undefined;
 
+  const runningServer = (): StartedServer => {
+    if (!server) {
+      throw new Error('server was not started by beforeAll');
+    }
+    return server;
+  };
+
   beforeAll(async () => {
     configDir = createTempConfigDir({ '.env.dev': envFileContent('express') });
     pm2Dir = createTempPm2Dir({
@@ -122,32 +131,43 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
         { name: 'jumentix-dev-restapi', marker: 'rest-marker' },
         { name: 'jumentix-dev-service-management', marker: 'sm-marker' }
       ]),
-      'ecosystem.staging.config.cjs': ecosystemSource([{ name: 'jumentix-staging-restapi', marker: 'staging-marker' }]),
-      'ecosystem.production.config.cjs': ecosystemSource([{ name: 'jumentix-prod-restapi', marker: 'prod-marker' }])
+      'ecosystem.staging.config.cjs': ecosystemSource([
+        { name: 'jumentix-staging-restapi', marker: 'staging-marker' }
+      ]),
+      'ecosystem.production.config.cjs': ecosystemSource([
+        { name: 'jumentix-prod-restapi', marker: 'prod-marker' }
+      ])
       // No ecosystem.ci.cjs on purpose: the missing-file state is an
       // acceptance criterion, asserted below.
     });
     const pm2ModulePath = path.join(pm2Dir, 'pm2-fixture.cjs');
     const pm2ActionsDump = path.join(pm2Dir, 'pm2-actions.json');
-    fs.writeFileSync(pm2ModulePath, pm2ModuleSource([
-      {
-        name: 'jumentix-dev-restapi',
-        pm_id: 1,
-        monit: { cpu: 3.5, memory: 52428800 },
-        pm2_env: {
-          name: 'jumentix-dev-restapi',
-          namespace: 'default',
-          status: 'online',
-          restart_time: 2,
-          unstable_restarts: 0,
-          pm_uptime: Date.now() - 120000,
-          pm_exec_path: './apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts',
-          exec_interpreter: 'bun',
-          watch: true,
-          axm_monitor: { latency: { value: '12ms' } }
-        }
-      }
-    ], pm2ActionsDump), 'utf8');
+    fs.writeFileSync(
+      pm2ModulePath,
+      pm2ModuleSource(
+        [
+          {
+            name: 'jumentix-dev-restapi',
+            pm_id: 1,
+            monit: { cpu: 3.5, memory: 52428800 },
+            pm2_env: {
+              name: 'jumentix-dev-restapi',
+              namespace: 'default',
+              status: 'online',
+              restart_time: 2,
+              unstable_restarts: 0,
+              pm_uptime: Date.now() - 120000,
+              pm_exec_path: './apps/backend-template/src/interface/HTTP/adapters/start-rest-api.ts',
+              exec_interpreter: 'bun',
+              watch: true,
+              axm_monitor: { latency: { value: '12ms' } }
+            }
+          }
+        ],
+        pm2ActionsDump
+      ),
+      'utf8'
+    );
     server = await startServer(configDir, {
       JUMENTIX_SERVICE_MANAGEMENT_PM2_DIR: pm2Dir,
       JUMENTIX_SERVICE_MANAGEMENT_PM2_MODULE: pm2ModulePath
@@ -165,7 +185,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   it('reads the real ecosystem file — names, env and derived commands, no package-manager string', async () => {
     expect.hasAssertions();
     const { status, body } = await requestJson<Pm2EcosystemPayload>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-ecosystem?environment=dev'
     );
@@ -193,7 +213,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   it('collects runtime process metrics through the PM2 API', async () => {
     expect.hasAssertions();
     const { status, body } = await requestJson<any>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-metrics?environment=dev'
     );
@@ -231,30 +251,34 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     // Node 22+ provides a WHATWG WebSocket global; avoid importing the `ws`
     // package from the backend-template package boundary.
     const result = await new Promise<{ metrics: any; action: any }>((resolve, reject) => {
-      const socket = new WebSocket(`ws://127.0.0.1:${server!.port}/api/runtime/pm2-ws`);
+      const socket = new WebSocket(`ws://127.0.0.1:${runningServer().port}/api/runtime/pm2-ws`);
       let metricsFrame: any = null;
       const timer = setTimeout(() => {
         socket.close();
         reject(new Error('WebSocket metrics/action timeout'));
       }, 8000);
       socket.addEventListener('open', () => {
-        socket.send(JSON.stringify({
-          type: 'subscribe',
-          environment: 'dev',
-          intervalMs: 2000
-        }));
+        socket.send(
+          JSON.stringify({
+            type: 'subscribe',
+            environment: 'dev',
+            intervalMs: 2000
+          })
+        );
       });
       socket.addEventListener('message', (event) => {
-        const message = JSON.parse(String((event as MessageEvent).data));
+        const message = JSON.parse(String(event.data));
         if (message.type === 'metrics' && !metricsFrame) {
           metricsFrame = message;
-          socket.send(JSON.stringify({
-            type: 'action',
-            action: 'restart',
-            scope: 'process',
-            name: 'jumentix-dev-restapi',
-            pmId: 1
-          }));
+          socket.send(
+            JSON.stringify({
+              type: 'action',
+              action: 'restart',
+              scope: 'process',
+              name: 'jumentix-dev-restapi',
+              pmId: 1
+            })
+          );
           return;
         }
         if (message.type === 'action-result' && metricsFrame) {
@@ -281,30 +305,34 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     const dumpPath = (globalThis as any).__pm2ActionsDump as string;
     if (fs.existsSync(dumpPath)) fs.unlinkSync(dumpPath);
     const result = await new Promise<{ action: any }>((resolve, reject) => {
-      const socket = new WebSocket(`ws://127.0.0.1:${server!.port}/api/runtime/pm2-ws`);
+      const socket = new WebSocket(`ws://127.0.0.1:${runningServer().port}/api/runtime/pm2-ws`);
       const timer = setTimeout(() => {
         socket.close();
         reject(new Error('WebSocket start-after-stop timeout'));
       }, 8000);
       let subscribed = false;
       socket.addEventListener('open', () => {
-        socket.send(JSON.stringify({
-          type: 'subscribe',
-          environment: 'dev',
-          intervalMs: 2000
-        }));
+        socket.send(
+          JSON.stringify({
+            type: 'subscribe',
+            environment: 'dev',
+            intervalMs: 2000
+          })
+        );
       });
       socket.addEventListener('message', (event) => {
-        const message = JSON.parse(String((event as MessageEvent).data));
+        const message = JSON.parse(String(event.data));
         if (message.type === 'metrics' && !subscribed) {
           subscribed = true;
-          socket.send(JSON.stringify({
-            type: 'action',
-            action: 'start',
-            scope: 'process',
-            name: 'jumentix-dev-restapi',
-            pmId: 1
-          }));
+          socket.send(
+            JSON.stringify({
+              type: 'action',
+              action: 'start',
+              scope: 'process',
+              name: 'jumentix-dev-restapi',
+              pmId: 1
+            })
+          );
           return;
         }
         if (message.type === 'action-result') {
@@ -320,19 +348,21 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     });
     expect(result.action.ok).toBe(true);
     expect(result.action.action).toBe('start');
-    const actions = JSON.parse(fs.readFileSync(dumpPath, 'utf8')) as Array<{
+    const actions = JSON.parse(fs.readFileSync(dumpPath, 'utf8')) as {
       method: string;
       target: string;
       opts: unknown;
-    }>;
+    }[];
     const startCalls = actions.filter((entry) => entry.method === 'start');
     expect(startCalls.length).toBeGreaterThan(0);
-    expect(startCalls.some((entry) => (
-      entry.target === 'jumentix-dev-restapi' && entry.opts === null
-    ))).toBe(true);
-    expect(startCalls.every((entry) => (
-      typeof entry.target === 'string' && !String(entry.target).includes('ecosystem.')
-    ))).toBe(true);
+    expect(
+      startCalls.some((entry) => entry.target === 'jumentix-dev-restapi' && entry.opts === null)
+    ).toBe(true);
+    expect(
+      startCalls.every(
+        (entry) => typeof entry.target === 'string' && !String(entry.target).includes('ecosystem.')
+      )
+    ).toBe(true);
   });
 
   it('reflects an ecosystem edit with no code change and no server restart', async () => {
@@ -347,7 +377,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
       'utf8'
     );
     const { status, body } = await requestJson<Pm2EcosystemPayload>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-ecosystem?environment=dev'
     );
@@ -358,7 +388,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   it('covers every environment the ecosystems define, not only dev', async () => {
     expect.hasAssertions();
     const staging = await requestJson<Pm2EcosystemPayload>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-ecosystem?environment=staging'
     );
@@ -367,7 +397,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     expect(staging.body.apps.map((app) => app.name)).toStrictEqual(['jumentix-staging-restapi']);
 
     const production = await requestJson<Pm2EcosystemPayload>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-ecosystem?environment=production'
     );
@@ -376,7 +406,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
     expect(production.body.apps.map((app) => app.name)).toStrictEqual(['jumentix-prod-restapi']);
 
     const prodAlias = await requestJson<Pm2EcosystemPayload>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-ecosystem?environment=prod'
     );
@@ -387,7 +417,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   it('reports a missing ecosystem file as an explicit state, not a silent empty preview or a 500', async () => {
     expect.hasAssertions();
     const { status, body } = await requestJson<Pm2EcosystemPayload>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-ecosystem?environment=ci'
     );
@@ -402,7 +432,7 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
   it('rejects an unknown environment explicitly, never coercing to dev', async () => {
     expect.hasAssertions();
     const { status, body } = await requestJson<ErrorEnvelope>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-ecosystem?environment=qa'
     );
@@ -414,9 +444,13 @@ describe('service management PM2 ecosystem preview API (JUM-480)', () => {
 
   it('surfaces a broken ecosystem file as the honest 500 envelope with code and path', async () => {
     expect.hasAssertions();
-    fs.writeFileSync(path.join(pm2Dir, 'ecosystem.staging.config.cjs'), 'module.exports = { apps: [', 'utf8');
+    fs.writeFileSync(
+      path.join(pm2Dir, 'ecosystem.staging.config.cjs'),
+      'module.exports = { apps: [',
+      'utf8'
+    );
     const { status, body } = await requestJson<ErrorEnvelope>(
-      server!.port,
+      runningServer().port,
       'GET',
       '/api/runtime/pm2-ecosystem?environment=staging'
     );

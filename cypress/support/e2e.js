@@ -136,11 +136,11 @@ const DELETE_TIMEOUT_MS = 5000;
 function deleteDatabase(factory, name) {
   return new Promise((resolve) => {
     const request = factory.deleteDatabase(name);
+    const giveUp = window.setTimeout(() => resolve('timed-out'), DELETE_TIMEOUT_MS);
     const settle = (outcome) => {
       window.clearTimeout(giveUp);
       resolve(outcome);
     };
-    const giveUp = window.setTimeout(() => resolve('timed-out'), DELETE_TIMEOUT_MS);
 
     request.onsuccess = () => settle('deleted');
     request.onerror = () => settle('errored');
@@ -149,33 +149,37 @@ function deleteDatabase(factory, name) {
   });
 }
 
-afterEach(() => cy.window({ log: false, timeout: TEARDOWN_TIMEOUT_MS }).then(
-  { timeout: TEARDOWN_TIMEOUT_MS },
-  (browserWindow) => {
-    const factory = browserWindow.indexedDB;
+afterEach(() =>
+  cy
+    .window({ log: false, timeout: TEARDOWN_TIMEOUT_MS })
+    .then({ timeout: TEARDOWN_TIMEOUT_MS }, (browserWindow) => {
+      const factory = browserWindow.indexedDB;
 
-    // `databases()` is how a spec's leftovers are found without the suite
-    // having to remember its own names. Where a browser lacks it, the suite is
-    // responsible for its own cleanup and says so.
-    if (typeof factory.databases !== 'function') return undefined;
+      // `databases()` is how a spec's leftovers are found without the suite
+      // having to remember its own names. Where a browser lacks it, the suite is
+      // responsible for its own cleanup and says so.
+      if (typeof factory.databases !== 'function') return undefined;
 
-    return factory.databases()
-      .then((open) => Promise.all(
-        open.filter((entry) => entry.name).map((entry) => deleteDatabase(factory, entry.name))
-      ))
-      .then((outcomes) => {
-        const survived = outcomes.filter((outcome) => outcome !== 'deleted');
-        if (survived.length > 0) {
-          // Visible, and not a failure. A database that outlives its spec makes
-          // the next one start dirty, which is the failure mode this hook
-          // exists to prevent — so it has to be sayable rather than swallowed.
-          // eslint-disable-next-line no-console
-          console.warn(
-            `[cana] ${survived.length} database(s) survived teardown `
-            + `(${survived.join(', ')}). The next spec starts with them present.`
-          );
-        }
-        return undefined;
-      });
-  }
-));
+      return factory
+        .databases()
+        .then((open) =>
+          Promise.all(
+            open.filter((entry) => entry.name).map((entry) => deleteDatabase(factory, entry.name))
+          )
+        )
+        .then((outcomes) => {
+          const survived = outcomes.filter((outcome) => outcome !== 'deleted');
+          if (survived.length > 0) {
+            // Visible, and not a failure. A database that outlives its spec makes
+            // the next one start dirty, which is the failure mode this hook
+            // exists to prevent — so it has to be sayable rather than swallowed.
+            // eslint-disable-next-line no-console
+            console.warn(
+              `[cana] ${survived.length} database(s) survived teardown ` +
+                `(${survived.join(', ')}). The next spec starts with them present.`
+            );
+          }
+          return undefined;
+        });
+    })
+);

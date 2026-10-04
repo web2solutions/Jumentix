@@ -1,12 +1,20 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const NODE_ENV = process.env.NODE_ENV || 'dev';
 
 const envFilesByEnv = {
-  dev: ['apps/backend-template/src/config/.env.dev', 'apps/backend-template/src/config/.env.dev.example', 'apps/backend-template/src/config/.env.ci'],
-  ci: ['apps/backend-template/src/config/.env.ci', 'apps/backend-template/src/config/.env.dev.example'],
+  dev: [
+    'apps/backend-template/src/config/.env.dev',
+    'apps/backend-template/src/config/.env.dev.example',
+    'apps/backend-template/src/config/.env.ci'
+  ],
+  ci: [
+    'apps/backend-template/src/config/.env.ci',
+    'apps/backend-template/src/config/.env.dev.example'
+  ],
   prod: ['apps/backend-template/src/config/.env.prod'],
-  staging: ['apps/backend-template/src/config/.env.staging'],
+  staging: ['apps/backend-template/src/config/.env.staging']
 };
 
 const candidateFiles = envFilesByEnv[NODE_ENV] || envFilesByEnv.dev;

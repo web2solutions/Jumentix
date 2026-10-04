@@ -20,11 +20,11 @@ function resolveGhBinary(candidates = GH_CANDIDATES, exists = fs.existsSync, env
     if (exists(candidate)) return candidate;
   }
   throw new Error(
-    'Could not find gh in a fixed system location '
-      + `(looked in: ${candidates.join(', ')}).\n`
-      + '  Release jobs resolve gh by absolute path on purpose so PATH cannot\n'
-      + '  shadow the real CLI. Install the GitHub CLI, set GH_BIN to an absolute\n'
-      + '  path, or add its location to GH_CANDIDATES in ci-cd/lib/gh-binary.js.'
+    'Could not find gh in a fixed system location ' +
+      `(looked in: ${candidates.join(', ')}).\n` +
+      '  Release jobs resolve gh by absolute path on purpose so PATH cannot\n' +
+      '  shadow the real CLI. Install the GitHub CLI, set GH_BIN to an absolute\n' +
+      '  path, or add its location to GH_CANDIDATES in ci-cd/lib/gh-binary.js.'
   );
 }
 

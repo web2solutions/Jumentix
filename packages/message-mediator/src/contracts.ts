@@ -35,8 +35,9 @@ export interface IEventBus {
   subscribe(eventName: string, listener: (event: IIntegrationEvent) => Promise<void> | void): void;
 }
 
-export type MessageHandler<TPayload = any, TResult = any> =
-  (message: IMessage<TPayload>) => Promise<IMessageResponse<TResult>> | IMessageResponse<TResult>;
+export type MessageHandler<TPayload = any, TResult = any> = (
+  message: IMessage<TPayload>
+) => Promise<IMessageResponse<TResult>> | IMessageResponse<TResult>;
 
 export interface IMessageRequestOptions {
   timeoutMs?: number;

@@ -16,12 +16,12 @@ without any warning**.
 
 Measured diff from one `bun install` against a deliberately-authored `package.json`:
 
-| Field | Authored | After `bun install` | Class of damage |
-| --- | --- | --- | --- |
-| `workspaces` | `["apps/*","packages/*","tooling/*"]` | `[".","apps/*","packages/*","apps/service-management","tooling/*"]` | Injected `"."` (root as its own workspace member) and a path already covered by `apps/*` |
-| `patchedDependencies` | `{"nextra-theme-docs@4.6.1": "..."}` | adds `{"nextra-theme-docs@4.6.1@4.6.1": "..."}` | **Corrupted key** — the version is appended twice, producing a selector that can never match a package. The patch is declared twice, once inertly |
-| `overrides.postcss` | `^8.5.23` | `^8.5.18` | **Silent security downgrade.** A deliberately raised floor was lowered back to the pnpm value |
-| `overrides` | 16 flat pins | 23 pins | Injected all 7 pnpm nested selectors (`restify>find-my-way`, `cassandra-driver>adm-zip`, `next>postcss`, `next>sharp`, `concurrently>shell-quote`, `@grpc/proto-loader>protobufjs`, `google-gax>protobufjs`) as flat string keys — the `EINVALIDTAGNAME` form npm rejects |
+| Field                 | Authored                              | After `bun install`                                                 | Class of damage                                                                                                                                                                                                                                                           |
+| --------------------- | ------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workspaces`          | `["apps/*","packages/*","tooling/*"]` | `[".","apps/*","packages/*","apps/service-management","tooling/*"]` | Injected `"."` (root as its own workspace member) and a path already covered by `apps/*`                                                                                                                                                                                  |
+| `patchedDependencies` | `{"nextra-theme-docs@4.6.1": "..."}`  | adds `{"nextra-theme-docs@4.6.1@4.6.1": "..."}`                     | **Corrupted key** — the version is appended twice, producing a selector that can never match a package. The patch is declared twice, once inertly                                                                                                                         |
+| `overrides.postcss`   | `^8.5.23`                             | `^8.5.18`                                                           | **Silent security downgrade.** A deliberately raised floor was lowered back to the pnpm value                                                                                                                                                                             |
+| `overrides`           | 16 flat pins                          | 23 pins                                                             | Injected all 7 pnpm nested selectors (`restify>find-my-way`, `cassandra-driver>adm-zip`, `next>postcss`, `next>sharp`, `concurrently>shell-quote`, `@grpc/proto-loader>protobufjs`, `google-gax>protobufjs`) as flat string keys — the `EINVALIDTAGNAME` form npm rejects |
 
 The `postcss` case is the one that matters most. It is not a broken build; it is a security floor being quietly
 relaxed by the package manager, which is the exact failure mode the override set exists to prevent.
@@ -76,13 +76,13 @@ FAILED: ENOENT reading ".../node_modules/.bun/hyper-express@6.17.3/node_modules/
 
 ### Mitigations attempted — all four install backends fail
 
-| Configuration | Packages installed | uWS resolved | `require('hyper-express')` |
-| --- | --- | --- | --- |
-| `--linker=isolated --backend=clonefile` (default) | 4071 | no | FAILED |
-| `--linker=isolated --backend=copyfile` | 4071 | no | FAILED |
-| `--linker=isolated --backend=hardlink` | 4071 | no | FAILED |
-| `--linker=isolated --backend=symlink` | 4071 | no | FAILED |
-| `--linker=hoisted --backend=clonefile` | **2056** | no | FAILED |
+| Configuration                                     | Packages installed | uWS resolved | `require('hyper-express')` |
+| ------------------------------------------------- | ------------------ | ------------ | -------------------------- |
+| `--linker=isolated --backend=clonefile` (default) | 4071               | no           | FAILED                     |
+| `--linker=isolated --backend=copyfile`            | 4071               | no           | FAILED                     |
+| `--linker=isolated --backend=hardlink`            | 4071               | no           | FAILED                     |
+| `--linker=isolated --backend=symlink`             | 4071               | no           | FAILED                     |
+| `--linker=hoisted --backend=clonefile`            | **2056**           | no           | FAILED                     |
 
 `clonefileat` is an APFS copy-on-write syscall, so the default backend was the obvious suspect — but the
 failure survives every backend, which rules out the copy strategy as the cause. `trustedDependencies:
@@ -109,9 +109,9 @@ architectural incompatibility in the module's distribution model, upstream of us
 
 Verified end state on the same tree, same vendored copy:
 
-| Runtime | ABI | `require('hyper-express')` |
-| --- | --- | --- |
-| Node 22 | 127 | **OK** |
+| Runtime    | ABI | `require('hyper-express')`                   |
+| ---------- | --- | -------------------------------------------- |
+| Node 22    | 127 | **OK**                                       |
 | Bun 1.3.13 | 137 | FAILED — `napi_register_module_v1` not found |
 
 The three install-layer defects were real and are fixed. They were also masking this one, which is why fixing
@@ -124,7 +124,7 @@ documented technical impossibility with a one-line proof, not a scope concession
 
 The vendoring step is still required, and required under Bun, because the Node path depends on it too: Bun's
 installer cannot materialize the GitHub tarball at all, so without `ci-cd/vendor-uwebsockets.js` the module is
-absent for *either* runtime. The script runs as `postinstall`, verifies the pinned tarball by SHA-256, extracts
+absent for _either_ runtime. The script runs as `postinstall`, verifies the pinned tarball by SHA-256, extracts
 only the current platform's binaries, fails closed if this runtime's ABI has no prebuilt, and repairs the
 dangling symlinks the isolated linker leaves in `node_modules/.bun/*/node_modules/`.
 
@@ -132,9 +132,9 @@ dangling symlinks the isolated linker leaves in `node_modules/.bun/*/node_module
 
 Before that resolution, this was a **hard blocker for the cutover**, not a cosmetic install warning:
 
-* `hyper-express` is one of the declared supported HTTP frameworks (`JUMENTIX_HTTP_FRAMEWORK=hyper-express`).
-* Its integration target owns **21 test files**.
-* Bun runtime acceptance requires every destination-appropriate gate to pass. A framework adapter that cannot be
+- `hyper-express` is one of the declared supported HTTP frameworks (`JUMENTIX_HTTP_FRAMEWORK=hyper-express`).
+- Its integration target owns **21 test files**.
+- Bun runtime acceptance requires every destination-appropriate gate to pass. A framework adapter that cannot be
   imported cannot pass, and declaring the matrix green with that target skipped would be a false green under
   Requirement 065.
 
@@ -147,9 +147,9 @@ across 15 platform/ABI triples, of which any machine needs one.
 The integrity property that matters — that we get exactly the reviewed bytes — comes from the pinned tag plus
 the recorded SHA-256, not from the file living in git history:
 
-* tag `v20.69.0`, published 2026-07-11
-* `sha256 691f1f43cb6c4e30c56d7c11968c275130e57b52ac3327bc457c574dedc613d0`
-* license: Apache-2.0 (carried into the vendored tree)
+- tag `v20.69.0`, published 2026-07-11
+- `sha256 691f1f43cb6c4e30c56d7c11968c275130e57b52ac3327bc457c574dedc613d0`
+- license: Apache-2.0 (carried into the vendored tree)
 
 A checksum mismatch fails the install rather than updating the expectation. If the upstream tag is ever moved,
 that mismatch is itself the finding.
@@ -164,15 +164,15 @@ applies to every dependent, which is strictly stronger than pinning one dependen
 
 Six of the seven already had an identical flat pin in force, so their effective behaviour is unchanged:
 
-| pnpm selector | Range | Pre-existing flat pin |
-| --- | --- | --- |
-| `restify>find-my-way` | `^9.7.0` | `find-my-way: ^9.7.0` — identical |
-| `next>postcss` | `^8.5.18` | `postcss` — identical floor |
-| `next>sharp` | `^0.35.0` | `sharp: ^0.35.0` — identical |
-| `concurrently>shell-quote` | `^1.9.0` | `shell-quote: ^1.9.0` — identical |
-| `@grpc/proto-loader>protobufjs` | `^7.6.5` | `protobufjs: ^7.6.5` — identical |
-| `google-gax>protobufjs` | `^7.6.5` | `protobufjs: ^7.6.5` — identical |
-| `cassandra-driver>adm-zip` | `^0.6.0` | **none** — became flat `adm-zip: ^0.6.0` |
+| pnpm selector                   | Range     | Pre-existing flat pin                    |
+| ------------------------------- | --------- | ---------------------------------------- |
+| `restify>find-my-way`           | `^9.7.0`  | `find-my-way: ^9.7.0` — identical        |
+| `next>postcss`                  | `^8.5.18` | `postcss` — identical floor              |
+| `next>sharp`                    | `^0.35.0` | `sharp: ^0.35.0` — identical             |
+| `concurrently>shell-quote`      | `^1.9.0`  | `shell-quote: ^1.9.0` — identical        |
+| `@grpc/proto-loader>protobufjs` | `^7.6.5`  | `protobufjs: ^7.6.5` — identical         |
+| `google-gax>protobufjs`         | `^7.6.5`  | `protobufjs: ^7.6.5` — identical         |
+| `cassandra-driver>adm-zip`      | `^0.6.0`  | **none** — became flat `adm-zip: ^0.6.0` |
 
 `postcss` was the only genuine conflict across the three declaration surfaces: `^8.5.18` in
 `pnpm-workspace.yaml` and in `package.json#overrides`, `^8.5.23` in `package.json#pnpm.overrides`. Resolved to
@@ -183,10 +183,10 @@ the lower value would have relaxed a security floor by accident of file preceden
 
 Measured on the same machine and tree, warm cache, isolated linker:
 
-| Operation | Wall time |
-| --- | --- |
-| `bun install` (4071 packages) | 4.77 s – 11.24 s |
-| `bun install --frozen-lockfile` (no changes) | 2.37 s |
+| Operation                                    | Wall time        |
+| -------------------------------------------- | ---------------- |
+| `bun install` (4071 packages)                | 4.77 s – 11.24 s |
+| `bun install --frozen-lockfile` (no changes) | 2.37 s           |
 
 `bun.lock` is generated in the committed text format at 568 KB. `bun install --frozen-lockfile` completes
 without modifying the lockfile, satisfying Requirement 096 §2.
@@ -196,11 +196,11 @@ measurements, so a same-tree comparison was not possible. JUM-38 owns the compar
 
 ## 5. Status
 
-| Risk | Status |
-| --- | --- |
-| #1 `bun install` mutates the managed tree | **Resolved** — cause identified, ordering corrected, guarded, negative paths tested |
-| #4 Nested override selectors | **Resolved** — converted to flat pins with per-entry justification |
-| #2 `uWebSockets.js` link failure | **Resolved by vendoring** — pinned, checksum-verified `postinstall` step; module now present and loadable under Node |
+| Risk                                             | Status                                                                                                                                   |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| #1 `bun install` mutates the managed tree        | **Resolved** — cause identified, ordering corrected, guarded, negative paths tested                                                      |
+| #4 Nested override selectors                     | **Resolved** — converted to flat pins with per-entry justification                                                                       |
+| #2 `uWebSockets.js` link failure                 | **Resolved by vendoring** — pinned, checksum-verified `postinstall` step; module now present and loadable under Node                     |
 | #2b uWS is not an N-API module (found during #2) | **Closed as upstream-impossible.** `hyper-express` is a declared Node-runtime target under Req 096 §4. No Bun path exists at any version |
 
 No quality gate is claimed green by this document. It records install-layer evidence only.

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /* eslint-disable no-console */
 /**
  * Branch-gate body for generated release / changelog PRs (JUM-889).
@@ -11,16 +10,17 @@
  *
  * This script only asserts the diff is the expected automation shape.
  */
-const { execFileSync } = require('child_process');
-const { gitBinary } = require('./lib/git-binary.js');
-const { isEntryPoint } = require('./lib/entry-point.js');
+const { execFileSync } = require('node:child_process');
+
 const {
   isGeneratedAppReleaseBranch,
   isGeneratedChangelogSyncBranch,
   isGeneratedPackageBumpBranch,
-  resolveHeadRef,
-  resolveBaseRef
+  resolveBaseRef,
+  resolveHeadRef
 } = require('./classify-ci-context.js');
+const { isEntryPoint } = require('./lib/entry-point.js');
+const { gitBinary } = require('./lib/git-binary.js');
 
 const RELEASE_ALLOWED = new Set([
   'package.json',
@@ -34,7 +34,9 @@ function runGit(args, options = {}) {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', options.allowFailure ? 'ignore' : 'pipe'],
       cwd: options.cwd
-    }).toString().trim();
+    })
+      .toString()
+      .trim();
   } catch (error) {
     if (options.allowFailure) return '';
     throw error;
@@ -42,12 +44,15 @@ function runGit(args, options = {}) {
 }
 
 function listChangedFiles(diffBaseRef, cwd) {
-  const output = runGit(
-    ['diff', '--name-only', `${diffBaseRef}...HEAD`],
-    { cwd, allowFailure: true }
-  );
+  const output = runGit(['diff', '--name-only', `${diffBaseRef}...HEAD`], {
+    cwd,
+    allowFailure: true
+  });
   if (!output) return [];
-  return output.split('\n').map((line) => line.trim()).filter(Boolean);
+  return output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function isAllowedReleasePath(file) {
@@ -59,9 +64,11 @@ function isAllowedReleasePath(file) {
   if (file.startsWith('packages/cli-init/templates/')) return true;
   // Packaging-gate repairs must be able to land on the same tip as the bump;
   // otherwise the allowlist that permits templates cannot itself ship.
-  return file === 'ci-cd/check-generated-automation-pr.js'
-    || file === 'ci-cd/create-app-release-tag.js'
-    || file === 'ci-cd/test/check-generated-automation-pr.test.ts';
+  return (
+    file === 'ci-cd/check-generated-automation-pr.js' ||
+    file === 'ci-cd/create-app-release-tag.js' ||
+    file === 'ci-cd/test/check-generated-automation-pr.test.ts'
+  );
 }
 
 function validateGeneratedAutomationPr(options = {}) {
@@ -74,20 +81,19 @@ function validateGeneratedAutomationPr(options = {}) {
   // JUMENTIX_QUALITY_GATE_TARGET=CIRCLE_BRANCH, so resolveBaseRef collapses to the
   // head itself and `git diff head...HEAD` is empty (job 2158 / PR #522).
   if (
-    (
-      isGeneratedAppReleaseBranch(headRef)
-      || isGeneratedChangelogSyncBranch(headRef)
-      || isGeneratedPackageBumpBranch(headRef)
-    )
-    && baseRef !== 'main'
-    && baseRef !== 'dev'
-    && baseRef !== 'origin/main'
-    && baseRef !== 'origin/dev'
+    (isGeneratedAppReleaseBranch(headRef) ||
+      isGeneratedChangelogSyncBranch(headRef) ||
+      isGeneratedPackageBumpBranch(headRef)) &&
+    baseRef !== 'main' &&
+    baseRef !== 'dev' &&
+    baseRef !== 'origin/main' &&
+    baseRef !== 'origin/dev'
   ) {
     baseRef = 'main';
   }
-  const diffBaseRef = options.diffBaseRef
-    || (baseRef === 'main' || baseRef === 'dev' ? `origin/${baseRef}` : baseRef);
+  const diffBaseRef =
+    options.diffBaseRef ||
+    (baseRef === 'main' || baseRef === 'dev' ? `origin/${baseRef}` : baseRef);
   const changed = options.changedFiles || listChangedFiles(diffBaseRef, cwd);
   const failures = [];
 
@@ -117,12 +123,13 @@ function validateGeneratedAutomationPr(options = {}) {
       failures.push('[generated-automation] package-bump PR has an empty diff');
     }
     for (const file of changed) {
-      const allowed = /^packages\/[^/]+\/package\.json$/.test(file)
-        || file === 'packages/cli-init/templates.manifest.json';
+      const allowed =
+        /^packages\/[^/]+\/package\.json$/.test(file) ||
+        file === 'packages/cli-init/templates.manifest.json';
       if (!allowed) {
         failures.push(
-          `[generated-automation] package-bump PR must only touch package manifests`
-            + ` (+ cli-init templates.manifest.json); unexpected file: ${file}`
+          `[generated-automation] package-bump PR must only touch package manifests` +
+            ` (+ cli-init templates.manifest.json); unexpected file: ${file}`
         );
       }
     }

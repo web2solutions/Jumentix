@@ -1,3 +1,5 @@
-import { createLambdaOperationHandler } from './createLambdaOperationHandler';
+import createLambdaOperationHandler from './createLambdaOperationHandler';
 
-export const handler = createLambdaOperationHandler('updateOrganizationPhone');
+const handler = createLambdaOperationHandler('updateOrganizationPhone');
+
+export default handler;

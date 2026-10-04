@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
 const {
   classifyZone,
   collectSourceFiles,
   readImports,
-  workspaceDependencyViolations,
-  validateImport
+  validateImport,
+  workspaceDependencyViolations
 } = require('../check-workspace-boundaries');
 
 describe('check-workspace-boundaries', () => {
@@ -16,8 +16,12 @@ describe('check-workspace-boundaries', () => {
   it('classifies workspace zones', () => {
     expect.hasAssertions();
     expect(classifyZone(path.join('apps', 'backend-template', 'src', 'x.ts'))).toBe('backend');
-    expect(classifyZone(path.join('apps', 'service-management', 'server.js'))).toBe('service-management');
-    expect(classifyZone(path.join('packages', 'message-mediator', 'src', 'index.ts'))).toBe('package');
+    expect(classifyZone(path.join('apps', 'service-management', 'server.js'))).toBe(
+      'service-management'
+    );
+    expect(classifyZone(path.join('packages', 'message-mediator', 'src', 'index.ts'))).toBe(
+      'package'
+    );
     expect(classifyZone(path.join('sdk-clients', 'rest', 'index.ts'))).toBe('legacy-sdk');
   });
 
@@ -50,23 +54,27 @@ describe('check-workspace-boundaries', () => {
     ];
     const filePath = path.join(rootDir, 'apps', 'backend-template', 'src', 'messages.ts');
 
-    expect(workspaceDependencyViolations({
-      rootDir,
-      filePath,
-      imports: ['@jumentix/message-mediator'],
-      manifests
-    })).toStrictEqual([
-      'apps/backend-template/src/messages.ts: @jumentix/message-mediator is a local workspace dependency '
-      + 'and must be declared in apps/backend-template/package.json'
+    expect(
+      workspaceDependencyViolations({
+        rootDir,
+        filePath,
+        imports: ['@jumentix/message-mediator'],
+        manifests
+      })
+    ).toStrictEqual([
+      'apps/backend-template/src/messages.ts: @jumentix/message-mediator is a local workspace dependency ' +
+        'and must be declared in apps/backend-template/package.json'
     ]);
 
     dependencies['@jumentix/message-mediator'] = 'workspace:*';
-    expect(workspaceDependencyViolations({
-      rootDir,
-      filePath,
-      imports: ['@jumentix/message-mediator'],
-      manifests
-    })).toStrictEqual([]);
+    expect(
+      workspaceDependencyViolations({
+        rootDir,
+        filePath,
+        imports: ['@jumentix/message-mediator'],
+        manifests
+      })
+    ).toStrictEqual([]);
   });
 
   it('does not scan generated dist output', () => {
@@ -79,7 +87,7 @@ describe('check-workspace-boundaries', () => {
       fs.mkdirSync(sourceDir, { recursive: true });
       fs.mkdirSync(distDir, { recursive: true });
       fs.writeFileSync(path.join(sourceDir, 'index.ts'), 'export {};\n');
-      fs.writeFileSync(path.join(distDir, 'index.d.ts'), 'import x from \'@src/generated\';\n');
+      fs.writeFileSync(path.join(distDir, 'index.d.ts'), "import x from '@src/generated';\n");
 
       expect(collectSourceFiles(temporaryRoot, 'packages')).toStrictEqual([
         path.join(sourceDir, 'index.ts')
@@ -99,7 +107,7 @@ describe('check-workspace-boundaries', () => {
       fs.mkdirSync(sourceDir, { recursive: true });
       fs.mkdirSync(templatesDir, { recursive: true });
       fs.writeFileSync(path.join(sourceDir, 'index.ts'), 'export {};\n');
-      fs.writeFileSync(path.join(templatesDir, 'seed.ts'), 'import x from \'@src/modules/Users\';\n');
+      fs.writeFileSync(path.join(templatesDir, 'seed.ts'), "import x from '@src/modules/Users';\n");
 
       expect(collectSourceFiles(temporaryRoot, 'packages')).toStrictEqual([
         path.join(sourceDir, 'index.ts')
@@ -134,12 +142,17 @@ describe('check-workspace-boundaries', () => {
     const violations = validateImport({
       rootDir,
       currentFile: path.join(rootDir, 'packages/external-store-proxy/src/ExternalStoreProxy.ts'),
-      relativeFilePath: path.join('packages', 'external-store-proxy', 'src', 'ExternalStoreProxy.ts'),
+      relativeFilePath: path.join(
+        'packages',
+        'external-store-proxy',
+        'src',
+        'ExternalStoreProxy.ts'
+      ),
       importPath: '@src/infra/exceptions'
     });
     expect(violations).toStrictEqual([
-      'packages/external-store-proxy/src/ExternalStoreProxy.ts: '
-      + '@src alias is only allowed inside apps/backend-template'
+      'packages/external-store-proxy/src/ExternalStoreProxy.ts: ' +
+        '@src alias is only allowed inside apps/backend-template'
     ]);
   });
 

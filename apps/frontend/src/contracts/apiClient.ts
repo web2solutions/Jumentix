@@ -36,9 +36,7 @@ export const createApiClient = (baseUrl: string = defaultBaseUrl()): RestApiClie
 let sharedClient: RestApiClient | undefined;
 
 export const getSharedApiClient = (): RestApiClient => {
-  if (!sharedClient) {
-    sharedClient = createApiClient();
-  }
+  sharedClient ??= createApiClient();
   return sharedClient;
 };
 

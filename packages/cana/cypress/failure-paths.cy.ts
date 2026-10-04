@@ -1,4 +1,3 @@
-import type { CanaSchema } from '../src';
 import {
   abortWithReason,
   browserStorageEnvironment,
@@ -11,6 +10,8 @@ import {
   runQuery
 } from '../src';
 import { rejection, thrownBy } from './harness';
+
+import type { CanaSchema } from '../src';
 
 /**
  * Failure paths a real IndexedDB will not produce on demand.
@@ -50,8 +51,12 @@ function memoryTombstone() {
     backing,
     tombstone: {
       get: (key: string) => (backing.has(key) ? (backing.get(key) as string) : null),
-      set: (key: string, value: string) => { backing.set(key, value); },
-      remove: (key: string) => { backing.delete(key); }
+      set: (key: string, value: string) => {
+        backing.set(key, value);
+      },
+      remove: (key: string) => {
+        backing.delete(key);
+      }
     }
   };
 }
@@ -66,7 +71,10 @@ describe('blocked and timed-out lifecycle operations', () => {
     } as unknown as IDBFactory;
 
     const failure = await openDatabase({
-      name: 'designer', schema, factory, blockedTimeoutMs: 20
+      name: 'designer',
+      schema,
+      factory,
+      blockedTimeoutMs: 20
     }).catch((error: unknown) => error);
 
     expect(isCanaErrorCode(failure, 'UpgradeBlocked')).to.equal(true);
@@ -79,7 +87,9 @@ describe('blocked and timed-out lifecycle operations', () => {
       deleteDatabase: () => pendingRequest()
     } as unknown as IDBFactory;
 
-    expect(await rejection(deleteDatabase('designer', { factory, blockedTimeoutMs: 20 }))).to.deep.include({ code: 'UpgradeBlocked' });
+    expect(
+      await rejection(deleteDatabase('designer', { factory, blockedTimeoutMs: 20 }))
+    ).to.deep.include({ code: 'UpgradeBlocked' });
   });
 
   it('reports a delete that fails rather than resolving', async () => {
@@ -119,8 +129,9 @@ describe('blocked and timed-out lifecycle operations', () => {
       databases: async () => []
     } as unknown as IDBFactory;
 
-    const failure = await openDatabase({ name: 'designer', schema, factory })
-      .catch((error: unknown) => error);
+    const failure = await openDatabase({ name: 'designer', schema, factory }).catch(
+      (error: unknown) => error
+    );
 
     expect(isCanaErrorCode(failure, 'QuotaExceeded')).to.equal(true);
   });
@@ -148,8 +159,9 @@ describe('blocked and timed-out lifecycle operations', () => {
       databases: async () => []
     } as unknown as IDBFactory;
 
-    const failure = await openDatabase({ name: 'designer', schema, factory })
-      .catch((error: unknown) => error);
+    const failure = await openDatabase({ name: 'designer', schema, factory }).catch(
+      (error: unknown) => error
+    );
 
     expect(isCanaErrorCode(failure, 'UpgradeFailed')).to.equal(true);
     expect((failure as { message: string }).message).to.include('without a transaction');
@@ -169,7 +181,9 @@ describe('blocked and timed-out lifecycle operations', () => {
       open: (name: string, version?: number) => real.open(name, version),
       deleteDatabase: (name: string) => real.deleteDatabase(name),
       cmp: (left: unknown, right: unknown) => real.cmp(left, right),
-      databases: async () => { throw new Error('not permitted'); }
+      databases: async () => {
+        throw new Error('not permitted');
+      }
     } as unknown as IDBFactory;
 
     const second = await openDatabase({ name: 'designer', factory: throwing, schema });
@@ -185,11 +199,14 @@ describe('transaction abort edge cases', () => {
     // must survive that, or an aborted transaction reports only that something
     // went wrong somewhere.
     const dying = {
-      abort: () => { throw new Error('already finishing'); }
+      abort: () => {
+        throw new Error('already finishing');
+      }
     } as unknown as IDBTransaction;
 
-    expect(thrownBy(() => abortWithReason(dying, 'the stated reason')))
-      .to.deep.include({ code: 'TransactionAborted' });
+    expect(thrownBy(() => abortWithReason(dying, 'the stated reason'))).to.deep.include({
+      code: 'TransactionAborted'
+    });
   });
 
   it('supplies a default reason when none is given', () => {
@@ -204,7 +221,8 @@ describe('transaction abort edge cases', () => {
     const client = createClient({ name: 'designer', schema });
     await client.open();
 
-    const failure = await client.transaction('readonly', ['no-such-store'], async () => undefined)
+    const failure = await client
+      .transaction('readonly', ['no-such-store'], async () => undefined)
       .catch((error: unknown) => error);
 
     expect(isCanaError(failure)).to.equal(true);
@@ -214,12 +232,19 @@ describe('transaction abort edge cases', () => {
 
 describe('query execution failure paths', () => {
   /** A store whose cursor and count both refuse to start. */
-  const deadStore = () => ({
-    name: 'designs',
-    openCursor: () => { throw new Error('store is dead'); },
-    count: () => { throw new Error('store is dead'); },
-    index: () => { throw new Error('no such index'); }
-  } as unknown as IDBObjectStore);
+  const deadStore = () =>
+    ({
+      name: 'designs',
+      openCursor: () => {
+        throw new Error('store is dead');
+      },
+      count: () => {
+        throw new Error('store is dead');
+      },
+      index: () => {
+        throw new Error('no such index');
+      }
+    }) as unknown as IDBObjectStore;
 
   it('translates a cursor that cannot be opened', async () => {
     expect(await rejection(runQuery(deadStore(), undefined))).to.deep.include({ canaError: true });
@@ -230,15 +255,19 @@ describe('query execution failure paths', () => {
   });
 
   it('names the store when an index lookup fails', async () => {
-    const failure = await runQuery(deadStore(), { index: 'missing' })
-      .catch((error: unknown) => error);
+    const failure = await runQuery(deadStore(), { index: 'missing' }).catch(
+      (error: unknown) => error
+    );
 
     expect((failure as { store?: string }).store).to.equal('designs');
   });
 
   it('translates a cursor request that errors after opening', async () => {
     const request = {
-      onsuccess: null, onerror: null, result: null, error: null
+      onsuccess: null,
+      onerror: null,
+      result: null,
+      error: null
     } as unknown as {
       onerror: (() => void) | null;
       error: DOMException | null;
@@ -259,7 +288,10 @@ describe('query execution failure paths', () => {
 
   it('translates a count request that errors after starting', async () => {
     const request = {
-      onsuccess: null, onerror: null, result: 0, error: null
+      onsuccess: null,
+      onerror: null,
+      result: 0,
+      error: null
     } as unknown as {
       onerror: (() => void) | null;
       error: DOMException | null;
@@ -300,11 +332,15 @@ describe('browser storage environment', () => {
     });
 
     const environment = browserStorageEnvironment();
+    const { estimate, persist, persisted } = environment;
+    if (!estimate || !persist || !persisted) {
+      throw new Error('expected Storage API wiring to be installed');
+    }
 
-    expect(environment.estimate).to.not.equal(undefined);
-    expect(await environment.estimate!()).to.deep.equal({ usage: 1, quota: 2 });
-    expect(await environment.persist!()).to.equal(true);
-    expect(await environment.persisted!()).to.equal(false);
+    expect(estimate).to.not.equal(undefined);
+    expect(await estimate()).to.deep.equal({ usage: 1, quota: 2 });
+    expect(await persist()).to.equal(true);
+    expect(await persisted()).to.equal(false);
   });
 
   it('leaves them undefined when the Storage API is absent', () => {
@@ -329,11 +365,12 @@ describe('browser storage environment', () => {
     });
 
     const { tombstone } = browserStorageEnvironment();
-    tombstone!.set('k', 'v');
+    if (!tombstone) throw new Error('expected a localStorage tombstone backend');
+    tombstone.set('k', 'v');
 
-    expect(tombstone!.get('k')).to.equal('v');
-    tombstone!.remove('k');
+    expect(tombstone.get('k')).to.equal('v');
+    tombstone.remove('k');
 
-    expect(tombstone!.get('k')).to.equal(null);
+    expect(tombstone.get('k')).to.equal(null);
   });
 });

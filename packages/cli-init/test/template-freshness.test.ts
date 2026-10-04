@@ -1,13 +1,12 @@
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/no-var-requires, jest/require-hook, jest/no-conditional-in-test */
+/* eslint-disable jest/no-conditional-in-test */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 const {
-  DEFAULT_EXCLUSIONS,
   buildTemplates,
   collectExpectedFiles,
+  DEFAULT_EXCLUSIONS,
   isExcluded,
   matchGlob,
   resolveSourceCommit,
@@ -49,14 +48,16 @@ function fixtureRoot() {
  * bun:test in the quality gate).
  */
 function entryPointDrivableWithJest(): boolean {
-  return typeof jest !== 'undefined'
-    && typeof (jest as any).isolateModules === 'function'
-    && typeof (jest as any).doMock === 'function';
+  return (
+    typeof jest !== 'undefined' &&
+    typeof (jest as any).isolateModules === 'function' &&
+    typeof (jest as any).doMock === 'function'
+  );
 }
 
 function requireFresh(scriptPath: string): void {
   const cache = (require as any).cache as Record<string, unknown> | undefined;
-  if (cache && Object.prototype.hasOwnProperty.call(cache, scriptPath)) {
+  if (cache && Object.hasOwn(cache, scriptPath)) {
     delete cache[scriptPath];
   }
   require(scriptPath);
@@ -96,11 +97,13 @@ describe('template freshness gate (JUM-845)', () => {
     try {
       const built = buildTemplates(root, { sourceCommit: 'fixture-commit' });
       expect(built.fileCount).toBeGreaterThan(0);
-      expect(fs.existsSync(path.join(root, 'packages/cli-init/templates/backend/package.json'))).toBe(true);
-      expect(fs.existsSync(path.join(root, 'packages/cli-init/templates/backend/OASdoc/index.html'))).toBe(false);
       expect(
-        validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' })
-      ).toStrictEqual([]);
+        fs.existsSync(path.join(root, 'packages/cli-init/templates/backend/package.json'))
+      ).toBe(true);
+      expect(
+        fs.existsSync(path.join(root, 'packages/cli-init/templates/backend/OASdoc/index.html'))
+      ).toBe(false);
+      expect(validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' })).toStrictEqual([]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
@@ -112,10 +115,14 @@ describe('template freshness gate (JUM-845)', () => {
     try {
       buildTemplates(root, { sourceCommit: 'fixture-commit' });
       expect(
-        fs.existsSync(path.join(root, 'packages/cli-init/templates/frontend/node_modules/left-pad/index.js'))
+        fs.existsSync(
+          path.join(root, 'packages/cli-init/templates/frontend/node_modules/left-pad/index.js')
+        )
       ).toBe(false);
       expect(
-        fs.existsSync(path.join(root, 'packages/cli-init/templates/frontend/cypress/videos/run.mp4'))
+        fs.existsSync(
+          path.join(root, 'packages/cli-init/templates/frontend/cypress/videos/run.mp4')
+        )
       ).toBe(false);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -128,10 +135,7 @@ describe('template freshness gate (JUM-845)', () => {
     try {
       buildTemplates(root, { sourceCommit: 'fixture-commit' });
 
-      const drifted = path.join(
-        root,
-        'packages/cli-init/templates/backend/src/index.ts'
-      );
+      const drifted = path.join(root, 'packages/cli-init/templates/backend/src/index.ts');
       fs.writeFileSync(drifted, 'export const backend = "stale";\n', 'utf8');
 
       const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
@@ -158,7 +162,9 @@ describe('template freshness gate (JUM-845)', () => {
       );
 
       const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
-      expect(failures).toContain('[cli-init template-freshness] unreadable templates.manifest.json');
+      expect(failures).toContain(
+        '[cli-init template-freshness] unreadable templates.manifest.json'
+      );
       expect(failures.join('\n')).not.toContain('must-not-be-logged');
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -172,9 +178,7 @@ describe('template freshness gate (JUM-845)', () => {
       writeFile(root, 'apps/backend-template/package.json', '{"name":"backend-seed"}\n');
 
       const failures = validateTemplateFreshness(root);
-      expect(failures).toStrictEqual([
-        '[cli-init template-freshness] missing seed: apps/frontend'
-      ]);
+      expect(failures).toStrictEqual(['[cli-init template-freshness] missing seed: apps/frontend']);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
@@ -224,8 +228,8 @@ describe('template freshness gate (JUM-845)', () => {
 
       const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
       expect(failures).toStrictEqual([
-        '[cli-init template-freshness] missing packaged file: templates/backend/src/index.ts'
-        + ' — run `bun run cli:build-templates`'
+        '[cli-init template-freshness] missing packaged file: templates/backend/src/index.ts' +
+          ' — run `bun run cli:build-templates`'
       ]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -241,8 +245,8 @@ describe('template freshness gate (JUM-845)', () => {
 
       const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
       expect(failures).toStrictEqual([
-        '[cli-init template-freshness] unexpected packaged file: templates/backend/extra.txt'
-        + ' — run `bun run cli:build-templates`'
+        '[cli-init template-freshness] unexpected packaged file: templates/backend/extra.txt' +
+          ' — run `bun run cli:build-templates`'
       ]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -258,8 +262,8 @@ describe('template freshness gate (JUM-845)', () => {
 
       const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
       expect(failures).toStrictEqual([
-        '[cli-init template-freshness] missing packages/cli-init/templates.manifest.json'
-        + ' — run `bun run cli:build-templates`'
+        '[cli-init template-freshness] missing packages/cli-init/templates.manifest.json' +
+          ' — run `bun run cli:build-templates`'
       ]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -294,8 +298,8 @@ describe('template freshness gate (JUM-845)', () => {
 
       const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
       expect(failures).toStrictEqual([
-        '[cli-init template-freshness] manifest missing entry: backend/src/index.ts'
-        + ' — run `bun run cli:build-templates`'
+        '[cli-init template-freshness] manifest missing entry: backend/src/index.ts' +
+          ' — run `bun run cli:build-templates`'
       ]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -314,8 +318,8 @@ describe('template freshness gate (JUM-845)', () => {
 
       const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
       expect(failures).toStrictEqual([
-        '[cli-init template-freshness] manifest hash drift: backend/src/index.ts'
-        + ' — run `bun run cli:build-templates`'
+        '[cli-init template-freshness] manifest hash drift: backend/src/index.ts' +
+          ' — run `bun run cli:build-templates`'
       ]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -326,18 +330,32 @@ describe('template freshness gate (JUM-845)', () => {
     expect.hasAssertions();
     const root = fixtureRoot();
     try {
-      writeFile(root, 'packages/cana/package.json', '{"name":"@jumentix/cana","version":"0.1.0"}\n');
-      writeFile(root, 'packages/secret/package.json', '{"name":"@jumentix/secret","version":"1.0.0","private":true}\n');
+      writeFile(
+        root,
+        'packages/cana/package.json',
+        '{"name":"@jumentix/cana","version":"0.1.0"}\n'
+      );
+      writeFile(
+        root,
+        'packages/secret/package.json',
+        '{"name":"@jumentix/secret","version":"1.0.0","private":true}\n'
+      );
       buildTemplates(root, { sourceCommit: 'fixture-commit' });
       const manifestPath = path.join(root, 'packages/cli-init/templates.manifest.json');
 
-      expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).packageVersions).toStrictEqual({ '@jumentix/cana': '0.1.0' });
+      expect(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).packageVersions).toStrictEqual({
+        '@jumentix/cana': '0.1.0'
+      });
 
-      writeFile(root, 'packages/cana/package.json', '{"name":"@jumentix/cana","version":"0.2.0"}\n');
+      writeFile(
+        root,
+        'packages/cana/package.json',
+        '{"name":"@jumentix/cana","version":"0.2.0"}\n'
+      );
 
       expect(validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' })).toStrictEqual([
-        '[cli-init template-freshness] package version drift: @jumentix/cana (manifest 0.1.0, source 0.2.0)'
-        + ' — run `bun run cli:build-templates`'
+        '[cli-init template-freshness] package version drift: @jumentix/cana (manifest 0.1.0, source 0.2.0)' +
+          ' — run `bun run cli:build-templates`'
       ]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -356,8 +374,8 @@ describe('template freshness gate (JUM-845)', () => {
 
       const failures = validateTemplateFreshness(root, { sourceCommit: 'fixture-commit' });
       expect(failures).toStrictEqual([
-        '[cli-init template-freshness] manifest has stale entry: backend/stale.txt'
-        + ' — run `bun run cli:build-templates`'
+        '[cli-init template-freshness] manifest has stale entry: backend/stale.txt' +
+          ' — run `bun run cli:build-templates`'
       ]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -372,8 +390,7 @@ describe('template freshness gate (JUM-845)', () => {
     try {
       buildTemplates(root, { sourceCommit: 'fixture-commit' });
       expect(runFreshnessCheck(root, { sourceCommit: 'fixture-commit' })).toBe(0);
-      expect(logSpy.mock.calls.flat().join('\n'))
-        .toContain('CLI template freshness check passed');
+      expect(logSpy.mock.calls.flat().join('\n')).toContain('CLI template freshness check passed');
 
       writeFile(root, 'packages/cli-init/templates/backend/extra.txt', 'stray');
       expect(runFreshnessCheck(root, { sourceCommit: 'fixture-commit' })).toBe(1);
@@ -544,11 +561,8 @@ describe('template build script edges (JUM-845)', () => {
             mkdirSync: jest.fn(),
             copyFileSync: jest.fn(),
             writeFileSync: jest.fn(),
-            existsSync: (target: string) => (
-              target.includes(`${path.sep}apps${path.sep}`)
-                ? actual.existsSync(target)
-                : false
-            )
+            existsSync: (target: string) =>
+              target.includes(`${path.sep}apps${path.sep}`) ? actual.existsSync(target) : false
           };
         });
         require('../scripts/build-templates');

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 
 /**
  * First-run sample model suite (JUM-548).
@@ -25,34 +24,27 @@
  */
 
 const {
-  SAMPLE_ID_PREFIX,
-  buildSampleModelPayload,
-  isSampleDomain,
-  isSampleEntity,
-  isSampleRelationship
-} = require('@jumentix/designer-core/model/sampleModel.js');
-const {
-  normalizeStatePayload
-} = require('@jumentix/designer-core/state/designerState.js');
-const {
-  collectModelIssues
-} = require('@jumentix/designer-core/validation/modelValidation.js');
-const {
   buildJsonExportDocument,
   buildOasDocument
 } = require('@jumentix/designer-core/exporters/designerExporters.js');
+const { buildDomainsFromOas } = require('@jumentix/designer-core/importers/designerImporters.js');
 const {
-  buildDomainsFromOas
-} = require('@jumentix/designer-core/importers/designerImporters.js');
+  buildSampleModelPayload,
+  isSampleDomain,
+  isSampleEntity,
+  isSampleRelationship,
+  SAMPLE_ID_PREFIX
+} = require('@jumentix/designer-core/model/sampleModel.js');
+const { normalizeStatePayload } = require('@jumentix/designer-core/state/designerState.js');
+const {
+  default: collectModelIssues
+} = require('@jumentix/designer-core/validation/modelValidation.js');
 
 function loadSample() {
   return normalizeStatePayload(buildSampleModelPayload());
 }
 
-function entityByName(
-  state: { domains: Array<{ entities: Array<{ name: string }> }> },
-  name: string
-): any {
+function entityByName(state: { domains: { entities: { name: string }[] }[] }, name: string): any {
   return state.domains.flatMap((domain) => domain.entities).find((entity) => entity.name === name);
 }
 
@@ -65,35 +57,48 @@ describe('first-run sample model (JUM-548)', () => {
       const [users, tasks] = state.domains;
       expect(users.name).toBe('Users');
       expect(tasks.name).toBe('Tasks');
-      expect(users.entities.map((entity: { name: string }) => entity.name))
-        .toStrictEqual(['User', 'Organization', 'Email', 'Phone', 'ContactPoint']);
-      expect(tasks.entities.map((entity: { name: string }) => entity.name))
-        .toStrictEqual(['Project', 'Task', 'Comment']);
-      expect(state.relationships.map((relationship: { name: string }) => relationship.name))
-        .toStrictEqual([
-          'User belongs to Organization',
-          'Email belongs to User',
-          'Phone belongs to User',
-          'Project belongs to Organization',
-          'Task belongs to Project',
-          'Task assigned to User',
-          'Comment belongs to Task',
-          'Comment authored by User'
-        ]);
+      expect(users.entities.map((entity: { name: string }) => entity.name)).toStrictEqual([
+        'User',
+        'Organization',
+        'Email',
+        'Phone',
+        'ContactPoint'
+      ]);
+      expect(tasks.entities.map((entity: { name: string }) => entity.name)).toStrictEqual([
+        'Project',
+        'Task',
+        'Comment'
+      ]);
+      expect(
+        state.relationships.map((relationship: { name: string }) => relationship.name)
+      ).toStrictEqual([
+        'User belongs to Organization',
+        'Email belongs to User',
+        'Phone belongs to User',
+        'Project belongs to Organization',
+        'Task belongs to Project',
+        'Task assigned to User',
+        'Comment belongs to Task',
+        'Comment authored by User'
+      ]);
       // Relationships resolve to real sample entities with valid cardinalities.
       state.relationships.forEach((relationship: { fromEntityId: string; toEntityId: string }) => {
-        const ids = new Set(state.domains.flatMap((domain: { entities: Array<{ id: string }> }) => (
-          domain.entities.map((entity) => entity.id)
-        )));
+        const ids = new Set(
+          state.domains.flatMap((domain: { entities: { id: string }[] }) =>
+            domain.entities.map((entity) => entity.id)
+          )
+        );
         expect(ids.has(relationship.fromEntityId)).toBe(true);
         expect(ids.has(relationship.toEntityId)).toBe(true);
       });
-      expect(state.relationships).toContainEqual(expect.objectContaining({
-        fromEntityId: 'sample-entity-task',
-        fromField: 'assigneeId',
-        toEntityId: 'sample-entity-user',
-        toField: 'id'
-      }));
+      expect(state.relationships).toContainEqual(
+        expect.objectContaining({
+          fromEntityId: 'sample-entity-task',
+          fromField: 'assigneeId',
+          toEntityId: 'sample-entity-user',
+          toField: 'id'
+        })
+      );
       expect(state.selectedDomainId).toBe(users.id);
     });
 
@@ -103,11 +108,12 @@ describe('first-run sample model (JUM-548)', () => {
       const [users] = state.domains;
       expect(users.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
       expect(isSampleDomain(users)).toBe(true);
-      state.domains.forEach((domain: { id: string; entities: Array<{ id: string }> }) => {
+      state.domains.forEach((domain: { id: string; entities: { id: string }[] }) => {
         expect(domain.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
         expect(isSampleDomain(domain)).toBe(true);
       });
-      state.domains.flatMap((domain: { entities: Array<{ id: string }> }) => domain.entities)
+      state.domains
+        .flatMap((domain: { entities: { id: string }[] }) => domain.entities)
         .forEach((entity: { id: string }) => {
           expect(entity.id.startsWith(SAMPLE_ID_PREFIX)).toBe(true);
           expect(isSampleEntity(entity)).toBe(true);
@@ -215,9 +221,9 @@ describe('first-run sample model (JUM-548)', () => {
       const firstImport = buildDomainsFromOas(JSON.parse(JSON.stringify(first)));
       expect(firstImport.ok).toBe(true);
       expect(firstImport.domains).toHaveLength(2);
-      expect(firstImport.domains.flatMap(
-        (domain: { entities: Array<unknown> }) => domain.entities
-      )).toHaveLength(8);
+      expect(
+        firstImport.domains.flatMap((domain: { entities: unknown[] }) => domain.entities)
+      ).toHaveLength(8);
       expect(firstImport.relationships).toHaveLength(8);
       const second = buildOasDocument({
         domains: firstImport.domains,

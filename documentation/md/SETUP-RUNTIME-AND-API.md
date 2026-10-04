@@ -229,7 +229,7 @@ Service Management app (PM2-served):
 bun run dev:service-management
 ```
 
-![serverless dev mode](../images/sls.png "serverless dev mode")
+![serverless dev mode](../images/sls.png 'serverless dev mode')
 
 ## Production Commands
 

@@ -49,12 +49,12 @@ or answered with this evidence.
 Every documentation file serves one reader. Name that reader before writing, and keep each
 fact in exactly one layer — the other layers link to it.
 
-| Layer | Files | Reader |
-| --- | --- | --- |
-| Prospect | root `README.md` / `README.pt-BR.md`, website commercial pages | someone deciding whether to try Jumentix |
-| Developer | website `/docs/**` pages (`apps/jumentix-website/content/**`) | an engineer integrating Jumentix |
-| Contributor | `documentation/md/**`, component `README.md` files | someone building Jumentix |
-| Agent / internal | `.agents/**` | an agent executing governance |
+| Layer            | Files                                                          | Reader                                   |
+| ---------------- | -------------------------------------------------------------- | ---------------------------------------- |
+| Prospect         | root `README.md` / `README.pt-BR.md`, website commercial pages | someone deciding whether to try Jumentix |
+| Developer        | website `/docs/**` pages (`apps/jumentix-website/content/**`)  | an engineer integrating Jumentix         |
+| Contributor      | `documentation/md/**`, component `README.md` files             | someone building Jumentix                |
+| Agent / internal | `.agents/**`                                                   | an agent executing governance            |
 
 Prospect and developer pages never carry CI/gate control variables
 (`JUMENTIX_ENABLE_GITHUB_ACTIONS_CI`, `JUMENTIX_QUALITY_GATE_TARGET`, `JUMENTIX_GATE_V2`,

@@ -1,4 +1,5 @@
 import { BaseExternalDataRepository } from '../src/BaseExternalDataRepository';
+
 import type { IRepositoryConnectionOptions } from '../src/BaseExternalDataRepository';
 
 /**
@@ -29,7 +30,7 @@ class TestRepository extends BaseExternalDataRepository {
    * Removing it passed under bun, which does not typecheck, and failed under
    * Jest, which does.
    */
-  // eslint-disable-next-line no-useless-constructor
+
   public constructor(options: IRepositoryConnectionOptions) {
     super(options);
   }
@@ -117,8 +118,9 @@ describe('getRequiredOption', () => {
   it('returns the value, trimmed', () => {
     expect.hasAssertions();
 
-    expect(repository({ connectionUrl: '  postgres://host  ' }).required('connectionUrl'))
-      .toBe('postgres://host');
+    expect(repository({ connectionUrl: '  postgres://host  ' }).required('connectionUrl')).toBe(
+      'postgres://host'
+    );
   });
 
   /**
@@ -134,8 +136,9 @@ describe('getRequiredOption', () => {
   ])('throws when the option is %s', (_label, options) => {
     expect.hasAssertions();
 
-    expect(() => repository({ provider: 'redis', ...options }).required('connectionUrl'))
-      .toThrow('Missing required option "connectionUrl" for redis');
+    expect(() => repository({ provider: 'redis', ...options }).required('connectionUrl')).toThrow(
+      'Missing required option "connectionUrl" for redis'
+    );
   });
 });
 
@@ -169,8 +172,9 @@ describe('getExtraOption', () => {
   ])('keeps a falsy %s rather than falling back', (_label, configured, fallback) => {
     expect.hasAssertions();
 
-    expect(repository({ extra: { value: configured } }).extra('value', fallback))
-      .toStrictEqual(configured);
+    expect(repository({ extra: { value: configured } }).extra('value', fallback)).toStrictEqual(
+      configured
+    );
   });
 });
 
@@ -191,8 +195,9 @@ describe('loadModule', () => {
   it('explains which optional dependency is missing, and for whom', async () => {
     expect.hasAssertions();
 
-    await expect(repository({ provider: 'cassandra' }).load('no-such-driver-xyz'))
-      .rejects.toThrow('Missing optional dependency "no-such-driver-xyz" for cassandra');
+    await expect(repository({ provider: 'cassandra' }).load('no-such-driver-xyz')).rejects.toThrow(
+      'Missing optional dependency "no-such-driver-xyz" for cassandra'
+    );
   });
 });
 

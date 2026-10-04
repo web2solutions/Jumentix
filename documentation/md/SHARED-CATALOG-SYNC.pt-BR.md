@@ -69,14 +69,14 @@ Users:
 
 `spec/1.0.0.yml` (contract-first; `bun run oas:check-routes` garante):
 
-| Operação | Caminho | Escopo | Concorrência |
-|---|---|---|---|
-| `getAll` | `GET /catalogs` | `read_catalog` | `includeDeleted=true` retorna tombstones |
-| `create` | `POST /catalogs` | `create_catalog` | servidor atribui `version: 1` |
-| `getOneById` | `GET /catalogs/{id}` | `read_catalog` | — |
-| `update` | `PUT /catalogs/{id}` | `update_catalog` | `version` no corpo; desatualizada → 409 |
-| `deleteOne` | `DELETE /catalogs/{id}?version=` | `delete_catalog` | exclusão lógica (tombstone); desatualizada → 409 |
-| `restore` | `POST /catalogs/{id}/restore` | `update_catalog` | recupera tombstone; desatualizada → 409 |
+| Operação     | Caminho                          | Escopo           | Concorrência                                     |
+| ------------ | -------------------------------- | ---------------- | ------------------------------------------------ |
+| `getAll`     | `GET /catalogs`                  | `read_catalog`   | `includeDeleted=true` retorna tombstones         |
+| `create`     | `POST /catalogs`                 | `create_catalog` | servidor atribui `version: 1`                    |
+| `getOneById` | `GET /catalogs/{id}`             | `read_catalog`   | —                                                |
+| `update`     | `PUT /catalogs/{id}`             | `update_catalog` | `version` no corpo; desatualizada → 409          |
+| `deleteOne`  | `DELETE /catalogs/{id}?version=` | `delete_catalog` | exclusão lógica (tombstone); desatualizada → 409 |
+| `restore`    | `POST /catalogs/{id}/restore`    | `update_catalog` | recupera tombstone; desatualizada → 409          |
 
 ### Autorização (TENANT-RBAC)
 
@@ -121,7 +121,7 @@ broker nas implantações que os habilitam):
 - **Caminho de rejeição no designer:** o conflito vira uma entrada explícita
   (`getConflicts()`), exibida na região de status, resolvida por
   `resolveConflict(id, 'take-server' | 'take-local')`. `take-local` republica
-  contra a versão *atual* do servidor — uma escrita deliberada, nunca uma
+  contra a versão _atual_ do servidor — uma escrita deliberada, nunca uma
   sobrescrita cega.
 
 ## Sincronização sobre os eventos de ressincronização do Cana
@@ -132,7 +132,7 @@ irmão do mesmo fluxo de eventos confirmados do Cana que o `designerSync`
 (JUM-485) assina:
 
 - **Saída:** commits locais do Cana no documento de estado agendam um push
-  com debounce de cada domínio compartilhado *sujo*. A sujeira é decidida por
+  com debounce de cada domínio compartilhado _sujo_. A sujeira é decidida por
   um marcador durável em
   `domain.context.catalog = { id, version, contentHash }` (aditivo, padrão de
   carregamento do JUM-492, Requisito 126 Contrato 3): `contentHash` é o JSON
@@ -157,7 +157,7 @@ irmão do mesmo fluxo de eventos confirmados do Cana que o `designerSync`
 Provada, não afirmada:
 `apps/service-management-api/test/integration/catalogSync.integration.test.ts`
 sobe o backend Express **real** (autenticação JWT real, mediator real) em uma
- porta loopback efêmera e executa **dois clientes designer reais** sobre o
+porta loopback efêmera e executa **dois clientes designer reais** sobre o
 `fetch` real do Node. Bob é particionado ao ter seu transporte apontado para
 uma **porta fechada** — um `ECONNREFUSED` real, não latência simulada. Os
 dois lados continuam editando; ao curar, o read-back de Bob converge o novo

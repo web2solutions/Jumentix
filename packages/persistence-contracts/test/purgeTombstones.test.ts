@@ -1,11 +1,11 @@
 import {
-  InMemoryIdReservationLedger,
-  TOMBSTONE_PURGE_TTL_DAYS,
   assertSeedIdNotPurged,
+  InMemoryIdReservationLedger,
   purgeTombstones,
-  type IPurgeRecord,
-  type IPurgeStore
+  TOMBSTONE_PURGE_TTL_DAYS
 } from '../src';
+
+import type { IPurgeRecord, IPurgeStore } from '../src';
 
 const oldTombstone = '2026-01-01T00:00:00.000Z';
 const now = new Date('2026-06-01T00:00:00.000Z');
@@ -114,7 +114,10 @@ describe('purgeTombstones', () => {
       }
     };
     const report = await purgeTombstones({
-      stores: [store], ledger, now, commit: false
+      stores: [store],
+      ledger,
+      now,
+      commit: false
     });
     expect(report.events.map((event) => event.id)).toStrictEqual(['as-date']);
     expect(report.events[0].deletedAt).toBe('2026-01-01T00:00:00.000Z');
@@ -133,7 +136,10 @@ describe('purgeTombstones', () => {
       }
     };
     const report = await purgeTombstones({
-      stores: [store], ledger, now, commit: true
+      stores: [store],
+      ledger,
+      now,
+      commit: true
     });
     expect(report.events).toHaveLength(1);
     expect(report.dryRun).toBe(false);

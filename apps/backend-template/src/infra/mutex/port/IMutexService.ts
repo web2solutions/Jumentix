@@ -1,1 +1,3 @@
-export type { IMutexService } from '@jumentix/mutex-service';
+import type { IMutexService } from '@jumentix/mutex-service';
+
+export default IMutexService;

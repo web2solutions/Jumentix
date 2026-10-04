@@ -3,6 +3,7 @@ export { default as BasicAuthorizationHeaderUser2 } from './BasicAuthorizationHe
 export { default as BasicAuthorizationHeaderUser3 } from './BasicAuthorizationHeaderUser3';
 export { default as BasicAuthorizationHeaderUser4 } from './BasicAuthorizationHeaderUser4';
 export { default as BasicAuthorizationHeaderUserGuest } from './BasicAuthorizationHeaderUserGuest';
+export { default as authenticateForHeader } from './authenticateForHeader';
 export { default as user1 } from './user1';
 export { default as user2 } from './user2';
 export { default as user3 } from './user3';

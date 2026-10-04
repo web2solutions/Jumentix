@@ -32,11 +32,10 @@
  * Cana options when the host must fail closed instead of degrading.
  */
 
-import type {
-  CanaChangeEvent, CanaKey, CanaSchema, CanaTable
-} from './contracts';
-import type { ClientOptions } from './core/client';
-import { Client, createClient } from './core/client';
+import { createClient } from './core/client';
+
+import type { CanaChangeEvent, CanaSchema, CanaTable } from './contracts';
+import type { Client, ClientOptions } from './core/client';
 
 /**
  * The client shape Jumentix application code expects.
@@ -53,19 +52,16 @@ export interface JumentixDatabaseClientLike {
 }
 
 export interface CanaDatabaseClient extends JumentixDatabaseClientLike {
-  readonly stores: Record<string, CanaTable<unknown, CanaKey>>;
+  readonly stores: Record<string, CanaTable<unknown>>;
   /** The underlying client, for the parts of Cana the common shape cannot express. */
   readonly cana: Client;
   subscribe(listener: (event: CanaChangeEvent) => void): () => void;
 }
 
-function buildStores(
-  cana: Client,
-  schema: CanaSchema
-): Record<string, CanaTable<unknown, CanaKey>> {
-  const stores: Record<string, CanaTable<unknown, CanaKey>> = {};
+function buildStores(cana: Client, schema: CanaSchema): Record<string, CanaTable<unknown>> {
+  const stores: Record<string, CanaTable<unknown>> = {};
   for (const store of schema.stores) {
-    stores[store.name] = cana.table<unknown, CanaKey>(store.name);
+    stores[store.name] = cana.table<unknown>(store.name);
   }
   return stores;
 }

@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/max-expects */
 /*
  * JUM-770 — designer render guard: a render pass whose signed inputs did not
  * change is skipped; any change (or an explicit invalidation) re-arms it.
@@ -9,8 +9,9 @@ import { createRenderGuard, stableSerialize } from '../../src/ui/renderGuard.js'
 describe('service-management render guard (JUM-770)', () => {
   it('serializes objects independent of key order', () => {
     expect.hasAssertions();
-    expect(stableSerialize({ a: 1, b: { c: [1, 2], d: 'x' } }))
-      .toBe(stableSerialize({ b: { d: 'x', c: [1, 2] }, a: 1 }));
+    expect(stableSerialize({ a: 1, b: { c: [1, 2], d: 'x' } })).toBe(
+      stableSerialize({ b: { d: 'x', c: [1, 2] }, a: 1 })
+    );
     expect(stableSerialize({ a: 1 })).not.toBe(stableSerialize({ a: 2 }));
   });
 
@@ -58,16 +59,16 @@ describe('renderGuard signature edges (JUM-821)', () => {
     // Callbacks and absent values are not render inputs: two states that
     // differ only in them must serialize identically, or every render would
     // look changed.
-    expect(stableSerialize({ a: 1, fn: () => 2, missing: undefined }))
-      .toBe(stableSerialize({ a: 1 }));
-    expect(stableSerialize({ a: 1, fn: () => 999 }))
-      .toBe(stableSerialize({ a: 1, fn: () => 2 }));
+    expect(stableSerialize({ a: 1, fn: () => 2, missing: undefined })).toBe(
+      stableSerialize({ a: 1 })
+    );
+    expect(stableSerialize({ a: 1, fn: () => 999 })).toBe(stableSerialize({ a: 1, fn: () => 2 }));
   });
 
   it('accepts a plain value as the signature source', () => {
     expect.hasAssertions();
 
-    const guard = createRenderGuard('fixed-signature' as never);
+    const guard = createRenderGuard('fixed-signature');
     expect(guard.shouldRender()).toBe(true);
     expect(guard.shouldRender()).toBe(false);
     guard.invalidate();

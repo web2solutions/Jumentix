@@ -6,13 +6,13 @@ Tornar a fronteira Node/CI explícita e fail-closed. Localmente estas suítes co
 
 ## Inventário
 
-| Suíte / superfície | Por que depende da plataforma | Local (`runner`) | CI (`ciRunner`) | Tier |
-| --- | --- | --- | --- | --- |
-| `test/integration/mutex/*` | Redis real | bun | node | nightly |
-| `realtime/socketio.redis-streams.multi-instance.test.ts` | Redis Streams multi-instância | bun | node | nightly |
-| `test/smoke/database/*` | Matriz de drivers de banco / docker | bun | node | nightly |
-| Integração de frameworks HTTP (`Express`…`Total-JS`) | Peculiaridades de framework + harness Nest | bun | node | gate |
-| Restify | Historicamente sensível à versão major do Node | bun | node | gate |
+| Suíte / superfície                                       | Por que depende da plataforma                  | Local (`runner`) | CI (`ciRunner`) | Tier    |
+| -------------------------------------------------------- | ---------------------------------------------- | ---------------- | --------------- | ------- |
+| `test/integration/mutex/*`                               | Redis real                                     | bun              | node            | nightly |
+| `realtime/socketio.redis-streams.multi-instance.test.ts` | Redis Streams multi-instância                  | bun              | node            | nightly |
+| `test/smoke/database/*`                                  | Matriz de drivers de banco / docker            | bun              | node            | nightly |
+| Integração de frameworks HTTP (`Express`…`Total-JS`)     | Peculiaridades de framework + harness Nest     | bun              | node            | gate    |
+| Restify                                                  | Historicamente sensível à versão major do Node | bun              | node            | gate    |
 
 ## Skips silenciosos antigos (removidos como fonte da verdade)
 

@@ -67,4 +67,3 @@ Current write-trigger invalidation:
 - `apps/backend-template/test/unit/infra/cache/CacheService.test.ts`
 - `apps/backend-template/test/unit/modules/Users/service/UserService.test.ts`
 - `apps/backend-template/test/unit/modules/Users/service/OrganizationService.test.ts`
-

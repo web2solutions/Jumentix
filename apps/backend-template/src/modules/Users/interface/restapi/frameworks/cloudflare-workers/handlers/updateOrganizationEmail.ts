@@ -1,5 +1,6 @@
 import { OrganizationEmailUpdateRequestEvent } from '@src/modules/Users';
-import { createOrganizationMutationHandler } from './_organizationMutationHandlerFactory';
+
+import createOrganizationMutationHandler from './_organizationMutationHandlerFactory';
 
 export default createOrganizationMutationHandler({
   path: '/organizations/{id}/updateEmail/{emailId}',

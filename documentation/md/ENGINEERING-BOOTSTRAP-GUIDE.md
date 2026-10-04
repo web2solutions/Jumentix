@@ -198,8 +198,8 @@ A feature should be considered done when:
 
 Following the existing patterns in this boilerplate is the fastest path to consistent, maintainable delivery.
 
-
 <!-- test-pyramid-tdd -->
+
 ## Hexagonal Test Pyramid / TDD (Bun)
 
 Local tests run on Bun for every suite type (Requirement 106). Prefer:

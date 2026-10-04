@@ -80,7 +80,7 @@ const submit = async () => {
                       </CButton>
                     </CCol>
                     <CCol :xs="6" class="text-end">
-                      <RouterLink to="/register" custom v-slot="{ href, navigate }">
+                      <RouterLink v-slot="{ href, navigate }" to="/register" custom>
                         <CButton color="link" class="px-0" :href="href" @click="navigate">
                           {{ t('auth.login.needAccount') }}
                         </CButton>

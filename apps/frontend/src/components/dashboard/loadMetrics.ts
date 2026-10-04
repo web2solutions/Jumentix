@@ -1,16 +1,16 @@
-import { runMetricsQuery, type IMetricsQuery } from '@jumentix/persistence-contracts';
+import { runMetricsQuery } from '@jumentix/persistence-contracts';
 
 import { getSharedApiClient } from '@/contracts/apiClient';
 import { toQueryParams } from '@/contracts/listSchema';
-import {
-  asMetricsResult,
-  metricsSpecForListOperation,
-  type MetricsResult
-} from '@/contracts/metricsSchema';
+import { asMetricsResult, metricsSpecForListOperation } from '@/contracts/metricsSchema';
 import { loadRelationLabels, relationFor } from '@/contracts/relationLabels';
 import { isCanaOpen } from '@/data/db';
 import { listLocal } from '@/data/localRepository';
 import { useAuthStore } from '@/stores/auth';
+
+import type { IMetricsQuery } from '@jumentix/persistence-contracts';
+
+import type { MetricsResult } from '@/contracts/metricsSchema';
 
 import type { DashboardMetricsQuery } from './types';
 
@@ -22,7 +22,7 @@ const sinceFilter = (since: string | undefined): Record<string, unknown> | undef
 const localRecords = async (
   schemaName: string,
   since?: string
-): Promise<Array<Record<string, unknown>>> => {
+): Promise<Record<string, unknown>[]> => {
   const head = await listLocal(schemaName, { page: 1, size: 1 });
   const page = await listLocal(schemaName, { page: 1, size: Math.max(head.total, 1) });
   if (!since) return page.result;
@@ -38,16 +38,17 @@ const labelRelationBuckets = async (
   query: DashboardMetricsQuery,
   result: MetricsResult
 ): Promise<MetricsResult> => {
-  const relation = query.metric === 'groupBy' && query.field
-    ? relationFor(query.schemaName, query.field)
-    : undefined;
+  const relation =
+    query.metric === 'groupBy' && query.field
+      ? relationFor(query.schemaName, query.field)
+      : undefined;
   if (!relation) return result;
   const labels = await loadRelationLabels(relation);
   return {
     ...result,
-    buckets: result.buckets.map((bucket) => (
+    buckets: result.buckets.map((bucket) =>
       labels[bucket.key] ? { ...bucket, label: labels[bucket.key] } : bucket
-    ))
+    )
   };
 };
 
@@ -64,7 +65,7 @@ const loadRawMetrics = async (query: DashboardMetricsQuery): Promise<MetricsResu
     };
     return runMetricsQuery(records, metricsQuery, capabilities);
   }
-  const response = await getSharedApiClient().request<unknown>({
+  const response = await getSharedApiClient().request({
     operationId: query.metricsOperationId,
     query: {
       metric: query.metric,
@@ -77,9 +78,8 @@ const loadRawMetrics = async (query: DashboardMetricsQuery): Promise<MetricsResu
   return asMetricsResult(response);
 };
 
-export const loadMetrics = async (query: DashboardMetricsQuery): Promise<MetricsResult> => (
-  labelRelationBuckets(query, await loadRawMetrics(query))
-);
+export const loadMetrics = async (query: DashboardMetricsQuery): Promise<MetricsResult> =>
+  labelRelationBuckets(query, await loadRawMetrics(query));
 
 export const countPendingLocal = async (schemaName: string): Promise<number> => {
   if (!isCanaOpen()) return 0;

@@ -1,5 +1,6 @@
+import ServiceResponse from './ServiceResponse';
+
 import type { IKeyValueStorageClient, IServiceResponse } from './contracts';
-import { ServiceResponse } from './ServiceResponse';
 
 const resolvePrefix = (): string => {
   const envPrefix = String(process.env.JUMENTIX_KV_KEY_PREFIX || '').trim();
@@ -9,7 +10,7 @@ const resolvePrefix = (): string => {
   return 'jumentix__';
 };
 
-export abstract class BaseKeyValueStorageClient implements IKeyValueStorageClient {
+abstract class BaseKeyValueStorageClient implements IKeyValueStorageClient {
   public client: any;
 
   public prefix: string;
@@ -37,3 +38,5 @@ export abstract class BaseKeyValueStorageClient implements IKeyValueStorageClien
     return new ServiceResponse({ result: { connected: this.connected } });
   }
 }
+
+export default BaseKeyValueStorageClient;

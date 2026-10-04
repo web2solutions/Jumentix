@@ -1,6 +1,6 @@
 import type { IServiceResponse } from './IServiceResponse';
 
-export class ServiceResponse {
+class ServiceResponse {
   public result: any = undefined;
 
   public error: Error | undefined = undefined;
@@ -14,3 +14,5 @@ export class ServiceResponse {
     if (message) this.message = message;
   }
 }
+
+export default ServiceResponse;

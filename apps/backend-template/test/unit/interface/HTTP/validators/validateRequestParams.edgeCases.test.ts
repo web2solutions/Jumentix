@@ -15,13 +15,19 @@ describe('validateRequestParams edge cases', () => {
     // Not a required-field failure: the parameter is optional, so the request
     // only fails because an empty string is not a value at all.
     const endPointConfig = {
-      parameters: [{
-        name: 'filter', required: false, in: 'query', schema: { type: 'string' }
-      }]
+      parameters: [
+        {
+          name: 'filter',
+          required: false,
+          in: 'query',
+          schema: { type: 'string' }
+        }
+      ]
     };
 
-    expect(() => validateRequestParams(endPointConfig, {}, { filter: '' }))
-      .toThrow(new ValidationError('The parameter filter can not be empty.'));
+    expect(() => validateRequestParams(endPointConfig, {}, { filter: '' })).toThrow(
+      new ValidationError('The parameter filter can not be empty.')
+    );
     expect(validateRequestParams(endPointConfig, {}, {})).toBe(true);
   });
 
@@ -33,25 +39,27 @@ describe('validateRequestParams edge cases', () => {
     };
 
     expect(validateRequestParams(endPointConfig, { id: 'any-value' })).toBe(true);
-    expect(() => validateRequestParams(endPointConfig, {}))
-      .toThrow(new ValidationError('The parameter id is required in path.'));
+    expect(() => validateRequestParams(endPointConfig, {})).toThrow(
+      new ValidationError('The parameter id is required in path.')
+    );
   });
 
   it('coerces query strings against union-typed schemas', () => {
     expect.hasAssertions();
 
     const endPointConfig = {
-      parameters: [{
-        name: 'page',
-        required: false,
-        in: 'query',
-        schema: { type: ['integer', 'null'], minimum: 1 }
-      }]
+      parameters: [
+        {
+          name: 'page',
+          required: false,
+          in: 'query',
+          schema: { type: ['integer', 'null'], minimum: 1 }
+        }
+      ]
     };
 
     expect(validateRequestParams(endPointConfig, {}, { page: '3' })).toBe(true);
-    expect(() => validateRequestParams(endPointConfig, {}, { page: '0' }))
-      .toThrow(ValidationError);
+    expect(() => validateRequestParams(endPointConfig, {}, { page: '0' })).toThrow(ValidationError);
   });
 
   it('keeps a whitespace-only query value a string and lets the schema reject it', () => {
@@ -60,28 +68,33 @@ describe('validateRequestParams edge cases', () => {
     // Trimming to '' and returning the original string is what makes the
     // failure message point at the type rule instead of the required rule.
     const endPointConfig = {
-      parameters: [{
-        name: 'page',
-        required: false,
-        in: 'query',
-        schema: { type: 'integer' }
-      }]
+      parameters: [
+        {
+          name: 'page',
+          required: false,
+          in: 'query',
+          schema: { type: 'integer' }
+        }
+      ]
     };
 
-    expect(() => validateRequestParams(endPointConfig, {}, { page: '   ' }))
-      .toThrow(ValidationError);
+    expect(() => validateRequestParams(endPointConfig, {}, { page: '   ' })).toThrow(
+      ValidationError
+    );
   });
 
   it('coerces the boolean false literal without rejecting it as empty', () => {
     expect.hasAssertions();
 
     const endPointConfig = {
-      parameters: [{
-        name: 'active',
-        required: true,
-        in: 'query',
-        schema: { type: 'boolean' }
-      }]
+      parameters: [
+        {
+          name: 'active',
+          required: true,
+          in: 'query',
+          schema: { type: 'boolean' }
+        }
+      ]
     };
 
     // `active=false` is a present, valid value — not a missing parameter.
@@ -92,20 +105,24 @@ describe('validateRequestParams edge cases', () => {
     expect.hasAssertions();
 
     const endPointConfig = {
-      parameters: [{
-        name: 'x-request-count',
-        required: true,
-        in: 'header',
-        schema: { type: 'integer' }
-      }]
+      parameters: [
+        {
+          name: 'x-request-count',
+          required: true,
+          in: 'header',
+          schema: { type: 'integer' }
+        }
+      ]
     };
 
     // Headers arrive typed already (no query-string coercion), so a string
     // fails the integer rule.
     expect(validateRequestParams(endPointConfig, {}, {}, { 'x-request-count': 7 })).toBe(true);
-    expect(() => validateRequestParams(endPointConfig, {}, {}, { 'x-request-count': 'seven' }))
-      .toThrow(ValidationError);
-    expect(() => validateRequestParams(endPointConfig, {}, {}))
-      .toThrow(new ValidationError('The parameter x-request-count is required in header.'));
+    expect(() =>
+      validateRequestParams(endPointConfig, {}, {}, { 'x-request-count': 'seven' })
+    ).toThrow(ValidationError);
+    expect(() => validateRequestParams(endPointConfig, {}, {})).toThrow(
+      new ValidationError('The parameter x-request-count is required in header.')
+    );
   });
 });

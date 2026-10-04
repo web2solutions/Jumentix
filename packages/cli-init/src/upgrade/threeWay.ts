@@ -6,19 +6,19 @@ import path from 'node:path';
 
 export type UpgradeFileStatus = 'updated' | 'conflicted' | 'skipped' | 'added' | 'removed';
 
-export type UpgradeFileResult = {
+export interface UpgradeFileResult {
   path: string;
   status: UpgradeFileStatus;
   content: string | null;
-};
+}
 
-export type UpgradeReport = {
+export interface UpgradeReport {
   updated: string[];
   conflicted: string[];
   skipped: string[];
   added: string[];
   removed: string[];
-};
+}
 
 export function sha256Text(content: string): string {
   return crypto.createHash('sha256').update(content).digest('hex');
@@ -28,7 +28,11 @@ export function sha256Text(content: string): string {
  * Three-way merge via `git merge-file -p`. Returns conflict markers when edits
  * overlap. Falls back to a labeled two-way conflict block when git is missing.
  */
-export function threeWayMerge(base: string, ours: string, theirs: string): {
+export function threeWayMerge(
+  base: string,
+  ours: string,
+  theirs: string
+): {
   content: string;
   conflicted: boolean;
 } {
@@ -90,13 +94,7 @@ export function planFileUpgrade(input: {
   oursContent: string | null;
   theirsContent: string | null;
 }): UpgradeFileResult {
-  const {
-    relPath,
-    baseHash,
-    baseContent,
-    oursContent,
-    theirsContent
-  } = input;
+  const { relPath, baseHash, baseContent, oursContent, theirsContent } = input;
 
   if (theirsContent === null && oursContent === null) {
     return { path: relPath, status: 'skipped', content: null };
@@ -169,7 +167,7 @@ export function summarizeResults(results: UpgradeFileResult[]): UpgradeReport {
   for (const entry of results) {
     report[entry.status].push(entry.path);
   }
-  for (const key of Object.keys(report) as Array<keyof UpgradeReport>) {
+  for (const key of Object.keys(report) as (keyof UpgradeReport)[]) {
     report[key].sort((left, right) => left.localeCompare(right));
   }
   return report;

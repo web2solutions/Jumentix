@@ -10,12 +10,18 @@
  * no dual-write with IndexedDB and no auto-promote between the two.
  */
 
+import { canaError } from './errors';
+import { applyBeforeWrite } from './hooks';
+import { planQuery } from './query';
+import { OPERATION_LEDGER_STORE, withLedgerStore } from './reconciliation';
+import { createChangeBuffer } from './transaction';
+
 import type {
   CanaBulkWriteResult,
   CanaChangeType,
+  CanaCountMetrics,
   CanaKey,
   CanaQuery,
-  CanaCountMetrics,
   CanaQueryMetrics,
   CanaQueryPlan,
   CanaSchema,
@@ -26,13 +32,8 @@ import type {
   CanaTransactionScope,
   CanaWriteResult
 } from '../contracts';
-import { canaError } from './errors';
 import type { CanaHooks } from './hooks';
-import { applyBeforeWrite } from './hooks';
-import { OPERATION_LEDGER_STORE, withLedgerStore } from './reconciliation';
 import type { ChangeBuffer } from './transaction';
-import { createChangeBuffer } from './transaction';
-import { planQuery } from './query';
 
 const STORAGE_PREFIX = 'cana.ls.v1:';
 
@@ -108,6 +109,7 @@ function writePath(record: Record<string, unknown>, path: string, value: unknown
   // so each write is validated at the point of use (single traversal).
   const guard = (segment: string): void => {
     if (segment === '__proto__' || segment === 'constructor' || segment === 'prototype') {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'InvalidRequest',
         `keyPath "${path}" is not writable: segment "${segment}" would mutate the prototype chain.`
@@ -117,7 +119,7 @@ function writePath(record: Record<string, unknown>, path: string, value: unknown
   const segments = path.split('.');
   let cursor: Record<string, unknown> = record;
   for (let i = 0; i < segments.length - 1; i += 1) {
-    const segment = segments[i]!;
+    const segment = segments[i];
     guard(segment);
     const next = cursor[segment];
     if (next === null || typeof next !== 'object') {
@@ -125,7 +127,7 @@ function writePath(record: Record<string, unknown>, path: string, value: unknown
     }
     cursor = cursor[segment] as Record<string, unknown>;
   }
-  const last = segments[segments.length - 1]!;
+  const last = segments[segments.length - 1];
   guard(last);
   cursor[last] = value;
 }
@@ -150,34 +152,31 @@ function persist(storage: LocalStorageLike, name: string, snapshot: LsSnapshot):
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (/quota/i.test(message) || (error as { name?: string }).name === 'QuotaExceededError') {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'QuotaExceeded',
-        `localStorage quota exceeded while writing "${name}". The fallback store did not accept `
-          + 'the write.',
+        `localStorage quota exceeded while writing "${name}". The fallback store did not accept ` +
+          'the write.',
         { cause: error }
       );
     }
-    throw canaError(
-      'Unavailable',
-      `localStorage refused a write for "${name}": ${message}`,
-      { cause: error }
-    );
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
+    throw canaError('Unavailable', `localStorage refused a write for "${name}": ${message}`, {
+      cause: error
+    });
   }
 }
 
-function loadSnapshot(
-  storage: LocalStorageLike,
-  name: string,
-  schema: CanaSchema
-): LsSnapshot {
+function loadSnapshot(storage: LocalStorageLike, name: string, schema: CanaSchema): LsSnapshot {
   let raw: string | null;
   try {
     raw = storage.getItem(storageKey(name));
   } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError(
       'Unavailable',
-      `localStorage refused a read for "${name}". IndexedDB was unavailable and the fallback `
-        + 'store cannot be opened either.',
+      `localStorage refused a read for "${name}". IndexedDB was unavailable and the fallback ` +
+        'store cannot be opened either.',
       { cause: error }
     );
   }
@@ -188,10 +187,11 @@ function loadSnapshot(
       throw new Error('malformed');
     }
     if (parsed.version > schema.version) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'UpgradeFailed',
-        `Refusing to downgrade localStorage database "${name}" from version ${parsed.version} `
-          + `to ${schema.version}.`
+        `Refusing to downgrade localStorage database "${name}" from version ${parsed.version} ` +
+          `to ${schema.version}.`
       );
     }
     // Ensure every schema store exists (upgrade by adding empty stores).
@@ -208,6 +208,7 @@ function loadSnapshot(
     return next;
   } catch (error) {
     if ((error as { canaError?: boolean }).canaError) throw error;
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError(
       'Internal',
       `localStorage database "${name}" is corrupted and cannot be opened.`,
@@ -219,6 +220,7 @@ function loadSnapshot(
 function storeSchema(schema: CanaSchema, name: string): CanaStoreSchema {
   const found = schema.stores.find((store) => store.name === name);
   if (!found) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError('InvalidRequest', `Unknown store "${name}".`, { store: name });
   }
   return found;
@@ -265,11 +267,10 @@ function indexValue(
   }
   const index = schema.indexes?.find((entry) => entry.name === query.index);
   if (!index) {
-    throw canaError(
-      'InvalidRequest',
-      `Store "${schema.name}" has no index "${query.index}".`,
-      { store: schema.name }
-    );
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
+    throw canaError('InvalidRequest', `Store "${schema.name}" has no index "${query.index}".`, {
+      store: schema.name
+    });
   }
   return readPath(record, index.keyPath);
 }
@@ -318,29 +319,28 @@ interface TxState {
  * Open a localStorage-backed database, or throw `Unavailable` when the store
  * cannot be used at all.
  */
-export function openLocalStorageBackend(
-  options: LocalStorageBackendOptions
-  // eslint-disable-next-line no-use-before-define -- class is declared immediately below
-): LocalStorageBackend {
+export function openLocalStorageBackend(options: LocalStorageBackendOptions): LocalStorageBackend {
   const storage = options.storage ?? browserLocalStorage();
   if (!storage) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
     throw canaError(
       'Unavailable',
-      'No usable localStorage fallback in this environment. IndexedDB was unavailable and the '
-        + 'fallback store cannot be opened either.'
+      'No usable localStorage fallback in this environment. IndexedDB was unavailable and the ' +
+        'fallback store cannot be opened either.'
     );
   }
   // Match CanaClient.effectiveSchema(): when the ledger is on, its store must
   // exist in the schema or every readwrite transaction fails with Unknown store.
   const schema: CanaSchema = options.operationLedger
     ? {
-      ...options.schema,
-      stores: withLedgerStore(options.schema.stores) as CanaSchema['stores']
-    }
+        ...options.schema,
+        stores: withLedgerStore(options.schema.stores)
+      }
     : options.schema;
   const normalized = { ...options, schema };
   const snapshot = loadSnapshot(storage, normalized.name, normalized.schema);
-  // eslint-disable-next-line no-use-before-define -- class is declared immediately below
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define -- the factory runs after module evaluation, so referencing the class declared below is safe
   return new LocalStorageBackend(normalized, storage, snapshot);
 }
 
@@ -369,6 +369,7 @@ export class LocalStorageBackend {
 
   private requireOpen(): void {
     if (this.closed) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'InvalidRequest',
         `localStorage client for "${this.options.name}" is closed.`
@@ -407,10 +408,12 @@ export class LocalStorageBackend {
         snapshot: mode === 'readonly' ? this.snapshot : cloneSnapshot(this.snapshot)
       };
 
-      const scopeStores = this.options.operationLedger && mode === 'readwrite'
-        && !stores.includes(OPERATION_LEDGER_STORE)
-        ? [...stores, OPERATION_LEDGER_STORE]
-        : stores;
+      const scopeStores =
+        this.options.operationLedger &&
+        mode === 'readwrite' &&
+        !stores.includes(OPERATION_LEDGER_STORE)
+          ? [...stores, OPERATION_LEDGER_STORE]
+          : stores;
 
       for (const name of scopeStores) {
         storeSchema(this.options.schema, name);
@@ -419,7 +422,7 @@ export class LocalStorageBackend {
       try {
         if (this.options.operationLedger && mode === 'readwrite') {
           working.snapshot.stores[OPERATION_LEDGER_STORE] ??= {};
-          working.snapshot.stores[OPERATION_LEDGER_STORE]![serializeKey(correlationId)] = {
+          working.snapshot.stores[OPERATION_LEDGER_STORE][serializeKey(correlationId)] = {
             id: correlationId,
             at: attemptedAt,
             stores: [...stores]
@@ -427,14 +430,11 @@ export class LocalStorageBackend {
         }
 
         const result = await body({
-          table: <TRecord, TKey extends CanaKey = CanaKey>(name: string) => (
-            this.createTable<TRecord, TKey>(name, working, buffer, correlationId, mode)
-          ),
+          table: <TRecord, TKey extends CanaKey = CanaKey>(name: string) =>
+            this.createTable<TRecord, TKey>(name, working, buffer, correlationId, mode),
           abort: (reason?: string) => {
-            throw canaError(
-              'TransactionAborted',
-              reason ?? 'Transaction aborted.'
-            );
+            // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
+            throw canaError('TransactionAborted', reason ?? 'Transaction aborted.');
           }
         });
 
@@ -467,7 +467,9 @@ export class LocalStorageBackend {
 
     // Chain onto the queue without losing the previous rejection.
     let release!: (value: unknown) => void;
-    const gate = new Promise((resolve) => { release = resolve; });
+    const gate = new Promise((resolve) => {
+      release = resolve;
+    });
     const previous = this.queue;
     this.queue = previous.then(() => gate);
     await previous.catch(() => undefined);
@@ -497,6 +499,7 @@ export class LocalStorageBackend {
       // and every record write would then land on it — refuse the name before
       // the read, instead of relying on the schema never containing it.
       if (name === '__proto__' || name === 'constructor' || name === 'prototype') {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
         throw canaError(
           'InvalidRequest',
           `Store name "${name}" cannot be used as a snapshot property key.`,
@@ -505,11 +508,12 @@ export class LocalStorageBackend {
       }
       // eslint-disable-next-line no-param-reassign -- TxState is the mutable scratch snapshot
       working.snapshot.stores[name] ??= {};
-      return working.snapshot.stores[name]!;
+      return working.snapshot.stores[name];
     };
 
     const assertWritable = (): void => {
       if (mode === 'readonly') {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
         throw canaError(
           'InvalidRequest',
           `Cannot write to "${name}" inside a readonly localStorage transaction.`,
@@ -525,25 +529,26 @@ export class LocalStorageBackend {
         correlationId,
         ...(key === undefined ? {} : { key }),
         ...(value === undefined ? {} : { record: value })
-      } as Parameters<ChangeBuffer['record']>[0]);
+      });
     };
 
     const throughHooks = (
       type: CanaChangeType,
       key: CanaKey | undefined,
       value: unknown
-    ): unknown => applyBeforeWrite(
-      this.options.hooks,
-      {
-        store: name,
-        type,
-        correlationId,
-        // Writes always carry a record; deletes go through `record()` only.
-        record: value,
-        ...(key === undefined ? {} : { key })
-      },
-      value
-    );
+    ): unknown =>
+      applyBeforeWrite(
+        this.options.hooks,
+        {
+          store: name,
+          type,
+          correlationId,
+          // Writes always carry a record; deletes go through `record()` only.
+          record: value,
+          ...(key === undefined ? {} : { key })
+        },
+        value
+      );
 
     const resolveInboundKey = (value: TRecord, explicit?: TKey): CanaKey => {
       if (schema.keyPath !== undefined) {
@@ -551,7 +556,7 @@ export class LocalStorageBackend {
         if (existing !== undefined) return existing as CanaKey;
         if (schema.autoIncrement) {
           // Sequences are initialised for every schema store at open time.
-          const generated = working.snapshot.sequences[name]! + 1;
+          const generated = working.snapshot.sequences[name] + 1;
           // eslint-disable-next-line no-param-reassign -- TxState is the mutable scratch snapshot
           working.snapshot.sequences[name] = generated;
           if (typeof schema.keyPath === 'string') {
@@ -559,6 +564,7 @@ export class LocalStorageBackend {
           }
           return generated;
         }
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
         throw canaError(
           'InvalidRequest',
           `add/put on "${name}" needs a key at keyPath ${String(schema.keyPath)}.`,
@@ -567,11 +573,12 @@ export class LocalStorageBackend {
       }
       if (explicit !== undefined) return explicit;
       if (schema.autoIncrement) {
-        const generated = working.snapshot.sequences[name]! + 1;
+        const generated = working.snapshot.sequences[name] + 1;
         // eslint-disable-next-line no-param-reassign -- TxState is the mutable scratch snapshot
         working.snapshot.sequences[name] = generated;
         return generated;
       }
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
       throw canaError(
         'InvalidRequest',
         `add/put on "${name}" needs an explicit key: the store uses outbound keys.`,
@@ -589,6 +596,7 @@ export class LocalStorageBackend {
       async add(value: TRecord, key?: TKey): Promise<CanaWriteResult> {
         assertWritable();
         if (schema.keyPath !== undefined && key !== undefined) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
           throw canaError(
             'InvalidRequest',
             `add on "${name}" was given an explicit key, but the store has an inbound keyPath.`,
@@ -599,6 +607,7 @@ export class LocalStorageBackend {
         const resolved = resolveInboundKey(writing, key);
         const encoded = serializeKey(resolved);
         if (bag()[encoded] !== undefined) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
           throw canaError(
             'ConstraintViolation',
             `Key ${String(resolved)} already exists in "${name}".`,
@@ -613,17 +622,19 @@ export class LocalStorageBackend {
       async put(value: TRecord, key?: TKey): Promise<CanaWriteResult> {
         assertWritable();
         if (schema.keyPath !== undefined && key !== undefined) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
           throw canaError(
             'InvalidRequest',
             `put on "${name}" was given an explicit key, but the store has an inbound keyPath.`,
             { store: name, key }
           );
         }
-        const resolvedProbe = schema.keyPath !== undefined
-          ? (readPath(value, schema.keyPath) as CanaKey | undefined)
-          : key;
-        const existed = resolvedProbe !== undefined
-          && bag()[serializeKey(resolvedProbe)] !== undefined;
+        const resolvedProbe =
+          schema.keyPath !== undefined
+            ? (readPath(value, schema.keyPath) as CanaKey | undefined)
+            : key;
+        const existed =
+          resolvedProbe !== undefined && bag()[serializeKey(resolvedProbe)] !== undefined;
         const writing = throughHooks(existed ? 'updated' : 'created', key, value) as TRecord;
         const resolved = resolveInboundKey(writing, key);
         bag()[serializeKey(resolved)] = writing;
@@ -635,6 +646,7 @@ export class LocalStorageBackend {
         assertWritable();
         const current = bag()[serializeKey(key)] as TRecord | undefined;
         if (current === undefined) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error -- CanaError is plain data by design so it survives structuredClone across the worker boundary (see contracts.ts)
           throw canaError(
             'NotFound',
             `Cannot update "${String(key)}" in "${name}": no such record.`,
@@ -723,9 +735,7 @@ export class LocalStorageBackend {
         return runLocalQuery<TRecord>(schema, bag(), query);
       },
 
-      async explainCount(
-        query?: CanaQuery
-      ): Promise<{ count: number; metrics: CanaCountMetrics }> {
+      async explainCount(query?: CanaQuery): Promise<{ count: number; metrics: CanaCountMetrics }> {
         // The fallback filters the whole bag in memory, so its count reads
         // every record. Reporting a native count here would claim a cheapness
         // this backend does not have (JUM-706).
@@ -736,9 +746,7 @@ export class LocalStorageBackend {
         };
       },
 
-      async explain(
-        query?: CanaQuery
-      ): Promise<{
+      async explain(query?: CanaQuery): Promise<{
         records: readonly TRecord[];
         plan: CanaQueryPlan;
         metrics: CanaQueryMetrics;

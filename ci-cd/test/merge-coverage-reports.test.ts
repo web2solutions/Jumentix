@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/max-expects */
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const {
   hasBranchData,
@@ -13,7 +12,13 @@ const {
 
 const RECORD_A = ['SF:src/a.ts', 'DA:1,1', 'DA:2,0', 'end_of_record'].join('\n');
 const RECORD_B = ['SF:src/b.ts', 'DA:1,1', 'end_of_record'].join('\n');
-const RECORD_WITH_BRANCH = ['SF:src/branch.ts', 'DA:1,1', 'BRDA:1,0,0,1', 'BRF:1', 'end_of_record'].join('\n');
+const RECORD_WITH_BRANCH = [
+  'SF:src/branch.ts',
+  'DA:1,1',
+  'BRDA:1,0,0,1',
+  'BRF:1',
+  'end_of_record'
+].join('\n');
 
 const makeTmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'merge-lcov-'));
 
@@ -45,9 +50,15 @@ describe('merge-coverage-reports', () => {
     const rebased = rebaseRecordFile(relative, 'apps/frontend/');
     expect(rebased).toContain('SF:apps/frontend/src/useXCrud.ts');
 
-    const absolute = ['SF:/repo/apps/frontend/src/useXCrud.ts', 'DA:1,1', 'end_of_record'].join('\n');
-    expect(rebaseRecordFile(absolute, 'apps/frontend/')).toContain('SF:/repo/apps/frontend/src/useXCrud.ts');
-    expect(rebaseRecordFile(['DA:1,1', 'end_of_record'].join('\n'), 'apps/frontend/')).toBe('DA:1,1\nend_of_record');
+    const absolute = ['SF:/repo/apps/frontend/src/useXCrud.ts', 'DA:1,1', 'end_of_record'].join(
+      '\n'
+    );
+    expect(rebaseRecordFile(absolute, 'apps/frontend/')).toContain(
+      'SF:/repo/apps/frontend/src/useXCrud.ts'
+    );
+    expect(rebaseRecordFile(['DA:1,1', 'end_of_record'].join('\n'), 'apps/frontend/')).toBe(
+      'DA:1,1\nend_of_record'
+    );
   });
 
   it('splits records on end_of_record and ignores trailing text', () => {
@@ -66,11 +77,7 @@ describe('merge-coverage-reports', () => {
     const dir = makeTmp();
     const input = path.join(dir, 'frontend.info');
     const output = path.join(dir, 'merged.info');
-    fs.writeFileSync(input, [
-      'DA:1,1',
-      'end_of_record',
-      RECORD_A
-    ].join('\n'));
+    fs.writeFileSync(input, ['DA:1,1', 'end_of_record', RECORD_A].join('\n'));
 
     const stats = mergeLcovFiles([{ path: input, pathPrefix: 'apps/frontend/' }], output);
 
@@ -100,8 +107,9 @@ describe('merge-coverage-reports', () => {
 
       expect(result.status).toBe(0);
       expect(fs.existsSync(output)).toBe(true);
-      expect(fs.readFileSync(path.join(dir, 'artifacts', 'ci', 'coverage-merge.json'), 'utf8'))
-        .toContain(output);
+      expect(
+        fs.readFileSync(path.join(dir, 'artifacts', 'ci', 'coverage-merge.json'), 'utf8')
+      ).toContain(output);
       fs.rmSync(dir, { recursive: true, force: true });
     });
 

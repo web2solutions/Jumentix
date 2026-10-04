@@ -1,6 +1,7 @@
 # Hexagonal + DDD + Feature-driven Migration Plan
 
 ## Goal
+
 Move the codebase to a feature-driven, DDD-aligned hexagonal architecture with clear separation between domain and infrastructure, minimizing change blast radius per bugfix/feature.
 
 ## Approved Target Structure
@@ -43,6 +44,7 @@ apps/backend-template/src/
 ## Phases
 
 ### Phase 1 - Guardrails and Canonical Namespaces
+
 - Keep current behavior.
 - Introduce canonical folders inside each module:
   - `application/use-cases`
@@ -55,33 +57,40 @@ apps/backend-template/src/
   - boundary checks
 
 Done criteria:
+
 - Users module has canonical folders and bridge exports.
 - No runtime changes.
 - `ci:gate` green.
 
 ### Phase 2 - Application Entry Consolidation
+
 - Move controller dependencies to application ports/use-cases only.
 - Remove direct service implementation imports from input adapters.
 - Keep composition as single wiring point.
 
 Done criteria:
+
 - Controllers call only application contracts.
 - No controller references repository/service implementations.
 
 ### Phase 3 - Outbound Port Normalization
+
 - Rename repository interfaces to explicit ports (`*Port` naming).
 - Move infra implementations to `adapters/out/*`.
 - Keep domain/application depending only on ports.
 
 Done criteria:
+
 - Outbound dependencies are interface-driven.
 - Infra is physically and semantically separated.
 
 ### Phase 4 - Module-by-module Rollout
+
 - Repeat the same structure for each bounded context.
 - Enforce naming and dependency rules uniformly.
 
 Done criteria:
+
 - All modules follow the same feature-driven hexagonal layout.
 
 ## Non-Functional Acceptance Criteria

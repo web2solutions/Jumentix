@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const packageRoot = path.resolve(__dirname, '..');
 const source = path.resolve(packageRoot, '../../spec/asyncapi/async-api.proto');

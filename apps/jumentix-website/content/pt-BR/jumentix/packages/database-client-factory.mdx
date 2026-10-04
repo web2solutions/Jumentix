@@ -57,7 +57,6 @@ const compilers = buildDatabaseClientCompilers();
 // Select compiler from env (e.g. DB_DRIVER=mongo) at composition root.
 ```
 
-
 ### 3. Fluxos centrais
 
 ### 1. Read driver from env
@@ -72,7 +71,6 @@ Do not rebuild clients per request.
 
 Pass contracts to use-cases, not the factory.
 
-
 ### 4. Superfície prática (exports)
 
 - `buildDatabaseClientCompilers`
@@ -83,8 +81,8 @@ Use os exports nas camadas de aplicação/adaptadores — não em entidades de d
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
+| Sintoma               | Causa    | Correção                                                  |
+| --------------------- | -------- | --------------------------------------------------------- |
 | Unknown driver string | Env typo | Fail closed with a clear error listing supported drivers. |
 
 **Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.

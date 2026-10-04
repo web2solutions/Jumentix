@@ -16,20 +16,20 @@ open source estabelecidos, preservando a linguagem, os recursos e a identidade d
 
 ## Arquitetura de informação
 
-| Rota | Responsabilidade |
-| --- | --- |
-| `/` | Posicionamento, provas, visão real do Domain Designer e entrada por código |
-| `/product` | Capacidades completas e ciclo de entrega |
-| `/use-cases` e filhas | Blueprints REST, realtime, SaaS modular, microsserviços e PWA offline |
-| `/integrations` | Inventário HTTP, realtime, persistência, mensageria e deploy |
-| `/architecture` | DDD, Hexagonal, Event-Driven, SOLID e limites contratuais, mais o mapa hexagonal interativo do backend-template (incluindo `interface/GUI`) |
-| `/security-compliance` | RBAC, controles PCI, segredos e evidências |
-| `/pricing-or-engagement` | Caminhos open source, piloto e adoção como plataforma |
-| `/community` | Fluxo de contribuição e governança |
-| `/roadmap` | Direção do produto conectada ao roadmap do Linear |
-| `/changelog` | Histórico do GitHub com até 200 mudanças por página |
-| `/contact` | Discussions, issues e contato enterprise |
-| `/docs/jumentix` | Entrada da documentação técnica |
+| Rota                     | Responsabilidade                                                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                      | Posicionamento, provas, visão real do Domain Designer e entrada por código                                                                  |
+| `/product`               | Capacidades completas e ciclo de entrega                                                                                                    |
+| `/use-cases` e filhas    | Blueprints REST, realtime, SaaS modular, microsserviços e PWA offline                                                                       |
+| `/integrations`          | Inventário HTTP, realtime, persistência, mensageria e deploy                                                                                |
+| `/architecture`          | DDD, Hexagonal, Event-Driven, SOLID e limites contratuais, mais o mapa hexagonal interativo do backend-template (incluindo `interface/GUI`) |
+| `/security-compliance`   | RBAC, controles PCI, segredos e evidências                                                                                                  |
+| `/pricing-or-engagement` | Caminhos open source, piloto e adoção como plataforma                                                                                       |
+| `/community`             | Fluxo de contribuição e governança                                                                                                          |
+| `/roadmap`               | Direção do produto conectada ao roadmap do Linear                                                                                           |
+| `/changelog`             | Histórico do GitHub com até 200 mudanças por página                                                                                         |
+| `/contact`               | Discussions, issues e contato enterprise                                                                                                    |
+| `/docs/jumentix`         | Entrada da documentação técnica                                                                                                             |
 
 Cada rota comercial também existe sob `/pt-BR`. O controle de idioma preserva a rota atual.
 

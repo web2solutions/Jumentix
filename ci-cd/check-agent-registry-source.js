@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
-const { execFileSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const https = require('node:https');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 
 const CONFIG_PATH = path.resolve('.agents/registry-source.json');
@@ -46,8 +47,13 @@ function repositoryCoordinates(config) {
 }
 
 function encodeRawPath(remotePath) {
-  const segments = String(remotePath || '').replace(/^\/+/, '').split('/');
-  if (segments.length === 0 || segments.some((segment) => !segment || segment === '.' || segment === '..')) {
+  const segments = String(remotePath || '')
+    .replace(/^\/+/, '')
+    .split('/');
+  if (
+    segments.length === 0 ||
+    segments.some((segment) => !segment || segment === '.' || segment === '..')
+  ) {
     throw new Error('Invalid registry remote path.');
   }
   return segments.map((segment) => encodeURIComponent(segment)).join('/');
@@ -74,13 +80,13 @@ function buildContentsApiUrl(config, ref = config.revision) {
     throw new Error('Canonical registry content requires a full immutable commit SHA.');
   }
   const remotePath = encodeRawPath(config.remotePath);
-  return [
+  return `${[
     'https://api.github.com/repos',
     encodeURIComponent(owner),
     encodeURIComponent(repo),
     'contents',
     remotePath
-  ].join('/') + `?ref=${encodeURIComponent(ref)}`;
+  ].join('/')}?ref=${encodeURIComponent(ref)}`;
 }
 
 function buildBranchRevisionUrl(config) {
@@ -90,29 +96,37 @@ function buildBranchRevisionUrl(config) {
 
 function fetchBody(url, headers, sourceName) {
   return new Promise((resolve, reject) => {
-    https.get(url, { headers }, (res) => {
-      if (!res.statusCode || res.statusCode < 200 || res.statusCode >= 300) {
-        if (typeof res.resume === 'function') res.resume();
-        reject(new Error(`Failed to fetch ${sourceName}: HTTP ${res.statusCode || 'unknown'} (${url})`));
-        return;
-      }
-      let body = '';
-      res.setEncoding('utf8');
-      res.on('data', (chunk) => {
-        body += chunk;
+    https
+      .get(url, { headers }, (res) => {
+        if (!res.statusCode || res.statusCode < 200 || res.statusCode >= 300) {
+          if (typeof res.resume === 'function') res.resume();
+          reject(
+            new Error(`Failed to fetch ${sourceName}: HTTP ${res.statusCode || 'unknown'} (${url})`)
+          );
+          return;
+        }
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => {
+          body += chunk;
+        });
+        res.on('end', () => resolve(body));
+      })
+      .on('error', (error) => {
+        reject(new Error(`Failed to fetch ${sourceName}: ${error.message}`, { cause: error }));
       });
-      res.on('end', () => resolve(body));
-    }).on('error', (error) => {
-      reject(new Error(`Failed to fetch ${sourceName}: ${error.message}`, { cause: error }));
-    });
   });
 }
 
 function fetchText(url) {
-  return fetchBody(url, {
-    Accept: 'text/plain',
-    'User-Agent': 'jumentix-agent-registry-check'
-  }, 'immutable canonical registry content');
+  return fetchBody(
+    url,
+    {
+      Accept: 'text/plain',
+      'User-Agent': 'jumentix-agent-registry-check'
+    },
+    'immutable canonical registry content'
+  );
 }
 
 function readGhAuthToken() {
@@ -197,10 +211,7 @@ async function fetchCanonicalText(config, revision, env = process.env) {
       );
     }
     if (/HTTP (401|403)/.test(message)) {
-      throw new Error(
-        `${message}. ${PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE}`,
-        { cause: error }
-      );
+      throw new Error(`${message}. ${PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE}`, { cause: error });
     }
     if (/HTTP 404/.test(message)) {
       // Private raw.githubusercontent.com answers 404 without credentials — that is not pin drift.
@@ -215,11 +226,7 @@ async function fetchCanonicalText(config, revision, env = process.env) {
 }
 
 async function fetchJson(url, env = process.env) {
-  const body = await fetchBody(
-    url,
-    githubApiHeaders(env),
-    'canonical registry branch revision'
-  );
+  const body = await fetchBody(url, githubApiHeaders(env), 'canonical registry branch revision');
   try {
     return JSON.parse(body);
   } catch (error) {
@@ -247,7 +254,7 @@ async function main() {
   const args = parseArgs();
   const config = readConfig();
   const localPath = path.resolve(config.localMirrorPath);
-  let revision = config.revision;
+  let { revision } = config;
 
   if (args.sync) {
     revision = await resolveBranchRevision(config);
@@ -273,7 +280,8 @@ async function main() {
       console.error('Local agent registry mirror is out of sync with canonical repository.');
       console.error(`Source: ${sourceUrl}`);
       console.error('Run: bun run agent-registry:sync');
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
     console.log(`Agent registry mirror matches canonical revision ${revision}.`);
     return;
@@ -283,19 +291,17 @@ async function main() {
     fs.writeFileSync(localPath, remoteContent);
     fs.writeFileSync(CONFIG_PATH, `${JSON.stringify({ ...config, revision }, null, 2)}\n`);
     console.log(`Agent registry mirror synchronized from canonical revision ${revision}.`);
-    return;
   }
 }
 
 if (isEntryPoint(module)) {
   main().catch((error) => {
     console.error(error.message);
-    process.exit(1);
+    process.exitCode = 1;
   });
 }
 
 module.exports = {
-  PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE,
   buildBranchRevisionUrl,
   buildContentsApiUrl,
   buildRawUrl,
@@ -308,6 +314,7 @@ module.exports = {
   mirrorsMatch,
   normalize,
   parseArgs,
+  PRIVATE_REGISTRY_CREDENTIAL_GUIDANCE,
   readConfig,
   readGhAuthToken,
   resolveBranchRevision,

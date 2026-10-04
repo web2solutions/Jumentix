@@ -1,8 +1,8 @@
-#!/usr/bin/env bun
 /* eslint-disable no-console */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('../../../ci-cd/lib/entry-point.js');
 
 const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
@@ -17,7 +17,10 @@ const packageRoot = path.resolve(__dirname, '../packages/agent-registry');
  * `` `busy` ``.
  */
 function unformat(value) {
-  return String(value).trim().replace(/^`+|`+$/g, '').trim();
+  return String(value)
+    .trim()
+    .replace(/^`+|`+$/g, '')
+    .trim();
 }
 
 function parseMarkdownRegistry(content) {
@@ -84,12 +87,14 @@ async function main() {
   const registryPath = path.resolve('.agents/AGENT-REGISTRY.md');
   if (!fs.existsSync(registryPath)) {
     console.error(`Agent registry not found: ${registryPath}`);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     console.error('Missing required environment variable: FIREBASE_SERVICE_ACCOUNT_KEY');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const content = fs.readFileSync(registryPath, 'utf8');
@@ -129,6 +134,7 @@ async function main() {
         capabilities: agent.capabilities || []
       };
 
+      // eslint-disable-next-line no-await-in-loop -- migration upserts run sequentially to bound Firestore write rate and keep error order stable
       await registry.upsertAgent(firestore, record);
       results.upserted.push(agent.agent_id);
     } catch (error) {
@@ -144,7 +150,7 @@ async function main() {
 
   if (results.errors.length > 0) {
     results.errors.forEach((e) => console.error(`  ${e.agent_id}: ${e.error}`));
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 
@@ -154,7 +160,7 @@ async function main() {
 if (isEntryPoint(module)) {
   main().catch((error) => {
     console.error(error.message);
-    process.exit(1);
+    process.exitCode = 1;
   });
 }
 

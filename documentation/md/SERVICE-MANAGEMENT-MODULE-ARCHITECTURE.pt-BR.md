@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Arquitetura de módulos do Service Management e contrato da porta IDesignerStore
 
 Este é o documento E3 da cadeia de documentação E1–E8 do Service Management
@@ -64,15 +65,15 @@ extração e entrega de store; a regra não.
 
 ### Módulos atuais
 
-| Módulo | Camada | Papel |
-| --- | --- | --- |
-| `apps/service-management/script.js` | Vinculado ao DOM | Módulo de entrada: conexão de eventos, renderização, fluxos de importação/exportação. Detém toda interação com `document`/`window`. |
-| `packages/designer-core/src/state/designerState.js` | Livre de DOM | Núcleo de estado e persistência: o objeto de estado, a cadeia de normalização `normalizeStatePayload`, snapshot/apply, histórico (undo/redo), `loadState`, `buildModelSnapshot`. |
-| `packages/designer-core/src/store/IDesignerStore.js` | Livre de DOM, sem dependências | A porta de armazenamento: contrato + classe base. Importável sob qualquer runtime JavaScript. |
-| `apps/service-management/src/store/CanaDesignerStore.js` | Livre de DOM | O único adaptador `IDesignerStore` (JUM-483), sobre o cliente Cana — injetado, nunca importado. |
-| `apps/service-management/src/store/designerStoreFactory.js` | Livre de DOM | A costura de construção do store: `createDesignerStore()` sempre retorna `CanaDesignerStore`; o cliente Cana é a única variável. |
-| `apps/service-management/src/store/canaMigration.js` | Livre de DOM | A migração unidirecional localStorage → Cana do JUM-484 (executada no boot antes de qualquer carga de estado) e os estados de ambiente de armazenamento declarados. |
-| `apps/service-management/src/state/designerSync.js` | Livre de DOM | O motor de sincronização multi-abas do JUM-485: assina os eventos de escrita ordenados do Cana, os conecta entre abas via `BroadcastChannel` e reconcilia as mudanças remotas com o histórico local de undo/redo, a edição local pendente e a seleção. |
+| Módulo                                                      | Camada                         | Papel                                                                                                                                                                                                                                                  |
+| ----------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/service-management/script.js`                         | Vinculado ao DOM               | Módulo de entrada: conexão de eventos, renderização, fluxos de importação/exportação. Detém toda interação com `document`/`window`.                                                                                                                    |
+| `packages/designer-core/src/state/designerState.js`         | Livre de DOM                   | Núcleo de estado e persistência: o objeto de estado, a cadeia de normalização `normalizeStatePayload`, snapshot/apply, histórico (undo/redo), `loadState`, `buildModelSnapshot`.                                                                       |
+| `packages/designer-core/src/store/IDesignerStore.js`        | Livre de DOM, sem dependências | A porta de armazenamento: contrato + classe base. Importável sob qualquer runtime JavaScript.                                                                                                                                                          |
+| `apps/service-management/src/store/CanaDesignerStore.js`    | Livre de DOM                   | O único adaptador `IDesignerStore` (JUM-483), sobre o cliente Cana — injetado, nunca importado.                                                                                                                                                        |
+| `apps/service-management/src/store/designerStoreFactory.js` | Livre de DOM                   | A costura de construção do store: `createDesignerStore()` sempre retorna `CanaDesignerStore`; o cliente Cana é a única variável.                                                                                                                       |
+| `apps/service-management/src/store/canaMigration.js`        | Livre de DOM                   | A migração unidirecional localStorage → Cana do JUM-484 (executada no boot antes de qualquer carga de estado) e os estados de ambiente de armazenamento declarados.                                                                                    |
+| `apps/service-management/src/state/designerSync.js`         | Livre de DOM                   | O motor de sincronização multi-abas do JUM-485: assina os eventos de escrita ordenados do Cana, os conecta entre abas via `BroadcastChannel` e reconcilia as mudanças remotas com o histórico local de undo/redo, a edição local pendente e a seleção. |
 
 A direção das dependências é unidirecional: `script.js` →
 `src/state/designerState.js` → (porta) `src/store/IDesignerStore.js` ←
@@ -194,12 +195,12 @@ designer — nunca como uma troca silenciosa para outro backend. Concretamente,
 `loadState()` mapeia os resultados de load da porta para o comportamento de
 recuperação:
 
-| Resultado de `load()` | Significado | Comportamento de `loadState()` |
-| --- | --- | --- |
-| `'ok'` | Um documento armazenado foi encontrado e decodificado. | Normaliza e aplica o recorte do modelo. Se a própria normalização lançar exceção (payload corrompido mas decodificável), recupera exatamente como `'lost'`. |
-| `'empty'` | Nada está armazenado. Primeira execução — NÃO é erro, NÃO é perda de dados. | Semeia o template padrão, persiste-o, limpa o histórico. |
-| `'lost'` | O armazenamento estava disponível e continha dados que não são mais legíveis (despejo, corrupção). Distinto de `'empty'`. | Semeia, persiste o estado recuperado (sobrescrevendo o payload ilegível), redefine a view, limpa o histórico. |
-| `'unavailable'` | O próprio backend de armazenamento não pode ser usado (modo privado, IndexedDB ausente). Terminal sob a regra de não-fallback. | Semeia **apenas em memória** — não há nada atrás do store para gravar, e nenhum fallback. |
+| Resultado de `load()` | Significado                                                                                                                    | Comportamento de `loadState()`                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'ok'`                | Um documento armazenado foi encontrado e decodificado.                                                                         | Normaliza e aplica o recorte do modelo. Se a própria normalização lançar exceção (payload corrompido mas decodificável), recupera exatamente como `'lost'`. |
+| `'empty'`             | Nada está armazenado. Primeira execução — NÃO é erro, NÃO é perda de dados.                                                    | Semeia o template padrão, persiste-o, limpa o histórico.                                                                                                    |
+| `'lost'`              | O armazenamento estava disponível e continha dados que não são mais legíveis (despejo, corrupção). Distinto de `'empty'`.      | Semeia, persiste o estado recuperado (sobrescrevendo o payload ilegível), redefine a view, limpa o histórico.                                               |
+| `'unavailable'`       | O próprio backend de armazenamento não pode ser usado (modo privado, IndexedDB ausente). Terminal sob a regra de não-fallback. | Semeia **apenas em memória** — não há nada atrás do store para gravar, e nenhum fallback.                                                                   |
 
 O JUM-484 tornou esses estados visíveis em vez de silenciosos: no boot, o app
 detecta e comunica quatro estados de ambiente de armazenamento declarados —
@@ -226,7 +227,7 @@ confiar nisso** e DEVEM tratar todo resultado como assíncrono.
 - **`load()` → `DesignerStoreLoadResult`.** Lê o documento de estado do
   designer persistido: `{ status: 'ok', payload }` quando um documento foi
   encontrado e decodificado; `{ status: 'empty' | 'unavailable' | 'lost',
-  payload: null }` caso contrário, com um `reason` opcional para
+payload: null }` caso contrário, com um `reason` opcional para
   `'unavailable'`/`'lost'`.
 - **`save(payload)` → `DesignerStoreSaveResult`.** Garante durabilidade ou diz
   que não pode:
@@ -235,9 +236,9 @@ confiar nisso** e DEVEM tratar todo resultado como assíncrono.
   - `'unknown'` — o resultado é indeterminado (por exemplo, um worker morreu
     após a escrita ser despachada). Um resultado desconhecido **NÃO DEVE ser
     reportado ao usuário como sucesso**.
-  Adaptadores PODEM lançar exceções sincronamente para erros de programação
-  (um payload não serializável); falhas de backend são reportadas através do
-  resultado, nunca como `'persisted'`.
+    Adaptadores PODEM lançar exceções sincronamente para erros de programação
+    (um payload não serializável); falhas de backend são reportadas através do
+    resultado, nunca como `'persisted'`.
 - **`clear()` → `DesignerStoreSaveResult`.** Remove o documento de estado.
   Resolver `'persisted'` significa que o documento se foi para sempre: um
   `load()` subsequente reporta `'empty'`.

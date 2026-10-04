@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
+import JwtService from '@src/infra/jwt/JwtService';
+import MutexService from '@src/infra/mutex/adapter/MutexService';
+import InMemoryDbClient from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
+import InMemoryKeyValueStorageClient from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
+import PasswordCryptoService from '@src/infra/security/PasswordCryptoService';
 import { RealtimeAPIBase } from '@src/interface/Async/RealtimeAPIBase';
-import { PasswordCryptoService } from '@src/infra/security/PasswordCryptoService';
-import { InMemoryKeyValueStorageClient } from '@src/infra/persistence/KeyValueStorage/InMemoryKeyValueStorageClient';
-import { MutexService } from '@src/infra/mutex/adapter/MutexService';
-import { JwtService } from '@src/infra/jwt/JwtService';
 import { composeUsersAuthServices } from '@src/modules/Users';
-import { InMemoryDbClient } from '@src/infra/persistence/InMemoryDatabase/InMemoryDbClient';
 
 /**
  * The resolver's answer when the module loads but is not a handler factory.
@@ -63,17 +61,22 @@ describe('realtime api base module resolution edge cases', () => {
       authService
     });
 
-    expect((api as any).listOperationIds()).toStrictEqual(expect.arrayContaining(['login', 'getAll']));
+    expect((api as any).listOperationIds()).toStrictEqual(
+      expect.arrayContaining(['login', 'getAll'])
+    );
   });
 
   it('answers undefined when the runtime module default is not a factory', () => {
     expect.hasAssertions();
 
-    const api = new ProbeAPI({
-      databaseClient,
-      interfaceType: 'websocketapi',
-      frameworkName: 'socket-io'
-    }, false);
+    const api = new ProbeAPI(
+      {
+        databaseClient,
+        interfaceType: 'websocketapi',
+        frameworkName: 'socket-io'
+      },
+      false
+    );
 
     const handler = (api as any).getRuntimeHandlerFactory({
       moduleName: 'Users',
@@ -92,11 +95,14 @@ describe('realtime api base module resolution edge cases', () => {
     // The websocket wrapper always decorates metadata before invoking; a
     // framework that hands the request straight through (as this double does)
     // exercises the `|| {}` the wrapper hides.
-    const api = new ProbeAPI({
-      databaseClient,
-      interfaceType: 'websocketapi',
-      frameworkName: 'socket-io'
-    }, false);
+    const api = new ProbeAPI(
+      {
+        databaseClient,
+        interfaceType: 'websocketapi',
+        frameworkName: 'socket-io'
+      },
+      false
+    );
     const register = jest.fn().mockResolvedValue({ result: 'pong' });
 
     const invoke = (api as any).getRuntimeHandlerFactory({

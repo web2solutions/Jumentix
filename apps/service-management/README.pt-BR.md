@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: apps/service-management/README.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Aplicativo de gerenciamento de serviços
 
 [![GitHub Actions dev](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/web2solutions/Jumentix/actions/workflows/ci.yml?query=branch%3Adev)
@@ -113,12 +114,12 @@ definido em `@jumentix/designer-core` (`packages/designer-core/src/model/sampleM
      inline.
 3. **Configuração do serviço**
    - Configurar tipo de serviço (`REST API`, `WebSocket API + REST API`, `gRPC API + REST API`),
-   modelo de execução, provedor de nuvem, perfil de ativos estáticos e portas de tempo de execução.
+     modelo de execução, provedor de nuvem, perfil de ativos estáticos e portas de tempo de execução.
    - As gravações são validadas (JUM-544): as portas devem ser inteiros entre 1–65535 e únicas
-   entre os protocolos que o tipo de serviço selecionado realmente vincula, e a combinação
-   modo de execução × provedor de nuvem deve existir na matriz de implantação do Requisito 059
-   (lida da fonte legível por máquina compartilhada `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`)).
-   Perfis inválidos são relatados na superfície de status da guia e não são salvos.
+     entre os protocolos que o tipo de serviço selecionado realmente vincula, e a combinação
+     modo de execução × provedor de nuvem deve existir na matriz de implantação do Requisito 059
+     (lida da fonte legível por máquina compartilhada `@jumentix/designer-core` (`packages/designer-core/src/model/deployCapabilityMatrix.js`)).
+     Perfis inválidos são relatados na superfície de status da guia e não são salvos.
    - A visualização do perfil de tempo de execução PM2 para implantações de VM lê os
      arquivos reais `pm2/ecosystem.*.cjs` através de `GET /api/runtime/pm2-ecosystem`
      (JUM-480): a lista de processos e o comando `pm2 start` sugerido derivam do
@@ -352,8 +353,8 @@ O contrato completo (conjuntos de enum, semântica de escrita, higiene de respos
 - `JUMENTIX_REALTIME_API_PROTOCOL`
 - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`
 
-Cada chave de ambiente pertence a exatamente um de três níveis: *editável* (legível e
-gravável), *somente leitura* (visível no GET, nunca gravável) e *nunca exposta*
+Cada chave de ambiente pertence a exatamente um de três níveis: _editável_ (legível e
+gravável), _somente leitura_ (visível no GET, nunca gravável) e _nunca exposta_
 (segredos — ausente do GET e não gravável). A classificação autoritativa por chave
 é mantida no
 [Requisito 126](../../.agents/requirements/software/126-service-management-ownership-and-public-contracts.md).
@@ -381,7 +382,7 @@ um erro se o diretório não existir.
   `JUMENTIX_SERVICE_MANAGEMENT_HOST`, porta com
   `JUMENTIX_SERVICE_MANAGEMENT_PORT` (padrão `3200`).
 - Quando `JUMENTIX_SERVICE_MANAGEMENT_AUTH_TOKEN` está definido, `POST
-  /api/runtime/env` requer `Authorization: Bearer <token>` e retorna `401`
+/api/runtime/env` requer `Authorization: Bearer <token>` e retorna `401`
   caso contrário; quando não definido, a operação apenas em loopback é permitida
   sem token.
 - Cada mutação é registrada com timestamp, ambiente e chaves alteradas (não

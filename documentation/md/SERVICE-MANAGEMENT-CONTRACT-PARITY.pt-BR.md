@@ -2,6 +2,7 @@
 Arquivo gerado automaticamente a partir de: documentation/md/SERVICE-MANAGEMENT-CONTRACT-PARITY.md
 Idioma alvo: Português (Brasil)
 -->
+
 # Garantias de paridade de contratos do Service Management
 
 Este é o documento E4 da cadeia de documentação E1–E8 do Service Management
@@ -177,7 +178,7 @@ esperadas.
   `serviceConfiguration`, `codeWorkspace` e `deployments` fazem ida e volta com deep-equal, e
   a exportação é idempotente. A fronteira é documentada e assertada: seleções
   e `idCounter` não fazem parte do documento e são recomputados na
-  importação, e `runtimeEnvironment` atravessa apenas como a *seleção* de
+  importação, e `runtimeEnvironment` atravessa apenas como a _seleção_ de
   ambiente (veja a seção JUM-547 abaixo). Documentos anteriores ao JUM-547,
   só de domínio (`{ domains, relationships, view }`, sem `kind`/`version`),
   importam normalmente com as seções ausentes preenchidas com padrões; um
@@ -219,13 +220,13 @@ entrando (ou voltando) silenciosamente para ela reprova a suíte:
   volta para exatamente esse padrão), `x-fieldless: true` (um conjunto de
   campos vazio sobrevive em vez de ganhar os campos padrão
   `id`/`createdAt`/`updatedAt` do importador) e `x-field-flags: { pk, fk,
-  unique }` por campo (emitido apenas quando os flags divergem da heurística
+unique }` por campo (emitido apenas quando os flags divergem da heurística
   de nomes do importador: `id` → PK/unique, `*Id` → FK). Contratos de mensagem
   e composição (`oneOf`/`allOf`/`anyOf`, `discriminator`, `x-external-refs`)
   atravessam da mesma forma.
 - **Relacionamentos atravessam como linhas `x-relations` de topo indexadas
   por nome de schema** (`{ name, fromSchema, toSchema, fromCardinality,
-  toCardinality }`) — nunca por id de modelo, porque o importador recomputa
+toCardinality }`) — nunca por id de modelo, porque o importador recomputa
   ids e ids no documento quebrariam o ponto fixo. Linhas cujos pontos de
   extremidade não importaram são descartadas, a mesma regra que
   `normalizeStatePayload` aplica a ids de modelo pendentes.
@@ -321,7 +322,7 @@ um espelho no lado do designer da implementação do domínio Users (`Rbac.ts`,
 real, registrada aqui em vez de corrigida silenciosamente:
 
 - **O designer persistia `tenantScoped` como um flag livre por regra; o
-  runtime não tem esse controle.** O escopo de tenant no runtime é *derivado*
+  runtime não tem esse controle.** O escopo de tenant no runtime é _derivado_
   do conjunto de papéis (`shouldRequireOrganization`: papéis normalizados
   `admin`/`user` restringem o principal à sua organização; `superadmin` e
   escopos diretos legados mantêm uma fronteira global). Um valor

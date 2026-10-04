@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { isEntryPoint } = require('./lib/entry-point.js');
 const { byPath } = require('./lib/mapped-suites.js');
 
@@ -23,7 +24,10 @@ function walk(dir, pred, out = []) {
 function classifyUnit(file) {
   // JUM-776: component suites (test/component) mount the shipped .vue files
   // through @vue/test-utils under bun:test; same layer and script as unit.
-  if (file.startsWith('apps/frontend/test/unit/') || file.startsWith('apps/frontend/test/component/')) {
+  if (
+    file.startsWith('apps/frontend/test/unit/') ||
+    file.startsWith('apps/frontend/test/component/')
+  ) {
     return { layer: 'frontend', kind: 'non-hexagonal' };
   }
   if (file.startsWith('apps/service-management-api/test/unit/')) {
@@ -40,20 +44,20 @@ function classifyUnit(file) {
   const rel = file.replace(/^apps\/backend-template\/test\/unit\//, '');
   if (rel.startsWith('modules/Users/domain/')) return { layer: 'domain', kind: 'hexagonal' };
   if (
-    rel.startsWith('modules/Users/application/')
-    || rel.startsWith('modules/Users/features/')
-    || rel.startsWith('modules/Users/composition/')
-    || rel.startsWith('modules/Users/service/')
-    || rel.startsWith('modules/Users/events/')
-    || rel === 'modules/Users/factories.test.ts'
-    || rel === 'modules/Users/index.exports.test.ts'
+    rel.startsWith('modules/Users/application/') ||
+    rel.startsWith('modules/Users/features/') ||
+    rel.startsWith('modules/Users/composition/') ||
+    rel.startsWith('modules/Users/service/') ||
+    rel.startsWith('modules/Users/events/') ||
+    rel === 'modules/Users/factories.test.ts' ||
+    rel === 'modules/Users/index.exports.test.ts'
   ) {
     return { layer: 'application', kind: 'hexagonal' };
   }
   if (
-    rel.startsWith('modules/Users/adapters/in/')
-    || rel.startsWith('modules/Users/interface/')
-    || rel === 'modules/Users/lambdaRuntime.test.ts'
+    rel.startsWith('modules/Users/adapters/in/') ||
+    rel.startsWith('modules/Users/interface/') ||
+    rel === 'modules/Users/lambdaRuntime.test.ts'
   ) {
     return { layer: 'adapters/in', kind: 'hexagonal' };
   }
@@ -64,12 +68,12 @@ function classifyUnit(file) {
     return { layer: 'adapters/out+infra', kind: 'hexagonal' };
   }
   if (
-    rel.startsWith('ci-cd/')
-    || rel.startsWith('config/')
-    || rel.startsWith('shared/')
-    || rel.startsWith('sdk-clients/')
-    || rel.startsWith('packages/')
-    || rel.startsWith('domains/')
+    rel.startsWith('ci-cd/') ||
+    rel.startsWith('config/') ||
+    rel.startsWith('shared/') ||
+    rel.startsWith('sdk-clients/') ||
+    rel.startsWith('packages/') ||
+    rel.startsWith('domains/')
   ) {
     return { layer: 'tooling', kind: 'non-hexagonal' };
   }
@@ -120,9 +124,9 @@ function classifyIntegration(file) {
     const area = SERVICE_MANAGEMENT_API_INTEGRATION_AREA[parts[parts.length - 1]];
     if (!area) {
       throw new Error(
-        `Service Management API integration suite with no recorded area: ${file}\n`
-          + '  Name it in SERVICE_MANAGEMENT_API_INTEGRATION_AREA (ci-cd/generate-test-map.js)'
-          + '  — service-management/catalog-api — and regenerate.'
+        `Service Management API integration suite with no recorded area: ${file}\n` +
+          '  Name it in SERVICE_MANAGEMENT_API_INTEGRATION_AREA (ci-cd/generate-test-map.js)' +
+          '  — service-management/catalog-api — and regenerate.'
       );
     }
     return {
@@ -142,15 +146,15 @@ function classifyIntegration(file) {
   // owner-home path under apps/service-management/test/integration/** until
   // JUM-828 finishes the move and drops the old candidate.
   if (
-    bucket === 'ServiceManagement'
-    || file.startsWith('apps/service-management/test/integration/')
+    bucket === 'ServiceManagement' ||
+    file.startsWith('apps/service-management/test/integration/')
   ) {
     const area = SERVICE_MANAGEMENT_INTEGRATION_AREA[parts[parts.length - 1]];
     if (!area) {
       throw new Error(
-        `Service Management integration suite with no recorded area: ${file}\n`
-          + '  Name it in SERVICE_MANAGEMENT_INTEGRATION_AREA (ci-cd/generate-test-map.js)'
-          + '  — service-management/server or service-management/designer — and regenerate.'
+        `Service Management integration suite with no recorded area: ${file}\n` +
+          '  Name it in SERVICE_MANAGEMENT_INTEGRATION_AREA (ci-cd/generate-test-map.js)' +
+          '  — service-management/server or service-management/designer — and regenerate.'
       );
     }
     return {
@@ -181,9 +185,17 @@ function classifyIntegration(file) {
     'Sails-JS': { layer: 'adapters/in', adapter: 'sails-js', script: 'test:integration:sails-js' },
     Feathers: { layer: 'adapters/in', adapter: 'feathers', script: 'test:integration:feathers' },
     'Derby-JS': { layer: 'adapters/in', adapter: 'derby-js', script: 'test:integration:derby-js' },
-    'Adonis-JS': { layer: 'adapters/in', adapter: 'adonis-js', script: 'test:integration:adonis-js' },
+    'Adonis-JS': {
+      layer: 'adapters/in',
+      adapter: 'adonis-js',
+      script: 'test:integration:adonis-js'
+    },
     'Total-JS': { layer: 'adapters/in', adapter: 'total-js', script: 'test:integration:total-js' },
-    realtime: { layer: 'interface/runtime', adapter: 'realtime', script: 'test:integration:realtime' },
+    realtime: {
+      layer: 'interface/runtime',
+      adapter: 'realtime',
+      script: 'test:integration:realtime'
+    },
     mutex: {
       layer: 'adapters/out+infra',
       adapter: 'mutex',
@@ -191,11 +203,13 @@ function classifyIntegration(file) {
       ciRunner: 'node'
     }
   };
-  return map[bucket] || {
-    layer: 'adapters/in',
-    adapter: String(bucket).toLowerCase(),
-    script: null
-  };
+  return (
+    map[bucket] || {
+      layer: 'adapters/in',
+      adapter: String(bucket).toLowerCase(),
+      script: null
+    }
+  );
 }
 
 /** Every `*.test.ts` under `packages/<name>/test/`, repository-relative. */
@@ -203,22 +217,19 @@ function packageSuitePaths(root) {
   const packagesRoot = path.join(root, PACKAGES_DIR);
   if (!fs.existsSync(packagesRoot)) return [];
 
-  return fs.readdirSync(packagesRoot, { withFileTypes: true })
+  return fs
+    .readdirSync(packagesRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .flatMap((entry) => walk(
-      path.join(packagesRoot, entry.name, 'test'),
-      (file) => /\.test\.ts$/.test(file)
-    ))
+    .flatMap((entry) =>
+      walk(path.join(packagesRoot, entry.name, 'test'), (file) => /\.test\.ts$/.test(file))
+    )
     .map((file) => path.relative(root, file).replace(/\\/g, '/'))
     .sort(byPath);
 }
 
 /** Every `*.cy.ts` spec under `packages/cana/cypress/`, repository-relative. */
 function browserSpecPaths(root) {
-  return walk(
-    path.join(root, PACKAGES_DIR, 'cana', 'cypress'),
-    (file) => /\.cy\.ts$/.test(file)
-  )
+  return walk(path.join(root, PACKAGES_DIR, 'cana', 'cypress'), (file) => /\.cy\.ts$/.test(file))
     .map((file) => path.relative(root, file).replace(/\\/g, '/'))
     .sort(byPath);
 }
@@ -240,7 +251,9 @@ function carriedQuarantine(root, previousManifest) {
   const kept = previous.filter((entry) => fs.existsSync(path.join(root, entry.path)));
   for (const entry of previous) {
     if (!kept.includes(entry)) {
-      console.log(`[ci] quarantine entry dropped, file no longer exists: ${entry.path} (${entry.issue})`);
+      console.log(
+        `[ci] quarantine entry dropped, file no longer exists: ${entry.path} (${entry.issue})`
+      );
     }
   }
   return kept;
@@ -264,13 +277,13 @@ function websiteSuitePaths(root) {
   const websiteRoot = path.join(root, 'apps', 'jumentix-website');
   const unit = walk(
     websiteRoot,
-    (file) => /\.test\.(ts|tsx|mjs)$/.test(file)
-      && !file.includes(`${path.sep}node_modules${path.sep}`)
-      && !file.includes(`${path.sep}.next${path.sep}`)
+    (file) =>
+      /\.test\.(ts|tsx|mjs)$/.test(file) &&
+      !file.includes(`${path.sep}node_modules${path.sep}`) &&
+      !file.includes(`${path.sep}.next${path.sep}`)
   );
-  const cypress = walk(
-    path.join(websiteRoot, 'cypress', 'e2e'),
-    (file) => /\.cy\.(js|ts)$/.test(file)
+  const cypress = walk(path.join(websiteRoot, 'cypress', 'e2e'), (file) =>
+    /\.cy\.(js|ts)$/.test(file)
   );
 
   const relative = (file) => path.relative(root, file).replace(/\\/g, '/');
@@ -282,9 +295,8 @@ function websiteSuitePaths(root) {
 
 /** Frontend Cypress specs (JUM-813). Docker-backed; nightly like website Cypress. */
 function frontendE2eSpecPaths(root) {
-  return walk(
-    path.join(root, 'apps', 'frontend', 'cypress', 'e2e'),
-    (file) => /\.cy\.ts$/.test(file)
+  return walk(path.join(root, 'apps', 'frontend', 'cypress', 'e2e'), (file) =>
+    /\.cy\.ts$/.test(file)
   )
     .map((file) => path.relative(root, file).replace(/\\/g, '/'))
     .sort(byPath);
@@ -365,21 +377,18 @@ function buildManifest(root = process.cwd()) {
     path.join(root, 'apps/frontend/test/component'),
     // Req 137 / JUM-829: monorepo gate proof suites.
     path.join(root, 'ci-cd/test')
-  ].flatMap((unitRoot) => walk(
-    unitRoot,
-    (p) => /\.test\.ts$/.test(p)
-  )).map((p) => path.relative(root, p).replace(/\\/g, '/'));
+  ]
+    .flatMap((unitRoot) => walk(unitRoot, (p) => /\.test\.ts$/.test(p)))
+    .map((p) => path.relative(root, p).replace(/\\/g, '/'));
   const integrationTests = [
     path.join(root, 'apps/backend-template/test/integration'),
     path.join(root, 'apps/service-management/test/integration'),
     path.join(root, 'apps/service-management-api/test/integration')
-  ].flatMap((integrationRoot) => walk(
-    integrationRoot,
-    (p) => /\.test\.ts$/.test(p)
-  )).map((p) => path.relative(root, p).replace(/\\/g, '/'));
-  const smokeTests = walk(
-    path.join(root, 'apps/backend-template/test/smoke'),
-    (p) => /\.test\.ts$/.test(p)
+  ]
+    .flatMap((integrationRoot) => walk(integrationRoot, (p) => /\.test\.ts$/.test(p)))
+    .map((p) => path.relative(root, p).replace(/\\/g, '/'));
+  const smokeTests = walk(path.join(root, 'apps/backend-template/test/smoke'), (p) =>
+    /\.test\.ts$/.test(p)
   ).map((p) => path.relative(root, p).replace(/\\/g, '/'));
 
   // Requirement 112 gives every package its own suite, so the generator has to
@@ -403,7 +412,11 @@ function buildManifest(root = process.cwd()) {
       // is what lets a contract-shape change reach every dependent layer — the
       // service-management sub-layers included — through reverse dependencies,
       // even though no importer edge can exist against a YAML file (JUM-472).
-      sourceGlobs: ['packages/*/src/contracts/**', 'packages/persistence-contracts/src/**', 'spec/**'],
+      sourceGlobs: [
+        'packages/*/src/contracts/**',
+        'packages/persistence-contracts/src/**',
+        'spec/**'
+      ],
       runner: 'bun',
       tier: 'gate'
     },
@@ -453,9 +466,7 @@ function buildManifest(root = process.cwd()) {
     },
     'interface/runtime': {
       dependsOn: ['adapters/in', 'adapters/out+infra'],
-      sourceGlobs: [
-        'apps/backend-template/src/interface/**'
-      ],
+      sourceGlobs: ['apps/backend-template/src/interface/**'],
       runner: 'node',
       tier: 'gate'
     },
@@ -470,19 +481,14 @@ function buildManifest(root = process.cwd()) {
     // to no layer and turns the gate red until it is classified here.
     'service-management/server': {
       dependsOn: ['contracts'],
-      sourceGlobs: [
-        'apps/service-management/server.js',
-        'apps/service-management/package.json'
-      ],
+      sourceGlobs: ['apps/service-management/server.js', 'apps/service-management/package.json'],
       runner: 'bun',
       tier: 'gate',
       kind: 'non-hexagonal'
     },
     'service-management/catalog-api': {
       dependsOn: ['contracts'],
-      sourceGlobs: [
-        'apps/service-management-api/**'
-      ],
+      sourceGlobs: ['apps/service-management-api/**'],
       runner: 'bun',
       tier: 'gate',
       kind: 'non-hexagonal'
@@ -586,7 +592,14 @@ function buildManifest(root = process.cwd()) {
         'jest.config.js',
         'sonar-project.properties',
         'package.json',
-        'bunfig.toml'
+        'bunfig.toml',
+        // The cli-init template tree is a generated mirror of the app seeds
+        // (cli:build-templates) guarded by template-freshness.test.ts, a
+        // tooling suite. A templates-only regeneration mapped to no layer and
+        // the gate refused it as unsupported-change-set — the same false-red
+        // class JUM-622/JUM-680 fixed for the browser harness and the website.
+        'packages/cli-init/templates/**',
+        'packages/cli-init/templates.manifest.json'
       ],
       runner: 'bun',
       tier: 'gate',
@@ -612,11 +625,11 @@ function buildManifest(root = process.cwd()) {
       // situation (JUM-680). A script pin runs them through the app script.
       ...(layer === 'frontend'
         ? {
-          script: 'frontend:test:unit',
-          reason: file.includes('/test/component/')
-            ? 'bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.'
-            : 'bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.'
-        }
+            script: 'frontend:test:unit',
+            reason: file.includes('/test/component/')
+              ? 'bun:test suites mounting shipped .vue components through @vue/test-utils + happy-dom (JUM-776); the app-scoped bunfig preload registers the SFC loader.'
+              : 'bun:test suites with app-scoped @/ aliases; a root jest batch cannot execute them.'
+          }
         : {}),
       ...(ciRunner ? { ciRunner } : {}),
       ...(previous.bunCompat ? { bunCompat: previous.bunCompat } : {}),
@@ -626,13 +639,18 @@ function buildManifest(root = process.cwd()) {
   }
   for (const file of integrationTests) {
     const meta = classifyIntegration(file);
-    const isNightly = meta.adapter === 'mutex'
-      || file.includes('redis-streams.multi-instance');
+    const isNightly = meta.adapter === 'mutex' || file.includes('redis-streams.multi-instance');
     // The pin is preserved here too. It used to be read only for unit suites,
     // while every Node-pinned suite in this map is an integration one — so the
     // preservation covered the case that never needed it and missed the case
     // that did.
     const previous = previousOverrides.get(file) || {};
+    let timeoutMs = 120_000;
+    if (['express', 'fastify'].includes(meta.adapter)) {
+      timeoutMs = 300_000;
+    } else if (meta.adapter === 'restify') {
+      timeoutMs = 600_000;
+    }
     suites.push({
       id: file,
       path: file,
@@ -645,11 +663,7 @@ function buildManifest(root = process.cwd()) {
       ciRunner: previous.ciRunner || meta.ciRunner || 'node',
       ...(previous.reason ? { reason: previous.reason } : {}),
       tier: isNightly ? 'nightly' : 'gate',
-      timeoutMs: ['express', 'fastify'].includes(meta.adapter)
-        ? 300_000
-        : meta.adapter === 'restify'
-          ? 600_000
-          : 120_000
+      timeoutMs
     });
   }
   for (const file of smokeTests) {
@@ -683,12 +697,14 @@ function buildManifest(root = process.cwd()) {
 
   if (unclassified.length > 0) {
     throw new Error(
-      'Package suites with no recorded classification:\n'
-        + unclassified.map((file) => `  - ${file}`).join('\n')
-        + '\n\n  Suites under apps/backend-template/test/ are classified from their path;'
-        + '\n  nothing under packages/*/test/ encodes a layer. Add the entry to'
-        + '\n  test-map.json by hand — layer, kind, type, runner, tier, timeoutMs — and'
-        + '\n  this generator will carry it forward from then on.'
+      `Package suites with no recorded classification:\n${unclassified
+        .map((file) => `  - ${file}`)
+        .join(
+          '\n'
+        )}\n\n  Suites under apps/backend-template/test/ are classified from their path;` +
+        `\n  nothing under packages/*/test/ encodes a layer. Add the entry to` +
+        `\n  test-map.json by hand — layer, kind, type, runner, tier, timeoutMs — and` +
+        `\n  this generator will carry it forward from then on.`
     );
   }
 
@@ -713,7 +729,8 @@ function buildManifest(root = process.cwd()) {
       runner: 'bun',
       tier: 'gate',
       timeoutMs: 60000,
-      reason: 'Runs under the website\'s own Jest config; the root runner cannot execute it directly.'
+      reason:
+        "Runs under the website's own Jest config; the root runner cannot execute it directly."
     });
   }
   for (const file of websiteSuites.cypress) {
@@ -728,7 +745,8 @@ function buildManifest(root = process.cwd()) {
       runner: 'bun',
       tier: 'nightly',
       timeoutMs: 600000,
-      reason: 'Needs a production build and a running server; nightly rather than gate for that cost alone.'
+      reason:
+        'Needs a production build and a running server; nightly rather than gate for that cost alone.'
     });
   }
 
@@ -792,7 +810,8 @@ function buildManifest(root = process.cwd()) {
 
   return {
     schemaVersion: 1,
-    description: 'Hexagonal Test Pyramid manifest — Bun unit + Node integration + layer-aware gates',
+    description:
+      'Hexagonal Test Pyramid manifest — Bun unit + Node integration + layer-aware gates',
     layers,
     blastRadius: 'outward',
     suites,
@@ -846,7 +865,9 @@ function main() {
   const outPath = path.join(root, 'test-map.json');
   fs.writeFileSync(outPath, `${JSON.stringify(manifest, null, 2)}\n`);
   console.log(`[ci] wrote ${outPath}`);
-  console.log(`[ci] suites=${manifest.stats.suites} unit=${manifest.stats.unit} integration=${manifest.stats.integration} smoke=${manifest.stats.smoke}`);
+  console.log(
+    `[ci] suites=${manifest.stats.suites} unit=${manifest.stats.unit} integration=${manifest.stats.integration} smoke=${manifest.stats.smoke}`
+  );
 }
 
 if (isEntryPoint(module)) {
@@ -854,7 +875,6 @@ if (isEntryPoint(module)) {
 }
 
 module.exports = {
-  SERVICE_MANAGEMENT_INTEGRATION_AREA,
   buildManifest,
   carriedQuarantine,
   classifyIntegration,
@@ -863,5 +883,6 @@ module.exports = {
   loadPreviousRunnerOverrides,
   packageSuitePaths,
   readPreviousManifest,
+  SERVICE_MANAGEMENT_INTEGRATION_AREA,
   walk
 };

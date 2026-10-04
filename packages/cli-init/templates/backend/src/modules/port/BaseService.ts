@@ -1,12 +1,12 @@
+import type BaseModel from './BaseModel';
+import type BaseRepo from './BaseRepo';
 import type { IPagingRequest } from './IPagingRequest';
-import type { IServiceResponse } from './IServiceResponse';
 import type { IServiceConfig } from './IServiceConfig';
+import type { IServiceResponse } from './IServiceResponse';
 import type { TRepos } from './TRepos';
 import type { TServices } from './TServices';
-import { BaseRepo } from './BaseRepo';
-import { BaseModel } from './BaseModel';
 
-export abstract class BaseService<ResponseDataEntity, RequestCreateDTO, RequestUpdateDTO> {
+abstract class BaseService<ResponseDataEntity, RequestCreateDTO, RequestUpdateDTO> {
   /**
    * dataRepository is the main data dataRepository associated to the service.
    * Mandatory
@@ -28,7 +28,8 @@ export abstract class BaseService<ResponseDataEntity, RequestCreateDTO, RequestU
   constructor(config: IServiceConfig) {
     this.repos = config.repos ?? {};
     this.services = config.services ?? {};
-    if (!config.dataRepository) throw Error('You must provide a data repository when creating a service instance.');
+    if (!config.dataRepository)
+      throw Error('You must provide a data repository when creating a service instance.');
     this.dataRepository = config.dataRepository;
   }
 
@@ -44,7 +45,9 @@ export abstract class BaseService<ResponseDataEntity, RequestCreateDTO, RequestU
   public abstract getOneById(id: string): Promise<IServiceResponse<ResponseDataEntity>>;
 
   public abstract getAll(
-    filters: Record<string, string|number>,
+    filters: Record<string, string | number>,
     paging: IPagingRequest
-  ):Promise<IServiceResponse<ResponseDataEntity[]>>;
+  ): Promise<IServiceResponse<ResponseDataEntity[]>>;
 }
+
+export default BaseService;

@@ -1,4 +1,6 @@
-import { applyListFilters, type TListFilters } from './listQuery';
+import { applyListFilters } from './listQuery';
+
+import type { TListFilters } from './listQuery';
 
 export type TMetricsKind = 'count' | 'groupBy' | 'series';
 export type TMetricsInterval = 'day' | 'week' | 'month';

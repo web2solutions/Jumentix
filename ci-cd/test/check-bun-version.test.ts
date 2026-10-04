@@ -1,9 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const {
-  EXACT_VERSION,
-  readToolchainInput,
-  validateToolchain
-} = require('../check-bun-version');
+const { EXACT_VERSION, readToolchainInput, validateToolchain } = require('../check-bun-version');
 
 const soundInput = {
   runningBunVersion: '1.3.14',
@@ -36,8 +31,12 @@ describe('check-bun-version', () => {
 
   it('rejects a missing or empty pin file', () => {
     expect.hasAssertions();
-    expect(validateToolchain({ ...soundInput, rawPin: null })[0]).toContain('.bun-version is missing');
-    expect(validateToolchain({ ...soundInput, rawPin: '   ' })[0]).toContain('.bun-version is empty');
+    expect(validateToolchain({ ...soundInput, rawPin: null })[0]).toContain(
+      '.bun-version is missing'
+    );
+    expect(validateToolchain({ ...soundInput, rawPin: '   ' })[0]).toContain(
+      '.bun-version is empty'
+    );
   });
 
   it('rejects a range, since a range lets local and CI diverge', () => {
@@ -51,12 +50,15 @@ describe('check-bun-version', () => {
 
   it('rejects a packageManager that is absent, not bun, or skewed from the pin', () => {
     expect.hasAssertions();
-    expect(validateToolchain({ ...soundInput, declaredPackageManager: null })[0])
-      .toContain('packageManager is not set');
-    expect(validateToolchain({ ...soundInput, declaredPackageManager: 'pnpm@9.15.3' })[0])
-      .toContain('expected "bun@<version>"');
-    expect(validateToolchain({ ...soundInput, declaredPackageManager: 'bun@1.2.0' })[0])
-      .toContain('Version skew between sources of truth');
+    expect(validateToolchain({ ...soundInput, declaredPackageManager: null })[0]).toContain(
+      'packageManager is not set'
+    );
+    expect(
+      validateToolchain({ ...soundInput, declaredPackageManager: 'pnpm@9.15.3' })[0]
+    ).toContain('expected "bun@<version>"');
+    expect(validateToolchain({ ...soundInput, declaredPackageManager: 'bun@1.2.0' })[0]).toContain(
+      'Version skew between sources of truth'
+    );
   });
 
   it('rejects a running Bun that does not match the pin exactly', () => {
@@ -87,7 +89,7 @@ describe('check-bun-version CLI', () => {
   it('reports success against the committed repository state', () => {
     expect.hasAssertions();
     const { main } = require('../check-bun-version');
-    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
     // Jest runs on Node, so the guard's Bun assertion would fail for the right
     // reason. Present a sound input instead and exercise the reporting path.
     const mod = require('../check-bun-version');
@@ -107,22 +109,24 @@ describe('check-bun-version CLI', () => {
   it('prints every failure and exits non-zero when the toolchain is wrong', () => {
     expect.hasAssertions();
     const { main } = require('../check-bun-version');
-    const error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    const exit = jest.spyOn(process, 'exit').mockImplementation(((): never => {
-      throw new Error('process.exit called');
-    }) as never);
+    const error = jest.spyOn(console, 'error').mockReturnValue(undefined);
+    const previousExitCode = process.exitCode;
 
     // The failing state is passed in rather than produced by the ambient
     // runtime. Previously this test relied on being executed under Node so that
     // `process.versions.bun` was absent — which meant it asserted nothing when
     // run under Bun, where the guard correctly passes (JUM-583).
-    expect(() => main({
-      runningBunVersion: null,
-      rawPin: '1.3.14',
-      declaredPackageManager: 'bun@1.3.14'
-    })).toThrow('process.exit called');
-    expect(exit).toHaveBeenCalledWith(1);
-    expect(error.mock.calls.flat().join('\n')).toContain('Not running under Bun');
+    try {
+      main({
+        runningBunVersion: null,
+        rawPin: '1.3.14',
+        declaredPackageManager: 'bun@1.3.14'
+      });
+      expect(process.exitCode).toBe(1);
+      expect(error.mock.calls.flat().join('\n')).toContain('Not running under Bun');
+    } finally {
+      process.exitCode = previousExitCode;
+    }
   });
 });
 
@@ -135,7 +139,6 @@ describe('check-bun-version CLI', () => {
  * before anyone has a node_modules to debug with.
  */
 describe('check-bun-version input reading (JUM-721)', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
   const guard = require('../check-bun-version') as {
     readToolchainInput: (sources?: Record<string, unknown>) => {
       runningBunVersion: string | null;
@@ -192,10 +195,10 @@ describe('check-bun-version input reading (JUM-721)', () => {
 
   it('uses the real input reader when main is called without an explicit input', () => {
     expect.hasAssertions();
-    const log = jest.spyOn(console, 'log').mockImplementation(() => undefined);
-    const exit = jest.spyOn(process, 'exit').mockImplementation(((): never => {
+    const log = jest.spyOn(console, 'log').mockReturnValue(undefined);
+    const exit = jest.spyOn(process, 'exit').mockImplementation((): never => {
       throw new Error('process.exit called');
-    }) as never);
+    });
     const bunVersion = (process.versions as Record<string, string | undefined>).bun;
     try {
       Object.defineProperty(process.versions, 'bun', {
@@ -233,7 +236,10 @@ describe('check-bun-version manifest reading (JUM-821)', () => {
     });
 
     expect(input.declaredPackageManager).toBeNull();
-    expect(guard.validateToolchain(input)
-      .some((entry: string) => entry.includes('packageManager is not set'))).toBe(true);
+    expect(
+      guard
+        .validateToolchain(input)
+        .some((entry: string) => entry.includes('packageManager is not set'))
+    ).toBe(true);
   });
 });

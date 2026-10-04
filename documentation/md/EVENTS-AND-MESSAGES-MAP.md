@@ -54,14 +54,15 @@ Selection is made by `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER` in `apps/backend-templa
 
 Producer: `UserService` (`apps/backend-template/src/modules/Users/service/UserService.ts`)
 
-| Event Name | Published By | Trigger |
-|---|---|---|
-| `users.user.created` | `UserService.create` | user created |
-| `users.user.updated` | `UserService.update` | user updated |
-| `users.user.deleted` | `UserService.delete` | user deleted |
+| Event Name                      | Published By                 | Trigger                      |
+| ------------------------------- | ---------------------------- | ---------------------------- |
+| `users.user.created`            | `UserService.create`         | user created                 |
+| `users.user.updated`            | `UserService.update`         | user updated                 |
+| `users.user.deleted`            | `UserService.delete`         | user deleted                 |
 | `users.user.credentialsUpdated` | `UserService.updatePassword` | password/credentials updated |
 
 Listeners are registered in `registerUserEventListeners` (`apps/backend-template/src/modules/Users/events/listeners/registerUserEventListeners.ts`) through:
+
 - `onUserCreated`
 - `onUserUpdated`
 - `onUserDeleted`
@@ -71,9 +72,9 @@ Listeners are registered in `registerUserEventListeners` (`apps/backend-template
 
 Registered in `registerUserMessageHandlers` (`apps/backend-template/src/modules/Users/events/listeners/registerUserMessageHandlers.ts`):
 
-| Contract | Handler Owner | Input Payload | Result / Error |
-|---|---|---|---|
-| `users.auth.authorize` | Users Auth service | `{ authorization: string }` | authenticated user payload or error |
+| Contract                   | Handler Owner      | Input Payload                                               | Result / Error                                             |
+| -------------------------- | ------------------ | ----------------------------------------------------------- | ---------------------------------------------------------- |
+| `users.auth.authorize`     | Users Auth service | `{ authorization: string }`                                 | authenticated user payload or error                        |
 | `users.auth.ensure-access` | Users Auth service | `{ authorization: string, schemaOAS: Record<string, any> }` | authorized user payload or error if forbidden/unauthorized |
 
 ## 6) Where Contracts Are Consumed

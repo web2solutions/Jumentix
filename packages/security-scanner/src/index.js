@@ -58,83 +58,339 @@ const NON_BLOCKING_SEVERITIES = new Set(['LOW', 'NONE', 'UNKNOWN']);
  * than permanent.
  */
 const ACCEPTED_RISK = {
-  'GHSA-rrr8-f88r-h8q6': { until: '2026-10-31', reason: 'restify 11.1.0 pins find-my-way 7.x; no patched major-compatible release' },
-  'GHSA-c96f-x56v-gq3h': { until: '2026-10-31', reason: 'restify transport required for adapter compatibility; awaiting upstream' },
-  'GHSA-m6fv-jmcg-4jfg': { until: '2026-10-31', reason: 'send advisory inherited through the restify path only' },
-  'GHSA-xcpc-8h2w-3j85': { until: '2026-10-31', reason: 'inherited via cassandra-driver; awaiting release consuming adm-zip >=0.6.0' },
+  'GHSA-rrr8-f88r-h8q6': {
+    until: '2026-10-31',
+    reason: 'restify 11.1.0 pins find-my-way 7.x; no patched major-compatible release'
+  },
+  'GHSA-c96f-x56v-gq3h': {
+    until: '2026-10-31',
+    reason: 'restify transport required for adapter compatibility; awaiting upstream'
+  },
+  'GHSA-m6fv-jmcg-4jfg': {
+    until: '2026-10-31',
+    reason: 'send advisory inherited through the restify path only'
+  },
+  'GHSA-xcpc-8h2w-3j85': {
+    until: '2026-10-31',
+    reason: 'inherited via cassandra-driver; awaiting release consuming adm-zip >=0.6.0'
+  },
   // Completed on 2026-07-30 after the initial migration captured only four of
   // eight GHSA identifiers. Recording the correction prevents a silent policy
   // change.
-  'GHSA-395f-4hp3-45gv': { until: '2026-10-31', reason: 'inherited through the concurrently legacy chain in the local tooling path' },
-  'GHSA-f88m-g3jw-g9cj': { until: '2026-10-31', reason: 'Next.js still resolves sharp 0.34.x transitively in the current Nextra stack' },
-  'GHSA-6g55-p6wh-862q': { until: '2026-10-31', reason: 'postcss inherited from the Next.js transitive chain; awaiting upstream' },
-  'GHSA-r28c-9q8g-f849': { until: '2026-10-31', reason: 'website stack retains transitive postcss chains until upstream updates land' },
-  'GHSA-5p2g-fcmc-qvqq': { until: '2026-10-31', reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling' },
-  'GHSA-w3rx-r6r6-pgpr': { until: '2026-10-31', reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling' },
-  'GHSA-4mjr-xmp4-gh2g': { until: '2026-10-31', reason: 'qs 6.15.3 is inherited from express 4.22.2 through Sails/LoopBack; Bun cannot override this nested edge yet' },
-  'GHSA-x5fp-wj9c-mxmx': { until: '2026-10-31', reason: 'qs 6.15.3 is inherited from express 4.22.2 through Sails/LoopBack; Bun cannot override this nested edge yet' },
+  'GHSA-395f-4hp3-45gv': {
+    until: '2026-10-31',
+    reason: 'inherited through the concurrently legacy chain in the local tooling path'
+  },
+  'GHSA-f88m-g3jw-g9cj': {
+    until: '2026-10-31',
+    reason: 'Next.js still resolves sharp 0.34.x transitively in the current Nextra stack'
+  },
+  'GHSA-6g55-p6wh-862q': {
+    until: '2026-10-31',
+    reason: 'postcss inherited from the Next.js transitive chain; awaiting upstream'
+  },
+  'GHSA-r28c-9q8g-f849': {
+    until: '2026-10-31',
+    reason: 'website stack retains transitive postcss chains until upstream updates land'
+  },
+  'GHSA-5p2g-fcmc-qvqq': {
+    until: '2026-10-31',
+    reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling'
+  },
+  'GHSA-w3rx-r6r6-pgpr': {
+    until: '2026-10-31',
+    reason: 'image-size 2.0.2 is the latest release and is inherited through Storybook/SVG tooling'
+  },
+  'GHSA-4mjr-xmp4-gh2g': {
+    until: '2026-10-31',
+    reason:
+      'qs 6.15.3 is inherited from express 4.22.2 through Sails/LoopBack; Bun cannot override this nested edge yet'
+  },
+  'GHSA-x5fp-wj9c-mxmx': {
+    until: '2026-10-31',
+    reason:
+      'qs 6.15.3 is inherited from express 4.22.2 through Sails/LoopBack; Bun cannot override this nested edge yet'
+  },
   // 2026-09-29: OSV wave blocking local husky deps:audit on clean tip (JUM-900 release path).
   // Pins land in a follow-up security task; expiry keeps these temporary.
-  'GHSA-2xp9-vwfh-vxw4': { until: '2026-10-31', reason: 'Next.js image-opt RCE inherited via website Nextra stack; bump coordinated with website release' },
-  'GHSA-p293-qw3h-jr36': { until: '2026-10-31', reason: 'Next.js Windows RCE inherited via website Nextra stack; bump coordinated with website release' },
-  'GHSA-vcvr-r3jv-pc5j': { until: '2026-10-31', reason: 'Next.js next/og ImageResponse RCE inherited via website Nextra stack; bump coordinated with website release' },
-  'GHSA-7q85-xj36-vmfc': { until: '2026-10-31', reason: 'adm-zip memory allocation inherited via cassandra-driver; awaiting upstream consuming fixed release' },
-  'GHSA-j5f4-cc29-5x44': { until: '2026-10-31', reason: 'adm-zip SUID/SGID extraction inherited via cassandra-driver; awaiting upstream consuming fixed release' },
-  'GHSA-rcw4-f5rp-g42v': { until: '2026-10-31', reason: 'adm-zip decompression-bomb bypass inherited via cassandra-driver; awaiting upstream consuming fixed release' },
-  'GHSA-rfgv-xxqx-mfg5': { until: '2026-10-31', reason: 'undici WebSocket subprotocol DoS inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-rgj7-g3m4-5g8c': { until: '2026-10-31', reason: 'sharp libheif advisories inherited through Next.js/Nextra image pipeline; awaiting upstream' },
-  'GHSA-g84c-rxfj-3j2c': { until: '2026-10-31', reason: 'webpack-dev-middleware path traversal is dev-only tooling; bump with Storybook/webpack toolchain' },
-  'GHSA-2v37-7h3g-55p8': { until: '2026-10-31', reason: 'nanoid zero-size generator loop inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-w27v-7q3p-w38r': { until: '2026-10-31', reason: 'SVGO removeScripts namespace bypass inherited through Storybook/SVG tooling; awaiting upstream' },
-  'GHSA-6q6h-j7hj-3r64': { until: '2026-10-31', reason: 'happy-dom ESM compiler export-name issue is test-only; bump with frontend test toolchain' },
-  'GHSA-w4gp-fjgq-3q4g': { until: '2026-10-31', reason: 'happy-dom fetch credentials cookie scope is test-only; bump with frontend test toolchain' },
-  'GHSA-2883-xcg3-v3hh': { until: '2026-10-31', reason: 'js-yaml merge-key CPU DoS inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-5p4m-2wfm-xmqj': { until: '2026-10-31', reason: 'js-yaml !!omap quadratic CPU inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-rgw5-rvv9-x895': { until: '2026-10-31', reason: 'brace-expansion DoS bypass inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-5jgf-p345-68v8': { until: '2026-10-31', reason: 'fast-uri IDN host confusion inherited via Ajv/fastify chains; awaiting upstream consuming fixed release' },
-  'GHSA-f65p-4m7j-42xc': { until: '2026-10-31', reason: 'fast-uri IPv6 SSRF inherited via Ajv/fastify chains; awaiting upstream consuming fixed release' },
-  'GHSA-fph4-wmhf-6fwf': { until: '2026-10-31', reason: 'fast-uri hostname SSRF inherited via Ajv/fastify chains; awaiting upstream consuming fixed release' },
-  'GHSA-jqff-g426-hqxp': { until: '2026-10-31', reason: 'fast-uri percent-encoded scheme host confusion via Ajv/fastify; awaiting upstream consuming fixed release' },
-  'GHSA-qw65-cvwx-89v3': { until: '2026-10-31', reason: 'fast-uri authority injection via port serialization; awaiting upstream consuming fixed release' },
-  'GHSA-7p8r-x3mc-p8w7': { until: '2026-10-31', reason: 'fast-uri backslash authority host confusion (3.x); awaiting upstream consuming fixed release' },
+  'GHSA-2xp9-vwfh-vxw4': {
+    until: '2026-10-31',
+    reason:
+      'Next.js image-opt RCE inherited via website Nextra stack; bump coordinated with website release'
+  },
+  'GHSA-p293-qw3h-jr36': {
+    until: '2026-10-31',
+    reason:
+      'Next.js Windows RCE inherited via website Nextra stack; bump coordinated with website release'
+  },
+  'GHSA-vcvr-r3jv-pc5j': {
+    until: '2026-10-31',
+    reason:
+      'Next.js next/og ImageResponse RCE inherited via website Nextra stack; bump coordinated with website release'
+  },
+  'GHSA-7q85-xj36-vmfc': {
+    until: '2026-10-31',
+    reason:
+      'adm-zip memory allocation inherited via cassandra-driver; awaiting upstream consuming fixed release'
+  },
+  'GHSA-j5f4-cc29-5x44': {
+    until: '2026-10-31',
+    reason:
+      'adm-zip SUID/SGID extraction inherited via cassandra-driver; awaiting upstream consuming fixed release'
+  },
+  'GHSA-rcw4-f5rp-g42v': {
+    until: '2026-10-31',
+    reason:
+      'adm-zip decompression-bomb bypass inherited via cassandra-driver; awaiting upstream consuming fixed release'
+  },
+  'GHSA-rfgv-xxqx-mfg5': {
+    until: '2026-10-31',
+    reason:
+      'undici WebSocket subprotocol DoS inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-rgj7-g3m4-5g8c': {
+    until: '2026-10-31',
+    reason:
+      'sharp libheif advisories inherited through Next.js/Nextra image pipeline; awaiting upstream'
+  },
+  'GHSA-g84c-rxfj-3j2c': {
+    until: '2026-10-31',
+    reason:
+      'webpack-dev-middleware path traversal is dev-only tooling; bump with Storybook/webpack toolchain'
+  },
+  'GHSA-2v37-7h3g-55p8': {
+    until: '2026-10-31',
+    reason:
+      'nanoid zero-size generator loop inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-w27v-7q3p-w38r': {
+    until: '2026-10-31',
+    reason:
+      'SVGO removeScripts namespace bypass inherited through Storybook/SVG tooling; awaiting upstream'
+  },
+  'GHSA-6q6h-j7hj-3r64': {
+    until: '2026-10-31',
+    reason:
+      'happy-dom ESM compiler export-name issue is test-only; bump with frontend test toolchain'
+  },
+  'GHSA-w4gp-fjgq-3q4g': {
+    until: '2026-10-31',
+    reason:
+      'happy-dom fetch credentials cookie scope is test-only; bump with frontend test toolchain'
+  },
+  'GHSA-2883-xcg3-v3hh': {
+    until: '2026-10-31',
+    reason: 'js-yaml merge-key CPU DoS inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-5p4m-2wfm-xmqj': {
+    until: '2026-10-31',
+    reason:
+      'js-yaml !!omap quadratic CPU inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-rgw5-rvv9-x895': {
+    until: '2026-10-31',
+    reason:
+      'brace-expansion DoS bypass inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-5jgf-p345-68v8': {
+    until: '2026-10-31',
+    reason:
+      'fast-uri IDN host confusion inherited via Ajv/fastify chains; awaiting upstream consuming fixed release'
+  },
+  'GHSA-f65p-4m7j-42xc': {
+    until: '2026-10-31',
+    reason:
+      'fast-uri IPv6 SSRF inherited via Ajv/fastify chains; awaiting upstream consuming fixed release'
+  },
+  'GHSA-fph4-wmhf-6fwf': {
+    until: '2026-10-31',
+    reason:
+      'fast-uri hostname SSRF inherited via Ajv/fastify chains; awaiting upstream consuming fixed release'
+  },
+  'GHSA-jqff-g426-hqxp': {
+    until: '2026-10-31',
+    reason:
+      'fast-uri percent-encoded scheme host confusion via Ajv/fastify; awaiting upstream consuming fixed release'
+  },
+  'GHSA-qw65-cvwx-89v3': {
+    until: '2026-10-31',
+    reason:
+      'fast-uri authority injection via port serialization; awaiting upstream consuming fixed release'
+  },
+  'GHSA-7p8r-x3mc-p8w7': {
+    until: '2026-10-31',
+    reason:
+      'fast-uri backslash authority host confusion (3.x); awaiting upstream consuming fixed release'
+  },
   // Moderate advisories from the same 2026-09-29 OSV wave (also block deps:audit).
-  'GHSA-2v8p-3f2j-5mp7': { until: '2026-10-31', reason: 'mermaid XY chart DoS inherited via website docs tooling; bump with Nextra/mermaid upgrade' },
-  'GHSA-3rrr-jr9j-h3q3': { until: '2026-10-31', reason: 'mermaid architecture diagram prototype pollution via website docs tooling; awaiting upstream' },
-  'GHSA-6x64-9x62-f2gx': { until: '2026-10-31', reason: 'mermaid CSS injection via website docs tooling; bump coordinated with website release' },
-  'GHSA-rhh3-jpg6-66xh': { until: '2026-10-31', reason: 'mermaid radar diagram DoS inherited via website docs tooling; awaiting upstream' },
-  'GHSA-3wwx-pv8p-q78v': { until: '2026-10-31', reason: 'undici WebSocket permessage-deflate DoS inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-8xcm-r25x-g524': { until: '2026-10-31', reason: 'undici retry interceptor desync inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-m8rv-5g2x-5cg5': { until: '2026-10-31', reason: 'undici CRLF via blob type inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-v3r7-h72x-cjcm': { until: '2026-10-31', reason: 'undici cookie attribute injection inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-4vpr-x523-8j87': { until: '2026-10-31', reason: 'SVGO foreignObject sanitization gap via Storybook/SVG tooling; awaiting upstream' },
-  'GHSA-54fx-42gc-7vw4': { until: '2026-10-31', reason: 'hono language middleware complexity DoS inherited transitively; awaiting upstream pin' },
-  'GHSA-8j4g-w8fx-2239': { until: '2026-10-31', reason: 'hono CORS ReDoS inherited transitively; awaiting upstream consuming fixed release' },
-  'GHSA-crvj-82cr-hjcx': { until: '2026-10-31', reason: 'hono query parser fragment differential inherited transitively; awaiting upstream' },
-  'GHSA-f23p-vx2j-j53r': { until: '2026-10-31', reason: 'hono memo() SSR cross-user disclosure inherited transitively; awaiting upstream' },
-  'GHSA-g6gw-c38x-mqfc': { until: '2026-10-31', reason: 'hono parseBody nesting memory exhaustion inherited transitively; awaiting upstream' },
-  'GHSA-gqvv-2mrq-wpjv': { until: '2026-10-31', reason: 'hono toSSG path traversal incomplete fix inherited transitively; awaiting upstream' },
-  'GHSA-2vr4-cq9g-pvrc': { until: '2026-10-31', reason: 'ip-address NAT64 classifier gap inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-rpw4-54j3-4h4q': { until: '2026-10-31', reason: 'ip-address link-local fe80::/10 gap inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-3m5p-2c4r-xxw2': { until: '2026-10-31', reason: 'fastify trustProxy X-Forwarded spoofing inherited via adapter stacks; awaiting upstream' },
-  'GHSA-w2qp-rph6-63g4': { until: '2026-10-31', reason: 'fastify schema coercion bypass inherited via adapter stacks; awaiting upstream' },
-  'GHSA-r3ph-w7gj-g6xm': { until: '2026-10-31', reason: 'js-yaml 5.x merge-key CPU DoS inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-8cw4-87c7-c6xx': { until: '2026-10-31', reason: 'csv-parse prototype replacement via columns path inherited transitively; awaiting upstream' },
-  'GHSA-55q2-fjhq-7xh7': { until: '2026-10-31', reason: 'DOMPurify IN_PLACE hook XSS inherited via website/docs sanitization; awaiting upstream' },
-  'GHSA-vwc7-r8mq-g2x9': { until: '2026-10-31', reason: 'adm-zip symlink overwrite inherited via cassandra-driver; awaiting upstream consuming fixed release' },
-  'GHSA-8238-w5pm-2374': { until: '2026-10-31', reason: 'adm-zip async DEFLATE unhandled error DoS inherited via cassandra-driver; awaiting upstream' },
-  'GHSA-c6fg-446q-cg94': { until: '2026-10-31', reason: 'adm-zip getDataAsync maxOutputLength bypass inherited via cassandra-driver; awaiting upstream' },
-  'GHSA-p634-w6r4-rjp2': { until: '2026-10-31', reason: 'adm-zip duplicate ZIP entry name mismatch inherited via cassandra-driver; awaiting upstream' },
-  'GHSA-2gc4-cqfq-p2gv': { until: '2026-10-31', reason: 'engine.io protocol revision mismatch DoS inherited via socket.io transitive chain; awaiting upstream' },
-  'GHSA-6j4f-fj2g-mc7p': { until: '2026-10-31', reason: 'brace-expansion parseCommaParts recursion DoS inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-qhr7-859c-m2p7': { until: '2026-10-31', reason: 'brace-expansion nested brace recursion DoS inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-4p3w-j4w9-5jqw': { until: '2026-10-31', reason: 'moment locale path traversal inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-h3mg-xc3c-68pw': { until: '2026-10-31', reason: 'ip-address Address6 parse diagnostic length DoS inherited transitively; awaiting upstream' },
-  'GHSA-j6r3-76f7-8jcv': { until: '2026-10-31', reason: 'ip-address cross-family isInSubnet allowlist bypass inherited transitively; awaiting upstream' },
-  'GHSA-q2hr-2g5m-vwhr': { until: '2026-10-31', reason: 'brace-expansion quadratic rewrite CPU DoS inherited transitively; Bun cannot override nested edges yet' },
-  'GHSA-hrr3-gc8f-f4qj': { until: '2026-10-31', reason: 'fast-uri percent-encoded host case normalization via Ajv/fastify; awaiting upstream' },
+  'GHSA-2v8p-3f2j-5mp7': {
+    until: '2026-10-31',
+    reason:
+      'mermaid XY chart DoS inherited via website docs tooling; bump with Nextra/mermaid upgrade'
+  },
+  'GHSA-3rrr-jr9j-h3q3': {
+    until: '2026-10-31',
+    reason:
+      'mermaid architecture diagram prototype pollution via website docs tooling; awaiting upstream'
+  },
+  'GHSA-6x64-9x62-f2gx': {
+    until: '2026-10-31',
+    reason: 'mermaid CSS injection via website docs tooling; bump coordinated with website release'
+  },
+  'GHSA-rhh3-jpg6-66xh': {
+    until: '2026-10-31',
+    reason: 'mermaid radar diagram DoS inherited via website docs tooling; awaiting upstream'
+  },
+  'GHSA-3wwx-pv8p-q78v': {
+    until: '2026-10-31',
+    reason:
+      'undici WebSocket permessage-deflate DoS inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-8xcm-r25x-g524': {
+    until: '2026-10-31',
+    reason:
+      'undici retry interceptor desync inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-m8rv-5g2x-5cg5': {
+    until: '2026-10-31',
+    reason: 'undici CRLF via blob type inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-v3r7-h72x-cjcm': {
+    until: '2026-10-31',
+    reason:
+      'undici cookie attribute injection inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-4vpr-x523-8j87': {
+    until: '2026-10-31',
+    reason: 'SVGO foreignObject sanitization gap via Storybook/SVG tooling; awaiting upstream'
+  },
+  'GHSA-54fx-42gc-7vw4': {
+    until: '2026-10-31',
+    reason: 'hono language middleware complexity DoS inherited transitively; awaiting upstream pin'
+  },
+  'GHSA-8j4g-w8fx-2239': {
+    until: '2026-10-31',
+    reason: 'hono CORS ReDoS inherited transitively; awaiting upstream consuming fixed release'
+  },
+  'GHSA-crvj-82cr-hjcx': {
+    until: '2026-10-31',
+    reason: 'hono query parser fragment differential inherited transitively; awaiting upstream'
+  },
+  'GHSA-f23p-vx2j-j53r': {
+    until: '2026-10-31',
+    reason: 'hono memo() SSR cross-user disclosure inherited transitively; awaiting upstream'
+  },
+  'GHSA-g6gw-c38x-mqfc': {
+    until: '2026-10-31',
+    reason: 'hono parseBody nesting memory exhaustion inherited transitively; awaiting upstream'
+  },
+  'GHSA-gqvv-2mrq-wpjv': {
+    until: '2026-10-31',
+    reason: 'hono toSSG path traversal incomplete fix inherited transitively; awaiting upstream'
+  },
+  'GHSA-2vr4-cq9g-pvrc': {
+    until: '2026-10-31',
+    reason:
+      'ip-address NAT64 classifier gap inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-rpw4-54j3-4h4q': {
+    until: '2026-10-31',
+    reason:
+      'ip-address link-local fe80::/10 gap inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-3m5p-2c4r-xxw2': {
+    until: '2026-10-31',
+    reason:
+      'fastify trustProxy X-Forwarded spoofing inherited via adapter stacks; awaiting upstream'
+  },
+  'GHSA-w2qp-rph6-63g4': {
+    until: '2026-10-31',
+    reason: 'fastify schema coercion bypass inherited via adapter stacks; awaiting upstream'
+  },
+  'GHSA-r3ph-w7gj-g6xm': {
+    until: '2026-10-31',
+    reason:
+      'js-yaml 5.x merge-key CPU DoS inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-8cw4-87c7-c6xx': {
+    until: '2026-10-31',
+    reason:
+      'csv-parse prototype replacement via columns path inherited transitively; awaiting upstream'
+  },
+  'GHSA-55q2-fjhq-7xh7': {
+    until: '2026-10-31',
+    reason: 'DOMPurify IN_PLACE hook XSS inherited via website/docs sanitization; awaiting upstream'
+  },
+  'GHSA-vwc7-r8mq-g2x9': {
+    until: '2026-10-31',
+    reason:
+      'adm-zip symlink overwrite inherited via cassandra-driver; awaiting upstream consuming fixed release'
+  },
+  'GHSA-8238-w5pm-2374': {
+    until: '2026-10-31',
+    reason:
+      'adm-zip async DEFLATE unhandled error DoS inherited via cassandra-driver; awaiting upstream'
+  },
+  'GHSA-c6fg-446q-cg94': {
+    until: '2026-10-31',
+    reason:
+      'adm-zip getDataAsync maxOutputLength bypass inherited via cassandra-driver; awaiting upstream'
+  },
+  'GHSA-p634-w6r4-rjp2': {
+    until: '2026-10-31',
+    reason:
+      'adm-zip duplicate ZIP entry name mismatch inherited via cassandra-driver; awaiting upstream'
+  },
+  'GHSA-2gc4-cqfq-p2gv': {
+    until: '2026-10-31',
+    reason:
+      'engine.io protocol revision mismatch DoS inherited via socket.io transitive chain; awaiting upstream'
+  },
+  'GHSA-6j4f-fj2g-mc7p': {
+    until: '2026-10-31',
+    reason:
+      'brace-expansion parseCommaParts recursion DoS inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-qhr7-859c-m2p7': {
+    until: '2026-10-31',
+    reason:
+      'brace-expansion nested brace recursion DoS inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-4p3w-j4w9-5jqw': {
+    until: '2026-10-31',
+    reason:
+      'moment locale path traversal inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-h3mg-xc3c-68pw': {
+    until: '2026-10-31',
+    reason:
+      'ip-address Address6 parse diagnostic length DoS inherited transitively; awaiting upstream'
+  },
+  'GHSA-j6r3-76f7-8jcv': {
+    until: '2026-10-31',
+    reason:
+      'ip-address cross-family isInSubnet allowlist bypass inherited transitively; awaiting upstream'
+  },
+  'GHSA-q2hr-2g5m-vwhr': {
+    until: '2026-10-31',
+    reason:
+      'brace-expansion quadratic rewrite CPU DoS inherited transitively; Bun cannot override nested edges yet'
+  },
+  'GHSA-hrr3-gc8f-f4qj': {
+    until: '2026-10-31',
+    reason: 'fast-uri percent-encoded host case normalization via Ajv/fastify; awaiting upstream'
+  },
   // 2026-10-01: OSV wave blocking branch-gate on JUM-914 remaining S9383 PR.
-  'GHSA-c475-qrg2-pj4r': { until: '2026-10-31', reason: 'basic-ftp RE_LINE DoS inherited via get-uri; fixed only on 6.x which breaks get-uri^5; awaiting upstream' },
-  'GHSA-vfj7-8cjw-p6xm': { until: '2026-10-31', reason: 'braces@3.0.3 stack-exhaustion DoS; no patched release yet (OSV last_affected 3.0.3); transitive via micromatch/chokidar' },
+  'GHSA-c475-qrg2-pj4r': {
+    until: '2026-10-31',
+    reason:
+      'basic-ftp RE_LINE DoS inherited via get-uri; fixed only on 6.x which breaks get-uri^5; awaiting upstream'
+  },
+  'GHSA-vfj7-8cjw-p6xm': {
+    until: '2026-10-31',
+    reason:
+      'braces@3.0.3 stack-exhaustion DoS; no patched release yet (OSV last_affected 3.0.3); transitive via micromatch/chokidar'
+  }
 };
 
 /**
@@ -179,7 +435,7 @@ async function postJson(url, body) {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
   });
   if (!response.ok) {
     throw new Error(`OSV request failed: HTTP ${response.status} (${url})`);
@@ -227,16 +483,19 @@ async function evaluatePackages(packages, io = {}) {
   //    proportional to the tree rather than to the number of packages.
   const idsByPackage = new Map();
   for (const group of chunk(targets, BATCH_SIZE)) {
-    const payload = await batch(group.map((target) => ({
-      package: { name: target.name, ecosystem: 'npm' },
-      version: target.version,
-    })));
+    // eslint-disable-next-line no-await-in-loop -- sequential batches: the OSV endpoint is rate-limited; the cache prevents repeat requests
+    const payload = await batch(
+      group.map((target) => ({
+        package: { name: target.name, ecosystem: 'npm' },
+        version: target.version
+      }))
+    );
 
     const results = payload?.results;
     if (!Array.isArray(results) || results.length !== group.length) {
       throw new Error(
-        'OSV batch response did not match the request shape; refusing to treat an '
-          + 'unverifiable result as clean.',
+        'OSV batch response did not match the request shape; refusing to treat an ' +
+          'unverifiable result as clean.'
       );
     }
 
@@ -260,6 +519,7 @@ async function evaluatePackages(packages, io = {}) {
       if (isAcceptedRisk(id, now)) continue;
 
       if (!cache.has(id)) {
+        // eslint-disable-next-line no-await-in-loop -- sequential detail fetches on purpose; bursting would trip the same rate limit
         cache.set(id, await detail(id));
       }
       const vuln = cache.get(id);
@@ -270,7 +530,7 @@ async function evaluatePackages(packages, io = {}) {
         level: FATAL_SEVERITIES.has(severity) ? 'fatal' : 'warn',
         package: packageKey,
         url: `https://osv.dev/vulnerability/${id}`,
-        description: `${severity}: ${vuln?.summary || id}`,
+        description: `${severity}: ${vuln?.summary || id}`
       });
     }
   }
@@ -285,14 +545,14 @@ export const scanner = {
     // outcome when the dependency set could not be verified. Swallowing it here
     // would reproduce the exact false green that motivated this scanner.
     return evaluatePackages(packages);
-  },
+  }
 };
 
 export {
   ACCEPTED_RISK,
-  NON_BLOCKING_SEVERITIES,
-  FATAL_SEVERITIES,
   evaluatePackages,
+  FATAL_SEVERITIES,
   isAcceptedRisk,
-  severityOf,
+  NON_BLOCKING_SEVERITIES,
+  severityOf
 };

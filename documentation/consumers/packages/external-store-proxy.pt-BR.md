@@ -53,7 +53,6 @@ const stores = createExternalStores(client);
 // Pass stores.users (etc.) into use-cases as IStore ports.
 ```
 
-
 ### 3. Fluxos centrais
 
 ### 1. Create stores from a client
@@ -68,7 +67,6 @@ Pass `IStore` ports only — not the native client.
 
 Swap in an in-memory IStore in unit tests.
 
-
 ### 4. Superfície prática (exports)
 
 - `ExternalStoreProxy`
@@ -78,8 +76,8 @@ Use os exports nas camadas de aplicação/adaptadores — não em entidades de d
 
 ## Erros comuns
 
-| Sintoma | Causa | Correção |
-|---------|-------|----------|
+| Sintoma                                      | Causa             | Correção                                     |
+| -------------------------------------------- | ----------------- | -------------------------------------------- |
 | Use-case imports ExternalStoreProxy directly | Leaky abstraction | Depend on IStore from persistence-contracts. |
 
 **Como verificar:** o snippet de primeiro sucesso roda (ou typechecka no serviço) e o use-case depende só de ports.

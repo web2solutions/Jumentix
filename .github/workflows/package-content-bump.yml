@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'packages/**'
+      - "packages/**"
   workflow_dispatch:
 
 concurrency:

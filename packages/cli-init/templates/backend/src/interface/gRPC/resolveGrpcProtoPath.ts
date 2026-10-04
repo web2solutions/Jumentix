@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const CANONICAL_PROTO_SEGMENTS = ['spec', 'asyncapi', 'async-api.proto'];
 
@@ -25,17 +25,15 @@ export const resolveGrpcProtoPath = (
   if (explicitPath) {
     const resolvedExplicitPath = path.resolve(explicitPath);
     if (fs.existsSync(resolvedExplicitPath)) return resolvedExplicitPath;
-    throw new Error(
-      `gRPC proto file not found at configured path: ${resolvedExplicitPath}`
-    );
+    throw new Error(`gRPC proto file not found at configured path: ${resolvedExplicitPath}`);
   }
 
   const canonicalPath = findCanonicalProtoFrom(moduleDirectory);
   if (canonicalPath) return canonicalPath;
 
   throw new Error(
-    `Canonical gRPC proto artifact "${CANONICAL_PROTO_SEGMENTS.join('/')}" `
-    + `was not found from module directory: ${path.resolve(moduleDirectory)}`
+    `Canonical gRPC proto artifact "${CANONICAL_PROTO_SEGMENTS.join('/')}" ` +
+      `was not found from module directory: ${path.resolve(moduleDirectory)}`
   );
 };
 

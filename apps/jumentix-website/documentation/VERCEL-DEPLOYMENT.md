@@ -70,8 +70,8 @@ Configured values:
 Because `web2solutions/Jumentix` is private, unauthenticated GitHub API calls return 404.
 Set these on the Vercel project (Production + Preview):
 
-| Name | Purpose |
-| --- | --- |
+| Name           | Purpose                                                                                                                                                                                                                                               |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GITHUB_TOKEN` | Optional legacy variable. Nothing at runtime needs it: `/changelog` and `/api/github-releases` bundle their data at build time (`scripts/sync-changelog.mjs`, `scripts/sync-releases.mjs`). The releases snapshot uses it at build time when present. |
 
 Vercel Analytics is mounted in the root App Router layout via

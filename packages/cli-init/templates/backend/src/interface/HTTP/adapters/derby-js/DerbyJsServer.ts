@@ -1,20 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable class-methods-use-this */
-import { createServer, Server } from 'http';
-import fs from 'fs';
-import path from 'path';
-import { createUuid } from '@src/modules/port/UUID';
-import { _HTTP_PORT_ } from '@src/config/constants';
+import fs from 'node:fs';
+import { createServer } from 'node:http';
+import path from 'node:path';
+
+import { HTTP_PORT } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
-import type {
-  IHTTPRequest,
-  IHTTPResponse,
-  IbaseHandler
-} from '@src/interface/HTTP/ports';
-import {
-  HTTPBaseServer
-} from '@src/interface/HTTP/ports';
+import { HTTPBaseServer } from '@src/interface/HTTP/ports';
+import { createUuid } from '@src/modules/port/UUID';
+
+import type { Server } from 'node:http';
+
+import type { IbaseHandler, IHTTPRequest, IHTTPResponse } from '@src/interface/HTTP/ports';
 
 export type DerbyJsRequest = IHTTPRequest;
 export type DerbyJsResponse = {
@@ -80,9 +76,8 @@ class DerbyJsServer extends HTTPBaseServer<any> {
 
   constructor() {
     super();
-    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     const derby = require('derby');
-    // eslint-disable-next-line global-require
+
     const Router = require('find-my-way');
 
     this.application = derby.createApp('api');
@@ -218,23 +213,23 @@ class DerbyJsServer extends HTTPBaseServer<any> {
   }
 
   public async start(): Promise<void> {
-    this.server = createServer(this.requestListener());
+    const server = createServer(this.requestListener());
+    this.server = server;
     await new Promise<void>((resolve) => {
-      this.server!.listen(_HTTP_PORT_, resolve);
+      server.listen(HTTP_PORT, resolve);
     });
   }
 
   public async stop(): Promise<void> {
-    if (!this.server) return;
+    const { server } = this;
+    if (!server) return;
     await new Promise<void>((resolve) => {
-      this.server!.close(() => resolve());
+      server.close(() => resolve());
     });
   }
 
   public static compile(): HTTPBaseServer<any> {
-    if (!derbyJsServer) {
-      derbyJsServer = new DerbyJsServer();
-    }
+    derbyJsServer ??= new DerbyJsServer();
     return derbyJsServer;
   }
 }

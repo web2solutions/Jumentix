@@ -62,19 +62,19 @@ Prefer objective statements (files/modules/contracts), not generic descriptions.
 
 ### Domain / Business Rules
 
-- 
+-
 
 ### Application / Use Cases
 
-- 
+-
 
 ### Adapters / Infrastructure
 
-- 
+-
 
 ### API / Contracts (OpenAPI, DTOs, handlers, controllers)
 
-- 
+-
 
 ## Detailed Technical Changes
 
@@ -87,9 +87,9 @@ If relevant, include:
 - backward compatibility notes
 -->
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Architecture and Design Alignment
 
@@ -114,7 +114,7 @@ Document security considerations clearly.
 If none, explicitly state "No security impact".
 -->
 
-- Security impact: 
+- Security impact:
 - Secrets handling reviewed: [ ] Yes [ ] No [ ] N/A
 - Input/output sanitization reviewed: [ ] Yes [ ] No [ ] N/A
 - AuthN/AuthZ impact: [ ] Yes [ ] No

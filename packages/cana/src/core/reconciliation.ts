@@ -27,8 +27,9 @@
  * an absence it cannot distinguish from a deletion.
  */
 
-import type { CanaWriteOutcome } from '../contracts';
 import { requestToPromise } from './errors';
+
+import type { CanaWriteOutcome } from '../contracts';
 
 /** The store the ledger lives in. Present in every Cana schema. */
 export const OPERATION_LEDGER_STORE = '__cana_operations';
@@ -52,8 +53,7 @@ export const DEFAULT_LEDGER_HORIZON_MS = 24 * 60 * 60 * 1000;
  * exactly the duplicate-write bug this file exists to prevent.
  */
 export type ResolvedOutcome =
-  | Extract<CanaWriteOutcome, 'committed' | 'rolled-back'>
-  | 'unresolvable';
+  Extract<CanaWriteOutcome, 'committed' | 'rolled-back'> | 'unresolvable';
 
 /** The ledger's own store declaration, in the shape a Cana schema expects. */
 interface LedgerStoreSchema {
@@ -91,10 +91,9 @@ export function recordOperation(
   transaction: IDBTransaction,
   operation: OperationRecord
 ): Promise<IDBValidKey> {
-  return requestToPromise(
-    transaction.objectStore(OPERATION_LEDGER_STORE).put({ ...operation }),
-    { store: OPERATION_LEDGER_STORE }
-  );
+  return requestToPromise(transaction.objectStore(OPERATION_LEDGER_STORE).put({ ...operation }), {
+    store: OPERATION_LEDGER_STORE
+  });
 }
 
 /**

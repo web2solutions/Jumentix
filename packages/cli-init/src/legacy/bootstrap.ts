@@ -1,8 +1,9 @@
-/* eslint-disable no-console, no-continue */
+/* eslint-disable no-console */
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
-import { spawnSync } from 'node:child_process';
+
 import type { Readable, Writable } from 'node:stream';
 
 export const BOILERPLATE_REPOSITORY = 'https://github.com/web2solutions/Jumentix.git';
@@ -55,7 +56,7 @@ Options:
 `);
 }
 
-export type LegacyCliArgs = {
+export interface LegacyCliArgs {
   help: boolean;
   nonInteractive: boolean;
   serviceTypeId: string;
@@ -63,7 +64,7 @@ export type LegacyCliArgs = {
   gitBranch: string;
   installDeps: boolean | undefined;
   repository: string;
-};
+}
 
 export function parseCliArgs(argv: string[]): LegacyCliArgs {
   const args: LegacyCliArgs = {
@@ -99,10 +100,11 @@ export function parseCliArgs(argv: string[]): LegacyCliArgs {
     }
     if (rawArg.startsWith('--install-deps=')) {
       const installDepsRaw = (rawArg.split('=')[1] || '').toLowerCase();
-      args.installDeps = installDepsRaw === 'y'
-        || installDepsRaw === 'yes'
-        || installDepsRaw === 'true'
-        || installDepsRaw === '1';
+      args.installDeps =
+        installDepsRaw === 'y' ||
+        installDepsRaw === 'yes' ||
+        installDepsRaw === 'true' ||
+        installDepsRaw === '1';
       continue;
     }
     if (rawArg.startsWith('--repo=')) {
@@ -122,11 +124,12 @@ export function createPrompt({
 } = {}): { ask: (question: string) => Promise<string>; close: () => void } {
   const rl = readline.createInterface({
     input: input as any,
-    output: output as any
+    output
   });
-  const ask = (question: string): Promise<string> => new Promise((resolve) => {
-    rl.question(question, (answer) => resolve(String(answer || '').trim()));
-  });
+  const ask = (question: string): Promise<string> =>
+    new Promise((resolve) => {
+      rl.question(question, (answer) => resolve(String(answer || '').trim()));
+    });
   return {
     ask,
     close: () => rl.close()
@@ -164,9 +167,9 @@ function resolveFirstExisting(candidates: string[], name: string): string {
     if (fs.existsSync(candidate)) return candidate;
   }
   throw new Error(
-    `Could not resolve "${name}" to an absolute path (looked in: ${candidates.join(', ')}). `
-      + 'This check resolves without PATH on purpose; add the binary location to '
-      + 'RESOLVED_BINARIES in packages/cli-init/src/legacy/bootstrap.ts.'
+    `Could not resolve "${name}" to an absolute path (looked in: ${candidates.join(', ')}). ` +
+      'This check resolves without PATH on purpose; add the binary location to ' +
+      'RESOLVED_BINARIES in packages/cli-init/src/legacy/bootstrap.ts.'
   );
 }
 
@@ -236,23 +239,22 @@ export function resolveServiceTypeById(serviceTypeId: string): ServiceType {
   return found;
 }
 
-export function writeBootstrapProfile(
-  targetPath: string,
-  payload: Record<string, unknown>
-): void {
+export function writeBootstrapProfile(targetPath: string, payload: Record<string, unknown>): void {
   const configDir = path.join(targetPath, '.jumentix');
   fs.mkdirSync(configDir, { recursive: true });
   const outputPath = path.join(configDir, 'service-profile.json');
   fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
-export async function run(options: {
-  argv?: string[];
-  log?: (message?: string) => void;
-  createPrompt?: typeof createPrompt;
-  execute?: typeof runCommand;
-  workingDirectory?: string;
-} = {}): Promise<void> {
+export async function run(
+  options: {
+    argv?: string[];
+    log?: (message?: string) => void;
+    createPrompt?: typeof createPrompt;
+    execute?: typeof runCommand;
+    workingDirectory?: string;
+  } = {}
+): Promise<void> {
   const {
     argv = process.argv.slice(2),
     log = console.log,
@@ -281,21 +283,27 @@ export async function run(options: {
       ? resolveServiceTypeById(cliArgs.serviceTypeId)
       : await chooseServiceType(prompt.ask, log);
 
-    const projectName = cliArgs.projectName || await prompt.ask('Project folder name (e.g. my-service): ');
+    const projectName =
+      cliArgs.projectName || (await prompt.ask('Project folder name (e.g. my-service): '));
     if (!projectName) throw new Error('Project folder name is required.');
     const targetPath = toAbsolute(projectName, workingDirectory);
     ensureTargetFolderIsEmpty(targetPath);
 
-    const gitBranch = cliArgs.gitBranch
-      || (await prompt.ask('Git branch to clone (default: dev): '))
-      || 'dev';
-    const installDeps = typeof cliArgs.installDeps === 'boolean'
-      ? cliArgs.installDeps
-      : (((await prompt.ask('Run bun install after scaffold? (Y/n): ')) || 'y').toLowerCase() !== 'n');
+    const gitBranch =
+      cliArgs.gitBranch || (await prompt.ask('Git branch to clone (default: dev): ')) || 'dev';
+    const installDeps =
+      typeof cliArgs.installDeps === 'boolean'
+        ? cliArgs.installDeps
+        : ((await prompt.ask('Run bun install after scaffold? (Y/n): ')) || 'y').toLowerCase() !==
+          'n';
     const repository = cliArgs.repository || BOILERPLATE_REPOSITORY;
 
     log('\nCloning boilerplate repository...');
-    execute('git', ['clone', '--branch', gitBranch, '--', repository, projectName], workingDirectory);
+    execute(
+      'git',
+      ['clone', '--branch', gitBranch, '--', repository, projectName],
+      workingDirectory
+    );
 
     writeBootstrapProfile(targetPath, {
       generatedAt: new Date().toISOString(),

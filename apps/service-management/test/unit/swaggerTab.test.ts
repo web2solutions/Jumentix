@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
-
 function loadSwaggerTabModule() {
   if (typeof jest.resetModules === 'function') {
     jest.resetModules();
@@ -13,29 +9,37 @@ function loadSwaggerTabModule() {
 
 function sampleState() {
   return {
-    domains: [{
-      id: 'domain-users',
-      name: 'Users',
-      entities: [{
-        id: 'entity-user',
-        name: 'User',
-        fields: [{
-          name: 'id',
-          type: 'uuid',
-          required: true,
-          pk: true
-        }]
-      }]
-    }],
+    domains: [
+      {
+        id: 'domain-users',
+        name: 'Users',
+        entities: [
+          {
+            id: 'entity-user',
+            name: 'User',
+            fields: [
+              {
+                name: 'id',
+                type: 'uuid',
+                required: true,
+                pk: true
+              }
+            ]
+          }
+        ]
+      }
+    ],
     relationships: [],
     architecture: {
-      services: [{
-        id: 'core',
-        name: 'Core',
-        kind: 'core',
-        domains: ['domain-users'],
-        url: 'http://localhost:3000/api/1.0.0'
-      }],
+      services: [
+        {
+          id: 'core',
+          name: 'Core',
+          kind: 'core',
+          domains: ['domain-users'],
+          url: 'http://localhost:3000/api/1.0.0'
+        }
+      ],
       links: []
     }
   };
@@ -95,7 +99,9 @@ describe('swagger tab service selector (JUM-818)', () => {
     expect(selectOasForService(documentSet, 'merged').info.title).toBe('Merged');
     expect(selectOasForService(documentSet, 'core').info.title).toBe('Core');
     expect(selectOasForService(documentSet, 'missing').info.title).toBe('Merged');
-    expect(selectOasForService({ merged: documentSet.merged }, undefined).info.title).toBe('Merged');
+    expect(selectOasForService({ merged: documentSet.merged }, undefined).info.title).toBe(
+      'Merged'
+    );
   });
 
   it('loads swagger-ui assets, fills service choices and updates an existing UI instance', async () => {
@@ -103,11 +109,14 @@ describe('swagger tab service selector (JUM-818)', () => {
     const { createSwaggerTab } = loadSwaggerTabModule();
     const { appended } = installDocument();
     const updateSpec = jest.fn();
-    const bundle = Object.assign(jest.fn(() => ({
-      specActions: { updateSpec }
-    })), {
-      presets: { apis: 'apis-preset' }
-    });
+    const bundle = Object.assign(
+      jest.fn(() => ({
+        specActions: { updateSpec }
+      })),
+      {
+        presets: { apis: 'apis-preset' }
+      }
+    );
     const select = makeSelect('core');
     const dom = {
       openapiServiceSelect: select,
@@ -120,14 +129,18 @@ describe('swagger tab service selector (JUM-818)', () => {
     appended.find((node) => node.src?.includes('swagger-ui-bundle')).onload();
     await render;
 
-    expect(appended.some((node) => node.src === './vendor/swagger-ui/swagger-ui-bundle.js')).toBe(true);
+    expect(appended.some((node) => node.src === './vendor/swagger-ui/swagger-ui-bundle.js')).toBe(
+      true
+    );
     expect(appended.some((node) => node.href === './vendor/swagger-ui/swagger-ui.css')).toBe(true);
     expect(select.options.map((option) => option.value)).toStrictEqual(['merged', 'core']);
-    expect(bundle).toHaveBeenCalledWith(expect.objectContaining({
-      dom_id: '#swagger-ui',
-      layout: 'BaseLayout',
-      tryItOutEnabled: true
-    }));
+    expect(bundle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dom_id: '#swagger-ui',
+        layout: 'BaseLayout',
+        tryItOutEnabled: true
+      })
+    );
 
     select.value = 'merged';
     await tab.renderSwagger();
@@ -138,9 +151,12 @@ describe('swagger tab service selector (JUM-818)', () => {
     expect.hasAssertions();
     const { createSwaggerTab } = loadSwaggerTabModule();
     installDocument({ hasCss: true });
-    const bundle = Object.assign(jest.fn(() => ({})), {
-      presets: { apis: 'apis-preset' }
-    });
+    const bundle = Object.assign(
+      jest.fn(() => ({})),
+      {
+        presets: { apis: 'apis-preset' }
+      }
+    );
     (globalThis as any).SwaggerUIBundle = bundle;
     const tab = createSwaggerTab({ dom: { swaggerUi: { textContent: '' } }, state: sampleState() });
     await tab.renderSwagger();
@@ -181,12 +197,15 @@ describe('swagger tab service selector (JUM-818)', () => {
     expect.hasAssertions();
     const { createSwaggerTab } = loadSwaggerTabModule();
     installDocument({ hasCss: true });
-    (globalThis as any).SwaggerUIBundle = Object.assign(jest.fn(() => {
-      // eslint-disable-next-line no-throw-literal
-      throw 'renderer unavailable';
-    }), {
-      presets: { apis: 'apis-preset' }
-    });
+    (globalThis as any).SwaggerUIBundle = Object.assign(
+      jest.fn(() => {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- deliberate bare-string throw: renderer failures must be normalized to text
+        throw 'renderer unavailable';
+      }),
+      {
+        presets: { apis: 'apis-preset' }
+      }
+    );
     const dom = { swaggerUi: { textContent: '' } };
     await createSwaggerTab({ dom, state: sampleState() }).renderSwagger();
     expect(dom.swaggerUi.textContent).toContain('renderer unavailable');
@@ -197,11 +216,14 @@ describe('swagger tab service selector (JUM-818)', () => {
     const { createSwaggerTab } = loadSwaggerTabModule();
     const { appended } = installDocument();
     const updateSpec = jest.fn();
-    const bundle = Object.assign(jest.fn(() => ({
-      specActions: { updateSpec }
-    })), {
-      presets: { apis: 'apis-preset' }
-    });
+    const bundle = Object.assign(
+      jest.fn(() => ({
+        specActions: { updateSpec }
+      })),
+      {
+        presets: { apis: 'apis-preset' }
+      }
+    );
     const select = makeSelect('merged');
     const refresh: any = {
       addEventListener: jest.fn((event, handler) => {
@@ -232,9 +254,12 @@ describe('swagger tab service selector (JUM-818)', () => {
     expect.hasAssertions();
     const { createSwaggerTab } = loadSwaggerTabModule();
     installDocument({ hasCss: true });
-    const bundle = Object.assign(jest.fn(() => ({})), {
-      presets: { apis: 'apis-preset' }
-    });
+    const bundle = Object.assign(
+      jest.fn(() => ({})),
+      {
+        presets: { apis: 'apis-preset' }
+      }
+    );
     (globalThis as any).SwaggerUIBundle = bundle;
     // A fresh <select> has no value; the tab must read that as 'merged'.
     const select = makeSelect('');

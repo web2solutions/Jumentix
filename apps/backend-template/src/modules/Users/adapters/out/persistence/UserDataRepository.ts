@@ -1,39 +1,29 @@
 /* istanbul ignore file */
-import type { IStore } from '@src/infra/ports/persistence/IStore';
+import { DEFAULT_PAGE_SIZE } from '@src/config/constants';
+import { DomainValidationError } from '@src/infra/exceptions';
+import { BaseRepo } from '@src/modules/port';
+import User from '@src/modules/Users/domain/Model/User';
 import {
-  throwIfPreUpdateValidationFails,
+  canNotBeEmpty,
   throwIfNotFound,
-  canNotBeEmpty
+  throwIfPreUpdateValidationFails
 } from '@src/shared/validators';
-import type {
-  IUser
-} from '@src/modules/Users/domain/Entity/IUser';
-import { User } from '@src/modules/Users/domain/Model/User';
-import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
-import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
+
+import type { IStore } from '@src/infra/ports/persistence/IStore';
+import type { IPagingRequest, IPagingResponse, IRepoConfig } from '@src/modules/port';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
-import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
-import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
 import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
 import type { IUserRepository } from '@src/modules/Users/service/ports/IUserRepository';
-import type {
-  IPagingRequest,
-  IPagingResponse,
-  IRepoConfig
-} from '@src/modules/port';
-import {
-  BaseRepo
-} from '@src/modules/port';
 
-import { _DEFAULT_PAGE_SIZE_ } from '@src/config/constants';
-
-export function exclude<T, Key extends keyof T>(
-  record: T,
-  keys: Key[]
-): Omit<T, Key> {
+export function exclude<T, Key extends keyof T>(record: T, keys: Key[]): Omit<T, Key> {
   for (const key of keys) {
     // eslint-disable-next-line no-param-reassign
     delete record[key];
@@ -43,7 +33,8 @@ export function exclude<T, Key extends keyof T>(
 
 export class UserDataRepository
   extends BaseRepo<User, RequestCreateUser, RequestUpdateUser>
-  implements IUserRepository {
+  implements IUserRepository
+{
   public store: IStore<IUser>;
 
   public limit: number;
@@ -52,7 +43,7 @@ export class UserDataRepository
     super(config);
     const { limit } = config;
     this.store = this.databaseClient.stores.User;
-    this.limit = limit ?? _DEFAULT_PAGE_SIZE_;
+    this.limit = limit ?? DEFAULT_PAGE_SIZE;
   }
 
   public async create(data: RequestCreateUser): Promise<User> {
@@ -67,12 +58,12 @@ export class UserDataRepository
 
   public async update(id: string, data: RequestUpdateUser): Promise<User> {
     throwIfPreUpdateValidationFails(id, data);
-    const newData = { ...(new User({ ...data, password: '' })).serialize() };
+    const newData = { ...new User({ ...data, password: '' }).serialize() };
     delete (newData as any).password;
     delete (newData as any).salt;
     delete (newData as any).createdAt;
     delete (newData as any).updatedAt;
-    const updatedDoc = await this.store.update(id, newData as IUser);
+    const updatedDoc = await this.store.update(id, newData);
     return new User(updatedDoc);
   }
 
@@ -88,12 +79,10 @@ export class UserDataRepository
   }
 
   public async getAll(
-    filters: Record<string, string|number>,
+    filters: Record<string, string | number>,
     paging: IPagingRequest
   ): Promise<IPagingResponse<User[]>> {
-    const {
-      result, page, size, total
-    } = await this.store.getAll(filters, paging);
+    const { result, page, size, total } = await this.store.getAll(filters, paging);
     const currentPage = page ?? paging?.page ?? 1;
     const currentSize = size ?? paging?.size ?? this.limit;
     const rows = result ?? [];
@@ -113,9 +102,12 @@ export class UserDataRepository
   public async updatePassword(id: string, data: RequestUpdatePassword): Promise<User> {
     const oldDocument = await this.getOneById(id);
     canNotBeEmpty('password', data.password);
+    canNotBeEmpty('salt', data.salt);
     const model: User = new User({ ...oldDocument.serialize() });
+    const { salt } = data;
+    if (!salt) throw new DomainValidationError('salt can not be empty');
     model.password = data.password;
-    model.salt = data.salt!;
+    model.salt = salt;
     await this.store.update(id, model.serialize());
     return model;
   }
@@ -140,10 +132,7 @@ export class UserDataRepository
     return model;
   }
 
-  public async deleteDocument(
-    userId: string,
-    documentId: string
-  ): Promise<User> {
+  public async deleteDocument(userId: string, documentId: string): Promise<User> {
     const oldDocument = await this.getOneById(userId);
     const model: User = new User({ ...oldDocument.serialize() });
     model.deleteDocument(documentId);
@@ -171,10 +160,7 @@ export class UserDataRepository
     return model;
   }
 
-  public async deletePhone(
-    userId: string,
-    phoneId: string
-  ): Promise<User> {
+  public async deletePhone(userId: string, phoneId: string): Promise<User> {
     const oldPhone = await this.getOneById(userId);
     const model: User = new User({ ...oldPhone.serialize() });
     model.deletePhone(phoneId);
@@ -202,10 +188,7 @@ export class UserDataRepository
     return model;
   }
 
-  public async deleteEmail(
-    userId: string,
-    emailId: string
-  ): Promise<User> {
+  public async deleteEmail(userId: string, emailId: string): Promise<User> {
     const oldEmail = await this.getOneById(userId);
     const model: User = new User({ ...oldEmail.serialize() });
     model.deleteEmail(emailId);

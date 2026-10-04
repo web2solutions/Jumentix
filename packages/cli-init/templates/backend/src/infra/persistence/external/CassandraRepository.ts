@@ -1,1 +1,3 @@
-export { CassandraRepository } from '@jumentix/external-db-repositories';
+import { CassandraRepository } from '@jumentix/external-db-repositories';
+
+export default CassandraRepository;

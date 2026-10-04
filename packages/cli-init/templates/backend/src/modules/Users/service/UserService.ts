@@ -1,68 +1,66 @@
 // file deepcode ignore WrongNumberOfArguments: <same name but different functions>
 // file deepcode ignore MissingArgument: <same name but different functions>
 
-import type {
-  IPagingRequest,
-  IPagingResponse,
-  IServiceResponse,
-  IServiceConfig,
-  IEventBus
-} from '@src/modules/port';
-import {
-  ServiceResponse,
-  BaseService
-} from '@src/modules/port';
+import { runMetricsQuery } from '@jumentix/persistence-contracts';
+
+import { ResourceLockedError, ValidationError } from '@src/infra/exceptions';
+import { BaseService, ServiceResponse } from '@src/modules/port';
 import { UUID } from '@src/modules/port/UUID';
-
-import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
-import { UserDataRepository } from '@src/modules/Users/adapters/out/persistence/UserDataRepository';
-import { OrganizationDataRepository } from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
-import { createUser } from '@src/modules/Users/features/createUser';
-import { updateUser } from '@src/modules/Users/features/updateUser';
-import { deleteUserById } from '@src/modules/Users/features/deleteUserById';
-import { getUserById } from '@src/modules/Users/features/getUserById';
-import { getAllUsers } from '@src/modules/Users/features/getAllUsers';
-import { updatePassword } from '@src/modules/Users/features/updatePassword';
-import { createDocument } from '@src/modules/Users/features/createDocument';
-import { updateDocument } from '@src/modules/Users/features/updateDocument';
-import { deleteDocument } from '@src/modules/Users/features/deleteDocument';
-import { createPhone } from '@src/modules/Users/features/createPhone';
-import { updatePhone } from '@src/modules/Users/features/updatePhone';
-import { deletePhone } from '@src/modules/Users/features/deletePhone';
-import { createEmail } from '@src/modules/Users/features/createEmail';
-import { updateEmail } from '@src/modules/Users/features/updateEmail';
-import { deleteEmail } from '@src/modules/Users/features/deleteEmail';
-import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
-import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
-import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
-import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
-import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
-import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
-import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
-import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
-import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import { shouldRequireOrganization } from '@src/modules/Users/domain/security/Rbac';
 import { UserIntegrationEventName } from '@src/modules/Users/events/contracts/UserIntegrationEventName';
-import {
-  runMetricsQuery,
-  type IMetricsCapabilities,
-  type IMetricsQuery,
-  type IMetricsResult
-} from '@jumentix/persistence-contracts';
-import { BaseError, ResourceLockedError, ValidationError } from '@src/infra/exceptions';
-
+import createDocument from '@src/modules/Users/features/createDocument';
+import createEmail from '@src/modules/Users/features/createEmail';
+import createPhone from '@src/modules/Users/features/createPhone';
+import createUser from '@src/modules/Users/features/createUser';
+import deleteDocument from '@src/modules/Users/features/deleteDocument';
+import deleteEmail from '@src/modules/Users/features/deleteEmail';
+import deletePhone from '@src/modules/Users/features/deletePhone';
+import deleteUserById from '@src/modules/Users/features/deleteUserById';
+import getAllUsers from '@src/modules/Users/features/getAllUsers';
+import getUserById from '@src/modules/Users/features/getUserById';
+import updateDocument from '@src/modules/Users/features/updateDocument';
+import updateEmail from '@src/modules/Users/features/updateEmail';
+import updatePassword from '@src/modules/Users/features/updatePassword';
+import updatePhone from '@src/modules/Users/features/updatePhone';
+import updateUser from '@src/modules/Users/features/updateUser';
 import { canNotBeEmpty, mustBePassword } from '@src/shared/validators';
 
-import type { IMutexService } from '@src/infra/mutex/port/IMutexService';
-import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
-import { shouldRequireOrganization } from '@src/modules/Users/domain/security/Rbac';
-import type { ICacheService } from '@src/infra/cache';
 import type { IDeadLetterQueue } from '@jumentix/dead-letter-queue';
+import type {
+  IMetricsCapabilities,
+  IMetricsQuery,
+  IMetricsResult
+} from '@jumentix/persistence-contracts';
+
+import type { ICacheService } from '@src/infra/cache';
+import type { BaseError } from '@src/infra/exceptions';
+import type IMutexService from '@src/infra/mutex/port/IMutexService';
+import type { IPasswordCryptoService } from '@src/infra/security/IPasswordCryptoService';
+import type {
+  IEventBus,
+  IPagingRequest,
+  IPagingResponse,
+  IServiceConfig,
+  IServiceResponse
+} from '@src/modules/port';
+import type OrganizationDataRepository from '@src/modules/Users/adapters/out/persistence/OrganizationDataRepository';
+import type { UserDataRepository } from '@src/modules/Users/adapters/out/persistence/UserDataRepository';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
+import type { RequestCreateDocument } from '@src/modules/Users/interface/dto/RequestCreateDocument';
+import type { RequestCreateEmail } from '@src/modules/Users/interface/dto/RequestCreateEmail';
+import type { RequestCreatePhone } from '@src/modules/Users/interface/dto/RequestCreatePhone';
+import type { RequestCreateUser } from '@src/modules/Users/interface/dto/RequestCreateUser';
+import type { RequestUpdateDocument } from '@src/modules/Users/interface/dto/RequestUpdateDocument';
+import type { RequestUpdateEmail } from '@src/modules/Users/interface/dto/RequestUpdateEmail';
+import type { RequestUpdatePassword } from '@src/modules/Users/interface/dto/RequestUpdatePassword';
+import type { RequestUpdatePhone } from '@src/modules/Users/interface/dto/RequestUpdatePhone';
+import type { RequestUpdateUser } from '@src/modules/Users/interface/dto/RequestUpdateUser';
 
 interface IUserServiceConfig extends IServiceConfig {
   organizationDataRepository?: OrganizationDataRepository;
 }
 
-export class UserService extends BaseService<IUser, RequestCreateUser, RequestUpdateUser> {
+class UserService extends BaseService<IUser, RequestCreateUser, RequestUpdateUser> {
   public dataRepository: UserDataRepository;
 
   public organizationDataRepository?: OrganizationDataRepository;
@@ -86,18 +84,19 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
    */
   private readonly deadLetterQueue?: IDeadLetterQueue;
 
-  public constructor(
-    config: IUserServiceConfig
-  ) {
+  public constructor(config: IUserServiceConfig) {
     super(config);
     const { dataRepository, services } = config;
+    if (!services) {
+      throw new Error(
+        'UserService requires config.services (passwordCryptoService and mutexService).'
+      );
+    }
     this.dataRepository = dataRepository as UserDataRepository;
-    this.organizationDataRepository = (
-      config.organizationDataRepository as OrganizationDataRepository | undefined
-    );
-    this.passwordCryptoService = services!.passwordCryptoService;
-    // this.services.mutexService = services!.mutexService;
-    this.mutexService = services!.mutexService;
+    this.organizationDataRepository = config.organizationDataRepository;
+    this.passwordCryptoService = services.passwordCryptoService;
+    // this.services.mutexService = services.mutexService;
+    this.mutexService = services.mutexService;
     this.eventBus = services?.eventBus as IEventBus | undefined;
     this.cacheService = services?.cacheService as ICacheService | undefined;
     this.deadLetterQueue = services?.deadLetterQueue as IDeadLetterQueue | undefined;
@@ -120,12 +119,18 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     if (this.deadLetterQueue) {
       try {
         await this.deadLetterQueue.enqueue({
-          entityName: this.entityName, resourceId: id, operation, payload
+          entityName: this.entityName,
+          resourceId: id,
+          operation,
+          payload
         });
       } catch (error: unknown) {
         // eslint-disable-next-line no-console
         console.error('[dead-letter] failed to record a locked write', {
-          entityName: this.entityName, resourceId: id, operation, error
+          entityName: this.entityName,
+          resourceId: id,
+          operation,
+          error
         });
       }
     }
@@ -155,10 +160,13 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     }
     return Object.keys(payload)
       .sort((a, b) => a.localeCompare(b))
-      .reduce((acc, key) => {
-        acc[key] = UserService.sortPayload(payload[key]);
-        return acc;
-      }, {} as Record<string, any>);
+      .reduce(
+        (acc, key) => {
+          acc[key] = UserService.sortPayload(payload[key]);
+          return acc;
+        },
+        {} as Record<string, any>
+      );
   }
 
   private async getCacheVersion(): Promise<number> {
@@ -176,17 +184,18 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     const safeUser = { ...(user as IUser & { salt?: string }) };
     delete (safeUser as any).password;
     delete (safeUser as any).salt;
-    return safeUser as IUser;
+    return safeUser;
   }
 
   private static sanitizeUsers(users?: IUser[]): IUser[] {
-    return (users || []).map((user) => UserService.sanitizeUser(user) as IUser);
+    return (users ?? []).map((user) => UserService.sanitizeUser(user) as IUser);
   }
 
-  private async ensureOrganizationCompliance(
-    data: { organization?: string; roles?: string[] }
-  ): Promise<void> {
-    const roles = data.roles || [];
+  private async ensureOrganizationCompliance(data: {
+    organization?: string;
+    roles?: string[];
+  }): Promise<void> {
+    const roles = data.roles ?? [];
     const organization = data.organization || '';
     if (shouldRequireOrganization(roles) && !organization) {
       throw new Error('organization is required for admin and user roles');
@@ -223,24 +232,28 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     // `catch` so one failed write does not poison every later one queued behind
     // it; the failure still reaches its own caller through `next`.
     const next = pending.then(write, write);
-    const settled = next.then(() => undefined, () => undefined);
+    const settled = next.then(
+      () => undefined,
+      () => undefined
+    );
     UserService.organizationWriteQueue.set(organizationId, settled);
     return next;
   }
 
   private async syncOrganizationUsers(
     userId: string,
-    previousOrganizationId: string = '',
-    nextOrganizationId: string = ''
+    previousOrganizationId = '',
+    nextOrganizationId = ''
   ): Promise<void> {
-    if (!this.organizationDataRepository) return;
+    const { organizationDataRepository } = this;
+    if (!organizationDataRepository) return;
     let relationshipChanged = false;
 
     if (previousOrganizationId && previousOrganizationId !== nextOrganizationId) {
       await UserService.queueOrganizationWrite(previousOrganizationId, async () => {
-        const previous = await this.organizationDataRepository!.getOneById(previousOrganizationId);
+        const previous = await organizationDataRepository.getOneById(previousOrganizationId);
         const nextUsers = previous.users.filter((id: string) => id !== userId);
-        await this.organizationDataRepository!.update(previousOrganizationId, {
+        await organizationDataRepository.update(previousOrganizationId, {
           id: previous.id,
           name: previous.name,
           address: previous.address,
@@ -254,9 +267,9 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
 
     if (nextOrganizationId) {
       await UserService.queueOrganizationWrite(nextOrganizationId, async () => {
-        const organization = await this.organizationDataRepository!.getOneById(nextOrganizationId);
+        const organization = await organizationDataRepository.getOneById(nextOrganizationId);
         const linkedUsers = [...new Set([...(organization.users || []), userId])];
-        await this.organizationDataRepository!.update(nextOrganizationId, {
+        await organizationDataRepository.update(nextOrganizationId, {
           id: organization.id,
           name: organization.name,
           address: organization.address,
@@ -328,7 +341,6 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     return serviceResponse;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   public async update(id: string, data: RequestUpdateUser): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
@@ -338,18 +350,16 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
         organization: data.organization ?? previous.organization,
         roles: data.roles ?? previous.roles
       });
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('update', id, data);
       // console.log('data', data);
       const user = await updateUser(id, data, this.dataRepository);
       // console.log('user', user)
       serviceResponse.result = UserService.sanitizeUser(user);
       await this.invalidateReadCache();
-      await this.syncOrganizationUsers(
-        id,
-        previous.organization || '',
-        user.organization || ''
-      );
+      await this.syncOrganizationUsers(id, previous.organization || '', user.organization || '');
       await this.publishEvent(UserIntegrationEventName.Updated, { id });
 
       await this.mutexService.unlock(this.entityName, id);
@@ -364,7 +374,9 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
   public async delete(id: string): Promise<IServiceResponse<boolean>> {
     const serviceResponse: IServiceResponse<boolean> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('delete', id, {});
       const previous = await this.dataRepository.getOneById(id);
       const deleted = await deleteUserById(id, this.dataRepository);
@@ -405,16 +417,18 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
   }
 
   public async getAll(
-    filters: Record<string, string|number>,
+    filters: Record<string, string | number>,
     paging: IPagingRequest
   ): Promise<IServiceResponse<IUser[]>> {
     let serviceResponse: IServiceResponse<IUser[]> = {};
     try {
       const version = await this.getCacheVersion();
-      const cacheKey = `users:v${version}:getAll:${JSON.stringify(UserService.sortPayload({
-        filters,
-        paging
-      }))}`;
+      const cacheKey = `users:v${version}:getAll:${JSON.stringify(
+        UserService.sortPayload({
+          filters,
+          paging
+        })
+      )}`;
       const cached = await this.cacheService?.get<IServiceResponse<IUser[]>>(cacheKey);
       if (cached) {
         return cached;
@@ -448,7 +462,7 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
         ...user,
         createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : user.createdAt,
         updatedAt: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : user.updatedAt
-      })) as Array<Record<string, unknown>>;
+      })) as Record<string, unknown>[];
       serviceResponse.result = runMetricsQuery(rows, { ...query, filters }, capabilities);
     } catch (error) {
       if (error instanceof Error && /Accepted:/.test(error.message)) {
@@ -469,7 +483,9 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
       canNotBeEmpty('password', data.password);
       mustBePassword('password', data.password);
 
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('updatePassword', id, data);
 
       const newData = { ...data };
@@ -496,7 +512,9 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
   ): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('createDocument', id, data);
 
       const user = await createDocument(id, data, this.dataRepository);
@@ -518,7 +536,9 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
   ): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('updateDocument', id, { documentId, data });
 
       const user = await updateDocument(id, documentId, data, this.dataRepository);
@@ -534,13 +554,12 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     return serviceResponse;
   }
 
-  public async deleteDocument(
-    id: string,
-    documentId: string
-  ): Promise<IServiceResponse<IUser>> {
+  public async deleteDocument(id: string, documentId: string): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('deleteDocument', id, { documentId });
 
       const user = await deleteDocument(id, documentId, this.dataRepository);
@@ -556,13 +575,12 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     return serviceResponse;
   }
 
-  public async createPhone(
-    id: string,
-    data: RequestCreatePhone
-  ): Promise<IServiceResponse<IUser>> {
+  public async createPhone(id: string, data: RequestCreatePhone): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('createPhone', id, data);
 
       const user = await createPhone(id, data, this.dataRepository);
@@ -585,7 +603,9 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
   ): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('updatePhone', id, { phoneId, data });
 
       const user = await updatePhone(id, phoneId, data, this.dataRepository);
@@ -601,13 +621,12 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     return serviceResponse;
   }
 
-  public async deletePhone(
-    id: string,
-    phoneId: string
-  ): Promise<IServiceResponse<IUser>> {
+  public async deletePhone(id: string, phoneId: string): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('deletePhone', id, { phoneId });
 
       const user = await deletePhone(id, phoneId, this.dataRepository);
@@ -623,13 +642,12 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     return serviceResponse;
   }
 
-  public async createEmail(
-    id: string,
-    data: RequestCreateEmail
-  ): Promise<IServiceResponse<IUser>> {
+  public async createEmail(id: string, data: RequestCreateEmail): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('createEmail', id, data);
 
       const user = await createEmail(id, data, this.dataRepository);
@@ -652,7 +670,9 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
   ): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('updateEmail', id, { emailId, data });
 
       const user = await updateEmail(id, emailId, data, this.dataRepository);
@@ -668,13 +688,12 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     return serviceResponse;
   }
 
-  public async deleteEmail(
-    id: string,
-    emailId: string
-  ): Promise<IServiceResponse<IUser>> {
+  public async deleteEmail(id: string, emailId: string): Promise<IServiceResponse<IUser>> {
     const serviceResponse: IServiceResponse<IUser> = {};
     try {
-      const { result: { previouslyLocked } } = await this.mutexService.lock(this.entityName, id);
+      const {
+        result: { previouslyLocked }
+      } = await this.mutexService.lock(this.entityName, id);
       if (previouslyLocked) await this.rejectLocked('deleteEmail', id, { emailId });
 
       const user = await deleteEmail(id, emailId, this.dataRepository);
@@ -694,3 +713,5 @@ export class UserService extends BaseService<IUser, RequestCreateUser, RequestUp
     return new UserService(config);
   }
 }
+
+export default UserService;

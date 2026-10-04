@@ -1,10 +1,10 @@
 import {
-  TENANT_AUTHORIZATION_REASONS,
   decideOrganizationAccess,
   decideUserAccess,
   resolveOrganizationCollectionScope,
   resolveUserCollectionScope,
-  resolveUserCreationOrganization
+  resolveUserCreationOrganization,
+  TENANT_AUTHORIZATION_REASONS
 } from '@src/modules/Users/domain/security/TenantAuthorizationPolicy';
 
 describe('tenant authorization policy', () => {
@@ -56,10 +56,12 @@ describe('tenant authorization policy', () => {
   it('preserves domain-defined global behavior for legacy direct scopes', () => {
     expect.hasAssertions();
     const unboundLegacy = { id: 'legacy', roles: ['read_user'] };
-    expect(decideUserAccess(unboundLegacy, {
-      id: 'other',
-      organization: 'org-2'
-    }).allowed).toBe(true);
+    expect(
+      decideUserAccess(unboundLegacy, {
+        id: 'other',
+        organization: 'org-2'
+      }).allowed
+    ).toBe(true);
     expect(resolveUserCollectionScope(legacy).filters).toStrictEqual({});
     expect(resolveOrganizationCollectionScope(unboundLegacy).filters).toStrictEqual({});
   });
@@ -67,8 +69,9 @@ describe('tenant authorization policy', () => {
   it('fails closed when a tenant principal has no organization', () => {
     expect.hasAssertions();
     const unboundAdmin = { id: 'admin', roles: ['admin'] };
-    expect(decideUserAccess(unboundAdmin, { id: 'target' }).reason)
-      .toBe(TENANT_AUTHORIZATION_REASONS.organizationRequired);
+    expect(decideUserAccess(unboundAdmin, { id: 'target' }).reason).toBe(
+      TENANT_AUTHORIZATION_REASONS.organizationRequired
+    );
     expect(resolveUserCollectionScope(unboundAdmin).decision.allowed).toBe(false);
     expect(resolveOrganizationCollectionScope(unboundAdmin).decision.allowed).toBe(false);
   });

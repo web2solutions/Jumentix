@@ -1,7 +1,8 @@
-import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
 import { BaseExternalDataRepository } from '@jumentix/external-persistence-core';
 
-export class OracleRepository extends BaseExternalDataRepository {
+import type { IRepositoryConnectionOptions } from '@jumentix/external-persistence-core';
+
+class OracleRepository extends BaseExternalDataRepository {
   private connection: any | null = null;
 
   constructor(options: IRepositoryConnectionOptions) {
@@ -22,8 +23,9 @@ export class OracleRepository extends BaseExternalDataRepository {
     const parsedUrl = OracleRepository.parseConnectionUrl(this.options.connectionUrl);
     const user = parsedUrl.user || this.getExtraOption<string>('user', 'jumentix');
     const password = parsedUrl.password || this.getExtraOption<string>('password', 'jumentix');
-    const connectString = parsedUrl.connectString
-      || this.getExtraOption<string>('connectString', '127.0.0.1:1521/FREEPDB1');
+    const connectString =
+      parsedUrl.connectString ||
+      this.getExtraOption<string>('connectString', '127.0.0.1:1521/FREEPDB1');
 
     this.connection = await getConnection({
       user,
@@ -68,3 +70,5 @@ export class OracleRepository extends BaseExternalDataRepository {
     }
   }
 }
+
+export default OracleRepository;

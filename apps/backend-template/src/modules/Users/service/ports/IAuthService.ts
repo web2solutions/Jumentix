@@ -1,8 +1,8 @@
-import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
-import type { IServiceResponse } from '@src/modules/port';
 import type { IJwtService } from '@src/infra/jwt/IJwtService';
+import type { IServiceResponse } from '@src/modules/port';
+import type { IUser } from '@src/modules/Users/domain/Entity/IUser';
 
-import { EAuthSchemaType } from './EAuthSchemaType';
+import type EAuthSchemaType from './EAuthSchemaType';
 import type { IAuthorizationHeader } from './IAuthorizationHeader';
 import type { ITokenObject } from './ITokenObject';
 
@@ -27,9 +27,6 @@ export interface IAuthService {
     newPassword: string
   ): Promise<IServiceResponse<boolean>>;
   logout(authorization?: string): Promise<IServiceResponse<boolean>>;
-  throwIfUserHasNoAccessToResource(
-    user: IUser,
-    endPointConfig: Record<string, any>
-  ): boolean;
+  throwIfUserHasNoAccessToResource(user: IUser, endPointConfig: Record<string, any>): boolean;
   compile?(): IAuthService;
 }

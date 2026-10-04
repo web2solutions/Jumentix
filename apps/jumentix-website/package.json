@@ -60,7 +60,8 @@
     "react-dom": "19.2.8",
     "react-redux": "^9.3.0",
     "swr": "^2.4.2",
-    "vue": "^3.5.41"
+    "vue": "^3.5.41",
+    "@jumentix/service-management": "workspace:*"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "10.6.0",
@@ -85,6 +86,8 @@
     "postcss-simple-vars": "^7.0.1",
     "storybook": "10.6.0",
     "turbopack-inline-svg-loader": "^1.0.3",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "playwright-webkit": "^1.62.1",
+    "cypress": "^15.19.0"
   }
 }

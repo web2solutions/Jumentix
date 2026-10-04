@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-const { execFileSync } = require('child_process');
+const { execFileSync } = require('node:child_process');
+
 const { gitBinary } = require('./lib/git-binary');
 
 /**
@@ -36,7 +37,11 @@ const DRIVERS = [
 const git = gitBinary();
 
 for (const driver of DRIVERS) {
-  execFileSync(git, ['config', `merge.${driver.name}.name`, `keep ours for ${driver.name}; test-map:check catches staleness`]);
+  execFileSync(git, [
+    'config',
+    `merge.${driver.name}.name`,
+    `keep ours for ${driver.name}; test-map:check catches staleness`
+  ]);
   execFileSync(git, ['config', `merge.${driver.name}.driver`, driver.command]);
   console.log(`[setup-git-merge-drivers] registered merge.${driver.name}`);
 }
