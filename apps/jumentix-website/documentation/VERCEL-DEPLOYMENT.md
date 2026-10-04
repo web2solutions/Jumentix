@@ -98,6 +98,7 @@ Rollback: use the previous Production deployment in the Vercel project dashboard
   monorepo source files.
 - Vercel and local builds use the Bun workspace lockfile and patched dependency declarations.
 - Root deployment scripts are intentionally scope-agnostic (no forced `--scope`) to support
+- Production promotions to `main` must use a `dev`→`main` PR (or an allowed generated release/changelog head). Ad-hoc `cursor/release/*` heads targeting `main` fail CI context classification.
   personal-account and team-account Vercel contexts.
 - The Vercel CLI project link (`.vercel/project.json`, created by `vercel link` or a manual
   deploy) is machine-specific local config. It is gitignored at the repository root and must
