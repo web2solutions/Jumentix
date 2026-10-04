@@ -4,7 +4,11 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-10-04 [JUM-917][Release] Promote auto-publish, website verify, and Cana 0.1.1 media to main (#610) - Eduardo A.
+- 2026-10-04 [JUM-917][CI] Fix package-bump SHA pin and website-verify Vercel skip (#611) - Eduardo A.
+- 2026-10-04 [JUM-917][CI] Auto-publish packages, verify website deploy, fix Cana npm media (#608) - Eduardo A.
+- 2026-10-04 [JUM-771][Feature] Hexagonal map: real file previews, dark-mode contrast, modern styling (#607) - Eduardo A.
+- 2026-10-04 [JUM-916][Release] Sync main v0.3.3 into dev (#606) - Eduardo A.
 
 ## v0.3.3 - 2026-10-04
 
