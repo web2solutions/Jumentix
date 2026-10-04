@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.4.0 - 2026-10-04
+
+- 2026-10-04 chore(release): v0.4.0 (#613) - Eduardo A.
 - 2026-10-04 [JUM-917][Release] Promote auto-publish, website verify, and Cana 0.1.1 media to main (#610) - Eduardo A.
 - 2026-10-04 [JUM-917][CI] Fix package-bump SHA pin and website-verify Vercel skip (#611) - Eduardo A.
 - 2026-10-04 [JUM-917][CI] Auto-publish packages, verify website deploy, fix Cana npm media (#608) - Eduardo A.
