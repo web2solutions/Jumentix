@@ -47,11 +47,9 @@ jobs:
         run: |
           set -euo pipefail
           bun install --frozen-lockfile
-          plan="$(bun ci-cd/plan-package-content-bumps.js)"
-          echo "$plan"
-          count="$(jq '.bumps | length' <<<"$plan")"
+          bun ci-cd/plan-package-content-bumps.js --out /tmp/package-bumps.json
+          count="$(jq '.bumps | length' /tmp/package-bumps.json)"
           echo "count=$count" >> "$GITHUB_OUTPUT"
-          echo "$plan" > /tmp/package-bumps.json
           if [ "$count" = "0" ]; then
             echo "No package content bumps required."
           fi
@@ -74,16 +72,10 @@ jobs:
           # a stale expectedHeadOid.
           base_oid="$(git rev-parse HEAD)"
           bun ci-cd/plan-package-content-bumps.js --apply --from /tmp/package-bumps.json
-          # Include run id so a retry on the same main tip never collides with a
-          # leftover chore/package-bump-<sha8> branch from a failed prior job.
-          branch="chore/package-bump-${base_oid:0:8}-${GITHUB_RUN_ID}"
-          # Close any prior open bump PRs before pushing the new branch so we
-          # never delete-branch the tip we are about to publish.
-          gh pr list --base main --state open --json number,headRefName --jq \
-            '.[] | select(.headRefName | test("^chore/package-bump-")) | .number' | \
-            while read -r prior_pr; do
-              gh pr close "$prior_pr" --delete-branch || true
-            done
+          # Uniquify with run id + attempt so same-run retries never collide with a
+          # leftover branch from a prior failed attempt of this job.
+          branch="chore/package-bump-${base_oid:0:8}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git push origin --delete "refs/heads/$branch" 2>/dev/null || true
           git push origin "HEAD:refs/heads/$branch"
           mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
           changed+=("packages/cli-init/templates.manifest.json")
@@ -129,6 +121,14 @@ jobs:
             --title "chore(release): bump packages with unpublished content changes" \
             --body "$body")"
           echo "Opened $pr_url"
+          # Close prior bump PRs only after the replacement PR exists, so a
+          # mid-flight failure never leaves main without an open bump PR.
+          new_number="$(gh pr view "$pr_url" --json number --jq .number)"
+          gh pr list --base main --state open --json number,headRefName --jq \
+            ".[] | select(.headRefName | test(\"^chore/package-bump-\")) | select(.number != ${new_number}) | .number" | \
+            while read -r prior_pr; do
+              gh pr close "$prior_pr" --delete-branch || true
+            done
           deadline=$((SECONDS + 5400))
           while :; do
             state="$(gh pr view "$pr_url" --json mergeStateStatus --jq .mergeStateStatus)"

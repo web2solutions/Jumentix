@@ -131,7 +131,7 @@ describe('classify-ci-context', () => {
     const evidence = classify({
       GITHUB_EVENT_NAME: 'pull_request',
       JUMENTIX_CI_IS_PULL_REQUEST: 'true',
-      GITHUB_HEAD_REF: 'chore/package-bump-deadbeef-123456789',
+      GITHUB_HEAD_REF: 'chore/package-bump-deadbeef-123456789-2',
       GITHUB_BASE_REF: 'main'
     });
 
