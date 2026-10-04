@@ -74,7 +74,16 @@ jobs:
           # a stale expectedHeadOid.
           base_oid="$(git rev-parse HEAD)"
           bun ci-cd/plan-package-content-bumps.js --apply --from /tmp/package-bumps.json
-          branch="chore/package-bump-${base_oid:0:8}"
+          # Include run id so a retry on the same main tip never collides with a
+          # leftover chore/package-bump-<sha8> branch from a failed prior job.
+          branch="chore/package-bump-${base_oid:0:8}-${GITHUB_RUN_ID}"
+          # Close any prior open bump PRs before pushing the new branch so we
+          # never delete-branch the tip we are about to publish.
+          gh pr list --base main --state open --json number,headRefName --jq \
+            '.[] | select(.headRefName | test("^chore/package-bump-")) | .number' | \
+            while read -r prior_pr; do
+              gh pr close "$prior_pr" --delete-branch || true
+            done
           git push origin "HEAD:refs/heads/$branch"
           mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
           changed+=("packages/cli-init/templates.manifest.json")
@@ -110,11 +119,6 @@ jobs:
             echo "$mutation_result" >&2
             exit 1
           fi
-          gh pr list --base main --state open --json number,headRefName --jq \
-            '.[] | select(.headRefName | test("^chore/package-bump-[0-9a-f]{8}$")) | .number' | \
-            while read -r prior_pr; do
-              gh pr close "$prior_pr" --delete-branch || true
-            done
           body="$(jq -r '
             "Automated patch bumps for public packages whose published surface changed on `main` while the declared version was already on npm (JUM-917 / Req 070).\n\n"
             + "## Bumps\n\n"

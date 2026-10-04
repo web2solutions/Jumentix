@@ -34,11 +34,12 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 2
+          fetch-depth: 0
       - name: Wait for Vercel production status on this commit
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ github.sha }}
+          BEFORE: ${{ github.event.before }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
@@ -46,7 +47,17 @@ jobs:
           # path filters still run this job (Req 070 content surface), but a
           # missing Vercel status is only a failure when that root actually
           # changed — otherwise Vercel correctly skips and we must not fail closed.
-          website_touched="$(git show --name-only --pretty=format: "$SHA" | awk '
+          #
+          # Prefer the push range (before..sha) so multi-commit pushes and merge
+          # commits are covered; fall back to diff-tree -m for the tip alone.
+          if [ -n "${BEFORE:-}" ] \
+            && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] \
+            && git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            changed_paths="$(git diff --name-only "$BEFORE" "$SHA")"
+          else
+            changed_paths="$(git diff-tree --no-commit-id --name-only -r -m "$SHA")"
+          fi
+          website_touched="$(printf '%s\n' "$changed_paths" | awk '
             $0 ~ /^apps\/jumentix-website\// { found=1 }
             END { print found ? "yes" : "no" }
           ')"
@@ -74,7 +85,7 @@ jobs:
             esac
             if [ "$SECONDS" -gt "$deadline" ]; then
               if [ "$website_touched" = "no" ] && [ "$vercel" = "missing" ]; then
-                echo "No apps/jumentix-website changes on $SHA; missing Vercel status is an expected skip."
+                echo "No apps/jumentix-website changes in push range for $SHA; missing Vercel status is an expected skip."
                 exit 0
               fi
               echo "Timed out waiting for Vercel status on $SHA (last vercel=$vercel, website_touched=$website_touched)." >&2

@@ -116,7 +116,7 @@ function isGeneratedChangelogSyncBranch(headRef) {
 
 /** Signed package content-bump branches opened by `package-content-bump.yml` (JUM-917). */
 function isGeneratedPackageBumpBranch(headRef) {
-  return /^chore\/package-bump-[0-9a-f]{8}$/i.test(String(headRef || '').trim());
+  return /^chore\/package-bump-[0-9a-f]{8}(?:-\d+)?$/i.test(String(headRef || '').trim());
 }
 
 /** Signed app-release bump branches opened by `create-app-release-tag.js --github-api`. */
