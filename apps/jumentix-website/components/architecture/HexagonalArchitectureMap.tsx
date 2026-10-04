@@ -419,7 +419,7 @@ export function HexagonalArchitectureMap({ locale = 'en' }: { locale?: HexLocale
           </ul>
 
           {snippet ? (
-            <div>
+            <div aria-live="off">
               <h4 className={classes.detailSection}>{labels.filePreview}</h4>
               <div className={classes.previewHeader}>
                 <p className={classes.previewPath}><code>{snippet.path}</code></p>
