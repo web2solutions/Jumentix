@@ -52,6 +52,24 @@ describe('check-generated-automation-pr', () => {
     ]);
   });
 
+  it('allows only package manifests on package-bump branches', () => {
+    expect.hasAssertions();
+    const ok = validateGeneratedAutomationPr({
+      headRef: 'chore/package-bump-deadbeef',
+      baseRef: 'main',
+      changedFiles: ['packages/cana/package.json', 'packages/cli-init/package.json']
+    });
+    expect(ok.failures).toStrictEqual([]);
+
+    const bad = validateGeneratedAutomationPr({
+      headRef: 'chore/package-bump-deadbeef',
+      changedFiles: ['packages/cana/package.json', 'README.md']
+    });
+    expect(bad.failures).toStrictEqual([
+      '[generated-automation] package-bump PR must only touch package manifests; unexpected file: README.md'
+    ]);
+  });
+
   it('forces base main when CircleCI QUALITY_GATE_TARGET equals the head branch', () => {
     expect.hasAssertions();
     const result = validateGeneratedAutomationPr({

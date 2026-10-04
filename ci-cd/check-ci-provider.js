@@ -307,6 +307,7 @@ if (!fs.existsSync(packageContentBumpWorkflowPath)) {
     /name:\s*Package content bump/,
     /plan-package-content-bumps\.js/,
     /chore\/package-bump-/,
+    /timeout-minutes:\s*120/,
     /group:\s*package-content-bump-main/
   ]) {
     if (!marker.test(contents)) {

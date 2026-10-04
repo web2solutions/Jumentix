@@ -221,6 +221,10 @@ describe('run-branch-quality-gate', () => {
       context: 'release-pr-to-main',
       headRef: 'chore/changelog-sync-deadbeef'
     })).toBe(generatedGate);
+    expect(selectQualityGate('main', {
+      context: 'release-pr-to-main',
+      headRef: 'chore/package-bump-deadbeef'
+    })).toBe(generatedGate);
   });
 
   it('runs only preflight plus the generated-automation script for release heads', () => {

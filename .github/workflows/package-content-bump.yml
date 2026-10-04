@@ -26,7 +26,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    timeout-minutes: 30
+    timeout-minutes: 120
     steps:
       - name: Checkout main
         uses: actions/checkout@v5
@@ -111,8 +111,7 @@ jobs:
               gh pr close "$prior_pr" --delete-branch || true
             done
           body="$(jq -r '
-            "## Summary\n\n"
-            + "Automated patch bumps for public packages whose published surface changed on `main` while the declared version was already on npm (JUM-917 / Req 070).\n\n"
+            "Automated patch bumps for public packages whose published surface changed on `main` while the declared version was already on npm (JUM-917 / Req 070).\n\n"
             + "## Bumps\n\n"
             + (.bumps | map("- `\(.name)`: `\(.from)` → `\(.to)` (\(.reason))") | join("\n"))
             + "\n\nAfter merge, `app-release.yml` → `npm-publish.yml` publishes the new versions."
@@ -121,14 +120,14 @@ jobs:
             --title "chore(release): bump packages with unpublished content changes" \
             --body "$body")"
           echo "Opened $pr_url"
-          deadline=$((SECONDS + 3600))
+          deadline=$((SECONDS + 5400))
           while :; do
             state="$(gh pr view "$pr_url" --json mergeStateStatus --jq .mergeStateStatus)"
             case "$state" in
               CLEAN|UNSTABLE|HAS_HOOKS) break ;;
               BLOCKED|UNKNOWN)
                 if [ "$SECONDS" -gt "$deadline" ]; then
-                  echo "Required checks did not pass within 60m on $pr_url (last state: $state)." >&2
+                  echo "Required checks did not pass within 90m on $pr_url (last state: $state)." >&2
                   exit 1
                 fi
                 sleep 30
