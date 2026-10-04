@@ -1,7 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { MonacoCodeBlock, languageFromPath } from '@/components/code/MonacoCodeBlock';
+import hexMapSnippetsData from '@/content/generated/hex-map-snippets.json';
 import classes from './HexagonalArchitectureMap.module.css';
+
+type HexMapSnippet = { id: string; path: string; code: string };
+const HEX_MAP_SNIPPETS = hexMapSnippetsData as HexMapSnippet[];
 
 export type HexLocale = 'en' | 'pt-BR';
 
@@ -275,6 +280,8 @@ const RING: Record<LayerId, number> = {
   composition: 5,
 };
 
+const SNIPPET_BY_LAYER = new Map(HEX_MAP_SNIPPETS.map((snippet) => [snippet.id, snippet]));
+
 function hexPoints(cx: number, cy: number, r: number): string {
   const pts: string[] = [];
   for (let i = 0; i < 6; i += 1) {
@@ -311,6 +318,7 @@ export function HexagonalArchitectureMap({ locale = 'en' }: { locale?: HexLocale
       flow: 'Fluxo de chamada',
       paths: 'Pastas',
       examples: 'Peças concretas',
+      filePreview: 'Arquivo real',
       source: 'Fonte: apps/backend-template · contrato Spec Architecture',
     }
     : {
@@ -319,8 +327,11 @@ export function HexagonalArchitectureMap({ locale = 'en' }: { locale?: HexLocale
       flow: 'Call flow',
       paths: 'Folders',
       examples: 'Concrete pieces',
+      filePreview: 'Real file',
       source: 'Source: apps/backend-template · Spec Architecture contract',
     };
+
+  const snippet = SNIPPET_BY_LAYER.get(selected.id);
 
   return (
     <section
@@ -406,6 +417,26 @@ export function HexagonalArchitectureMap({ locale = 'en' }: { locale?: HexLocale
               <li key={example}>{example}</li>
             ))}
           </ul>
+
+          {snippet ? (
+            <div>
+              <h4 className={classes.detailSection}>{labels.filePreview}</h4>
+              <div className={classes.previewHeader}>
+                <p className={classes.previewPath}><code>{snippet.path}</code></p>
+              </div>
+              <div className={classes.previewFrame}>
+                <MonacoCodeBlock
+                  value={snippet.code}
+                  language={languageFromPath(snippet.path)}
+                  readOnly
+                  minHeight={160}
+                  maxHeight={320}
+                  ariaLabel={`${labels.filePreview}: ${snippet.path}`}
+                  testId={`hex-map-preview-${selected.id}`}
+                />
+              </div>
+            </div>
+          ) : null}
         </aside>
       </div>
 
