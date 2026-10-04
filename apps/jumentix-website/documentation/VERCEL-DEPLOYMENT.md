@@ -43,10 +43,13 @@ bun run website:vercel:link
 ## Bun pin on Vercel
 
 Vercel's default Bun image may lag the repo pin (`.bun-version` / `packageManager`).
-`apps/jumentix-website/vercel.json` forces:
+`apps/jumentix-website/vercel.json` forces (monorepo-aware from the app Root Directory):
 
-- `installCommand`: `bunx bun@1.3.13 install --frozen-lockfile`
-- `buildCommand`: `bunx bun@1.3.13 run build`
+- `installCommand`: `cd ../.. && bunx bun@1.3.13 install --frozen-lockfile`
+- `buildCommand`: `cd ../.. && bunx bun@1.3.13 run website:deps:build && cd apps/jumentix-website && bunx bun@1.3.13 run build`
+
+Workspace packages (`@jumentix/cana`, etc.) ship `dist/` gitignored, so Vercel must build
+website deps before the Next.js build.
 
 ## Configuration
 
@@ -57,8 +60,8 @@ File:
 Configured values:
 
 - `framework`: `nextjs`
-- `installCommand`: `bun install --frozen-lockfile`
-- `buildCommand`: `bun run build`
+- `installCommand`: monorepo-root Bun install (see above)
+- `buildCommand`: `website:deps:build` then app `build` (see above)
 - `devCommand`: `bun run dev`
 - `outputDirectory`: `.next`
 
@@ -95,6 +98,7 @@ Rollback: use the previous Production deployment in the Vercel project dashboard
   monorepo source files.
 - Vercel and local builds use the Bun workspace lockfile and patched dependency declarations.
 - Root deployment scripts are intentionally scope-agnostic (no forced `--scope`) to support
+- Production promotions to `main` must use a `dev`→`main` PR (or an allowed generated release/changelog head). Ad-hoc `cursor/release/*` heads targeting `main` fail CI context classification.
   personal-account and team-account Vercel contexts.
 - The Vercel CLI project link (`.vercel/project.json`, created by `vercel link` or a manual
   deploy) is machine-specific local config. It is gitignored at the repository root and must
