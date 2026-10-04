@@ -1,6 +1,6 @@
 {
   "name": "@jumentix/cana",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cana \u2014 framework-agnostic offline-first IndexedDB client for any browser frontend, in pure TypeScript.",
   "license": "MIT",
   "main": "dist/index.js",
@@ -28,6 +28,7 @@
   "files": [
     "dist",
     "docs",
+    "media",
     "README.md",
     "LICENSE.md"
   ],

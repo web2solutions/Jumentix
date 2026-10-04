@@ -247,6 +247,32 @@ describe('check-pr-governance', () => {
     })).toHaveLength(2);
   });
 
+  it('allows the CI-generated package-bump PR to target main', () => {
+    expect.hasAssertions();
+    const generated = {
+      title: 'chore(release): bump packages with unpublished content changes',
+      body: [
+        'Automated patch bumps for public packages whose published surface changed on `main` while the declared version was already on npm (JUM-917 / Req 070).',
+        '',
+        '## Bumps',
+        '',
+        '- `@jumentix/cana`: `0.1.0` → `0.1.1`'
+      ].join('\n'),
+      headRef: 'chore/package-bump-deadbeef',
+      baseRef: 'main'
+    };
+
+    expect(validatePullRequest(generated)).toStrictEqual([]);
+    expect(validatePullRequest({
+      ...generated,
+      headRef: 'chore/package-bump-deadbeef-123456789-2'
+    })).toStrictEqual([]);
+    expect(validatePullRequest({
+      ...generated,
+      body: 'manual package bump'
+    })).toHaveLength(2);
+  });
+
   it('validates templates but skips PR metadata on long-lived branch builds', async () => {
     expect.hasAssertions();
 

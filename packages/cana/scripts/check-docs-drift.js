@@ -101,6 +101,34 @@ const hasVanilla = canaEntries.some((entry) => entry.slug === 'vanilla-typescrip
 if (!hasAny) errors.push('content-sources missing packages/cana any-framework');
 if (!hasVanilla) errors.push('content-sources missing packages/cana vanilla-typescript');
 
+const REQUIRED_MEDIA = [
+  'cana-worker-model.svg',
+  'cana-performance-ladder.svg',
+  'jumentix-eating-sugarcane.png'
+];
+for (const name of REQUIRED_MEDIA) {
+  const mediaPath = path.join(packageRoot, 'media', name);
+  if (!fs.existsSync(mediaPath)) {
+    errors.push(`missing package media/${name}`);
+  }
+}
+
+for (const readmeName of ['README.md', 'README.pt-BR.md']) {
+  const readmePath = path.join(packageRoot, readmeName);
+  const body = fs.readFileSync(readmePath, 'utf8');
+  if (/\/images\/cana\//.test(body)) {
+    errors.push(
+      `${readmeName} still references site-absolute /images/cana/ paths; `
+        + 'use package-local ./media/ so npm and GitHub render images'
+    );
+  }
+  for (const name of REQUIRED_MEDIA) {
+    if (!body.includes(`./media/${name}`)) {
+      errors.push(`${readmeName} must reference ./media/${name}`);
+    }
+  }
+}
+
 if (errors.length > 0) {
   console.error('cana docs drift check failed:');
   for (const error of errors) console.error(`- ${error}`);
