@@ -69,7 +69,7 @@ jobs:
           export GH_TOKEN="$CHANGELOG_GH_TOKEN"
           git fetch origin main
           git merge --ff-only origin/main
-          bun ci-cd/plan-package-content-bumps.js --apply
+          bun ci-cd/plan-package-content-bumps.js --apply --from /tmp/package-bumps.json
           branch="chore/package-bump-${GITHUB_SHA:0:8}"
           git push origin "HEAD:refs/heads/$branch"
           mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
@@ -139,4 +139,4 @@ jobs:
                 ;;
             esac
           done
-          gh pr merge "$pr_url" --merge --auto || gh pr merge "$pr_url" --merge
+          gh pr merge "$pr_url" --squash --delete-branch

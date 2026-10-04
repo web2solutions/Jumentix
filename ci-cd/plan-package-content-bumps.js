@@ -65,13 +65,29 @@ function tagExists(tagName) {
   return Boolean(remote && remote.includes(tagName));
 }
 
+function resolveTagCommit(tagName) {
+  const local = runGit(['rev-parse', '--verify', `${tagName}^{commit}`], { allowFailure: true });
+  if (local) return local;
+
+  const remote = runGit(['ls-remote', '--tags', 'origin', `refs/tags/${tagName}`], {
+    allowFailure: true
+  });
+  const sha = String(remote || '').split(/\s+/)[0];
+  if (!sha) return '';
+
+  // Materialize the remote tag locally so subsequent diffs use a real object.
+  runGit(['fetch', '--no-tags', 'origin', `${sha}:refs/tags/${tagName}`], { allowFailure: true });
+  return runGit(['rev-parse', '--verify', `${tagName}^{commit}`], { allowFailure: true }) || sha;
+}
+
 function contentChangedSinceTag(tagName, watchPaths) {
-  if (!tagExists(tagName)) {
+  const base = resolveTagCommit(tagName);
+  if (!base) {
     // No tag yet: if the version is already on npm, treat HEAD as changed so a
     // bump can republish. Caller decides via versionPublished.
     return true;
   }
-  const diff = runGit(['diff', '--name-only', `${tagName}...HEAD`, '--', ...watchPaths], {
+  const diff = runGit(['diff', '--name-only', `${base}...HEAD`, '--', ...watchPaths], {
     allowFailure: true
   });
   return Boolean(diff);
@@ -150,9 +166,19 @@ function applyPackageContentBumps(bumps, options = {}) {
   return applied;
 }
 
+function readBumpPlan(filePath) {
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  if (!Array.isArray(parsed.bumps)) {
+    throw new Error(`bump plan ${filePath} must contain a bumps array`);
+  }
+  return parsed.bumps;
+}
+
 function main(argv = process.argv.slice(2)) {
   const apply = argv.includes('--apply');
-  const bumps = planPackageContentBumps();
+  const fromIndex = argv.indexOf('--from');
+  const fromPath = fromIndex >= 0 ? argv[fromIndex + 1] : '';
+  const bumps = fromPath ? readBumpPlan(fromPath) : planPackageContentBumps();
   if (bumps.length === 0) {
     console.log(JSON.stringify({ bumps: [], applied: false }, null, 2));
     return { bumps, applied: [] };
@@ -168,6 +194,8 @@ module.exports = {
   contentChangedSinceTag,
   planPackageContentBumps,
   publishedPaths,
+  readBumpPlan,
+  resolveTagCommit,
   main
 };
 
