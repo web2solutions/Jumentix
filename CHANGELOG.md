@@ -4,7 +4,12 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-10-03 [JUM-915][Release] Promote monorepo-aware Vercel website build (#595) - Eduardo A.
+- 2026-10-03 [JUM-915][Docs] Note main promotes must be from-dev (#596) - Eduardo A.
+- 2026-10-03 docs(website): note that main promotes must be from-dev - Eduardo A.
+- 2026-10-03 [JUM-915][Chore] Monorepo-aware Vercel build for jumentix-website (#593) - Eduardo A.
+- 2026-10-03 fix(website): monorepo-aware Vercel build; accept braces GHSA - Eduardo A.
+- 2026-10-01 [JUM-914][Release] Reconcile main v0.3.2 into dev (#592) - Eduardo A.
 
 ## v0.3.2 - 2026-10-01
 
