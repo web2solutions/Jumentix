@@ -140,7 +140,7 @@ builds the package and loads the artefact rather than the workspace alias.
 | `main` → `dist/index.js` (CommonJS) | yes |
 | `module` / `exports.import` → `dist/index.mjs` (ESM) | yes |
 | `types` → `dist/index.d.ts`, first in the exports map | yes |
-| `files` ships `dist`, README, LICENSE — not `src` | yes |
+| `files` ships `dist`, `docs`, README, LICENSE — not `src` | yes |
 | `LICENSE.md` present and matching the declared MIT | yes |
 | Runtime dependencies | **none** |
 | `sideEffects: false` | yes |

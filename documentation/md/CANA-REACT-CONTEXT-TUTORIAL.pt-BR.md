@@ -87,5 +87,9 @@ Baixe o app Vite completo usado pelo exemplo avançado:
 
 ## Próximo
 
+O client principal é agnóstico de framework — veja
+[Integrar com qualquer framework](/docs/pt-BR/jumentix/packages/cana/any-framework) e
+[Vanilla TypeScript](/docs/pt-BR/jumentix/packages/cana/vanilla-typescript).
+
 Compare com [React Redux](./react-redux) para apps maiores com slices e
 selectors explícitos, ou [Vue 3 + Pinia](./vue-pinia) para o padrão de store Vue.

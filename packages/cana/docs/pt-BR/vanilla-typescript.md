@@ -1,0 +1,273 @@
+# Cana com Vanilla TypeScript
+
+Construa o mesmo app de tarefas categorizadas sem React, Vue ou pacote helper.
+O Cana controla o estado durável no IndexedDB; um `Map` simples (ou o DOM)
+controla o estado de UI.
+
+## 1. Comece do zero
+
+```bash
+bun create vite cana-vanilla-ts --template vanilla-ts
+cd cana-vanilla-ts
+bun add @jumentix/cana
+```
+
+Use duas stores:
+
+- `categories`: buckets de tarefas com `id`, `name`, `color`, timestamps.
+- `tasks`: registros com `categoryId`, `completed`, `priority`, timestamps.
+
+Índices deixam o reload barato:
+
+- `categories.byName`
+- `tasks.byCategory`
+- `tasks.byCompleted`
+- `tasks.byUpdatedAt`
+
+## 2. Crie o client
+
+`src/cana.ts`:
+
+```ts
+import { createClient, type CanaSchema } from '@jumentix/cana';
+
+export type Category = {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type Task = {
+  id: string;
+  title: string;
+  categoryId: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: number;
+  updatedAt: number;
+};
+
+export const schema: CanaSchema = {
+  version: 1,
+  stores: [
+    {
+      name: 'categories',
+      keyPath: 'id',
+      indexes: [{ name: 'byName', keyPath: 'name', unique: true }]
+    },
+    {
+      name: 'tasks',
+      keyPath: 'id',
+      indexes: [
+        { name: 'byCategory', keyPath: 'categoryId' },
+        { name: 'byCompleted', keyPath: 'completed' },
+        { name: 'byUpdatedAt', keyPath: 'updatedAt' }
+      ]
+    }
+  ]
+};
+
+export const client = createClient({
+  name: 'tasks-app-vanilla',
+  schema,
+  originId: 'vanilla-ui'
+});
+```
+
+## 3. Ligue o estado de UI aos eventos commitados
+
+`src/main.ts`:
+
+```ts
+import {
+  isCanaErrorCode,
+  type CanaChangeEvent
+} from '@jumentix/cana';
+import { client, type Category, type Task } from './cana';
+
+const categories = new Map<string, Category>();
+const tasks = new Map<string, Task>();
+
+function applyEvent(event: CanaChangeEvent): void {
+  const key = String(event.key);
+  if (event.store === 'categories') {
+    if (event.type === 'cleared') {
+      categories.clear();
+      return;
+    }
+    if (event.type === 'deleted') {
+      categories.delete(key);
+      return;
+    }
+    categories.set(key, event.value as Category);
+    return;
+  }
+  if (event.store === 'tasks') {
+    if (event.type === 'cleared') {
+      tasks.clear();
+      return;
+    }
+    if (event.type === 'deleted') {
+      tasks.delete(key);
+      return;
+    }
+    tasks.set(key, event.value as Task);
+  }
+}
+
+function render(): void {
+  const root = document.querySelector<HTMLElement>('#app');
+  if (!root) return;
+  const taskList = [...tasks.values()]
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .map((task) => {
+      const category = categories.get(task.categoryId)?.name ?? task.categoryId;
+      return `<li data-id="${task.id}">
+        <label>
+          <input type="checkbox" ${task.completed ? 'checked' : ''} />
+          ${task.title} <small>(${category})</small>
+        </label>
+      </li>`;
+    })
+    .join('');
+  root.innerHTML = `
+    <h1>Tarefas</h1>
+    <form id="add-task">
+      <input name="title" placeholder="Nova tarefa" required />
+      <button type="submit">Adicionar</button>
+    </form>
+    <ul id="tasks">${taskList}</ul>
+  `;
+
+  root.querySelector('#add-task')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const title = new FormData(form).get('title');
+    if (typeof title !== 'string' || title.trim() === '') return;
+    const now = Date.now();
+    try {
+      await client.table<Task>('tasks').add({
+        id: `task-${now}`,
+        title: title.trim(),
+        categoryId: 'work',
+        completed: false,
+        priority: 'medium',
+        createdAt: now,
+        updatedAt: now
+      });
+      form.reset();
+    } catch (error) {
+      if (isCanaErrorCode(error, 'QuotaExceeded')) {
+        console.warn('Quota de storage esgotada');
+        return;
+      }
+      throw error;
+    }
+  });
+
+  root.querySelectorAll<HTMLInputElement>('#tasks input[type="checkbox"]').forEach((input) => {
+    input.addEventListener('change', async () => {
+      const id = input.closest('li')?.dataset.id;
+      if (!id) return;
+      const task = tasks.get(id);
+      if (!task) return;
+      await client.table<Task>('tasks').put({
+        ...task,
+        completed: input.checked,
+        updatedAt: Date.now()
+      });
+    });
+  });
+}
+
+async function boot(): Promise<void> {
+  await client.open();
+
+  const existingCategories = await client.table<Category>('categories').query({ index: 'byName' });
+  const existingTasks = await client.table<Task>('tasks').query({ index: 'byUpdatedAt' });
+  for (const category of existingCategories) categories.set(category.id, category);
+  for (const task of existingTasks) tasks.set(task.id, task);
+
+  if (categories.size === 0) {
+    const now = Date.now();
+    await client.transaction('readwrite', ['categories', 'tasks'], async (tx) => {
+      await tx.table<Category>('categories').bulkAdd([
+        { id: 'work', name: 'Work', color: '#2563eb', createdAt: now, updatedAt: now },
+        { id: 'home', name: 'Home', color: '#16a34a', createdAt: now, updatedAt: now }
+      ]);
+      await tx.table<Task>('tasks').add({
+        id: 'task-1',
+        title: 'Escrever o tutorial do Cana',
+        categoryId: 'work',
+        completed: false,
+        priority: 'high',
+        createdAt: now,
+        updatedAt: now
+      });
+    });
+  }
+
+  client.subscribe((event) => {
+    applyEvent(event);
+    render();
+  });
+
+  render();
+}
+
+boot().catch((error) => {
+  console.error(error);
+});
+```
+
+Fluxo:
+
+1. A UI chama `client.table('tasks').add(...)`.
+2. O Cana confirma a escrita.
+3. `subscribe` recebe o `CanaChangeEvent` commitado.
+4. `applyEvent` atualiza o `Map`.
+5. `render()` pinta o DOM a partir dos maps.
+
+## 4. Escrita atômica multi-store
+
+Criar uma categoria com a primeira tarefa precisa ficar em uma transação:
+
+```ts
+await client.transaction('readwrite', ['categories', 'tasks'], async (tx) => {
+  const now = Date.now();
+  await tx.table<Category>('categories').add({
+    id: 'errands',
+    name: 'Errands',
+    color: '#ca8a04',
+    createdAt: now,
+    updatedAt: now
+  });
+  await tx.table<Task>('tasks').add({
+    id: `task-${now}`,
+    title: 'Comprar cana',
+    categoryId: 'errands',
+    completed: false,
+    priority: 'low',
+    createdAt: now,
+    updatedAt: now
+  });
+});
+```
+
+Não coloque `fetch`, timers ou async sem relação dentro do callback.
+
+## 5. Checklist
+
+- [ ] `open()` roda antes de qualquer chamada de tabela.
+- [ ] O estado de UI é atualizado a partir de eventos commitados (ou reload completo após o seed).
+- [ ] Escritas multi-store usam `transaction()`.
+- [ ] Erros usam `isCanaErrorCode`, não `instanceof`.
+- [ ] O tear-down faz unsubscribe se a página puder remontar sem reload completo.
+
+## Próximo
+
+- [Integrar com qualquer framework](./any-framework.md) — o mesmo padrão para React, Vue, Svelte, …
+- [Transações e eventos de mudança](./transactions-events.md) — janelas de replay e `originId`.
+- [Storage e recuperação de crash](./storage-recovery.md) — `resolveWrite()` para resultados `unknown`.

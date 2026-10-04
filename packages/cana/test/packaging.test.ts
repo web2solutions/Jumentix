@@ -139,9 +139,10 @@ describe('cana packaging manifest', () => {
     expect(manifest.scripts.build).toContain('bun run build:esm');
   });
 
-  it('ships the built output and the licence, and does not ship source', () => {
+  it('ships the built output, docs, and the licence, and does not ship source', () => {
     expect.hasAssertions();
     expect(manifest.files).toContain('dist');
+    expect(manifest.files).toContain('docs');
     expect(manifest.files).toContain('README.md');
     expect(manifest.files).toContain('LICENSE.md');
     expect(manifest.files).not.toContain('src');
@@ -153,6 +154,26 @@ describe('cana packaging manifest', () => {
     // warning at pack time.
     expect(exists('README.md')).toBe(true);
     expect(exists('LICENSE.md')).toBe(true);
+    expect(exists('docs/en/usage-guide.md')).toBe(true);
+    expect(exists('docs/pt-BR/usage-guide.md')).toBe(true);
+  });
+
+  it('ships framework-agnostic consumer tutorials in docs/', () => {
+    expect.hasAssertions();
+    expect(exists('docs/en/any-framework.md')).toBe(true);
+    expect(exists('docs/en/vanilla-typescript.md')).toBe(true);
+    expect(exists('docs/pt-BR/any-framework.md')).toBe(true);
+    expect(exists('docs/pt-BR/vanilla-typescript.md')).toBe(true);
+  });
+
+  it('keeps website content-sources pointed at packaged consumer docs', () => {
+    expect.hasAssertions();
+    // Drives packages/cana/scripts/check-docs-drift.js (fail-closed usage registration).
+    const output = execFileSync('bun', [path.join(packageRoot, 'scripts/check-docs-drift.js')], {
+      cwd: packageRoot,
+      encoding: 'utf8'
+    });
+    expect(output).toContain('cana docs drift check passed');
   });
 
   it('declares a licence that matches the file it ships', () => {
