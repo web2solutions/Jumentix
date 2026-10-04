@@ -111,6 +111,8 @@
     "npm:whoami": "bun pm whoami",
     "npm:org:check:jumentix": "bun ci-cd/check-npm-org-integration.js",
     "npm:packages:check": "bun ci-cd/check-npm-package-release.js",
+    "npm:packages:plan-content-bumps": "bun ci-cd/plan-package-content-bumps.js",
+    "npm:packages:apply-content-bumps": "bun ci-cd/plan-package-content-bumps.js --apply",
     "npm:publish:dry-run:packages": "bun run npm:packages:check",
     "pm2:list": "pm2 ls",
     "pm2:logs": "pm2 logs",
