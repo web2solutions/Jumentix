@@ -47,12 +47,11 @@ const API = new RestAPI<Express>({
   messageMediator
 });
 
-// Bootstrap entrypoint: the process stays alive on the listening server, so
-// startup is not awaited here; failures stay unhandled rejections, which the
-// process-level handler registered by RestAPI logs and exits non-zero on.
 (async () => {
   await API.start();
   await API.seedData();
 })().catch((error: unknown) => {
-  throw error;
+  // eslint-disable-next-line no-console
+  console.error(error);
+  process.exitCode = 1;
 });

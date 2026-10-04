@@ -4,7 +4,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { v4 } from 'uuid';
 
-import { HTTP_PORT } from '@src/config/constants';
+import { _HTTP_PORT_ } from '@src/config/constants';
 import isCorsOriginAllowed from '@src/config/security';
 import { Context } from '@src/infra/context/Context';
 import { InternalServerError } from '@src/infra/exceptions';
@@ -65,7 +65,7 @@ class ExpressServer extends HTTPBaseServer<Express> {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        const port = Number(process.env.JUMENTIX_HTTP_PORT || HTTP_PORT);
+        const port = Number(process.env.JUMENTIX_HTTP_PORT || _HTTP_PORT_);
         this.server = this.application.listen(port, () => {
           // eslint-disable-next-line no-console
           console.log(`Express App Listening on Port ${port}`);
@@ -73,11 +73,7 @@ class ExpressServer extends HTTPBaseServer<Express> {
         });
       } catch (error) {
         // console.error(`An error occurred: ${JSON.stringify(error)}`);
-        // Best-effort cleanup before rejecting; the executor cannot await.
-        // A stop failure stays an unhandled rejection, as before.
-        this.stop().catch((stopError: unknown) => {
-          throw stopError;
-        });
+        this.stop().catch(() => undefined);
         reject(new InternalServerError((error as Error).message));
       }
     });

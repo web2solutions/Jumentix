@@ -7,7 +7,7 @@ import fastifyStatic from '@fastify/static';
 import fastify from 'fastify';
 import { v4 } from 'uuid';
 
-import { HTTP_PORT } from '@src/config/constants';
+import { _HTTP_PORT_ } from '@src/config/constants';
 import isCorsOriginAllowed from '@src/config/security';
 import { Context } from '@src/infra/context/Context';
 import { HTTPBaseServer } from '@src/interface/HTTP/ports';
@@ -89,13 +89,13 @@ class FastifyServer extends HTTPBaseServer<Fastify> {
 
   public async start(): Promise<void> {
     try {
-      await this.application.listen({ port: HTTP_PORT });
+      await this.application.listen({ port: _HTTP_PORT_ });
       // eslint-disable-next-line no-console
-      console.log(`Fastify App Listening on Port ${HTTP_PORT}`);
+      console.log(`Fastify App Listening on Port ${_HTTP_PORT_}`);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`An error occurred: ${JSON.stringify(error)}`);
-      await this.stop();
+      this.stop().catch(() => undefined);
       throw error;
     }
   }

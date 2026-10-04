@@ -58,6 +58,13 @@ const NON_BLOCKING_SEVERITIES = new Set(['LOW', 'NONE', 'UNKNOWN']);
  * than permanent.
  */
 const ACCEPTED_RISK = {
+  'GHSA-vfj7-8cjw-p6xm': {
+    until: '2026-11-30',
+    reason:
+      'braces 3.0.3 stack-exhaustion via deeply nested glob patterns has no patched release; ' +
+      'braces enters only through build/test tooling (micromatch/fast-glob/chokidar) where ' +
+      'patterns are developer-controlled, never request input'
+  },
   'GHSA-rrr8-f88r-h8q6': {
     until: '2026-10-31',
     reason: 'restify 11.1.0 pins find-my-way 7.x; no patched major-compatible release'
@@ -379,6 +386,12 @@ const ACCEPTED_RISK = {
   'GHSA-hrr3-gc8f-f4qj': {
     until: '2026-10-31',
     reason: 'fast-uri percent-encoded host case normalization via Ajv/fastify; awaiting upstream'
+  },
+  // 2026-10-01: OSV wave blocking branch-gate on JUM-914 remaining S9383 PR.
+  'GHSA-c475-qrg2-pj4r': {
+    until: '2026-10-31',
+    reason:
+      'basic-ftp RE_LINE DoS inherited via get-uri; fixed only on 6.x which breaks get-uri^5; awaiting upstream'
   }
 };
 
@@ -472,7 +485,7 @@ async function evaluatePackages(packages, io = {}) {
   //    proportional to the tree rather than to the number of packages.
   const idsByPackage = new Map();
   for (const group of chunk(targets, BATCH_SIZE)) {
-    // eslint-disable-next-line no-await-in-loop -- batches are queried sequentially on purpose: one bounded OSV request at a time
+    // eslint-disable-next-line no-await-in-loop -- sequential batches: the OSV endpoint is rate-limited; the cache prevents repeat requests
     const payload = await batch(
       group.map((target) => ({
         package: { name: target.name, ecosystem: 'npm' },
@@ -508,7 +521,7 @@ async function evaluatePackages(packages, io = {}) {
       if (isAcceptedRisk(id, now)) continue;
 
       if (!cache.has(id)) {
-        // eslint-disable-next-line no-await-in-loop -- detail fetches are deliberately sequential; the cache already prevents repeat requests
+        // eslint-disable-next-line no-await-in-loop -- sequential detail fetches on purpose; bursting would trip the same rate limit
         cache.set(id, await detail(id));
       }
       const vuln = cache.get(id);

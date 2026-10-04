@@ -447,3 +447,50 @@ describe('publish-npm-cohort publishPackage', () => {
     expect(calls).toStrictEqual(['pack']);
   });
 });
+
+describe('signed-commit binary-safe encoding (JUM-914)', () => {
+  const {
+    createSignedCommitOnBranchWithGh,
+    encodeAdditionContents
+  } = require('../lib/github-signed-commit.js');
+
+  it('round-trips binary Buffer contents without utf8 corruption', () => {
+    expect.hasAssertions();
+    // PNG magic bytes — must survive base64 for createCommitOnBranch.
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0xff]);
+    const encoded = encodeAdditionContents(png);
+    expect(Buffer.from(encoded, 'base64').equals(png)).toBe(true);
+    // Regression: utf8 decode of the same bytes yields a different payload.
+    const corrupted = Buffer.from(png.toString('utf8'), 'utf8');
+    expect(corrupted.equals(png)).toBe(false);
+  });
+
+  it('encodes utf8 text additions the same as before', () => {
+    expect.hasAssertions();
+    const text = '{\n  "version": "0.3.1"\n}\n';
+    expect(encodeAdditionContents(text)).toBe(Buffer.from(text, 'utf8').toString('base64'));
+  });
+
+  it('passes Buffer additions through GraphQL as raw base64', () => {
+    expect.hasAssertions();
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+    let captured = '';
+    createSignedCommitOnBranchWithGh({
+      repository: 'web2solutions/Jumentix',
+      branch: 'chore/release-v0.3.1',
+      expectedHeadOid: 'abc',
+      headline: 'chore(release): v0.3.1',
+      additions: [{ path: 'icon.png', contents: png }],
+      env: { GH_TOKEN: 'test' },
+      ghPath: '/bin/true',
+      execFile: (_bin: string, _args: string[], options: { input: string }) => {
+        captured = options.input;
+        return JSON.stringify({
+          data: { createCommitOnBranch: { commit: { oid: 'def' } } }
+        });
+      }
+    });
+    const payload = JSON.parse(captured);
+    expect(payload.variables.input.fileChanges.additions[0].contents).toBe(png.toString('base64'));
+  });
+});

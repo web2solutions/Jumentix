@@ -150,7 +150,11 @@ export default [
       'import-x/order': 'off',
       // The untyped fallback context (no projectService) also changes
       // consistent-type-imports' fix-style behavior vs the typed seed.
-      '@typescript-eslint/consistent-type-imports': 'off'
+      '@typescript-eslint/consistent-type-imports': 'off',
+      // JUM-913 made the backend seed publishable as @jumentix/backend-template:
+      // mirror sources self-import that scope, which is only declared in the
+      // generated app's package.json — never in this repo's.
+      'import-x/no-extraneous-dependencies': 'off'
     }
   },
   {
@@ -166,6 +170,11 @@ export default [
         ...globals.serviceworker,
         ...globals.browser
       }
+    },
+    rules: {
+      // `self` IS the global scope of a service worker — window does not
+      // exist there; the CRA-derived restriction targets window code.
+      'no-restricted-globals': 'off'
     }
   },
   {

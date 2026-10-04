@@ -1,13 +1,13 @@
 const CACHE = 'jumentix-frontend-v1';
 
-globalThis.addEventListener('install', (event) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(['./', './index.html', './manifest.json']))
   );
-  globalThis.skipWaiting();
+  self.skipWaiting();
 });
 
-globalThis.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
@@ -15,10 +15,10 @@ globalThis.addEventListener('activate', (event) => {
         Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))
       )
   );
-  globalThis.clients.claim();
+  self.clients.claim();
 });
 
-globalThis.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
@@ -29,7 +29,10 @@ globalThis.addEventListener('fetch', (event) => {
       return fetch(request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(request, copy));
+          caches
+            .open(CACHE)
+            .then((cache) => cache.put(request, copy))
+            .catch(() => undefined);
           return response;
         })
         .catch(() => caches.match('./index.html'));

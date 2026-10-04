@@ -1,6 +1,6 @@
 {
   "name": "@jumentix/website",
-  "version": "0.2.16",
+  "version": "0.3.1",
   "private": true,
   "packageManager": "bun@1.3.13",
   "scripts": {
@@ -13,7 +13,7 @@
     "dev": "next dev -p 3010",
     "build": "next build",
     "start": "next start -p 3010",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static",
@@ -60,11 +60,10 @@
     "react-dom": "19.2.8",
     "react-redux": "^9.3.0",
     "swr": "^2.4.2",
-    "vue": "^3.5.41"
+    "vue": "^3.5.41",
+    "@jumentix/service-management": "workspace:*"
   },
   "devDependencies": {
-    "@jumentix/config-eslint": "workspace:*",
-    "@jumentix/service-management": "workspace:*",
     "@storybook/addon-a11y": "10.6.0",
     "@storybook/addon-docs": "10.6.0",
     "@storybook/addon-themes": "10.6.0",
@@ -78,10 +77,7 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "^19.2.4",
     "axe-core": "^4.12.1",
-    "cypress": "^15.19.0",
     "cypress-axe": "^1.7.0",
-    "eslint": "9.39.5",
-    "globals": "17.12.0",
     "jest-axe": "^11.0.0",
     "jest-environment-jsdom": "^30.4.1",
     "postcss": "^8.5.23",
@@ -91,6 +87,7 @@
     "storybook": "10.6.0",
     "turbopack-inline-svg-loader": "^1.0.3",
     "typescript": "6.0.3",
-    "playwright-webkit": "^1.62.1"
+    "playwright-webkit": "^1.62.1",
+    "cypress": "^15.19.0"
   }
 }

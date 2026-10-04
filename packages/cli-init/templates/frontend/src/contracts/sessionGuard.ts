@@ -58,9 +58,7 @@ export const installSessionGuard = (router: Router): void => {
       },
       () => {
         if (router.currentRoute.value.meta.public !== true) {
-          router.push('/login').catch(() => {
-            // Session is already cleared; a failed redirect leaves the current view.
-          });
+          router.push('/login').catch(() => undefined);
         }
       }
     );

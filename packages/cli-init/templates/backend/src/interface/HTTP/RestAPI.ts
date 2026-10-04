@@ -5,7 +5,7 @@ import YAML from 'yaml';
 
 import organizations, { seedOrganizationIds } from '@seed/organizations';
 import users, { seedUserIds } from '@seed/users';
-import { API_PREFIX, DOCS_PREFIX } from '@src/config/constants';
+import { _API_PREFIX_, _DOCS_PREFIX_ } from '@src/config/constants';
 import entityIdLedger from '@src/infra/persistence/InMemoryDatabase/idReservationLedger';
 import { purgeUserAndOrganizationTombstones } from '@src/infra/persistence/purgeStores';
 import { EHTTPFrameworks } from '@src/interface/HTTP/ports';
@@ -85,18 +85,13 @@ export class RestAPI<T> {
     this.buildInfraEndPoints(config);
 
     process.on('exit', () => {
-      // The 'exit' event only runs synchronous listeners; stop is invoked so
-      // its synchronous cleanup still happens, and its promise is settled
-      // because it cannot outlive the event loop.
-      this.stop().catch(() => {
-        // Nothing left to report to: the process is already exiting.
-      });
+      this.stop().catch(() => undefined);
     });
 
     process.on('unhandledRejection', (e) => {
       // eslint-disable-next-line no-console
       console.error(e);
-      // eslint-disable-next-line n/no-process-exit -- loud exit code 1 on unhandled rejection is the tested contract (RestAPI.composition.test.ts)
+      // eslint-disable-next-line n/no-process-exit -- unhandled rejections must terminate the listener; the composition suite spies on this call
       process.exit(1);
     });
   }
@@ -159,17 +154,17 @@ export class RestAPI<T> {
           databaseClient: {} as IDatabaseClient,
           endPointConfig: {}
         }),
-        path: `${DOCS_PREFIX}/${version}`
+        path: `${_DOCS_PREFIX_}/${version}`
       });
     }
 
     this.server.endPointRegister({
       method: 'get',
-      path: `${DOCS_PREFIX}/asyncapi/versions`,
+      path: `${_DOCS_PREFIX_}/asyncapi/versions`,
       handler: (_req: any, res: any): void => {
         const versions: Record<string, string> = {};
         for (const [version] of this.asyncApiSpecs) {
-          versions[version] = `${DOCS_PREFIX}/asyncapi/${version}`;
+          versions[version] = `${_DOCS_PREFIX_}/asyncapi/${version}`;
         }
         res.status(200).json({ versions });
       }
@@ -183,7 +178,7 @@ export class RestAPI<T> {
           databaseClient: {} as IDatabaseClient,
           endPointConfig: {}
         }),
-        path: `${DOCS_PREFIX}/asyncapi/${version}`
+        path: `${_DOCS_PREFIX_}/asyncapi/${version}`
       });
     }
   }
@@ -268,7 +263,7 @@ export class RestAPI<T> {
 
     this.server.endPointRegister({
       ...handlerFactory,
-      path: `${API_PREFIX}/${version}${replaceVars(handlerFactory.path)}`
+      path: `${_API_PREFIX_}/${version}${replaceVars(handlerFactory.path)}`
     });
   }
 
@@ -334,9 +329,9 @@ export class RestAPI<T> {
   private static getControllerModule(moduleName: string, controllerName: string): any {
     const controllerPath = `@src/modules/${moduleName}/adapters/in/http/controllers/${controllerName}`;
     try {
-      // Controllers are default-export modules (JUM-44 codemod); read the
-      // default first, keep the named lookup for any named-export survivor.
       const imported = require(controllerPath);
+      // Controllers are JUM-44 default-export modules; older callers may still
+      // surface them by name through a barrel. Accept both shapes.
       const controllerModule = imported?.default ?? imported?.[controllerName];
       if (controllerModule) {
         return controllerModule;
@@ -440,6 +435,7 @@ export class RestAPI<T> {
       const existing = await organizationUseCases.getOneById(organization.id);
       if (existing.result) {
         seeded.push(existing.result);
+
         continue;
       }
       try {
@@ -457,6 +453,7 @@ export class RestAPI<T> {
           // eslint-disable-next-line no-await-in-loop
           const restored = await organizationUseCases.getOneById(organization.id);
           if (restored.result) seeded.push(restored.result);
+
           continue;
         }
       } catch {
@@ -484,6 +481,7 @@ export class RestAPI<T> {
       const existing = await userUseCases.getOneById(user.id);
       if (existing.result) {
         seeded.push(existing.result);
+
         continue;
       }
       try {
@@ -501,6 +499,7 @@ export class RestAPI<T> {
           // eslint-disable-next-line no-await-in-loop
           const restored = await userUseCases.getOneById(user.id);
           if (restored.result) seeded.push(restored.result);
+
           continue;
         }
       } catch {
@@ -522,19 +521,12 @@ export class RestAPI<T> {
     const allUsers = (await userUseCases.getAll({}, { page: 1, size: 1000 })).result ?? [];
     for (const user of allUsers) {
       requests.push(
-        new Promise((resolve, reject) => {
-          userUseCases
-            .delete(user.id)
-            .then((deletedUser) => {
-              if (deletedUser.error) throw deletedUser.error;
-              if (deletedUser.result === undefined) throw new Error('User delete failed');
-              resolve(deletedUser.result);
-            })
-            .catch((error: any) => {
-              // console.log(error.message);
-              reject(new Error(error.message));
-            });
-        })
+        (async () => {
+          const deletedUser = await userUseCases.delete(user.id);
+          if (deletedUser.error) throw deletedUser.error;
+          if (deletedUser.result === undefined) throw new Error('User delete failed');
+          return deletedUser.result;
+        })()
       );
     }
     return Promise.all(requests);

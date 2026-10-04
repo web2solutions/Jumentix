@@ -135,6 +135,14 @@ bun run cli:check-template-freshness
 Freshness gate fails closed when packaged templates drift from seeds. Script:
 `packages/cli-init/scripts/check-template-freshness.js` (wired into `ci:gate`).
 
+Application release (`ci-cd/create-app-release-tag.js --github-api`) rebuilds
+templates on every version bump and commits them via signed `createCommitOnBranch`.
+File contents are read as raw `Buffer` and base64-encoded for the GitHub API
+(`encodeAdditionContents` in `ci-cd/lib/github-signed-commit.js`). Reading PNG/ICO
+as utf8 before base64 corrupts binaries and fails template freshness on the
+release PR (JUM-914). The rebuild also runs `validateTemplateFreshness` locally
+before the PR opens.
+
 ## Workspace assembly pipeline
 
 1. **Source resolution** — build `GenerationPlan` from `--from` / `--preset`.

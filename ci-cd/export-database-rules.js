@@ -139,9 +139,15 @@ async function run(rootDir = process.cwd(), env = process.env) {
 }
 
 if (isEntryPoint(module)) {
-  run().then((code) => {
-    process.exitCode = code;
-  });
+  run().then(
+    (code) => {
+      process.exitCode = code;
+    },
+    (error) => {
+      console.error(error);
+      process.exitCode = 1;
+    }
+  );
 }
 
 module.exports = { databaseUrl, fetchRules, run, serviceAccount };

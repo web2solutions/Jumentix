@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { HTTP_PORT } from '@src/config/constants';
+import { _HTTP_PORT_ } from '@src/config/constants';
 import { Context as RequestContext } from '@src/infra/context/Context';
 import { HTTPBaseServer } from '@src/interface/HTTP/ports';
 import { createUuid } from '@src/modules/port/UUID';
@@ -41,7 +41,7 @@ class LoopBackServer extends HTTPBaseServer<any> {
     // Lazy require keeps compilation independent from optional framework install.
     const { RestApplication } = require('@loopback/rest');
     this.application = new RestApplication({
-      rest: { port: HTTP_PORT }
+      rest: { port: _HTTP_PORT_ }
     });
     if (this.application.static) {
       this.application.static('/OASdoc', 'apps/backend-template/OASdoc');
@@ -115,17 +115,19 @@ class LoopBackServer extends HTTPBaseServer<any> {
       'get' | 'post' | 'put' | 'patch' | 'delete';
     this.router[method](handlerFactory.path, (req: any, res: any) => {
       const store = new Map();
-      RequestContext.run(store, () => {
-        store.set('correlationId', createUuid());
-        store.set('timeStart', +new Date());
-        store.set('request', req);
-        store.set('authorization', req.headers?.authorization || '');
-        // The request lifecycle is detached from the router callback;
-        // failures are answered with a 500 inside the chain.
-        Promise.resolve(handlerFactory.handler(req, this.createResponseAdapter(res))).catch(() => {
-          if (!res.headersSent) res.status(500).json({ message: '' });
-        });
-      });
+      Promise.resolve(
+        RequestContext.run(store, () => {
+          store.set('correlationId', createUuid());
+          store.set('timeStart', +new Date());
+          store.set('request', req);
+          store.set('authorization', req.headers?.authorization || '');
+          return Promise.resolve(
+            handlerFactory.handler(req, this.createResponseAdapter(res))
+          ).catch(() => {
+            if (!res.headersSent) res.status(500).json({ message: '' });
+          });
+        })
+      ).catch(() => undefined);
     });
   }
 

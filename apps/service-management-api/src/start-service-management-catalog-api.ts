@@ -46,30 +46,26 @@ const catalogAPI = new ServiceManagementCatalogAPI<Express>({
   await catalogAPI.start();
   console.log('Service Management catalog API started.');
 })().catch((error: unknown) => {
-  console.error('Failed to start Service Management catalog API.', error);
+  console.error(error);
   process.exitCode = 1;
 });
 
 const stop = async () => {
   await catalogAPI.stop();
-  await keyValueStorageClient.disconnect?.();
+  await keyValueStorageClient?.disconnect?.();
 };
 
 process.once('SIGTERM', () => {
   stop()
-    .catch((error: unknown) => {
-      console.error('Failed to stop Service Management catalog API cleanly.', error);
-    })
     .finally(() => {
       process.exitCode = 0;
-    });
+    })
+    .catch(() => undefined);
 });
 process.once('SIGINT', () => {
   stop()
-    .catch((error: unknown) => {
-      console.error('Failed to stop Service Management catalog API cleanly.', error);
-    })
     .finally(() => {
       process.exitCode = 0;
-    });
+    })
+    .catch(() => undefined);
 });

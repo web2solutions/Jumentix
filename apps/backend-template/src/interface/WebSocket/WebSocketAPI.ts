@@ -3,7 +3,7 @@ import http from 'node:http';
 
 import { Server } from 'socket.io';
 
-import { HTTP_PORT } from '@src/config/constants';
+import { _HTTP_PORT_ } from '@src/config/constants';
 import { RealtimeAPIBase } from '@src/interface/Async/RealtimeAPIBase';
 
 import type { Socket } from 'socket.io';
@@ -44,7 +44,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
       frameworkName: 'socket-io'
     });
     this.host = config.host || '0.0.0.0';
-    this.port = config.port || Number(process.env.JUMENTIX_WEBSOCKET_PORT || HTTP_PORT + 1);
+    this.port = config.port || Number(process.env.JUMENTIX_WEBSOCKET_PORT || _HTTP_PORT_ + 1);
     this.path = config.path || '/ws';
     this.configureSocketIo = config.configureSocketIo;
     this.cleanupSocketIo = config.cleanupSocketIo;
@@ -135,9 +135,8 @@ export class WebSocketAPI extends RealtimeAPIBase {
     }
     await this.databaseClient.connect();
 
-    const httpServer = http.createServer();
-    this.httpServer = httpServer;
-    this.io = new Server(httpServer, {
+    this.httpServer = http.createServer();
+    this.io = new Server(this.httpServer, {
       path: this.path,
       transports: ['websocket'],
       cors: {
@@ -153,7 +152,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
     });
 
     await new Promise<void>((resolve) => {
-      httpServer.listen(this.port, this.host, () => {
+      this.httpServer?.listen(this.port, this.host, () => {
         resolve();
       });
     });
@@ -165,7 +164,7 @@ export class WebSocketAPI extends RealtimeAPIBase {
     if (!this.started) return;
 
     if (this.io) {
-      await this.io.close();
+      Promise.resolve(this.io.close()).catch(() => undefined);
       this.io = undefined;
     }
 
@@ -173,10 +172,10 @@ export class WebSocketAPI extends RealtimeAPIBase {
       await this.cleanupSocketIo();
     }
 
-    const { httpServer } = this;
-    if (httpServer) {
+    if (this.httpServer) {
+      const server = this.httpServer;
       await new Promise<void>((resolve) => {
-        httpServer.close(() => resolve());
+        server.close(() => resolve());
       });
       this.httpServer = undefined;
     }

@@ -69,6 +69,11 @@ export default [
         ...globals.serviceworker,
         ...globals.browser
       }
+    },
+    rules: {
+      // `self` IS the global scope of a service worker — window does not
+      // exist there; the CRA-derived restriction targets window code.
+      'no-restricted-globals': 'off'
     }
   }
 ];
