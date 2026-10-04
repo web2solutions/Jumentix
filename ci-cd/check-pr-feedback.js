@@ -21,11 +21,15 @@ function isCursorUsageLimitNotice(comment) {
  * for. Same category as the Cursor usage-limit notice above.
  */
 function isAutomatedStatusDecoration(comment) {
-  const login = comment?.author?.login || '';
+  const login = (comment?.author?.login || '').replace(/\[bot\]$/i, '');
   if (login === 'sonarqubecloud' && /quality gate/i.test(comment.body || '')) return true;
   // Codecov posts a coverage summary on every PR; it is status decoration, not
   // human review feedback (proven by #479 blocking on codecov[bot] comments).
   if (login === 'codecov' && /codecov\.io/i.test(comment.body || '')) return true;
+  // Vercel posts encrypted deployment status tables (`[vc]: …`) on every
+  // website-touched PR. They are not human review (proven by #595/#600/#601
+  // repeatedly blocking on vercel[bot] until an invalid marker was posted).
+  if (login === 'vercel' && /^\[vc\]:/i.test((comment.body || '').trim())) return true;
   return false;
 }
 

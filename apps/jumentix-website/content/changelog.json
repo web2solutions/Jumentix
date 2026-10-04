@@ -1,5 +1,23 @@
 [
   {
+    "sha": "715dee1a906ed832f5ab844b32c6c50d6729479c",
+    "date": "2026-10-04T04:52:51-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-916][Docs] Framework-agnostic Cana docs in package and website (#600)"
+  },
+  {
+    "sha": "69db7782afea05c2377682c59a90cc29aa400bb2",
+    "date": "2026-10-04T04:29:19-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(cana): assert usage pages in docs drift check"
+  },
+  {
+    "sha": "2279a2d934d7c6a9dde1f2b44ad9f154752ab923",
+    "date": "2026-10-04T03:06:59-03:00",
+    "author": "Eduardo A.",
+    "message": "docs(cana): ship framework-agnostic docs in package and site"
+  },
+  {
     "sha": "a60f7662111912b1da777ea0f0fbb62f37bc3ddc",
     "date": "2026-10-03T23:07:26-03:00",
     "author": "Eduardo A.",

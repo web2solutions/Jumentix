@@ -184,10 +184,16 @@ function render(): void {
 async function boot(): Promise<void> {
   await client.open();
 
-  const existingCategories = await client.table<Category>('categories').query({ index: 'byName' });
-  const existingTasks = await client.table<Task>('tasks').query({ index: 'byUpdatedAt' });
-  for (const category of existingCategories) categories.set(category.id, category);
-  for (const task of existingTasks) tasks.set(task.id, task);
+  async function reloadFromTables(): Promise<void> {
+    categories.clear();
+    tasks.clear();
+    const loadedCategories = await client.table<Category>('categories').query({ index: 'byName' });
+    const loadedTasks = await client.table<Task>('tasks').query({ index: 'byUpdatedAt' });
+    for (const category of loadedCategories) categories.set(category.id, category);
+    for (const task of loadedTasks) tasks.set(task.id, task);
+  }
+
+  await reloadFromTables();
 
   if (categories.size === 0) {
     const now = Date.now();
@@ -206,6 +212,8 @@ async function boot(): Promise<void> {
         updatedAt: now
       });
     });
+    // Seed writes commit before subscribe(); reload maps so the first paint is not empty.
+    await reloadFromTables();
   }
 
   client.subscribe((event) => {
