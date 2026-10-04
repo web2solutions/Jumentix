@@ -69,8 +69,12 @@ jobs:
           export GH_TOKEN="$CHANGELOG_GH_TOKEN"
           git fetch origin main
           git merge --ff-only origin/main
+          # Use live HEAD after ff-merge, not the workflow trigger SHA — queued
+          # runs can start after main has moved, and createCommitOnBranch rejects
+          # a stale expectedHeadOid.
+          base_oid="$(git rev-parse HEAD)"
           bun ci-cd/plan-package-content-bumps.js --apply --from /tmp/package-bumps.json
-          branch="chore/package-bump-${GITHUB_SHA:0:8}"
+          branch="chore/package-bump-${base_oid:0:8}"
           git push origin "HEAD:refs/heads/$branch"
           mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
           changed+=("packages/cli-init/templates.manifest.json")
@@ -90,7 +94,7 @@ jobs:
             --arg query "$mutation" \
             --arg repository "$GITHUB_REPOSITORY" \
             --arg branch "$branch" \
-            --arg expectedHeadOid "$GITHUB_SHA" \
+            --arg expectedHeadOid "$base_oid" \
             --arg headline "$headline" \
             --argjson additions "$additions" \
             '{query: $query, variables: {input: {

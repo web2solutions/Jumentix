@@ -30,6 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - name: Checkout commit for path inspection
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
       - name: Wait for Vercel production status on this commit
         env:
           GH_TOKEN: ${{ github.token }}
@@ -37,6 +42,15 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
+          # Vercel Root Directory is apps/jumentix-website. Upstream docs/media
+          # path filters still run this job (Req 070 content surface), but a
+          # missing Vercel status is only a failure when that root actually
+          # changed — otherwise Vercel correctly skips and we must not fail closed.
+          website_touched="$(git show --name-only --pretty=format: "$SHA" | awk '
+            $0 ~ /^apps\/jumentix-website\// { found=1 }
+            END { print found ? "yes" : "no" }
+          ')"
+          echo "website_touched=$website_touched"
           deadline=$((SECONDS + 1500))
           while :; do
             payload="$(gh api "repos/$REPO/commits/$SHA/status")"
@@ -59,7 +73,11 @@ jobs:
                 ;;
             esac
             if [ "$SECONDS" -gt "$deadline" ]; then
-              echo "Timed out waiting for Vercel status on $SHA (last vercel=$vercel)." >&2
+              if [ "$website_touched" = "no" ] && [ "$vercel" = "missing" ]; then
+                echo "No apps/jumentix-website changes on $SHA; missing Vercel status is an expected skip."
+                exit 0
+              fi
+              echo "Timed out waiting for Vercel status on $SHA (last vercel=$vercel, website_touched=$website_touched)." >&2
               exit 1
             fi
             sleep 20
