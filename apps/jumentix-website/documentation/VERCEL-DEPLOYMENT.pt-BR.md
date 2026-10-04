@@ -102,6 +102,7 @@ Rollback: use a implantação de Production anterior no painel do projeto Vercel
   acessar arquivos-fonte externos ao aplicativo no monorepo.
 - Builds locais e da Vercel usam o lockfile Bun do workspace e seus patches de dependência.
 - Os scripts de implantação raiz são intencionalmente independentes de escopo (sem `--scope` forçado) para suportar
+- Promoções de produção para `main` devem usar um PR `dev`→`main` (ou um head de release/changelog gerado permitido). Heads ad hoc `cursor/release/*` apontando para `main` falham na classificação de contexto do CI.
   contextos Vercel de conta pessoal e conta de equipe.
 - O link de projeto do Vercel CLI (`.vercel/project.json`, criado por `vercel link` ou deploy
   manual) é configuração local da máquina. Está no .gitignore da raiz do repositório e nunca
