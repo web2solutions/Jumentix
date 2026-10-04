@@ -16,6 +16,9 @@ describe('HexagonalArchitectureMap', () => {
     expect(screen.getByText('interface/GUI/web/')).toBeInTheDocument();
     expect(screen.getByText('interface/GUI/desktop/')).toBeInTheDocument();
     expect(screen.getByText(/Web GUI \(SPA\/PWA\/React\/Vue\) — slot ready/i)).toBeInTheDocument();
+
+    expect(screen.getByText('apps/backend-template/src/interface/GUI/README.md')).toBeInTheDocument();
+    expect(screen.getByTestId('hex-map-preview-inbound')).toHaveTextContent(/inbound GUI slot/i);
   });
 
   it('renders Portuguese copy and domain selection', async () => {
@@ -27,5 +30,10 @@ describe('HexagonalArchitectureMap', () => {
     );
     await userEvent.click(screen.getByRole('tab', { name: 'Domínio' }));
     expect(screen.getByText('modules/Users/domain/')).toBeInTheDocument();
+
+    expect(
+      screen.getByText('apps/backend-template/src/modules/Users/domain/security/Rbac.ts'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('hex-map-preview-domain')).toHaveTextContent('EUserRole');
   });
 });
