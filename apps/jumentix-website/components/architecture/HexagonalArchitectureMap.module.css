@@ -115,7 +115,8 @@
   transform: translateY(-1px);
 }
 
-.pillActive {
+.pillActive,
+.pillActive:hover {
   border-color: var(--jtx-coral-500);
   background: color-mix(in srgb, var(--jtx-coral-500) 14%, transparent);
   font-weight: 650;
