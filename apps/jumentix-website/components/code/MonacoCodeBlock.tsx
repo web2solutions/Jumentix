@@ -46,6 +46,7 @@ function normalizeLanguage(language?: string): string {
     env: 'shell',
     js: 'javascript',
     jsx: 'javascript',
+    md: 'markdown',
     mjs: 'javascript',
     shellscript: 'shell',
     sh: 'shell',

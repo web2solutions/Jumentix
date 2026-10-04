@@ -2,9 +2,9 @@
   display: grid;
   gap: 20px;
   padding: 28px;
-  border: 1px solid color-mix(in srgb, var(--jtx-ink) 12%, transparent);
+  border: 1px solid var(--jtx-line);
   border-radius: 18px;
-  background: color-mix(in srgb, var(--jtx-surface-elevated, var(--jtx-surface)) 92%, #0b1220 8%);
+  background: var(--jtx-surface-subtle);
 }
 
 .intro {
@@ -18,7 +18,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--jtx-accent, #c45c26);
+  color: var(--jtx-coral-500);
   font-weight: 700;
 }
 
@@ -57,39 +57,40 @@
 
 .ring {
   cursor: pointer;
-  stroke: color-mix(in srgb, var(--jtx-ink) 22%, transparent);
+  stroke: var(--jtx-line-strong);
   stroke-width: 1.25;
   transition:
-    stroke-width 120ms ease,
-    stroke 120ms ease;
+    stroke-width var(--jtx-motion-fast),
+    stroke var(--jtx-motion-fast),
+    fill var(--jtx-motion-fast);
 }
 
 .ring:focus-visible {
-  outline: 2px solid var(--jtx-accent, #c45c26);
+  outline: 2px solid var(--jtx-coral-500);
   outline-offset: 2px;
 }
 
 .ring0 {
-  fill: color-mix(in srgb, var(--jtx-accent, #c45c26) 34%, white);
+  fill: color-mix(in srgb, var(--jtx-coral-500) 32%, var(--jtx-surface));
 }
 .ring1 {
-  fill: color-mix(in srgb, var(--jtx-accent, #c45c26) 22%, white);
+  fill: color-mix(in srgb, var(--jtx-coral-500) 18%, var(--jtx-surface));
 }
 .ring2 {
-  fill: color-mix(in srgb, var(--jtx-ink) 10%, white);
+  fill: color-mix(in srgb, var(--jtx-ink) 10%, var(--jtx-surface));
 }
 .ring3 {
-  fill: color-mix(in srgb, #1f6f5b 18%, white);
+  fill: color-mix(in srgb, var(--jtx-green-500) 18%, var(--jtx-surface));
 }
 .ring4 {
-  fill: color-mix(in srgb, var(--jtx-ink) 8%, white);
+  fill: color-mix(in srgb, var(--jtx-ink) 7%, var(--jtx-surface));
 }
 .ring5 {
-  fill: color-mix(in srgb, var(--jtx-ink) 5%, white);
+  fill: var(--jtx-surface-raised);
 }
 
 .ringActive {
-  stroke: var(--jtx-accent, #c45c26);
+  stroke: var(--jtx-coral-500);
   stroke-width: 3;
 }
 
@@ -114,18 +115,28 @@
 }
 
 .pill {
-  border: 1px solid color-mix(in srgb, var(--jtx-ink) 16%, transparent);
+  border: 1px solid var(--jtx-line);
   background: transparent;
   color: var(--jtx-ink);
   border-radius: 999px;
   padding: 6px 12px;
   font-size: 0.8rem;
   cursor: pointer;
+  transition:
+    border-color var(--jtx-motion-fast),
+    background var(--jtx-motion-fast),
+    transform var(--jtx-motion-fast);
 }
 
-.pillActive {
-  border-color: var(--jtx-accent, #c45c26);
-  background: color-mix(in srgb, var(--jtx-accent, #c45c26) 14%, transparent);
+.pill:hover {
+  border-color: var(--jtx-line-strong);
+  transform: translateY(-1px);
+}
+
+.pillActive,
+.pillActive:hover {
+  border-color: var(--jtx-coral-500);
+  background: color-mix(in srgb, var(--jtx-coral-500) 14%, transparent);
   font-weight: 650;
 }
 
@@ -134,9 +145,12 @@
   gap: 8px;
   padding: 18px;
   border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--jtx-ink) 10%, transparent);
-  background: color-mix(in srgb, white 88%, var(--jtx-surface));
+  border: 1px solid var(--jtx-line);
+  background: color-mix(in srgb, var(--jtx-surface-raised) 72%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--jtx-shadow-sm);
   min-height: 360px;
+  transition: box-shadow var(--jtx-motion-fast);
 }
 
 .detailEyebrow {
@@ -226,6 +240,35 @@
   margin: 0;
   font-size: 0.75rem;
   color: color-mix(in srgb, var(--jtx-ink) 50%, transparent);
+}
+
+.previewHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.previewPath {
+  margin: 0;
+  font-family: var(--jtx-font-mono);
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--jtx-ink) 70%, transparent);
+  word-break: break-all;
+}
+
+.previewFrame {
+  border: 1px solid var(--jtx-line);
+  border-radius: var(--jtx-radius-md);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--jtx-code) 96%, transparent);
+  box-shadow: var(--jtx-shadow-sm);
+  transition: border-color var(--jtx-motion-fast);
+}
+
+.previewFrame:focus-within {
+  border-color: var(--jtx-coral-500);
 }
 
 @media (max-width: 900px) {
