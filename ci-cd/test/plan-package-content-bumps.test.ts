@@ -83,7 +83,7 @@ describe('plan-package-content-bumps', () => {
       to: '0.1.1',
       packageJsonPath: 'packages/cana/package.json',
       reason: 'test'
-    }], { root });
+    }], { root, syncCliManifest: false });
     expect(JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version).toBe('0.1.1');
   });
 });

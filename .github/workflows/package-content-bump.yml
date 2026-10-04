@@ -73,6 +73,7 @@ jobs:
           branch="chore/package-bump-${GITHUB_SHA:0:8}"
           git push origin "HEAD:refs/heads/$branch"
           mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
+          changed+=("packages/cli-init/templates.manifest.json")
           additions='[]'
           for pkg_path in "${changed[@]}"; do
             contents="$(base64 -w 0 "$pkg_path")"

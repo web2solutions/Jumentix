@@ -117,9 +117,12 @@ function validateGeneratedAutomationPr(options = {}) {
       failures.push('[generated-automation] package-bump PR has an empty diff');
     }
     for (const file of changed) {
-      if (!/^packages\/[^/]+\/package\.json$/.test(file)) {
+      const allowed = /^packages\/[^/]+\/package\.json$/.test(file)
+        || file === 'packages/cli-init/templates.manifest.json';
+      if (!allowed) {
         failures.push(
-          `[generated-automation] package-bump PR must only touch package manifests; unexpected file: ${file}`
+          `[generated-automation] package-bump PR must only touch package manifests`
+            + ` (+ cli-init templates.manifest.json); unexpected file: ${file}`
         );
       }
     }

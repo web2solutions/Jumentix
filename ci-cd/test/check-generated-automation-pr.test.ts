@@ -57,7 +57,11 @@ describe('check-generated-automation-pr', () => {
     const ok = validateGeneratedAutomationPr({
       headRef: 'chore/package-bump-deadbeef',
       baseRef: 'main',
-      changedFiles: ['packages/cana/package.json', 'packages/cli-init/package.json']
+      changedFiles: [
+        'packages/cana/package.json',
+        'packages/cli-init/package.json',
+        'packages/cli-init/templates.manifest.json'
+      ]
     });
     expect(ok.failures).toStrictEqual([]);
 
@@ -66,7 +70,8 @@ describe('check-generated-automation-pr', () => {
       changedFiles: ['packages/cana/package.json', 'README.md']
     });
     expect(bad.failures).toStrictEqual([
-      '[generated-automation] package-bump PR must only touch package manifests; unexpected file: README.md'
+      '[generated-automation] package-bump PR must only touch package manifests'
+        + ' (+ cli-init templates.manifest.json); unexpected file: README.md'
     ]);
   });
 

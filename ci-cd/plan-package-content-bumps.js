@@ -136,6 +136,17 @@ function applyPackageContentBumps(bumps, options = {}) {
     fs.writeFileSync(absolute, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
     applied.push(bump);
   }
+
+  // Keep cli-init packageVersions in sync so GENERATED_AUTOMATION_QUALITY_GATE's
+  // cli:check-template-freshness preflight stays green (Bugbot on #608).
+  if (applied.length > 0 && options.syncCliManifest !== false) {
+    const { collectPackageVersions } = require('../packages/cli-init/scripts/build-templates.js');
+    const manifestPath = path.join(root, 'packages/cli-init/templates.manifest.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest.packageVersions = collectPackageVersions(root);
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  }
+
   return applied;
 }
 
