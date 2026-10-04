@@ -181,7 +181,7 @@ function isGeneratedAppRelease({ title, body, headRef }) {
 }
 
 function isGeneratedPackageBump({ title, body, headRef }) {
-  return /^chore\/package-bump-[0-9a-f]{8}$/i.test(String(headRef || '').trim())
+  return /^chore\/package-bump-[0-9a-f]{8}(?:-\d+)*$/i.test(String(headRef || '').trim())
     && String(title || '').trim() === GENERATED_PACKAGE_BUMP_TITLE
     && String(body || '').trimStart().startsWith(GENERATED_PACKAGE_BUMP_BODY_PREFIX);
 }

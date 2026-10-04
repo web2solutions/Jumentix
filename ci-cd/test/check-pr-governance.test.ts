@@ -265,6 +265,10 @@ describe('check-pr-governance', () => {
     expect(validatePullRequest(generated)).toStrictEqual([]);
     expect(validatePullRequest({
       ...generated,
+      headRef: 'chore/package-bump-deadbeef-123456789-2'
+    })).toStrictEqual([]);
+    expect(validatePullRequest({
+      ...generated,
       body: 'manual package bump'
     })).toHaveLength(2);
   });

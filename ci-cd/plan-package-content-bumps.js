@@ -207,13 +207,28 @@ function main(argv = process.argv.slice(2)) {
   const apply = argv.includes('--apply');
   const fromIndex = argv.indexOf('--from');
   const fromPath = fromIndex >= 0 ? argv[fromIndex + 1] : '';
+  const outIndex = argv.indexOf('--out');
+  const outPath = outIndex >= 0 ? argv[outIndex + 1] : '';
   const bumps = fromPath ? readBumpPlan(fromPath) : planPackageContentBumps();
+  const payload = { bumps, applied: false };
   if (bumps.length === 0) {
-    console.log(JSON.stringify({ bumps: [], applied: false }, null, 2));
+    if (outPath) {
+      fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    }
+    // Summary only — never dump bump objects to logs (Sonar jssecurity:S8689).
+    console.log(JSON.stringify({ bumpCount: 0, packages: [], applied: false }));
     return { bumps, applied: [] };
   }
   const applied = apply ? applyPackageContentBumps(bumps) : [];
-  console.log(JSON.stringify({ bumps, applied: apply }, null, 2));
+  payload.applied = apply;
+  if (outPath) {
+    fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  }
+  console.log(JSON.stringify({
+    bumpCount: bumps.length,
+    packages: bumps.map((bump) => `${bump.name}: ${bump.from} -> ${bump.to}`),
+    applied: apply
+  }));
   return { bumps, applied };
 }
 

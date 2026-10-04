@@ -47,11 +47,9 @@ jobs:
         run: |
           set -euo pipefail
           bun install --frozen-lockfile
-          plan="$(bun ci-cd/plan-package-content-bumps.js)"
-          echo "$plan"
-          count="$(jq '.bumps | length' <<<"$plan")"
+          bun ci-cd/plan-package-content-bumps.js --out /tmp/package-bumps.json
+          count="$(jq '.bumps | length' /tmp/package-bumps.json)"
           echo "count=$count" >> "$GITHUB_OUTPUT"
-          echo "$plan" > /tmp/package-bumps.json
           if [ "$count" = "0" ]; then
             echo "No package content bumps required."
           fi
@@ -69,8 +67,15 @@ jobs:
           export GH_TOKEN="$CHANGELOG_GH_TOKEN"
           git fetch origin main
           git merge --ff-only origin/main
+          # Use live HEAD after ff-merge, not the workflow trigger SHA — queued
+          # runs can start after main has moved, and createCommitOnBranch rejects
+          # a stale expectedHeadOid.
+          base_oid="$(git rev-parse HEAD)"
           bun ci-cd/plan-package-content-bumps.js --apply --from /tmp/package-bumps.json
-          branch="chore/package-bump-${GITHUB_SHA:0:8}"
+          # Uniquify with run id + attempt so same-run retries never collide with a
+          # leftover branch from a prior failed attempt of this job.
+          branch="chore/package-bump-${base_oid:0:8}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git push origin --delete "refs/heads/$branch" 2>/dev/null || true
           git push origin "HEAD:refs/heads/$branch"
           mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
           changed+=("packages/cli-init/templates.manifest.json")
@@ -90,7 +95,7 @@ jobs:
             --arg query "$mutation" \
             --arg repository "$GITHUB_REPOSITORY" \
             --arg branch "$branch" \
-            --arg expectedHeadOid "$GITHUB_SHA" \
+            --arg expectedHeadOid "$base_oid" \
             --arg headline "$headline" \
             --argjson additions "$additions" \
             '{query: $query, variables: {input: {
@@ -106,11 +111,6 @@ jobs:
             echo "$mutation_result" >&2
             exit 1
           fi
-          gh pr list --base main --state open --json number,headRefName --jq \
-            '.[] | select(.headRefName | test("^chore/package-bump-[0-9a-f]{8}$")) | .number' | \
-            while read -r prior_pr; do
-              gh pr close "$prior_pr" --delete-branch || true
-            done
           body="$(jq -r '
             "Automated patch bumps for public packages whose published surface changed on `main` while the declared version was already on npm (JUM-917 / Req 070).\n\n"
             + "## Bumps\n\n"
@@ -121,6 +121,14 @@ jobs:
             --title "chore(release): bump packages with unpublished content changes" \
             --body "$body")"
           echo "Opened $pr_url"
+          # Close prior bump PRs only after the replacement PR exists, so a
+          # mid-flight failure never leaves main without an open bump PR.
+          new_number="$(gh pr view "$pr_url" --json number --jq .number)"
+          gh pr list --base main --state open --json number,headRefName --jq \
+            ".[] | select(.headRefName | test(\"^chore/package-bump-\")) | select(.number != ${new_number}) | .number" | \
+            while read -r prior_pr; do
+              gh pr close "$prior_pr" --delete-branch || true
+            done
           deadline=$((SECONDS + 5400))
           while :; do
             state="$(gh pr view "$pr_url" --json mergeStateStatus --jq .mergeStateStatus)"
