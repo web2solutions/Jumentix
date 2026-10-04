@@ -44,7 +44,8 @@
       "sourceGlobs": [
         "apps/backend-template/src/infra/**",
         "apps/backend-template/src/modules/*/adapters/out/**",
-        "packages/*/src/**"
+        "packages/*/src/**",
+        "packages/*/scripts/**"
       ],
       "runner": "bun",
       "tier": "gate"

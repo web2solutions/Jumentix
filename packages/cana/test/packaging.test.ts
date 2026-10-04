@@ -168,6 +168,7 @@ describe('cana packaging manifest', () => {
 
   it('keeps website content-sources pointed at packaged consumer docs', () => {
     expect.hasAssertions();
+    // Drives packages/cana/scripts/check-docs-drift.js (fail-closed usage registration).
     const output = execFileSync('bun', [path.join(packageRoot, 'scripts/check-docs-drift.js')], {
       cwd: packageRoot,
       encoding: 'utf8'

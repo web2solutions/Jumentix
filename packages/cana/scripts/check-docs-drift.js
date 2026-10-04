@@ -30,6 +30,19 @@ const REQUIRED_DOCS = [
   'vanilla-typescript'
 ];
 
+const REQUIRED_USAGE_SOURCES = [
+  'usage-guide',
+  'getting-started',
+  'schema-keys',
+  'crud-bulk',
+  'querying',
+  'transactions-events',
+  'hooks-errors',
+  'storage-recovery',
+  'workers-testing',
+  'api-reference'
+];
+
 const errors = [];
 
 const config = JSON.parse(fs.readFileSync(sourcesPath, 'utf8'));
@@ -63,8 +76,7 @@ for (const entry of canaEntries) {
       }
     }
     if (entry.section === 'packages/cana/usage' && key === 'source') {
-      const base = path.basename(absolute, '.md');
-      usageShortNames.add(base === 'usage-guide' ? 'usage-guide' : base);
+      usageShortNames.add(path.basename(absolute, '.md'));
     }
   }
 }
@@ -78,20 +90,9 @@ for (const locale of ['en', 'pt-BR']) {
   }
 }
 
-for (const name of [
-  'getting-started',
-  'schema-keys',
-  'crud-bulk',
-  'querying',
-  'transactions-events',
-  'hooks-errors',
-  'storage-recovery',
-  'workers-testing',
-  'api-reference',
-  'usage-guide'
-]) {
-  if (!usageShortNames.has(name) && name !== 'usage-guide') {
-    // usage-guide source basename is usage-guide; slug is index
+for (const name of REQUIRED_USAGE_SOURCES) {
+  if (!usageShortNames.has(name)) {
+    errors.push(`content-sources missing packages/cana/usage entry for ${name}.md`);
   }
 }
 
