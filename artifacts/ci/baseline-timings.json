@@ -9,8 +9,13 @@
     "tests": 518
   },
   "bunLocalSamples": {
-    "usersDomainWatchColdMs": null,
-    "note": "Fill from local bun test runs as developers exercise tdd:*; not gated on CI"
+    "usersDomainWatchColdMs": 1470,
+    "fullUnitMs": 158010,
+    "files": 303,
+    "tests": 4074,
+    "capturedAt": "2026-10-04",
+    "command": "bun test apps/backend-template/test/unit/modules/Users (Users domain, cold); bun run test:unit (full unit suite, includes workspace:build:packages prestep)",
+    "note": "Users-domain cold sample: 29 files / 322 tests / 1458ms bun-reported + 1.47s wall. Full suite grew 7.9x in test count since the jestEra baseline (518->4074) while wall time stayed roughly flat (157.6s->158.0s). One pre-existing failing test (UserService.deadLetter.test.ts) unrelated to this measurement."
   },
   "targets": {
     "taskGateMs_p50": 60000,

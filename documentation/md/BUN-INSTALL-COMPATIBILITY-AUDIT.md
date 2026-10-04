@@ -194,6 +194,31 @@ without modifying the lockfile, satisfying Requirement 096 §2.
 No performance claim is made against the pnpm baseline here: the pnpm surfaces were removed before these
 measurements, so a same-tree comparison was not possible. JUM-38 owns the comparative budget.
 
+## 4a. Comparative budget (JUM-38) — Bun vs npm, same tree, same machine, 2026-10-04
+
+Measured on a disposable copy of this repository's `package.json` tree (no prior lockfile), same machine,
+back to back. npm could not run unmodified — see the two fixes below — so this is the number after making
+npm pass, not out of the box.
+
+| Operation | Bun 1.3.13 | npm (Node 22) | Ratio |
+| --- | --- | --- | --- |
+| Cold install, `--ignore-scripts` | `bun install --ignore-scripts` — 5,056 packages, **12.34s** | `npm install --ignore-scripts --legacy-peer-deps` — 2,892 packages, **172.07s** | ~14x |
+| Full unit suite (current tree) | `bun run test:unit` — 303 files / 4,074 tests, **158.01s** | no equivalent Jest run exists for the current suite count (Req 106 reserves Node/Jest for CI-declared compatibility suites, not full local unit) | not comparable like-for-like |
+| Build (25 packages, 4 levels) | `bun run mono:build` — **41.45s** | same command, same `tsc` process either way — build time is dominated by `tsc` (always Node), Bun's own bundler step adds single-digit-to-tens of ms per package | not an engine axis |
+
+Fixes npm needed that Bun does not:
+
+1. `EUNSUPPORTEDPROTOCOL` on `workspace:*` — npm does not understand the `workspace:` range protocol. 17
+   `package.json` files had to be rewritten to `"*"` before `npm install` would resolve at all.
+2. `ERESOLVE` on `@types/react` vs `@types/react-dom` peer ranges — npm's strict peer-dependency resolver
+   refuses this tree by default; `--legacy-peer-deps` is required. Bun installs it unmodified.
+
+Package counts are not directly comparable (Bun reports the full resolved tree, npm reports top-level
+added packages after its own dedupe), so the only apples-to-apples number here is wall-clock time, not
+packages/second.
+
+Evidence: `artifacts/ci/baseline-timings.json` (`bunLocalSamples`).
+
 ## 5. Status
 
 | Risk | Status |
