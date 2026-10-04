@@ -1,13 +1,16 @@
 # Cana — Adaptador de Banco de Dados Offline sobre IndexedDB
 
-`@jumentix/cana` é um motor IndexedDB próprio para aplicações offline-first da
-Jumentix. Não é um invólucro sobre uma biblioteca existente. Quando o IndexedDB
-não abre, ele pode degradar para um backend **explícito** em localStorage
-(JUM-615).
+`@jumentix/cana` é um motor IndexedDB próprio, feito para aplicações offline-first
+da Jumentix e utilizável em qualquer frontend no navegador. Não é um invólucro
+sobre uma biblioteca existente. Quando o IndexedDB não abre, ele pode degradar
+para um backend **explícito** em localStorage (JUM-615).
 
 Este documento registra o que ele faz, o que se recusa deliberadamente a fazer e
 o que a suite de testes comprovou. Um banco offline que exagera suas garantias
 é pior do que um que não oferece nenhuma.
+
+A documentação de uso para o consumidor fica no pacote:
+[`packages/cana/docs/pt-BR/usage-guide.md`](../../packages/cana/docs/pt-BR/usage-guide.md).
 
 ---
 
@@ -249,6 +252,6 @@ os próprios termos Apache-2.0, e nada dele é copiado para dentro deste pacote.
 - Requisito `094` — portão de conclusão de documentação do épico
 - `.agents/NFR-REGISTRY.md` — NFRs de durabilidade e desempenho
 
-Guia de uso: [CANA-USAGE-GUIDE.pt-BR.md](./CANA-USAGE-GUIDE.pt-BR.md)
+Guia de uso: [`packages/cana/docs/pt-BR/usage-guide.md`](../../packages/cana/docs/pt-BR/usage-guide.md)
 
 Inglês: [CANA-INDEXEDDB-ADAPTER.md](./CANA-INDEXEDDB-ADAPTER.md)

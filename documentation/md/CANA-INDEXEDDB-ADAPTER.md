@@ -1,13 +1,17 @@
 # Cana — IndexedDB Offline Database Adapter
 
-`@jumentix/cana` is a first-party IndexedDB engine for offline-first Jumentix
-applications. It is not a wrapper around an existing library. When IndexedDB
-cannot open, it may degrade to an **explicit** localStorage backend (JUM-615).
+`@jumentix/cana` is a first-party IndexedDB engine built for offline-first
+Jumentix applications and usable in any browser frontend. It is not a wrapper
+around an existing library. When IndexedDB cannot open, it may degrade to an
+**explicit** localStorage backend (JUM-615).
 
 This document records what it does, what it deliberately refuses to do, and what
 the test suite has proven. An offline database that overstates its guarantees is
 worse than one that has none, because the application built on it will make
 promises to users that it cannot keep.
+
+Consumer-facing usage docs live in the package:
+[`packages/cana/docs/en/usage-guide.md`](../../packages/cana/docs/en/usage-guide.md).
 
 ---
 
@@ -245,6 +249,6 @@ Apache-2.0 terms, and nothing from it is copied into this package.
 - Requirement `094` — epic documentation completion gate
 - `.agents/NFR-REGISTRY.md` — durability and performance NFRs
 
-Usage guide: [CANA-USAGE-GUIDE.md](./CANA-USAGE-GUIDE.md)
+Usage guide: [`packages/cana/docs/en/usage-guide.md`](../../packages/cana/docs/en/usage-guide.md)
 
 Portuguese: [CANA-INDEXEDDB-ADAPTER.pt-BR.md](./CANA-INDEXEDDB-ADAPTER.pt-BR.md)
