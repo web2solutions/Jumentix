@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "8feb7809c8eab105ced189df3d9c403c8d32b6e2",
+  "sourceCommit": "78ccf358b2dce7c07f8c95f60d4a225116415f69",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -29,7 +29,7 @@
   },
   "packageVersions": {
     "@jumentix/adapter-runtime-bootstrap": "0.1.0",
-    "@jumentix/cana": "0.1.0",
+    "@jumentix/cana": "0.1.1",
     "@jumentix/cana-react": "0.1.0",
     "@jumentix/cana-vue": "0.1.0",
     "@jumentix/cli-init": "0.0.0",

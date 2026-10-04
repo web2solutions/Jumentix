@@ -220,12 +220,12 @@ function joinWrappedInlineCodeSpans(markdown, sourceFile) {
 
 async function copyDocumentationImages(markdown, sourceFile) {
   const imagePattern = /!\[([^\]]*)\]\(([^)\s]+)(\s+"[^"]*")?\)/g;
+  const htmlImagePattern = /(<img\b[^>]*\bsrc=["'])([^"']+)(["'][^>]*>)/gi;
   const replacements = new Map();
 
-  for (const match of markdown.matchAll(imagePattern)) {
-    const href = match[2];
+  const considerHref = async (href) => {
     if (replacements.has(href) || href.startsWith('/') || /^[a-z][a-z\d+.-]*:/i.test(href)) {
-      continue;
+      return;
     }
 
     const absoluteSource = path.resolve(path.dirname(sourceFile), decodeURIComponent(href));
@@ -237,7 +237,7 @@ async function copyDocumentationImages(markdown, sourceFile) {
     }
 
     try {
-      if (!(await fs.stat(absoluteSource)).isFile()) continue;
+      if (!(await fs.stat(absoluteSource)).isFile()) return;
     } catch {
       throw new Error(`Documentation image ${href} in ${sourceFile} does not exist`);
     }
@@ -246,13 +246,24 @@ async function copyDocumentationImages(markdown, sourceFile) {
     await fs.mkdir(path.dirname(destination), { recursive: true });
     await fs.copyFile(absoluteSource, destination);
     replacements.set(href, `/${assetsDirectoryName}/${relativeToRepository.split(path.sep).join('/')}`);
+  };
+
+  for (const match of markdown.matchAll(imagePattern)) {
+    await considerHref(match[2]);
+  }
+  for (const match of markdown.matchAll(htmlImagePattern)) {
+    await considerHref(match[2]);
   }
 
   if (replacements.size === 0) return markdown;
 
-  return markdown.replace(imagePattern, (fullMatch, alt, href, title) =>
+  let next = markdown.replace(imagePattern, (fullMatch, alt, href, title) =>
     (replacements.has(href) ? `![${alt}](${replacements.get(href)}${title || ''})` : fullMatch)
   );
+  next = next.replace(htmlImagePattern, (fullMatch, prefix, href, suffix) =>
+    (replacements.has(href) ? `${prefix}${replacements.get(href)}${suffix}` : fullMatch)
+  );
+  return next;
 }
 
 async function rewriteRepositoryLinks(markdown, sourceFile, routesBySource) {

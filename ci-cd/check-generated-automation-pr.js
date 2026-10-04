@@ -17,6 +17,7 @@ const { isEntryPoint } = require('./lib/entry-point.js');
 const {
   isGeneratedAppReleaseBranch,
   isGeneratedChangelogSyncBranch,
+  isGeneratedPackageBumpBranch,
   resolveHeadRef,
   resolveBaseRef
 } = require('./classify-ci-context.js');
@@ -73,7 +74,11 @@ function validateGeneratedAutomationPr(options = {}) {
   // JUMENTIX_QUALITY_GATE_TARGET=CIRCLE_BRANCH, so resolveBaseRef collapses to the
   // head itself and `git diff head...HEAD` is empty (job 2158 / PR #522).
   if (
-    (isGeneratedAppReleaseBranch(headRef) || isGeneratedChangelogSyncBranch(headRef))
+    (
+      isGeneratedAppReleaseBranch(headRef)
+      || isGeneratedChangelogSyncBranch(headRef)
+      || isGeneratedPackageBumpBranch(headRef)
+    )
     && baseRef !== 'main'
     && baseRef !== 'dev'
     && baseRef !== 'origin/main'
@@ -106,6 +111,20 @@ function validateGeneratedAutomationPr(options = {}) {
       failures.push(
         `[generated-automation] changelog PR must only touch CHANGELOG.md; unexpected file: ${file}`
       );
+    }
+  } else if (isGeneratedPackageBumpBranch(headRef)) {
+    if (changed.length === 0) {
+      failures.push('[generated-automation] package-bump PR has an empty diff');
+    }
+    for (const file of changed) {
+      const allowed = /^packages\/[^/]+\/package\.json$/.test(file)
+        || file === 'packages/cli-init/templates.manifest.json';
+      if (!allowed) {
+        failures.push(
+          `[generated-automation] package-bump PR must only touch package manifests`
+            + ` (+ cli-init templates.manifest.json); unexpected file: ${file}`
+        );
+      }
     }
   } else {
     failures.push(

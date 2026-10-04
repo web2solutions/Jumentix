@@ -1,5 +1,47 @@
 [
   {
+    "sha": "78ccf358b2dce7c07f8c95f60d4a225116415f69",
+    "date": "2026-10-04T07:46:59-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-916][Release] Sync main v0.3.3 into dev (#606)"
+  },
+  {
+    "sha": "967f2837828245ae3d85eef0859c7d7c96ada603",
+    "date": "2026-10-04T06:49:59-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#605)"
+  },
+  {
+    "sha": "cafac2ab49ea2eace3cbe80dd3bb4f0a4f4797cf",
+    "date": "2026-10-04T06:38:59-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.3.3 (#604)"
+  },
+  {
+    "sha": "68030196a13b99098b9498ae0dd2fc7f5798d7aa",
+    "date": "2026-10-04T06:20:55-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#603)"
+  },
+  {
+    "sha": "8feb7809c8eab105ced189df3d9c403c8d32b6e2",
+    "date": "2026-10-04T06:17:58-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-916][Release] Promote framework-agnostic Cana docs to main (#601)"
+  },
+  {
+    "sha": "c7911ef40be3f787d537577c158307ea1ff61a93",
+    "date": "2026-10-04T05:51:28-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-916][Fix] Reload vanilla seed maps and auto-exempt Vercel feedback (#602)"
+  },
+  {
+    "sha": "9859557d7d73fd7cf128a8f31188bad70e41e40b",
+    "date": "2026-10-04T05:38:17-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(cana): reload vanilla seed maps before first paint"
+  },
+  {
     "sha": "715dee1a906ed832f5ab844b32c6c50d6729479c",
     "date": "2026-10-04T04:52:51-03:00",
     "author": "Eduardo A.",
@@ -16,6 +58,18 @@
     "date": "2026-10-04T03:06:59-03:00",
     "author": "Eduardo A.",
     "message": "docs(cana): ship framework-agnostic docs in package and site"
+  },
+  {
+    "sha": "eeb1afc2e242600f168aafa546a6a372cfb07db7",
+    "date": "2026-10-03T23:50:38-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#598)"
+  },
+  {
+    "sha": "2598d1da0ba4a175f89c49d58905756683cd6197",
+    "date": "2026-10-03T23:29:16-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-915][Release] Promote monorepo-aware Vercel website build (#595)"
   },
   {
     "sha": "a60f7662111912b1da777ea0f0fbb62f37bc3ddc",

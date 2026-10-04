@@ -14,7 +14,7 @@ A documentação do consumidor vem neste pacote em
 
 <figure className="cana-brand-scene">
   <img
-    src="/images/cana/jumentix-eating-sugarcane.png"
+    src="./media/jumentix-eating-sugarcane.png"
     alt="Mascote Jumentix comendo uma planta de cana-de-açúcar"
   />
   <figcaption>
@@ -136,7 +136,7 @@ explícitos de transação, replay de mudanças, reconciliação após falha e u
 fronteira opcional de worker para aplicações que precisam tirar persistência da
 thread de UI.
 
-![Modelo de workers do Cana](/images/cana/cana-worker-model.svg)
+![Modelo de workers do Cana](./media/cana-worker-model.svg)
 
 ### Modelo mental em 30 segundos
 
@@ -236,7 +236,7 @@ milissegundos são ruidosos entre browsers, discos e runners compartilhados, mas
 `recordsExamined`, `cursorAdvanced` e planos de query mostram se o engine pediu
 ao navegador a quantidade certa de trabalho.
 
-![Escada de performance do Cana](/images/cana/cana-performance-ladder.svg)
+![Escada de performance do Cana](./media/cana-performance-ladder.svg)
 
 #### Como ler os dados
 

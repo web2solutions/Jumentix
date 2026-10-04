@@ -163,6 +163,9 @@ function isSignedDevPromotionBranch(headRef) {
 const GENERATED_CHANGELOG_SYNC_BODY_PREFIX =
   'Generated changelog sync, opened automatically by the sync-changelog workflow. Drift fix for JUM-862.';
 const GENERATED_APP_RELEASE_BODY_PREFIX = 'Automated application version bump and release for';
+const GENERATED_PACKAGE_BUMP_TITLE = 'chore(release): bump packages with unpublished content changes';
+const GENERATED_PACKAGE_BUMP_BODY_PREFIX =
+  'Automated patch bumps for public packages whose published surface changed on `main` while the declared version was already on npm (JUM-917 / Req 070).';
 
 function isGeneratedChangelogSync({ title, body, headRef }) {
   // Bugbot / other bots may append a summary after the canonical first paragraph.
@@ -177,10 +180,17 @@ function isGeneratedAppRelease({ title, body, headRef }) {
     && String(body || '').trimStart().startsWith(GENERATED_APP_RELEASE_BODY_PREFIX);
 }
 
+function isGeneratedPackageBump({ title, body, headRef }) {
+  return /^chore\/package-bump-[0-9a-f]{8}$/i.test(String(headRef || '').trim())
+    && String(title || '').trim() === GENERATED_PACKAGE_BUMP_TITLE
+    && String(body || '').trimStart().startsWith(GENERATED_PACKAGE_BUMP_BODY_PREFIX);
+}
+
 function validateReleasePullRequest({ title, body, headRef }) {
   const failures = [];
   if (isGeneratedChangelogSync({ title, body, headRef })) return failures;
   if (isGeneratedAppRelease({ title, body, headRef })) return failures;
+  if (isGeneratedPackageBump({ title, body, headRef })) return failures;
   if (headRef !== 'dev' && !isSignedDevPromotionBranch(headRef)) {
     failures.push('[pr-governance] only dev may target main');
   }
@@ -468,6 +478,8 @@ module.exports = {
   TITLE_PREFIX_BY_NATURE,
   GENERATED_CHANGELOG_SYNC_BODY_PREFIX,
   GENERATED_APP_RELEASE_BODY_PREFIX,
+  GENERATED_PACKAGE_BUMP_TITLE,
+  GENERATED_PACKAGE_BUMP_BODY_PREFIX,
   agentBranchPatterns,
   isPlaceholder,
   loadSupportedAgents,
