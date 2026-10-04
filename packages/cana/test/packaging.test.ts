@@ -139,11 +139,11 @@ describe('cana packaging manifest', () => {
     expect(manifest.scripts.build).toContain('bun run build:esm');
   });
 
-  it('ships the built output and the licence, and does not ship source', () => {
+  it('ships the built output, docs, media, and the licence, and does not ship source', () => {
     expect.hasAssertions();
-    expect(manifest.files).toContain('dist');
-    expect(manifest.files).toContain('README.md');
-    expect(manifest.files).toContain('LICENSE.md');
+    expect(manifest.files).toStrictEqual(
+      expect.arrayContaining(['dist', 'docs', 'media', 'README.md', 'LICENSE.md'])
+    );
     expect(manifest.files).not.toContain('src');
   });
 
@@ -151,8 +151,52 @@ describe('cana packaging manifest', () => {
     expect.hasAssertions();
     // `files` naming something absent produces a tarball missing it, with no
     // warning at pack time.
-    expect(exists('README.md')).toBe(true);
-    expect(exists('LICENSE.md')).toBe(true);
+    expect([
+      exists('README.md'),
+      exists('LICENSE.md'),
+      exists('docs/en/usage-guide.md'),
+      exists('docs/pt-BR/usage-guide.md')
+    ]).toStrictEqual([true, true, true, true]);
+  });
+
+  it('ships package-local media assets referenced by the README', () => {
+    expect.hasAssertions();
+    expect([
+      exists('media/cana-worker-model.svg'),
+      exists('media/cana-performance-ladder.svg'),
+      exists('media/jumentix-eating-sugarcane.png')
+    ]).toStrictEqual([true, true, true]);
+  });
+
+  it('keeps README image refs package-local so npm and GitHub render them', () => {
+    expect.hasAssertions();
+    const bodies = ['README.md', 'README.pt-BR.md'].map(
+      (name) => fs.readFileSync(path.join(packageRoot, name), 'utf8')
+    );
+    expect(bodies.every((body) => !body.includes('/images/cana/'))).toBe(true);
+    expect(bodies.every((body) => body.includes('./media/jumentix-eating-sugarcane.png'))).toBe(true);
+    expect(bodies.every((body) => body.includes('./media/cana-worker-model.svg'))).toBe(true);
+    expect(bodies.every((body) => body.includes('./media/cana-performance-ladder.svg'))).toBe(true);
+  });
+
+  it('ships framework-agnostic consumer tutorials in docs/', () => {
+    expect.hasAssertions();
+    expect([
+      exists('docs/en/any-framework.md'),
+      exists('docs/en/vanilla-typescript.md'),
+      exists('docs/pt-BR/any-framework.md'),
+      exists('docs/pt-BR/vanilla-typescript.md')
+    ]).toStrictEqual([true, true, true, true]);
+  });
+
+  it('keeps website content-sources pointed at packaged consumer docs', () => {
+    expect.hasAssertions();
+    // Drives packages/cana/scripts/check-docs-drift.js (fail-closed usage registration).
+    const output = execFileSync('bun', [path.join(packageRoot, 'scripts/check-docs-drift.js')], {
+      cwd: packageRoot,
+      encoding: 'utf8'
+    });
+    expect(output).toContain('cana docs drift check passed');
   });
 
   it('declares a licence that matches the file it ships', () => {

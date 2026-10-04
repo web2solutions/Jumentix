@@ -6,7 +6,7 @@
  * Consumers should import from here rather than from `core/*`: the contracts are
  * the stable surface, and the module layout beneath them is not.
  *
- * See documentation/md/CANA-USAGE-GUIDE.md for the task-oriented guide.
+ * See packages/cana/docs/en/usage-guide.md for the task-oriented guide.
  *
  * ## Why every line below is `export *`
  *

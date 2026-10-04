@@ -1,18 +1,25 @@
 # @jumentix/cana
 
-IndexedDB offline database adapter for Jumentix applications.
+Framework-agnostic offline-first IndexedDB client for any browser frontend.
 
-The frontend seed (`apps/frontend`) opens Cana before login and syncs through
-the OAS: [Frontend offline data layer](../../documentation/md/FRONTEND-OFFLINE-DATA-LAYER.md).
+Install with `bun add @jumentix/cana` or `npm install @jumentix/cana`. The public
+API has no framework dependency — only the browser. Optional helpers
+(`@jumentix/cana-react`, `@jumentix/cana-vue`) patch UI stores when you want
+them; they are not required.
+
+Consumer docs ship in this package under [`docs/`](./docs/en/usage-guide.md)
+(English and Portuguese) and on the site at
+[/docs/jumentix/packages/cana](/docs/jumentix/packages/cana).
 
 <figure className="cana-brand-scene">
   <img
-    src="/images/cana/jumentix-eating-sugarcane.png"
+    src="./media/jumentix-eating-sugarcane.png"
     alt="Jumentix mascot eating a sugarcane plant"
   />
   <figcaption>
     Cana keeps durable browser data close to the application: sugarcane as fuel,
-    Jumentix fully charged, and persistence work kept off the UI path.
+    persistence work kept off the UI path. Built for Jumentix; usable in any
+    frontend project.
   </figcaption>
 </figure>
 
@@ -51,9 +58,16 @@ await client.table('tasks').add({
 ## Responsibility in context
 
 - **Stack layer:** offline / browser persistence adapter
-- **Owns:** IndexedDB client API for PWAs
-- **Used with:** `@jumentix/cana-react`, `@jumentix/cana-vue`, designer-core, SPA/PWA guide, service-management
-- **Not responsible for:** server databases, Redis KV, REST/WebSocket protocols
+- **Owns:** IndexedDB client API for PWAs and SPAs
+- **Used with:** any UI framework or vanilla TypeScript; optionally `@jumentix/cana-react`, `@jumentix/cana-vue`
+- **Not responsible for:** server databases, Redis KV, REST/WebSocket protocols, framework rendering state
+
+### Jumentix origin
+
+Cana was built for Jumentix offline/PWA surfaces. Inside this monorepo the
+frontend seed opens Cana before login and syncs through the OAS
+([Frontend offline data layer](../../documentation/md/FRONTEND-OFFLINE-DATA-LAYER.md)).
+That integration is optional for external consumers.
 
 ## Three things to know before using it
 
@@ -119,7 +133,7 @@ surface, explicit transaction outcomes, change replay, crash reconciliation and
 an optional worker boundary for applications that need to move persistence work
 off the UI thread.
 
-![Cana worker model](/images/cana/cana-worker-model.svg)
+![Cana worker model](./media/cana-worker-model.svg)
 
 ### Mental model in 30 seconds
 
@@ -214,7 +228,7 @@ noisy across browsers, disks and shared runners, but `recordsExamined`,
 `cursorAdvanced` and query plans tell us whether the engine is asking the
 browser to do the right amount of work.
 
-![Cana performance ladder](/images/cana/cana-performance-ladder.svg)
+![Cana performance ladder](./media/cana-performance-ladder.svg)
 
 #### How to read the data
 
@@ -316,13 +330,15 @@ The automated performance tests keep these contracts green:
 
 ## Framework tutorials
 
-Build the same categorized task app with framework state management:
+Wire the same categorized task app to any UI store:
 
+- [Any framework](./docs/en/any-framework.md) — stable contract and five-step pattern
+- [Vanilla TypeScript](./docs/en/vanilla-typescript.md) — no framework helpers
 - [React Context API](/docs/jumentix/packages/cana/react-context)
 - [React Redux](/docs/jumentix/packages/cana/react-redux)
 - [Vue 3 and Pinia](/docs/jumentix/packages/cana/vue-pinia)
 
-Use the small integration packages in applications:
+Optional integration packages:
 
 ```bash
 bun add @jumentix/cana @jumentix/cana-react
@@ -331,8 +347,6 @@ bun add @jumentix/cana @jumentix/cana-vue
 
 ## Next step
 
-Continue with the consumer [usage guide](../../documentation/md/CANA-USAGE-GUIDE.md)
-for the full API, querying, transactions, hooks, crash recovery, and
-troubleshooting. Use [designer-core](/docs/jumentix/packages/designer-core/usage)
-when a Jumentix UI also needs to validate domain documents before persisting
-them.
+Continue with the consumer [usage guide](./docs/en/usage-guide.md) for the full
+API, querying, transactions, hooks, crash recovery, and troubleshooting. On the
+site: [/docs/jumentix/packages/cana/usage](/docs/jumentix/packages/cana/usage).

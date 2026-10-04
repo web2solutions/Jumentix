@@ -44,7 +44,8 @@
       "sourceGlobs": [
         "apps/backend-template/src/infra/**",
         "apps/backend-template/src/modules/*/adapters/out/**",
-        "packages/*/src/**"
+        "packages/*/src/**",
+        "packages/*/scripts/**"
       ],
       "runner": "bun",
       "tier": "gate"
@@ -3224,6 +3225,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/plan-package-content-bumps.test.ts",
+      "path": "ci-cd/test/plan-package-content-bumps.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/generate-test-map.test.ts",
       "path": "ci-cd/test/generate-test-map.test.ts",
       "layer": "tooling",
@@ -6129,9 +6140,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 365,
+    "unit": 366,
     "integration": 102,
     "smoke": 2,
-    "suites": 529
+    "suites": 530
   }
 }

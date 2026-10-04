@@ -1267,6 +1267,23 @@ Headings:
 
 ---
 
+# Cana with Vanilla TypeScript
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vanilla-typescript
+
+Categorized task app with Cana and no framework helpers.
+
+Headings:
+- Cana with Vanilla TypeScript
+- 1. Start from zero
+- 2. Create the client
+- 3. Wire UI state from committed events
+- 4. Atomic multi-store write
+- 5. Checklist
+- Next
+
+---
+
 # Cana with Vue 3 and Pinia
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia
@@ -1288,11 +1305,12 @@ Headings:
 
 URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana
 
-IndexedDB offline database adapter for Jumentix applications.
+Framework-agnostic offline-first IndexedDB client for any browser frontend.
 
 Headings:
 - @jumentix/cana
 - Responsibility in context
+- Jumentix origin
 - Three things to know before using it
 - Errors are plain data
 - Try it in the browser
@@ -1384,7 +1402,7 @@ Headings:
 - Choose the next step
 - The running example
 - Complete code policy
-- Framework tutorials
+- Use with any UI framework
 - Package integrations
 
 ---
@@ -1447,6 +1465,7 @@ Install Cana and build the minimal categorized task database.
 Headings:
 - Getting started with Cana
 - Install
+- or: npm install @jumentix/cana
 - Complete minimal task app
 - What to notice
 - Run it here
@@ -1482,6 +1501,23 @@ Headings:
 - Export and import
 - Resolve an uncertain write
 - Run it here
+- Next
+
+---
+
+# Integrate Cana with any UI framework
+
+URL: https://jumentix-website.vercel.app/docs/jumentix/packages/cana/any-framework
+
+Stable Cana contract and five-step wiring pattern for any UI store.
+
+Headings:
+- Integrate Cana with any UI framework
+- Stable contract
+- Rules that never change between frameworks
+- Manual wiring vs helper packages
+- Minimal subscribe adapter
+- Checklist for a new framework
 - Next
 
 ---

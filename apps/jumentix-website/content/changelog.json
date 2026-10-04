@@ -1,753 +1,1803 @@
 [
   {
-    "sha": "d9ceeb31ac3f9b6ea91be1d71b8ab6b20c5771d4",
-    "date": "2026-08-15T13:15:18-03:00",
+    "sha": "78ccf358b2dce7c07f8c95f60d4a225116415f69",
+    "date": "2026-10-04T07:46:59-03:00",
     "author": "Eduardo A.",
-    "message": "docs(website): expand adapter documentation"
+    "message": "[JUM-916][Release] Sync main v0.3.3 into dev (#606)"
   },
   {
-    "sha": "c0ec51e6ed7967a838b0aaf290070abcf8721ebc",
-    "date": "2026-08-14T00:08:01-03:00",
+    "sha": "967f2837828245ae3d85eef0859c7d7c96ada603",
+    "date": "2026-10-04T06:49:59-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): organize architecture playground ux"
+    "message": "chore: synchronize changelog (#605)"
   },
   {
-    "sha": "a640c6b9442014f822fbfc556283e3c62bca33af",
-    "date": "2026-08-14T00:03:15-03:00",
+    "sha": "cafac2ab49ea2eace3cbe80dd3bb4f0a4f4797cf",
+    "date": "2026-10-04T06:38:59-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): organize architecture playground ux"
+    "message": "chore(release): v0.3.3 (#604)"
   },
   {
-    "sha": "f11f90513096520744ccc4e20c99044e2c48caad",
-    "date": "2026-08-13T23:33:06-03:00",
+    "sha": "68030196a13b99098b9498ae0dd2fc7f5798d7aa",
+    "date": "2026-10-04T06:20:55-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): show live indexeddb flow in cana canvas"
+    "message": "chore: synchronize changelog (#603)"
   },
   {
-    "sha": "523ba233c11474571b37d9667d39b73f1ef8b70e",
-    "date": "2026-08-13T23:28:56-03:00",
+    "sha": "8feb7809c8eab105ced189df3d9c403c8d32b6e2",
+    "date": "2026-10-04T06:17:58-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): show live indexeddb flow in cana canvas"
+    "message": "[JUM-916][Release] Promote framework-agnostic Cana docs to main (#601)"
   },
   {
-    "sha": "112178b5dbd4d304da5913af92bd21e0d7df9f7c",
-    "date": "2026-08-13T22:30:36-03:00",
+    "sha": "c7911ef40be3f787d537577c158307ea1ff61a93",
+    "date": "2026-10-04T05:51:28-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): show live dlq flow in cana canvas"
+    "message": "[JUM-916][Fix] Reload vanilla seed maps and auto-exempt Vercel feedback (#602)"
   },
   {
-    "sha": "060e14062d6b450008b3fd05025957e5066aeda9",
-    "date": "2026-08-13T22:26:00-03:00",
+    "sha": "9859557d7d73fd7cf128a8f31188bad70e41e40b",
+    "date": "2026-10-04T05:38:17-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-dlq-live-canvas"
+    "message": "fix(cana): reload vanilla seed maps before first paint"
   },
   {
-    "sha": "6855982f44ee5db4ac6323029c4afd7903ac624c",
-    "date": "2026-08-13T22:24:05-03:00",
+    "sha": "715dee1a906ed832f5ab844b32c6c50d6729479c",
+    "date": "2026-10-04T04:52:51-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): show live dlq flow in cana canvas"
+    "message": "[JUM-916][Docs] Framework-agnostic Cana docs in package and website (#600)"
   },
   {
-    "sha": "f67d1d251be51880e9dfc3ace738cafefaadd727",
-    "date": "2026-08-13T20:58:00-03:00",
+    "sha": "69db7782afea05c2377682c59a90cc29aa400bb2",
+    "date": "2026-10-04T04:29:19-03:00",
     "author": "Eduardo A.",
-    "message": "chore: untrack vercel cli local project link (JUM-719) (#241)"
+    "message": "fix(cana): assert usage pages in docs drift check"
   },
   {
-    "sha": "4e5618f40eba610551cbead8b99657544b441553",
-    "date": "2026-08-13T20:39:28-03:00",
+    "sha": "2279a2d934d7c6a9dde1f2b44ad9f154752ab923",
+    "date": "2026-10-04T03:06:59-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): bundle release notes at build and add empty state (JUM-719) (#240)"
+    "message": "docs(cana): ship framework-agnostic docs in package and site"
   },
   {
-    "sha": "57a1076b3f3e9e4d53380e3d19a8f9cd974a8438",
-    "date": "2026-08-13T19:41:21-03:00",
+    "sha": "eeb1afc2e242600f168aafa546a6a372cfb07db7",
+    "date": "2026-10-03T23:50:38-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): show per-request cana canvas flow"
+    "message": "chore: synchronize changelog (#598)"
   },
   {
-    "sha": "465b733917acba10214906cb3819092623698785",
-    "date": "2026-08-13T19:36:07-03:00",
+    "sha": "2598d1da0ba4a175f89c49d58905756683cd6197",
+    "date": "2026-10-03T23:29:16-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow"
+    "message": "[JUM-915][Release] Promote monorepo-aware Vercel website build (#595)"
   },
   {
-    "sha": "d9bd8dc6a0157b3853e02253dec7a138d13d8fb4",
-    "date": "2026-08-13T19:30:41-03:00",
+    "sha": "a60f7662111912b1da777ea0f0fbb62f37bc3ddc",
+    "date": "2026-10-03T23:07:26-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): bake changelog data at build instead of github api (JUM-718) (#238)"
+    "message": "[JUM-915][Docs] Note main promotes must be from-dev (#596)"
   },
   {
-    "sha": "a7896f15b6b6572cdefeddf8c0675d6ac26a4003",
-    "date": "2026-08-13T19:15:50-03:00",
+    "sha": "320bed65de0b69731758b68d72107100ee5eef3a",
+    "date": "2026-10-03T22:33:24-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): improve cana comparison charts"
+    "message": "docs(website): note that main promotes must be from-dev"
   },
   {
-    "sha": "10c3a462343ccec38204cf6499fec7be1b259fff",
-    "date": "2026-08-13T19:10:56-03:00",
+    "sha": "175705c987b7d639b69d5be03076aab2d3d3216b",
+    "date": "2026-10-03T20:00:35-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow"
+    "message": "[JUM-915][Chore] Monorepo-aware Vercel build for jumentix-website (#593)"
   },
   {
-    "sha": "cf11249e7c947286fa36959ca3aea4195c3d22a5",
-    "date": "2026-08-13T19:04:09-03:00",
+    "sha": "e064819f7cfe73e3fff8290a31a3ff38c5715d18",
+    "date": "2026-10-03T16:07:33-03:00",
     "author": "Eduardo A.",
-    "message": "test(ci): cover four guard behaviours, and state what the floor is really made of (JUM-681) (#237)"
+    "message": "fix(website): monorepo-aware Vercel build; accept braces GHSA"
   },
   {
-    "sha": "f9bb806c37c83acbb205c4fa59edf94d767d9d75",
-    "date": "2026-08-13T18:56:10-03:00",
+    "sha": "88d86d09b662754bae4a148699a11d5d585a7812",
+    "date": "2026-10-01T15:34:17-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-per-request-canvas-flow"
+    "message": "[JUM-914][Release] Reconcile main v0.3.2 into dev (#592)"
   },
   {
-    "sha": "69e8033c728352f32ff9b415bcff5720f1351532",
-    "date": "2026-08-13T18:45:47-03:00",
+    "sha": "692855de321928cc81d39bda864ed3e9b8b66515",
+    "date": "2026-10-01T14:17:34-03:00",
     "author": "Eduardo A.",
-    "message": "fix(users): serialise organization membership writes, and seed sequentially (JUM-687) (#223)"
+    "message": "chore: synchronize changelog (#591)"
   },
   {
-    "sha": "3508af750f11e9101335248601df906f3c93cc92",
-    "date": "2026-08-13T18:30:12-03:00",
+    "sha": "751ede5367a289cdf2d3c148fce55f72a4cd790f",
+    "date": "2026-10-01T14:14:34-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): show per-request cana canvas flow"
+    "message": "chore(release): v0.3.2 (#590)"
   },
   {
-    "sha": "98b4cc097fedd8e7a39815d2924ee68f009185ae",
-    "date": "2026-08-13T18:18:41-03:00",
+    "sha": "df44d6329df6753e8ab30e609711dcfbc98dbc87",
+    "date": "2026-10-01T13:47:28-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): graph cana 30s flow metrics"
+    "message": "chore: synchronize changelog (#589)"
   },
   {
-    "sha": "9c2dc01ea88a78cbde9fe0704911e8a5b963fa71",
-    "date": "2026-08-13T18:03:19-03:00",
+    "sha": "441393aba2371cd81c170864f34c1f37532a6bdf",
+    "date": "2026-10-01T13:36:44-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-infinite-30s-flow"
+    "message": "[JUM-914][Release] Promote remaining S9383 clear for Sonar reliability A (#588)"
   },
   {
-    "sha": "11b511668bb499383b81460b44a23a767c0fd21f",
-    "date": "2026-08-13T17:39:13-03:00",
+    "sha": "5232dc99cdfde8d7f371e0dbfeff57af32e3b9ff",
+    "date": "2026-10-01T13:12:27-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): graph cana 30s flow metrics"
+    "message": "[JUM-914][Release] Reconcile main v0.3.1 into dev for Sonar A promote (#587)"
   },
   {
-    "sha": "5a35c4acbe12794274fbf907b83613a83cfcf085",
-    "date": "2026-08-13T17:47:19-03:00",
+    "sha": "bfc1272fdae9e8bcd505cacd26357d44fdb60612",
+    "date": "2026-10-01T12:53:19-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-709][Feature] Day-by-day tasks and real code for zero-to-MVP paths (#235)"
+    "message": "Merge remote-tracking branch 'origin/main' into cursor/release/JUM-914-reconcile-v031"
   },
   {
-    "sha": "bcb402b1030ce5a0867638013ac7b85985027fa5",
-    "date": "2026-08-13T17:13:59-03:00",
+    "sha": "3c302e0fd593659ad6ee5971dac070884593cada",
+    "date": "2026-10-01T12:53:06-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): merge cana heavy data canvas"
+    "message": "[JUM-914][Fix] Clear remaining designer-core and SM-api S9383 (#586)"
   },
   {
-    "sha": "c86ebb17a6e3fb0899ec1bc1852ce4c449adb852",
-    "date": "2026-08-13T16:41:45-03:00",
+    "sha": "0a404dc62ecb96119b13c9ea5ef186ea0bd80dc1",
+    "date": "2026-10-01T12:30:59-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-multi-client-workers-canvas"
+    "message": "fix(security): accept basic-ftp GHSA-c475 until get-uri can take 6.x"
   },
   {
-    "sha": "5bd6cb1b251b5f867612e6f33fbe799d3f142f32",
-    "date": "2026-08-13T16:32:10-03:00",
+    "sha": "77d6357b41498f58f9556896722cab82bf631db6",
+    "date": "2026-10-01T11:25:54-03:00",
     "author": "Eduardo A.",
-    "message": "chore(deps): consolidate Dependabot updates (JUM-717) (#233)"
+    "message": "fix(sonar): clear remaining S9383 in designer-core and SM API"
   },
   {
-    "sha": "cf6d371e8ee9270922f4f289c4f5d7ab05d9e21f",
-    "date": "2026-08-13T16:11:16-03:00",
+    "sha": "fcd6ac734aab7aa4ba3c9ee90c98cebd68e0ef40",
+    "date": "2026-10-01T10:31:12-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into fix/cana-multi-client-workers-canvas"
+    "message": "chore: synchronize changelog (#585)"
   },
   {
-    "sha": "c2c1f3c758dd101ca5d0b170c05792103ca7cbb9",
-    "date": "2026-08-13T16:03:41-03:00",
+    "sha": "511daf088efc25f06b2b7e40765da6aa2b6ac25d",
+    "date": "2026-10-01T10:21:11-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): merge cana heavy data canvas"
+    "message": "chore(release): v0.3.1 (#584)"
   },
   {
-    "sha": "e0174e0f857871fde5113425de8ef90aecaae9a1",
-    "date": "2026-08-13T15:47:15-03:00",
+    "sha": "272eff253501d448b27079249904507ff678bd1b",
+    "date": "2026-10-01T10:11:23-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-704][Bug] Install the four missing frameworks and make their adapters serve (#218)"
+    "message": "chore: synchronize changelog (#583)"
   },
   {
-    "sha": "9c847a83d1bf275ae60494702c17da1b31d80046",
-    "date": "2026-08-13T15:16:50-03:00",
+    "sha": "97a1f6151ce6248f042a506d100ced7222fb48bc",
+    "date": "2026-10-01T09:56:38-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): show cana dlq client flow (#232)"
+    "message": "[JUM-914][Release] Promote binary-safe release + Sonar S9383 tip green (#581)"
   },
   {
-    "sha": "b13dcd526b193767f2c8fedfe12af1caebd54766",
-    "date": "2026-08-13T14:57:50-03:00",
+    "sha": "545b95c863e7465eb9d8ed484b621c3fd5ae41e7",
+    "date": "2026-10-01T09:03:15-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-708][Chore] Pin Bun to 1.3.13 until the frozen-lockfile regression is fixed (#227)"
+    "message": "[JUM-914][Release] Reconcile main into dev to unblock tip promote (#582)"
   },
   {
-    "sha": "da7656ba764252742d6d09925ae124e88eb9f13d",
-    "date": "2026-08-13T14:32:32-03:00",
+    "sha": "059969aed7fca2d955303628f07fa0de916ae713",
+    "date": "2026-10-01T08:53:11-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): sync playground navigation and dlq canvas (#231)"
+    "message": "chore(release): reconcile main into dev for JUM-914 promote"
   },
   {
-    "sha": "490b98611fd62bcb22d15dfcce4939ccae862e79",
-    "date": "2026-08-13T14:07:36-03:00",
+    "sha": "aa9e43f280eef4a624cf79964542513e80c4bf69",
+    "date": "2026-10-01T06:50:40-03:00",
     "author": "Eduardo A.",
-    "message": "docs: expand use case code and dlq canvas (#230)"
+    "message": "[JUM-914][Fix] Clear Sonar S9383 floating promises and pin fastify/hono (#580)"
   },
   {
-    "sha": "930962c3ddc5ab4fe3a618b99159034511b82758",
-    "date": "2026-08-13T12:50:34-03:00",
+    "sha": "a4f420ced0cb8d9a9bf9a7760029e9a736cdf7a2",
+    "date": "2026-09-30T22:48:25-03:00",
     "author": "Eduardo A.",
-    "message": "docs: showcase mutex dead-letter replay (#229)"
+    "message": "fix(sonar): clear S9383 floating promises and pin fastify/hono"
   },
   {
-    "sha": "72a55a75d7d065508338df91a030cb4cecce3e45",
-    "date": "2026-08-13T12:25:27-03:00",
+    "sha": "d8c40dd1f1534123fac038bbc2232f9c221a3490",
+    "date": "2026-09-30T22:46:09-03:00",
     "author": "Eduardo A.",
-    "message": "docs: expand MVP use cases and mediator playgrounds (#228)"
+    "message": "[JUM-914][Fix] Binary-safe app-release template commits (#579)"
   },
   {
-    "sha": "d24d6772efcdb6fbddb02c813fc9f520371ac554",
-    "date": "2026-08-13T10:39:00-03:00",
+    "sha": "2e96a1bb06538a7420d851025f46eefbb83a6d8d",
+    "date": "2026-09-30T20:05:24-03:00",
     "author": "Eduardo A.",
-    "message": "docs: expand AI governance website showcase (#226)"
+    "message": "fix(release): binary-safe app-release template commits (JUM-914)"
   },
   {
-    "sha": "33a8f281e5eb96643fdbf0af112f57ea823806b7",
-    "date": "2026-08-13T07:01:50-03:00",
+    "sha": "9a94084a1669574e00a36b910e63f3ab815a038e",
+    "date": "2026-09-30T14:02:10-03:00",
     "author": "Eduardo A.",
-    "message": "docs: expand Cana and Jumentix website showcases"
+    "message": "chore: synchronize changelog (#576)"
   },
   {
-    "sha": "beb7f72d2e878c30e33ebef1cf433270ef11a0e8",
-    "date": "2026-08-13T06:27:50-03:00",
+    "sha": "af5317357714e00186cc48c27d6e1e842b27b7e7",
+    "date": "2026-09-30T13:57:36-03:00",
     "author": "Eduardo A.",
-    "message": "feat(cana): report what a count read (JUM-706) (#219)"
+    "message": "[JUM-913][Ci] Promote tag-token + next/og ACCEPTED_RISK to main (#574)"
   },
   {
-    "sha": "7612943c6f21319a5176e1e8fa1e24160d4b0635",
-    "date": "2026-08-13T05:56:44-03:00",
+    "sha": "3d0a0981b4b785d3379268a334e661528f158783",
+    "date": "2026-09-30T13:31:17-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): expand commercial page content (#224)"
+    "message": "ci(npm-publish): wire tag API token; accept next/og GHSA (JUM-913) (#573)"
   },
   {
-    "sha": "cf8988e9517714a3eb339dadfc30b03c52b0a582",
-    "date": "2026-08-13T05:43:00-03:00",
+    "sha": "ce73b0850ddb2e1ff267e76afb97070c48a11664",
+    "date": "2026-09-30T12:12:49-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): expand commercial page content"
+    "message": "[JUM-913][Ci] Promote npm package-tag API fix to main (#570)"
   },
   {
-    "sha": "dab33fb55b4043a35009d95042165edc301c2b5d",
-    "date": "2026-08-13T05:29:52-03:00",
+    "sha": "fd087f00e6f85244b9026ae8ea08c7388dd7734d",
+    "date": "2026-09-30T11:48:24-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): add white Jumentix site icon (#222)"
+    "message": "ci(npm-publish): create package tags via GitHub API (JUM-913) (#569)"
   },
   {
-    "sha": "9b5f8dd679a9b5eed2f5471182b8c766b3805e1f",
-    "date": "2026-08-13T05:19:55-03:00",
+    "sha": "ca5624b51ba45a779d94d2070b6c048a6286f359",
+    "date": "2026-09-30T11:05:30-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): add white Jumentix site icon"
+    "message": "chore: synchronize changelog (#566)"
   },
   {
-    "sha": "42e402bbf59f983d4c7ffa323a4ee2106b4ddf9a",
-    "date": "2026-08-13T05:10:49-03:00",
+    "sha": "f6379d51d6173a6ef48e57513a938f8d2ed5ba87",
+    "date": "2026-09-30T10:42:55-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): show energized Jumentix eating sugarcane (#221)"
+    "message": "[JUM-913][Ci] Promote npm Node publish fix (and #561) to main (#565)"
   },
   {
-    "sha": "301e7bbfa95de215edfea2de5e40386ebd52ad95",
-    "date": "2026-08-13T05:02:43-03:00",
+    "sha": "20d657bd5b6ce3c5d2ceedff8a717a3fa9695979",
+    "date": "2026-09-30T10:19:56-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): energize Jumentix sugarcane art"
+    "message": "ci(npm-publish): run under Node for provenance (JUM-913) (#564)"
   },
   {
-    "sha": "6760559f3fe298e08d5c3e0addac3d6235a24653",
-    "date": "2026-08-13T04:54:58-03:00",
+    "sha": "64fc73feca50e267c9ad52c4ec1602a2a9e00559",
+    "date": "2026-09-30T10:02:52-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): show Jumentix eating sugarcane on Cana docs"
+    "message": "chore: synchronize changelog (#563)"
   },
   {
-    "sha": "99a9e685f3da3cc8ac4d7987c66cccd6c4d281f3",
-    "date": "2026-08-13T04:45:15-03:00",
+    "sha": "f755102566ac9fbd35bda04801694e4d1a7b8e0a",
+    "date": "2026-09-30T09:42:06-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): promote Jumentix mascot brand identity (#220)"
+    "message": "chore(release): v0.3.0 (#560)"
   },
   {
-    "sha": "046c77fb5ddd12d002981d7e11b647f45c7d199b",
-    "date": "2026-08-13T04:37:20-03:00",
+    "sha": "2ec40887491a5d662cacb436acf3cffbc2713c46",
+    "date": "2026-09-29T23:41:43-03:00",
     "author": "Eduardo A.",
-    "message": "feat(website): promote Jumentix mascot brand identity"
+    "message": "[JUM-900][Fix] Rebuild CLI templates with app-release version bumps (#561)"
   },
   {
-    "sha": "1789ce5432f8ba6969c8b537891c6f94c7924974",
-    "date": "2026-08-13T04:20:07-03:00",
+    "sha": "7003a237566c033521ffa66214ba208fec643111",
+    "date": "2026-09-29T22:55:21-03:00",
     "author": "Eduardo A.",
-    "message": "docs(JUM-707): split Cana usage guide and complete examples (#217)"
+    "message": "chore: synchronize changelog (#559)"
   },
   {
-    "sha": "581cb71adc9fc4c41714a9f6d91eb68a89a3ddf4",
-    "date": "2026-08-13T04:03:55-03:00",
+    "sha": "49a919c0404d58cb1b8d11be1c580006cf86d8b4",
+    "date": "2026-09-29T22:32:50-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-707-split-cana-usage-complete-examples"
+    "message": "[JUM-900][Release] Promote dev to main — close the docs epic, publish npm packages (#548)"
   },
   {
-    "sha": "eaa075a090be2e692adf1f07cc8c51cd01edddbe",
-    "date": "2026-08-13T03:44:39-03:00",
+    "sha": "3486b9eb4ce05bea67e9ea534659fc705fea2e25",
+    "date": "2026-09-29T22:06:34-03:00",
     "author": "Eduardo A.",
-    "message": "docs(JUM-707): split Cana usage guide and complete examples"
+    "message": "fix(ci): resolve git via absolute path in merge-driver setup (#557)"
   },
   {
-    "sha": "4a25c933dc612930dae492e561bf5317eb4f3965",
-    "date": "2026-08-13T03:26:04-03:00",
+    "sha": "da342b6d471fb078a1bd0e1ead1dff1bccd9817c",
+    "date": "2026-09-29T20:47:39-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): render mermaid diagrams, for the first time (JUM-664) (#216)"
+    "message": "fix(service-management): detect busy ports with TCP connect (#556)"
   },
   {
-    "sha": "e50dc415653eae0b674797905ef0a99100905be0",
-    "date": "2026-08-12T22:18:41-03:00",
+    "sha": "fe31ba409b23a4e43d94eee8c4aa75b37906ffca",
+    "date": "2026-09-29T19:56:40-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-681][Test] Cover the paths the floor was blamed on, and correct the analysis (#215)"
+    "message": "fix(cli-init): compare package-version keys with localeCompare (#555)"
   },
   {
-    "sha": "9d86dd0ab42aedf972a473a5ddb031007def4eb1",
-    "date": "2026-08-12T21:59:32-03:00",
+    "sha": "e50553335e314fd7657aaa7687ec687342bfd023",
+    "date": "2026-09-29T19:11:15-03:00",
     "author": "Eduardo A.",
-    "message": "feat(cana): report what a query examined, and drop the stopwatch (JUM-682) (#214)"
+    "message": "fix(ci): mirror GHA patch baselines on CircleCI for release coverage (#554)"
   },
   {
-    "sha": "c4580261e8f639cae4b8edbec57ca9d0cc2e0e22",
-    "date": "2026-08-12T21:10:27-03:00",
+    "sha": "713825b75da309ca358bf848494893665600396c",
+    "date": "2026-09-28T10:14:06-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-705][Docs] Use English Cana example identifiers"
+    "message": "fix(coverage): remap dist-tested TypeScript coverage back to its source for patch coverage (#553)"
   },
   {
-    "sha": "0846f7c8aa3e99ca6fe5c4a78dc43e8baf08c743",
-    "date": "2026-08-12T20:54:09-03:00",
+    "sha": "8e95142041dfaac059c98da8f7e7940cd1dc840c",
+    "date": "2026-09-28T08:59:05-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-701][Fix] Run the Monaco mount in tests, and stop the task-change gate reading the repository four times (#213)"
+    "message": "test(architecture-canvas): cover createArchitectureCanvas render/interaction paths (#552)"
   },
   {
-    "sha": "3c9de6da101b4c11d71fec309a14a92afdf7e6a7",
-    "date": "2026-08-12T20:24:11-03:00",
+    "sha": "bba4952493b140b5f26613d44147e5652f0d096a",
+    "date": "2026-09-27T08:45:09-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-698][Bug] Establish the request context in four adapters, and make their suites integrate (#211)"
+    "message": "fix(website): update the prepublish roadmap-content smoke check (#551)"
   },
   {
-    "sha": "914147067ab0c8bd9047125ad74b3deed05d7505",
-    "date": "2026-08-12T19:32:46-03:00",
+    "sha": "6a76ab2dd06fbff570f3c7f5e328afcc0c2ddfe3",
+    "date": "2026-09-27T08:28:56-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-703][Docs] Expand Cana tutorials and integrations (#210)"
+    "message": "fix(message-mediator): declare ioredis, bullmq's real Redis dependency (#550)"
   },
   {
-    "sha": "0b7262dae2b91d39e0f1c4881554467aee5da518",
-    "date": "2026-08-12T19:21:22-03:00",
+    "sha": "5f036dc2dfb5ea78af85ba18f0078c9e3085dec2",
+    "date": "2026-09-27T08:02:16-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-703-cana-performance-notes"
+    "message": "fix(cli-init): restore process.exitCode with a number Bun actually honors (#549)"
   },
   {
-    "sha": "4b49de4a813d4bbc03a53c1d0979a9629bbe922a",
-    "date": "2026-08-12T19:07:51-03:00",
+    "sha": "b0ba932a84a36e766e6253ff3f6f6707a75edf6c",
+    "date": "2026-09-26T23:21:09-03:00",
     "author": "Eduardo A.",
-    "message": "feat(cana): add React and Vue integration packages (JUM-703)"
+    "message": "docs(website): marketing-vs-technical language calibration pass (#547)"
   },
   {
-    "sha": "716ae4e7da10c2b0161d064b0b980d0248337151",
-    "date": "2026-08-12T19:04:54-03:00",
+    "sha": "987a5c506d4cf121b8f6303a1596be62dc8094b6",
+    "date": "2026-09-26T23:02:36-03:00",
     "author": "Eduardo A.",
-    "message": "fix(ci): count assertion declarations per test, not per file (JUM-702) (#209)"
+    "message": "[JUM-898][Feature] Warn when a product screenshot may be stale (#546)"
   },
   {
-    "sha": "4eade880433f13012dad8719e307296fd70e7467",
-    "date": "2026-08-12T17:56:48-03:00",
+    "sha": "d63ebe29b923d23c424497f407afa3d40222b6da",
+    "date": "2026-09-26T22:17:08-03:00",
     "author": "Eduardo A.",
-    "message": "feat(ci): make the test-integrity check mandatory (JUM-683) (#208)"
+    "message": "feat(website): current product screenshots and a \"See it running\" tour (#542)"
   },
   {
-    "sha": "1cf18575ab5eb15c5fbb8d41f49ea02ea00cc397",
-    "date": "2026-08-12T17:45:55-03:00",
+    "sha": "3bbe0418b2825bd16ddce2c4585d591f516887fe",
+    "date": "2026-09-26T22:04:51-03:00",
     "author": "Eduardo A.",
-    "message": "fix(ci): make the branch threshold a real one, with the gap as a dated floor (JUM-681) (#200)"
+    "message": "fix(frontend): resolve dashboard organization ids to their display name (#543)"
   },
   {
-    "sha": "7f98d15b7b892cbcdc6aa7e4914ccf6b542c7b31",
-    "date": "2026-08-12T17:35:19-03:00",
+    "sha": "457d43e8f23e2c79981979286104a9aeecf4b136",
+    "date": "2026-09-26T22:04:48-03:00",
     "author": "Eduardo A.",
-    "message": "fix(ci): correct the mock-only rule, and make the Express suite integrate (JUM-678) (#199)"
+    "message": "fix(docs-ui): vendor swagger-ui 5 so /OASdoc and the designer render OpenAPI 3.1 (#541)"
   },
   {
-    "sha": "61ed1edc5994bee40930c74c860503e1f1221bba",
-    "date": "2026-08-12T17:13:58-03:00",
+    "sha": "a45b531509777871dad18c2fa76fcdc0e57e31ba",
+    "date": "2026-09-26T21:35:06-03:00",
     "author": "Eduardo A.",
-    "message": "test: declare assertions in the 31 suites that did not (JUM-677) (#197)"
+    "message": "chore(ci): stop test-map.json from conflicting on every PR (#544)"
   },
   {
-    "sha": "33b00ba6455ec19e09e108fcf3bc78cb1168ab56",
-    "date": "2026-08-12T17:02:24-03:00",
+    "sha": "96f533041877ebbb74330a865512519e12525781",
+    "date": "2026-09-26T20:26:21-03:00",
     "author": "Eduardo A.",
-    "message": "test: wait on the event, not the clock (JUM-679) (#195)"
+    "message": "docs(website): keep maintainer provenance off the developer site and pair every contributor doc (#538)"
   },
   {
-    "sha": "fae91d969e15e07f78446843a1f3c0b244e34e3d",
-    "date": "2026-08-12T16:49:48-03:00",
+    "sha": "2120b03528d8c59c365178c4448c84ece09efb55",
+    "date": "2026-09-26T18:36:15-03:00",
     "author": "Eduardo A.",
-    "message": "test(website): bring the website's suites under the test map (JUM-680) (#194)"
+    "message": "[JUM-906][Fix] Breadcrumb names the module and tab and links to real locations (#540)"
   },
   {
-    "sha": "fbac0006ef76d77d367910a7413ec807c05aa678",
-    "date": "2026-08-12T16:36:53-03:00",
+    "sha": "ee05afec604d6b016cd0136cc1915afb2a2ab91d",
+    "date": "2026-09-26T18:09:16-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-700][Fix] Hide agent metadata and add Cana design notes"
+    "message": "[JUM-905][Fix] Dark canvas, sidebar and anchored mini-map on the Architecture tab (#539)"
   },
   {
-    "sha": "4b8f3039c11b4d6641207b521b14abc62f3210c1",
-    "date": "2026-08-12T16:09:39-03:00",
+    "sha": "ea12b997566636d18999e40a311b62d75b105cb3",
+    "date": "2026-09-26T17:45:36-03:00",
     "author": "Eduardo A.",
-    "message": "test: bound the quarantine to suites that still exist (JUM-682) (#196)"
+    "message": "ci(gate): run ci:gate checks that no CI job ran as a branch-gate preflight (#534)"
   },
   {
-    "sha": "eba83fa6c5a47ed2f7d2db858167e26e1ee8367f",
-    "date": "2026-08-12T15:45:30-03:00",
+    "sha": "6c28d96a5a11c98dd07769609f8aab8fd3d882c6",
+    "date": "2026-09-26T17:36:14-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-699][Fix] Stabilize Cana playground theme and Monaco code widgets"
+    "message": "chore(website): remove starter-template leftovers nothing renders (#536)"
   },
   {
-    "sha": "21927c69f471d09c082a39878f50ac2a39457c36",
-    "date": "2026-08-12T14:51:00-03:00",
+    "sha": "b80fd8ffd70933a5ec3759ec8240b42555786fef",
+    "date": "2026-09-26T17:21:01-03:00",
     "author": "Eduardo A.",
-    "message": "docs(JUM-690): add Cana framework tutorials (#198)"
+    "message": "fix(cli-init): commit the packaged Users persistence adapters .gitignore dropped (#537)"
   },
   {
-    "sha": "500c65a4b631aa09933120e42168561b9c8d7365",
-    "date": "2026-08-12T11:45:55-03:00",
+    "sha": "8c4d0179aa8fc0afd91be9a15c81347498f56a57",
+    "date": "2026-09-26T16:58:41-03:00",
     "author": "Eduardo A.",
-    "message": "test(website): add component, a11y, and link-quality jest gates for JUM-158 (#192)"
+    "message": "docs(readme): speak to prospects, drop the CI-governance leak and document the real CLI (#535)"
   },
   {
-    "sha": "8c46bab1af88388862c5c6ee0555d943a6d4b3fb",
-    "date": "2026-08-12T11:30:21-03:00",
+    "sha": "d038d9ebf8b2d0e234ea7c12c6336f356d4b1595",
+    "date": "2026-09-26T16:38:55-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-688][Docs] Fix MDX build break from angle-bracket headings (#193)"
+    "message": "[JUM-891][Chore] Consolidate Dependabot updates (#458–#460, #462) (#529)"
   },
   {
-    "sha": "0efb7960414f91e8f659563510ef4df0556cfa8e",
-    "date": "2026-08-12T10:46:14-03:00",
+    "sha": "e7c853dc01b7ff1747bfc4d84e5196d9a50bde6e",
+    "date": "2026-09-26T15:57:49-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): escape MDX-breaking (<30 min) package headings (JUM-688)"
+    "message": "chore(deps): consolidate Dependabot bumps (#458–#460, #462)"
   },
   {
-    "sha": "41fef1a85aeb9bd540ad94ad39da3f5e04f46c67",
-    "date": "2026-08-12T11:15:06-03:00",
+    "sha": "f4f130206a016995afc61d7e15443aba1b6ab1a1",
+    "date": "2026-09-26T15:50:53-03:00",
     "author": "Eduardo A.",
-    "message": "feat(governance): declare and gate test integrity — requirements 134 and 135 (#188)"
+    "message": "[JUM-901][Fix] Run the published CLI when the GitHub entry point has no local build (#533)"
   },
   {
-    "sha": "348fc6b73ce5a968a6e4229d2ab9b96d5f04991d",
-    "date": "2026-08-12T11:03:17-03:00",
+    "sha": "dbe07c6ae8b38d1473121d76b8ac9e6d40bd4b5c",
+    "date": "2026-09-26T15:33:55-03:00",
     "author": "Eduardo A.",
-    "message": "feat(dead-letter): run the replay worker for the life of the server (JUM-53) (#191)"
+    "message": "fix(cli-init): pin each generated @jumentix/* dependency to its own published version (#532)"
   },
   {
-    "sha": "97f764db8e2218d9b150e1916883c187185e051a",
-    "date": "2026-08-11T22:14:32-03:00",
+    "sha": "0336bc823b97d3980bb0cecaf7336aae89ec9739",
+    "date": "2026-09-26T15:21:43-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-658][Docs] Site-wide deep docs, playgrounds, SEO/AI (#184)"
+    "message": "ci(release): automate npm publish after each main release and publish packed tarballs (#531)"
   },
   {
-    "sha": "144db092a2bbe4e34e45f406ce24c4553ea063a0",
-    "date": "2026-08-11T21:35:41-03:00",
+    "sha": "dd9c2dafe15bd8fbfbfe016c859f6dfb5eb350f9",
+    "date": "2026-09-26T14:56:11-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): document always-on Vercel Analytics (JUM-686)"
+    "message": "feat(governance): add Requirement 066 audience matrix and docs:check-audience gate (#530)"
   },
   {
-    "sha": "d8d7c51596f75ef5ad7f4b1c7c2a02e52ed7aceb",
-    "date": "2026-08-11T20:43:21-03:00",
+    "sha": "96e8dc41265b9ab29b0fab77e41dfcaa4f394e7f",
+    "date": "2026-09-26T12:38:38-03:00",
     "author": "Eduardo A.",
-    "message": "docs(website): finish junior zero-to-pleno epic pass (JUM-671–676)"
+    "message": "[JUM-889][Chore] Sync v0.2.15 release into dev (#528)"
   },
   {
-    "sha": "c02cb5e934d8888275a3ef8327bd66fa62785aaf",
-    "date": "2026-08-11T20:38:41-03:00",
+    "sha": "5a177a6308f38bc05f3c3576c21b35d0c86317b6",
+    "date": "2026-09-26T12:25:30-03:00",
     "author": "Eduardo A.",
-    "message": "docs(website): add public apps hubs and guide checklists (JUM-675, JUM-685)"
+    "message": "chore: synchronize changelog (#527)"
   },
   {
-    "sha": "d1e1b96579c472489332d23baa20e7a30b6e9c2a",
-    "date": "2026-08-11T20:34:27-03:00",
+    "sha": "1122076d61465c7066848e0f3ee63e3a159c2cde",
+    "date": "2026-09-26T12:04:11-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): exclude private packages; deepen public package docs (JUM-685)"
+    "message": "chore(release): v0.2.15 (#525)"
   },
   {
-    "sha": "88603c5f6d91b38d0803ac701513c0d1322fd7e1",
-    "date": "2026-08-11T19:42:22-03:00",
+    "sha": "5f7169bee84de6b224cbf6b13dd39edd25fc2116",
+    "date": "2026-09-26T11:53:01-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): dark-mode quote contrast and designer-core playground (JUM-665, JUM-666)"
+    "message": "[JUM-889][Fix] Promote unattended release branch-gate fixes to main (#524)"
   },
   {
-    "sha": "698076c2700072491d9eb171f49c1efe95b8cf3b",
-    "date": "2026-08-11T16:51:49-03:00",
+    "sha": "b7151ca422851feac6f66a93d00de2310810c397",
+    "date": "2026-09-26T11:28:50-03:00",
     "author": "Eduardo A.",
-    "message": "docs(website): site-wide deep docs, playgrounds, and SEO/AI for JUM-658"
+    "message": "[JUM-889][Fix] Force-reset stale chore/release branch tips (#523)"
   },
   {
-    "sha": "9b69dffce380fcc6af03da020a7193ece18d1564",
-    "date": "2026-08-11T10:38:07-03:00",
+    "sha": "2254de8ccfeaa3dd2d12694c68e8fc513e282708",
+    "date": "2026-09-26T11:14:35-03:00",
     "author": "Eduardo A.",
-    "message": "docs(website): publish cana consumer docs and playgrounds"
+    "message": "fix(release): diff generated PRs against main on branch push"
   },
   {
-    "sha": "6ec1533efa9e7b5960f77893474f8e9b1c0025e6",
-    "date": "2026-08-11T21:49:25-03:00",
+    "sha": "5148a10118f28391027f1314a532a8909f2229b6",
+    "date": "2026-09-26T11:03:34-03:00",
     "author": "Eduardo A.",
-    "message": "fix(website): stop the nested navbar anchor that breaks hydration (JUM-664) (#190)"
+    "message": "fix(release): force-reset stale chore/release branch tips"
   },
   {
-    "sha": "94aa70463323260ac659595b9bbcb104b6c92aa9",
-    "date": "2026-08-11T20:23:18-03:00",
+    "sha": "23b897e4798cf4b2b6259a1dc325625f4ee298f1",
+    "date": "2026-09-26T10:55:54-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-637][Governance] Reuse existing Firebase credentials for RTDB agent bus (#168)"
+    "message": "[JUM-889][Chore] Promote changelog race fix to main (#520)"
   },
   {
-    "sha": "8c5ec50e2d8a62c289dc2a4d2901f593f6c79acf",
-    "date": "2026-08-11T19:59:33-03:00",
+    "sha": "f32b4d35ad1ed54e8464cfb29f5333616fd48e40",
+    "date": "2026-09-26T10:29:01-03:00",
     "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into kimi/governance/JUM-637-reuse-firebase-rtdb-credentials"
+    "message": "[JUM-889][Chore] Reconcile main into dev + changelog race fix (#519)"
   },
   {
-    "sha": "c87cd207113dd65574926a35e9380392e8e8a70f",
-    "date": "2026-08-11T19:53:52-03:00",
+    "sha": "cb2f6c2864981457a8d1d203654c58bceabd6853",
+    "date": "2026-09-26T10:24:01-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-684][Chore] Consolidate Dependabot dependency updates (#189)"
+    "message": "fix(release): tolerate changelog-sync race after tagging"
   },
   {
-    "sha": "bff63701e7ec0eadc75d7d54c3a05331620acce2",
-    "date": "2026-08-11T19:29:52-03:00",
+    "sha": "97977fce0f8b0229a2567da98957691bc922e1ed",
+    "date": "2026-09-25T16:30:32-03:00",
     "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#518)"
+  },
+  {
+    "sha": "e8086b153ee424fea1d36f84a8ac86dc9ab9923a",
+    "date": "2026-09-25T15:48:07-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Release] Promote unattended release automation to main (#517)"
+  },
+  {
+    "sha": "2c408a13977713fc43f5402c9d825de651d84916",
+    "date": "2026-09-25T15:02:16-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Fix] Unattended release/changelog PR automation (#516)"
+  },
+  {
+    "sha": "44e593079cbfee9259ee2d760da9ce9518cfc8eb",
+    "date": "2026-09-25T13:59:29-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#515)"
+  },
+  {
+    "sha": "349ccda13ce16f9a5ab8af3eebb2ca31415be417",
+    "date": "2026-09-25T13:38:57-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#513)"
+  },
+  {
+    "sha": "7e14c66051aee7e706fb69d3752f0bf3bf1b00dd",
+    "date": "2026-09-25T13:24:38-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.14 (#512)"
+  },
+  {
+    "sha": "bd422eb9e31b40f1d87c1f40ec42bcc6aa309280",
+    "date": "2026-09-25T13:17:23-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#511)"
+  },
+  {
+    "sha": "8fc560b7daa5ed26ab9fe30c221a695dadc6edec",
+    "date": "2026-09-25T13:04:28-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.13 (#510)"
+  },
+  {
+    "sha": "49299b562c502420a527a8a4bdd6b6f99b05142a",
+    "date": "2026-09-25T12:54:27-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#509)"
+  },
+  {
+    "sha": "479f735d99f50c0cf613a642bf23258f4a3cbebe",
+    "date": "2026-09-25T12:52:30-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.12 (#508)"
+  },
+  {
+    "sha": "14e8cf08ed0cb771e4bda5275e9058947428df67",
+    "date": "2026-09-25T12:32:25-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#506)"
+  },
+  {
+    "sha": "bcc39a00a456cf8112d014fc5b7ddb4d073b5a17",
+    "date": "2026-09-25T12:31:37-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.11 (#507)"
+  },
+  {
+    "sha": "da5d173240ca270f10f3a918570c28231914f2a6",
+    "date": "2026-09-25T12:20:42-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.10 (#505)"
+  },
+  {
+    "sha": "ccf049c1ccbf18fb0b8dd665db9edf617b9f6ed1",
+    "date": "2026-09-25T12:11:13-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#503)"
+  },
+  {
+    "sha": "720d9587041ce7e63b31e4b9cb10bfb29bc0e121",
+    "date": "2026-09-25T12:09:43-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.9 (#504)"
+  },
+  {
+    "sha": "162ad506046549030a32a06162ce8d95d3991471",
+    "date": "2026-09-25T11:49:54-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.8 (#501)"
+  },
+  {
+    "sha": "45ef2cf98de4bb78bffdad3397d08152af90eceb",
+    "date": "2026-09-25T11:48:25-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#502)"
+  },
+  {
+    "sha": "276249cbea8eb59098b91e2a5de426c1c1611e90",
+    "date": "2026-09-25T11:39:18-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#500)"
+  },
+  {
+    "sha": "611cb03d51a613ae0df9a1565addc4f92b017e68",
+    "date": "2026-09-25T11:29:09-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.7 (#499)"
+  },
+  {
+    "sha": "0af1dfb886b31163fdfe4da5dd007ff471658763",
+    "date": "2026-09-25T11:19:30-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#498)"
+  },
+  {
+    "sha": "59f4cb42546284dee57add4554c5b2231c996c59",
+    "date": "2026-09-25T11:17:47-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.6 (#497)"
+  },
+  {
+    "sha": "c301fe279ebb04861f35175438ad05dbe239e21b",
+    "date": "2026-09-25T10:57:31-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.5 (#496)"
+  },
+  {
+    "sha": "05db91acf63571c98985cff209494418e6407306",
+    "date": "2026-09-25T10:56:32-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#495)"
+  },
+  {
+    "sha": "dbf69766d4ea57dd380d14d11b431d2b2d74468f",
+    "date": "2026-09-25T10:36:14-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.4 (#494)"
+  },
+  {
+    "sha": "74b94901f8dbed16af34fd14c3ef4b68bc0ceef6",
+    "date": "2026-09-25T10:24:35-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#493)"
+  },
+  {
+    "sha": "9f36d30c96890ceedbd3a4fa2fb31744f73bdfdf",
+    "date": "2026-09-25T10:13:54-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.3 (#492)"
+  },
+  {
+    "sha": "97d6e50382b9a4bd0066e8743d974eccb236faa4",
+    "date": "2026-09-25T10:04:37-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#491)"
+  },
+  {
+    "sha": "29079721e19b7a4a36deb18acde8e3ebf617d8c5",
+    "date": "2026-09-25T09:51:28-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.2 (#489)"
+  },
+  {
+    "sha": "7ae1711c58314aafe1e828975aebcceec87ed873",
+    "date": "2026-09-25T09:47:08-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#490)"
+  },
+  {
+    "sha": "1538bf182537ac5a8834ac9b1e74343d224ddbcb",
+    "date": "2026-09-25T09:25:02-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Release] Promote coverage harden to main (#486)"
+  },
+  {
+    "sha": "66813fd811c27cddfa2a914ac634aefc63924800",
+    "date": "2026-09-25T08:57:10-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Fix] Ignore cli-init templates in patch coverage (#488)"
+  },
+  {
+    "sha": "c7c15003a43dba3e04e1a22f09d47c5a6ab88e60",
+    "date": "2026-09-25T08:50:37-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(coverage): ignore cli-init templates in patch coverage"
+  },
+  {
+    "sha": "6dea283b280309d79cd5bb9ba02e12c5ebcde531",
+    "date": "2026-09-25T07:52:27-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Fix] Decouple app-release dry-run from live tip history (#487)"
+  },
+  {
+    "sha": "5c08d0daa5d4efb8c2c2812baf501256f3749ee2",
+    "date": "2026-09-25T07:46:27-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(test): decouple app-release dry-run from live tip history"
+  },
+  {
+    "sha": "0409e7af2a5d5341613badfc70a2e42fea08bb3f",
+    "date": "2026-09-25T07:42:56-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Release] Reconcile main into dev (v0.2.1 ancestry) (#485)"
+  },
+  {
+    "sha": "8ea2619bcce1364c16c1c705b0cf3b049d244253",
+    "date": "2026-09-25T07:22:13-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): merge main into dev (v0.2.1 ancestry)"
+  },
+  {
+    "sha": "a9da7132b244828ec199556cae55895e7d37d996",
+    "date": "2026-09-24T19:29:12-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#484)"
+  },
+  {
+    "sha": "1aae03de7e6bfc2df75afd7f5b71525416ad6d87",
+    "date": "2026-09-24T19:18:33-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#483)"
+  },
+  {
+    "sha": "a4da7cda2583bbc3fe060d0025b4b572fe540f7a",
+    "date": "2026-09-24T19:04:48-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][CI] Skip frontend coverage on non-frontend release patches (#481)"
+  },
+  {
+    "sha": "40eec58a9624b91ba28d1cf38785e64954c0e6c3",
+    "date": "2026-09-24T18:56:07-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.1 (#479)"
+  },
+  {
+    "sha": "e5eff61510248f2e44584bd8df0758237415f0f4",
+    "date": "2026-09-24T18:48:01-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): treat Codecov PR comments as automated decoration"
+  },
+  {
+    "sha": "050bdff02743518ebc90d537763094f2dc97a73b",
+    "date": "2026-09-24T18:16:55-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): skip frontend coverage on non-frontend release patches"
+  },
+  {
+    "sha": "aeb2c9dacdc34d8d827c58879ae3f827b3f6bdc0",
+    "date": "2026-09-24T14:41:42-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#480)"
+  },
+  {
+    "sha": "7714c7086fb6dd964212a69054b385e51feb4b27",
+    "date": "2026-09-24T14:20:16-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Release] Promote app-release inherit fix to main (#477)"
+  },
+  {
+    "sha": "1dc1f7c5b9593ec267ce7628b9487fa074024407",
+    "date": "2026-09-24T13:58:06-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#478)"
+  },
+  {
+    "sha": "76db40ba7bcbc766a6cd322c25ad04c8c5c662be",
+    "date": "2026-09-24T13:52:57-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): merge main into dev (v0.2.0 ancestry)"
+  },
+  {
+    "sha": "d3b89bcd4b7d9ccac5e676ab8ef8be90bc6c78cc",
+    "date": "2026-09-24T13:49:31-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(release): handle gh inherit stdio returning null (#476)"
+  },
+  {
+    "sha": "77f0431666516f82508dab902052a4ed0c30d2a2",
+    "date": "2026-09-24T13:49:01-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.2.0 (#475)"
+  },
+  {
+    "sha": "fd0e02a259b0c31f5d08adb27889d7efdee557e8",
+    "date": "2026-09-24T13:38:20-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): v0.1.0 (#472)"
+  },
+  {
+    "sha": "432c179d4c2985676f734933559c1505e0fa0efd",
+    "date": "2026-09-24T13:18:27-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): allow app-release chore branches to target main (#474)"
+  },
+  {
+    "sha": "7a38825b6fca61fb4df352b2d76d618313c67f24",
+    "date": "2026-09-24T12:54:14-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Release] Promote signed app-release path to main (#468)"
+  },
+  {
+    "sha": "c079cd7bc567290a278674588d72429a431fa193",
+    "date": "2026-09-24T12:23:11-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): preinstall Firefox before browser-tools orb (#471)"
+  },
+  {
+    "sha": "4806352d1e2cdb7cca026c24550c9ab74a93a3c9",
+    "date": "2026-09-24T11:31:15-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(release): resolve sleep/bun via absolute paths (#470)"
+  },
+  {
+    "sha": "45f78f2d98b598bfda05169743915804b4685659",
+    "date": "2026-09-24T10:49:54-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-890][Test] Guard REST changelog signature verification (#469)"
+  },
+  {
+    "sha": "6984f4dd593f86c2336243494999d3273a9b8fe8",
+    "date": "2026-09-24T09:22:58-03:00",
+    "author": "Eduardo Almeida",
+    "message": "test(ci): guard changelog REST signature verification"
+  },
+  {
+    "sha": "e7ea89b7f5a1e46bc0342160f54d65977a03ede7",
+    "date": "2026-09-24T09:19:59-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Chore] Merge main into dev (ancestry for promote) (#467)"
+  },
+  {
+    "sha": "7f015c64beb35d4179dd8ef589f3dd8ec6ba8db8",
+    "date": "2026-09-24T09:14:58-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(release): merge main into dev (ancestry)"
+  },
+  {
+    "sha": "326b24bcd9b2d77f40cce5e521accc431b8ecb40",
+    "date": "2026-09-24T09:13:55-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-889][Chore] Merge main into dev before app-release promote (#465)"
+  },
+  {
+    "sha": "30dcdae587e991de62c11f208066b42a0c60e791",
+    "date": "2026-09-23T16:08:13-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(release): move app tags to signed GHA path (#457)"
+  },
+  {
+    "sha": "2e09a431fa038dc4cae57616e7902ebfb437137d",
+    "date": "2026-09-23T15:02:05-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#456)"
+  },
+  {
+    "sha": "5943daf1683f6c15c4d8979a78e197817b685105",
+    "date": "2026-09-23T15:00:45-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-882][Fix] Resolve gh/npm via absolute paths for Sonar S4036"
+  },
+  {
+    "sha": "5081287150aa5c2ddb2fffefb50522f34ec82661",
+    "date": "2026-09-23T14:58:06-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-882][Release] Promote tag-driven release epic to main"
+  },
+  {
+    "sha": "5410581d07932b2e0ae2eaff610a7d34d02941ad",
+    "date": "2026-09-23T14:23:22-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-882][Release] Tag-driven changelog, GitHub Releases and npm publish"
+  },
+  {
+    "sha": "07bca244cb97fc70741e83cf8b98654afc5662b8",
+    "date": "2026-09-23T13:26:51-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#452)"
+  },
+  {
+    "sha": "578dd77432365c645ff49c3def1bc6c8075b5014",
+    "date": "2026-09-23T13:15:34-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-890][Release] Verify automated changelog commit signing (#446)"
+  },
+  {
+    "sha": "f423828c2f43f74877cfc031e0d576e84f89c63d",
+    "date": "2026-09-23T12:53:26-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-890][Chore] Merge main into dev (#451)"
+  },
+  {
+    "sha": "03ba0cb3622feeeb358a40ff1ecbe557f978fa1f",
+    "date": "2026-09-23T12:48:46-03:00",
+    "author": "Eduardo Almeida",
+    "message": "chore: merge main into dev"
+  },
+  {
+    "sha": "d288148f0f585378f8e30a8da52500c8cbe1a208",
+    "date": "2026-09-23T12:47:27-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): sign generated changelog commits (#441) (#443) (#450)"
+  },
+  {
+    "sha": "591d039e88450624ccbcdc4113bb59d0b64e8a0e",
+    "date": "2026-09-23T11:34:17-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-872][CI] CircleCI as canonical CI; GitHub Actions minimal and reversible (#444)"
+  },
+  {
+    "sha": "ab1cbdec1feb78a2ba3467630b6483413435c0b1",
+    "date": "2026-09-23T06:29:02-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): grant id-token write for npm provenance publish (#442)"
+  },
+  {
+    "sha": "5f1264e536f92940503758ca37cf27259845ab87",
+    "date": "2026-09-23T05:53:17-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-890][Fix] Run CircleCI services on the executor network (#447)"
+  },
+  {
+    "sha": "995676689e64e47cd666bafefaae4484cbe2ade9",
+    "date": "2026-09-23T05:13:00-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): verify generated changelog commits via REST (#445)"
+  },
+  {
+    "sha": "2c2c70503d267100a1c3441b21c8f34e05e16c10",
+    "date": "2026-09-23T03:56:14-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): sign generated changelog commits (#441) (#443)"
+  },
+  {
+    "sha": "a2e432b67144216024feada8a0c88d4f0df3ee0f",
+    "date": "2026-09-23T03:36:44-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): sign generated changelog commits (#441)"
+  },
+  {
+    "sha": "1b70f52dea86aa7411159abbaa67cd5aff2d9c5b",
+    "date": "2026-09-23T02:05:18-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-863][Release] Promote dev to main after Sonar reliability repair (#438)"
+  },
+  {
+    "sha": "7c154b93ba0c1388f08b23da37a1502d206a0367",
+    "date": "2026-09-23T00:31:17-03:00",
+    "author": "Eduardo A.",
+    "message": "merge: reconcile main into dev (#439)"
+  },
+  {
+    "sha": "c2989ad3949bc9c2306ed06e1faa5de42c26dde7",
+    "date": "2026-09-23T00:21:48-03:00",
+    "author": "Eduardo Almeida",
+    "message": "merge: reconcile main into dev"
+  },
+  {
+    "sha": "071dc916c8cd828586ac67fb645681f87691bbf2",
+    "date": "2026-09-23T00:13:42-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(api): await Fastify documentation replies (#437)"
+  },
+  {
+    "sha": "8c6776dbd0edce6120960c2020d12924ed808fb9",
+    "date": "2026-09-22T23:20:24-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-862][Release] Reconcile changelog CI safeguards (#435)"
+  },
+  {
+    "sha": "f9f4105472b2cf8624f4256b5963c66fefe1a50d",
+    "date": "2026-09-22T22:20:28-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): run required jobs for changelog sync PRs (#433)"
+  },
+  {
+    "sha": "fef776d3626708ddc1c576cf8d960f2aa91b9474",
+    "date": "2026-09-22T17:22:34-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-862][Release] Repair generated changelog promotion (#431)"
+  },
+  {
+    "sha": "cb384df1eb49eb428d6c53b3f21e913d8da9b9be",
+    "date": "2026-09-22T17:02:47-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): allow generated changelog release PRs (#430)"
+  },
+  {
+    "sha": "fe96ee8f96e418276012012fc018791b14cfc21a",
+    "date": "2026-09-22T16:30:49-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-821][Release] Promote dev to main — factory cli-init, npm publish readiness, CI governance (#409)"
+  },
+  {
+    "sha": "a08358001ac37b5557f0f0638fc853a8c364bfef",
+    "date": "2026-09-22T16:09:09-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): scope release patch coverage to dev baseline (#428)"
+  },
+  {
+    "sha": "1caf54ab66c00b79c98f7991c0922b285fb9bd2d",
+    "date": "2026-09-22T15:33:57-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): prepare frontend coverage dependencies (#427)"
+  },
+  {
+    "sha": "57b9d64726b203b2d06ef6f1ac76898cbbdb4ff8",
+    "date": "2026-09-22T14:47:18-03:00",
+    "author": "Eduardo A.",
+    "message": "test(backend): cover paging fallbacks (#426)"
+  },
+  {
+    "sha": "26ca2ae2aa1f215c3dcc103d1156435c2e26035c",
+    "date": "2026-09-22T14:02:37-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): retry database compose startup (#425)"
+  },
+  {
+    "sha": "773d0e3ea6be348adadd117ead3aa2233b37f5a8",
+    "date": "2026-09-22T13:44:14-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): retry transient Redis registry failures (#424)"
+  },
+  {
+    "sha": "a109a9a5d13d84e1bb0b0b440eaf628a20e2d19b",
+    "date": "2026-09-22T10:50:48-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): [JUM-821] harden isolated promotion jobs (#423)"
+  },
+  {
+    "sha": "5998d741e502ba8f94718a27fb495f325ea9ef5e",
+    "date": "2026-09-22T10:04:26-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): [JUM-821] build dependencies before workspace tests (#422)"
+  },
+  {
+    "sha": "0c1ed0b9440e9e5bf94fef21d425a9fda2b6374d",
+    "date": "2026-09-22T09:42:46-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): build workspaces topologically (#421)"
+  },
+  {
+    "sha": "ee623d225cf1d3d524b86423b698aee1ed3dd702",
+    "date": "2026-09-22T01:11:14-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#420)"
+  },
+  {
+    "sha": "a2f0459ab04c0c72f31b0f24f312e76c0cd94e89",
+    "date": "2026-09-22T00:59:10-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(cli-init): [JUM-821] resolve Bun in Actions (#419)"
+  },
+  {
+    "sha": "55a860fe953ce38f1d4ee94dd9cfdc864f3b817d",
+    "date": "2026-09-22T00:43:46-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#418)"
+  },
+  {
+    "sha": "813acce0da44bc8b3274126146fa7b1705c47bce",
+    "date": "2026-09-22T00:29:46-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): [JUM-821] bootstrap promotion gates (#417)"
+  },
+  {
+    "sha": "20a4ce3732bdb78889a3f8c5585ceac4da222f99",
+    "date": "2026-09-22T00:13:05-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(cli-init): [JUM-821] restore coverage setup (#416)"
+  },
+  {
+    "sha": "8bc76701c2f6d12300f84a96561937fe99f46ca3",
+    "date": "2026-09-21T23:52:00-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#415)"
+  },
+  {
+    "sha": "36655f5da8b09675e80b1d164521b1a868284d31",
+    "date": "2026-09-21T23:38:33-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-871][Fix] Build workspace packages in topological level order (#414)"
+  },
+  {
+    "sha": "aaeb86d1f9bf6d7734462f3838dcc200ec20def3",
+    "date": "2026-09-21T22:35:06-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#413)"
+  },
+  {
+    "sha": "238e2fe2d7c9dfef5da97cd04d65a5ac0c4a5bfe",
+    "date": "2026-09-21T22:23:38-03:00",
+    "author": "Eduardo A.",
+    "message": "ci(JUM-862): bind bot-token jobs to the consolidated secrets environment (#412)"
+  },
+  {
+    "sha": "d32c157f845640c7e04f81c2a1f969eefd812c95",
+    "date": "2026-09-21T22:11:51-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(JUM-872): address PR #409 review findings on dev (#411)"
+  },
+  {
+    "sha": "e07577b584822ca84402fae13b01225f7a44e609",
+    "date": "2026-09-21T20:55:30-03:00",
+    "author": "Eduardo A.",
+    "message": "ci(JUM-866): guard the patch-report frontend coverage step to PRs (#410)"
+  },
+  {
+    "sha": "03d50153d15e398e50b938988d7e39efa7010873",
+    "date": "2026-09-21T20:08:05-03:00",
+    "author": "Eduardo Almeida",
+    "message": "Merge remote-tracking branch 'origin/main' into dev"
+  },
+  {
+    "sha": "664e34d0f0f5314ea17c7cd2532de944432ff4ae",
+    "date": "2026-09-21T20:00:28-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-821][Chore] Reconcile main squash ancestry into dev (#408)"
+  },
+  {
+    "sha": "d76896f86b6a564750760f9d01953a5cdc8e9e59",
+    "date": "2026-09-21T19:49:43-03:00",
+    "author": "Eduardo A.",
+    "message": "ci(JUM-841): verify npm org access before publishing (#407)"
+  },
+  {
+    "sha": "9d2e8c302b19c6eaab03e21f15709abe3667a2fb",
+    "date": "2026-09-21T19:12:20-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#404)"
+  },
+  {
+    "sha": "67ad836967e5ab787cb613d15377702c631aa137",
+    "date": "2026-09-21T18:59:29-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-862][CI] Treat UNKNOWN merge state as retryable in the changelog sync poll (#401)"
+  },
+  {
+    "sha": "f31ad011229675195453b9d36fc4a4b6908b58e0",
+    "date": "2026-09-21T18:24:23-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#402)"
+  },
+  {
+    "sha": "c3dda265ac481a0f71595a658358e50e9a4d44bb",
+    "date": "2026-09-21T17:53:54-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-870][Fix] Restore npm pack gate and map NPM_CI_CD (#398)"
+  },
+  {
+    "sha": "8a1e1afe17e1b0d5b4dc3f70ab05c8d2f91abb71",
+    "date": "2026-09-21T17:38:43-03:00",
+    "author": "Eduardo A.",
+    "message": "ci(JUM-862): bind sync-changelog to the env vars environment (#399)"
+  },
+  {
+    "sha": "4b0eede889c449c52611e9d82dcc820820c5a2cc",
+    "date": "2026-09-21T17:00:50-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#397)"
+  },
+  {
+    "sha": "4dde754b4d534ec434862ed9f621aa001d9d4864",
+    "date": "2026-09-21T19:39:17Z",
+    "author": "github-actions[bot]",
+    "message": "chore: synchronize changelog"
+  },
+  {
+    "sha": "4f53ea8ea648db4c081786f06b212d588d00bb5a",
+    "date": "2026-09-21T16:47:27-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-856][Docs] Fill factory epic closure merge evidence (#396)"
+  },
+  {
+    "sha": "2b151f532d03e8cfc5fe4087eb78a2e285b72fe0",
+    "date": "2026-09-21T16:39:38-03:00",
+    "author": "Eduardo A.",
+    "message": "docs(cli-init): fill factory epic closure merge evidence"
+  },
+  {
+    "sha": "460d71464b2460f9b70350712e50d7027cef9154",
+    "date": "2026-09-21T16:34:56-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-866][Fix] Restore long-lived CI health (#393)"
+  },
+  {
+    "sha": "aa590173d47d2153a6a93e672cbaad7db9e1ffb5",
+    "date": "2026-09-21T13:13:30-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-856][Governance] Req 094 epic closure record for factory v1 (#395)"
+  },
+  {
+    "sha": "c7cb4ebe9b4752dacc61c5a05b5db3375a1cffa1",
+    "date": "2026-09-20T23:32:41-03:00",
+    "author": "Eduardo A.",
+    "message": "docs(cli-init): req 094 epic closure record for factory v1"
+  },
+  {
+    "sha": "a963054cd641652ee85330fde7309ff398256a79",
+    "date": "2026-09-21T13:03:01-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-855][Docs] Factory getting-started and bootstrap EN/PT (#394)"
+  },
+  {
+    "sha": "d97bf80724b7abd6092a7b2ceb364ec2c8a629ce",
+    "date": "2026-09-20T23:27:42-03:00",
+    "author": "Eduardo A.",
+    "message": "docs(cli-init): factory getting-started and bootstrap EN/PT"
+  },
+  {
+    "sha": "3e87a876b01e7bd0f963ea1f5aac00b92569c031",
+    "date": "2026-09-21T12:52:29-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-854][Test] Add generation e2e matrix harness (#392)"
+  },
+  {
+    "sha": "8bb8a0ba31256345761cf44a93b946ccad50b34e",
+    "date": "2026-09-21T12:14:25-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(cli-init): link designer-core for spawned e2e CLI"
+  },
+  {
+    "sha": "d0914f1b6ee8591e8df2f8b20b7a93724fd5601b",
+    "date": "2026-09-20T23:23:31-03:00",
+    "author": "Eduardo A.",
+    "message": "test(cli-init): add generation e2e matrix harness"
+  },
+  {
+    "sha": "40bb147de7aa43b11eb5d8af2b690b81c29610fc",
+    "date": "2026-09-21T11:50:25-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-852][Feature] Doctor env and project diagnostics (#391)"
+  },
+  {
+    "sha": "35bfab149ff578bb7b745f5c5ac34cbfff0e9016",
+    "date": "2026-09-20T23:15:52-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(cli-init): doctor env and project diagnostics"
+  },
+  {
+    "sha": "78bc4a8f92cf50052b3b727cb8bae8e1ab552133",
+    "date": "2026-09-21T11:37:38-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-851][Feature] Upgrade generated projects with three-way merge (#390)"
+  },
+  {
+    "sha": "dc3d3fdd47f80e775b01c743b805a3ade5317776",
+    "date": "2026-09-20T23:12:08-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(cli-init): upgrade generated projects with three-way merge"
+  },
+  {
+    "sha": "1aa69de89420893b10a138e87610ce2bb034c287",
+    "date": "2026-09-21T11:23:26-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-850][Feature] Add domain|service|frontend to generated projects (#389)"
+  },
+  {
+    "sha": "713803f8548daeb3583010e4a43b84c5cc35a646",
+    "date": "2026-09-20T23:04:13-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(cli-init): add domain|service|frontend to generated projects"
+  },
+  {
+    "sha": "0d236b8f8079d514889c8ac9bd3ce61ad01bfbed",
+    "date": "2026-09-21T11:11:52-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-849][Feature] Assemble generated workspace root and manifests (#388)"
+  },
+  {
+    "sha": "cdaeb7e073f37154ce5959bfa8fcee3fe9328ee5",
+    "date": "2026-09-20T22:52:58-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(cli-init): assemble generated workspace root and manifests"
+  },
+  {
+    "sha": "9e37ad64bd034e4b710c197d22be62f0ef007d8e",
+    "date": "2026-09-21T10:52:54-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-848][Feature] Generate frontend seed from GenerationPlan (#387)"
+  },
+  {
+    "sha": "4324417aa17cbeec21c7ce358dd1fbb45f64e348",
+    "date": "2026-09-20T23:34:08-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(cli-init): slugify identifiers without ReDoS regex"
+  },
+  {
+    "sha": "07a826a76a95ad3b10c957073bb676e4accc8ec2",
+    "date": "2026-09-20T22:41:23-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(cli-init): generate frontend seed from GenerationPlan"
+  },
+  {
+    "sha": "5987d41574cdcb944bb4581f7627bb2ed11f3e49",
+    "date": "2026-09-20T23:37:21-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-847][Feature] Generate backend services from GenerationPlan (#386)"
+  },
+  {
+    "sha": "dcbc1f1acca5f8e3c6d2648e6ea08b7a61348c3f",
+    "date": "2026-09-20T23:18:32-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(cli-init): sanitize npm name segments without ReDoS regex"
+  },
+  {
+    "sha": "aec9a76910b3c6dfadddb40974b35875863da5dc",
+    "date": "2026-09-20T22:19:26-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(cli-init): generate backend services from GenerationPlan"
+  },
+  {
+    "sha": "61458a18ce4455e55fb401d9559f40d3bd2e42ae",
+    "date": "2026-09-20T22:52:32-03:00",
+    "author": "github-actions[bot]",
+    "message": "chore: synchronize changelog (#383)"
+  },
+  {
+    "sha": "ab55ec805fba87d2aebc58ac11eead431641266b",
+    "date": "2026-09-20T22:43:18-03:00",
+    "author": "Eduardo A.",
+    "message": "ci(JUM-862): open changelog PRs with a PAT and poll mergeability (#385)"
+  },
+  {
+    "sha": "cdc0c846b76e8843de7eee5555a031d8b99be8f1",
+    "date": "2026-09-20T22:15:22-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-846][Feature] Resolve sources into GenerationPlan (#384)"
+  },
+  {
+    "sha": "d41923b7f81ed731bc8a2fdb4f4ca97826d797f5",
+    "date": "2026-09-20T22:03:12-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: merge origin/dev into GenerationPlan branch"
+  },
+  {
+    "sha": "fbb96dfb26f0ad73fd57ab3bc48efe649cfcdca7",
+    "date": "2026-09-20T21:41:32-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(cli-init): resolve sources into GenerationPlan"
+  },
+  {
+    "sha": "d4d4f19c6124c3ad0d8b7eef16fc6914112630f0",
+    "date": "2026-09-20T21:38:42-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-853][Feature] Make @jumentix packages and CLI npm-publishable (#379)"
+  },
+  {
+    "sha": "bf9024373ffa44719ae3b86738e43753be19728b",
+    "date": "2026-09-20T20:21:35-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(release): make @jumentix packages and cli-init publishable"
+  },
+  {
+    "sha": "518645c302f434dbf94789180c24421231b7c893",
+    "date": "2026-09-20T21:30:23-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-845][Feature] Package CLI templates with freshness gate (#377)"
+  },
+  {
+    "sha": "66b979d82604e7886cffacdf9639a31d5975ce2c",
+    "date": "2026-09-20T19:54:58-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(cli-init): package backend/frontend seeds with freshness gate"
+  },
+  {
+    "sha": "90fa8ab798b3ea116d3a45d57693383aaf62206e",
+    "date": "2026-09-20T21:09:23-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: synchronize changelog (#380)"
+  },
+  {
+    "sha": "93dedfdf12f9f8dad0ba7000cadfb44a9b43b7d0",
+    "date": "2026-09-20T21:07:09-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-865][Chore] Enforce PR feedback and Sonar reliability gates (#376)"
+  },
+  {
+    "sha": "303db96999c705e9128e6712c0e998a76ed6ac0e",
+    "date": "2026-09-20T21:01:28-03:00",
+    "author": "Eduardo Almeida",
+    "message": "Merge remote-tracking branch 'origin/dev' into codex/chore/JUM-865-pr-feedback-resolution-gate"
+  },
+  {
+    "sha": "093873a5be01f6f29e56d32f4247a0c6c1e27448",
+    "date": "2026-09-20T20:20:53-03:00",
+    "author": "Eduardo A.",
+    "message": "ci(JUM-862): grant pull-requests write to sync-changelog (#378)"
+  },
+  {
+    "sha": "2c0540dcb9e160deef1afddab3cb61905dec7af2",
+    "date": "2026-09-20T20:02:04-03:00",
+    "author": "Eduardo Almeida",
+    "message": "Merge remote-tracking branch 'origin/dev' into codex/chore/JUM-865-pr-feedback-resolution-gate"
+  },
+  {
+    "sha": "09efd4ebe11b23104a0f80dc0309b6c0064b3f59",
+    "date": "2026-09-20T19:53:36-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(JUM-864): validate keyPath segments at the point of use in writePath (#375)"
+  },
+  {
+    "sha": "980b5571e622026b536d098ba530df5ff334a11c",
+    "date": "2026-09-20T19:53:33-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(JUM-863): make versionless catalog delete unconditional and unshadow deletedAt (#374)"
+  },
+  {
+    "sha": "2a1453bdf6a4d55b2d1d433bdba0c74bffdeda7c",
+    "date": "2026-09-20T19:53:30-03:00",
+    "author": "Eduardo A.",
+    "message": "ci(JUM-862): synchronize changelog through a PR instead of pushing to dev (#372)"
+  },
+  {
+    "sha": "96ede997f7fe466e278ecd0786e76cc922e51764",
+    "date": "2026-09-20T19:49:18-03:00",
+    "author": "Eduardo Almeida",
+    "message": "Merge remote-tracking branch 'origin/dev' into codex/chore/JUM-865-pr-feedback-resolution-gate"
+  },
+  {
+    "sha": "4db5d8b386ce2a670ae96acecafa93d9fbae2423",
+    "date": "2026-09-20T19:39:36-03:00",
+    "author": "Eduardo Almeida",
+    "message": "fix(JUM-865): fail closed Bun installation in CI"
+  },
+  {
+    "sha": "5553158bb008f3157fbc477a2fc7412b48f0651e",
+    "date": "2026-09-20T19:22:27-03:00",
+    "author": "Eduardo Almeida",
+    "message": "feat(JUM-865): enforce PR feedback and Sonar reliability gates"
+  },
+  {
+    "sha": "9e1137a63a5e76feb7fd2a58124384d539217f34",
+    "date": "2026-09-20T19:21:29-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-844][Refactor] CLI core command router prompts and TypeScript build (#373)"
+  },
+  {
+    "sha": "e0e7b31d4d89f30715df329dc067d98e6ad3b929",
+    "date": "2026-09-20T19:07:42-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(cli-init): build dist before suites when missing"
+  },
+  {
+    "sha": "baebf02c2a225ff6bbd719db0e1a0e23b01dbb97",
+    "date": "2026-09-20T18:44:39-03:00",
+    "author": "Eduardo A.",
+    "message": "refactor(cli-init): add TS command router, prompts and init config"
+  },
+  {
+    "sha": "1c84117f5dd9a39aa18e745fd7a81c5a6963a8f3",
+    "date": "2026-09-20T18:46:45-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-843][Governance] Rewrite Req 037 as factory generator CLI v2 (#371)"
+  },
+  {
+    "sha": "a274dd6f2ad337d9e947be0f572545c1a6285b2f",
+    "date": "2026-09-20T18:35:26-03:00",
+    "author": "Eduardo A.",
+    "message": "docs(governance): rewrite Req 037 as factory generator CLI v2"
+  },
+  {
+    "sha": "9cc76e2eb0180b185eba370b4cf2a27c4ad5d7ea",
+    "date": "2026-09-19T20:38:15-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-821][Release] Promote dev to main (#366)"
+  },
+  {
+    "sha": "1c12a2f85ecba30af444afb9c5e042c2fc75d57e",
+    "date": "2026-09-19T20:19:42-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(JUM-860): enforce Sonar reliability against the analyzed branch (#370)"
+  },
+  {
+    "sha": "86cc935320ec258f0dbbbb118b531b2e424b5c81",
+    "date": "2026-09-19T20:13:00-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(JUM-859): resolve npm by absolute path in check-npm-org-integration (#369)"
+  },
+  {
+    "sha": "693cd689bb71cf1161bb15528c028936a42d9f30",
+    "date": "2026-09-19T19:23:53-03:00",
+    "author": "Eduardo A.",
+    "message": "test(JUM-858): cover JUM-811 dashboard metrics lines for the patch-coverage gate (#368)"
+  },
+  {
+    "sha": "9fb6f76bc0c7e11bf01de1d334d17be56547c462",
+    "date": "2026-09-19T18:46:52-03:00",
+    "author": "Eduardo A.",
+    "message": "test(JUM-857): restore branch coverage to >= 98% for the release gate (#367)"
+  },
+  {
+    "sha": "66919e7eb63ef10391f532a5893e69565f7560d8",
+    "date": "2026-09-19T17:02:22-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-842][Ci] Point coverage jobs at moved cana browser scripts (#364)"
+  },
+  {
+    "sha": "937056b68adcef17ab07b0a433555600514973e4",
+    "date": "2026-09-19T16:51:49-03:00",
+    "author": "Eduardo Almeida",
+    "message": "Merge remote-tracking branch 'origin/dev' into cursor/ci/JUM-842-browser-coverage-paths"
+  },
+  {
+    "sha": "878ec41141c1d54445fd04297b2201066d0f4ede",
+    "date": "2026-09-19T16:33:52-03:00",
+    "author": "Eduardo A.",
+    "message": "feat: [JUM-841] prepare npm package publication (#365)"
+  },
+  {
+    "sha": "6a9e061b0a40605e619936642239858541c1ca92",
+    "date": "2026-09-19T16:12:16-03:00",
+    "author": "Eduardo Almeida",
+    "message": "Merge remote-tracking branch 'origin/dev' into codex/feature/JUM-841-npm-publication"
+  },
+  {
+    "sha": "4fa6e12b88d919eb19ff0492d2adbbace313db4a",
+    "date": "2026-09-19T16:11:22-03:00",
+    "author": "Eduardo A.",
+    "message": "docs: [JUM-844] make product setup CLI-first (#363)"
+  },
+  {
+    "sha": "69fadf5dd03a155a7bea710978a70007553a646f",
+    "date": "2026-09-19T16:01:36-03:00",
+    "author": "Eduardo Almeida",
+    "message": "Merge remote-tracking branch 'origin/dev' into codex/feature/JUM-841-npm-publication"
+  },
+  {
+    "sha": "5684fa1a3941d827b3b86cec71bc9e81f290546e",
+    "date": "2026-09-19T15:50:39-03:00",
+    "author": "Eduardo Almeida",
+    "message": "Merge remote-tracking branch 'origin/dev' into codex/fix/JUM-844-sonar-badge-validity"
+  },
+  {
+    "sha": "4ffbe02cf590d156c0bfa8a2d2eefbe194a291ee",
+    "date": "2026-09-19T15:38:18-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: sync changelog for JUM-842 coverage path retarget"
+  },
+  {
+    "sha": "00404502325036f0d1785f74617f87a7a640081a",
+    "date": "2026-09-19T15:35:25-03:00",
+    "author": "Eduardo A.",
+    "message": "ci: retarget coverage jobs to packages/cana browser scripts"
+  },
+  {
+    "sha": "b76e4b2c3b9e505caf7f7cfcc23b8854a064282f",
+    "date": "2026-09-19T15:32:31-03:00",
+    "author": "Eduardo Almeida",
+    "message": "feat: [JUM-841] prepare npm package publication"
+  },
+  {
+    "sha": "a118f0bd96b5998cbedb4bca1ce21437ddb14232",
+    "date": "2026-09-19T15:17:47-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: clear ownership path freeze leftovers for JUM-834 (#362)"
+  },
+  {
+    "sha": "64298e1aa2e558f6b840bebfa093923bcc1c4985",
+    "date": "2026-09-19T15:10:01-03:00",
+    "author": "Eduardo Almeida",
+    "message": "docs: [JUM-844] make product setup CLI-first"
+  },
+  {
+    "sha": "8b5bef627679a9641dcbcaaa56b57a2311c21caa",
+    "date": "2026-09-19T15:02:10-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-824][Governance] Restore suite and tooling ownership (#358)"
+  },
+  {
+    "sha": "967e3c64116a03d7263a28c5b6748496fa58ea24",
+    "date": "2026-09-19T14:44:19-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: sync origin/dev before merge of ownership epic"
+  },
+  {
+    "sha": "c762eff3f26605404b21bd9f1dee691b2556a13b",
+    "date": "2026-09-19T14:26:37-03:00",
+    "author": "Eduardo A.",
+    "message": "fix: clear Sonar reliability bug and ownership regex smells"
+  },
+  {
+    "sha": "e5fd9e34f1c5f48731eede4ba0071e1e28dfcff6",
+    "date": "2026-09-19T14:14:12-03:00",
+    "author": "Eduardo A.",
+    "message": "docs: restore public project badges (#361)"
+  },
+  {
+    "sha": "c48bbeb37b0e1d0c4e4bd3812a2021ecfd086f7a",
+    "date": "2026-09-19T13:58:16-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: sync origin/dev into ownership epic branch"
+  },
+  {
+    "sha": "2358ed95c847535b34b5574482d1a6735188d9bb",
+    "date": "2026-09-19T13:57:57-03:00",
+    "author": "Eduardo A.",
+    "message": "docs: align Codecov grids (#360)"
+  },
+  {
+    "sha": "1e972e66a74d1a148b3d0877e09d18d1cd0992ca",
+    "date": "2026-09-19T13:54:05-03:00",
+    "author": "Eduardo A.",
+    "message": "fix: drop ownership --root CLI to clear Sonar S8707"
+  },
+  {
+    "sha": "40f5e00c88bcde1f400a8025d7a514cb97ca393e",
+    "date": "2026-09-19T13:22:59-03:00",
+    "author": "Eduardo A.",
+    "message": "fix: empty ownership allow-list and clear Sonar debt"
+  },
+  {
+    "sha": "d6ebc7b600410371aa137e6820bfb7d7b3acc300",
+    "date": "2026-09-19T13:15:43-03:00",
+    "author": "Eduardo A.",
+    "message": "chore: absorb #359 sonar/codecov into ci-cd ownership"
+  },
+  {
+    "sha": "1bf0536168370484f117786790e85dc4a5b063ba",
+    "date": "2026-09-19T12:46:08-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): enforce public quality reporting (#359)"
+  },
+  {
+    "sha": "fba75b0f49699877f7af1cdb38d9b1de2fafb926",
+    "date": "2026-09-19T12:00:28-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(governance): restore suite and tooling ownership (JUM-824)"
+  },
+  {
+    "sha": "46dc6d11f816cf67ffb223f7bc764911ba56878c",
+    "date": "2026-09-19T07:57:51-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-840][Governance] Retire superseded governance material (#357)"
+  },
+  {
+    "sha": "40dcbb7abb746f72af40ec91eff08e9e36d544af",
+    "date": "2026-09-19T07:35:28-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(latent): clear bugs documented during JUM-821 promotion rounds (JUM-839) (#356)"
+  },
+  {
+    "sha": "78ba64ff7d72129f7fa777b3f8605d1ae2155631",
+    "date": "2026-09-18T17:26:50-03:00",
+    "author": "Eduardo A.",
+    "message": "fix(ci): analyse main and dev on sonar and codecov (#355)"
+  },
+  {
+    "sha": "9b6ae0587c88b455bb5ddbccffbeae2adc2c6734",
+    "date": "2026-09-18T13:37:08-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-811][Feature] Domain dashboards, OAS metrics widgets and a11y (#354)"
+  },
+  {
+    "sha": "dc2efbe67f62ddd1f851ca7d746af0df3fa69d69",
+    "date": "2026-09-18T13:28:58-03:00",
+    "author": "Eduardo A.",
+    "message": "feat(frontend): domain dashboards from OAS metrics"
+  },
+  {
+    "sha": "985957a06d6ec41ec75ebea147bc1f43c01f764a",
+    "date": "2026-09-17T19:57:52-03:00",
+    "author": "Eduardo A.",
+    "message": "[JUM-821][Release] Promote dev to main (#353)"
+  },
+  {
+    "sha": "c3333a807d46f49d3970e436e89f3816a60d7ea3",
+    "date": "2026-09-17T10:44:04-03:00",
+    "author": "Eduardo Almeida",
+    "message": "chore(release): retrigger dev promotion gate"
+  },
+  {
+    "sha": "6a2e3b27ef4a1657ef64c620972787bff9434d93",
+    "date": "2026-09-17T10:03:23-03:00",
+    "author": "Eduardo A.",
+    "message": "chore(deps): consolidate Dependabot updates (#352)"
+  },
+  {
+    "sha": "4adf13a36bf07a0c9607e206888425c1bc624158",
+    "date": "2026-09-17T09:54:07-03:00",
+    "author": "Eduardo Almeida",
     "message": "chore(deps): consolidate Dependabot updates"
   },
   {
-    "sha": "f480e7f46ce24189fe1f92307234c91227d7ea6d",
-    "date": "2026-08-11T19:02:25-03:00",
+    "sha": "149da2441c19ded87d08d6b00b4f61086fd511bb",
+    "date": "2026-09-16T15:04:37-03:00",
     "author": "Eduardo A.",
-    "message": "test(fastify): seed the user the localhost request authenticates as (JUM-663) (#187)"
+    "message": "Merge pull request #346 from web2solutions/dev"
   },
   {
-    "sha": "74bcbed2d99f67f411a3544773df191ed2c4aab2",
-    "date": "2026-08-11T18:46:26-03:00",
-    "author": "Eduardo A.",
-    "message": "test(restify): make the localhost suite establish what it depends on (JUM-663) (#186)"
-  },
-  {
-    "sha": "c651e39550a1a083e21be1dfde542648066c62bd",
-    "date": "2026-08-11T17:52:50-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(users): stop a refused caller from releasing another writer's lock (JUM-663) (#185)"
-  },
-  {
-    "sha": "6579d6eae4c6b505d6a4cd0615aba14546e7c3f4",
-    "date": "2026-08-11T17:17:07-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-53][Feature] Replay worker, real-Redis suite and full documentation (#183)"
-  },
-  {
-    "sha": "7f56785d076433e479eee8056fa659d603a28635",
-    "date": "2026-08-11T14:14:07-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-53][Feature] Dead-letter queue for mutex-refused transactions (#182)"
-  },
-  {
-    "sha": "9975428af63c64dcd01fc9186781befec3b0a7c3",
-    "date": "2026-08-11T13:26:52-03:00",
-    "author": "Eduardo A.",
-    "message": "chore(lint): clear the 662 warnings so the next one is visible for JUM-657 (#181)"
-  },
-  {
-    "sha": "c1f1420f4a25389f881e20131bb17255949d4263",
-    "date": "2026-08-11T12:33:32-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(agent-bus): order recent events by key and gate RTDB indexes for JUM-656 (#180)"
-  },
-  {
-    "sha": "2aec61a4b79ca5e53a50ed0758917e17b85a9bbe",
-    "date": "2026-08-11T12:25:48-03:00",
-    "author": "Eduardo A.",
-    "message": "chore(website): delete the orphaned content pages for JUM-640 (#179)"
-  },
-  {
-    "sha": "0398316d96d30eecc73f68a87c5511fbeaa523f0",
-    "date": "2026-08-10T22:39:02-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-655][CI] Gate stale builds and orphaned content, declare requirements 130-132 (#177)"
-  },
-  {
-    "sha": "5354ad1df53030a51e8ac602a611f22c23c90aee",
-    "date": "2026-08-10T22:36:11-03:00",
+    "sha": "390576a190e30dab6493bea92c559db47883b66e",
+    "date": "2026-09-16T14:17:01-03:00",
     "author": "Eduardo Almeida",
-    "message": "chore(governance): gate the defect classes that recurred, and declare the rules"
+    "message": "test(ci): close release coverage gaps"
   },
   {
-    "sha": "69430cdcdfe6aa3c650d2c3911866e0e3b705187",
-    "date": "2026-08-10T22:28:19-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-640][Docs] State the real cause of the orphaned docs content (#176)"
-  },
-  {
-    "sha": "3ee15a9b5d1bf8ca127aacfdeca619f8d601ac9a",
-    "date": "2026-08-10T22:22:31-03:00",
+    "sha": "294445300e113a769112c1dd23aceb25bf2904ea",
+    "date": "2026-09-16T13:30:13-03:00",
     "author": "Eduardo Almeida",
-    "message": "docs(website): state the real cause of the orphaned docs content"
+    "message": "fix(ci): enforce coverage after browser union"
   },
   {
-    "sha": "2ee85c134f6376c70fc0d6001a3c83ae38f98c11",
-    "date": "2026-08-10T22:22:09-03:00",
+    "sha": "708f64e7f9310317d70bfe7352201d4ff88f8e7a",
+    "date": "2026-09-16T12:37:59-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-654][Fix] Make the mandatory agent bus usable (#175)"
+    "message": "[Deps] Consolidate Dependabot security updates (#345)"
   },
   {
-    "sha": "daf51fa842bde5e2732e42c9ecd677024cd83caa",
-    "date": "2026-08-10T22:17:22-03:00",
+    "sha": "bc12ad6426c50442d54a19a683760494fd5fb4ca",
+    "date": "2026-09-16T12:13:56-03:00",
     "author": "Eduardo Almeida",
-    "message": "fix(agent-registry): make the mandatory agent bus usable"
+    "message": "chore(deps): consolidate Dependabot security updates"
   },
   {
-    "sha": "42620be36e40d0351a48c35eef9fed085a089803",
-    "date": "2026-08-10T13:29:26-03:00",
+    "sha": "14fec1007fee689514544767da3b7165c3c6eee8",
+    "date": "2026-09-16T12:01:03-03:00",
     "author": "Eduardo A.",
-    "message": "chore(changelog): regenerate after rebase onto latest dev"
+    "message": "[JUM-815][Feature] Architecture designer, Core service, Swagger (#337)"
   },
   {
-    "sha": "c8c517faa2a8d35956f388c88983897bfb3d5fee",
-    "date": "2026-08-10T09:29:00-03:00",
+    "sha": "5ccdb9db1b7686d6d97e3920b36440c93d95a3eb",
+    "date": "2026-09-16T11:41:43-03:00",
     "author": "Eduardo A.",
-    "message": "fix(agent-registry): lock canonical RTDB URL and strip undefined writes"
+    "message": "feat(designer): architecture canvas and OAS split"
   },
   {
-    "sha": "afe366ef6b01ed49d3eab356249579dee33cb809",
-    "date": "2026-08-10T09:24:16-03:00",
+    "sha": "39f14a6761b89e0ba76e5a00776227808eec5360",
+    "date": "2026-09-16T00:50:51-03:00",
     "author": "Eduardo A.",
-    "message": "fix(agent-registry): reuse existing Firebase registry credentials for RTDB bus"
+    "message": "Merge PR #327: JUM-821 dev promotion"
   },
   {
-    "sha": "fc23062572fe5833d4332d015799cf3e9164c53a",
-    "date": "2026-08-10T12:53:37-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-641][Docs] Record the Jumentix epic delivery baseline (#170)"
-  },
-  {
-    "sha": "7b05177b537c755151f738c68cfbaf22a6a3abab",
-    "date": "2026-08-10T10:51:41-03:00",
+    "sha": "88e91a449b83b52bb09d4630d591e9442f211d34",
+    "date": "2026-09-16T00:19:13-03:00",
     "author": "Eduardo Almeida",
-    "message": "docs(jumentix): record the epic delivery baseline, EN and PT-BR"
+    "message": "[JUM-821] Promote dev snapshot with verified signature"
   },
   {
-    "sha": "6d7426aceb91ccd21d5b1b671d5fc720ca8ae51d",
-    "date": "2026-08-10T12:29:08-03:00",
+    "sha": "bf859d1a07f1c7231fda6b675e725111f8f822d5",
+    "date": "2026-08-29T13:44:35-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-638][CI] Make SonarCloud advisory while budget is unavailable (#173)"
+    "message": "[JUM-721][Release] Promote dev to main with signed squash (#278)"
   },
   {
-    "sha": "ac367402cd68e02ac7e9af6aafe9704aa4d9a491",
-    "date": "2026-08-10T12:14:45-03:00",
-    "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into codex/bug/JUM-638-sonar-opt-in"
-  },
-  {
-    "sha": "fc6bd6a9647dab863b7500d8bb361a6b832a4a30",
-    "date": "2026-08-10T12:11:49-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-158][Test] Discover, sweep and gate every website route (#169)"
-  },
-  {
-    "sha": "18a54297607b8ef9cf10f96ec3518b214fdc5989",
-    "date": "2026-08-10T10:30:59-03:00",
+    "sha": "9439a1e60dc611240946542971b0bfe11112350d",
+    "date": "2026-08-29T13:11:28-03:00",
     "author": "Eduardo Almeida",
-    "message": "test(website): make the unit suite runnable and assert browser-only failures"
+    "message": "chore(release): promote dev to main"
   },
   {
-    "sha": "2828be3180b008f5d1457e5fd5a7a98f55969f3b",
-    "date": "2026-08-10T10:16:24-03:00",
-    "author": "Eduardo Almeida",
-    "message": "test(website): discover every route and sweep it, and gate the deploy"
-  },
-  {
-    "sha": "31e92203f7ded4d56a9e1c8ae66f8b334ddcf89c",
-    "date": "2026-08-10T11:29:23-03:00",
+    "sha": "60b2984585a0064f8b35eda7a239505d97beb4a0",
+    "date": "2026-08-20T15:01:29-03:00",
     "author": "Eduardo A.",
-    "message": "ci(governance): keep sonar analysis within loc budget"
+    "message": "[JUM-724][Release] Promote dev to main with signed squash (#254)"
   },
   {
-    "sha": "c5fff652ad39d98ef69f7ddcb700caedd1b6132b",
-    "date": "2026-08-10T11:33:20-03:00",
+    "sha": "ea60ad50b0bb14e2f311e5abb8c23a42e07cc5ae",
+    "date": "2026-08-20T11:22:51-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-638][CI] Keep Sonar analysis within LOC budget (#172)"
+    "message": "chore(release): promote dev to main for JUM-724"
   },
   {
-    "sha": "f6a5e525ea1261245e3934ac1a2b53fec8539052",
-    "date": "2026-08-10T11:29:23-03:00",
+    "sha": "eee788766d14f0b00bb44a1caadd5de9ee9dd6e1",
+    "date": "2026-08-10T15:19:22-03:00",
     "author": "Eduardo A.",
-    "message": "ci(governance): keep sonar analysis within loc budget"
+    "message": "[JUM-638][Release] Promote dev to main with signed squash (#174)"
   },
   {
-    "sha": "3d964d137954d19e8f66d4969082c16e3bb2acbc",
-    "date": "2026-08-10T11:02:36-03:00",
+    "sha": "d59caeabe49ce307dde84f398f76581449a778ee",
+    "date": "2026-08-10T12:59:19-03:00",
     "author": "Eduardo A.",
-    "message": "[JUM-638][Fix] Isolate HTTP update integration targets (#171)"
-  },
-  {
-    "sha": "459cedfa1bc8d6429bc492c61982fee00f904814",
-    "date": "2026-08-10T10:44:43-03:00",
-    "author": "Eduardo A.",
-    "message": "test(governance): isolate http update integration targets"
-  },
-  {
-    "sha": "54d9c433ee62dc7aba0d398acb422a084a605c7c",
-    "date": "2026-08-10T10:07:08-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-638][Fix] Stabilize dev promotion gates (#167)"
-  },
-  {
-    "sha": "d0b4d8a098c9c6a1fd16dbd38fb7dcbf7070daf7",
-    "date": "2026-08-10T09:55:23-03:00",
-    "author": "Eduardo A.",
-    "message": "test(governance): stabilize dev promotion gates"
-  },
-  {
-    "sha": "9cd1a5abceb41d87fcb7c62cc581a50369cae4a6",
-    "date": "2026-08-10T09:15:13-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-637][Governance] Mandatory Firebase RTDB agent progress bus (Requirement 129) (#164)"
-  },
-  {
-    "sha": "e94abc920ec61f5f1c27d9f331989c972820c42f",
-    "date": "2026-08-10T09:09:38-03:00",
-    "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into kimi/governance/JUM-637-mandatory-firebase-agent-bus"
-  },
-  {
-    "sha": "4b43fd46def599e641c08775933b1e9e77ff5085",
-    "date": "2026-08-09T16:44:13-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-639][Release] Reconcile main ancestry into dev (#166)"
-  },
-  {
-    "sha": "bd2c46bf7207958a27f3dfd0bb769f1d209e7e72",
-    "date": "2026-08-09T16:40:37-03:00",
-    "author": "Eduardo Almeida",
-    "message": "chore(release): reconcile main ancestry into dev for JUM-639"
-  },
-  {
-    "sha": "ff5353e3e8abc9f0fdfff94d15256a185a36a87e",
-    "date": "2026-08-09T16:30:37-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(agent-registry): add Firebase RTDB agent progress bus"
-  },
-  {
-    "sha": "f8312b27c1d33c8187e2fad941b8a51f3b8ed3fc",
-    "date": "2026-08-09T15:46:41-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-628][Fix] Retry port allocation on EADDRINUSE in the test harness (#140)"
+    "message": "chore(release): promote dev to main for JUM-638"
   },
   {
     "sha": "5f51ab0882ca410d4ebee7c6538dd7e7c46328d5",
@@ -760,54 +1810,6 @@
     "date": "2026-08-09T10:27:07-03:00",
     "author": "Eduardo A.",
     "message": "chore(release): promote dev to main"
-  },
-  {
-    "sha": "55f910d77501ca0722a847e41ac4874aea287ccb",
-    "date": "2026-08-09T10:26:45-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-636][Fix] Run full gate for signed release branches (#163)"
-  },
-  {
-    "sha": "073b9c4e2bd6d694941b1178522184cf8ea36f38",
-    "date": "2026-08-09T10:21:47-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): run full gate for signed release branches"
-  },
-  {
-    "sha": "6d643d1acdabc1bd42c60b91d3901bccac592f86",
-    "date": "2026-08-09T10:17:56-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-635][Fix] Isolate ServiceManagement test ports (#161)"
-  },
-  {
-    "sha": "091b418b92b2e79ecb81caa53d95122fbc1dedb3",
-    "date": "2026-08-09T10:12:10-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): isolate ServiceManagement test server ports"
-  },
-  {
-    "sha": "3a0e57b250ab31c0f9d06f25616ed1dcc68a3592",
-    "date": "2026-08-09T10:07:49-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-635][Fix] Stabilize status-region browser assertion (#160)"
-  },
-  {
-    "sha": "9b3d811e961dcf6132a8cd172de18cee56c162dc",
-    "date": "2026-08-09T10:01:53-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): stabilize status-region browser assertion"
-  },
-  {
-    "sha": "65377f5c22550b500d6ca1af426195d54c2221ac",
-    "date": "2026-08-09T09:57:37-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-635][Fix] Stabilize ServiceManagement browser gate (#159)"
-  },
-  {
-    "sha": "4d16559f247e0d2081d49c5afc6d51af7027e07e",
-    "date": "2026-08-09T09:39:17-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): make first-run browser spec order independent"
   },
   {
     "sha": "0ec8df82480dd7a7d0f1b13a9a5440d3e76821e1",
@@ -834,742 +1836,10 @@
     "message": "chore(release): promote dev to main"
   },
   {
-    "sha": "e727d1348764f773c8a6d398219be88e4ecc590b",
-    "date": "2026-08-09T08:41:28-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-633][CI] Resolve Sonar release gate findings (#157)"
-  },
-  {
-    "sha": "13fe4b611cd1d2d54ac567105d1bc8346ba1735d",
-    "date": "2026-08-09T08:35:51-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): resolve Sonar release gate findings"
-  },
-  {
-    "sha": "094a2cd15bd9e868ec4cace0c4db7229706b90ea",
-    "date": "2026-08-09T08:05:57-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): isolate database compose projects (#156)"
-  },
-  {
-    "sha": "dd9453cd62ca8c96ee631201973a89e9abb4d0a6",
-    "date": "2026-08-09T08:02:30-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): isolate database compose projects"
-  },
-  {
-    "sha": "54ab4ce0e2190928663d2060c7a7aa942d2cbc75",
-    "date": "2026-08-09T07:38:16-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): recreate mongodb smoke container (#155)"
-  },
-  {
-    "sha": "eda67d36352b7a907dc52362bd485508dbb54c6e",
-    "date": "2026-08-09T07:34:38-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): recreate mongodb smoke container"
-  },
-  {
-    "sha": "2a475fe345d224a91c422e9c0d40d4ba7dfe06b6",
-    "date": "2026-08-09T07:15:44-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): keep db repository smoke on bun (#154)"
-  },
-  {
-    "sha": "565981bef9940fd609bf798d513dc3f1f629c4cd",
-    "date": "2026-08-09T07:07:25-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(ci): keep db repository smoke on bun"
-  },
-  {
-    "sha": "a7401f64383170a842a0a202ac05d69c96aa4d44",
-    "date": "2026-08-09T06:35:43-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-632][CI] Keep coverage free of live broker suites (#153)"
-  },
-  {
-    "sha": "8ac1abed46fd9ac778b63c63f140411884f92e4c",
-    "date": "2026-08-09T06:31:49-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: refresh branch gate status"
-  },
-  {
-    "sha": "cd5593e02af1b79919b4832a25410048eced6f76",
-    "date": "2026-08-09T06:27:45-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: refresh checks after disabling circleci"
-  },
-  {
-    "sha": "52843dee6bb94e9799e8e119edced818c8b77a47",
-    "date": "2026-08-09T06:21:29-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: keep coverage free of live broker suites"
-  },
-  {
-    "sha": "4261b50c57212847024cb5549bdbf2f79a8ab664",
-    "date": "2026-08-09T06:03:31-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-632][CI] Stabilize Redis database matrix smoke (#152)"
-  },
-  {
-    "sha": "eca59676e7e0a21054d8cf0973cd724025f327c1",
-    "date": "2026-08-09T06:00:16-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: stabilize Redis database matrix smoke"
-  },
-  {
-    "sha": "66a14bd7e12c5a87daa6bcab0f56b3414c0d0170",
-    "date": "2026-08-09T05:47:24-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-632][CI] Make Sonar scanner install idempotent (#151)"
-  },
-  {
-    "sha": "1698d9fff469ff66cb7f98302817876bcc33f7f0",
-    "date": "2026-08-09T05:35:33-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: make Sonar scanner install idempotent"
-  },
-  {
-    "sha": "6504fda90db281acd5dce4dca3f2216bcfc31c2d",
-    "date": "2026-08-09T05:22:23-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-632][CI] Recreate Cassandra compose service before database matrix (#150)"
-  },
-  {
-    "sha": "4fa546eda9602eb18d5afb038916eb77331ec8c5",
-    "date": "2026-08-09T05:19:04-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: recreate Cassandra compose service before database matrix"
-  },
-  {
-    "sha": "d46260387e2fd0f85eab829484a4b50a900922d6",
-    "date": "2026-08-09T04:54:37-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-632][CI] Select macOS coverage publishing tools (#149)"
-  },
-  {
-    "sha": "4737e1487b9f75d75f86bbad9191e577be96a868",
-    "date": "2026-08-09T04:51:13-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: retrigger GitHub Actions after runner reset"
-  },
-  {
-    "sha": "6c30ea063e1f023b7d7295dd9a4dd113eab426e5",
-    "date": "2026-08-09T04:43:09-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: retrigger macOS coverage tool checks"
-  },
-  {
-    "sha": "1e8beefb22f6787e7af7f7fa6b9b783e3b4cf2d6",
-    "date": "2026-08-09T04:12:25-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: select macOS tools for coverage publishing"
-  },
-  {
-    "sha": "f0bc4c4d750f1bb3567bdd45fcc490a334538f7c",
-    "date": "2026-08-09T04:24:04-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-615][Feature] Cana localStorage fallback, real Workers, 100% coverage (#138)"
-  },
-  {
-    "sha": "621ea3faf240fd5609628af713402b38dd5feb8c",
-    "date": "2026-08-09T03:54:39-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-632][CI] Reuse local broker services in GitHub Actions (#148)"
-  },
-  {
-    "sha": "82f01336b4f6180957c6a7250c6c335a940a8b99",
-    "date": "2026-08-09T03:40:49-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: reuse local broker services in GitHub Actions"
-  },
-  {
-    "sha": "3c3c8abe68e0c4b5e0ff9e2fe257815b15ea77a5",
-    "date": "2026-08-09T03:24:33-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-632][Release] Record main ancestry before promotion (#147)"
-  },
-  {
-    "sha": "57bc09b49d1e59c66c2741109519c5e5bb5a3a2c",
-    "date": "2026-08-09T03:17:34-03:00",
-    "author": "Eduardo A.",
-    "message": "chore(release): record main ancestry before promotion"
-  },
-  {
-    "sha": "198cd054df02e51f477215230be0f64c92b80abd",
-    "date": "2026-08-09T03:15:32-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-631][CI] Make dev delivery gates cheap and context-aware (#144)"
-  },
-  {
-    "sha": "0a5edb0d484540ac3f9984e7c5ee2807bd666a66",
-    "date": "2026-08-09T01:43:00-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: run GitHub Actions on self-hosted runner"
-  },
-  {
-    "sha": "be5f03f52a5a99aeda290121e9945dba9ac279dd",
-    "date": "2026-08-09T01:35:24-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: replace CircleCI with GitHub Actions"
-  },
-  {
-    "sha": "12c16e62d852a9aebac62b80c4af01ac19972763",
-    "date": "2026-08-09T01:13:04-03:00",
-    "author": "Eduardo A.",
-    "message": "test: isolate branch gate tests from CircleCI env"
-  },
-  {
-    "sha": "f0789a5fd3a469be48d7ade62be1aa106fa6a2ba",
-    "date": "2026-08-09T01:07:07-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: treat unselected CircleCI jobs as skipped"
-  },
-  {
-    "sha": "67bc0bb89fb8a8ba853b9b8be8a07a07a2037354",
-    "date": "2026-08-09T01:03:42-03:00",
-    "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into codex/ci/JUM-631-fast-cheap-dev-ci"
-  },
-  {
-    "sha": "9221b18fd98aef45ad410adaf1516e016a71dbcc",
-    "date": "2026-08-09T01:00:42-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: make context classifier runtime configurable"
-  },
-  {
-    "sha": "8c4de90e0c8903f4ca1e600a483443a0b09d92bf",
-    "date": "2026-08-09T00:54:41-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: make dev delivery gates cheap and context-aware"
-  },
-  {
-    "sha": "8be6f7c40036506bd1a5ca9a262b6a707055857f",
-    "date": "2026-08-09T00:43:07-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-631][Governance] Requirement 128 — requirement changes take precedence in the release process (#143)"
-  },
-  {
-    "sha": "ec6e8900523f4f2e41b806c19e865eead8edba96",
-    "date": "2026-08-09T00:29:17-03:00",
-    "author": "Eduardo Almeida",
-    "message": "docs(governance): add requirement 128 for release precedence of requirement changes"
-  },
-  {
-    "sha": "abd6340a82976446b9aaf5f29d7818aeae47b0f8",
-    "date": "2026-08-09T00:27:11-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-630][Governance] Requirement 127 — mandatory rtk and Caveman in every agent session (#142)"
-  },
-  {
-    "sha": "04409a528d7afd97aa118c9482bc3458675a2bd0",
-    "date": "2026-08-09T00:12:55-03:00",
-    "author": "Eduardo Almeida",
-    "message": "docs(governance): teach rtk and caveman, EN and PT-BR"
-  },
-  {
-    "sha": "6b05dfd7f63c47ac36314429bb9b1f7966d4027d",
-    "date": "2026-08-09T00:10:03-03:00",
-    "author": "Eduardo Almeida",
-    "message": "docs(governance): add requirement 127 for mandatory rtk and caveman"
-  },
-  {
-    "sha": "3a7f4b1c9b6d9064e3271c1ee766131c4dead9c3",
-    "date": "2026-08-08T22:00:52-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-493][Feature] Designer core as @jumentix package with publish dry-run (#137)"
-  },
-  {
-    "sha": "516e521bfa66637611554d41f38b96eb5ab24ac6",
-    "date": "2026-08-08T21:32:32-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(JUM-629): re-export Cana barrel with export `*` so bun 1.3.14 emits no dangling bindings (#141)"
-  },
-  {
-    "sha": "defb643822dc0297258ff5b99624d035e09c156b",
-    "date": "2026-08-08T20:50:23-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-609][Governance] Fail on duplicate requirement IDs, for being duplicates (#139)"
-  },
-  {
-    "sha": "d16ec6ad33bf561a4c06edbaa7736131b2b3be39",
-    "date": "2026-08-08T20:37:37-03:00",
-    "author": "Eduardo Almeida",
-    "message": "chore(governance): fail on duplicate requirement IDs, for being duplicates"
-  },
-  {
-    "sha": "219815f1cb912c498e9456436ecebc0e57844387",
-    "date": "2026-08-08T19:15:02-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-626][Fix] Announce load-time storage corruption recovery in the boot UI (#136)"
-  },
-  {
-    "sha": "bb3c3ce30cd94533d34286147a871ee6a907b33a",
-    "date": "2026-08-08T18:01:26-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-627][Governance] Verify the child task issue is in the focused epic (#134)"
-  },
-  {
-    "sha": "1ae3613513e3186d20a72e6ffa21dea6c18a1989",
-    "date": "2026-08-08T17:45:12-03:00",
-    "author": "Eduardo Almeida",
-    "message": "test(governance): stop the no-credential cases reading the ambient key"
-  },
-  {
-    "sha": "98de9be035d618b7dfde2e9f821ecfa5ed10160b",
-    "date": "2026-08-08T17:34:36-03:00",
-    "author": "Eduardo Almeida",
-    "message": "chore(governance): state which membership the check verified"
-  },
-  {
-    "sha": "c5b577f5568bafd013ac14429700979853e6f00a",
-    "date": "2026-08-08T17:30:22-03:00",
-    "author": "Eduardo Almeida",
-    "message": "fix(governance): find the linear key at any workspace depth"
-  },
-  {
-    "sha": "820df6f1c60a79a29f295e6c1ac85f2b6261bec6",
-    "date": "2026-08-08T13:25:26-03:00",
-    "author": "Eduardo Almeida",
-    "message": "chore(governance): verify the child task issue is in the focused epic"
-  },
-  {
-    "sha": "5095f998cb94703c1d37492d8037743320dc5357",
-    "date": "2026-08-08T15:44:00-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-491][Feature] Multi-user shared catalog sync over Cana resync events (#133)"
-  },
-  {
-    "sha": "621c67bba95becffde390e3329afaaa871d92855",
-    "date": "2026-08-08T15:13:32-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-494): document E8 collaboration and packaging, closing the E1-E8 chain (EN/PT-BR) (#135)"
-  },
-  {
-    "sha": "22f0f32a9c6275bc484ea9f95aab297920f6707f",
-    "date": "2026-08-08T12:36:16-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-545][Feature] Interface adapter lifecycle with edit-in-place and validation (#130)"
-  },
-  {
-    "sha": "fb17fe349ac1553636c7b77c8bebd357714d80c3",
-    "date": "2026-08-08T10:27:31-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-492): domain-package versioning with semantic conflict resolution (#132)"
-  },
-  {
-    "sha": "8f87b2bc124e1f9b60ff4cabc090e6c7a792f04c",
-    "date": "2026-08-08T09:57:44-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-546): deploy target lifecycle with edit, duplicate and validation (#129)"
-  },
-  {
-    "sha": "441f684768b1585f5db66418e3fb415635d8dae0",
-    "date": "2026-08-08T09:18:03-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-548): first-run experience with sample model loader and guided empty states (#131)"
-  },
-  {
-    "sha": "24b1c8c1ded9e8998daad57ae44eed6c71a6eb15",
-    "date": "2026-08-08T08:18:26-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-547): full-suite export/import carrying all four tabs (#128)"
-  },
-  {
-    "sha": "54fc018388e4f0158f6fde39dd5b5afd477575a3",
-    "date": "2026-08-08T06:39:33-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-490): document E7 design system and PWA shell (EN/PT-BR) (#127)"
-  },
-  {
-    "sha": "25ea4c8f9fccf963f3bc6176464a07a1333fb6bc",
-    "date": "2026-08-08T06:18:46-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-487): document E6 Cana adoption, migration and offline behaviour (EN/PT-BR) (#126)"
-  },
-  {
-    "sha": "1496c7f21d5cc341c09a918bef830570d3d6c8f0",
-    "date": "2026-08-08T05:29:29-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-486][Test] Offline/online persistence matrix for Cana (#124)"
-  },
-  {
-    "sha": "c520ca8888472151e715ca8c28cd689d93ca1b9d",
-    "date": "2026-08-08T04:15:15-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-488): adopt Jumentix design system tokens and Storybook coverage in the designer (#125)"
-  },
-  {
-    "sha": "d6dd332fd24ae9d700ecc964b90c419a3a1ab640",
-    "date": "2026-08-08T02:55:16-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-485][Feature] Multi-tab write-event sync with undo isolation (#122)"
-  },
-  {
-    "sha": "1f965a2cfe4f7d3fcc4775d96d21d0a007301f96",
-    "date": "2026-08-08T02:53:00-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-621][Fix] Keep BullMQ results long enough for the caller to read them (#123)"
-  },
-  {
-    "sha": "d5ab7eab3ccc523c908d2f7dafaaad4934316f39",
-    "date": "2026-08-08T02:38:58-03:00",
-    "author": "Eduardo Almeida",
-    "message": "fix(message-mediator): keep bullmq results long enough to be read"
-  },
-  {
-    "sha": "3dd38df39d9c1610661dd383d4380cf9dafe7576",
-    "date": "2026-08-08T01:53:44-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-489): installable PWA shell with service worker and manifest (#121)"
-  },
-  {
-    "sha": "113a6c0e4d15a5e6bd90e854082836c774f1efc5",
-    "date": "2026-08-08T00:57:56-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-484): one-way migration of service-management.v1 from localStorage to Cana (no fallback) (#120)"
-  },
-  {
-    "sha": "c3b62e25e7203bf70d953b8f59972c2308a34ea9",
-    "date": "2026-08-08T00:00:52-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-482): document E5 operations console (EN/PT-BR) (#119)"
-  },
-  {
-    "sha": "81140b5de73907ca874bcc751ed55f244b65f419",
-    "date": "2026-08-07T23:15:04-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-483][Feature] CanaDesignerStore adapter over the Cana client (#116)"
-  },
-  {
     "sha": "acc0c9318fdb09c2566a6ff754925f1a9e794595",
     "date": "2026-08-07T22:45:09-03:00",
     "author": "Eduardo A.",
     "message": "[JUM-504][Release] Promote CircleCI-backed dev snapshot to main"
-  },
-  {
-    "sha": "cece434d6ee4ca33c3cfa472b507f0622f441b73",
-    "date": "2026-08-07T22:30:28-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-624][Fix] Close the redis connection the integration suite leaks (#117)"
-  },
-  {
-    "sha": "3d32a23803ea791facb63f232cb507900e8adbb0",
-    "date": "2026-08-07T22:17:56-03:00",
-    "author": "Eduardo A.",
-    "message": "chore(release): reconcile main into dev before promotion"
-  },
-  {
-    "sha": "8dc96fb3804763f76400bb6b6fa8d9d3096288cc",
-    "date": "2026-08-07T20:26:09-03:00",
-    "author": "Eduardo Almeida",
-    "message": "fix(key-value): close the redis connection the integration suite opens"
-  },
-  {
-    "sha": "7275b2c8d45a3eee8147734c30d43b81120e84aa",
-    "date": "2026-08-07T21:57:43-03:00",
-    "author": "Eduardo A.",
-    "message": "test(cana): tolerate browser timing quantization in performance shape"
-  },
-  {
-    "sha": "9d79903823d1dc1eddac337b5bf051e465f842ba",
-    "date": "2026-08-07T21:43:11-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: avoid Sonar SCM blame in CircleCI partial clones"
-  },
-  {
-    "sha": "bacddb333a1a132163faa0cd9bb26c06285f263e",
-    "date": "2026-08-07T21:32:40-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-479): document E4 contract parity guarantees (EN/PT-BR) (#105)"
-  },
-  {
-    "sha": "1f010cdbe4f35c13939d93119db6232405cb46bc",
-    "date": "2026-08-07T21:21:43-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: hydrate git blobs before Sonar scan"
-  },
-  {
-    "sha": "013c734e57cb2b143ec424045a709507c3b55175",
-    "date": "2026-08-07T21:03:10-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-481): align Deploy Management to the Req 059 matrix with per-service metadata (#115)"
-  },
-  {
-    "sha": "5024300b1654be99bb7db7a088ea1f31307d128c",
-    "date": "2026-08-07T20:46:43-03:00",
-    "author": "Eduardo A.",
-    "message": "test: close Redis integration client after smoke suite"
-  },
-  {
-    "sha": "a17a561fd5887b8bec3113e41dbec57daf6e45ce",
-    "date": "2026-08-07T20:40:02-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-480): real multi-environment editing and PM2 ecosystem preview (#106)"
-  },
-  {
-    "sha": "211551521010ced57ee03cd5015466a6b1cd0b6f",
-    "date": "2026-08-07T20:26:34-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: fold coverage publishers into CircleCI coverage job"
-  },
-  {
-    "sha": "7d98037fdf6b5fd0be407ce39635b7548d0dd24b",
-    "date": "2026-08-07T19:53:37-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-618][Test] Stop the Cypress teardown reporting blocked deletes as clean (#112)"
-  },
-  {
-    "sha": "ec4bbbdde11bf02da77a207b1906d9eec5bedf89",
-    "date": "2026-08-07T17:32:52-03:00",
-    "author": "Eduardo Almeida",
-    "message": "test(cana-browser): give the teardown its own budget, and stop it lying about blocks"
-  },
-  {
-    "sha": "48e5646ee53fd6612759cb72a4bf60f8f514d562",
-    "date": "2026-08-07T19:25:08-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-623][CI] Cover the cypress support file and config, not just the specs (#114)"
-  },
-  {
-    "sha": "d4127c7ec7c98f63055c7150ae81f8768cda104f",
-    "date": "2026-08-07T19:05:11-03:00",
-    "author": "Eduardo Almeida",
-    "message": "ci(test-map): cover the cypress support file and config, not just the specs"
-  },
-  {
-    "sha": "6136b9b0075af90f0c1a314c91c3e57b12fea2cc",
-    "date": "2026-08-07T19:01:24-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-622][CI] Register cana's browser specs so the gate can select them (#113)"
-  },
-  {
-    "sha": "50258a165ebe94b5c4b4d226dfdea3cdfb9c3f91",
-    "date": "2026-08-07T17:52:45-03:00",
-    "author": "Eduardo Almeida",
-    "message": "ci(test-map): register cana's cypress specs so the gate can select them"
-  },
-  {
-    "sha": "9fe2b263b2b058a73e2292feca8542ca9a91ac3b",
-    "date": "2026-08-07T18:36:09-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-620][CI] Declare readiness on every compose service (#111)"
-  },
-  {
-    "sha": "654918c35edd468d178fe99c1784bfde76e9babd",
-    "date": "2026-08-07T17:17:26-03:00",
-    "author": "Eduardo Almeida",
-    "message": "ci(docker): declare readiness on every compose service"
-  },
-  {
-    "sha": "85400433a247566adde90950c740ecc2e81a3822",
-    "date": "2026-08-07T18:15:09-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-616][CI] Read the parsed review job instead of grepping the config as text (#110)"
-  },
-  {
-    "sha": "409067fc55deffe20505eb5f95b37c211dbcfc3c",
-    "date": "2026-08-07T17:44:50-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-619][CI] Scope the Jest ruleset to test files (#109)"
-  },
-  {
-    "sha": "7a3381f9b486d1ff021f159ba264b49dc4090b37",
-    "date": "2026-08-07T16:58:31-03:00",
-    "author": "Eduardo Almeida",
-    "message": "ci(third-party-review): read the parsed job instead of grepping the config as text"
-  },
-  {
-    "sha": "d3725fc2873f49d57bcd7de3493385963b5d542d",
-    "date": "2026-08-07T16:46:58-03:00",
-    "author": "Eduardo Almeida",
-    "message": "ci(eslint): scope the Jest ruleset to test files"
-  },
-  {
-    "sha": "6a46bbd84f4b8eb94a746bb3770035a48ac4f09c",
-    "date": "2026-08-07T17:10:24-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(JUM-617): recompute domain/entity ids on domain-package re-import (#104)"
-  },
-  {
-    "sha": "0fcf3528176bc5e70442490985cc1c5e146c5cf1",
-    "date": "2026-08-07T16:24:03-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-602][Test] Make external-db-repositories coverage its own (#108)"
-  },
-  {
-    "sha": "51216f22f397d67e05d2dd25dafc73e8f8fd20ea",
-    "date": "2026-08-07T15:46:56-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-601][Refactor] Move the store errors into persistence-contracts so a library stops importing an application (#107)"
-  },
-  {
-    "sha": "a19a951ccb6bb5c9499160bdbf24edf730d345e8",
-    "date": "2026-08-07T14:16:43-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-614][Governance] Require an agent to declare where it works (#103)"
-  },
-  {
-    "sha": "05f6b5e0bf3584ade4511ffe04237df955230114",
-    "date": "2026-08-07T13:50:18-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(JUM-543): replace blocking alerts with non-blocking status surfaces and honest env-API errors (#100)"
-  },
-  {
-    "sha": "091ac56098f19f7859c3587a0628ee60de675854",
-    "date": "2026-08-07T13:48:49-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-478): lossless OAS round-trip with full entity meta normalization (#102)"
-  },
-  {
-    "sha": "aeb762dc1273c538b8346785fbb74a3430bc7b0b",
-    "date": "2026-08-07T13:39:34-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-599][Fix] Enforce the declared filter operators (#101)"
-  },
-  {
-    "sha": "1c6aa2dfdbd9f1f78439619b2bce59136a36473f",
-    "date": "2026-08-07T13:20:32-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(JUM-544): validate service configuration ports and run-mode x provider consistency (#99)"
-  },
-  {
-    "sha": "3d2bdd50863ecaa178ac748dcf4dfb9118fe2126",
-    "date": "2026-08-06T04:55:17-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-474): make OAS 3.1 export compliant with Req 036 and route-resolution (#98)"
-  },
-  {
-    "sha": "ff5dc312ed14ed20870e13bc63cea4ccb7cfae19",
-    "date": "2026-08-06T04:26:38-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-476): emit hexagonal layout from codegen preview and boilerplate bundle (#97)"
-  },
-  {
-    "sha": "c21891fca942b358f9304fc95a27e92fbd08ae64",
-    "date": "2026-08-06T03:51:49-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-475): asyncapi 3.0 per-transport and grpc proto exports targeting canonical spec/asyncapi/ (#96)"
-  },
-  {
-    "sha": "2522a751920855cd92fda02d8007a65e97c66af9",
-    "date": "2026-08-06T03:12:58-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-477): align RBAC editor with tenant authorization contract (#95)"
-  },
-  {
-    "sha": "dfd0505bc00fbfe9956bbe8b328ab554044ca321",
-    "date": "2026-08-06T02:34:15-03:00",
-    "author": "Eduardo A.",
-    "message": "test(JUM-471): add exporters/importers round-trip suite (#94)"
-  },
-  {
-    "sha": "ef474c252360c3f11da5cda39530f86624611c66",
-    "date": "2026-08-06T02:25:52-03:00",
-    "author": "Eduardo A.",
-    "message": "test(JUM-470): pin validation severities, export-gate boundary and normalizer round-trips (#93)"
-  },
-  {
-    "sha": "19b1bba51044bedd777f9a669e62162f6c14c0c3",
-    "date": "2026-08-06T02:21:44-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-600][CI] Run the docker smoke matrix on dev and main, and fix its readiness race (#92)"
-  },
-  {
-    "sha": "0b89f6420d7d78356d51a6c11c345e3abac2771a",
-    "date": "2026-08-06T01:51:55-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-469][Refactor] Modularize designer exporters, importers, validation, canvas and tabs (#87)"
-  },
-  {
-    "sha": "12418eb79a8b19779929f028a0fbd7bb869a5f39",
-    "date": "2026-08-06T01:23:21-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-596][CI] Run lint before the branch gates that do not contain it (#91)"
-  },
-  {
-    "sha": "21f26ccb3f2cc64c94c5b83e602422772dfe72b0",
-    "date": "2026-08-05T21:56:49-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-613][Fix] Repair the Firestore agent-registry integration and its corrupted records (#88)"
-  },
-  {
-    "sha": "4cb1aee5ca15db472e3c2531d0f877f08efb913c",
-    "date": "2026-08-05T21:25:14-03:00",
-    "author": "Eduardo A.",
-    "message": "ci(JUM-472): register service-management in the path-to-layer manifest (#90)"
-  },
-  {
-    "sha": "552c669821eae07ed0fd06a83df34a2e79c70539",
-    "date": "2026-08-05T20:57:37-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-473): document E3 module architecture and IDesignerStore port contract (#89)"
-  },
-  {
-    "sha": "57c180823388945a3620cc29df7f052e54f9669f",
-    "date": "2026-08-05T20:14:22-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(website): document Vercel deploy auth and GITHUB_TOKEN (JUM-397) (#70)"
-  },
-  {
-    "sha": "b212a1c4cb0b3a3a6cf1b6867a1e7ea07b1c8a49",
-    "date": "2026-08-05T19:18:06-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-468][Refactor] Extract state/persistence core behind IDesignerStore port (#86)"
-  },
-  {
-    "sha": "775575ec8b9eeeea6c772e679909afc8b163c29c",
-    "date": "2026-08-05T18:24:09-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-466][Test] Expand service-management integration smoke (#85)"
-  },
-  {
-    "sha": "65a366c61e115e834e6b3084fddf18207d1b31c9",
-    "date": "2026-08-05T17:41:04-03:00",
-    "author": "Eduardo A.",
-    "message": "feat(JUM-460): expand env key allowlist to the full runtime matrix (#84)"
-  },
-  {
-    "sha": "13991c15532de8a711a66ad468dc69d6c32e08a0",
-    "date": "2026-08-05T17:08:59-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(JUM-461): truthful key labels and canonical framework selector in service-management (#83)"
-  },
-  {
-    "sha": "a69dd8b46f855295ded2e29b7f42045f9b877e76",
-    "date": "2026-08-05T16:43:45-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(JUM-463): refresh static manifest on miss in dev, keep boot manifest in production (#82)"
-  },
-  {
-    "sha": "6bc1941903542abec14d8c8fe628ccfb1b9ce8c1",
-    "date": "2026-08-05T16:40:31-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-464): document runtime-env contract and fixed env paths (EN/PT-BR) (#81)"
-  },
-  {
-    "sha": "fa5842883beed0d8f3cb8c55f4f09f2dc91c0dfe",
-    "date": "2026-08-05T16:08:48-03:00",
-    "author": "Eduardo A.",
-    "message": "fix(service-management): repair env path, honor environment parameter, and protect runtime-env API [JUM-458][JUM-558][JUM-459][JUM-462] (#65)"
-  },
-  {
-    "sha": "019cece550617f5fb8216a746ced83f5b25beb2f",
-    "date": "2026-08-05T15:44:40-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-465][Governance] Ownership registration and component requirement spec (#80)"
-  },
-  {
-    "sha": "0de596cc414e1fefdda198ca0c5c9bad63e22479",
-    "date": "2026-08-05T15:24:57-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-467): audit bilingual docs and repair links for service-management (#79)"
-  },
-  {
-    "sha": "65d46a518cc678846046b12e71694cf9bed7676f",
-    "date": "2026-08-05T14:58:05-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-604][Governance] Support the Kimi agent with declarative agent support (#78)"
   },
   {
     "sha": "f8be033f1f424307194cb0def60f541a54bd9064",
@@ -1578,142 +1848,16 @@
     "message": "[JUM-504][Release] Promote main branch-gate fix"
   },
   {
-    "sha": "c693cc9dd0255178d645c315567b9eac0b12fcf5",
-    "date": "2026-08-05T00:53:42-03:00",
-    "author": "Eduardo A.",
-    "message": "test: isolate PR governance helpers"
-  },
-  {
-    "sha": "331865baf7cdaf6a9669d36f2929cb75b03fe529",
-    "date": "2026-08-05T00:42:12-03:00",
-    "author": "Eduardo A.",
-    "message": "test: satisfy PR governance lint"
-  },
-  {
-    "sha": "5c7f90716d733f956d445354e5a4ef6c6b42ec24",
-    "date": "2026-08-05T00:34:47-03:00",
-    "author": "Eduardo A.",
-    "message": "chore(release): reconcile main ancestry after branch-gate fix"
-  },
-  {
-    "sha": "866d8e9bd56db84a2651366cc7d9bf26fd55e3de",
-    "date": "2026-08-05T00:33:19-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: skip PR metadata checks on branch builds"
-  },
-  {
     "sha": "84dcd30c6047dd1735713f9bf64b5ad605647d24",
     "date": "2026-08-05T00:27:02-03:00",
     "author": "Eduardo A.",
     "message": "[JUM-504][Release] Promote CircleCI-backed dev snapshot to main"
   },
   {
-    "sha": "ab3ba40f528017a1eeff7f5e7633d264496c04f7",
-    "date": "2026-08-05T00:07:36-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: fix CircleCI badge endpoints"
-  },
-  {
-    "sha": "7188a6be96a7748c5421551e6251a62bc76d57e6",
-    "date": "2026-08-05T00:04:59-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: restore CircleCI and Codecov badges"
-  },
-  {
-    "sha": "db0482f2f007435928fb93fb31e015452f3de723",
-    "date": "2026-08-04T23:58:16-03:00",
-    "author": "Eduardo A.",
-    "message": "chore(release): reconcile main ancestry into dev"
-  },
-  {
-    "sha": "882bc208ed76388bce77cd7900fbc11829857a91",
-    "date": "2026-08-03T14:20:30-03:00",
-    "author": "Eduardo A.",
-    "message": "ci(JUM-504): backfill git blobs for SonarQube SCM blame"
-  },
-  {
-    "sha": "f3149be939beeddc23cd79b63a8a108b0406682c",
-    "date": "2026-08-03T14:13:47-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(website): document Vercel deploy auth and GITHUB_TOKEN for JUM-397 (#69)"
-  },
-  {
-    "sha": "3833b87a673aa53c39a6b236d3950470c23b05c6",
-    "date": "2026-08-03T13:57:17-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-504][CI] Restore CircleCI gates for dev and main (#63)"
-  },
-  {
-    "sha": "4b82c8de258d06bb85823f7fd1df6ffb1e2b4c48",
-    "date": "2026-08-03T12:54:14-03:00",
-    "author": "Eduardo A.",
-    "message": "chore(JUM-611): merge remote dev into Firestore registry cutover"
-  },
-  {
-    "sha": "2be4f8670a7a819281ea0b3330234c11f964ed03",
-    "date": "2026-08-03T12:51:59-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(JUM-611): deprecate GitHub-mirrored agent registry after Firestore cutover"
-  },
-  {
-    "sha": "4a66e8e93a3fb6e5741795fe88a1d6e4971a7e59",
-    "date": "2026-08-03T12:46:15-03:00",
-    "author": "Eduardo A.",
-    "message": "docs(website): reconcile consumer docs drift for JUM-510 (#68)"
-  },
-  {
-    "sha": "993af140a317036809df2d68dbe63e790066696a",
-    "date": "2026-08-03T12:31:28-03:00",
-    "author": "Eduardo A.",
-    "message": "ci(JUM-611): fix migration script require for Bun compatibility"
-  },
-  {
-    "sha": "6a81135b01a498e2481b4d237659f49e47f14227",
-    "date": "2026-08-03T05:55:46-03:00",
-    "author": "Eduardo A.",
-    "message": "test(website): add Cypress route, a11y, and responsive gates (JUM-396)"
-  },
-  {
-    "sha": "f0a5f71758b71d93713297262a6d22b1f97a4c53",
-    "date": "2026-08-03T03:11:49-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-611][Governance] Replace GitHub-mirrored agent registry with Firestore Database"
-  },
-  {
-    "sha": "5785488cc91600ae51151cf6034c418aa0acf038",
-    "date": "2026-08-03T00:51:04-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][CI] Sync agent-registry mirror (kimi-k3-cursor-001) (#64)"
-  },
-  {
-    "sha": "beb1171960ae13e1f98e807c658c164f21ff80df",
-    "date": "2026-08-03T00:34:10-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-419][CI] Sync the agent-registry mirror to canonical 271da346"
-  },
-  {
     "sha": "cf6098b25af3d63cd0ba1a783661316bbf77b7a8",
     "date": "2026-08-03T00:19:15-03:00",
     "author": "Eduardo A.",
     "message": "[JUM-417][Release] Promote dev to main: Cana engine matrix, Sonar fixes, temporary CircleCI bridge (#62)"
-  },
-  {
-    "sha": "f018fdda98b28a370da856d3cc9bf7d195358842",
-    "date": "2026-08-03T00:17:36-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][Release] Merge main history into dev for the promotion"
-  },
-  {
-    "sha": "d989c089be775621ad1201275acaed562b09f44f",
-    "date": "2026-08-03T00:14:33-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][CI] Sonar new-code fixes + temporary CircleCI bridge (PR #52 leftovers) (#61)"
-  },
-  {
-    "sha": "d9f244bb2ebd0cda228e060636883d22477a1330",
-    "date": "2026-08-03T00:12:31-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-605][Refactor] Eliminate legacy Jumentix product naming confusion"
   },
   {
     "sha": "c509dc8995673606fd9d35eb40df8cedcbf5a2b7",
@@ -1728,238 +1872,10 @@
     "message": "chore(release): promote dev snapshot to main"
   },
   {
-    "sha": "db5be4fbd60a773d1d798298e52e0490c875d408",
-    "date": "2026-08-02T23:45:54-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][Testing] Enforce the Cana browser and worker matrix across engines (#52)"
-  },
-  {
-    "sha": "8b63d2ed7548e90996ae0b0b16b05e667704d38e",
-    "date": "2026-08-02T23:44:50-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-540][Docs] Clarify nested requirement globs for release governance (#59)"
-  },
-  {
-    "sha": "8de92b3a75e565d5396ad5fb9b78a35260f61fdb",
-    "date": "2026-08-02T23:44:03-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: clarify nested requirement globs for release governance"
-  },
-  {
-    "sha": "5114ee937dd6781dbb5003d35b4809805d2f43f6",
-    "date": "2026-08-02T23:00:48-03:00",
-    "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into kimi/testing/JUM-417-cana-browser-matrix"
-  },
-  {
-    "sha": "95d868a2b5c22a32250b5dd16418bc17a2452fd7",
-    "date": "2026-08-02T22:57:59-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][CI] Grade the coverage gate on the engine union, not one leg"
-  },
-  {
-    "sha": "18c6c3d510eae7455931848697e2277992923a36",
-    "date": "2026-08-02T21:49:34-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][Testing] Resolve the PR 52 review threads on the browser matrix"
-  },
-  {
-    "sha": "1c431adb8a173424a753e84e46fe478ee5ad2e8f",
-    "date": "2026-08-02T21:18:54-03:00",
-    "author": "Eduardo A.",
-    "message": "Merge branch 'dev' into kimi/testing/JUM-417-cana-browser-matrix"
-  },
-  {
-    "sha": "3eafe6504a25758c1fa8e5a45971e31afdb7fbfc",
-    "date": "2026-08-02T20:36:04-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][Testing] Cover the conformance failure path and defensive guards in a real browser"
-  },
-  {
-    "sha": "c58a529f1e5d1b623748785e2ae896ce7416a72a",
-    "date": "2026-08-02T20:03:30-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][Testing] Run the engine matrix inline in the Sonar workflow and union it there"
-  },
-  {
-    "sha": "3261f92a4eac4c909370188a6d7adc47247128bf",
-    "date": "2026-08-02T20:00:05-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][Testing] Replace every unpinned upload-artifact use in the provider test"
-  },
-  {
-    "sha": "79b18430b73a67afc170ab97ab85c59f52a3431a",
-    "date": "2026-08-02T19:51:10-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-417][Testing] Enforce the Cana browser and worker matrix across engines"
-  },
-  {
-    "sha": "219bd1d32676fdd4add245ea6f4149f965eaffd9",
-    "date": "2026-08-02T22:57:17-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-540][CI] Align strict Redis auth with coverage gate (#57)"
-  },
-  {
-    "sha": "96865483b6cb26768d19cdff8bf933f318a98ea2",
-    "date": "2026-08-02T22:09:02-03:00",
-    "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into codex/release/fix-main-promotion-redis-auth"
-  },
-  {
-    "sha": "18cb2526091b15e7f9ac8d308794fd354dc7b19d",
-    "date": "2026-08-02T22:07:01-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-609][Governance] Separate project and software requirements into distinct namespaces (#54)"
-  },
-  {
-    "sha": "8e6d5dcd3d35e5838040829c9389cdcdafe2f512",
-    "date": "2026-08-02T22:01:20-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: align strict coverage Redis gate"
-  },
-  {
-    "sha": "11ed8bad9ec4baa2ad64ac3ae62db3dda0ea2812",
-    "date": "2026-08-02T21:49:47-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: separate project and software requirements into distinct namespaces [JUM-609]"
-  },
-  {
-    "sha": "872ec17ee02a7feca8ba486c2f61f870ded18940",
-    "date": "2026-08-02T21:34:17-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-540][CI] Align strict coverage gate with release coverage (#56)"
-  },
-  {
-    "sha": "8c1cc35056655e61b1800ac215eed92f750c5d3c",
-    "date": "2026-08-02T21:22:05-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: align strict coverage gate with release coverage"
-  },
-  {
-    "sha": "411dd36d68fe272c60aadf7da435873a0f0477d3",
-    "date": "2026-08-02T20:56:20-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-540][Release] Reconcile main ancestry into dev (#53)"
-  },
-  {
-    "sha": "813f3e158d1ea50bff772a52f912ba580ea04ac2",
-    "date": "2026-08-02T20:45:33-03:00",
-    "author": "Eduardo A.",
-    "message": "chore(release): reconcile main into dev before promotion"
-  },
-  {
-    "sha": "e74fefcc9f13757ac8b666c53dfc83a25abfb45f",
-    "date": "2026-08-02T20:17:58-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-540][Fix] Resolve BullMQ readiness review (#51)"
-  },
-  {
-    "sha": "bd169d1f450c64b9bb0525dc385420f51d0e921d",
-    "date": "2026-08-02T19:14:25-03:00",
-    "author": "Eduardo A.",
-    "message": "fix: resolve BullMQ infrastructure readiness review"
-  },
-  {
-    "sha": "f86b55dbaec73916ff183636956463475ff7d27c",
-    "date": "2026-08-02T19:26:13-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-009][Docs] Complete documentation drift follow-up (#50)"
-  },
-  {
-    "sha": "256ecdb37c6a7af0b0acba73b8d76d043609299e",
-    "date": "2026-08-02T19:14:40-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: refresh changelog after latest dev merge"
-  },
-  {
-    "sha": "d15ee4485ca9177c437b93b2a46b232ac18ccfce",
-    "date": "2026-08-02T19:14:22-03:00",
-    "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift"
-  },
-  {
-    "sha": "11103912e362ae8d8cce2b063b8a114483e30c3c",
-    "date": "2026-08-02T19:08:18-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-540][CI] Complete Bun tooling gate cleanup (#49)"
-  },
-  {
-    "sha": "20033c259a3f75583eef2575fa30a5d7b7d3ddf7",
-    "date": "2026-08-02T18:58:27-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: refresh changelog after dev merge"
-  },
-  {
-    "sha": "c688b5d059774c53f8e79c609ffeb439db6cb7ce",
-    "date": "2026-08-02T18:56:22-03:00",
-    "author": "Eduardo A.",
-    "message": "Merge remote-tracking branch 'origin/dev' into codex/docs/JUM-009-documentation-drift"
-  },
-  {
-    "sha": "786b03bd49a0c80eb7c232421d1ecc3fff2ce9f3",
-    "date": "2026-08-02T18:43:12-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: complete Bun tooling gate cleanup"
-  },
-  {
-    "sha": "60e644bc02d933da307ba9aa34d8fc894e8af3b0",
-    "date": "2026-08-02T18:43:12-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: complete Bun tooling gate cleanup"
-  },
-  {
-    "sha": "05f7307e697ca98a1258724bbdaac27ac47ebe44",
-    "date": "2026-08-02T17:53:19-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: enforce authorized emails before push"
-  },
-  {
-    "sha": "9b1462f3a24470eb8b2ced060dd7f40550f83377",
-    "date": "2026-08-02T17:49:13-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: update GitHub Actions runtime pins"
-  },
-  {
-    "sha": "64e821c1fefd481655b15933d1996c15b36fa8ae",
-    "date": "2026-08-02T17:48:51-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: reconcile documentation drift"
-  },
-  {
-    "sha": "295d277a9d8fc4d5d9ff0ee5cab7f7ec1434cf53",
-    "date": "2026-08-02T17:42:32-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: reconcile documentation drift (#47)"
-  },
-  {
-    "sha": "b93197706da17c7fd1e77a0e56a573f373cacd73",
-    "date": "2026-08-02T17:26:54-03:00",
-    "author": "Eduardo A.",
-    "message": "ci: update GitHub Actions runtime pins"
-  },
-  {
-    "sha": "c2790cabfc3fcfcd8be86fd40f22373f45405c2f",
-    "date": "2026-08-02T17:19:58-03:00",
-    "author": "Eduardo A.",
-    "message": "docs: reconcile documentation drift"
-  },
-  {
-    "sha": "faf69beb0f0190f91f8bd45b63d77d2a9f41be49",
-    "date": "2026-08-02T16:32:34-03:00",
-    "author": "Eduardo A.",
-    "message": "[JUM-581][Testing] Cana runs in a real browser; the IndexedDB fake is deleted (#38)"
-  },
-  {
     "sha": "c1e3cc635daf29f918b90e946dcc59c7659dd4d4",
     "date": "2026-08-02T16:24:19-03:00",
     "author": "Eduardo A.",
     "message": "[JUM-594][Release] Promote private free CI strategy (#46)"
-  },
-  {
-    "sha": "68067e59f2404c527f21ebf248c1aa0f0008d2a0",
-    "date": "2026-08-02T16:16:36-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][Testing] Merge origin/dev into cana browser coverage PR"
   },
   {
     "sha": "789a39b7165e7eea5bb3bfea7e94b8883be37baf",
@@ -1974,28 +1890,10 @@
     "message": "refactor: share canonical spec resolution via shared-contracts"
   },
   {
-    "sha": "2dbe8658854e55c3d69187799d542d456f5b2c80",
-    "date": "2026-08-02T15:43:27-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][Testing] Classify Cypress helpers as tests; cover cana public barrel"
-  },
-  {
     "sha": "414bfb39d9e80684301a6ee7c234f0ec3e8a664a",
     "date": "2026-08-02T15:12:18-03:00",
     "author": "Eduardo A.",
     "message": "test: cover the explicit-path branch of the WebSocket spec loader"
-  },
-  {
-    "sha": "ecbe25304d109a2f915ce472642967f9d65afe47",
-    "date": "2026-08-02T15:09:34-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][CI] Decorate PR #38 from Sonar workflow_dispatch with pullrequest key"
-  },
-  {
-    "sha": "d8eb32a80dbc0e1e3fa21a2d364cb15036dcb880",
-    "date": "2026-08-02T15:08:45-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][CI] Retrigger pull_request checks for browser LCOV path fix"
   },
   {
     "sha": "4262d4a26bb53760409dea3c4370b905a71a18ee",
@@ -2004,28 +1902,10 @@
     "message": "fix: resolve REST and WebSocket SDK spec paths independent of cwd"
   },
   {
-    "sha": "9663697acdaf971134f4624bb74346d2644aa328",
-    "date": "2026-08-02T14:56:06-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][Testing] Emit browser LCOV with repository-relative paths for Sonar"
-  },
-  {
     "sha": "b2498bacb46ba7e45812829841d07bcfd493db6b",
     "date": "2026-08-02T14:44:23-03:00",
     "author": "Eduardo A.",
     "message": "[JUM-594][Release] Fix loadSpecs cwd resolution to unblock the dev-to-main promotion (#43)"
-  },
-  {
-    "sha": "113e2f319a102c9fe453232ead495ae954eefd0e",
-    "date": "2026-08-02T14:39:19-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][Security] Emit browser LCOV without missing deps; drop hard-coded smoke passwords"
-  },
-  {
-    "sha": "bed433b384ba5da2cffc82300d1c7e3322afa91e",
-    "date": "2026-08-02T14:28:54-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][Security] Resolve Sonar PATH vulnerability and unhang coverage with forceExit"
   },
   {
     "sha": "5ec34521c7d5c8c7de8c37c765ea9c38a5621b22",
@@ -2040,24 +1920,6 @@
     "message": "fix: resolve AsyncAPI gRPC spec independent of the current working directory"
   },
   {
-    "sha": "e35e3f61bc0a3d4f33791ca65c044fb6b714d074",
-    "date": "2026-08-02T13:42:06-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][CI] Run Sonar coverage against the same real Redis/brokers/browser as the gate"
-  },
-  {
-    "sha": "c6bbff67a2176d5684f3fbea1e18132569da51ce",
-    "date": "2026-08-02T13:20:28-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][Testing] Merge origin/dev; keep Redis reconnect fix without istanbul ignore"
-  },
-  {
-    "sha": "543120aa1c83ead92382da72177d338393a1ce23",
-    "date": "2026-08-02T02:09:19-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][Testing] Measure Redis and broker adapters at 99% without istanbul ignore"
-  },
-  {
     "sha": "7fc0d71424f6219bde2b6a8b34111fd7a3d308ee",
     "date": "2026-08-01T23:19:28-03:00",
     "author": "Eduardo A.",
@@ -2068,12 +1930,6 @@
     "date": "2026-08-01T23:07:03-03:00",
     "author": "Eduardo A.",
     "message": "[JUM-597][Fix] Redis key-value client reports connection failures instead of hanging (#40)"
-  },
-  {
-    "sha": "9f631e6bf70aaf36050fdc951f20dba1ef484918",
-    "date": "2026-08-01T22:44:47-03:00",
-    "author": "Eduardo Almeida",
-    "message": "[JUM-581][Testing] Run cana in a real browser; delete fake-indexeddb"
   },
   {
     "sha": "225b366d60a0963df99a98839662851efff6ec29",

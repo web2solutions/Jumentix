@@ -1,7 +1,7 @@
 {
   "name": "@jumentix/cana",
-  "version": "0.1.0",
-  "description": "Cana \u2014 offline-first IndexedDB database client for Jumentix, in pure TypeScript.",
+  "version": "0.1.1",
+  "description": "Cana \u2014 framework-agnostic offline-first IndexedDB client for any browser frontend, in pure TypeScript.",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,12 +20,15 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "echo \"cana: covered by the root eslint run\"",
     "test": "bun test --isolate test && bun --cwd ../.. packages/cana/scripts/run-browser-tests.js",
+    "check-docs-drift": "bun scripts/check-docs-drift.js",
     "prepublishOnly": "bun run clean && bun run build",
     "build:esm": "bun build src/index.ts --outfile dist/index.mjs --format esm --target browser"
   },
   "sideEffects": false,
   "files": [
     "dist",
+    "docs",
+    "media",
     "README.md",
     "LICENSE.md"
   ],
@@ -47,6 +50,9 @@
     "offline",
     "database",
     "browser",
+    "browser-database",
+    "pwa",
+    "framework-agnostic",
     "jumentix"
   ],
   "engines": {

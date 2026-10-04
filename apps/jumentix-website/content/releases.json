@@ -1,1 +1,110 @@
-[]
+[
+  {
+    "id": 402950848,
+    "tag_name": "v0.3.3",
+    "name": "v0.3.3",
+    "body": "- 2026-10-04 chore(release): v0.3.3 (#604) - Eduardo A.\n- 2026-10-04 [JUM-916][Release] Promote framework-agnostic Cana docs to main (#601) - Eduardo A.\n- 2026-10-04 [JUM-916][Fix] Reload vanilla seed maps and auto-exempt Vercel feedback (#602) - Eduardo A.\n- 2026-10-04 fix(cana): reload vanilla seed maps before first paint - Eduardo A.\n- 2026-10-04 [JUM-916][Docs] Framework-agnostic Cana docs in package and website (#600) - Eduardo A.\n- 2026-10-04 fix(cana): assert usage pages in docs drift check - Eduardo A.\n- 2026-10-04 docs(cana): ship framework-agnostic docs in package and site - Eduardo A.\n- 2026-10-03 [JUM-915][Release] Promote monorepo-aware Vercel website build (#595) - Eduardo A.\n- 2026-10-03 [JUM-915][Docs] Note main promotes must be from-dev (#596) - Eduardo A.\n- 2026-10-03 docs(website): note that main promotes must be from-dev - Eduardo A.\n- 2026-10-03 [JUM-915][Chore] Monorepo-aware Vercel build for jumentix-website (#593) - Eduardo A.\n- 2026-10-03 fix(website): monorepo-aware Vercel build; accept braces GHSA - Eduardo A.\n- 2026-10-01 [JUM-914][Release] Reconcile main v0.3.2 into dev (#592) - Eduardo A.\n",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-10-04T09:39:02Z",
+    "published_at": "2026-10-04T09:50:04Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.3.3",
+    "target_commitish": "main"
+  },
+  {
+    "id": 401187627,
+    "tag_name": "v0.3.2",
+    "name": "v0.3.2",
+    "body": "- 2026-10-01 chore(release): v0.3.2 (#590) - Eduardo A.\n- 2026-10-01 [JUM-914][Release] Promote remaining S9383 clear for Sonar reliability A (#588) - Eduardo A.\n- 2026-10-01 [JUM-914][Release] Reconcile main v0.3.1 into dev for Sonar A promote (#587) - Eduardo A.\n- 2026-10-01 Merge remote-tracking branch 'origin/main' into cursor/release/JUM-914-reconcile-v031 - Eduardo A.\n- 2026-10-01 [JUM-914][Fix] Clear remaining designer-core and SM-api S9383 (#586) - Eduardo A.\n- 2026-10-01 fix(security): accept basic-ftp GHSA-c475 until get-uri can take 6.x - Eduardo A.\n- 2026-10-01 fix(sonar): clear remaining S9383 in designer-core and SM API - Eduardo A.\n",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-10-01T17:14:40Z",
+    "published_at": "2026-10-01T17:17:39Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.3.2",
+    "target_commitish": "main"
+  },
+  {
+    "id": 400997759,
+    "tag_name": "v0.3.1",
+    "name": "v0.3.1",
+    "body": "- 2026-10-01 chore(release): v0.3.1 (#584) - Eduardo A.\n- 2026-10-01 [JUM-914][Release] Promote binary-safe release + Sonar S9383 tip green (#581) - Eduardo A.\n- 2026-10-01 [JUM-914][Release] Reconcile main into dev to unblock tip promote (#582) - Eduardo A.\n- 2026-10-01 chore(release): reconcile main into dev for JUM-914 promote - Eduardo A.\n- 2026-10-01 [JUM-914][Fix] Clear Sonar S9383 floating promises and pin fastify/hono (#580) - Eduardo A.\n- 2026-09-30 fix(sonar): clear S9383 floating promises and pin fastify/hono - Eduardo A.\n- 2026-09-30 [JUM-914][Fix] Binary-safe app-release template commits (#579) - Eduardo A.\n- 2026-09-30 fix(release): binary-safe app-release template commits (JUM-914) - Eduardo A.\n- 2026-09-30 [JUM-913][Ci] Promote tag-token + next/og ACCEPTED_RISK to main (#574) - Eduardo A.\n- 2026-09-30 ci(npm-publish): wire tag API token; accept next/og GHSA (JUM-913) (#573) - Eduardo A.\n- 2026-09-30 [JUM-913][Ci] Promote npm package-tag API fix to main (#570) - Eduardo A.\n- 2026-09-30 ci(npm-publish): create package tags via GitHub API (JUM-913) (#569) - Eduardo A.\n- 2026-09-30 [JUM-913][Ci] Promote npm Node publish fix (and #561) to main (#565) - Eduardo A.\n- 2026-09-30 ci(npm-publish): run under Node for provenance (JUM-913) (#564) - Eduardo A.\n- 2026-09-29 [JUM-900][Fix] Rebuild CLI templates with app-release version bumps (#561) - Eduardo A.\n",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-10-01T13:21:15Z",
+    "published_at": "2026-10-01T13:31:16Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.3.1",
+    "target_commitish": "main"
+  },
+  {
+    "id": 400052871,
+    "tag_name": "v0.3.0",
+    "name": "v0.3.0",
+    "body": "- 2026-09-30 chore(release): v0.3.0 (#560) - Eduardo A.\n- 2026-09-29 [JUM-900][Release] Promote dev to main — close the docs epic, publish npm packages (#548) - Eduardo A.\n- 2026-09-29 fix(ci): resolve git via absolute path in merge-driver setup (#557) - Eduardo A.\n- 2026-09-29 fix(service-management): detect busy ports with TCP connect (#556) - Eduardo A.\n- 2026-09-29 fix(cli-init): compare package-version keys with localeCompare (#555) - Eduardo A.\n- 2026-09-29 fix(ci): mirror GHA patch baselines on CircleCI for release coverage (#554) - Eduardo A.\n- 2026-09-28 fix(coverage): remap dist-tested TypeScript coverage back to its source for patch coverage (#553) - Eduardo A.\n- 2026-09-28 test(architecture-canvas): cover createArchitectureCanvas render/interaction paths (#552) - Eduardo A.\n- 2026-09-27 fix(website): update the prepublish roadmap-content smoke check (#551) - Eduardo A.\n- 2026-09-27 fix(message-mediator): declare ioredis, bullmq's real Redis dependency (#550) - Eduardo A.\n- 2026-09-27 fix(cli-init): restore process.exitCode with a number Bun actually honors (#549) - Eduardo A.\n- 2026-09-26 docs(website): marketing-vs-technical language calibration pass (#547) - Eduardo A.\n- 2026-09-26 [JUM-898][Feature] Warn when a product screenshot may be stale (#546) - Eduardo A.\n- 2026-09-26 feat(website): current product screenshots and a \"See it running\" tour (#542) - Eduardo A.\n- 2026-09-26 fix(frontend): resolve dashboard organization ids to their display name (#543) - Eduardo A.\n- 2026-09-26 fix(docs-ui): vendor swagger-ui 5 so /OASdoc and the designer render OpenAPI 3.1 (#541) - Eduardo A.\n- 2026-09-26 chore(ci): stop test-map.json from conflicting on every PR (#544) - Eduardo A.\n- 2026-09-26 docs(website): keep maintainer provenance off the developer site and pair every contributor doc (#538) - Eduardo A.\n- 2026-09-26 [JUM-906][Fix] Breadcrumb names the module and tab and links to real locations (#540) - Eduardo A.\n- 2026-09-26 [JUM-905][Fix] Dark canvas, sidebar and anchored mini-map on the Architecture tab (#539) - Eduardo A.\n- 2026-09-26 ci(gate): run ci:gate checks that no CI job ran as a branch-gate preflight (#534) - Eduardo A.\n- 2026-09-26 chore(website): remove starter-template leftovers nothing renders (#536) - Eduardo A.\n- 2026-09-26 fix(cli-init): commit the packaged Users persistence adapters .gitignore dropped (#537) - Eduardo A.\n- 2026-09-26 docs(readme): speak to prospects, drop the CI-governance leak and document the real CLI (#535) - Eduardo A.\n- 2026-09-26 [JUM-891][Chore] Consolidate Dependabot updates (#458–#460, #462) (#529) - Eduardo A.\n- 2026-09-26 chore(deps): consolidate Dependabot bumps (#458–#460, #462) - Eduardo A.\n- 2026-09-26 [JUM-901][Fix] Run the published CLI when the GitHub entry point has no local build (#533) - Eduardo A.\n- 2026-09-26 fix(cli-init): pin each generated @jumentix/* dependency to its own published version (#532) - Eduardo A.\n- 2026-09-26 ci(release): automate npm publish after each main release and publish packed tarballs (#531) - Eduardo A.\n- 2026-09-26 feat(governance): add Requirement 066 audience matrix and docs:check-audience gate (#530) - Eduardo A.\n- 2026-09-26 [JUM-889][Chore] Sync v0.2.15 release into dev (#528) - Eduardo A.\n",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-09-30T12:42:26Z",
+    "published_at": "2026-09-30T13:02:56Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.3.0",
+    "target_commitish": "main"
+  },
+  {
+    "id": 397286018,
+    "tag_name": "v0.2.15",
+    "name": "v0.2.15",
+    "body": "- 2026-09-26 chore(release): v0.2.15 (#525) - Eduardo A.\n- 2026-09-26 [JUM-889][Fix] Promote unattended release branch-gate fixes to main (#524) - Eduardo A.\n- 2026-09-26 [JUM-889][Fix] Force-reset stale chore/release branch tips (#523) - Eduardo A.\n- 2026-09-26 fix(release): diff generated PRs against main on branch push - Eduardo A.\n- 2026-09-26 fix(release): force-reset stale chore/release branch tips - Eduardo A.\n- 2026-09-26 [JUM-889][Chore] Promote changelog race fix to main (#520) - Eduardo A.\n- 2026-09-26 [JUM-889][Chore] Reconcile main into dev + changelog race fix (#519) - Eduardo A.\n- 2026-09-26 fix(release): tolerate changelog-sync race after tagging - Eduardo A.\n",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-09-26T15:04:14Z",
+    "published_at": "2026-09-26T15:25:33Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.2.15",
+    "target_commitish": "main"
+  },
+  {
+    "id": 396849092,
+    "tag_name": "v0.2.14",
+    "name": "v0.2.14",
+    "body": "- 2026-09-25 [JUM-889][Release] Promote unattended release automation to main (#517) - Eduardo A.\n- 2026-09-25 [JUM-889][Fix] Unattended release/changelog PR automation (#516) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.14 (#512) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.13 (#510) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.12 (#508) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.11 (#507) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.10 (#505) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.9 (#504) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.8 (#501) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.7 (#499) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.6 (#497) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.5 (#496) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.4 (#494) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.3 (#492) - Eduardo A.\n- 2026-09-25 chore(release): v0.2.2 (#489) - Eduardo A.\n- 2026-09-25 [JUM-889][Release] Promote coverage harden to main (#486) - Eduardo A.\n- 2026-09-25 [JUM-889][Fix] Ignore cli-init templates in patch coverage (#488) - Eduardo A.\n- 2026-09-25 fix(coverage): ignore cli-init templates in patch coverage - Eduardo A.\n- 2026-09-25 [JUM-889][Fix] Decouple app-release dry-run from live tip history (#487) - Eduardo A.\n- 2026-09-25 fix(test): decouple app-release dry-run from live tip history - Eduardo A.\n- 2026-09-25 [JUM-889][Release] Reconcile main into dev (v0.2.1 ancestry) (#485) - Eduardo A.\n- 2026-09-25 chore(release): merge main into dev (v0.2.1 ancestry) - Eduardo A.\n- 2026-09-24 [JUM-889][CI] Skip frontend coverage on non-frontend release patches (#481) - Eduardo A.\n- 2026-09-24 fix(ci): treat Codecov PR comments as automated decoration - Eduardo A.\n- 2026-09-24 fix(ci): skip frontend coverage on non-frontend release patches - Eduardo A.\n",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-09-25T18:48:21Z",
+    "published_at": "2026-09-25T18:49:04Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.2.14",
+    "target_commitish": "main"
+  },
+  {
+    "id": 396113436,
+    "tag_name": "v0.2.1",
+    "name": "v0.2.1",
+    "body": "Application release v0.2.1 (tagged after #479 merge; app-release had opened v0.2.2 while tip was already at 0.2.1 without a tag).",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-09-24T22:04:36Z",
+    "published_at": "2026-09-24T22:04:37Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.2.1",
+    "target_commitish": "main"
+  },
+  {
+    "id": 395886118,
+    "tag_name": "v0.2.0",
+    "name": "v0.2.0",
+    "body": "Release v0.2.0.\n\n(No matching CHANGELOG.md section was found.)\n",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-09-24T16:50:17Z",
+    "published_at": "2026-09-24T16:50:19Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.2.0",
+    "target_commitish": "main"
+  },
+  {
+    "id": 395879601,
+    "tag_name": "v0.1.0",
+    "name": "v0.1.0",
+    "body": "Release v0.1.0.\n\n(No matching CHANGELOG.md section was found.)\n",
+    "draft": false,
+    "prerelease": true,
+    "created_at": "2026-09-24T16:41:15Z",
+    "published_at": "2026-09-24T16:41:17Z",
+    "html_url": "https://github.com/web2solutions/Jumentix/releases/tag/v0.1.0",
+    "target_commitish": "main"
+  }
+]

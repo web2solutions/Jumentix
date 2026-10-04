@@ -111,6 +111,33 @@ describe('classify-ci-context', () => {
     expect(evidence.selectedJobs).toStrictEqual([...FULL_JOBS, 'browser-matrix']);
   });
 
+  it('classifies the generated package-bump branch as a full-suite release promotion', () => {
+    expect.hasAssertions();
+
+    const evidence = classify({
+      GITHUB_EVENT_NAME: 'pull_request',
+      JUMENTIX_CI_IS_PULL_REQUEST: 'true',
+      GITHUB_HEAD_REF: 'chore/package-bump-deadbeef',
+      GITHUB_BASE_REF: 'main'
+    });
+
+    expect(evidence.context).toBe(CONTEXTS.RELEASE_PR_TO_MAIN);
+    expect(evidence.selectedJobs).toStrictEqual([...FULL_JOBS, 'browser-matrix']);
+  });
+
+  it('classifies package-bump branches that include a run-id suffix', () => {
+    expect.hasAssertions();
+
+    const evidence = classify({
+      GITHUB_EVENT_NAME: 'pull_request',
+      JUMENTIX_CI_IS_PULL_REQUEST: 'true',
+      GITHUB_HEAD_REF: 'chore/package-bump-deadbeef-123456789-2',
+      GITHUB_BASE_REF: 'main'
+    });
+
+    expect(evidence.context).toBe(CONTEXTS.RELEASE_PR_TO_MAIN);
+  });
+
   it('classifies a main push as a full-suite event', () => {
     expect.hasAssertions();
 

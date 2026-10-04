@@ -1,18 +1,26 @@
 # @jumentix/cana
 
-Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.
+Cliente IndexedDB offline-first agnóstico de framework para qualquer frontend no
+navegador.
 
-O seed de frontend (`apps/frontend`) abre o Cana antes do login e sincroniza
-pela OAS: [Camada de dados offline do frontend](../../documentation/md/FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md).
+Instale com `bun add @jumentix/cana` ou `npm install @jumentix/cana`. A API
+pública não depende de framework — só do browser. Helpers opcionais
+(`@jumentix/cana-react`, `@jumentix/cana-vue`) atualizam stores de UI quando você
+quiser; não são obrigatórios.
+
+A documentação do consumidor vem neste pacote em
+[`docs/`](./docs/pt-BR/usage-guide.md) (inglês e português) e no site em
+[/docs/pt-BR/jumentix/packages/cana](/docs/pt-BR/jumentix/packages/cana).
 
 <figure className="cana-brand-scene">
   <img
-    src="/images/cana/jumentix-eating-sugarcane.png"
+    src="./media/jumentix-eating-sugarcane.png"
     alt="Mascote Jumentix comendo uma planta de cana-de-açúcar"
   />
   <figcaption>
     O Cana mantém dados duráveis no navegador perto da aplicação: cana como
-    combustível, Jumentix totalmente energizado e persistência fora do caminho da UI.
+    combustível e persistência fora do caminho da UI. Feito para o Jumentix;
+    utilizável em qualquer projeto frontend.
   </figcaption>
 </figure>
 
@@ -51,9 +59,16 @@ await client.table('tasks').add({
 ## Responsabilidade no escopo
 
 - **Camada:** persistência offline / browser
-- **Responsável por:** API de cliente IndexedDB para PWAs
-- **Usado com:** `@jumentix/cana-react`, `@jumentix/cana-vue`, designer-core, guia SPA/PWA, service-management
-- **Não responsável por:** bancos server-side, Redis KV, REST/WebSocket
+- **Responsável por:** API de cliente IndexedDB para PWAs e SPAs
+- **Usado com:** qualquer framework de UI ou TypeScript vanilla; opcionalmente `@jumentix/cana-react`, `@jumentix/cana-vue`
+- **Não responsável por:** bancos server-side, Redis KV, REST/WebSocket, estado de renderização do framework
+
+### Origem Jumentix
+
+O Cana foi feito para as superfícies offline/PWA do Jumentix. Neste monorepo o
+seed de frontend abre o Cana antes do login e sincroniza pela OAS
+([Camada de dados offline do frontend](../../documentation/md/FRONTEND-OFFLINE-DATA-LAYER.pt-BR.md)).
+Essa integração é opcional para consumidores externos.
 
 ## Três coisas a saber antes de usar
 
@@ -121,7 +136,7 @@ explícitos de transação, replay de mudanças, reconciliação após falha e u
 fronteira opcional de worker para aplicações que precisam tirar persistência da
 thread de UI.
 
-![Modelo de workers do Cana](/images/cana/cana-worker-model.svg)
+![Modelo de workers do Cana](./media/cana-worker-model.svg)
 
 ### Modelo mental em 30 segundos
 
@@ -221,7 +236,7 @@ milissegundos são ruidosos entre browsers, discos e runners compartilhados, mas
 `recordsExamined`, `cursorAdvanced` e planos de query mostram se o engine pediu
 ao navegador a quantidade certa de trabalho.
 
-![Escada de performance do Cana](/images/cana/cana-performance-ladder.svg)
+![Escada de performance do Cana](./media/cana-performance-ladder.svg)
 
 #### Como ler os dados
 
@@ -325,13 +340,15 @@ Os testes automatizados de performance mantêm estes contratos verdes:
 
 ## Tutoriais por framework
 
-Construa o mesmo app de tarefas categorizadas com state management de frontend:
+Ligue o mesmo app de tarefas categorizadas a qualquer store de UI:
 
+- [Qualquer framework](./docs/pt-BR/any-framework.md) — contrato estável e padrão em cinco passos
+- [Vanilla TypeScript](./docs/pt-BR/vanilla-typescript.md) — sem helpers de framework
 - [React Context API](/docs/pt-BR/jumentix/packages/cana/react-context)
 - [React Redux](/docs/pt-BR/jumentix/packages/cana/react-redux)
 - [Vue 3 e Pinia](/docs/pt-BR/jumentix/packages/cana/vue-pinia)
 
-Use os pacotes pequenos de integração nas aplicações:
+Pacotes de integração opcionais:
 
 ```bash
 bun add @jumentix/cana @jumentix/cana-react
@@ -340,8 +357,7 @@ bun add @jumentix/cana @jumentix/cana-vue
 
 ## Próximo passo
 
-Continue no [guia de uso](../../documentation/md/CANA-USAGE-GUIDE.pt-BR.md) do
-consumidor — API completa, consultas, transações, hooks, recuperação de falhas e
-solução de problemas. Use
-[designer-core](/docs/pt-BR/jumentix/packages/designer-core/usage) quando uma
-UI Jumentix também precisar validar documentos de domínio antes de persistir.
+Continue no [guia de uso](./docs/pt-BR/usage-guide.md) do consumidor — API
+completa, consultas, transações, hooks, recuperação de falhas e solução de
+problemas. No site:
+[/docs/pt-BR/jumentix/packages/cana/usage](/docs/pt-BR/jumentix/packages/cana/usage).

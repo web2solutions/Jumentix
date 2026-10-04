@@ -13,8 +13,8 @@ Organização alvo para publicação de pacotes:
 Configurado na raiz `.npmrc`:
 
 - `@jumentix:registry=https://registry.npmjs.org/`
-- `sempre-auth=true`
-- `proveniência=verdade`
+- `always-auth=true`
+- `provenance=true`
 
 Comandos de validação:
 
@@ -28,6 +28,15 @@ Observação:
 
 - Esses comandos não publicam.
 - O gate de artefatos valida o conjunto aprovado de release `@jumentix/*` em um consumidor externo.
+
+### Publicação automática em `main`
+
+1. `app-release.yml` roda em todo push para `main` e chama `npm-publish.yml`.
+2. `npm-publish.yml` publica cada pacote público cuja versão em `package.json` ainda não está no npm.
+3. Quando o conteúdo publicado muda em `main` sem bump de versão, `package-content-bump.yml`
+   abre um PR assinado de patch-bump para a próxima publicação (JUM-917).
+
+Não publique de um laptop. Faça bump da versão no PR de entrega ou confie no follow-up automático.
 
 ## Integração Vercel
 
@@ -56,6 +65,12 @@ bun run deploy:vercel
 ```
 
 Esses comandos são configurados para funcionar sem sinalizadores de escopo forçados e não exigem publicação/implantação imediata.
+
+### Deploy automático de produção em `main`
+
+A integração Git da Vercel faz deploy de `jumentix-website` nos pushes para `main`.
+`website-deploy-verify.yml` espera o status de commit da Vercel e falha fechado se o deploy
+não suceder (JUM-917 / Req 070). `website:publish` manual é só recuperação.
 
 ## Nota importante sobre o tempo de execução
 

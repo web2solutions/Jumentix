@@ -7,7 +7,8 @@ const {
   classifyCiContext,
   CONTEXTS,
   isGeneratedAppReleaseBranch,
-  isGeneratedChangelogSyncBranch
+  isGeneratedChangelogSyncBranch,
+  isGeneratedPackageBumpBranch
 } = require('./classify-ci-context.js');
 
 /**
@@ -172,7 +173,9 @@ function resolvePullRequestFlag(value = process.env.AAA_CI_IS_PULL_REQUEST) {
 }
 
 function isGeneratedAutomationHead(headRef) {
-  return isGeneratedAppReleaseBranch(headRef) || isGeneratedChangelogSyncBranch(headRef);
+  return isGeneratedAppReleaseBranch(headRef)
+    || isGeneratedChangelogSyncBranch(headRef)
+    || isGeneratedPackageBumpBranch(headRef);
 }
 
 function selectQualityGate(targetBranch, options = {}) {
