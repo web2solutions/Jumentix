@@ -1207,6 +1207,22 @@
     ]
   },
   {
+    "title": "Cana with Vanilla TypeScript",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vanilla-typescript",
+    "description": "Categorized task app with Cana and no framework helpers.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Cana with Vanilla TypeScript",
+      "1. Start from zero",
+      "2. Create the client",
+      "3. Wire UI state from committed events",
+      "4. Atomic multi-store write",
+      "5. Checklist",
+      "Next"
+    ]
+  },
+  {
     "title": "Cana with Vue 3 and Pinia",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/vue-pinia",
     "description": "From zero to final implementation: categorized tasks with Cana, Vue 3 and Pinia.",
@@ -1225,12 +1241,13 @@
   {
     "title": "@jumentix/cana",
     "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana",
-    "description": "IndexedDB offline database adapter for Jumentix applications.",
+    "description": "Framework-agnostic offline-first IndexedDB client for any browser frontend.",
     "section": "packages",
     "locale": "en",
     "headings": [
       "@jumentix/cana",
       "Responsibility in context",
+      "Jumentix origin",
       "Three things to know before using it",
       "Errors are plain data",
       "Try it in the browser",
@@ -1317,7 +1334,7 @@
       "Choose the next step",
       "The running example",
       "Complete code policy",
-      "Framework tutorials",
+      "Use with any UI framework",
       "Package integrations"
     ]
   },
@@ -1376,6 +1393,7 @@
     "headings": [
       "Getting started with Cana",
       "Install",
+      "or: npm install @jumentix/cana",
       "Complete minimal task app",
       "What to notice",
       "Run it here",
@@ -1409,6 +1427,22 @@
       "Export and import",
       "Resolve an uncertain write",
       "Run it here",
+      "Next"
+    ]
+  },
+  {
+    "title": "Integrate Cana with any UI framework",
+    "url": "https://jumentix-website.vercel.app/docs/jumentix/packages/cana/any-framework",
+    "description": "Stable Cana contract and five-step wiring pattern for any UI store.",
+    "section": "packages",
+    "locale": "en",
+    "headings": [
+      "Integrate Cana with any UI framework",
+      "Stable contract",
+      "Rules that never change between frameworks",
+      "Manual wiring vs helper packages",
+      "Minimal subscribe adapter",
+      "Checklist for a new framework",
       "Next"
     ]
   },
@@ -2913,6 +2947,22 @@
     ]
   },
   {
+    "title": "Cana com Vanilla TypeScript",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/vanilla-typescript",
+    "description": "App de tarefas categorizadas com Cana e sem helpers de framework.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Cana com Vanilla TypeScript",
+      "1. Comece do zero",
+      "2. Crie o client",
+      "3. Ligue o estado de UI aos eventos commitados",
+      "4. Escrita atômica multi-store",
+      "5. Checklist",
+      "Próximo"
+    ]
+  },
+  {
     "title": "Cana com Vue 3 e Pinia",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/vue-pinia",
     "description": "Do zero à implementação final: tarefas categorizadas com Cana, Vue 3 e Pinia.",
@@ -2931,12 +2981,13 @@
   {
     "title": "@jumentix/cana",
     "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana",
-    "description": "Adaptador de banco de dados offline sobre IndexedDB para aplicações Jumentix.",
+    "description": "Cliente IndexedDB offline-first agnóstico de framework para qualquer frontend no navegador.",
     "section": "packages",
     "locale": "pt-BR",
     "headings": [
       "@jumentix/cana",
       "Responsabilidade no escopo",
+      "Origem Jumentix",
       "Três coisas a saber antes de usar",
       "Erros são dados puros",
       "Experimente no navegador",
@@ -3023,7 +3074,7 @@
       "Escolha o próximo passo",
       "O exemplo contínuo",
       "Política de código completo",
-      "Tutoriais por framework",
+      "Use com qualquer framework de UI",
       "Integrações de pacote"
     ]
   },
@@ -3082,6 +3133,7 @@
     "headings": [
       "Primeiros passos com Cana",
       "Instalação",
+      "ou: npm install @jumentix/cana",
       "App mínimo completo de tarefas",
       "O que observar",
       "Execute aqui",
@@ -3115,6 +3167,22 @@
       "Export e import",
       "Resolver uma escrita incerta",
       "Execute aqui",
+      "Próximo"
+    ]
+  },
+  {
+    "title": "Integrar o Cana com qualquer framework de UI",
+    "url": "https://jumentix-website.vercel.app/docs/pt-BR/jumentix/packages/cana/any-framework",
+    "description": "Contrato estável do Cana e padrão de wiring em cinco passos para qualquer store de UI.",
+    "section": "packages",
+    "locale": "pt-BR",
+    "headings": [
+      "Integrar o Cana com qualquer framework de UI",
+      "Contrato estável",
+      "Regras que não mudam entre frameworks",
+      "Wiring manual vs pacotes helper",
+      "Adaptador mínimo de subscribe",
+      "Checklist para um framework novo",
       "Próximo"
     ]
   },

@@ -143,7 +143,7 @@ constrói o pacote e carrega o artefato em vez do alias do workspace.
 | `main` → `dist/index.js` (CommonJS) | sim |
 | `module` / `exports.import` → `dist/index.mjs` (ESM) | sim |
 | `types` → `dist/index.d.ts`, primeiro no mapa de exports | sim |
-| `files` publica `dist`, README, LICENSE — não `src` | sim |
+| `files` publica `dist`, `docs`, README, LICENSE — não `src` | sim |
 | `LICENSE.md` presente e coerente com o MIT declarado | sim |
 | Dependências de runtime | **nenhuma** |
 | `sideEffects: false` | sim |

@@ -433,7 +433,11 @@ function buildManifest(root = process.cwd()) {
       sourceGlobs: [
         'apps/backend-template/src/infra/**',
         'apps/backend-template/src/modules/*/adapters/out/**',
-        'packages/*/src/**'
+        'packages/*/src/**',
+        // Package-owned scripts (docs drift, browser harness helpers) are part of
+        // the publishable package surface; without this glob a scripts-only change
+        // maps to no layer and the task gate refuses it as unsupported-change-set.
+        'packages/*/scripts/**'
       ],
       runner: 'bun',
       tier: 'gate'

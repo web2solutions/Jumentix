@@ -162,6 +162,31 @@ describe('check-pr-feedback', () => {
     expect(feedbackChecker.isAutomatedStatusDecoration({ ...sonarDecoration, body: 'Please extract this function.' })).toBe(false);
   });
 
+  it('exempts Vercel deployment status tables, which carry no human feedback', () => {
+    expect.hasAssertions();
+
+    const vercelDecoration = makeComment({
+      author: { login: 'vercel' },
+      body: '[vc]: #encrypted-deployment-status-table'
+    });
+    expect(feedbackChecker.isAutomatedStatusDecoration(vercelDecoration)).toBe(true);
+    expect(feedbackChecker.isAutomatedStatusDecoration({
+      ...vercelDecoration,
+      author: { login: 'vercel[bot]' }
+    })).toBe(true);
+    expect(() => feedbackChecker.validatePullRequestFeedback(makeFeedback({
+      comments: [vercelDecoration]
+    }))).not.toThrow();
+    expect(feedbackChecker.isAutomatedStatusDecoration({
+      ...vercelDecoration,
+      body: 'Please fix the Root Directory setting.'
+    })).toBe(false);
+    expect(feedbackChecker.isAutomatedStatusDecoration({
+      ...vercelDecoration,
+      author: { login: 'another-bot' }
+    })).toBe(false);
+  });
+
   it('paginates GitHub connections and fails closed on malformed pages', async () => {
     expect.hasAssertions();
 
