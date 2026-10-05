@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "e01b02c86451897041e4c8435b38ee9f0dd910d0",
+  "sourceCommit": "846048bb4cd3d25501caa1c728e9bbf5efd16062",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -156,7 +156,7 @@
       "source": "apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.pt-BR.md"
     },
     "backend/package.json": {
-      "sha256": "4c5a4cfb7047b59bda373e252ccf6b6d257cb3de1b81e94abb510d803658b111",
+      "sha256": "3020b8c3e2750ecec64fb45a8ed79bf3be035d078695ebcf161ecaf99e3b8aee",
       "source": "apps/backend-template/package.json"
     },
     "backend/scripts/purge-tombstones.js": {
@@ -3648,7 +3648,7 @@
       "source": "apps/frontend/index.html"
     },
     "frontend/package.json": {
-      "sha256": "bd425b8ec3d5295f7f7a6579a8538e8a9c60505a58f2996603256a64d94b48ef",
+      "sha256": "e652a2dc6e1154ba38ac9a21bbbf56cddfae957cdf2d1bae325ed7ed82938fdc",
       "source": "apps/frontend/package.json"
     },
     "frontend/public/android-icon-144x144.png": {
