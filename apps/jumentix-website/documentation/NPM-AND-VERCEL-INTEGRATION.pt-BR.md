@@ -34,7 +34,9 @@ Observação:
 1. `app-release.yml` roda em todo push para `main` e chama `npm-publish.yml`.
 2. `npm-publish.yml` publica cada pacote público cuja versão em `package.json` ainda não está no npm.
 3. Quando o conteúdo publicado muda em `main` sem bump de versão, `package-content-bump.yml`
-   abre um PR assinado de patch-bump para a próxima publicação (JUM-917).
+   abre um PR assinado de patch-bump (branch via refs API + commit GraphQL via stdin em
+   `ci-cd/plan-package-content-bumps.js --commit`, sem passar `templates.manifest.json` pelo
+   `ARG_MAX` do shell) para a próxima publicação (JUM-917).
 
 Não publique de um laptop. Faça bump da versão no PR de entrega ou confie no follow-up automático.
 
