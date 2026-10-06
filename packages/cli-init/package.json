@@ -1,6 +1,6 @@
 {
   "name": "@jumentix/cli-init",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Jumentix factory generator CLI (Req 037 v2)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
