@@ -154,6 +154,8 @@ describe('plan-package-content-bumps', () => {
       branch: 'chore/package-bump-test',
       expectedHeadOid: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       env: { CHANGELOG_GH_TOKEN: 'test-token', GITHUB_REPOSITORY: 'web2solutions/Jumentix' },
+      // Absolute stub path so createSignedCommitOnBranchWithGh never calls ghBinary().
+      ghPath: '/usr/bin/false',
       execFile: (_bin: string, args: string[], opts: { input: string }) => {
         calls.push({ args, input: opts.input });
         return JSON.stringify({
