@@ -23,7 +23,10 @@
    bumping its version and promoting to `main`; nothing is published from a local
    machine. When published package surface changes on `main` without a version bump,
    `package-content-bump.yml` must open a signed patch-bump PR so the next publish
-   ships the content (docs, media, README, dist, …).
+   ships the content (docs, media, README, dist, …). The signed commit must be built
+   via GraphQL stdin (`plan-package-content-bumps.js --commit` /
+   `createSignedCommitOnBranchWithGh`) — not shell/`jq --arg` — so large files such as
+   `packages/cli-init/templates.manifest.json` do not fail with `Argument list too long`.
 6. Website production deployment is automated on `main` (owner decision 2026-10-04,
    JUM-917): Vercel Git Integration must deploy production for every relevant push
    to `main`. `website-deploy-verify.yml` fail-closes when the Vercel commit status

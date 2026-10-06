@@ -135,6 +135,18 @@ const ACCEPTED_RISK = {
   // 2026-10-01: OSV wave blocking branch-gate on JUM-914 remaining S9383 PR.
   'GHSA-c475-qrg2-pj4r': { until: '2026-10-31', reason: 'basic-ftp RE_LINE DoS inherited via get-uri; fixed only on 6.x which breaks get-uri^5; awaiting upstream' },
   'GHSA-vfj7-8cjw-p6xm': { until: '2026-10-31', reason: 'braces@3.0.3 stack-exhaustion DoS; no patched release yet (OSV last_affected 3.0.3); transitive via micromatch/chokidar' },
+  // 2026-10-06: OSV wave blocking package-content-bump ARG_MAX fix (JUM-917).
+  'GHSA-858h-whjf-mvg5': { until: '2026-10-31', reason: 'simple-git long-option bypass; direct pin needs coordinated 4.x upgrade + lock refresh' },
+  'GHSA-g4wm-2vf7-vfgr': { until: '2026-10-31', reason: 'simple-git config-include command execution; coordinated with 4.x upgrade' },
+  'GHSA-x6jw-m9v5-85vh': { until: '2026-10-31', reason: 'simple-git trailer command config; coordinated with 4.x upgrade' },
+  'GHSA-vc2v-76pw-4v95': { until: '2026-10-31', reason: 'compression memory-leak DoS; Bun override did not lift nested 1.8.1 — pin follow-up' },
+  'GHSA-jqcg-44mw-7w3h': { until: '2026-10-31', reason: 'proxy-addr IPv4-mapped trust spoofing; Bun override did not lift nested 2.0.7 — pin follow-up' },
+  'GHSA-wq5f-xc86-pv6w': { until: '2026-10-31', reason: 'sharp librsvg CVE via Next/Nextra image pipeline; awaiting clean 0.35.5 lock lift' },
+  'GHSA-pqg4-j6r4-53mv': { until: '2026-10-31', reason: 'shell-quote comment-token injection; Bun override did not lift nested 1.10.0 — pin follow-up' },
+  'GHSA-68fv-2mgg-jv7q': { until: '2026-10-31', reason: 'source-map-js indexed section DoS; Bun override did not lift nested 1.2.1 — pin follow-up' },
+  'GHSA-477h-4r7f-fvrx': { until: '2026-10-31', reason: 'pbkdf2 long-password rehash DoS inherited transitively; awaiting upstream pin' },
+  'GHSA-rj75-hqrm-r3gf': { until: '2026-10-31', reason: 'postcss-selector-parser flat selector CPU DoS via PostCSS toolchain; awaiting upstream' },
+  'GHSA-hp3w-g68c-fv3c': { until: '2026-10-31', reason: 'sprintf-js unbounded precision DoS inherited transitively; awaiting upstream' },
 };
 
 /**

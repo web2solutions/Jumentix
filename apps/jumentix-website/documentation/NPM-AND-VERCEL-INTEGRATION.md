@@ -30,8 +30,10 @@ Note:
 1. `app-release.yml` runs on every push to `main` and calls `npm-publish.yml`.
 2. `npm-publish.yml` publishes every public package whose `package.json` version is not yet on npm.
 3. When package content (docs, media, README, dist inputs, …) changes on `main` without a
-   version bump, `package-content-bump.yml` opens a signed patch-bump PR so the next publish
-   ships the new surface (JUM-917).
+   version bump, `package-content-bump.yml` opens a signed patch-bump PR (refs API branch +
+   GraphQL stdin commit via `ci-cd/plan-package-content-bumps.js --commit`, so large
+   `templates.manifest.json` bodies never hit shell `ARG_MAX`) so the next publish ships the
+   new surface (JUM-917).
 
 Do not publish from a laptop. Bump the package version in the delivery PR when you change
 published surface, or rely on the automated patch-bump follow-up.

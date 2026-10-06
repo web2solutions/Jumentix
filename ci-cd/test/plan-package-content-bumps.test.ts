@@ -1,6 +1,9 @@
 const {
   applyPackageContentBumps,
+  buildPackageContentBumpAdditions,
   bumpPatch,
+  CLI_INIT_MANIFEST,
+  commitPackageContentBumps,
   peelRemoteTagSha,
   planPackageContentBumps,
   publishedPaths
@@ -101,5 +104,77 @@ describe('plan-package-content-bumps', () => {
       reason: 'test'
     }], { root, syncCliManifest: false });
     expect(JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version).toBe('0.1.1');
+  });
+
+  it('builds Buffer additions including cli-init manifest without shell argv', () => {
+    expect.hasAssertions();
+    const fs = require('fs');
+    const os = require('os');
+    const path = require('path');
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'pkg-bump-add-'));
+    const pkgDir = path.join(root, 'packages', 'cli-init');
+    fs.mkdirSync(pkgDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(pkgDir, 'package.json'),
+      `${JSON.stringify({ name: '@jumentix/cli-init', version: '0.0.1' }, null, 2)}\n`
+    );
+    // Oversized relative to typical ARG_MAX (~256KiB) so shell/jq --arg would fail.
+    const big = Buffer.alloc(300_000, 0x61);
+    fs.writeFileSync(path.join(root, CLI_INIT_MANIFEST), big);
+    const additions = buildPackageContentBumpAdditions([{
+      packageJsonPath: 'packages/cli-init/package.json'
+    }], { root });
+    expect(additions).toHaveLength(2);
+    expect(additions[0]).toMatchObject({ path: 'packages/cli-init/package.json' });
+    expect(Buffer.isBuffer(additions[0].contents)).toBe(true);
+    expect(additions[1]).toMatchObject({ path: CLI_INIT_MANIFEST });
+    expect(additions[1].contents).toHaveLength(300_000);
+  });
+
+  it('commits package bumps through GraphQL stdin (no argv file bodies)', () => {
+    expect.hasAssertions();
+    const fs = require('fs');
+    const os = require('os');
+    const path = require('path');
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'pkg-bump-commit-'));
+    const pkgDir = path.join(root, 'packages', 'cli-init');
+    fs.mkdirSync(pkgDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(pkgDir, 'package.json'),
+      `${JSON.stringify({ name: '@jumentix/cli-init', version: '0.0.1' }, null, 2)}\n`
+    );
+    fs.writeFileSync(path.join(root, CLI_INIT_MANIFEST), '{"packageVersions":{}}\n');
+    const calls: Array<{ args: string[]; input: string }> = [];
+    const result = commitPackageContentBumps([{
+      name: '@jumentix/cli-init',
+      packageJsonPath: 'packages/cli-init/package.json'
+    }], {
+      root,
+      repository: 'web2solutions/Jumentix',
+      branch: 'chore/package-bump-test',
+      expectedHeadOid: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      env: { CHANGELOG_GH_TOKEN: 'test-token', GITHUB_REPOSITORY: 'web2solutions/Jumentix' },
+      execFile: (_bin: string, args: string[], opts: { input: string }) => {
+        calls.push({ args, input: opts.input });
+        return JSON.stringify({
+          data: { createCommitOnBranch: { commit: { oid: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' } } }
+        });
+      }
+    });
+    expect(result.oid).toBe('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+    expect(calls).toHaveLength(1);
+    expect(calls[0].args).toStrictEqual(['api', 'graphql', '--input', '-']);
+    const payload = JSON.parse(calls[0].input);
+    const { additions } = payload.variables.input.fileChanges;
+    expect(additions).toStrictEqual([
+      expect.objectContaining({
+        path: 'packages/cli-init/package.json',
+        contents: expect.stringMatching(/^.+$/)
+      }),
+      expect.objectContaining({
+        path: CLI_INIT_MANIFEST,
+        contents: expect.stringMatching(/^.+$/)
+      })
+    ]);
   });
 });

@@ -81,38 +81,18 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
             -f ref="refs/heads/${branch}" \
             -f sha="${base_oid}" >/dev/null
-          mapfile -t changed < <(jq -r '.bumps[].packageJsonPath' /tmp/package-bumps.json)
-          changed+=("packages/cli-init/templates.manifest.json")
-          additions='[]'
-          for pkg_path in "${changed[@]}"; do
-            contents="$(base64 -w 0 "$pkg_path")"
-            additions="$(jq -nc --argjson acc "$additions" --arg path "$pkg_path" --arg contents "$contents" \
-              '$acc + [{path: $path, contents: $contents}]')"
-          done
-          mutation='mutation CreatePackageBumpCommit($input: CreateCommitOnBranchInput!) {
-            createCommitOnBranch(input: $input) {
-              commit { oid }
-            }
-          }'
-          headline="chore(release): bump packages with unpublished content changes"
-          mutation_result="$(jq -nc \
-            --arg query "$mutation" \
-            --arg repository "$GITHUB_REPOSITORY" \
-            --arg branch "$branch" \
-            --arg expectedHeadOid "$base_oid" \
-            --arg headline "$headline" \
-            --argjson additions "$additions" \
-            '{query: $query, variables: {input: {
-              branch: {repositoryNameWithOwner: $repository, branchName: $branch},
-              expectedHeadOid: $expectedHeadOid,
-              message: {headline: $headline},
-              fileChanges: {additions: $additions}
-          }}}' | gh api graphql --input -)"
-          commit_oid="$(jq -r '.data.createCommitOnBranch.commit.oid // empty' <<<"$mutation_result")"
+          # Signed commit via Node helper + GraphQL stdin — never pass base64
+          # file bodies through shell/jq argv (templates.manifest.json exceeds
+          # ARG_MAX → "jq: Argument list too long").
+          bun ci-cd/plan-package-content-bumps.js --commit --from /tmp/package-bumps.json \
+            --branch "$branch" \
+            --expected-head-oid "$base_oid" \
+            --out-commit /tmp/package-bump-commit.json
+          commit_oid="$(jq -r '.oid // empty' /tmp/package-bump-commit.json)"
           verified="$(gh api "repos/$GITHUB_REPOSITORY/commits/$commit_oid" --jq '.commit.verification.verified // false')"
           if [ -z "$commit_oid" ] || [ "$verified" != "true" ]; then
             echo "Package bump commit was not verified." >&2
-            echo "$mutation_result" >&2
+            cat /tmp/package-bump-commit.json >&2 || true
             exit 1
           fi
           body="$(jq -r '
