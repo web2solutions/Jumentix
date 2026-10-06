@@ -4,7 +4,8 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-10-06 [JUM-917][Release] Promote package-bump GraphQL stdin commit fix (#622) - Eduardo A.
+- 2026-10-06 [JUM-917][CI] Commit package bumps via GraphQL stdin (fix ARG_MAX) (#621) - Eduardo A.
 
 ## v0.4.1 - 2026-10-05
 
