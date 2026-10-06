@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 2026-10-06 chore(release): bump packages with unpublished content changes (#625) - Eduardo A.
 - 2026-10-06 [JUM-917][Release] Promote package-bump GraphQL stdin commit fix (#622) - Eduardo A.
 - 2026-10-06 [JUM-917][CI] Commit package bumps via GraphQL stdin (fix ARG_MAX) (#621) - Eduardo A.
 
