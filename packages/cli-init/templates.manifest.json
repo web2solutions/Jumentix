@@ -32,7 +32,7 @@
     "@jumentix/cana": "0.1.1",
     "@jumentix/cana-react": "0.1.0",
     "@jumentix/cana-vue": "0.1.0",
-    "@jumentix/cli-init": "0.0.0",
+    "@jumentix/cli-init": "0.0.1",
     "@jumentix/database-client-factory": "0.1.0",
     "@jumentix/dead-letter-queue": "0.1.0",
     "@jumentix/designer-core": "0.1.0",
