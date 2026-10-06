@@ -6,6 +6,13 @@
 
 - No changes.
 
+## v0.4.1 - 2026-10-05
+
+- 2026-10-05 chore(release): v0.4.1 (#619) - Eduardo A.
+- 2026-10-05 [JUM-917][Release] Promote package-bump refs API fix to main (#617) - Eduardo A.
+- 2026-10-04 [JUM-917][Release] Sync main v0.4.0 into dev (#616) - Eduardo A.
+- 2026-10-04 fix(ci): create package-bump branches via GitHub refs API (#615) - Eduardo A.
+
 ## v0.4.0 - 2026-10-04
 
 - 2026-10-04 chore(release): v0.4.0 (#613) - Eduardo A.
