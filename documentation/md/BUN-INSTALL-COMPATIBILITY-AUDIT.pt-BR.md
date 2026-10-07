@@ -194,6 +194,31 @@ Nenhuma afirmação de desempenho é feita contra a baseline do pnpm aqui: as su
 antes destas medições, então uma comparação na mesma árvore não foi possível. O JUM-38 é dono do orçamento
 comparativo.
 
+## 4a. Orçamento comparativo (JUM-38) — Bun vs npm, mesma árvore, mesma máquina, 2026-10-04
+
+Medido em uma cópia descartável da árvore de `package.json` deste repositório (sem lockfile prévio), mesma
+máquina, uma medição logo após a outra. O npm não rodou sem modificação — ver os dois ajustes abaixo —
+então este é o número depois de fazer o npm funcionar, não o número de fábrica.
+
+| Operação | Bun 1.3.13 | npm (Node 22) | Razão |
+| --- | --- | --- | --- |
+| Install a frio, `--ignore-scripts` | `bun install --ignore-scripts` — 5.056 pacotes, **12,34s** | `npm install --ignore-scripts --legacy-peer-deps` — 2.892 pacotes, **172,07s** | ~14x |
+| Suite unit completa (árvore atual) | `bun run test:unit` — 303 arquivos / 4.074 tests, **158,01s** | não existe equivalente Jest rodando a suite atual (Requisito 106 reserva Node/Jest para suites de compatibilidade declaradas em CI, não para o unit local completo) | não comparável 1:1 |
+| Build (25 pacotes, 4 níveis) | `bun run mono:build` — **41,45s** | mesmo comando, mesmo processo `tsc` nos dois casos — o tempo de build é dominado pelo `tsc` (sempre Node), o bundler do Bun soma dígitos-a-dezenas de ms por pacote | não é um eixo de motor |
+
+Ajustes que o npm precisou e o Bun não:
+
+1. `EUNSUPPORTEDPROTOCOL` em `workspace:*` — o npm não entende o protocolo de faixa `workspace:`. 17 arquivos
+   `package.json` tiveram que ser reescritos para `"*"` antes do `npm install` sequer resolver.
+2. `ERESOLVE` em `@types/react` vs `@types/react-dom` — o resolvedor estrito de peer-dependency do npm recusa
+   essa árvore por padrão; `--legacy-peer-deps` é obrigatório. O Bun instala sem modificação.
+
+Contagens de pacotes não são comparáveis diretamente (Bun reporta a árvore resolvida completa, npm reporta
+pacotes adicionados no topo após seu próprio dedupe), então o único número 1:1 aqui é tempo de relógio, não
+pacotes por segundo.
+
+Evidência: `artifacts/ci/baseline-timings.json` (`bunLocalSamples`).
+
 ## 5. Status
 
 | Risco | Status |
