@@ -99,6 +99,7 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'interfaceAdapters.browser.integration.test.ts': 'service-management/designer',
   'statusOutcome.browser.integration.test.ts': 'service-management/designer',
   'accessibleNames.browser.integration.test.ts': 'service-management/designer',
+  'edgeRoutingFocus.browser.integration.test.ts': 'service-management/designer',
   'architectureDesigner.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',

@@ -564,7 +564,7 @@ describe('declared storage-environment states (no fallback — decision 2026-07-
     });
     expect(state.kind).toBe('degraded-durability');
     expect(state.severity).toBe('info');
-    expect(state.message).toContain('quota');
+    expect(state.message).toContain('nearly full');
   });
 
   it('declares nothing when storage is healthy', () => {

@@ -14,7 +14,8 @@
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.54" />
+  <link rel="stylesheet" href="./vendor/jumentix-ui/jumentix-ui.css?v=0.9.128" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.128" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -121,346 +122,583 @@
     <section id="tab-domain-designer" class="tab-section active" role="tabpanel" aria-labelledby="tab-domain-designer-btn">
       <div class="app-shell">
         <aside class="sidebar" id="designer-sidebar" aria-label="Domain Designer panels">
-          <header class="sidebar-header">
-            <h2>Domain Designer</h2>
-            <p>ER modeling by domain</p>
-          </header>
-
           <!--
-            JUM-729 follow-up: the sidebar was ten panels stacked in one scrolling column,
-            so reaching Model Check meant scrolling past the whole inspector and
-            nothing on screen said the panels below existed. They are grouped
-            here and switched by this tab bar; every panel keeps its id and its
-            markup, so the behaviour of each one is unchanged.
+            Rail natures (exclusive): Model | History | Validate | Export | Import
+            Structure · Temporal · Assure · Emit · Ingest
           -->
-          <div class="sidebar-tabs" role="tablist" aria-label="Domain Designer panels">
-            <button id="sidebar-group-model-btn" class="sidebar-tab active" type="button" role="tab" aria-selected="true" aria-controls="sidebar-group-model" data-sidebar-tab="model">Model</button>
-            <button id="sidebar-group-inspector-btn" class="sidebar-tab" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-inspector" data-sidebar-tab="inspector">Inspector</button>
-            <button id="sidebar-group-quality-btn" class="sidebar-tab" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-quality" data-sidebar-tab="quality">Quality</button>
-            <button id="sidebar-group-share-btn" class="sidebar-tab" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-share" data-sidebar-tab="share">Share</button>
+          <div class="sidebar-panel-tabs" id="sidebar-panel-tabs" role="tablist" aria-label="Domain Designer panels">
+            <button id="sidebar-group-model-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-model-body" data-sidebar-tab="model">
+              <span class="sidebar-panel-tab-label">Model</span>
+              <span class="sidebar-panel-tab-context sidebar-accordion-context" id="sidebar-group-model-context">0</span>
+            </button>
+            <button id="sidebar-group-history-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-history-body" data-sidebar-tab="history">
+              <span class="sidebar-panel-tab-label">History</span>
+            </button>
+            <button id="sidebar-group-validate-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-validate-body" data-sidebar-tab="validate">
+              <span class="sidebar-panel-tab-label">Validate</span>
+            </button>
+            <button id="sidebar-group-export-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-export-body" data-sidebar-tab="export">
+              <span class="sidebar-panel-tab-label">Export</span>
+            </button>
+            <button id="sidebar-group-import-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-import-body" data-sidebar-tab="import">
+              <span class="sidebar-panel-tab-label">Import</span>
+            </button>
           </div>
 
-          <section class="panel" data-sidebar-group="model">
-            <h2>Domains</h2>
-            <div class="row">
-              <input id="domain-name-input" type="text" placeholder="Domain name" aria-label="Domain name" />
-              <button id="add-domain-btn" type="button">Add</button>
-            </div>
-            <div class="row">
-              <button id="rename-domain-btn" type="button">Rename</button>
-              <button id="delete-domain-btn" type="button">Delete</button>
-            </div>
-            <div class="row">
-              <input id="domain-color-input" type="color" value="#60a5fa" aria-label="Domain color" />
-              <button id="set-domain-color-btn" type="button">Set Color</button>
-            </div>
-            <ul id="domain-list" class="list"></ul>
-          </section>
+          <div class="sidebar-accordion-stack" id="sidebar-accordion-stack">
 
-          <section class="panel" data-sidebar-group="model">
-            <h2>Bounded Context</h2>
-            <p class="hint">Metadata for selected domain context and ownership.</p>
-            <div class="column compact">
-              <input id="domain-ubiquitous-language-input" type="text" placeholder="Ubiquitous language" aria-label="Ubiquitous language" />
-              <input id="domain-owner-team-input" type="text" placeholder="Owner team" aria-label="Owner team" />
-              <input id="domain-upstream-input" type="text" placeholder="Upstream dependencies (comma separated)" aria-label="Upstream dependencies (comma separated)" />
-              <input id="domain-downstream-input" type="text" placeholder="Downstream dependencies (comma separated)" aria-label="Downstream dependencies (comma separated)" />
-              <input id="domain-integration-channel-input" type="text" placeholder="Integration channel (http, async, grpc...)" aria-label="Integration channel" />
-              <input id="domain-package-dependencies-input" type="text" placeholder="Package dependencies (comma separated)" aria-label="Package dependencies (comma separated)" />
-              <input id="domain-shared-value-objects-input" type="text" placeholder="Shared value objects (comma separated)" aria-label="Shared value objects (comma separated)" />
-              <div class="row">
-                <button id="save-domain-context-btn" type="button">Save Context</button>
-                <button id="clear-domain-context-btn" type="button">Clear</button>
+          <section class="sidebar-accordion-cell" data-sidebar-group="model" data-hierarchy-band="structure" data-hierarchy-depth="0" data-accordion-expanded="false" id="sidebar-group-model" role="tabpanel" aria-labelledby="sidebar-group-model-btn">
+            <div class="sidebar-accordion-body" id="sidebar-group-model-body" hidden>
+            <div class="sidebar-shell" data-shell="model" data-shell-mode="catalog">
+            <header class="jx-scope-chrome" aria-label="Model scope">
+              <p class="jx-scope-chrome-job">Structure</p>
+              <p class="jx-scope-chrome-path" id="model-scope-path">Nothing selected</p>
+            </header>
+            <div class="jx-cell-toolbar" id="structure-create-toolbar" role="toolbar" aria-label="Structure create" data-create-scope="domain">
+              <div class="jx-cell-toolbar-start" id="domain-create-toolbar" data-scope="domain">
+                <input id="domain-name-input" class="jx-input" type="text" placeholder="New domain" aria-label="Domain name" />
+                <button id="add-domain-btn" class="jx-btn jx-btn-primary" type="button">Domain</button>
+              </div>
+              <div class="jx-cell-toolbar-start" id="entity-create-toolbar" data-gate="domain" data-gate-ready="false" aria-disabled="true" hidden>
+                <input id="entity-name-input" class="jx-input" type="text" placeholder="New entity" aria-label="Entity name" disabled />
+                <button id="add-entity-btn" class="jx-btn jx-btn-primary" type="button" disabled>Entity</button>
+                <details class="jx-toolbar-overflow">
+                  <summary>More</summary>
+                  <div class="jx-cell-toolbar-group">
+                    <input id="entity-search-input" class="jx-input" type="text" placeholder="Find" aria-label="Search entity" disabled />
+                    <button id="entity-search-btn" class="jx-btn" type="button" disabled>Find</button>
+                    <select id="entity-template-select" class="jx-input" aria-label="Entity template" disabled>
+                      <option value="">Template…</option>
+                      <option value="crudAggregate">crudAggregate</option>
+                      <option value="eventSourced">eventSourced</option>
+                      <option value="referenceData">referenceData</option>
+                      <option value="tenantOwned">tenantOwned</option>
+                    </select>
+                    <button id="apply-entity-template-btn" class="jx-btn" type="button" disabled>Apply</button>
+                  </div>
+                </details>
               </div>
             </div>
+            <div class="sidebar-shell-scroll jx-cell-body" data-shell-scroll="model">
+          <section class="panel jx-panel jx-scope-browse" id="domains-catalog-panel">
+            <p class="jx-scope-section-label" id="jx-scope-browse-label">Browse · pick a domain or entity</p>
+            <ul id="domain-list" class="list jx-list domain-tree" aria-label="Domains and their entities"></ul>
+            <p class="hint jx-hint" id="domains-catalog-hint">Select a domain or entity in the tree to edit below.</p>
+          </section>
+          <div class="jx-scope-edit" id="jx-scope-edit" hidden>
+            <p class="jx-scope-section-label" id="jx-scope-edit-label">Edit</p>
+          <section class="panel domain-inspector-panel" id="domain-inspector-panel" data-sidebar-group="model" hidden>
+            <header class="domain-inspector-chrome">
+              <div class="domain-inspector-chrome-top">
+                <p class="domain-inspector-mode" id="domain-inspector-mode" hidden>Domain</p>
+                <p id="domain-inspector-title" class="domain-inspector-selection" hidden>Domain</p>
+              </div>
+              <div class="sidebar-shell-tabs domain-shell-tabs" role="tablist" aria-label="Domain sections">
+                <button type="button" class="sidebar-shell-tab active" role="tab" aria-selected="true" data-domain-pane-tab="identity" id="domain-pane-tab-identity">Name</button>
+                <button type="button" class="sidebar-shell-tab" role="tab" aria-selected="false" data-domain-pane-tab="context" id="domain-pane-tab-context" tabindex="-1">Context</button>
+              </div>
+            </header>
+            <div class="domain-inspector-body" id="domain-inspector-body" data-domain-section="context">
+              <div class="domain-inspector-identity domain-inspector-pane" data-domain-pane="identity" data-domain-section="identity" role="tabpanel" aria-labelledby="domain-pane-tab-identity">
+                <div class="form-field">
+                  <label for="domain-rename-input">Name</label>
+                  <div class="jx-toolbar jx-field-row domain-inspector-identity-name">
+                    <input id="domain-rename-input" class="jx-input" type="text" placeholder="e.g. Tasks" aria-label="Domain name" />
+                    <button id="rename-domain-btn" class="jx-btn jx-btn-primary" type="button">Save</button>
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label for="domain-color-input">Color</label>
+                  <div class="row domain-inspector-identity-meta">
+                    <input id="domain-color-input" type="color" value="#60a5fa" aria-label="Domain color" />
+                    <button id="set-domain-color-btn" type="button" hidden>Apply color</button>
+                  </div>
+                </div>
+              </div>
+              <div class="domain-inspector-pane domain-context-pane" data-domain-pane="context" data-domain-section="context-form" role="tabpanel" aria-labelledby="domain-pane-tab-context" id="domain-context-details" hidden>
+              <div class="column compact domain-context-form">
+                <section class="domain-context-section" data-context-section="language" aria-labelledby="domain-context-section-language">
+                  <h3 class="domain-context-section-title" id="domain-context-section-language">Language</h3>
+                  <div class="form-field" id="domain-ubiquitous-language-editor">
+                    <span class="form-label" id="domain-ubiquitous-language-label">Terms</span>
+                    <ul class="tag-list" data-tag-list aria-labelledby="domain-ubiquitous-language-label"></ul>
+                    <div class="row tag-editor-add">
+                      <input data-tag-input id="domain-ubiquitous-language-input" type="text" placeholder="Add term" aria-label="Add ubiquitous language term" />
+                      <button data-tag-add type="button">Add</button>
+                    </div>
+                  </div>
+                </section>
+                <section class="domain-context-section" data-context-section="ownership" aria-labelledby="domain-context-section-ownership">
+                  <h3 class="domain-context-section-title" id="domain-context-section-ownership">Ownership</h3>
+                  <div class="form-field">
+                    <label for="domain-owner-team-input">Owner team</label>
+                    <input id="domain-owner-team-input" type="text" placeholder="e.g. delivery" aria-label="Owner team" />
+                  </div>
+                  <div class="form-field">
+                    <label for="domain-integration-channel-input">Integration</label>
+                    <select id="domain-integration-channel-input" aria-label="Integration channel">
+                      <option value="">Not set</option>
+                      <option value="http">HTTP / REST</option>
+                      <option value="async">Async messaging</option>
+                      <option value="grpc">gRPC</option>
+                      <option value="graphql">GraphQL</option>
+                      <option value="events">Domain events</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <input id="domain-integration-channel-other-input" type="text" placeholder="Other channel" aria-label="Other integration channel" hidden />
+                  </div>
+                </section>
+                <section class="domain-context-section" data-context-section="dependencies" aria-labelledby="domain-context-section-dependencies">
+                  <h3 class="domain-context-section-title" id="domain-context-section-dependencies">Dependencies</h3>
+                  <div class="form-field" id="domain-upstream-editor">
+                    <span class="form-label" id="domain-upstream-label">Depends on</span>
+                    <div class="domain-check-list" id="domain-upstream-check-list" role="group" aria-labelledby="domain-upstream-label"></div>
+                    <ul class="tag-list" data-tag-list aria-label="External upstream systems"></ul>
+                    <div class="row tag-editor-add">
+                      <input data-tag-input id="domain-upstream-input" type="text" placeholder="External system" aria-label="Add external upstream system" />
+                      <button data-tag-add type="button">Add</button>
+                    </div>
+                  </div>
+                  <div class="form-field" id="domain-downstream-editor">
+                    <span class="form-label" id="domain-downstream-label">Used by</span>
+                    <div class="domain-check-list" id="domain-downstream-check-list" role="group" aria-labelledby="domain-downstream-label"></div>
+                    <ul class="tag-list" data-tag-list aria-label="External downstream consumers"></ul>
+                    <div class="row tag-editor-add">
+                      <input data-tag-input id="domain-downstream-input" type="text" placeholder="External consumer" aria-label="Add external downstream consumer" />
+                      <button data-tag-add type="button">Add</button>
+                    </div>
+                  </div>
+                </section>
+                <section class="domain-context-section" data-context-section="contracts" aria-labelledby="domain-context-section-contracts">
+                  <h3 class="domain-context-section-title" id="domain-context-section-contracts">Contracts</h3>
+                  <div class="form-field" id="domain-package-dependencies-editor">
+                    <span class="form-label" id="domain-package-dependencies-label">Packages</span>
+                    <ul class="tag-list" data-tag-list aria-labelledby="domain-package-dependencies-label"></ul>
+                    <div class="row tag-editor-add">
+                      <input data-tag-input id="domain-package-dependencies-input" type="text" placeholder="e.g. @acme/contracts" aria-label="Add package dependency" />
+                      <button data-tag-add type="button">Add</button>
+                    </div>
+                  </div>
+                  <div class="form-field" id="domain-shared-value-objects-editor">
+                    <span class="form-label" id="domain-shared-value-objects-label">Shared value objects</span>
+                    <ul class="tag-list" data-tag-list aria-labelledby="domain-shared-value-objects-label"></ul>
+                    <div class="row tag-editor-add">
+                      <input data-tag-input id="domain-shared-value-objects-input" type="text" placeholder="e.g. Money" aria-label="Add shared value object" />
+                      <button data-tag-add type="button">Add</button>
+                    </div>
+                  </div>
+                </section>
+                <div class="row domain-context-actions">
+                  <button id="clear-domain-context-btn" type="button">Clear context</button>
+                  <button id="save-domain-context-btn" type="button" hidden>Save context</button>
+                  <span id="domain-context-autosave-hint" class="domain-context-autosave-hint" aria-live="polite" hidden></span>
+                </div>
+              </div>
+              </div>
+            </div>
+            <footer class="domain-inspector-danger" aria-label="Domain danger zone">
+              <button id="delete-domain-btn" type="button" class="jx-btn jx-btn-danger jx-btn-block danger-btn">Delete domain</button>
+            </footer>
           </section>
 
-          <section class="panel" data-sidebar-group="model">
-            <h2>Entities</h2>
-            <div class="row">
-              <input id="entity-name-input" type="text" placeholder="Entity name" aria-label="Entity name" />
-              <button id="add-entity-btn" type="button">Add</button>
-            </div>
-            <div class="row">
-              <select id="entity-template-select" aria-label="Entity template">
-                <option value="">Entity template</option>
-                <option value="crudAggregate">crudAggregate</option>
-                <option value="eventSourced">eventSourced</option>
-                <option value="referenceData">referenceData</option>
-                <option value="tenantOwned">tenantOwned</option>
-              </select>
-              <button id="apply-entity-template-btn" type="button">Apply Entity Template</button>
-            </div>
-            <div class="row">
+          <!--
+            Entity ⊃ Field edit surface — same jx-scope-edit as domain inspector.
+            Catalog is the domain tree above; no second Entities panel.
+          -->
+          <section class="entities-workspace jx-scope-entities" id="entities-workspace" data-gate="domain" data-gate-ready="false" aria-disabled="true">
+            <button id="pick-domain-cta" class="jx-btn" type="button" hidden>Select a domain</button>
+            <div id="entities-workspace-gate" hidden></div>
+            <div class="entities-workspace-body" id="entities-workspace-body">
+          <section class="panel jx-panel" id="entities-catalog-panel" hidden>
+            <ul id="entity-list" class="list jx-list" aria-label="Entities in selected domain" hidden></ul>
+            <p class="hint jx-hint" id="entities-catalog-hint" hidden></p>
+            <p class="entities-workspace-subtitle" id="entities-workspace-subtitle" hidden></p>
+            <div class="row sidebar-legacy-actions" hidden>
               <button id="rename-entity-btn" type="button">Rename</button>
               <button id="delete-entity-btn" type="button">Delete</button>
-            </div>
-            <div class="row">
               <button id="duplicate-entity-btn" type="button">Duplicate</button>
             </div>
-            <div class="row">
-              <input id="entity-search-input" type="text" placeholder="Search entity" aria-label="Search entity" />
-              <button id="entity-search-btn" type="button">Find</button>
+          </section>
+          <section class="panel entity-inspector-panel" id="entity-inspector-panel" data-sidebar-group="model" hidden>
+            <header class="entity-inspector-chrome">
+              <div class="entity-inspector-chrome-top">
+                <p class="entity-inspector-mode" id="entity-inspector-mode" hidden>Entity</p>
+                <p id="entity-inspector-title" class="entity-inspector-selection">Select an entity in the list</p>
+              </div>
+              <div class="entity-inspector-identity" data-entity-section="identity">
+                <div class="row entity-inspector-identity-name">
+                  <input id="entity-rename-input" type="text" placeholder="Entity name" aria-label="Entity name" />
+                  <button id="save-entity-rename-btn" type="button">Save</button>
+                </div>
+                <div class="row entity-inspector-identity-move">
+                  <select id="entity-move-domain-select" aria-label="Move entity to domain"></select>
+                  <button id="move-entity-btn" type="button">Move</button>
+                </div>
+              </div>
+              <div class="entity-inspector-tabs" role="tablist" aria-label="Entity edit sections">
+                <button type="button" class="entity-inspector-tab active" role="tab" aria-selected="true" data-entity-pane-tab="fields" id="entity-pane-tab-fields" title="Fields">Fields</button>
+                <button type="button" class="entity-inspector-tab" role="tab" aria-selected="false" data-entity-pane-tab="rules" id="entity-pane-tab-rules" tabindex="-1" title="Rules">Rules</button>
+                <button type="button" class="entity-inspector-tab" role="tab" aria-selected="false" data-entity-pane-tab="rbac" id="entity-pane-tab-rbac" tabindex="-1" title="Access">Access</button>
+                <button type="button" class="entity-inspector-tab" role="tab" aria-selected="false" data-entity-pane-tab="contracts" id="entity-pane-tab-contracts" tabindex="-1" title="Contracts">Contracts</button>
+                <button type="button" class="entity-inspector-tab" role="tab" aria-selected="false" data-entity-pane-tab="advanced" id="entity-pane-tab-advanced" tabindex="-1" title="Advanced">Advanced</button>
+              </div>
+            </header>
+
+            <div class="entity-inspector-body" id="entity-inspector-body">
+              <div class="entity-inspector-pane entity-inspector-pane-fields" data-entity-pane="fields" data-entity-section="fields" role="tabpanel" aria-labelledby="entity-pane-tab-fields">
+                <ul id="entity-field-list" class="list entity-field-list"></ul>
+                <details class="entity-field-composer" id="entity-field-composer">
+                  <summary class="entity-field-composer-label">Add field</summary>
+                  <div class="entity-field-composer-body">
+                    <div class="row">
+                      <input id="field-name-input" type="text" placeholder="fieldName" aria-label="Field name" />
+                      <button id="add-field-btn" type="button">Add</button>
+                    </div>
+                    <div class="entity-field-type-row">
+                      <select id="field-type-select" aria-label="Field type">
+                        <option value="string">string</option>
+                        <option value="integer">integer</option>
+                        <option value="number">number</option>
+                        <option value="boolean">boolean</option>
+                        <option value="array">array</option>
+                        <option value="object">object</option>
+                        <option value="date">date</option>
+                        <option value="datetime">datetime</option>
+                        <option value="uuid">uuid</option>
+                      </select>
+                      <select id="field-format-select" aria-label="Field format (optional)">
+                        <option value="">format</option>
+                        <option value="uuid">uuid</option>
+                        <option value="date">date</option>
+                        <option value="date-time">date-time</option>
+                        <option value="email">email</option>
+                        <option value="uri">uri</option>
+                      </select>
+                    </div>
+                    <input id="field-enum-input" type="text" placeholder="enum: a,b,c (optional)" aria-label="Enum values, comma separated (optional)" />
+                    <div class="entity-field-flags" role="group" aria-label="New field flags">
+                      <label class="flag-chip"><input id="field-required-check" type="checkbox" /> req</label>
+                      <label class="flag-chip"><input id="field-pk-check" type="checkbox" /> PK</label>
+                      <label class="flag-chip"><input id="field-fk-check" type="checkbox" /> FK</label>
+                      <label class="flag-chip"><input id="field-unique-check" type="checkbox" /> uniq</label>
+                      <label class="flag-chip"><input id="field-nullable-check" type="checkbox" /> null</label>
+                    </div>
+                    <div class="row">
+                      <select id="field-template-select" aria-label="Field template">
+                        <option value="">Template…</option>
+                        <option value="tenant">tenantRef</option>
+                        <option value="audit">auditTrail</option>
+                        <option value="softDelete">softDelete</option>
+                        <option value="contact">contactPack</option>
+                      </select>
+                      <button id="apply-field-template-btn" type="button">Apply</button>
+                    </div>
+                  </div>
+                </details>
+              </div>
+
+              <div class="entity-inspector-pane" data-entity-pane="rules" data-entity-section="rules" role="tabpanel" aria-labelledby="entity-pane-tab-rules" hidden>
+                <div class="column compact">
+                  <label class="check"><input id="entity-aggregate-root-check" type="checkbox" /> Aggregate root</label>
+                  <textarea id="entity-invariants-input" rows="4" placeholder="Invariant rules (one per line)" aria-label="Invariant rules (one per line)"></textarea>
+                  <button id="save-entity-rules-btn" type="button">Save Rules</button>
+                </div>
+              </div>
+
+              <div class="entity-inspector-pane" data-entity-pane="rbac" data-entity-section="rbac" role="tabpanel" aria-labelledby="entity-pane-tab-rbac" hidden>
+                <div class="column compact">
+                  <label for="entity-rbac-action-select">Action</label>
+                  <select id="entity-rbac-action-select">
+                    <option value="list">list</option>
+                    <option value="getById">getById</option>
+                    <option value="create">create</option>
+                    <option value="update">update</option>
+                    <option value="delete">delete</option>
+                  </select>
+                  <div class="entity-field-flags" role="group" aria-label="RBAC roles">
+                    <label class="flag-chip"><input id="entity-rbac-superadmin-check" type="checkbox" /> superadmin</label>
+                    <label class="flag-chip"><input id="entity-rbac-admin-check" type="checkbox" /> admin</label>
+                    <label class="flag-chip"><input id="entity-rbac-user-check" type="checkbox" /> user</label>
+                    <label class="flag-chip"><input id="entity-rbac-tenant-check" type="checkbox" disabled /> tenant</label>
+                  </div>
+                  <p class="hint">Tenant scope derives from roles (admin/user → org; superadmin → global).</p>
+                  <button id="save-entity-rbac-btn" type="button">Save RBAC Rule</button>
+                  <ul id="entity-rbac-list" class="list"></ul>
+                </div>
+              </div>
+
+              <div class="entity-inspector-pane" data-entity-pane="contracts" data-entity-section="contracts" role="tabpanel" aria-labelledby="entity-pane-tab-contracts" hidden>
+                <div class="column compact">
+                  <label for="entity-contract-name-input">Message contract</label>
+                  <input id="entity-contract-name-input" type="text" placeholder="Contract name" />
+                  <div class="row">
+                    <select id="entity-contract-type-select" aria-label="Contract type">
+                      <option value="event">event</option>
+                      <option value="command">command</option>
+                      <option value="request">request</option>
+                      <option value="response">response</option>
+                    </select>
+                    <input id="entity-contract-channel-input" type="text" placeholder="channel/topic" aria-label="Contract channel/topic" />
+                  </div>
+                  <div class="row">
+                    <input id="entity-contract-version-input" type="text" placeholder="version (e.g. 1.0.0)" aria-label="Contract version" />
+                    <button id="add-entity-contract-btn" type="button">Add</button>
+                  </div>
+                  <ul id="entity-contract-list" class="list"></ul>
+                </div>
+              </div>
+
+              <div class="entity-inspector-pane" data-entity-pane="advanced" data-entity-section="oas" role="tabpanel" aria-labelledby="entity-pane-tab-advanced" hidden>
+                <div class="column compact">
+                  <label for="entity-oas-composition-mode-select">OpenAPI composition</label>
+                  <select id="entity-oas-composition-mode-select">
+                    <option value="">none</option>
+                    <option value="oneOf">oneOf</option>
+                    <option value="allOf">allOf</option>
+                    <option value="anyOf">anyOf</option>
+                  </select>
+                  <input id="entity-oas-composition-refs-input" type="text" placeholder="Schema refs (comma)" aria-label="Schema refs (comma separated)" />
+                  <input id="entity-oas-external-refs-input" type="text" placeholder="External $refs (comma)" aria-label="External $refs (comma separated)" />
+                  <input id="entity-oas-discriminator-input" type="text" placeholder="Discriminator (optional)" aria-label="Discriminator property (optional)" />
+                  <button id="save-entity-oas-composition-btn" type="button">Save OAS</button>
+                  <p class="hint">API preview (OpenAPI CRUD)</p>
+                  <ul id="entity-api-preview-list" class="list"></ul>
+                </div>
+              </div>
             </div>
-            <p class="hint">Select a domain first.</p>
           </section>
 
-          <section class="panel" data-sidebar-group="inspector">
-            <h2>Relationship</h2>
-            <div class="column">
-              <select id="from-entity-select" aria-label="From entity"></select>
-              <select id="from-card-select" aria-label="From cardinality">
-                <option value="1">1</option>
-                <option value="N">N</option>
-              </select>
-              <select id="to-card-select" aria-label="To cardinality">
-                <option value="1">1</option>
-                <option value="N">N</option>
-              </select>
-              <select id="to-entity-select" aria-label="To entity"></select>
-              <label class="check"><input id="relationship-auto-fk-check" type="checkbox" checked /> auto FK</label>
-              <div class="row">
-                <button id="add-relationship-btn" type="button">Connect</button>
-                <button id="pick-relationship-btn" type="button">Pick On Canvas</button>
+          <section class="panel relationship-inspector-panel" id="relationship-inspector-panel" data-sidebar-group="model" hidden>
+            <header class="relationship-inspector-chrome">
+              <div class="relationship-inspector-chrome-top">
+                <p class="relationship-inspector-mode" id="relationship-inspector-mode" hidden>Relationship</p>
+                <p id="relationship-inspector-title" class="relationship-inspector-selection">Select a link on the canvas, in Browse, or with [ ]</p>
               </div>
-              <p id="relationship-pick-status" class="hint">Pick mode off</p>
+              <div class="relationship-nav" id="relationship-nav" role="toolbar" aria-label="Relationship navigation">
+                <button type="button" class="jx-btn" id="relationship-prev-btn" title="Previous link ([)">Prev</button>
+                <span class="relationship-nav-index" id="relationship-nav-index" aria-live="polite">0 / 0</span>
+                <button type="button" class="jx-btn" id="relationship-next-btn" title="Next link (])">Next</button>
+              </div>
+            </header>
+            <div class="relationship-browse" data-relationship-section="browse">
+              <p class="jx-scope-section-label">Links</p>
+              <ul id="relationship-list" class="list jx-list relationship-nav-list" aria-label="Relationships in scope"></ul>
             </div>
-            <ul id="relationship-list" class="list"></ul>
-            <div class="column compact">
-              <input id="relationship-name-input" type="text" placeholder="Selected relationship name" aria-label="Selected relationship name" />
-              <div class="row">
-                <select id="relationship-from-entity-select" aria-label="Relationship from entity"></select>
-                <select id="relationship-to-entity-select" aria-label="Relationship to entity"></select>
-              </div>
-              <div class="row">
-                <select id="relationship-from-card-select" aria-label="Relationship from cardinality">
+            <div class="relationship-inspector-create" data-relationship-section="create">
+              <p class="jx-scope-section-label">Create</p>
+              <div class="column">
+                <select id="from-entity-select" aria-label="From entity"></select>
+                <select id="from-card-select" aria-label="From cardinality">
                   <option value="1">1</option>
                   <option value="N">N</option>
                 </select>
-                <select id="relationship-to-card-select" aria-label="Relationship to cardinality">
+                <select id="to-card-select" aria-label="To cardinality">
                   <option value="1">1</option>
                   <option value="N">N</option>
                 </select>
+                <select id="to-entity-select" aria-label="To entity"></select>
+                <label class="check"><input id="relationship-auto-fk-check" type="checkbox" checked /> auto FK</label>
+                <div class="row">
+                  <button id="add-relationship-btn" type="button">Connect</button>
+                  <button id="pick-relationship-btn" type="button">Pick On Canvas</button>
+                </div>
+                <p id="relationship-pick-status" class="hint">Pick mode off</p>
               </div>
-              <div class="row">
-                <button id="save-relationship-btn" type="button">Save Relationship</button>
-                <button id="reverse-relationship-btn" type="button">Reverse</button>
-              </div>
-              <div class="row">
-                <input id="relationship-label-offset-x-input" type="number" placeholder="Label X offset" aria-label="Label X offset" />
-                <input id="relationship-label-offset-y-input" type="number" placeholder="Label Y offset" aria-label="Label Y offset" />
-                <button id="reset-relationship-label-offset-btn" type="button">Reset Label Pos</button>
-              </div>
-              <div class="row">
-                <input id="relationship-bend-x-input" type="number" placeholder="Bend X (optional)" aria-label="Bend X (optional)" />
-                <input id="relationship-bend-y-input" type="number" placeholder="Bend Y (optional)" aria-label="Bend Y (optional)" />
-                <select id="relationship-anchor-behavior-select" aria-label="Anchor behavior">
-                  <option value="auto">anchor auto</option>
-                  <option value="center">anchor center</option>
-                </select>
+            </div>
+            <div class="relationship-inspector-body" id="relationship-inspector-body" data-relationship-section="edit" hidden>
+              <p class="jx-scope-section-label">Edit · Relationship</p>
+              <div class="column compact">
+                <input id="relationship-name-input" type="text" placeholder="Selected relationship name" aria-label="Selected relationship name" />
+                <div class="row">
+                  <select id="relationship-from-entity-select" aria-label="Relationship from entity"></select>
+                  <select id="relationship-to-entity-select" aria-label="Relationship to entity"></select>
+                </div>
+                <div class="row">
+                  <select id="relationship-from-card-select" aria-label="Relationship from cardinality">
+                    <option value="1">1</option>
+                    <option value="N">N</option>
+                  </select>
+                  <select id="relationship-to-card-select" aria-label="Relationship to cardinality">
+                    <option value="1">1</option>
+                    <option value="N">N</option>
+                  </select>
+                </div>
+                <div class="row">
+                  <button id="save-relationship-btn" type="button">Save</button>
+                  <button id="reverse-relationship-btn" type="button">Reverse</button>
+                  <button id="delete-relationship-btn" type="button" class="jx-btn jx-btn-danger">Delete</button>
+                </div>
+                <div class="row">
+                  <input id="relationship-label-offset-x-input" type="number" placeholder="Label X offset" aria-label="Label X offset" />
+                  <input id="relationship-label-offset-y-input" type="number" placeholder="Label Y offset" aria-label="Label Y offset" />
+                  <button id="reset-relationship-label-offset-btn" type="button">Reset Label Pos</button>
+                </div>
+                <div class="row">
+                  <input id="relationship-bend-x-input" type="number" placeholder="Bend X (optional)" aria-label="Bend X (optional)" />
+                  <input id="relationship-bend-y-input" type="number" placeholder="Bend Y (optional)" aria-label="Bend Y (optional)" />
+                  <select id="relationship-anchor-behavior-select" aria-label="Anchor behavior">
+                    <option value="auto">anchor auto</option>
+                    <option value="center">anchor center</option>
+                  </select>
+                </div>
               </div>
             </div>
           </section>
 
-          <section class="panel" id="entity-inspector-panel" data-sidebar-group="inspector">
-            <h2>Entity Inspector</h2>
-            <p id="entity-inspector-title" class="hint">No entity selected</p>
-            <div class="row">
-              <input id="entity-rename-input" type="text" placeholder="Entity name" aria-label="Entity name" />
-              <button id="save-entity-rename-btn" type="button">Save Name</button>
-            </div>
-            <div class="row">
-              <select id="entity-move-domain-select" aria-label="Move entity to domain"></select>
-              <button id="move-entity-btn" type="button">Move Domain</button>
-            </div>
-            <div class="column compact">
-              <label class="check"><input id="entity-aggregate-root-check" type="checkbox" /> Aggregate root</label>
-              <textarea id="entity-invariants-input" rows="3" placeholder="Invariant rules (one per line)" aria-label="Invariant rules (one per line)"></textarea>
-              <button id="save-entity-rules-btn" type="button">Save Rules</button>
-            </div>
-            <div class="column compact">
-              <label for="entity-rbac-action-select">RBAC Action</label>
-              <select id="entity-rbac-action-select">
-                <option value="list">list</option>
-                <option value="getById">getById</option>
-                <option value="create">create</option>
-                <option value="update">update</option>
-                <option value="delete">delete</option>
-              </select>
-              <label class="check"><input id="entity-rbac-superadmin-check" type="checkbox" /> superadmin</label>
-              <label class="check"><input id="entity-rbac-admin-check" type="checkbox" /> admin</label>
-              <label class="check"><input id="entity-rbac-user-check" type="checkbox" /> user</label>
-              <label class="check"><input id="entity-rbac-tenant-check" type="checkbox" disabled /> tenant scoped (derived from roles)</label>
-              <p class="hint">Roles are the normalized roles of the tenant RBAC contract. Tenant scoping is derived from the selected roles (admin/user scope to their organization; superadmin is global), matching what the runtime enforces. Legacy direct scopes remain runtime-supported but are not editable here.</p>
-              <button id="save-entity-rbac-btn" type="button">Save RBAC Rule</button>
-              <ul id="entity-rbac-list" class="list"></ul>
-            </div>
-            <div class="column compact">
-              <label for="entity-contract-name-input">Message Contract</label>
-              <input id="entity-contract-name-input" type="text" placeholder="Contract name" />
-              <div class="row">
-                <select id="entity-contract-type-select" aria-label="Contract type">
-                  <option value="event">event</option>
-                  <option value="command">command</option>
-                  <option value="request">request</option>
-                  <option value="response">response</option>
-                </select>
-                <input id="entity-contract-channel-input" type="text" placeholder="channel/topic" aria-label="Contract channel/topic" />
+          <section class="panel note-inspector-panel" id="note-inspector-panel" data-sidebar-group="model" hidden>
+            <header class="note-inspector-chrome">
+              <div class="note-inspector-chrome-top">
+                <p class="note-inspector-mode" id="note-inspector-mode">No selection</p>
+                <p id="note-inspector-title" class="note-inspector-selection">Click a note on the canvas to edit it here.</p>
               </div>
-              <div class="row">
-                <input id="entity-contract-version-input" type="text" placeholder="version (e.g. 1.0.0)" aria-label="Contract version" />
-                <button id="add-entity-contract-btn" type="button">Add Contract</button>
+              <div class="note-inspector-identity" data-note-section="identity">
+                <div class="row">
+                  <input id="note-color-input" type="color" value="#fde68a" aria-label="Note color" />
+                  <button id="save-note-btn" type="button">Save</button>
+                  <button id="delete-note-btn" type="button">Delete</button>
+                </div>
               </div>
-              <ul id="entity-contract-list" class="list"></ul>
+            </header>
+            <div class="note-inspector-body" id="note-inspector-body" hidden>
+              <textarea id="note-text-input" rows="8" placeholder="Note text" aria-label="Note text"></textarea>
             </div>
-            <div class="column compact">
-              <label for="entity-oas-composition-mode-select">OpenAPI Composition</label>
-              <select id="entity-oas-composition-mode-select">
-                <option value="">none</option>
-                <option value="oneOf">oneOf</option>
-                <option value="allOf">allOf</option>
-                <option value="anyOf">anyOf</option>
-              </select>
-              <input id="entity-oas-composition-refs-input" type="text" placeholder="Schema refs (comma), e.g. Users_User,Billing_Invoice" aria-label="Schema refs (comma separated)" />
-              <input id="entity-oas-external-refs-input" type="text" placeholder="External $refs (comma URLs/paths)" aria-label="External $refs (comma separated)" />
-              <input id="entity-oas-discriminator-input" type="text" placeholder="Discriminator property (optional)" aria-label="Discriminator property (optional)" />
-              <button id="save-entity-oas-composition-btn" type="button">Save OAS Composition</button>
+          </section>
             </div>
-            <div class="row">
-              <input id="field-name-input" type="text" placeholder="fieldName" aria-label="Field name" />
-              <button id="add-field-btn" type="button">Add Field</button>
+          </section>
+          </div>
             </div>
-            <div class="row">
-              <select id="field-template-select" aria-label="Field template">
-                <option value="">Field template</option>
-                <option value="tenant">tenantRef</option>
-                <option value="audit">auditTrail</option>
-                <option value="softDelete">softDelete</option>
-                <option value="contact">contactPack</option>
-              </select>
-              <button id="apply-field-template-btn" type="button">Apply Template</button>
             </div>
-            <div class="column compact">
-              <select id="field-type-select" aria-label="Field type">
-                <option value="string">string</option>
-                <option value="integer">integer</option>
-                <option value="number">number</option>
-                <option value="boolean">boolean</option>
-                <option value="array">array</option>
-                <option value="object">object</option>
-                <option value="date">date</option>
-                <option value="datetime">datetime</option>
-                <option value="uuid">uuid</option>
-              </select>
-              <select id="field-format-select" aria-label="Field format (optional)">
-                <option value="">format (optional)</option>
-                <option value="uuid">uuid</option>
-                <option value="date">date</option>
-                <option value="date-time">date-time</option>
-                <option value="email">email</option>
-                <option value="uri">uri</option>
-              </select>
-              <input id="field-enum-input" type="text" placeholder="enum: a,b,c (optional)" aria-label="Enum values, comma separated (optional)" />
-              <label class="check"><input id="field-required-check" type="checkbox" /> required</label>
-              <label class="check"><input id="field-pk-check" type="checkbox" /> PK</label>
-              <label class="check"><input id="field-fk-check" type="checkbox" /> FK</label>
-              <label class="check"><input id="field-unique-check" type="checkbox" /> unique</label>
-              <label class="check"><input id="field-nullable-check" type="checkbox" /> nullable</label>
-            </div>
-            <ul id="entity-field-list" class="list"></ul>
-            <p class="hint">API preview (OpenAPI CRUD)</p>
-            <ul id="entity-api-preview-list" class="list"></ul>
           </section>
 
-          <section class="panel" data-sidebar-group="share">
-            <h2>Export</h2>
-            <div class="row">
-              <button id="export-json-btn" type="button">Export JSON</button>
-              <button id="export-oas-btn" type="button">Export OAS 3.1</button>
-              <button id="export-md-btn" type="button">Export Markdown</button>
-              <button id="export-jsonschema-btn" type="button">Export JSON Schema</button>
-              <button id="export-asyncapi-btn" type="button">Export AsyncAPI</button>
-              <button id="export-proto-btn" type="button">Export gRPC Proto</button>
-              <button id="export-boilerplate-bundle-btn" type="button">Export Boilerplate Bundle</button>
-              <button id="export-package-btn" type="button">Export Package</button>
+          <section class="sidebar-accordion-cell" data-sidebar-group="history" data-hierarchy-band="temporal" data-hierarchy-depth="0" data-accordion-expanded="false" id="sidebar-group-history" role="tabpanel" aria-labelledby="sidebar-group-history-btn">
+            <div class="sidebar-accordion-body" id="sidebar-group-history-body" hidden>
+            <div class="sidebar-shell" data-shell="history">
+              <header class="jx-scope-chrome"><p class="jx-scope-chrome-job">Temporal</p><p class="jx-scope-chrome-path">Undo / redo</p></header>
+              <div class="jx-cell-toolbar" role="toolbar" aria-label="History actions">
+                <div class="jx-segmented jx-cell-toolbar-group" role="group" aria-label="History">
+                  <button id="undo-btn" class="jx-btn" type="button">Undo</button>
+                  <button id="redo-btn" class="jx-btn" type="button">Redo</button>
+                </div>
+              </div>
+              <div class="sidebar-shell-scroll jx-cell-body" data-shell-scroll="history">
+          <section class="panel jx-panel">
+            <p class="hint jx-hint">Model edit stack only. Shortcuts: Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z.</p>
+          </section>
+              </div>
             </div>
-            <div class="row">
-              <button id="import-json-btn" type="button">Import JSON</button>
+            </div>
+          </section>
+
+          <section class="sidebar-accordion-cell" data-sidebar-group="validate" data-hierarchy-band="assure" data-hierarchy-depth="0" data-accordion-expanded="false" id="sidebar-group-validate" role="tabpanel" aria-labelledby="sidebar-group-validate-btn">
+            <div class="sidebar-accordion-body" id="sidebar-group-validate-body" hidden>
+            <div class="sidebar-shell" data-shell="validate">
+              <header class="jx-scope-chrome"><p class="jx-scope-chrome-job">Assure</p><p class="jx-scope-chrome-path">Model checks</p></header>
+              <div class="jx-cell-toolbar" role="toolbar" aria-label="Validate actions">
+                <button id="run-model-check-btn" type="button" class="jx-btn jx-btn-primary">Validate</button>
+                <span class="jx-cell-toolbar-sep" aria-hidden="true"></span>
+                <select id="model-check-min-severity-select" class="jx-input" aria-label="Minimum severity">
+                  <option value="info">info+</option>
+                  <option value="warn">warn+</option>
+                  <option value="error">error</option>
+                </select>
+              </div>
+              <div class="sidebar-shell-scroll jx-cell-body" data-shell-scroll="validate">
+          <section class="panel jx-panel">
+            <ul id="model-check-list" class="list jx-list"></ul>
+            <details class="sidebar-nested-details jx-details" id="schema-diff-details">
+              <summary>Compare baseline</summary>
+              <p class="hint jx-hint">Secondary — compare against a saved baseline.</p>
+              <div class="jx-cell-toolbar jx-cell-toolbar-nested" role="toolbar" aria-label="Schema diff">
+                <button id="save-baseline-btn" class="jx-btn" type="button">Save baseline</button>
+                <button id="run-schema-diff-btn" class="jx-btn jx-btn-primary" type="button">Run</button>
+                <span class="jx-cell-toolbar-spacer" aria-hidden="true"></span>
+                <button id="clear-baseline-btn" type="button" class="jx-btn">Clear</button>
+              </div>
+              <ul id="schema-diff-list" class="list jx-list"></ul>
+            </details>
+          </section>
+              </div>
+            </div>
+            </div>
+          </section>
+
+          <section class="sidebar-accordion-cell" data-sidebar-group="export" data-hierarchy-band="emit" data-hierarchy-depth="0" data-accordion-expanded="false" id="sidebar-group-export" role="tabpanel" aria-labelledby="sidebar-group-export-btn">
+            <div class="sidebar-accordion-body" id="sidebar-group-export-body" hidden>
+            <div class="sidebar-shell" data-shell="export">
+              <header class="jx-scope-chrome"><p class="jx-scope-chrome-job">Emit</p><p class="jx-scope-chrome-path">Export artifacts</p></header>
+              <div class="jx-cell-toolbar" role="toolbar" aria-label="Export formats">
+                <div class="jx-segmented jx-segmented-wrap" role="group" aria-label="Export formats">
+                  <button id="export-json-btn" class="jx-btn" type="button">JSON</button>
+                  <button id="export-oas-btn" class="jx-btn" type="button">OAS 3.1</button>
+                  <button id="export-md-btn" class="jx-btn" type="button">Markdown</button>
+                  <button id="export-jsonschema-btn" class="jx-btn" type="button">JSON Schema</button>
+                  <button id="export-asyncapi-btn" class="jx-btn" type="button">AsyncAPI</button>
+                  <button id="export-proto-btn" class="jx-btn" type="button">gRPC Proto</button>
+                  <button id="export-boilerplate-bundle-btn" class="jx-btn" type="button">Boilerplate</button>
+                  <button id="export-package-btn" class="jx-btn" type="button">Package</button>
+                </div>
+              </div>
+              <div class="jx-cell-toolbar" role="toolbar" aria-label="Export policy">
+                <label class="jx-cell-toolbar-check"><input id="export-block-critical-check" type="checkbox" checked /> Block export on critical issues</label>
+              </div>
+              <div class="sidebar-shell-scroll jx-cell-body" data-shell-scroll="export">
+          <section class="panel jx-panel sidebar-export-actions">
+            <details class="sidebar-nested-details jx-details">
+              <summary>Code / examples preview</summary>
+              <div class="jx-cell-toolbar jx-cell-toolbar-nested" role="toolbar" aria-label="Previews">
+                <button id="generate-code-preview-btn" class="jx-btn" type="button">Code</button>
+                <button id="generate-examples-btn" class="jx-btn" type="button">Examples</button>
+              </div>
+              <pre id="code-preview-output" class="code-preview-output" hidden></pre>
+              <pre id="examples-preview-output" class="code-preview-output" hidden></pre>
+            </details>
+          </section>
+              </div>
+            </div>
+            </div>
+          </section>
+
+          <section class="sidebar-accordion-cell" data-sidebar-group="import" data-hierarchy-band="ingest" data-hierarchy-depth="0" data-accordion-expanded="false" id="sidebar-group-import" role="tabpanel" aria-labelledby="sidebar-group-import-btn">
+            <div class="sidebar-accordion-body" id="sidebar-group-import-body" hidden>
+            <div class="sidebar-shell" data-shell="import">
+              <header class="jx-scope-chrome"><p class="jx-scope-chrome-job">Ingest</p><p class="jx-scope-chrome-path">Load model</p></header>
+              <div class="jx-cell-toolbar" role="toolbar" aria-label="Import sources">
+                <button id="import-json-btn" class="jx-btn" type="button">JSON</button>
+                <button id="import-oas-btn" class="jx-btn" type="button">OAS 3.1</button>
+                <button id="import-package-btn" class="jx-btn" type="button">Package</button>
+                <span class="jx-cell-toolbar-spacer" aria-hidden="true"></span>
+                <button id="load-sample-btn" type="button" class="jx-btn jx-btn-primary">Sample</button>
+              </div>
               <input id="import-json-input" type="file" accept="application/json,.json" hidden aria-label="Import JSON" />
-            </div>
-            <div class="row">
-              <button id="import-oas-btn" type="button">Import OAS 3.1</button>
               <input id="import-oas-input" type="file" accept="application/json,.json" hidden aria-label="Import OAS 3.1" />
-            </div>
-            <div class="row">
-              <button id="import-package-btn" type="button">Import Package</button>
               <input id="import-package-input" type="file" accept="application/json,.json" hidden aria-label="Import Package" />
+              <div class="sidebar-shell-scroll jx-cell-body" data-shell-scroll="import">
+          <section class="panel jx-panel sidebar-import-actions">
+            <details class="sidebar-nested-details jx-details" id="import-details">
+              <summary>Reset / legend</summary>
+              <div class="jx-cell-toolbar jx-cell-toolbar-nested" role="toolbar" aria-label="Reset">
+                <button id="reset-canvas-btn" class="jx-btn" type="button">Reset</button>
+                <button id="clear-storage-btn" class="jx-btn" type="button">Clear save</button>
+              </div>
+              <details class="sidebar-nested-details jx-details">
+                <summary>Canvas legend</summary>
+                <ul class="legend">
+                  <li>Drag domains and entities</li>
+                  <li>Drag empty canvas (or Space + drag) to pan</li>
+                  <li>Wheel to zoom; 0 resets view</li>
+                  <li>Domain corner to resize</li>
+                  <li>Alt + L auto layout</li>
+                  <li>Entity edge dots to connect</li>
+                </ul>
+              </details>
+            </details>
+          </section>
+              </div>
             </div>
-            <div class="row">
-              <button id="load-sample-btn" type="button">Load Sample Model</button>
-            </div>
-            <div class="row">
-              <button id="generate-code-preview-btn" type="button">Code Preview</button>
-              <button id="generate-examples-btn" type="button">Generate Examples</button>
-            </div>
-            <pre id="code-preview-output" class="code-preview-output"></pre>
-            <pre id="examples-preview-output" class="code-preview-output"></pre>
-            <div class="row">
-              <button id="reset-canvas-btn" type="button">Reset</button>
-              <button id="clear-storage-btn" type="button">Clear Save</button>
             </div>
           </section>
 
-          <section class="panel" data-sidebar-group="quality">
-            <h2>History</h2>
-            <div class="row">
-              <button id="undo-btn" type="button">Undo</button>
-              <button id="redo-btn" type="button">Redo</button>
-            </div>
-          </section>
-
-          <section class="panel" data-sidebar-group="share">
-            <h2>Legend</h2>
-            <ul class="legend">
-              <li>Drag domains and entities</li>
-              <li>Drag the empty canvas (or Space + drag) to pan</li>
-              <li>Wheel to zoom, or the + and - keys; 0 resets the view</li>
-              <li>Drag a domain's bottom-right corner to resize it</li>
-              <li>Alt + L to auto layout</li>
-              <li>Select domain to add entity</li>
-              <li>Drag from entity edge dots to connect entities</li>
-              <li>Arrow keys move the selected entity (Shift for larger steps)</li>
-              <li>Arrow keys, Home and End switch tabs on the focused tab bar</li>
-            </ul>
-          </section>
-
-          <section class="panel" data-sidebar-group="quality">
-            <h2>Model Check</h2>
-            <div class="row">
-              <button id="run-model-check-btn" type="button">Validate Model</button>
-            </div>
-            <div class="column compact">
-              <label class="check"><input id="export-block-critical-check" type="checkbox" checked /> block export on critical issues</label>
-              <label for="model-check-min-severity-select">Display minimum severity</label>
-              <select id="model-check-min-severity-select">
-                <option value="info">info</option>
-                <option value="warn">warn</option>
-                <option value="error">error</option>
-              </select>
-            </div>
-            <ul id="model-check-list" class="list"></ul>
-          </section>
-
-          <section class="panel" data-sidebar-group="quality">
-            <h2>Schema Diff</h2>
-            <p class="hint">Compare current model against saved baseline and preview migration hints.</p>
-            <div class="row">
-              <button id="save-baseline-btn" type="button">Save Baseline</button>
-              <button id="run-schema-diff-btn" type="button">Run Diff</button>
-              <button id="clear-baseline-btn" type="button">Clear Baseline</button>
-            </div>
-            <ul id="schema-diff-list" class="list"></ul>
-          </section>
+          </div>
         </aside>
 
         <main class="workspace" id="workspace-main" tabindex="-1">
@@ -469,7 +707,10 @@
                action that starts the flow (load the sample) and points at the
                canvas controls, the model checks and the export gate. Toggled
                by renderEmptyStates in script.js. -->
-          <aside class="empty-state" id="domain-designer-empty-state" hidden>
+          <!-- Starts visible: renderEmptyStates() hides it once domains exist.
+               Hidden-by-default left a blank canvas when the shell painted
+               before script init (or when a stale SW blocked modules). -->
+          <aside class="empty-state" id="domain-designer-empty-state">
             <h2>Start your domain model</h2>
             <p>
               This is the Domain Designer: model bounded contexts, entities and their fields,
@@ -479,77 +720,84 @@
             <p>
               First action: load the sample model — a small identity domain (Users and Organization,
               the same resources <code>spec/1.0.0.yml</code> declares) that exercises relationships,
-              RBAC, a message contract and composition. Or type a domain name in the Domains panel
-              and press Add to start from scratch.
+              RBAC, a message contract and composition.               Or type a domain name in the Model panel
+              and press Domain to start from scratch.
             </p>
             <button id="domain-designer-empty-load-sample-btn" type="button">Load Sample Model</button>
             <p class="hint">
               The sample is marked "sample" in the domain list and is safe to delete — it never mixes
-              with your work. Once you have a model, run "Validate Model" in the Model Check panel;
+              with your work. Once you have a model, run "Validate model" in the Validate panel;
               the export gate refuses exports while critical issues exist. Canvas controls are listed
-              in the Legend panel (Space + drag to pan, Ctrl/Cmd + wheel to zoom).
+              under Import → Canvas legend (Space + drag to pan, Ctrl/Cmd + wheel to zoom).
             </p>
           </aside>
-          <header class="workspace-header">
-            <!--
-              JUM-729 follow-up: the panels open over the canvas instead of taking a
-              permanent column from it. The canvas is the product; ten panels
-              parked beside it at all times left a modelling surface too narrow
-              to hold a domain and its neighbours at once.
-            -->
-            <button
-              id="toggle-sidebar-btn"
-              class="panel-toggle"
-              type="button"
-              aria-expanded="false"
-              aria-controls="designer-sidebar"
-              title="Show panels (P)"
-            >Panels</button>
-            <div id="selection-status" role="status" aria-live="polite">No domain selected</div>
-            <!--
-              JUM-729 follow-up: creation lives on the toolbar, not behind a drawer. With
-              the panels closed by default there was no way to add the first
-              domain without opening them first, which is the same "where do I
-              start" the empty state exists to answer.
-            -->
-            <div class="workspace-create">
-              <button id="quick-add-domain-btn" type="button" title="Add a domain (D)">+ Domain</button>
-              <button id="quick-add-entity-btn" type="button" title="Add an entity to the selected domain (E)">+ Entity</button>
-              <button id="quick-undo-btn" type="button" title="Undo (Ctrl/Cmd + Z)" aria-label="Undo">&#8630;</button>
-              <button id="quick-redo-btn" type="button" title="Redo (Ctrl/Cmd + Shift + Z)" aria-label="Redo">&#8631;</button>
-              <button id="quick-add-note-btn" type="button" title="Add a note (N)">+ Note</button>
-              <button id="quick-validate-btn" type="button" title="Validate the model">Validate</button>
-              <button id="export-png-btn" type="button" title="Download the diagram as a PNG">PNG</button>
+          <header class="workspace-header jx-cell-toolbar-host" aria-label="Canvas navigate">
+            <div class="jx-scope-chrome workspace-scope-chrome">
+              <button
+                id="toggle-sidebar-btn"
+                class="panel-toggle jx-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="designer-sidebar"
+                title="Show panels (P)"
+              >Panels</button>
+              <p class="jx-scope-chrome-job">Navigate</p>
+              <p class="jx-scope-chrome-path" id="canvas-scope-path">Nothing selected</p>
+              <div id="selection-status" role="status" aria-live="polite" hidden>No domain selected</div>
             </div>
-            <!--
-              JUM-729 follow-up: search is on the toolbar, not in a panel. On a model
-              with fifteen domains, finding the entity you mean by scrolling
-              the canvas is the slowest thing in the tool.
-            -->
-            <div class="workspace-search">
-              <input
-                id="model-search-input"
-                type="search"
-                placeholder="Search model (/)"
-                aria-label="Search domains, entities and fields"
-                autocomplete="off"
-              />
-              <ul id="model-search-results" class="search-results" hidden></ul>
-            </div>
-            <div class="workspace-actions">
-              <button id="zoom-out-btn" type="button" title="Zoom out" aria-label="Zoom out">-</button>
-              <div id="zoom-indicator" class="zoom-indicator">100%</div>
-              <button id="zoom-in-btn" type="button" title="Zoom in" aria-label="Zoom in">+</button>
-              <select id="edge-style-select" title="Relationship routing style" aria-label="Relationship routing style">
-                <option value="curved">Curved</option>
-                <option value="orthogonal">Orthogonal</option>
-              </select>
-              <button id="toggle-compact-view-btn" type="button" aria-pressed="false">Compact View</button>
-              <button id="toggle-snap-btn" type="button" aria-pressed="true">Snap: On</button>
-              <button id="auto-layout-btn" type="button">Auto Layout</button>
-              <button id="toggle-large-canvas-btn" type="button" aria-pressed="false">Large Canvas: Off</button>
-              <button id="fit-view-btn" type="button">Fit</button>
-              <button id="reset-view-btn" type="button">Reset View</button>
+            <div class="jx-cell-toolbar workspace-toolbar-row" role="toolbar" aria-label="Canvas actions">
+              <div class="workspace-toolbar-cluster workspace-toolbar-create" aria-label="Create">
+                <button id="quick-add-domain-btn" class="jx-btn" type="button" title="Add a domain (D)">+ Domain</button>
+                <button id="quick-add-entity-btn" class="jx-btn" type="button" title="Add an entity to the selected domain (E)">+ Entity</button>
+                <button id="quick-add-note-btn" class="jx-btn" type="button" title="Add a note (N)">+ Note</button>
+              </div>
+              <span class="jx-cell-toolbar-sep" aria-hidden="true"></span>
+              <div class="workspace-toolbar-cluster workspace-toolbar-history" aria-label="History">
+                <button id="quick-undo-btn" class="jx-btn" type="button" title="Undo (Ctrl/Cmd + Z)" aria-label="Undo">&#8630;</button>
+                <button id="quick-redo-btn" class="jx-btn" type="button" title="Redo (Ctrl/Cmd + Shift + Z)" aria-label="Redo">&#8631;</button>
+              </div>
+              <span class="jx-cell-toolbar-sep" aria-hidden="true"></span>
+              <div class="workspace-toolbar-cluster workspace-toolbar-assure" aria-label="Assure">
+                <button id="quick-validate-btn" class="jx-btn" type="button" title="Validate the model">Validate</button>
+                <button id="export-png-btn" class="jx-btn" type="button" title="Download the diagram as a PNG">PNG</button>
+              </div>
+              <span class="jx-cell-toolbar-spacer" aria-hidden="true"></span>
+              <div class="workspace-toolbar-cluster workspace-toolbar-search" aria-label="Find">
+                <div class="workspace-search">
+                  <input
+                    id="model-search-input"
+                    class="jx-input"
+                    type="search"
+                    placeholder="Search model (/)"
+                    aria-label="Search domains, entities and fields"
+                    autocomplete="off"
+                  />
+                  <ul id="model-search-results" class="search-results" hidden></ul>
+                </div>
+              </div>
+              <span class="jx-cell-toolbar-sep" aria-hidden="true"></span>
+              <div class="workspace-toolbar-cluster workspace-toolbar-view" aria-label="View">
+                <div class="workspace-actions workspace-view-zoom">
+                  <button id="zoom-out-btn" class="jx-btn" type="button" title="Zoom out" aria-label="Zoom out">-</button>
+                  <div id="zoom-indicator" class="zoom-indicator">100%</div>
+                  <button id="zoom-in-btn" class="jx-btn" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+                </div>
+                <div class="workspace-actions workspace-view-layout">
+                  <select id="edge-style-select" class="jx-input" title="Relationship routing style" aria-label="Relationship routing style">
+                    <option value="curved">Curved</option>
+                    <option value="orthogonal">Orthogonal</option>
+                  </select>
+                  <button id="toggle-compact-view-btn" class="jx-btn" type="button" aria-pressed="false" title="Compact entity cards">Compact</button>
+                  <button id="toggle-snap-btn" class="jx-btn" type="button" aria-pressed="true" title="Snap to grid">Snap</button>
+                  <button id="auto-layout-btn" class="jx-btn" type="button" title="Auto-arrange domains and entities">Layout</button>
+                  <button id="toggle-large-canvas-btn" class="jx-btn" type="button" aria-pressed="false" title="Expand the virtual canvas">Canvas</button>
+                </div>
+                <div class="workspace-actions workspace-view-camera">
+                  <button id="canvas-overview-btn" class="jx-btn jx-btn-primary" type="button" title="Show all domains" aria-pressed="false" hidden>All</button>
+                  <button id="fit-view-btn" class="jx-btn" type="button" title="Fit model in view">Fit</button>
+                  <button id="reset-view-btn" class="jx-btn" type="button" title="Reset pan and zoom">Reset</button>
+                </div>
+              </div>
             </div>
           </header>
           <!-- The canvas is a visual surface; its keyboard/screen-reader path
@@ -1127,7 +1375,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js?v=0.9.54"></script>
+  <script type="module" src="./script.js?v=0.9.128"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

@@ -235,6 +235,7 @@ const dom = {
   toggleCompactViewBtn: document.getElementById('toggle-compact-view-btn'),
   toggleSnapBtn: document.getElementById('toggle-snap-btn'),
   domainNameInput: document.getElementById('domain-name-input'),
+  domainRenameInput: document.getElementById('domain-rename-input'),
   addDomainBtn: document.getElementById('add-domain-btn'),
   renameDomainBtn: document.getElementById('rename-domain-btn'),
   deleteDomainBtn: document.getElementById('delete-domain-btn'),
@@ -243,12 +244,16 @@ const dom = {
   domainUbiquitousLanguageInput: document.getElementById('domain-ubiquitous-language-input'),
   domainOwnerTeamInput: document.getElementById('domain-owner-team-input'),
   domainUpstreamInput: document.getElementById('domain-upstream-input'),
+  domainUpstreamCheckList: document.getElementById('domain-upstream-check-list'),
   domainDownstreamInput: document.getElementById('domain-downstream-input'),
+  domainDownstreamCheckList: document.getElementById('domain-downstream-check-list'),
   domainIntegrationChannelInput: document.getElementById('domain-integration-channel-input'),
+  domainIntegrationChannelOtherInput: document.getElementById('domain-integration-channel-other-input'),
   domainPackageDependenciesInput: document.getElementById('domain-package-dependencies-input'),
   domainSharedValueObjectsInput: document.getElementById('domain-shared-value-objects-input'),
   saveDomainContextBtn: document.getElementById('save-domain-context-btn'),
   clearDomainContextBtn: document.getElementById('clear-domain-context-btn'),
+  domainContextAutosaveHint: document.getElementById('domain-context-autosave-hint'),
   entityNameInput: document.getElementById('entity-name-input'),
   addEntityBtn: document.getElementById('add-entity-btn'),
   renameEntityBtn: document.getElementById('rename-entity-btn'),
@@ -274,12 +279,17 @@ const dom = {
   relationshipToCardSelect: document.getElementById('relationship-to-card-select'),
   saveRelationshipBtn: document.getElementById('save-relationship-btn'),
   reverseRelationshipBtn: document.getElementById('reverse-relationship-btn'),
+  deleteRelationshipBtn: document.getElementById('delete-relationship-btn'),
   relationshipLabelOffsetXInput: document.getElementById('relationship-label-offset-x-input'),
   relationshipLabelOffsetYInput: document.getElementById('relationship-label-offset-y-input'),
   resetRelationshipLabelOffsetBtn: document.getElementById('reset-relationship-label-offset-btn'),
   relationshipBendXInput: document.getElementById('relationship-bend-x-input'),
   relationshipBendYInput: document.getElementById('relationship-bend-y-input'),
   relationshipAnchorBehaviorSelect: document.getElementById('relationship-anchor-behavior-select'),
+  noteTextInput: document.getElementById('note-text-input'),
+  noteColorInput: document.getElementById('note-color-input'),
+  saveNoteBtn: document.getElementById('save-note-btn'),
+  deleteNoteBtn: document.getElementById('delete-note-btn'),
   entityInspectorTitle: document.getElementById('entity-inspector-title'),
   entityRenameInput: document.getElementById('entity-rename-input'),
   saveEntityRenameBtn: document.getElementById('save-entity-rename-btn'),
@@ -558,6 +568,9 @@ const canvas = createCanvas({
     saveState,
     setSelectedDomain,
     setSelectedEntity,
+    setSelectedField,
+    setSelectedRelationship,
+    setSelectedNote,
     handleEntityRelationshipPick,
     addRelationshipFromAnchor,
     addDomain,
@@ -593,6 +606,12 @@ const inspectors = createInspectors({
     focusEntity,
     deleteRelationship,
     setSelectedDomain,
+    setSelectedEntity,
+    setSelectedField,
+    setSelectedRelationship,
+    cycleSelectedRelationship: (delta) => canvas.cycleSelectedRelationship?.(delta),
+    relationshipsInNavScope: () => canvas.relationshipsInNavScope?.() || state.relationships || [],
+    persistDomainContext: () => saveSelectedDomainContext({ announce: false }),
     editFieldMetadata,
     updateField,
     removeField,
@@ -602,7 +621,8 @@ const inspectors = createInspectors({
     getPm2EcosystemPreview,
     editDeployment,
     duplicateDeployment,
-    syncDeploymentEditStateAfterRemoval
+    syncDeploymentEditStateAfterRemoval,
+    openSidebarGroup: (key) => sidebarGroups.setActiveGroup(key)
   }
 });
 
@@ -930,17 +950,9 @@ function getSelectedDomain() {
 function focusEntity(entityId) {
   const found = findEntity(entityId);
   if (!found) return;
-  state.selectedDomainId = found.domain.id;
-  state.selectedEntityId = found.entity.id;
-  render();
-  const zoom = state.view.zoom || 1;
-  const targetLeft = (found.domain.x + found.entity.x + CANVAS_ORIGIN_X - 120) * zoom;
-  const targetTop = (found.domain.y + found.entity.y + CANVAS_ORIGIN_Y - 80) * zoom;
-  dom.canvas.scrollTo({
-    left: Math.max(0, targetLeft),
-    top: Math.max(0, targetTop),
-    behavior: 'smooth'
-  });
+  // Route through setSelectedEntity so the Entity edit panel opens the same
+  // way a canvas click does (drawer + Inspector group). Focus zoom runs there.
+  setSelectedEntity(found.entity.id);
 }
 
 /**
@@ -982,6 +994,10 @@ function addDomain(name, options = {}) {
   };
   state.domains.push(domain);
   state.selectedDomainId = domain.id;
+  state.selectedEntityId = null;
+  state.selectedRelationshipId = null;
+  state.selectedNoteId = null;
+  syncSelectionPath('domain');
   return domain;
 }
 
@@ -1036,6 +1052,8 @@ function addEntity(domainId, name, options = {}) {
   const entity = {
     id: nextId('entity'),
     name,
+    domainId: domain.id,
+    kind: 'data',
     x: position.x,
     y: position.y,
     fields,
@@ -1059,7 +1077,9 @@ function addEntity(domainId, name, options = {}) {
     }
   };
   domain.entities.push(entity);
+  state.selectedDomainId = domain.id;
   state.selectedEntityId = entity.id;
+  syncSelectionPath('entity');
   return entity;
 }
 
@@ -1093,18 +1113,204 @@ function deleteDomain(domainId) {
   }
 }
 
-function setSelectedDomain(domainId) {
-  state.selectedDomainId = domainId;
-  render();
+function paintSelectionChrome(panelId) {
+  // Soft select during an in-flight pointer drag: update Domains/Entities shells
+  // and highlight classes without remounting canvas nodes under the pointer.
+  if (typeof canvas.syncSelectionClasses === 'function') canvas.syncSelectionClasses();
+  inspectors.renderDomainList();
+  inspectors.renderEntityList();
+  inspectors.renderStatus();
+  inspectors.syncInspectorPanelVisibility();
+  inspectors.syncRelationshipInspector();
+  inspectors.syncNoteInspector();
+  inspectors.renderEntityInspector();
+  if (panelId) sidebarGroups.revealGroupFor(panelId, { scroll: false });
 }
 
-function setSelectedEntity(entityId) {
+/**
+ * Consistent hierarchical nav: chrome first, Camera3 flies, peer remount only
+ * after settle when remountCanvas is true. Never remount before the flight.
+ */
+function navigateToSelection(panelId, { remountCanvas = true, camera = true } = {}) {
+  paintSelectionChrome(panelId);
+  if (!camera || typeof canvas.focusSelectionOnCanvas !== 'function') return;
+  const hasTarget = Boolean(
+    state.selectedDomainId
+    || state.selectedEntityId
+    || state.selectedRelationshipId
+    || state.selectedNoteId
+  );
+  if (!hasTarget) {
+    if (typeof canvas.showOverview === 'function') {
+      canvas.showOverview({ camera: 'fit', persist: remountCanvas });
+    }
+    return;
+  }
+  canvas.focusSelectionOnCanvas({
+    persist: remountCanvas,
+    remountPeers: remountCanvas
+  });
+}
+
+function syncSelectionPath(kind, extras = {}) {
+  const next = {
+    kind: kind || 'none',
+    domainId: state.selectedDomainId || null,
+    entityId: null,
+    fieldName: null,
+    relationshipId: null,
+    noteId: null
+  };
+  if (kind === 'entity' || kind === 'field') {
+    next.entityId = state.selectedEntityId || null;
+    if (kind === 'field') {
+      next.fieldName = String(extras.fieldName || '').trim() || null;
+    }
+    if (!next.domainId || !next.entityId || (kind === 'field' && !next.fieldName)) {
+      if (kind === 'field' && next.domainId && next.entityId) {
+        next.kind = 'entity';
+        next.fieldName = null;
+      } else {
+        next.kind = next.domainId ? 'domain' : 'none';
+        next.entityId = null;
+        next.fieldName = null;
+      }
+    }
+  } else if (kind === 'relationship') {
+    next.relationshipId = state.selectedRelationshipId || null;
+    next.entityId = null;
+    if (!next.relationshipId) next.kind = next.domainId ? 'domain' : 'none';
+  } else if (kind === 'note') {
+    next.noteId = state.selectedNoteId || null;
+    if (!next.noteId) next.kind = next.domainId ? 'domain' : 'none';
+  } else if (kind === 'domain') {
+    next.entityId = null;
+    if (!next.domainId) next.kind = 'none';
+  } else {
+    next.kind = 'none';
+    next.domainId = state.selectedDomainId || null;
+  }
+  state.selection = next;
+}
+
+function setSelectedDomain(domainId, { remountCanvas = true } = {}) {
+  // Reverse nav: re-selecting the focused domain (no child) = parent of domain
+  // is the canvas world → show every domain again.
+  const reverseToOverview = Boolean(
+    remountCanvas
+    && domainId
+    && domainId === state.selectedDomainId
+    && !state.selectedEntityId
+    && !state.selectedRelationshipId
+    && !state.selectedNoteId
+    && state.view?.canvasStage === 'focus'
+  );
+  if (reverseToOverview) {
+    domainId = null;
+  }
+
+  state.selectedDomainId = domainId;
+  // Domain selection clears child edit sessions and opens Domains (multi-open).
+  // Coming from an entity (parent domain) keeps focus stage and frames the domain.
+  if (domainId) {
+    state.selectedEntityId = null;
+    state.selectedRelationshipId = null;
+    state.selectedNoteId = null;
+    if (Array.isArray(state.selectedEntityIds)) state.selectedEntityIds = [];
+    syncSelectionPath('domain');
+  } else {
+    state.selectedEntityId = null;
+    state.selectedRelationshipId = null;
+    state.selectedNoteId = null;
+    if (Array.isArray(state.selectedEntityIds)) state.selectedEntityIds = [];
+    syncSelectionPath('none');
+    if (state.view) state.view.canvasStage = 'overview';
+  }
+  navigateToSelection(domainId ? 'domain-inspector-panel' : null, { remountCanvas });
+}
+
+function setSelectedField(entityId, fieldName, { remountCanvas = false } = {}) {
+  const found = findEntity(entityId);
+  const name = String(fieldName || '').trim();
+  if (!found || !name || !(found.entity.fields || []).some((field) => field.name === name)) {
+    if (entityId) setSelectedEntity(entityId, { remountCanvas });
+    return;
+  }
+  const alreadyFocused = state.selection?.kind === 'field'
+    && state.selectedEntityId === entityId
+    && state.selection.fieldName === name;
+  if (alreadyFocused && !remountCanvas) return;
+  state.selectedDomainId = found.domain.id;
   state.selectedEntityId = entityId;
-  // JUM-729 follow-up: the Entity Inspector lives in another sidebar group, so a
-  // selection made on the canvas has to bring that group forward — otherwise
-  // clicking an entity fills a panel nobody can see.
-  if (entityId) sidebarGroups.revealGroupFor('entity-inspector-panel');
-  render();
+  state.selectedRelationshipId = null;
+  state.selectedNoteId = null;
+  if (Array.isArray(state.selectedEntityIds)) state.selectedEntityIds = [];
+  syncSelectionPath('field', { fieldName: name });
+  // Field hops stay soft: no peer remount, Camera3 retargets.
+  navigateToSelection('entity-inspector-panel', { remountCanvas });
+}
+
+function setSelectedEntity(entityId, { remountCanvas = true } = {}) {
+  // Domain ⊃ Entity gate: entity selection requires a resolvable parent domain.
+  if (entityId) {
+    const found = findEntity(entityId);
+    if (!found) {
+      state.selectedEntityId = null;
+      syncSelectionPath(state.selectedDomainId ? 'domain' : 'none');
+      navigateToSelection(state.selectedDomainId ? 'domain-inspector-panel' : null, { remountCanvas });
+      return;
+    }
+    state.selectedDomainId = found.domain.id;
+    state.selectedEntityId = entityId;
+    state.selectedRelationshipId = null;
+    state.selectedNoteId = null;
+    if (!found.entity.domainId) found.entity.domainId = found.domain.id;
+    if (!found.entity.kind) found.entity.kind = 'data';
+    syncSelectionPath('entity');
+  } else {
+    state.selectedEntityId = null;
+    syncSelectionPath(state.selectedDomainId ? 'domain' : 'none');
+  }
+  if (!entityId) {
+    navigateToSelection(state.selectedDomainId ? 'domain-inspector-panel' : null, { remountCanvas });
+    return;
+  }
+  navigateToSelection('entity-inspector-panel', { remountCanvas });
+}
+
+function setSelectedRelationship(relationshipId, { remountCanvas = true } = {}) {
+  state.selectedRelationshipId = relationshipId;
+  if (relationshipId) {
+    state.selectedEntityId = null;
+    state.selectedNoteId = null;
+    const rel = state.relationships.find((entry) => entry.id === relationshipId);
+    if (rel) {
+      const found = findEntity(rel.fromEntityId);
+      if (found) state.selectedDomainId = found.domain.id;
+    }
+    syncSelectionPath('relationship');
+  } else {
+    syncSelectionPath(state.selectedDomainId ? 'domain' : 'none');
+  }
+  navigateToSelection(
+    relationshipId ? 'relationship-inspector-panel' : (state.selectedDomainId ? 'domain-inspector-panel' : null),
+    { remountCanvas }
+  );
+}
+
+function setSelectedNote(noteId, { remountCanvas = true } = {}) {
+  state.selectedNoteId = noteId || null;
+  if (noteId) {
+    state.selectedEntityId = null;
+    state.selectedRelationshipId = null;
+    syncSelectionPath('note');
+  } else {
+    syncSelectionPath(state.selectedDomainId ? 'domain' : 'none');
+  }
+  navigateToSelection(
+    noteId ? 'note-inspector-panel' : (state.selectedDomainId ? 'domain-inspector-panel' : null),
+    { remountCanvas }
+  );
 }
 
 function addFieldToSelectedEntity() {
@@ -1295,8 +1501,11 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
       };
       state.relationships.push(relA);
       state.relationships.push(relB);
+      state.selectedEntityId = null;
+      state.selectedNoteId = null;
       state.selectedRelationshipId = relA.id;
       render();
+      sidebarGroups.revealGroupFor('relationship-inspector-panel');
       return;
     }
 
@@ -1349,8 +1558,11 @@ function addRelationship(fromEntityId, toEntityId, fromCardinality, toCardinalit
         }
       }
     }
+    state.selectedEntityId = null;
+    state.selectedNoteId = null;
     state.selectedRelationshipId = relationship.id;
     render();
+    sidebarGroups.revealGroupFor('relationship-inspector-panel');
   });
 }
 
@@ -1514,24 +1726,29 @@ function setSelectedDomainColor(color) {
   });
 }
 
-function saveSelectedDomainContext() {
+function saveSelectedDomainContext({ announce = false } = {}) {
   const selected = getSelectedDomain();
-  if (!selected) {
-    showStatus('Select a domain first.');
+  if (!selected || state.selectedEntityId || state.selectedRelationshipId || state.selectedNoteId) {
+    if (announce) showStatus('Select a domain first.');
     return;
   }
+  // Ignore blur/change noise while the inspector is copying a newly selected
+  // domain into the form — otherwise empty leftovers overwrite real context.
+  if (inspectors.isDomainContextHydrating?.()) return;
   withPersist(() => {
-    selected.context = {
-      ubiquitousLanguage: String(dom.domainUbiquitousLanguageInput.value || '').trim(),
-      ownerTeam: String(dom.domainOwnerTeamInput.value || '').trim(),
-      upstreamDependencies: parseCommaSeparated(dom.domainUpstreamInput.value),
-      downstreamDependencies: parseCommaSeparated(dom.domainDownstreamInput.value),
-      integrationChannel: String(dom.domainIntegrationChannelInput.value || '').trim(),
-      packageDependencies: uniqueStrings(parseCommaSeparated(dom.domainPackageDependenciesInput.value)),
-      sharedValueObjects: uniqueStrings(parseCommaSeparated(dom.domainSharedValueObjectsInput.value))
-    };
-    inspectors.renderStatus();
+    selected.context = inspectors.readDomainContextForm();
   });
+  if (dom.domainContextAutosaveHint) {
+    dom.domainContextAutosaveHint.hidden = false;
+    dom.domainContextAutosaveHint.textContent = 'Saved';
+    window.setTimeout(() => {
+      if (dom.domainContextAutosaveHint) {
+        dom.domainContextAutosaveHint.textContent = '';
+        dom.domainContextAutosaveHint.hidden = true;
+      }
+    }, 1600);
+  }
+  if (announce) showStatus(`Domain context saved for "${selected.name}".`, 'info');
 }
 
 function saveSelectedEntityName(name) {
@@ -1698,8 +1915,11 @@ function moveSelectedEntityToDomain(targetDomainId) {
     found.domain.entities = found.domain.entities.filter((entity) => entity.id !== found.entity.id);
     found.entity.x = 14 + (targetDomain.entities.length % 2) * 206;
     found.entity.y = 14 + Math.floor(targetDomain.entities.length / 2) * 118;
+    found.entity.domainId = targetDomain.id;
+    found.entity.kind = found.entity.kind || 'data';
     targetDomain.entities.push(found.entity);
     state.selectedDomainId = targetDomain.id;
+    syncSelectionPath('entity');
     render();
   });
   showStatus(`Entity "${found.entity.name}" moved to ${targetDomain.name}.`, 'info');
@@ -2135,7 +2355,8 @@ function importStateFromOasFile(file) {
           edgeStyle: 'curved',
           modelCheckMinSeverity: 'info',
           exportBlockCritical: true,
-          largeCanvasMode: false
+          largeCanvasMode: false,
+          canvasStage: 'overview'
         };
         recomputeIdCounter();
         render();
@@ -2162,6 +2383,9 @@ function generateCodePreview() {
   dom.codePreviewOutput.textContent = flattenBundleFiles(bundle).length
     ? renderBundlePreview(bundle)
     : '// Select an entity or create domains/entities to preview generated skeletons.';
+  dom.codePreviewOutput.hidden = false;
+  const details = dom.codePreviewOutput.closest('details');
+  if (details) details.open = true;
 }
 
 function ensureCodeWorkspaceState() {
@@ -2838,6 +3062,13 @@ function ensureMonacoWorkspaceEditor() {
   return codeWorkspaceMonacoLoadPromise;
 }
 
+function revealSidebarPreview(output) {
+  if (!output) return;
+  output.hidden = false;
+  const details = output.closest('details');
+  if (details) details.open = true;
+}
+
 function generateExamplesPreview() {
   const selected = findEntity(state.selectedEntityId);
   const targets = selected
@@ -2845,6 +3076,7 @@ function generateExamplesPreview() {
     : state.domains.flatMap((domain) => domain.entities.map((entity) => ({ domain, entity })));
   if (!targets.length) {
     dom.examplesPreviewOutput.textContent = '// No entities found for example generation.';
+    revealSidebarPreview(dom.examplesPreviewOutput);
     return;
   }
   const chunks = targets.map(({ domain, entity }) => {
@@ -2863,6 +3095,7 @@ function generateExamplesPreview() {
     ].join('\n');
   });
   dom.examplesPreviewOutput.textContent = chunks.join('\n\n/* ---------------------------------------- */\n\n');
+  revealSidebarPreview(dom.examplesPreviewOutput);
 }
 
 // JUM-548: the first-run state is intentionally EMPTY — no domains, no
@@ -2886,7 +3119,8 @@ function seed() {
     edgeStyle: 'curved',
     modelCheckMinSeverity: 'info',
     exportBlockCritical: true,
-    largeCanvasMode: false
+    largeCanvasMode: false,
+    canvasStage: 'overview'
   };
 }
 
@@ -3081,12 +3315,15 @@ function render() {
   inspectors.renderServiceConfiguration();
   inspectors.renderDeployments();
   inspectors.renderDomainList();
+  inspectors.renderEntityList();
   inspectors.renderStatus();
   canvas.renderView();
   canvas.renderDomains();
   inspectors.renderEntityOptions();
   inspectors.renderRelationshipList();
   inspectors.syncRelationshipInspector();
+  inspectors.syncNoteInspector();
+  inspectors.syncInspectorPanelVisibility();
   inspectors.renderPickStatus();
   inspectors.renderEntityInspector();
   canvas.renderNotes();
@@ -3440,32 +3677,55 @@ function wireEvents() {
   dom.saveDomainContextBtn.onclick = saveSelectedDomainContext;
   dom.clearDomainContextBtn.onclick = () => {
     if (!getSelectedDomain()) return;
-    dom.domainUbiquitousLanguageInput.value = '';
-    dom.domainOwnerTeamInput.value = '';
-    dom.domainUpstreamInput.value = '';
-    dom.domainDownstreamInput.value = '';
-    dom.domainIntegrationChannelInput.value = '';
-    dom.domainPackageDependenciesInput.value = '';
-    dom.domainSharedValueObjectsInput.value = '';
-    saveSelectedDomainContext();
+    if (!window.confirm('Clear all bounded-context details for this domain?')) return;
+    inspectors.clearDomainContextForm();
+    saveSelectedDomainContext({ announce: true });
   };
+  if (dom.domainColorInput) {
+    dom.domainColorInput.addEventListener('change', () => {
+      if (!getSelectedDomain()) return;
+      setSelectedDomainColor(dom.domainColorInput.value);
+    });
+  }
 
-  dom.renameDomainBtn.onclick = () => {
+  const saveDomainRename = () => {
     const selected = getSelectedDomain();
-    if (!selected) return;
-    const next = window.prompt('Rename domain', selected.name);
-    if (!next || !next.trim()) return;
-    if (isDomainNameTaken(next.trim(), selected.id)) {
-      showStatus(`Domain "${next.trim()}" already exists.`);
+    if (!selected || state.selectedEntityId || state.selectedRelationshipId || state.selectedNoteId) return;
+    const next = (dom.domainRenameInput?.value || '').trim();
+    if (!next) {
+      showStatus('Type a domain name before saving.');
+      return;
+    }
+    if (isDomainNameTaken(next, selected.id)) {
+      showStatus(`Domain "${next}" already exists.`);
+      return;
+    }
+    if (next === selected.name) {
+      showStatus(`Domain "${selected.name}" unchanged.`);
       return;
     }
     const previousName = selected.name;
     withPersist(() => {
-      selected.name = next.trim();
+      selected.name = next;
       render();
     });
-    showStatus(`Domain "${previousName}" renamed to "${next.trim()}".`, 'info');
+    showStatus(`Domain "${previousName}" renamed to "${next}".`, 'info');
   };
+  dom.renameDomainBtn.onclick = saveDomainRename;
+  if (dom.domainRenameInput) {
+    dom.domainRenameInput.onkeydown = (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      saveDomainRename();
+    };
+    dom.domainRenameInput.addEventListener('blur', () => {
+      const selected = getSelectedDomain();
+      if (!selected || state.selectedEntityId) return;
+      const next = (dom.domainRenameInput.value || '').trim();
+      if (!next || next === selected.name) return;
+      saveDomainRename();
+    });
+  }
 
   dom.deleteDomainBtn.onclick = () => {
     const selected = getSelectedDomain();
@@ -3604,6 +3864,20 @@ function wireEvents() {
   };
   dom.saveRelationshipBtn.onclick = saveSelectedRelationship;
   dom.reverseRelationshipBtn.onclick = reverseSelectedRelationship;
+  if (dom.deleteRelationshipBtn) {
+    dom.deleteRelationshipBtn.onclick = () => {
+      const relationshipId = state.selectedRelationshipId;
+      if (!relationshipId) return;
+      const relationship = state.relationships.find((candidate) => candidate.id === relationshipId);
+      const label = relationship?.name || 'relationship';
+      if (!window.confirm(`Delete ${label}?`)) return;
+      withPersist(() => {
+        deleteRelationship(relationshipId);
+        render();
+      });
+      showStatus(`Deleted ${label}.`, 'info');
+    };
+  }
   dom.resetRelationshipLabelOffsetBtn.onclick = () => {
     if (!state.selectedRelationshipId) return;
     dom.relationshipLabelOffsetXInput.value = '0';
@@ -3613,6 +3887,31 @@ function wireEvents() {
     dom.relationshipAnchorBehaviorSelect.value = 'auto';
     saveSelectedRelationship();
   };
+
+  const saveSelectedNote = () => {
+    const note = (state.notes || []).find((candidate) => candidate.id === state.selectedNoteId);
+    if (!note) return;
+    withPersist(() => {
+      note.text = dom.noteTextInput?.value || '';
+      note.color = dom.noteColorInput?.value || note.color || '#fde68a';
+      render();
+    });
+    showStatus('Note saved.', 'info');
+  };
+  if (dom.saveNoteBtn) dom.saveNoteBtn.onclick = saveSelectedNote;
+  if (dom.deleteNoteBtn) {
+    dom.deleteNoteBtn.onclick = () => {
+      const noteId = state.selectedNoteId;
+      if (!noteId) return;
+      if (!window.confirm('Delete this note?')) return;
+      withPersist(() => {
+        state.notes = (state.notes || []).filter((candidate) => candidate.id !== noteId);
+        state.selectedNoteId = null;
+        render();
+      });
+      showStatus('Note deleted.', 'info');
+    };
+  }
   dom.undoBtn.onclick = undo;
   dom.redoBtn.onclick = redo;
 
@@ -3681,7 +3980,11 @@ function wireEvents() {
         if (result.entityId) setSelectedEntity(result.entityId);
         dom.modelSearchResults.hidden = true;
         dom.modelSearchInput.value = '';
-        canvas.scrollSelectionIntoView();
+        if (typeof canvas.focusSelectionOnCanvas === 'function') {
+          canvas.focusSelectionOnCanvas();
+        } else {
+          canvas.scrollSelectionIntoView();
+        }
         render();
       };
       item.appendChild(button);
@@ -3741,6 +4044,10 @@ function wireEvents() {
   dom.autoLayoutBtn.onclick = canvas.autoLayout;
   dom.fitViewBtn.onclick = canvas.fitView;
   dom.resetViewBtn.onclick = canvas.resetView;
+  const canvasOverviewBtn = document.getElementById('canvas-overview-btn');
+  if (canvasOverviewBtn) {
+    canvasOverviewBtn.onclick = () => setSelectedDomain(null);
+  }
 
   dom.addFieldBtn.onclick = addFieldToSelectedEntity;
   dom.applyFieldTemplateBtn.onclick = applyFieldTemplateToSelectedEntity;
@@ -3838,15 +4145,45 @@ function wireEvents() {
       sidebarGroups.toggleDrawer();
       return;
     }
-    if (key === 'escape' && sidebarGroups.isOpen()) {
-      sidebarGroups.setDrawerOpen(false);
-      return;
-    }
     if (key === 'escape') {
       setRelationshipPickMode(false);
       canvas.stopAnchorDrag();
-      state.selectedRelationshipId = null;
-      render();
+      // Hierarchical reverse first (soft + camera). Drawer closes only at overview.
+      // field → entity → domain → overview
+      // relationship → from-entity → domain → overview
+      // note → domain → overview
+      if (state.selection?.kind === 'field' && state.selectedEntityId) {
+        event.preventDefault();
+        setSelectedEntity(state.selectedEntityId, { remountCanvas: false });
+        return;
+      }
+      if (state.selectedRelationshipId) {
+        event.preventDefault();
+        const rel = state.relationships.find((entry) => entry.id === state.selectedRelationshipId);
+        if (rel?.fromEntityId) {
+          setSelectedEntity(rel.fromEntityId, { remountCanvas: false });
+          return;
+        }
+        if (state.selectedDomainId) setSelectedDomain(state.selectedDomainId, { remountCanvas: false });
+        else setSelectedDomain(null);
+        return;
+      }
+      if (state.selectedEntityId || state.selectedNoteId) {
+        event.preventDefault();
+        if (state.selectedDomainId) setSelectedDomain(state.selectedDomainId, { remountCanvas: false });
+        else setSelectedDomain(null);
+        return;
+      }
+      if (state.selectedDomainId || state.view?.canvasStage === 'focus') {
+        event.preventDefault();
+        setSelectedDomain(null);
+        return;
+      }
+      if (sidebarGroups.isOpen()) {
+        event.preventDefault();
+        sidebarGroups.setDrawerOpen(false);
+        return;
+      }
       return;
     }
     if ((event.ctrlKey || event.metaKey) && key === 'z' && !event.shiftKey) {
@@ -3890,6 +4227,19 @@ function wireEvents() {
     if (event.altKey && key === 'v') {
       event.preventDefault();
       canvas.toggleCompactView();
+      return;
+    }
+    if (
+      !editingInput
+      && !event.ctrlKey
+      && !event.metaKey
+      && !event.altKey
+      && (key === '[' || key === ']')
+    ) {
+      event.preventDefault();
+      if (typeof canvas.cycleSelectedRelationship === 'function') {
+        canvas.cycleSelectedRelationship(key === ']' ? 1 : -1);
+      }
       return;
     }
     if (!editingInput && ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key) && state.selectedEntityId) {
@@ -4021,7 +4371,24 @@ async function boot() {
       probeStatus: probe.status,
       probeReason: probe.reason
     });
-    if (environment.message) showStatus(environment.message, environment.severity);
+    if (environment.message) {
+      // Durability-not-permanent is normal in Chromium until the origin is
+      // installed/engaged — still declare it, but only once per tab session so
+      // it does not interrupt every Domain Designer refresh.
+      const durabilityOnly = environment.kind === 'degraded-durability'
+        && String(probe.reason || '').startsWith('durability:');
+      const durabilityKey = 'jtx-sm-durability-toast-shown';
+      let skipToast = false;
+      if (durabilityOnly) {
+        try {
+          skipToast = sessionStorage.getItem(durabilityKey) === '1';
+          if (!skipToast) sessionStorage.setItem(durabilityKey, '1');
+        } catch (_) {
+          skipToast = false;
+        }
+      }
+      if (!skipToast) showStatus(environment.message, environment.severity);
+    }
     probeDeclaredDataLoss = environment.kind === 'data-lost';
   }
 

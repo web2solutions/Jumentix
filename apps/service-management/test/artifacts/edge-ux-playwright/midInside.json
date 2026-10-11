@@ -1,0 +1,571 @@
+{
+  "generatedAt": "2026-10-11T11:03:59.089Z",
+  "branch": "cursor/feature/edge-focus-camera3-mvp",
+  "shellExpected": "0.9.128",
+  "midInsideCommand": "rtk proxy bun apps/service-management/scripts/capture-edge-ux-evidence.mjs",
+  "probes": {
+    "overview": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-user-organization",
+          "hits": 0,
+          "d": "M 435 219 L 443.5 219 Q 452 219 452 208 L 452 208 Q 452 197 461.5 197 L 471 197"
+        },
+        {
+          "id": "sample-rel-email-user",
+          "hits": 0,
+          "d": "M 435 629 L 447 629 Q 459 629 459 615 L 459 211 Q 459 197 447 197 L 435 197"
+        },
+        {
+          "id": "sample-rel-phone-user",
+          "hits": 0,
+          "d": "M 471 629 L 461.5 629 Q 452 629 452 615 L 452 211 Q 452 197 443.5 197 L 435 197"
+        },
+        {
+          "id": "sample-rel-project-organization",
+          "hits": 0,
+          "d": "M 945 279 L 945 640 Q 945 654 931 654 L 825 654 Q 811 654 811 640 L 811 197"
+        },
+        {
+          "id": "sample-rel-task-project",
+          "hits": 0,
+          "d": "M 1311 279 L 1304 279 Q 1297 279 1297 268 L 1297 268 Q 1297 257 1291 257 L 1285 257"
+        },
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1311 301 L 1311 36 Q 1311 22 1297 22 L 449 22 Q 435 22 435 36 L 435 197"
+        },
+        {
+          "id": "sample-rel-comment-task",
+          "hits": 0,
+          "d": "M 1651 523 L 1663 523 Q 1675 523 1675 509 L 1675 271 Q 1675 257 1663 257 L 1651 257"
+        },
+        {
+          "id": "sample-rel-comment-author",
+          "hits": 0,
+          "d": "M 1311 545 L 1311 68 Q 1311 54 1297 54 L 449 54 Q 435 54 435 68 L 435 197"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 8,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 5,
+      "usersLabel": "5 entities",
+      "shell": "0.9.128",
+      "scope": "Domain · Users",
+      "focusKind": "none"
+    },
+    "domainTasks": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-project-organization",
+          "hits": 0,
+          "d": "M 930.3999947106786 273.960011260604 L 930.3999947106786 640 Q 930.3999947106786 654 916.3999947106786 654 L 830.1000304"
+        },
+        {
+          "id": "sample-rel-task-project",
+          "hits": 0,
+          "d": "M 1311.040027683397 273.960011260604 L 1304.0200138416985 273.960011260604 Q 1297 273.960011260604 1297 262.520002943264"
+        },
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1311.040027683397 296.83999307130307 L 1311.040027683397 36 Q 1311.040027683397 22 1297.040027683397 22 L 454.10001427"
+        },
+        {
+          "id": "sample-rel-comment-task",
+          "hits": 0,
+          "d": "M 1664.6399365250072 527.7200216344222 L 1676.6399365250072 527.7200216344222 Q 1688.6399365250072 527.7200216344222 168"
+        },
+        {
+          "id": "sample-rel-comment-author",
+          "hits": 0,
+          "d": "M 1311.040027683397 550.6000034451217 L 1311.040027683397 68 Q 1311.040027683397 54 1297.040027683397 54 L 454.100014274"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 5,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 2,
+      "usersLabel": "2 soft peers",
+      "shell": "0.9.128",
+      "scope": "Domain · Tasks",
+      "focusKind": "domain"
+    },
+    "domainUsers": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-user-organization",
+          "hits": 0,
+          "d": "M 433.59996715574243 206.5600086932127 L 442.7999835778712 206.5600086932127 Q 452 206.5600086932127 452 195.12001371311"
+        },
+        {
+          "id": "sample-rel-email-user",
+          "hits": 0,
+          "d": "M 433.59996715574243 632.9599798956297 L 445.59996715574243 632.9599798956297 Q 457.59996715574243 632.9599798956297 457"
+        },
+        {
+          "id": "sample-rel-phone-user",
+          "hits": 0,
+          "d": "M 471.0400066003631 632.9599798956297 L 461.52000330018154 632.9599798956297 Q 452 632.9599798956297 452 618.95997989562"
+        },
+        {
+          "id": "sample-rel-project-organization",
+          "hits": 0,
+          "d": "M 939.9000281175531 278.04001111427533 L 939.9000281175531 866 Q 939.9000281175531 880 925.9000281175531 880 L 838.63996"
+        },
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1305.8999685176132 300.70000576742495 L 1305.8999685176132 36 Q 1305.8999685176132 22 1291.8999685176132 22 L 447.5999"
+        },
+        {
+          "id": "sample-rel-comment-author",
+          "hits": 0,
+          "d": "M 1305.8999685176132 545.0300102119759 L 1305.8999685176132 68 Q 1305.8999685176132 54 1291.8999685176132 54 L 447.59996"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 8,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 5,
+      "usersLabel": "5 entities",
+      "shell": "0.9.128",
+      "scope": "Domain · Users",
+      "focusKind": "domain"
+    },
+    "entityProject": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-project-organization",
+          "hits": 0,
+          "d": "M 925.0959845480347 272.9616268020154 L 925.0959845480347 640 Q 925.0959845480347 654 911.0959845480347 654 L 830.099992"
+        },
+        {
+          "id": "sample-rel-task-project",
+          "hits": 0,
+          "d": "M 1305.736003183686 272.9616268020154 L 1301.368001591843 272.9616268020154 Q 1297 272.9616268020154 1297 261.1784155395"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 3,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "Tasks · Project",
+      "focusKind": "entity"
+    },
+    "entityTask": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-task-project",
+          "hits": 0,
+          "d": "M 1305.7359600215705 272.9616012216702 L 1301.3679800107852 272.9616012216702 Q 1297 272.9616012216702 1297 261.17840855"
+        },
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1305.7359600215705 296.52798654559 L 1305.7359600215705 36 Q 1305.7359600215705 22 1291.7359600215705 22 L 454.1000143"
+        },
+        {
+          "id": "sample-rel-comment-task",
+          "hits": 0,
+          "d": "M 1669.9439564972236 527.0647689449215 L 1681.9439564972236 527.0647689449215 Q 1693.9439564972236 527.0647689449215 169"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 4,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "Tasks · Task",
+      "focusKind": "entity"
+    },
+    "fieldAssignee": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1305.7359600215705 296.52798654559 L 1305.7359600215705 36 Q 1305.7359600215705 22 1291.7359600215705 22 L 454.1000143"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 4,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "Field · Tasks → Task → assigneeId",
+      "focusKind": "field"
+    },
+    "fieldProjectId": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-task-project",
+          "hits": 0,
+          "d": "M 1305.7359600215705 272.9616012216702 L 1301.3679800107852 272.9616012216702 Q 1297 272.9616012216702 1297 261.17840855"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 4,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "Field · Tasks → Task → projectId",
+      "focusKind": "field"
+    },
+    "fieldTaskId": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-comment-task",
+          "hits": 0,
+          "d": "M 1669.9439564972236 527.0647689449215 L 1681.9439564972236 527.0647689449215 Q 1693.9439564972236 527.0647689449215 169"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 3,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "Field · Tasks → Comment → taskId",
+      "focusKind": "field"
+    },
+    "relTaskProject": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1305.7360012896843 296.52802514248197 L 1305.7360012896843 36 Q 1305.7360012896843 22 1291.7360012896843 22 L 454.0999"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 2,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "Relationship",
+      "focusKind": "relationship"
+    },
+    "relAssignee": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-task-project",
+          "hits": 0,
+          "d": "M 1305.7359600215705 272.9616012216702 L 1301.3679800107852 272.9616012216702 Q 1297 272.9616012216702 1297 261.17840855"
+        },
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1305.7359600215705 296.52798654559 L 1305.7359600215705 36 Q 1305.7359600215705 22 1291.7359600215705 22 L 454.1000143"
+        },
+        {
+          "id": "sample-rel-comment-task",
+          "hits": 0,
+          "d": "M 1669.9439564972236 527.0647689449215 L 1681.9439564972236 527.0647689449215 Q 1693.9439564972236 527.0647689449215 169"
+        },
+        {
+          "id": "sample-rel-comment-author",
+          "hits": 0,
+          "d": "M 1305.7359600215705 550.631189356925 L 1305.7359600215705 68 Q 1305.7359600215705 54 1291.7359600215705 54 L 454.100014"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 4,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "2 domains",
+      "focusKind": "none"
+    },
+    "afterEscOverview": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-task-project",
+          "hits": 0,
+          "d": "M 1305.7359600215705 272.9616012216702 L 1301.3679800107852 272.9616012216702 Q 1297 272.9616012216702 1297 261.17840855"
+        },
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1305.7359600215705 296.52798654559 L 1305.7359600215705 36 Q 1305.7359600215705 22 1291.7359600215705 22 L 454.1000143"
+        },
+        {
+          "id": "sample-rel-comment-task",
+          "hits": 0,
+          "d": "M 1669.9439564972236 527.0647689449215 L 1681.9439564972236 527.0647689449215 Q 1693.9439564972236 527.0647689449215 169"
+        },
+        {
+          "id": "sample-rel-comment-author",
+          "hits": 0,
+          "d": "M 1305.7359600215705 550.631189356925 L 1305.7359600215705 68 Q 1305.7359600215705 54 1291.7359600215705 54 L 454.100014"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 4,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "2 domains",
+      "focusKind": "none"
+    },
+    "camera3Field": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1305.7359600215705 296.52798654559 L 1305.7359600215705 36 Q 1305.7359600215705 22 1291.7359600215705 22 L 454.1000143"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 4,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "Field · Tasks → Task → assigneeId",
+      "focusKind": "field"
+    },
+    "finalOverview": {
+      "totalHits": 0,
+      "byRelationship": [
+        {
+          "id": "sample-rel-task-project",
+          "hits": 0,
+          "d": "M 1305.7359600215705 272.9616012216702 L 1301.3679800107852 272.9616012216702 Q 1297 272.9616012216702 1297 261.17840855"
+        },
+        {
+          "id": "sample-rel-task-assignee",
+          "hits": 0,
+          "d": "M 1305.7359600215705 296.52798654559 L 1305.7359600215705 36 Q 1305.7359600215705 22 1291.7359600215705 22 L 454.1000143"
+        },
+        {
+          "id": "sample-rel-comment-task",
+          "hits": 0,
+          "d": "M 1669.9439564972236 527.0647689449215 L 1681.9439564972236 527.0647689449215 Q 1693.9439564972236 527.0647689449215 169"
+        },
+        {
+          "id": "sample-rel-comment-author",
+          "hits": 0,
+          "d": "M 1305.7359600215705 550.631189356925 L 1305.7359600215705 68 Q 1305.7359600215705 54 1291.7359600215705 54 L 454.100014"
+        }
+      ],
+      "ghostVerticalIds": [],
+      "labelsOnCards": 0,
+      "stagedGhosts": 0,
+      "pkOnCount": 4,
+      "pkOffVisible": 0,
+      "usersEntityDomCount": 1,
+      "usersLabel": "1 soft peer",
+      "shell": "0.9.128",
+      "scope": "2 domains",
+      "focusKind": "none"
+    }
+  },
+  "shots": [
+    {
+      "name": "00-boot-empty",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/00-boot-empty.png",
+      "scope": "Nothing selected",
+      "focusKind": "none"
+    },
+    {
+      "name": "01-sample-overview",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/01-sample-overview.png",
+      "scope": "Domain · Users",
+      "focusKind": "none"
+    },
+    {
+      "name": "02-domain-tasks",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/02-domain-tasks.png",
+      "scope": "Domain · Tasks",
+      "focusKind": "domain"
+    },
+    {
+      "name": "03-domain-users",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/03-domain-users.png",
+      "scope": "Domain · Users",
+      "focusKind": "domain"
+    },
+    {
+      "name": "04-entity-project",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/04-entity-project.png",
+      "scope": "Tasks · Project",
+      "focusKind": "entity"
+    },
+    {
+      "name": "05-entity-task",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/05-entity-task.png",
+      "scope": "Tasks · Task",
+      "focusKind": "entity"
+    },
+    {
+      "name": "06-entity-comment",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/06-entity-comment.png",
+      "scope": "Tasks · Comment",
+      "focusKind": "entity"
+    },
+    {
+      "name": "07-entity-user",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/07-entity-user.png",
+      "scope": "Users · User",
+      "focusKind": "entity"
+    },
+    {
+      "name": "08-entity-organization",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/08-entity-organization.png",
+      "scope": "Users · Organization",
+      "focusKind": "entity"
+    },
+    {
+      "name": "09-field-assigneeId",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/09-field-assigneeId.png",
+      "scope": "Field · Tasks → Task → assigneeId",
+      "focusKind": "field"
+    },
+    {
+      "name": "10-field-projectId",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/10-field-projectId.png",
+      "scope": "Field · Tasks → Task → projectId",
+      "focusKind": "field"
+    },
+    {
+      "name": "11-field-taskId",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/11-field-taskId.png",
+      "scope": "Field · Tasks → Comment → taskId",
+      "focusKind": "field"
+    },
+    {
+      "name": "12-rel-hover-task-project",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/12-rel-hover-task-project.png",
+      "scope": "Tasks · Task",
+      "focusKind": "entity"
+    },
+    {
+      "name": "13-rel-select-task-project",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/13-rel-select-task-project.png",
+      "scope": "Relationship",
+      "focusKind": "relationship"
+    },
+    {
+      "name": "14-rel-select-task-assignee",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/14-rel-select-task-assignee.png",
+      "scope": "2 domains",
+      "focusKind": "none"
+    },
+    {
+      "name": "15-rel-select-comment-task",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/15-rel-select-comment-task.png",
+      "scope": "Relationship",
+      "focusKind": "relationship"
+    },
+    {
+      "name": "16-esc-start-field",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/16-esc-start-field.png",
+      "scope": "Field · Tasks → Task → assigneeId",
+      "focusKind": "field"
+    },
+    {
+      "name": "17-esc-to-entity",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/17-esc-to-entity.png",
+      "scope": "Tasks · Task",
+      "focusKind": "entity"
+    },
+    {
+      "name": "18-esc-to-domain",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/18-esc-to-domain.png",
+      "scope": "Domain · Tasks",
+      "focusKind": "domain"
+    },
+    {
+      "name": "19-esc-to-overview",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/19-esc-to-overview.png",
+      "scope": "2 domains",
+      "focusKind": "none"
+    },
+    {
+      "name": "20-camera3-entity-project",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/20-camera3-entity-project.png",
+      "scope": "Tasks · Project",
+      "focusKind": "entity"
+    },
+    {
+      "name": "21-camera3-relationship",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/21-camera3-relationship.png",
+      "scope": "Relationship",
+      "focusKind": "relationship"
+    },
+    {
+      "name": "22-camera3-field-assignee",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/22-camera3-field-assignee.png",
+      "scope": "Field · Tasks → Task → assigneeId",
+      "focusKind": "field"
+    },
+    {
+      "name": "23-structure-create-domain",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/23-structure-create-domain.png",
+      "scope": "2 domains",
+      "focusKind": "none"
+    },
+    {
+      "name": "24-final-overview",
+      "file": "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/edge-ux-playwright/24-final-overview.png",
+      "scope": "2 domains",
+      "focusKind": "none"
+    }
+  ],
+  "pass": {
+    "overviewMidInside0": true,
+    "domainTasksMidInside0": true,
+    "relTaskProjectMidInside0": true,
+    "fieldAssigneeMidInside0": true,
+    "finalOverviewMidInside0": true,
+    "noGhostVerticalsOverview": true,
+    "noStagedGhostsOnField": true,
+    "shell117": true,
+    "tasksSoftPeersMounted": true
+  }
+}

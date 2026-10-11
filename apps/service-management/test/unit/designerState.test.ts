@@ -137,7 +137,7 @@ describe('designer state core (JUM-468)', () => {
       });
       expect(normalized.relationships.map((r: { id: string }) => r.id)).toStrictEqual(['rel-1']);
       expect(normalized.selectedDomainId).toBe('domain-1');
-      expect(normalized.view.zoom).toBe(2);
+      expect(normalized.view.zoom).toBe(2.5);
       expect(normalized.view.edgeStyle).toBe('curved');
       expect(normalized.view.modelCheckMinSeverity).toBe('info');
       expect(normalized.view.exportBlockCritical).toBe(true);
@@ -505,10 +505,10 @@ describe('designer state core (JUM-468)', () => {
       expect(normalizeOptionalNumber('nope')).toBeNull();
     });
 
-    it('clampZoom clamps to the pinned 0.25–2 range', () => {
+    it('clampZoom clamps to the pinned 0.25–2.5 range', () => {
       expect.hasAssertions();
       expect(clampZoom(0.1)).toBe(0.25);
-      expect(clampZoom(5)).toBe(2);
+      expect(clampZoom(5)).toBe(2.5);
       expect(clampZoom(1.3)).toBe(1.3);
     });
 
@@ -618,6 +618,8 @@ describe('designer state core (JUM-468)', () => {
         // names none — every one saved before field anchors existed.
         fromField: null,
         toField: null,
+        fromDomainId: null,
+        toDomainId: null,
         anchorBehavior: 'auto',
         bendX: null,
         bendY: null,
@@ -777,7 +779,6 @@ describe('designer state core (JUM-468)', () => {
         relationships: [],
         selectedDomainId: 'd-x',
         selectedEntityId: 'e-x',
-        selectedRelationshipId: 'r-x',
         idCounter: 42,
         view: {
           zoom: 1.5,
@@ -791,9 +792,11 @@ describe('designer state core (JUM-468)', () => {
       });
       expect(normalized.selectedDomainId).toBe('d-x');
       expect(normalized.selectedEntityId).toBe('e-x');
-      expect(normalized.selectedRelationshipId).toBe('r-x');
+      expect(normalized.selectedRelationshipId).toBeNull();
       expect(normalized.idCounter).toBe(42);
-      expect(normalized.view).toStrictEqual({
+      expect(normalized.modelSchemaVersion).toBe(2);
+      expect(normalized.selection.kind).toBe('entity');
+      expect(normalized.view).toMatchObject({
         zoom: 1.5,
         compactEntities: true,
         snapToGrid: false,
@@ -801,10 +804,15 @@ describe('designer state core (JUM-468)', () => {
         modelCheckMinSeverity: 'error',
         exportBlockCritical: false,
         largeCanvasMode: true,
-        // JUM-729 follow-up: which sidebar group is on screen and whether the
-        // drawer is open, defaulted for a payload that predates both.
         sidebarGroup: 'model',
         sidebarOpen: false
+      });
+      expect(normalized.view.sidebarExpanded).toMatchObject({
+        model: false,
+        history: false,
+        validate: false,
+        export: false,
+        import: false
       });
     });
   });
@@ -859,6 +867,7 @@ describe('designer state core (JUM-468)', () => {
         'domains',
         'idCounter',
         'interfaces',
+        'modelSchemaVersion',
         // JUM-767: monitoringHistory is additive Cana state (aggregate samples
         // + per-process sparks). Not part of OAS/codegen — ops UI only.
         'monitoringHistory',
@@ -870,7 +879,10 @@ describe('designer state core (JUM-468)', () => {
         'runtimeEnvironment',
         'selectedDomainId',
         'selectedEntityId',
+        'selectedFieldName',
+        'selectedNoteId',
         'selectedRelationshipId',
+        'selection',
         'serviceConfiguration',
         'view'
       ]);

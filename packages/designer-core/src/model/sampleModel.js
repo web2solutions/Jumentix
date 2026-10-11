@@ -80,7 +80,12 @@ export function buildSampleModelPayload() {
         height: 900,
         context: {
           ubiquitousLanguage: 'identity, organization, tenant, contact point',
-          ownerTeam: 'platform'
+          ownerTeam: 'platform',
+          upstreamDependencies: [],
+          downstreamDependencies: ['Tasks'],
+          integrationChannel: 'http',
+          packageDependencies: ['@acme/platform-kernel'],
+          sharedValueObjects: ['TenantId', 'EmailAddress']
         },
         entities: [
           {
@@ -222,7 +227,12 @@ export function buildSampleModelPayload() {
         height: 650,
         context: {
           ubiquitousLanguage: 'project, task, assignee, comment',
-          ownerTeam: 'delivery'
+          ownerTeam: 'delivery',
+          upstreamDependencies: ['Users'],
+          downstreamDependencies: [],
+          integrationChannel: 'async',
+          packageDependencies: ['@acme/identity-contracts'],
+          sharedValueObjects: ['ProjectId', 'Money']
         },
         entities: [
           {

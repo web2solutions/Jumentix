@@ -29,7 +29,9 @@ import {
   buildPreviewEdgePathD,
   alignmentGuidesFor,
   clampEntityPosition,
+  computeCenteredFit,
   computeFitView,
+  computeLevelFit,
   entitiesInMarquee,
   entityBoxHeight,
   entityFieldRowHeight,
@@ -64,6 +66,7 @@ const VIRTUAL_CANVAS_HEIGHT = CANVAS_HEIGHT + CANVAS_ORIGIN_Y * 2;
  * @param {Object} options.actions - callbacks into the orchestrator:
  * `withPersist(action)`, `render()`, `saveState()`,
  * `setSelectedDomain(id)`, `setSelectedEntity(id)`,
+ * `setSelectedRelationship(id)`, `setSelectedNote(id)`,
  * `handleEntityRelationshipPick(id)`,
  * `addRelationshipFromAnchor(fromEntityId, toEntityId, toSide)`.
  */
@@ -74,6 +77,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     saveState,
     setSelectedDomain,
     setSelectedEntity,
+    setSelectedField,
+    setSelectedRelationship,
+    setSelectedNote,
     handleEntityRelationshipPick,
     addRelationshipFromAnchor,
     addDomain,
@@ -87,6 +93,36 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   let miniMapRenderFrame = 0;
   let pendingAlignmentGuides = null;
   let canvasOriginInitialized = false;
+  /**
+   * Camera 3 — FPS-driven critically-smoothed rig (delta-time exponential
+   * decay). Retargetable mid-flight; frame-budget aware; minimap throttled.
+   * @type {null | {
+   *   raf: number,
+   *   lastTs: number,
+   *   frame: number,
+   *   fpsEma: number,
+   *   onComplete: Function | null,
+   *   targetZoom: number,
+   *   targetCx: number,
+   *   targetCy: number,
+   *   liveZoom: number,
+   *   liveCx: number,
+   *   liveCy: number
+   * }}
+   */
+  let camera3 = null;
+
+  const CAMERA3 = {
+    TARGET_FPS: 60,
+    FRAME_MS: 1000 / 60,
+    MAX_DT_MS: 33.333,
+    ZOOM_LAMBDA: 10.5,
+    PAN_LAMBDA: 9.0,
+    ARRIVE_ZOOM: 0.003,
+    ARRIVE_PAN: 0.4,
+    MINIMAP_EVERY_N: 2,
+    FPS_EMA_ALPHA: 0.12
+  };
 
   function modelToCanvasX(x) {
     return x + CANVAS_ORIGIN_X;
@@ -467,10 +503,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     return [
       {
         label: 'Edit in inspector',
-        run: () => {
-          state.selectedRelationshipId = relationship.id;
-          render();
-        }
+        run: () => setSelectedRelationship(relationship.id)
       },
       { separator: true },
       {
@@ -536,6 +569,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     if (!['info', 'warn', 'error'].includes(state.view.modelCheckMinSeverity)) state.view.modelCheckMinSeverity = 'info';
     if (typeof state.view.exportBlockCritical !== 'boolean') state.view.exportBlockCritical = true;
     if (typeof state.view.largeCanvasMode !== 'boolean') state.view.largeCanvasMode = false;
+    if (state.view.canvasStage !== 'focus') state.view.canvasStage = 'overview';
     dom.canvasInner.style.transform = `scale(${zoom})`;
     dom.canvasInner.style.width = `${VIRTUAL_CANVAS_WIDTH}px`;
     dom.canvasInner.style.height = `${VIRTUAL_CANVAS_HEIGHT}px`;
@@ -549,10 +583,20 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       dom.canvas.scrollTop = CANVAS_ORIGIN_Y * zoom;
     }
     dom.canvas.classList.toggle('large-canvas-mode', Boolean(state.view.largeCanvasMode));
+    dom.canvas.dataset.canvasStage = state.view.canvasStage === 'focus' ? 'focus' : 'overview';
     dom.zoomIndicator.textContent = `${Math.round(zoom * 100)}%`;
-    dom.toggleCompactViewBtn.textContent = state.view.compactEntities ? 'Full View' : 'Compact View';
-    dom.toggleSnapBtn.textContent = state.view.snapToGrid ? 'Snap: On' : 'Snap: Off';
-    dom.toggleLargeCanvasBtn.textContent = state.view.largeCanvasMode ? 'Large Canvas: On' : 'Large Canvas: Off';
+    syncStageChrome();
+    // Short labels — pressed state + title carry On/Off; long strings overcrowded the toolbar.
+    dom.toggleCompactViewBtn.textContent = state.view.compactEntities ? 'Full' : 'Compact';
+    dom.toggleCompactViewBtn.title = state.view.compactEntities
+      ? 'Show full entity cards'
+      : 'Compact entity cards';
+    dom.toggleSnapBtn.textContent = 'Snap';
+    dom.toggleSnapBtn.title = state.view.snapToGrid ? 'Snap to grid: On' : 'Snap to grid: Off';
+    dom.toggleLargeCanvasBtn.textContent = 'Canvas';
+    dom.toggleLargeCanvasBtn.title = state.view.largeCanvasMode
+      ? 'Large canvas: On'
+      : 'Large canvas: Off';
     // Toggle semantics (JUM-488): the three view switches are aria-pressed
     // toggles; the pressed state mirrors the view flags they flip.
     dom.toggleCompactViewBtn.setAttribute('aria-pressed', String(Boolean(state.view.compactEntities)));
@@ -564,6 +608,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   }
 
   function setZoom(zoomValue) {
+    cancelCameraFlight();
     state.view.zoom = clampZoom(zoomValue);
     renderView();
     scheduleMiniMapRender();
@@ -571,12 +616,17 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   }
 
   function zoomBy(delta) {
-    setZoom((state.view.zoom || 1) + delta);
+    // Multiplicative steps feel even across the zoom range.
+    const current = clampZoom(state.view.zoom || 1);
+    const factor = delta >= 0 ? 1.12 : 1 / 1.12;
+    setZoom(current * factor);
   }
 
   function zoomAtPointer(delta, event) {
+    cancelCameraFlight();
     const previousZoom = clampZoom(state.view.zoom || 1);
-    const nextZoom = clampZoom(previousZoom + delta);
+    const factor = delta >= 0 ? 1.1 : 1 / 1.1;
+    const nextZoom = clampZoom(previousZoom * factor);
     if (nextZoom === previousZoom) return;
     const rect = dom.canvas.getBoundingClientRect();
     const localX = event.clientX - rect.left;
@@ -591,23 +641,268 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     saveState();
   }
 
-  function fitView() {
-    const { zoom, left, top } = computeFitView(state.domains, dom.canvas.clientWidth, dom.canvas.clientHeight);
+  function cancelCameraFlight({ runComplete = false } = {}) {
+    if (!camera3) return;
+    cancelAnimationFrame(camera3.raf);
+    const { onComplete, liveZoom, liveCx, liveCy } = camera3;
+    // Keep the live pose so a mid-flight cancel does not snap back.
+    if (Number.isFinite(liveZoom)) {
+      state.view.zoom = liveZoom;
+      applyCamera3Frame(liveZoom, liveCx, liveCy, { minimap: true });
+    }
+    camera3 = null;
+    if (dom.canvas) {
+      dom.canvas.dataset.navigating = 'false';
+      delete dom.canvas.dataset.zoomDirection;
+      delete dom.canvas.dataset.camFps;
+      delete dom.canvas.dataset.camera;
+    }
+    syncSelectionClasses();
+    syncStageChrome();
+    if (runComplete && typeof onComplete === 'function') onComplete();
+  }
+
+  function viewportModelCenter(zoom = clampZoom(state.view.zoom || 1)) {
+    if (!dom.canvas) return { x: 0, y: 0 };
+    return {
+      x: (dom.canvas.scrollLeft + dom.canvas.clientWidth / 2) / zoom - CANVAS_ORIGIN_X,
+      y: (dom.canvas.scrollTop + dom.canvas.clientHeight / 2) / zoom - CANVAS_ORIGIN_Y
+    };
+  }
+
+  /** Frame-rate independent exponential smooth (Camera 3). */
+  function cam3ExpSmooth(current, target, lambda, dtSec) {
+    if (dtSec <= 0) return current;
+    return current + (target - current) * (1 - Math.exp(-lambda * dtSec));
+  }
+
+  function applyCamera3Frame(zoom, centerX, centerY, { minimap = true } = {}) {
     state.view.zoom = zoom;
+    if (dom.canvasInner) {
+      // Camera 3 depth cue: slight perspective scale without breaking model coords.
+      const depth = 1 + (zoom - 1) * 0.012;
+      dom.canvasInner.style.transform = `scale(${zoom})`;
+      dom.canvasInner.style.setProperty('--cam3-depth', String(depth));
+    }
+    if (dom.zoomIndicator) dom.zoomIndicator.textContent = `${Math.round(zoom * 100)}%`;
+    if (!dom.canvas) return;
+    dom.canvas.scrollLeft = Math.max(
+      0,
+      centerX * zoom + CANVAS_ORIGIN_X * zoom - dom.canvas.clientWidth / 2
+    );
+    dom.canvas.scrollTop = Math.max(
+      0,
+      centerY * zoom + CANVAS_ORIGIN_Y * zoom - dom.canvas.clientHeight / 2
+    );
+    if (minimap) scheduleMiniMapRender();
+  }
+
+  function settleCamera3(rig) {
+    const { targetZoom, targetCx, targetCy, onComplete } = rig;
+    camera3 = null;
+    state.view.zoom = targetZoom;
     renderView();
-    dom.canvas.scrollTo({
-      left: left + CANVAS_ORIGIN_X * zoom,
-      top: top + CANVAS_ORIGIN_Y * zoom,
-      behavior: 'smooth'
+    applyCamera3Frame(targetZoom, targetCx, targetCy, { minimap: true });
+    if (dom.canvas) {
+      dom.canvas.dataset.navigating = 'false';
+      delete dom.canvas.dataset.zoomDirection;
+      delete dom.canvas.dataset.camFps;
+      delete dom.canvas.dataset.camera;
+    }
+    if (typeof onComplete === 'function') onComplete();
+  }
+
+  /**
+   * Camera 3 chase loop — targets 60 FPS, integrates with clamped dt so a
+   * hitch does not overshoot, and retargets without restarting from scratch.
+   */
+  function tickCamera3(now) {
+    if (!camera3) return;
+    const rig = camera3;
+    let dtMs = now - (rig.lastTs || now);
+    rig.lastTs = now;
+    // Skip micro-frames (display > 60Hz) to keep work near TARGET_FPS budget.
+    if (dtMs > 0 && dtMs < CAMERA3.FRAME_MS * 0.55) {
+      rig.raf = requestAnimationFrame(tickCamera3);
+      return;
+    }
+    dtMs = Math.min(Math.max(dtMs, CAMERA3.FRAME_MS * 0.5), CAMERA3.MAX_DT_MS);
+    const dtSec = dtMs / 1000;
+    const instFps = 1000 / dtMs;
+    rig.fpsEma += (instFps - rig.fpsEma) * CAMERA3.FPS_EMA_ALPHA;
+    rig.frame += 1;
+
+    // Under load, ease chasing so we stay responsive without burning CPU.
+    const load = Math.max(0, Math.min(1, (CAMERA3.TARGET_FPS - rig.fpsEma) / CAMERA3.TARGET_FPS));
+    const zoomLambda = CAMERA3.ZOOM_LAMBDA * (1 - load * 0.35);
+    const panLambda = CAMERA3.PAN_LAMBDA * (1 - load * 0.35);
+
+    rig.liveZoom = cam3ExpSmooth(rig.liveZoom, rig.targetZoom, zoomLambda, dtSec);
+    rig.liveCx = cam3ExpSmooth(rig.liveCx, rig.targetCx, panLambda, dtSec);
+    rig.liveCy = cam3ExpSmooth(rig.liveCy, rig.targetCy, panLambda, dtSec);
+
+    const paintMinimap = rig.frame % CAMERA3.MINIMAP_EVERY_N === 0;
+    applyCamera3Frame(rig.liveZoom, rig.liveCx, rig.liveCy, { minimap: paintMinimap });
+
+    if (dom.canvas) {
+      dom.canvas.dataset.camFps = String(Math.round(rig.fpsEma));
+      const zoomingIn = rig.targetZoom > rig.liveZoom + 0.015;
+      const zoomingOut = rig.targetZoom < rig.liveZoom - 0.015;
+      dom.canvas.dataset.zoomDirection = zoomingIn ? 'in' : zoomingOut ? 'out' : 'pan';
+    }
+
+    const zoomDone = Math.abs(rig.targetZoom - rig.liveZoom) <= CAMERA3.ARRIVE_ZOOM;
+    const panDone = Math.hypot(rig.targetCx - rig.liveCx, rig.targetCy - rig.liveCy)
+      <= CAMERA3.ARRIVE_PAN;
+    if (zoomDone && panDone) {
+      settleCamera3(rig);
+      return;
+    }
+    rig.raf = requestAnimationFrame(tickCamera3);
+  }
+
+  /**
+   * Camera 3 — set (or retarget) the chase goal. Mid-flight retarget keeps live
+   * pose so focus changes feel continuous and interruptible.
+   */
+  function animateCameraTo(target, { onComplete, duration: _duration } = {}) {
+    if (!dom.canvas || !dom.canvasInner) {
+      if (typeof onComplete === 'function') onComplete();
+      return;
+    }
+    const toZoom = clampZoom(target.zoom);
+    const toCx = Number(target.centerX) || 0;
+    const toCy = Number(target.centerY) || 0;
+
+    if (camera3) {
+      camera3.targetZoom = toZoom;
+      camera3.targetCx = toCx;
+      camera3.targetCy = toCy;
+      camera3.onComplete = typeof onComplete === 'function' ? onComplete : null;
+      const zoomingIn = toZoom > camera3.liveZoom + 0.02;
+      const zoomingOut = toZoom < camera3.liveZoom - 0.02;
+      dom.canvas.dataset.navigating = 'true';
+      dom.canvas.dataset.camera = '3';
+      dom.canvas.dataset.zoomDirection = zoomingIn ? 'in' : zoomingOut ? 'out' : 'pan';
+      return;
+    }
+
+    const fromZoom = clampZoom(state.view.zoom || 1);
+    const fromCenter = viewportModelCenter(fromZoom);
+    dom.canvas.dataset.navigating = 'true';
+    dom.canvas.dataset.camera = '3';
+    const zoomingIn = toZoom > fromZoom + 0.02;
+    const zoomingOut = toZoom < fromZoom - 0.02;
+    dom.canvas.dataset.zoomDirection = zoomingIn ? 'in' : zoomingOut ? 'out' : 'pan';
+
+    camera3 = {
+      raf: 0,
+      lastTs: performance.now(),
+      frame: 0,
+      fpsEma: CAMERA3.TARGET_FPS,
+      onComplete: typeof onComplete === 'function' ? onComplete : null,
+      targetZoom: toZoom,
+      targetCx: toCx,
+      targetCy: toCy,
+      liveZoom: fromZoom,
+      liveCx: fromCenter.x,
+      liveCy: fromCenter.y
+    };
+    camera3.raf = requestAnimationFrame(tickCamera3);
+  }
+
+  function allDomainsBounds() {
+    if (!Array.isArray(state.domains) || state.domains.length === 0) {
+      return { x: 0, y: 0, width: 480, height: 320 };
+    }
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    state.domains.forEach((domain) => {
+      const box = domainBox(domain);
+      minX = Math.min(minX, domain.x);
+      minY = Math.min(minY, domain.y);
+      maxX = Math.max(maxX, domain.x + box.width);
+      maxY = Math.max(maxY, domain.y + box.height);
     });
-    saveState();
+    return {
+      x: minX,
+      y: minY,
+      width: Math.max(48, maxX - minX),
+      height: Math.max(48, maxY - minY)
+    };
+  }
+
+  function syncStageChrome() {
+    const overviewBtn = document.getElementById('canvas-overview-btn');
+    const stageFocus = state.view.canvasStage === 'focus' && Boolean(activeSelectionDomainId());
+    if (overviewBtn) {
+      overviewBtn.hidden = !stageFocus;
+      overviewBtn.setAttribute('aria-pressed', String(stageFocus));
+    }
+    if (dom.canvas) {
+      dom.canvas.dataset.canvasStage = stageFocus ? 'focus' : 'overview';
+    }
+  }
+
+  /**
+   * Overview = full diagram navigable. Focus = active domain on stage,
+   * peers parked as chips (still clickable / minimap-reachable).
+   * Camera flies first; layout remount waits until the flight finishes.
+   */
+  function showOverview({ camera = 'fit', persist = true } = {}) {
+    if (!dom.canvas) return;
+    const finishOverviewLayout = () => {
+      const wasFocus = state.view.canvasStage === 'focus';
+      state.view.canvasStage = 'overview';
+      if (wasFocus || dom.canvasInner.querySelector('.domain.is-staged-away')) {
+        renderDomains();
+        renderEdges();
+      } else {
+        syncSelectionClasses();
+      }
+      syncStageChrome();
+      if (persist) saveState();
+    };
+
+    if (camera === 'reset') {
+      animateCameraTo(
+        { zoom: 1, centerX: 0, centerY: 0 },
+        {
+          duration: 320,
+          onComplete: () => {
+            dom.canvas.scrollTo({ left: CANVAS_ORIGIN_X, top: CANVAS_ORIGIN_Y, behavior: 'auto' });
+            finishOverviewLayout();
+          }
+        }
+      );
+      return;
+    }
+
+    const bounds = allDomainsBounds();
+    const fit = computeLevelFit(
+      bounds,
+      dom.canvas.clientWidth,
+      dom.canvas.clientHeight,
+      'overview'
+    );
+    animateCameraTo(
+      {
+        zoom: fit.zoom,
+        centerX: fit.centerX,
+        centerY: fit.centerY
+      },
+      { onComplete: finishOverviewLayout }
+    );
+  }
+
+  function fitView() {
+    showOverview({ camera: 'fit' });
   }
 
   function resetView() {
-    state.view.zoom = 1;
-    renderView();
-    dom.canvas.scrollTo({ left: CANVAS_ORIGIN_X, top: CANVAS_ORIGIN_Y, behavior: 'smooth' });
-    saveState();
+    showOverview({ camera: 'reset' });
   }
 
   function toggleCompactView() {
@@ -657,7 +952,13 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
 
     const end = (event) => {
       if (pointerId !== event.pointerId) return;
-      if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
+      try {
+        if (typeof el.hasPointerCapture === 'function' && el.hasPointerCapture(pointerId)) {
+          el.releasePointerCapture(pointerId);
+        }
+      } catch {
+        // Drag target may already be detached after a selection re-render.
+      }
       const ownerDocument = el.ownerDocument || document;
       ownerDocument.removeEventListener('pointermove', move, true);
       ownerDocument.removeEventListener('pointerup', end, true);
@@ -678,16 +979,547 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       totalDy = 0;
       moved = false;
       started = false;
-      if (typeof options.onPointerDown === 'function') options.onPointerDown(event);
-      el.setPointerCapture(pointerId);
+      // Document capture listeners first: selection handlers often remount the
+      // canvas and detach `el`, which makes setPointerCapture throw and would
+      // otherwise leave the gesture without move/up handlers.
       const ownerDocument = el.ownerDocument || document;
       ownerDocument.addEventListener('pointermove', move, true);
       ownerDocument.addEventListener('pointerup', end, true);
       ownerDocument.addEventListener('pointercancel', end, true);
+      try {
+        if (el.isConnected && typeof el.setPointerCapture === 'function') {
+          el.setPointerCapture(pointerId);
+        }
+      } catch {
+        // Optional: document listeners above still drive the drag.
+      }
+      if (typeof options.onPointerDown === 'function') options.onPointerDown(event);
     });
 
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
+  }
+
+  function activeSelectionDomainId() {
+    return state.selectedDomainId || state.selection?.domainId || null;
+  }
+
+  function isFocusStage() {
+    return state.view.canvasStage === 'focus' && Boolean(activeSelectionDomainId());
+  }
+
+  function entityDomainId(entityId) {
+    return findEntity(state.domains, entityId)?.domain?.id || null;
+  }
+
+  function incidentRelationshipIds(entityId) {
+    return new Set(
+      (state.relationships || [])
+        .filter((rel) => rel.fromEntityId === entityId || rel.toEntityId === entityId)
+        .map((rel) => rel.id)
+    );
+  }
+
+  /**
+   * Typed near-single focus: what stays on stage for the current selection kind.
+   */
+  function focusScenarioFor() {
+    const kind = state.selection?.kind || 'none';
+    const domainId = activeSelectionDomainId();
+    const entityId = state.selectedEntityId || state.selection?.entityId || null;
+    const fieldName = state.selection?.kind === 'field' ? state.selection.fieldName : null;
+    const relationshipId = state.selectedRelationshipId || null;
+    const noteId = state.selectedNoteId || null;
+    const selectedRel = relationshipId
+      ? (state.relationships || []).find((entry) => entry.id === relationshipId)
+      : null;
+
+    if (kind === 'none' || !domainId) {
+      return {
+        kind: 'none',
+        keepDomains: null,
+        keepEntities: null,
+        keepEdges: null,
+        keepNotes: null,
+        endpointEntities: new Set(),
+        fieldName: null
+      };
+    }
+
+    if (kind === 'domain') {
+      // Soft peers: keep cross-domain relationship endpoints so Tasks focus
+      // still shows User/Organization cards — never an empty Users chip with
+      // floating vertical gutters in the corridor.
+      const homeEntities = new Set(
+        (state.domains.find((d) => d.id === domainId)?.entities || []).map((e) => e.id)
+      );
+      const keepEntities = new Set(homeEntities);
+      const keepEdges = new Set();
+      const endpointEntities = new Set();
+      (state.relationships || []).forEach((rel) => {
+        const touchesHome = homeEntities.has(rel.fromEntityId) || homeEntities.has(rel.toEntityId);
+        if (!touchesHome) return;
+        keepEdges.add(rel.id);
+        keepEntities.add(rel.fromEntityId);
+        keepEntities.add(rel.toEntityId);
+        if (!homeEntities.has(rel.fromEntityId)) endpointEntities.add(rel.fromEntityId);
+        if (!homeEntities.has(rel.toEntityId)) endpointEntities.add(rel.toEntityId);
+      });
+      return {
+        kind,
+        keepDomains: new Set(
+          [...keepEntities].map((id) => entityDomainId(id)).filter(Boolean)
+        ),
+        keepEntities,
+        keepEdges,
+        keepNotes: new Set(),
+        endpointEntities,
+        fieldName: null
+      };
+    }
+
+    if (kind === 'entity') {
+      const keepEntities = new Set([entityId].filter(Boolean));
+      const keepEdges = incidentRelationshipIds(entityId);
+      (state.relationships || []).forEach((rel) => {
+        if (!keepEdges.has(rel.id)) return;
+        keepEntities.add(rel.fromEntityId);
+        keepEntities.add(rel.toEntityId);
+      });
+      return {
+        kind,
+        keepDomains: new Set(
+          [...keepEntities].map((id) => entityDomainId(id)).filter(Boolean)
+        ),
+        keepEntities,
+        keepEdges,
+        keepNotes: new Set(),
+        endpointEntities: new Set(
+          [...keepEntities].filter((id) => id !== entityId)
+        ),
+        fieldName: null
+      };
+    }
+
+    if (kind === 'field') {
+      // Near-single field focus: only edges that bind THIS field name, not every
+      // incident relationship (that was centering Project while assigneeId selected).
+      const keepEntities = new Set([entityId].filter(Boolean));
+      const keepEdges = new Set();
+      (state.relationships || []).forEach((rel) => {
+        if (!entityId) return;
+        const fromField = inferRelationshipFieldName(rel, 'from');
+        const toField = inferRelationshipFieldName(rel, 'to');
+        const touchesField =
+          (rel.fromEntityId === entityId && fromField === fieldName)
+          || (rel.toEntityId === entityId && toField === fieldName);
+        if (!touchesField) return;
+        keepEdges.add(rel.id);
+        keepEntities.add(rel.fromEntityId);
+        keepEntities.add(rel.toEntityId);
+      });
+      return {
+        kind,
+        keepDomains: new Set(
+          [...keepEntities].map((id) => entityDomainId(id)).filter(Boolean)
+        ),
+        keepEntities,
+        keepEdges,
+        keepNotes: new Set(),
+        endpointEntities: new Set(
+          [...keepEntities].filter((id) => id !== entityId)
+        ),
+        fieldName
+      };
+    }
+
+    if (kind === 'relationship' && selectedRel) {
+      const keepEntities = new Set([selectedRel.fromEntityId, selectedRel.toEntityId]);
+      const keepDomains = new Set(
+        [...keepEntities].map((id) => entityDomainId(id)).filter(Boolean)
+      );
+      return {
+        kind,
+        keepDomains,
+        keepEntities,
+        keepEdges: new Set([selectedRel.id]),
+        keepNotes: new Set(),
+        endpointEntities: keepEntities,
+        fieldName: null
+      };
+    }
+
+    if (kind === 'note') {
+      return {
+        kind,
+        keepDomains: domainId ? new Set([domainId]) : new Set(),
+        keepEntities: new Set(),
+        keepEdges: new Set(),
+        keepNotes: new Set([noteId].filter(Boolean)),
+        endpointEntities: new Set(),
+        fieldName: null
+      };
+    }
+
+    return {
+      kind: 'domain',
+      keepDomains: new Set([domainId]),
+      keepEntities: null,
+      keepEdges: null,
+      keepNotes: new Set(),
+      endpointEntities: new Set(),
+      fieldName: null
+    };
+  }
+
+  function syncSelectionClasses() {
+    const scenario = focusScenarioFor();
+    const stageFocus = scenario.kind !== 'none';
+    const activeDomainId = activeSelectionDomainId();
+    const entitySelected = Boolean(state.selectedEntityId || state.selection?.entityId);
+
+    if (dom.canvas) {
+      dom.canvas.dataset.focusKind = scenario.kind;
+    }
+
+    dom.canvasInner.querySelectorAll('.domain[data-domain-id]').forEach((node) => {
+      const id = node.dataset.domainId;
+      const keep = !scenario.keepDomains || scenario.keepDomains.has(id);
+      const isActive = id === activeDomainId;
+      const isSoftPeer = stageFocus && keep && !isActive;
+      node.classList.toggle('selected', isActive && !entitySelected && scenario.kind === 'domain');
+      node.classList.toggle(
+        'context-active',
+        isActive && (scenario.kind === 'entity' || scenario.kind === 'field' || scenario.kind === 'relationship')
+      );
+      node.classList.toggle('is-focus', stageFocus && keep && isActive);
+      node.classList.toggle('is-quiet', stageFocus && !keep);
+      node.classList.toggle('is-staged-away', stageFocus && !keep);
+      node.classList.toggle('is-soft', isSoftPeer);
+    });
+
+    dom.canvasInner.querySelectorAll('.entity[data-entity-id]').forEach((node) => {
+      const id = node.dataset.entityId;
+      const inMulti = Array.isArray(state.selectedEntityIds) && state.selectedEntityIds.includes(id);
+      const isSelected = id === state.selectedEntityId || inMulti;
+      const keep = !scenario.keepEntities || scenario.keepEntities.has(id);
+      const isEndpoint = scenario.endpointEntities.has(id);
+      node.classList.toggle('selected', isSelected);
+      node.classList.toggle('is-quiet', stageFocus && !keep);
+      node.classList.toggle('is-staged-away', stageFocus && !keep);
+      node.classList.toggle('is-soft', stageFocus && keep && isEndpoint && !isSelected);
+      node.classList.toggle('is-edge-endpoint', isEndpoint);
+      node.classList.toggle('is-focus', stageFocus && keep && isSelected);
+    });
+
+    dom.canvasInner.querySelectorAll('.entity-field-row[data-field-name]').forEach((node) => {
+      const ownerEntityId = node.closest('.entity[data-entity-id]')?.dataset?.entityId;
+      const selected = Boolean(
+        scenario.fieldName
+        && ownerEntityId
+        && ownerEntityId === state.selectedEntityId
+        && node.dataset.fieldName === scenario.fieldName
+      );
+      node.classList.toggle('is-selected', selected);
+    });
+
+    dom.canvasInner.querySelectorAll('.canvas-note[data-note-id]').forEach((node) => {
+      const id = node.dataset.noteId;
+      const keep = !scenario.keepNotes || scenario.keepNotes.has(id);
+      node.classList.toggle('selected', id === state.selectedNoteId);
+      node.classList.toggle('is-quiet', stageFocus && !keep);
+      node.classList.toggle('is-staged-away', stageFocus && !keep);
+    });
+
+    syncEdgeChrome(scenario);
+    syncStageChrome();
+  }
+
+  function syncEdgeChrome(scenarioOrDomainId) {
+    if (!dom.edges) return;
+    const scenario = typeof scenarioOrDomainId === 'object' && scenarioOrDomainId
+      ? scenarioOrDomainId
+      : focusScenarioFor();
+    const selectedId = state.selectedRelationshipId || null;
+    const hoverId = dom.edges.dataset.hoverRelationshipId || null;
+    const stageFocus = scenario.kind !== 'none';
+    dom.edges.querySelectorAll('[data-relationship-id]').forEach((node) => {
+      const id = node.dataset.relationshipId;
+      const keep = !scenario.keepEdges || scenario.keepEdges.has(id);
+      const staged = stageFocus && !keep;
+      node.classList.toggle('is-quiet', staged);
+      node.classList.toggle('is-staged-away', staged);
+      node.classList.toggle('is-soft', false);
+      node.classList.toggle('is-hover', id === hoverId && id !== selectedId && keep);
+      node.classList.toggle('active', id === selectedId);
+    });
+  }
+
+  function setEdgeHover(relationshipId) {
+    if (!dom.edges) return;
+    if (relationshipId) dom.edges.dataset.hoverRelationshipId = relationshipId;
+    else delete dom.edges.dataset.hoverRelationshipId;
+    syncEdgeChrome(focusScenarioFor());
+  }
+
+  /**
+   * Model-space box for the current selection (entity → domain → note → rel).
+   */
+  function selectionFocusBounds() {
+    if (state.selectedNoteId) {
+      const note = (state.notes || []).find((entry) => entry.id === state.selectedNoteId);
+      if (note) {
+        return {
+          x: note.x,
+          y: note.y,
+          width: Number.isFinite(note.width) ? note.width : 220,
+          height: Number.isFinite(note.height) ? note.height : 120
+        };
+      }
+    }
+
+    if (state.selectedRelationshipId) {
+      const relationship = (state.relationships || [])
+        .find((entry) => entry.id === state.selectedRelationshipId);
+      if (relationship) {
+        const from = findEntity(state.domains, relationship.fromEntityId);
+        const to = findEntity(state.domains, relationship.toEntityId);
+        if (from && to) {
+          const fromBox = {
+            x: from.domain.x + from.entity.x,
+            y: from.domain.y + from.entity.y,
+            width: entityWidth(from.entity),
+            height: entityBoxHeight(
+              from.entity,
+              state.view.compactEntities,
+              state.view.largeCanvasMode
+            )
+          };
+          const toBox = {
+            x: to.domain.x + to.entity.x,
+            y: to.domain.y + to.entity.y,
+            width: entityWidth(to.entity),
+            height: entityBoxHeight(
+              to.entity,
+              state.view.compactEntities,
+              state.view.largeCanvasMode
+            )
+          };
+          const pad = 48;
+          const minX = Math.min(fromBox.x, toBox.x) - pad;
+          const minY = Math.min(fromBox.y, toBox.y) - pad;
+          const maxX = Math.max(fromBox.x + fromBox.width, toBox.x + toBox.width) + pad;
+          const maxY = Math.max(fromBox.y + fromBox.height, toBox.y + toBox.height) + pad;
+          // Prefer the corridor center when entities are far apart.
+          const midX = (fromBox.x + fromBox.width / 2 + toBox.x + toBox.width / 2) / 2;
+          const midY = (fromBox.y + fromBox.height / 2 + toBox.y + toBox.height / 2) / 2;
+          const spanX = Math.max(160, maxX - minX);
+          const spanY = Math.max(120, maxY - minY);
+          return {
+            x: midX - spanX / 2,
+            y: midY - spanY / 2,
+            width: spanX,
+            height: spanY
+          };
+        }
+      }
+    }
+
+    const found = state.selectedEntityId
+      ? findEntity(state.domains, state.selectedEntityId)
+      : null;
+    if (found) {
+      const fieldName = state.selection?.kind === 'field' ? state.selection.fieldName : null;
+      const entityBox = {
+        x: found.domain.x + found.entity.x,
+        y: found.domain.y + found.entity.y,
+        width: entityWidth(found.entity),
+        height: entityBoxHeight(
+          found.entity,
+          state.view.compactEntities,
+          state.view.largeCanvasMode
+        )
+      };
+      const scenario = focusScenarioFor();
+      const peerIds = [...(scenario.endpointEntities || [])];
+      const unionPeers = (seed) => {
+        let minX = seed.x;
+        let minY = seed.y;
+        let maxX = seed.x + seed.width;
+        let maxY = seed.y + seed.height;
+        peerIds.forEach((peerId) => {
+          const peer = findEntity(state.domains, peerId);
+          if (!peer) return;
+          const peerBox = {
+            x: peer.domain.x + peer.entity.x,
+            y: peer.domain.y + peer.entity.y,
+            width: entityWidth(peer.entity),
+            height: entityBoxHeight(
+              peer.entity,
+              state.view.compactEntities,
+              state.view.largeCanvasMode
+            )
+          };
+          minX = Math.min(minX, peerBox.x);
+          minY = Math.min(minY, peerBox.y);
+          maxX = Math.max(maxX, peerBox.x + peerBox.width);
+          maxY = Math.max(maxY, peerBox.y + peerBox.height);
+        });
+        const pad = peerIds.length ? 72 : 36;
+        return {
+          x: minX - pad,
+          y: minY - pad,
+          width: Math.max(220, maxX - minX + pad * 2),
+          height: Math.max(160, maxY - minY + pad * 2)
+        };
+      };
+      if (!fieldName) {
+        // Entity focus: keep soft-peer endpoints in frame (User when Task selected).
+        return peerIds.length ? unionPeers(entityBox) : entityBox;
+      }
+      // Field focus: frame the selected row + ALL field-bound corridor peers.
+      const rowHeight = entityFieldRowHeight(state.view.largeCanvasMode);
+      const fieldIndex = Math.max(
+        0,
+        (found.entity.fields || []).findIndex((field) => field.name === fieldName)
+      );
+      const fieldBox = {
+        x: entityBox.x,
+        y: entityBox.y + 32 + fieldIndex * rowHeight,
+        width: entityBox.width,
+        height: Math.max(rowHeight + 8, 36)
+      };
+      return unionPeers(fieldBox);
+    }
+
+    const domain = state.domains.find((candidate) => candidate.id === state.selectedDomainId);
+    if (!domain) return null;
+    const box = domainBox(domain);
+    const home = { x: domain.x, y: domain.y, width: box.width, height: box.height };
+    // Domain focus with soft peers: frame home + endpoint cards so Users soft
+    // peers are not parked off-screen while edges still paint into the gutter.
+    const scenario = focusScenarioFor();
+    if (!scenario.endpointEntities?.size) return home;
+    let minX = home.x;
+    let minY = home.y;
+    let maxX = home.x + home.width;
+    let maxY = home.y + home.height;
+    scenario.endpointEntities.forEach((entityId) => {
+      const hit = findEntity(state.domains, entityId);
+      if (!hit) return;
+      const width = entityWidth(hit.entity);
+      const height = entityBoxHeight(
+        hit.entity,
+        state.view.compactEntities,
+        state.view.largeCanvasMode
+      );
+      minX = Math.min(minX, hit.domain.x + hit.entity.x);
+      minY = Math.min(minY, hit.domain.y + hit.entity.y);
+      maxX = Math.max(maxX, hit.domain.x + hit.entity.x + width);
+      maxY = Math.max(maxY, hit.domain.y + hit.entity.y + height);
+    });
+    const pad = 56;
+    return {
+      x: minX - pad,
+      y: minY - pad,
+      width: Math.max(home.width, maxX - minX + pad * 2),
+      height: Math.max(200, maxY - minY + pad * 2)
+    };
+  }
+
+  function selectionZoomLevel() {
+    if (state.selectedNoteId) return 'note';
+    if (state.selectedRelationshipId) return 'relationship';
+    if (state.selection?.kind === 'field' && state.selectedEntityId) return 'field';
+    if (state.selectedEntityId) return 'entity';
+    if (state.selectedDomainId) return 'domain';
+    return 'overview';
+  }
+
+  /**
+   * Fly the camera onto the selection at the hierarchical zoom level, then
+   * settle focus-stage layout. Soft-select during drag calls
+   * `syncSelectionClasses` only — not this.
+   */
+  function focusSelectionOnCanvas({ persist = true, remountPeers = true } = {}) {
+    if (!dom.canvas) return;
+    const bounds = selectionFocusBounds();
+    if (!bounds) {
+      state.view.canvasStage = 'overview';
+      syncSelectionClasses();
+      return;
+    }
+
+    const focusDomainId = state.selectedDomainId
+      || (state.selectedEntityId
+        ? findEntity(state.domains, state.selectedEntityId)?.domain?.id
+        : null)
+      || null;
+
+    if (focusDomainId && !state.selectedDomainId) {
+      state.selectedDomainId = focusDomainId;
+    }
+
+    // Soft peers must remount BEFORE Camera3 flight. Deferring remount until
+    // settle left Users as an empty chip while cross-domain edges still painted
+    // midX gutters (live 7.34.08AM shot). Soft-peer cards need real anchors now.
+    if (focusDomainId) state.view.canvasStage = 'focus';
+    if (remountPeers && focusDomainId) {
+      renderDomains();
+      renderEdges();
+    }
+    syncSelectionClasses();
+    syncStageChrome();
+
+    const level = selectionZoomLevel();
+    const fit = computeLevelFit(
+      bounds,
+      dom.canvas.clientWidth,
+      dom.canvas.clientHeight,
+      level
+    );
+
+    // Zoom-out guard: stepping up the hierarchy must not accidentally zoom in.
+    const currentZoom = clampZoom(state.view.zoom || 1);
+    if ((level === 'domain' || level === 'overview') && fit.zoom > currentZoom + 0.04) {
+      fit.zoom = currentZoom;
+    }
+    // Zoom-in preference: deeper levels should not land wider than current framing.
+    // Skip the nudge when framing soft peers across a wide span — otherwise field
+    // Camera3 over-zooms and parks User/Organization off-screen.
+    const wideSoftPeerFrame = bounds.width > 520 || bounds.height > 420;
+    if (
+      (level === 'entity' || level === 'field' || level === 'relationship' || level === 'note')
+      && fit.zoom < currentZoom - 0.02
+      && state.view.canvasStage === 'focus'
+      && !wideSoftPeerFrame
+    ) {
+      const nudge = level === 'field' ? 1.08 : level === 'relationship' ? 1.08 : 1.06;
+      const cap = level === 'field' ? 1.65 : 2.2;
+      fit.zoom = Math.min(cap, Math.max(fit.zoom, currentZoom * nudge));
+    }
+    if (level === 'field' && wideSoftPeerFrame) {
+      fit.zoom = Math.min(fit.zoom, 1.45);
+    }
+
+    animateCameraTo(
+      {
+        zoom: fit.zoom,
+        centerX: fit.centerX,
+        centerY: fit.centerY
+      },
+      {
+        onComplete: () => {
+          // Soft field hops may skip remountPeers; re-sync chrome after settle.
+          if (remountPeers && focusDomainId) {
+            renderEdges();
+          }
+          syncSelectionClasses();
+          syncStageChrome();
+          if (persist) saveState();
+        }
+      }
+    );
   }
 
   function isDragInteractiveTarget(target) {
@@ -718,16 +1550,63 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   function renderDomains() {
     dom.canvasInner.querySelectorAll('.domain').forEach((node) => node.remove());
 
+    const scenario = focusScenarioFor();
+    const stageFocus = isFocusStage();
+    const activeDomainId = activeSelectionDomainId();
+
     state.domains.forEach((domain) => {
       const domainEl = document.createElement('section');
       domainEl.className = `domain${state.selectedDomainId === domain.id ? ' selected' : ''}`;
-      const box = domainBox(domain);
+      domainEl.dataset.domainId = domain.id;
+      // Soft peers stay mounted (keepDomains). Only true outsiders become chips.
+      // Staging every non-active domain ignored keepDomains and left Users as an
+      // empty "0 entities" chip while cross-domain edges still targeted User/Org
+      // model anchors → classic floating vertical gutter corridor.
+      const keepDomain = !scenario.keepDomains || scenario.keepDomains.has(domain.id);
+      const stagedAway = stageFocus && !keepDomain;
+      const softPeer = stageFocus && keepDomain && domain.id !== activeDomainId;
+      const collapsed = isDomainCollapsed(domain) || stagedAway;
+      const chipBox = domainBox({ ...domain, collapsed: true });
+      const softEntities = (softPeer && scenario.keepEntities)
+        ? domain.entities.filter((entity) => scenario.keepEntities.has(entity.id))
+        : null;
+      // Soft-peer domains: tight box around endpoint cards (not the full empty hull).
+      let box;
+      if (stagedAway) {
+        box = { width: Math.min(220, chipBox.width), height: chipBox.height };
+      } else if (softEntities && softEntities.length) {
+        let maxRight = 220;
+        let maxBottom = 96;
+        softEntities.forEach((entity) => {
+          maxRight = Math.max(maxRight, entity.x + entityWidth(entity) + 24);
+          maxBottom = Math.max(
+            maxBottom,
+            entity.y + entityBoxHeight(
+              entity,
+              state.view.compactEntities,
+              state.view.largeCanvasMode
+            ) + 24
+          );
+        });
+        box = { width: maxRight, height: maxBottom };
+      } else {
+        box = domainBox(domain);
+      }
       domainEl.style.left = `${modelToCanvasX(domain.x)}px`;
       domainEl.style.top = `${modelToCanvasY(domain.y)}px`;
       domainEl.style.width = `${box.width}px`;
       domainEl.style.height = `${box.height}px`;
       domainEl.style.setProperty('--domain-color', domain.color);
-      domainEl.onmousedown = () => setSelectedDomain(domain.id);
+      if (stagedAway) {
+        domainEl.classList.add('is-staged-away');
+        domainEl.title = `Show domain "${domain.name}"`;
+      }
+      if (softPeer) {
+        domainEl.classList.add('is-soft');
+        domainEl.title = `Soft peer domain "${domain.name}"`;
+      }
+      // Selection authority: soft on pointerdown (drag), hard settle on click-end.
+      // No separate mousedown remount — that fought Camera3 mid-flight.
       domainEl.addEventListener('contextmenu', (event) => {
         // Only when the domain itself is the target: an entity or a field row
         // inside it owns its own menu, and this would otherwise swallow both.
@@ -743,7 +1622,6 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       domainEl.appendChild(headerEl);
       const domainDragGrip = headerEl.querySelector('.domain-drag-grip');
 
-      const collapsed = isDomainCollapsed(domain);
       if (collapsed) domainEl.classList.add('collapsed');
 
       const collapseBtn = document.createElement('button');
@@ -755,11 +1633,17 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       );
       collapseBtn.setAttribute(
         'aria-label',
-        `${collapsed ? 'Expand' : 'Collapse'} domain "${domain.name}"`
+        stagedAway
+          ? `Show domain "${domain.name}"`
+          : `${collapsed ? 'Expand' : 'Collapse'} domain "${domain.name}"`
       );
       collapseBtn.addEventListener('pointerdown', (event) => event.stopPropagation());
       collapseBtn.addEventListener('click', (event) => {
         event.stopPropagation();
+        if (stagedAway) {
+          setSelectedDomain(domain.id);
+          return;
+        }
         withPersist(() => {
           domain.collapsed = !domain.collapsed;
           render();
@@ -780,7 +1664,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         scheduleEdgesRender();
         scheduleMiniMapRender();
       };
+      // Soft select during pointerdown: a full render remounts this domain and
+      // breaks setPointerCapture / the in-flight drag. Full remount on click end.
+      const selectDomainOnPointer = (options) => setSelectedDomain(domain.id, options);
       const persistMovedDomain = {
+        onPointerDown: () => selectDomainOnPointer({ remountCanvas: false }),
         onStart: () => {
           closeSidebarForCanvasWork();
           domainEl.classList.add('dragging');
@@ -795,7 +1683,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
             domainEl.style.top = `${modelToCanvasY(domain.y)}px`;
             domainDragOrigin = null;
           }
-          if (!moved) return;
+          if (!moved) {
+            // Click (no drag): chrome + Camera3; peer remount after settle.
+            selectDomainOnPointer({ remountCanvas: true });
+            return;
+          }
           saveState();
           render();
         }
@@ -814,15 +1706,26 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       });
 
       if (collapsed) {
-        // Its entities are still in the model and still the ends of their
-        // relationships; they just have no box on screen. `renderEdges` falls
-        // back to the domain box for an entity it cannot place.
+        // Outsider chip only. Soft-peer domains never take this path — they
+        // stay expanded so relationship anchors have real cards (not midX
+        // gutters into an empty chip). Edges into true collapsed domains are
+        // suppressed in renderEdges.
         domainEl.appendChild(resizeHandleFor(domain, domainEl, collapsed));
         dom.canvasInner.appendChild(domainEl);
         return;
       }
 
-      domain.entities.forEach((entity) => {
+      const entitiesToRender = (stageFocus && scenario.keepEntities)
+        ? domain.entities.filter((entity) => scenario.keepEntities.has(entity.id))
+        : domain.entities;
+      // Soft-peer domains: advertise how many endpoint cards are on stage, not
+      // a misleading "0 entities" empty chip while edges still target the model.
+      const countEl = headerEl.querySelector('.entity-count');
+      if (countEl && softPeer && scenario.keepEntities) {
+        countEl.textContent = `${entitiesToRender.length} soft peer${entitiesToRender.length === 1 ? '' : 's'}`;
+      }
+
+      entitiesToRender.forEach((entity) => {
         const connectedFieldNames = relationshipFieldNamesForEntity(entity.id);
         const entityEl = document.createElement('article');
         const inMultiSelection = Array.isArray(state.selectedEntityIds)
@@ -869,7 +1772,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         });
         entityEl.onclick = (event) => {
           event.stopPropagation();
-          setSelectedEntity(entity.id);
+          // Selection settles via drag onEnd / pointerdown soft; pick mode only here.
           handleEntityRelationshipPick(entity.id);
         };
 
@@ -921,6 +1824,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
           });
         };
         const persistMovedEntity = {
+          onPointerDown: () => setSelectedEntity(entity.id, { remountCanvas: false }),
           onStart: () => {
             closeSidebarForCanvasWork();
             domainEl.classList.add('dragging');
@@ -940,7 +1844,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
               });
               entityDragOrigin = null;
             }
-            if (!moved) return;
+            if (!moved) {
+              setSelectedEntity(entity.id, { remountCanvas: false });
+              return;
+            }
             saveState();
             render();
           }
@@ -972,12 +1879,33 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
           // opposite of that.
           entity.fields.forEach((field, fieldIndex) => {
             const li = document.createElement('li');
-            li.className = `entity-field-row${connectedFieldNames.has(field.name) ? ' relationship-field-connected' : ''}`;
+            const fieldSelected = state.selection?.kind === 'field'
+              && state.selectedEntityId === entity.id
+              && state.selection.fieldName === field.name;
+            li.className = [
+              'entity-field-row',
+              connectedFieldNames.has(field.name) ? 'relationship-field-connected' : '',
+              fieldSelected ? 'is-selected' : ''
+            ].filter(Boolean).join(' ');
+            li.dataset.fieldName = field.name;
             if (state.view.largeCanvasMode) {
               li.textContent = fieldLabel(field);
+              li.addEventListener('click', (event) => {
+                event.stopPropagation();
+                if (typeof setSelectedField === 'function') setSelectedField(entity.id, field.name);
+                else setSelectedEntity(entity.id);
+              });
               fieldsEl.appendChild(li);
               return;
             }
+            li.addEventListener('click', (event) => {
+              if (event.target.closest('input, select, button, details, summary, a, .field-link-handle, .entity-anchor')) {
+                return;
+              }
+              event.stopPropagation();
+              if (typeof setSelectedField === 'function') setSelectedField(entity.id, field.name);
+              else setSelectedEntity(entity.id);
+            });
 
             const keyBtn = document.createElement('button');
             keyBtn.type = 'button';
@@ -1000,8 +1928,14 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
             nameEl.className = 'field-name-input';
             nameEl.value = field.name;
             nameEl.setAttribute('aria-label', `Name of field "${field.name}"`);
-            nameEl.addEventListener('click', (event) => event.stopPropagation());
+            nameEl.addEventListener('click', (event) => {
+              event.stopPropagation();
+              if (typeof setSelectedField === 'function') setSelectedField(entity.id, field.name, { remountCanvas: false });
+            });
             nameEl.addEventListener('pointerdown', (event) => event.stopPropagation());
+            nameEl.addEventListener('focus', () => {
+              if (typeof setSelectedField === 'function') setSelectedField(entity.id, field.name, { remountCanvas: false });
+            });
             nameEl.addEventListener('pointerup', () => nameEl.focus());
             nameEl.addEventListener('change', () => {
               const nextName = nameEl.value.trim();
@@ -1011,6 +1945,15 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
               }
               withPersist(() => {
                 field.name = nextName;
+                if (typeof setSelectedField === 'function') {
+                  state.selection = {
+                    ...(state.selection || {}),
+                    kind: 'field',
+                    fieldName: nextName,
+                    entityId: entity.id,
+                    domainId: state.selectedDomainId
+                  };
+                }
                 render();
               });
             });
@@ -1078,9 +2021,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
             li.appendChild(createFieldSchemaEditor(field));
 
             li.dataset.fieldIndex = String(fieldIndex);
-            li.dataset.fieldName = field.name;
             li.addEventListener('contextmenu', (event) => {
-              setSelectedEntity(entity.id);
+              if (typeof setSelectedField === 'function') setSelectedField(entity.id, field.name, { remountCanvas: false });
+              else setSelectedEntity(entity.id);
               openElementMenu(
                 event,
                 `Field "${field.name}"`,
@@ -1162,6 +2105,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
 
       dom.canvasInner.appendChild(domainEl);
     });
+    syncSelectionClasses();
   }
 
   /**
@@ -1377,10 +2321,18 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
 
     (state.notes || []).forEach((note) => {
       const noteEl = document.createElement('div');
-      noteEl.className = 'canvas-note';
+      const selected = state.selectedNoteId === note.id;
+      noteEl.className = `canvas-note${selected ? ' selected' : ''}`;
+      noteEl.dataset.noteId = note.id;
       noteEl.style.left = `${modelToCanvasX(note.x)}px`;
       noteEl.style.top = `${modelToCanvasY(note.y)}px`;
       noteEl.style.background = note.color;
+
+      noteEl.addEventListener('mousedown', (event) => {
+        if (event.button !== 0) return;
+        if (event.target.closest('textarea, button, input')) return;
+        setSelectedNote(note.id);
+      });
 
       const grip = document.createElement('div');
       grip.className = 'canvas-note-grip';
@@ -1394,6 +2346,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         noteEl.style.top = `${modelToCanvasY(note.y)}px`;
       }, {
         onStart: () => {
+          setSelectedNote(note.id, { remountCanvas: false });
           noteDragOrigin = { x: note.x, y: note.y };
           withPersist(() => {});
         },
@@ -1415,7 +2368,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       text.value = note.text;
       text.placeholder = 'Note…';
       text.setAttribute('aria-label', 'Canvas note');
-      text.addEventListener('pointerdown', (event) => event.stopPropagation());
+      text.addEventListener('pointerdown', (event) => {
+        event.stopPropagation();
+        setSelectedNote(note.id);
+      });
       text.addEventListener('change', () => {
         withPersist(() => {
           note.text = text.value;
@@ -1424,12 +2380,18 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       noteEl.appendChild(text);
 
       noteEl.addEventListener('contextmenu', (event) => {
+        setSelectedNote(note.id);
         openElementMenu(event, 'Note', [
+          {
+            label: 'Edit in inspector',
+            run: () => setSelectedNote(note.id)
+          },
           {
             label: 'Delete note',
             danger: true,
             run: () => withPersist(() => {
               state.notes = state.notes.filter((candidate) => candidate.id !== note.id);
+              if (state.selectedNoteId === note.id) state.selectedNoteId = null;
               render();
             })
           }
@@ -1442,21 +2404,25 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
 
   /** Drop a note at a point or at the centre of what is currently on screen. */
   function addNote(position = null) {
+    let createdId = null;
     withPersist(() => {
       const zoom = state.view.zoom || 1;
       const centre = position || {
         x: Math.round((dom.canvas.scrollLeft + dom.canvas.clientWidth / 2) / zoom - CANVAS_ORIGIN_X),
         y: Math.round((dom.canvas.scrollTop + dom.canvas.clientHeight / 2) / zoom - CANVAS_ORIGIN_Y)
       };
-      state.notes = [...(state.notes || []), {
+      const created = {
         id: `note-${String(Date.now())}`,
         text: '',
         x: centre.x,
         y: centre.y,
         color: '#fde68a'
-      }];
+      };
+      createdId = created.id;
+      state.notes = [...(state.notes || []), created];
       render();
     });
+    if (createdId) setSelectedNote(createdId);
   }
 
   function pointOffsetBySide(point, side, distance) {
@@ -1491,38 +2457,82 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     return simplified;
   }
 
-  function allEntityBounds(excludeIds = new Set()) {
+  function allEntityBounds(excludeIds = new Set(), pad = 10) {
     const compact = Boolean(state.view.compactEntities);
     const large = Boolean(state.view.largeCanvasMode);
+    const inset = Math.max(0, Number(pad) || 0);
     return state.domains.flatMap((domain) => domain.entities
       .filter((entity) => !excludeIds.has(entity.id))
       .map((entity) => ({
         entityId: entity.id,
-        x: domain.x + entity.x - 14,
-        y: domain.y + entity.y - 14,
-        width: entityWidth(entity) + 28,
-        height: entityBoxHeight(entity, compact, large) + 28
+        x: domain.x + entity.x - inset,
+        y: domain.y + entity.y - inset,
+        width: entityWidth(entity) + inset * 2,
+        height: entityBoxHeight(entity, compact, large) + inset * 2
       })));
   }
 
+  /** Domain hulls as soft obstacles so cross-domain links skirt the cards. */
+  function allDomainBounds(excludeDomainIds = new Set()) {
+    return state.domains
+      .filter((domain) => !excludeDomainIds.has(domain.id))
+      .map((domain) => {
+        const size = domainBox(domain);
+        return {
+          entityId: `domain:${domain.id}`,
+          x: domain.x - 8,
+          y: domain.y - 8,
+          width: size.width + 16,
+          height: size.height + 16
+        };
+      });
+  }
+
+  function routeObstaclesFor(relationship) {
+    const from = findEntity(state.domains, relationship.fromEntityId);
+    const to = findEntity(state.domains, relationship.toEntityId);
+    // Exclude endpoints — stub exits intentionally graze their own hulls. Tight
+    // pad so mid-gutters between close cards stay open (Project↔Task golden).
+    const exclude = new Set([relationship.fromEntityId, relationship.toEntityId].filter(Boolean));
+    const entityObstacles = allEntityBounds(exclude, 8);
+    if (!from || !to || from.domain.id === to.domain.id) return entityObstacles;
+    // Cross-domain: skirt foreign domain hulls, but never the two endpoints' domains.
+    const foreignDomains = allDomainBounds(new Set([from.domain.id, to.domain.id]));
+    return entityObstacles.concat(foreignDomains);
+  }
+
   function segmentIntersectsBox(a, b, box) {
-    if (a.x === b.x) {
-      const minY = Math.min(a.y, b.y);
-      const maxY = Math.max(a.y, b.y);
-      return a.x >= box.x
-        && a.x <= box.x + box.width
-        && maxY >= box.y
-        && minY <= box.y + box.height;
+    const minX = box.x;
+    const maxX = box.x + box.width;
+    const minY = box.y;
+    const maxY = box.y + box.height;
+    // Liang–Barsky: orthogonal and diagonal corridors both count as hits.
+    let t0 = 0;
+    let t1 = 1;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const clips = [
+      [-dx, a.x - minX],
+      [dx, maxX - a.x],
+      [-dy, a.y - minY],
+      [dy, maxY - a.y]
+    ];
+    for (let index = 0; index < clips.length; index += 1) {
+      const [p, q] = clips[index];
+      if (p === 0) {
+        if (q < 0) return false;
+        continue;
+      }
+      const r = q / p;
+      if (p < 0) {
+        if (r > t1) return false;
+        if (r > t0) t0 = r;
+      } else {
+        if (r < t0) return false;
+        if (r < t1) t1 = r;
+      }
     }
-    if (a.y === b.y) {
-      const minX = Math.min(a.x, b.x);
-      const maxX = Math.max(a.x, b.x);
-      return a.y >= box.y
-        && a.y <= box.y + box.height
-        && maxX >= box.x
-        && minX <= box.x + box.width;
-    }
-    return false;
+    return t0 <= t1;
   }
 
   function routeLength(points) {
@@ -1537,6 +2547,87 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       const previous = points[index];
       return total + obstacles.filter((box) => segmentIntersectsBox(previous, point, box)).length;
     }, 0);
+  }
+
+  /**
+   * Collisions on the corridor only — skip exit/enter stubs so hull exits
+   * are not scored as failures, but a stub→stub shortcut through a box is.
+   */
+  function routeInteriorCollisionCount(points, obstacles) {
+    if (!Array.isArray(points) || points.length < 2 || !obstacles?.length) return 0;
+    if (points.length === 2) {
+      return obstacles.filter((box) => segmentIntersectsBox(points[0], points[1], box)).length;
+    }
+    let total = 0;
+    for (let index = 1; index < points.length - 2; index += 1) {
+      total += obstacles.filter((box) => segmentIntersectsBox(points[index], points[index + 1], box)).length;
+    }
+    return total;
+  }
+
+  function entityBoundById(entityId) {
+    const found = findEntity(state.domains, entityId);
+    if (!found) return null;
+    const compact = Boolean(state.view.compactEntities);
+    const large = Boolean(state.view.largeCanvasMode);
+    return {
+      entityId,
+      x: found.domain.x + found.entity.x - 10,
+      y: found.domain.y + found.entity.y - 10,
+      width: entityWidth(found.entity) + 20,
+      height: entityBoxHeight(found.entity, compact, large) + 20
+    };
+  }
+
+  /**
+   * If the route still clips an endpoint hull (or is a 2-point diagonal),
+   * force an exterior orthogonal elbow in the clear gutter around both boxes.
+   */
+  function ensureRouteClearsEndpointHulls(points, relationship, fromSide, toSide) {
+    const fromBox = entityBoundById(relationship.fromEntityId);
+    const toBox = entityBoundById(relationship.toEntityId);
+    const endpointBoxes = [fromBox, toBox].filter(Boolean);
+    if (!endpointBoxes.length) return points;
+    const otherBoxes = allEntityBounds(new Set([
+      relationship.fromEntityId,
+      relationship.toEntityId
+    ]));
+    const interiorHits = routeInteriorCollisionCount(points, endpointBoxes)
+      + routeCollisionCount(points, otherBoxes);
+    const isDiagonalTwoPoint = points.length === 2
+      && points[0].x !== points[1].x
+      && points[0].y !== points[1].y;
+    if (interiorHits === 0 && !isDiagonalTwoPoint) return points;
+
+    const pad = 44;
+    const start = points[0];
+    const end = points[points.length - 1];
+    const fromStub = pointOffsetBySide(start, fromSide || 'right', pad);
+    const toStub = pointOffsetBySide(end, toSide || 'left', pad);
+    const left = Math.min(...endpointBoxes.map((box) => box.x)) - pad;
+    const right = Math.max(...endpointBoxes.map((box) => box.x + box.width)) + pad;
+    const top = Math.min(...endpointBoxes.map((box) => box.y)) - pad;
+    const bottom = Math.max(...endpointBoxes.map((box) => box.y + box.height)) + pad;
+    const obstacles = allEntityBounds();
+    const candidates = [
+      [start, fromStub, { x: right, y: fromStub.y }, { x: right, y: toStub.y }, toStub, end],
+      [start, fromStub, { x: left, y: fromStub.y }, { x: left, y: toStub.y }, toStub, end],
+      [start, fromStub, { x: fromStub.x, y: top }, { x: toStub.x, y: top }, toStub, end],
+      [start, fromStub, { x: fromStub.x, y: bottom }, { x: toStub.x, y: bottom }, toStub, end],
+      // Mid-gutter elbows between the two boxes.
+      [start, fromStub, { x: fromStub.x, y: fromStub.y }, { x: toStub.x, y: fromStub.y }, toStub, end],
+      [start, fromStub, { x: fromStub.x, y: toStub.y }, { x: toStub.x, y: toStub.y }, toStub, end]
+    ].map(normalizeRoutePoints);
+    candidates.sort((leftRoute, rightRoute) => (
+      scoreRoute(leftRoute, obstacles, relationship)
+      - scoreRoute(rightRoute, obstacles, relationship)
+    ));
+    const best = candidates[0] || points;
+    if (best.length === 2 && best[0].x !== best[1].x && best[0].y !== best[1].y) {
+      // Avoid recursion into ensure — pick shortest exterior lane.
+      return forceOrthogonalCorridor(best, null, fromSide, toSide);
+    }
+    return best;
   }
 
   function sideDirection(side) {
@@ -1578,6 +2669,26 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     return index - (sorted.length - 1) / 2;
   }
 
+  /**
+   * Rank every link spanning the same two domains (0..n-1). Used to stack
+   * highways just above the strip (rank*lane) so labels never share a Y and the
+   * outer ranks do not get shoved into absurd negative canvas Y.
+   */
+  function crossDomainRouteRank(relationship) {
+    const fromDomain = entityDomainId(relationship.fromEntityId);
+    const toDomain = entityDomainId(relationship.toEntityId);
+    if (!fromDomain || !toDomain || fromDomain === toDomain) return 0;
+    const pair = new Set([fromDomain, toDomain]);
+    const sorted = [...state.relationships]
+      .filter((candidate) => {
+        const left = entityDomainId(candidate.fromEntityId);
+        const right = entityDomainId(candidate.toEntityId);
+        return left && right && left !== right && pair.has(left) && pair.has(right);
+      })
+      .sort((left, right) => String(left.id).localeCompare(String(right.id)));
+    return Math.max(0, sorted.findIndex((candidate) => candidate.id === relationship.id));
+  }
+
   function routeExitPenalty(points, relationship) {
     const fromDirection = sideDirection(relationship.fromAnchorSide);
     const toDirection = sideDirection(relationship.toAnchorSide);
@@ -1606,17 +2717,69 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     }, 0);
   }
 
+  function routeDomainEscapePenalty(points, relationship) {
+    const from = findEntity(state.domains, relationship.fromEntityId);
+    const to = findEntity(state.domains, relationship.toEntityId);
+    if (!from || !to || from.domain.id !== to.domain.id) return 0;
+    const size = domainBox(from.domain);
+    const pad = 28;
+    const minX = from.domain.x - pad;
+    const minY = from.domain.y - pad;
+    const maxX = from.domain.x + size.width + pad;
+    const maxY = from.domain.y + size.height + pad;
+    return points.reduce((total, point) => {
+      if (point.x < minX || point.x > maxX || point.y < minY || point.y > maxY) {
+        return total + 300000;
+      }
+      return total;
+    }, 0);
+  }
+
   function scoreRoute(points, obstacles, relationship) {
-    const collisions = routeCollisionCount(points, obstacles);
+    const endpointIds = new Set([relationship.fromEntityId, relationship.toEntityId]);
+    const otherObstacles = obstacles.filter((box) => !endpointIds.has(box.entityId));
+    const endpointObstacles = obstacles.filter((box) => endpointIds.has(box.entityId));
+    const collisions = routeCollisionCount(points, otherObstacles);
+    const endpointInterior = routeInteriorCollisionCount(points, endpointObstacles);
     const labelPoint = routeLabelPoint(points);
     const labelCollisions = obstacles.filter((box) => pointInsideBox(labelPoint, box, 18)).length;
     return collisions * 120000
+      + endpointInterior * 200000
       + labelCollisions * 45000
+      + routeDomainEscapePenalty(points, relationship)
       + routeExitPenalty(points, relationship)
       + routeSelfCrossPenalty(points)
       + routeLength(points)
       + routeBendCount(points) * 520
       + points.length * 80;
+  }
+
+  function forceOrthogonalCorridor(points, relationship = null, fromSide = 'right', toSide = 'left') {
+    if (!Array.isArray(points) || points.length !== 2) return points;
+    const [from, to] = points;
+    if (from.x === to.x || from.y === to.y) return points;
+    const span = Math.abs(to.x - from.x) + Math.abs(to.y - from.y);
+    // Short gap between facing stubs: a single elbow is enough.
+    if (span < 96) {
+      const verticalFirst = Math.abs(to.y - from.y) >= Math.abs(to.x - from.x);
+      return normalizeRoutePoints(
+        verticalFirst
+          ? [from, { x: from.x, y: to.y }, to]
+          : [from, { x: to.x, y: from.y }, to]
+      );
+    }
+    // Long diagonal: never invent a through-box elbow — use exterior lanes.
+    if (relationship) {
+      return ensureRouteClearsEndpointHulls(points, relationship, fromSide, toSide);
+    }
+    const pad = 48;
+    const left = Math.min(from.x, to.x) - pad;
+    const right = Math.max(from.x, to.x) + pad;
+    const candidates = [
+      normalizeRoutePoints([from, { x: right, y: from.y }, { x: right, y: to.y }, to]),
+      normalizeRoutePoints([from, { x: left, y: from.y }, { x: left, y: to.y }, to])
+    ];
+    return candidates.sort((a, b) => routeLength(a) - routeLength(b))[0];
   }
 
   function laneDirection(anchorSide, fallback) {
@@ -1689,20 +2852,486 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     return normalizedCandidates[0];
   }
 
-  function edgeRoutePoints(relationship, from, to, controlX, controlY, explicit, obstacles = null) {
-    const spacing = explicit ? 28 : 44;
-    const fromStub = pointOffsetBySide(from, relationship.fromAnchorSide, spacing);
-    const toStub = pointOffsetBySide(to, relationship.toAnchorSide, spacing);
-    if (explicit) {
-      return normalizeRoutePoints([from, fromStub, { x: controlX, y: controlY }, toStub, to]);
+  function unionObstacleBounds(obstacles) {
+    if (!obstacles?.length) return null;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    obstacles.forEach((box) => {
+      minX = Math.min(minX, box.x);
+      minY = Math.min(minY, box.y);
+      maxX = Math.max(maxX, box.x + box.width);
+      maxY = Math.max(maxY, box.y + box.height);
+    });
+    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+  }
+
+  /**
+   * When two cards sit close side-by-side, stubs must meet in the mid-gutter —
+   * never overshoot into the neighbor hull (Project→Task golden failure).
+   */
+  function clampStubsForTightGutter(from, to, fromSide, toSide, fromBox, toBox, spacing) {
+    let fromStub = pointOffsetBySide(from, fromSide, spacing);
+    let toStub = pointOffsetBySide(to, toSide, spacing);
+    if (!fromBox || !toBox) return { fromStub, toStub };
+
+    const fromRight = fromBox.x + fromBox.width;
+    const toRight = toBox.x + toBox.width;
+    const fromBottom = fromBox.y + fromBox.height;
+    const toBottom = toBox.y + toBox.height;
+    // Only collapse stubs into a shared mid lane when the facing gap is actually
+    // tight (Project↔Task). Wide cross-domain gaps (Task→User) must NOT snap to
+    // midX — that painted floating vertical gutters between Users↔Tasks and
+    // drove horizontals through peer cards.
+    const maxTightGap = Math.max(48, spacing * 2 + 12);
+
+    if (fromSide === 'right' && toSide === 'left' && fromRight <= toBox.x + 1) {
+      const gap = toBox.x - fromRight;
+      if (gap <= maxTightGap) {
+        const midX = (fromRight + toBox.x) / 2;
+        fromStub = { x: midX, y: from.y };
+        toStub = { x: midX, y: to.y };
+      }
+    } else if (fromSide === 'left' && toSide === 'right' && toRight <= fromBox.x + 1) {
+      const gap = fromBox.x - toRight;
+      if (gap <= maxTightGap) {
+        const midX = (toRight + fromBox.x) / 2;
+        fromStub = { x: midX, y: from.y };
+        toStub = { x: midX, y: to.y };
+      }
+    } else if (fromSide === 'bottom' && toSide === 'top' && fromBottom <= toBox.y + 1) {
+      const gap = toBox.y - fromBottom;
+      if (gap <= maxTightGap) {
+        const midY = (fromBottom + toBox.y) / 2;
+        fromStub = { x: from.x, y: midY };
+        toStub = { x: to.x, y: midY };
+      }
+    } else if (fromSide === 'top' && toSide === 'bottom' && toBottom <= fromBox.y + 1) {
+      const gap = fromBox.y - toBottom;
+      if (gap <= maxTightGap) {
+        const midY = (toBottom + fromBox.y) / 2;
+        fromStub = { x: from.x, y: midY };
+        toStub = { x: to.x, y: midY };
+      }
     }
-    return automaticEdgeRoutePoints(
-      relationship,
-      from,
-      to,
+    return { fromStub, toStub };
+  }
+
+  /**
+   * Hard-constraint orthogonal corridor between stubs. Local to the endpoint
+   * pair — never ring around the world-union of every entity (that produced
+   * floating vertical gutters between Users↔Tasks).
+   */
+  function routeClearOrthogonalPath(
+    fromStub,
+    toStub,
+    obstacles,
+    {
+      ordinal = 0,
+      laneGap = 18,
+      fromBox = null,
+      toBox = null,
+      fromSide = 'right',
+      toSide = 'left'
+    } = {}
+  ) {
+    const stagger = ordinal * laneGap;
+
+    const pickClear = (rawCandidates) => {
+      const clear = rawCandidates
+        .map(normalizeRoutePoints)
+        .filter((points) => points.length >= 2 && routeCollisionCount(points, obstacles) === 0);
+      if (!clear.length) return null;
+      clear.sort((leftRoute, rightRoute) => (
+        routeLength(leftRoute) - routeLength(rightRoute)
+        + routeBendCount(leftRoute) * 48
+        - routeBendCount(rightRoute) * 48
+      ));
+      return clear[0];
+    };
+
+    // Already co-axial (tight-gutter clamp): pure stub corridor.
+    if (Math.abs(fromStub.x - toStub.x) <= 1.5) {
+      return normalizeRoutePoints([fromStub, toStub]);
+    }
+    if (Math.abs(fromStub.y - toStub.y) <= 1.5) {
+      return normalizeRoutePoints([fromStub, toStub]);
+    }
+
+    const midX = Math.round((fromStub.x + toStub.x) / 2 + stagger);
+    const midY = Math.round((fromStub.y + toStub.y) / 2 + stagger);
+    const spanX = Math.abs(toStub.x - fromStub.x);
+
+    // Local ring around ONLY the two endpoint boxes (not world union).
+    const local = (fromBox && toBox)
+      ? {
+        x: Math.min(fromBox.x, toBox.x),
+        y: Math.min(fromBox.y, toBox.y),
+        width: Math.max(fromBox.x + fromBox.width, toBox.x + toBox.width)
+          - Math.min(fromBox.x, toBox.x),
+        height: Math.max(fromBox.y + fromBox.height, toBox.y + toBox.height)
+          - Math.min(fromBox.y, toBox.y)
+      }
+      : {
+        x: Math.min(fromStub.x, toStub.x) - 36,
+        y: Math.min(fromStub.y, toStub.y) - 36,
+        width: Math.abs(toStub.x - fromStub.x) + 72,
+        height: Math.abs(toStub.y - fromStub.y) + 72
+      };
+
+    // Cross-domain / long spans: prefer SHORT clear orth paths. Never share one
+    // exterior side-lane for every edge (that bundled parallel verticals +
+    // stacked labels on a top ring). Climb at each stub's own X with spaced
+    // highway Y so labels sit on separate horizontals.
+    const crossDomain = Boolean(
+      fromBox?.entityId
+      && toBox?.entityId
+      && entityDomainId(fromBox.entityId)
+      && entityDomainId(toBox.entityId)
+      && entityDomainId(fromBox.entityId) !== entityDomainId(toBox.entityId)
+    );
+    if (crossDomain || spanX > 140) {
+      // No shared midX lane — that recreates the Users↔Tasks gutter corridor.
+      const shortClear = pickClear([
+        [fromStub, { x: toStub.x, y: fromStub.y }, toStub],
+        [fromStub, { x: fromStub.x, y: toStub.y }, toStub],
+        [fromStub, { x: fromStub.x, y: midY }, { x: toStub.x, y: midY }, toStub]
+      ]);
+      if (shortClear) return shortClear;
+
+      const preferBottom = fromSide === 'bottom' || toSide === 'bottom';
+      const laneSpread = 28;
+      const basePad = 44;
+      const highwayY = preferBottom
+        ? Math.round(local.y + local.height + basePad + Math.abs(ordinal) * laneSpread)
+        : Math.round(Math.min(local.y, fromStub.y, toStub.y) - basePad - Math.abs(ordinal) * laneSpread);
+      // Per-stub climb — verticals stay short and at different X (no shared side lane).
+      return normalizeRoutePoints([
+        fromStub,
+        { x: fromStub.x, y: highwayY },
+        { x: toStub.x, y: highwayY },
+        toStub
+      ]);
+    }
+
+    const nearCandidates = [
+      [fromStub, { x: midX, y: fromStub.y }, { x: midX, y: toStub.y }, toStub],
+      [fromStub, { x: fromStub.x, y: midY }, { x: toStub.x, y: midY }, toStub],
+      [fromStub, { x: toStub.x, y: fromStub.y }, toStub],
+      [fromStub, { x: fromStub.x, y: toStub.y }, toStub]
+    ];
+    const near = pickClear(nearCandidates);
+    if (near) return near;
+
+    // Prefer the exterior side implied by anchors (stacked both-right → right gutter).
+    const preferRight = fromSide === 'right' || toSide === 'right';
+    const preferLeft = fromSide === 'left' || toSide === 'left';
+    const preferTop = fromSide === 'top' || toSide === 'top';
+    const preferBottom = fromSide === 'bottom' || toSide === 'bottom';
+
+    for (let expand = 0; expand <= 6; expand += 1) {
+      const pad = 28 + Math.abs(stagger) + expand * 22;
+      const left = Math.round(local.x - pad);
+      const right = Math.round(local.x + local.width + pad);
+      const top = Math.round(local.y - pad);
+      const bottom = Math.round(local.y + local.height + pad);
+      const preferred = [];
+      if (preferRight) {
+        preferred.push([fromStub, { x: right, y: fromStub.y }, { x: right, y: toStub.y }, toStub]);
+      }
+      if (preferLeft) {
+        preferred.push([fromStub, { x: left, y: fromStub.y }, { x: left, y: toStub.y }, toStub]);
+      }
+      if (preferTop) {
+        preferred.push([fromStub, { x: fromStub.x, y: top }, { x: toStub.x, y: top }, toStub]);
+      }
+      if (preferBottom) {
+        preferred.push([fromStub, { x: fromStub.x, y: bottom }, { x: toStub.x, y: bottom }, toStub]);
+      }
+      const ring = pickClear([
+        ...preferred,
+        [fromStub, { x: fromStub.x, y: top }, { x: toStub.x, y: top }, toStub],
+        [fromStub, { x: fromStub.x, y: bottom }, { x: toStub.x, y: bottom }, toStub],
+        [fromStub, { x: left, y: fromStub.y }, { x: left, y: toStub.y }, toStub],
+        [fromStub, { x: right, y: fromStub.y }, { x: right, y: toStub.y }, toStub],
+        [fromStub, { x: fromStub.x, y: top }, { x: right, y: top }, { x: right, y: toStub.y }, toStub],
+        [fromStub, { x: fromStub.x, y: top }, { x: left, y: top }, { x: left, y: toStub.y }, toStub],
+        [fromStub, { x: fromStub.x, y: bottom }, { x: right, y: bottom }, { x: right, y: toStub.y }, toStub],
+        [fromStub, { x: fromStub.x, y: bottom }, { x: left, y: bottom }, { x: left, y: toStub.y }, toStub]
+      ]);
+      if (ring) return ring;
+    }
+
+    // Fail-closed: short elbow above the local pair (still reconnects via from/to).
+    const escapeY = Math.round(local.y - 64 - Math.abs(stagger));
+    return normalizeRoutePoints([
       fromStub,
-      toStub,
-      obstacles || allEntityBounds(new Set([relationship.fromEntityId, relationship.toEntityId]))
+      { x: fromStub.x, y: escapeY },
+      { x: toStub.x, y: escapeY },
+      toStub
+    ]);
+  }
+
+  function routeFullyClear(points, peerObstacles, endpointBoxes) {
+    if (routeCollisionCount(points, peerObstacles) !== 0) return false;
+    if (routeInteriorCollisionCount(points, endpointBoxes) !== 0) return false;
+    // A stub entry/exit must be short. Long first/last segments that traverse an
+    // endpoint hull (Email→User crossing through User to the far side) are hits.
+    if (points.length >= 2 && endpointBoxes?.length) {
+      const first = points[0];
+      const second = points[1];
+      const last = points[points.length - 1];
+      const beforeLast = points[points.length - 2];
+      const firstLen = Math.abs(second.x - first.x) + Math.abs(second.y - first.y);
+      const lastLen = Math.abs(last.x - beforeLast.x) + Math.abs(last.y - beforeLast.y);
+      if (
+        firstLen > 40
+        && endpointBoxes.some((box) => segmentIntersectsBox(first, second, box))
+      ) {
+        return false;
+      }
+      if (
+        lastLen > 40
+        && endpointBoxes.some((box) => segmentIntersectsBox(beforeLast, last, box))
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * After reconnecting card anchors, long horizontals can still clip peer cards
+   * (Task→User through Project) or cross an endpoint hull to reach the wrong
+   * side (Comment→User through User). Fail-closed: keep anchor sides and climb
+   * to a clear top/bottom/side lane around the local pair.
+   */
+  function repairRoutePeerClips(
+    points,
+    obstacles,
+    fromBox,
+    toBox,
+    ordinal = 0,
+    fromSide = 'right',
+    toSide = 'left'
+  ) {
+    if (!Array.isArray(points) || points.length < 2) return points;
+    const endpointBoxes = [fromBox, toBox].filter(Boolean);
+    // Fatter peer pads so grazes through Project/Organization still count.
+    const fatPeers = allEntityBounds(
+      new Set(endpointBoxes.map((box) => box.entityId).filter(Boolean)),
+      14
+    );
+    const peers = fatPeers.length ? fatPeers : obstacles;
+    if (routeFullyClear(points, peers, endpointBoxes)) return points;
+    const start = points[0];
+    const end = points[points.length - 1];
+    const fromExit = pointOffsetBySide(start, fromSide, 28);
+    const toEnter = pointOffsetBySide(end, toSide, 28);
+    const local = (fromBox && toBox)
+      ? {
+        x: Math.min(fromBox.x, toBox.x),
+        y: Math.min(fromBox.y, toBox.y),
+        width: Math.max(fromBox.x + fromBox.width, toBox.x + toBox.width)
+          - Math.min(fromBox.x, toBox.x),
+        height: Math.max(fromBox.y + fromBox.height, toBox.y + toBox.height)
+          - Math.min(fromBox.y, toBox.y)
+      }
+      : null;
+    if (!local) return points;
+    const stagger = Math.abs(ordinal) * 14;
+    const candidates = [];
+    for (let expand = 0; expand <= 8; expand += 1) {
+      const pad = 36 + stagger + expand * 24;
+      const top = Math.round(local.y - pad);
+      const bottom = Math.round(local.y + local.height + pad);
+      const left = Math.round(local.x - pad);
+      const right = Math.round(local.x + local.width + pad);
+      // Always leave via fromSide and enter via toSide — never cross an endpoint.
+      candidates.push(
+        normalizeRoutePoints([
+          start, fromExit,
+          { x: fromExit.x, y: top },
+          { x: toEnter.x, y: top },
+          toEnter, end
+        ]),
+        normalizeRoutePoints([
+          start, fromExit,
+          { x: fromExit.x, y: bottom },
+          { x: toEnter.x, y: bottom },
+          toEnter, end
+        ]),
+        normalizeRoutePoints([
+          start, fromExit,
+          { x: right, y: fromExit.y },
+          { x: right, y: top },
+          { x: toEnter.x, y: top },
+          toEnter, end
+        ]),
+        normalizeRoutePoints([
+          start, fromExit,
+          { x: left, y: fromExit.y },
+          { x: left, y: top },
+          { x: toEnter.x, y: top },
+          toEnter, end
+        ]),
+        normalizeRoutePoints([
+          start, fromExit,
+          { x: right, y: fromExit.y },
+          { x: right, y: bottom },
+          { x: toEnter.x, y: bottom },
+          toEnter, end
+        ]),
+        normalizeRoutePoints([
+          start, fromExit,
+          { x: left, y: fromExit.y },
+          { x: left, y: bottom },
+          { x: toEnter.x, y: bottom },
+          toEnter, end
+        ]),
+        normalizeRoutePoints([
+          start, fromExit,
+          { x: right, y: fromExit.y },
+          { x: right, y: toEnter.y },
+          toEnter, end
+        ]),
+        normalizeRoutePoints([
+          start, fromExit,
+          { x: left, y: fromExit.y },
+          { x: left, y: toEnter.y },
+          toEnter, end
+        ])
+      );
+    }
+    const clear = candidates.filter((route) => routeFullyClear(route, peers, endpointBoxes));
+    if (!clear.length) return points;
+    clear.sort((leftRoute, rightRoute) => (
+      routeLength(leftRoute) - routeLength(rightRoute)
+      + routeBendCount(leftRoute) * 40
+      - routeBendCount(rightRoute) * 40
+    ));
+    return clear[0];
+  }
+
+  function edgeRoutePoints(relationship, from, to, controlX, controlY, explicit, obstacles = null) {
+    const spacing = 24;
+    const fromSide = relationship.fromAnchorSide || 'right';
+    const toSide = relationship.toAnchorSide || 'left';
+    const fromBox = entityBoundById(relationship.fromEntityId);
+    const toBox = entityBoundById(relationship.toEntityId);
+    const routeObstacles = obstacles || routeObstaclesFor(relationship);
+    const ordinal = relationshipRouteOrdinal(relationship);
+    const crossDomain = Boolean(
+      fromBox?.entityId
+      && toBox?.entityId
+      && entityDomainId(fromBox.entityId)
+      && entityDomainId(toBox.entityId)
+      && entityDomainId(fromBox.entityId) !== entityDomainId(toBox.entityId)
+    );
+
+    // Cross-domain: climb at each endpoint's OWN anchor X (never a shared midX /
+    // side-lane, and never a facing-side X that tunnels through sibling cards —
+    // Comment→User left-exit used to climb through Task). Short top/bottom
+    // highways ranked per domain-pair so labels sit on separate horizontals
+    // just above the strip (no shared ring, no lift-120 exile).
+    if (crossDomain && !explicit && fromBox && toBox && from && to) {
+      const endpoints = [fromBox, toBox];
+      const fatPeers = allEntityBounds(
+        new Set([fromBox.entityId, toBox.entityId].filter(Boolean)),
+        12
+      );
+      const corridorLeft = Math.min(from.x, to.x);
+      const corridorRight = Math.max(from.x, to.x);
+      const stripPeers = fatPeers.filter((box) => (
+        box.x < corridorRight && (box.x + box.width) > corridorLeft
+      ));
+      const clearanceBoxes = stripPeers.length ? stripPeers : fatPeers;
+      const stripTop = clearanceBoxes.length
+        ? Math.min(...clearanceBoxes.map((box) => box.y), fromBox.y, toBox.y)
+        : Math.min(fromBox.y, toBox.y);
+      const stripBottom = clearanceBoxes.length
+        ? Math.max(
+          ...clearanceBoxes.map((box) => box.y + box.height),
+          fromBox.y + fromBox.height,
+          toBox.y + toBox.height
+        )
+        : Math.max(fromBox.y + fromBox.height, toBox.y + toBox.height);
+      const laneSpread = 32;
+      const rank = crossDomainRouteRank(relationship);
+      // Alternate top/bottom by rank so three Users↔Tasks links do not pile on one
+      // ring; within each side, rank/2 keeps label AABBs from stacking.
+      const useBottom = rank % 2 === 1;
+      const sideRank = Math.floor(rank / 2);
+      const rankLift = sideRank * laneSpread;
+      // Exit via card top/bottom first so the vertical stays in this card's column.
+      const atTopHighway = (highwayY) => normalizeRoutePoints([
+        from,
+        { x: from.x, y: Math.min(from.y, fromBox.y) - 12 },
+        { x: from.x, y: highwayY },
+        { x: to.x, y: highwayY },
+        { x: to.x, y: Math.min(to.y, toBox.y) - 12 },
+        to
+      ]);
+      const atBottomHighway = (highwayY) => normalizeRoutePoints([
+        from,
+        { x: from.x, y: Math.max(from.y, fromBox.y + fromBox.height) + 12 },
+        { x: from.x, y: highwayY },
+        { x: to.x, y: highwayY },
+        { x: to.x, y: Math.max(to.y, toBox.y + toBox.height) + 12 },
+        to
+      ]);
+      const preferred = useBottom ? atBottomHighway : atTopHighway;
+      const other = useBottom ? atTopHighway : atBottomHighway;
+      const preferredYs = [16, 28, 44, 60, 76].map((pad) => (
+        useBottom
+          ? Math.round(stripBottom + pad + rankLift)
+          : Math.round(stripTop - pad - rankLift)
+      ));
+      const otherYs = [16, 28, 44, 60, 76].map((pad) => (
+        useBottom
+          ? Math.round(stripTop - pad - rankLift)
+          : Math.round(stripBottom + pad + rankLift)
+      ));
+      const pickShortestClear = (builder, ys) => {
+        const clear = ys
+          .map((highwayY) => builder(highwayY))
+          .filter((path) => routeFullyClear(path, fatPeers, endpoints));
+        if (!clear.length) return null;
+        clear.sort((left, right) => routeLength(left) - routeLength(right));
+        return clear[0];
+      };
+      const preferredPath = pickShortestClear(preferred, preferredYs);
+      if (preferredPath) return preferredPath;
+      const otherPath = pickShortestClear(other, otherYs);
+      if (otherPath) return otherPath;
+      // Fail closed on the preferred side at own X — still rank-spaced, never midX.
+      return preferred(preferredYs[1] || preferredYs[0]);
+    }
+
+    const clamped = clampStubsForTightGutter(from, to, fromSide, toSide, fromBox, toBox, spacing);
+    const fromStub = clamped.fromStub;
+    const toStub = clamped.toStub;
+    if (explicit) {
+      // Explicit bend still must touch both card anchors — never stub-only.
+      const explicitPath = normalizeRoutePoints([from, fromStub, { x: controlX, y: controlY }, toStub, to]);
+      return repairRoutePeerClips(
+        explicitPath, routeObstacles, fromBox, toBox, ordinal, fromSide, toSide
+      );
+    }
+    const corridor = routeClearOrthogonalPath(fromStub, toStub, routeObstacles, {
+      ordinal,
+      laneGap: 16,
+      fromBox,
+      toBox,
+      fromSide,
+      toSide
+    });
+    // ROOT FIX: reconnect corridor to card anchors. Stub→stub alone painted the
+    // floating vertical gutters (midX clamp / exterior lanes) that never touched cards.
+    const connected = normalizeRoutePoints([from, ...corridor, to]);
+    return repairRoutePeerClips(
+      connected, routeObstacles, fromBox, toBox, ordinal, fromSide, toSide
     );
   }
 
@@ -1738,6 +3367,26 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   }
 
   function routeLabelPoint(points) {
+    // Prefer the longest horizontal segment so cross-domain labels sit on the
+    // highway mid, not piled on a shared vertical corner.
+    let best = null;
+    let bestLen = 0;
+    for (let index = 1; index < points.length; index += 1) {
+      const previous = points[index - 1];
+      const point = points[index];
+      const horizontal = Math.abs(previous.y - point.y) <= 1.5;
+      if (!horizontal) continue;
+      const length = Math.abs(point.x - previous.x);
+      if (length > bestLen) {
+        bestLen = length;
+        best = {
+          x: (previous.x + point.x) / 2,
+          y: previous.y
+        };
+      }
+    }
+    if (best && bestLen >= 48) return best;
+
     const total = routeLength(points);
     let remaining = total / 2;
     for (let index = 1; index < points.length; index += 1) {
@@ -1772,11 +3421,77 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   function routeLabelOffset(relationship, points) {
     const segment = routeMiddleSegment(points);
     const ordinal = relationshipRouteOrdinal(relationship);
-    const spread = ordinal * 16;
-    if (segment.from.y === segment.to.y) {
-      return { x: 0, y: -8 + spread };
+    const spread = ordinal * 14;
+    const labelPoint = routeLabelPoint(points);
+    // Keep the full label AABB (middle-anchored ~96×16) off every entity card.
+    // Tight Project↔Task gutters cannot hold the text — lift into clear sky above.
+    const blockers = allEntityBounds(new Set(), 2);
+    const halfW = 52;
+    const halfH = 9;
+    const clearAt = (dx, dy) => {
+      const samples = [
+        { x: labelPoint.x + dx, y: labelPoint.y + dy },
+        { x: labelPoint.x + dx - halfW, y: labelPoint.y + dy },
+        { x: labelPoint.x + dx + halfW, y: labelPoint.y + dy },
+        { x: labelPoint.x + dx - halfW, y: labelPoint.y + dy - halfH },
+        { x: labelPoint.x + dx + halfW, y: labelPoint.y + dy - halfH },
+        { x: labelPoint.x + dx - halfW, y: labelPoint.y + dy + halfH },
+        { x: labelPoint.x + dx + halfW, y: labelPoint.y + dy + halfH }
+      ];
+      return !samples.some((probe) => blockers.some((box) => pointInsideBox(probe, box, 1)));
+    };
+
+    const fromBox = blockers.find((box) => box.entityId === relationship.fromEntityId);
+    const toBox = blockers.find((box) => box.entityId === relationship.toEntityId);
+    if (fromBox && toBox) {
+      const left = fromBox.x + fromBox.width <= toBox.x ? fromBox : toBox;
+      const right = left === fromBox ? toBox : fromBox;
+      const hasSideGutter = left.x + left.width < right.x - 4;
+      const gutterX = hasSideGutter
+        ? (left.x + left.width + right.x) / 2
+        : (fromBox.x + fromBox.width / 2 + toBox.x + toBox.width / 2) / 2;
+      // Prefer sky above both cards — only place works when gutter < label width.
+      const skyY = Math.min(fromBox.y, toBox.y) - 12 - Math.abs(spread);
+      const skyDx = gutterX - labelPoint.x;
+      for (const lift of [0, 10, 20, 32, 48]) {
+        const dy = skyY - lift - labelPoint.y;
+        if (clearAt(skyDx, dy)) return { x: skyDx, y: dy };
+        if (clearAt(0, dy)) return { x: 0, y: dy };
+      }
+      if (hasSideGutter) {
+        const dx = gutterX - labelPoint.x;
+        for (const dy of [-28 + spread, -40, -12, 16, 28]) {
+          if (clearAt(dx, dy)) return { x: dx, y: dy };
+        }
+      }
+      const top = fromBox.y + fromBox.height <= toBox.y ? fromBox : toBox;
+      const bottom = top === fromBox ? toBox : fromBox;
+      if (top.y + top.height < bottom.y - 6) {
+        const gutterY = (top.y + top.height + bottom.y) / 2;
+        const dy = gutterY - labelPoint.y;
+        for (const dx of [0, 18 + spread, -(18 + spread), 36, -36]) {
+          if (clearAt(dx, dy)) return { x: dx, y: dy };
+        }
+      }
     }
-    return { x: 8 + spread, y: -4 };
+
+    const vertical = Math.abs(segment.from.x - segment.to.x) <= 1.5;
+    const candidates = [];
+    for (const mag of [24, 36, 48, 64, 80, 104, 128]) {
+      candidates.push(
+        { x: 0, y: -mag + spread },
+        { x: mag + Math.abs(spread), y: vertical ? -12 : -14 },
+        { x: -(mag + Math.abs(spread)), y: vertical ? -12 : -14 },
+        { x: mag, y: -mag },
+        { x: -mag, y: -mag }
+      );
+    }
+    for (let attempt = 0; attempt < candidates.length; attempt += 1) {
+      if (clearAt(candidates[attempt].x, candidates[attempt].y)) {
+        return candidates[attempt];
+      }
+    }
+    return { x: 0, y: Math.min(fromBox?.y ?? labelPoint.y, toBox?.y ?? labelPoint.y) - 18 - labelPoint.y };
   }
 
   function buildRoutedEdgePathD(relationship, from, to, controlX, controlY, orthogonal, explicit) {
@@ -1857,17 +3572,15 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
    * the user cannot see the answer to.
    */
   function scrollSelectionIntoView() {
-    const found = state.selectedEntityId ? findEntity(state.domains, state.selectedEntityId) : null;
-    const domain = found
-      ? found.domain
-      : state.domains.find((candidate) => candidate.id === state.selectedDomainId);
-    if (!domain) return;
-    const zoom = state.view.zoom || 1;
-    const targetX = (domain.x + (found ? found.entity.x : 0)) * zoom;
-    const targetY = (domain.y + (found ? found.entity.y : 0)) * zoom;
+    const bounds = selectionFocusBounds();
+    if (!bounds || !dom.canvas) return;
+    // Keep current zoom; only re-center (search / soft navigate).
+    const zoom = clampZoom(state.view.zoom || 1);
+    const centerX = bounds.x + bounds.width / 2;
+    const centerY = bounds.y + bounds.height / 2;
     dom.canvas.scrollTo({
-      left: Math.max(0, targetX - dom.canvas.clientWidth / 2),
-      top: Math.max(0, targetY - dom.canvas.clientHeight / 2),
+      left: Math.max(0, centerX * zoom + CANVAS_ORIGIN_X * zoom - dom.canvas.clientWidth / 2),
+      top: Math.max(0, centerY * zoom + CANVAS_ORIGIN_Y * zoom - dom.canvas.clientHeight / 2),
       behavior: 'smooth'
     });
   }
@@ -1925,15 +3638,23 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       : entityCenterOnCanvas(entityId);
   }
 
+  function facingAnchorSide(current, other) {
+    if (!current || !other) return 'right';
+    const dx = other.x - current.x;
+    const dy = other.y - current.y;
+    // Prefer left/right for field-row anchors unless clearly stacked.
+    if (Math.abs(dx) >= Math.abs(dy) * 0.55) {
+      return dx >= 0 ? 'right' : 'left';
+    }
+    return dy >= 0 ? 'bottom' : 'top';
+  }
+
   function relationshipSide(entityId, otherEntityId, fallbackSide) {
     if (fallbackSide) return fallbackSide;
-    const current = entityCenterOnCanvas(entityId);
-    const other = entityCenterOnCanvas(otherEntityId);
-    if (!current || !other) return 'right';
-    if (Math.abs(current.x - other.x) >= Math.abs(current.y - other.y)) {
-      return current.x <= other.x ? 'right' : 'left';
-    }
-    return current.y <= other.y ? 'bottom' : 'top';
+    return facingAnchorSide(
+      entityCenterOnCanvas(entityId),
+      entityCenterOnCanvas(otherEntityId)
+    );
   }
 
   function inferRelationshipFieldName(relationship, end) {
@@ -1969,18 +3690,36 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     const fieldName = inferRelationshipFieldName(relationship, end);
     const current = entityCenterOnCanvas(entityId);
     const other = entityCenterOnCanvas(otherEntityId);
-    const side = fieldName && current && other
-      ? (current.x <= other.x ? 'right' : 'left')
-      : relationshipSide(
+    // Field rows only expose left/right anchors; when stacked, still pick the
+    // facing horizontal side so the corridor runs in the exterior gutter.
+    let side;
+    if (fieldName && current && other) {
+      const dx = other.x - current.x;
+      const dy = other.y - current.y;
+      if (Math.abs(dy) > Math.abs(dx) * 1.15) {
+        // Stacked: both ends use the same exterior side (right gutter by default).
+        side = dx >= 0 ? 'right' : 'left';
+        if (Math.abs(dx) < 40) side = 'right';
+      } else {
+        side = dx >= 0 ? 'right' : 'left';
+      }
+    } else {
+      side = relationshipSide(
         entityId,
         otherEntityId,
         end === 'from' ? relationship.fromAnchorSide : relationship.toAnchorSide
       );
+    }
+    // Top/bottom field anchors fall back to entity side midpoints.
+    const pointSide = (side === 'top' || side === 'bottom') && fieldName ? side : side;
+    const point = (side === 'top' || side === 'bottom')
+      ? edgeEndpoint(entityId, side, null)
+      : edgeEndpoint(entityId, pointSide, fieldName);
     return {
       entityId,
       side,
-      fieldName,
-      point: edgeEndpoint(entityId, side, fieldName)
+      fieldName: (side === 'top' || side === 'bottom') ? null : fieldName,
+      point
     };
   }
 
@@ -2025,22 +3764,32 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     };
   }
 
-  function edgeHitRoutePoints(routePoints, fromEndpoint, toEndpoint) {
-    if (routePoints.length < 2) return routePoints;
+  /**
+   * Pull first/last vertices off the entity hull so the painted stroke and hit
+   * path sit in the corridor between boxes — not under/over the boxes.
+   */
+  function edgeClearedRoutePoints(routePoints, fromEndpoint, toEndpoint, distance = 20) {
+    if (!Array.isArray(routePoints) || routePoints.length < 2) return routePoints || [];
     const points = routePoints.map((point) => ({ ...point }));
+    const fromSide = fromEndpoint?.side || 'right';
+    const toSide = toEndpoint?.side || 'left';
     points[0] = pointOutsideEndpoint(
       routePoints[0],
-      fromEndpoint.side,
+      fromSide,
       routePoints[1] || routePoints[routePoints.length - 1],
-      10
+      distance
     );
     points[points.length - 1] = pointOutsideEndpoint(
       routePoints[routePoints.length - 1],
-      toEndpoint.side,
+      toSide,
       routePoints[routePoints.length - 2] || routePoints[0],
-      10
+      distance
     );
     return points;
+  }
+
+  function edgeHitRoutePoints(routePoints, fromEndpoint, toEndpoint) {
+    return edgeClearedRoutePoints(routePoints, fromEndpoint, toEndpoint, 16);
   }
 
   function entityAnchorOnCanvas(entityId, side) {
@@ -2202,10 +3951,36 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     renderAnchorPreviewEdge(fromPoint, pointer);
   }
 
+  /**
+   * True when an entity's domain is a collapsed chip (or focus outsider) so
+   * field-level anchors would collapse into a vertical gutter corridor.
+   */
+  function entityAnchorUnavailable(entityId) {
+    const found = findEntity(state.domains, entityId);
+    if (!found) return true;
+    if (isDomainCollapsed(found.domain)) return true;
+    if (!isFocusStage()) return false;
+    const scenario = focusScenarioFor();
+    if (scenario.keepDomains && !scenario.keepDomains.has(found.domain.id)) return true;
+    if (scenario.keepEntities && !scenario.keepEntities.has(entityId)) return true;
+    return false;
+  }
+
   function renderEdges() {
     dom.edges.innerHTML = '';
-    const entityBounds = allEntityBounds();
+    // Keep the SVG above domain/entity boxes for hit-testing in corridors.
+    if (dom.edges.parentElement === dom.canvasInner) {
+      dom.canvasInner.appendChild(dom.edges);
+    }
     state.relationships.forEach((relationship) => {
+      // Never paint field-level edges into collapsed/outsider chips — that is
+      // exactly the Users↔Tasks floating vertical gutter the live 7.34 shot shows.
+      if (
+        entityAnchorUnavailable(relationship.fromEntityId)
+        || entityAnchorUnavailable(relationship.toEntityId)
+      ) {
+        return;
+      }
       const useCenter = relationship.anchorBehavior === 'center';
       const fromEndpoint = relationshipEndpoint(relationship, 'from');
       const toEndpoint = relationshipEndpoint(relationship, 'to');
@@ -2225,8 +4000,6 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
           fromField: fromEndpoint.fieldName,
           toField: toEndpoint.fieldName
         };
-      const routeObstacles = entityBounds.filter((box) => box.entityId !== relationship.fromEntityId
-        && box.entityId !== relationship.toEntityId);
       const routePoints = edgeRoutePoints(
         routedRelationship,
         from,
@@ -2234,36 +4007,54 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         controlX,
         controlY,
         control.explicit,
-        routeObstacles
+        routeObstaclesFor(routedRelationship)
       );
-      const edgePathD = state.view.edgeStyle === 'orthogonal' || control.explicit
-        ? routePoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
-        : roundedRoutePathD(routePoints);
+      // Prefer orthogonal corridors (clear stubs); rounded only as cosmetic joins.
+      const edgePathD = state.view.edgeStyle === 'curved' && !control.explicit && routePoints.length > 2
+        ? roundedRoutePathD(routePoints)
+        : routePoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
       const routeLabel = routeLabelPoint(routePoints);
       const labelX = routeLabel.x;
       const labelY = routeLabel.y;
       const labelOffsetX = Number.isFinite(relationship.labelOffsetX) ? relationship.labelOffsetX : 0;
       const labelOffsetY = Number.isFinite(relationship.labelOffsetY) ? relationship.labelOffsetY : 0;
-      const activeClass = state.selectedRelationshipId === relationship.id ? ' active' : '';
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('class', `edge-line${activeClass}`);
+      path.setAttribute('class', 'edge-line');
       path.setAttribute('d', edgePathD);
+      path.dataset.relationshipId = relationship.id;
+      path.dataset.edgeFrom = relationship.fromEntityId;
+      path.dataset.edgeTo = relationship.toEntityId;
       dom.edges.appendChild(path);
 
-      const hitRoutePoints = useCenter ? routePoints : edgeHitRoutePoints(routePoints, fromEndpoint, toEndpoint);
-      const hitPathD = state.view.edgeStyle === 'orthogonal' || control.explicit
-        ? hitRoutePoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
-        : roundedRoutePathD(hitRoutePoints);
+      const hitPathD = routePoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       hit.setAttribute('class', 'edge-hit');
       hit.setAttribute('d', hitPathD);
+      hit.dataset.relationshipId = relationship.id;
+      hit.dataset.edgeFrom = relationship.fromEntityId;
+      hit.dataset.edgeTo = relationship.toEntityId;
+      hit.setAttribute('tabindex', '0');
+      hit.setAttribute('role', 'button');
+      hit.setAttribute(
+        'aria-label',
+        `Relationship ${relationship.name || relationship.id}: ${relationship.fromCardinality}:${relationship.toCardinality}`
+      );
+      hit.addEventListener('pointerenter', () => setEdgeHover(relationship.id));
+      hit.addEventListener('pointerleave', () => setEdgeHover(null));
+      hit.addEventListener('focus', () => setEdgeHover(relationship.id));
+      hit.addEventListener('blur', () => setEdgeHover(null));
       hit.addEventListener('click', (event) => {
         event.stopPropagation();
-        state.selectedRelationshipId = relationship.id;
-        render();
+        setSelectedRelationship(relationship.id);
+      });
+      hit.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        event.stopPropagation();
+        setSelectedRelationship(relationship.id);
       });
       hit.addEventListener('contextmenu', (event) => {
-        state.selectedRelationshipId = relationship.id;
+        setSelectedRelationship(relationship.id);
         openElementMenu(
           event,
           relationship.name || 'Relationship',
@@ -2273,12 +4064,18 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       dom.edges.appendChild(hit);
 
       if (!state.view.largeCanvasMode) {
-        const sourceCardinality = cardinalityLabelPoint(from, to);
-        const targetCardinality = cardinalityLabelPoint(to, from);
+        const sourceCardinality = cardinalityLabelPoint(routePoints[0], routePoints[routePoints.length - 1]);
+        const targetCardinality = cardinalityLabelPoint(
+          routePoints[routePoints.length - 1],
+          routePoints[0]
+        );
         const fromLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         fromLabel.setAttribute('class', 'edge-label');
         fromLabel.setAttribute('x', String(sourceCardinality.x));
         fromLabel.setAttribute('y', String(sourceCardinality.y));
+        fromLabel.dataset.relationshipId = relationship.id;
+        fromLabel.dataset.edgeFrom = relationship.fromEntityId;
+        fromLabel.dataset.edgeTo = relationship.toEntityId;
         fromLabel.textContent = relationship.fromCardinality;
         dom.edges.appendChild(fromLabel);
 
@@ -2286,6 +4083,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         toLabel.setAttribute('class', 'edge-label');
         toLabel.setAttribute('x', String(targetCardinality.x));
         toLabel.setAttribute('y', String(targetCardinality.y));
+        toLabel.dataset.relationshipId = relationship.id;
+        toLabel.dataset.edgeFrom = relationship.fromEntityId;
+        toLabel.dataset.edgeTo = relationship.toEntityId;
         toLabel.textContent = relationship.toCardinality;
         dom.edges.appendChild(toLabel);
 
@@ -2294,18 +4094,30 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         nameLabel.setAttribute('class', 'edge-label edge-name-label');
         nameLabel.setAttribute('x', String(labelX + autoLabelOffset.x + labelOffsetX));
         nameLabel.setAttribute('y', String(labelY + autoLabelOffset.y + labelOffsetY));
+        nameLabel.dataset.relationshipId = relationship.id;
+        nameLabel.dataset.edgeFrom = relationship.fromEntityId;
+        nameLabel.dataset.edgeTo = relationship.toEntityId;
         const fullLabel = relationshipFieldLabel(relationship, fromEndpoint, toEndpoint);
         nameLabel.textContent = compactRelationshipFieldLabel(relationship, fromEndpoint, toEndpoint);
         nameLabel.dataset.fullLabel = fullLabel;
         nameLabel.setAttribute('tabindex', '0');
         nameLabel.setAttribute('role', 'button');
-        nameLabel.setAttribute('aria-label', `Move label for ${fullLabel || relationship.name || 'relationship'}`);
+        nameLabel.setAttribute('aria-label', `Select and move label for ${fullLabel || relationship.name || 'relationship'}`);
+        nameLabel.addEventListener('pointerenter', () => setEdgeHover(relationship.id));
+        nameLabel.addEventListener('pointerleave', () => setEdgeHover(null));
+        nameLabel.addEventListener('click', (event) => {
+          event.stopPropagation();
+          setSelectedRelationship(relationship.id);
+        });
         attachDrag(nameLabel, (dx, dy) => {
           relationship.labelOffsetX = (Number.isFinite(relationship.labelOffsetX) ? relationship.labelOffsetX : 0) + dx;
           relationship.labelOffsetY = (Number.isFinite(relationship.labelOffsetY) ? relationship.labelOffsetY : 0) + dy;
           renderEdges();
         }, {
-          onStart: () => closeSidebarForCanvasWork(),
+          onStart: () => {
+            closeSidebarForCanvasWork();
+            setSelectedRelationship(relationship.id, { remountCanvas: false });
+          },
           onEnd: (_event, moved) => {
             if (!moved) return;
             saveState();
@@ -2316,18 +4128,21 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       }
 
       if (state.selectedRelationshipId === relationship.id) {
+        const routeStart = routePoints[0];
+        const routeEnd = routePoints[routePoints.length - 1];
+        const routeMid = routeLabelPoint(routePoints);
         [
           {
             end: 'from',
             point: from,
-            handlePoint: useCenter ? from : pointOutsideEndpoint(from, fromEndpoint.side, to),
+            handlePoint: routeStart,
             fixedPoint: to,
             label: 'source'
           },
           {
             end: 'to',
             point: to,
-            handlePoint: useCenter ? to : pointOutsideEndpoint(to, toEndpoint.side, from),
+            handlePoint: routeEnd,
             fixedPoint: from,
             label: 'target'
           }
@@ -2336,7 +4151,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
           endHandle.setAttribute('class', `edge-end-handle edge-end-handle-${endpoint.end}`);
           endHandle.setAttribute('cx', String(endpoint.handlePoint.x));
           endHandle.setAttribute('cy', String(endpoint.handlePoint.y));
-          endHandle.setAttribute('r', '5');
+          endHandle.setAttribute('r', '3.5');
           endHandle.setAttribute('tabindex', '0');
           endHandle.setAttribute('role', 'button');
           endHandle.setAttribute(
@@ -2349,9 +4164,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
 
         const bendHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         bendHandle.setAttribute('class', `edge-bend-handle${control.explicit ? ' explicit' : ''}`);
-        bendHandle.setAttribute('cx', String(controlX));
-        bendHandle.setAttribute('cy', String(controlY));
-        bendHandle.setAttribute('r', '5.5');
+        bendHandle.setAttribute('cx', String(control.explicit ? controlX : routeMid.x));
+        bendHandle.setAttribute('cy', String(control.explicit ? controlY : routeMid.y));
+        bendHandle.setAttribute('r', '3.75');
         bendHandle.setAttribute('tabindex', '0');
         bendHandle.setAttribute('role', 'slider');
         bendHandle.setAttribute('aria-label', `Move route handle for ${relationship.name || 'relationship'}`);
@@ -2384,6 +4199,52 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         dom.edges.appendChild(bendHandle);
       }
     });
+    syncEdgeChrome(focusScenarioFor());
+  }
+
+  /**
+   * Relationships in the current nav scope: selected entity's links, else
+   * domain of the selected relationship/domain, else the full model list.
+   */
+  function relationshipsInNavScope() {
+    const all = Array.isArray(state.relationships) ? state.relationships : [];
+    if (state.selectedEntityId) {
+      return all.filter((rel) => (
+        rel.fromEntityId === state.selectedEntityId
+        || rel.toEntityId === state.selectedEntityId
+      ));
+    }
+    let domainId = state.selectedDomainId || null;
+    if (!domainId && state.selectedRelationshipId) {
+      const current = all.find((rel) => rel.id === state.selectedRelationshipId);
+      if (current) {
+        domainId = findEntity(state.domains, current.fromEntityId)?.domain?.id
+          || findEntity(state.domains, current.toEntityId)?.domain?.id
+          || null;
+      }
+    }
+    if (domainId) {
+      const entityIds = new Set(
+        (state.domains.find((domain) => domain.id === domainId)?.entities || [])
+          .map((entity) => entity.id)
+      );
+      return all.filter((rel) => entityIds.has(rel.fromEntityId) || entityIds.has(rel.toEntityId));
+    }
+    return all;
+  }
+
+  function cycleSelectedRelationship(delta = 1) {
+    const scope = relationshipsInNavScope();
+    if (!scope.length) return null;
+    const currentId = state.selectedRelationshipId;
+    let index = scope.findIndex((rel) => rel.id === currentId);
+    if (index < 0) {
+      index = delta >= 0 ? -1 : 0;
+    }
+    const next = scope[(index + delta + scope.length) % scope.length];
+    if (!next) return null;
+    setSelectedRelationship(next.id);
+    return next.id;
   }
 
   function renderMiniMap() {
@@ -2394,17 +4255,28 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     const mapWidth = dom.miniMap.clientWidth || 180;
     const mapHeight = dom.miniMap.clientHeight || 130;
     const scale = Math.min(mapWidth / canvasWidth, mapHeight / canvasHeight);
+    const stageFocus = isFocusStage();
+    const activeDomainId = activeSelectionDomainId();
     state.domains.forEach((domain) => {
       const box = document.createElement('div');
       box.className = 'mini-map-domain';
+      box.dataset.domainId = domain.id;
       box.style.left = `${modelToCanvasX(domain.x) * scale}px`;
       box.style.top = `${modelToCanvasY(domain.y) * scale}px`;
       const domainSize = domainBox(domain);
-      box.style.width = `${domainSize.width * scale}px`;
-      box.style.height = `${domainSize.height * scale}px`;
+      box.style.width = `${Math.max(4, domainSize.width * scale)}px`;
+      box.style.height = `${Math.max(4, domainSize.height * scale)}px`;
       box.style.borderColor = domain.color || '#64748b';
-      if (state.selectedDomainId === domain.id) box.classList.add('active');
-      box.title = domain.name;
+      if (domain.id === activeDomainId) box.classList.add('active');
+      if (stageFocus && domain.id !== activeDomainId) box.classList.add('is-quiet');
+      box.title = stageFocus && domain.id !== activeDomainId
+        ? `Go to ${domain.name}`
+        : domain.name;
+      box.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setSelectedDomain(domain.id);
+      });
       dom.miniMap.appendChild(box);
     });
     const zoom = clampZoom(state.view.zoom || 1);
@@ -2473,22 +4345,34 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   }
 
   /**
-   * Canvas-level event wiring: background click deselects, ctrl/cmd-wheel
-   * zooms, middle-button/space pans, and window-level pointer tracking drives
-   * the anchor-drag preview. The keyboard map stays in `script.js` because it
-   * reaches far beyond the canvas (undo/redo, pick mode, deletion).
+   * Canvas-level event wiring: background click reverses to overview (all
+   * domains), ctrl/cmd-wheel zooms, middle-button/space pans, and window-level
+   * pointer tracking drives the anchor-drag preview. The keyboard map stays in
+   * `script.js` because it reaches far beyond the canvas (undo/redo, pick mode,
+   * deletion, Escape hierarchy).
    */
   function wireCanvasEvents() {
+    let suppressBackgroundClick = false;
+    let panMoved = false;
+
+    function isCanvasBackground(target) {
+      return target === dom.canvas
+        || target === dom.canvasInner
+        || target === dom.edges;
+    }
+
     dom.canvas.addEventListener('click', (event) => {
-      if (event.target !== dom.canvas && event.target !== dom.edges && event.target !== dom.canvasInner) return;
-      state.selectedRelationshipId = null;
-      render();
+      if (!isCanvasBackground(event.target)) return;
+      if (suppressBackgroundClick) {
+        suppressBackgroundClick = false;
+        return;
+      }
+      // Reverse nav: empty canvas = parent of every domain → show all domains.
+      setSelectedDomain(null);
     });
 
     dom.canvas.addEventListener('contextmenu', (event) => {
-      const onBackground = event.target === dom.canvas
-        || event.target === dom.canvasInner
-        || event.target === dom.edges;
+      const onBackground = isCanvasBackground(event.target);
       if (!onBackground) return;
       openElementMenu(event, 'Canvas', canvasMenuItems(event));
     });
@@ -2518,10 +4402,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       // A drag that starts on a domain, an entity, an anchor or the resize
       // handle belongs to that element, and stealing it would make them
       // immovable.
-      const onBackground = event.target === dom.canvas
-        || event.target === dom.canvasInner
-        || event.target === dom.edges;
+      const onBackground = isCanvasBackground(event.target);
       const primaryDragOnBackground = event.button === 0 && onBackground;
+      panMoved = false;
       if (primaryDragOnBackground && event.shiftKey) {
         closeSidebarForCanvasWork();
         event.preventDefault();
@@ -2529,6 +4412,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         return;
       }
       if (event.button !== 1 && !interaction.spacePressed && !primaryDragOnBackground) return;
+      cancelCameraFlight();
       closeSidebarForCanvasWork();
       interaction.panning = true;
       interaction.panStartX = event.clientX;
@@ -2543,11 +4427,13 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       if (!interaction.panning) return;
       const dx = event.clientX - interaction.panStartX;
       const dy = event.clientY - interaction.panStartY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) panMoved = true;
       dom.canvas.scrollLeft = interaction.scrollStartLeft - dx;
       dom.canvas.scrollTop = interaction.scrollStartTop - dy;
     });
 
     const stopPan = () => {
+      if (interaction.panning && panMoved) suppressBackgroundClick = true;
       interaction.panning = false;
       dom.canvas.classList.remove('panning');
     };
@@ -2581,7 +4467,12 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   return {
     addNote,
     endpointForExport,
+    focusSelectionOnCanvas,
+    showOverview,
     scrollSelectionIntoView,
+    syncSelectionClasses,
+    relationshipsInNavScope,
+    cycleSelectedRelationship,
     renderNotes,
     clearAlignmentGuides,
     renderView,

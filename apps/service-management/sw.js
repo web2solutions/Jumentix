@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.9.54';
+const SHELL_VERSION = '0.9.128';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -68,6 +68,10 @@ const SHELL_ASSETS = [
   // offline shell is incomplete without the vendored --jtx-* properties.
   './tokens.css',
   './styles.css',
+  // Vendored jumentix-ui CSS — server static root cannot serve ../../packages/.
+  './vendor/jumentix-ui/jumentix-ui.css',
+  './vendor/jumentix-ui/tokens.css',
+  './vendor/jumentix-ui/primitives.css',
   './script.js',
   './manifest.webmanifest',
   './icons/icon.svg',
@@ -117,6 +121,7 @@ const SHELL_ASSETS = [
   './src/ui/contextMenu.js',
   './src/ui/helpPopoverState.js',
   './src/ui/inspectors.js',
+  './src/ui/tagEditor.js',
   './src/ui/monitoringApp.js',
   './src/ui/monitoringCharts.js',
   './src/ui/processHelpCatalog.js',

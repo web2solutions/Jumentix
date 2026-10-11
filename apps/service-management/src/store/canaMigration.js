@@ -351,10 +351,24 @@ export function describeDesignerStorageEnvironment({ indexedDbPresent, probeStat
     };
   }
   if (probeStatus === 'available' && probeReason) {
+    // Keep the declared kind for gates/tests; rewrite the toast for operators.
+    // Raw probe reasons are diagnostic (`durability:…`, `quota:…`) and read as
+    // failure even when saves still work.
+    const reason = String(probeReason);
+    let message;
+    if (reason.startsWith('quota:')) {
+      message = 'Local storage is nearly full. Export a backup before large edits, '
+        + 'or free browser site data for this origin.';
+    } else if (reason.startsWith('durability:')) {
+      message = 'Designs still save in this browser. Storage is not marked permanent yet, '
+        + 'so under disk pressure the browser may clear site data — use Export for a backup.';
+    } else {
+      message = `Storage is working with a warning: ${reason}`;
+    }
     return {
       kind: 'degraded-durability',
       severity: 'info',
-      message: `Storage is working but durability is degraded: ${probeReason}`
+      message
     };
   }
   return { kind: 'ok', severity: 'info', message: null };

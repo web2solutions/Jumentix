@@ -220,7 +220,7 @@
     "cli:build-templates": "bun packages/cli-init/scripts/build-templates.js",
     "cli:check-template-freshness": "bun packages/cli-init/scripts/check-template-freshness.js",
     "dev:cli": "bun -r tsconfig-paths/register ./apps/backend-template/src/interface/CLI/index.ts",
-    "service-management:vendor": "bun apps/service-management/scripts/sync-service-management-cana-bundle.js && bun apps/service-management/scripts/sync-service-management-designer-core.js && bun apps/service-management/scripts/sync-service-management-d3.js && bun apps/service-management/scripts/sync-service-management-swagger-ui.js",
+    "service-management:vendor": "bun apps/service-management/scripts/sync-service-management-cana-bundle.js && bun apps/service-management/scripts/sync-service-management-designer-core.js && bun apps/service-management/scripts/sync-service-management-d3.js && bun apps/service-management/scripts/sync-service-management-swagger-ui.js && bun apps/service-management/scripts/sync-service-management-jumentix-ui.js",
     "dev:service-management": "bun run service-management:vendor && pm2 start ./apps/service-management/server.js --name jumentix-dev-service-management --interpreter bun --update-env",
     "start:cli": "bun run dev:cli",
     "prod:http": "pm2 start ./.build/apps/backend-template/src/interface/HTTP/adapters/start-rest-api.js --name jumentix-prod-http --interpreter bun --interpreter-args='--env-file=./.build/apps/backend-template/src/config/.env.prod' --update-env",
@@ -473,6 +473,8 @@
     "undici": "^6.28.0",
     "fastify": "^5.12.5",
     "hono": "^4.13.12",
+    "handlebars": "^4.7.10",
+    "msgpack5": "^6.1.0",
     "vue-eslint-parser": {
       "eslint-scope": "^9.1.2"
     }

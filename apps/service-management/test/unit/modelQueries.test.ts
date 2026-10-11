@@ -565,9 +565,44 @@ describe('model queries (JUM-469)', () => {
       expect(clamped.top).toBe(0);
       const tiny = [{ x: 500, y: 400 }];
       const zoomed = model.computeFitView(tiny, 4000, 3000);
-      expect(zoomed.zoom).toBe(2);
-      expect(zoomed.left).toBe((500 - 80) * 2);
-      expect(zoomed.top).toBe((400 - 80) * 2);
+      expect(zoomed.zoom).toBe(2.5);
+      expect(zoomed.left).toBe((500 - 80) * 2.5);
+      expect(zoomed.top).toBe((400 - 80) * 2.5);
+    });
+
+    it('centers a selection box in the viewport with computeCenteredFit', () => {
+      expect.hasAssertions();
+      const fit = model.computeCenteredFit(
+        {
+          x: 100, y: 200, width: 200, height: 100
+        },
+        800,
+        600,
+        { padding: 50 }
+      );
+      // content 300×200 → zoom = min(800/300, 600/200) = min(2.66, 3) → clamp 2.5
+      expect(fit.zoom).toBe(2.5);
+      expect(fit.left).toBe((100 + 100) * 2.5 - 400);
+      expect(fit.top).toBe((200 + 50) * 2.5 - 300);
+      expect(fit.centerX).toBe(200);
+      expect(fit.centerY).toBe(250);
+    });
+
+    it('frames hierarchy levels with decreasing max zoom overview←domain←entity', () => {
+      expect.hasAssertions();
+      const box = {
+        x: 0, y: 0, width: 200, height: 160
+      };
+      const entity = model.computeLevelFit(box, 1200, 900, 'entity');
+      const domain = model.computeLevelFit(box, 1200, 900, 'domain');
+      const overview = model.computeLevelFit(box, 1200, 900, 'overview');
+      expect(entity.zoom).toBeGreaterThan(domain.zoom);
+      expect(domain.zoom).toBeGreaterThan(overview.zoom);
+      expect(overview.zoom).toBeLessThanOrEqual(1.35);
+      expect(model.zoomLevelPreset('entity').maxZoom).toBe(2.5);
+      expect(model.zoomLevelPreset('overview').maxZoom).toBe(1.35);
+      expect(model.zoomLevelPreset('relationship').fill).toBe(0.78);
+      expect(model.zoomLevelPreset('relationship').maxZoom).toBe(2.35);
     });
 
     it('packs fifteen domains densely enough for overview fit', () => {

@@ -38,9 +38,9 @@
  * canonical runtime matrix.
  */
 
-import { FIELD_TYPES } from '@jumentix/designer-core/state/designerState.js';
+import { FIELD_TYPES, parseCommaSeparated } from '@jumentix/designer-core/state/designerState.js';
 import { deriveTenantScoped } from '@jumentix/designer-core/model/rbacContract.js';
-import { isSampleDomain } from '@jumentix/designer-core/model/sampleModel.js';
+import { isSampleDomain, isSampleEntity } from '@jumentix/designer-core/model/sampleModel.js';
 import { collectServiceConfigurationIssues } from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
 import { collectDeployTargetIssues } from '@jumentix/designer-core/validation/deployTargetValidation.js';
 import {
@@ -60,6 +60,9 @@ import {
   toPathToken,
   toSchemaName
 } from '@jumentix/designer-core/model/modelQueries.js';
+import { createTagEditor } from './tagEditor.js';
+
+const KNOWN_INTEGRATION_CHANNELS = new Set(['http', 'async', 'grpc', 'graphql', 'events']);
 
 /**
  * @param {Object} options
@@ -68,8 +71,9 @@ import {
  * @param {Object} options.interaction - shared interaction flags.
  * @param {Object} options.actions - callbacks into the orchestrator:
  * `withPersist(action)`, `render()`, `focusEntity(entityId)`,
- * `deleteRelationship(id)`, `setSelectedDomain(id)`,
- * `editFieldMetadata(entityId, fieldName)`, `updateField(entityId, fieldName, partial)`,
+ * `deleteRelationship(id)`, `setSelectedDomain(id)`, `setSelectedEntity(id)`,
+ * `setSelectedRelationship(id)`,
+ * `persistDomainContext()`, `editFieldMetadata(entityId, fieldName)`, `updateField(entityId, fieldName, partial)`,
  * `removeField(entityId, fieldName)`, `renderRuntimeEnvironment()`,
  * `loadSchemaBaseline()`, `showStatus(message, severity)` (JUM-543
  * non-blocking status surface — replaces the monolith's window.alert),
@@ -86,6 +90,12 @@ export function createInspectors({ dom, state, interaction, actions }) {
     focusEntity,
     deleteRelationship,
     setSelectedDomain,
+    setSelectedEntity,
+    setSelectedField,
+    setSelectedRelationship,
+    cycleSelectedRelationship,
+    relationshipsInNavScope,
+    persistDomainContext,
     editFieldMetadata,
     updateField,
     removeField,
@@ -98,54 +108,772 @@ export function createInspectors({ dom, state, interaction, actions }) {
     syncDeploymentEditStateAfterRemoval
   } = actions;
 
+  let domainTagEditors = null;
+  // Only reload tag chips when the selected domain changes (or after an
+  // explicit force). Re-writing on every canvas render would wipe in-progress Add.
+  let boundDomainContextId = null;
+  let domainAutosaveWired = false;
+  // Suppress autosave while hydrating the form for a newly selected domain —
+  // otherwise blur/change from the previous focus writes the wrong domain's
+  // leftover field values into the newly selected context.
+  let domainContextHydrating = false;
+
   function getSelectedDomain() {
     return state.domains.find((domain) => domain.id === state.selectedDomainId) || null;
   }
 
+  function requestDomainContextPersist() {
+    if (domainContextHydrating) return;
+    if (typeof persistDomainContext === 'function') persistDomainContext();
+  }
+
+  /**
+   * Normalize legacy CSV strings or arrays into a unique string list.
+   * Single adapter for inspector boundaries — UI never invents summary labels.
+   */
+  function asStringList(raw) {
+    return [...new Set(parseCommaSeparated(raw || []))];
+  }
+
+  /** Model stores ubiquitousLanguage as a single string; lists stay arrays. */
+  function serializeUbiquitousLanguage(terms) {
+    return asStringList(terms).join(', ');
+  }
+
+  function syncDomainIntegrationChannelOther() {
+    const select = dom.domainIntegrationChannelInput;
+    const other = dom.domainIntegrationChannelOtherInput;
+    if (!select || !other) return;
+    const isOther = select.value === 'other';
+    other.hidden = !isOther;
+    if (!isOther) other.value = '';
+  }
+
+  function modelDomainNames(excludeName = '') {
+    return state.domains
+      .map((domain) => domain.name)
+      .filter((name) => name && name !== excludeName);
+  }
+
+  function readCheckedDomainNames(listEl) {
+    if (!listEl) return [];
+    return Array.from(listEl.querySelectorAll('input[type="checkbox"][data-domain-name]:checked'))
+      .map((input) => input.getAttribute('data-domain-name'))
+      .filter(Boolean);
+  }
+
+  function renderDomainDependencyChecks(listEl, selectedNames, currentDomainName, disabled) {
+    if (!listEl) return;
+    const selected = new Set(selectedNames || []);
+    const others = modelDomainNames(currentDomainName);
+    listEl.innerHTML = '';
+    if (others.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'field-hint domain-check-empty';
+      empty.textContent = 'No other domains on the canvas yet. Create another domain, or add an external name below.';
+      listEl.appendChild(empty);
+      return;
+    }
+    others.forEach((name) => {
+      const label = document.createElement('label');
+      label.className = 'domain-check';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.setAttribute('data-domain-name', name);
+      input.checked = selected.has(name);
+      input.disabled = disabled;
+      input.onchange = () => requestDomainContextPersist();
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(` ${name}`));
+      listEl.appendChild(label);
+    });
+  }
+
+  function ensureDomainTagEditors() {
+    if (domainTagEditors) return domainTagEditors;
+    const onChange = () => requestDomainContextPersist();
+    domainTagEditors = {
+      ubiquitous: createTagEditor({
+        root: document.getElementById('domain-ubiquitous-language-editor'),
+        emptyLabel: 'No terms yet — type one and press Enter',
+        onChange
+      }),
+      upstream: createTagEditor({
+        root: document.getElementById('domain-upstream-editor'),
+        emptyLabel: 'No external systems yet',
+        onChange
+      }),
+      downstream: createTagEditor({
+        root: document.getElementById('domain-downstream-editor'),
+        emptyLabel: 'No external consumers yet',
+        onChange
+      }),
+      packages: createTagEditor({
+        root: document.getElementById('domain-package-dependencies-editor'),
+        emptyLabel: 'No packages yet — type one and press Enter',
+        onChange
+      }),
+      sharedVos: createTagEditor({
+        root: document.getElementById('domain-shared-value-objects-editor'),
+        emptyLabel: 'No shared value objects yet — type one and press Enter',
+        onChange
+      })
+    };
+    return domainTagEditors;
+  }
+
+  function wireDomainAutosaveControls() {
+    if (domainAutosaveWired) return;
+    domainAutosaveWired = true;
+    if (dom.domainOwnerTeamInput) {
+      dom.domainOwnerTeamInput.addEventListener('change', () => requestDomainContextPersist());
+      dom.domainOwnerTeamInput.addEventListener('blur', () => requestDomainContextPersist());
+    }
+    if (dom.domainIntegrationChannelInput) {
+      dom.domainIntegrationChannelInput.addEventListener('change', () => {
+        syncDomainIntegrationChannelOther();
+        if (dom.domainIntegrationChannelInput.value !== 'other') {
+          requestDomainContextPersist();
+        }
+      });
+    }
+    if (dom.domainIntegrationChannelOtherInput) {
+      dom.domainIntegrationChannelOtherInput.addEventListener('change', () => requestDomainContextPersist());
+      dom.domainIntegrationChannelOtherInput.addEventListener('blur', () => requestDomainContextPersist());
+    }
+  }
+
+  function readDomainContextForm() {
+    const editors = ensureDomainTagEditors();
+    const selected = getSelectedDomain();
+    const modelNames = new Set(modelDomainNames(selected?.name || ''));
+    const select = dom.domainIntegrationChannelInput;
+    const other = dom.domainIntegrationChannelOtherInput;
+    let channel = String(select?.value || '').trim();
+    if (channel === 'other') {
+      channel = String(other?.value || '').trim();
+    }
+    const upstreamChecked = readCheckedDomainNames(dom.domainUpstreamCheckList);
+    const downstreamChecked = readCheckedDomainNames(dom.domainDownstreamCheckList);
+    const upstreamExternal = editors.upstream.getValues().filter((name) => !modelNames.has(name));
+    const downstreamExternal = editors.downstream.getValues().filter((name) => !modelNames.has(name));
+    return {
+      ubiquitousLanguage: serializeUbiquitousLanguage(editors.ubiquitous.getValues()),
+      ownerTeam: String(dom.domainOwnerTeamInput?.value || '').trim(),
+      upstreamDependencies: asStringList([...upstreamChecked, ...upstreamExternal]),
+      downstreamDependencies: asStringList([...downstreamChecked, ...downstreamExternal]),
+      integrationChannel: channel,
+      packageDependencies: asStringList(editors.packages.getValues()),
+      sharedValueObjects: asStringList(editors.sharedVos.getValues())
+    };
+  }
+
+  function clearDomainContextForm() {
+    const editors = ensureDomainTagEditors();
+    editors.ubiquitous.clear({ silent: true });
+    editors.upstream.clear({ silent: true });
+    editors.downstream.clear({ silent: true });
+    editors.packages.clear({ silent: true });
+    editors.sharedVos.clear({ silent: true });
+    if (dom.domainOwnerTeamInput) dom.domainOwnerTeamInput.value = '';
+    if (dom.domainIntegrationChannelInput) dom.domainIntegrationChannelInput.value = '';
+    if (dom.domainIntegrationChannelOtherInput) {
+      dom.domainIntegrationChannelOtherInput.value = '';
+      dom.domainIntegrationChannelOtherInput.hidden = true;
+    }
+    renderDomainDependencyChecks(dom.domainUpstreamCheckList, [], getSelectedDomain()?.name || '', false);
+    renderDomainDependencyChecks(dom.domainDownstreamCheckList, [], getSelectedDomain()?.name || '', false);
+  }
+
+  function writeDomainContextForm(context = {}, {
+    disabled = false,
+    selectedDomainName = '',
+    domainId = null,
+    force = false
+  } = {}) {
+    wireDomainAutosaveControls();
+    const editors = ensureDomainTagEditors();
+    const shouldLoadValues = force || domainId !== boundDomainContextId;
+    const modelNames = new Set(modelDomainNames(selectedDomainName));
+    const upstreamAll = asStringList(context.upstreamDependencies);
+    const downstreamAll = asStringList(context.downstreamDependencies);
+    const upstreamModel = upstreamAll.filter((name) => modelNames.has(name));
+    const downstreamModel = downstreamAll.filter((name) => modelNames.has(name));
+    const upstreamExternal = upstreamAll.filter((name) => !modelNames.has(name));
+    const downstreamExternal = downstreamAll.filter((name) => !modelNames.has(name));
+    const packageDeps = asStringList(context.packageDependencies);
+    const sharedVos = asStringList(context.sharedValueObjects);
+
+    if (shouldLoadValues) {
+      domainContextHydrating = true;
+      boundDomainContextId = domainId;
+      // Always replace field values when the selected domain changes — never
+      // preserve leftover focus state from the previously selected domain.
+      if (dom.domainOwnerTeamInput) {
+        dom.domainOwnerTeamInput.value = context.ownerTeam || '';
+      }
+      editors.ubiquitous.setValues(asStringList(context.ubiquitousLanguage), { silent: true });
+      editors.upstream.setValues(upstreamExternal, { silent: true });
+      editors.downstream.setValues(downstreamExternal, { silent: true });
+      editors.packages.setValues(packageDeps, { silent: true });
+      editors.sharedVos.setValues(sharedVos, { silent: true });
+
+      const channel = String(context.integrationChannel || '').trim();
+      if (dom.domainIntegrationChannelInput) {
+        if (!channel) {
+          dom.domainIntegrationChannelInput.value = '';
+        } else if (KNOWN_INTEGRATION_CHANNELS.has(channel)) {
+          dom.domainIntegrationChannelInput.value = channel;
+        } else {
+          dom.domainIntegrationChannelInput.value = 'other';
+          if (dom.domainIntegrationChannelOtherInput) {
+            dom.domainIntegrationChannelOtherInput.value = channel;
+          }
+        }
+      }
+      syncDomainIntegrationChannelOther();
+      if (
+        dom.domainIntegrationChannelOtherInput
+        && dom.domainIntegrationChannelInput?.value === 'other'
+        && channel
+        && !KNOWN_INTEGRATION_CHANNELS.has(channel)
+      ) {
+        dom.domainIntegrationChannelOtherInput.hidden = false;
+        dom.domainIntegrationChannelOtherInput.value = channel;
+      }
+      // Release after the current event stack so any blur/change caused by
+      // swapping selection cannot persist the previous domain's leftovers.
+      globalThis.setTimeout(() => {
+        domainContextHydrating = false;
+      }, 0);
+    }
+
+    // Checklists always refresh so newly created domains appear immediately.
+    renderDomainDependencyChecks(
+      dom.domainUpstreamCheckList,
+      shouldLoadValues ? upstreamModel : readCheckedDomainNames(dom.domainUpstreamCheckList),
+      selectedDomainName,
+      disabled
+    );
+    renderDomainDependencyChecks(
+      dom.domainDownstreamCheckList,
+      shouldLoadValues ? downstreamModel : readCheckedDomainNames(dom.domainDownstreamCheckList),
+      selectedDomainName,
+      disabled
+    );
+
+    editors.ubiquitous.setDisabled(disabled);
+    editors.upstream.setDisabled(disabled);
+    editors.downstream.setDisabled(disabled);
+    editors.packages.setDisabled(disabled);
+    editors.sharedVos.setDisabled(disabled);
+    if (dom.domainIntegrationChannelInput) dom.domainIntegrationChannelInput.disabled = disabled;
+    if (dom.domainIntegrationChannelOtherInput) dom.domainIntegrationChannelOtherInput.disabled = disabled;
+    if (dom.domainOwnerTeamInput) dom.domainOwnerTeamInput.disabled = disabled;
+    if (dom.saveDomainContextBtn) dom.saveDomainContextBtn.disabled = disabled;
+    if (dom.clearDomainContextBtn) dom.clearDomainContextBtn.disabled = disabled;
+  }
+
+  /** Domain panels the user manually collapsed while still selected. */
+  const collapsedDomainIds = new Set();
+
+  /**
+   * Domain ⊃ Entity tree — each domain is an expandable panel; entities nest
+   * inside. Flat peer lists are forbidden: hierarchy must be visible in one glance.
+   */
   function renderDomainList() {
+    if (!dom.domainList) return;
     dom.domainList.innerHTML = '';
+    dom.domainList.classList.add('domain-tree');
+
     state.domains.forEach((domain) => {
+      const entities = Array.isArray(domain.entities) ? domain.entities : [];
+      const isSelectedDomain = state.selectedDomainId === domain.id;
+      const ownsSelectedEntity = entities.some((entity) => entity.id === state.selectedEntityId);
+      // Selected domain (or domain owning the selected entity) expands unless user collapsed it.
+      const expanded = (isSelectedDomain || ownsSelectedEntity) && !collapsedDomainIds.has(domain.id);
+
       const li = document.createElement('li');
+      li.className = 'domain-tree-item';
+      li.dataset.domainId = domain.id;
+      li.dataset.expanded = String(expanded);
+      if (isSelectedDomain) li.classList.add('is-domain-selected');
+      if (ownsSelectedEntity) li.classList.add('is-context-active');
+
+      const header = document.createElement('div');
+      header.className = 'domain-tree-header';
+
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'domain-tree-toggle';
+      toggle.setAttribute('aria-expanded', String(expanded));
+      toggle.setAttribute('aria-controls', `domain-tree-children-${domain.id}`);
+      toggle.title = expanded ? 'Collapse entities' : 'Expand entities';
+      toggle.innerHTML = '<span class="domain-tree-chevron" aria-hidden="true"></span>';
+      toggle.onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (expanded) collapsedDomainIds.add(domain.id);
+        else {
+          collapsedDomainIds.delete(domain.id);
+          if (!isSelectedDomain) setSelectedDomain(domain.id);
+        }
+        renderDomainList();
+      };
+
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = state.selectedDomainId === domain.id ? 'active' : '';
-      btn.textContent = domain.name;
-      // JUM-548: sample-loaded domains carry a visible marker so first-run
-      // content is always distinguishable from the user's own work.
+      btn.className = `domain-tree-domain${isSelectedDomain && !state.selectedEntityId ? ' active' : ''}`;
+      btn.setAttribute('aria-current', isSelectedDomain ? 'true' : 'false');
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'domain-tree-name';
+      nameSpan.textContent = domain.name;
+      btn.appendChild(nameSpan);
       if (isSampleDomain(domain)) {
         const badge = document.createElement('span');
         badge.className = 'sample-badge';
         badge.textContent = 'sample';
         btn.appendChild(badge);
       }
-      btn.onclick = () => setSelectedDomain(domain.id);
-      li.appendChild(btn);
+      const count = document.createElement('span');
+      count.className = 'list-meta';
+      count.textContent = `${entities.length}`;
+      count.title = 'Entities in this domain';
+      btn.appendChild(count);
+      btn.onclick = () => {
+        collapsedDomainIds.delete(domain.id);
+        setSelectedDomain(domain.id);
+      };
+
+      header.appendChild(toggle);
+      header.appendChild(btn);
+      li.appendChild(header);
+
+      const children = document.createElement('ul');
+      children.className = 'domain-tree-children list jx-list';
+      children.id = `domain-tree-children-${domain.id}`;
+      children.hidden = !expanded;
+      children.setAttribute('aria-label', `Entities in ${domain.name}`);
+
+      if (expanded) {
+        if (!entities.length) {
+          const empty = document.createElement('li');
+          empty.className = 'domain-tree-empty';
+          empty.textContent = 'No entities yet — add one below.';
+          children.appendChild(empty);
+        }
+        entities.forEach((entity) => {
+          const childLi = document.createElement('li');
+          childLi.className = 'domain-tree-entity';
+          const childBtn = document.createElement('button');
+          childBtn.type = 'button';
+          childBtn.className = state.selectedEntityId === entity.id ? 'active' : '';
+          const entityName = document.createElement('span');
+          entityName.className = 'domain-tree-name';
+          entityName.textContent = entity.name;
+          childBtn.appendChild(entityName);
+          if (isSampleEntity(entity)) {
+            const badge = document.createElement('span');
+            badge.className = 'sample-badge';
+            badge.textContent = 'sample';
+            childBtn.appendChild(badge);
+          }
+          const fieldCount = document.createElement('span');
+          fieldCount.className = 'list-meta';
+          fieldCount.textContent = `${(entity.fields || []).length}`;
+          fieldCount.title = 'Fields';
+          childBtn.appendChild(fieldCount);
+          childBtn.onclick = () => {
+            collapsedDomainIds.delete(domain.id);
+            if (typeof setSelectedEntity === 'function') setSelectedEntity(entity.id);
+            else focusEntity(entity.id);
+          };
+          childLi.appendChild(childBtn);
+
+          const entityLinks = (state.relationships || []).filter((rel) => (
+            rel.fromEntityId === entity.id || rel.toEntityId === entity.id
+          ));
+          if (entityLinks.length) {
+            const linkList = document.createElement('ul');
+            linkList.className = 'domain-tree-links';
+            linkList.setAttribute('aria-label', `Links for ${entity.name}`);
+            entityLinks.forEach((rel) => {
+              const linkLi = document.createElement('li');
+              linkLi.className = 'domain-tree-link';
+              if (state.selectedRelationshipId === rel.id) linkLi.classList.add('is-selected');
+              const linkBtn = document.createElement('button');
+              linkBtn.type = 'button';
+              linkBtn.className = state.selectedRelationshipId === rel.id ? 'active' : '';
+              const otherId = rel.fromEntityId === entity.id ? rel.toEntityId : rel.fromEntityId;
+              const outbound = rel.fromEntityId === entity.id;
+              linkBtn.textContent = `${outbound ? '→' : '←'} ${entityLabel(state.domains, otherId)} (${rel.fromCardinality}:${rel.toCardinality})`;
+              linkBtn.title = relationshipDisplayLabel(rel);
+              linkBtn.onclick = (event) => {
+                event.stopPropagation();
+                collapsedDomainIds.delete(domain.id);
+                setSelectedRelationship(rel.id);
+              };
+              linkLi.appendChild(linkBtn);
+              linkList.appendChild(linkLi);
+            });
+            childLi.appendChild(linkList);
+          }
+
+          children.appendChild(childLi);
+        });
+      }
+
+      li.appendChild(children);
       dom.domainList.appendChild(li);
     });
   }
 
+  function wirePickDomainCta() {
+    const cta = document.getElementById('pick-domain-cta');
+    if (!cta || cta.dataset.wired === 'true') return;
+    cta.dataset.wired = 'true';
+    cta.addEventListener('click', () => {
+      if (typeof actions.openSidebarGroup === 'function') {
+        actions.openSidebarGroup('model');
+        return;
+      }
+      const domainsToggle = document.getElementById('sidebar-group-model-btn');
+      if (domainsToggle) domainsToggle.click();
+    });
+  }
+
+  /**
+   * Structure create toolbars — exclusive by selection path (never Domain+Entity together):
+   *   none   → Domain create only
+   *   domain → Entity create only (gated on that domain)
+   *   entity / rel / note → no create strip
+   */
+  function setCreateToolbarVisible(el, show) {
+    if (!el) return;
+    el.hidden = !show;
+    el.classList.toggle('is-create-inactive', !show);
+    el.setAttribute('aria-hidden', String(!show));
+    // Inline display beats any stylesheet that overrides [hidden].
+    el.style.display = show ? '' : 'none';
+  }
+
+  function syncStructureCreateToolbars(kind, domain) {
+    const domainCreate = document.getElementById('domain-create-toolbar');
+    const entityCreate = document.getElementById('entity-create-toolbar');
+    const showDomainCreate = kind === null || kind === 'none';
+    // Field scope is under entity — no structure create strip.
+    const showEntityCreate = kind === 'domain' && Boolean(domain);
+
+    setCreateToolbarVisible(domainCreate, showDomainCreate);
+    setCreateToolbarVisible(entityCreate, showEntityCreate);
+    if (entityCreate) {
+      entityCreate.dataset.gateReady = String(showEntityCreate);
+      entityCreate.setAttribute('aria-disabled', String(!showEntityCreate));
+      ['input', 'button', 'select'].forEach((tag) => {
+        entityCreate.querySelectorAll(tag).forEach((control) => {
+          control.disabled = !showEntityCreate;
+        });
+      });
+      const entityInput = document.getElementById('entity-name-input');
+      if (entityInput && domain) {
+        entityInput.placeholder = `New entity in ${domain.name}`;
+      }
+    }
+    const structureToolbar = document.getElementById('structure-create-toolbar');
+    if (structureToolbar) {
+      const showStrip = showDomainCreate || showEntityCreate;
+      structureToolbar.hidden = !showStrip;
+      structureToolbar.classList.toggle('is-create-inactive', !showStrip);
+      structureToolbar.style.display = showStrip ? '' : 'none';
+      structureToolbar.dataset.createScope = showEntityCreate ? 'entity' : showDomainCreate ? 'domain' : 'none';
+    }
+  }
+
+  function renderEntityList() {
+    wirePickDomainCta();
+    renderDomainList();
+    const domain = state.domains.find((entry) => entry.id === state.selectedDomainId) || null;
+    syncStructureCreateToolbars(activeInspectorKind(), domain);
+  }
+
+  function activeInspectorKind() {
+    if (state.selectedNoteId) return 'note';
+    if (state.selectedRelationshipId) return 'relationship';
+    if (
+      state.selection?.kind === 'field'
+      && state.selectedEntityId
+      && state.selection.fieldName
+    ) {
+      return 'field';
+    }
+    if (state.selectedEntityId) return 'entity';
+    if (state.selectedDomainId) return 'domain';
+    return null;
+  }
+
+  function selectedFieldName() {
+    return activeInspectorKind() === 'field'
+      ? String(state.selection?.fieldName || '').trim() || null
+      : null;
+  }
+
+  /**
+   * One path label on the Domains tab; browse=tree, edit=one inspector.
+   */
+  function updateShellChrome(kind, selectedDomain) {
+    const domainsContext = document.getElementById('sidebar-group-model-context');
+    const domainsShell = document.querySelector('.sidebar-shell[data-shell="model"], .sidebar-shell[data-shell="domains"]');
+    const domainTitle = document.getElementById('domain-inspector-title');
+    const domainsHint = document.getElementById('domains-catalog-hint');
+    const scopeEdit = document.getElementById('jx-scope-edit');
+    const modelScopePath = document.getElementById('model-scope-path');
+    const canvasScopePath = document.getElementById('canvas-scope-path');
+    const entityHit = (kind === 'entity' || kind === 'field')
+      ? state.domains
+        .flatMap((domain) => domain.entities.map((entity) => ({ domain, entity })))
+        .find((entry) => entry.entity.id === state.selectedEntityId)
+      : null;
+    const fieldName = kind === 'field' ? selectedFieldName() : null;
+
+    let pathLabel = 'Nothing selected';
+    if (kind === 'field' && entityHit && fieldName) {
+      pathLabel = `Field · ${entityHit.domain.name} → ${entityHit.entity.name} → ${fieldName}`;
+    } else if (kind === 'entity' && entityHit) {
+      pathLabel = `Entity · ${entityHit.domain.name} → ${entityHit.entity.name}`;
+    } else if (kind === 'domain' && selectedDomain) {
+      pathLabel = `Domain · ${selectedDomain.name}`;
+    } else if (kind === 'relationship') {
+      const rel = state.relationships.find((entry) => entry.id === state.selectedRelationshipId);
+      if (rel) {
+        const fromHit = state.domains
+          .flatMap((domain) => domain.entities.map((entity) => ({ domain, entity })))
+          .find((entry) => entry.entity.id === rel.fromEntityId);
+        const toHit = state.domains
+          .flatMap((domain) => domain.entities.map((entity) => ({ domain, entity })))
+          .find((entry) => entry.entity.id === rel.toEntityId);
+        const fromName = fromHit ? `${fromHit.entity.name}${rel.fromField ? `.${rel.fromField}` : ''}` : rel.fromEntityId;
+        const toName = toHit ? `${toHit.entity.name}${rel.toField ? `.${rel.toField}` : ''}` : rel.toEntityId;
+        pathLabel = `Rel · ${fromName} → ${toName}`;
+      } else {
+        pathLabel = 'Relationship';
+      }
+    } else if (kind === 'note') {
+      const note = (state.notes || []).find((entry) => entry.id === state.selectedNoteId);
+      const preview = String(note?.text || '').trim().slice(0, 28);
+      pathLabel = preview ? `Note · ${preview}` : 'Note';
+    } else if (state.domains.length) {
+      pathLabel = `${state.domains.length} domains`;
+    }
+
+    if (domainsContext) {
+      if (kind === 'field' && entityHit && fieldName) {
+        domainsContext.textContent = `${entityHit.entity.name} → ${fieldName}`;
+      } else if (kind === 'entity' && entityHit) {
+        domainsContext.textContent = `${entityHit.domain.name} → ${entityHit.entity.name}`;
+      } else if (selectedDomain) {
+        domainsContext.textContent = selectedDomain.name;
+      } else {
+        domainsContext.textContent = String(state.domains.length);
+      }
+    }
+    if (modelScopePath) modelScopePath.textContent = pathLabel;
+    if (canvasScopePath) canvasScopePath.textContent = pathLabel;
+    if (domainsShell) {
+      const editing = Boolean(kind);
+      domainsShell.dataset.shellMode = editing ? 'editing' : 'catalog';
+      domainsShell.dataset.selectionKind = kind || 'none';
+    }
+    if (domainTitle) {
+      domainTitle.hidden = kind === 'domain' && Boolean(selectedDomain);
+    }
+    if (domainsHint) {
+      domainsHint.hidden = Boolean(kind);
+      if (!kind) {
+        domainsHint.textContent = state.domains.length
+          ? 'Select a domain or entity in the tree to edit below.'
+          : 'Add a domain to start modeling.';
+      }
+    }
+    const browseLabel = document.getElementById('jx-scope-browse-label');
+    if (browseLabel) {
+      browseLabel.textContent = kind ? 'Browse' : 'Browse · pick a domain or entity';
+    }
+    const editLabel = document.getElementById('jx-scope-edit-label');
+    if (editLabel) {
+      if (kind === 'domain') editLabel.textContent = 'Edit · Domain';
+      else if (kind === 'field') editLabel.textContent = 'Edit · Field';
+      else if (kind === 'entity') editLabel.textContent = 'Edit · Entity';
+      else if (kind === 'relationship') editLabel.textContent = 'Edit · Relationship';
+      else if (kind === 'note') editLabel.textContent = 'Edit · Note';
+      else editLabel.textContent = 'Edit';
+    }
+    if (scopeEdit) {
+      scopeEdit.dataset.editKind = kind || 'none';
+      scopeEdit.hidden = !kind;
+    }
+    syncStructureCreateToolbars(kind, selectedDomain);
+  }
+
+  function syncInspectorPanelVisibility() {
+    const kind = activeInspectorKind();
+    const panels = [
+      ['domain-inspector-panel', 'domain'],
+      ['entity-inspector-panel', 'entity'],
+      ['relationship-inspector-panel', 'relationship'],
+      ['note-inspector-panel', 'note']
+    ];
+    panels.forEach(([id, panelKind]) => {
+      const panel = document.getElementById(id);
+      if (!panel) return;
+      // Field edit reuses the entity panel with a narrowed surface.
+      const active = kind === panelKind || (panelKind === 'entity' && kind === 'field');
+      panel.hidden = !active;
+      panel.classList.toggle('is-deferred', !active);
+      if (id === 'entity-inspector-panel') {
+        panel.classList.toggle('is-field-scope', kind === 'field');
+        panel.dataset.editScope = kind === 'field' ? 'field' : (kind === 'entity' ? 'entity' : 'none');
+      }
+    });
+
+    const domainsCatalog = document.getElementById('domains-catalog-panel');
+    if (domainsCatalog) {
+      domainsCatalog.hidden = false;
+      domainsCatalog.classList.toggle('is-shell-secondary', Boolean(kind));
+    }
+    const entitiesCatalog = document.getElementById('entities-catalog-panel');
+    if (entitiesCatalog) {
+      entitiesCatalog.hidden = true;
+    }
+
+    const workspace = document.getElementById('entities-workspace');
+    const domain = getSelectedDomain();
+    const showEntityScope = kind === 'entity' || kind === 'field' || kind === 'relationship' || kind === 'note';
+    if (workspace) {
+      const ready = Boolean(domain);
+      workspace.dataset.gateReady = String(ready);
+      workspace.classList.toggle('is-gate-blocked', !ready);
+      workspace.setAttribute('aria-disabled', String(!ready));
+      workspace.hidden = !showEntityScope;
+      const gate = document.getElementById('entities-workspace-gate');
+      if (gate) gate.hidden = true;
+      const body = document.getElementById('entities-workspace-body');
+      if (body) body.hidden = !showEntityScope;
+    }
+    const pickCta = document.getElementById('pick-domain-cta');
+    if (pickCta) pickCta.hidden = true;
+
+    updateShellChrome(kind, domain);
+    renderEntityList();
+  }
+
+  const DOMAIN_PANES = ['identity', 'context'];
+  let chosenDomainPane = 'identity';
+
+  function setDomainInspectorPane(pane) {
+    if (!DOMAIN_PANES.includes(pane)) return;
+    chosenDomainPane = pane;
+    const panel = document.getElementById('domain-inspector-panel');
+    if (!panel) return;
+    panel.querySelectorAll('[data-domain-pane-tab]').forEach((tab) => {
+      const isActive = tab.dataset.domainPaneTab === pane;
+      tab.classList.toggle('active', isActive);
+      tab.setAttribute('aria-selected', String(isActive));
+      tab.tabIndex = isActive ? 0 : -1;
+    });
+    panel.querySelectorAll('[data-domain-pane]').forEach((section) => {
+      section.hidden = section.dataset.domainPane !== pane;
+    });
+  }
+
+  function wireDomainInspectorPanes() {
+    const panel = document.getElementById('domain-inspector-panel');
+    if (!panel || panel.dataset.domainPanesWired === 'true') return;
+    panel.dataset.domainPanesWired = 'true';
+    const tabs = Array.from(panel.querySelectorAll('[data-domain-pane-tab]'));
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => setDomainInspectorPane(tab.dataset.domainPaneTab));
+      tab.addEventListener('keydown', (event) => {
+        let nextIndex = null;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (nextIndex === null) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const next = tabs[nextIndex];
+        setDomainInspectorPane(next.dataset.domainPaneTab);
+        next.focus();
+      });
+    });
+    setDomainInspectorPane(DOMAIN_PANES.includes(chosenDomainPane) ? chosenDomainPane : 'identity');
+  }
+
+  function syncDomainInspectorEditMode(selected) {
+    wireDomainInspectorPanes();
+    const panel = document.getElementById('domain-inspector-panel');
+    const titleEl = document.getElementById('domain-inspector-title');
+    const body = document.getElementById('domain-inspector-body');
+    const editingDomain = activeInspectorKind() === 'domain' && Boolean(selected);
+    if (panel) {
+      panel.classList.toggle('is-editing', editingDomain);
+      panel.classList.toggle('is-empty', !editingDomain);
+      panel.setAttribute(
+        'aria-label',
+        editingDomain
+          ? `Editing domain ${selected.name}`
+          : 'Domain inspector — no domain selected'
+      );
+    }
+    if (titleEl) {
+      titleEl.textContent = editingDomain ? selected.name : 'Domain';
+    }
+    if (body) body.hidden = !editingDomain;
+    if (dom.domainRenameInput) {
+      const renameFocused = document.activeElement === dom.domainRenameInput;
+      if (!renameFocused) {
+        dom.domainRenameInput.value = editingDomain ? selected.name : '';
+      }
+      dom.domainRenameInput.disabled = !editingDomain;
+    }
+    if (dom.renameDomainBtn) dom.renameDomainBtn.disabled = !editingDomain;
+    if (dom.deleteDomainBtn) dom.deleteDomainBtn.disabled = !editingDomain;
+    if (dom.setDomainColorBtn) dom.setDomainColorBtn.disabled = !editingDomain;
+    if (dom.domainColorInput) dom.domainColorInput.disabled = !editingDomain;
+  }
+
   function renderStatus() {
     const selected = getSelectedDomain();
-    dom.status.textContent = selected ? `Selected domain: ${selected.name}` : 'No domain selected';
-    dom.domainColorInput.value = selected?.color || '#60a5fa';
+    syncDomainInspectorEditMode(selected);
+    syncInspectorPanelVisibility();
+    const kind = activeInspectorKind();
+    if (kind === 'note') {
+      dom.status.textContent = 'Selected note';
+    } else if (kind === 'relationship') {
+      const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
+      dom.status.textContent = relationship
+        ? `Selected relationship: ${relationship.name || relationship.id}`
+        : 'No relationship selected';
+    } else if (kind === 'entity') {
+      const found = state.domains
+        .flatMap((domain) => domain.entities.map((entity) => ({ domain, entity })))
+        .find((entry) => entry.entity.id === state.selectedEntityId);
+      dom.status.textContent = found
+        ? `Selected entity: ${found.domain.name} / ${found.entity.name}`
+        : 'No entity selected';
+    } else {
+      dom.status.textContent = selected ? `Selected domain: ${selected.name}` : 'No domain selected';
+    }
+    if (dom.domainColorInput && document.activeElement !== dom.domainColorInput) {
+      dom.domainColorInput.value = selected?.color || '#60a5fa';
+    }
     const context = selected?.context || {};
-    dom.domainUbiquitousLanguageInput.value = context.ubiquitousLanguage || '';
-    dom.domainOwnerTeamInput.value = context.ownerTeam || '';
-    dom.domainUpstreamInput.value = Array.isArray(context.upstreamDependencies) ? context.upstreamDependencies.join(', ') : '';
-    dom.domainDownstreamInput.value = Array.isArray(context.downstreamDependencies) ? context.downstreamDependencies.join(', ') : '';
-    dom.domainIntegrationChannelInput.value = context.integrationChannel || '';
-    dom.domainPackageDependenciesInput.value = Array.isArray(context.packageDependencies) ? context.packageDependencies.join(', ') : '';
-    dom.domainSharedValueObjectsInput.value = Array.isArray(context.sharedValueObjects) ? context.sharedValueObjects.join(', ') : '';
-    const disabled = !selected;
-    dom.domainUbiquitousLanguageInput.disabled = disabled;
-    dom.domainOwnerTeamInput.disabled = disabled;
-    dom.domainUpstreamInput.disabled = disabled;
-    dom.domainDownstreamInput.disabled = disabled;
-    dom.domainIntegrationChannelInput.disabled = disabled;
-    dom.domainPackageDependenciesInput.disabled = disabled;
-    dom.domainSharedValueObjectsInput.disabled = disabled;
-    dom.saveDomainContextBtn.disabled = disabled;
-    dom.clearDomainContextBtn.disabled = disabled;
+    const editingDomain = kind === 'domain' && Boolean(selected);
+    writeDomainContextForm(context, {
+      disabled: !editingDomain,
+      selectedDomainName: selected?.name || '',
+      domainId: editingDomain ? selected.id : null
+    });
   }
 
   function renderEntityOptions() {
@@ -182,25 +910,76 @@ export function createInspectors({ dom, state, interaction, actions }) {
     fill(dom.relationshipToEntitySelect);
   }
 
+  function relationshipDisplayLabel(relationship) {
+    const from = entityLabel(state.domains, relationship.fromEntityId);
+    const to = entityLabel(state.domains, relationship.toEntityId);
+    const card = `${relationship.fromCardinality || '1'}:${relationship.toCardinality || '1'}`;
+    const name = String(relationship.name || '').trim();
+    return name ? `${name} · ${from} ${card} ${to}` : `${from} ${card} ${to}`;
+  }
+
+  function wireRelationshipNavControls() {
+    const prev = document.getElementById('relationship-prev-btn');
+    const next = document.getElementById('relationship-next-btn');
+    if (prev && prev.dataset.wired !== 'true') {
+      prev.dataset.wired = 'true';
+      prev.addEventListener('click', () => {
+        if (typeof cycleSelectedRelationship === 'function') cycleSelectedRelationship(-1);
+      });
+    }
+    if (next && next.dataset.wired !== 'true') {
+      next.dataset.wired = 'true';
+      next.addEventListener('click', () => {
+        if (typeof cycleSelectedRelationship === 'function') cycleSelectedRelationship(1);
+      });
+    }
+  }
+
+  function syncRelationshipNavIndex(scope) {
+    const indexEl = document.getElementById('relationship-nav-index');
+    const prev = document.getElementById('relationship-prev-btn');
+    const next = document.getElementById('relationship-next-btn');
+    const total = scope.length;
+    const current = scope.findIndex((rel) => rel.id === state.selectedRelationshipId);
+    if (indexEl) {
+      indexEl.textContent = total
+        ? `${current >= 0 ? current + 1 : '—'} / ${total}`
+        : '0 / 0';
+    }
+    const enabled = total > 0;
+    if (prev) prev.disabled = !enabled;
+    if (next) next.disabled = !enabled;
+  }
+
   function renderRelationshipList() {
+    wireRelationshipNavControls();
+    if (!dom.relationshipList) return;
     dom.relationshipList.innerHTML = '';
-    state.relationships.forEach((relationship) => {
+    const scope = typeof relationshipsInNavScope === 'function'
+      ? relationshipsInNavScope()
+      : (state.relationships || []);
+    syncRelationshipNavIndex(scope);
+    if (!scope.length) {
+      const empty = document.createElement('li');
+      empty.className = 'relationship-item is-empty';
+      empty.textContent = 'No links in this scope yet.';
+      dom.relationshipList.appendChild(empty);
+      return;
+    }
+    scope.forEach((relationship) => {
       const li = document.createElement('li');
       li.className = 'relationship-item';
-      const name = document.createElement('div');
+      if (state.selectedRelationshipId === relationship.id) li.classList.add('is-selected');
+      const name = document.createElement('button');
+      name.type = 'button';
       name.className = 'relationship-name';
-      name.textContent = `${relationship.name || 'relation'} | ${entityLabel(state.domains, relationship.fromEntityId)} (${relationship.fromCardinality}) -> (${relationship.toCardinality}) ${entityLabel(state.domains, relationship.toEntityId)}`;
-      if (state.selectedRelationshipId === relationship.id) {
-        name.style.borderColor = '#2563eb';
-        name.style.background = '#eff6ff';
-      }
-      name.onclick = () => {
-        state.selectedRelationshipId = relationship.id;
-        render();
-      };
+      name.textContent = relationshipDisplayLabel(relationship);
+      name.onclick = () => setSelectedRelationship(relationship.id);
       const del = document.createElement('button');
       del.type = 'button';
-      del.textContent = 'x';
+      del.className = 'relationship-delete';
+      del.setAttribute('aria-label', `Delete ${relationshipDisplayLabel(relationship)}`);
+      del.textContent = '×';
       del.onclick = () => deleteRelationship(relationship.id);
       li.appendChild(name);
       li.appendChild(del);
@@ -209,8 +988,33 @@ export function createInspectors({ dom, state, interaction, actions }) {
   }
 
   function syncRelationshipInspector() {
+    const panel = document.getElementById('relationship-inspector-panel');
+    const modeEl = document.getElementById('relationship-inspector-mode');
+    const titleEl = document.getElementById('relationship-inspector-title');
+    const body = document.getElementById('relationship-inspector-body');
+    const create = panel?.querySelector('[data-relationship-section="create"]');
     const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
-    const disabled = !relationship;
+    const editingRelationship = activeInspectorKind() === 'relationship' && Boolean(relationship);
+    renderRelationshipList();
+    if (panel) {
+      panel.classList.toggle('is-editing', editingRelationship);
+      panel.classList.toggle('is-empty', !editingRelationship);
+      panel.setAttribute(
+        'aria-label',
+        editingRelationship
+          ? `Editing relationship ${relationship.name || relationship.id}`
+          : 'Relationship inspector — no relationship selected'
+      );
+    }
+    if (modeEl) modeEl.textContent = editingRelationship ? 'Editing relationship' : 'No selection';
+    if (titleEl) {
+      titleEl.textContent = editingRelationship
+        ? relationshipDisplayLabel(relationship)
+        : 'Select a link on the canvas, in Browse, or with [ ]';
+    }
+    if (body) body.hidden = !editingRelationship;
+    if (create) create.hidden = editingRelationship;
+    const disabled = !editingRelationship;
     dom.relationshipNameInput.disabled = disabled;
     dom.relationshipFromEntitySelect.disabled = disabled;
     dom.relationshipToEntitySelect.disabled = disabled;
@@ -224,6 +1028,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
     dom.resetRelationshipLabelOffsetBtn.disabled = disabled;
     dom.saveRelationshipBtn.disabled = disabled;
     dom.reverseRelationshipBtn.disabled = disabled;
+    if (dom.deleteRelationshipBtn) dom.deleteRelationshipBtn.disabled = disabled;
     if (!relationship) {
       dom.relationshipNameInput.value = '';
       dom.relationshipFromEntitySelect.value = '';
@@ -239,7 +1044,9 @@ export function createInspectors({ dom, state, interaction, actions }) {
       return;
     }
     dom.relationshipNameInput.placeholder = 'Relationship name';
-    dom.relationshipNameInput.value = relationship.name || '';
+    if (document.activeElement !== dom.relationshipNameInput) {
+      dom.relationshipNameInput.value = relationship.name || '';
+    }
     dom.relationshipFromEntitySelect.value = relationship.fromEntityId;
     dom.relationshipToEntitySelect.value = relationship.toEntityId;
     dom.relationshipFromCardSelect.value = relationship.fromCardinality || '1';
@@ -249,6 +1056,43 @@ export function createInspectors({ dom, state, interaction, actions }) {
     dom.relationshipBendXInput.value = Number.isFinite(relationship.bendX) ? String(relationship.bendX) : '';
     dom.relationshipBendYInput.value = Number.isFinite(relationship.bendY) ? String(relationship.bendY) : '';
     dom.relationshipAnchorBehaviorSelect.value = relationship.anchorBehavior === 'center' ? 'center' : 'auto';
+  }
+
+  function syncNoteInspector() {
+    const panel = document.getElementById('note-inspector-panel');
+    const modeEl = document.getElementById('note-inspector-mode');
+    const titleEl = document.getElementById('note-inspector-title');
+    const body = document.getElementById('note-inspector-body');
+    const note = (state.notes || []).find((candidate) => candidate.id === state.selectedNoteId);
+    const editingNote = activeInspectorKind() === 'note' && Boolean(note);
+    if (panel) {
+      panel.classList.toggle('is-editing', editingNote);
+      panel.classList.toggle('is-empty', !editingNote);
+      panel.setAttribute(
+        'aria-label',
+        editingNote ? 'Editing note' : 'Note inspector — no note selected'
+      );
+    }
+    if (modeEl) modeEl.textContent = editingNote ? 'Editing note' : 'No selection';
+    if (titleEl) {
+      titleEl.textContent = editingNote
+        ? (note.text || 'Untitled note').split('\n')[0].slice(0, 48) || 'Untitled note'
+        : 'Click a note on the canvas to edit it here.';
+    }
+    if (body) body.hidden = !editingNote;
+    if (dom.noteTextInput) {
+      const focused = document.activeElement === dom.noteTextInput;
+      if (!focused) dom.noteTextInput.value = editingNote ? (note.text || '') : '';
+      dom.noteTextInput.disabled = !editingNote;
+    }
+    if (dom.noteColorInput) {
+      if (document.activeElement !== dom.noteColorInput) {
+        dom.noteColorInput.value = editingNote ? (note.color || '#fde68a') : '#fde68a';
+      }
+      dom.noteColorInput.disabled = !editingNote;
+    }
+    if (dom.saveNoteBtn) dom.saveNoteBtn.disabled = !editingNote;
+    if (dom.deleteNoteBtn) dom.deleteNoteBtn.disabled = !editingNote;
   }
 
   function renderPickStatus() {
@@ -333,12 +1177,99 @@ export function createInspectors({ dom, state, interaction, actions }) {
     });
   }
 
+  const ENTITY_PANES = ['fields', 'rules', 'rbac', 'contracts', 'advanced'];
+  let chosenEntityPane = 'fields';
+  let lastSelectedEntityIdForPane = null;
+
+  function activeEntityPane() {
+    return ENTITY_PANES.includes(chosenEntityPane) ? chosenEntityPane : 'fields';
+  }
+
+  function setEntityInspectorPane(pane) {
+    if (!ENTITY_PANES.includes(pane)) return;
+    chosenEntityPane = pane;
+    const panel = document.getElementById('entity-inspector-panel');
+    if (!panel) return;
+    panel.querySelectorAll('[data-entity-pane-tab]').forEach((tab) => {
+      const isActive = tab.dataset.entityPaneTab === pane;
+      tab.classList.toggle('active', isActive);
+      tab.setAttribute('aria-selected', String(isActive));
+      tab.tabIndex = isActive ? 0 : -1;
+    });
+    panel.querySelectorAll('[data-entity-pane]').forEach((section) => {
+      section.hidden = section.dataset.entityPane !== pane;
+    });
+  }
+
+  function wireEntityInspectorPanes() {
+    const panel = document.getElementById('entity-inspector-panel');
+    if (!panel || panel.dataset.entityPanesWired === 'true') return;
+    panel.dataset.entityPanesWired = 'true';
+    const tabs = Array.from(panel.querySelectorAll('[data-entity-pane-tab]'));
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => setEntityInspectorPane(tab.dataset.entityPaneTab));
+      tab.addEventListener('keydown', (event) => {
+        let nextIndex = null;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (nextIndex === null) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const next = tabs[nextIndex];
+        setEntityInspectorPane(next.dataset.entityPaneTab);
+        next.focus();
+      });
+    });
+    setEntityInspectorPane(activeEntityPane());
+  }
+
+  function syncEntityInspectorEditMode(found) {
+    wireEntityInspectorPanes();
+    const panel = document.getElementById('entity-inspector-panel');
+    const modeEl = document.getElementById('entity-inspector-mode');
+    const body = document.getElementById('entity-inspector-body');
+    const kind = activeInspectorKind();
+    const editingEntity = kind === 'entity' && Boolean(found);
+    const editingField = kind === 'field' && Boolean(found) && Boolean(selectedFieldName());
+    const editing = editingEntity || editingField;
+    if (panel) {
+      panel.classList.toggle('is-editing', editing);
+      panel.classList.toggle('is-empty', !editing);
+      panel.classList.toggle('is-field-scope', editingField);
+      panel.dataset.editScope = editingField ? 'field' : (editingEntity ? 'entity' : 'none');
+      panel.setAttribute('aria-busy', 'false');
+      panel.setAttribute(
+        'aria-label',
+        editingField
+          ? `Editing field ${found.domain.name} / ${found.entity.name} / ${selectedFieldName()}`
+          : editingEntity
+            ? `Editing entity ${found.domain.name} / ${found.entity.name}`
+            : 'Entity inspector — no entity selected'
+      );
+    }
+    if (modeEl) {
+      modeEl.hidden = true;
+      modeEl.textContent = editingField ? 'Field' : editingEntity ? 'Entity' : 'No selection';
+    }
+    if (body) body.hidden = !editing;
+    // Field scope always shows Fields pane; entity switch resets to Fields.
+    const selectedId = editing ? found.entity.id : null;
+    if (editingField || (selectedId && selectedId !== lastSelectedEntityIdForPane)) {
+      setEntityInspectorPane('fields');
+    }
+    lastSelectedEntityIdForPane = selectedId;
+    if (!editing) setEntityInspectorPane('fields');
+  }
+
   function renderEntityInspector() {
     const found = findEntity(state.domains, state.selectedEntityId);
     dom.entityFieldList.innerHTML = '';
     dom.entityApiPreviewList.innerHTML = '';
+    syncEntityInspectorEditMode(found);
     if (!found) {
-      dom.entityInspectorTitle.textContent = 'No entity selected';
+      dom.entityInspectorTitle.textContent = 'Select an entity in the list';
       dom.entityRenameInput.value = '';
       dom.entityRenameInput.disabled = true;
       dom.saveEntityRenameBtn.disabled = true;
@@ -383,13 +1314,17 @@ export function createInspectors({ dom, state, interaction, actions }) {
       dom.applyFieldTemplateBtn.disabled = true;
       return;
     }
-    dom.entityInspectorTitle.textContent = `${found.domain.name} / ${found.entity.name}`;
+    const fieldFocus = selectedFieldName();
+    const fieldScope = activeInspectorKind() === 'field' && Boolean(fieldFocus);
+    dom.entityInspectorTitle.textContent = fieldScope
+      ? `${found.domain.name} / ${found.entity.name} · ${fieldFocus}`
+      : `${found.domain.name} / ${found.entity.name}`;
     dom.entityRenameInput.value = found.entity.name;
-    dom.entityRenameInput.disabled = false;
-    dom.saveEntityRenameBtn.disabled = false;
-    dom.duplicateEntityBtn.disabled = false;
-    dom.entityMoveDomainSelect.disabled = false;
-    dom.moveEntityBtn.disabled = false;
+    dom.entityRenameInput.disabled = fieldScope;
+    dom.saveEntityRenameBtn.disabled = fieldScope;
+    dom.duplicateEntityBtn.disabled = fieldScope;
+    dom.entityMoveDomainSelect.disabled = fieldScope;
+    dom.moveEntityBtn.disabled = fieldScope;
     dom.entityAggregateRootCheck.disabled = false;
     dom.entityAggregateRootCheck.checked = Boolean(found.entity?.meta?.aggregateRoot);
     dom.entityInvariantsInput.disabled = false;
@@ -422,13 +1357,22 @@ export function createInspectors({ dom, state, interaction, actions }) {
     dom.entityOasCompositionRefsInput.value = Array.isArray(composition.refs) ? composition.refs.join(', ') : '';
     dom.entityOasExternalRefsInput.value = Array.isArray(composition.externalRefs) ? composition.externalRefs.join(', ') : '';
     dom.entityOasDiscriminatorInput.value = composition.discriminator || '';
-    dom.fieldTemplateSelect.disabled = false;
-    dom.applyFieldTemplateBtn.disabled = false;
+    dom.fieldTemplateSelect.disabled = fieldScope;
+    dom.applyFieldTemplateBtn.disabled = fieldScope;
     dom.entityMoveDomainSelect.value = found.domain.id;
-    found.entity.fields.forEach((field) => {
+    const fieldsToEdit = fieldScope
+      ? (found.entity.fields || []).filter((field) => field.name === fieldFocus)
+      : (found.entity.fields || []);
+    if (fieldScope && !fieldsToEdit.length) {
+      const empty = document.createElement('li');
+      empty.className = 'field-row is-empty';
+      empty.textContent = `Field "${fieldFocus}" is not on this entity.`;
+      dom.entityFieldList.appendChild(empty);
+    }
+    fieldsToEdit.forEach((field) => {
       const li = document.createElement('li');
       const row = document.createElement('div');
-      row.className = 'field-row';
+      row.className = fieldScope ? 'field-row is-field-focus' : 'field-row';
       // JUM-732: every control in a generated field row carries the field it
       // belongs to in its accessible name. Before this, the name input and the
       // type select computed no accessible name at all, and the three buttons
@@ -503,17 +1447,39 @@ export function createInspectors({ dom, state, interaction, actions }) {
       del.textContent = 'x';
       del.setAttribute('aria-label', `Delete ${fieldLabel}`);
       del.onclick = () => removeField(found.entity.id, field.name);
-      row.appendChild(nameInput);
-      row.appendChild(typeSelect);
-      row.appendChild(requiredCheck);
-      row.appendChild(pkCheck);
-      row.appendChild(fkCheck);
-      row.appendChild(uniqueCheck);
-      row.appendChild(indexedCheck);
-      row.appendChild(nullableCheck);
-      row.appendChild(meta);
-      row.appendChild(save);
-      row.appendChild(del);
+      // Two-line row: name/type/actions on top, flag chips below — a single
+      // 11-track grid was wider than the Domain Designer drawer and clipped.
+      const primary = document.createElement('div');
+      primary.className = 'field-row-primary';
+      primary.appendChild(nameInput);
+      primary.appendChild(typeSelect);
+      const actions = document.createElement('div');
+      actions.className = 'field-row-actions';
+      actions.appendChild(meta);
+      actions.appendChild(save);
+      actions.appendChild(del);
+      primary.appendChild(actions);
+      const flags = document.createElement('div');
+      flags.className = 'field-row-flags';
+      flags.setAttribute('role', 'group');
+      flags.setAttribute('aria-label', `Flags for ${fieldLabel}`);
+      const flagDefs = [
+        [requiredCheck, 'req'],
+        [pkCheck, 'PK'],
+        [fkCheck, 'FK'],
+        [uniqueCheck, 'uniq'],
+        [indexedCheck, 'idx'],
+        [nullableCheck, 'null']
+      ];
+      flagDefs.forEach(([input, label]) => {
+        const chip = document.createElement('label');
+        chip.className = 'flag-chip';
+        chip.appendChild(input);
+        chip.appendChild(document.createTextNode(` ${label}`));
+        flags.appendChild(chip);
+      });
+      row.appendChild(primary);
+      row.appendChild(flags);
       li.appendChild(row);
       dom.entityFieldList.appendChild(li);
     });
@@ -928,10 +1894,26 @@ export function createInspectors({ dom, state, interaction, actions }) {
 
   return {
     renderDomainList,
+    renderEntityList,
     renderStatus,
     renderEntityOptions,
     renderRelationshipList,
     syncRelationshipInspector,
+    syncNoteInspector,
+    syncInspectorPanelVisibility,
+    syncDomainIntegrationChannelOther,
+    readDomainContextForm,
+    clearDomainContextForm,
+    isDomainContextHydrating: () => domainContextHydrating,
+    refreshDomainContextForm: () => {
+      const selected = getSelectedDomain();
+      writeDomainContextForm(selected?.context || {}, {
+        disabled: !(selected && !state.selectedEntityId && !state.selectedRelationshipId && !state.selectedNoteId),
+        selectedDomainName: selected?.name || '',
+        domainId: selected?.id || null,
+        force: true
+      });
+    },
     renderPickStatus,
     renderEntityRbacInspector,
     renderEntityContractsInspector,

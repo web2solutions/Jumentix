@@ -1,0 +1,41 @@
+{
+  "name": "@jumentix/jumentix-ui",
+  "version": "0.1.0",
+  "description": "Jumentix UI primitives (Ext-grade contracts): tokens, button, field, toolbar, scope chrome, segmented, tabs, list, details, form. Dark-first. No Sencha runtime.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./css": "./src/css/jumentix-ui.css",
+    "./css/tokens": "./src/css/tokens.css",
+    "./css/primitives": "./src/css/primitives.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "gallery",
+    "README.md",
+    "README.pt-BR.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "build": "bun -e \"console.log('@jumentix/jumentix-ui: CSS package — no compile step')\"",
+    "test": "bun test --isolate test",
+    "typecheck": "bun -e \"console.log('@jumentix/jumentix-ui: no TS sources')\"",
+    "clean": "bun -e \"console.log('@jumentix/jumentix-ui: nothing to clean')\""
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web2solutions/Jumentix.git",
+    "directory": "packages/jumentix-ui"
+  },
+  "homepage": "https://jumentix-website.vercel.app"
+}
