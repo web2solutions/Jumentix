@@ -222,6 +222,24 @@ describe('check-pr-governance', () => {
     expect(validatePullRequest({ ...generated, body: 'manual changelog update' })).toHaveLength(2);
   });
 
+  it('allows Dependabot PRs to target main or dev without Linear/JUM metadata', () => {
+    expect.hasAssertions();
+    const dependabotMain = {
+      title: 'chore(deps): bump source-map-js from 1.2.1 to 1.2.2 in /apps/frontend/template',
+      body: 'Bumps source-map-js from 1.2.1 to 1.2.2.',
+      headRef: 'dependabot/npm_and_yarn/apps/frontend/template/source-map-js-1.2.2',
+      baseRef: 'main'
+    };
+    const dependabotDev = {
+      ...dependabotMain,
+      headRef: 'dependabot/bun/some-package-1.2.3',
+      baseRef: 'dev'
+    };
+
+    expect(validatePullRequest(dependabotMain)).toStrictEqual([]);
+    expect(validatePullRequest(dependabotDev)).toStrictEqual([]);
+  });
+
   it('allows the CI-generated app-release bump PR to target main', () => {
     expect.hasAssertions();
     const generated = {
