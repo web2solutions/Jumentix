@@ -34,7 +34,7 @@ describe('classify-ci-context', () => {
     });
   });
 
-  it('classifies a task PR to dev as branch-gate plus third-party-review and browser-matrix', () => {
+  it('classifies a task PR to dev as branch-gate, third-party-review, browser-matrix, and coverage', () => {
     expect.hasAssertions();
 
     const evidence = classify({
@@ -44,7 +44,9 @@ describe('classify-ci-context', () => {
     });
 
     expect(evidence.context).toBe(CONTEXTS.TASK_PR_TO_DEV);
-    expect(evidence.selectedJobs).toStrictEqual(['branch-gate', 'third-party-review', 'browser-matrix']);
+    expect(evidence.selectedJobs).toStrictEqual([
+      'branch-gate', 'third-party-review', 'browser-matrix', 'coverage'
+    ]);
   });
 
   it('classifies a dev push as the cheap health gate', () => {
@@ -246,11 +248,13 @@ describe('classify-ci-context', () => {
     expect(jobSelected(evidence, 'missing')).toBe(false);
   });
 
-  it('selects browser-matrix for task PRs to dev and release PRs to main', () => {
+  it('selects browser-matrix and coverage for task PRs to dev and release PRs to main', () => {
     expect.hasAssertions();
 
     expect(selectedJobsFor(CONTEXTS.TASK_PR_TO_DEV)).toContain('browser-matrix');
+    expect(selectedJobsFor(CONTEXTS.TASK_PR_TO_DEV)).toContain('coverage');
     expect(selectedJobsFor(CONTEXTS.RELEASE_PR_TO_MAIN)).toContain('browser-matrix');
+    expect(selectedJobsFor(CONTEXTS.RELEASE_PR_TO_MAIN)).toContain('coverage');
   });
 
   it('keeps browser-matrix out of push and scheduled contexts', () => {

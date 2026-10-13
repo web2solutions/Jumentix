@@ -177,7 +177,7 @@ Remote enforcement:
 
 - CircleCI (`.circleci/config.yml`) is the canonical hosted orchestrator and invokes `bun run ci:gate:branch`
 - CircleCI passes the PR base branch or pushed branch explicitly, marks PR events, and stores branch-gate evidence even after failure
-- CircleCI owns full coverage production (plus Codecov upload and SonarCloud scan) for pushes to `dev` and `main`, `dev -> main` promotions, and the nightly scheduled full runs; local gates and task PRs to `dev` stay fast and diagnostic
+- CircleCI owns full coverage production (plus Codecov upload and SonarCloud scan) for every PR to `dev`, every push to `dev`/`main`, `dev -> main` promotions, and the nightly scheduled full runs (JUM-923 / Requirement `113`); local task-branch push gates stay change-focused and are not the coverage authority
 - After a validated merge to `main`, the always-on GitHub Actions `sync-changelog` job serializes the generated `CHANGELOG.md` update; task branches, `dev`, and PRs leave that file untouched
 - Task-branch push events compare `origin/dev...HEAD`; hosted CI never uses the local staged-diff mode
 - CircleCI stores `artifacts/ci/full-test-matrix.json` when the branch gate selects the full matrix
@@ -192,18 +192,20 @@ Remote enforcement:
 #### Hosted job matrix by context (JUM-786)
 
 `ci-cd/classify-ci-context.js` (`JOBS_BY_CONTEXT`) and the job guards in
-`.circleci/config.yml` must agree. Heavy jobs (`workspace-builds`,
-`workspace-tests`, `integration`, `coverage`, `website`, `database-matrix`) run
-only for release/`main`/scheduled contexts (Requirements `087`/`113`). They
-**intentionally skip** on task-branch pushes, PRs to `dev`, and cheap `dev`
-pushes — a skip there is not a pass. The flag-gated `.github/workflows/ci.yml`
-keeps matching job-level `if:` guards for the fallback path.
+`.circleci/config.yml` must agree. Heavy jobs other than `coverage`
+(`workspace-builds`, `workspace-tests`, `integration`, `website`,
+`database-matrix`) run only for release/`main`/scheduled contexts
+(Requirements `087`/`113`). They **intentionally skip** on task-branch pushes
+and PRs to `dev` — a skip there is not a pass. `coverage` is selected for
+every PR to `dev` and every push to `dev` so a coverage-red tip cannot land
+(JUM-923 / Requirement `020`). The flag-gated `.github/workflows/ci.yml` keeps
+matching job-level `if:` guards for the fallback path.
 
 | Context | Hosted jobs that run (CircleCI) | Branch-gate script + preflight |
 | --- | --- | --- |
 | Task-branch push | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
-| PR to `dev` | `branch-gate`, `third-party-review`, `browser-matrix` (plus always-on GitHub `pr-feedback`) | same task gate + preflight |
-| Push to `dev` | `branch-gate` | `test:unit` + lint, integrity, workspace boundaries, `build:dev` |
+| PR to `dev` | `branch-gate`, `third-party-review`, `browser-matrix`, `coverage` (plus always-on GitHub `pr-feedback`) | same task gate + preflight |
+| Push to `dev` | `branch-gate`, `coverage` | `test:unit` + lint, integrity, workspace boundaries, `build:dev` |
 | Release PR to `main` / push to `main` / schedule / manual trigger | full list (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, workspace boundaries, `build:dev` preflight) |
 
 `build:dev` (`tsc -p tsconfig.build.json`) typechecks backend/package TypeScript
