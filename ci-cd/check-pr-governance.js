@@ -186,11 +186,19 @@ function isGeneratedPackageBump({ title, body, headRef }) {
     && String(body || '').trimStart().startsWith(GENERATED_PACKAGE_BUMP_BODY_PREFIX);
 }
 
+/** Dependabot version/security update branches (`dependabot/<ecosystem>/...`). */
+function isDependabotPullRequest({ headRef }) {
+  return /^dependabot\//i.test(String(headRef || '').trim());
+}
+
 function validateReleasePullRequest({ title, body, headRef }) {
   const failures = [];
   if (isGeneratedChangelogSync({ title, body, headRef })) return failures;
   if (isGeneratedAppRelease({ title, body, headRef })) return failures;
   if (isGeneratedPackageBump({ title, body, headRef })) return failures;
+  // Security updates always open against the default branch; allow them through
+  // without Linear/JUM release-title rules so required CI can run and merge.
+  if (isDependabotPullRequest({ headRef })) return failures;
   if (headRef !== 'dev' && !isSignedDevPromotionBranch(headRef)) {
     failures.push('[pr-governance] only dev may target main');
   }
@@ -294,6 +302,9 @@ function validatePullRequest(metadata, rootDir = process.cwd()) {
     failures.push(`[pr-governance] task PR must target dev, got: ${baseRef || '<empty>'}`);
     return failures;
   }
+
+  // Version updates target `dev` via dependabot.yml; skip agent-branch / Linear fields.
+  if (isDependabotPullRequest({ headRef })) return failures;
 
   const { failures: branchFailures, branchMatch, branchNature } = resolveTaskBranch(headRef, rootDir);
   if (branchFailures.length > 0 && !branchMatch) return branchFailures;
