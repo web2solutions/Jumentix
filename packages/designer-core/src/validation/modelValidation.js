@@ -84,6 +84,15 @@ export function collectModelIssues(state) {
         pushIssue(`Duplicate entity name in domain ${domain.name}: ${entity.name}`, entity.id, 'error');
       }
       seenEntityNames.add(entityKey);
+      // Domain⊃Entity ownership — nesting under domain is ownership. A denormalized
+      // domainId is stamped by normalize; when present it must match the parent.
+      if (entity.domainId && entity.domainId !== domain.id) {
+        pushIssue(
+          `Entity ${domain.name}/${entity.name || entity.id} domainId mismatch (expected ${domain.id}, got ${entity.domainId}).`,
+          entity.id,
+          'error'
+        );
+      }
 
       const seenFields = new Set();
       let hasPrimaryKey = false;
@@ -186,11 +195,33 @@ export function collectModelIssues(state) {
     });
   });
 
+  const selection = state.selection;
+  if (selection && typeof selection === 'object') {
+    if ((selection.kind === 'entity' || selection.kind === 'field') && !selection.domainId) {
+      pushIssue('Selection path has entity/field without domainId.', null, 'error');
+    }
+    if (selection.kind === 'field' && (!selection.entityId || !selection.fieldName)) {
+      pushIssue('Selection path has field without entityId/fieldName.', null, 'error');
+    }
+    if (selection.entityId && selection.domainId) {
+      const hit = findEntity(state.domains, selection.entityId);
+      if (hit && hit.domain.id !== selection.domainId) {
+        pushIssue('Selection path entityId does not belong to selection.domainId.', selection.entityId, 'error');
+      }
+    }
+  }
+
   state.relationships.forEach((relationship) => {
     const from = findEntity(state.domains, relationship.fromEntityId);
     const to = findEntity(state.domains, relationship.toEntityId);
     if (!from || !to) {
       pushIssue(`Relationship "${relationship.name || relationship.id}" references missing entities.`, null, 'error');
+    }
+    if (from && relationship.fromDomainId && relationship.fromDomainId !== from.domain.id) {
+      pushIssue(`Relationship "${relationship.name || relationship.id}" fromDomainId mismatch.`, null, 'error');
+    }
+    if (to && relationship.toDomainId && relationship.toDomainId !== to.domain.id) {
+      pushIssue(`Relationship "${relationship.name || relationship.id}" toDomainId mismatch.`, null, 'error');
     }
     if (!['1', 'N'].includes(relationship.fromCardinality) || !['1', 'N'].includes(relationship.toCardinality)) {
       pushIssue(`Relationship "${relationship.name || relationship.id}" has invalid cardinality.`, null, 'error');

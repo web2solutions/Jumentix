@@ -1,0 +1,3138 @@
+{
+  "generatedAt": "2026-10-11T12:40:12.545Z",
+  "branch": "cursor/feature/edge-focus-camera3-mvp",
+  "expectedShell": "0.9.138",
+  "short": false,
+  "shotCount": 26,
+  "mvpVerdict": "PASS",
+  "video": "apps/service-management/test/artifacts/nav-video-r3/tour.webm",
+  "mediaRecorder": null,
+  "mediaRecorderBytes": 0,
+  "frameCount": 68,
+  "findings": [
+    {
+      "severity": "info",
+      "id": "clean",
+      "detail": "No automated probe failures on this tour."
+    }
+  ],
+  "steps": [
+    {
+      "index": 1,
+      "name": "boot",
+      "file": "01-boot.png",
+      "note": "after SW unregister",
+      "focusKind": "none",
+      "stage": "overview",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "100%",
+      "scope": "Nothing selected",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 0,
+      "quietCount": 0,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": false,
+      "usersLabel": null,
+      "usersEntityCount": null,
+      "softPeerEntityCounts": [],
+      "domains": []
+    },
+    {
+      "index": 2,
+      "name": "load-sample",
+      "file": "02-load-sample.png",
+      "note": "",
+      "focusKind": "none",
+      "stage": "overview",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "100%",
+      "scope": "Domain · Users",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 0,
+      "quietCount": 0,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": false,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": null,
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": null,
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "overview",
+      "file": "03-overview.png",
+      "note": "",
+      "focusKind": "none",
+      "stage": "overview",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "52%",
+      "scope": "2 domains",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 0,
+      "quietCount": 0,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": false,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": null,
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": null,
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "name": "domain-tasks",
+      "file": "04-domain-tasks.png",
+      "note": "",
+      "focusKind": "domain",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "44%",
+      "scope": "Domain · Tasks",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 0,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "name": "domain-users",
+      "file": "05-domain-users.png",
+      "note": "",
+      "focusKind": "domain",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "44%",
+      "scope": "Domain · Users",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 4,
+      "quietCount": 0,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Tasks",
+          "entityCount": 3,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "name": "entity-user",
+      "file": "06-entity-user.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Users · User",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 4,
+      "quietCount": 4,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Tasks",
+          "entityCount": 3,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "name": "entity-task",
+      "file": "07-entity-task.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "name": "entity-comment",
+      "file": "08-entity-comment.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Tasks · Comment",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "name": "field-assigneeId",
+      "file": "09-field-assigneeId.png",
+      "note": "",
+      "focusKind": "field",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "45%",
+      "scope": "Field · Tasks → Task → assigneeId",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1.005705, 0, 0, 1.005705, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "name": "field-title",
+      "file": "10-field-title.png",
+      "note": "",
+      "focusKind": "field",
+      "stage": "focus",
+      "camera": "3",
+      "navigating": true,
+      "zoomPct": "148%",
+      "scope": "Field · Tasks → Task → title",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 0,
+      "quietCount": 8,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": true,
+      "scaledSoftEntities": false,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": true,
+          "staged": false,
+          "focus": false,
+          "depth": "2",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1.02, 0, 0, 1.02, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "name": "field-projectId",
+      "file": "11-field-projectId.png",
+      "note": "",
+      "focusKind": "field",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "81%",
+      "scope": "Field · Tasks → Task → projectId",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 0,
+      "quietCount": 8,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": true,
+      "scaledSoftEntities": false,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": true,
+          "staged": false,
+          "focus": false,
+          "depth": "2",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1.005319, 0, 0, 1.005319, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "name": "edge-select",
+      "file": "12-edge-select.png",
+      "note": "sample-rel-task-project",
+      "focusKind": "relationship",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "84%",
+      "scope": "Relationship",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 2,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": true,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 0,
+      "softPeerEntityCounts": [],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": true,
+          "staged": false,
+          "focus": false,
+          "depth": "2",
+          "countLabel": "",
+          "entityCount": 0,
+          "entities": []
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "name": "zoom-wheel-in",
+      "file": "13-zoom-wheel-in.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "231%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "name": "zoom-wheel-out",
+      "file": "14-zoom-wheel-out.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "32%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "name": "zoom-toolbar-in",
+      "file": "15-zoom-toolbar-in.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "36%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "name": "zoom-toolbar-out",
+      "file": "16-zoom-toolbar-out.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "32%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "name": "fit-view",
+      "file": "17-fit-view.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1.00006, 0, 0, 1.00006, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "name": "reset-view",
+      "file": "18-reset-view.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "name": "minimap-click",
+      "file": "19-minimap-click.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "name": "esc-start-field",
+      "file": "20-esc-start-field.png",
+      "note": "",
+      "focusKind": "field",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "45%",
+      "scope": "Field · Tasks → Task → assigneeId",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1.02, 0, 0, 1.02, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "name": "esc-to-entity",
+      "file": "21-esc-to-entity.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 22,
+      "name": "esc-to-domain",
+      "file": "22-esc-to-domain.png",
+      "note": "",
+      "focusKind": "domain",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "44%",
+      "scope": "Domain · Tasks",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 0,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "name": "esc-to-overview",
+      "file": "23-esc-to-overview.png",
+      "note": "",
+      "focusKind": "none",
+      "stage": "overview",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "52%",
+      "scope": "2 domains",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 0,
+      "quietCount": 0,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": false,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": null,
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": null,
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": false,
+              "depth": null,
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 24,
+      "name": "refocus-task",
+      "file": "24-refocus-task.png",
+      "note": "",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Tasks · Task",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 6,
+      "quietCount": 2,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Users",
+          "entityCount": 5,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 25,
+      "name": "refocus-quiet-peer",
+      "file": "25-refocus-quiet-peer.png",
+      "note": "sample-entity-user → Users · User",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Users · User",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 4,
+      "quietCount": 4,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Tasks",
+          "entityCount": 3,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 26,
+      "name": "final",
+      "file": "26-final.png",
+      "note": "taskProbe soft=6",
+      "focusKind": "entity",
+      "stage": "focus",
+      "camera": null,
+      "navigating": false,
+      "zoomPct": "47%",
+      "scope": "Users · User",
+      "shell": "0.9.138",
+      "midInside": 0,
+      "softCount": 4,
+      "quietCount": 4,
+      "stagedCount": 0,
+      "ghostDomains": [],
+      "scaledQuiet": false,
+      "scaledSoftEntities": true,
+      "usersLabel": null,
+      "usersEntityCount": 5,
+      "softPeerEntityCounts": [
+        {
+          "name": "Tasks",
+          "entityCount": 3,
+          "countLabel": ""
+        }
+      ],
+      "domains": [
+        {
+          "name": "Users",
+          "soft": false,
+          "quiet": false,
+          "staged": false,
+          "focus": true,
+          "depth": "0",
+          "countLabel": "",
+          "entityCount": 5,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": false,
+              "focus": true,
+              "depth": "0",
+              "scale": "matrix(1, 0, 0, 1, 0, 0)",
+              "opacity": "1"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": false,
+              "quiet": true,
+              "focus": false,
+              "depth": "2",
+              "scale": "matrix(0.78, 0, 0, 0.78, 0, 0)",
+              "opacity": "0.42"
+            }
+          ]
+        },
+        {
+          "name": "Tasks",
+          "soft": true,
+          "quiet": false,
+          "staged": false,
+          "focus": false,
+          "depth": "1",
+          "countLabel": "",
+          "entityCount": 3,
+          "entities": [
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            },
+            {
+              "id": "sample-e",
+              "soft": true,
+              "quiet": false,
+              "focus": false,
+              "depth": "1",
+              "scale": "matrix(0.9, 0, 0, 0.9, 0, 0)",
+              "opacity": "0.78"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -172,11 +172,11 @@ This file consolidates non-functional requirements already requested and stored 
   full matrix; GitHub Actions is retained, disabled by default behind the single
   reversible `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` repository variable, with three
   always-on exceptions (`pr-feedback.yml`, the `ci.yml` `sync-changelog` and
-  `pr-feedback` jobs, `npm-publish.yml`). Task delivery to `dev` uses cheap
-  layer-aware gates; release promotion to `main` runs full
-  coverage, Codecov publishing, Sonar defense-in-depth, website, integration,
-  workspace and database checks. SonarQube Cloud and Codecov run on CircleCI
-  without interruption.
+  `pr-feedback` jobs, `npm-publish.yml`). Every PR to `dev` (and every push to
+  `dev`) must run the CircleCI `coverage` job fail-closed (JUM-923 / Req `020`);
+  task-branch *pushes* stay change-focused. Release promotion to `main` runs the
+  full matrix (coverage, Codecov, Sonar, website, integration, workspace,
+  database). SonarQube Cloud and Codecov run on CircleCI without interruption.
 - `114` Agent onboard uses an operator-confirmed filesystem root (this host:
   `/Users/eduardoalmeida/apps/XpertMinds`) and the layout
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.

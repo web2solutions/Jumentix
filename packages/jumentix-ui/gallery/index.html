@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jumentix UI — KitchenSink</title>
+  <link rel="stylesheet" href="../src/css/jumentix-ui.css" />
+  <style>
+    body { margin: 0; font-family: var(--jtx-ui-font); background: var(--jtx-ui-surface); color: var(--jtx-ui-ink); }
+    main { max-width: 960px; margin: 0 auto; padding: 24px; display: grid; gap: 28px; }
+    h1 { margin: 0 0 8px; color: var(--jtx-ui-ink-strong); }
+    h2 { margin: 0 0 12px; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--jtx-ui-ink-muted); }
+    section { border: 1px solid var(--jtx-ui-line); border-radius: var(--jtx-ui-radius); background: var(--jtx-ui-surface-panel); overflow: hidden; }
+    .pad { padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+  </style>
+</head>
+<body class="jtx-ui-root">
+  <main>
+    <header>
+      <h1>Jumentix UI KitchenSink</h1>
+      <p>Ext-grade contracts · dark-first · prefix <code>jtx-ui-*</code></p>
+    </header>
+
+    <section>
+      <div class="jtx-ui-scope-chrome">
+        <p class="jtx-ui-scope-chrome-job">Structure</p>
+        <p class="jtx-ui-scope-chrome-path">Users → User</p>
+      </div>
+      <div class="jtx-ui-toolbar">
+        <input class="jtx-ui-input" placeholder="New entity" />
+        <button type="button" class="jtx-ui-btn jtx-ui-btn-primary">Entity</button>
+        <span class="jtx-ui-toolbar-spacer"></span>
+        <button type="button" class="jtx-ui-btn">Find</button>
+      </div>
+      <div class="pad">
+        <h2 style="width:100%">Scope chrome + toolbar</h2>
+      </div>
+    </section>
+
+    <section>
+      <div class="jtx-ui-tabs" role="tablist">
+        <button type="button" class="jtx-ui-tab active" role="tab" aria-selected="true">Model</button>
+        <button type="button" class="jtx-ui-tab" role="tab" aria-selected="false">History</button>
+        <button type="button" class="jtx-ui-tab" role="tab" aria-selected="false">Validate</button>
+        <button type="button" class="jtx-ui-tab" role="tab" aria-selected="false">Export</button>
+        <button type="button" class="jtx-ui-tab" role="tab" aria-selected="false">Import</button>
+      </div>
+      <div class="pad"><h2 style="width:100%">Tabs (natures)</h2></div>
+    </section>
+
+    <section>
+      <div class="pad">
+        <h2 style="width:100%">Buttons / segmented / field</h2>
+        <button type="button" class="jtx-ui-btn">Default</button>
+        <button type="button" class="jtx-ui-btn jtx-ui-btn-primary">Primary</button>
+        <button type="button" class="jtx-ui-btn jtx-ui-btn-danger">Danger</button>
+        <div class="jtx-ui-segmented">
+          <button type="button" class="jtx-ui-btn">Undo</button>
+          <button type="button" class="jtx-ui-btn">Redo</button>
+        </div>
+        <div class="jtx-ui-field" style="width:100%">
+          <label class="jtx-ui-field-label" for="demo-name">Name</label>
+          <input id="demo-name" class="jtx-ui-input" value="User" />
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <details class="jtx-ui-details" open>
+        <summary>Details / accordion leaf</summary>
+        <div class="pad">
+          <ul class="jtx-ui-list">
+            <li style="padding:8px 10px;border-bottom:1px solid var(--jtx-ui-line)">Row one</li>
+            <li style="padding:8px 10px">Row two</li>
+          </ul>
+        </div>
+      </details>
+    </section>
+  </main>
+</body>
+</html>

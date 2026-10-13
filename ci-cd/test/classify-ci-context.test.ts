@@ -34,7 +34,7 @@ describe('classify-ci-context', () => {
     });
   });
 
-  it('classifies a task PR to dev as branch-gate plus third-party-review and browser-matrix', () => {
+  it('classifies a task PR to dev as branch-gate, third-party-review, browser-matrix, and coverage', () => {
     expect.hasAssertions();
 
     const evidence = classify({
@@ -44,7 +44,9 @@ describe('classify-ci-context', () => {
     });
 
     expect(evidence.context).toBe(CONTEXTS.TASK_PR_TO_DEV);
-    expect(evidence.selectedJobs).toStrictEqual(['branch-gate', 'third-party-review', 'browser-matrix']);
+    expect(evidence.selectedJobs).toStrictEqual([
+      'branch-gate', 'third-party-review', 'browser-matrix', 'coverage'
+    ]);
   });
 
   it('classifies a dev push as the cheap health gate', () => {
@@ -200,6 +202,33 @@ describe('classify-ci-context', () => {
     })).toThrow('only dev may open release pull requests to main');
   });
 
+  it('classifies Dependabot security PRs targeting main as full-suite release promotions', () => {
+    expect.hasAssertions();
+
+    const evidence = classify({
+      GITHUB_EVENT_NAME: 'pull_request',
+      JUMENTIX_CI_IS_PULL_REQUEST: 'true',
+      GITHUB_HEAD_REF: 'dependabot/npm_and_yarn/apps/frontend/template/source-map-js-1.2.2',
+      GITHUB_BASE_REF: 'main'
+    });
+
+    expect(evidence.context).toBe(CONTEXTS.RELEASE_PR_TO_MAIN);
+    expect(evidence.selectedJobs).toStrictEqual([...FULL_JOBS, 'browser-matrix']);
+  });
+
+  it('classifies Dependabot version-update PRs targeting dev as task PRs', () => {
+    expect.hasAssertions();
+
+    const evidence = classify({
+      GITHUB_EVENT_NAME: 'pull_request',
+      JUMENTIX_CI_IS_PULL_REQUEST: 'true',
+      GITHUB_HEAD_REF: 'dependabot/bun/some-package-1.2.3',
+      GITHUB_BASE_REF: 'dev'
+    });
+
+    expect(evidence.context).toBe(CONTEXTS.TASK_PR_TO_DEV);
+  });
+
   it('returns exit 78 when a required job is not selected', () => {
     expect.hasAssertions();
 
@@ -219,11 +248,13 @@ describe('classify-ci-context', () => {
     expect(jobSelected(evidence, 'missing')).toBe(false);
   });
 
-  it('selects browser-matrix for task PRs to dev and release PRs to main', () => {
+  it('selects browser-matrix and coverage for task PRs to dev and release PRs to main', () => {
     expect.hasAssertions();
 
     expect(selectedJobsFor(CONTEXTS.TASK_PR_TO_DEV)).toContain('browser-matrix');
+    expect(selectedJobsFor(CONTEXTS.TASK_PR_TO_DEV)).toContain('coverage');
     expect(selectedJobsFor(CONTEXTS.RELEASE_PR_TO_MAIN)).toContain('browser-matrix');
+    expect(selectedJobsFor(CONTEXTS.RELEASE_PR_TO_MAIN)).toContain('coverage');
   });
 
   it('keeps browser-matrix out of push and scheduled contexts', () => {

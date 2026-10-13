@@ -183,7 +183,7 @@ Aplicação remota:
 
 - CircleCI (`.circleci/config.yml`) é o orquestrador hospedado canônico e invoca `bun run ci:gate:branch`
 - o CircleCI passa a branch base do PR ou a branch enviada, marca eventos de PR e sempre retém a evidência do gate
-- CircleCI assume a produção completa de cobertura (mais upload Codecov e scan SonarCloud) em pushes para `dev` e `main`, promoções `dev -> main` e nas execuções completas do gatilho agendado noturno; gates locais e PRs de tarefa até `dev` ficam rápidos e diagnósticos
+- CircleCI assume a produção completa de cobertura (mais upload Codecov e scan SonarCloud) em toda PR para `dev`, todo push para `dev`/`main`, promoções `dev -> main` e nas execuções completas do gatilho agendado noturno (JUM-923 / Requisito `113`); gates locais de push em branches de tarefa continuam focados na mudança e não são a autoridade de cobertura
 - Após um merge validado em `main`, o job `sync-changelog` do GitHub Actions, sempre ativo, serializa a atualização gerada de `CHANGELOG.md`; branches de tarefa, `dev` e PRs deixam esse arquivo intacto
 - eventos de push em branches de tarefa comparam `origin/dev...HEAD`; a CI hospedada nunca usa o
   modo local de diff staged
@@ -199,18 +199,20 @@ Aplicação remota:
 #### Matriz de jobs hospedados por contexto (JUM-786)
 
 `ci-cd/classify-ci-context.js` (`JOBS_BY_CONTEXT`) e os guards de jobs em
-`.circleci/config.yml` precisam concordar. Jobs pesados (`workspace-builds`,
-`workspace-tests`, `integration`, `coverage`, `website`, `database-matrix`)
-correm só em release/`main`/agendado (Requisitos `087`/`113`). Em push de
-tarefa, PR para `dev` e push barato para `dev` eles **pulam de propósito** —
-pular não é passar. O `.github/workflows/ci.yml`, retido atrás do flag, mantém
-`if:` equivalentes por job para o caminho de fallback.
+`.circleci/config.yml` precisam concordar. Jobs pesados além de `coverage`
+(`workspace-builds`, `workspace-tests`, `integration`, `website`,
+`database-matrix`) correm só em release/`main`/agendado (Requisitos
+`087`/`113`). Em push de tarefa eles **pulam de propósito** — pular não é
+passar. `coverage` roda em toda PR para `dev` e em todo push para `dev` para
+a ponta não aceitar regressão de cobertura (JUM-923 / Requisito `020`). O
+`.github/workflows/ci.yml`, retido atrás do flag, mantém `if:` equivalentes
+por job para o caminho de fallback.
 
 | Contexto | Jobs que rodam (CircleCI) | Script do branch-gate + preflight |
 | --- | --- | --- |
 | Push de branch de tarefa | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
-| PR para `dev` | `branch-gate`, `third-party-review`, `browser-matrix` (mais o `pr-feedback` do GitHub, sempre ativo) | mesmo gate de tarefa + preflight |
-| Push para `dev` | `branch-gate` | `test:unit` + lint, integrity, boundaries, `build:dev` |
+| PR para `dev` | `branch-gate`, `third-party-review`, `browser-matrix`, `coverage` (mais o `pr-feedback` do GitHub, sempre ativo) | mesmo gate de tarefa + preflight |
+| Push para `dev` | `branch-gate`, `coverage` | `test:unit` + lint, integrity, boundaries, `build:dev` |
 | PR de release para `main` / push `main` / schedule / gatilho manual | lista completa (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
 
 `build:dev` (`tsc -p tsconfig.build.json`) tipa o TypeScript de backend/pacotes

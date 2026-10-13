@@ -69,6 +69,20 @@ describe('first-run sample model (JUM-548)', () => {
         .toStrictEqual(['User', 'Organization', 'Email', 'Phone', 'ContactPoint']);
       expect(tasks.entities.map((entity: { name: string }) => entity.name))
         .toStrictEqual(['Project', 'Task', 'Comment']);
+      expect(users.context).toMatchObject({
+        ownerTeam: 'platform',
+        downstreamDependencies: ['Tasks'],
+        integrationChannel: 'http',
+        packageDependencies: ['@acme/platform-kernel']
+      });
+      expect(tasks.context).toMatchObject({
+        ubiquitousLanguage: 'project, task, assignee, comment',
+        ownerTeam: 'delivery',
+        upstreamDependencies: ['Users'],
+        integrationChannel: 'async',
+        packageDependencies: ['@acme/identity-contracts'],
+        sharedValueObjects: ['ProjectId', 'Money']
+      });
       expect(state.relationships.map((relationship: { name: string }) => relationship.name))
         .toStrictEqual([
           'User belongs to Organization',

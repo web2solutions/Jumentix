@@ -27,9 +27,14 @@ const FULL_JOBS = Object.freeze([
 
 const JOBS_BY_CONTEXT = Object.freeze({
   [CONTEXTS.TASK_BRANCH_PUSH]: Object.freeze(['branch-gate']),
-  [CONTEXTS.TASK_PR_TO_DEV]: Object.freeze(['branch-gate', 'third-party-review', 'browser-matrix']),
-  // Codecov + SonarCloud analyse both long-lived branches; other heavy jobs
-  // stay release/main/scheduled only.
+  // Coverage is mandatory on PRs to `dev` (Requirements 020/113): soft-skipping
+  // left merges green while the post-merge `dev-push` coverage job failed
+  // (JUM-918 → JUM-922). Sonar reliability-A still rides inside this job.
+  [CONTEXTS.TASK_PR_TO_DEV]: Object.freeze([
+    'branch-gate', 'third-party-review', 'browser-matrix', 'coverage'
+  ]),
+  // Other heavy jobs stay release/main/scheduled only; coverage also runs on
+  // every push to `dev` so the tip cannot drift after a force-push or direct land.
   [CONTEXTS.DEV_PUSH]: Object.freeze(['branch-gate', 'coverage']),
   [CONTEXTS.RELEASE_PR_TO_MAIN]: Object.freeze([...FULL_JOBS, 'browser-matrix']),
   [CONTEXTS.MAIN_PUSH]: FULL_JOBS,
@@ -124,6 +129,15 @@ function isGeneratedAppReleaseBranch(headRef) {
   return /^chore\/release-v\d+\.\d+\.\d+$/i.test(String(headRef || '').trim());
 }
 
+/**
+ * Dependabot version/security update branches (`dependabot/<ecosystem>/...`).
+ * Security updates always open against the default branch (`main`); version
+ * updates respect `target-branch: dev` in `.github/dependabot.yml`.
+ */
+function isDependabotBranch(headRef) {
+  return /^dependabot\//i.test(String(headRef || '').trim());
+}
+
 function classifyCiContext(options = {}) {
   const env = options.env || process.env;
   const cwd = options.cwd || process.cwd();
@@ -147,6 +161,7 @@ function classifyCiContext(options = {}) {
         || isGeneratedChangelogSyncBranch(headRef)
         || isGeneratedPackageBumpBranch(headRef)
         || isGeneratedAppReleaseBranch(headRef)
+        || isDependabotBranch(headRef)
       )
     ) {
       context = CONTEXTS.RELEASE_PR_TO_MAIN;
@@ -239,6 +254,7 @@ module.exports = {
   JOBS_BY_CONTEXT,
   classifyCiContext,
   isPullRequest,
+  isDependabotBranch,
   isGeneratedChangelogSyncBranch,
   isGeneratedPackageBumpBranch,
   isGeneratedAppReleaseBranch,

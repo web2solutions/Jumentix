@@ -30,6 +30,10 @@ const { syncServiceManagementCanaBundle } = require(
 const { syncServiceManagementSwaggerUi } = require(
   path.resolve(process.cwd(), 'apps/service-management/scripts/sync-service-management-swagger-ui.js')
 ) as { syncServiceManagementSwaggerUi: (options?: { root?: string }) => number };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { syncServiceManagementJumentixUi } = require(
+  path.resolve(process.cwd(), 'apps/service-management/scripts/sync-service-management-jumentix-ui.js')
+) as { syncServiceManagementJumentixUi: (options?: { root?: string }) => number };
 
 export const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
 export const staticRoot = path.resolve(process.cwd(), 'apps/service-management');
@@ -339,6 +343,10 @@ export async function startServer(
   if (swaggerSyncResult !== 0) {
     throw new Error('swagger-ui vendor sync failed; the OpenAPI tab cannot boot without it.');
   }
+  const jumentixUiSyncResult = syncServiceManagementJumentixUi({ root: process.cwd() });
+  if (jumentixUiSyncResult !== 0) {
+    throw new Error('jumentix-ui vendor sync failed; the designer shell cannot boot without it.');
+  }
   return runWithPortRetry({
     pinnedPort: options.pinnedPort,
     maxAttempts: options.maxAttempts,
@@ -500,7 +508,7 @@ type DrawerPage = {
   click: (target: string) => Promise<void>;
   waitForSelector: (target: string, options?: Record<string, unknown>) => Promise<unknown>;
   $: (target: string) => Promise<unknown>;
-  evaluate: <T>(fn: (target: string) => T, arg: string) => Promise<T>;
+  evaluate: <T, A = string>(fn: (arg: A) => T, arg: A) => Promise<T>;
 };
 
 export async function openDesignerPanels(
@@ -528,12 +536,80 @@ export async function openDesignerPanels(
     const toggle = document.getElementById('toggle-sidebar-btn');
     if (drawer && !drawer.classList.contains('open')) toggle?.click();
 
+    // Exclusive Structure create: Domain create only when selection is none;
+    // Entity create / search only when a domain is selected. Tests historically
+    // opened #domain-name-input while the default first-domain selection kept
+    // that toolbar inactive — clear or promote selection to match the control.
+    // Clear selection when focusing the domain-create field. For `#add-domain-btn`,
+    // only clear when a domain is still selected (toolbar inactive) — never after
+    // fillInPanels already cleared, or a second canvas click races multi-tab sync.
+    const needsDomainCreateField = Boolean(
+      selector
+      && (
+        selector.includes('domain-name-input')
+        || selector.includes('domain-create')
+      )
+    );
+    const needsDomainCreateBtn = Boolean(selector && selector.includes('add-domain-btn'));
+    const needsEntityWorkspace = Boolean(
+      selector
+      && (
+        selector.includes('entity-name-input')
+        || selector.includes('entity-search')
+        || selector.includes('entity-create')
+        || selector.includes('add-entity-btn')
+      )
+    );
+    const needsEntitySelected = Boolean(
+      selector
+      && (
+        selector.includes('field-name-input')
+        || selector.includes('add-field-btn')
+        || selector.includes('entity-inspector')
+      )
+    );
+    const canvas = document.getElementById('canvas');
+    const domainSelected = Boolean(
+      document.querySelector('#domain-list .domain-tree-domain.active')
+    );
+    if (needsDomainCreateField && canvas) {
+      canvas.click();
+    } else if (needsDomainCreateBtn && domainSelected && canvas) {
+      canvas.click();
+    } else if (needsEntityWorkspace || needsEntitySelected) {
+      const firstDomain = document.querySelector(
+        '#domain-list .domain-tree-domain'
+      ) as HTMLElement | null;
+      if (firstDomain && !firstDomain.classList.contains('active')) firstDomain.click();
+      if (needsEntitySelected) {
+        const activeEntity = document.querySelector(
+          '#domain-list .domain-tree-entity button.active'
+        );
+        if (!activeEntity) {
+          const firstEntity = document.querySelector(
+            '#domain-list .domain-tree-entity button'
+          ) as HTMLElement | null;
+          firstEntity?.click();
+        }
+      }
+    }
+
     const element = selector ? document.querySelector(selector) : null;
+    // Domain inspector panes are tabpanels (`hidden` until their tab is active).
+    const domainPane = element?.closest('[data-domain-pane]') as HTMLElement | null;
+    if (domainPane?.hidden) {
+      const paneKey = domainPane.dataset.domainPane;
+      const paneTab = document.querySelector(
+        `[data-domain-pane-tab="${paneKey}"], #domain-pane-tab-${paneKey}`
+      ) as HTMLElement | null;
+      paneTab?.click();
+    }
     const panel = element?.closest('[data-sidebar-group]') as HTMLElement | null;
     const group = panel?.dataset.sidebarGroup;
     if (group) {
       const tab = document.querySelector(`[data-sidebar-tab="${group}"]`) as HTMLElement | null;
-      if (tab?.getAttribute('aria-selected') !== 'true') tab?.click();
+      // Accordion: expand the cell when collapsed (aria-expanded=false).
+      if (tab?.getAttribute('aria-expanded') === 'false') tab?.click();
     }
 
     const designerActive = Boolean(designerSection?.classList.contains('active'));
@@ -550,10 +626,12 @@ export async function openDesignerPanels(
       }
       if (node === document.body) break;
     }
+    const cellExpanded = panel?.dataset.accordionExpanded !== 'false';
     const reachable = hasArea
       && designerActive
       && Boolean(element)
       && panel?.hidden === false
+      && cellExpanded
       && Boolean(drawer?.classList.contains('open'));
     return JSON.stringify({
       reachable: selector
@@ -566,7 +644,9 @@ export async function openDesignerPanels(
       panelGroup: group ?? null,
       panelHidden: panel?.hidden ?? null,
       drawerOpen: drawer?.classList.contains('open') ?? null,
-      activeTab: document.querySelector('.sidebar-tab.active')?.getAttribute('data-sidebar-tab')
+      activeTab: document.querySelector('.sidebar-accordion-toggle[aria-expanded="true"]')
+        ?.getAttribute('data-sidebar-tab')
+        ?? document.querySelector('.sidebar-tab.active')?.getAttribute('data-sidebar-tab')
         ?? null
     });
   }, target || '');
@@ -616,4 +696,27 @@ export async function clickInPanels(
     return Boolean(element);
   }, selector);
   if (!clicked) throw new Error(`clickInPanels found no element for ${selector}`);
+}
+
+/**
+ * Fill a control inside the panel drawer after `openDesignerPanels` reachability.
+ * Same rationale as `clickInPanels`: Playwright's own visibility model can lag
+ * the drawer animation even when the page reports a non-empty box.
+ */
+export async function fillInPanels(
+  page: DrawerPage,
+  selector: string,
+  value: string
+): Promise<void> {
+  await openDesignerPanels(page, selector);
+  const filled = await page.evaluate(({ wanted, next }) => {
+    const element = document.querySelector(wanted) as HTMLInputElement | null;
+    if (!element) return false;
+    element.focus();
+    element.value = next;
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }, { wanted: selector, next: value });
+  if (!filled) throw new Error(`fillInPanels found no element for ${selector}`);
 }

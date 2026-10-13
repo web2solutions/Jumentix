@@ -51,10 +51,31 @@ commands:
             echo 'export PATH="$HOME/.bun/bin:$PATH"' >> "$BASH_ENV"
       - run:
           name: Install frozen dependencies
+          # bun install can sit quiet >10m on cold CircleCI caches; keep a
+          # heartbeat so the default no_output_timeout does not kill the job.
+          no_output_timeout: 25m
           command: |
             source "$BASH_ENV"
             bun ci-cd/check-bun-version.js
-            bun install --frozen-lockfile
+            # Skip Cypress binary during frozen install — jobs that need it
+            # install explicitly later (browser-matrix / website / database-matrix).
+            # A hung cypress postinstall previously SIGHUP'd and starved output
+            # until the default 10m no_output_timeout killed the whole job.
+            export CYPRESS_INSTALL_BINARY=0
+            set +e
+            bun install --frozen-lockfile &
+            install_pid=$!
+            while kill -0 "$install_pid" 2>/dev/null; do
+              echo "[ci] bun install still running (pid=$install_pid)..."
+              sleep 30
+            done
+            wait "$install_pid"
+            install_status=$?
+            set -e
+            if [ "$install_status" -ne 0 ]; then
+              echo "[ci] bun install failed with exit $install_status"
+              exit "$install_status"
+            fi
             bun run compat:check-node-version
   resolve_pr_metadata:
     steps:

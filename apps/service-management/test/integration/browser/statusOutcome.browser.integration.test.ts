@@ -23,6 +23,7 @@ import {
   envFileContent,
   startServer,
   clickInPanels,
+  fillInPanels,
   openDesignerPanels,
   stopServer,
   waitForServer
@@ -64,8 +65,7 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
   }
 
   const addDomain = async (page: import('playwright-webkit').Page, name: string): Promise<void> => {
-    await openDesignerPanels(page, '#domain-name-input');
-    await page.fill('#domain-name-input', name);
+    await fillInPanels(page, '#domain-name-input', name);
     await clickInPanels(page, '#add-domain-btn');
     await page.waitForTimeout(150);
   };
@@ -119,19 +119,16 @@ describe('serviceManagement status region reports outcomes (JUM-730)', () => {
     await clickInPanels(page, '#domain-list li');
     await page.waitForTimeout(150);
 
-    await openDesignerPanels(page, '#entity-name-input');
-    await page.fill('#entity-name-input', 'Invoice');
+    await fillInPanels(page, '#entity-name-input', 'Invoice');
     await clickInPanels(page, '#add-entity-btn');
     await page.waitForTimeout(200);
     await expect(statusText(page)).resolves.toBe('Entity "Invoice" added to Billing.');
 
-    await openDesignerPanels(page, '#entity-search-input');
-    await page.fill('#entity-search-input', 'Invoice');
+    await fillInPanels(page, '#entity-search-input', 'Invoice');
     await clickInPanels(page, '#entity-search-btn');
     await page.waitForTimeout(200);
 
-    await openDesignerPanels(page, '#field-name-input');
-    await page.fill('#field-name-input', 'total');
+    await fillInPanels(page, '#field-name-input', 'total');
     await clickInPanels(page, '#add-field-btn');
     await page.waitForTimeout(200);
     await expect(statusText(page)).resolves.toBe('Field "total" added to Invoice.');

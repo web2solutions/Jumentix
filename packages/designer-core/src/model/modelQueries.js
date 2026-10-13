@@ -683,6 +683,79 @@ export function computeFitView(domains, viewportWidth, viewportHeight) {
 }
 
 /**
+ * Zoom + scroll that centers a model-space box in the viewport.
+ * Used when selecting a domain/entity/note/relationship on the canvas.
+ *
+ * `left`/`top` are scaled model scroll offsets (caller adds CANVAS_ORIGIN_* * zoom).
+ *
+ * @param {{ x: number, y: number, width: number, height: number }} bounds
+ * @param {number} viewportWidth
+ * @param {number} viewportHeight
+ * @param {{ padding?: number, fill?: number, maxZoom?: number }} [options]
+ */
+export function computeCenteredFit(bounds, viewportWidth, viewportHeight, options = {}) {
+  const padding = Number.isFinite(options.padding) ? options.padding : 72;
+  const fill = Number.isFinite(options.fill) ? options.fill : 1;
+  const maxZoom = Number.isFinite(options.maxZoom) ? options.maxZoom : 2.5;
+  const width = Math.max(48, Number(bounds?.width) || 0);
+  const height = Math.max(48, Number(bounds?.height) || 0);
+  const x = Number.isFinite(bounds?.x) ? bounds.x : 0;
+  const y = Number.isFinite(bounds?.y) ? bounds.y : 0;
+  const contentWidth = width + padding * 2;
+  const contentHeight = height + padding * 2;
+  const rawZoom = Math.min(
+    viewportWidth / Math.max(1, contentWidth),
+    viewportHeight / Math.max(1, contentHeight)
+  ) * Math.max(0.2, Math.min(1, fill));
+  const zoom = clampZoom(Math.min(rawZoom, maxZoom));
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+  return {
+    zoom,
+    left: centerX * zoom - viewportWidth / 2,
+    top: centerY * zoom - viewportHeight / 2,
+    centerX,
+    centerY
+  };
+}
+
+/**
+ * Hierarchical camera framing presets:
+ *   overview → see every domain (never over-zoom)
+ *   domain   → one bounded context fills most of the stage
+ *   entity   → one card with breathing room (zoom-in from domain)
+ * Zoom-out (entity→domain→overview) therefore lands at a lower zoom.
+ *
+ * @param {'overview'|'domain'|'entity'|'relationship'|'note'} level
+ */
+export function zoomLevelPreset(level) {
+  // Same-bounds ordering must stay entity > domain > overview so zoom-out
+  // steps land at a lower zoom. Real models reinforce this (entity ≪ domain).
+  const presets = {
+    overview: { fill: 0.9, maxZoom: 1.35, padding: 96 },
+    domain: { fill: 0.78, maxZoom: 1.85, padding: 64 },
+    // Entity zooms past domain on same bounds (overview←domain←entity ladder).
+    entity: { fill: 0.85, maxZoom: 2.5, padding: 80 },
+    // Field + soft peers: keep both cards on stage (never 2.5× into one row).
+    field: { fill: 0.84, maxZoom: 1.5, padding: 96 },
+    relationship: { fill: 0.78, maxZoom: 2.35, padding: 80 },
+    note: { fill: 0.6, maxZoom: 2.2, padding: 96 }
+  };
+  return presets[level] || presets.domain;
+}
+
+/**
+ * @param {{ x: number, y: number, width: number, height: number }} bounds
+ * @param {number} viewportWidth
+ * @param {number} viewportHeight
+ * @param {'overview'|'domain'|'entity'|'relationship'|'note'} level
+ */
+export function computeLevelFit(bounds, viewportWidth, viewportHeight, level = 'domain') {
+  const preset = zoomLevelPreset(level);
+  return computeCenteredFit(bounds, viewportWidth, viewportHeight, preset);
+}
+
+/**
  * Pure geometry of `autoLayout`: reposition every domain (grid) and every
  * entity (two columns) in place. The DOM caller wraps this in `withPersist`
  * and re-renders, as before.

@@ -107,4 +107,61 @@ describe('architecture validation defensive branches', () => {
     expect(crossing?.severity).toBe('warn');
     expect(crossing?.entityId).toBe('entity-user');
   });
+
+  it('flags multi-assigned domains and adapter-missing links (JUM-922)', () => {
+    expect.hasAssertions();
+
+    // Unassigned domains and unknown protocols are normalized away before the
+    // collector runs (orphans attach to Core; bad protocols coerce to rest).
+    // Multi-assignment and adapter mismatch are the reachable miss arms.
+    const multi = {
+      ...baseState(),
+      architecture: {
+        services: [
+          {
+            id: 'core', name: 'Core', kind: 'core', domains: ['domain-users', 'domain-billing'], url: ''
+          },
+          {
+            id: 'svc-billing', name: 'Billing', kind: 'domain', domains: ['domain-billing'], url: ''
+          }
+        ],
+        links: []
+      }
+    };
+    expect(
+      collectArchitectureIssues(multi).some((issue) => issue.message.includes('more than one service'))
+    ).toBe(true);
+
+    const missingAdapter = {
+      ...baseState(),
+      interfaces: [{ type: 'graphql' }],
+      architecture: {
+        ...baseState().architecture,
+        links: [
+          {
+            id: 'link-2', from: 'core', to: 'svc-billing', protocol: 'rest'
+          }
+        ]
+      }
+    };
+    expect(
+      collectArchitectureIssues(missingAdapter).some((issue) => issue.message.includes('no declared interface adapter'))
+    ).toBe(true);
+
+    const supported = {
+      ...baseState(),
+      interfaces: [{ type: 'http-rest' }],
+      architecture: {
+        ...baseState().architecture,
+        links: [
+          {
+            id: 'link-3', from: 'core', to: 'svc-billing', protocol: 'rest'
+          }
+        ]
+      }
+    };
+    expect(
+      collectArchitectureIssues(supported).some((issue) => issue.message.includes('no declared interface adapter'))
+    ).toBe(false);
+  });
 });

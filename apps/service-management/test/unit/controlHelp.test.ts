@@ -50,7 +50,12 @@ describe('service-management control help coverage (JUM-733)', () => {
     expect.hasAssertions();
     const source = fs.readFileSync(path.join(appRoot, 'src/ui/controlHelp.js'), 'utf-8');
     expect(source).toContain('VISUAL_HELP_HOST_BLOCKLIST');
-    expect(source).toContain('\'.row, [role="tablist"], .code-editor-body, .entity, .mini-map, .canvas-context-menu\'');
+    expect(source).toContain('.workspace-header');
+    expect(source).toContain('#domain-inspector-panel');
+    expect(source).toContain('#entity-inspector-panel');
+    expect(source).toContain('#note-inspector-panel');
+    expect(source).toContain('#relationship-inspector-panel');
+    expect(source).toContain('[role="tablist"]');
     expect(source).toContain('control.id === \'code-workspace-editor\'');
     expect(source).toContain('ensureDescription(control, help, rootDocument)');
     expect(source).toContain('if (!shouldInstallVisualHelp(control)) return');

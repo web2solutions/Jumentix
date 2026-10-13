@@ -1,7 +1,17 @@
 version: 2
 updates:
-  - package-ecosystem: npm
+  # Repo is Bun-managed (`bun.lock`); npm_and_yarn cannot update that lockfile.
+  # https://github.com/web2solutions/Jumentix/security/dependabot/37
+  - package-ecosystem: bun
     directory: /
+    schedule:
+      interval: weekly
+    target-branch: dev
+    open-pull-requests-limit: 5
+
+  # Nested Vue template keeps its own npm lockfile outside the Bun workspace.
+  - package-ecosystem: npm
+    directory: /apps/frontend/template
     schedule:
       interval: weekly
     target-branch: dev
