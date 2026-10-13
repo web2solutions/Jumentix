@@ -203,12 +203,74 @@ function readBumpPlan(filePath) {
   return parsed.bumps;
 }
 
+const CLI_INIT_MANIFEST = 'packages/cli-init/templates.manifest.json';
+const BUMP_COMMIT_HEADLINE = 'chore(release): bump packages with unpublished content changes';
+
+/**
+ * Build createCommitOnBranch additions from applied bump files.
+ * Reads Buffers so large manifests never transit shell argv (ARG_MAX / jq
+ * "Argument list too long" on templates.manifest.json — JUM-917).
+ */
+function buildPackageContentBumpAdditions(bumps, options = {}) {
+  const root = options.root || ROOT;
+  if (!Array.isArray(bumps) || bumps.length === 0) {
+    throw new Error('bumps must be a non-empty array');
+  }
+  const paths = bumps.map((bump) => bump.packageJsonPath);
+  if (options.includeCliManifest !== false) {
+    paths.push(CLI_INIT_MANIFEST);
+  }
+  const unique = [...new Set(paths)];
+  return unique.map((rel) => {
+    const absolute = path.join(root, rel);
+    if (!fs.existsSync(absolute)) {
+      throw new Error(`missing bump addition file: ${rel}`);
+    }
+    return {
+      path: rel,
+      // Binary-safe Buffer — encodeAdditionContents base64-encodes for GraphQL.
+      contents: fs.readFileSync(absolute)
+    };
+  });
+}
+
+function commitPackageContentBumps(bumps, options = {}) {
+  const {
+    createSignedCommitOnBranchWithGh,
+    resolveRepository
+  } = require('./lib/github-signed-commit.js');
+  const repository = options.repository || resolveRepository(options.env || process.env);
+  const branch = options.branch;
+  const expectedHeadOid = options.expectedHeadOid;
+  const headline = options.headline || BUMP_COMMIT_HEADLINE;
+  if (!branch) throw new Error('branch is required');
+  if (!expectedHeadOid) throw new Error('expectedHeadOid is required');
+  const additions = buildPackageContentBumpAdditions(bumps, options);
+  return createSignedCommitOnBranchWithGh({
+    repository,
+    branch,
+    expectedHeadOid,
+    headline,
+    additions,
+    env: options.env,
+    execFile: options.execFile,
+    ghPath: options.ghPath
+  });
+}
+
 function main(argv = process.argv.slice(2)) {
   const apply = argv.includes('--apply');
+  const commit = argv.includes('--commit');
   const fromIndex = argv.indexOf('--from');
   const fromPath = fromIndex >= 0 ? argv[fromIndex + 1] : '';
   const outIndex = argv.indexOf('--out');
   const outPath = outIndex >= 0 ? argv[outIndex + 1] : '';
+  const branchIndex = argv.indexOf('--branch');
+  const branch = branchIndex >= 0 ? argv[branchIndex + 1] : '';
+  const oidIndex = argv.indexOf('--expected-head-oid');
+  const expectedHeadOid = oidIndex >= 0 ? argv[oidIndex + 1] : '';
+  const commitOutIndex = argv.indexOf('--out-commit');
+  const commitOutPath = commitOutIndex >= 0 ? argv[commitOutIndex + 1] : '';
   const bumps = fromPath ? readBumpPlan(fromPath) : planPackageContentBumps();
   const payload = { bumps, applied: false };
   if (bumps.length === 0) {
@@ -224,17 +286,33 @@ function main(argv = process.argv.slice(2)) {
   if (outPath) {
     fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
   }
+  let commitResult = null;
+  if (commit) {
+    commitResult = commitPackageContentBumps(bumps, { branch, expectedHeadOid });
+    if (commitOutPath) {
+      fs.writeFileSync(
+        commitOutPath,
+        `${JSON.stringify({ oid: commitResult.oid }, null, 2)}\n`,
+        'utf8'
+      );
+    }
+  }
   console.log(JSON.stringify({
     bumpCount: bumps.length,
     packages: bumps.map((bump) => `${bump.name}: ${bump.from} -> ${bump.to}`),
-    applied: apply
+    applied: apply,
+    ...(commitResult ? { commitOid: commitResult.oid } : {})
   }));
-  return { bumps, applied };
+  return { bumps, applied, commit: commitResult };
 }
 
 module.exports = {
+  CLI_INIT_MANIFEST,
+  BUMP_COMMIT_HEADLINE,
   applyPackageContentBumps,
+  buildPackageContentBumpAdditions,
   bumpPatch,
+  commitPackageContentBumps,
   contentChangedSinceTag,
   peelRemoteTagSha,
   planPackageContentBumps,

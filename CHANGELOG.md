@@ -4,7 +4,25 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-10-06 chore(release): bump packages with unpublished content changes (#625) - Eduardo A.
+- 2026-10-06 [JUM-917][Release] Promote package-bump GraphQL stdin commit fix (#622) - Eduardo A.
+- 2026-10-06 [JUM-917][CI] Commit package bumps via GraphQL stdin (fix ARG_MAX) (#621) - Eduardo A.
+
+## v0.4.1 - 2026-10-05
+
+- 2026-10-05 chore(release): v0.4.1 (#619) - Eduardo A.
+- 2026-10-05 [JUM-917][Release] Promote package-bump refs API fix to main (#617) - Eduardo A.
+- 2026-10-04 [JUM-917][Release] Sync main v0.4.0 into dev (#616) - Eduardo A.
+- 2026-10-04 fix(ci): create package-bump branches via GitHub refs API (#615) - Eduardo A.
+
+## v0.4.0 - 2026-10-04
+
+- 2026-10-04 chore(release): v0.4.0 (#613) - Eduardo A.
+- 2026-10-04 [JUM-917][Release] Promote auto-publish, website verify, and Cana 0.1.1 media to main (#610) - Eduardo A.
+- 2026-10-04 [JUM-917][CI] Fix package-bump SHA pin and website-verify Vercel skip (#611) - Eduardo A.
+- 2026-10-04 [JUM-917][CI] Auto-publish packages, verify website deploy, fix Cana npm media (#608) - Eduardo A.
+- 2026-10-04 [JUM-771][Feature] Hexagonal map: real file previews, dark-mode contrast, modern styling (#607) - Eduardo A.
+- 2026-10-04 [JUM-916][Release] Sync main v0.3.3 into dev (#606) - Eduardo A.
 
 ## v0.3.3 - 2026-10-04
 
