@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/no-conditional-in-test, prefer-promise-reject-errors */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -306,6 +307,78 @@ describe('build-workspace-packages (JUM-871)', () => {
     await expect(spawnPackageBuild(target, {
       spawn: spawnCloseWithoutCode
     })).resolves.toBe(1);
+  });
+
+  it('covers discover/spawn/main default-option branches (JUM-922)', async () => {
+    expect.hasAssertions();
+    const discovered = discoverWorkspacePackages({
+      packagesDir: path.join(process.cwd(), 'packages'),
+      readdir: () => [
+        { name: 'skip.txt', isDirectory: () => false },
+        { name: 'self-dep', isDirectory: () => true }
+      ],
+      readFile: () => JSON.stringify({
+        name: 'self-dep',
+        scripts: { build: 'echo' },
+        dependencies: { 'self-dep': '1.0.0', lodash: '4.0.0' }
+      })
+    });
+    expect([...discovered.keys()]).toStrictEqual(['self-dep']);
+    expect(discovered.get('self-dep').dependencies).toStrictEqual(['lodash']);
+
+    // Default options.root / options.packagesDir / options.readdir / options.readFile.
+    const fromCwd = discoverWorkspacePackages();
+    expect(fromCwd.size).toBeGreaterThan(0);
+
+    const cycle = new Map([
+      ['a', pkg('a', ['b'])],
+      ['b', pkg('b', ['c'])],
+      ['c', pkg('c', ['a'])]
+    ]);
+    expect(() => computeBuildLevels(cycle)).toThrow(/cycle/i);
+
+    // Multi-dep keeps indegree > 0 after the first dependency is satisfied.
+    expect(computeBuildLevels(new Map([
+      ['app', pkg('app', ['lib', 'web'])],
+      ['lib', pkg('lib', [])],
+      ['web', pkg('web', [])]
+    ]))).toStrictEqual([['lib', 'web'], ['app']]);
+
+    // Candidate depends on a package outside the remaining set.
+    expect(findCycle(new Map([
+      ['a', pkg('a', ['outside'])],
+      ['b', pkg('b', [])]
+    ]), new Set(['a']))).toBeNull();
+
+    await expect(spawnPackageBuild(pkg('worker'), {
+      spawn: () => ({
+        on: (event: string, callback: (code: number) => void) => {
+          if (event === 'close') callback(0);
+        }
+      })
+    })).resolves.toBe(0);
+
+    // Default logger on buildWorkspacePackages / main.
+    const order: string[] = [];
+    const resolvers = new Map<string, CloseCallback>();
+    const run = buildWorkspacePackages({
+      packages: new Map([['solo', pkg('solo', [])]]),
+      spawn: deferredSpawn(order, resolvers)
+    });
+    await tick();
+    finishBuild(resolvers, 'solo', 0);
+    await expect(run).resolves.toBe(0);
+
+    await expect(main({
+      execute: async () => 0
+    })).resolves.toBe(0);
+
+    const nonErrorReject: string[] = [];
+    await expect(main({
+      execute: () => Promise.reject('plain-string-failure'),
+      logger: { error: (line: string) => nonErrorReject.push(line) }
+    })).resolves.toBe(1);
+    expect(nonErrorReject.join('\n')).toContain('plain-string-failure');
   });
 
   it('reports rejected builds and binds the CLI dispatcher to the resulting status', async () => {

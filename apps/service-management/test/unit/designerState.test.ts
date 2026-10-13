@@ -142,6 +142,32 @@ describe('designer state core (JUM-468)', () => {
       expect(normalized.view.modelCheckMinSeverity).toBe('info');
       expect(normalized.view.exportBlockCritical).toBe(true);
     });
+
+    it('keeps focus canvas stage and non-data entity kinds (JUM-922)', () => {
+      expect.hasAssertions();
+      const focused = normalizeStatePayload({
+        domains: [{
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [{
+            id: 'entity-1',
+            name: 'Invoice',
+            kind: 'command',
+            fields: [],
+            domainId: 'domain-1'
+          }, {
+            id: 'entity-2',
+            name: 'BlankKind',
+            kind: '   ',
+            fields: []
+          }]
+        }],
+        view: { canvasStage: 'focus' }
+      });
+      expect(focused.view.canvasStage).toBe('focus');
+      expect(focused.domains[0].entities[0].kind).toBe('command');
+      expect(focused.domains[0].entities[1].kind).toBe('data');
+    });
   });
 
   describe('normalizeCodeWorkspaceInput', () => {
@@ -315,6 +341,27 @@ describe('designer state core (JUM-468)', () => {
       const outcome = await core.loadState();
       expect(outcome.status).toBe('unavailable');
       expect(outcome.reason).toContain('SecurityError');
+    });
+
+    it('restores payloads that omit notes/selection/schema with empty defaults (JUM-922)', async () => {
+      expect.hasAssertions();
+      const storage = createFakeStorage({
+        'service-management.v1': JSON.stringify({
+          domains: [{
+            id: 'domain-1',
+            name: 'Billing',
+            entities: [{ id: 'entity-1', name: 'Invoice', fields: [] }]
+          }],
+          relationships: [],
+          idCounter: 2
+        })
+      });
+      const { core } = createCore(storage);
+      const result = await core.loadState();
+      expect(result.status).toBe('ok');
+      expect(core.state.notes).toStrictEqual([]);
+      expect(core.state.selection.kind).toBeDefined();
+      expect(core.state.modelSchemaVersion).toBeGreaterThan(0);
     });
 
     it('reports recovered with the cause when a decodable payload fails normalisation', async () => {

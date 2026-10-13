@@ -171,6 +171,9 @@ async function wheelOnCanvas(
   return { x, y };
 }
 
+// Click loops + camera settle routinely exceed Jest's 5s default under load.
+jest.setTimeout(30000);
+
 describe('domain designer fluid zoom edge cases (JUM-918)', () => {
   let browser: Browser;
   let page: Page;

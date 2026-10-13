@@ -771,6 +771,34 @@ describe('selection + relationship domain ownership (JUM-922)', () => {
       'Relationship "InvoiceUser" toDomainId mismatch.'
     ]));
   });
+
+  it('accepts matching selection ownership and relationships without domain stamps', () => {
+    expect.hasAssertions();
+    expect(messages(collectModelIssues(createState({
+      selection: {
+        kind: 'entity',
+        domainId: 'domain-1',
+        entityId: 'entity-1'
+      },
+      relationships: [{
+        id: 'rel-ok',
+        name: 'Self',
+        fromEntityId: 'entity-1',
+        toEntityId: 'entity-1',
+        fromCardinality: '1',
+        toCardinality: '1'
+      }]
+    })))).toStrictEqual([]);
+
+    const entityMismatch = messages(collectModelIssues(createState({
+      domains: [{
+        id: 'domain-1',
+        name: 'Billing',
+        entities: [createEntity({ id: 'entity-1', name: 'Invoice', domainId: 'domain-2' })]
+      }]
+    })));
+    expect(entityMismatch.some((msg) => msg.includes('domainId mismatch'))).toBe(true);
+  });
 });
 
 // Keeps this file a module: with no import/export left, TypeScript would

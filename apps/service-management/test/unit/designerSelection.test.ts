@@ -77,6 +77,13 @@ describe('designer selection path (JUM-922)', () => {
       [],
       {}
     )).toMatchObject({ kind: 'entity', entityId: 'e1', domainId: 'd1' });
+    // Field kind on an empty tree exercises the `|| kind === 'field'` branch of
+    // the empty-tree entityId ternary (entity alone short-circuits the ||).
+    expect(normalizeSelection(
+      { kind: 'field', entityId: 'e1', fieldName: 'email', domainId: 'd1' },
+      [],
+      {}
+    )).toMatchObject({ kind: 'field', fieldName: 'email', entityId: 'e1' });
     expect(normalizeSelection(
       { kind: 'field', entityId: 'e1', fieldName: 'email' },
       null,
@@ -92,6 +99,18 @@ describe('designer selection path (JUM-922)', () => {
       [],
       {}
     )).toMatchObject({ kind: 'note', noteId: 'n1' });
+    // Non entity/field kinds on an empty tree take the ternary's null arm.
+    expect(normalizeSelection(
+      { kind: 'domain', domainId: 'd1', entityId: 'e1' },
+      [],
+      {}
+    )).toMatchObject({ kind: 'domain', entityId: null });
+    // Falsy kind on an empty tree takes `kind || 'none'`.
+    expect(normalizeSelection(
+      { kind: 'bogus' as unknown as string },
+      [],
+      {}
+    )).toMatchObject({ kind: 'none', entityId: null });
   });
 
   it('fail-closes ghost entities and invalid domain ids', () => {
@@ -100,6 +119,8 @@ describe('designer selection path (JUM-922)', () => {
       { kind: 'entity', entityId: 'ghost', domainId: 'd1' },
       domains
     )).toMatchObject({ kind: 'domain', domainId: 'd1', entityId: null });
+    // Ghost entity + valid domain takes the domain downgrade; ghost + missing
+    // domain takes the none arm of `domainId && domainIds.has(domainId)`.
     expect(normalizeSelection(
       { kind: 'field', entityId: 'ghost', fieldName: 'x', domainId: 'missing' },
       domains
@@ -108,6 +129,11 @@ describe('designer selection path (JUM-922)', () => {
       { kind: 'entity', entityId: 'e3', domainId: 'd1' },
       domains
     )).toMatchObject({ kind: 'entity', domainId: 'd2', entityId: 'e3' });
+    // Field with entity but blank fieldName → entity; field with neither → none.
+    expect(normalizeSelection(
+      { kind: 'field', entityId: 'e1', fieldName: '   ', domainId: 'd1' },
+      domains
+    )).toMatchObject({ kind: 'entity', entityId: 'e1', fieldName: null });
   });
 
   it('downgrades incomplete field/domain/relationship/note kinds', () => {

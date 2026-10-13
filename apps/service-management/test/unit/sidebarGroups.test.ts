@@ -933,4 +933,81 @@ describe('sidebarGroups coverage gaps (JUM-922)', () => {
     datasetOnlyTab.dispatch('keydown', { key: 'ArrowRight' });
     keylessTab.dispatch('click');
   });
+
+  it('covers End key, missing gate/body, rAF scroll, and empty-key tabs (JUM-922)', () => {
+    expect.hasAssertions();
+    const { doc, sidebar } = makeSidebar({
+      view: { sidebarOpen: true, sidebarExpanded: { model: true }, sidebarGroup: 'model' }
+    });
+
+    const modelTab = doc.querySelector('[data-sidebar-tab="model"]');
+    modelTab.dispatch('keydown', { key: 'End' });
+    expect(doc.activeElement).toBe(doc.querySelector('[data-sidebar-tab="import"]'));
+    // Non-nav key falls through the End check's false arm.
+    modelTab.dispatch('keydown', { key: 'a' });
+
+    const workspace = doc.getElementById('entities-workspace');
+    const gate = doc.getElementById('entities-workspace-gate');
+    gate.parentNode.children = gate.parentNode.children.filter((child: any) => child !== gate);
+    // Public surface: syncHierarchyContext → syncEntitiesWorkspaceGate.
+    sidebar.syncHierarchyContext();
+    expect(workspace.dataset.gateReady).toBeDefined();
+
+    const historyCell = doc.getElementById('sidebar-group-history');
+    historyCell.children = historyCell.children.filter(
+      (child: any) => !child.classList.contains('sidebar-accordion-body')
+    );
+    sidebar.setExpanded('history', true);
+    sidebar.renderSidebarGroups();
+    expect(historyCell.dataset.accordionExpanded).toBe('true');
+
+    const prevRaf = (globalThis as any).requestAnimationFrame;
+    (globalThis as any).requestAnimationFrame = (cb: () => void) => {
+      cb();
+      return 1;
+    };
+    delete historyCell.scrollIntoView;
+    const validateCell = doc.getElementById('sidebar-group-validate');
+    delete validateCell.scrollIntoView;
+    sidebar.setExpanded('validate', true, { scroll: true });
+    // Entities workspace scroll with rAF present.
+    sidebar.revealGroupFor('entities-workspace', { scroll: true });
+    (globalThis as any).requestAnimationFrame = prevRaf;
+
+    // focusTab no-ops when every tab node is gone.
+    GROUP_KEYS.forEach((key) => {
+      const tab = doc.querySelector(`[data-sidebar-tab="${key}"]`);
+      if (tab?.parentNode) {
+        tab.parentNode.children = tab.parentNode.children.filter((child: any) => child !== tab);
+      }
+    });
+    modelTab.dispatch('keydown', { key: 'Home' });
+
+    const emptyKeyTab = createFakeElement(doc, 'button', {
+      className: 'sidebar-panel-tab',
+      id: 'empty-key-tab'
+    });
+    emptyKeyTab.setAttribute('data-sidebar-tab', '');
+    doc.getElementById('sidebar-panel-tabs').appendChild(emptyKeyTab);
+    const wired = createSidebarGroups({
+      documentRef: doc,
+      state: {
+        domains: [],
+        view: { sidebarOpen: true, sidebarExpanded: { model: true }, sidebarGroup: 'model' }
+      },
+      saveState: () => {}
+    });
+    wired.renderSidebarGroups();
+    emptyKeyTab.dispatch('click');
+
+    const list = doc.getElementById('domain-list');
+    delete list.focus;
+    doc.getElementById('pick-domain-cta').dispatch('click');
+    expect(openKeys(wired)).toStrictEqual(['model']);
+
+    const panel = doc.getElementById('domain-inspector-panel');
+    panel.parentNode.children = panel.parentNode.children.filter((child: any) => child !== panel);
+    wired.revealGroupFor('domain-inspector-panel', { scroll: false });
+    expect(openKeys(wired)).toStrictEqual(['model']);
+  });
 });
