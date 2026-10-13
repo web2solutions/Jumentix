@@ -1649,6 +1649,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/tagEditor.test.ts",
+      "path": "apps/service-management/test/unit/tagEditor.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/catalogSyncTransport.test.ts",
       "path": "apps/service-management/test/unit/catalogSyncTransport.test.ts",
       "layer": "service-management/designer",
@@ -1701,6 +1711,16 @@
     {
       "id": "apps/service-management/test/unit/rbacContract.test.ts",
       "path": "apps/service-management/test/unit/rbacContract.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/domainContextForm.test.ts",
+      "path": "apps/service-management/test/unit/domainContextForm.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1781,6 +1801,16 @@
     {
       "id": "apps/service-management/test/unit/scripts/service-management-vendor-wiring.test.ts",
       "path": "apps/service-management/test/unit/scripts/service-management-vendor-wiring.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/scripts/sync-service-management-jumentix-ui.test.ts",
+      "path": "apps/service-management/test/unit/scripts/sync-service-management-jumentix-ui.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -1889,6 +1919,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "apps/service-management/test/unit/sidebarGroups.test.ts",
+      "path": "apps/service-management/test/unit/sidebarGroups.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "apps/service-management/test/unit/designerPackageVersioning.test.ts",
       "path": "apps/service-management/test/unit/designerPackageVersioning.test.ts",
       "layer": "service-management/designer",
@@ -1901,6 +1941,16 @@
     {
       "id": "apps/service-management/test/unit/renderGuard.test.ts",
       "path": "apps/service-management/test/unit/renderGuard.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "apps/service-management/test/unit/designerHierarchySchema.test.ts",
+      "path": "apps/service-management/test/unit/designerHierarchySchema.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -4481,6 +4531,19 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/service-management/test/integration/browser/edgeRoutingFocus.browser.integration.test.ts",
+      "path": "apps/service-management/test/integration/browser/edgeRoutingFocus.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/service-management/test/integration/browser/deployTargetLifecycle.browser.integration.test.ts",
       "path": "apps/service-management/test/integration/browser/deployTargetLifecycle.browser.integration.test.ts",
       "layer": "service-management/designer",
@@ -4626,6 +4689,19 @@
     {
       "id": "apps/service-management/test/integration/browser/canaMigration.browser.integration.test.ts",
       "path": "apps/service-management/test/integration/browser/canaMigration.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
+      "id": "apps/service-management/test/integration/browser/zoomFluidity.browser.integration.test.ts",
+      "path": "apps/service-management/test/integration/browser/zoomFluidity.browser.integration.test.ts",
       "layer": "service-management/designer",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -5146,6 +5222,16 @@
       "path": "packages/external-store-proxy/test/ExternalStoreProxy.test.ts",
       "layer": "adapters/out+infra",
       "kind": "hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "packages/jumentix-ui/test/unit/package.smoke.test.ts",
+      "path": "packages/jumentix-ui/test/unit/package.smoke.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
       "type": "unit",
       "runner": "bun",
       "tier": "gate",
@@ -6140,9 +6226,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 366,
-    "integration": 102,
+    "unit": 372,
+    "integration": 104,
     "smoke": 2,
-    "suites": 530
+    "suites": 538
   }
 }

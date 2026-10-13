@@ -1,0 +1,15 @@
+{
+  "shell": "0.9.145",
+  "rootCause": "Canvas attachDrag soft-selects on pointerdown (remountCanvas:false) then settles on pointerup (remountCanvas:true). setSelectedDomain reverseToOverview treated that same-gesture settle as a re-click and cleared selection. Panel/tree is single-shot so it never hit the trap.",
+  "fixes": [
+    "script.js:setSelectedDomain — reverseNav gate (default true)",
+    "canvas.js:persistMovedDomain — domainExclusiveAtPointerDown; reverseNav only on true second click",
+    "styles.css — overview .domain z-index:19 above .edges (18); focus is-focus z-index:22"
+  ],
+  "evidence": {
+    "png": "34-test-canvas-domain-users-click.png",
+    "test": "selects domain from canvas header click (not tree)",
+    "result": "focusKind=domain focusDomains=1 scope=Domain · Users shell=0.9.145"
+  },
+  "edgeRoutingFocus": "4 pass / 0 fail / 52 expect"
+}

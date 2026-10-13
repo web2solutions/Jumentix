@@ -422,10 +422,12 @@ describe('installControlHelp installation rules', () => {
     tablist.setAttribute('role', 'tablist');
     addControl(doc, 'button', { id: 'tab-monitoring-btn' }, tablist);
     addControl(doc, 'textarea', { id: 'code-workspace-editor' });
+    const toolbar = addControl(doc, 'header', { className: 'workspace-header' });
+    addControl(doc, 'button', { id: 'quick-add-domain-btn' }, toolbar);
 
     installControlHelp(doc);
 
-    ['zoom-in-btn', 'tab-monitoring-btn', 'code-workspace-editor'].forEach((id) => {
+    ['zoom-in-btn', 'tab-monitoring-btn', 'code-workspace-editor', 'quick-add-domain-btn'].forEach((id) => {
       expect(doc.getElementById(`control-help-${id}`)).not.toBeNull();
       expect(doc.getElementById(`control-help-${id}-btn`)).toBeNull();
     });

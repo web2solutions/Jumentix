@@ -57,7 +57,7 @@ import {
   startServer,
   staticRoot,
   clickInPanels,
-  openDesignerPanels,
+  fillInPanels,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
@@ -269,8 +269,7 @@ async function gotoServiceManagementShell(page: Page, url: string, port?: number
 
 /** Add a domain through the real UI and wait until the write is durable. */
 async function addDomainThroughUi(page: Page, name: string) {
-  await openDesignerPanels(page, '#domain-name-input');
-  await page.fill('#domain-name-input', name);
+  await fillInPanels(page, '#domain-name-input', name);
   await clickInPanels(page, '#add-domain-btn');
   await page.waitForFunction(
     (domainName) => new Promise((resolve) => {
@@ -728,8 +727,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // An edit in this session is doomed: there is nothing behind the store
       // to write to. The startup declaration above is the user-facing warning
       // for this environment; persistence is proven by the reload below.
-      await openDesignerPanels(page, '#domain-name-input');
-      await page.fill('#domain-name-input', 'DoomedDomain');
+      await fillInPanels(page, '#domain-name-input', 'DoomedDomain');
       await clickInPanels(page, '#add-domain-btn');
 
       // Proof the edit was never silently persisted: a fresh page on the same
@@ -972,7 +970,8 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       // state stays available, but the degraded-durability surface names the
       // quota pressure. The generous timeout is CI boot-latency headroom, not
       // a weaker assertion: the trigger above is deterministic.
-      await waitForStatusLogged(page, 'quota: storage usage is near the origin quota', 45000);
+      // Operator-facing toast (canaMigration rewrites probeReason `quota:…`).
+      await waitForStatusLogged(page, 'Local storage is nearly full', 45000);
       await waitForHealthyBoot(page);
 
       // The backup/export path is reachable from the warned session.
@@ -992,8 +991,7 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
         + '   retryable: false'
         + ' }'
         + '}');
-      await openDesignerPanels(page, '#domain-name-input');
-      await page.fill('#domain-name-input', 'QuotaDoomedDomain');
+      await fillInPanels(page, '#domain-name-input', 'QuotaDoomedDomain');
       await clickInPanels(page, '#add-domain-btn');
       // No silent acceptance: JUM-485's save-outcome hook surfaces the
       // unconfirmed save and reconciles by read-back.
@@ -1019,7 +1017,8 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
       }, SHELL_CACHE_PREFIX);
       await page.reload({ waitUntil: 'load' });
       await page.waitForSelector('#tab-domain-designer-btn', { timeout: 15000 });
-      await waitForStatusLogged(page, 'quota: storage usage is near the origin quota', 45000);
+      // Operator-facing toast (canaMigration rewrites probeReason `quota:…`).
+      await waitForStatusLogged(page, 'Local storage is nearly full', 45000);
       await waitForGuidedEmptyState(page, 45000);
       await expect(domainListText(page)).resolves.not.toContain('QuotaDoomedDomain');
       expect(pageErrors).toStrictEqual([]);

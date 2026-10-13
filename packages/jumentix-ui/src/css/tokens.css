@@ -1,0 +1,26 @@
+/**
+ * Jumentix UI — dark-first design tokens (lifted from Domain Designer --jx-*).
+ * Consumer maps --jx-* → --jtx-ui-* or uses --jtx-ui-* directly.
+ */
+:root,
+.jtx-ui-root {
+  --jtx-ui-ink: #d6dbe6;
+  --jtx-ui-ink-strong: #f2f5fa;
+  --jtx-ui-ink-muted: #9aa3b5;
+  --jtx-ui-ink-faint: #6b7385;
+  --jtx-ui-surface: #12151a;
+  --jtx-ui-surface-raised: #181c24;
+  --jtx-ui-surface-panel: #151920;
+  --jtx-ui-surface-hover: #1e2430;
+  --jtx-ui-surface-input: #0e1116;
+  --jtx-ui-line: #2a3140;
+  --jtx-ui-line-strong: #3a4356;
+  --jtx-ui-line-soft: #222833;
+  --jtx-ui-accent: #8eb6dc;
+  --jtx-ui-accent-soft: #243246;
+  --jtx-ui-accent-focus: #60a5fa;
+  --jtx-ui-danger: #f87171;
+  --jtx-ui-control-h: 32px;
+  --jtx-ui-radius: 5px;
+  --jtx-ui-font: "IBM Plex Sans", "Segoe UI", sans-serif;
+}

@@ -125,7 +125,8 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     expect(domainListText).toContain('Users');
     expect(domainListText).toContain('Tasks');
     // ...which are marked as sample in the domain list...
-    const badges = await page.$$('#domain-list .sample-badge');
+    // Domain rows only — entity rows also carry sample badges under the tree.
+    const badges = await page.$$('#domain-list .domain-tree-domain .sample-badge');
     expect(badges).toHaveLength(2);
     await Promise.all(badges.map((badge) => (
       expect(badge.textContent()).resolves.toBe('sample')
