@@ -1,5 +1,5 @@
 /* eslint-disable jest/prefer-expect-assertions, jest/max-expects, no-await-in-loop */
-/* eslint-disable jest/no-conditional-in-test, jest/no-conditional-expect */
+/* eslint-disable jest/no-conditional-in-test, jest/no-conditional-expect, no-continue */
 /*
  * JUM-918 follow-up — fluid pointer-anchored zoom + edge-case matrix.
  * Real Playwright WebKit against the real service-management server.
@@ -54,9 +54,17 @@ function readZoomProbe(opts?: ZoomProbeOpts | void): ZoomProbe {
   const clientY = opts && typeof opts === 'object' ? opts.clientY : undefined;
   if (Number.isFinite(clientX) && Number.isFinite(clientY)) {
     const stack = document.elementsFromPoint(clientX as number, clientY as number);
-    const entity = stack.find((node) => (
-      node instanceof HTMLElement && node.classList.contains('entity') && Boolean(node.dataset.entityId)
-    )) as HTMLElement | undefined;
+    // Field rows / chrome sit above the card; walk closest() so a pointer on a
+    // child still resolves to the entity host (WebKit headless is picky here).
+    let entity: HTMLElement | undefined;
+    for (const node of stack) {
+      if (!(node instanceof HTMLElement)) continue;
+      const host = node.closest('.entity[data-entity-id]') as HTMLElement | null;
+      if (host?.dataset?.entityId) {
+        entity = host;
+        break;
+      }
+    }
     if (entity) {
       const rect = entity.getBoundingClientRect();
       entityUnder = {
@@ -355,21 +363,82 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
 
   it('pointer-anchored zoom keeps entity near cursor', async () => {
     expect.hasAssertions();
-    for (let i = 0; i < 10; i += 1) await page.click('#zoom-in-btn');
-    await waitUserZoomIdle(page);
-    const entityBox = await page.locator('.entity[data-entity-id]').first().boundingBox();
-    expect(entityBox).toBeTruthy();
-    const box = entityBox as { x: number; y: number; width: number; height: number };
-    const px = box.x + box.width / 2;
-    const py = box.y + box.height / 2;
+    // Prior clamp-min leaves zoom at 0.25; focus stage / empty hit stacks make
+    // elementsFromPoint miss cards. Escape to overview, fit via canvas camera
+    // (not Element.scrollIntoView — that scrolls the wrong container), then
+    // pick a client point the same probe asserts against.
+    for (let i = 0; i < 4; i += 1) {
+      await page.keyboard.press('Escape');
+    }
+    await page.click('#fit-view-btn');
+    await waitUserZoomIdle(page, 4000);
+    await page.waitForFunction(() => {
+      const canvas = document.getElementById('canvas');
+      return Boolean(
+        canvas
+        && canvas.dataset.navigating !== 'true'
+        && canvas.dataset.userZooming !== 'true'
+      );
+    }, { timeout: 8000 });
+
+    const target = await page.waitForFunction(() => {
+      const canvas = document.getElementById('canvas');
+      if (!canvas || canvas.dataset.navigating === 'true') return null;
+      const canvasRect = canvas.getBoundingClientRect();
+      const entities = Array.from(
+        document.querySelectorAll('.entity[data-entity-id]')
+      ) as HTMLElement[];
+      const candidates = entities
+        .map((el) => {
+          const r = el.getBoundingClientRect();
+          const cx = r.left + r.width / 2;
+          const cy = r.top + r.height / 2;
+          const inside = cx >= canvasRect.left + 8
+            && cx <= canvasRect.right - 8
+            && cy >= canvasRect.top + 8
+            && cy <= canvasRect.bottom - 8
+            && r.width >= 40
+            && r.height >= 40;
+          return {
+            id: el.dataset.entityId || '',
+            x: cx,
+            y: cy,
+            area: r.width * r.height,
+            inside
+          };
+        })
+        .filter((entry) => entry.inside && entry.id)
+        .sort((a, b) => b.area - a.area);
+      for (const entry of candidates) {
+        const stack = document.elementsFromPoint(entry.x, entry.y);
+        for (const node of stack) {
+          if (!(node instanceof HTMLElement)) continue;
+          const host = node.closest('.entity[data-entity-id]') as HTMLElement | null;
+          if (host?.dataset?.entityId === entry.id) {
+            return { id: entry.id, x: entry.x, y: entry.y };
+          }
+        }
+      }
+      return null;
+    }, { timeout: 10000 }).then((handle) => handle.jsonValue() as Promise<{
+      id: string;
+      x: number;
+      y: number;
+    } | null>);
+
+    expect(target?.id).toBeTruthy();
+    const px = (target as { x: number }).x;
+    const py = (target as { y: number }).y;
     const before = await page.evaluate(readZoomProbe, { clientX: px, clientY: py });
+    expect(before.entityUnder?.id).toBe((target as { id: string }).id);
+
     await wheelOnCanvas(page, {
       deltaY: -100,
       steps: 6,
       clientX: px,
       clientY: py
     });
-    const after = await waitUserZoomIdle(page);
+    const after = await waitUserZoomIdle(page, 4000);
     const afterUnder = await page.evaluate(readZoomProbe, { clientX: px, clientY: py });
     const sameEntity = Boolean(
       before.entityUnder?.id
@@ -383,12 +452,10 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
       )
       : null;
     expect(after.zoom).toBeGreaterThan(before.zoom);
-    // Deep zoom can leave the original card under the fixed client point; when
-    // the same entity remains under the pointer, keep the drift budget tight.
     if (sameEntity && drift !== null) {
       expect(drift).toBeLessThan(80);
     } else {
-      expect(before.entityUnder?.id || afterUnder.entityUnder?.id).toBeTruthy();
+      expect(before.entityUnder?.id).toBeTruthy();
     }
     results.push({
       case: 'pointer-anchor',
@@ -396,13 +463,11 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
       afterZoom: after.zoom,
       sameEntity,
       drift,
-      pass: after.zoom > before.zoom
-        && (sameEntity
-          ? (drift !== null && drift < 80)
-          : Boolean(before.entityUnder || afterUnder.entityUnder))
+      pass: after.zoom > before.zoom && Boolean(before.entityUnder?.id)
+        && (sameEntity ? (drift !== null && drift < 80) : true)
     });
     await shot('pointer-anchor');
-  });
+  }, 30000);
 
   it('shift+wheel does not change zoom', async () => {
     expect.hasAssertions();
@@ -438,10 +503,9 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
   it('line-mode and page-mode wheel deltas zoom', async () => {
     expect.hasAssertions();
     // Prior cases may leave zoom at the max clamp — create headroom first.
-    for (let i = 0; i < 12; i += 1) {
+    for (let i = 0; i < 6; i += 1) {
       await page.click('#zoom-out-btn');
     }
-    await waitUserZoomIdle(page);
     const before = await waitUserZoomIdle(page);
     expect(before.zoom).toBeLessThan(2.4);
     await wheelOnCanvas(page, { deltaY: -3, deltaMode: 1, steps: 4 });
@@ -458,7 +522,7 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
       pass: afterLine.zoom > before.zoom && afterPage.zoom < afterLine.zoom
     });
     await shot('delta-modes');
-  });
+  }, 20000);
 
   it('wheel interrupts focus Camera3 and takes over fluidly', async () => {
     expect.hasAssertions();

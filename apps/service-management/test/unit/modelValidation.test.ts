@@ -703,6 +703,76 @@ describe('oas export gate collisions (JUM-474)', () => {
   });
 });
 
+describe('selection + relationship domain ownership (JUM-922)', () => {
+  it('flags incomplete selection paths and entity/domain mismatches', () => {
+    expect.hasAssertions();
+    const entityIssues = messages(collectModelIssues(createState({
+      selection: { kind: 'entity', entityId: 'entity-1' }
+    })));
+    expect(entityIssues).toContain('Selection path has entity/field without domainId.');
+
+    const fieldIssues = messages(collectModelIssues(createState({
+      selection: { kind: 'field', domainId: 'domain-1' }
+    })));
+    expect(fieldIssues).toContain('Selection path has field without entityId/fieldName.');
+
+    const mismatch = messages(collectModelIssues(createState({
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [createEntity({ id: 'entity-1', name: 'Invoice' })]
+        },
+        {
+          id: 'domain-2',
+          name: 'Users',
+          entities: [createEntity({ id: 'entity-2', name: 'User' })]
+        }
+      ],
+      selection: {
+        kind: 'entity',
+        domainId: 'domain-2',
+        entityId: 'entity-1'
+      }
+    })));
+    expect(mismatch).toContain(
+      'Selection path entityId does not belong to selection.domainId.'
+    );
+  });
+
+  it('flags relationship fromDomainId/toDomainId mismatches', () => {
+    expect.hasAssertions();
+    const issues = messages(collectModelIssues(createState({
+      domains: [
+        {
+          id: 'domain-1',
+          name: 'Billing',
+          entities: [createEntity({ id: 'entity-1', name: 'Invoice' })]
+        },
+        {
+          id: 'domain-2',
+          name: 'Users',
+          entities: [createEntity({ id: 'entity-2', name: 'User' })]
+        }
+      ],
+      relationships: [{
+        id: 'rel-1',
+        name: 'InvoiceUser',
+        fromEntityId: 'entity-1',
+        toEntityId: 'entity-2',
+        fromDomainId: 'wrong-domain',
+        toDomainId: 'also-wrong',
+        fromCardinality: 'N',
+        toCardinality: '1'
+      }]
+    })));
+    expect(issues).toStrictEqual(expect.arrayContaining([
+      'Relationship "InvoiceUser" fromDomainId mismatch.',
+      'Relationship "InvoiceUser" toDomainId mismatch.'
+    ]));
+  });
+});
+
 // Keeps this file a module: with no import/export left, TypeScript would
 // treat it as a script and its top-level requires would share one global
 // scope with every other script-mode suite in ts-jest's program (TS2451).

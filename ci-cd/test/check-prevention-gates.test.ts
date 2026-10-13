@@ -181,4 +181,26 @@ describe('website content reachability (JUM-655, Requirement 132)', () => {
 
     gateFs.rmSync(root, { recursive: true, force: true });
   });
+
+  it('skips missing content roots, hidden dirs, and stale exemptions that are now reachable (JUM-922)', () => {
+    expect.hasAssertions();
+    const missingRoot = gateFs.mkdtempSync(gatePath.join(gateOs.tmpdir(), 'jum922-nocontent-'));
+    expect(validateWebsiteContentRoutes(missingRoot)).toStrictEqual([]);
+    gateFs.rmSync(missingRoot, { recursive: true, force: true });
+
+    const root = gateFs.mkdtempSync(gatePath.join(gateOs.tmpdir(), 'jum922-content-'));
+    const content = gatePath.join(root, 'apps/jumentix-website/content');
+    gateFs.mkdirSync(gatePath.join(content, 'jumentix'), { recursive: true });
+    gateFs.mkdirSync(gatePath.join(content, '.cache'), { recursive: true });
+    gateFs.mkdirSync(gatePath.join(content, 'node_modules', 'pkg'), { recursive: true });
+    gateFs.writeFileSync(gatePath.join(content, 'jumentix', 'index.mdx'), '# ok\n');
+    gateFs.writeFileSync(gatePath.join(content, '.cache', 'secret.mdx'), '# hidden\n');
+    gateFs.writeFileSync(gatePath.join(content, 'node_modules', 'pkg', 'x.mdx'), '# skip\n');
+
+    const failures = validateWebsiteContentRoutes(root, [
+      { file: 'jumentix/index.mdx', issue: 'JUM-922', reason: 'should-be-live' }
+    ]);
+    expect(failures.some((f: string) => f.includes('still listed'))).toBe(true);
+    gateFs.rmSync(root, { recursive: true, force: true });
+  });
 });
