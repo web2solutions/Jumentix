@@ -38,7 +38,7 @@ const INTEGRATION_CONTRACTS = Object.freeze([
   {
     file: '.github/dependabot.yml',
     markers: [
-      'package-ecosystem: npm',
+      'package-ecosystem: bun',
       'target-branch: dev'
     ]
   },

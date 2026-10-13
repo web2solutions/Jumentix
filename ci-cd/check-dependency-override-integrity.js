@@ -78,6 +78,10 @@ const REQUIRED_OVERRIDES = {
   // Raised on 2026-08-13: monaco-editor nested `dompurify@3.4.8` past the
   // resolutions pin; flat override lifts GHSA-55q2-fjhq-7xh7 / GHSA-cmwh-pvxp-8882.
   dompurify: '^3.4.13',
+  // Raised on 2026-10-11: GHSA-8r5x-fm3f-whwj / GHSA-p8wg-vrv2-v86f (CRITICAL)
+  // and GHSA-5x5g-h9x8-2fh9 / GHSA-8f34-f56x-9xph — patched releases exist.
+  handlebars: '^4.7.10',
+  msgpack5: '^6.1.0',
   // Raised on 2026-08-13: openapi-typescript@5 nested `undici@5.29.0` past the
   // resolutions pin; 5.29.0 is the latest 5.x and carries HIGH WebSocket GHSAs.
   // Flat override lifts it to the already-resolved 6.28.0 line.
