@@ -523,6 +523,15 @@ body {
   pointer-events: none;
 }
 
+/* Domain Designer: park toasts bottom-left so mini-map + sidebar stay clear. */
+.service-management-shell:has(#tab-domain-designer.active) .status-region {
+  right: auto;
+  left: var(--jtx-space-4);
+  bottom: var(--jtx-space-4);
+  z-index: 24;
+  max-width: min(360px, 42vw);
+}
+
 .status-region.status-error {
   border-color: #ffc0ad;
   background: var(--jtx-coral-50);
@@ -776,6 +785,20 @@ body {
 }
 
 /* Camera 3 — GPU-friendly stage cues while the FPS rig is chasing. */
+/* Fluid user zoom (wheel/buttons) — same Camera3 depth cue, no focus remount. */
+#tab-domain-designer #canvas[data-user-zooming="true"] {
+  cursor: zoom-in;
+}
+
+#tab-domain-designer #canvas[data-user-zooming="true"][data-zoom-direction="out"] {
+  cursor: zoom-out;
+}
+
+#tab-domain-designer #canvas[data-user-zooming="true"] .canvas-inner {
+  will-change: transform;
+  transition: none;
+}
+
 #tab-domain-designer #canvas[data-camera="3"][data-navigating="true"] {
   cursor: grab;
 }
@@ -4801,7 +4824,7 @@ body {
 }
 
 #tab-domain-designer #relationship-inspector-panel.is-editing {
-  border-color: #34d399;
+  border-color: var(--jx-line);
   box-shadow: none;
   background: #171a20;
 }
@@ -4811,38 +4834,42 @@ body {
   z-index: 2;
   flex: 0 0 auto;
   margin: 0;
-  padding: 0;
+  padding: 0 0 8px;
   border-bottom: 1px solid #2c3038;
   background: rgba(18, 19, 23, 0.97);
   backdrop-filter: none;
 }
 
+#tab-domain-designer .relationship-inspector-chrome[hidden] {
+  display: none !important;
+}
+
 #tab-domain-designer #relationship-inspector-panel.is-editing .relationship-inspector-chrome {
-  border-bottom-color: rgba(52, 211, 153, 0.45);
-  background: linear-gradient(180deg, rgba(52, 211, 153, 0.14), rgba(18, 19, 23, 0.97) 70%);
+  border-bottom-color: #2c3038;
+  background: rgba(18, 19, 23, 0.97);
 }
 
 #tab-domain-designer .relationship-inspector-chrome-top {
   display: grid;
   gap: 2px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 #tab-domain-designer .relationship-inspector-mode {
-  margin: 0;
-  color: #98a3b3;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-#tab-domain-designer #relationship-inspector-panel.is-editing .relationship-inspector-mode {
-  color: #6ee7b7;
+  /* Outer jx-scope-edit-label already says Relationship — avoid double chrome. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 #tab-domain-designer .relationship-inspector-selection {
-  margin: 0 0 8px;
+  margin: 0;
   color: #d8dee8;
   font-size: 14px;
   font-weight: 600;
@@ -4850,13 +4877,27 @@ body {
   overflow-wrap: anywhere;
 }
 
+#tab-domain-designer .relationship-inspector-selection[hidden] {
+  display: none !important;
+}
+
 #tab-domain-designer #relationship-inspector-panel:not(.is-editing) .relationship-inspector-selection {
   color: #98a3b3;
   font-weight: 400;
 }
 
-#tab-domain-designer .relationship-inspector-create,
+#tab-domain-designer .relationship-inspector-create {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: 10px;
+}
+
 #tab-domain-designer .relationship-inspector-body {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   overflow-x: hidden;
@@ -4976,6 +5017,13 @@ body {
   color: #98a3b3;
 }
 
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-soft .entity-count,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-quiet .entity-count {
+  color: color-mix(in srgb, #98a3b3 70%, transparent);
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
 #tab-domain-designer .sidebar-tabs {
   display: none;
 }
@@ -5029,6 +5077,10 @@ body {
   backface-visibility: hidden;
   transform: translateZ(0) scale(1);
   transform-origin: center center;
+  /* Beat .edges (18) on overview too — fat .edge-hit strokes otherwise steal
+     header/body clicks where corridors cross domain cards. Soft/quiet tiers
+     already raise z-index on focus stage. */
+  z-index: 19;
   /* ~21 frames @ 60fps — synced with Camera3 chase feel */
   transition: transform 350ms cubic-bezier(0.22, 0.61, 0.36, 1),
     opacity 350ms cubic-bezier(0.22, 0.61, 0.36, 1),
@@ -5048,83 +5100,214 @@ body {
   outline-offset: 3px;
 }
 
+/* Quiet home-domain shell when a nested entity/field is the unique is-focus.
+ * Must stay weaker than .domain.is-focus / .entity.is-focus exclusive chrome. */
 #tab-domain-designer .domain.context-active {
-  outline: 2px solid color-mix(in srgb, var(--jx-accent) 70%, transparent);
-  outline-offset: 3px;
+  outline: 1px solid color-mix(in srgb, var(--jx-accent) 32%, transparent);
+  outline-offset: 2px;
   box-shadow:
-    0 18px 42px rgba(0, 0, 0, 0.4),
-    0 0 0 1px color-mix(in srgb, var(--jx-accent) 35%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 10px 28px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* Focus stage: active domain on stage; peers parked as clickable chips. */
+/* Focus stage: active domain full-scale foreground; peers scaled behind. */
 #tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-focus {
   transform: translateZ(0) scale(1.04);
-  z-index: 6;
+  /* Keep above .edges (18) and soft peers (20) — was z-index:6 and lost hits. */
+  z-index: 22;
 }
 
-/* During camera flight: peers stay off-scene — no soft ghost remnants. */
+/* Overview: domain cards must beat .edges (18). Fat .edge-hit strokes otherwise
+ * create dead zones over headers/bodies; panel tree never hits that trap. */
+#tab-domain-designer #canvas[data-canvas-stage="overview"] .domain {
+  z-index: 19;
+  pointer-events: auto;
+}
+
+/*
+ * Focus depth hierarchy — secondaries stay ON STAGE at smaller scales
+ * (background), never hidden off-stage. Tiers:
+ *   depth 0 / is-focus → exclusive foreground (one subject)
+ *   depth 1 / is-soft  → recessed peers (linked domains / endpoints)
+ *   depth 2 / is-quiet → deeper outsiders/siblings (still clickable)
+ *
+ * Soft peer domains use true CSS scale(0.86); edge anchors resolve via DOM
+ * rects so painted strokes stay glued. Quiet outsiders may scale freely.
+ * Only .is-focus gets the strong exclusive ring — soft/quiet never compete.
+ */
 #tab-domain-designer #canvas[data-navigating="true"][data-canvas-stage="focus"] .domain.is-quiet,
 #tab-domain-designer #canvas[data-navigating="true"][data-canvas-stage="focus"] .domain.is-staged-away {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  filter: none;
-  transform: none;
+  opacity: 0.28;
+  visibility: visible;
+  pointer-events: auto;
+  filter: saturate(0.38) brightness(0.82) blur(0.55px);
+  transform: translateZ(0) scale(0.42);
+  transform-origin: center center;
+  z-index: 19;
 }
 
 #tab-domain-designer #canvas[data-camera="3"][data-navigating="true"][data-zoom-direction="in"] .domain.is-focus {
   transform: translateZ(0) scale(1.03);
   box-shadow:
-    0 22px 48px rgba(0, 0, 0, 0.45),
-    0 0 0 1px color-mix(in srgb, var(--jx-accent) 40%, transparent);
+    0 26px 56px rgba(0, 0, 0, 0.52),
+    0 0 0 2px color-mix(in srgb, var(--jx-accent) 55%, transparent),
+    0 0 36px color-mix(in srgb, var(--jx-accent) 22%, transparent);
 }
 
 #tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-quiet,
-#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-staged-away {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: none;
-  filter: none;
-  z-index: 0;
-}
-
-/* Soft-peer domains stay on stage with real entity cards (no empty chips). */
-#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-soft {
-  opacity: 1;
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-staged-away,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain[data-stage-depth="2"] {
+  opacity: 0.24;
   visibility: visible;
   pointer-events: auto;
-  filter: saturate(0.92);
-  transform: none;
-  z-index: 4;
-}
-
-/* Near-single focus: non-keep entities/edges/notes leave the scene. */
-#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-quiet,
-#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-staged-away {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateZ(0) scale(0.86);
-}
-
-/* Soft-peer endpoint cards remain selectable / hoverable for relationships. */
-#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-soft,
-#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-focus,
-#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-edge-endpoint {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateZ(0) scale(1.03);
+  filter: saturate(0.32) brightness(0.7);
+  transform: translateZ(0) scale(0.48);
+  transform-origin: center center;
+  /* Above .edges (18) so quiet peer cards stay clickable; corridor strokes
+     still show in the inter-domain gap. */
+  z-index: 19;
   box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.42),
-    0 0 0 1px color-mix(in srgb, var(--jx-accent) 36%, transparent);
+    0 4px 12px rgba(0, 0, 0, 0.36),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  outline: none;
 }
 
-#tab-domain-designer #canvas[data-camera="3"][data-navigating="true"] .entity.is-focus,
-#tab-domain-designer #canvas[data-camera="3"][data-navigating="true"] .entity.is-edge-endpoint {
-  transform: translateZ(0) scale(1.04);
+/* Soft-peer domains: full inventory on stage, clearly behind focus, clickable.
+ * Scale stays ≥0.82 so DOM edge anchors (getBoundingClientRect) stay near cards.
+ * Opacity/filter carry the "recessed background" read — must never look equal. */
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-soft,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain[data-stage-depth="1"] {
+  /* Recessed background inventory — never compete with unique focus. */
+  opacity: 0.26;
+  visibility: visible;
+  pointer-events: auto;
+  filter: saturate(0.28) brightness(0.62) contrast(0.88);
+  transform: translateZ(0) scale(0.78);
+  transform-origin: center center;
+  /* Must beat .edges z-index (18) — soft peers were dead-click targets when
+     edge-hit strokes painted above the soft domain stacking context. */
+  z-index: 20;
+  outline: none;
+  box-shadow:
+    inset 0 0 72px rgba(0, 0, 0, 0.62),
+    0 2px 10px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+}
+
+/* Soft domain already scales — do not compound entity soft/quiet scales inside. */
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-soft .entity.is-soft,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-soft .entity[data-stage-depth="1"],
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain[data-stage-depth="1"] .entity.is-soft,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain[data-stage-depth="1"] .entity[data-stage-depth="1"],
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-soft .entity.is-quiet,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-soft .entity[data-stage-depth="2"],
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain[data-stage-depth="1"] .entity.is-quiet,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain[data-stage-depth="1"] .entity[data-stage-depth="2"] {
+  transform: translateZ(0) scale(1);
+}
+
+/* Soft-peer depth veil — inventory faintly scannable, clearly behind focus. */
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-soft::after,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain[data-stage-depth="1"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    165deg,
+    rgba(8, 10, 14, 0.42),
+    rgba(8, 10, 14, 0.72)
+  );
+  pointer-events: none;
+  z-index: 40;
+  transition: opacity 320ms ease;
+}
+
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain.is-focus,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .domain[data-stage-depth="0"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  filter: none;
+  z-index: 22;
+  outline: 2px solid color-mix(in srgb, var(--jx-accent) 72%, transparent);
+  outline-offset: 4px;
+  box-shadow:
+    0 26px 58px rgba(0, 0, 0, 0.55),
+    0 0 0 2px color-mix(in srgb, var(--jx-accent) 58%, transparent),
+    0 0 36px color-mix(in srgb, var(--jx-accent) 24%, transparent);
+}
+
+/*
+ * Entity depth tiers — soft/quiet clearly recessed vs exclusive focus.
+ * Soft scale stays moderate so model-space edge anchors stay near cards.
+ */
+/* Quiet siblings: recess via opacity/filter only — CSS scale on same-domain
+ * peers shifts DOM edge anchors and punches midInside through the focus card. */
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-quiet,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-staged-away,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity[data-stage-depth="2"] {
+  opacity: 0.32;
+  visibility: visible;
+  pointer-events: auto;
+  filter: saturate(0.38) brightness(0.82);
+  transform: translateZ(0) scale(1);
+  transform-origin: center center;
+  z-index: 3;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  transition: opacity 320ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    filter 320ms ease,
+    transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 320ms ease;
+}
+
+/* Soft-peer endpoint cards: recessed mid-tier, no focus ring, still selectable.
+ * Do NOT style bare `.is-edge-endpoint` here — same-domain quiet siblings can
+ * also be endpoints and must stay at quiet depth (unique focus exclusivity). */
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-soft,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity[data-stage-depth="1"] {
+  opacity: 0.52;
+  visibility: visible;
+  pointer-events: auto;
+  filter: saturate(0.55) brightness(0.88);
+  transform: translateZ(0) scale(0.86);
+  transform-origin: center center;
+  z-index: 5;
+  outline: none;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  transition: opacity 320ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    filter 320ms ease,
+    transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 320ms ease;
+}
+
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-focus,
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity[data-stage-depth="0"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  filter: none;
+  /* Keep layout-aligned with model edge anchors (no grow). */
+  transform: translateZ(0) scale(1);
+  transform-origin: center center;
+  z-index: 8;
+  outline: 2px solid color-mix(in srgb, var(--jx-accent) 78%, transparent);
+  outline-offset: 3px;
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.52),
+    0 0 0 2px color-mix(in srgb, var(--jx-accent) 58%, transparent),
+    0 0 32px color-mix(in srgb, var(--jx-accent) 22%, transparent);
+  transition: opacity 320ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    filter 320ms ease,
+    transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 320ms ease;
+}
+
+#tab-domain-designer #canvas[data-camera="3"][data-navigating="true"] .entity.is-focus {
+  transform: translateZ(0) scale(1.02);
 }
 
 #tab-domain-designer #canvas[data-canvas-stage="focus"] .edge-line.is-quiet,
@@ -5139,12 +5322,14 @@ body {
   pointer-events: none;
 }
 
-/* Soft edges stay interactive — only true outsiders (is-quiet / staged-away) hide. */
+/* Soft edges stay interactive — only true outsiders (is-quiet / staged-away) hide.
+ * Dimmer than focus edges so corridors to background peers don't compete. */
 #tab-domain-designer #canvas[data-canvas-stage="focus"] .edge-line.is-soft,
 #tab-domain-designer #canvas[data-canvas-stage="focus"] .edge-label.is-soft,
 #tab-domain-designer #canvas[data-canvas-stage="focus"] .edge-hit.is-soft {
-  opacity: 0.92;
+  opacity: 0.7;
   pointer-events: auto;
+  transition: opacity 280ms ease;
 }
 
 #tab-domain-designer #canvas[data-canvas-stage="focus"] .canvas-note.is-staged-away {
@@ -5157,10 +5342,16 @@ body {
   stroke-width: 2.6;
 }
 
-#tab-domain-designer #canvas .entity.is-edge-endpoint {
+/* Endpoint hint only outside exclusive focus — never compete with is-focus ring. */
+#tab-domain-designer #canvas:not([data-canvas-stage="focus"]) .entity.is-edge-endpoint {
   outline: 2px solid color-mix(in srgb, var(--jx-accent) 70%, transparent);
   outline-offset: 3px;
   z-index: 7;
+}
+
+#tab-domain-designer #canvas[data-canvas-stage="focus"] .entity.is-edge-endpoint:not(.is-focus) {
+  outline: none;
+  z-index: 5;
 }
 
 #tab-domain-designer .domain-tree-links {
@@ -5191,71 +5382,286 @@ body {
   background: color-mix(in srgb, var(--jx-accent) 12%, transparent);
 }
 
-#tab-domain-designer .relationship-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-#tab-domain-designer .relationship-nav-index {
-  flex: 1;
-  text-align: center;
-  font-size: 11px;
-  color: var(--jx-ink-muted);
-  font-variant-numeric: tabular-nums;
-}
-
 #tab-domain-designer .relationship-browse {
-  margin: 8px 0 10px;
+  flex: 0 0 auto;
+  margin: 8px 0 6px;
+  order: 2;
 }
 
-#tab-domain-designer .relationship-nav-list {
-  max-height: 160px;
-  overflow: auto;
+#tab-domain-designer .relationship-browse[hidden] {
+  display: none !important;
 }
 
-#tab-domain-designer .relationship-item {
-  display: flex;
-  align-items: stretch;
-  gap: 4px;
+/* Editing: only the current relationship form — tree owns link browsing. */
+#tab-domain-designer #relationship-inspector-panel.is-editing .relationship-inspector-chrome {
+  order: 1;
+}
+
+#tab-domain-designer #relationship-inspector-panel.is-editing .relationship-inspector-body {
+  order: 2;
+}
+
+#tab-domain-designer #relationship-inspector-panel.is-editing .relationship-browse {
+  display: none !important;
+}
+
+#tab-domain-designer #relationship-inspector-panel.is-editing .relationship-inspector-create {
+  order: 4;
+}
+
+#tab-domain-designer .relationship-browse-hint {
   margin: 0 0 4px;
+  color: var(--jx-ink-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+}
+
+#tab-domain-designer .relationship-browse-hint[hidden] {
+  display: none !important;
+}
+
+#tab-domain-designer .relationship-nav-list.jx-list.list,
+#tab-domain-designer .relationship-nav-list {
+  max-height: 72px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+#tab-domain-designer .relationship-nav-list > .relationship-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  gap: 4px;
+  align-items: start;
+  margin: 0 0 2px;
+  padding: 0;
+  border-bottom: 0;
 }
 
 #tab-domain-designer .relationship-item.is-empty {
+  display: block;
   color: var(--jx-ink-muted);
   font-size: 12px;
-  padding: 6px 2px;
+  padding: 4px 2px;
 }
 
-#tab-domain-designer .relationship-name {
-  flex: 1;
+#tab-domain-designer .relationship-nav-list .relationship-name {
+  display: grid;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
   text-align: left;
-  font-size: 12px;
-  padding: 6px 8px;
+  font-size: 11px;
+  line-height: 1.25;
+  min-height: 0;
+  padding: 4px 8px;
   border-radius: 6px;
-  border: 1px solid var(--jx-line);
+  border: 1px solid transparent;
   background: transparent;
   color: var(--jx-ink);
   cursor: pointer;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  box-shadow: none;
+}
+
+#tab-domain-designer .relationship-name-title {
+  display: block;
+  font-weight: 600;
+  color: var(--jx-ink);
+  overflow-wrap: break-word;
+}
+
+#tab-domain-designer .relationship-name-meta {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--jx-ink-muted);
+  overflow-wrap: break-word;
 }
 
 #tab-domain-designer .relationship-item.is-selected .relationship-name {
-  border-color: color-mix(in srgb, var(--jx-accent) 45%, transparent);
-  background: color-mix(in srgb, var(--jx-accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--jx-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--jx-accent) 12%, transparent);
 }
 
-#tab-domain-designer .relationship-delete {
+#tab-domain-designer .relationship-nav-list .relationship-delete {
   width: 28px;
+  min-width: 28px;
+  max-width: 28px;
+  min-height: 28px;
+  padding: 0;
   border-radius: 6px;
-  border: 1px solid var(--jx-line);
+  border: 1px solid transparent;
   background: transparent;
   color: var(--jx-ink-muted);
   cursor: pointer;
+  justify-self: end;
+  text-align: center;
+  box-shadow: none;
+}
+
+#tab-domain-designer .relationship-delete:hover,
+#tab-domain-designer .relationship-delete:focus-visible {
+  color: #fecaca;
+  border-color: color-mix(in srgb, #f87171 45%, transparent);
+}
+
+/* Relationship create/edit: labeled fields, sticky actions, advanced collapsed. */
+#tab-domain-designer .relationship-form {
+  gap: 12px;
+  margin-top: 0;
+}
+
+#tab-domain-designer .relationship-form-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+#tab-domain-designer .relationship-form-primary {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+#tab-domain-designer .relationship-form .form-field {
+  gap: 4px;
+  min-width: 0;
+}
+
+#tab-domain-designer .relationship-form .form-field > label {
+  color: var(--jx-ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+#tab-domain-designer .relationship-form select,
+#tab-domain-designer .relationship-form input[type='text'],
+#tab-domain-designer .relationship-form input[type='number'] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#tab-domain-designer .relationship-form select {
+  white-space: normal;
+  text-overflow: clip;
+  overflow: hidden;
+}
+
+#tab-domain-designer .relationship-form-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  align-items: start;
+}
+
+#tab-domain-designer .relationship-form-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  min-width: 0;
+}
+
+#tab-domain-designer .relationship-form-actions-sticky {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 1px solid #2c3038;
+  background: #171a20;
+}
+
+#tab-domain-designer .relationship-form-actions > .jx-btn,
+#tab-domain-designer .relationship-form-actions > button {
+  width: 100%;
+  min-width: 0;
+}
+
+#tab-domain-designer .relationship-advanced {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--jx-line);
+  border-radius: 6px;
+  background: transparent;
+  /* Expand in document flow — one sidebar scroll only (no nested max-height). */
+  max-height: none;
+  overflow: visible;
+}
+
+#tab-domain-designer .relationship-advanced > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 10px;
+  color: var(--jx-ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+#tab-domain-designer .relationship-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+#tab-domain-designer .relationship-advanced > summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--jx-ink-faint, var(--jx-ink-muted));
+}
+
+#tab-domain-designer .relationship-advanced[open] > summary::before {
+  content: '▾';
+}
+
+#tab-domain-designer .relationship-advanced-body {
+  display: grid;
+  gap: 10px;
+  padding: 0 10px 10px;
+}
+
+#tab-domain-designer .relationship-inspector-create {
+  padding-bottom: 8px;
+  overflow-x: hidden;
+}
+
+#tab-domain-designer .relationship-inspector-body {
+  padding-bottom: 4px;
+}
+
+#tab-domain-designer .relationship-form,
+#tab-domain-designer .relationship-form-pair,
+#tab-domain-designer .relationship-form-actions {
+  max-width: 100%;
 }
 
 #tab-domain-designer #canvas[data-canvas-stage="focus"] .canvas-note.is-quiet {
   opacity: 0.35;
+}
+
+#tab-domain-designer .mini-map-domain.is-soft {
+  opacity: 0.72;
 }
 
 #tab-domain-designer .mini-map-domain.is-quiet {
@@ -5264,6 +5670,7 @@ body {
 
 #tab-domain-designer .mini-map-domain {
   cursor: pointer;
+  pointer-events: auto;
 }
 
 #tab-domain-designer .domain.dragging,

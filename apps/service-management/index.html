@@ -14,8 +14,8 @@
        styles.css, which consumes them. tokens.css is vendored from
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
-  <link rel="stylesheet" href="./vendor/jumentix-ui/jumentix-ui.css?v=0.9.128" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.128" />
+  <link rel="stylesheet" href="./vendor/jumentix-ui/jumentix-ui.css?v=0.9.148" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.148" />
 </head>
 <body>
   <div class="service-management-shell">
@@ -471,34 +471,44 @@
           <section class="panel relationship-inspector-panel" id="relationship-inspector-panel" data-sidebar-group="model" hidden>
             <header class="relationship-inspector-chrome">
               <div class="relationship-inspector-chrome-top">
-                <p class="relationship-inspector-mode" id="relationship-inspector-mode" hidden>Relationship</p>
-                <p id="relationship-inspector-title" class="relationship-inspector-selection">Select a link on the canvas, in Browse, or with [ ]</p>
-              </div>
-              <div class="relationship-nav" id="relationship-nav" role="toolbar" aria-label="Relationship navigation">
-                <button type="button" class="jx-btn" id="relationship-prev-btn" title="Previous link ([)">Prev</button>
-                <span class="relationship-nav-index" id="relationship-nav-index" aria-live="polite">0 / 0</span>
-                <button type="button" class="jx-btn" id="relationship-next-btn" title="Next link (])">Next</button>
+                <p class="relationship-inspector-mode" id="relationship-inspector-mode">Relationship</p>
+                <p id="relationship-inspector-title" class="relationship-inspector-selection">Select a link on the canvas or in the tree</p>
               </div>
             </header>
             <div class="relationship-browse" data-relationship-section="browse">
-              <p class="jx-scope-section-label">Links</p>
-              <ul id="relationship-list" class="list jx-list relationship-nav-list" aria-label="Relationships in scope"></ul>
+              <p class="jx-scope-section-label">On this entity</p>
+              <p class="relationship-browse-hint" id="relationship-browse-hint" hidden></p>
+              <ul id="relationship-list" class="list jx-list relationship-nav-list" aria-label="Related links on this entity"></ul>
             </div>
             <div class="relationship-inspector-create" data-relationship-section="create">
               <p class="jx-scope-section-label">Create</p>
-              <div class="column">
-                <select id="from-entity-select" aria-label="From entity"></select>
-                <select id="from-card-select" aria-label="From cardinality">
-                  <option value="1">1</option>
-                  <option value="N">N</option>
-                </select>
-                <select id="to-card-select" aria-label="To cardinality">
-                  <option value="1">1</option>
-                  <option value="N">N</option>
-                </select>
-                <select id="to-entity-select" aria-label="To entity"></select>
-                <label class="check"><input id="relationship-auto-fk-check" type="checkbox" checked /> auto FK</label>
-                <div class="row">
+              <div class="column relationship-form">
+                <div class="form-field">
+                  <label for="from-entity-select">From entity</label>
+                  <select id="from-entity-select" aria-label="From entity"></select>
+                </div>
+                <div class="form-field">
+                  <label for="to-entity-select">To entity</label>
+                  <select id="to-entity-select" aria-label="To entity"></select>
+                </div>
+                <div class="relationship-form-pair">
+                  <div class="form-field">
+                    <label for="from-card-select">From cardinality</label>
+                    <select id="from-card-select" aria-label="From cardinality">
+                      <option value="1">One</option>
+                      <option value="N">Many</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label for="to-card-select">To cardinality</label>
+                    <select id="to-card-select" aria-label="To cardinality">
+                      <option value="1">One</option>
+                      <option value="N">Many</option>
+                    </select>
+                  </div>
+                </div>
+                <label class="check"><input id="relationship-auto-fk-check" type="checkbox" checked /> Auto foreign key</label>
+                <div class="relationship-form-actions">
                   <button id="add-relationship-btn" type="button">Connect</button>
                   <button id="pick-relationship-btn" type="button">Pick On Canvas</button>
                 </div>
@@ -506,41 +516,77 @@
               </div>
             </div>
             <div class="relationship-inspector-body" id="relationship-inspector-body" data-relationship-section="edit" hidden>
-              <p class="jx-scope-section-label">Edit · Relationship</p>
-              <div class="column compact">
-                <input id="relationship-name-input" type="text" placeholder="Selected relationship name" aria-label="Selected relationship name" />
-                <div class="row">
-                  <select id="relationship-from-entity-select" aria-label="Relationship from entity"></select>
-                  <select id="relationship-to-entity-select" aria-label="Relationship to entity"></select>
+              <div class="column relationship-form relationship-form-edit">
+                <div class="relationship-form-primary">
+                  <div class="form-field">
+                    <label for="relationship-name-input">Name</label>
+                    <input id="relationship-name-input" type="text" placeholder="e.g. Comment authored by User" aria-label="Relationship name" />
+                  </div>
+                  <div class="form-field">
+                    <label for="relationship-from-entity-select">From entity</label>
+                    <select id="relationship-from-entity-select" aria-label="From entity"></select>
+                  </div>
+                  <div class="form-field">
+                    <label for="relationship-to-entity-select">To entity</label>
+                    <select id="relationship-to-entity-select" aria-label="To entity"></select>
+                  </div>
+                  <div class="relationship-form-pair" role="group" aria-label="Cardinality">
+                    <div class="form-field">
+                      <label for="relationship-from-card-select">From cardinality</label>
+                      <select id="relationship-from-card-select" aria-label="From cardinality">
+                        <option value="1">One</option>
+                        <option value="N">Many</option>
+                      </select>
+                    </div>
+                    <div class="form-field">
+                      <label for="relationship-to-card-select">To cardinality</label>
+                      <select id="relationship-to-card-select" aria-label="To cardinality">
+                        <option value="1">One</option>
+                        <option value="N">Many</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                <div class="row">
-                  <select id="relationship-from-card-select" aria-label="Relationship from cardinality">
-                    <option value="1">1</option>
-                    <option value="N">N</option>
-                  </select>
-                  <select id="relationship-to-card-select" aria-label="Relationship to cardinality">
-                    <option value="1">1</option>
-                    <option value="N">N</option>
-                  </select>
-                </div>
-                <div class="row">
-                  <button id="save-relationship-btn" type="button">Save</button>
-                  <button id="reverse-relationship-btn" type="button">Reverse</button>
+                <div class="relationship-form-actions relationship-form-actions-sticky" role="group" aria-label="Relationship actions">
+                  <button id="save-relationship-btn" type="button" class="jx-btn jx-btn-primary">Save</button>
+                  <button id="reverse-relationship-btn" type="button" class="jx-btn">Reverse</button>
                   <button id="delete-relationship-btn" type="button" class="jx-btn jx-btn-danger">Delete</button>
                 </div>
-                <div class="row">
-                  <input id="relationship-label-offset-x-input" type="number" placeholder="Label X offset" aria-label="Label X offset" />
-                  <input id="relationship-label-offset-y-input" type="number" placeholder="Label Y offset" aria-label="Label Y offset" />
-                  <button id="reset-relationship-label-offset-btn" type="button">Reset Label Pos</button>
-                </div>
-                <div class="row">
-                  <input id="relationship-bend-x-input" type="number" placeholder="Bend X (optional)" aria-label="Bend X (optional)" />
-                  <input id="relationship-bend-y-input" type="number" placeholder="Bend Y (optional)" aria-label="Bend Y (optional)" />
-                  <select id="relationship-anchor-behavior-select" aria-label="Anchor behavior">
-                    <option value="auto">anchor auto</option>
-                    <option value="center">anchor center</option>
-                  </select>
-                </div>
+                <details class="relationship-advanced">
+                  <summary>Advanced</summary>
+                  <div class="relationship-advanced-body">
+                    <div class="relationship-form-pair">
+                      <div class="form-field">
+                        <label for="relationship-label-offset-x-input">Label offset X</label>
+                        <input id="relationship-label-offset-x-input" type="number" placeholder="0" aria-label="Label offset X" />
+                      </div>
+                      <div class="form-field">
+                        <label for="relationship-label-offset-y-input">Label offset Y</label>
+                        <input id="relationship-label-offset-y-input" type="number" placeholder="0" aria-label="Label offset Y" />
+                      </div>
+                    </div>
+                    <div class="relationship-form-actions">
+                      <button id="reset-relationship-label-offset-btn" type="button" class="jx-btn">Reset label position</button>
+                    </div>
+                    <div class="relationship-form-pair">
+                      <div class="form-field">
+                        <label for="relationship-bend-x-input">Bend X</label>
+                        <input id="relationship-bend-x-input" type="number" placeholder="optional" aria-label="Bend X (optional)" />
+                      </div>
+                      <div class="form-field">
+                        <label for="relationship-bend-y-input">Bend Y</label>
+                        <input id="relationship-bend-y-input" type="number" placeholder="optional" aria-label="Bend Y (optional)" />
+                      </div>
+                    </div>
+                    <div class="form-field">
+                      <label for="relationship-anchor-behavior-select">Anchor</label>
+                      <select id="relationship-anchor-behavior-select" aria-label="Anchor behavior">
+                        <option value="auto">Auto</option>
+                        <option value="center">Center</option>
+                      </select>
+                    </div>
+                  </div>
+                </details>
               </div>
             </div>
           </section>
@@ -1375,7 +1421,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js?v=0.9.128"></script>
+  <script type="module" src="./script.js?v=0.9.148"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

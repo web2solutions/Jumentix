@@ -111,6 +111,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
    * }}
    */
   let camera3 = null;
+  /** Pointer/button-driven zoom chase (separate from focus Camera3 framing). */
+  let userZoom = null;
+  let userZoomSaveTimer = 0;
 
   const CAMERA3 = {
     TARGET_FPS: 60,
@@ -121,7 +124,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     ARRIVE_ZOOM: 0.003,
     ARRIVE_PAN: 0.4,
     MINIMAP_EVERY_N: 2,
-    FPS_EMA_ALPHA: 0.12
+    FPS_EMA_ALPHA: 0.12,
+    /** User wheel/button zoom — snappier than focus framing, still 60FPS smooth. */
+    USER_ZOOM_LAMBDA: 14.5,
+    USER_ZOOM_ARRIVE: 0.0025,
+    USER_ZOOM_SAVE_MS: 180
   };
 
   function modelToCanvasX(x) {
@@ -607,7 +614,178 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     dom.exportBlockCriticalCheck.checked = state.view.exportBlockCritical;
   }
 
+  function cancelUserZoom({ commit = true } = {}) {
+    if (!userZoom) return;
+    cancelAnimationFrame(userZoom.raf);
+    if (commit && Number.isFinite(userZoom.liveZoom)) {
+      state.view.zoom = clampZoom(userZoom.liveZoom);
+      applyAnchoredZoomFrame(
+        userZoom.liveZoom,
+        userZoom.anchorModelX,
+        userZoom.anchorModelY,
+        userZoom.localX,
+        userZoom.localY,
+        { minimap: true }
+      );
+    }
+    userZoom = null;
+    if (dom.canvas) {
+      delete dom.canvas.dataset.userZooming;
+    }
+    if (userZoomSaveTimer) {
+      clearTimeout(userZoomSaveTimer);
+      userZoomSaveTimer = 0;
+    }
+  }
+
+  function scheduleUserZoomSave() {
+    if (userZoomSaveTimer) clearTimeout(userZoomSaveTimer);
+    userZoomSaveTimer = setTimeout(() => {
+      userZoomSaveTimer = 0;
+      saveState();
+    }, CAMERA3.USER_ZOOM_SAVE_MS);
+  }
+
+  /**
+   * Keep a model-space anchor under a fixed canvas-local pointer while zoom changes.
+   * This is what makes wheel zoom feel like a camera, not a CSS scale of the page.
+   */
+  function applyAnchoredZoomFrame(
+    zoom,
+    anchorModelX,
+    anchorModelY,
+    localX,
+    localY,
+    { minimap = true } = {}
+  ) {
+    const z = clampZoom(zoom);
+    state.view.zoom = z;
+    if (dom.canvasInner) {
+      const depth = 1 + (z - 1) * 0.012;
+      dom.canvasInner.style.transform = `scale(${z})`;
+      dom.canvasInner.style.setProperty('--cam3-depth', String(depth));
+    }
+    if (dom.zoomIndicator) dom.zoomIndicator.textContent = `${Math.round(z * 100)}%`;
+    if (!dom.canvas) return;
+    dom.canvas.scrollLeft = Math.max(0, anchorModelX * z - localX);
+    dom.canvas.scrollTop = Math.max(0, anchorModelY * z - localY);
+    if (minimap) scheduleMiniMapRender();
+  }
+
+  function tickUserZoom(now) {
+    if (!userZoom) return;
+    const rig = userZoom;
+    let dtMs = now - (rig.lastTs || now);
+    rig.lastTs = now;
+    if (dtMs > 0 && dtMs < CAMERA3.FRAME_MS * 0.55) {
+      rig.raf = requestAnimationFrame(tickUserZoom);
+      return;
+    }
+    dtMs = Math.min(Math.max(dtMs, CAMERA3.FRAME_MS * 0.5), CAMERA3.MAX_DT_MS);
+    const dtSec = dtMs / 1000;
+    rig.liveZoom = cam3ExpSmooth(
+      rig.liveZoom,
+      rig.targetZoom,
+      CAMERA3.USER_ZOOM_LAMBDA,
+      dtSec
+    );
+    applyAnchoredZoomFrame(
+      rig.liveZoom,
+      rig.anchorModelX,
+      rig.anchorModelY,
+      rig.localX,
+      rig.localY,
+      { minimap: rig.frame % CAMERA3.MINIMAP_EVERY_N === 0 }
+    );
+    rig.frame += 1;
+    if (dom.canvas) {
+      const zoomingIn = rig.targetZoom > rig.liveZoom + 0.01;
+      const zoomingOut = rig.targetZoom < rig.liveZoom - 0.01;
+      dom.canvas.dataset.userZooming = 'true';
+      dom.canvas.dataset.zoomDirection = zoomingIn ? 'in' : zoomingOut ? 'out' : 'pan';
+      dom.canvas.dataset.camera = '3';
+    }
+    if (Math.abs(rig.targetZoom - rig.liveZoom) <= CAMERA3.USER_ZOOM_ARRIVE) {
+      applyAnchoredZoomFrame(
+        rig.targetZoom,
+        rig.anchorModelX,
+        rig.anchorModelY,
+        rig.localX,
+        rig.localY,
+        { minimap: true }
+      );
+      state.view.zoom = clampZoom(rig.targetZoom);
+      userZoom = null;
+      if (dom.canvas) {
+        delete dom.canvas.dataset.userZooming;
+        delete dom.canvas.dataset.zoomDirection;
+        // Keep data-camera only if a focus flight still owns it.
+        if (!camera3) delete dom.canvas.dataset.camera;
+      }
+      scheduleUserZoomSave();
+      return;
+    }
+    rig.raf = requestAnimationFrame(tickUserZoom);
+  }
+
+  /**
+   * Start or retarget a fluid user zoom. Anchor is the model point under
+   * (localX, localY) at the live zoom so the cursor stays glued to content.
+   */
+  function beginOrRetargetUserZoom(targetZoom, localX, localY) {
+    if (!dom.canvas || !dom.canvasInner) return;
+    cancelCameraFlight();
+    const nextZoom = clampZoom(targetZoom);
+    const liveZoom = userZoom
+      ? userZoom.liveZoom
+      : clampZoom(state.view.zoom || 1);
+    if (!userZoom && Math.abs(nextZoom - liveZoom) <= CAMERA3.USER_ZOOM_ARRIVE) return;
+
+    let anchorModelX = (dom.canvas.scrollLeft + localX) / liveZoom;
+    let anchorModelY = (dom.canvas.scrollTop + localY) / liveZoom;
+
+    // Focus-stage zoom-in: blend pointer anchor toward a TIGHT selection point so
+    // aggressive wheel-in does not park in empty soft-peer union void.
+    // Relationships: endpoint corridor mid (not soft-hull union center).
+    if (state.view.canvasStage === 'focus' && nextZoom > liveZoom + 0.02) {
+      const zoomAnchor = selectionZoomAnchorPoint();
+      if (zoomAnchor) {
+        const deep = Math.min(1, Math.max(0, (nextZoom - 0.85) / 1.1));
+        const blend = 0.32 + deep * 0.58;
+        anchorModelX += (zoomAnchor.x - anchorModelX) * blend;
+        anchorModelY += (zoomAnchor.y - anchorModelY) * blend;
+      }
+    }
+
+    if (userZoom) {
+      userZoom.targetZoom = nextZoom;
+      userZoom.anchorModelX = anchorModelX;
+      userZoom.anchorModelY = anchorModelY;
+      userZoom.localX = localX;
+      userZoom.localY = localY;
+      return;
+    }
+
+    userZoom = {
+      raf: 0,
+      lastTs: performance.now(),
+      frame: 0,
+      liveZoom,
+      targetZoom: nextZoom,
+      anchorModelX,
+      anchorModelY,
+      localX,
+      localY
+    };
+    if (dom.canvas) {
+      dom.canvas.dataset.userZooming = 'true';
+      dom.canvas.dataset.camera = '3';
+    }
+    userZoom.raf = requestAnimationFrame(tickUserZoom);
+  }
+
   function setZoom(zoomValue) {
+    cancelUserZoom({ commit: false });
     cancelCameraFlight();
     state.view.zoom = clampZoom(zoomValue);
     renderView();
@@ -616,32 +794,54 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   }
 
   function zoomBy(delta) {
-    // Multiplicative steps feel even across the zoom range.
-    const current = clampZoom(state.view.zoom || 1);
+    // Multiplicative steps feel even across the zoom range; chase is fluid.
+    if (!dom.canvas) {
+      const current = clampZoom(state.view.zoom || 1);
+      const factor = delta >= 0 ? 1.12 : 1 / 1.12;
+      setZoom(current * factor);
+      return;
+    }
+    const current = userZoom
+      ? userZoom.targetZoom
+      : clampZoom(state.view.zoom || 1);
     const factor = delta >= 0 ? 1.12 : 1 / 1.12;
-    setZoom(current * factor);
+    const localX = dom.canvas.clientWidth / 2;
+    const localY = dom.canvas.clientHeight / 2;
+    beginOrRetargetUserZoom(current * factor, localX, localY);
   }
 
   function zoomAtPointer(delta, event) {
-    cancelCameraFlight();
-    const previousZoom = clampZoom(state.view.zoom || 1);
-    const factor = delta >= 0 ? 1.1 : 1 / 1.1;
-    const nextZoom = clampZoom(previousZoom * factor);
-    if (nextZoom === previousZoom) return;
+    if (!dom.canvas || !event) {
+      zoomBy(delta);
+      return;
+    }
     const rect = dom.canvas.getBoundingClientRect();
     const localX = event.clientX - rect.left;
     const localY = event.clientY - rect.top;
-    const modelX = (dom.canvas.scrollLeft + localX) / previousZoom;
-    const modelY = (dom.canvas.scrollTop + localY) / previousZoom;
-    state.view.zoom = nextZoom;
-    renderView();
-    dom.canvas.scrollLeft = modelX * nextZoom - localX;
-    dom.canvas.scrollTop = modelY * nextZoom - localY;
-    scheduleMiniMapRender();
-    saveState();
+    const current = userZoom
+      ? userZoom.targetZoom
+      : clampZoom(state.view.zoom || 1);
+    // Prefer continuous pixel deltas (trackpad); fall back to stepped buttons.
+    let factor;
+    if (Number.isFinite(event.deltaY) && event.deltaY !== 0) {
+      const lineHeight = 16;
+      const pageHeight = dom.canvas.clientHeight || 800;
+      const pixels = event.deltaMode === 1
+        ? event.deltaY * lineHeight
+        : event.deltaMode === 2
+          ? event.deltaY * pageHeight
+          : event.deltaY;
+      // Negative deltaY (wheel up / pinch out) → zoom in.
+      factor = Math.exp(-pixels * 0.00165);
+    } else {
+      factor = delta >= 0 ? 1.1 : 1 / 1.1;
+    }
+    beginOrRetargetUserZoom(current * factor, localX, localY);
   }
 
   function cancelCameraFlight({ runComplete = false } = {}) {
+    // Do not cancel userZoom here — wheel retargets call this to stop focus
+    // framing without aborting the in-flight pointer-anchored zoom chase.
     if (!camera3) return;
     cancelAnimationFrame(camera3.raf);
     const { onComplete, liveZoom, liveCx, liveCy } = camera3;
@@ -770,6 +970,8 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       if (typeof onComplete === 'function') onComplete();
       return;
     }
+    // Focus framing owns the camera; commit any live user zoom first.
+    cancelUserZoom({ commit: true });
     const toZoom = clampZoom(target.zoom);
     const toCx = Number(target.centerX) || 0;
     const toCy = Number(target.centerY) || 0;
@@ -848,20 +1050,20 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
 
   /**
    * Overview = full diagram navigable. Focus = active domain on stage,
-   * peers parked as chips (still clickable / minimap-reachable).
+   * peers return from scaled depth tiers to full equal stage.
    * Camera flies first; layout remount waits until the flight finishes.
    */
   function showOverview({ camera = 'fit', persist = true } = {}) {
     if (!dom.canvas) return;
     const finishOverviewLayout = () => {
-      const wasFocus = state.view.canvasStage === 'focus';
       state.view.canvasStage = 'overview';
-      if (wasFocus || dom.canvasInner.querySelector('.domain.is-staged-away')) {
-        renderDomains();
-        renderEdges();
-      } else {
-        syncSelectionClasses();
-      }
+      state.view.focusZoomLevel = 'overview';
+      // Always remount. Soft-peer focus filters entities out of the DOM; callers
+      // (setSelectedDomain(null) → paintSelectionChrome) clear depth classes and
+      // flip canvasStage to overview BEFORE this settles, so a "was focus?" check
+      // here is already false and would leave Users stuck at 1 of 5 cards.
+      renderDomains();
+      renderEdges();
       syncStageChrome();
       if (persist) saveState();
     };
@@ -898,10 +1100,37 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   }
 
   function fitView() {
+    // Fit must not destroy focus depth tiers / soft-peer mounts. Only drop to
+    // full overview when nothing is selected.
+    const hasSelection = Boolean(
+      state.selectedDomainId
+      || state.selectedEntityId
+      || state.selectedRelationshipId
+      || state.selectedNoteId
+    );
+    if (hasSelection) {
+      focusSelectionOnCanvas({ persist: true, remountPeers: false });
+      return;
+    }
     showOverview({ camera: 'fit' });
   }
 
   function resetView() {
+    const hasSelection = Boolean(
+      state.selectedDomainId
+      || state.selectedEntityId
+      || state.selectedRelationshipId
+      || state.selectedNoteId
+    );
+    if (hasSelection) {
+      // Snap toward 100% then re-frame the live selection (keep focus stage).
+      cancelUserZoom({ commit: true });
+      cancelCameraFlight();
+      state.view.zoom = 1;
+      renderView();
+      focusSelectionOnCanvas({ persist: true, remountPeers: false });
+      return;
+    }
     showOverview({ camera: 'reset' });
   }
 
@@ -1047,9 +1276,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     }
 
     if (kind === 'domain') {
-      // Soft peers: keep cross-domain relationship endpoints so Tasks focus
-      // still shows User/Organization cards — never an empty Users chip with
-      // floating vertical gutters in the corridor.
+      // Domain focus: Camera3 frames the home domain at full scale. Cross-linked
+      // domains stay as soft peers (scaled background cards with real endpoint
+      // entities). True outsiders stay on stage as a quieter/smaller depth tier
+      // — still clickable / minimap-reachable, never equal stage competition.
       const homeEntities = new Set(
         (state.domains.find((d) => d.id === domainId)?.entities || []).map((e) => e.id)
       );
@@ -1057,13 +1287,15 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       const keepEdges = new Set();
       const endpointEntities = new Set();
       (state.relationships || []).forEach((rel) => {
-        const touchesHome = homeEntities.has(rel.fromEntityId) || homeEntities.has(rel.toEntityId);
-        if (!touchesHome) return;
+        const fromHome = homeEntities.has(rel.fromEntityId);
+        const toHome = homeEntities.has(rel.toEntityId);
+        if (!fromHome && !toHome) return;
         keepEdges.add(rel.id);
+        if (fromHome && toHome) return;
         keepEntities.add(rel.fromEntityId);
         keepEntities.add(rel.toEntityId);
-        if (!homeEntities.has(rel.fromEntityId)) endpointEntities.add(rel.fromEntityId);
-        if (!homeEntities.has(rel.toEntityId)) endpointEntities.add(rel.toEntityId);
+        if (!fromHome) endpointEntities.add(rel.fromEntityId);
+        if (!toHome) endpointEntities.add(rel.toEntityId);
       });
       return {
         kind,
@@ -1079,13 +1311,22 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     }
 
     if (kind === 'entity') {
-      const keepEntities = new Set([entityId].filter(Boolean));
+      // Focused entity full-scale; same-domain siblings stay on stage as quieter
+      // background cards; cross-domain relationship endpoints stay as soft peers.
       const keepEdges = incidentRelationshipIds(entityId);
+      const endpointEntities = new Set();
       (state.relationships || []).forEach((rel) => {
         if (!keepEdges.has(rel.id)) return;
-        keepEntities.add(rel.fromEntityId);
-        keepEntities.add(rel.toEntityId);
+        if (rel.fromEntityId !== entityId) endpointEntities.add(rel.fromEntityId);
+        if (rel.toEntityId !== entityId) endpointEntities.add(rel.toEntityId);
       });
+      const homeDomainId = entityDomainId(entityId);
+      const keepEntities = new Set(
+        (state.domains.find((entry) => entry.id === homeDomainId)?.entities || [])
+          .map((entry) => entry.id)
+      );
+      endpointEntities.forEach((id) => keepEntities.add(id));
+      if (entityId) keepEntities.add(entityId);
       return {
         kind,
         keepDomains: new Set(
@@ -1094,18 +1335,16 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         keepEntities,
         keepEdges,
         keepNotes: new Set(),
-        endpointEntities: new Set(
-          [...keepEntities].filter((id) => id !== entityId)
-        ),
+        endpointEntities,
         fieldName: null
       };
     }
 
     if (kind === 'field') {
-      // Near-single field focus: only edges that bind THIS field name, not every
-      // incident relationship (that was centering Project while assigneeId selected).
-      const keepEntities = new Set([entityId].filter(Boolean));
+      // Field focus: edges that bind THIS field; siblings stay as background;
+      // field-bound endpoints stay as soft peers (never hide cards off-stage).
       const keepEdges = new Set();
+      const endpointEntities = new Set();
       (state.relationships || []).forEach((rel) => {
         if (!entityId) return;
         const fromField = inferRelationshipFieldName(rel, 'from');
@@ -1115,8 +1354,57 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
           || (rel.toEntityId === entityId && toField === fieldName);
         if (!touchesField) return;
         keepEdges.add(rel.id);
-        keepEntities.add(rel.fromEntityId);
-        keepEntities.add(rel.toEntityId);
+        if (rel.fromEntityId !== entityId) endpointEntities.add(rel.fromEntityId);
+        if (rel.toEntityId !== entityId) endpointEntities.add(rel.toEntityId);
+      });
+      const homeDomainId = entityDomainId(entityId);
+      const keepEntities = new Set(
+        (state.domains.find((entry) => entry.id === homeDomainId)?.entities || [])
+          .map((entry) => entry.id)
+      );
+      endpointEntities.forEach((id) => keepEntities.add(id));
+      if (entityId) keepEntities.add(entityId);
+      return {
+        kind,
+        keepDomains: new Set(
+          [...keepEntities].map((id) => entityDomainId(id)).filter(Boolean)
+        ),
+        keepEntities,
+        keepEdges,
+        keepNotes: new Set(),
+        endpointEntities,
+        fieldName
+      };
+    }
+
+    if (kind === 'relationship' && selectedRel) {
+      // Selected edge endpoints stay primary; one-hop incident cross-links
+      // promote soft peer domains (e.g. Users while framing Task↔Project) so
+      // Camera3 does not crop background inventory off-stage.
+      const seed = new Set([selectedRel.fromEntityId, selectedRel.toEntityId]);
+      const keepEntities = new Set(seed);
+      const keepEdges = new Set([selectedRel.id]);
+      const endpointEntities = new Set(seed);
+      (state.relationships || []).forEach((rel) => {
+        const fromSeed = seed.has(rel.fromEntityId);
+        const toSeed = seed.has(rel.toEntityId);
+        if (!fromSeed && !toSeed) return;
+        keepEdges.add(rel.id);
+        if (!seed.has(rel.fromEntityId)) {
+          keepEntities.add(rel.fromEntityId);
+          endpointEntities.add(rel.fromEntityId);
+        }
+        if (!seed.has(rel.toEntityId)) {
+          keepEntities.add(rel.toEntityId);
+          endpointEntities.add(rel.toEntityId);
+        }
+      });
+      // Same-domain siblings of the selected pair stay on stage (quiet tier).
+      seed.forEach((id) => {
+        const homeId = entityDomainId(id);
+        (state.domains.find((entry) => entry.id === homeId)?.entities || []).forEach((ent) => {
+          keepEntities.add(ent.id);
+        });
       });
       return {
         kind,
@@ -1126,25 +1414,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         keepEntities,
         keepEdges,
         keepNotes: new Set(),
-        endpointEntities: new Set(
-          [...keepEntities].filter((id) => id !== entityId)
-        ),
-        fieldName
-      };
-    }
-
-    if (kind === 'relationship' && selectedRel) {
-      const keepEntities = new Set([selectedRel.fromEntityId, selectedRel.toEntityId]);
-      const keepDomains = new Set(
-        [...keepEntities].map((id) => entityDomainId(id)).filter(Boolean)
-      );
-      return {
-        kind,
-        keepDomains,
-        keepEntities,
-        keepEdges: new Set([selectedRel.id]),
-        keepNotes: new Set(),
-        endpointEntities: keepEntities,
+        endpointEntities,
         fieldName: null
       };
     }
@@ -1182,34 +1452,90 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       dom.canvas.dataset.focusKind = scenario.kind;
     }
 
+    // Unique focus subject: exactly one primary gets is-focus.
+    // Domain focus → domain only. Entity/field → entity only (home domain uses
+    // context-active shell, never is-focus). Relationship → from-side primary.
+    const domainIsUniqueFocus = stageFocus && scenario.kind === 'domain';
+    const nestedEntityFocus = scenario.kind === 'entity' || scenario.kind === 'field';
+    const relationshipPrimaryId = scenario.kind === 'relationship'
+      ? ((state.relationships || []).find((entry) => entry.id === state.selectedRelationshipId)
+        ?.fromEntityId || null)
+      : null;
+
     dom.canvasInner.querySelectorAll('.domain[data-domain-id]').forEach((node) => {
       const id = node.dataset.domainId;
       const keep = !scenario.keepDomains || scenario.keepDomains.has(id);
       const isActive = id === activeDomainId;
       const isSoftPeer = stageFocus && keep && !isActive;
+      const isQuietBg = stageFocus && !keep;
+      const isFocusDomain = domainIsUniqueFocus && isActive;
       node.classList.toggle('selected', isActive && !entitySelected && scenario.kind === 'domain');
       node.classList.toggle(
         'context-active',
-        isActive && (scenario.kind === 'entity' || scenario.kind === 'field' || scenario.kind === 'relationship')
+        isActive && (nestedEntityFocus || scenario.kind === 'relationship')
       );
-      node.classList.toggle('is-focus', stageFocus && keep && isActive);
-      node.classList.toggle('is-quiet', stageFocus && !keep);
-      node.classList.toggle('is-staged-away', stageFocus && !keep);
+      node.classList.toggle('is-focus', isFocusDomain);
+      // Depth tiers stay on stage: soft peers + quieter outsiders (no hide).
+      node.classList.toggle('is-quiet', isQuietBg);
+      node.classList.toggle('is-staged-away', false);
       node.classList.toggle('is-soft', isSoftPeer);
+      if (isFocusDomain) node.dataset.stageDepth = '0';
+      else if (isSoftPeer) node.dataset.stageDepth = '1';
+      else if (isQuietBg) node.dataset.stageDepth = '2';
+      else delete node.dataset.stageDepth;
     });
 
     dom.canvasInner.querySelectorAll('.entity[data-entity-id]').forEach((node) => {
       const id = node.dataset.entityId;
       const inMulti = Array.isArray(state.selectedEntityIds) && state.selectedEntityIds.includes(id);
       const isSelected = id === state.selectedEntityId || inMulti;
+      const isFocusEntity = Boolean(
+        (nestedEntityFocus && isSelected)
+        || (scenario.kind === 'relationship' && relationshipPrimaryId && id === relationshipPrimaryId)
+      );
       const keep = !scenario.keepEntities || scenario.keepEntities.has(id);
       const isEndpoint = scenario.endpointEntities.has(id);
-      node.classList.toggle('selected', isSelected);
-      node.classList.toggle('is-quiet', stageFocus && !keep);
-      node.classList.toggle('is-staged-away', stageFocus && !keep);
-      node.classList.toggle('is-soft', stageFocus && keep && isEndpoint && !isSelected);
-      node.classList.toggle('is-edge-endpoint', isEndpoint);
-      node.classList.toggle('is-focus', stageFocus && keep && isSelected);
+      const entityHomeId = entityDomainId(id);
+      // Soft = cross-domain relationship endpoints, OR any card living inside a
+      // soft-peer domain. Same-domain siblings of the focus stay quieter so
+      // Task focus does not promote Project/Comment to soft-peer scale — but
+      // soft-peer inventory must stay readable (quiet-on-soft stacked opacity
+      // looked like ghost empty chips in nav-video vision).
+      const isCrossDomainEndpoint = Boolean(
+        isEndpoint
+        && entityHomeId
+        && activeDomainId
+        && entityHomeId !== activeDomainId
+      );
+      const inSoftPeerDomain = Boolean(
+        stageFocus
+        && entityHomeId
+        && activeDomainId
+        && entityHomeId !== activeDomainId
+        && scenario.keepDomains?.has(entityHomeId)
+      );
+      const isSoft = stageFocus && !isFocusEntity && (
+        inSoftPeerDomain
+        || (keep && (
+          scenario.kind === 'relationship'
+            ? isEndpoint
+            : isCrossDomainEndpoint
+        ))
+      );
+      const isQuietBg = stageFocus && !isFocusEntity && !isSoft && (
+        !keep
+        || (nestedEntityFocus && keep)
+      );
+      node.classList.toggle('selected', isSelected || isFocusEntity);
+      node.classList.toggle('is-quiet', isQuietBg);
+      node.classList.toggle('is-staged-away', false);
+      node.classList.toggle('is-soft', isSoft);
+      node.classList.toggle('is-edge-endpoint', isEndpoint && !isFocusEntity);
+      node.classList.toggle('is-focus', stageFocus && isFocusEntity);
+      if (stageFocus && isFocusEntity) node.dataset.stageDepth = '0';
+      else if (isSoft) node.dataset.stageDepth = '1';
+      else if (isQuietBg) node.dataset.stageDepth = '2';
+      else delete node.dataset.stageDepth;
     });
 
     dom.canvasInner.querySelectorAll('.entity-field-row[data-field-name]').forEach((node) => {
@@ -1263,18 +1589,97 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   }
 
   /**
-   * Model-space box for the current selection (entity → domain → note → rel).
+   * Tight zoom-in target — primary subject center only (never soft-peer union).
+   * Relationship primary = from-side endpoint.
+   */
+  function selectionZoomAnchorPoint() {
+    if (state.selectedRelationshipId) {
+      const relationship = (state.relationships || [])
+        .find((entry) => entry.id === state.selectedRelationshipId);
+      if (relationship) {
+        const from = findEntity(state.domains, relationship.fromEntityId);
+        if (from) {
+          return {
+            x: from.domain.x + from.entity.x + entityWidth(from.entity) / 2,
+            y: from.domain.y + from.entity.y
+              + entityBoxHeight(from.entity, state.view.compactEntities, state.view.largeCanvasMode) / 2
+          };
+        }
+      }
+    }
+    // Entity / field: lock onto the focused card (or field row), never the
+    // soft-peer hull union — that center sits in empty inter-domain void.
+    if (state.selectedEntityId) {
+      const found = findEntity(state.domains, state.selectedEntityId);
+      if (found) {
+        const entityBox = {
+          x: found.domain.x + found.entity.x,
+          y: found.domain.y + found.entity.y,
+          width: entityWidth(found.entity),
+          height: entityBoxHeight(
+            found.entity,
+            state.view.compactEntities,
+            state.view.largeCanvasMode
+          )
+        };
+        const fieldName = state.selection?.kind === 'field' ? state.selection.fieldName : null;
+        if (fieldName && !state.view.compactEntities && !state.view.largeCanvasMode) {
+          const rowHeight = entityFieldRowHeight(state.view.largeCanvasMode);
+          const fieldIndex = Math.max(
+            0,
+            (found.entity.fields || []).findIndex((field) => field.name === fieldName)
+          );
+          return {
+            x: entityBox.x + entityBox.width / 2,
+            y: entityBox.y + 32 + fieldIndex * rowHeight + rowHeight / 2
+          };
+        }
+        return {
+          x: entityBox.x + entityBox.width / 2,
+          y: entityBox.y + entityBox.height / 2
+        };
+      }
+    }
+    if (state.selectedDomainId) {
+      const domain = state.domains.find((entry) => entry.id === state.selectedDomainId);
+      if (domain) {
+        const box = domainBox(domain);
+        return {
+          x: domain.x + box.width / 2,
+          y: domain.y + box.height / 2
+        };
+      }
+    }
+    const bounds = selectionFocusBounds();
+    if (!bounds || !(bounds.width > 0) || !(bounds.height > 0)) return null;
+    return {
+      x: bounds.x + bounds.width / 2,
+      y: bounds.y + bounds.height / 2
+    };
+  }
+
+  /**
+   * Model-space box for Camera3 — PRIMARY SUBJECT ONLY (tight pad).
+   * Soft peers may sit in the periphery after framing; never expand the frame
+   * to fit soft-peer hulls as equal citizens.
    */
   function selectionFocusBounds() {
+    const padSubject = (box, pad = 36) => ({
+      x: box.x - pad,
+      y: box.y - pad,
+      width: Math.max(160, box.width + pad * 2),
+      height: Math.max(120, box.height + pad * 2)
+    });
+
     if (state.selectedNoteId) {
       const note = (state.notes || []).find((entry) => entry.id === state.selectedNoteId);
       if (note) {
-        return {
+        return padSubject({
           x: note.x,
           y: note.y,
           width: Number.isFinite(note.width) ? note.width : 220,
           height: Number.isFinite(note.height) ? note.height : 120
-        };
+        }, 28);
       }
     }
 
@@ -1284,7 +1689,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       if (relationship) {
         const from = findEntity(state.domains, relationship.fromEntityId);
         const to = findEntity(state.domains, relationship.toEntityId);
-        if (from && to) {
+        if (from) {
+          // Primary = from-side endpoint. Frame that card tightly; optionally
+          // nudge ~12% toward the to-side if it is nearby — never equal union
+          // and never soft-peer domain hull expansion.
           const fromBox = {
             x: from.domain.x + from.entity.x,
             y: from.domain.y + from.entity.y,
@@ -1295,32 +1703,27 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
               state.view.largeCanvasMode
             )
           };
-          const toBox = {
-            x: to.domain.x + to.entity.x,
-            y: to.domain.y + to.entity.y,
-            width: entityWidth(to.entity),
-            height: entityBoxHeight(
-              to.entity,
-              state.view.compactEntities,
-              state.view.largeCanvasMode
-            )
-          };
-          const pad = 48;
-          const minX = Math.min(fromBox.x, toBox.x) - pad;
-          const minY = Math.min(fromBox.y, toBox.y) - pad;
-          const maxX = Math.max(fromBox.x + fromBox.width, toBox.x + toBox.width) + pad;
-          const maxY = Math.max(fromBox.y + fromBox.height, toBox.y + toBox.height) + pad;
-          // Prefer the corridor center when entities are far apart.
-          const midX = (fromBox.x + fromBox.width / 2 + toBox.x + toBox.width / 2) / 2;
-          const midY = (fromBox.y + fromBox.height / 2 + toBox.y + toBox.height / 2) / 2;
-          const spanX = Math.max(160, maxX - minX);
-          const spanY = Math.max(120, maxY - minY);
-          return {
-            x: midX - spanX / 2,
-            y: midY - spanY / 2,
-            width: spanX,
-            height: spanY
-          };
+          const framed = padSubject(fromBox, 40);
+          if (to) {
+            const toCx = to.domain.x + to.entity.x + entityWidth(to.entity) / 2;
+            const toCy = to.domain.y + to.entity.y
+              + entityBoxHeight(to.entity, state.view.compactEntities, state.view.largeCanvasMode) / 2;
+            const fromCx = fromBox.x + fromBox.width / 2;
+            const fromCy = fromBox.y + fromBox.height / 2;
+            const dx = toCx - fromCx;
+            const dy = toCy - fromCy;
+            const near = Math.hypot(dx, dy) < Math.max(fromBox.width, fromBox.height) * 3.2;
+            if (near) {
+              const bias = 0.12;
+              return {
+                x: framed.x + dx * bias,
+                y: framed.y + dy * bias,
+                width: framed.width,
+                height: framed.height
+              };
+            }
+          }
+          return framed;
         }
       }
     }
@@ -1340,44 +1743,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
           state.view.largeCanvasMode
         )
       };
-      const scenario = focusScenarioFor();
-      const peerIds = [...(scenario.endpointEntities || [])];
-      const unionPeers = (seed) => {
-        let minX = seed.x;
-        let minY = seed.y;
-        let maxX = seed.x + seed.width;
-        let maxY = seed.y + seed.height;
-        peerIds.forEach((peerId) => {
-          const peer = findEntity(state.domains, peerId);
-          if (!peer) return;
-          const peerBox = {
-            x: peer.domain.x + peer.entity.x,
-            y: peer.domain.y + peer.entity.y,
-            width: entityWidth(peer.entity),
-            height: entityBoxHeight(
-              peer.entity,
-              state.view.compactEntities,
-              state.view.largeCanvasMode
-            )
-          };
-          minX = Math.min(minX, peerBox.x);
-          minY = Math.min(minY, peerBox.y);
-          maxX = Math.max(maxX, peerBox.x + peerBox.width);
-          maxY = Math.max(maxY, peerBox.y + peerBox.height);
-        });
-        const pad = peerIds.length ? 72 : 36;
-        return {
-          x: minX - pad,
-          y: minY - pad,
-          width: Math.max(220, maxX - minX + pad * 2),
-          height: Math.max(160, maxY - minY + pad * 2)
-        };
-      };
       if (!fieldName) {
-        // Entity focus: keep soft-peer endpoints in frame (User when Task selected).
-        return peerIds.length ? unionPeers(entityBox) : entityBox;
+        // Entity focus: subject card only — soft peers stay peripheral.
+        return padSubject(entityBox, 32);
       }
-      // Field focus: frame the selected row + ALL field-bound corridor peers.
+      // Field focus: owning entity + field row (tight), not peer/domain union.
       const rowHeight = entityFieldRowHeight(state.view.largeCanvasMode);
       const fieldIndex = Math.max(
         0,
@@ -1389,42 +1759,20 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         width: entityBox.width,
         height: Math.max(rowHeight + 8, 36)
       };
-      return unionPeers(fieldBox);
+      const seed = {
+        x: Math.min(entityBox.x, fieldBox.x),
+        y: Math.min(entityBox.y, fieldBox.y),
+        width: entityBox.width,
+        height: Math.max(entityBox.height, fieldBox.y + fieldBox.height - entityBox.y)
+      };
+      return padSubject(seed, 28);
     }
 
     const domain = state.domains.find((candidate) => candidate.id === state.selectedDomainId);
     if (!domain) return null;
     const box = domainBox(domain);
-    const home = { x: domain.x, y: domain.y, width: box.width, height: box.height };
-    // Domain focus with soft peers: frame home + endpoint cards so Users soft
-    // peers are not parked off-screen while edges still paint into the gutter.
-    const scenario = focusScenarioFor();
-    if (!scenario.endpointEntities?.size) return home;
-    let minX = home.x;
-    let minY = home.y;
-    let maxX = home.x + home.width;
-    let maxY = home.y + home.height;
-    scenario.endpointEntities.forEach((entityId) => {
-      const hit = findEntity(state.domains, entityId);
-      if (!hit) return;
-      const width = entityWidth(hit.entity);
-      const height = entityBoxHeight(
-        hit.entity,
-        state.view.compactEntities,
-        state.view.largeCanvasMode
-      );
-      minX = Math.min(minX, hit.domain.x + hit.entity.x);
-      minY = Math.min(minY, hit.domain.y + hit.entity.y);
-      maxX = Math.max(maxX, hit.domain.x + hit.entity.x + width);
-      maxY = Math.max(maxY, hit.domain.y + hit.entity.y + height);
-    });
-    const pad = 56;
-    return {
-      x: minX - pad,
-      y: minY - pad,
-      width: Math.max(home.width, maxX - minX + pad * 2),
-      height: Math.max(200, maxY - minY + pad * 2)
-    };
+    // Domain focus: home hull only — other domains may clip in periphery.
+    return padSubject({ x: domain.x, y: domain.y, width: box.width, height: box.height }, 44);
   }
 
   function selectionZoomLevel() {
@@ -1463,6 +1811,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     // Soft peers must remount BEFORE Camera3 flight. Deferring remount until
     // settle left Users as an empty chip while cross-domain edges still painted
     // midX gutters (live 7.34.08AM shot). Soft-peer cards need real anchors now.
+    const priorLevel = state.view.focusZoomLevel || (
+      state.view.canvasStage === 'focus' ? 'domain' : 'overview'
+    );
     if (focusDomainId) state.view.canvasStage = 'focus';
     if (remountPeers && focusDomainId) {
       renderDomains();
@@ -1479,28 +1830,41 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       level
     );
 
-    // Zoom-out guard: stepping up the hierarchy must not accidentally zoom in.
+    const LEVEL_RANK = {
+      overview: 0,
+      domain: 1,
+      note: 2,
+      relationship: 2,
+      entity: 3,
+      field: 4
+    };
     const currentZoom = clampZoom(state.view.zoom || 1);
-    if ((level === 'domain' || level === 'overview') && fit.zoom > currentZoom + 0.04) {
+    const climbing = (LEVEL_RANK[level] ?? 0) < (LEVEL_RANK[priorLevel] ?? 0);
+    // Zoom-out guard ONLY when climbing hierarchy (entity→domain, domain→overview).
+    // overview→domain and peer domain switches MUST zoom in to the primary subject
+    // — the old blanket domain guard left Users+Tasks as equal citizens at overview
+    // framing (tree select painted chrome only; Camera3 never tightened).
+    if (climbing && (level === 'domain' || level === 'overview') && fit.zoom > currentZoom + 0.04) {
       fit.zoom = currentZoom;
     }
+    // Domain exclusive: when entering/refocusing a domain (not climbing), push
+    // Camera3 past the soft overview framing so the primary subject dominates
+    // and soft peers fall to the periphery (not equal stage citizens).
+    if (level === 'domain' && !climbing) {
+      fit.zoom = Math.min(1.85, Math.max(fit.zoom, fit.zoom * 1.22));
+    }
     // Zoom-in preference: deeper levels should not land wider than current framing.
-    // Skip the nudge when framing soft peers across a wide span — otherwise field
-    // Camera3 over-zooms and parks User/Organization off-screen.
-    const wideSoftPeerFrame = bounds.width > 520 || bounds.height > 420;
+    // Bounds are primary-subject-only, so the nudge is safe (no soft-peer union).
     if (
       (level === 'entity' || level === 'field' || level === 'relationship' || level === 'note')
       && fit.zoom < currentZoom - 0.02
       && state.view.canvasStage === 'focus'
-      && !wideSoftPeerFrame
     ) {
       const nudge = level === 'field' ? 1.08 : level === 'relationship' ? 1.08 : 1.06;
       const cap = level === 'field' ? 1.65 : 2.2;
       fit.zoom = Math.min(cap, Math.max(fit.zoom, currentZoom * nudge));
     }
-    if (level === 'field' && wideSoftPeerFrame) {
-      fit.zoom = Math.min(fit.zoom, 1.45);
-    }
+    state.view.focusZoomLevel = level;
 
     animateCameraTo(
       {
@@ -1558,37 +1922,22 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       const domainEl = document.createElement('section');
       domainEl.className = `domain${state.selectedDomainId === domain.id ? ' selected' : ''}`;
       domainEl.dataset.domainId = domain.id;
-      // Soft peers stay mounted (keepDomains). Only true outsiders become chips.
-      // Staging every non-active domain ignored keepDomains and left Users as an
-      // empty "0 entities" chip while cross-domain edges still targeted User/Org
-      // model anchors → classic floating vertical gutter corridor.
+      // Depth hierarchy on the same stage: focus (full), soft peers (mid scale
+      // with real endpoint cards), quieter outsiders (smaller scale, collapsed
+      // for packing). Never hide domains off-stage or leave empty "0 entities"
+      // ghosts while edges still target their model anchors.
       const keepDomain = !scenario.keepDomains || scenario.keepDomains.has(domain.id);
-      const stagedAway = stageFocus && !keepDomain;
+      const quietBg = stageFocus && !keepDomain;
       const softPeer = stageFocus && keepDomain && domain.id !== activeDomainId;
-      const collapsed = isDomainCollapsed(domain) || stagedAway;
+      const collapsed = isDomainCollapsed(domain) || quietBg;
       const chipBox = domainBox({ ...domain, collapsed: true });
-      const softEntities = (softPeer && scenario.keepEntities)
-        ? domain.entities.filter((entity) => scenario.keepEntities.has(entity.id))
-        : null;
-      // Soft-peer domains: tight box around endpoint cards (not the full empty hull).
+      // Soft peers keep the FULL domain hull + inventory on stage (scaled/dimmed
+      // via CSS depth tiers). Endpoint-only filtering left empty "1 soft peer"
+      // chips that failed the MVP bar — other domains must stay readable, not
+      // ghost stubs while Camera3 frames the focus.
       let box;
-      if (stagedAway) {
+      if (quietBg) {
         box = { width: Math.min(220, chipBox.width), height: chipBox.height };
-      } else if (softEntities && softEntities.length) {
-        let maxRight = 220;
-        let maxBottom = 96;
-        softEntities.forEach((entity) => {
-          maxRight = Math.max(maxRight, entity.x + entityWidth(entity) + 24);
-          maxBottom = Math.max(
-            maxBottom,
-            entity.y + entityBoxHeight(
-              entity,
-              state.view.compactEntities,
-              state.view.largeCanvasMode
-            ) + 24
-          );
-        });
-        box = { width: maxRight, height: maxBottom };
       } else {
         box = domainBox(domain);
       }
@@ -1597,13 +1946,16 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       domainEl.style.width = `${box.width}px`;
       domainEl.style.height = `${box.height}px`;
       domainEl.style.setProperty('--domain-color', domain.color);
-      if (stagedAway) {
-        domainEl.classList.add('is-staged-away');
-        domainEl.title = `Show domain "${domain.name}"`;
-      }
-      if (softPeer) {
+      if (stageFocus && domain.id === activeDomainId) {
+        domainEl.dataset.stageDepth = '0';
+      } else if (softPeer) {
         domainEl.classList.add('is-soft');
+        domainEl.dataset.stageDepth = '1';
         domainEl.title = `Soft peer domain "${domain.name}"`;
+      } else if (quietBg) {
+        domainEl.classList.add('is-quiet');
+        domainEl.dataset.stageDepth = '2';
+        domainEl.title = `Go to domain "${domain.name}"`;
       }
       // Selection authority: soft on pointerdown (drag), hard settle on click-end.
       // No separate mousedown remount — that fought Camera3 mid-flight.
@@ -1633,14 +1985,14 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       );
       collapseBtn.setAttribute(
         'aria-label',
-        stagedAway
-          ? `Show domain "${domain.name}"`
+        quietBg
+          ? `Focus domain "${domain.name}"`
           : `${collapsed ? 'Expand' : 'Collapse'} domain "${domain.name}"`
       );
       collapseBtn.addEventListener('pointerdown', (event) => event.stopPropagation());
       collapseBtn.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (stagedAway) {
+        if (quietBg) {
           setSelectedDomain(domain.id);
           return;
         }
@@ -1666,9 +2018,22 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       };
       // Soft select during pointerdown: a full render remounts this domain and
       // breaks setPointerCapture / the in-flight drag. Full remount on click end.
+      // Track exclusive focus at down so click-end can reverse-nav only on a
+      // true re-click — not after soft→hard of a fresh canvas domain pick.
+      let domainExclusiveAtPointerDown = false;
       const selectDomainOnPointer = (options) => setSelectedDomain(domain.id, options);
       const persistMovedDomain = {
-        onPointerDown: () => selectDomainOnPointer({ remountCanvas: false }),
+        onPointerDown: () => {
+          domainExclusiveAtPointerDown = Boolean(
+            domain.id === state.selectedDomainId
+            && !state.selectedEntityId
+            && !state.selectedRelationshipId
+            && !state.selectedNoteId
+            && state.view?.canvasStage === 'focus'
+            && state.selection?.kind === 'domain'
+          );
+          selectDomainOnPointer({ remountCanvas: false });
+        },
         onStart: () => {
           closeSidebarForCanvasWork();
           domainEl.classList.add('dragging');
@@ -1684,8 +2049,13 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
             domainDragOrigin = null;
           }
           if (!moved) {
-            // Click (no drag): chrome + Camera3; peer remount after settle.
-            selectDomainOnPointer({ remountCanvas: true });
+            // Click (no drag): chrome + Camera3 remount. reverseNav only when
+            // this domain was already exclusive focus at pointerdown (panel
+            // path is single-shot and never hits this soft→hard trap).
+            selectDomainOnPointer({
+              remountCanvas: true,
+              reverseNav: domainExclusiveAtPointerDown
+            });
             return;
           }
           saveState();
@@ -1706,23 +2076,27 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       });
 
       if (collapsed) {
-        // Outsider chip only. Soft-peer domains never take this path — they
-        // stay expanded so relationship anchors have real cards (not midX
-        // gutters into an empty chip). Edges into true collapsed domains are
-        // suppressed in renderEdges.
+        // Quiet background tier (collapsed for packing) or user-collapsed.
+        // Soft peers never take this path — they stay expanded with endpoint
+        // cards so corridors anchor to real content, not midX gutters.
+        // Quiet chips keep the real model count (never a lying "0 entities"
+        // ghost while the domain still exists in the model).
+        const quietCountEl = headerEl.querySelector('.entity-count');
+        if (quietCountEl && quietBg) {
+          quietCountEl.textContent = `${domain.entities.length} in background`;
+        }
         domainEl.appendChild(resizeHandleFor(domain, domainEl, collapsed));
         dom.canvasInner.appendChild(domainEl);
         return;
       }
 
-      const entitiesToRender = (stageFocus && scenario.keepEntities)
-        ? domain.entities.filter((entity) => scenario.keepEntities.has(entity.id))
-        : domain.entities;
-      // Soft-peer domains: advertise how many endpoint cards are on stage, not
-      // a misleading "0 entities" empty chip while edges still target the model.
+      // Always render the full domain inventory for focus + soft peers. Depth
+      // (is-soft / is-quiet / stageDepth) carries visual hierarchy — never strip
+      // cards out of the DOM (that produced empty soft chips and dead peers).
+      const entitiesToRender = domain.entities;
       const countEl = headerEl.querySelector('.entity-count');
-      if (countEl && softPeer && scenario.keepEntities) {
-        countEl.textContent = `${entitiesToRender.length} soft peer${entitiesToRender.length === 1 ? '' : 's'}`;
+      if (countEl && softPeer) {
+        countEl.textContent = `${domain.entities.length} in background`;
       }
 
       entitiesToRender.forEach((entity) => {
@@ -1772,8 +2146,15 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         });
         entityEl.onclick = (event) => {
           event.stopPropagation();
-          // Selection settles via drag onEnd / pointerdown soft; pick mode only here.
-          handleEntityRelationshipPick(entity.id);
+          // Pick mode consumes the click; otherwise ensure selection even when the
+          // gesture skipped pointerdown (programmatic click / keyboard activation).
+          if (interaction.relationshipPickActive) {
+            handleEntityRelationshipPick(entity.id);
+            return;
+          }
+          if (state.selectedEntityId !== entity.id) {
+            setSelectedEntity(entity.id, { remountCanvas: true });
+          }
         };
 
         const entityHeader = document.createElement('header');
@@ -1789,8 +2170,19 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         entityNameEl.className = 'entity-name-input';
         entityNameEl.value = entity.name;
         entityNameEl.setAttribute('aria-label', `Name of entity "${entity.name}"`);
-        entityNameEl.addEventListener('click', (event) => event.stopPropagation());
-        entityNameEl.addEventListener('pointerdown', (event) => event.stopPropagation());
+        entityNameEl.addEventListener('click', (event) => {
+          event.stopPropagation();
+          // Name field must not swallow soft/quiet peer re-focus — select first.
+          if (state.selectedEntityId !== entity.id) {
+            setSelectedEntity(entity.id, { remountCanvas: true });
+          }
+        });
+        entityNameEl.addEventListener('pointerdown', (event) => {
+          event.stopPropagation();
+          if (state.selectedEntityId !== entity.id) {
+            setSelectedEntity(entity.id, { remountCanvas: true });
+          }
+        });
         entityNameEl.addEventListener('pointerup', () => {
           if (!entityDragOrigin) entityNameEl.focus();
         });
@@ -1845,7 +2237,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
               entityDragOrigin = null;
             }
             if (!moved) {
-              setSelectedEntity(entity.id, { remountCanvas: false });
+              // Re-focusing a different card (incl. soft/quiet peers) must remount
+              // depth tiers; same-card re-click stays soft to avoid Camera3 thrash.
+              const changed = state.selectedEntityId !== entity.id
+                || state.selection?.kind !== 'entity';
+              setSelectedEntity(entity.id, { remountCanvas: changed });
               return;
             }
             saveState();
@@ -2478,12 +2874,13 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       .filter((domain) => !excludeDomainIds.has(domain.id))
       .map((domain) => {
         const size = domainBox(domain);
+        // Inflated pad keeps corridor strokes off soft-domain borders (edge skim).
         return {
           entityId: `domain:${domain.id}`,
-          x: domain.x - 8,
-          y: domain.y - 8,
-          width: size.width + 16,
-          height: size.height + 16
+          x: domain.x - 16,
+          y: domain.y - 16,
+          width: size.width + 32,
+          height: size.height + 32
         };
       });
   }
@@ -3247,17 +3644,32 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         box.x < corridorRight && (box.x + box.width) > corridorLeft
       ));
       const clearanceBoxes = stripPeers.length ? stripPeers : fatPeers;
+      // Include endpoint domain tops/bottoms so highways clear soft-domain borders
+      // instead of skimming the glowing hull edge.
+      const fromFound = findEntity(state.domains, relationship.fromEntityId);
+      const toFound = findEntity(state.domains, relationship.toEntityId);
+      const fromDomainBox = fromFound ? domainBox(fromFound.domain) : null;
+      const toDomainBox = toFound ? domainBox(toFound.domain) : null;
+      const domainTop = Math.min(
+        fromFound?.domain?.y ?? Infinity,
+        toFound?.domain?.y ?? Infinity
+      );
+      const domainBottom = Math.max(
+        fromFound && fromDomainBox ? fromFound.domain.y + fromDomainBox.height : -Infinity,
+        toFound && toDomainBox ? toFound.domain.y + toDomainBox.height : -Infinity
+      );
       const stripTop = clearanceBoxes.length
-        ? Math.min(...clearanceBoxes.map((box) => box.y), fromBox.y, toBox.y)
-        : Math.min(fromBox.y, toBox.y);
+        ? Math.min(...clearanceBoxes.map((box) => box.y), fromBox.y, toBox.y, domainTop)
+        : Math.min(fromBox.y, toBox.y, domainTop);
       const stripBottom = clearanceBoxes.length
         ? Math.max(
           ...clearanceBoxes.map((box) => box.y + box.height),
           fromBox.y + fromBox.height,
-          toBox.y + toBox.height
+          toBox.y + toBox.height,
+          domainBottom
         )
-        : Math.max(fromBox.y + fromBox.height, toBox.y + toBox.height);
-      const laneSpread = 32;
+        : Math.max(fromBox.y + fromBox.height, toBox.y + toBox.height, domainBottom);
+      const laneSpread = 36;
       const rank = crossDomainRouteRank(relationship);
       // Alternate top/bottom by rank so three Users↔Tasks links do not pile on one
       // ring; within each side, rank/2 keeps label AABBs from stacking.
@@ -3267,23 +3679,23 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       // Exit via card top/bottom first so the vertical stays in this card's column.
       const atTopHighway = (highwayY) => normalizeRoutePoints([
         from,
-        { x: from.x, y: Math.min(from.y, fromBox.y) - 12 },
+        { x: from.x, y: Math.min(from.y, fromBox.y) - 16 },
         { x: from.x, y: highwayY },
         { x: to.x, y: highwayY },
-        { x: to.x, y: Math.min(to.y, toBox.y) - 12 },
+        { x: to.x, y: Math.min(to.y, toBox.y) - 16 },
         to
       ]);
       const atBottomHighway = (highwayY) => normalizeRoutePoints([
         from,
-        { x: from.x, y: Math.max(from.y, fromBox.y + fromBox.height) + 12 },
+        { x: from.x, y: Math.max(from.y, fromBox.y + fromBox.height) + 16 },
         { x: from.x, y: highwayY },
         { x: to.x, y: highwayY },
-        { x: to.x, y: Math.max(to.y, toBox.y + toBox.height) + 12 },
+        { x: to.x, y: Math.max(to.y, toBox.y + toBox.height) + 16 },
         to
       ]);
       const preferred = useBottom ? atBottomHighway : atTopHighway;
       const other = useBottom ? atTopHighway : atBottomHighway;
-      const preferredYs = [16, 28, 44, 60, 76].map((pad) => (
+      const preferredYs = [28, 44, 60, 78, 96].map((pad) => (
         useBottom
           ? Math.round(stripBottom + pad + rankLift)
           : Math.round(stripTop - pad - rankLift)
@@ -3615,6 +4027,32 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   }
 
   /**
+   * Visual entity-side anchor via DOM rects — required when soft domains CSS-scale
+   * so model-space anchors do not float outside the painted card.
+   */
+  function domEntityAnchorPoint(entityId, side) {
+    if (!side) return null;
+    const entityEl = [...dom.canvasInner.querySelectorAll('.entity[data-entity-id]')]
+      .find((candidate) => candidate.dataset.entityId === entityId);
+    if (!entityEl) return null;
+    const zoom = clampZoom(state.view.zoom || 1);
+    const canvasRect = dom.canvasInner.getBoundingClientRect();
+    const entityRect = entityEl.getBoundingClientRect();
+    const midX = entityRect.left + entityRect.width / 2;
+    const midY = entityRect.top + entityRect.height / 2;
+    let screenX = midX;
+    let screenY = midY;
+    if (side === 'left') screenX = entityRect.left;
+    else if (side === 'right') screenX = entityRect.right;
+    else if (side === 'top') screenY = entityRect.top;
+    else if (side === 'bottom') screenY = entityRect.bottom;
+    return {
+      x: (screenX - canvasRect.left) / zoom - CANVAS_ORIGIN_X,
+      y: (screenY - canvasRect.top) / zoom - CANVAS_ORIGIN_Y
+    };
+  }
+
+  /**
    * The point an edge end attaches to: the named field's row when the link
    * declares one, the entity side otherwise (JUM-729 follow-up).
    */
@@ -3633,9 +4071,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       );
       if (fieldPoint) return fieldPoint;
     }
-    return side
-      ? entityAnchorOnCanvas(entityId, side)
-      : entityCenterOnCanvas(entityId);
+    if (side) {
+      return domEntityAnchorPoint(entityId, side) || entityAnchorOnCanvas(entityId, side);
+    }
+    return entityCenterOnCanvas(entityId);
   }
 
   function facingAnchorSide(current, other) {
@@ -3972,12 +4411,21 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     if (dom.edges.parentElement === dom.canvasInner) {
       dom.canvasInner.appendChild(dom.edges);
     }
+    const edgeScenario = focusScenarioFor();
     state.relationships.forEach((relationship) => {
       // Never paint field-level edges into collapsed/outsider chips — that is
       // exactly the Users↔Tasks floating vertical gutter the live 7.34 shot shows.
       if (
         entityAnchorUnavailable(relationship.fromEntityId)
         || entityAnchorUnavailable(relationship.toEntityId)
+      ) {
+        return;
+      }
+      // Background siblings stay mounted, but only keepEdges stay lit — do not
+      // paint every incident edge just because the endpoint card is on stage.
+      if (
+        edgeScenario.keepEdges
+        && !edgeScenario.keepEdges.has(relationship.id)
       ) {
         return;
       }
@@ -4257,6 +4705,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     const scale = Math.min(mapWidth / canvasWidth, mapHeight / canvasHeight);
     const stageFocus = isFocusStage();
     const activeDomainId = activeSelectionDomainId();
+    const scenario = focusScenarioFor();
     state.domains.forEach((domain) => {
       const box = document.createElement('div');
       box.className = 'mini-map-domain';
@@ -4267,8 +4716,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       box.style.width = `${Math.max(4, domainSize.width * scale)}px`;
       box.style.height = `${Math.max(4, domainSize.height * scale)}px`;
       box.style.borderColor = domain.color || '#64748b';
+      const keepDomain = !scenario.keepDomains || scenario.keepDomains.has(domain.id);
       if (domain.id === activeDomainId) box.classList.add('active');
-      if (stageFocus && domain.id !== activeDomainId) box.classList.add('is-quiet');
+      else if (stageFocus && keepDomain) box.classList.add('is-soft');
+      else if (stageFocus) box.classList.add('is-quiet');
       box.title = stageFocus && domain.id !== activeDomainId
         ? `Go to ${domain.name}`
         : domain.name;
@@ -4378,12 +4829,12 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     });
 
     dom.canvas.addEventListener('wheel', (event) => {
-      // JUM-729 follow-up: the wheel zooms on its own. It used to demand ctrl/cmd, which
-      // is the browser's page-zoom gesture, not a canvas one — the plain wheel
-      // scrolled the canvas and the diagram never changed size. Shift+wheel
-      // still scrolls, for anyone who wants to pan a large model.
+      // Wheel / trackpad / ctrl-pinch (macOS) all zoom the diagram. Shift+wheel
+      // still scrolls for large-model pan. Capture + preventDefault so Brave /
+      // Chrome page-zoom does not steal the gesture.
       if (event.shiftKey) return;
       event.preventDefault();
+      event.stopPropagation();
       const direction = event.deltaY > 0 ? -0.1 : 0.1;
       zoomAtPointer(direction, event);
     }, { passive: false, capture: true });
@@ -4412,6 +4863,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         return;
       }
       if (event.button !== 1 && !interaction.spacePressed && !primaryDragOnBackground) return;
+      cancelUserZoom({ commit: true });
       cancelCameraFlight();
       closeSidebarForCanvasWork();
       interaction.panning = true;
@@ -4477,6 +4929,8 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     clearAlignmentGuides,
     renderView,
     zoomBy,
+    zoomAtPointer,
+    setZoom,
     fitView,
     resetView,
     toggleCompactView,

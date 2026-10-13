@@ -442,7 +442,9 @@ export function createInspectors({ dom, state, interaction, actions }) {
       btn.appendChild(count);
       btn.onclick = () => {
         collapsedDomainIds.delete(domain.id);
-        setSelectedDomain(domain.id);
+        // Tree pick must remount peers + Camera3 exclusive domain frame
+        // (same contract as canvas domain click-end). Never chrome-only.
+        setSelectedDomain(domain.id, { remountCanvas: true });
       };
 
       header.appendChild(toggle);
@@ -703,7 +705,7 @@ export function createInspectors({ dom, state, interaction, actions }) {
       if (kind === 'domain') editLabel.textContent = 'Edit · Domain';
       else if (kind === 'field') editLabel.textContent = 'Edit · Field';
       else if (kind === 'entity') editLabel.textContent = 'Edit · Entity';
-      else if (kind === 'relationship') editLabel.textContent = 'Edit · Relationship';
+      else if (kind === 'relationship') editLabel.textContent = 'Relationship';
       else if (kind === 'note') editLabel.textContent = 'Edit · Note';
       else editLabel.textContent = 'Edit';
     }
@@ -918,51 +920,63 @@ export function createInspectors({ dom, state, interaction, actions }) {
     return name ? `${name} · ${from} ${card} ${to}` : `${from} ${card} ${to}`;
   }
 
-  function wireRelationshipNavControls() {
-    const prev = document.getElementById('relationship-prev-btn');
-    const next = document.getElementById('relationship-next-btn');
-    if (prev && prev.dataset.wired !== 'true') {
-      prev.dataset.wired = 'true';
-      prev.addEventListener('click', () => {
-        if (typeof cycleSelectedRelationship === 'function') cycleSelectedRelationship(-1);
-      });
-    }
-    if (next && next.dataset.wired !== 'true') {
-      next.dataset.wired = 'true';
-      next.addEventListener('click', () => {
-        if (typeof cycleSelectedRelationship === 'function') cycleSelectedRelationship(1);
-      });
-    }
+  function relationshipPathMeta(relationship) {
+    const from = entityLabel(state.domains, relationship.fromEntityId);
+    const to = entityLabel(state.domains, relationship.toEntityId);
+    const card = `${relationship.fromCardinality || '1'}:${relationship.toCardinality || '1'}`;
+    return `${from} ${card} ${to}`;
   }
 
-  function syncRelationshipNavIndex(scope) {
-    const indexEl = document.getElementById('relationship-nav-index');
-    const prev = document.getElementById('relationship-prev-btn');
-    const next = document.getElementById('relationship-next-btn');
+  function relationshipLinkParts(relationship) {
+    const meta = relationshipPathMeta(relationship);
+    const name = String(relationship.name || '').trim();
+    return {
+      title: name || meta,
+      meta: name ? meta : ''
+    };
+  }
+
+  function relationshipScopeEntityLabel(scope) {
+    const selected = scope.find((rel) => rel.id === state.selectedRelationshipId) || scope[0];
+    if (!selected) return '';
+    if (state.selectedEntityId) {
+      return entityLabel(state.domains, state.selectedEntityId);
+    }
+    const fromId = selected.fromEntityId;
+    const toId = selected.toEntityId;
+    // Prefer the entity that owns the majority of scoped links (from side).
+    const fromCount = scope.filter((rel) => rel.fromEntityId === fromId || rel.toEntityId === fromId).length;
+    const toCount = scope.filter((rel) => rel.fromEntityId === toId || rel.toEntityId === toId).length;
+    return entityLabel(state.domains, fromCount >= toCount ? fromId : toId);
+  }
+
+  function syncRelationshipBrowseHint(scope) {
+    const hint = document.getElementById('relationship-browse-hint');
+    if (!hint) return;
     const total = scope.length;
     const current = scope.findIndex((rel) => rel.id === state.selectedRelationshipId);
-    if (indexEl) {
-      indexEl.textContent = total
-        ? `${current >= 0 ? current + 1 : '—'} / ${total}`
-        : '0 / 0';
+    if (!total || current < 0) {
+      hint.hidden = true;
+      hint.textContent = '';
+      return;
     }
-    const enabled = total > 0;
-    if (prev) prev.disabled = !enabled;
-    if (next) next.disabled = !enabled;
+    const entityName = relationshipScopeEntityLabel(scope);
+    const shortEntity = String(entityName || '').split('/').pop()?.trim() || entityName || 'entity';
+    hint.hidden = false;
+    hint.textContent = `Link ${current + 1} of ${total} on ${shortEntity}`;
   }
 
   function renderRelationshipList() {
-    wireRelationshipNavControls();
     if (!dom.relationshipList) return;
     dom.relationshipList.innerHTML = '';
     const scope = typeof relationshipsInNavScope === 'function'
       ? relationshipsInNavScope()
       : (state.relationships || []);
-    syncRelationshipNavIndex(scope);
+    syncRelationshipBrowseHint(scope);
     if (!scope.length) {
       const empty = document.createElement('li');
       empty.className = 'relationship-item is-empty';
-      empty.textContent = 'No links in this scope yet.';
+      empty.textContent = 'No related links yet.';
       dom.relationshipList.appendChild(empty);
       return;
     }
@@ -970,15 +984,28 @@ export function createInspectors({ dom, state, interaction, actions }) {
       const li = document.createElement('li');
       li.className = 'relationship-item';
       if (state.selectedRelationshipId === relationship.id) li.classList.add('is-selected');
+      const parts = relationshipLinkParts(relationship);
+      const fullLabel = relationshipDisplayLabel(relationship);
       const name = document.createElement('button');
       name.type = 'button';
       name.className = 'relationship-name';
-      name.textContent = relationshipDisplayLabel(relationship);
+      name.title = fullLabel;
+      const titleEl = document.createElement('span');
+      titleEl.className = 'relationship-name-title';
+      titleEl.textContent = parts.title;
+      name.appendChild(titleEl);
+      if (parts.meta) {
+        const metaEl = document.createElement('span');
+        metaEl.className = 'relationship-name-meta';
+        metaEl.textContent = parts.meta;
+        name.appendChild(metaEl);
+      }
       name.onclick = () => setSelectedRelationship(relationship.id);
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'relationship-delete';
-      del.setAttribute('aria-label', `Delete ${relationshipDisplayLabel(relationship)}`);
+      del.title = 'Remove link';
+      del.setAttribute('aria-label', `Remove link: ${parts.title}`);
       del.textContent = '×';
       del.onclick = () => deleteRelationship(relationship.id);
       li.appendChild(name);
@@ -987,12 +1014,15 @@ export function createInspectors({ dom, state, interaction, actions }) {
     });
   }
 
+  let lastRelationshipIdForAdvanced = null;
+
   function syncRelationshipInspector() {
     const panel = document.getElementById('relationship-inspector-panel');
     const modeEl = document.getElementById('relationship-inspector-mode');
     const titleEl = document.getElementById('relationship-inspector-title');
     const body = document.getElementById('relationship-inspector-body');
     const create = panel?.querySelector('[data-relationship-section="create"]');
+    const browse = panel?.querySelector('[data-relationship-section="browse"]');
     const relationship = state.relationships.find((candidate) => candidate.id === state.selectedRelationshipId);
     const editingRelationship = activeInspectorKind() === 'relationship' && Boolean(relationship);
     renderRelationshipList();
@@ -1006,14 +1036,27 @@ export function createInspectors({ dom, state, interaction, actions }) {
           : 'Relationship inspector — no relationship selected'
       );
     }
-    if (modeEl) modeEl.textContent = editingRelationship ? 'Editing relationship' : 'No selection';
+    if (modeEl) modeEl.textContent = 'Relationship';
     if (titleEl) {
+      // Name lives in the editable field — chrome only prompts when empty.
       titleEl.textContent = editingRelationship
-        ? relationshipDisplayLabel(relationship)
-        : 'Select a link on the canvas, in Browse, or with [ ]';
+        ? ''
+        : 'Select a link on the canvas or in the tree';
+      titleEl.hidden = editingRelationship;
     }
+    const chrome = panel?.querySelector('.relationship-inspector-chrome');
+    // Outer "Relationship" label is enough while editing — hide empty chrome bar.
+    if (chrome) chrome.hidden = editingRelationship;
     if (body) body.hidden = !editingRelationship;
     if (create) create.hidden = editingRelationship;
+    // Edit card is ONLY the current relationship — tree owns link browsing.
+    if (browse) browse.hidden = editingRelationship;
+    const advanced = body?.querySelector('details.relationship-advanced');
+    const selectedId = editingRelationship ? relationship.id : null;
+    if (advanced && selectedId !== lastRelationshipIdForAdvanced) {
+      advanced.open = false;
+      lastRelationshipIdForAdvanced = selectedId;
+    }
     const disabled = !editingRelationship;
     dom.relationshipNameInput.disabled = disabled;
     dom.relationshipFromEntitySelect.disabled = disabled;

@@ -1,0 +1,56 @@
+{
+  "overview": {
+    "totalHits": 0,
+    "entityCount": 8,
+    "edgeCount": 8,
+    "shell": "0.9.128",
+    "focusKind": "none",
+    "scope": "Domain · Users",
+    "usersLabel": null
+  },
+  "domainTasks": {
+    "totalHits": 0,
+    "entityCount": 5,
+    "edgeCount": 6,
+    "shell": "0.9.128",
+    "focusKind": "none",
+    "scope": "2 domains",
+    "usersLabel": null
+  },
+  "entityTask": {
+    "totalHits": 0,
+    "entityCount": 2,
+    "edgeCount": 1,
+    "shell": "0.9.128",
+    "focusKind": "relationship",
+    "scope": "Relationship",
+    "usersLabel": null
+  },
+  "fieldAssignee": {
+    "totalHits": 0,
+    "entityCount": 2,
+    "edgeCount": 1,
+    "shell": "0.9.128",
+    "focusKind": "field",
+    "scope": "Field · Tasks → Comment → body",
+    "usersLabel": null
+  },
+  "relationship": {
+    "totalHits": 0,
+    "entityCount": 2,
+    "edgeCount": 1,
+    "shell": "0.9.128",
+    "focusKind": "none",
+    "scope": "2 domains",
+    "usersLabel": null
+  },
+  "finalOverview": {
+    "totalHits": 0,
+    "entityCount": 8,
+    "edgeCount": 8,
+    "shell": "0.9.128",
+    "focusKind": "domain",
+    "scope": "Domain · Users",
+    "usersLabel": null
+  }
+}

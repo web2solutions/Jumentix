@@ -122,6 +122,28 @@ describe('serviceManagement domain designer smoke', () => {
     expect(html).toContain('id="domains-catalog-panel"');
     expect(html).not.toContain('<details class="panel relationship-inspector-panel"');
     expect(html).toContain('<section class="panel relationship-inspector-panel"');
+    expect(html).toContain('class="column relationship-form"');
+    expect(html).toContain('<label for="relationship-name-input">Name</label>');
+    expect(html).toContain('<label for="relationship-from-entity-select">From entity</label>');
+    expect(html).toContain('<label for="relationship-to-entity-select">To entity</label>');
+    expect(html).toContain('<label for="relationship-from-card-select">From cardinality</label>');
+    expect(html).toContain('<label for="relationship-to-card-select">To cardinality</label>');
+    expect(html).toContain('<label for="relationship-label-offset-x-input">Label offset X</label>');
+    expect(html).toContain('<label for="relationship-label-offset-y-input">Label offset Y</label>');
+    expect(html).toContain('<label for="relationship-bend-x-input">Bend X</label>');
+    expect(html).toContain('<label for="relationship-bend-y-input">Bend Y</label>');
+    expect(html).toContain('class="relationship-form-pair"');
+    expect(html).toContain('class="relationship-advanced"');
+    expect(html).toContain('relationship-form-actions-sticky');
+    expect(html).not.toContain('id="relationship-inspector-subtitle"');
+    expect(html).not.toContain('relationship-inspector-subtitle');
+    expect(html).toContain('On this entity');
+    expect(html).not.toContain('id="relationship-prev-btn"');
+    expect(html).not.toContain('Edit · Relationship');
+    expect(html).not.toContain('N — many');
+    expect(html).not.toContain('1 — one');
+    expect(html).toContain('>Many</option>');
+    expect(html).toContain('>One</option>');
     expect(html).toContain('data-entity-section="fields"');
     expect(html).toContain('data-entity-pane-tab="fields"');
     expect(html).toContain('data-entity-pane="fields"');
@@ -222,6 +244,12 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('resizeEntityBox');
     expect(canvasSource).toContain('entityBoxHeight');
     expect(canvasSource).toContain('zoomAtPointer');
+    expect(canvasSource).toContain('beginOrRetargetUserZoom');
+    expect(canvasSource).toContain('applyAnchoredZoomFrame');
+    expect(canvasSource).toContain('tickUserZoom');
+    expect(canvasSource).toContain('USER_ZOOM_LAMBDA');
+    expect(canvasSource).toContain('dataset.userZooming');
+    expect(canvasSource).toContain('Math.exp(-pixels * 0.00165)');
     expect(canvasSource).toContain('typeEl.addEventListener(\'pointerdown\'');
     expect(canvasSource).toContain('addFieldBtn.addEventListener(\'pointerdown\'');
     expect(canvasSource).toContain('event.preventDefault()');
@@ -393,17 +421,30 @@ describe('serviceManagement domain designer smoke', () => {
     expect(inspectorsSource).toContain('return \'field\'');
     expect(inspectorsSource).toContain('is-field-scope');
     expect(inspectorsSource).toContain('Edit · Field');
+    expect(inspectorsSource).toContain('editLabel.textContent = \'Relationship\'');
+    expect(inspectorsSource).toContain('relationshipPathMeta');
+    expect(inspectorsSource).toContain('syncRelationshipBrowseHint');
+    expect(inspectorsSource).toContain('browse.hidden = editingRelationship');
+    expect(inspectorsSource).not.toContain('relationship-inspector-subtitle');
+    expect(inspectorsSource).toContain('advanced.open = false');
+    const scriptRel = fs.readFileSync(
+      path.resolve(process.cwd(), 'apps/service-management/script.js'),
+      'utf-8'
+    );
+    expect(scriptRel).toContain('// Keep the human name as-is on reverse — auto-rename only on create.');
+    expect(scriptRel).toContain('// Never auto-rename on edit — only create uses buildRelationshipName.');
     expect(css).toContain('is-field-scope');
     expect(css).toContain('entity-field-row.is-selected');
+    expect(css).toContain('relationship-form-actions-sticky');
+    expect(css).toContain('relationship-advanced');
     const scriptNav = fs.readFileSync(
       path.resolve(process.cwd(), 'apps/service-management/script.js'),
       'utf-8'
     );
     expect(scriptNav).toContain('function navigateToSelection');
     expect(scriptNav).toContain('remountPeers: remountCanvas');
-    expect(html).toContain('id="relationship-prev-btn"');
-    expect(html).toContain('id="relationship-next-btn"');
-    expect(html).toContain('id="relationship-nav-index"');
+    expect(html).toContain('id="relationship-browse-hint"');
+    expect(html).toContain('id="relationship-list"');
     expect(inspectorsSource).toContain('domain-tree-links');
     expect(css).toContain('edge-line.is-hover');
     expect(css).toContain('entity.is-edge-endpoint');
@@ -474,6 +515,12 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('routeClearOrthogonalPath');
     expect(canvasSource).toContain('clampStubsForTightGutter');
     expect(canvasSource).toContain('focusScenarioFor');
+    // Focus depth: soft-peer keepDomains + entity/domain stage-depth scale tiers on stage.
+    expect(canvasSource).toContain('Cross-linked');
+    expect(canvasSource).toContain('dataset.stageDepth');
+    expect(css).toContain('data-stage-depth');
+    expect(canvasSource).toContain('same-domain siblings stay on stage');
+    expect(canvasSource).toContain('keepDomains: new Set(');
     expect(canvasSource).toContain('routeObstaclesFor');
     expect(canvasSource).toContain('Liang');
     expect(canvasSource).toContain('TARGET_FPS: 60');
@@ -481,13 +528,17 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('tickCamera3');
     expect(canvasSource).toContain('if (state.selectedRelationshipId) return \'relationship\'');
     expect(scriptSource).toContain('if (rel?.fromEntityId)');
-    expect(scriptSource).toContain('setSelectedEntity(rel.fromEntityId, { remountCanvas: false })');
+    expect(scriptSource).toContain('setSelectedEntity(rel.fromEntityId, { remountCanvas: true })');
     expect(css).toContain('.edge-line.is-quiet');
     expect(css).toContain('.entity.is-staged-away');
     expect(css).toContain('.domain.is-staged-away');
+    expect(css).toContain('data-stage-depth');
+    expect(css).toMatch(/\.entity\.is-soft[\s\S]*scale\(0\.86\)/);
+    expect(css).toMatch(/\.entity\.is-quiet[\s\S]*scale\(1\)/);
+    expect(css).toMatch(/\.domain\.is-quiet[\s\S]*scale\(0\.48\)/);
     expect(css).toMatch(/\.edge-line\.is-quiet[\s\S]*display:\s*none/);
-    expect(css).toMatch(/\.entity\.is-staged-away[\s\S]*visibility:\s*hidden/);
-    expect(css).toMatch(/\.domain\.is-staged-away[\s\S]*visibility:\s*hidden/);
+    expect(css).toMatch(/\.entity\.is-quiet[\s\S]*pointer-events:\s*auto/);
+    expect(css).toMatch(/\.domain\.is-quiet[\s\S]*pointer-events:\s*auto/);
     expect(canvasSource).toContain('reconnect corridor to card anchors');
     expect(canvasSource).toContain('[from, ...corridor, to]');
     const modelQueriesSource = fs.readFileSync(
@@ -517,7 +568,7 @@ describe('serviceManagement domain designer smoke', () => {
       'utf-8'
     );
     expect(sampleSource).toContain('width: 780');
-    expect(sampleSource).toContain('height: 900');
+    expect(sampleSource).toContain('height: 760');
     expect(sampleSource).toMatch(/name: 'ContactPoint'/);
     expect(sampleSource).toMatch(/name: 'Tasks'/);
     expect(sampleSource).toMatch(/name: 'Project'/);
@@ -525,7 +576,7 @@ describe('serviceManagement domain designer smoke', () => {
     expect(sampleSource).toMatch(/name: 'Comment'/);
     expect(sampleSource).toContain('id: \'sample-rel-task-project\'');
     expect(sampleSource).toContain('fromField: \'projectId\'');
-    expect(sampleSource).toContain('y: 650');
+    expect(sampleSource).toContain('y: 548');
   });
 
   it('wires export and package features in runtime script', () => {

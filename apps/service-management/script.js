@@ -762,10 +762,15 @@ function showStatus(message, severity = 'error') {
   dom.statusRegion.className = `status-region status-${severity}`;
   dom.statusRegion.hidden = false;
   if (severity === 'info') {
+    // Designer canvas chrome (mini-map) needs the toast gone sooner so demos
+    // and tours are not covered by the sample-load banner.
+    const hideMs = document.getElementById('tab-domain-designer')?.classList.contains('active')
+      ? 3200
+      : 6000;
     statusHideTimer = setTimeout(() => {
       dom.statusRegion.hidden = true;
       statusHideTimer = null;
-    }, 6000);
+    }, hideMs);
   }
 }
 
@@ -1193,11 +1198,14 @@ function syncSelectionPath(kind, extras = {}) {
   state.selection = next;
 }
 
-function setSelectedDomain(domainId, { remountCanvas = true } = {}) {
+function setSelectedDomain(domainId, { remountCanvas = true, reverseNav = true } = {}) {
   // Reverse nav: re-selecting the focused domain (no child) = parent of domain
   // is the canvas world → show every domain again.
+  // Canvas attachDrag soft-selects on pointerdown then settles on click-end;
+  // settle must pass reverseNav:false or the second call always bounces to overview.
   const reverseToOverview = Boolean(
-    remountCanvas
+    reverseNav
+    && remountCanvas
     && domainId
     && domainId === state.selectedDomainId
     && !state.selectedEntityId
@@ -1240,14 +1248,18 @@ function setSelectedField(entityId, fieldName, { remountCanvas = false } = {}) {
     && state.selectedEntityId === entityId
     && state.selection.fieldName === name;
   if (alreadyFocused && !remountCanvas) return;
+  // Cross-entity field hops (incl. soft/quiet peers) must remount depth tiers;
+  // same-entity field hops stay soft Camera3 retargets.
+  const entityChanged = state.selectedEntityId !== entityId;
   state.selectedDomainId = found.domain.id;
   state.selectedEntityId = entityId;
   state.selectedRelationshipId = null;
   state.selectedNoteId = null;
   if (Array.isArray(state.selectedEntityIds)) state.selectedEntityIds = [];
   syncSelectionPath('field', { fieldName: name });
-  // Field hops stay soft: no peer remount, Camera3 retargets.
-  navigateToSelection('entity-inspector-panel', { remountCanvas });
+  navigateToSelection('entity-inspector-panel', {
+    remountCanvas: remountCanvas || entityChanged
+  });
 }
 
 function setSelectedEntity(entityId, { remountCanvas = true } = {}) {
@@ -1637,8 +1649,9 @@ function saveSelectedRelationship() {
   withPersist(() => {
     relationship.fromEntityId = fromEntityId;
     relationship.toEntityId = toEntityId;
-    relationship.name = dom.relationshipNameInput.value.trim()
-      || buildRelationshipName(fromEntityId, toEntityId, fromCardinality, toCardinality);
+    // Never auto-rename on edit — only create uses buildRelationshipName.
+    const nextName = dom.relationshipNameInput.value.trim();
+    if (nextName) relationship.name = nextName;
     relationship.fromCardinality = fromCardinality;
     relationship.toCardinality = toCardinality;
     relationship.labelOffsetX = normalizeOptionalNumber(dom.relationshipLabelOffsetXInput.value) ?? 0;
@@ -1665,12 +1678,7 @@ function reverseSelectedRelationship() {
     relationship.toEntityId = nextToEntityId;
     relationship.fromCardinality = nextFromCardinality;
     relationship.toCardinality = nextToCardinality;
-    relationship.name = buildRelationshipName(
-      relationship.fromEntityId,
-      relationship.toEntityId,
-      relationship.fromCardinality,
-      relationship.toCardinality
-    );
+    // Keep the human name as-is on reverse — auto-rename only on create.
     render();
   });
 }
@@ -3168,13 +3176,23 @@ function repairLegacySampleDiagramLayout() {
     'sample-entity-phone': { x: 240, y: 134 },
     'sample-entity-contact-point': { x: 127, y: 254 }
   };
-  const nextPositions = {
+  // Prior spread (R3) kept ContactPoint at y:650 inside a 900-tall hull.
+  const priorSpreadPositions = {
     'sample-entity-user': { x: 14, y: 14 },
     'sample-entity-organization': { x: 390, y: 14 },
     'sample-entity-email': { x: 14, y: 380 },
     'sample-entity-phone': { x: 390, y: 380 },
     'sample-entity-contact-point': { x: 220, y: 650 }
   };
+  // Packed hull: ContactPoint sits under Email/Phone with ~20px corridor.
+  const nextPositions = {
+    'sample-entity-user': { x: 14, y: 14 },
+    'sample-entity-organization': { x: 390, y: 14 },
+    'sample-entity-email': { x: 14, y: 380 },
+    'sample-entity-phone': { x: 390, y: 380 },
+    'sample-entity-contact-point': { x: 202, y: 548 }
+  };
+  const PACKED_USERS_HEIGHT = 760;
   const allSampleEntitiesPresent = Object.keys(legacyPositions)
     .every((entityId) => entitiesById.has(entityId));
   if (!allSampleEntitiesPresent) return repaired;
@@ -3184,14 +3202,19 @@ function repairLegacySampleDiagramLayout() {
   });
   const legacyDomainBox = (!Number.isFinite(sampleDomain.width) || sampleDomain.width <= 540)
     && (!Number.isFinite(sampleDomain.height) || sampleDomain.height <= 430);
-  const crampedNewLayout = sampleDomain.height < 900
+  const stillPriorSpread = sampleDomain.height >= 900
+    && Object.entries(priorSpreadPositions).every(([entityId, position]) => {
+      const entity = entitiesById.get(entityId);
+      return entity && entity.x === position.x && entity.y === position.y;
+    });
+  const needsPackedLayout = sampleDomain.height !== PACKED_USERS_HEIGHT
     || Object.entries(nextPositions).some(([entityId, position]) => {
       const entity = entitiesById.get(entityId);
-      return entity.x !== position.x || entity.y !== position.y;
+      return !entity || entity.x !== position.x || entity.y !== position.y;
     });
-  if (stillLegacy || legacyDomainBox || crampedNewLayout) {
+  if (stillLegacy || legacyDomainBox || stillPriorSpread || needsPackedLayout) {
     sampleDomain.width = 780;
-    sampleDomain.height = 900;
+    sampleDomain.height = PACKED_USERS_HEIGHT;
     Object.entries(nextPositions).forEach(([entityId, position]) => {
       Object.assign(entitiesById.get(entityId), position);
     });
@@ -4154,6 +4177,7 @@ function wireEvents() {
       // note → domain → overview
       if (state.selection?.kind === 'field' && state.selectedEntityId) {
         event.preventDefault();
+        // Field → entity: same keep-set; soft Camera3 retarget is enough.
         setSelectedEntity(state.selectedEntityId, { remountCanvas: false });
         return;
       }
@@ -4161,16 +4185,19 @@ function wireEvents() {
         event.preventDefault();
         const rel = state.relationships.find((entry) => entry.id === state.selectedRelationshipId);
         if (rel?.fromEntityId) {
-          setSelectedEntity(rel.fromEntityId, { remountCanvas: false });
+          // Relationship keep-set differs from entity — remount soft/quiet peers.
+          setSelectedEntity(rel.fromEntityId, { remountCanvas: true });
           return;
         }
-        if (state.selectedDomainId) setSelectedDomain(state.selectedDomainId, { remountCanvas: false });
+        if (state.selectedDomainId) setSelectedDomain(state.selectedDomainId, { remountCanvas: true });
         else setSelectedDomain(null);
         return;
       }
       if (state.selectedEntityId || state.selectedNoteId) {
         event.preventDefault();
-        if (state.selectedDomainId) setSelectedDomain(state.selectedDomainId, { remountCanvas: false });
+        // Entity → domain changes soft-peer filters; must remount or overview
+        // inherits a truncated soft-peer DOM (Users stuck at 1 card).
+        if (state.selectedDomainId) setSelectedDomain(state.selectedDomainId, { remountCanvas: true });
         else setSelectedDomain(null);
         return;
       }

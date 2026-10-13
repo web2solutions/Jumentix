@@ -1,29 +1,30 @@
 # JUM-918 Edge UX Playwright Evidence Pack
 
-- Generated: 2026-10-11T11:03:59.089Z
+- Generated: 2026-10-12T18:11:02.149Z
 - Branch: `cursor/feature/edge-focus-camera3-mvp`
 - Command: `rtk proxy bun apps/service-management/scripts/capture-edge-ux-evidence.mjs`
-- Shell: **0.9.128** (soft-refresh hard Reload if stale)
-- Reference broken shots: `/Users/eduardoalmeida/.cursor/projects/Users-eduardoalmeida-apps-Jumentix/assets/Screenshot_2026-10-11_*.png` (61 files)
-- Failures: **0** / 10
+- Shell: **0.9.144** (soft-refresh hard Reload if stale)
+- Reference broken shots: `/Users/eduardoalmeida/.cursor/projects/Users-eduardoalmeida-apps-Jumentix/assets/Screenshot_2026-10-11_*.png` (64 files)
+- Failures: **1** / 11
 
 ## midInside CDP
 
 | Probe | totalHits | ghostVerticals | labelsOnCards | stagedGhosts | shell |
 | --- | ---: | ---: | ---: | ---: | --- |
-| overview | 0 | 0 | 0 | 0 | 0.9.128 |
-| domainTasks | 0 | 0 | 0 | 0 | 0.9.128 |
-| domainUsers | 0 | 0 | 0 | 0 | 0.9.128 |
-| entityProject | 0 | 0 | 0 | 0 | 0.9.128 |
-| entityTask | 0 | 0 | 0 | 0 | 0.9.128 |
-| fieldAssignee | 0 | 0 | 0 | 0 | 0.9.128 |
-| fieldProjectId | 0 | 0 | 0 | 0 | 0.9.128 |
-| fieldTaskId | 0 | 0 | 0 | 0 | 0.9.128 |
-| relTaskProject | 0 | 0 | 0 | 0 | 0.9.128 |
-| relAssignee | 0 | 0 | 0 | 0 | 0.9.128 |
-| afterEscOverview | 0 | 0 | 0 | 0 | 0.9.128 |
-| camera3Field | 0 | 0 | 0 | 0 | 0.9.128 |
-| finalOverview | 0 | 0 | 0 | 0 | 0.9.128 |
+| overview | 0 | 0 | 0 | 0 | 0.9.144 |
+| domainTasks | 0 | 0 | 0 | 0 | 0.9.144 |
+| domainUsers | 0 | 0 | 0 | 0 | 0.9.144 |
+| domainUsersExclusive | undefined | 0 | undefined | undefined | undefined |
+| entityProject | 0 | 0 | 0 | 0 | 0.9.144 |
+| entityTask | 0 | 0 | 0 | 0 | 0.9.144 |
+| fieldAssignee | 0 | 0 | 0 | 0 | 0.9.144 |
+| fieldProjectId | 0 | 0 | 0 | 0 | 0.9.144 |
+| fieldTaskId | 0 | 0 | 0 | 0 | 0.9.144 |
+| relTaskProject | 1 | 0 | 0 | 0 | 0.9.144 |
+| relAssignee | 0 | 0 | 0 | 0 | 0.9.144 |
+| afterEscOverview | 0 | 0 | 0 | 0 | 0.9.144 |
+| camera3Field | 0 | 0 | 0 | 0 | 0.9.144 |
+| finalOverview | 0 | 0 | 0 | 0 | 0.9.144 |
 
 ## Comparison matrix (broken refs → after)
 
@@ -31,11 +32,12 @@
 | --- | --- | --- | ---: | ---: | --- | --- |
 | Sample overview (Users+Tasks) | Floating vertical gutters between domains; lines through cards; parallel bars | `01-sample-overview.png` | 0 | 0 | n/a (overview) | **PASS** |
 | Domain Tasks focus (vs Screenshot_2026-10-11_at_7.34.08_AM) | Users empty 0-entities chip + vertical corridor of parallel white lines + floating labels | `02-domain-tasks.png` | 0 | 0 | true | **PASS** |
+| Domain Users exclusive (tree Browse click) | Both domains equal weight; Camera3 never flies; Tasks not soft/quiet | `03-domain-users.png` | 0 | n/a | true | **PASS** |
 | Entity Project | Wrong stage peers; lines through Project/Task text | `04-entity-project.png` | 0 | n/a | true | **PASS** |
 | Entity Task | Project centered while Task selected | `05-entity-task.png` | 0 | n/a | true | **PASS** |
 | Field assigneeId | Breadcrumb Field…assigneeId but Project centered; empty inspector | `09-field-assigneeId.png / 22-camera3-field-assignee.png` | 0 | n/a | true | **PASS** |
 | Field projectId | Label projectId→id on Task chrome | `10-field-projectId.png` | 0 | n/a | true | **PASS** |
-| Relationship Project↔Task | Corridor through cards; oversized handles | `13-rel-select-task-project.png` | 0 | 0 | true | **PASS** |
+| Relationship Project↔Task | Corridor through cards; oversized handles | `13-rel-select-task-project.png` | 1 | 0 | true | **FAIL** |
 | Relationship Task→User (assignee) | Cross-domain floating vertical corridor | `14-rel-select-task-assignee.png` | 0 | 0 | n/a | **PASS** |
 | Esc ladder field→entity→domain→overview | Focus mismatch / stuck stage | `16…19-esc-*.png` | 0 | n/a | true | **PASS** |
 | Final overview soft-refresh shell | Stale SW showing old ghost routes | `24-final-overview.png` | 0 | n/a | n/a | **PASS** |
@@ -45,7 +47,7 @@
 - `00-boot-empty.png` — empty first-run after hard reload (scope: Nothing selected)
 - `01-sample-overview.png` — sample loaded overview (scope: Domain · Users)
 - `02-domain-tasks.png` — domain Tasks + Users soft peers (vs 7.34.08AM) (scope: Domain · Tasks)
-- `03-domain-users.png` — domain Users selected (scope: Domain · Users)
+- `03-domain-users.png` — domain Users exclusive + Tasks soft (scope: Domain · Users)
 - `04-entity-project.png` — entity Project (scope: Tasks · Project)
 - `05-entity-task.png` — entity Task (scope: Tasks · Task)
 - `06-entity-comment.png` — entity Comment (scope: Tasks · Comment)
@@ -70,7 +72,7 @@
 
 ## Soft-refresh note
 
-If the live browser still shows ghost gutters, hard Reload so SW `0.9.128` + `script.js?v=0.9.128` load. Stale shells keep the pre-fix router.
+If the live browser still shows ghost gutters, hard Reload so SW `0.9.144` + `script.js?v=0.9.144` load. Stale shells keep the pre-fix router.
 
 ## WebGL
 

@@ -77,7 +77,7 @@ export function buildSampleModelPayload() {
         x: 80,
         y: 80,
         width: 780,
-        height: 900,
+        height: 760,
         context: {
           ubiquitousLanguage: 'identity, organization, tenant, contact point',
           ownerTeam: 'platform',
@@ -195,8 +195,8 @@ export function buildSampleModelPayload() {
           {
             id: 'sample-entity-contact-point',
             name: 'ContactPoint',
-            x: 220,
-            y: 650,
+            x: 202,
+            y: 548,
             fields: [
               { name: 'id', type: 'uuid', required: true, pk: true, unique: true },
               {

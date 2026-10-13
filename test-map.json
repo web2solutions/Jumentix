@@ -4700,6 +4700,19 @@
       "timeoutMs": 120000
     },
     {
+      "id": "apps/service-management/test/integration/browser/zoomFluidity.browser.integration.test.ts",
+      "path": "apps/service-management/test/integration/browser/zoomFluidity.browser.integration.test.ts",
+      "layer": "service-management/designer",
+      "kind": "non-hexagonal",
+      "type": "integration",
+      "adapter": "service-management",
+      "script": "test:integration:service-management",
+      "runner": "bun",
+      "ciRunner": "node",
+      "tier": "gate",
+      "timeoutMs": 120000
+    },
+    {
       "id": "apps/service-management-api/test/integration/catalogSync.integration.test.ts",
       "path": "apps/service-management-api/test/integration/catalogSync.integration.test.ts",
       "layer": "service-management/catalog-api",
@@ -6214,8 +6227,8 @@
   },
   "stats": {
     "unit": 372,
-    "integration": 103,
+    "integration": 104,
     "smoke": 2,
-    "suites": 537
+    "suites": 538
   }
 }

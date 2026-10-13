@@ -167,12 +167,40 @@ const MID_INSIDE_PROBE_SOURCE = `(() => {
   const scopeEl = document.getElementById('canvas-scope-path');
   const usersDomain = Array.from(document.querySelectorAll('.domain[data-domain-id]'))
     .find((node) => ((node.querySelector('.domain-title') || {}).textContent || '') === 'Users');
+  const tasksDomain = Array.from(document.querySelectorAll('.domain[data-domain-id]'))
+    .find((node) => ((node.querySelector('.domain-title') || {}).textContent || '') === 'Tasks');
   const usersEntityDomCount = usersDomain
     ? usersDomain.querySelectorAll('.entity[data-entity-id]').length
     : 0;
   const usersLabel = usersDomain && usersDomain.querySelector('.entity-count')
     ? (usersDomain.querySelector('.entity-count').textContent || '')
     : '';
+  const focusDomains = Array.from(document.querySelectorAll('.domain.is-focus')).map((node) => (
+    (node.querySelector('.domain-title') || {}).textContent || node.dataset.domainId || ''
+  ));
+  const domainDepth = (node) => {
+    if (!node) return null;
+    return {
+      name: (node.querySelector('.domain-title') || {}).textContent || '',
+      focus: node.classList.contains('is-focus'),
+      soft: node.classList.contains('is-soft'),
+      quiet: node.classList.contains('is-quiet'),
+      stageDepth: node.dataset.stageDepth || null,
+      opacity: Number.parseFloat(window.getComputedStyle(node).opacity || '1')
+    };
+  };
+  const zoomPct = canvas && canvas.dataset
+    ? Math.round((Number(document.documentElement.style.getPropertyValue('--canvas-zoom'))
+      || Number((window.__jxView && window.__jxView.zoom) || 0)
+      || 0) * 100)
+    : 0;
+  // Prefer live view zoom from canvas transform / data attribute when exposed.
+  let liveZoom = null;
+  try {
+    const zoomLabel = document.getElementById('zoom-indicator');
+    const m = zoomLabel && zoomLabel.textContent ? zoomLabel.textContent.match(/(\\d+)\\s*%/) : null;
+    if (m) liveZoom = Number(m[1]);
+  } catch (_e) { /* ignore */ }
   return {
     totalHits: totalHits,
     byRelationship: byRelationship,
@@ -185,7 +213,13 @@ const MID_INSIDE_PROBE_SOURCE = `(() => {
     usersLabel: usersLabel,
     shell: shellMatch ? shellMatch[1] : 'unknown',
     scope: scopeEl ? (scopeEl.textContent || '') : '',
-    focusKind: canvas && canvas.dataset ? (canvas.dataset.focusKind || 'none') : 'none'
+    focusKind: canvas && canvas.dataset ? (canvas.dataset.focusKind || 'none') : 'none',
+    canvasStage: canvas && canvas.dataset ? (canvas.dataset.canvasStage || 'overview') : 'overview',
+    focusDomainNames: focusDomains,
+    focusDomainCount: focusDomains.length,
+    usersDepth: domainDepth(usersDomain),
+    tasksDepth: domainDepth(tasksDomain),
+    zoomPct: liveZoom != null ? liveZoom : zoomPct
   };
 })()`;
 
@@ -319,7 +353,7 @@ async function main() {
     page.setDefaultTimeout(20000);
 
     await page.goto(baseUrl, { waitUntil: 'load' });
-    // Soft + hard refresh so SW serves shell 0.9.128 (not a stale 0.9.116 cache).
+    // Soft + hard refresh so SW serves shell 0.9.148 (not a stale cache).
     await page.evaluate(async () => {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map((reg) => reg.unregister()));
@@ -343,8 +377,47 @@ async function main() {
     probes.domainTasks = await probePage(page);
 
     await clickTreeDomain(page, 'Users');
-    shots.push(await shot(page, '03-domain-users', 'domain Users selected'));
+    // Exclusive Users focus contract: Camera3 + unique is-focus + soft/quiet Tasks.
+    const usersExclusive = await page.evaluate(() => {
+      const canvas = document.getElementById('canvas');
+      const focusDomains = Array.from(document.querySelectorAll('.domain.is-focus'));
+      const users = Array.from(document.querySelectorAll('.domain[data-domain-id]'))
+        .find((n) => ((n.querySelector('.domain-title') || {}).textContent || '') === 'Users');
+      const tasks = Array.from(document.querySelectorAll('.domain[data-domain-id]'))
+        .find((n) => ((n.querySelector('.domain-title') || {}).textContent || '') === 'Tasks');
+      const zoomLabel = document.getElementById('zoom-indicator');
+      const zoomMatch = zoomLabel?.textContent?.match(/(\d+)\s*%/);
+      return {
+        focusKind: canvas?.dataset?.focusKind || 'none',
+        stage: canvas?.dataset?.canvasStage || 'overview',
+        focusCount: focusDomains.length,
+        usersIsFocus: Boolean(users?.classList.contains('is-focus')),
+        tasksSoftOrQuiet: Boolean(
+          tasks?.classList.contains('is-soft') || tasks?.classList.contains('is-quiet')
+        ),
+        tasksOpacity: tasks ? Number.parseFloat(getComputedStyle(tasks).opacity || '1') : null,
+        usersOpacity: users ? Number.parseFloat(getComputedStyle(users).opacity || '1') : null,
+        zoomPct: zoomMatch ? Number(zoomMatch[1]) : null
+      };
+    });
+    if (
+      usersExclusive.focusKind !== 'domain'
+      || usersExclusive.stage !== 'focus'
+      || usersExclusive.focusCount !== 1
+      || !usersExclusive.usersIsFocus
+      || !usersExclusive.tasksSoftOrQuiet
+      || !(usersExclusive.tasksOpacity < 0.4)
+      || !(usersExclusive.zoomPct == null || usersExclusive.zoomPct >= 70)
+    ) {
+      console.error('[assert] Users exclusive focus FAILED', usersExclusive);
+      throw new Error(
+        `Users exclusive focus failed: ${JSON.stringify(usersExclusive)}`
+      );
+    }
+    console.log('[assert] Users exclusive focus OK', usersExclusive);
+    shots.push(await shot(page, '03-domain-users', 'domain Users exclusive + Tasks soft'));
     probes.domainUsers = await probePage(page);
+    probes.domainUsersExclusive = usersExclusive;
 
     // Entity selects — Tasks side
     await clickTreeEntity(page, 'Tasks', 'Project');
@@ -450,7 +523,7 @@ async function main() {
   const summary = {
     generatedAt: new Date().toISOString(),
     branch: 'cursor/feature/edge-focus-camera3-mvp',
-    shellExpected: '0.9.128',
+    shellExpected: '0.9.148',
     midInsideCommand,
     probes,
     shots: shots.map((s) => ({ name: s.name, file: s.file, scope: s.scope, focusKind: s.focusKind })),
@@ -462,8 +535,17 @@ async function main() {
       finalOverviewMidInside0: probes.finalOverview?.totalHits === 0,
       noGhostVerticalsOverview: (probes.overview?.ghostVerticalIds || []).length === 0,
       noStagedGhostsOnField: probes.fieldAssignee?.stagedGhosts === 0,
-      shell117: probes.overview?.shell === '0.9.128',
-      tasksSoftPeersMounted: (probes.domainTasks?.usersEntityDomCount || 0) > 0
+      shell117: probes.overview?.shell === '0.9.148',
+      tasksSoftPeersMounted: (probes.domainTasks?.usersEntityDomCount || 0) > 0,
+      usersExclusiveFocus: Boolean(
+        probes.domainUsersExclusive?.focusKind === 'domain'
+        && probes.domainUsersExclusive?.usersIsFocus
+        && probes.domainUsersExclusive?.focusCount === 1
+        && probes.domainUsersExclusive?.tasksSoftOrQuiet
+        && probes.domainUsersExclusive?.tasksOpacity < 0.4
+        && (probes.domainUsersExclusive?.zoomPct == null
+          || probes.domainUsersExclusive.zoomPct >= 70)
+      )
     }
   };
 
@@ -498,6 +580,26 @@ async function main() {
         && probes.domainTasks?.stagedGhosts === 0
         && (probes.domainTasks?.ghostVerticalIds || []).length === 0
         && (probes.domainTasks?.usersEntityDomCount || 0) > 0
+        ? 'PASS' : 'FAIL'
+    },
+    {
+      scene: 'Domain Users exclusive (tree Browse click)',
+      broken: 'Both domains equal weight; Camera3 never flies; Tasks not soft/quiet',
+      after: '03-domain-users.png',
+      midInside: probes.domainUsers?.totalHits,
+      focusOk: String(probes.domainUsersExclusive?.focusKind === 'domain'
+        && probes.domainUsersExclusive?.usersIsFocus
+        && probes.domainUsersExclusive?.focusCount === 1),
+      tasksSoft: probes.domainUsersExclusive?.tasksSoftOrQuiet,
+      tasksOpacity: probes.domainUsersExclusive?.tasksOpacity,
+      zoomPct: probes.domainUsersExclusive?.zoomPct,
+      verdict: probes.domainUsersExclusive?.focusKind === 'domain'
+        && probes.domainUsersExclusive?.usersIsFocus
+        && probes.domainUsersExclusive?.focusCount === 1
+        && probes.domainUsersExclusive?.tasksSoftOrQuiet
+        && probes.domainUsersExclusive?.tasksOpacity < 0.4
+        && (probes.domainUsersExclusive?.zoomPct == null
+          || probes.domainUsersExclusive.zoomPct >= 70)
         ? 'PASS' : 'FAIL'
     },
     {
@@ -581,7 +683,7 @@ async function main() {
       after: '24-final-overview.png',
       midInside: probes.finalOverview?.totalHits,
       shell: probes.finalOverview?.shell,
-      verdict: probes.finalOverview?.totalHits === 0 && probes.finalOverview?.shell === '0.9.128' ? 'PASS' : 'FAIL'
+      verdict: probes.finalOverview?.totalHits === 0 && probes.finalOverview?.shell === '0.9.148' ? 'PASS' : 'FAIL'
     }
   ];
 
@@ -618,7 +720,7 @@ async function main() {
     '',
     '## Soft-refresh note',
     '',
-    'If the live browser still shows ghost gutters, hard Reload so SW `0.9.128` + `script.js?v=0.9.128` load. Stale shells keep the pre-fix router.',
+    'If the live browser still shows ghost gutters, hard Reload so SW `0.9.148` + `script.js?v=0.9.148` load. Stale shells keep the pre-fix router.',
     '',
     '## WebGL',
     '',
