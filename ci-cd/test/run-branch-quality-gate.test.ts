@@ -289,7 +289,7 @@ describe('run-branch-quality-gate', () => {
       targetBranch: 'dev',
       isPullRequest: true,
       context: 'task-pr-to-dev',
-      selectedJobs: ['branch-gate', 'third-party-review', 'browser-matrix'],
+      selectedJobs: ['branch-gate', 'third-party-review', 'browser-matrix', 'coverage'],
       gate: 'task-changes',
       script: 'ci:gate:task'
     });
