@@ -267,6 +267,16 @@ jobs:
       - require_ci_job:
           job: workspace-tests
       - install_browser_deps
+      # `@jumentix/cana`'s package `test` script runs Cypress chrome after bun unit
+      # tests (Requirement 112). Without this binary install, release-pr-to-main
+      # workspace-tests fails closed while browser-matrix (which does install
+      # Cypress) still looks healthy — JUM-924 / jobs 5364 and 5389.
+      - run:
+          name: Install Cypress binary
+          command: |
+            source "$BASH_ENV"
+            bun x cypress install
+            bun x cypress verify
       - run:
           name: Run workspace package tests
           no_output_timeout: 30m
