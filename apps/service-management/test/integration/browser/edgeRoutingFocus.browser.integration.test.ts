@@ -255,6 +255,44 @@ async function hardReloadShell(page: Page, baseUrl: string) {
   await page.reload({ waitUntil: 'load' });
 }
 
+/**
+ * Wait until Camera3 flight / user-zoom settle and the focus subject is near
+ * viewport center. Camera3 arms `navigating` asynchronously after the click, so
+ * a bare "not busy" check can return before the flight starts.
+ */
+async function waitCanvasCameraIdle(page: Page, timeoutMs = 15000) {
+  const started = Date.now();
+  let sawBusy = false;
+  const armUntil = started + 500;
+  while (Date.now() - started < timeoutMs) {
+    const probe = await page.evaluate(() => {
+      const canvas = document.getElementById('canvas');
+      const busy = canvas?.dataset.navigating === 'true'
+        || canvas?.dataset.userZooming === 'true';
+      const focusSubject = document.querySelector<HTMLElement>(
+        '.entity.is-focus, .domain.is-focus'
+      );
+      let focusNearViewportCenter = false;
+      if (focusSubject && canvas) {
+        const rect = focusSubject.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        const fx = rect.left + rect.width / 2;
+        const fy = rect.top + rect.height / 2;
+        const cx = canvasRect.left + canvasRect.width / 2;
+        const cy = canvasRect.top + canvasRect.height / 2;
+        focusNearViewportCenter = Math.hypot(fx - cx, fy - cy)
+          < Math.max(canvasRect.width, canvasRect.height) * 0.42;
+      }
+      return { busy: Boolean(busy), focusNearViewportCenter };
+    });
+    if (probe.busy) sawBusy = true;
+    const armed = sawBusy || Date.now() >= armUntil;
+    if (armed && !probe.busy && probe.focusNearViewportCenter) return;
+    await page.waitForTimeout(50);
+  }
+  throw new Error(`canvas focus not settled near center after ${timeoutMs}ms`);
+}
+
 describe('serviceManagement edge routing + focus (JUM-918)', () => {
   let tempDir: string;
   let server: StartedServer | undefined;
@@ -319,7 +357,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
       row?.scrollIntoView({ block: 'center', inline: 'center' });
       row?.click();
     });
-    await page.waitForTimeout(900);
+    await waitCanvasCameraIdle(page);
     await page.screenshot({
       path: path.join(artifactsDir, '32-test-field-assigneeId.png'),
       fullPage: false
@@ -363,7 +401,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
 
     await openDesignerPanels(page, '#domain-list');
     await page.locator('#domain-list .domain-tree-domain', { hasText: 'Tasks' }).first().click();
-    await page.waitForTimeout(1100);
+    await waitCanvasCameraIdle(page);
 
     await page.screenshot({
       path: path.join(artifactsDir, '31-test-domain-tasks-peers-staged.png'),
@@ -437,7 +475,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
       match?.scrollIntoView({ block: 'center' });
       (match as HTMLElement | undefined)?.click();
     });
-    await page.waitForTimeout(1100);
+    await waitCanvasCameraIdle(page);
 
     await page.screenshot({
       path: path.join(artifactsDir, '33-test-entity-task-siblings-bg.png'),
@@ -529,7 +567,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
       };
     });
     expect(clicked.ok).toBe(true);
-    await page.waitForTimeout(1100);
+    await waitCanvasCameraIdle(page);
 
     await page.screenshot({
       path: path.join(artifactsDir, '34-test-canvas-domain-users-click.png'),

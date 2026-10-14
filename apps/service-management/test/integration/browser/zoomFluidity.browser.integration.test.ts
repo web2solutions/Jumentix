@@ -102,14 +102,22 @@ async function hardReload(page: Page, baseUrl: string) {
   await page.waitForSelector('#canvas', { timeout: 30000 });
 }
 
-async function waitUserZoomIdle(page: Page, timeoutMs = 2500) {
+async function waitUserZoomIdle(page: Page, timeoutMs = 12000) {
   const started = Date.now();
+  let probe = await page.evaluate(readZoomProbe);
   while (Date.now() - started < timeoutMs) {
-    const probe = await page.evaluate(readZoomProbe);
     if (!probe.userZooming && !probe.navigating) return probe;
-    await page.waitForTimeout(40);
+    await page.waitForTimeout(50);
+    probe = await page.evaluate(readZoomProbe);
   }
-  return page.evaluate(readZoomProbe);
+  if (probe.userZooming || probe.navigating) {
+    throw new Error(
+      `user zoom still active after ${timeoutMs}ms `
+        + `(zoom=${String(probe.zoom)} userZooming=${String(probe.userZooming)} `
+        + `navigating=${String(probe.navigating)})`
+    );
+  }
+  return probe;
 }
 
 async function wheelOnCanvas(
