@@ -470,6 +470,13 @@ if (fs.existsSync(circleciPath)) {
     failures.push('CircleCI PR metadata must shell-quote values before writing BASH_ENV');
   }
 
+  const workspaceTestsBlock = contents.match(/\n  workspace-tests:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/bun x cypress install[\s\S]*bun x cypress verify[\s\S]*bun run mono:test/.test(workspaceTestsBlock)) {
+    failures.push(
+      'CircleCI workspace-tests must install and verify Cypress before mono:test (@jumentix/cana package test runs Cypress chrome)'
+    );
+  }
+
   const browserMatrixBlock = contents.match(/\n  browser-matrix:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
   if (!/require_ci_job:\s*\n\s*job:\s*browser-matrix/.test(browserMatrixBlock)) {
     failures.push('CircleCI browser-matrix job must gate on the shared context classifier via require_ci_job');
