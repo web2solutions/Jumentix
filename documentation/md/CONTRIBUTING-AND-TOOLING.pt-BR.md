@@ -81,6 +81,12 @@ entrada para um arquivo já limpo faz a verificação falhar até ser removida.
 
 ## Ferramentas
 
+Gerenciador de pacotes: **Bun** (`bun.lock`) é canônico no monorepo
+(Requisito `096`). O Dependabot segue esse contrato — atualizações na raiz usam
+o ecossistema `bun`; só `apps/frontend/template` mantém um lockfile `npm`
+aninhado. Ver `documentation/md/CI-PROVIDER-GOVERNANCE.pt-BR.md` (seção
+Dependabot).
+
 Fiapos:
 
 ```bash

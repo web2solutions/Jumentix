@@ -42,15 +42,38 @@ CircleCI equivalent:
 ## Branch protection required checks
 
 - `dev` requires `ci/circleci: branch-gate`, `ci/circleci: third-party-review`,
-  `ci/circleci: browser-matrix`, plus the always-on GitHub `pr-feedback`
-  checks.
+  `ci/circleci: browser-matrix`, `ci/circleci: coverage`, plus the always-on
+  GitHub `pr-feedback` checks (JUM-923 / Requirement `020`).
 - `main` additionally requires `ci/circleci: workspace-builds`,
   `ci/circleci: workspace-tests`, `ci/circleci: integration`,
-  `ci/circleci: coverage`, `ci/circleci: website`, and
-  `ci/circleci: database-matrix`.
+  `ci/circleci: website`, and `ci/circleci: database-matrix` (coverage is
+  already required).
 - The standalone `sonar-reliability` check is subsumed by the CircleCI
   `coverage` job (`bun run sonar:check-reliability` runs inside it).
 
 Codecov and SonarQube Cloud keep running without interruption through the
 CircleCI `coverage` job. Required checks fail closed: a skipped, pending,
 missing, timed-out, cancelled, or provider-inaccessible result is never green.
+
+## Dependabot (Bun root + nested npm)
+
+Canonical config: `.github/dependabot.yml` (JUM-919 / JUM-920).
+
+| Ecosystem | Directory | Why |
+| --- | --- | --- |
+| `bun` | `/` | The monorepo is Bun-managed (`bun.lock`). `npm_and_yarn` cannot refresh that lockfile. |
+| `npm` | `/apps/frontend/template` | Nested Vue template keeps its own `package-lock.json` outside the Bun workspace. |
+
+Rules of the road:
+
+1. **Version updates** open against `dev` (`target-branch: dev`).
+2. **Security updates** still open against the repository default branch
+   (`main`) — that is Dependabot's platform behaviour, not a second ecosystem.
+3. Dependabot heads (`dependabot/<ecosystem>/...`) are an allowed CI /
+   pr-governance path: they skip agent-branch / Linear field checks and are
+   classified so the destination-appropriate CircleCI jobs run (including
+   coverage). Do not invent a parallel npm root ecosystem to “unblock”
+   Dependabot — that would fight Requirement `096` and leave `bun.lock` stale.
+4. Promoting the Bun Dependabot config itself to `main` is a normal
+   `dev` → `main` release PR, never a focused release head that only
+   cherry-picks `.github/dependabot.yml`.
