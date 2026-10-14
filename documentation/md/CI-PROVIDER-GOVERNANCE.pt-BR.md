@@ -42,12 +42,12 @@ têm equivalente no CircleCI:
 ## Checks obrigatórios da proteção de branch
 
 - `dev` exige `ci/circleci: branch-gate`, `ci/circleci: third-party-review`,
-  `ci/circleci: browser-matrix`, mais os checks `pr-feedback` do GitHub sempre
-  ativos.
+  `ci/circleci: browser-matrix`, `ci/circleci: coverage`, mais os checks
+  `pr-feedback` do GitHub sempre ativos (JUM-923 / Requisito `020`).
 - `main` exige adicionalmente `ci/circleci: workspace-builds`,
   `ci/circleci: workspace-tests`, `ci/circleci: integration`,
-  `ci/circleci: coverage`, `ci/circleci: website` e
-  `ci/circleci: database-matrix`.
+  `ci/circleci: website` e `ci/circleci: database-matrix` (coverage já é
+  obrigatório).
 - O check independente `sonar-reliability` é absorvido pelo job `coverage` do
   CircleCI (`bun run sonar:check-reliability` roda dentro dele).
 
@@ -55,3 +55,27 @@ Codecov e SonarQube Cloud continuam rodando sem interrupção através do job
 `coverage` do CircleCI. Checks obrigatórios falham fechado: resultado pulado,
 pendente, ausente, expirado, cancelado ou inacessível no provedor nunca é
 verde.
+
+## Dependabot (Bun na raiz + npm aninhado)
+
+Config canônica: `.github/dependabot.yml` (JUM-919 / JUM-920).
+
+| Ecossistema | Diretório | Por quê |
+| --- | --- | --- |
+| `bun` | `/` | O monorepo é gerido por Bun (`bun.lock`). `npm_and_yarn` não atualiza esse lockfile. |
+| `npm` | `/apps/frontend/template` | O template Vue aninhado mantém o próprio `package-lock.json` fora do workspace Bun. |
+
+Regras:
+
+1. **Atualizações de versão** abrem contra `dev` (`target-branch: dev`).
+2. **Atualizações de segurança** ainda abrem contra a branch padrão do
+   repositório (`main`) — comportamento da plataforma Dependabot, não um
+   segundo ecossistema.
+3. Heads Dependabot (`dependabot/<ecosystem>/...`) são caminho permitido de CI /
+   pr-governance: pulam campos de agent-branch / Linear e rodam os jobs
+   CircleCI adequados ao destino (incluindo coverage). Não invente um
+   ecossistema npm na raiz para “desbloquear” o Dependabot — isso conflita
+   com o Requisito `096` e deixa o `bun.lock` obsoleto.
+4. Promover o próprio config Bun do Dependabot para `main` é um PR de release
+   normal `dev` → `main`, nunca um head de release focado que só cherry-pick
+   `.github/dependabot.yml`.
