@@ -25,6 +25,9 @@ describe('@jumentix/jumentix-ui package surface', () => {
     const css = readFileSync(join(root, 'src/css/primitives.css'), 'utf8');
     const markers = ['.jtx-ui-toolbar', '.jtx-ui-scope-chrome', '.jtx-ui-tabs', '.jtx-ui-form'];
     expect(markers.every((marker) => css.includes(marker))).toBe(true);
+    const gallery = readFileSync(join(root, 'gallery/index.html'), 'utf8');
+    expect(gallery).toContain('id="gallery-new-entity"');
+    expect(gallery).toContain('for="gallery-new-entity"');
   });
 
   it('documents EN and PT', () => {

@@ -105,7 +105,8 @@
         "apps/service-management/src/**",
         "apps/service-management/index.html",
         "apps/service-management/styles.css",
-        "packages/designer-core/**"
+        "packages/designer-core/**",
+        "packages/jumentix-ui/**"
       ],
       "runner": "bun",
       "tier": "gate",
