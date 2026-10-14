@@ -55,9 +55,13 @@ export const MantineNavBar = () => {
           <a
             className={classes.locale}
             href={localizedDocsPath(pathname, portuguese)}
-            aria-label={portuguese ? 'Read documentation in English' : 'Leia a documentação em português'}
+            aria-label={
+              portuguese
+                ? 'EN — Read documentation in English'
+                : 'PT-BR — Leia a documentação em português'
+            }
           >
-            <IconLanguage size={17} />
+            <IconLanguage size={17} aria-hidden="true" focusable="false" />
             {portuguese ? 'EN' : 'PT-BR'}
           </a>
           <ColorSchemeControl />

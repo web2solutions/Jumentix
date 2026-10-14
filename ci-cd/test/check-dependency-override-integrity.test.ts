@@ -56,6 +56,19 @@ describe('check-dependency-override-integrity', () => {
     expect(failures[0]).toContain('EINVALIDTAGNAME');
   });
 
+  it('rejects flat content-disposition/cookie overrides that break nested Express 4', () => {
+    expect.hasAssertions();
+    const withContentDisposition = soundManifest();
+    withContentDisposition.overrides['content-disposition'] = '^2.0.1';
+    const withCookie = soundManifest();
+    withCookie.overrides.cookie = '^1.1.1';
+
+    expect(validateOverrideIntegrity(withContentDisposition)[0])
+      .toContain('override "content-disposition" is forbidden');
+    expect(validateOverrideIntegrity(withCookie)[0])
+      .toContain('override "cookie" is forbidden');
+  });
+
   it('rejects a dropped patch and a patch whose file is absent', () => {
     expect.hasAssertions();
     const withoutPatch = soundManifest();

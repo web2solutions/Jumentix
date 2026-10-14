@@ -178,6 +178,19 @@ function validateOverrideIntegrity(pkg, retiredSurfacesPresent = [], patchExists
     }
   }
 
+  // Flat overrides that break nested Express 4 (LoopBack / Sails). Root Express is
+  // 5.x and already declares content-disposition@2 / cookie@0.7+, so OVERRIDE_MAJOR
+  // against the root manifest cannot catch this — the nested 4.22 copies still load
+  // `require('content-disposition')` as a callable default and crash at boot with
+  // `TypeError: argument fn must be a function` when 2.x is forced onto them.
+  for (const [name, reason] of Object.entries(FORBIDDEN_FLAT_OVERRIDES)) {
+    if (overrides[name] !== undefined) {
+      failures.push(
+        `override "${name}" is forbidden: ${reason}`,
+      );
+    }
+  }
+
   // A second surface that CI does not read is a stale pin waiting to be trusted.
   for (const label of retiredSurfacesPresent) {
     failures.push(
@@ -216,6 +229,23 @@ function validateOverrideIntegrity(pkg, retiredSurfacesPresent = [], patchExists
 const OVERRIDE_MAJOR_COMPATIBILITY = [
   { dependent: 'express', overridden: 'send', requiredMajor: 1 }
 ];
+
+/**
+ * Flat overrides that must never exist, regardless of the version they pin.
+ *
+ * These packages still have Express 4 consumers in the tree (LoopBack, Sails).
+ * Express 4's `utils.js` does `deprecate.function(require('content-disposition'), …)`
+ * and expects a callable default export — content-disposition@2 ships named
+ * exports only. The same class of silent API break as JUM-587 (`send`).
+ */
+const FORBIDDEN_FLAT_OVERRIDES = {
+  'content-disposition':
+    'nested Express 4 (LoopBack/Sails) requires the 0.x callable default export; '
+    + 'forcing 2.x makes `require("express")` throw at load time',
+  cookie:
+    'nested Express 4 / Sails pin cookie 0.7.x; a flat 1.x force breaks those adapters '
+    + 'the same way a flat send@1 force broke Express 4 responses (JUM-587)',
+};
 
 /** The leading major of a semver range such as `^1.2.0`, `~0.19.0`, `1.x`. */
 function rangeMajor(range) {
@@ -330,6 +360,7 @@ if (isEntryPoint(module)) {
 
 module.exports = {
   OVERRIDE_MAJOR_COMPATIBILITY,
+  FORBIDDEN_FLAT_OVERRIDES,
   rangeMajor,
   readInstalledDependentRange,
   validateOverrideMajors,
