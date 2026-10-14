@@ -48,7 +48,10 @@ module.exports = {
     '^.+\\.m?js$': '<rootDir>/ci-cd/jest/javascript-transformer.js'
   },
   transformIgnorePatterns: [
-    '<rootDir>/node_modules/(?!\\.bun/uuid@)'
+    // ESM-only packages hoisted under `.bun/` that Jest still `require()`s via
+    // Fastify / light-my-request. Flat overrides for these break nested Express 4
+    // (LoopBack/Sails); transforming them is the Jest-side fix instead.
+    '<rootDir>/node_modules/(?!\\.bun/(uuid@|content-disposition@|cookie@))'
   ],
   verbose: true,
   detectOpenHandles: true,
