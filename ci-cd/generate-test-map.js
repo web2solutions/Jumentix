@@ -501,7 +501,10 @@ function buildManifest(root = process.cwd()) {
         // modules and its suites assert the artifact built from them. Its own
         // files (manifest, build script, suites) belong to this same layer so
         // a packaging change runs the designer suites and vice versa.
-        'packages/designer-core/**'
+        'packages/designer-core/**',
+        // Kitchen-sink CSS package consumed by the designer chrome; gallery HTML
+        // and primitives must map here or a gallery-only fix is unsupported-change-set.
+        'packages/jumentix-ui/**'
       ],
       runner: 'bun',
       tier: 'gate',
