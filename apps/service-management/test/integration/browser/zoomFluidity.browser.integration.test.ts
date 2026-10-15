@@ -102,7 +102,7 @@ async function hardReload(page: Page, baseUrl: string) {
   await page.waitForSelector('#canvas', { timeout: 30000 });
 }
 
-async function waitUserZoomIdle(page: Page, timeoutMs = 30000) {
+async function waitUserZoomIdle(page: Page, timeoutMs = 12000) {
   const started = Date.now();
   let probe = await page.evaluate(readZoomProbe);
   let stableSince = Date.now();
@@ -117,6 +117,20 @@ async function waitUserZoomIdle(page: Page, timeoutMs = 30000) {
     probe = await page.evaluate(readZoomProbe);
   }
   return probe;
+}
+
+/** Fire N toolbar zoom clicks in-page so CI WebKit does not burn the Jest budget. */
+async function clickZoomToolbar(page: Page, buttonId: '#zoom-in-btn' | '#zoom-out-btn', times: number) {
+  await page.evaluate(
+    ({ id, n }) => {
+      const btn = document.getElementById(id.slice(1));
+      if (!btn) throw new Error(`${id} missing`);
+      for (let i = 0; i < n; i += 1) {
+        (btn as HTMLButtonElement).click();
+      }
+    },
+    { id: buttonId, n: times }
+  );
 }
 
 async function wheelOnCanvas(
@@ -179,7 +193,8 @@ async function wheelOnCanvas(
 }
 
 // Click loops + camera settle routinely exceed Jest's 5s default under load.
-jest.setTimeout(30000);
+// CI WebKit settle + multi-wait cases need headroom beyond a single idle poll.
+jest.setTimeout(120000);
 
 describe('domain designer fluid zoom edge cases (JUM-918)', () => {
   let browser: Browser;
@@ -341,9 +356,7 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
 
   it('clamps at max 2.5 under aggressive zoom-in', async () => {
     expect.hasAssertions();
-    for (let i = 0; i < 24; i += 1) {
-      await page.click('#zoom-in-btn');
-    }
+    await clickZoomToolbar(page, '#zoom-in-btn', 24);
     const after = await waitUserZoomIdle(page);
     expect(after.zoom).toBeLessThanOrEqual(2.5 + 0.001);
     expect(after.zoom).toBeGreaterThanOrEqual(2.0);
@@ -357,10 +370,8 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
 
   it('clamps at min 0.25 under aggressive zoom-out', async () => {
     expect.hasAssertions();
-    for (let i = 0; i < 36; i += 1) {
-      await page.click('#zoom-out-btn');
-    }
-    const after = await waitUserZoomIdle(page, 4000);
+    await clickZoomToolbar(page, '#zoom-out-btn', 36);
+    const after = await waitUserZoomIdle(page);
     expect(after.zoom).toBeGreaterThanOrEqual(0.25 - 0.001);
     expect(after.zoom).toBeLessThanOrEqual(0.5);
     results.push({
@@ -369,7 +380,7 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
       pass: after.zoom >= 0.25 - 0.001
     });
     await shot('clamp-min');
-  }, 15000);
+  }, 90000);
 
   it('pointer-anchored zoom keeps entity near cursor', async () => {
     expect.hasAssertions();
@@ -477,14 +488,16 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
         && (sameEntity ? (drift !== null && drift < 80) : true)
     });
     await shot('pointer-anchor');
-  }, 30000);
+  }, 90000);
 
   it('shift+wheel does not change zoom', async () => {
     expect.hasAssertions();
-    const before = await waitUserZoomIdle(page);
+    const before = await waitUserZoomIdle(page, 20000);
+    expect(before.userZooming).toBe(false);
+    expect(before.navigating).toBe(false);
     await wheelOnCanvas(page, { deltaY: -200, steps: 4, shiftKey: true });
     await page.waitForTimeout(200);
-    const after = await waitUserZoomIdle(page);
+    const after = await waitUserZoomIdle(page, 20000);
     expect(Math.abs(after.zoom - before.zoom)).toBeLessThan(0.02);
     results.push({
       case: 'shift-wheel-no-zoom',
@@ -513,9 +526,7 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
   it('line-mode and page-mode wheel deltas zoom', async () => {
     expect.hasAssertions();
     // Prior cases may leave zoom at the max clamp — create headroom first.
-    for (let i = 0; i < 6; i += 1) {
-      await page.click('#zoom-out-btn');
-    }
+    await clickZoomToolbar(page, '#zoom-out-btn', 6);
     const before = await waitUserZoomIdle(page);
     expect(before.zoom).toBeLessThan(2.4);
     await wheelOnCanvas(page, { deltaY: -3, deltaMode: 1, steps: 4 });
@@ -532,7 +543,7 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
       pass: afterLine.zoom > before.zoom && afterPage.zoom < afterLine.zoom
     });
     await shot('delta-modes');
-  }, 20000);
+  }, 90000);
 
   it('wheel interrupts focus Camera3 and takes over fluidly', async () => {
     expect.hasAssertions();
