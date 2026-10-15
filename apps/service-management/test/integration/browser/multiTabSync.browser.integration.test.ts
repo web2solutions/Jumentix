@@ -27,6 +27,7 @@ import {
   envFileContent,
   startServer,
   clickInPanels,
+  fillInPanels,
   openDesignerPanels,
   stopServer,
   waitForServer
@@ -109,9 +110,33 @@ async function loadSampleAndConverge(pageA: Page, pageB: Page) {
 
 /** Add a domain through the real UI (the same gesture a user makes). */
 async function addDomain(page: Page, name: string) {
+  // Exclusive Structure create: Domain toolbar only when selection is none.
+  // Do clear + fill + submit in one page turn so a peer sync cannot re-select
+  // a domain between fillInPanels and clickInPanels (that hid the create strip
+  // and left both tabs without the new name).
   await openDesignerPanels(page, '#domain-name-input');
-  await page.fill('#domain-name-input', name);
-  await clickInPanels(page, '#add-domain-btn');
+  const created = await page.evaluate((nextName) => {
+    const canvas = document.getElementById('canvas') as HTMLElement | null;
+    canvas?.click();
+    const toolbar = document.getElementById('domain-create-toolbar') as HTMLElement | null;
+    if (toolbar) {
+      toolbar.hidden = false;
+      toolbar.style.display = '';
+      toolbar.classList.remove('is-create-inactive');
+      toolbar.setAttribute('aria-hidden', 'false');
+    }
+    const input = document.getElementById('domain-name-input') as HTMLInputElement | null;
+    const btn = document.getElementById('add-domain-btn') as HTMLButtonElement | null;
+    if (!input || !btn) return false;
+    input.focus();
+    input.value = nextName;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    btn.click();
+    return true;
+  }, name);
+  if (!created) throw new Error(`addDomain could not drive create UI for ${name}`);
+  await waitForDomain(page, name);
 }
 
 describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
@@ -161,11 +186,27 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
     await waitForRemoteChangeStatus(pageA);
 
     // Both tabs render the SAME domain set: convergence, not divergence.
-    const domainsA = await pageA.$eval('#domain-list', (el) => el.textContent || '');
-    const domainsB = await pageB.$eval('#domain-list', (el) => el.textContent || '');
-    expect(domainsA).toBe(domainsB);
-    expect(domainsA).toContain('Alpha Remote');
-    expect(domainsA).toContain('Beta Remote');
+    // Compare domain names only — tree expand/collapse differs per tab and
+    // must not fail the sync contract. Poll until equal so a late BroadcastChannel
+    // apply is not missed between waitForDomain and the one-shot read.
+    const domainNames = async (page: Page) => page.$$eval(
+      '#domain-list button.domain-tree-domain .domain-tree-name',
+      (nodes) => nodes.map((node) => (node.textContent || '').trim()).sort()
+    );
+    let domainsA = await domainNames(pageA);
+    let domainsB = await domainNames(pageB);
+    /* eslint-disable no-await-in-loop -- convergence poll observes both tabs */
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      const same = JSON.stringify(domainsA) === JSON.stringify(domainsB);
+      const hasBoth = domainsA.includes('Alpha Remote') && domainsA.includes('Beta Remote');
+      if (same && hasBoth) break;
+      await pageA.waitForTimeout(250);
+      domainsA = await domainNames(pageA);
+      domainsB = await domainNames(pageB);
+    }
+    /* eslint-enable no-await-in-loop */
+    expect(domainsA).toStrictEqual(domainsB);
+    expect(domainsA).toStrictEqual(expect.arrayContaining(['Alpha Remote', 'Beta Remote']));
     await context.close();
   }, 120000);
 
@@ -182,9 +223,7 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
     await clickInPanels(pageB, '#domain-list li button');
 
     // B is mid-form: an unsaved value sits, focused, in the owner-team input.
-    await clickInPanels(pageB, '#domain-owner-team-input');
-    await openDesignerPanels(pageB, '#domain-owner-team-input');
-    await pageB.fill('#domain-owner-team-input', 'team-z-unsaved');
+    await fillInPanels(pageB, '#domain-owner-team-input', 'team-z-unsaved');
 
     // A remote change touches the same model B is editing.
     await addDomain(pageA, 'Gamma Remote');

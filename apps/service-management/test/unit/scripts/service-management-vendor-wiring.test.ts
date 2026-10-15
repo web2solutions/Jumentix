@@ -26,12 +26,16 @@ describe('service management vendor wiring', () => {
     expect.hasAssertions();
 
     const vendor = manifest.scripts[VENDOR_SCRIPT];
+    const syncScripts = [
+      'sync-service-management-cana-bundle.js',
+      'sync-service-management-designer-core.js',
+      'sync-service-management-d3.js',
+      'sync-service-management-swagger-ui.js',
+      'sync-service-management-jumentix-ui.js'
+    ];
 
     expect(vendor).toBeDefined();
-    expect(vendor).toContain('sync-service-management-cana-bundle.js');
-    expect(vendor).toContain('sync-service-management-designer-core.js');
-    expect(vendor).toContain('sync-service-management-d3.js');
-    expect(vendor).toContain('sync-service-management-swagger-ui.js');
+    expect(syncScripts.every((name) => vendor.includes(name))).toBe(true);
   });
 
   it('names generator scripts that exist on disk', () => {
@@ -42,7 +46,7 @@ describe('service management vendor wiring', () => {
       .map((part) => part.trim().replace(/^bun\s+/, ''))
       .filter((part) => part.endsWith('.js'));
 
-    expect(referenced).toHaveLength(4);
+    expect(referenced).toHaveLength(5);
     referenced.forEach((script) => {
       expect(fs.existsSync(path.resolve(process.cwd(), script))).toBe(true);
     });

@@ -1,0 +1,64 @@
+{
+  "shellExpected": "0.9.148",
+  "shellObserved": "0.9.148",
+  "probe": {
+    "editing": true,
+    "bodyHidden": false,
+    "labels": [
+      "Name",
+      "From entity",
+      "To entity",
+      "From cardinality",
+      "To cardinality",
+      "Label offset X",
+      "Label offset Y",
+      "Bend X",
+      "Bend Y",
+      "Anchor"
+    ],
+    "sectionLabels": [
+      "On this entity",
+      "Create"
+    ],
+    "visibleSectionLabels": [],
+    "title": "",
+    "subtitlePresent": false,
+    "subtitleHidden": false,
+    "subtitleText": "",
+    "browseHidden": true,
+    "browseHint": "Link 1 of 6 on User",
+    "pager": false,
+    "advancedOpen": false,
+    "advancedNestedScroll": false,
+    "neonEditing": false,
+    "fromCardText": "Many",
+    "toCardText": "One",
+    "hasFormClass": true,
+    "hasStickyActions": true,
+    "hasAdvanced": true,
+    "pathBannerInText": false,
+    "onThisEntityVisible": false,
+    "saveVisibleInPanel": true,
+    "cardinalityVisibleInPanel": true,
+    "shell": "0.9.148",
+    "advancedOpenAfterClick": true,
+    "advancedNestedScrollAfterOpen": false
+  },
+  "shots": [
+    "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/relationship-form-ux/01-relationship-edit-panel.png",
+    "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/relationship-form-ux/02-relationship-edit-full.png",
+    "/Users/eduardoalmeida/apps/Jumentix/apps/service-management/test/artifacts/relationship-form-ux/03-relationship-advanced-open.png"
+  ],
+  "checks": {
+    "noPathBannerEl": true,
+    "noPathBannerText": true,
+    "browseHiddenWhileEditing": true,
+    "noOnThisEntityInEditCard": true,
+    "advancedCollapsedByDefault": true,
+    "advancedNoNestedScroll": true,
+    "saveVisible": true,
+    "cardinalityVisible": true,
+    "shortCardinalityLabels": true
+  },
+  "verdict": "PASS"
+}

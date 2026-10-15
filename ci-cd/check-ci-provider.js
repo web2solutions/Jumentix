@@ -169,12 +169,13 @@ if (!fs.existsSync(workflowPath)) {
   }
 
   const heavyContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
-  // Coverage (Codecov + Sonar) must also run on pushes to `dev`.
-  const coverageContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
+  // Coverage (Codecov + Sonar) must run on PRs to `dev`, pushes to `dev`/`main`,
+  // and release/main/scheduled contexts (JUM-923 / Req 020/113).
+  const coverageContextGuard = /github\.event_name == 'schedule'[\s\S]+github\.event_name == 'workflow_dispatch'[\s\S]+github\.ref_name == 'main'[\s\S]+github\.ref_name == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'dev'[\s\S]+github\.event_name == 'pull_request' && github\.base_ref == 'main'[\s\S]+github\.head_ref == 'dev'[\s\S]+startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/package-bump-'\)[\s\S]+startsWith\(github\.head_ref, 'chore\/release-v'\)[\s\S]+startsWith\(github\.head_ref, 'codex\/release\/'\)[\s\S]+endsWith\(github\.head_ref, '-dev-main-signed-squash'\)/;
   for (const job of ['workspace-builds', 'workspace-tests', 'integration', 'coverage', 'website', 'database-matrix']) {
     const jobBlock = contents.match(new RegExp(`\\n  ${job}:\\n[\\s\\S]*?(?=\\n  [a-z-]+:\\n|\\n?$)`))?.[0] || '';
     const guard = job === 'coverage' ? coverageContextGuard : heavyContextGuard;
-    const expected = job === 'coverage' ? 'main/dev/release contexts' : 'release/full contexts';
+    const expected = job === 'coverage' ? 'main/dev/PR-to-dev/release contexts' : 'release/full contexts';
     if (!guard.test(jobBlock)) {
       failures.push(`.github/workflows/ci.yml must guard ${job} to ${expected}`);
     }
@@ -467,6 +468,13 @@ if (fs.existsSync(circleciPath)) {
   }
   if (/const quote = \(value\) => JSON\.stringify/.test(contents)) {
     failures.push('CircleCI PR metadata must shell-quote values before writing BASH_ENV');
+  }
+
+  const workspaceTestsBlock = contents.match(/\n  workspace-tests:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';
+  if (!/bun x cypress install[\s\S]*bun x cypress verify[\s\S]*bun run mono:test/.test(workspaceTestsBlock)) {
+    failures.push(
+      'CircleCI workspace-tests must install and verify Cypress before mono:test (@jumentix/cana package test runs Cypress chrome)'
+    );
   }
 
   const browserMatrixBlock = contents.match(/\n  browser-matrix:\n[\s\S]*?(?=\n  [a-z_-]+:\n|\nworkflows:|\n?$)/)?.[0] || '';

@@ -197,7 +197,8 @@ describe('designer normalisers (JUM-470)', () => {
           exportBlockCritical: false,
           largeCanvasMode: true,
           sidebarGroup: 'quality',
-          sidebarOpen: true
+          sidebarOpen: true,
+          sidebarExpanded: { model: true, quality: true, share: true }
         }
       };
       const once = normalizeStatePayload(input);
@@ -208,9 +209,20 @@ describe('designer normalisers (JUM-470)', () => {
       // Spot-pin the content that matters, so idempotence is not vacuous.
       expect(once.domains[0].entities[0].fields[1].minimum).toBe(0);
       expect(once.domains[0].entities[0].meta.oasComposition.refs).toStrictEqual(['A', 'B']);
-      expect(once.relationships[0]).toStrictEqual(input.relationships[0]);
-      expect(once.view).toStrictEqual(input.view);
+      expect(once.relationships[0]).toMatchObject({
+        ...input.relationships[0],
+        fromDomainId: 'domain-1',
+        toDomainId: 'domain-1'
+      });
+      // Legacy quality/share fold into exclusive horizontal tabs; preferred wins.
+      expect(once.view.sidebarGroup).toBe('validate');
+      const openGroups = Object.entries(once.view.sidebarExpanded)
+        .filter(([, open]) => open)
+        .sort();
+      expect(openGroups).toStrictEqual([['validate', true]]);
       expect(once.idCounter).toBe(9);
+      expect(once.domains[0].entities[0].domainId).toBe('domain-1');
+      expect(once.selection.kind).toBe('relationship');
     });
   });
 

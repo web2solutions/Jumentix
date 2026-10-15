@@ -99,6 +99,8 @@ const SERVICE_MANAGEMENT_INTEGRATION_AREA = {
   'interfaceAdapters.browser.integration.test.ts': 'service-management/designer',
   'statusOutcome.browser.integration.test.ts': 'service-management/designer',
   'accessibleNames.browser.integration.test.ts': 'service-management/designer',
+  'edgeRoutingFocus.browser.integration.test.ts': 'service-management/designer',
+  'zoomFluidity.browser.integration.test.ts': 'service-management/designer',
   'architectureDesigner.browser.integration.test.ts': 'service-management/designer',
   'runtimeEnv.integration.test.ts': 'service-management/server',
   'runtimeEnvContract.integration.test.ts': 'service-management/server',
@@ -499,7 +501,10 @@ function buildManifest(root = process.cwd()) {
         // modules and its suites assert the artifact built from them. Its own
         // files (manifest, build script, suites) belong to this same layer so
         // a packaging change runs the designer suites and vice versa.
-        'packages/designer-core/**'
+        'packages/designer-core/**',
+        // Kitchen-sink CSS package consumed by the designer chrome; gallery HTML
+        // and primitives must map here or a gallery-only fix is unsupported-change-set.
+        'packages/jumentix-ui/**'
       ],
       runner: 'bun',
       tier: 'gate',

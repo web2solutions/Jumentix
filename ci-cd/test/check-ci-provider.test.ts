@@ -538,7 +538,7 @@ describe('check-ci-provider', () => {
         )
       );
     });
-    expect(run(directory).output).toContain('must guard coverage to main/dev/release contexts');
+    expect(run(directory).output).toContain('must guard coverage to main/dev/PR-to-dev/release contexts');
   });
 
   it('fails when the coverage job re-enables real broker or Redis integration suites', () => {

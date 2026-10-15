@@ -103,7 +103,8 @@ export function normalizeOptionalNumber(value) {
 }
 
 export function clampZoom(value) {
-  return Math.max(0.25, Math.min(2, value));
+  // Focus framing uses the upper end so a single entity fills the viewport.
+  return Math.max(0.25, Math.min(2.5, value));
 }
 
 export function fallbackId(prefix, seed) {
@@ -177,10 +178,22 @@ export function normalizeNote(note, noteIndex) {
   };
 }
 
-export function normalizeRelationship(relationship) {
+/**
+ * @param {Object} relationship
+ * @param {Map<string, string>|null} [entityDomainIndex] entityId → domainId
+ */
+export function normalizeRelationship(relationship, entityDomainIndex = null) {
+  const fromEntityId = relationship.fromEntityId;
+  const toEntityId = relationship.toEntityId;
+  const fromDomainId = entityDomainIndex?.get?.(fromEntityId)
+    || String(relationship.fromDomainId || '').trim()
+    || null;
+  const toDomainId = entityDomainIndex?.get?.(toEntityId)
+    || String(relationship.toDomainId || '').trim()
+    || null;
   return {
     ...relationship,
-    name: relationship.name || `${relationship.fromEntityId} -> ${relationship.toEntityId}`,
+    name: relationship.name || `${fromEntityId} -> ${toEntityId}`,
     fromCardinality: relationship.fromCardinality || 'N',
     toCardinality: relationship.toCardinality || '1',
     fromAnchorSide: ['top', 'right', 'bottom', 'left'].includes(relationship.fromAnchorSide) ? relationship.fromAnchorSide : null,
@@ -190,6 +203,8 @@ export function normalizeRelationship(relationship) {
     // drawn from the entity side exactly as it was.
     fromField: String(relationship.fromField || '').trim() || null,
     toField: String(relationship.toField || '').trim() || null,
+    fromDomainId,
+    toDomainId,
     anchorBehavior: relationship.anchorBehavior === 'center' ? 'center' : 'auto',
     bendX: normalizeOptionalNumber(relationship.bendX),
     bendY: normalizeOptionalNumber(relationship.bendY),
@@ -458,7 +473,182 @@ export function defaultFields() {
   ];
 }
 
-export function normalizeEntityInput(entity, entityIndex) {
+/** Document schema version — Domain⊃Entity ownership + selection path. */
+export const MODEL_SCHEMA_VERSION = 2;
+
+/** Rail natures: Structure | Temporal | Assure | Emit | Ingest */
+export const CANONICAL_SIDEBAR_GROUP_KEYS = [
+  'model',
+  'history',
+  'validate',
+  'export',
+  'import'
+];
+
+export const LEGACY_SIDEBAR_GROUP_MAP = {
+  quality: 'validate',
+  share: 'export',
+  inspector: 'model',
+  selection: 'model',
+  entities: 'model',
+  diff: 'validate'
+  // import is canonical — do not fold into export
+};
+
+export function emptySelection() {
+  return {
+    kind: 'none',
+    domainId: null,
+    entityId: null,
+    fieldName: null,
+    relationshipId: null,
+    noteId: null
+  };
+}
+
+/**
+ * Build hierarchical selection from path and/or legacy flat ids.
+ * Entity/field require a resolvable domain; otherwise fail closed to none/domain.
+ */
+export function normalizeSelection(raw, domains, flat = {}) {
+  const domainList = Array.isArray(domains) ? domains : [];
+  const domainIds = new Set(domainList.map((domain) => domain.id));
+  const entityIndex = new Map();
+  domainList.forEach((domain) => {
+    (domain.entities || []).forEach((entity) => {
+      entityIndex.set(entity.id, domain.id);
+    });
+  });
+
+  const source = raw && typeof raw === 'object' ? raw : {};
+  let kind = ['none', 'domain', 'entity', 'field', 'relationship', 'note'].includes(source.kind)
+    ? source.kind
+    : null;
+  let domainId = String(source.domainId || flat.selectedDomainId || '').trim() || null;
+  let entityId = String(source.entityId || flat.selectedEntityId || '').trim() || null;
+  let fieldName = String(source.fieldName || flat.selectedFieldName || '').trim() || null;
+  let relationshipId = String(source.relationshipId || flat.selectedRelationshipId || '').trim() || null;
+  let noteId = String(source.noteId || flat.selectedNoteId || '').trim() || null;
+
+  if (!kind) {
+    if (noteId) kind = 'note';
+    else if (relationshipId) kind = 'relationship';
+    else if (entityId && fieldName) kind = 'field';
+    else if (entityId) kind = 'entity';
+    else if (domainId) kind = 'domain';
+    else kind = 'none';
+  }
+
+  // Flat id writers (legacy UI / sync tests) may set selectedRelationshipId /
+  // selectedNoteId while selection.kind is still a stale domain focus. Flat
+  // wins for those exclusive kinds so syncSelectionFromFlat does not erase them.
+  if (noteId && kind !== 'note') kind = 'note';
+  else if (relationshipId && kind !== 'relationship' && kind !== 'note') kind = 'relationship';
+
+  // Empty domain tree: preserve flat ids for round-trip of incomplete payloads.
+  if (domainList.length === 0) {
+    return {
+      kind: kind || 'none',
+      domainId,
+      entityId: kind === 'entity' || kind === 'field' ? entityId : null,
+      fieldName: kind === 'field' ? fieldName : null,
+      relationshipId: kind === 'relationship' ? relationshipId : null,
+      noteId: kind === 'note' ? noteId : null
+    };
+  }
+
+  if (entityId) {
+    const ownerDomainId = entityIndex.get(entityId) || null;
+    if (!ownerDomainId) {
+      entityId = null;
+      fieldName = null;
+      if (kind === 'entity' || kind === 'field') kind = domainId && domainIds.has(domainId) ? 'domain' : 'none';
+    } else {
+      domainId = ownerDomainId;
+    }
+  }
+
+  if (domainId && !domainIds.has(domainId)) {
+    domainId = null;
+  }
+
+  if ((kind === 'entity' || kind === 'field') && !domainId) {
+    kind = 'none';
+    entityId = null;
+    fieldName = null;
+  }
+  if (kind === 'field' && (!entityId || !fieldName)) {
+    kind = entityId ? 'entity' : (domainId ? 'domain' : 'none');
+    fieldName = null;
+  }
+  if (kind === 'domain' && !domainId) kind = 'none';
+  if (kind === 'relationship' && !relationshipId) kind = domainId ? 'domain' : 'none';
+  if (kind === 'note' && !noteId) kind = domainId ? 'domain' : 'none';
+  if (kind === 'none') {
+    entityId = null;
+    fieldName = null;
+    relationshipId = null;
+    noteId = null;
+  }
+
+  return {
+    kind,
+    domainId,
+    entityId: kind === 'entity' || kind === 'field' ? entityId : null,
+    fieldName: kind === 'field' ? fieldName : null,
+    relationshipId: kind === 'relationship' ? relationshipId : null,
+    noteId: kind === 'note' ? noteId : null
+  };
+}
+
+/** Flat id views derived from selection path (compat for existing UI). */
+export function selectionToFlatIds(selection) {
+  const path = selection && typeof selection === 'object' ? selection : emptySelection();
+  return {
+    selectedDomainId: path.domainId || null,
+    selectedEntityId: path.kind === 'entity' || path.kind === 'field' ? path.entityId : null,
+    selectedFieldName: path.kind === 'field' ? path.fieldName : null,
+    selectedRelationshipId: path.kind === 'relationship' ? path.relationshipId : null,
+    selectedNoteId: path.kind === 'note' ? path.noteId : null
+  };
+}
+
+/**
+ * Exclusive horizontal-tab map — canonical 4 panes; legacy keys fold in.
+ * At most one `true` flag remains (preferred among open, else first open).
+ */
+export function normalizeMultiSidebarExpanded(raw, preferred) {
+  const next = Object.fromEntries(CANONICAL_SIDEBAR_GROUP_KEYS.map((key) => [key, false]));
+  const isOpenFlag = (value) => value === true || value === 1 || value === 'true' || value === '1';
+  const resolveKey = (value) => {
+    if (typeof value !== 'string' || !value) return null;
+    const mapped = LEGACY_SIDEBAR_GROUP_MAP[value] || value;
+    return CANONICAL_SIDEBAR_GROUP_KEYS.includes(mapped) ? mapped : null;
+  };
+
+  if (raw && typeof raw === 'object') {
+    for (const key of CANONICAL_SIDEBAR_GROUP_KEYS) {
+      if (isOpenFlag(raw[key])) next[key] = true;
+    }
+    if (isOpenFlag(raw.quality) || isOpenFlag(raw.diff)) next.validate = true;
+    if (isOpenFlag(raw.share)) next.export = true;
+    // Legacy payloads that folded import→export: keep export if only legacy share;
+    // explicit raw.import opens the Ingest cell (canonical key).
+    if (isOpenFlag(raw.import)) next.import = true;
+    if (isOpenFlag(raw.inspector) || isOpenFlag(raw.selection) || isOpenFlag(raw.entities)) {
+      next.model = true;
+    }
+  }
+
+  const preferredKey = resolveKey(preferred);
+  const openKeys = CANONICAL_SIDEBAR_GROUP_KEYS.filter((key) => next[key]);
+  let active = null;
+  if (preferredKey && openKeys.includes(preferredKey)) active = preferredKey;
+  else if (openKeys.length) active = openKeys[0];
+  return Object.fromEntries(CANONICAL_SIDEBAR_GROUP_KEYS.map((key) => [key, key === active]));
+}
+
+export function normalizeEntityInput(entity, entityIndex, domainId = null) {
   const fieldsInput = Array.isArray(entity?.fields) ? entity.fields : defaultFields();
   const fields = fieldsInput.map((field, fieldIndex) => normalizeField(field, fieldIndex));
   const entityName = String(entity?.name || '').trim() || `Entity_${entityIndex + 1}`;
@@ -477,9 +667,13 @@ export function normalizeEntityInput(entity, entityIndex) {
     externalRefs: parseCommaSeparated(entity?.meta?.oasComposition?.externalRefs || []),
     discriminator: String(entity?.meta?.oasComposition?.discriminator || '').trim()
   };
+  const ownerDomainId = String(domainId || entity?.domainId || '').trim() || null;
+  const kind = entity?.kind === 'data' || !entity?.kind ? 'data' : String(entity.kind).trim() || 'data';
   return {
     id: entity?.id || fallbackId('entity', entityIndex),
     name: entityName,
+    domainId: ownerDomainId,
+    kind,
     x: Number.isFinite(entity?.x) ? entity.x : 14 + (entityIndex % 2) * 206,
     y: Number.isFinite(entity?.y) ? entity.y : 14 + Math.floor(entityIndex / 2) * 120,
     width: Number.isFinite(entity?.width)
@@ -510,10 +704,11 @@ export function normalizeEntityInput(entity, entityIndex) {
 }
 
 export function normalizeDomainInput(domain, domainIndex) {
+  const domainId = domain?.id || fallbackId('domain', domainIndex);
   const entitiesInput = Array.isArray(domain?.entities) ? domain.entities : [];
-  const entities = entitiesInput.map((entity, entityIndex) => normalizeEntityInput(entity, entityIndex));
+  const entities = entitiesInput.map((entity, entityIndex) => normalizeEntityInput(entity, entityIndex, domainId));
   return {
-    id: domain?.id || fallbackId('domain', domainIndex),
+    id: domainId,
     name: String(domain?.name || '').trim() || `Domain_${domainIndex + 1}`,
     color: /^#[0-9a-f]{6}$/i.test(domain?.color || '') ? domain.color : DOMAIN_COLORS[domainIndex % DOMAIN_COLORS.length],
     x: Number.isFinite(domain?.x) ? domain.x : 120 + domainIndex * 40,
@@ -589,10 +784,16 @@ export function normalizeDomainInput(domain, domainIndex) {
 export function normalizeStatePayload(parsed) {
   const domainsInput = Array.isArray(parsed?.domains) ? parsed.domains : [];
   const domains = domainsInput.map((domain, domainIndex) => normalizeDomainInput(domain, domainIndex));
-  const entityIds = new Set(domains.flatMap((domain) => domain.entities.map((entity) => entity.id)));
+  const entityDomainIndex = new Map();
+  domains.forEach((domain) => {
+    domain.entities.forEach((entity) => {
+      entityDomainIndex.set(entity.id, domain.id);
+    });
+  });
+  const entityIds = new Set(entityDomainIndex.keys());
   const relationshipsInput = Array.isArray(parsed?.relationships) ? parsed.relationships : [];
   const relationships = relationshipsInput
-    .map(normalizeRelationship)
+    .map((relationship) => normalizeRelationship(relationship, entityDomainIndex))
     .filter((relationship) => entityIds.has(relationship.fromEntityId) && entityIds.has(relationship.toEntityId));
   const notesInput = Array.isArray(parsed?.notes) ? parsed.notes : [];
   const notes = notesInput.map(normalizeNote);
@@ -605,17 +806,37 @@ export function normalizeStatePayload(parsed) {
   const codeWorkspace = normalizeCodeWorkspaceInput(parsed?.codeWorkspace);
   const monitoringHistory = normalizeMonitoringHistoryInput(parsed?.monitoringHistory);
   const architecture = normalizeArchitectureInput(parsed?.architecture, domains);
+
+  const rawSidebarGroup = typeof parsed?.view?.sidebarGroup === 'string' ? parsed.view.sidebarGroup : '';
+  const mappedSidebarGroup = LEGACY_SIDEBAR_GROUP_MAP[rawSidebarGroup] || rawSidebarGroup;
+  const sidebarGroup = CANONICAL_SIDEBAR_GROUP_KEYS.includes(mappedSidebarGroup)
+    ? mappedSidebarGroup
+    : 'model';
+  const rawExpanded = parsed?.view?.sidebarExpanded && typeof parsed.view.sidebarExpanded === 'object'
+    ? parsed.view.sidebarExpanded
+    : null;
+  const sidebarExpanded = normalizeMultiSidebarExpanded(rawExpanded, sidebarGroup);
+
+  const selection = normalizeSelection(parsed?.selection, domains, {
+    selectedDomainId: parsed?.selectedDomainId || null,
+    selectedEntityId: parsed?.selectedEntityId || null,
+    selectedFieldName: parsed?.selectedFieldName || null,
+    selectedRelationshipId: parsed?.selectedRelationshipId || null,
+    selectedNoteId: parsed?.selectedNoteId || null
+  });
+  // Prefer explicit domain when nothing selected so Entities workspace can gate on.
+  if (selection.kind === 'none' && domains[0]?.id) {
+    selection.kind = 'domain';
+    selection.domainId = domains[0].id;
+  }
+  const flat = selectionToFlatIds(selection);
+
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
-    // JUM-729 follow-up: which sidebar group is on screen, so a reload does not throw
-    // the user back to Model in the middle of an inspector edit.
-    sidebarGroup: ['model', 'inspector', 'quality', 'share'].includes(parsed?.view?.sidebarGroup)
-      ? parsed.view.sidebarGroup
-      : 'model',
-    // JUM-729 follow-up: the panels overlay the canvas, so whether the drawer is open is
-    // part of the view. Closed by default — the canvas is what the designer is
-    // for, and a first run should show it whole.
+    sidebarGroup,
+    // Exclusive horizontal tabs — at most one pane true after normalize.
+    sidebarExpanded,
     sidebarOpen: Boolean(parsed?.view?.sidebarOpen),
     snapToGrid: parsed?.view?.snapToGrid !== false,
     edgeStyle: ['curved', 'orthogonal'].includes(parsed?.view?.edgeStyle) ? parsed.view.edgeStyle : 'curved',
@@ -623,15 +844,21 @@ export function normalizeStatePayload(parsed) {
       ? parsed.view.modelCheckMinSeverity
       : 'info',
     exportBlockCritical: parsed?.view?.exportBlockCritical !== false,
-    largeCanvasMode: Boolean(parsed?.view?.largeCanvasMode)
+    largeCanvasMode: Boolean(parsed?.view?.largeCanvasMode),
+    // Session layout emphasis: focus stages peers away; overview keeps full diagram.
+    canvasStage: parsed?.view?.canvasStage === 'focus' ? 'focus' : 'overview'
   };
   return {
+    modelSchemaVersion: MODEL_SCHEMA_VERSION,
     domains,
     relationships,
     notes,
-    selectedDomainId: parsed?.selectedDomainId || domains[0]?.id || null,
-    selectedEntityId: parsed?.selectedEntityId || null,
-    selectedRelationshipId: parsed?.selectedRelationshipId || null,
+    selection,
+    selectedDomainId: flat.selectedDomainId,
+    selectedEntityId: flat.selectedEntityId,
+    selectedFieldName: flat.selectedFieldName,
+    selectedRelationshipId: flat.selectedRelationshipId,
+    selectedNoteId: flat.selectedNoteId,
     idCounter: parsed?.idCounter || 1,
     interfaces,
     serviceConfiguration,
@@ -649,12 +876,14 @@ export function createDefaultView() {
     zoom: 1,
     compactEntities: false,
     sidebarGroup: 'model',
+    sidebarExpanded: Object.fromEntries(CANONICAL_SIDEBAR_GROUP_KEYS.map((key) => [key, false])),
     sidebarOpen: false,
     snapToGrid: true,
     edgeStyle: 'curved',
     modelCheckMinSeverity: 'info',
     exportBlockCritical: true,
-    largeCanvasMode: false
+    largeCanvasMode: false,
+    canvasStage: 'overview'
   };
 }
 
@@ -678,12 +907,16 @@ export function createDefaultView() {
  */
 export function createDesignerState({ store, seed, render, runtimeEnvDefaults = {}, onSaveResult }) {
   const state = {
+    modelSchemaVersion: MODEL_SCHEMA_VERSION,
     domains: [],
     relationships: [],
     notes: [],
+    selection: emptySelection(),
     selectedDomainId: null,
     selectedEntityId: null,
+    selectedFieldName: null,
     selectedRelationshipId: null,
+    selectedNoteId: null,
     idCounter: 1,
     activeTab: 'domain-designer',
     interfaces: [],
@@ -718,14 +951,35 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
     future: []
   };
 
+  function syncSelectionFromFlat() {
+    state.selection = normalizeSelection(state.selection, state.domains, {
+      selectedDomainId: state.selectedDomainId,
+      selectedEntityId: state.selectedEntityId,
+      selectedFieldName: state.selectedFieldName,
+      selectedRelationshipId: state.selectedRelationshipId,
+      selectedNoteId: state.selectedNoteId
+    });
+    const flat = selectionToFlatIds(state.selection);
+    state.selectedDomainId = flat.selectedDomainId;
+    state.selectedEntityId = flat.selectedEntityId;
+    state.selectedFieldName = flat.selectedFieldName;
+    state.selectedRelationshipId = flat.selectedRelationshipId;
+    state.selectedNoteId = flat.selectedNoteId;
+  }
+
   function snapshotState() {
+    syncSelectionFromFlat();
     return JSON.parse(JSON.stringify({
+      modelSchemaVersion: MODEL_SCHEMA_VERSION,
       domains: state.domains,
       relationships: state.relationships,
       notes: state.notes,
+      selection: state.selection,
       selectedDomainId: state.selectedDomainId,
       selectedEntityId: state.selectedEntityId,
+      selectedFieldName: state.selectedFieldName,
       selectedRelationshipId: state.selectedRelationshipId,
+      selectedNoteId: state.selectedNoteId,
       idCounter: state.idCounter,
       activeTab: state.activeTab,
       interfaces: state.interfaces,
@@ -740,12 +994,32 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
   }
 
   function applySnapshot(snapshot) {
-    state.domains = snapshot.domains || [];
-    state.relationships = (snapshot.relationships || []).map(normalizeRelationship);
+    state.domains = (snapshot.domains || []).map((domain, index) => normalizeDomainInput(domain, index));
+    const entityDomainIndex = new Map();
+    state.domains.forEach((domain) => {
+      domain.entities.forEach((entity) => entityDomainIndex.set(entity.id, domain.id));
+    });
+    state.relationships = (snapshot.relationships || [])
+      .map((relationship) => normalizeRelationship(relationship, entityDomainIndex));
     state.notes = (snapshot.notes || []).map(normalizeNote);
-    state.selectedDomainId = snapshot.selectedDomainId || state.domains[0]?.id || null;
-    state.selectedEntityId = snapshot.selectedEntityId || null;
-    state.selectedRelationshipId = snapshot.selectedRelationshipId || null;
+    state.selection = normalizeSelection(snapshot.selection, state.domains, {
+      selectedDomainId: snapshot.selectedDomainId,
+      selectedEntityId: snapshot.selectedEntityId,
+      selectedFieldName: snapshot.selectedFieldName,
+      selectedRelationshipId: snapshot.selectedRelationshipId,
+      selectedNoteId: snapshot.selectedNoteId
+    });
+    if (state.selection.kind === 'none' && state.domains[0]?.id) {
+      state.selection.kind = 'domain';
+      state.selection.domainId = state.domains[0].id;
+    }
+    const flat = selectionToFlatIds(state.selection);
+    state.selectedDomainId = flat.selectedDomainId;
+    state.selectedEntityId = flat.selectedEntityId;
+    state.selectedFieldName = flat.selectedFieldName;
+    state.selectedRelationshipId = flat.selectedRelationshipId;
+    state.selectedNoteId = flat.selectedNoteId;
+    state.modelSchemaVersion = MODEL_SCHEMA_VERSION;
     state.idCounter = snapshot.idCounter || 1;
     state.activeTab = snapshot.activeTab || 'domain-designer';
     state.interfaces = Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
@@ -794,13 +1068,18 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
    */
   function saveState() {
     state.architecture = normalizeArchitectureInput(state.architecture, state.domains);
+    syncSelectionFromFlat();
     const payload = {
+      modelSchemaVersion: MODEL_SCHEMA_VERSION,
       domains: state.domains,
       relationships: state.relationships,
       notes: state.notes,
+      selection: state.selection,
       selectedDomainId: state.selectedDomainId,
       selectedEntityId: state.selectedEntityId,
+      selectedFieldName: state.selectedFieldName,
       selectedRelationshipId: state.selectedRelationshipId,
+      selectedNoteId: state.selectedNoteId,
       idCounter: state.idCounter,
       activeTab: state.activeTab,
       interfaces: state.interfaces,
@@ -901,9 +1180,14 @@ export function createDesignerState({ store, seed, render, runtimeEnvDefaults = 
       const parsed = normalizeStatePayload(result.payload);
       state.domains = parsed.domains;
       state.relationships = parsed.relationships;
+      state.notes = parsed.notes || [];
+      state.selection = parsed.selection || emptySelection();
       state.selectedDomainId = parsed.selectedDomainId;
       state.selectedEntityId = parsed.selectedEntityId;
+      state.selectedFieldName = parsed.selectedFieldName || null;
       state.selectedRelationshipId = parsed.selectedRelationshipId;
+      state.selectedNoteId = parsed.selectedNoteId || null;
+      state.modelSchemaVersion = parsed.modelSchemaVersion || MODEL_SCHEMA_VERSION;
       state.idCounter = parsed.idCounter;
       state.codeWorkspace = parsed.codeWorkspace;
       state.monitoringHistory = parsed.monitoringHistory;

@@ -1,0 +1,184 @@
+/**
+ * Jumentix UI primitives — Ext-grade geometry, dark paint via tokens.
+ * Prefix: jtx-ui-*
+ */
+.jtx-ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--jtx-ui-control-h);
+  padding: 6px 10px;
+  border: 1px solid var(--jtx-ui-line-strong);
+  border-radius: var(--jtx-ui-radius);
+  background: var(--jtx-ui-surface-raised);
+  color: var(--jtx-ui-ink-strong);
+  font-family: var(--jtx-ui-font);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.jtx-ui-btn:hover {
+  background: var(--jtx-ui-surface-hover);
+}
+
+.jtx-ui-btn-primary {
+  border-color: color-mix(in srgb, var(--jtx-ui-accent) 55%, var(--jtx-ui-line-strong));
+  background: color-mix(in srgb, var(--jtx-ui-accent-soft) 70%, var(--jtx-ui-surface-raised));
+  color: var(--jtx-ui-ink-strong);
+}
+
+.jtx-ui-btn-danger {
+  border-color: color-mix(in srgb, var(--jtx-ui-danger) 45%, var(--jtx-ui-line-strong));
+  color: var(--jtx-ui-danger);
+}
+
+.jtx-ui-btn-block {
+  width: 100%;
+}
+
+.jtx-ui-field {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.jtx-ui-field-label {
+  color: var(--jtx-ui-ink-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.jtx-ui-input {
+  min-height: var(--jtx-ui-control-h);
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--jtx-ui-line-strong);
+  border-radius: var(--jtx-ui-radius);
+  background: var(--jtx-ui-surface-input);
+  color: var(--jtx-ui-ink-strong);
+  font-family: var(--jtx-ui-font);
+  font-size: 13px;
+}
+
+.jtx-ui-scope-chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--jtx-ui-line);
+  background: color-mix(in srgb, var(--jtx-ui-surface-raised) 88%, var(--jtx-ui-accent-soft));
+}
+
+.jtx-ui-scope-chrome-job {
+  margin: 0;
+  color: var(--jtx-ui-ink-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.jtx-ui-scope-chrome-path {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--jtx-ui-ink-strong);
+  font-size: 13px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jtx-ui-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--jtx-ui-line-strong);
+  background: var(--jtx-ui-surface-raised);
+}
+
+.jtx-ui-toolbar-spacer {
+  flex: 1 1 12px;
+  min-width: 8px;
+}
+
+.jtx-ui-segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--jtx-ui-line-strong);
+  border-radius: var(--jtx-ui-radius);
+  overflow: hidden;
+}
+
+.jtx-ui-segmented > .jtx-ui-btn {
+  border: 0;
+  border-radius: 0;
+  border-right: 1px solid var(--jtx-ui-line);
+}
+
+.jtx-ui-segmented > .jtx-ui-btn:last-child {
+  border-right: 0;
+}
+
+.jtx-ui-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  gap: 0;
+  border-bottom: 1px solid var(--jtx-ui-line-strong);
+  background: var(--jtx-ui-surface-raised);
+}
+
+.jtx-ui-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--jtx-ui-ink-muted);
+  font-family: var(--jtx-ui-font);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.jtx-ui-tab[aria-selected="true"],
+.jtx-ui-tab.active {
+  color: var(--jtx-ui-ink-strong);
+  border-bottom-color: var(--jtx-ui-accent);
+  background: color-mix(in srgb, var(--jtx-ui-accent-soft) 45%, var(--jtx-ui-surface));
+}
+
+.jtx-ui-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--jtx-ui-line);
+  border-radius: var(--jtx-ui-radius);
+  background: var(--jtx-ui-surface);
+}
+
+.jtx-ui-details > summary {
+  cursor: pointer;
+  padding: 8px 10px;
+  color: var(--jtx-ui-ink-strong);
+  font-weight: 650;
+}
+
+.jtx-ui-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}

@@ -24,7 +24,7 @@ import {
   envFileContent,
   startServer,
   clickInPanels,
-  openDesignerPanels,
+  fillInPanels,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
@@ -142,8 +142,7 @@ describe('serviceManagement accessible names (JUM-732)', () => {
 
     await page.click('#domain-designer-empty-load-sample-btn');
     await page.waitForTimeout(500);
-    await openDesignerPanels(page, '#entity-search-input');
-    await page.fill('#entity-search-input', 'User');
+    await fillInPanels(page, '#entity-search-input', 'User');
     await clickInPanels(page, '#entity-search-btn');
     await page.waitForTimeout(400);
 
@@ -164,8 +163,7 @@ describe('serviceManagement accessible names (JUM-732)', () => {
 
     await page.click('#domain-designer-empty-load-sample-btn');
     await page.waitForTimeout(500);
-    await openDesignerPanels(page, '#entity-search-input');
-    await page.fill('#entity-search-input', 'User');
+    await fillInPanels(page, '#entity-search-input', 'User');
     await clickInPanels(page, '#entity-search-btn');
     await page.waitForTimeout(400);
 

@@ -77,6 +77,11 @@ a file that is already clean fails the check until it is removed.
 
 ## Tooling
 
+Package manager: **Bun** (`bun.lock`) is canonical for the monorepo
+(Requirement `096`). Dependabot follows that contract — root updates use the
+`bun` ecosystem; only `apps/frontend/template` keeps a nested `npm` lockfile.
+See `documentation/md/CI-PROVIDER-GOVERNANCE.md` (Dependabot section).
+
 Lint:
 
 ```bash

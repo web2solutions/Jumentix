@@ -34,7 +34,12 @@ export const MantineNavBar = () => {
     <>
       <MantineNextraThemeObserver />
       <Navbar
-        logo={<BrandMark asLink={false} />}
+        // Nextra defaults logoLink=true with aria-label="Home page", which fails
+        // axe label-content-name-mismatch against the visible "Jumentix" brand
+        // text (axe-core 4.14). Own the home anchor so the accessible name
+        // includes the visible brand (BrandMark aria-label="Jumentix home").
+        logoLink={false}
+        logo={<BrandMark href="/" />}
         projectIcon={
           <>
             <span className="sr-only">GitHub repository</span>
@@ -55,9 +60,13 @@ export const MantineNavBar = () => {
           <a
             className={classes.locale}
             href={localizedDocsPath(pathname, portuguese)}
-            aria-label={portuguese ? 'Read documentation in English' : 'Leia a documentação em português'}
+            aria-label={
+              portuguese
+                ? 'EN — Read documentation in English'
+                : 'PT-BR — Leia a documentação em português'
+            }
           >
-            <IconLanguage size={17} />
+            <IconLanguage size={17} aria-hidden="true" focusable="false" />
             {portuguese ? 'EN' : 'PT-BR'}
           </a>
           <ColorSchemeControl />

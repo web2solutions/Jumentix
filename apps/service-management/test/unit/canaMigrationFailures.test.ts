@@ -567,12 +567,30 @@ describe('describeDesignerStorageEnvironment (JUM-681)', () => {
       probeStatus: 'available'
     });
 
-    expect(degraded).toStrictEqual({
-      kind: 'degraded-durability',
-      severity: 'info',
-      message: 'Storage is working but durability is degraded: persistence not granted'
-    });
+    expect(degraded.kind).toBe('degraded-durability');
+    expect(degraded.severity).toBe('info');
+    expect(degraded.message).toContain('Storage is working with a warning');
+    expect(degraded.message).toContain('persistence not granted');
     expect(healthy).toStrictEqual({ kind: 'ok', severity: 'info', message: null });
+  });
+
+  it('rewrites durability and quota probe reasons into operator-facing copy', () => {
+    expect.hasAssertions();
+
+    const durability = describeDesignerStorageEnvironment({
+      indexedDbPresent: true,
+      probeStatus: 'available',
+      probeReason: 'durability: storage is not persistent; the browser may reclaim it under pressure.'
+    });
+    const quota = describeDesignerStorageEnvironment({
+      indexedDbPresent: true,
+      probeStatus: 'available',
+      probeReason: 'quota: storage usage is near the origin quota'
+    });
+
+    expect(durability.message).toContain('not marked permanent');
+    expect(durability.message).toContain('Export');
+    expect(quota.message).toContain('nearly full');
   });
 
   it('reports ok when called with nothing at all', () => {

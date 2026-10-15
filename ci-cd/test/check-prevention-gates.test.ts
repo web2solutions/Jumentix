@@ -14,6 +14,7 @@ const {
 const {
   ACCEPTED_UNREACHABLE,
   isReachable,
+  run: runWebsiteContentRoutes,
   validateWebsiteContentRoutes
 } = require('../../apps/jumentix-website/scripts/check-content-routes');
 
@@ -180,5 +181,50 @@ describe('website content reachability (JUM-655, Requirement 132)', () => {
     expect(failures.some((f: string) => f.includes('no longer exists'))).toBe(true);
 
     gateFs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('skips missing content roots, hidden dirs, and stale exemptions that are now reachable (JUM-922)', () => {
+    expect.hasAssertions();
+    const missingRoot = gateFs.mkdtempSync(gatePath.join(gateOs.tmpdir(), 'jum922-nocontent-'));
+    expect(validateWebsiteContentRoutes(missingRoot)).toStrictEqual([]);
+    gateFs.rmSync(missingRoot, { recursive: true, force: true });
+
+    const root = gateFs.mkdtempSync(gatePath.join(gateOs.tmpdir(), 'jum922-content-'));
+    const content = gatePath.join(root, 'apps/jumentix-website/content');
+    gateFs.mkdirSync(gatePath.join(content, 'jumentix', 'nested'), { recursive: true });
+    gateFs.mkdirSync(gatePath.join(content, '.cache'), { recursive: true });
+    gateFs.mkdirSync(gatePath.join(content, 'node_modules', 'pkg'), { recursive: true });
+    gateFs.writeFileSync(gatePath.join(content, 'jumentix', 'index.mdx'), '# ok\n');
+    gateFs.writeFileSync(gatePath.join(content, 'jumentix', 'nested', 'deep.mdx'), '# deep\n');
+    gateFs.writeFileSync(gatePath.join(content, '.cache', 'secret.mdx'), '# hidden\n');
+    gateFs.writeFileSync(gatePath.join(content, 'node_modules', 'pkg', 'x.mdx'), '# skip\n');
+    gateFs.writeFileSync(gatePath.join(content, 'jumentix', '_meta.json'), '{}\n');
+
+    const failures = validateWebsiteContentRoutes(root, [
+      { file: 'jumentix/index.mdx', issue: 'JUM-922', reason: 'should-be-live' }
+    ]);
+    expect(failures.some((f: string) => f.includes('still listed'))).toBe(true);
+
+    const orphanRoot = gateFs.mkdtempSync(gatePath.join(gateOs.tmpdir(), 'jum922-orphan-'));
+    const orphanContent = gatePath.join(orphanRoot, 'apps/jumentix-website/content');
+    gateFs.mkdirSync(gatePath.join(orphanContent, 'jumentix'), { recursive: true });
+    gateFs.writeFileSync(gatePath.join(orphanContent, 'jumentix', 'index.mdx'), '# ok\n');
+    gateFs.writeFileSync(gatePath.join(orphanContent, 'orphan.mdx'), '# orphan\n');
+
+    /* eslint-disable no-console -- capture run() stderr for assertion */
+    const previousError = console.error;
+    const errors: string[] = [];
+    console.error = (...args: unknown[]) => { errors.push(args.map(String).join(' ')); };
+    try {
+      // run() always uses the empty module register — orphan files fail closed.
+      expect(runWebsiteContentRoutes(orphanRoot)).toBe(1);
+      expect(errors.some((line) => line.includes('cannot be served'))).toBe(true);
+      expect(runWebsiteContentRoutes(repoRoot)).toBe(0);
+    } finally {
+      console.error = previousError;
+      gateFs.rmSync(root, { recursive: true, force: true });
+      gateFs.rmSync(orphanRoot, { recursive: true, force: true });
+    }
+    /* eslint-enable no-console */
   });
 });

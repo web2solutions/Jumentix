@@ -14,7 +14,7 @@ para open source.
 | Publicação Codecov | CircleCI usa o Codecov CLI verificado por checksum em pushes `main` e `dev` (mais contextos de release/agendados); quando o flag de fallback está habilitado, GitHub Actions usa `codecov/codecov-action@v5` nas mesmas superfícies, ambos com `CODECOV_TOKEN` | Badges ao vivo + gráfico Grid após o upload LCOV |
 | Qualidade | Gate Bun por branch e build/smoke/prepublish do Storybook | Validação obrigatória de produto e governança |
 | SAST/qualidade | Projeto SonarQube Cloud `web2solutions_Jumentix` | Dashboard público de qualidade, confiabilidade, segurança e cobertura |
-| Dependências | Scanner próprio via OSV.dev e Dependabot | Detecção fail-closed de vulnerabilidades e propostas de atualização |
+| Dependências | Scanner próprio via OSV.dev e Dependabot (`bun` em `/`, `npm` só em `/apps/frontend/template`) | Detecção fail-closed de vulnerabilidades e propostas de atualização; PRs de versão miram `dev`, PRs de segurança podem mirar `main` |
 | Segredos | Scanner OSS fixado executado no CI | Review de segredos controlado pelo repositório sem checks privados pagos |
 | Achados de PR | Artefatos SARIF de scanners OSS fixados | Evidência de review third-party sem dar autoridade única a reviewer hospedado |
 | Deploy | Build reproduzível e deploy documentado | Validação de build continua obrigatória antes de release |
