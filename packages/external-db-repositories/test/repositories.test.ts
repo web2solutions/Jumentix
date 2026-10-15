@@ -460,23 +460,28 @@ describe('the DynamoDB repository', () => {
    * because it costs a round trip on every startup; when it is on, a failure
    * must fail the connect rather than be swallowed.
    *
-   * Here it is the credentials that stop it — there are none in this
-   * environment, and the SDK says so before it ever reaches the endpoint. That
-   * is the same finding a deployment would get, and it is exactly what the
-   * health check is for: without it the connect would have succeeded and the
-   * first real query would have failed instead.
+   * Static credentials are required here so the AWS SDK skips IMDS / ambient
+   * credential discovery (which hangs for minutes in CI Docker) and goes
+   * straight to the unreachable endpoint — ECONNREFUSED is the fail-closed
+   * finding the health check is meant to surface.
    */
   it('fails the connect when the health check does not succeed', async () => {
     expect.hasAssertions();
 
     const repository = new DynamoDbRepository({
       endpoint: 'http://127.0.0.1:8999',
-      extra: { healthCheckOnConnect: true }
+      extra: {
+        healthCheckOnConnect: true,
+        credentials: {
+          accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
+          secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+        }
+      }
     });
 
-    await expect(repository.connect()).rejects.toThrow(/credentials|ECONNREFUSED/i);
+    await expect(repository.connect()).rejects.toThrow(/ECONNREFUSED|ENOTFOUND|connect|networking/i);
     expect(repository.isConnected()).toBe(false);
-  }, 30000);
+  }, 10000);
 
   it('destroys the client and forgets it', async () => {
     expect.hasAssertions();
