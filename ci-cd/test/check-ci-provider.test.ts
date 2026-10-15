@@ -252,14 +252,32 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.circleci/config.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch',
-          'bun run coverage:patch'
-        )
+        fs.readFileSync(file, 'utf8').split(
+          'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch'
+        ).join('bun run coverage:patch')
       );
     });
     expect(run(directory).output).toContain(
       'CircleCI coverage must use origin/dev as the patch baseline for dev→main promotions'
+    );
+  });
+
+  it('fails when CircleCI coverage drops the origin/dev baseline for task PRs into dev', () => {
+    expect.hasAssertions();
+
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      const contents = fs.readFileSync(file, 'utf8');
+      fs.writeFileSync(
+        file,
+        contents.replace(
+          /elif \[ "\$BASE_REF" = "dev" \]; then\n[\s\S]*?JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch\n/,
+          ''
+        )
+      );
+    });
+    expect(run(directory).output).toContain(
+      'CircleCI coverage must use origin/dev as the patch baseline for task/Dependabot PRs into dev'
     );
   });
 
@@ -309,7 +327,10 @@ describe('check-ci-provider', () => {
 
     const directory = fixture((root) => {
       const file = path.join(root, '.github/workflows/ci.yml');
-      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('coverage:patch', 'coverage:removed'));
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').split('coverage:patch').join('coverage:removed')
+      );
     });
     expect(run(directory).output).toContain('coverage:patch');
   });
@@ -334,10 +355,9 @@ describe('check-ci-provider', () => {
       const file = path.join(root, '.github/workflows/ci.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace(
-          'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch',
-          'bun run coverage:patch'
-        )
+        fs.readFileSync(file, 'utf8').split(
+          'JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch'
+        ).join('bun run coverage:patch')
       );
     });
     const { output } = run(directory);
