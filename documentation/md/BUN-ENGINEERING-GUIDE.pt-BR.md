@@ -13,11 +13,16 @@ O Bun é pinado exatamente. Uma versão, idêntica localmente e no CI — uma fa
 
 | Fonte de verdade | Valor |
 | --- | --- |
-| `.bun-version` | `1.3.13` |
-| `package.json#packageManager` | `bun@1.3.13` |
-| `package.json#engines.bun` | `>=1.3.13` |
+| `.bun-version` | `1.4.2` |
+| `package.json#packageManager` | `bun@1.4.2` |
+| `package.json#engines.bun` | `>=1.4.2` |
 
-> **Por que 1.3.13 e não o release mais novo.** O Bun 1.3.14 rejeita um lockfile que ele mesmo acabou de escrever para certas árvores de dependência — `bun install` passa, `bun install --frozen-lockfile` falha no mesmo arquivo, e um lock escrito pelo 1.3.13 também é rejeitado. 1.3.13, 1.3.11 e 1.3.9 aceitam. O pin sobe de volta quando um release corrigir (JUM-708).
+> **Por que 1.4.2.** O updater bun do Dependabot grava `bun.lock` com
+> `lockfileVersion` 3 (Bun 1.4.x). O CI precisa ler esse lockfile sob
+> `--frozen-lockfile`; o 1.3.13 não consegue (`UnknownLockfileVersion`). O pin
+> 1.4.2 foi verificado localmente: install + frozen-lockfile passam neste
+> workspace (JUM-925). A regressão de frozen-lockfile do 1.3.14 permanece em
+> JUM-708 e foi reavaliada contra 1.4.2 antes deste pin.
 
 
 O `ci-cd/check-bun-version.js` valida as três e falha fechado. Ele roda como `preinstall`, então é

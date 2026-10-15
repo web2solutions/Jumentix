@@ -49,8 +49,8 @@ bun run website:vercel:link
 A imagem Bun padrão da Vercel pode ficar atrás do pin do repositório (`.bun-version` / `packageManager`).
 `apps/jumentix-website/vercel.json` força (monorepo a partir do Root Directory do app):
 
-- `installCommand`: `cd ../.. && bunx bun@1.3.13 install --frozen-lockfile`
-- `buildCommand`: `cd ../.. && bunx bun@1.3.13 run website:deps:build && cd apps/jumentix-website && bunx bun@1.3.13 run build`
+- `installCommand`: `cd ../.. && bunx bun@1.4.2 install --frozen-lockfile`
+- `buildCommand`: `cd ../.. && bunx bun@1.4.2 run website:deps:build && cd apps/jumentix-website && bunx bun@1.4.2 run build`
 
 Pacotes workspace (`@jumentix/cana`, etc.) publicam `dist/` ignorado pelo git, então a Vercel
 precisa buildar as deps do site antes do build Next.js.

@@ -1,5 +1,5 @@
 {
-  "lockfileVersion": 1,
+  "lockfileVersion": 3,
   "configVersion": 1,
   "workspaces": {
     "": {
@@ -283,8 +283,12 @@
       },
       "peerDependencies": {
         "@jumentix/cana": "^0.1.0",
+        "pinia": "*",
         "vue": ">=3.3.0",
       },
+      "optionalPeers": [
+        "pinia",
+      ],
     },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
@@ -476,6 +480,9 @@
     "tar": "^7.5.17",
     "undici": "^6.28.0",
     "uuid": "^14.0.1",
+    "vue-eslint-parser": {
+      "eslint-scope": "^9.1.2",
+    },
     "ws": "^8.18.3",
   },
   "packages": {

@@ -172,20 +172,20 @@ describe('check-bun-version input reading (JUM-721)', () => {
     // one is the only way to exercise the branch that reads it — and that
     // branch is the guard's first assertion.
     const input = guard.readToolchainInput({
-      versions: { bun: '1.3.13' },
+      versions: { bun: '1.4.2' },
       pinPath: '/nonexistent/.bun-version',
       manifestPath: '/nonexistent/package.json'
     });
 
-    expect(input.runningBunVersion).toBe('1.3.13');
+    expect(input.runningBunVersion).toBe('1.4.2');
   });
 
   it('uses default source paths when only the version table is injected', () => {
     expect.hasAssertions();
 
-    const input = guard.readToolchainInput({ versions: { bun: '1.3.13' } });
+    const input = guard.readToolchainInput({ versions: { bun: '1.4.2' } });
 
-    expect(input.runningBunVersion).toBe('1.3.13');
+    expect(input.runningBunVersion).toBe('1.4.2');
     expect(String(input.rawPin).trim()).toMatch(EXACT_VERSION);
     expect(input.declaredPackageManager).toBe(`bun@${String(input.rawPin).trim()}`);
   });

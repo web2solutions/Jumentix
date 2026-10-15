@@ -13,11 +13,16 @@ committed.
 
 | Source of truth | Value |
 | --- | --- |
-| `.bun-version` | `1.3.13` |
-| `package.json#packageManager` | `bun@1.3.13` |
-| `package.json#engines.bun` | `>=1.3.13` |
+| `.bun-version` | `1.4.2` |
+| `package.json#packageManager` | `bun@1.4.2` |
+| `package.json#engines.bun` | `>=1.4.2` |
 
-> **Why 1.3.13 and not the newest release.** Bun 1.3.14 rejects a lockfile it has just written for some dependency trees — `bun install` succeeds, `bun install --frozen-lockfile` then fails on the same file, and a lock written by 1.3.13 is rejected too. 1.3.13, 1.3.11 and 1.3.9 all accept it. The pin moves back up when a release fixes it (JUM-708).
+> **Why 1.4.2.** Dependabot’s bun updater writes `bun.lock` `lockfileVersion` 3
+> (Bun 1.4.x). CI must parse that lockfile under `--frozen-lockfile`; Bun 1.3.13
+> cannot (`UnknownLockfileVersion`). Pin 1.4.2 was verified locally: install +
+> frozen-lockfile succeed on this workspace (JUM-925). The earlier 1.3.14
+> frozen-lockfile regression remains tracked as JUM-708 and was re-checked
+> against 1.4.2 before this pin.
 
 
 `ci-cd/check-bun-version.js` enforces all three and fails closed. It runs as `preinstall`, so it is

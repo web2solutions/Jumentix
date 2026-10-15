@@ -38,7 +38,7 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsSL -o /tmp/bun-install.sh https://bun.sh/install
-          bash /tmp/bun-install.sh "bun-v1.3.13"
+          bash /tmp/bun-install.sh "bun-v1.4.2"
           test -x "$HOME/.bun/bin/bun"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Create application tag and GitHub Release

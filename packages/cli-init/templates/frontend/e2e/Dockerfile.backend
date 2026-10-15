@@ -6,7 +6,7 @@
 # and in-process mediator/key-value keep the container self-contained; the
 # seeds (`apps/backend-template/seed`) provide the accounts the specs sign in
 # with.
-FROM oven/bun:1.3.13
+FROM oven/bun:1.4.2
 
 WORKDIR /app
 
