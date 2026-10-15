@@ -109,6 +109,7 @@ if (!fs.existsSync(workflowPath)) {
     /bun run coverage:patch/,
     /JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
     /JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/,
+    /GITHUB_BASE_REF.*=.*"dev"[\s\S]*JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
     /startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)/,
     /startsWith\(github\.head_ref, 'chore\/package-bump-'\)/,
     /startsWith\(github\.head_ref, 'chore\/release-v'\)/,
@@ -512,6 +513,11 @@ if (fs.existsSync(circleciPath)) {
   if (!/JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/.test(circleCoverageBlock)) {
     failures.push(
       'CircleCI coverage must use origin/dev as the patch baseline for dev→main promotions'
+    );
+  }
+  if (!/\[ "\$BASE_REF" = "dev" \][\s\S]*JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/.test(circleCoverageBlock)) {
+    failures.push(
+      'CircleCI coverage must use origin/dev as the patch baseline for task/Dependabot PRs into dev'
     );
   }
   if (!/JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/.test(circleCoverageBlock)) {

@@ -440,6 +440,11 @@ jobs:
                 JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch
               elif [ "$BASE_REF" = "main" ] && { [[ "$HEAD_REF" =~ ^chore/changelog-sync-[0-9a-f]{8}$ ]] || [[ "$HEAD_REF" =~ ^chore/release-v[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$HEAD_REF" =~ ^codex/release/[A-Z0-9-]+-dev-main-signed-squash$ ]]; }; then
                 JUMENTIX_PATCH_BASE_REF=origin/main bun run coverage:patch
+              elif [ "$BASE_REF" = "dev" ]; then
+                # Task / Dependabot PRs into dev must measure the PR patch,
+                # not dev-vs-main history (which re-litigates already-gated tip
+                # work such as the Bun 1.4.2 pin and fails closed on 0/1 lines).
+                JUMENTIX_PATCH_BASE_REF=origin/dev bun run coverage:patch
               else
                 bun run coverage:patch
               fi

@@ -7,6 +7,7 @@ const feedbackChecker = require('../check-pr-feedback') as {
   ) => Promise<unknown>;
   isAutomatedStatusDecoration: (comment: unknown) => boolean;
   isCursorUsageLimitNotice: (comment: unknown) => boolean;
+  isDependabotCommandComment: (comment: unknown) => boolean;
   parseResolutionMarker: (body: string) => unknown;
   run: (options: {
     argv?: string[]; env?: Record<string, string>; fetchFn?: typeof fetch
@@ -184,6 +185,23 @@ describe('check-pr-feedback', () => {
     expect(feedbackChecker.isAutomatedStatusDecoration({
       ...vercelDecoration,
       author: { login: 'another-bot' }
+    })).toBe(false);
+  });
+
+  it('exempts @dependabot command comments, which are bot control not review', () => {
+    expect.hasAssertions();
+
+    const rebase = makeComment({
+      author: { login: 'maintainer' },
+      body: '@dependabot rebase'
+    });
+    expect(feedbackChecker.isDependabotCommandComment(rebase)).toBe(true);
+    expect(() => feedbackChecker.validatePullRequestFeedback(makeFeedback({
+      comments: [rebase]
+    }))).not.toThrow();
+    expect(feedbackChecker.isDependabotCommandComment({
+      ...rebase,
+      body: 'Please rebase this after the Bun pin lands.'
     })).toBe(false);
   });
 
