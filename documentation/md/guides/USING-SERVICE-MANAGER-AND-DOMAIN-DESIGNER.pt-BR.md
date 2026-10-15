@@ -66,7 +66,7 @@ Implementação:
 
 ## 2. Pré-requisitos
 
-- Bun `>=1.3.13` (o repositório fixa `bun@1.3.13`)
+- Bun `>=1.3.13` (o repositório fixa `bun@1.4.2`)
 - Node.js `>=22.0.0 <23.0.0`
 - PM2, instalado como dependência do workspace
 - `rtk` para executar comandos do repositório

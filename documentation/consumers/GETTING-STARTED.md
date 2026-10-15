@@ -25,7 +25,7 @@ page gets you from zero to a verified first success in under 30 minutes.
 
 | Item | Minimum | How to verify |
 | --- | --- | --- |
-| **Bun** | 1.3.13+ (pinned in the monorepo) | `bun --version` prints `1.3.13` or higher |
+| **Bun** | 1.4.2+ (pinned in the monorepo) | `bun --version` prints `1.4.2` or higher |
 | **Terminal** | Any modern shell | You can run commands in your project folder |
 | **Editor** | VS Code, Cursor, or similar | You can open TypeScript files |
 | **Node.js** | 22.x (optional) | Only needed if a legacy tool still requires Node |
@@ -67,7 +67,7 @@ bun --version
 1. Install Bun (see Prerequisites).
 2. Confirm the version gate passes: `bun --version`.
 
-**Success check:** the command exits 0 and prints a semver ≥ 1.3.13.
+**Success check:** the command exits 0 and prints a semver ≥ 1.4.2.
 
 ### Step 2 — Pick your starting path (< 2 minutes)
 
@@ -226,7 +226,7 @@ Use the Cana playground in Step 5 to run this pattern live.
 
 ## Junior checklist (“I can …”)
 
-- [ ] Install Bun 1.3.13+ and confirm `bun --version`.
+- [ ] Install Bun 1.4.2+ and confirm `bun --version`.
 - [ ] Explain the adapter → application → domain layers using the diagram above.
 - [ ] Run `jumentix init` (or `npx @jumentix/cli-init init`) and locate `.jumentix/project.json`.
 - [ ] Run the Cana playground (**Run** green, **Reset** restores state).

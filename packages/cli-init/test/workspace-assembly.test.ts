@@ -44,7 +44,7 @@ describe('workspace assembly — helpers (JUM-849)', () => {
       version: '0.0.0',
       private: true,
       description: 'Generated Jumentix workspace (my-app)',
-      packageManager: 'bun@1.3.13',
+      packageManager: 'bun@1.4.2',
       workspaces: ['apps/*'],
       scripts: {
         dev: 'bun run --filter \'*\' dev',

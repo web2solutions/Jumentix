@@ -96,7 +96,7 @@ This file consolidates non-functional requirements already requested and stored 
 - `093` Consumer documentation information architecture, bilingual route parity, source synchronization, navigation depth, and publication integrity.
 - `094` Every Linear Project used as an epic must have a dedicated documentation Issue completed before the Project can be completed.
 - `095` Linear as single source of truth with API key security rules.
-- `096` Bun `1.3.13` is the pinned internal package manager and command interface; Node 22 is allowed only at declared compatibility and tool boundaries.
+- `096` Bun `1.4.2` is the pinned internal package manager and command interface; Node 22 is allowed only at declared compatibility and tool boundaries.
 - `097` Linear task and Project metadata lifecycle: agents must maintain valid status, priority, dates, labels, ownership, milestone alignment, and auditable Project Updates from acceptance through completion.
 - `098` Commit, push, and merge authorization is restricted to the project owner and explicitly
   authorized identities; platform protection requires checks but not PR approval.

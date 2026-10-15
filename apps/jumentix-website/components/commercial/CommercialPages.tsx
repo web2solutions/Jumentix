@@ -1152,7 +1152,7 @@ function BunToolingBand({
               )}
             </p>
             <ProofList items={[
-              t(locale, 'Generated projects pin `bun@1.3.13` in `packageManager`, so every machine runs the same version.', 'Projetos gerados pinam `bun@1.3.13` em `packageManager`, então toda máquina roda a mesma versão.'),
+              t(locale, 'Generated projects pin `bun@1.4.2` in `packageManager`, so every machine runs the same version.', 'Projetos gerados pinam `bun@1.4.2` em `packageManager`, então toda máquina roda a mesma versão.'),
               t(locale, '`bun run dev`, `test`, `lint` and `build` run across every app in the workspace.', '`bun run dev`, `test`, `lint` e `build` rodam em todos os apps do workspace.'),
               t(locale, 'Backend services start straight from TypeScript source in development.', 'Serviços backend sobem direto do código TypeScript em desenvolvimento.'),
               t(locale, '`jumentix add`, `upgrade` and `doctor` keep the project growing and current after the first day.', '`jumentix add`, `upgrade` e `doctor` fazem o projeto crescer e seguir atualizado depois do primeiro dia.'),
@@ -1170,7 +1170,7 @@ function BunToolingBand({
         </div>
         <MetricStrip metrics={[
           { value: '1', label: t(locale, 'runtime/package/test/bundle tool', 'ferramenta de runtime/pacote/teste/bundle') },
-          { value: '1.3.13+', label: t(locale, 'pinned Bun version', 'versão Bun pinada') },
+          { value: '1.4.2+', label: t(locale, 'pinned Bun version', 'versão Bun pinada') },
           { value: '4', label: t(locale, 'CLI commands: init, add, upgrade, doctor', 'comandos do CLI: init, add, upgrade, doctor') },
           { value: '14x', label: t(locale, 'faster cold install vs npm, measured on this monorepo', 'install a frio mais rápido vs npm, medido neste monorepo') },
         ]} />

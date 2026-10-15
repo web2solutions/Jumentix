@@ -254,7 +254,7 @@ function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMar
     /uses:\s*actions\/checkout@v5/,
     /ref:\s*\$\{\{ github\.event\.pull_request\.base\.sha \}\}/,
     /persist-credentials:\s*false/,
-    /BUN_VERSION:\s*1\.3\.13/
+    /BUN_VERSION:\s*1\.4\.2/
   ];
   for (const marker of [...commonMarkers, ...requiredMarkers]) {
     if (!marker.test(contents)) failures.push(`${label} is missing ${String(marker)}`);
@@ -385,7 +385,7 @@ function checkBrowserMatrixWorkflow(workflowPathToCheck) {
     /contents:\s*read/,
     /uses:\s*actions\/checkout@v5/,
     /persist-credentials:\s*false/,
-    /BUN_VERSION:\s*1\.3\.13/,
+    /BUN_VERSION:\s*1\.4\.2/,
     /export PATH="\$HOME\/\.bun\/bin:\$PATH"/,
     /install --frozen-lockfile/,
     /bun x cypress install/,
