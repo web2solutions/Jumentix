@@ -33,6 +33,15 @@ function isAutomatedStatusDecoration(comment) {
   return false;
 }
 
+/**
+ * `@dependabot …` command comments (rebase/recreate/merge/…) are bot control
+ * messages, not review feedback. Requiring resolution markers for them fails
+ * every Dependabot PR after a maintainer asks for a rebase (JUM-925 follow-up).
+ */
+function isDependabotCommandComment(comment) {
+  return /^\s*@dependabot\b/i.test((comment?.body || '').trim());
+}
+
 function parseResolutionMarker(body) {
   if (!body?.includes(MARKER_PREFIX)) return null;
 
@@ -135,7 +144,12 @@ function validatePullRequestFeedback({ pullRequestAuthor, comments, reviewThread
     } catch {
       continue;
     }
-    if (marker || isCursorUsageLimitNotice(comment) || isAutomatedStatusDecoration(comment)) continue;
+    if (
+      marker
+      || isCursorUsageLimitNotice(comment)
+      || isAutomatedStatusDecoration(comment)
+      || isDependabotCommandComment(comment)
+    ) continue;
     if (!evidenceByCommentUrl.has(comment.url)) {
       failures.push(`${comment.url}: general PR feedback needs a valid resolved or invalid response marker.`);
     }
@@ -263,6 +277,7 @@ module.exports = {
   isAutomatedStatusDecoration,
   isAuthorizedResolver,
   isCursorUsageLimitNotice,
+  isDependabotCommandComment,
   loadPullRequestFeedback,
   parseArguments,
   parseResolutionMarker,
