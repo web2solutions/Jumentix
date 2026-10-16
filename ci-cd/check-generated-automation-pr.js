@@ -18,6 +18,7 @@ const {
   isGeneratedAppReleaseBranch,
   isGeneratedChangelogSyncBranch,
   isGeneratedPackageBumpBranch,
+  isPullRequest,
   resolveHeadRef,
   resolveBaseRef
 } = require('./classify-ci-context.js');
@@ -105,7 +106,14 @@ function validateGeneratedAutomationPr(options = {}) {
   } else if (isGeneratedChangelogSyncBranch(headRef)) {
     const unexpected = changed.filter((file) => file !== 'CHANGELOG.md');
     if (changed.length === 0) {
-      failures.push('[generated-automation] changelog PR has an empty diff');
+      // sync-changelog pushes the bare main tip, then createCommitOnBranch adds
+      // CHANGELOG.md. CircleCI starts on the empty tip (no PR yet) and must not
+      // fail closed — the signed commit + PR follow in the same workflow
+      // (JUM-929 / chore/changelog-sync-9363a66e). An open PR with an empty
+      // diff is still a real failure.
+      if (isPullRequest(env)) {
+        failures.push('[generated-automation] changelog PR has an empty diff');
+      }
     }
     for (const file of unexpected) {
       failures.push(
@@ -140,6 +148,16 @@ function main(options = {}) {
   if (result.failures.length > 0) {
     for (const failure of result.failures) console.error(failure);
     return 1;
+  }
+  if (
+    isGeneratedChangelogSyncBranch(result.headRef)
+    && result.changedFiles.length === 0
+  ) {
+    console.log(
+      `[generated-automation] ok head=${result.headRef} empty-diff branch-push`
+        + ' (waiting for signed CHANGELOG commit)'
+    );
+    return 0;
   }
   console.log(
     `[generated-automation] ok head=${result.headRef} files=${result.changedFiles.length}`

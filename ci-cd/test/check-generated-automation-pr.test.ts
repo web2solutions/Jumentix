@@ -88,4 +88,28 @@ describe('check-generated-automation-pr', () => {
     expect(result.baseRef).toBe('main');
     expect(result.failures).toStrictEqual([]);
   });
+
+  it('soft-passes empty changelog branch-push before the signed commit lands (JUM-929)', () => {
+    expect.hasAssertions();
+    const branchPush = validateGeneratedAutomationPr({
+      headRef: 'chore/changelog-sync-deadbeef',
+      env: {
+        CIRCLE_BRANCH: 'chore/changelog-sync-deadbeef'
+      },
+      changedFiles: []
+    });
+    expect(branchPush.failures).toStrictEqual([]);
+
+    const openPr = validateGeneratedAutomationPr({
+      headRef: 'chore/changelog-sync-deadbeef',
+      env: {
+        CIRCLE_BRANCH: 'chore/changelog-sync-deadbeef',
+        CIRCLE_PULL_REQUEST: 'https://github.com/web2solutions/Jumentix/pull/673'
+      },
+      changedFiles: []
+    });
+    expect(openPr.failures).toStrictEqual([
+      '[generated-automation] changelog PR has an empty diff'
+    ]);
+  });
 });
