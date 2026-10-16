@@ -4,12 +4,48 @@
 
 ## Unreleased
 
+- 2026-10-14 chore(release): bump packages with unpublished content changes (#649) - Eduardo A.
+
+## v0.5.0 - 2026-10-15
+
+- 2026-10-14 chore(release): v0.5.0 (#648) - Eduardo A.
+- 2026-10-14 [JUM-924][Release] Promote bun Dependabot and simple-git 4.0.2 to main (#640) - Eduardo A.
+- 2026-10-14 [JUM-924][Fix] Stop zoomFluidity CI timeouts under WebKit (#646) - Eduardo A.
+- 2026-10-14 fix(ci): stop zoomFluidity WebKit settle timeouts - Eduardo A.
+- 2026-10-14 [JUM-924][Fix] Finish release gate unblock after #644 (#645) - Eduardo A.
+- 2026-10-14 fix(ci): finish release gate unblock after #644 - Eduardo A.
+- 2026-10-14 [JUM-924][Fix] Unblock release integration and website gates (#644) - Eduardo A.
+- 2026-10-14 fix(ci): unblock destin→main integration and website gates - Eduardo A.
+- 2026-10-14 fix(ci): install Cypress before workspace-tests mono:test (#643) - Eduardo A.
+- 2026-10-14 ci: retrigger destin tip for JUM-924 release checks (#642) - Eduardo A.
+- 2026-10-14 fix(ui): label kitchen-sink entity input for Sonar reliability (#641) - Eduardo A.
+- 2026-10-14 [JUM-924][Release] Resync main into dev + simple-git 4.0.2 (#639) - Eduardo A.
+- 2026-10-14 chore(release): merge main into destin and bump simple-git 4.0.2 - Eduardo A.
+- 2026-10-14 [JUM-924][Release] Sync main into dev before bun Dependabot promotion (#638) - Eduardo A.
+- 2026-10-14 docs(dependabot): document bun root ecosystem and CI path (#637) - Eduardo A.
+- 2026-10-14 [JUM-38][Ci] Close comparative benchmark gap with real Bun vs npm numbers (#609) - Eduardo A.
+- 2026-10-13 Merge remote-tracking branch 'origin/dev' into claude/docs/bun-vs-npm-real-metrics - Eduardo A.
+- 2026-10-13 ci: require coverage gate on every PR to dev (#636) - Eduardo A.
+- 2026-10-13 [JUM-922][Fix] Restore branch coverage gate on dev (#635) - Eduardo A.
 - 2026-10-13 chore(deps): bump source-map-js from 1.2.1 to 1.2.2 in /apps/frontend/template (#627) - dependabot[bot]
 - 2026-10-13 chore(deps): bump @vue/server-renderer and vue in /apps/frontend/template (#626) - dependabot[bot]
 - 2026-10-13 chore(deps): bump next from 16.3.5 to 16.3.6 in /apps/jumentix-website (#577) - dependabot[bot]
+- 2026-10-13 [JUM-919][Security] Make Dependabot PRs runnable and mergeable (#631) - Eduardo A.
+- 2026-10-13 ci: make Dependabot PRs runnable and mergeable - Eduardo A.
+- 2026-10-13 [JUM-918][Feature] Exclusive focus, fluid zoom, relationship editor UX (#630) - Eduardo A.
+- 2026-10-13 ci: harden CircleCI bun install against silent timeouts - Eduardo A.
+- 2026-10-13 fix(deps): pin next override to exact 16.3.8, not a caret range - Eduardo A.
+- 2026-10-13 fix(deps): raise handlebars/next/msgpack5 pins for new OSV-flagged CVEs - Eduardo A.
+- 2026-10-13 feat(designer): exclusive focus, fluid zoom, relationship form UX - Eduardo A.
+- 2026-10-13 Merge branch 'dev' into claude/docs/bun-vs-npm-real-metrics - Eduardo A.
+- 2026-10-11 feat(designer): collision-free edges with Camera3 focus - Eduardo A.
+- 2026-10-06 [JUM-917][Release] Sync main cli-init 0.0.1 bump into den (#629) - Eduardo A.
 - 2026-10-06 chore(release): bump packages with unpublished content changes (#625) - Eduardo A.
+- 2026-10-06 [JUM-917][Release] Sync main package-bump ARG_MAX fix into den (#623) - Eduardo A.
 - 2026-10-06 [JUM-917][Release] Promote package-bump GraphQL stdin commit fix (#622) - Eduardo A.
 - 2026-10-06 [JUM-917][CI] Commit package bumps via GraphQL stdin (fix ARG_MAX) (#621) - Eduardo A.
+- 2026-10-04 Merge remote-tracking branch 'origin/dev' into claude/docs/bun-vs-npm-real-metrics - Eduardo A.
+- 2026-10-04 docs(tooling): close JUM-38 comparative budget with real Bun vs npm numbers - Eduardo A.
 
 ## v0.4.1 - 2026-10-05
 
