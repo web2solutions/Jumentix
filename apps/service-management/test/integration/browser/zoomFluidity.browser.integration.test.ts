@@ -116,7 +116,13 @@ async function waitUserZoomIdle(page: Page, timeoutMs = 12000) {
     await page.waitForTimeout(50);
     probe = await page.evaluate(readZoomProbe);
   }
-  return probe;
+  // Fail closed on destin — never return a still-zooming probe that only
+  // flakes later on main (JUM-929 / CircleCI integration 6386).
+  throw new Error(
+    `waitUserZoomIdle timed out after ${timeoutMs}ms:`
+      + ` userZooming=${probe.userZooming} navigating=${probe.navigating}`
+      + ` zoom=${probe.zoom} camera=${probe.camera}`
+  );
 }
 
 /** Fire N toolbar zoom clicks in-page so CI WebKit does not burn the Jest budget. */
@@ -552,7 +558,8 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
     const duringFocus = await page.evaluate(readZoomProbe);
     await wheelOnCanvas(page, { deltaY: 120, steps: 3 });
     const mid = await page.evaluate(readZoomProbe);
-    const after = await waitUserZoomIdle(page);
+    // Budget covers Camera3 cancel + user-zoom settle ceiling (USER_ZOOM_MAX_MS).
+    const after = await waitUserZoomIdle(page, 20000);
     expect(after.userZooming).toBe(false);
     results.push({
       case: 'interrupt-focus',
