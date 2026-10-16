@@ -4,7 +4,10 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-10-16 [JUM-929][Release] Promote changelog empty-diff and zoom fail-closed fixes to main (#676) - Eduardo A.
+- 2026-10-16 [JUM-929][Chore] Merge main into destin with ancestry after #674 (#675) - Eduardo A.
+- 2026-10-16 Merge remote-tracking branch 'origin/main' into cursor/chore/JUM-929-merge-main-into-dev - Eduardo A.
+- 2026-10-16 [JUM-929][Fix] Stop changelog-sync empty-diff branch-gate race (#674) - Eduardo A.
 
 ## v0.5.1 - 2026-10-16
 
