@@ -215,7 +215,16 @@ jobs:
             exit 1
           fi
           export GH_TOKEN="$CHANGELOG_GH_TOKEN"
-          git push origin "HEAD:refs/heads/$branch"
+          # createCommitOnBranch requires the branch to exist. Creating the ref at
+          # the bare main tip briefly exposes an empty diff to CircleCI; the
+          # generated-automation gate soft-passes that branch-push (JUM-929).
+          # Apply the signed CHANGELOG commit immediately so the PR never opens
+          # against an empty tip.
+          gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/heads/$branch" \
+            -f sha="$GITHUB_SHA" >/dev/null \
+            || gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch" \
+              -f sha="$GITHUB_SHA" -F force=true >/dev/null
           changelog_contents="$(base64 -w 0 CHANGELOG.md)"
           mutation='mutation CreateChangelogCommit($input: CreateCommitOnBranchInput!) {
             createCommitOnBranch(input: $input) {
