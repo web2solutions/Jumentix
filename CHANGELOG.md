@@ -4,6 +4,25 @@
 
 ## Unreleased
 
+- 2026-10-16 [JUM-928][Release] Promote Dependabot batch and CI tip to main (#667) - Eduardo A.
+- 2026-10-16 [JUM-928][Chore] Merge main into destin with ancestry (not squash) (#668) - Eduardo A.
+- 2026-10-16 chore(release): merge main into destin with ancestry for JUM-928 promote - Eduardo A.
+- 2026-10-16 [JUM-928][Chore] Reconcile main into destin for promote - Eduardo A.
+- 2026-10-16 chore(deps-dev): bump happy-dom from 20.14.5 to 21.0.1 (#655) - dependabot[bot]
+- 2026-10-16 chore(deps-dev): bump @vue/compiler-sfc from 3.5.41 to 3.5.43 (#658) - dependabot[bot]
+- 2026-10-15 chore(deps-dev): bump eslint in /apps/frontend/template (#656) - dependabot[bot]
+- 2026-10-15 chore(deps-dev): bump postcss in /apps/frontend/template (#653) - dependabot[bot]
+- 2026-10-15 [JUM-927][Fix] Align react-dom to 19.3.0 with react - Eduardo A.
+- 2026-10-15 chore(deps-dev): bump storybook from 10.6.0 to 10.6.1 (#659) - dependabot[bot]
+- 2026-10-15 chore(deps): bump react and @types/react (#657) - dependabot[bot]
+- 2026-10-15 chore(deps-dev): bump @storybook/addon-docs from 10.6.0 to 10.6.1 (#654) - dependabot[bot]
+- 2026-10-15 chore(deps-dev): bump @typescript-eslint/parser (#652) - dependabot[bot]
+- 2026-10-15 chore(deps): bump @coreui/coreui in /apps/frontend/template (#651) - dependabot[bot]
+- 2026-10-15 chore(deps-dev): bump sass in /apps/frontend/template (#650) - dependabot[bot]
+- 2026-10-15 [JUM-926][Fix] Fail DynamoDB health-check fast without IMDS hang - Eduardo A.
+- 2026-10-15 [JUM-925][Fix] Unblock Dependabot: feedback exemption + destin patch baseline - Eduardo A.
+- 2026-10-15 [JUM-925][Chore] Pin Bun 1.4.2 for Dependabot lockfile v3 (#662) - Eduardo A.
+- 2026-10-15 chore(toolchain): pin Bun 1.4.2 for Dependabot lockfile v3 - Eduardo A.
 - 2026-10-14 chore(release): bump packages with unpublished content changes (#649) - Eduardo A.
 
 ## v0.5.0 - 2026-10-15
