@@ -1,6 +1,6 @@
 {
   "name": "@jumentix/cana-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React hooks and Redux-friendly helpers for @jumentix/cana.",
   "license": "MIT",
   "main": "dist/index.js",
