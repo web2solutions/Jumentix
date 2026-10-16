@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.5.1 - 2026-10-16
+
+- 2026-10-16 chore(release): v0.5.1 (#670) - Eduardo A.
+- 2026-10-16 chore(release): bump packages with unpublished content changes (#671) - Eduardo A.
 - 2026-10-16 [JUM-928][Release] Promote Dependabot batch and CI tip to main (#667) - Eduardo A.
 - 2026-10-16 [JUM-928][Chore] Merge main into destin with ancestry (not squash) (#668) - Eduardo A.
 - 2026-10-16 chore(release): merge main into destin with ancestry for JUM-928 promote - Eduardo A.
