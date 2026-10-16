@@ -128,7 +128,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     /** User wheel/button zoom — snappier than focus framing, still 60FPS smooth. */
     USER_ZOOM_LAMBDA: 14.5,
     USER_ZOOM_ARRIVE: 0.0025,
-    USER_ZOOM_SAVE_MS: 180
+    USER_ZOOM_SAVE_MS: 180,
+    /** Hard ceiling so a stalled RAF under CI load cannot leave data-user-zooming stuck (JUM-929). */
+    USER_ZOOM_MAX_MS: 2500
   };
 
   function modelToCanvasX(x) {
@@ -672,6 +674,26 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     if (minimap) scheduleMiniMapRender();
   }
 
+  function settleUserZoom(rig) {
+    applyAnchoredZoomFrame(
+      rig.targetZoom,
+      rig.anchorModelX,
+      rig.anchorModelY,
+      rig.localX,
+      rig.localY,
+      { minimap: true }
+    );
+    state.view.zoom = clampZoom(rig.targetZoom);
+    userZoom = null;
+    if (dom.canvas) {
+      delete dom.canvas.dataset.userZooming;
+      delete dom.canvas.dataset.zoomDirection;
+      // Keep data-camera only if a focus flight still owns it.
+      if (!camera3) delete dom.canvas.dataset.camera;
+    }
+    scheduleUserZoomSave();
+  }
+
   function tickUserZoom(now) {
     if (!userZoom) return;
     const rig = userZoom;
@@ -705,24 +727,10 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       dom.canvas.dataset.zoomDirection = zoomingIn ? 'in' : zoomingOut ? 'out' : 'pan';
       dom.canvas.dataset.camera = '3';
     }
-    if (Math.abs(rig.targetZoom - rig.liveZoom) <= CAMERA3.USER_ZOOM_ARRIVE) {
-      applyAnchoredZoomFrame(
-        rig.targetZoom,
-        rig.anchorModelX,
-        rig.anchorModelY,
-        rig.localX,
-        rig.localY,
-        { minimap: true }
-      );
-      state.view.zoom = clampZoom(rig.targetZoom);
-      userZoom = null;
-      if (dom.canvas) {
-        delete dom.canvas.dataset.userZooming;
-        delete dom.canvas.dataset.zoomDirection;
-        // Keep data-camera only if a focus flight still owns it.
-        if (!camera3) delete dom.canvas.dataset.camera;
-      }
-      scheduleUserZoomSave();
+    const arrived = Math.abs(rig.targetZoom - rig.liveZoom) <= CAMERA3.USER_ZOOM_ARRIVE;
+    const timedOut = (now - (rig.startedAt || now)) >= CAMERA3.USER_ZOOM_MAX_MS;
+    if (arrived || timedOut) {
+      settleUserZoom(rig);
       return;
     }
     rig.raf = requestAnimationFrame(tickUserZoom);
@@ -769,6 +777,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     userZoom = {
       raf: 0,
       lastTs: performance.now(),
+      startedAt: performance.now(),
       frame: 0,
       liveZoom,
       targetZoom: nextZoom,
