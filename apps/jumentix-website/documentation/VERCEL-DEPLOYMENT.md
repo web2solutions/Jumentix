@@ -45,8 +45,8 @@ bun run website:vercel:link
 Vercel's default Bun image may lag the repo pin (`.bun-version` / `packageManager`).
 `apps/jumentix-website/vercel.json` forces (monorepo-aware from the app Root Directory):
 
-- `installCommand`: `cd ../.. && bunx bun@1.3.13 install --frozen-lockfile`
-- `buildCommand`: `cd ../.. && bunx bun@1.3.13 run website:deps:build && cd apps/jumentix-website && bunx bun@1.3.13 run build`
+- `installCommand`: `cd ../.. && bunx bun@1.4.2 install --frozen-lockfile`
+- `buildCommand`: `cd ../.. && bunx bun@1.4.2 run website:deps:build && cd apps/jumentix-website && bunx bun@1.4.2 run build`
 
 Workspace packages (`@jumentix/cana`, etc.) ship `dist/` gitignored, so Vercel must build
 website deps before the Next.js build.

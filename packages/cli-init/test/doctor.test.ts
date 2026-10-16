@@ -21,7 +21,7 @@ function healthyProbe() {
   return {
     run(command: string) {
       if (command === 'bun') {
-        return { status: 0, stdout: '1.3.13\n', stderr: '' };
+        return { status: 0, stdout: '1.4.2\n', stderr: '' };
       }
       if (command === 'node') {
         return { status: 0, stdout: 'v22.0.0\n', stderr: '' };

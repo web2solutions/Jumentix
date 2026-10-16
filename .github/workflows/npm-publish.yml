@@ -52,7 +52,7 @@ jobs:
           package-manager-cache: false
       - name: Install Bun
         run: |
-          curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.13"
+          curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.2"
           echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Install frozen dependencies
         run: bun install --frozen-lockfile

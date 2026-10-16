@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "f7929b663957ff690357309c12eed49cae98ffcb",
+  "sourceCommit": "7ce1af73b7feab64ab63cad62f296d5055b5d7f2",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -140,19 +140,19 @@
       "source": "apps/backend-template/documentation/README.pt-BR.md"
     },
     "backend/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md": {
-      "sha256": "813ffb1b078de8ff75c367d33a1849e934d4656e2220e9fb955845996cadf431",
+      "sha256": "b65ad232ee9af30025962235095eccd3a2ac5e943a8a02ca338f3ccef948be99",
       "source": "apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.md"
     },
     "backend/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.pt-BR.md": {
-      "sha256": "dcb8b78c9e3febc9b4229ab6cc8901da65428bb4a9f97dd8c3900ffa57694d00",
+      "sha256": "e6919923389a2ab50250b0aadd89d66acf650da6c01cdcdd13cc4deca2aa2488",
       "source": "apps/backend-template/documentation/guides/CREATING-REALTIME-API-WITH-JUMENTIX.pt-BR.md"
     },
     "backend/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md": {
-      "sha256": "dd4e661efb19e124c727999ed0a62a07fcdb6465b372cad715b113d297c967b6",
+      "sha256": "d8980ecd213ff8a165faf0b22fdd9dfa15d27cde4ff4cd29cdab5c68e1d428ab",
       "source": "apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.md"
     },
     "backend/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.pt-BR.md": {
-      "sha256": "0fc19c69c562a2880949d0a3b20400716c621ea40b5bb0f6d00f751ec9797845",
+      "sha256": "a3e91929d7c9f0fd45634c15c5208133769c48901f4dd4c588b26262e384442d",
       "source": "apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.pt-BR.md"
     },
     "backend/package.json": {
@@ -3632,7 +3632,7 @@
       "source": "apps/frontend/cypress/tsconfig.json"
     },
     "frontend/e2e/Dockerfile.backend": {
-      "sha256": "72d7d3b1616b574889b38630f5b5712d58181570fc7ed07dfe1167b83ef9d014",
+      "sha256": "3bba9958712b3f2fab4ee9e0696d2d995797362e3ceeaa52358482c2d2c977a3",
       "source": "apps/frontend/e2e/Dockerfile.backend"
     },
     "frontend/e2e/docker-compose.yml": {
@@ -3648,7 +3648,7 @@
       "source": "apps/frontend/index.html"
     },
     "frontend/package.json": {
-      "sha256": "46b78f07ec27e854818cbde6ca0b94d0e3728e2a8037facc74dfab87c53f67e1",
+      "sha256": "6eddd7ee9cfba2714488c77de8aa42af0e2299d4cf51cc453fd484bac88a4f9f",
       "source": "apps/frontend/package.json"
     },
     "frontend/public/android-icon-144x144.png": {

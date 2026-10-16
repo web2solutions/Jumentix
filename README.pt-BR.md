@@ -21,7 +21,7 @@ Jumentix e uma fabrica de software de codigo aberto para equipes que criam produ
 [![Cobertura SonarCloud dev](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsonarcloud.io%2Fapi%2Fmeasures%2Fcomponent%3Fcomponent%3Dweb2solutions_Jumentix%26metricKeys%3Dcoverage%26branch%3Ddev&query=%24.component.measures%5B0%5D.value&label=Sonar%20cobertura%20dev&suffix=%25&color=yellow)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=dev)
 [![Qualidade SonarCloud main](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=alert_status&branch=main)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=main)
 [![Confiabilidade SonarCloud main](https://sonarcloud.io/api/project_badges/measure?project=web2solutions_Jumentix&metric=reliability_rating&branch=main)](https://sonarcloud.io/summary/new_code?id=web2solutions_Jumentix&branch=main)
-[![Bun](https://img.shields.io/badge/bun-1.3.13-000000?logo=bun&logoColor=white)](https://bun.sh/)
+[![Bun](https://img.shields.io/badge/bun-1.4.2-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![Compatibilidade Node](https://img.shields.io/badge/node%20compat-22.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](./spec/1.0.0.yml)
 [![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.0-9146FF)](./spec)

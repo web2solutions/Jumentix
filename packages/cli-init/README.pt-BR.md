@@ -16,7 +16,7 @@ bun install
 bun run dev
 ```
 
-Requer [Bun](https://bun.sh) 1.3.13 ou mais novo. O Docker é opcional e só é
+Requer [Bun](https://bun.sh) 1.4.2 ou mais novo. O Docker é opcional e só é
 usado quando o projeto roda um servidor de banco de dados ou Redis.
 
 ## Comandos

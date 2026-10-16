@@ -178,7 +178,7 @@ export function buildRootPackageJson(projectName: string): Record<string, unknow
     version: '0.0.0',
     private: true,
     description: `Generated Jumentix workspace (${name})`,
-    packageManager: 'bun@1.3.13',
+    packageManager: 'bun@1.4.2',
     workspaces: ['apps/*'],
     scripts: {
       dev: 'bun run --filter \'*\' dev',

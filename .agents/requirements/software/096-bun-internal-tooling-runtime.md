@@ -6,7 +6,7 @@
 
 ## Requirement
 
-1. Bun `1.3.13` is the pinned internal package manager and repository command
+1. Bun `1.4.2` is the pinned internal package manager and repository command
    interface for installation, tooling, builds, tests, CI/CD, and release work.
 2. Installs use committed `bun.lock` with `bun install --frozen-lockfile` in CI.
 3. TypeScript typechecking and repository quality gates remain mandatory.

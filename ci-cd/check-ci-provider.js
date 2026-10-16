@@ -109,6 +109,7 @@ if (!fs.existsSync(workflowPath)) {
     /bun run coverage:patch/,
     /JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
     /JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/,
+    /GITHUB_BASE_REF.*=.*"dev"[\s\S]*JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/,
     /startsWith\(github\.head_ref, 'chore\/changelog-sync-'\)/,
     /startsWith\(github\.head_ref, 'chore\/package-bump-'\)/,
     /startsWith\(github\.head_ref, 'chore\/release-v'\)/,
@@ -254,7 +255,7 @@ function checkTrustedPullRequestWorkflow(workflowPathToCheck, label, requiredMar
     /uses:\s*actions\/checkout@v5/,
     /ref:\s*\$\{\{ github\.event\.pull_request\.base\.sha \}\}/,
     /persist-credentials:\s*false/,
-    /BUN_VERSION:\s*1\.3\.13/
+    /BUN_VERSION:\s*1\.4\.2/
   ];
   for (const marker of [...commonMarkers, ...requiredMarkers]) {
     if (!marker.test(contents)) failures.push(`${label} is missing ${String(marker)}`);
@@ -385,7 +386,7 @@ function checkBrowserMatrixWorkflow(workflowPathToCheck) {
     /contents:\s*read/,
     /uses:\s*actions\/checkout@v5/,
     /persist-credentials:\s*false/,
-    /BUN_VERSION:\s*1\.3\.13/,
+    /BUN_VERSION:\s*1\.4\.2/,
     /export PATH="\$HOME\/\.bun\/bin:\$PATH"/,
     /install --frozen-lockfile/,
     /bun x cypress install/,
@@ -512,6 +513,11 @@ if (fs.existsSync(circleciPath)) {
   if (!/JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/.test(circleCoverageBlock)) {
     failures.push(
       'CircleCI coverage must use origin/dev as the patch baseline for dev→main promotions'
+    );
+  }
+  if (!/\[ "\$BASE_REF" = "dev" \][\s\S]*JUMENTIX_PATCH_BASE_REF=origin\/dev bun run coverage:patch/.test(circleCoverageBlock)) {
+    failures.push(
+      'CircleCI coverage must use origin/dev as the patch baseline for task/Dependabot PRs into dev'
     );
   }
   if (!/JUMENTIX_PATCH_BASE_REF=origin\/main bun run coverage:patch/.test(circleCoverageBlock)) {
