@@ -125,6 +125,12 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     ARRIVE_PAN: 0.4,
     MINIMAP_EVERY_N: 2,
     FPS_EMA_ALPHA: 0.12,
+    /**
+     * Hard ceiling for focus/fit Camera3 flights. Under CI WebKit load every
+     * rAF can look like a micro-frame, so the chase never advances and
+     * data-navigating stays true forever (CircleCI 6575/6581, JUM-930).
+     */
+    MAX_MS: 3000,
     /** User wheel/button zoom — snappier than focus framing, still 60FPS smooth. */
     USER_ZOOM_LAMBDA: 14.5,
     USER_ZOOM_ARRIVE: 0.0025,
@@ -697,6 +703,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   function tickUserZoom(now) {
     if (!userZoom) return;
     const rig = userZoom;
+    // Ceiling must run even when every rAF is treated as a micro-frame skip.
+    if ((now - (rig.startedAt || now)) >= CAMERA3.USER_ZOOM_MAX_MS) {
+      settleUserZoom(rig);
+      return;
+    }
     let dtMs = now - (rig.lastTs || now);
     rig.lastTs = now;
     if (dtMs > 0 && dtMs < CAMERA3.FRAME_MS * 0.55) {
@@ -727,9 +738,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       dom.canvas.dataset.zoomDirection = zoomingIn ? 'in' : zoomingOut ? 'out' : 'pan';
       dom.canvas.dataset.camera = '3';
     }
-    const arrived = Math.abs(rig.targetZoom - rig.liveZoom) <= CAMERA3.USER_ZOOM_ARRIVE;
-    const timedOut = (now - (rig.startedAt || now)) >= CAMERA3.USER_ZOOM_MAX_MS;
-    if (arrived || timedOut) {
+    if (Math.abs(rig.targetZoom - rig.liveZoom) <= CAMERA3.USER_ZOOM_ARRIVE) {
       settleUserZoom(rig);
       return;
     }
@@ -928,6 +937,11 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
   function tickCamera3(now) {
     if (!camera3) return;
     const rig = camera3;
+    // Ceiling must run even when every rAF is treated as a micro-frame skip.
+    if ((now - (rig.startedAt || now)) >= CAMERA3.MAX_MS) {
+      settleCamera3(rig);
+      return;
+    }
     let dtMs = now - (rig.lastTs || now);
     rig.lastTs = now;
     // Skip micro-frames (display > 60Hz) to keep work near TARGET_FPS budget.
@@ -990,6 +1004,8 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       camera3.targetCx = toCx;
       camera3.targetCy = toCy;
       camera3.onComplete = typeof onComplete === 'function' ? onComplete : null;
+      // Continuous focus retargets must not inherit the first-gesture ceiling.
+      camera3.startedAt = performance.now();
       const zoomingIn = toZoom > camera3.liveZoom + 0.02;
       const zoomingOut = toZoom < camera3.liveZoom - 0.02;
       dom.canvas.dataset.navigating = 'true';
@@ -1009,6 +1025,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     camera3 = {
       raf: 0,
       lastTs: performance.now(),
+      startedAt: performance.now(),
       frame: 0,
       fpsEma: CAMERA3.TARGET_FPS,
       onComplete: typeof onComplete === 'function' ? onComplete : null,
