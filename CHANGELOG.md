@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.5.3 - 2026-10-17
+
+- 2026-10-17 chore(release): v0.5.3 (#687) - Eduardo A.
 - 2026-10-17 [JUM-931][Release] Promote Camera3 settle fix to main (#685) - Eduardo A.
 - 2026-10-17 [JUM-931][Chore] Merge main into destin with ancestry after #683 (#684) - Eduardo A.
 - 2026-10-17 chore(release): merge main into destin with ancestry for JUM-931 promote - Eduardo A.
