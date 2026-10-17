@@ -4,6 +4,14 @@
 
 ## Unreleased
 
+- 2026-10-17 [JUM-931][Release] Promote Camera3 settle fix to main (#685) - Eduardo A.
+- 2026-10-17 [JUM-931][Chore] Merge main into destin with ancestry after #683 (#684) - Eduardo A.
+- 2026-10-17 chore(release): merge main into destin with ancestry for JUM-931 promote - Eduardo A.
+- 2026-10-17 [JUM-930][Fix] Force-settle Camera3 so zoomFluidity cannot redden main/dev (#683) - Eduardo A.
+
+## v0.5.2 - 2026-10-16
+
+- 2026-10-16 chore(release): v0.5.2 (#679) - Eduardo A.
 - 2026-10-16 [JUM-929][Release] Promote changelog empty-diff and zoom fail-closed fixes to main (#676) - Eduardo A.
 - 2026-10-16 [JUM-929][Chore] Merge main into destin with ancestry after #674 (#675) - Eduardo A.
 - 2026-10-16 Merge remote-tracking branch 'origin/main' into cursor/chore/JUM-929-merge-main-into-dev - Eduardo A.
