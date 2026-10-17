@@ -103,10 +103,12 @@ async function hardReload(page: Page, baseUrl: string) {
 }
 
 async function waitUserZoomIdle(page: Page, timeoutMs = 12000) {
+  // Camera3.MAX_MS (3000) + USER_ZOOM_MAX_MS (2500) + quiet window + CI slack.
+  const budget = Math.max(timeoutMs, 8000);
   const started = Date.now();
   let probe = await page.evaluate(readZoomProbe);
   let stableSince = Date.now();
-  while (Date.now() - started < timeoutMs) {
+  while (Date.now() - started < budget) {
     if (!probe.userZooming && !probe.navigating) {
       // Require a short quiet window so CI does not sample mid-frame.
       if (Date.now() - stableSince >= 120) return probe;
@@ -116,10 +118,9 @@ async function waitUserZoomIdle(page: Page, timeoutMs = 12000) {
     await page.waitForTimeout(50);
     probe = await page.evaluate(readZoomProbe);
   }
-  // Fail closed on destin — never return a still-zooming probe that only
-  // flakes later on main (JUM-929 / CircleCI integration 6386).
+  // Fail closed — never return a still-busy probe that only flakes on main.
   throw new Error(
-    `waitUserZoomIdle timed out after ${timeoutMs}ms:`
+    `waitUserZoomIdle timed out after ${budget}ms:`
       + ` userZooming=${probe.userZooming} navigating=${probe.navigating}`
       + ` zoom=${probe.zoom} camera=${probe.camera}`
   );
