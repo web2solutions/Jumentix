@@ -31,7 +31,7 @@ um release público no npm.
 | Integração com a factory de clientes Jumentix | Completa, testada |
 | Empacotamento (CJS/ESM duplo, tipos, licença) | Completo, testado |
 | Documentação (projeto, uso, EN + PT-BR) | Completa |
-| Concordância diferencial com o Dexie | Completa, 18/18 concordam, no navegador |
+| Concordância diferencial (dual-Cana + fixtures) | Completa, 18/18 concordam, no navegador |
 | **Conformidade entre navegadores** | **Completa — 284/284 no Chrome, Firefox e WebKit** |
 | Desempenho com volume real de dados | Forma de complexidade medida em navegador real; latência absoluta não |
 | Verificação em CI de qualquer item acima | **Roda a cada push/PR pela matriz de cobertura** |
@@ -49,7 +49,7 @@ suítes do cana             278 passaram, 16 suítes
 cobertura do fonte cana    98,15 stmts / 93,01 branch / 97,61 funcs / 99,15 lines
 eslint (cana + testes)     0 problemas
 tsc --noEmit               passa
-diferencial vs Dexie       18/18 concordam
+diferencial fixtures       18/18 concordam
 ```
 
 ### A cobertura não é exigida para este pacote
@@ -154,8 +154,9 @@ O formato duplo não é otimização. O Cana é uma biblioteca de navegador, e u
 pacote só-CommonJS não pode ser carregado por um `import` nativo — a página de
 conformidade demonstrou isso concretamente antes de o build ESM ser adicionado.
 
-O Dexie aparece apenas em `devDependencies`, como oráculo diferencial. Não é
-dependência de runtime, e um teste garante que nunca se torne uma.
+O Cana tem **zero** dependências de runtime; testes de packaging garantem que a
+lista permanece vazia. A cobertura diferencial usa só clientes Cana e fixtures
+congeladas.
 
 ---
 

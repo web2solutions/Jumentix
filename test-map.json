@@ -5970,8 +5970,8 @@
       "timeoutMs": 300000
     },
     {
-      "id": "packages/cana/cypress/differential-dexie.cy.ts",
-      "path": "packages/cana/cypress/differential-dexie.cy.ts",
+      "id": "packages/cana/cypress/differential-fixtures.cy.ts",
+      "path": "packages/cana/cypress/differential-fixtures.cy.ts",
       "layer": "browser-harness",
       "kind": "non-hexagonal",
       "type": "integration",
