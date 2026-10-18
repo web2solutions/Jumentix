@@ -14,4 +14,4 @@ Data entities and domain model field schemas must stay aligned with OpenAPI 3.1 
 ## Verification
 - Unit tests must cover valid and invalid field/entity schema paths.
 - CLI tests must cover interactive schema selection and validation scenarios.
-- CI coverage threshold policy remains mandatory (`>= 95%` global statements/lines and configured branch threshold).
+- CI coverage threshold policy remains mandatory (`>= 98%` on statements, lines, functions and branches, per Requirement `063` and `ci-cd/check-coverage-thresholds.js`).

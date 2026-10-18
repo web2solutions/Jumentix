@@ -4,7 +4,7 @@
 The local modeling application must evolve from single-purpose Domain Designer into a broader service-management suite.
 
 ## Rules
-1. Folder name must be `servicemangement` (as requested) and must host the management UI.
+1. The management UI lives in `apps/service-management` (originally the root `servicemangement` folder, re-homed by JUM-80).
 2. The application must expose tabbed sections:
    - Domain Designer
    - Communication Interface Designer
@@ -14,5 +14,5 @@ The local modeling application must evolve from single-purpose Domain Designer i
 4. New tabs must persist basic user-defined configuration in local state.
 
 ## Implementation Notes
-- Static app entrypoint: `servicemangement/index.html`.
-- Existing ER modeling behavior remains in `servicemangement/script.js`.
+- Static app entrypoint: `apps/service-management/index.html`.
+- Existing ER modeling behavior remains in `apps/service-management/script.js`.

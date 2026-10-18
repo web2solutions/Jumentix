@@ -11,8 +11,8 @@ VM-hosted environments (`dev`, `staging`, `production`) must use PM2 as the offi
    - `websocketAPI + RESTAPI`
    - `grpcAPI + RESTAPI`
 2. In VM environments, `RESTAPI`, `websocketAPI`, and `grpcAPI` must run as separated PM2 processes (no shared in-process bootstrap coupling).
-3. `servicemangement` must be served by PM2.
-4. Dev startup must automatically include the `servicemangement` PM2 process.
+3. `apps/service-management` must be served by PM2.
+4. Dev startup must automatically include the Service Management PM2 process (`jumentix-dev-service-management`).
 5. PM2 ecosystem files must exist for:
    - `dev`
    - `staging`
