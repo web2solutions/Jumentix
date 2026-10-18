@@ -16,7 +16,7 @@ An engineering agent is supported by this repository when all of the following h
 4. It commits with an identity authorized in `.agents/AUTHORIZED-COMMITTERS.json`
    (Requirement `111`).
 5. Its task branches use the declared `branchPrefix` in the form
-   `<prefix>/<nature>/<issue-id>-<short-slug>` (Requirement `122`).
+   `<prefix>/<nature>/<issue-id>-<short-slug>` (Requirement `086`).
 
 ## Declaration file
 
@@ -67,7 +67,7 @@ No edit to `ci-cd/check-pr-governance.js` is required.
 - `077` Multi-agent platform support
 - `089` Agent registry external single source of truth (Firestore)
 - `111` Authorized commit identities
-- `122` Task-owned branch and PR naming governance
+- `086` Task-owned branch and PR naming governance (supersedes the retired `122`)
 - `125` Agent support declaration
 
 ## Evidence

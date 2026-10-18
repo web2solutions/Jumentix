@@ -21,7 +21,7 @@ verdadeiros:
 4. Commita com uma identidade autorizada em `.agents/AUTHORIZED-COMMITTERS.json`
    (Requisito `111`).
 5. Suas branches de tarefa usam o `branchPrefix` declarado no formato
-   `<prefix>/<nature>/<issue-id>-<short-slug>` (Requisito `122`).
+   `<prefix>/<nature>/<issue-id>-<short-slug>` (Requisito `086`).
 
 ## Arquivo de declaração
 
@@ -74,7 +74,7 @@ Nenhuma alteração em `ci-cd/check-pr-governance.js` é necessária.
 - `077` Suporte a múltiplas plataformas de agentes
 - `089` Registro de agentes externo como fonte única de verdade (Firestore)
 - `111` Identidades de commit autorizadas
-- `122` Governança de nomenclatura de branches e PRs por tarefa
+- `086` Governança de nomenclatura de branches e PRs por tarefa (substitui o `122`, aposentado)
 - `125` Declaração de agentes suportados
 
 ## Evidências

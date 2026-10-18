@@ -114,11 +114,13 @@ Causa:
   o artefato dos testes unitários
 
 Padrão atual:
-- statements: `99%`
-- linhas: `99%`
-- funções: `99%`
-- branches: `90%`
+- statements: `98%`
+- linhas: `98%`
+- funções: `98%`
+- branches: `98%`
 - linhas alteradas: `99%`
+
+A autoridade é `ci-cd/check-coverage-thresholds.js` (JUM-681). O registro de exceções `ACCEPTED_BELOW_THRESHOLD` está vazio.
 
 Consertar:
 
@@ -181,7 +183,32 @@ Se necessário, verifique as chaves ambientais usadas pelos testes:
 - `JUMENTIX_REDIS_PASSWORD`
 - `JUMENTIX_JWT_TOKEN_SECRET_KEY`
 
-## 8) Fluxo rápido de diagnóstico local
+## 8) `deps:audit` falha localmente em um pacote que o `bun.lock` não resolve mais
+
+Sintomas:
+- `pre-commit` ou `pre-push` para em `deps:audit` com advisories `FATAL <pacote>@<versão>`
+- o mesmo commit passa no CI, e `grep '<pacote>@<versão>' bun.lock` não encontra nada
+
+Causa:
+- `packages/security-scanner/audit.js` audita cada entrada de `node_modules/.bun` — os pacotes realmente instalados, não uma tradução do lockfile. Um checkout que passou para um `dev` mais novo mantém entradas do store da instalação anterior. Uma entrada que o lockfile não resolve mais é órfã: nada a importa, mas o audit ainda a lê. O CI instala do zero, então não tem órfãs.
+
+Consertar (só local; nada muda no repositório):
+
+```bash
+bun install --frozen-lockfile
+ls node_modules/.bun | grep '^<pacote>@'
+```
+
+Se a versão antiga ainda aparecer e o `bun.lock` não a contiver, remova só esse diretório do store e rode o audit de novo:
+
+```bash
+rm -rf node_modules/.bun/<pacote>@<versão>
+bun run deps:audit
+```
+
+Não adicione o advisory a `ACCEPTED_RISK` por causa de uma órfã: a árvore instalada não é afetada. Se o `bun.lock` resolver a versão vulnerável, o achado é real — suba o pin.
+
+## 9) Fluxo rápido de diagnóstico local
 
 Execute esta sequência para isolar rapidamente os estágios do portão com falha:
 

@@ -2846,6 +2846,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/jest-config-discovery.test.ts",
+      "path": "ci-cd/test/jest-config-discovery.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-dependency-override-integrity.test.ts",
       "path": "ci-cd/test/check-dependency-override-integrity.test.ts",
       "layer": "tooling",

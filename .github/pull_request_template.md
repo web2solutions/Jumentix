@@ -185,8 +185,8 @@ Codecov, human, and all other bot feedback require resolution evidence.
 
 ### Coverage
 
-- Project coverage >= 95%: [ ] Yes [ ] No
-- Patch coverage >= 95%: [ ] Yes [ ] No
+- Project coverage >= 98% (all four metrics): [ ] Yes [ ] No
+- Patch coverage >= 99% (changed lines): [ ] Yes [ ] No
 - Codecov status passing: [ ] Yes [ ] No
 
 ### SonarQube Cloud

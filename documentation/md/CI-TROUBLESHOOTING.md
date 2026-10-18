@@ -110,11 +110,13 @@ Cause:
   unit-test artifact
 
 Current standard:
-- statements: `99%`
-- lines: `99%`
-- functions: `99%`
-- branches: `90%`
+- statements: `98%`
+- lines: `98%`
+- functions: `98%`
+- branches: `98%`
 - changed lines: `99%`
+
+The authority is `ci-cd/check-coverage-thresholds.js` (JUM-681). Its `ACCEPTED_BELOW_THRESHOLD` exception register is empty.
 
 Fix:
 
@@ -176,7 +178,32 @@ If needed, verify env keys used by tests:
 - `JUMENTIX_REDIS_PASSWORD`
 - `JUMENTIX_JWT_TOKEN_SECRET_KEY`
 
-## 8) Fast local diagnosis flow
+## 8) `deps:audit` fails locally on a package `bun.lock` no longer resolves
+
+Symptoms:
+- `pre-commit` or `pre-push` stops at `deps:audit` with `FATAL <package>@<version>` advisories
+- the same commit passes in CI, and `grep '<package>@<version>' bun.lock` finds nothing
+
+Cause:
+- `packages/security-scanner/audit.js` audits every entry in `node_modules/.bun` — the packages actually installed, not a lockfile translation. A checkout that moved to a newer `dev` keeps store entries from its previous install. An entry the lockfile no longer resolves is an orphan: nothing imports it, but the audit still reads it. CI installs from scratch, so it has no orphans.
+
+Fix (local only; nothing in the repository changes):
+
+```bash
+bun install --frozen-lockfile
+ls node_modules/.bun | grep '^<package>@'
+```
+
+If the old version is still listed and `bun.lock` does not contain it, remove that one store directory and re-run the audit:
+
+```bash
+rm -rf node_modules/.bun/<package>@<version>
+bun run deps:audit
+```
+
+Do not add the advisory to `ACCEPTED_RISK` for an orphan: the installed tree is not affected. If `bun.lock` does resolve the vulnerable version, the finding is real — raise the pin.
+
+## 9) Fast local diagnosis flow
 
 Run this sequence to isolate failing gate stages quickly:
 

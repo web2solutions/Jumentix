@@ -37,8 +37,8 @@ provider plans.
 - **Codecov publishing:** the full coverage job uploads LCOV after local
   project and patch thresholds pass. Codecov is the coverage dashboard, not the
   threshold authority.
-- **SonarQube Cloud:** the scanner runs after full coverage on release/main
-  contexts and reads the same LCOV paths declared in
+- **SonarQube Cloud:** the scanner runs after full coverage on every PR to `dev` or
+  `main` and on `dev`/`main` pushes and reads the same LCOV paths declared in
   `sonar-project.properties`.
 - **GitGuardian/Cursor Bugbot/Vercel:** these remain optional external
   visibility or deployment surfaces. Required evidence stays in repository

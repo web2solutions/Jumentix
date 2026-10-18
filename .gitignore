@@ -173,3 +173,6 @@ apps/service-management/vendor/
 
 # Backend dev SQLite databases (JUMENTIX_DATABASE_DRIVER=sqlite)
 localhost/
+
+# Agent git worktrees of this repository (Claude desktop: .claude/worktrees/<name>)
+.claude/worktrees/

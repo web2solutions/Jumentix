@@ -15,7 +15,7 @@ Date: `2026-08-05`
 
 Notes:
 
-1. Duplicate IDs `055`, `060`, and `079` were resolved by renumbering the secondary files to `122`, `123`, and `124`; dev branch requirements `120` and `121` are kept as-is.
+1. Duplicate IDs `055`, `060`, and `079` were resolved by renumbering the secondary files to `122`, `123`, and `124`; dev branch requirements `120` and `121` are kept as-is. `122` was retired on 2026-10-18 (JUM-933) as a duplicate of `086`; its file remains as a pointer.
 2. Requirements are now physically separated into `project/` (governance/process) and `software/` (product/technical).
 3. Coverage is measured by unique requirement IDs and by mandatory artifact linkage in the ledger.
 

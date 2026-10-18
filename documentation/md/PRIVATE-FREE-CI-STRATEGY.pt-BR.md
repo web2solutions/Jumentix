@@ -49,8 +49,7 @@ agendado noturno do CircleCI ou em execuções completas manuais.
 
 ## Contrato de cobertura
 
-- Statements, linhas e funções: 99%.
-- Branches: 90%.
+- Statements, linhas, funções e branches: 98% (`ci-cd/check-coverage-thresholds.js`, JUM-681).
 - Linhas alteradas: 99%.
 - O CircleCI retém evidência JSON/LCOV e envia LCOV ao Codecov
   quando o job completo `coverage` roda; o fallback do GitHub Actions faz o

@@ -1,41 +1,22 @@
-# Requirement 122 - Task-Owned Branch and PR Naming Governance
+# Requirement 122 - Task-Owned Branch and PR Naming Governance (Retired)
 
-## Context
+## Status
 
-Jumentix delivery must keep each tracked task independently reviewable, auditable, and reversible.
-Sharing a branch or pull request across unrelated tasks obscures ownership, evidence, and rollback boundaries.
-Branch names and pull request titles must also identify the nature of the change at a glance.
+Retired 2026-10-18 (JUM-933, owner decision). Superseded by Requirement `086`.
 
-## Mandatory Rules
+## Why
 
-1. Every Linear Issue executed as a task must have its own branch and its own pull request.
-2. A branch or pull request must not contain work for more than one task, even when tasks share a priority.
-3. Codex-created branches must use `codex/<nature>/<issue-id>-<short-slug>`.
-4. Other automation or human workflows may replace `codex` with their approved actor prefix, but the `<nature>/<issue-id>-<short-slug>` portion remains mandatory.
-5. Pull request titles must use `[JUM-XXXX][<Nature>] <concise outcome>`, beginning with the
-   identifier of the single Linear Issue delivered by the PR.
-6. Allowed nature values are `feature`, `fix`, `security`, `governance`, `docs`, `refactor`, `test`, `ci`, `release`, and `chore`.
-7. The title identifier, branch identifier, and linked Linear Issue identifier must match.
-8. The branch nature and pull request title nature must describe the same change category.
-9. Exceptions require explicit approval recorded in the linked issue and pull request.
+This file was created when duplicate ID `079` was renumbered. Every rule it
+carried — one task per branch and PR, the `<agent>/<nature>/<issue-id>-<slug>`
+branch format, the `[JUM-XXXX][<Nature>]` PR title, the allowed natures, the
+matching identifier and nature, and recorded exceptions — is stated in
+Requirement `086`, which adds the `dev`-first promotion path and the
+destination-aware gates. Two files stating the same rule are two places to
+update and one place to forget.
 
-## Examples
+## Rule
 
-- Branch: `codex/governance/JUM-133-task-branch-pr-naming`
-- Pull request: `[JUM-133][Governance] Enforce task-owned branches and pull requests`
-- Branch: `codex/ci/JUM-134-prevent-false-green-integration-tests`
-- Pull request: `[JUM-134][CI] Prevent false-green integration test results`
-
-## Acceptance Criteria
-
-1. Governance specs define the one-task/one-branch/one-PR rule and naming contract.
-2. Pull request templates require the branch name, matching Linear identifier, PR nature, and
-   one-task isolation attestation.
-3. Gate 5 treats missing task isolation or invalid naming as a merge blocker.
-4. Requirement registry, NFR registry, traceability ledger, coverage status, and bilingual documentation remain synchronized.
-
-## Evidence and Scope
-
-- Applies to human and AI delivery across the monorepo.
-- Evidence includes the linked issue, task-owned branch, task-owned pull request, naming fields, and validation results.
-- Complements requirements `056`, `057`, `064`, `067`, `068`, `071`, `072`, `073`, and `076`.
+Apply
+[Requirement 086](086-task-owned-branch-and-pr-naming-governance.md). This file
+keeps the ID reserved and gives references that still name `122` a pointer; it
+adds no obligation of its own. Do not cite `122` in new text.

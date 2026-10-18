@@ -71,6 +71,12 @@ module.exports = {
     '@jumentix/(.*)$': '<rootDir>/packages/$1/src',
   },
   testPathIgnorePatterns: [
+    // Agent tooling keeps git worktrees of this repository under `.claude/`
+    // (Claude desktop: `.claude/worktrees/<name>`). Jest reads path arguments
+    // as regexes, so a selected `packages/x/test/a.test.ts` also matched the
+    // copy inside a sibling worktree, which ran against an unbuilt tree and
+    // failed the task gate (JUM-933).
+    '<rootDir>/\\.claude/',
     ...unsupportedRuntimeIgnorePatterns,
     ...redisIntegrationIgnorePatterns
   ],
@@ -81,7 +87,7 @@ module.exports = {
   // Scope the dot-directories to the repo root and escape the dot. ('dist'
   // stays a bare substring on purpose: it also keeps node_modules build
   // output out of the haste crawl.)
-  modulePathIgnorePatterns: ['dist', '<rootDir>/\\.build', '<rootDir>/\\.serverless', '<rootDir>/\\.resources'],
+  modulePathIgnorePatterns: ['dist', '<rootDir>/\\.build', '<rootDir>/\\.serverless', '<rootDir>/\\.resources', '<rootDir>/\\.claude'],
   coveragePathIgnorePatterns: [
     // packages/ is excluded except cana/src, which this epic added with 293 tests.
     // Sonar reads this lcov, so an excluded path reports as 0% covered on new code

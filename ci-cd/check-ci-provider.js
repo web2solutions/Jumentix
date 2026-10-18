@@ -451,6 +451,15 @@ if (fs.existsSync(circleciPath)) {
     /sonar:check-reliability/,
     /-Dsonar\.branch\.name/,
     /-Dsonar\.pullrequest\.key/,
+    // Req 113: reliability-A is enforced inside coverage for every PR to dev,
+    // not only release promotions to main (JUM-933). Both the scan and the
+    // enforcement step must select pull-request analysis for a dev base.
+    /\[ "\$BASE" = "main" \] \|\| \[ "\$BASE" = "dev" \]; \}; then\n\s+# PR to dev or main/,
+    /\[ "\$BASE" = "main" \] \|\| \[ "\$BASE" = "dev" \]; \}; then\n\s+SONAR_PULL_REQUEST=/,
+    // Frontend subjects are selected from the same diff the patch gate
+    // measures; for a task PR to dev that is origin/dev, not origin/main.
+    /if \[ "\$\{JUMENTIX_PR_BASE_REF:-\}" = "dev" \]; then export JUMENTIX_PATCH_BASE_REF=origin\/dev; fi\n\s+if bun ci-cd\/needs-frontend-patch-coverage\.js; then\n\s+bun run mono:build/,
+    /if \[ "\$\{JUMENTIX_PR_BASE_REF:-\}" = "dev" \]; then export JUMENTIX_PATCH_BASE_REF=origin\/dev; fi\n\s+if bun ci-cd\/needs-frontend-patch-coverage\.js; then\n\s+bun run frontend:test:coverage/,
     /browser-matrix:/,
     /report-sonar-findings\.js/,
     /force_full/,

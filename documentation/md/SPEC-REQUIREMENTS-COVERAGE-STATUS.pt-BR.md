@@ -19,7 +19,7 @@ Data: `2026-08-05`
 
 Notas:
 
-1. IDs duplicados `055`, `060` e `079` foram resolvidos renumerando os arquivos secundários para `122`, `123` e `124`; os requisitos `120` e `121` da branch `dev` são mantidos inalterados.
+1. IDs duplicados `055`, `060` e `079` foram resolvidos renumerando os arquivos secundários para `122`, `123` e `124`; os requisitos `120` e `121` da branch `dev` são mantidos inalterados. O `122` foi aposentado em 2026-10-18 (JUM-933) como duplicata do `086`; o arquivo permanece como ponteiro.
 2. Requisitos agora estão fisicamente separados em `project/` (governança/processo) e `software/` (produto/técnico).
 3. A cobertura é medida por IDs de requisitos exclusivos e por vinculação obrigatória de artefatos no razão.
 

@@ -4,7 +4,7 @@
 - Nature: NFR (governance, multi-agent operations)
 - Source: Project owner decision, 2026-08-05 (JUM-604).
 - Relates to: `077` (multi-agent platform support), `089` (agent registry single source of truth),
-  `111` (authorized commit identities), `122` (branch and PR naming governance).
+  `111` (authorized commit identities), `086` (branch and PR naming governance; formerly `122`).
 
 ## Context
 
@@ -31,7 +31,7 @@ agents is data, and adding the next agent must be a data change rather than a co
      pattern of the other platform files;
    - the agent is registered in the canonical Firestore agent registry under Requirement `089`;
    - the agent commits with an identity authorized under Requirement `111`;
-   - the agent's task branches use the declared `branchPrefix` and satisfy Requirement `122`.
+   - the agent's task branches use the declared `branchPrefix` and satisfy Requirement `086`.
 5. Adding support for a new agent must require only a declaration entry plus its instructions
    file and registry record — no code change to the governance gate.
 

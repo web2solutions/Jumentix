@@ -627,6 +627,40 @@ describe('check-ci-provider', () => {
     expect(run(directory).output).toContain('must run inside the coverage job');
   });
 
+  it('fails when CircleCI coverage skips Sonar for pull requests to dev', () => {
+    expect.hasAssertions();
+
+    // The shape that shipped before JUM-933: only release PRs to main were
+    // analysed, so a task PR to dev passed coverage with Sonar never running.
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(
+        file,
+        fs.readFileSync(file, 'utf8').split('{ [ "$BASE" = "main" ] || [ "$BASE" = "dev" ]; }').join('[ "$BASE" = "main" ]')
+      );
+    });
+    const result = run(directory);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain('# PR to dev or main');
+    expect(result.output).toContain('SONAR_PULL_REQUEST=');
+  });
+
+  it('fails when frontend coverage subjects are selected against main for a dev PR', () => {
+    expect.hasAssertions();
+
+    // Before JUM-933 the selector defaulted to origin/main while the patch
+    // gate measured origin/dev, so the two read different diffs.
+    // Shell parameter expansion, not a JS template: assembled so it stays literal.
+    const devBaseExport = `if [ "$${'{'}JUMENTIX_PR_BASE_REF:-}" = "dev" ]; then export JUMENTIX_PATCH_BASE_REF=origin/dev; fi\n`;
+    const directory = fixture((root) => {
+      const file = path.join(root, '.circleci/config.yml');
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8').split(devBaseExport).join(''));
+    });
+    const result = run(directory);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain('needs-frontend-patch-coverage');
+  });
+
   it('fails when the Sonar scanner partial-clone guard is removed', () => {
     expect.hasAssertions();
 

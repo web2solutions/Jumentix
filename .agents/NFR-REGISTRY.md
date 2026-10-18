@@ -200,7 +200,7 @@ This file consolidates non-functional requirements already requested and stored 
   starting or resuming work, avoiding silent overlap or duplicate delivery.
 - `129` Agents must publish and consume the Firebase RTDB agent progress bus for
   machine-readable peer sync; Firestore remains ownership SSOT (`089` / `121`).
-- `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
+- `122` Retired 2026-10-18 (JUM-933): duplicate of `086`, which carries every rule; the file remains as a pointer.
 - `124` Monorepo root layout governance (migrated from duplicate `060`).
 - `125` Supported agents are declared as data in `.agents/supported-agents.json`; the PR
   governance gate derives task-branch prefixes from the declaration, verifies each declared

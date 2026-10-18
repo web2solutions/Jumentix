@@ -37,8 +37,8 @@ para open source.
 - **Publicação Codecov:** o job completo de cobertura envia LCOV depois que os
   thresholds locais de projeto e patch passam. Codecov é dashboard, não
   autoridade de threshold.
-- **SonarQube Cloud:** o scanner roda depois da cobertura completa nos contextos
-  de release/main e lê os mesmos caminhos LCOV declarados em
+- **SonarQube Cloud:** o scanner roda depois da cobertura completa em toda PR para `dev`
+  ou `main` e em pushes para `dev`/`main` e lê os mesmos caminhos LCOV declarados em
   `sonar-project.properties`.
 - **GitGuardian/Cursor Bugbot/Vercel:** continuam como visibilidade externa ou
   superfícies de deploy opcionais. A evidência obrigatória permanece nos

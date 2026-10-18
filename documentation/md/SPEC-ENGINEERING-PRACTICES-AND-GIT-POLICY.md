@@ -70,4 +70,4 @@ Primary enforcement sources:
 4. `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
 5. `.agents/requirements/project/065-commit-push-integrity-and-real-ci-enforcement.md`
 6. `.agents/requirements/project/067-bidirectional-task-pr-traceability-governance.md`
-7. `.agents/requirements/project/122-task-owned-branch-and-pr-naming-governance.md`
+7. `.agents/requirements/project/086-task-owned-branch-and-pr-naming-governance.md`

@@ -407,6 +407,9 @@ jobs:
             # Version-only / non-frontend patches skip this build — frontend
             # coverage is only needed when the patch has apps/frontend subjects
             # (JUM-889). Keep this step name for check-ci-provider.
+            # Same diff the patch gate measures: a task PR to dev is its own
+            # patch, not dev-vs-main history (JUM-933).
+            if [ "${JUMENTIX_PR_BASE_REF:-}" = "dev" ]; then export JUMENTIX_PATCH_BASE_REF=origin/dev; fi
             if bun ci-cd/needs-frontend-patch-coverage.js; then
               bun run mono:build
             else
@@ -416,6 +419,9 @@ jobs:
           name: Produce frontend coverage for the patch report
           command: |
             source "$BASH_ENV"
+            # Same diff the patch gate measures: a task PR to dev is its own
+            # patch, not dev-vs-main history (JUM-933).
+            if [ "${JUMENTIX_PR_BASE_REF:-}" = "dev" ]; then export JUMENTIX_PATCH_BASE_REF=origin/dev; fi
             if bun ci-cd/needs-frontend-patch-coverage.js; then
               bun run frontend:test:coverage
               # JUM-903: the frontend threshold check lived only in ci:gate,
@@ -496,10 +502,11 @@ jobs:
             test -n "${SONAR_TOKEN:-}"
             PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
             BASE="${JUMENTIX_PR_BASE_REF:-}"
-            if [ -n "${CIRCLE_PULL_REQUEST:-}" ] && [ "$BASE" = "main" ]; then
-              # Release promotion PR: submit a pull-request analysis; the target
-              # branch's measures are stale for PR code (mirrors the retired
-              # GitHub sonar-reliability workflow and ci.yml semantics).
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ] && { [ "$BASE" = "main" ] || [ "$BASE" = "dev" ]; }; then
+              # PR to dev or main: submit a pull-request analysis; the target
+              # branch's measures are stale for PR code (mirrors the GitHub
+              # sonar-reliability fallback). Req 113 requires reliability-A inside
+              # coverage for every PR to dev (JUM-933).
               sonar-scanner -Dsonar.scm.disabled=true \
                 -Dsonar.pullrequest.key="$PR_NUMBER" \
                 -Dsonar.pullrequest.branch="${CIRCLE_BRANCH}" \
@@ -507,7 +514,7 @@ jobs:
             elif [ "${CIRCLE_BRANCH:-}" = "main" ] || [ "${CIRCLE_BRANCH:-}" = "dev" ]; then
               sonar-scanner -Dsonar.scm.disabled=true -Dsonar.branch.name="${CIRCLE_BRANCH}"
             else
-              echo "Skipping Sonar scan for ${CIRCLE_BRANCH:-unknown}; Sonar analyses main, dev, and release PRs only."
+              echo "Skipping Sonar scan for ${CIRCLE_BRANCH:-unknown}; Sonar analyses main, dev, and PRs to dev or main only."
               exit 0
             fi
       - run:
@@ -525,7 +532,7 @@ jobs:
             source "$BASH_ENV"
             PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
             BASE="${JUMENTIX_PR_BASE_REF:-}"
-            if [ -n "${CIRCLE_PULL_REQUEST:-}" ] && [ "$BASE" = "main" ]; then
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ] && { [ "$BASE" = "main" ] || [ "$BASE" = "dev" ]; }; then
               SONAR_PULL_REQUEST="$PR_NUMBER" bun run sonar:check-reliability
             elif [ "${CIRCLE_BRANCH:-}" = "main" ] || [ "${CIRCLE_BRANCH:-}" = "dev" ]; then
               SONAR_BRANCH="${CIRCLE_BRANCH}" bun run sonar:check-reliability
