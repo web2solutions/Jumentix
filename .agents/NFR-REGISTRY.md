@@ -177,6 +177,10 @@ This file consolidates non-functional requirements already requested and stored 
   task-branch *pushes* stay change-focused. Release promotion to `main` runs the
   full matrix (coverage, Codecov, Sonar, website, integration, workspace,
   database). SonarQube Cloud and Codecov run on CircleCI without interruption.
+  A halted CircleCI job reports success, so outside a PR context the classifier
+  fails (never halts) every job a PR from that head would require, and
+  `resolve_pr_metadata` resolves the open PR by branch when CircleCI omits it
+  (JUM-936; rule 14).
 - `114` Agent onboard uses an operator-confirmed filesystem root (this host:
   `/Users/eduardoalmeida/apps/XpertMinds`) and the layout
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.

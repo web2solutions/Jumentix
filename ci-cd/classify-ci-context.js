@@ -138,6 +138,33 @@ function isDependabotBranch(headRef) {
   return /^dependabot\//i.test(String(headRef || '').trim());
 }
 
+function isReleasePromotionHead(headRef) {
+  return headRef === 'dev'
+    || isSignedDevPromotionBranch(headRef)
+    || isGeneratedChangelogSyncBranch(headRef)
+    || isGeneratedPackageBumpBranch(headRef)
+    || isGeneratedAppReleaseBranch(headRef)
+    || isDependabotBranch(headRef);
+}
+
+/**
+ * Jobs that a pull request opened from `headRef` would require.
+ *
+ * CircleCI reports a halted job as `ci/circleci: <job>` = success on the head
+ * SHA, and opening a PR starts no new pipeline. So a push pipeline that halts
+ * one of these jobs leaves a green the PR's branch protection accepts without
+ * the suite having run (PR #693 to `dev`; PRs #685 and #691 to `main`).
+ * Outside a PR context these jobs must fail, never halt (Requirement 113 §12).
+ */
+function pullRequestJobsForHead(headRef) {
+  if (!headRef || headRef === 'main') return [];
+  // Release heads (and Dependabot, whose security updates target `main`) take
+  // the release set, which already contains every job a PR to `dev` requires.
+  return selectedJobsFor(isReleasePromotionHead(headRef)
+    ? CONTEXTS.RELEASE_PR_TO_MAIN
+    : CONTEXTS.TASK_PR_TO_DEV);
+}
+
 function classifyCiContext(options = {}) {
   const env = options.env || process.env;
   const cwd = options.cwd || process.cwd();
@@ -153,17 +180,7 @@ function classifyCiContext(options = {}) {
     if (!baseRef) {
       throw new Error('[ci-context] pull request context is missing the base branch');
     }
-    if (
-      baseRef === 'main'
-      && (
-        headRef === 'dev'
-        || isSignedDevPromotionBranch(headRef)
-        || isGeneratedChangelogSyncBranch(headRef)
-        || isGeneratedPackageBumpBranch(headRef)
-        || isGeneratedAppReleaseBranch(headRef)
-        || isDependabotBranch(headRef)
-      )
-    ) {
+    if (baseRef === 'main' && isReleasePromotionHead(headRef)) {
       context = CONTEXTS.RELEASE_PR_TO_MAIN;
     } else if (baseRef === 'dev') {
       context = CONTEXTS.TASK_PR_TO_DEV;
@@ -193,6 +210,7 @@ function classifyCiContext(options = {}) {
     baseRef,
     diffBaseRef,
     selectedJobs,
+    pullRequestRequiredJobs: pullRequest ? [] : pullRequestJobsForHead(headRef),
     changedFiles: readChangedFiles(diffBaseRef, { ...options, cwd })
   };
 }
@@ -237,6 +255,16 @@ function runCli(argv = process.argv, env = process.env) {
   console.log(JSON.stringify(evidence, null, 2));
 
   if (args.requireJob && !jobSelected(evidence, args.requireJob)) {
+    if (evidence.pullRequestRequiredJobs.includes(args.requireJob)) {
+      console.error(
+        `[ci-context] ${args.requireJob} is required on pull requests from ${evidence.headRef}, `
+        + `but no open pull request was resolved for this ${evidence.context} pipeline. `
+        + 'Failing instead of halting: a halted job reports success and would satisfy the '
+        + 'required check without running its suite (Requirement 113 §12). '
+        + 'Open the pull request, then re-run this workflow.'
+      );
+      return 1;
+    }
     console.log(`[ci-context] job skipped for ${evidence.context}: ${args.requireJob}`);
     return 78;
   }
@@ -261,6 +289,7 @@ module.exports = {
   isScheduled,
   jobSelected,
   parseArgs,
+  pullRequestJobsForHead,
   readChangedFiles,
   resolveDiffBaseRef,
   resolveBaseRef,

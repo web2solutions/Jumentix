@@ -2,7 +2,7 @@
 
 - Status: Active
 - Nature: NFR (CI/CD, security, coverage, governance)
-- Source: Project owner decision, 2026-08-01; amended 2026-08-03 after GitHub Actions billing stopped hosted execution; amended 2026-08-09 to keep task delivery to `dev` under a cheap layer-aware gate; amended 2026-08-09 to restore GitHub Actions and disable CircleCI; amended 2026-09-13 after transfer to the public `web2solutions/Jumentix` repository to re-enable free open-source GitHub Actions, CircleCI, Codecov and SonarQube Cloud integrations; amended 2026-09-23 (owner decision, epic `[EPIC][CI] CircleCI as canonical CI; GitHub Actions minimal and reversible`, JUM-872..JUM-881) to make CircleCI the canonical orchestrator and to retain GitHub Actions disabled by default behind a single reversible flag; amended 2026-10-13 (JUM-923) to require the CircleCI `coverage` job on every PR to `dev` so coverage-red tips cannot land (Requirement `020`).
+- Source: Project owner decision, 2026-08-01; amended 2026-08-03 after GitHub Actions billing stopped hosted execution; amended 2026-08-09 to keep task delivery to `dev` under a cheap layer-aware gate; amended 2026-08-09 to restore GitHub Actions and disable CircleCI; amended 2026-09-13 after transfer to the public `web2solutions/Jumentix` repository to re-enable free open-source GitHub Actions, CircleCI, Codecov and SonarQube Cloud integrations; amended 2026-09-23 (owner decision, epic `[EPIC][CI] CircleCI as canonical CI; GitHub Actions minimal and reversible`, JUM-872..JUM-881) to make CircleCI the canonical orchestrator and to retain GitHub Actions disabled by default behind a single reversible flag; amended 2026-10-13 (JUM-923) to require the CircleCI `coverage` job on every PR to `dev` so coverage-red tips cannot land (Requirement `020`); amended 2026-10-18 (JUM-936, epic `[EPIC][Ci] Truthful CircleCI required-check states`) after classifier-halted jobs satisfied required checks on PR #693 to `dev` and on PRs #685 and #691 to `main`.
 - Amends: `107` CircleCI redundancy.
 - Replaces: `014` external Codecov dependency with repository-owned coverage gates plus public Codecov publishing.
 
@@ -35,7 +35,9 @@
    visibility, but Codecov is not the coverage authority and cannot weaken
    repository-owned thresholds.
 7. CircleCI workflows are enabled for the public repository and must halt
-   non-selected heavy jobs before starting costly work.
+   non-selected heavy jobs before starting costly work. Halting is allowed only
+   for a job that no pull request from the pipeline's head can require
+   (rule 14): CircleCI reports a halted job as `ci/circleci: <job>` = success.
 8. SonarQube Cloud and Codecov run on CircleCI and must keep running without a
    gap at every point of the CircleCI-canonical rollout; no change may merge if
    it interrupts either integration's history.
@@ -46,6 +48,19 @@
 11. The CircleCI `coverage` job (`test:coverage` + `coverage:check` + patch coverage when applicable, plus Codecov/Sonar publishing) runs for every PR to `dev`, every push to `dev`, `dev -> main` release promotions, `main` pushes, and scheduled/manual full runs. Soft-skipping coverage on task PRs is forbidden: a skipped or synthetic-green coverage check must never unblock a merge to `dev` (Requirement `020`). Local `ci:gate` and task-branch push gates may stay change-focused; they are not the production coverage authority.
 12. Pending, skipped, missing, timed-out, cancelled, quota-blocked, or provider-inaccessible checks are never passing.
 13. No `--no-verify`, admin bypass, force merge, swallowed failure, or synthetic green is allowed.
+14. A halted CircleCI job is a synthetic green. Outside a pull-request
+    context, `ci-cd/classify-ci-context.js` fails — never halts — every job a
+    pull request from the pipeline's head would require: the PR-to-`dev` set
+    for task branches, and the release-to-`main` set for `dev`, signed
+    promotion, generated changelog/package/app-release and Dependabot heads.
+    Only `main`, which is never a PR head, halts its unselected jobs. When
+    CircleCI provides no `CIRCLE_PULL_REQUEST`, `ci-cd/resolve-pr-metadata.js`
+    resolves the single open PR for the branch through the GitHub API (and
+    exports `CIRCLE_PULL_REQUEST` for later steps); an API failure or more than
+    one open PR fails closed. Opening a PR starts no new pipeline, so a PR
+    opened after its push pipeline classified shows those checks as failed
+    until the workflow is re-run, which then resolves the PR and runs the
+    suites.
 
 ## Required CI plan
 
@@ -59,6 +74,7 @@
 ## Verification
 
 - `bun run ci:check-provider`
+- `bun test ci-cd/test/classify-ci-context.test.ts ci-cd/test/resolve-pr-metadata.test.ts` (rule 14 negative controls: a push-context PR-required job must exit `1`, not `78`)
 - `bun run integrations:check`
 - Full-suite `coverage` job on PRs/pushes to `dev` and during release/main/scheduled contexts: `bun run test:coverage && bun run coverage:check && bun run coverage:patch`, followed by Codecov upload and SonarQube Cloud scan.
 - Required protected-branch PR checks for `dev` are the CircleCI check contexts `ci/circleci: branch-gate`, `ci/circleci: third-party-review`, `ci/circleci: browser-matrix`, and `ci/circleci: coverage`, plus the always-on GitHub Actions `pr-feedback` checks; the CircleCI `coverage` job subsumes `sonar-reliability` per rule 8/9. Release/main checks additionally use the CircleCI contexts `ci/circleci: workspace-builds`, `ci/circleci: workspace-tests`, `ci/circleci: integration`, `ci/circleci: website`, and `ci/circleci: database-matrix` (coverage is already required). When `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` is set to `'true'`, the GitHub Actions jobs with the same names run as the equivalent fallback checks.
