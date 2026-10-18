@@ -12,5 +12,5 @@ Domain Designer must model data entities and fields in a way that is compatible 
 ## Implementation Notes
 - Domain Designer is a modeling tool and contract assistant; it must reduce drift between model intent and API specification.
 - Changes to supported field metadata must be reflected in:
-  - `servicemangement/README.md`
+  - `apps/service-management/README.md`
   - project docs under `documentation/md/`

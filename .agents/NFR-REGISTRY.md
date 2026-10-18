@@ -132,7 +132,7 @@ This file consolidates non-functional requirements already requested and stored 
   identical behaviour — the AdonisJS adapter passed every test while integrating nothing.
 - `110` `bun:test` is the test runner; Jest is retained solely as the coverage
   instrument, because Bun emits no branch records at all and Requirements 020/063 mandate
-  90% branch coverage. `ci-cd/check-coverage-thresholds.js` is the
+  a branch threshold (98% since JUM-681). `ci-cd/check-coverage-thresholds.js` is the
   authority on all four metrics, reading Istanbul's report rather than lcov (which has no
   statement counter) and failing closed on any it cannot measure. A metric may sit below its
   threshold only under a dated, issue-tracked exception that ratchets: below its floor fails,
@@ -157,7 +157,7 @@ This file consolidates non-functional requirements already requested and stored 
   unparseable declaration (Requirement 065).
 
 - `112` Every workspace package and app owns a test suite covering its own source, at
-  the project's 99% standard. Coverage borrowed from a consumer measures the consumer: a
+  the project coverage threshold (98% on all four metrics, Requirement 063). Coverage borrowed from a consumer measures the consumer: a
   library exercised only by an application's tests is not tested, and the break surfaces
   three layers up where the reader starts at the wrong end. Packages do not depend on one
   another's suites in the development workflow — a commit runs the affected suites, and the

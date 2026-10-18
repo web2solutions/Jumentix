@@ -8,7 +8,7 @@ Guide and validate Domain Designer evolution as a feature-driven ER modeling too
 - OpenAPI 3.1-aware schema modeling support
 - Model validation guardrails and productivity flows
 - MVP backlog tracking and delivery state in Linear
-- Documentation synchronization across `servicemangement/README.md`, `README.md`, and `documentation/md/`
+- Documentation synchronization across `apps/service-management/README.md`, `README.md`, and `documentation/md/`
 
 ## Working rules
 - Keep Domain Designer changes focused on modeling productivity and contract consistency.

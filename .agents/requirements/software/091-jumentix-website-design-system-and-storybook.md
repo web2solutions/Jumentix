@@ -30,8 +30,8 @@ code-first explanations, and future growth without page-level UI duplication.
    viewports, and public static assets.
 10. Reduced-motion preferences, visible keyboard focus, semantic landmarks, labelled controls,
     readable contrast, and non-overlapping responsive layouts are mandatory.
-11. Storybook output is generated, must not be committed, and must be reproducible from the pnpm
-    workspace lockfile.
+11. Storybook output is generated, must not be committed, and must be reproducible from the committed
+    `bun.lock` workspace lockfile (Requirement `096`).
 12. Root and website package scripts must expose Storybook development, build, and smoke checks.
 13. Storybook smoke validation must inspect the generated story index and fail when required
     foundation stories or the expected minimum inventory are missing.

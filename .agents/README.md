@@ -88,15 +88,10 @@ See also:
 - [122-task-owned-branch-and-pr-naming-governance](requirements/project/122-task-owned-branch-and-pr-naming-governance.md)
 - [124-monorepo-root-layout-governance](requirements/project/124-monorepo-root-layout-governance.md)
 - [125-agent-support-declaration](requirements/project/125-agent-support-declaration.md)
+- [127-mandatory-rtk-and-caveman-agent-sessions](requirements/project/127-mandatory-rtk-and-caveman-agent-sessions.md)
+- [128-requirement-changes-release-precedence](requirements/project/128-requirement-changes-release-precedence.md)
 - [129-mandatory-firebase-agent-bus](requirements/project/129-mandatory-firebase-agent-bus.md)
 - [130-measured-claims-and-bounded-work](requirements/project/130-measured-claims-and-bounded-work.md)
-- [131-built-artifacts-carry-source-exports](requirements/software/131-built-artifacts-carry-source-exports.md)
-- [132-no-orphaned-published-artifacts](requirements/software/132-no-orphaned-published-artifacts.md)
-- [133-declared-indexes-for-ordered-queries](requirements/software/133-declared-indexes-for-ordered-queries.md)
-- [134-no-flaky-tests](requirements/software/134-no-flaky-tests.md)
-- [135-no-fake-tests](requirements/software/135-no-fake-tests.md)
-- [136-frontend-knows-backend-only-through-oas](requirements/software/136-frontend-knows-backend-only-through-oas.md)
-- [137-workspace-suite-and-tooling-ownership](requirements/software/137-workspace-suite-and-tooling-ownership.md)
 
 ## Software and Product Requirements
 
@@ -150,8 +145,13 @@ See also:
 - [115-functional-value-tests-no-fakes-no-third-party-api](requirements/software/115-functional-value-tests-no-fakes-no-third-party-api.md)
 - [118-smoke-integration-docker-real-services](requirements/software/118-smoke-integration-docker-real-services.md)
 - [126-service-management-ownership-and-public-contracts](requirements/software/126-service-management-ownership-and-public-contracts.md)
-- [127-mandatory-rtk-and-caveman-agent-sessions](requirements/project/127-mandatory-rtk-and-caveman-agent-sessions.md)
-- [128-requirement-changes-release-precedence](requirements/project/128-requirement-changes-release-precedence.md)
+- [131-built-artifacts-carry-source-exports](requirements/software/131-built-artifacts-carry-source-exports.md)
+- [132-no-orphaned-published-artifacts](requirements/software/132-no-orphaned-published-artifacts.md)
+- [133-declared-indexes-for-ordered-queries](requirements/software/133-declared-indexes-for-ordered-queries.md)
+- [134-no-flaky-tests](requirements/software/134-no-flaky-tests.md)
+- [135-no-fake-tests](requirements/software/135-no-fake-tests.md)
+- [136-frontend-knows-backend-only-through-oas](requirements/software/136-frontend-knows-backend-only-through-oas.md)
+- [137-workspace-suite-and-tooling-ownership](requirements/software/137-workspace-suite-and-tooling-ownership.md)
 
 ## Other Registry Files
 

@@ -81,12 +81,12 @@ per integration, not a parallel test suite per dependency.
 
 ## Relationship to other requirements
 
-- `106` — adapters must integrate their framework. That is a static check on the
-  source; this is the runtime counterpart. `106` catches a swallowed require by
-  reading the file; `107` catches an integration that silently degrades at
+- `108` — adapters must integrate their framework. That is a static check on the
+  source; this is the runtime counterpart. `108` catches a swallowed require by
+  reading the file; `109` catches an integration that silently degrades at
   runtime for any other reason.
 - `065` — fail-closed, no false greens. A suite that cannot distinguish real from
   fake is a false green with extra steps.
-- `057` / coverage policy — the 100% integration figure is stricter than the
+- `063` / coverage policy — the 100% integration figure is stricter than the
   global threshold, deliberately: integration tests are the only place the
   substitution is visible at all.
