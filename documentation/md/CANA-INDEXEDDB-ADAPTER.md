@@ -227,19 +227,19 @@ more coverage than they represent.
 | Query performance at scale | **Not measured.** `explain()` proves the plan, not wall-clock cost |
 | Production quota exhaustion on a filled origin | Policy and mapping are tested; filling a real origin quota in CI is not |
 
-### On Dexie (JUM-399 — closed)
+### Independence (JUM-399 — closed)
 
-Cana is an independent implementation. It shares no code with Dexie, and no
-Dexie source is vendored, bundled or referenced by this package.
+Cana is an independent IndexedDB engine implementation. No third-party IndexedDB
+library source is vendored, bundled, or referenced by this package at runtime.
 
-The project owner has determined that no licensing restriction applies to Cana
-and closed JUM-399 on that basis. This is recorded as the owner's decision; it
-is not a legal analysis by the engineering agent that wrote this code, which is
-not qualified to give one.
+The project owner closed JUM-399 on that basis. This is recorded as the owner's
+decision; it is not a legal analysis by the engineering agent that wrote this
+code.
 
-If Dexie is ever used for comparison — the differential harness in JUM-561 is the
-one planned case — it enters as an ordinary dev-time dependency under its own
-Apache-2.0 terms, and nothing from it is copied into this package.
+Differential coverage for JUM-561 lives in
+`packages/cana/cypress/differential-fixtures.cy.ts`: golden fixtures plus two
+independent Cana clients on the browser's IndexedDB. No external engine is a
+dependency of that harness.
 
 ## 6. Related requirements
 

@@ -230,19 +230,20 @@ uma cobertura maior do que realmente representam.
 | Desempenho de consultas em escala | **Não medido.** `explain()` prova o plano, não o custo de parede |
 | Esgotamento real de cota em origem cheia | Política e mapeamento testados; encher cota real em CI não |
 
-### Sobre o Dexie (JUM-399 — encerrado)
+### Independência (JUM-399 — encerrado)
 
-O Cana é uma implementação independente. Não compartilha código com o Dexie, e
-nenhum fonte do Dexie é embutido, empacotado ou referenciado por este pacote.
+O Cana é uma implementação independente de IndexedDB. Nenhum fonte de biblioteca
+IndexedDB de terceiros é embutido, empacotado ou referenciado por este pacote em
+runtime.
 
-O dono do projeto determinou que nenhuma restrição de licenciamento se aplica ao
-Cana e encerrou o JUM-399 com base nisso. Isto fica registrado como decisão do
-dono; não é uma análise jurídica do agente de engenharia que escreveu este
-código, que não tem qualificação para emiti-la.
+O dono do projeto encerrou o JUM-399 com base nisso. Isto fica registrado como
+decisão do dono; não é uma análise jurídica do agente de engenharia que escreveu
+este código.
 
-Se o Dexie vier a ser usado para comparação — o harness diferencial do JUM-561 é
-o único caso previsto — ele entra como dependência comum de desenvolvimento sob
-os próprios termos Apache-2.0, e nada dele é copiado para dentro deste pacote.
+A cobertura diferencial do JUM-561 vive em
+`packages/cana/cypress/differential-fixtures.cy.ts`: fixtures douradas e dois
+clientes Cana independentes no IndexedDB do navegador. Nenhum motor externo é
+dependência desse harness.
 
 ## 6. Requisitos relacionados
 
