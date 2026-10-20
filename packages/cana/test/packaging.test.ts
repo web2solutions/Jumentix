@@ -210,8 +210,7 @@ describe('cana packaging manifest', () => {
   it('has no runtime dependencies', () => {
     expect.hasAssertions();
     // Cana is a from-scratch engine. A runtime dependency appearing here would
-    // mean something was pulled in without the decision being made — Dexie in
-    // particular is a dev-time oracle only and must never reach this list.
+    // mean something was pulled in without the decision being made.
     expect(runtimeDependencies).toStrictEqual([]);
   });
 

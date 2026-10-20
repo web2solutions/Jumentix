@@ -80,7 +80,6 @@
         "cypress-axe": "^1.7.0",
         "cz-conventional-changelog": "^3.3.0",
         "derby": "^4.2.3",
-        "dexie": "^4.4.4",
         "eslint": "^8.57.1",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-import-resolver-alias": "^1.1.2",
@@ -106,7 +105,7 @@
     },
     "apps/backend-template": {
       "name": "@jumentix/backend-template",
-      "version": "0.4.1",
+      "version": "0.5.3",
       "dependencies": {
         "@jumentix/adapter-runtime-bootstrap": "workspace:*",
         "@jumentix/database-client-factory": "workspace:*",
@@ -123,7 +122,7 @@
     },
     "apps/frontend": {
       "name": "@jumentix/frontend",
-      "version": "0.4.1",
+      "version": "0.5.3",
       "dependencies": {
         "@coreui/chartjs": "^4.2.0",
         "@coreui/coreui": "^5.6.1",
@@ -168,7 +167,7 @@
     },
     "apps/jumentix-website": {
       "name": "@jumentix/website",
-      "version": "0.4.1",
+      "version": "0.5.3",
       "dependencies": {
         "@jumentix/cana": "workspace:*",
         "@jumentix/designer-core": "workspace:*",
@@ -227,7 +226,7 @@
     },
     "apps/service-management": {
       "name": "@jumentix/service-management",
-      "version": "0.4.1",
+      "version": "0.5.3",
       "dependencies": {
         "d3": "^7.9.0",
         "requirejs": "^2.3.8",
@@ -236,7 +235,7 @@
     },
     "apps/service-management-api": {
       "name": "@jumentix/service-management-api",
-      "version": "0.4.1",
+      "version": "0.5.3",
     },
     "packages/adapter-runtime-bootstrap": {
       "name": "@jumentix/adapter-runtime-bootstrap",
@@ -257,11 +256,11 @@
     },
     "packages/cana": {
       "name": "@jumentix/cana",
-      "version": "0.1.1",
+      "version": "0.1.2",
     },
     "packages/cana-react": {
       "name": "@jumentix/cana-react",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "@jumentix/cana": "workspace:*",
         "@types/react": "19.3.0",
@@ -292,7 +291,7 @@
     },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
-      "version": "0.0.1",
+      "version": "0.0.4",
       "bin": {
         "cli-init": "./bin/jumentix.js",
         "jumentix": "./bin/jumentix.js",
@@ -2755,8 +2754,6 @@
     "detect-node-es": ["detect-node-es@1.1.0", "", {}, "sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ=="],
 
     "devlop": ["devlop@1.1.0", "", { "dependencies": { "dequal": "^2.0.0" } }, "sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA=="],
-
-    "dexie": ["dexie@4.4.6", "", {}, "sha512-hJP/BO6mjB+tX6hToIO1kmxYLNmun90wYbfcoAoLpKEyDYal/k33dg0TAfoUe2TDsbbLoVIzljJ3BN2UbR5EOg=="],
 
     "dezalgo": ["dezalgo@1.0.4", "", { "dependencies": { "asap": "^2.0.0", "wrappy": "1" } }, "sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig=="],
 

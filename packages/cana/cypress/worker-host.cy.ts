@@ -2,10 +2,9 @@
 /*
  * The rule asks for `await expect(promise).resolves`, which is the one form
  * that does not work here. Under `bun test`, .resolves on a promise settled by
- * a MessagePort message deadlocks until the request timeout fires, and on a
- * Dexie thenable it is rejected outright as "not a promise". Awaiting first and
- * asserting on the value is equivalent in strength and passes under both
- * runners (JUM-584).
+ * a MessagePort message deadlocks until the request timeout fires. Awaiting
+ * first and asserting on the value is equivalent in strength and passes under
+ * both runners (JUM-584).
  */
 import type { CanaSchema } from '../src';
 import {
