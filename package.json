@@ -401,7 +401,7 @@
     "cypress-axe": "^1.7.0",
     "cz-conventional-changelog": "^3.3.0",
     "derby": "^4.2.3",
-    "dexie": "^4.4.4",
+
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-import-resolver-alias": "^1.1.2",

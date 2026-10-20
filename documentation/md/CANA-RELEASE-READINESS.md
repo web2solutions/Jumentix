@@ -30,7 +30,7 @@ in-memory shim can produce and which is the only thing standing between
 | Jumentix client-factory integration | Complete, tested |
 | Packaging (dual CJS/ESM, types, licence) | Complete, tested |
 | Documentation (design, usage, EN + PT-BR) | Complete |
-| Differential agreement with Dexie | Complete, 18/18 agree, in-browser |
+| Differential fixtures (dual-Cana + golden tables) | Complete, 18/18 agree, in-browser |
 | **Cross-browser conformance** | **Complete — 284/284 on Chrome, Firefox and WebKit** |
 | Performance under real data volume | Complexity shape measured in a real browser; absolute latency not |
 | CI verification of any of the above | **Runs on every push/PR via the coverage matrix** |
@@ -48,7 +48,7 @@ cana suites                278 passed, 16 suites
 cana source coverage       98.15 stmts / 93.01 branch / 97.61 funcs / 99.15 lines
 eslint (cana + tests)      0 problems
 tsc --noEmit               pass
-differential vs Dexie      18/18 agree
+differential fixtures      18/18 agree
 ```
 
 ### Coverage is not enforced for this package
@@ -151,8 +151,8 @@ The dual format is not an optimisation. Cana is a browser library, and a
 CommonJS-only package cannot be loaded by a native `import` at all — the
 conformance page demonstrated that concretely before the ESM build was added.
 
-Dexie appears only in `devDependencies`, as the differential oracle. It is not a
-runtime dependency and a test asserts that it never becomes one.
+Cana has **no** runtime dependencies; packaging tests assert the dependency list
+stays empty. Differential coverage uses only Cana clients and frozen fixtures.
 
 ---
 
