@@ -1,6 +1,6 @@
 # Spec Requirements Traceability Ledger
 
-<!-- requirements-inventory: files=128 unique=128 mapped=128 duplicates= -->
+<!-- requirements-inventory: files=129 unique=129 mapped=129 duplicates= -->
 
 This ledger maps requirement IDs to spec resources and validation evidence expectations.
 
@@ -108,7 +108,7 @@ For any change, identify impacted requirement IDs and ensure:
 
 ## G. Documentation, Governance Process, and Multi-Agent Operations
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `057`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `104`, `105`, `106`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`, `137`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `057`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `104`, `105`, `106`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`, `137`, `138`
 - Spec resources:
   - `documentation/README.md`
   - `documentation/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -168,9 +168,9 @@ If impacted requirement IDs are not mapped before implementation, the change is 
 
 As of `2026-08-05`, this ledger covers all unique requirement IDs currently registered in `.agents/requirements/project/` and `.agents/requirements/software/`:
 
-1. Requirement files in the registry: `127`
-2. Unique requirement IDs in the registry: `127`
-3. Unique IDs mapped in this ledger: `127`
+1. Requirement files in the registry: `129`
+2. Unique requirement IDs in the registry: `129`
+3. Unique IDs mapped in this ledger: `129`
 4. Duplicate IDs with independently binding files: `none`
 5. Missing IDs: `none`
 
@@ -194,6 +194,10 @@ As of `2026-08-05`, this ledger covers all unique requirement IDs currently regi
 ### `137` Workspace suite and tooling ownership placement (JUM-824…838)
 - Specs: `.agents/requirements/software/137-workspace-suite-and-tooling-ownership.md`, `documentation/md/TESTING-CI-AND-QUALITY.md` (+ pt-BR), `ci-cd/README.md`
 - Evidence: `bun run arch:check-ownership-placement`; `ci-cd/ownership-placement-allowlist.json` steady state `[]`; proof suite `ci-cd/test/check-workspace-ownership-placement.test.ts`; wired into `ci:gate` / branch preflight
+
+### `138` Mandatory ai-memory in every agent session (JUM-935)
+- Specs: `.agents/requirements/project/138-mandatory-ai-memory-agent-sessions.md`, managed blocks in `AGENTS.md` / `CLAUDE.md`, project skills under `.agents/skills/ai-memory-*` and `.claude/skills/ai-memory-*`
+- Evidence: `bun run requirements:check`; attestation via agent transcripts (MCP/CLI retrieval); local `ai-memory status` on operator host; https://github.com/akitaonrails/ai-memory
 
 ### `125` Agent support declaration (JUM-604)
 - Specs: `documentation/md/AGENT-SUPPORT-DECLARATION.md` (+ pt-BR)

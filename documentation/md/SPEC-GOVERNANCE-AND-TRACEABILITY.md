@@ -154,6 +154,7 @@ Spec conformance is enforced by executable policy:
 
 - Architecture boundary checks
 - Workspace ownership placement checks (Requirement `137`)
+- Mandatory ai-memory for agent sessions (Requirement `138`)
 - Import cycle checks
 - Contract route resolution checks
 - Coverage threshold checks
