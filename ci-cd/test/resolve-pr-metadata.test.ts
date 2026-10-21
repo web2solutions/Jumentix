@@ -51,7 +51,7 @@ async function pipelineEnv(
     fetchImpl: async () => respond(pulls),
     write: (line: string) => lines.push(line)
   });
-  return { CIRCLE_BRANCH: BRANCH, ...sourceExports(lines) };
+  return { CIRCLE_BRANCH: env.CIRCLE_BRANCH || BRANCH, ...sourceExports(lines) };
 }
 
 describe('resolve-pr-metadata', () => {
@@ -85,19 +85,54 @@ describe('resolve-pr-metadata', () => {
     jest.restoreAllMocks();
   });
 
-  it('leaves a pipeline with no PR yet red, not green, on its PR-required jobs', async () => {
+  // JUM-939: with no PR yet, the push runs its PR's suites against that PR's
+  // base, so the green it posts is the one the PR will accept.
+  it('runs a pipeline with no PR yet against the base its PR will target', async () => {
     expect.hasAssertions();
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     jest.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const env = await pipelineEnv([]);
+    const evidence = classifier.classifyCiContext({ env, spawn: () => ({ status: 0, stdout: '' }) });
 
-    expect(env.JUMENTIX_CI_IS_PULL_REQUEST).toBe('0');
-    expect(env.CIRCLE_PULL_REQUEST).toBeUndefined();
-    for (const job of ['third-party-review', 'browser-matrix', 'coverage']) {
-      expect(classifier.runCli(['node', 'classify', '--require-job', job], env)).toBe(1);
-    }
-    expect(classifier.runCli(['node', 'classify', '--require-job', 'branch-gate'], env)).toBe(0);
+    expect([env.JUMENTIX_CI_IS_PULL_REQUEST, env.CIRCLE_PULL_REQUEST]).toStrictEqual(['0', undefined]);
+    expect([env.JUMENTIX_PR_BASE_REF, env.JUMENTIX_QUALITY_GATE_TARGET, evidence.diffBaseRef])
+      .toStrictEqual(['dev', 'dev', 'origin/dev']);
+    expect(['branch-gate', 'third-party-review', 'browser-matrix', 'coverage']
+      .map((job) => classifier.runCli(['node', 'classify', '--require-job', job], env)))
+      .toStrictEqual([0, 0, 0, 0]);
+    jest.restoreAllMocks();
+  });
+
+  it('runs a dev push against main, the base of the release PR', async () => {
+    expect.hasAssertions();
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    const env = await pipelineEnv([], { CIRCLE_BRANCH: 'dev' });
+
+    expect(env.JUMENTIX_PR_BASE_REF).toBe('main');
+    expect(['website', 'integration', 'database-matrix', 'browser-matrix']
+      .map((job) => classifier.runCli(['node', 'classify', '--require-job', job], env)))
+      .toStrictEqual([0, 0, 0, 0]);
+    jest.restoreAllMocks();
+  });
+
+  it('leaves the base unset where the PR target cannot be known', () => {
+    expect.hasAssertions();
+
+    const env = sourceExports(exportLines(null, 'dependabot/npm_and_yarn/lodash-4.17.21'));
+
+    expect(env.JUMENTIX_PR_BASE_REF).toBeUndefined();
+    expect(env.JUMENTIX_QUALITY_GATE_TARGET).toBe('dependabot/npm_and_yarn/lodash-4.17.21');
+  });
+
+  it('keeps the branch name out of its log line (Sonar jssecurity:S5145)', async () => {
+    expect.hasAssertions();
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await pipelineEnv([PR_693], { CIRCLE_BRANCH: 'evil\nFAKE LOG LINE' });
+
+    expect(errors.mock.calls.join('\n')).toBe('[pr-metadata] resolved open PR #693 by head branch');
     jest.restoreAllMocks();
   });
 

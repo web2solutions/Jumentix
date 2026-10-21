@@ -189,7 +189,7 @@ describe('run-branch-quality-gate', () => {
     });
   });
 
-  it('selects the full matrix only for release promotions, main, and scheduled full contexts', () => {
+  it('selects the full matrix for release promotions, dev pushes, main, and scheduled full contexts', () => {
     expect.hasAssertions();
     expect([
       selectQualityGate('dev', { context: 'task-pr-to-dev' }),
@@ -201,7 +201,8 @@ describe('run-branch-quality-gate', () => {
     ]).toStrictEqual([
       TASK_QUALITY_GATE,
       TASK_QUALITY_GATE,
-      UNIT_QUALITY_GATE,
+      // The release PR from dev reuses this SHA's branch-gate status (JUM-939).
+      FULL_MATRIX_QUALITY_GATE,
       FULL_MATRIX_QUALITY_GATE,
       FULL_MATRIX_QUALITY_GATE,
       FULL_MATRIX_QUALITY_GATE
