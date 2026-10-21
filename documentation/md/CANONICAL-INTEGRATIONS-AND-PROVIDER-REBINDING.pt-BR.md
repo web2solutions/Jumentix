@@ -25,9 +25,11 @@ para open source.
   `branch-gate`, `third-party-review`, `browser-matrix`, `workspace-builds`,
   `workspace-tests`, `integration`, `coverage` (upload ao Codecov, scan do
   SonarQube Cloud e `bun run sonar:check-reliability`), `website` e
-  `database-matrix` — com gatilho agendado noturno em `main`/`dev`. Jobs não
-  exigidos pelo destino atual encerram com sucesso antes de iniciar trabalho
-  pesado.
+  `database-matrix` — com gatilho agendado noturno em `main`/`dev`. Um push
+  roda todo job que a pull request dele vai exigir, contra a base dessa PR,
+  porque job interrompido (halt) reporta sucesso e a PR reaproveita os status
+  do push do head (Requisito 113 regra 14). Só jobs que nenhuma PR daquele
+  head pode exigir são interrompidos antes do trabalho pesado.
 - **GitHub Actions retido:** `.github/workflows/ci.yml` (jobs da matriz),
   `browser-matrix.yml` e `sonar-reliability.yml` estão atrás de
   `if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'` e rodam como fallback

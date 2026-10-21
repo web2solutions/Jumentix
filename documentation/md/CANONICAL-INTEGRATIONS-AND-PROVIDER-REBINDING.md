@@ -25,9 +25,11 @@ provider plans.
   `branch-gate`, `third-party-review`, `browser-matrix`, `workspace-builds`,
   `workspace-tests`, `integration`, `coverage` (Codecov upload, SonarQube
   Cloud scan, and `bun run sonar:check-reliability`), `website`, and
-  `database-matrix` — with a nightly scheduled trigger on `main`/`dev`. Jobs
-  that are not required for the current destination halt successfully before
-  starting heavy work.
+  `database-matrix` — with a nightly scheduled trigger on `main`/`dev`. A
+  push runs every job its pull request will require, against that PR's base,
+  because a halted job reports success and a PR reuses its head's push
+  statuses (Requirement 113 rule 14). Only jobs no PR from the head can
+  require halt before heavy work.
 - **GitHub Actions retained:** `.github/workflows/ci.yml` (matrix jobs),
   `browser-matrix.yml`, and `sonar-reliability.yml` are gated behind
   `if: vars.JUMENTIX_ENABLE_GITHUB_ACTIONS_CI == 'true'` and run as the

@@ -56,6 +56,14 @@ Codecov e SonarQube Cloud continuam rodando sem interrupção através do job
 pendente, ausente, expirado, cancelado ou inacessível no provedor nunca é
 verde.
 
+Job do CircleCI interrompido (halt) publica `ci/circleci: <job>` = success, e
+abrir uma PR não inicia pipeline novo, então a PR reaproveita os status do
+push do head. Por isso um push roda todo job que a PR dele vai exigir, contra
+a base dessa PR: branch de tarefa roda o conjunto de `dev` contra `dev`; `dev`
+roda o conjunto de `main` contra `main` (Requisito 113 regra 14; JUM-936,
+JUM-939). Heads do Dependabot e de release gerados, enviados antes de a PR ser
+resolvida, falham os jobs que não rodam; abra a PR e rode o workflow de novo.
+
 ## Dependabot (Bun na raiz + npm aninhado)
 
 Config canônica: `.github/dependabot.yml` (JUM-919 / JUM-920).

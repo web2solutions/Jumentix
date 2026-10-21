@@ -199,21 +199,29 @@ Aplicação remota:
 #### Matriz de jobs hospedados por contexto (JUM-786)
 
 `ci-cd/classify-ci-context.js` (`JOBS_BY_CONTEXT`) e os guards de jobs em
-`.circleci/config.yml` precisam concordar. Jobs pesados além de `coverage`
-(`workspace-builds`, `workspace-tests`, `integration`, `website`,
-`database-matrix`) correm só em release/`main`/agendado (Requisitos
-`087`/`113`). Em push de tarefa eles **pulam de propósito** — pular não é
-passar. `coverage` roda em toda PR para `dev` e em todo push para `dev` para
-a ponta não aceitar regressão de cobertura (JUM-923 / Requisito `020`). O
+`.circleci/config.yml` precisam concordar. O CircleCI reporta job
+interrompido (halt) como `ci/circleci: <job>` = **success**, e abrir uma PR
+não inicia pipeline novo: a PR reaproveita os status deixados pelo push do
+head (PRs #693, #685 e #691 entraram com verdes interrompidos). Por isso um
+push roda todo job que a pull request dele vai exigir, contra a base dessa
+PR (`impliedPullRequestBase`, exportada por `ci-cd/resolve-pr-metadata.js`
+como `JUMENTIX_PR_BASE_REF`), e o status só fica verde porque a suíte rodou
+(JUM-936, JUM-939; Requisito `113` regra 14). Jobs que nenhuma PR daquele
+head pode exigir (`workspace-builds`, `workspace-tests`, `integration`,
+`website`, `database-matrix` em branch de tarefa; `browser-matrix` em `main`)
+são interrompidos; esse verde nunca é check obrigatório ali. Heads do
+Dependabot e de release gerados, enviados antes de a PR ser resolvida,
+falham — nunca interrompem — os jobs exigidos pela PR que não rodam. O
 `.github/workflows/ci.yml`, retido atrás do flag, mantém `if:` equivalentes
 por job para o caminho de fallback.
 
 | Contexto | Jobs que rodam (CircleCI) | Script do branch-gate + preflight |
 | --- | --- | --- |
-| Push de branch de tarefa | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
+| Push de branch de tarefa (ainda sem PR) | o mesmo da PR para `dev`, contra `dev` | o mesmo da PR para `dev` |
 | PR para `dev` | `branch-gate`, `third-party-review`, `browser-matrix`, `coverage` (mais o `pr-feedback` do GitHub, sempre ativo) | mesmo gate de tarefa + preflight |
-| Push para `dev` | `branch-gate`, `coverage` | `test:unit` + lint, integrity, boundaries, `build:dev` |
-| PR de release para `main` / push `main` / schedule / gatilho manual | lista completa (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
+| Push para `dev` | lista completa mais `browser-matrix`, contra `main` (`dev` é o head da PR de release) | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
+| PR de release para `main` / schedule / gatilho manual | lista completa mais `browser-matrix` | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
+| Push para `main` | lista completa (`FULL_JOBS`; `browser-matrix` é interrompido — `main` nunca é head de PR) | `ci:gate:strict` (+ integrity, boundaries, `build:dev` preflight) |
 
 `build:dev` (`tsc -p tsconfig.build.json`) tipa o TypeScript de backend/pacotes
 do compilador raiz. `apps/frontend/**` fica de fora: o workspace dono é

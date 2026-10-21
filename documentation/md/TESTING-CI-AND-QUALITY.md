@@ -192,21 +192,28 @@ Remote enforcement:
 #### Hosted job matrix by context (JUM-786)
 
 `ci-cd/classify-ci-context.js` (`JOBS_BY_CONTEXT`) and the job guards in
-`.circleci/config.yml` must agree. Heavy jobs other than `coverage`
-(`workspace-builds`, `workspace-tests`, `integration`, `website`,
-`database-matrix`) run only for release/`main`/scheduled contexts
-(Requirements `087`/`113`). They **intentionally skip** on task-branch pushes
-and PRs to `dev` — a skip there is not a pass. `coverage` is selected for
-every PR to `dev` and every push to `dev` so a coverage-red tip cannot land
-(JUM-923 / Requirement `020`). The flag-gated `.github/workflows/ci.yml` keeps
-matching job-level `if:` guards for the fallback path.
+`.circleci/config.yml` must agree. CircleCI reports a halted job as
+`ci/circleci: <job>` = **success**, and opening a PR starts no new pipeline:
+the PR reuses the statuses its head's push left (PRs #693, #685, #691 merged
+on halted greens). So a push runs every job its pull request will require,
+against that PR's base (`impliedPullRequestBase`, exported by
+`ci-cd/resolve-pr-metadata.js` as `JUMENTIX_PR_BASE_REF`), and the status is
+green only because the suite ran (JUM-936, JUM-939; Requirement `113` rule 14).
+Jobs no PR from the head can require (`workspace-builds`, `workspace-tests`,
+`integration`, `website`, `database-matrix` on a task branch;
+`browser-matrix` on `main`) halt; that green is never a required check there.
+Dependabot and generated release heads pushed before their PR is resolved
+fail — never halt — the PR-required jobs they do not run. The flag-gated
+`.github/workflows/ci.yml` keeps matching job-level `if:` guards for the
+fallback path.
 
 | Context | Hosted jobs that run (CircleCI) | Branch-gate script + preflight |
 | --- | --- | --- |
-| Task-branch push | `branch-gate` | `ci:gate:task` + lint, `test:integrity`, `arch:check-workspace-boundaries`, `build:dev` |
+| Task-branch push (no PR yet) | same as PR to `dev`, against `dev` | same as PR to `dev` |
 | PR to `dev` | `branch-gate`, `third-party-review`, `browser-matrix`, `coverage` (plus always-on GitHub `pr-feedback`) | same task gate + preflight |
-| Push to `dev` | `branch-gate`, `coverage` | `test:unit` + lint, integrity, workspace boundaries, `build:dev` |
-| Release PR to `main` / push to `main` / schedule / manual trigger | full list (`FULL_JOBS`) | `ci:gate:strict` (+ integrity, workspace boundaries, `build:dev` preflight) |
+| Push to `dev` | full list plus `browser-matrix`, against `main` (`dev` heads the release PR) | `ci:gate:strict` (+ integrity, workspace boundaries, `build:dev` preflight) |
+| Release PR to `main` / schedule / manual trigger | full list plus `browser-matrix` | `ci:gate:strict` (+ integrity, workspace boundaries, `build:dev` preflight) |
+| Push to `main` | full list (`FULL_JOBS`; `browser-matrix` halts — `main` is never a PR head) | `ci:gate:strict` (+ integrity, workspace boundaries, `build:dev` preflight) |
 
 `build:dev` (`tsc -p tsconfig.build.json`) typechecks backend/package TypeScript
 owned by the root compiler. `apps/frontend/**` is excluded: that workspace owns
