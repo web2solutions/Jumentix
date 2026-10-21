@@ -92,6 +92,7 @@ See also:
 - [128-requirement-changes-release-precedence](requirements/project/128-requirement-changes-release-precedence.md)
 - [129-mandatory-firebase-agent-bus](requirements/project/129-mandatory-firebase-agent-bus.md)
 - [130-measured-claims-and-bounded-work](requirements/project/130-measured-claims-and-bounded-work.md)
+- [138-mandatory-ai-memory-agent-sessions](requirements/project/138-mandatory-ai-memory-agent-sessions.md)
 
 ## Software and Product Requirements
 

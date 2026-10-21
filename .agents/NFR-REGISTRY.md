@@ -40,6 +40,8 @@ This file consolidates non-functional requirements already requested and stored 
 - Entity metrics (`GET /{entities}/metrics`) are bounded by `x-metrics-capabilities` and exclude tombstones (JUM-793).
 - `128` Requirement changes take precedence in the release process (sequence only, no gate exemption)
 - `129` Mandatory Firebase RTDB agent progress bus (`agent-bus:publish|watch|status`)
+- `138` Mandatory ai-memory in every agent session (cross-harness durable memory;
+  attestation-based usage; in-tree routing required)
 - `130` Measured claims and bounded work: no unmeasured numbers, no proxy stated as cause
 - `131` Built artifacts must carry every runtime export their source barrel declares
 - `132` No orphaned published artifacts: reachable, or declared with the issue that owns it
@@ -204,6 +206,9 @@ This file consolidates non-functional requirements already requested and stored 
   starting or resuming work, avoiding silent overlap or duplicate delivery.
 - `129` Agents must publish and consume the Firebase RTDB agent progress bus for
   machine-readable peer sync; Firestore remains ownership SSOT (`089` / `121`).
+- `138` Agents working on this repository must use ai-memory for durable
+  cross-session and cross-harness memory; retrieve before resuming prior work;
+  keep managed instruction blocks and project skills in-tree (`077` / `121`).
 - `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
 - `124` Monorepo root layout governance (migrated from duplicate `060`).
 - `125` Supported agents are declared as data in `.agents/supported-agents.json`; the PR
