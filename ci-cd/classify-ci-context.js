@@ -25,20 +25,31 @@ const FULL_JOBS = Object.freeze([
   'database-matrix'
 ]);
 
+const TASK_PR_JOBS = Object.freeze([
+  'branch-gate', 'third-party-review', 'browser-matrix', 'coverage'
+]);
+const RELEASE_JOBS = Object.freeze([...FULL_JOBS, 'browser-matrix']);
+
+// A push runs the jobs its pull request would require, against that PR's base
+// (JUM-939). CircleCI reports a halted job as success and opening a PR starts
+// no new pipeline, so a push that halted them left a green the PR accepted
+// without the suite running (JUM-936); failing them instead turned every tip
+// red. Running them makes the push status both green and true for the PR.
 const JOBS_BY_CONTEXT = Object.freeze({
-  [CONTEXTS.TASK_BRANCH_PUSH]: Object.freeze(['branch-gate']),
+  // Same set and base (`dev`) as the PR the branch will open.
+  [CONTEXTS.TASK_BRANCH_PUSH]: TASK_PR_JOBS,
   // Coverage is mandatory on PRs to `dev` (Requirements 020/113): soft-skipping
   // left merges green while the post-merge `dev-push` coverage job failed
   // (JUM-918 → JUM-922). Sonar reliability-A still rides inside this job.
-  [CONTEXTS.TASK_PR_TO_DEV]: Object.freeze([
-    'branch-gate', 'third-party-review', 'browser-matrix', 'coverage'
-  ]),
-  // Other heavy jobs stay release/main/scheduled only; coverage also runs on
-  // every push to `dev` so the tip cannot drift after a force-push or direct land.
-  [CONTEXTS.DEV_PUSH]: Object.freeze(['branch-gate', 'coverage']),
-  [CONTEXTS.RELEASE_PR_TO_MAIN]: Object.freeze([...FULL_JOBS, 'browser-matrix']),
+  [CONTEXTS.TASK_PR_TO_DEV]: TASK_PR_JOBS,
+  // `dev` is the head of the release PR to `main`, which reuses this SHA's
+  // statuses (PR #685), so a `dev` push runs the release set.
+  [CONTEXTS.DEV_PUSH]: RELEASE_JOBS,
+  [CONTEXTS.RELEASE_PR_TO_MAIN]: RELEASE_JOBS,
+  // `main` is never a PR head; browser-matrix gates PRs only.
   [CONTEXTS.MAIN_PUSH]: FULL_JOBS,
-  [CONTEXTS.SCHEDULED_FULL]: FULL_JOBS
+  // Scheduled/manual runs land on `dev` too, so they carry its release set.
+  [CONTEXTS.SCHEDULED_FULL]: RELEASE_JOBS
 });
 
 function normalizeRef(value) {
@@ -154,7 +165,8 @@ function isReleasePromotionHead(headRef) {
  * SHA, and opening a PR starts no new pipeline. So a push pipeline that halts
  * one of these jobs leaves a green the PR's branch protection accepts without
  * the suite having run (PR #693 to `dev`; PRs #685 and #691 to `main`).
- * Outside a PR context these jobs must fail, never halt (Requirement 113 §12).
+ * Outside a PR context a push runs them (JOBS_BY_CONTEXT); any it does not
+ * select fails, never halts (Requirement 113 rule 14).
  */
 function pullRequestJobsForHead(headRef) {
   if (!headRef || headRef === 'main') return [];
@@ -163,6 +175,17 @@ function pullRequestJobsForHead(headRef) {
   return selectedJobsFor(isReleasePromotionHead(headRef)
     ? CONTEXTS.RELEASE_PR_TO_MAIN
     : CONTEXTS.TASK_PR_TO_DEV);
+}
+
+/**
+ * The base branch the pull request from `headRef` will target, so a push can
+ * run that PR's suites against the same base (Requirement 086 §9–10). Empty
+ * when it cannot be known: `main` is never a head, and Dependabot opens version
+ * updates to `dev` but security updates to `main`.
+ */
+function impliedPullRequestBase(headRef) {
+  if (!headRef || headRef === 'main' || isDependabotBranch(headRef)) return '';
+  return isReleasePromotionHead(headRef) ? 'main' : 'dev';
 }
 
 function classifyCiContext(options = {}) {
@@ -285,6 +308,7 @@ module.exports = {
   isDependabotBranch,
   isGeneratedChangelogSyncBranch,
   isGeneratedPackageBumpBranch,
+  impliedPullRequestBase,
   isGeneratedAppReleaseBranch,
   isScheduled,
   jobSelected,

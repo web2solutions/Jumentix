@@ -16,6 +16,7 @@
  * non-zero rather than guessing a context (Requirement 113 §12).
  */
 const { isEntryPoint } = require('./lib/entry-point.js');
+const { impliedPullRequestBase } = require('./classify-ci-context.js');
 
 const shellQuote = (value) => `'${String(value || '').replace(/'/g, "'\\''")}'`;
 
@@ -56,10 +57,18 @@ async function resolvePullRequest({ repo, pullRequestUrl, branch, fetchImpl, tok
 
 function exportLines(pr, branch) {
   if (!pr) {
+    // No PR yet: run against the base its PR will target (JUM-939), so the
+    // push status is valid for that PR — branch gate, third-party review and
+    // patch coverage all read this base. Unknowable bases stay unset.
+    const base = impliedPullRequestBase(branch);
     return [
       'export AAA_CI_IS_PULL_REQUEST=0',
       'export JUMENTIX_CI_IS_PULL_REQUEST=0',
-      `export JUMENTIX_QUALITY_GATE_TARGET=${shellQuote(branch || 'dev')}`,
+      ...(base ? [
+        `export JUMENTIX_PR_BASE_REF=${shellQuote(base)}`,
+        `export AAA_PR_BASE_REF=${shellQuote(base)}`
+      ] : []),
+      `export JUMENTIX_QUALITY_GATE_TARGET=${shellQuote(base || branch || 'dev')}`,
       `export JUMENTIX_PR_HEAD_REF=${shellQuote(branch)}`,
       `export AAA_PR_HEAD_REF=${shellQuote(branch)}`
     ];
@@ -90,7 +99,8 @@ async function main(env = process.env, { fetchImpl, write = console.log } = {}) 
     token: env.GH_TOKEN || env.GITHUB_TOKEN || ''
   });
   if (pr && !env.CIRCLE_PULL_REQUEST) {
-    console.error(`[pr-metadata] resolved open PR #${pr.number} for ${branch} by head branch`);
+    // No branch name in the log: it is user-controlled (Sonar jssecurity:S5145).
+    console.error(`[pr-metadata] resolved open PR #${Number(pr.number)} by head branch`);
   }
   exportLines(pr, branch).forEach((line) => write(line));
 }

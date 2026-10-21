@@ -395,7 +395,10 @@ jobs:
           name: Enforce patch coverage
           command: |
             source "$BASH_ENV"
-            if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
+            # Keyed on the PR base, not CIRCLE_PULL_REQUEST: a push without a PR
+            # carries the base its PR will target (JUM-939), and its green
+            # coverage status is what that PR accepts.
+            if [ -n "${JUMENTIX_PR_BASE_REF:-}" ]; then
               bun run coverage:merge
               # Mirror .github/workflows/ci.yml: a dev→main promotion has no new
               # patch beyond protected `dev` (PR #548 / JUM-900). Measuring
@@ -416,7 +419,7 @@ jobs:
                 bun run coverage:patch
               fi
             else
-              echo "Patch coverage is PR-only; project coverage already passed."
+              echo "No PR base for ${CIRCLE_BRANCH:-unknown} (main push or Dependabot without a PR); project coverage already passed."
             fi
       - run:
           name: Install verified Codecov CLI

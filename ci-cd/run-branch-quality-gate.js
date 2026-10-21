@@ -183,14 +183,16 @@ function selectQualityGate(targetBranch, options = {}) {
     return GENERATED_AUTOMATION_QUALITY_GATE;
   }
   if (options.context) {
+    // `dev` heads the release PR to `main`, which reuses the `dev` push's
+    // branch-gate status, so that push runs the release gate (JUM-939).
     if (
       options.context === CONTEXTS.RELEASE_PR_TO_MAIN
+      || options.context === CONTEXTS.DEV_PUSH
       || options.context === CONTEXTS.MAIN_PUSH
       || options.context === CONTEXTS.SCHEDULED_FULL
     ) {
       return FULL_MATRIX_QUALITY_GATE;
     }
-    if (options.context === CONTEXTS.DEV_PUSH) return UNIT_QUALITY_GATE;
     return TASK_QUALITY_GATE;
   }
 
