@@ -3226,6 +3226,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/resolve-pr-metadata.test.ts",
+      "path": "ci-cd/test/resolve-pr-metadata.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/verify-codecov-public-reports.test.ts",
       "path": "ci-cd/test/verify-codecov-public-reports.test.ts",
       "layer": "tooling",
@@ -6237,9 +6247,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 373,
+    "unit": 374,
     "integration": 104,
     "smoke": 2,
-    "suites": 539
+    "suites": 540
   }
 }

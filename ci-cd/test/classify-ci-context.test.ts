@@ -4,6 +4,7 @@ const {
   FULL_JOBS,
   classifyCiContext,
   jobSelected,
+  pullRequestJobsForHead,
   runCli,
   selectedJobsFor
 } = require('../classify-ci-context');
@@ -229,12 +230,69 @@ describe('classify-ci-context', () => {
     expect(evidence.context).toBe(CONTEXTS.TASK_PR_TO_DEV);
   });
 
-  it('returns exit 78 when a required job is not selected', () => {
+  it('returns exit 78 when a job no pull request from the head can require is not selected', () => {
     expect.hasAssertions();
 
-    expect(runCli(['node', 'classify', '--require-job', 'coverage'], {
+    // website is required only on PRs to main; a task branch never opens one.
+    expect(runCli(['node', 'classify', '--require-job', 'website'], {
       CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci'
     })).toBe(78);
+    // main is never a PR head, so a main push may halt what it does not select.
+    expect(runCli(['node', 'classify', '--require-job', 'browser-matrix'], {
+      CIRCLE_BRANCH: 'main'
+    })).toBe(78);
+  });
+
+  // Negative control (Requirement 135 §3), JUM-936. The old classifier returned
+  // 78 here; require_ci_job turned 78 into `step halt` + `exit 0`, CircleCI
+  // posted `ci/circleci: coverage` = success, and PR #693 opened 47 s after the
+  // push found its required coverage check green without the suite having run.
+  it.each([
+    ['task branch push', 'claude/docs/JUM-933-requirements-text-drift', 'coverage'],
+    ['task branch push', 'claude/docs/JUM-933-requirements-text-drift', 'third-party-review'],
+    ['task branch push', 'claude/docs/JUM-933-requirements-text-drift', 'browser-matrix'],
+    ['dev push before a release PR (PR #685)', 'dev', 'website'],
+    ['dev push before a release PR (PR #685)', 'dev', 'integration'],
+    ['changelog sync push before its PR (PR #691)', 'chore/changelog-sync-e02a7c15', 'coverage'],
+    ['Dependabot push before its PR', 'dependabot/npm_and_yarn/lodash-4.17.21', 'database-matrix']
+  ])('fails, never halts, a PR-required job on a %s (%s, %s)', (_label, branch, job) => {
+    expect.hasAssertions();
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const logs = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    const status = runCli(['node', 'classify', '--require-job', job], { CIRCLE_BRANCH: branch });
+
+    expect(status).toBe(1);
+    expect(errors.mock.calls.join('\n')).toContain(`${job} is required on pull requests from ${branch}`);
+    errors.mockRestore();
+    logs.mockRestore();
+  });
+
+  it('still runs the PR-required job once the pipeline is classified as the PR', () => {
+    expect.hasAssertions();
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    expect(runCli(['node', 'classify', '--require-job', 'coverage'], {
+      CIRCLE_BRANCH: 'claude/docs/JUM-933-requirements-text-drift',
+      JUMENTIX_CI_IS_PULL_REQUEST: '1',
+      JUMENTIX_PR_BASE_REF: 'dev'
+    })).toBe(0);
+    jest.restoreAllMocks();
+  });
+
+  it('records the PR-required jobs only for push contexts', () => {
+    expect.hasAssertions();
+
+    expect(classify({ CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci' }).pullRequestRequiredJobs)
+      .toStrictEqual(selectedJobsFor(CONTEXTS.TASK_PR_TO_DEV));
+    expect(classify({ CIRCLE_BRANCH: 'dev' }).pullRequestRequiredJobs)
+      .toStrictEqual(selectedJobsFor(CONTEXTS.RELEASE_PR_TO_MAIN));
+    expect(classify({
+      CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci',
+      JUMENTIX_CI_IS_PULL_REQUEST: '1',
+      JUMENTIX_PR_BASE_REF: 'dev'
+    }).pullRequestRequiredJobs).toStrictEqual([]);
+    expect(pullRequestJobsForHead('main')).toStrictEqual([]);
   });
 
   it('confirms selected jobs for continuation guards', () => {
@@ -264,13 +322,5 @@ describe('classify-ci-context', () => {
     expect(selectedJobsFor(CONTEXTS.DEV_PUSH)).not.toContain('browser-matrix');
     expect(selectedJobsFor(CONTEXTS.MAIN_PUSH)).not.toContain('browser-matrix');
     expect(selectedJobsFor(CONTEXTS.SCHEDULED_FULL)).not.toContain('browser-matrix');
-  });
-
-  it('returns exit 78 when browser-matrix is required outside pull request contexts', () => {
-    expect.hasAssertions();
-
-    expect(runCli(['node', 'classify', '--require-job', 'browser-matrix'], {
-      CIRCLE_BRANCH: 'codex/feature/JUM-631-fast-ci'
-    })).toBe(78);
   });
 });

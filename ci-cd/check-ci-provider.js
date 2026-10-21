@@ -441,7 +441,7 @@ if (fs.existsSync(circleciPath)) {
     /database-matrix:/,
     /classify-ci-context\.js/,
     /circleci-agent step halt/,
-    /const shellQuote = \(value\) =>/,
+    /command: node ci-cd\/resolve-pr-metadata\.js >> "\$BASH_ENV"/,
     /Install Python virtualenv support/,
     /sudo apt-get install -y python3-venv/,
     /codecov --verbose upload-process --disable-search --fail-on-error/,
