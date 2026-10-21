@@ -303,6 +303,32 @@ describe('check-pr-governance', () => {
     })).resolves.toBe(0);
   });
 
+  // Negative control (JUM-941): before the fix a push pipeline that exported
+  // the base its PR will target was validated as a release PR and exited 1.
+  it('skips PR metadata when CI declares a push that carries its future PR base', async () => {
+    expect.hasAssertions();
+
+    await expect(runPrGovernanceCheck({
+      isPullRequest: '0',
+      title: '',
+      body: '',
+      headRef: 'dev',
+      baseRef: 'main'
+    })).resolves.toBe(0);
+  });
+
+  it('still validates explicit PR metadata when CI does not declare the context', async () => {
+    expect.hasAssertions();
+
+    await expect(runPrGovernanceCheck({
+      isPullRequest: '',
+      title: '',
+      body: '',
+      headRef: 'dev',
+      baseRef: 'main'
+    })).resolves.toBe(1);
+  });
+
   it('still validates PR metadata when CircleCI marks the job as a pull request', async () => {
     expect.hasAssertions();
 
