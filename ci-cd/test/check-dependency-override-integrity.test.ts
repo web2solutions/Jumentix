@@ -119,7 +119,7 @@ describe('check-dependency-override-integrity CLI', () => {
 
     main();
 
-    expect(log.mock.calls.flat().join('\n')).toContain('23 pins');
+    expect(log.mock.calls.flat().join('\n')).toContain('26 pins');
   });
 
   it('prints each failure and exits non-zero when a pin is missing', () => {

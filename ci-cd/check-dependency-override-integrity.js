@@ -77,7 +77,17 @@ const REQUIRED_OVERRIDES = {
   'adm-zip': '^0.6.0',
   // Raised on 2026-08-13: monaco-editor nested `dompurify@3.4.8` past the
   // resolutions pin; flat override lifts GHSA-55q2-fjhq-7xh7 / GHSA-cmwh-pvxp-8882.
-  dompurify: '^3.4.13',
+  // Raised again on 2026-10-23 (JUM-944): GHSA-cg2g-xh64-v4q7 / GHSA-mrv2-3pqr-j5jr
+  // fixed in dompurify >=3.4.17.
+  dompurify: '^3.4.17',
+  // Raised on 2026-10-23 (JUM-944): GHSA-8r9p-f939-6h3c / GHSA-q3jh-wrc6-jgq8.
+  'follow-redirects': '1.16.1',
+  // Raised on 2026-10-23 (JUM-944): GHSA-587h-7wmj-h5pm via vite launch-editor;
+  // fixed on vite >=8.3.3.
+  vite: '^8.3.5',
+  // Raised on 2026-10-23 (JUM-944): GHSA-2464-fhr4-w9xw / GHSA-673q-mjm6-r5xr /
+  // GHSA-p3m5-59mp-jv5r — Next.js 16.x fixed at >=16.4.1.
+  next: '16.4.2',
   // Raised on 2026-10-11: GHSA-8r5x-fm3f-whwj / GHSA-p8wg-vrv2-v86f (CRITICAL)
   // and GHSA-5x5g-h9x8-2fh9 / GHSA-8f34-f56x-9xph — patched releases exist.
   handlebars: '^4.7.10',
@@ -101,7 +111,8 @@ const REQUIRED_RESOLUTIONS = {
   // clearing the current moderate advisories.
   undici: '^6.28.0',
   mermaid: '^11.16.1',
-  dompurify: '^3.4.13',
+  // Raised on 2026-10-23 (JUM-944): align with override for GHSA-cg2g / GHSA-mrv2.
+  dompurify: '^3.4.17',
 };
 
 /**
