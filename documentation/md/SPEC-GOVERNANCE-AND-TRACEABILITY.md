@@ -139,7 +139,9 @@ Task isolation and naming policy:
   `main` run the complete matrix, plus the required CircleCI coverage job.
 - Main-matrix evidence must list every required cell and its terminal result.
 - An incomplete `main` matrix is failed evidence; it must never be interpreted as green.
-- PR review is optional. Branch protection and rulesets must not require an approval count.
+- Branch protection and rulesets must not require a GitHub approval count. Non-automated
+  pull requests targeting `dev` must pass the agent-critique check in Requirement `139`.
+  Automated pull requests are exempt.
 - Task isolation, `dev`-first promotion, conversation resolution, and every destination-aware CI,
   coverage, security, governance, and full-matrix requirement remain mandatory and terminal
   green.
