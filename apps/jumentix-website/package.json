@@ -57,7 +57,7 @@
     "nextra-theme-docs": "4.6.1",
     "pinia": "^4.0.3",
     "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "react-dom": "19.3.1",
     "react-redux": "^9.3.0",
     "swr": "^2.4.2",
     "vue": "^3.5.41"
