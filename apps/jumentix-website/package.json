@@ -83,7 +83,7 @@
     "postcss-import": "^17.0.0",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "^7.0.1",
-    "storybook": "10.6.1",
+    "storybook": "10.6.2",
     "turbopack-inline-svg-loader": "^1.0.3",
     "typescript": "6.0.3"
   }
