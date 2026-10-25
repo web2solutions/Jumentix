@@ -93,6 +93,7 @@ See also:
 - [129-mandatory-firebase-agent-bus](requirements/project/129-mandatory-firebase-agent-bus.md)
 - [130-measured-claims-and-bounded-work](requirements/project/130-measured-claims-and-bounded-work.md)
 - [138-mandatory-ai-memory-agent-sessions](requirements/project/138-mandatory-ai-memory-agent-sessions.md)
+- [139-agent-critique-on-dev-pull-requests](requirements/project/139-agent-critique-on-dev-pull-requests.md)
 
 ## Software and Product Requirements
 

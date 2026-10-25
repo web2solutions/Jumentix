@@ -101,7 +101,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `096` Bun `1.4.2` is the pinned internal package manager and command interface; Node 22 is allowed only at declared compatibility and tool boundaries.
 - `097` Linear task and Project metadata lifecycle: agents must maintain valid status, priority, dates, labels, ownership, milestone alignment, and auditable Project Updates from acceptance through completion.
 - `098` Commit, push, and merge authorization is restricted to the project owner and explicitly
-  authorized identities; platform protection requires checks but not PR approval.
+  authorized identities; platform protection requires checks and does not set a GitHub
+  approval count. Non-automated PRs to `dev` still pass Requirement `139`.
 
 ## Rule of Use
 
@@ -110,6 +111,11 @@ This file consolidates non-functional requirements already requested and stored 
   thread blocks merge until it is corrected, natively resolved, or answered with
   validated factual PR evidence; the required trusted-base `pr-feedback` check
   enforces the versioned Cursor usage-limit exception and fails closed otherwise.
+- `139` A non-automated pull request targeting `dev` needs a critique comment from a
+  different agent, and the latest verdict must be `approve`. The implementing
+  agent fixes every requested point until that approval. Dependabot, changelog
+  sync, application release, and package content-bump pull requests are exempt.
+  GitHub branch protection still has no required approval count (`079`).
 - `101` Agents waiting only on remote checks must progress another active, non-conflicting task
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
