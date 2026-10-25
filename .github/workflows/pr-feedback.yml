@@ -47,3 +47,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: bun ci-cd/check-pr-feedback.js --repo "$GITHUB_REPOSITORY" --pr "${{ github.event.pull_request.number }}"
+      - name: Enforce agent critique on non-automated PRs to dev
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ ! -f ci-cd/check-pr-agent-critique.js ]; then
+            echo "Trusted base has no agent-critique checker yet."
+            exit 0
+          fi
+          bun ci-cd/check-pr-agent-critique.js --repo "$GITHUB_REPOSITORY" --pr "${{ github.event.pull_request.number }}"
