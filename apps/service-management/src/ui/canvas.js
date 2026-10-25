@@ -764,13 +764,20 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     // Focus-stage zoom-in: blend pointer anchor toward a TIGHT selection point so
     // aggressive wheel-in does not park in empty soft-peer union void.
     // Relationships: endpoint corridor mid (not soft-hull union center).
+    //
+    // JUM-946: pointer anchors are canvas-inner coords (include CANVAS_ORIGIN);
+    // selectionZoomAnchorPoint() returns true model coords. Blending without
+    // model→canvas conversion pulled scroll into the virtual-canvas padding void
+    // (minimap still shows entities; viewport drifts to empty space).
     if (state.view.canvasStage === 'focus' && nextZoom > liveZoom + 0.02) {
       const zoomAnchor = selectionZoomAnchorPoint();
       if (zoomAnchor) {
         const deep = Math.min(1, Math.max(0, (nextZoom - 0.85) / 1.1));
         const blend = 0.32 + deep * 0.58;
-        anchorModelX += (zoomAnchor.x - anchorModelX) * blend;
-        anchorModelY += (zoomAnchor.y - anchorModelY) * blend;
+        const canvasAnchorX = modelToCanvasX(zoomAnchor.x);
+        const canvasAnchorY = modelToCanvasY(zoomAnchor.y);
+        anchorModelX += (canvasAnchorX - anchorModelX) * blend;
+        anchorModelY += (canvasAnchorY - anchorModelY) * blend;
       }
     }
 
