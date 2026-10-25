@@ -35,7 +35,10 @@ closed when the selected required suite is missing, skipped, empty, aborted, or 
 20. Scope-aware optimization is permitted for task-branch commit/push validation and
     PRs to `dev`; it must not omit required matrix cells for `main`.
 21. Exceptions require explicit approval recorded in the linked issue and pull request; exceptions may not bypass the `dev`-first promotion path or convert a failed or incomplete matrix into success.
-22. PR review is not a merge prerequisite. All required non-review checks remain mandatory and cannot be bypassed for any merge.
+22. GitHub approval count is not a merge prerequisite. Non-automated pull requests
+    targeting `dev` must pass the agent-critique check in Requirement `139`.
+    Automated pull requests are exempt. Every other required check remains
+    mandatory and cannot be bypassed for any merge.
 
 ## Examples
 

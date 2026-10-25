@@ -191,6 +191,18 @@ function isDependabotPullRequest({ headRef }) {
   return /^dependabot\//i.test(String(headRef || '').trim());
 }
 
+/**
+ * Pull requests opened by repository automation. Requirement 139 exempts these
+ * from the agent-critique gate. The four shapes are the same ones release
+ * governance already accepts without a task branch.
+ */
+function isAutomatedPullRequest(metadata) {
+  return isDependabotPullRequest(metadata)
+    || isGeneratedChangelogSync(metadata)
+    || isGeneratedAppRelease(metadata)
+    || isGeneratedPackageBump(metadata);
+}
+
 function validateReleasePullRequest({ title, body, headRef }) {
   const failures = [];
   if (isGeneratedChangelogSync({ title, body, headRef })) return failures;
@@ -499,6 +511,7 @@ module.exports = {
   GENERATED_PACKAGE_BUMP_TITLE,
   GENERATED_PACKAGE_BUMP_BODY_PREFIX,
   agentBranchPatterns,
+  isAutomatedPullRequest,
   isPlaceholder,
   loadSupportedAgents,
   issueIdentifierFrom,

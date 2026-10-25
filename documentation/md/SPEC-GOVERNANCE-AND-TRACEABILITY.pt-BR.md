@@ -148,8 +148,9 @@ Política de isolamento e nomenclatura:
   executam a matriz completa, além do job obrigatório de cobertura do CircleCI.
 - A evidência da matriz de `main` deve listar cada célula obrigatória e seu resultado terminal.
 - Uma matriz de `main` incompleta é evidência com falha; nunca pode ser interpretada como verde.
-- Review de PR é opcional. Branch protection e rulesets não devem exigir quantidade de
-  aprovações.
+- Branch protection e rulesets não devem exigir quantidade de aprovações no GitHub. Pull
+  requests não automatizados com destino `dev` precisam passar no check de crítica de agente
+  do Requisito `139`. Pull requests automatizados ficam isentos.
 - Isolamento da tarefa, promoção primeiro para `dev`, resolução de conversas e todos os
   requisitos de CI, cobertura, segurança, governança e matriz completa apropriados ao destino
   permanecem obrigatórios e terminalmente verdes.

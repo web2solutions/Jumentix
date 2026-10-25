@@ -20,8 +20,10 @@ Primary Codex runtime instructions for this repository:
     before planning or execution.
 13. Treat an epic as a Linear Project and never set it to `Completed` until its dedicated
     documentation Issue is completed under requirement `094`.
-14. Pull-request review is optional. Branch protection and rulesets must not require an approval
-    count; every required quality, coverage, security, and governance check remains mandatory.
+14. Branch protection and rulesets must not require an approval count. Non-automated
+    pull requests targeting `dev` must pass the agent-critique check in Requirement `139`.
+    Automated pull requests are exempt. Every required quality, coverage, security, and
+    governance check remains mandatory.
 15. Maintain valid status, priority, start/target dates, and labels for every assigned Linear
     Issue and Project; record material changes in Project Updates and fail closed on missing,
     stale, contradictory, or placeholder metadata under requirement `097`.
@@ -35,8 +37,10 @@ Primary Codex runtime instructions for this repository:
 19. **Wait for all required CI checks to pass** before merging. PRs targeting `dev` require
     `bun run test:unit` to pass. PRs targeting `main` require the full matrix
     (`bun run ci:gate:strict`) (Requirements `087`, `088`).
-20. **PR review is optional**; every other required CI, quality, coverage, security, and
-    governance check must be terminally successful and cannot be bypassed.
+20. **GitHub approval count is not required.** Non-automated pull requests targeting `dev`
+    must pass the agent-critique check (Requirement `139`); automated pull requests are
+    exempt. Every other required CI, quality, coverage, security, and governance check
+    must be terminally successful and cannot be bypassed.
 21. **Branch naming**: `codex/<nature>/<issue-id>-<short-slug>` for Codex agents.
     Allowed natures: `feature`, `fix`, `security`, `governance`, `docs`, `refactor`,
     `test`, `ci`, `release`, `chore`. PR titles must start with the matching Linear identifier:
