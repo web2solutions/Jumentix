@@ -17,7 +17,7 @@
         "@socket.io/redis-streams-adapter": "^0.3.1",
         "amqplib": "^2.0.1",
         "bcryptjs": "^3.0.3",
-        "body-parser": "^1.20.3",
+        "body-parser": "^1.20.9",
         "bullmq": "^6.3.8",
         "bunyan": "^1.8.15",
         "cassandra-driver": "^4.8.0",
@@ -143,7 +143,7 @@
         "vue-router": "^5.0.4",
       },
       "devDependencies": {
-        "@happy-dom/global-registrator": "20.14.5",
+        "@happy-dom/global-registrator": "21.0.4",
         "@types/node": "^24.10.1",
         "@typescript-eslint/eslint-plugin": "^8.68.0",
         "@typescript-eslint/parser": "^8.68.0",
@@ -155,7 +155,7 @@
         "eslint-plugin-vue": "^10.11.0",
         "fake-indexeddb": "6.2.5",
         "globals": "^17.12.0",
-        "happy-dom": "21.0.1",
+        "happy-dom": "21.0.4",
         "postcss": "^8.5.8",
         "sass": "^1.98.0",
         "typescript": "^5.9.3",
@@ -455,27 +455,22 @@
     "nextra-theme-docs@4.6.1": "patches/nextra-theme-docs@4.6.1.patch",
   },
   "overrides": {
-    "@loopback/express": {
-      "body-parser": "2.4.0",
-    },
-    "@loopback/rest": {
-      "body-parser": "2.4.0",
-    },
     "adm-zip": "^0.6.0",
-    "body-parser": "1.20.9",
+    "body-parser@1": {
+      ".": "1.20.9",
+    },
+    "body-parser@2": {
+      ".": "2.4.0",
+    },
     "brace-expansion": "^5.0.9",
     "dompurify": "^3.4.17",
-    "express@5": {
-      "body-parser": "2.4.0",
-    },
-    "fast-uri": "4.2.3",
+    "fast-uri": "^4.2.3",
     "fast-xml-parser": "^5.10.1",
     "fastify": "^5.12.5",
     "find-my-way": "^9.7.0",
     "follow-redirects": "1.16.1",
     "form-data": "^4.0.4",
     "handlebars": "^4.7.10",
-    "happy-dom": "21.0.4",
     "hono": "^4.13.12",
     "js-yaml": "^5.2.3",
     "msgpack5": "^6.1.0",
@@ -489,7 +484,7 @@
     "shell-quote": "^1.9.0",
     "svgo": "^4.0.2",
     "tar": "^7.5.17",
-    "undici": "6.29.1",
+    "undici": "^6.29.1",
     "uuid": "^14.0.1",
     "vite": "^8.3.5",
     "vue-eslint-parser": {
@@ -1060,7 +1055,7 @@
 
     "@hapi/bourne": ["@hapi/bourne@3.0.0", "", {}, "sha512-Waj1cwPXJDucOib4a3bAISsKJVb15MKi9IvmTI/7ssVEm6sywXGjVJDhl6/umt1pK1ZS7PacXU3A1PmFKHEZ2w=="],
 
-    "@happy-dom/global-registrator": ["@happy-dom/global-registrator@20.14.5", "", { "dependencies": { "@types/node": ">=20.0.0", "happy-dom": "^20.14.5" } }, "sha512-B05ID9DhSwLs6mlm1fzlkAtTIvB3duCvjJjfr19LBrlTK7VZtRjDqoTRIVv13GuYuNdhByu8LSZgThwV3Rkj7g=="],
+    "@happy-dom/global-registrator": ["@happy-dom/global-registrator@21.0.4", "", { "dependencies": { "@types/node": ">=20.0.0", "happy-dom": "^21.0.4" } }, "sha512-Bbr0hW9hhDhBf3Jp0EyDlkCbFgbr0z2jd3BMKYOYW+fOkPM4Nx195GMXyCtRCGEgoNn6i09FabXrSkNFm2ONzg=="],
 
     "@headlessui/react": ["@headlessui/react@2.2.10", "", { "dependencies": { "@floating-ui/react": "^0.26.16", "@react-aria/focus": "^3.20.2", "@react-aria/interactions": "^3.25.0", "@tanstack/react-virtual": "^3.13.9", "use-sync-external-store": "^1.5.0" }, "peerDependencies": { "react": "^18 || ^19 || ^19.0.0-rc", "react-dom": "^18 || ^19 || ^19.0.0-rc" } }, "sha512-5pVLNK9wlpxTUTy9GpgbX/SdcRh+HBnPktjM2wbiLTH4p+2EPHBO1aoSryUCuKUIItdDWO9ITlhUL8UnUN/oIA=="],
 

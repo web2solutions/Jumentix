@@ -250,6 +250,11 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('USER_ZOOM_LAMBDA');
     expect(canvasSource).toContain('dataset.userZooming');
     expect(canvasSource).toContain('Math.exp(-pixels * 0.00165)');
+    // JUM-946: focus zoom blend must convert selection model coords → canvas-inner
+    // (CANVAS_ORIGIN) before mixing with the pointer scroll anchor.
+    expect(canvasSource).toContain('selectionZoomAnchorPoint');
+    expect(canvasSource).toContain('modelToCanvasX(zoomAnchor.x)');
+    expect(canvasSource).toContain('modelToCanvasY(zoomAnchor.y)');
     expect(canvasSource).toContain('typeEl.addEventListener(\'pointerdown\'');
     expect(canvasSource).toContain('addFieldBtn.addEventListener(\'pointerdown\'');
     expect(canvasSource).toContain('event.preventDefault()');
