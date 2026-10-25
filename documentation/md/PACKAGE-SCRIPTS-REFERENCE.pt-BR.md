@@ -70,6 +70,7 @@ bun run <comando>
 | `packages:check-suites` | Use quando precisar desta operação específica do workspace. | `bun run packages:check-suites` | `bun ci-cd/check-package-suites.js` |
 | `governance:check-identity` | Use quando precisar desta operação específica do workspace. | `bun run governance:check-identity` | `bun ci-cd/check-commit-authorship.js --identity` |
 | `pr:governance:check` | Use quando precisar desta operação específica do workspace. | `bun run pr:governance:check` | `bun ci-cd/check-pr-governance.js` |
+| `pr:agent-critique:check` | Confere o gate de crítica de agente de uma pull request. Exige `GH_TOKEN`. | `bun run pr:agent-critique:check -- --repo owner/repository --pr 123` | `bun ci-cd/check-pr-agent-critique.js` |
 | `serverless:check-handlers` | Use quando precisar desta operação específica do workspace. | `bun run serverless:check-handlers` | `bun ci-cd/check-serverless-handler-paths.js` |
 | `ci:smoke` | Use em validações de CI e gates de entrega. | `bun run ci:smoke` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} NODE_ENV=ci bun apps/backend-template/scripts/run-api-smoke.js` |
 | `ci:integration` | Use em validações de CI e gates de entrega. | `bun run ci:integration` | `JUMENTIX_JWT_TOKEN_SECRET_KEY=${JUMENTIX_JWT_TOKEN_SECRET_KEY:-ci_jwt_secret_key} bun ci-cd/run-integration-tests.js` |

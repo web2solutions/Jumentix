@@ -12,8 +12,9 @@ and delivery governance.
 2. Every change must start from a dedicated branch that follows project branching principles.
 3. Branches must be tied to planned/tracked work items in Linear (Requirement `095`).
 4. Delivery to `main` must happen through PR flow with mandatory checks.
-5. Pull-request review is optional. Branch protection and rulesets must not configure a required
-   approval count.
+5. Branch protection and rulesets must not configure a required approval count.
+   Non-automated pull requests targeting `dev` still require the agent-critique
+   check in Requirement `139`. Automated pull requests are exempt from that check.
 6. The `dev`-first path, required CI/coverage/security checks, conversation resolution, and
    false-green protections remain mandatory. Every required check must be reported and terminal
    green.
@@ -32,5 +33,7 @@ and delivery governance.
 1. Governance docs and agent behavior prohibit local direct change on `main`.
 2. New implementation work is traceable to branch -> PR -> Linear Issue -> Linear Project.
 3. Any emergency exception is documented in the related issue/PR with audit rationale.
-4. Repository protection matches the review-optional policy and cannot override a failed,
-   missing, skipped, cancelled, timed-out, or incomplete quality gate.
+4. Repository protection does not set a GitHub approval count, enforces the
+   agent-critique check for non-automated pull requests to `dev` (Requirement `139`),
+   and cannot override a failed, missing, skipped, cancelled, timed-out, or
+   incomplete quality gate.

@@ -3376,6 +3376,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/check-pr-agent-critique.test.ts",
+      "path": "ci-cd/test/check-pr-agent-critique.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/check-pr-feedback.test.ts",
       "path": "ci-cd/test/check-pr-feedback.test.ts",
       "layer": "tooling",
