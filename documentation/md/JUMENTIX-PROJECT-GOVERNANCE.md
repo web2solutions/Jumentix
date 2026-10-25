@@ -99,8 +99,10 @@ If a PR is not linked to project work items, it is out of process.
 13. Missing, skipped, empty, cancelled, timed-out, aborted, or unreported required tests or
     matrix cells fail the selected gate.
 14. Test failures and discovery failures must propagate a non-zero status; false-green fallbacks are prohibited.
-15. PR review is optional. Branch protection and rulesets require no approval count, while every
-    destination-appropriate check remains mandatory and terminally successful.
+15. Branch protection and rulesets require no GitHub approval count. Non-automated pull
+    requests targeting `dev` must pass the agent-critique check in Requirement `139`.
+    Automated pull requests are exempt. Every destination-appropriate check remains
+    mandatory and terminally successful.
 
 ### Canonical agent registry evidence
 
