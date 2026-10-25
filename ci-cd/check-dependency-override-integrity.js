@@ -62,7 +62,9 @@ const REQUIRED_OVERRIDES = {
   postcss: '^8.5.26',
   nanoid: '^3.3.18',
   // Raised on 2026-08-11: GHSA-7p8r-x3mc-p8w7 affects fast-uri 3.x.
-  'fast-uri': '^4.1.2',
+  // Raised on 2026-10-25: GHSA-w74x-v6f9-j3xg and GHSA-wjr9-j795-jxcr are fixed
+  // in fast-uri 4.2.3. 4.2.2 is still a blocking warning.
+  'fast-uri': '4.2.3',
   svgo: '^4.0.2',
   'fast-xml-parser': '^5.10.1',
   'shell-quote': '^1.9.0',
@@ -94,8 +96,9 @@ const REQUIRED_OVERRIDES = {
   msgpack5: '^6.1.0',
   // Raised on 2026-08-13: openapi-typescript@5 nested `undici@5.29.0` past the
   // resolutions pin; 5.29.0 is the latest 5.x and carries HIGH WebSocket GHSAs.
-  // Flat override lifts it to the already-resolved 6.28.0 line.
-  undici: '^6.28.0',
+  // Raised on 2026-10-25: GHSA-xjj6-f33q-929c and GHSA-4qv8-2p9j-2685 are fixed
+  // in undici 6.29.1. 6.29.0 is still fatal.
+  undici: '6.29.1',
   // Raised on 2026-09-30: GHSA-667r / GHSA-9q9j / GHSA-hwr6 / GHSA-p68q are
   // fixed in fastify >=5.12.2; nested 5.10.0 / 5.12.0 copies were still fatal.
   fastify: '^5.12.5',
@@ -107,9 +110,9 @@ const REQUIRED_OVERRIDES = {
 /** Resolutions that must survive alongside the overrides. */
 const REQUIRED_RESOLUTIONS = {
   serverless: '^4.41.0',
-  // Raised on 2026-08-11: undici 6.28.0 keeps the serverless/node-gyp major while
-  // clearing the current moderate advisories.
-  undici: '^6.28.0',
+  // Raised on 2026-10-25: undici 6.29.1 clears GHSA-xjj6-f33q-929c and
+  // GHSA-4qv8-2p9j-2685. 6.29.0 is still fatal.
+  undici: '6.29.1',
   mermaid: '^11.16.1',
   // Raised on 2026-10-23 (JUM-944): align with override for GHSA-cg2g / GHSA-mrv2.
   dompurify: '^3.4.17',
