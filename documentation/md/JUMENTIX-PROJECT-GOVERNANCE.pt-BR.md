@@ -107,8 +107,10 @@ Se um PR não estiver vinculado aos itens de trabalho do projeto, ele estará fo
 13. Testes ou células obrigatórias ausentes, ignorados, vazios, cancelados, expirados, abortados
     ou não reportados reprovam o gate selecionado.
 14. Falhas de teste e de descoberta devem propagar status diferente de zero; fallbacks de falso positivo são proibidos.
-15. Review de PR é opcional. Branch protection e rulesets não exigem quantidade de aprovações,
-    mas todos os checks apropriados ao destino permanecem obrigatórios e terminalmente verdes.
+15. Branch protection e rulesets não exigem quantidade de aprovações no GitHub. Pull requests
+    não automatizados com destino `dev` precisam passar no check de crítica de agente do
+    Requisito `139`. Pull requests automatizados ficam isentos. Todos os checks apropriados
+    ao destino permanecem obrigatórios e terminalmente verdes.
 
 ### Evidência do Agent Registry canônico
 
