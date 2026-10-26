@@ -64,6 +64,15 @@ Configured values:
 - `buildCommand`: `website:deps:build` then app `build` (see above)
 - `devCommand`: `bun run dev`
 - `outputDirectory`: `.next`
+- `ignoreCommand`: `sh scripts/vercel-ignore-build.sh`
+
+## Dependabot pull requests
+
+A Dependabot head ref (`dependabot/...`) does not start a Vercel build.
+`ignoreCommand` runs before install. The script exits 0 for those refs, which
+tells Vercel to skip, and exits 1 for every other ref, including `dev`, `main`,
+and a missing ref (CLI deploys). The merge commit that lands the bump on `dev`
+or `main` still builds, because that ref is not `dependabot/...`.
 
 ## Required Vercel environment
 
