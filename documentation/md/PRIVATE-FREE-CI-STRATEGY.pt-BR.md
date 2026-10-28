@@ -13,6 +13,10 @@ SonarQube Cloud permanecem ativos porque o repositório é público; eles são
 publicados pelo gate completo de cobertura no CircleCI e não substituem os
 thresholds controlados pelo repositório.
 
+Um job do CircleCI interrompido (halt) reporta sucesso e a PR reaproveita os
+status do push do head; por isso um push roda todo job que a PR dele vai
+exigir, contra a base dessa PR (Requisito 113 regra 14; JUM-936, JUM-939).
+
 Checks obrigatórios falham fechado. Resultado pulado, neutro, ausente,
 expirado, cancelado ou pendente não é verde.
 
@@ -30,15 +34,20 @@ expirado, cancelado ou pendente não é verde.
 
 PRs de tarefa miram `dev`; somente promoção de release de `dev` mira `main`.
 
+Um push de branch de tarefa antes de a PR existir roda a coluna da PR de
+tarefa contra `dev`; um push em `dev` roda a coluna de promoção contra `main`,
+porque `dev` é o head da PR de release.
+
 | Gate | PR de tarefa para `dev` | push em `dev` | promoção `dev -> main` |
 | --- | --- | --- | --- |
-| Build/teste por branch | obrigatório, testes afetados por camada | unitário health obrigatório | matriz estrita obrigatória |
-| Review third-party | obrigatório | não obrigatório | obrigatório |
-| Cobertura do repositório | adiada | adiada | obrigatória |
-| Upload Codecov | adiado | adiado | obrigatório |
-| Scan Sonar | adiado | adiado | obrigatório |
-| Qualidade website | somente quando selecionada pelo `test-map.json` | adiada | obrigatória |
-| Matriz de banco | adiada | adiada | obrigatória |
+| Build/teste por branch | obrigatório, testes afetados por camada | matriz estrita obrigatória | matriz estrita obrigatória |
+| Review third-party | obrigatório | obrigatório | obrigatório |
+| Matriz de browsers | obrigatória | obrigatória | obrigatória |
+| Cobertura do repositório (projeto + patch) | obrigatória | obrigatória | obrigatória |
+| Upload Codecov | obrigatório | obrigatório | obrigatório |
+| Scan Sonar | não roda (Sonar analisa `dev`, `main` e PRs de release) | obrigatório (branch `dev`) | obrigatório |
+| Qualidade website | somente quando selecionada pelo `test-map.json` | obrigatória | obrigatória |
+| Matriz de banco | não roda | obrigatória | obrigatória |
 
 PRs de tarefa para `dev` têm alvo operacional de dez minutos ou menos. No
 CircleCI, o job `branch-gate` classifica o contexto, lê `test-map.json` e
@@ -49,22 +58,22 @@ agendado noturno do CircleCI ou em execuções completas manuais.
 
 ## Contrato de cobertura
 
-- Statements, linhas e funções: 99%.
-- Branches: 90%.
-- Linhas alteradas: 99%.
+- Statements, linhas, funções e branches: 98% (`ci-cd/check-coverage-thresholds.js`).
+- Linhas alteradas: 99% (`ci-cd/check-patch-coverage.js`).
 - O CircleCI retém evidência JSON/LCOV e envia LCOV ao Codecov
   quando o job completo `coverage` roda; o fallback do GitHub Actions faz o
   mesmo quando `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` é `true`.
 - SonarQube Cloud lê os mesmos caminhos LCOV declarados em
   `sonar-project.properties`.
-- Gates locais e PRs até `dev` ficam rápidos ao adiar cobertura completa e
-  patch coverage para a promoção de release.
+- Gates locais ficam focados na mudança. O CI hospedado roda cobertura
+  completa e de patch em toda PR para `dev`, todo push de branch de tarefa
+  (contra `dev`) e todo push em `dev` (Requisito 020, JUM-923).
 
 ## Proteção de branch
 
-`dev` exige os checks baratos do destino: os contextos do CircleCI
-`ci/circleci: branch-gate`, `ci/circleci: third-party-review` e
-`ci/circleci: browser-matrix`, mais os checks `pr-feedback` do GitHub Actions
+`dev` exige os checks do destino: os contextos do CircleCI
+`ci/circleci: branch-gate`, `ci/circleci: third-party-review`,
+`ci/circleci: browser-matrix` e `ci/circleci: coverage`, mais os checks `pr-feedback` do GitHub Actions
 sempre ativos, assinaturas verificadas, pull requests, proteção
 contra non-fast-forward, proteção contra deleção e threads de review resolvidas.
 O check de confiabilidade-A do SonarCloud é absorvido pelo job `coverage` do

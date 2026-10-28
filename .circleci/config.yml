@@ -81,43 +81,10 @@ commands:
     steps:
       - run:
           name: Resolve pull request metadata
-          command: |
-            if [ -z "${CIRCLE_PULL_REQUEST:-}" ]; then
-              {
-                echo "export AAA_CI_IS_PULL_REQUEST=0"
-                echo "export JUMENTIX_CI_IS_PULL_REQUEST=0"
-                echo "export JUMENTIX_QUALITY_GATE_TARGET=${CIRCLE_BRANCH:-dev}"
-                echo "export JUMENTIX_PR_HEAD_REF=${CIRCLE_BRANCH:-}"
-                echo "export AAA_PR_HEAD_REF=${CIRCLE_BRANCH:-}"
-              } >> "$BASH_ENV"
-              exit 0
-            fi
-
-            PR_NUMBER="${CIRCLE_PULL_REQUEST##*/}"
-            REPO="${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
-            node - "$REPO" "$PR_NUMBER" >> "$BASH_ENV" \<<'NODE'
-            const [repo, number] = process.argv.slice(2);
-            const url = `https://api.github.com/repos/${repo}/pulls/${number}`;
-            const response = await fetch(url, {
-              headers: { accept: 'application/vnd.github+json' }
-            });
-            if (!response.ok) {
-              throw new Error(`failed to resolve PR metadata: ${response.status} ${response.statusText}`);
-            }
-            const pr = await response.json();
-            const shellQuote = (value) => `'${String(value || '').replace(/'/g, "'\\''")}'`;
-            console.log('export AAA_CI_IS_PULL_REQUEST=1');
-            console.log('export JUMENTIX_CI_IS_PULL_REQUEST=1');
-            console.log(`export JUMENTIX_PR_BASE_REF=${shellQuote(pr.base?.ref)}`);
-            console.log(`export AAA_PR_BASE_REF=${shellQuote(pr.base?.ref)}`);
-            console.log(`export JUMENTIX_QUALITY_GATE_TARGET=${shellQuote(pr.base?.ref)}`);
-            console.log(`export JUMENTIX_PR_HEAD_REF=${shellQuote(pr.head?.ref)}`);
-            console.log(`export AAA_PR_HEAD_REF=${shellQuote(pr.head?.ref)}`);
-            console.log(`export JUMENTIX_PR_TITLE=${shellQuote(pr.title)}`);
-            console.log(`export AAA_PR_TITLE=${shellQuote(pr.title)}`);
-            console.log(`export JUMENTIX_PR_BODY=${shellQuote(pr.body)}`);
-            console.log(`export AAA_PR_BODY=${shellQuote(pr.body)}`);
-            NODE
+          # Empty CIRCLE_PULL_REQUEST falls back to the open PR for this branch
+          # (JUM-936): a pipeline that started just before its PR opened must
+          # still classify as that PR, and so must a workflow re-run.
+          command: node ci-cd/resolve-pr-metadata.js >> "$BASH_ENV"
   require_ci_job:
     parameters:
       job:
@@ -428,7 +395,10 @@ jobs:
           name: Enforce patch coverage
           command: |
             source "$BASH_ENV"
-            if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
+            # Keyed on the PR base, not CIRCLE_PULL_REQUEST: a push without a PR
+            # carries the base its PR will target (JUM-939), and its green
+            # coverage status is what that PR accepts.
+            if [ -n "${JUMENTIX_PR_BASE_REF:-}" ]; then
               bun run coverage:merge
               # Mirror .github/workflows/ci.yml: a dev→main promotion has no new
               # patch beyond protected `dev` (PR #548 / JUM-900). Measuring
@@ -449,7 +419,7 @@ jobs:
                 bun run coverage:patch
               fi
             else
-              echo "Patch coverage is PR-only; project coverage already passed."
+              echo "No PR base for ${CIRCLE_BRANCH:-unknown} (main push or Dependabot without a PR); project coverage already passed."
             fi
       - run:
           name: Install verified Codecov CLI

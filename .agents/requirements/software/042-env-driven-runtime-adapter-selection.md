@@ -14,7 +14,7 @@ Runtime startup must be driven by environment variables and editable through Ser
   - `JUMENTIX_REALTIME_API` (default `no`)
   - `JUMENTIX_REALTIME_API_PROTOCOL` (default `websocket`)
   - `JUMENTIX_REALTIME_API_DATABASE_DRIVER` (Mongo, PostgreSQL, MySQL, MS SQL, RDS, Aurora, Cassandra)
-- `servicemangement` must read and update these environment values in the active env file with cross-platform behavior.
+- `apps/service-management` must read and update these environment values in the active env file with cross-platform behavior.
 
 ## Guardrails
 

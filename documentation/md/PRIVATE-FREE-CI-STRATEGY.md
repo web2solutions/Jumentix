@@ -14,7 +14,9 @@ published by the full coverage gate on CircleCI and must not replace
 repository-owned threshold checks.
 
 Required checks fail closed. A skipped, neutral, missing, timed-out, cancelled,
-or pending result is not green.
+or pending result is not green. A halted CircleCI job reports success and a PR
+reuses its head's push statuses, so a push runs every job its PR will require,
+against that PR's base (Requirement 113 rule 14; JUM-936, JUM-939).
 
 ## Provider map
 
@@ -30,15 +32,20 @@ or pending result is not green.
 
 Task PRs target `dev`; only release promotion from `dev` targets `main`.
 
+A task-branch push before its PR exists runs the `dev` task PR column against
+`dev`; a `dev` push runs the promotion column against `main`, because `dev`
+heads the release PR.
+
 | Gate | `dev` task PR | `dev` push | `dev -> main` promotion |
 | --- | --- | --- | --- |
-| Branch-aware build/test | required, layer-affected tests | required, unit health gate | required, strict matrix |
-| Third-party review | required | not required | required |
-| Repository coverage | deferred | deferred | required |
-| Codecov upload | deferred | deferred | required |
-| Sonar scan | deferred | deferred | required |
-| Website quality | only when selected by `test-map.json` | deferred | required |
-| Database matrix | deferred | deferred | required |
+| Branch-aware build/test | required, layer-affected tests | required, strict matrix | required, strict matrix |
+| Third-party review | required | required | required |
+| Browser matrix | required | required | required |
+| Repository coverage (project + patch) | required | required | required |
+| Codecov upload | required | required | required |
+| Sonar scan | not run (Sonar analyses `dev`, `main` and release PRs) | required (`dev` branch) | required |
+| Website quality | only when selected by `test-map.json` | required | required |
+| Database matrix | not run | required | required |
 
 Task PRs to `dev` have a ten-minute-or-less operating target. On CircleCI the
 `branch-gate` job classifies the context, reads `test-map.json`, and runs only
@@ -49,22 +56,22 @@ CircleCI nightly scheduled trigger or manual full runs.
 
 ## Coverage contract
 
-- Statements, lines and functions: 99%.
-- Branches: 90%.
-- Changed lines: 99%.
+- Statements, lines, functions and branches: 98% (`ci-cd/check-coverage-thresholds.js`).
+- Changed lines: 99% (`ci-cd/check-patch-coverage.js`).
 - CircleCI retains JSON and LCOV evidence and uploads LCOV to
   Codecov when the full `coverage` job runs; the GitHub Actions fallback does
   the same when `JUMENTIX_ENABLE_GITHUB_ACTIONS_CI` is `true`.
 - SonarQube Cloud reads the same LCOV paths declared in
   `sonar-project.properties`.
-- Local gates and PRs up to `dev` stay fast by deferring full coverage and
-  patch coverage to release promotion.
+- Local gates stay change-focused. Hosted CI runs full and patch coverage on
+  every PR to `dev`, every task-branch push (against `dev`) and every `dev`
+  push (Requirement 020, JUM-923).
 
 ## Branch protection
 
-`dev` requires the cheap destination checks: the CircleCI contexts
-`ci/circleci: branch-gate`, `ci/circleci: third-party-review`, and
-`ci/circleci: browser-matrix`, plus the always-on GitHub Actions `pr-feedback`
+`dev` requires the destination checks: the CircleCI contexts
+`ci/circleci: branch-gate`, `ci/circleci: third-party-review`,
+`ci/circleci: browser-matrix`, and `ci/circleci: coverage`, plus the always-on GitHub Actions `pr-feedback`
 checks, verified signatures, pull requests, non-fast-forward
 protection, deletion protection, and resolved review threads. The SonarCloud
 reliability-A check is subsumed by the CircleCI `coverage` job.

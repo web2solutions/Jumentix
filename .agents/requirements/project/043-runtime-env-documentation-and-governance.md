@@ -12,7 +12,7 @@ Whenever runtime keys, startup adapters, or PM2 process orchestration change, th
 - `documentation/md/SETUP-RUNTIME-AND-API.md`
 - `documentation/md/SERVICE-MANAGEMENT-APPLICATION.md`
 - `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`
-- `servicemangement/README.md`
+- `apps/service-management/README.md`
 
 ## Runtime Keys in Scope
 

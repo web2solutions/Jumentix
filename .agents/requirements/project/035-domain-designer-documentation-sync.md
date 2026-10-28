@@ -5,7 +5,7 @@ Domain Designer evolved into a strategic developer-product capability and must b
 
 ## Rules
 1. Any Domain Designer feature change must update:
-   - `servicemangement/README.md`
+   - `apps/service-management/README.md`
    - relevant project docs in `documentation/md/`
 2. README documentation index must include discoverable links for Domain Designer documentation.
 3. Domain Designer MVP roadmap/status must remain visible in project documentation and linked to backlog tracking.

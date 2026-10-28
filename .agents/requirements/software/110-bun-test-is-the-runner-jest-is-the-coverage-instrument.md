@@ -16,8 +16,8 @@
 
    This is not sentiment about Jest. Bun's lcov output contains **no branch
    records at all** — no `BRF`, no `BRH`, no `BRDA` — because Bun has no branch
-   metric and no flag adds one. Requirements `020` and `063` mandate 90% branch
-   coverage. A Bun-only pipeline cannot measure it, and the honest choice between
+   metric and no flag adds one. Requirements `020` and `063` mandate a branch
+   threshold (90% when this was written; 98% since JUM-681). A Bun-only pipeline cannot measure it, and the honest choice between
    *losing the metric* and *keeping one tool for one job* is the second.
 
 3. **`ci-cd/check-coverage-thresholds.js` is the authority on all four metrics.**

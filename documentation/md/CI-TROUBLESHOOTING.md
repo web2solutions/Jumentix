@@ -192,3 +192,21 @@ bun run ci:smoke
 ```
 
 This is the same order used by `bun run ci:gate`.
+
+## 9) A required CircleCI check fails at "Classify CI context"
+
+Symptom: the job stops after `Classify CI context for <job>` with
+`[ci-context] <job> is required on pull requests from <branch>, but no open
+pull request was resolved for this <context> pipeline.`
+
+Cause: a halted CircleCI job reports success and a PR reuses its head's push
+statuses, so a push must run what its PR will require (Requirement 113 rule 14).
+Task branches and `dev` do run it, against `dev` and `main`. Dependabot heads
+(base unknown) and generated release heads (need PR-only evidence) cannot, so
+they fail instead of reporting a synthetic green.
+
+Fix: open the pull request, then re-run the workflow. `ci-cd/resolve-pr-metadata.js`
+then resolves the PR by branch and the job runs as the PR.
+
+How to spot an old synthetic green: a `ci/circleci:*` job that ended in ~36–60 s
+with its step list ending at `Classify CI context for <job>`.

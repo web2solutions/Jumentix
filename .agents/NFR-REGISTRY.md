@@ -40,6 +40,8 @@ This file consolidates non-functional requirements already requested and stored 
 - Entity metrics (`GET /{entities}/metrics`) are bounded by `x-metrics-capabilities` and exclude tombstones (JUM-793).
 - `128` Requirement changes take precedence in the release process (sequence only, no gate exemption)
 - `129` Mandatory Firebase RTDB agent progress bus (`agent-bus:publish|watch|status`)
+- `138` Mandatory ai-memory in every agent session (cross-harness durable memory;
+  attestation-based usage; in-tree routing required)
 - `130` Measured claims and bounded work: no unmeasured numbers, no proxy stated as cause
 - `131` Built artifacts must carry every runtime export their source barrel declares
 - `132` No orphaned published artifacts: reachable, or declared with the issue that owns it
@@ -63,7 +65,8 @@ This file consolidates non-functional requirements already requested and stored 
   an audience matrix (prospect / developer / contributor / agent) and an internal-vocabulary
   ban on public layers enforced by `docs:check-audience` (shrink-only allow-list, JUM-892).
 - `068` NFR capture and registry governance.
-- `069` Website commercial/static/vercel governance.
+- `069` Website commercial/static/vercel governance. Dependabot pull requests
+  do not start a Vercel website build; merges onto `dev` and `main` still do.
 - `070` npm organization and vercel scope integration governance; npm publication is automated
   after each application release on `main` (`app-release.yml` → `npm-publish.yml`, JUM-894),
   with automated patch bumps when published package content changes without a version bump
@@ -99,7 +102,8 @@ This file consolidates non-functional requirements already requested and stored 
 - `096` Bun `1.4.2` is the pinned internal package manager and command interface; Node 22 is allowed only at declared compatibility and tool boundaries.
 - `097` Linear task and Project metadata lifecycle: agents must maintain valid status, priority, dates, labels, ownership, milestone alignment, and auditable Project Updates from acceptance through completion.
 - `098` Commit, push, and merge authorization is restricted to the project owner and explicitly
-  authorized identities; platform protection requires checks but not PR approval.
+  authorized identities; platform protection requires checks and does not set a GitHub
+  approval count. Non-automated PRs to `dev` still pass Requirement `139`.
 
 ## Rule of Use
 
@@ -108,6 +112,11 @@ This file consolidates non-functional requirements already requested and stored 
   thread blocks merge until it is corrected, natively resolved, or answered with
   validated factual PR evidence; the required trusted-base `pr-feedback` check
   enforces the versioned Cursor usage-limit exception and fails closed otherwise.
+- `139` A non-automated pull request targeting `dev` needs a critique comment from a
+  different agent, and the latest verdict must be `approve`. The implementing
+  agent fixes every requested point until that approval. Dependabot, changelog
+  sync, application release, and package content-bump pull requests are exempt.
+  GitHub branch protection still has no required approval count (`079`).
 - `101` Agents waiting only on remote checks must progress another active, non-conflicting task
   in its own worktree and recheck the waiting task at material boundaries.
 - `102` Every executing task must publish truthful, task-specific Linear Project Updates at
@@ -132,7 +141,7 @@ This file consolidates non-functional requirements already requested and stored 
   identical behaviour — the AdonisJS adapter passed every test while integrating nothing.
 - `110` `bun:test` is the test runner; Jest is retained solely as the coverage
   instrument, because Bun emits no branch records at all and Requirements 020/063 mandate
-  90% branch coverage. `ci-cd/check-coverage-thresholds.js` is the
+  a branch threshold (98% since JUM-681). `ci-cd/check-coverage-thresholds.js` is the
   authority on all four metrics, reading Istanbul's report rather than lcov (which has no
   statement counter) and failing closed on any it cannot measure. A metric may sit below its
   threshold only under a dated, issue-tracked exception that ratchets: below its floor fails,
@@ -157,7 +166,7 @@ This file consolidates non-functional requirements already requested and stored 
   unparseable declaration (Requirement 065).
 
 - `112` Every workspace package and app owns a test suite covering its own source, at
-  the project's 99% standard. Coverage borrowed from a consumer measures the consumer: a
+  the project coverage threshold (98% on all four metrics, Requirement 063). Coverage borrowed from a consumer measures the consumer: a
   library exercised only by an application's tests is not tested, and the break surfaces
   three layers up where the reader starts at the wrong end. Packages do not depend on one
   another's suites in the development workflow — a commit runs the affected suites, and the
@@ -174,9 +183,14 @@ This file consolidates non-functional requirements already requested and stored 
   always-on exceptions (`pr-feedback.yml`, the `ci.yml` `sync-changelog` and
   `pr-feedback` jobs, `npm-publish.yml`). Every PR to `dev` (and every push to
   `dev`) must run the CircleCI `coverage` job fail-closed (JUM-923 / Req `020`);
-  task-branch *pushes* stay change-focused. Release promotion to `main` runs the
+  local task-branch hooks stay change-focused. Release promotion to `main` runs the
   full matrix (coverage, Codecov, Sonar, website, integration, workspace,
   database). SonarQube Cloud and Codecov run on CircleCI without interruption.
+  A halted CircleCI job reports success and a new PR reuses its head's push
+  statuses, so a push runs every job its PR will require against that PR's
+  base (task branch: PR-to-`dev` set; `dev`: release set), fails those it
+  cannot run, and `resolve_pr_metadata` resolves the open PR by branch when
+  CircleCI omits it (JUM-936, JUM-939; rule 14).
 - `114` Agent onboard uses an operator-confirmed filesystem root (this host:
   `/Users/eduardoalmeida/apps/XpertMinds`) and the layout
   `<root>/<agent-identifier>/Jumentix` as the only SoT checkout for that agent.
@@ -200,6 +214,9 @@ This file consolidates non-functional requirements already requested and stored 
   starting or resuming work, avoiding silent overlap or duplicate delivery.
 - `129` Agents must publish and consume the Firebase RTDB agent progress bus for
   machine-readable peer sync; Firestore remains ownership SSOT (`089` / `121`).
+- `138` Agents working on this repository must use ai-memory for durable
+  cross-session and cross-harness memory; retrieve before resuming prior work;
+  keep managed instruction blocks and project skills in-tree (`077` / `121`).
 - `122` Task-owned branch and PR naming governance (migrated from duplicate `079`).
 - `124` Monorepo root layout governance (migrated from duplicate `060`).
 - `125` Supported agents are declared as data in `.agents/supported-agents.json`; the PR

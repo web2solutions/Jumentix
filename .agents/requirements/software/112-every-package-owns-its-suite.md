@@ -8,7 +8,8 @@
 ## Requirement
 
 1. **Every workspace package and every app owns a test suite covering its own
-   source**, held to the project's 99% standard. A package whose only coverage
+   source**, held to the project coverage threshold (98% on all four metrics,
+   Requirement `063`; 99% when this was written). A package whose only coverage
    comes from an application's tests is not tested — the application is.
 
    The distinction is invisible in an aggregate number and decisive in practice.

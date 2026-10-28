@@ -191,6 +191,18 @@ function isDependabotPullRequest({ headRef }) {
   return /^dependabot\//i.test(String(headRef || '').trim());
 }
 
+/**
+ * Pull requests opened by repository automation. Requirement 139 exempts these
+ * from the agent-critique gate. The four shapes are the same ones release
+ * governance already accepts without a task branch.
+ */
+function isAutomatedPullRequest(metadata) {
+  return isDependabotPullRequest(metadata)
+    || isGeneratedChangelogSync(metadata)
+    || isGeneratedAppRelease(metadata)
+    || isGeneratedPackageBump(metadata);
+}
+
 function validateReleasePullRequest({ title, body, headRef }) {
   const failures = [];
   if (isGeneratedChangelogSync({ title, body, headRef })) return failures;
@@ -440,8 +452,15 @@ async function run(options = {}) {
     || String(metadata.body || '').trim()
     || String(metadata.baseRef || '').trim()
   );
-  const shouldValidatePullRequest = resolvePullRequestFlag(options.isPullRequest)
-    || hasExplicitPullRequestMetadata;
+  // CI declares the context. A push exports the base its PR *will* target
+  // (JUM-939) with AAA_CI_IS_PULL_REQUEST=0; that base is not PR metadata, and
+  // validating it as a release PR with an empty title failed the strict gate
+  // on every `dev` push (JUM-941, CircleCI job 7220).
+  const pullRequestFlag = options.isPullRequest ?? process.env.AAA_CI_IS_PULL_REQUEST;
+  const declaredNotPullRequest = resolvePullRequestFlag(pullRequestFlag) === false
+    && String(pullRequestFlag ?? '').trim() !== '';
+  const shouldValidatePullRequest = !declaredNotPullRequest
+    && (resolvePullRequestFlag(pullRequestFlag) || hasExplicitPullRequestMetadata);
   const failures = [
     ...validateSupportedAgents(options.rootDir),
     ...validateTemplates(options.rootDir),
@@ -492,6 +511,7 @@ module.exports = {
   GENERATED_PACKAGE_BUMP_TITLE,
   GENERATED_PACKAGE_BUMP_BODY_PREFIX,
   agentBranchPatterns,
+  isAutomatedPullRequest,
   isPlaceholder,
   loadSupportedAgents,
   issueIdentifierFrom,

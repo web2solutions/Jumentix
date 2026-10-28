@@ -55,6 +55,14 @@ Codecov and SonarQube Cloud keep running without interruption through the
 CircleCI `coverage` job. Required checks fail closed: a skipped, pending,
 missing, timed-out, cancelled, or provider-inaccessible result is never green.
 
+A halted CircleCI job posts `ci/circleci: <job>` = success, and opening a PR
+starts no new pipeline, so a PR reuses its head's push statuses. A push
+therefore runs every job its PR will require, against that PR's base: a task
+branch runs the `dev` set against `dev`; `dev` runs the `main` set against
+`main` (Requirement 113 rule 14; JUM-936, JUM-939). Dependabot and generated
+release heads pushed before their PR is resolved fail the jobs they do not
+run; open the PR and re-run the workflow.
+
 ## Dependabot (Bun root + nested npm)
 
 Canonical config: `.github/dependabot.yml` (JUM-919 / JUM-920).

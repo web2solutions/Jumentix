@@ -88,20 +88,25 @@ adapter:
 
 Tracked under Linear epic `JUM-570`. Each resolves by integrating properly
 **or** by removing the adapter. Removal is a legitimate outcome and should not be
-read as failure — four adapters that cannot start, plus two that quietly serve on
-Node `http`, are worth less than the four that genuinely work.
+read as failure — an adapter that quietly serves on Node `http` is worth less
+than none.
+
+This table mirrors `KNOWN_GAPS` in `ci-cd/check-http-adapter-authenticity.js`,
+which is the authority; the two change together.
 
 | Adapter | Issue | Defect | Framework |
 |---|---|---|---|
 | `adonis-js` | JUM-571 | swallowed require | `@adonisjs/http-server` |
 | `total-js` | JUM-576 | swallowed require | `total4` |
-| `feathers` | JUM-572 | undeclared dependency | `@feathersjs/feathers` |
-| `loopback` | JUM-573 | undeclared dependency | `@loopback/rest` |
-| `sails-js` | JUM-574 | undeclared dependency | `sails` |
-| `derby-js` | JUM-575 | undeclared dependency | `derby` |
+
+Resolved by JUM-704 (2026-08-13): `feathers` (JUM-572), `loopback` (JUM-573),
+`sails-js` (JUM-574) and `derby-js` (JUM-575) — the integrations were already
+correct and their frameworks are now declared dependencies in the root
+`package.json`.
 
 Verified compliant: `express`, `fastify`, `restify`, `cloudflare-workers`
-(Hono). Exempt as platform targets: `aws`, `vercel-functions`.
+(Hono), `feathers`, `loopback`, `sails-js`, `derby-js`. Exempt as platform
+targets: `aws`, `vercel-functions`.
 
 ## A note on how this audit went
 

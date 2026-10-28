@@ -299,17 +299,20 @@ describe('check-ci-provider', () => {
     );
   });
 
-  it('fails when CircleCI writes untrusted PR metadata to BASH_ENV with JSON quoting', () => {
+  it('fails when CircleCI writes PR metadata to BASH_ENV without the shell-quoting resolver', () => {
     expect.hasAssertions();
 
     const directory = fixture((root) => {
       const file = path.join(root, '.circleci/config.yml');
       fs.writeFileSync(
         file,
-        fs.readFileSync(file, 'utf8').replace('const shellQuote =', 'const quote =').replace(/shellQuote\(/g, 'quote(')
+        fs.readFileSync(file, 'utf8').replace(
+          'command: node ci-cd/resolve-pr-metadata.js >> "$BASH_ENV"',
+          'command: echo "export JUMENTIX_PR_TITLE=$PR_TITLE" >> "$BASH_ENV"'
+        )
       );
     });
-    expect(run(directory).output).toContain('const shellQuote');
+    expect(run(directory).output).toContain('resolve-pr-metadata');
   });
 
   it('fails when CircleCI third-party review lacks Python virtualenv support', () => {

@@ -4,7 +4,7 @@ Idioma alvo: Português (Brasil)
 -->
 # Especificações de rastreabilidade de requisitos
 
-<!-- requirements-inventory: files=128 unique=128 mapped=128 duplicates= -->
+<!-- requirements-inventory: files=130 unique=130 mapped=130 duplicates= -->
 
 Este livro-razão mapeia IDs de requisitos para especificações de recursos e expectativas de evidências de validação.
 
@@ -110,7 +110,7 @@ Para qualquer alteração, identifique os IDs dos requisitos afetados e garanta:
 
 ## G. Documentação, processo de governança e operações multiagente
 
-- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `057`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `104`, `105`, `106`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`, `137`
+- `009`, `018`, `019`, `023`, `024`, `025`, `033`, `035`, `057`, `066`, `067`, `068`, `071`, `072`, `073`, `075`, `076`, `077`, `078`, `079`, `080`, `081`, `082`, `083`, `084`, `085`, `086`, `087`, `088`, `089`, `090`, `094`, `095`, `097`, `098`, `099`, `100`, `101`, `102`, `104`, `105`, `106`, `108`, `109`, `110`, `111`, `112`, `113`, `114`, `116`, `117`, `119`, `120`, `121`, `122`, `124`, `125`, `126`, `127`, `128`, `129`, `130`, `131`, `132`, `133`, `134`, `135`, `137`, `138`, `139`
 - Recursos de especificações:
   - `documentação/README.md`
   - `documentação/md/JUMENTIX-PROJECT-GOVERNANCE.md`
@@ -170,9 +170,9 @@ Se os IDs de requisitos afetados não forem mapeados antes da implementação, a
 
 A partir de `2026-08-05`, este livro-razão cobre todos os IDs de requisitos exclusivos atualmente registrados em `.agents/requirements/project/` e `.agents/requirements/software/`:
 
-1. Arquivos de requisitos no registro: `127`
-2. IDs exclusivos no registro de requisitos: `127`
-3. IDs exclusivos mapeados neste livro-razão: `127`
+1. Arquivos de requisitos no registro: `129`
+2. IDs exclusivos no registro de requisitos: `129`
+3. IDs exclusivos mapeados neste livro-razão: `129`
 4. IDs duplicados com arquivos vinculantes independentes: `nenhum`
 5. IDs ausentes: `nenhum`
 
@@ -188,6 +188,14 @@ A partir de `2026-08-05`, este livro-razão cobre todos os IDs de requisitos exc
 ### `129` Bus obrigatório de progresso de agentes no Firebase RTDB
 - Specs: `.agents/requirements/project/129-mandatory-firebase-agent-bus.md`, `documentation/md/AGENT-OPERATING-REQUIREMENTS-114-121.pt-BR.md` (+ EN), `documentation/md/AGENT-RTK-AND-CAVEMAN-GUIDE.pt-BR.md` (+ EN)
 - Evidência: `packages/agent-registry/src/rtdb-client.ts`, `packages/agent-registry/src/bus-commands.ts`, `packages/agent-registry/bin/agent-registry-cli.js`, `bun run agent-bus:publish|watch|status`, testes unitários do pacote com RTDB mockado
+
+### `138` ai-memory obrigatório em toda sessão de agente (JUM-935)
+- Specs: `.agents/requirements/project/138-mandatory-ai-memory-agent-sessions.md`, blocos gerenciados em `AGENTS.md` / `CLAUDE.md`, skills em `.agents/skills/ai-memory-*` e `.claude/skills/ai-memory-*`
+- Evidência: `bun run requirements:check`; atestação via transcripts (MCP/CLI); `ai-memory status` no host do operador; https://github.com/akitaonrails/ai-memory
+
+### `139` Crítica de agente em pull requests não automatizados para `dev` (JUM-945)
+- Specs: `.agents/requirements/project/139-agent-critique-on-dev-pull-requests.md`, `documentation/md/TESTING-CI-AND-QUALITY.md` (+ pt-BR)
+- Evidência: `ci-cd/check-pr-agent-critique.js`; `ci-cd/test/check-pr-agent-critique.test.ts`; passo na base confiável em `.github/workflows/pr-feedback.yml` e `.github/workflows/ci.yml`; isenção automática via `isAutomatedPullRequest`
 
 ### `126` Ownership e contratos públicos do Service Management (JUM-465)
 - Specs: `.agents/requirements/software/126-service-management-ownership-and-public-contracts.md`, `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.pt-BR.md`, `documentation/md/SERVICE-MANAGEMENT-APPLICATION.pt-BR.md`, `.agents/COMPONENT-OWNERSHIP.md`

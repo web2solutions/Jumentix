@@ -48,17 +48,39 @@ async function waitForDomain(page: Page, name: string) {
   );
 }
 
-/** Wait until the status region announces a remote change. */
+/**
+ * Clear the status region before the action whose remote announcement is
+ * awaited, so the wait below cannot match an earlier announcement.
+ */
+async function armRemoteChangeStatus(page: Page) {
+  await page.evaluate(() => {
+    const region = document.getElementById('status-region');
+    if (region) region.textContent = '';
+  });
+}
+
+/**
+ * Wait until the status region announces a remote change.
+ *
+ * Reads the text, not visibility, and accepts the coalesced plural: the app
+ * hides info toasts after 3.2 s on the designer tab and says "N changes from
+ * another tab were applied." when writes coalesce — neither is fixed by
+ * timing, so requiring a visible singular toast failed under CI load
+ * (CircleCI job 7263, JUM-943). On timeout the actual text is reported.
+ */
 async function waitForRemoteChangeStatus(page: Page) {
-  await page.waitForFunction(
-    () => {
-      const region = document.getElementById('status-region');
-      return Boolean(region && !region.hidden && region.textContent
-        && region.textContent.includes('change from another tab'));
-    },
-    undefined,
-    { timeout: 20000 }
-  );
+  try {
+    await page.waitForFunction(
+      () => /\bchanges? from another tab\b/.test(document.getElementById('status-region')?.textContent || ''),
+      undefined,
+      { timeout: 20000 }
+    );
+  } catch (error) {
+    const text = await page.evaluate(() => document.getElementById('status-region')?.textContent || '');
+    throw new Error(
+      `no remote-change announcement; status region says: ${JSON.stringify(text)} (${String(error)})`
+    );
+  }
 }
 
 /**
@@ -102,6 +124,7 @@ async function bootPage(context: Awaited<ReturnType<Browser['newContext']>>, bas
  * real channel — the sample load doubles as the suite's first sync proof.
  */
 async function loadSampleAndConverge(pageA: Page, pageB: Page) {
+  await armRemoteChangeStatus(pageB);
   await clickInPanels(pageA, '#load-sample-btn');
   await waitForDomain(pageA, 'Users');
   await waitForDomain(pageB, 'Users');
@@ -175,12 +198,14 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
     await loadSampleAndConverge(pageA, pageB);
 
     // A writes; B converges and is told through the status region.
+    await armRemoteChangeStatus(pageB);
     await addDomain(pageA, 'Alpha Remote');
     await waitForDomain(pageA, 'Alpha Remote');
     await waitForDomain(pageB, 'Alpha Remote');
     await waitForRemoteChangeStatus(pageB);
 
     // B writes; A converges — the channel works in both directions.
+    await armRemoteChangeStatus(pageA);
     await addDomain(pageB, 'Beta Remote');
     await waitForDomain(pageA, 'Beta Remote');
     await waitForRemoteChangeStatus(pageA);
@@ -226,6 +251,7 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
     await fillInPanels(pageB, '#domain-owner-team-input', 'team-z-unsaved');
 
     // A remote change touches the same model B is editing.
+    await armRemoteChangeStatus(pageB);
     await addDomain(pageA, 'Gamma Remote');
     await waitForDomain(pageB, 'Gamma Remote');
     await waitForRemoteChangeStatus(pageB);

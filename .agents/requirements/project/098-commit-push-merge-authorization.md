@@ -24,8 +24,9 @@ Only emails declared in `.agents/AUTHORIZED-COMMITTERS.json` and explicitly auth
 
 ## Enforcement
 1. GitHub branch protection and rulesets on `main` and `dev` require the destination-appropriate
-   checks and block force pushes/deletions. PR review is optional and no approval count is
-   required.
+   checks and block force pushes/deletions. No GitHub approval count is required.
+   Non-automated pull requests targeting `dev` must pass the agent-critique check
+   in Requirement `139`. Automated pull requests are exempt.
 2. The canonical repositories are owned by the `XpertMinds` organization and their access
    lists must contain only identities authorized by the project owner in Linear.
 3. Organization-owned repositories must use user/team restrictions when the active GitHub plan

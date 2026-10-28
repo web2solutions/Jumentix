@@ -133,6 +133,16 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
        `JUM-461` together with the key's editability).
      - `JUMENTIX_REALTIME_API_DATABASE_DRIVER`: `Mongo`, `PostgreSQL`, `MySQL`,
        `MS SQL`, `RDS`, `Aurora`, `Cassandra`.
+     - `JUMENTIX_KEYVALUESTORAGE_DRIVER`: `inmemory`, `redis` (the two outcomes of
+       `packages/key-value-storage/src/compileKeyValueStorageClient.ts`).
+     - `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`: `inmemory`, `rabbitmq`, `bullmq` (the
+       canonical spellings of
+       `packages/message-mediator/src/compileMessageMediator.ts`).
+     - `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`: `cluster`, `redis-streams`, or empty
+       (empty keeps the backend default, the in-memory Socket.IO adapter).
+     - `JUMENTIX_WEBSOCKET_REDIS_URL`: a valid `redis://` or `rediss://` URL without
+       embedded credentials, or empty (empty falls back to `JUMENTIX_REDIS_URL` and
+       then to the discrete `JUMENTIX_REDIS_*` settings in the backend).
    - **Alias decision (per `JUM-461`, decided).** `derby`/`derby-js` and
      `sails`/`sails-js` are the same framework under two spellings. The canonical
      spellings are `derby-js` and `sails-js` — the adapter directories
@@ -147,28 +157,6 @@ contract they converge on, and the smoke expansion in `JUM-466` asserts it.
      value the UI offers MUST be a value the server accepts, and vice versa. This
      decision is also recorded in
      `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md`.
-
-     - `JUMENTIX_DATABASE_DRIVER`: `InMemory`, `IndexedDB`, `Mongo`, `PostgreSQL`,
-       `MySQL`, `MSSQL`, `Oracle`, `SQLite`, `DynamoDB`, `Cassandra`, `Firebase`,
-       `Aurora`, `RDS` (the canonical `DriverName` set of
-       `packages/database-client-factory/src/compileDatabaseClient.ts`).
-     - `JUMENTIX_KEYVALUESTORAGE_DRIVER`: `inmemory`, `redis` (the two outcomes of
-       `packages/key-value-storage/src/compileKeyValueStorageClient.ts`).
-     - `JUMENTIX_MESSAGE_MEDIATOR_ADAPTER`: `inmemory`, `rabbitmq`, `bullmq` (the
-       canonical spellings of
-       `packages/message-mediator/src/compileMessageMediator.ts`).
-     - `JUMENTIX_WEBSOCKET_SOCKETIO_ADAPTER`: `cluster`, `redis-streams`, or empty
-       (empty keeps the backend default, the in-memory Socket.IO adapter).
-     - `JUMENTIX_WEBSOCKET_REDIS_URL`: a valid `redis://` or `rediss://` URL without
-       embedded credentials, or empty (empty falls back to `JUMENTIX_REDIS_URL` and
-       then to the discrete `JUMENTIX_REDIS_*` settings in the backend).
-   - **Alias decision (per `JUM-461`).** `derby`/`derby-js` and `sails`/`sails-js`
-     are the same framework under two accepted spellings. The selector offers the
-     canonical spelling of each pair and the server's enum validation agrees with the
-     selector exactly — a value the UI offers MUST be a value the server accepts, and
-     vice versa. The canonical-spelling decision is recorded in
-     `documentation/md/RUNTIME-ENVIRONMENT-CONTRACTS.md` by `JUM-461`; until then the
-     11-value set above (which already uses the `-js` spellings) is binding.
      Separately, `JUMENTIX_DATABASE_DRIVER` and
      `JUMENTIX_REALTIME_API_DATABASE_DRIVER` are distinct keys and MUST be separately
      labelled and separately editable in the UI (done by `JUM-461`).

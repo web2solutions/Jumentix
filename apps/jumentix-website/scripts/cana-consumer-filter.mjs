@@ -46,16 +46,6 @@ export function toCanaConsumerMarkdown(markdown, { locale = 'en' } = {}) {
     'Este guia é sobre usar `@jumentix/cana` na sua aplicação.\n\n'
   );
 
-  // Soften Dexie checklist wording (engineering process, not consumer need).
-  out = out.replace(
-    /Dexie's documentation was used as a checklist of \*which subjects to cover\*; every\nword, example and API here is Cana's own\.\n\n/m,
-    ''
-  );
-  out = out.replace(
-    /A documentação do Dexie foi usada como\nchecklist de \*quais assuntos cobrir\*; cada palavra, exemplo e API aqui é do\npróprio Cana\.\n\n/m,
-    ''
-  );
-
   // Drop any leftover links to internal markdown docs.
   for (const name of INTERNAL_DOC_NAMES) {
     const linkRe = new RegExp(`\\[[^\\]]+\\]\\([^)]*${name}[^)]*\\)`, 'gi');

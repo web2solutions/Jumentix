@@ -3226,6 +3226,16 @@
       "timeoutMs": 60000
     },
     {
+      "id": "ci-cd/test/resolve-pr-metadata.test.ts",
+      "path": "ci-cd/test/resolve-pr-metadata.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
       "id": "ci-cd/test/verify-codecov-public-reports.test.ts",
       "path": "ci-cd/test/verify-codecov-public-reports.test.ts",
       "layer": "tooling",
@@ -3358,6 +3368,16 @@
     {
       "id": "ci-cd/test/check-package-suites.test.ts",
       "path": "ci-cd/test/check-package-suites.test.ts",
+      "layer": "tooling",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000
+    },
+    {
+      "id": "ci-cd/test/check-pr-agent-critique.test.ts",
+      "path": "ci-cd/test/check-pr-agent-critique.test.ts",
       "layer": "tooling",
       "kind": "non-hexagonal",
       "type": "unit",
@@ -5697,6 +5717,18 @@
       "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
     },
     {
+      "id": "apps/jumentix-website/scripts/vercel-ignore-build.test.mjs",
+      "path": "apps/jumentix-website/scripts/vercel-ignore-build.test.mjs",
+      "layer": "website",
+      "kind": "non-hexagonal",
+      "type": "unit",
+      "script": "website:test:unit",
+      "runner": "bun",
+      "tier": "gate",
+      "timeoutMs": 60000,
+      "reason": "Runs under the website's own Jest config; the root runner cannot execute it directly."
+    },
+    {
       "id": "apps/jumentix-website/cypress/e2e/accessibility.cy.js",
       "path": "apps/jumentix-website/cypress/e2e/accessibility.cy.js",
       "layer": "website",
@@ -5970,8 +6002,8 @@
       "timeoutMs": 300000
     },
     {
-      "id": "packages/cana/cypress/differential-dexie.cy.ts",
-      "path": "packages/cana/cypress/differential-dexie.cy.ts",
+      "id": "packages/cana/cypress/differential-fixtures.cy.ts",
+      "path": "packages/cana/cypress/differential-fixtures.cy.ts",
       "layer": "browser-harness",
       "kind": "non-hexagonal",
       "type": "integration",
@@ -6237,9 +6269,9 @@
     "shadowEnv": "JUMENTIX_GATE_V2_SHADOW"
   },
   "stats": {
-    "unit": 373,
+    "unit": 375,
     "integration": 104,
     "smoke": 2,
-    "suites": 539
+    "suites": 541
   }
 }

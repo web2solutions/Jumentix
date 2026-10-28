@@ -19,6 +19,13 @@ const {
 
 const packageRoot = path.join(__dirname, '..', '..');
 
+// Matches `timeoutMs` for this suite in test-map.json. The package `test`
+// script runs plain `bun test`, whose 5 s default killed the offline cell's
+// subprocess mid-run on a slower runner (CircleCI job 7223: timed out after
+// 5000ms; main job 7042 passed in 2080.94ms) — a timing-dependent result, not
+// a generation failure (JUM-942, Requirement 134).
+const MATRIX_TIMEOUT_MS = 180_000;
+
 const EXPECTED_CELL_IDS = [
   'monolith-express-sqlite',
   'monolith-fastify-postgres',
@@ -57,5 +64,5 @@ describe('cli-init generation e2e matrix (JUM-854)', () => {
       status: 'passed'
     });
     expect(logs.some((line) => line.includes('monolith/express/sqlite'))).toBe(true);
-  });
+  }, MATRIX_TIMEOUT_MS);
 });
