@@ -23,8 +23,13 @@ function parseCritiqueMarker(body) {
   const source = String(body || '');
   if (!source.includes(MARKER_PREFIX)) return null;
 
-  const matches = [...source.matchAll(MARKER_PATTERN)];
   const prefixes = source.match(/<!--\s*jumentix-agent-critique:/g) || [];
+  // A prose mention of the token is discussion, not a critique. Only an HTML
+  // comment that starts the marker is judged, so quoting the token cannot
+  // fail a later valid approve.
+  if (prefixes.length === 0) return null;
+
+  const matches = [...source.matchAll(MARKER_PATTERN)];
   if (matches.length !== 1 || matches.length !== prefixes.length) {
     throw new Error(
       'An agent-critique comment must contain exactly one well-formed '

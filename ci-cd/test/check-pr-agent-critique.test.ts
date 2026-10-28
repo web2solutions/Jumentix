@@ -87,6 +87,35 @@ describe('check-pr-agent-critique', () => {
     expect(failures[0]).toContain('other than');
   });
 
+  it('ignores a prose mention of the critique token when a later approve exists', () => {
+    expect.hasAssertions();
+
+    expect(critiqueChecker.validateAgentCritique(taskPullRequest([
+      {
+        url: 'https://github.com/web2solutions/Jumentix/pull/945#issuecomment-900',
+        createdAt: '2026-10-23T03:00:00Z',
+        body: 'The discussion quoted jumentix-agent-critique: without an HTML comment marker.'
+      },
+      critique(REVIEWER, 'approve', '2026-10-23T04:00:00Z')
+    ]))).toStrictEqual([]);
+  });
+
+  it('still rejects an HTML comment that is not a well-formed critique marker', () => {
+    expect.hasAssertions();
+
+    const failures = critiqueChecker.validateAgentCritique(taskPullRequest([
+      {
+        url: 'https://github.com/web2solutions/Jumentix/pull/945#issuecomment-901',
+        createdAt: '2026-10-23T03:00:00Z',
+        body: '<!-- jumentix-agent-critique: verdict=maybe reviewer=someone -->\nThis marker is not a verdict the gate accepts.'
+      },
+      critique(REVIEWER, 'approve', '2026-10-23T04:00:00Z')
+    ]));
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('exactly one well-formed');
+  });
+
   it('rejects a critique that is only the marker', () => {
     expect.hasAssertions();
 
