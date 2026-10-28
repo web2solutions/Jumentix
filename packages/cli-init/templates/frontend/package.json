@@ -1,8 +1,8 @@
 {
   "name": "@jumentix/frontend",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "private": true,
-  "description": "Jumentix frontend workspace app \u2014 offline-first, hybrid and online frontends over Jumentix backend contracts",
+  "description": "Jumentix frontend workspace app — offline-first, hybrid and online frontends over Jumentix backend contracts",
   "scripts": {
     "predev": "bun ./scripts/sync-contracts.mjs",
     "dev": "vite --force",
