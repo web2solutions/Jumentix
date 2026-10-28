@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- 2026-10-20 chore(deps-dev): bump vite from 8.3.0 to 8.3.4 in /apps/frontend/template (#697) - Eduardo A.
+- 2026-10-20 chore(deps-dev): bump vite in /apps/frontend/template - dependabot[bot]
 - 2026-10-17 chore(release): bump packages with unpublished content changes (#690) - Eduardo A.
 
 ## v0.5.3 - 2026-10-17
