@@ -65,6 +65,9 @@ const REQUIRED_OVERRIDES = {
   // Raised again on 2026-10-25 (JUM-946 gate): GHSA-w74x-v6f9-j3xg /
   // GHSA-wjr9-j795-jxcr fixed in fast-uri >=4.2.3.
   'fast-uri': '^4.2.3',
+  // Raised on 2026-10-28: GHSA-6pq8-jhm2-2vcw affects qs >=6.7.0 <=6.16.0.
+  // Fixed in 6.16.1. The previous floor ^6.16.0 still resolved the vulnerable release.
+  qs: '^6.16.1',
   svgo: '^4.0.2',
   'fast-xml-parser': '^5.10.1',
   'shell-quote': '^1.9.0',
