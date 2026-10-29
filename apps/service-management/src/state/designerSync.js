@@ -90,6 +90,14 @@
  * document is applied, once, so re-render work is bounded no matter how large
  * the storm, and the notification reports how many changes coalesced.
  *
+ * Arrival order is not commit order. A tab can still be delivering an older
+ * document after a newer one has already been applied (the multi-tab browser
+ * suite lost "Beta Remote" this way under CI load). Each broadcast carries a
+ * revision allocated from one origin-wide counter. A message whose revision
+ * is older than the newest revision this tab has already accepted is dropped,
+ * so a late echo cannot replace a newer model. Messages with no revision stay
+ * applicable: peers from before this guard did not stamp one.
+ *
  * This module is DOM-free and import-safe in any runtime: the channel, the
  * cursor storage, the scheduler and the tab identity are all injected or
  * resolved defensively from `globalThis`, exactly like the store port.
@@ -103,6 +111,17 @@ export const DESIGNER_SYNC_CHANNEL_NAME = 'service-management.cana-write-events'
 
 /** Cursor-storage key for the last Cana event cursor this tab saw. */
 export const DESIGNER_SYNC_CURSOR_KEY = 'service-management.v1.sync-cursor';
+
+/**
+ * Origin-wide revision counter. Shared by every tab of this origin (the
+ * cursor storage is localStorage in the browser) and by every engine in this
+ * process (unit tests give each tab its own storage). Not part of the
+ * `service-management.v1` document.
+ */
+export const DESIGNER_SYNC_REVISION_KEY = 'service-management.v1.sync-revision';
+
+/** Highest revision allocated in this JavaScript realm. */
+let memoryRevision = 0;
 
 /** Default trailing-edge window that coalesces a remote event storm. */
 export const DESIGNER_SYNC_COALESCE_MS = 50;
@@ -270,6 +289,8 @@ export function createDesignerSync({
   let pendingRemote = null;
   let pendingFlush = null;
   let coalescedCount = 0;
+  /** Newest revision accepted into the coalesce queue or already applied. */
+  let highWaterRevision = 0;
 
   function cursorStorageBackend() {
     return cursorStorage !== undefined ? cursorStorage : resolveDefaultCursorStorage();
@@ -300,6 +321,38 @@ export function createDesignerSync({
   }
 
   /**
+   * Next origin-wide revision. The in-process counter covers tabs that do not
+   * share storage; the stored counter covers browser tabs that do not share
+   * this realm. A late message carries the revision it was given at commit,
+   * which is older than a commit that happened after it.
+   */
+  function allocateRevision() {
+    const storage = cursorStorageBackend();
+    let stored = 0;
+    if (storage) {
+      try {
+        const raw = storage.getItem(DESIGNER_SYNC_REVISION_KEY);
+        const value = Number(raw);
+        if (Number.isInteger(value) && value > 0) stored = value;
+      } catch (_) {
+        stored = 0;
+      }
+    }
+    const next = Math.max(memoryRevision, stored) + 1;
+    memoryRevision = next;
+    if (storage) {
+      try {
+        storage.setItem(DESIGNER_SYNC_REVISION_KEY, String(next));
+      } catch (_) {
+        // The in-process counter still orders this realm. A tab that cannot
+        // persist the counter can re-accept a revision after reload; it cannot
+        // accept one this session already passed.
+      }
+    }
+    return next;
+  }
+
+  /**
    * Local commit observed through Cana's ordered listener: record the durable
    * cursor and re-publish the committed record on the channel, stamped with
    * this tab's identity. Only the state document crosses; baseline writes and
@@ -317,6 +370,7 @@ export function createDesignerSync({
       cursor: event.cursor,
       correlationId: event.correlationId,
       at: event.at,
+      revision: allocateRevision(),
       record: event.record
     });
   }
@@ -330,6 +384,10 @@ export function createDesignerSync({
     if (!message || typeof message !== 'object') return;
     if (message.originId === syncOriginId) return;
     if (typeof message.record !== 'string') return;
+    if (Number.isInteger(message.revision)) {
+      if (message.revision <= highWaterRevision) return;
+      highWaterRevision = message.revision;
+    }
     pendingRemote = message;
     coalescedCount += 1;
     if (pendingFlush !== null) cancelSchedule(pendingFlush);

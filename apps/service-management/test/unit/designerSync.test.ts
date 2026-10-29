@@ -42,6 +42,7 @@ const {
 const {
   DESIGNER_SYNC_CHANNEL_NAME,
   DESIGNER_SYNC_CURSOR_KEY,
+  DESIGNER_SYNC_REVISION_KEY,
   applyRemoteDocument,
   createDesignerSync,
   reconcileSelection
@@ -395,6 +396,51 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
       relationships: tabB.core.state.relationships
     });
     expect(tabA.core.state.relationships).toStrictEqual(normalizedB.relationships);
+  });
+
+  it('drops a stale revision that arrives after a newer remote write', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tabA = createTab(backend, hub);
+    const tabB = createTab(backend, hub);
+    await tabA.core.loadState();
+    await tabB.core.loadState();
+    expect((await tabA.sync.start()).started).toBe(true);
+    expect((await tabB.sync.start()).started).toBe(true);
+
+    await edit(tabA, () => {
+      tabA.core.state.domains = [
+        ...tabA.core.state.domains,
+        makeDomain('domain-2', 'Alpha Remote')
+      ];
+    });
+    tabB.flush();
+    const alphaMessage = [...hub.channels]
+      .flatMap((channel) => channel.posted)
+      .find((message) => message.originId === tabA.sync.originId
+        && String(message.record).includes('Alpha Remote'));
+    expect(alphaMessage.revision).toBeGreaterThan(0);
+    expect(tabB.core.state.domains.map((domain: any) => domain.name)).toContain('Alpha Remote');
+
+    await edit(tabB, () => {
+      tabB.core.state.domains = [
+        ...tabB.core.state.domains,
+        makeDomain('domain-3', 'Beta Remote')
+      ];
+    });
+    tabA.flush();
+    const namesA = tabA.core.state.domains.map((domain: any) => domain.name);
+    expect(namesA).toContain('Alpha Remote');
+    expect(namesA).toContain('Beta Remote');
+
+    const rendersBefore = tabB.renders.length;
+    tabB.sync.onChannelMessage(alphaMessage);
+    tabB.flush();
+    const namesB = tabB.core.state.domains.map((domain: any) => domain.name);
+    expect(namesB).toContain('Alpha Remote');
+    expect(namesB).toContain('Beta Remote');
+    expect(tabB.renders).toHaveLength(rendersBefore);
   });
 
   it('attributes events by origin: a tab never applies its own echo', async () => {
@@ -1070,6 +1116,7 @@ describe('designerSync — lifecycle', () => {
     expect.hasAssertions();
     expect(DESIGNER_SYNC_CHANNEL_NAME).toBe('service-management.cana-write-events');
     expect(DESIGNER_SYNC_CURSOR_KEY).toBe('service-management.v1.sync-cursor');
+    expect(DESIGNER_SYNC_REVISION_KEY).toBe('service-management.v1.sync-revision');
   });
 });
 
