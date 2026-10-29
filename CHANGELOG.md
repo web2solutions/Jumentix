@@ -4,7 +4,39 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-10-29 [JUM-949][Release] Promote the sync revision guard and Dependabot bumps (#740) - Eduardo A.
+- 2026-10-29 [JUM-950][Fix] Revert mongoose 9 until the Mongo smoke connects (#741) - Eduardo A.
+- 2026-10-29 fix: revert mongoose 9 until the Mongo smoke connects - Eduardo A.
+- 2026-10-29 chore(deps): bump mongoose from 8.24.5 to 9.11.4 (#734) - Eduardo A.
+- 2026-10-29 Merge branch 'dev' into dependabot/bun/dev/mongoose-9.11.4 - Eduardo A.
+- 2026-10-29 chore(deps): bump mermaid from 11.17.2 to 12.2.0 (#732) - Eduardo A.
+- 2026-10-29 Merge branch 'dev' into dependabot/bun/dev/mermaid-12.2.0 - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump globals from 16.5.0 to 17.13.0 in /apps/frontend/template (#731) - Eduardo A.
+- 2026-10-29 chore(deps): bump mongoose from 8.24.5 to 9.11.4 - dependabot[bot]
+- 2026-10-29 chore(deps): bump mermaid from 11.17.2 to 12.2.0 - dependabot[bot]
+- 2026-10-29 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/globals-17.13.0 - Eduardo A.
+- 2026-10-29 chore(deps): bump hono from 4.13.13 to 4.13.14 (#737) - Eduardo A.
+- 2026-10-29 Merge branch 'dev' into dependabot/bun/dev/hono-4.13.14 - Eduardo A.
+- 2026-10-29 chore(deps): bump @fastify/static from 10.1.6 to 10.1.7 (#735) - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump globals in /apps/frontend/template - dependabot[bot]
+- 2026-10-29 Merge branch 'dev' into dependabot/bun/dev/fastify/static-10.1.7 - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump eslint from 10.12.0 to 10.13.0 in /apps/frontend/template (#733) - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump eslint in /apps/frontend/template - dependabot[bot]
+- 2026-10-29 chore(deps-dev): bump autoprefixer from 10.5.0 to 10.6.1 in /apps/frontend/template (#736) - Eduardo A.
+- 2026-10-29 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/autoprefixer-10.6.1 - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump @typescript-eslint/eslint-plugin from 8.69.0 to 8.72.0 in /apps/frontend/template (#730) - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump autoprefixer in /apps/frontend/template - dependabot[bot]
+- 2026-10-29 chore(deps-dev): bump @typescript-eslint/eslint-plugin - dependabot[bot]
+- 2026-10-29 chore(deps-dev): bump @typescript-eslint/parser from 8.71.1 to 8.72.0 in /apps/frontend/template (#738) - Eduardo A.
+- 2026-10-29 chore(deps): bump hono from 4.13.13 to 4.13.14 - dependabot[bot]
+- 2026-10-29 chore(deps): bump @fastify/static from 10.1.6 to 10.1.7 - dependabot[bot]
+- 2026-10-29 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-eslint/parser-8.72.0 - Eduardo A.
+- 2026-10-29 [JUM-948][Fix] Drop stale multi-tab sync revisions (#739) - Eduardo A.
+- 2026-10-29 test: cover an unreadable sync revision counter - Eduardo A.
+- 2026-10-28 test: cover store-clear and stale decoded sync revisions - Eduardo A.
+- 2026-10-28 fix: advance the sync revision only after a successful apply - Eduardo A.
+- 2026-10-28 fix: drop stale multi-tab sync revisions - Eduardo A.
+- 2026-10-28 chore(deps-dev): bump @typescript-eslint/parser - dependabot[bot]
 
 ## v0.5.4 - 2026-10-28
 
