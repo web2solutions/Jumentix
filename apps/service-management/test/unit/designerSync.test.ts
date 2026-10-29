@@ -42,6 +42,7 @@ const {
 const {
   DESIGNER_SYNC_CHANNEL_NAME,
   DESIGNER_SYNC_CURSOR_KEY,
+  DESIGNER_SYNC_REVISION_KEY,
   applyRemoteDocument,
   createDesignerSync,
   reconcileSelection
@@ -395,6 +396,159 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
       relationships: tabB.core.state.relationships
     });
     expect(tabA.core.state.relationships).toStrictEqual(normalizedB.relationships);
+  });
+
+  it('drops a stale revision that arrives after a newer remote write', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tabA = createTab(backend, hub);
+    const tabB = createTab(backend, hub);
+    await tabA.core.loadState();
+    await tabB.core.loadState();
+    expect((await tabA.sync.start()).started).toBe(true);
+    expect((await tabB.sync.start()).started).toBe(true);
+
+    await edit(tabA, () => {
+      tabA.core.state.domains = [
+        ...tabA.core.state.domains,
+        makeDomain('domain-2', 'Alpha Remote')
+      ];
+    });
+    tabB.flush();
+    const alphaMessage = [...hub.channels]
+      .flatMap((channel) => channel.posted)
+      .find((message) => message.originId === tabA.sync.originId
+        && String(message.record).includes('Alpha Remote'));
+    expect(alphaMessage.revision).toBeGreaterThan(0);
+    expect(tabB.core.state.domains.map((domain: any) => domain.name)).toContain('Alpha Remote');
+
+    await edit(tabB, () => {
+      tabB.core.state.domains = [
+        ...tabB.core.state.domains,
+        makeDomain('domain-3', 'Beta Remote')
+      ];
+    });
+    tabA.flush();
+    const namesA = tabA.core.state.domains.map((domain: any) => domain.name);
+    expect(namesA).toContain('Alpha Remote');
+    expect(namesA).toContain('Beta Remote');
+
+    const rendersBefore = tabB.renders.length;
+    tabB.sync.onChannelMessage(alphaMessage);
+    tabB.flush();
+    const namesB = tabB.core.state.domains.map((domain: any) => domain.name);
+    expect(namesB).toContain('Alpha Remote');
+    expect(namesB).toContain('Beta Remote');
+    expect(tabB.renders).toHaveLength(rendersBefore);
+  });
+
+  it('a failed decode does not consume the revision', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tabA = createTab(backend, hub);
+    const tabB = createTab(backend, hub);
+    await tabB.core.loadState();
+    await tabB.sync.start();
+
+    tabB.sync.onChannelMessage({
+      originId: tabA.sync.originId,
+      revision: 4,
+      record: '{not-json'
+    });
+    tabB.flush();
+    await flushAsync();
+
+    tabB.sync.onChannelMessage({
+      originId: tabA.sync.originId,
+      revision: 4,
+      record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-9', 'Recovered')] }))
+    });
+    tabB.flush();
+    expect(tabB.core.state.domains.map((domain: any) => domain.name)).toContain('Recovered');
+  });
+
+  it('a store clear with no document does not mint a revision', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    await tab.core.loadState();
+    await tab.sync.start();
+    const channel = [...hub.channels][0];
+    const postedBefore = channel.posted.length;
+
+    tab.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      cursor: 4,
+      record: null
+    });
+
+    expect(channel.posted).toHaveLength(postedBefore);
+    expect(tab.sync.getLastCursor()).toBe(4);
+  });
+
+  it('keeps allocating a revision when the stored counter cannot be read', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    const stored = new Map<string, string>();
+    const sync = createDesignerSync({
+      store: tab.store,
+      designerState: tab.core,
+      channel: hub.createChannel(),
+      originId: 'unreadable-revision-tab',
+      cursorStorage: {
+        getItem(key: string) {
+          if (key === DESIGNER_SYNC_REVISION_KEY) throw new Error('revision unreadable');
+          return stored.has(key) ? stored.get(key) as string : null;
+        },
+        setItem(key: string, value: string) { stored.set(key, value); },
+        removeItem(key: string) { stored.delete(key); }
+      }
+    });
+    expect((await sync.start()).started).toBe(true);
+    sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      record: JSON.stringify(makeDocument()),
+      cursor: 2
+    });
+    const mine = [...hub.channels]
+      .flatMap((channel) => channel.posted)
+      .find((message) => message.originId === 'unreadable-revision-tab');
+    expect(mine.revision).toBeGreaterThan(0);
+    sync.stop();
+  });
+
+  it('a decoded older revision does not replace a newer applied document', () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    const sync = createDesignerSync({
+      store: tab.store,
+      designerState: tab.core,
+      channel: hub.createChannel(),
+      originId: 'high-water-tab',
+      cursorStorage: createFakeStorage()
+    });
+    const newer = sync.applyRemoteMessage({
+      originId: 'remote-tab',
+      revision: 2,
+      record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-8', 'Newer')] }))
+    });
+    const older = sync.applyRemoteMessage({
+      originId: 'remote-tab',
+      revision: 1,
+      record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-9', 'Older')] }))
+    });
+    expect(newer).toStrictEqual({ applied: true, reconciled: [] });
+    expect(older).toStrictEqual({ applied: false, reason: 'stale-revision' });
+    expect(tab.core.state.domains.map((domain: any) => domain.name)).toStrictEqual(['Newer']);
   });
 
   it('attributes events by origin: a tab never applies its own echo', async () => {
@@ -1070,6 +1224,7 @@ describe('designerSync — lifecycle', () => {
     expect.hasAssertions();
     expect(DESIGNER_SYNC_CHANNEL_NAME).toBe('service-management.cana-write-events');
     expect(DESIGNER_SYNC_CURSOR_KEY).toBe('service-management.v1.sync-cursor');
+    expect(DESIGNER_SYNC_REVISION_KEY).toBe('service-management.v1.sync-revision');
   });
 });
 
