@@ -46,7 +46,7 @@ import {
   parseCommaSeparated,
   parseEnumValues
 } from '@jumentix/designer-core/state/designerState.js';
-import { createDesignerSync } from './src/state/designerSync.js';
+import { claimDesignerWriteRevision, createDesignerSync } from './src/state/designerSync.js';
 import {
   deriveTenantScoped,
   validateRbacRule
@@ -154,6 +154,10 @@ let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 // the initial load — and observed by the save-outcome hook once it exists.
 let designerSync = null;
 const store = createDesignerStore();
+const persistDocument = store.save.bind(store);
+store.save = (payload) => persistDocument(payload, {
+  writeRevision: claimDesignerWriteRevision()
+});
 const designerState = createDesignerState({
   store,
   seed,

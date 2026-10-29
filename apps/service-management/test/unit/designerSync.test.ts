@@ -44,6 +44,7 @@ const {
   DESIGNER_SYNC_CURSOR_KEY,
   DESIGNER_SYNC_REVISION_KEY,
   applyRemoteDocument,
+  claimDesignerWriteRevision,
   createDesignerSync,
   reconcileSelection
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerSync.js'));
@@ -490,6 +491,58 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     expect(tab.sync.getLastCursor()).toBe(4);
   });
 
+  it('does not broadcast a local commit whose model no longer matches memory', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    await tab.core.loadState();
+    await tab.sync.start();
+    const channel = [...hub.channels][0];
+    const postedBefore = channel.posted.length;
+    const currentDomains = [
+      makeDomain('domain-a', 'Alpha Remote'),
+      makeDomain('domain-b', 'Beta Remote')
+    ];
+    tab.core.state.domains = currentDomains;
+    tab.core.state.relationships = [];
+    tab.core.state.deployments = [];
+
+    tab.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      cursor: 8,
+      record: JSON.stringify(makeDocument({
+        domains: [makeDomain('domain-a', 'Alpha Remote')]
+      }))
+    });
+
+    expect(channel.posted).toHaveLength(postedBefore);
+    expect(tab.sync.getLastCursor()).toBe(8);
+
+    tab.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      cursor: 9,
+      record: JSON.stringify(makeDocument({
+        domains: currentDomains,
+        relationships: [],
+        deployments: []
+      }))
+    });
+
+    expect(channel.posted).toHaveLength(postedBefore + 1);
+    expect(channel.posted[channel.posted.length - 1].record).toContain('Beta Remote');
+
+    tab.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      cursor: 10,
+      record: '{not-json'
+    });
+    expect(channel.posted).toHaveLength(postedBefore + 2);
+  });
+
   it('keeps allocating a revision when the stored counter cannot be read', async () => {
     expect.hasAssertions();
     const backend: Backend = { records: new Map() };
@@ -511,10 +564,14 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
       }
     });
     expect((await sync.start()).started).toBe(true);
+    const current = makeDocument();
+    tab.core.state.domains = current.domains;
+    tab.core.state.relationships = current.relationships;
+    tab.core.state.deployments = current.deployments;
     sync.onLocalEvent({
       store: STORE_NAME,
       key: STATE_KEY,
-      record: JSON.stringify(makeDocument()),
+      record: JSON.stringify(current),
       cursor: 2
     });
     const mine = [...hub.channels]
@@ -579,11 +636,16 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     tab.sync.onLocalEvent({ store: 'otherStore', key: STATE_KEY, record: '{}' });
     tab.sync.onLocalEvent({ store: STORE_NAME, key: 'service-management.schema-baseline.v1', record: '{}' });
     expect(peer.timers.size).toBe(0);
-    // A cursor-less event for the state document still broadcasts (no persist).
+    // A cursor-less event for the state document still broadcasts (no persist)
+    // when the committed record is still the model in memory.
+    const current = makeDocument();
+    tab.core.state.domains = current.domains;
+    tab.core.state.relationships = current.relationships;
+    tab.core.state.deployments = current.deployments;
     tab.sync.onLocalEvent({
       store: STORE_NAME,
       key: STATE_KEY,
-      record: JSON.stringify(makeDocument())
+      record: JSON.stringify(current)
     });
     expect(peer.timers.size).toBe(1);
     expect(tab.sync.getLastCursor()).toBeNull();
@@ -999,6 +1061,7 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
     const tab = createTab(backend, hub);
     await tab.core.loadState();
     await tab.sync.start();
+    await flushAsync();
     tab.saveOutcomes.length = 0;
     tab.script.transactionOutcome = 'unknown';
     tab.script.applyOnUnknown = true;
@@ -1021,6 +1084,7 @@ describe('designerSync — unknown-outcome saves surface and reconcile (Cana JUM
     const tab = createTab(backend, hub);
     await tab.core.loadState();
     await tab.sync.start();
+    await flushAsync();
     tab.saveOutcomes.length = 0;
     tab.script.transactionOutcome = 'unknown';
     await edit(tab, () => {
@@ -1317,6 +1381,36 @@ describe('designerSync — defensive defaults', () => {
 });
 
 describe('designerSync — defensive guards reach the coverage threshold (Req 020/063)', () => {
+  it('claims a write revision from ambient storage and survives a counter that throws', () => {
+    expect.hasAssertions();
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    const memory = new Map<string, string>();
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem(key: string) { return memory.has(key) ? memory.get(key) : null; },
+        setItem(key: string, value: string) { memory.set(key, String(value)); }
+      }
+    });
+    const first = claimDesignerWriteRevision();
+    const second = claimDesignerWriteRevision();
+    expect(second).toBeGreaterThan(first);
+    expect(memory.get(DESIGNER_SYNC_REVISION_KEY)).toBe(String(second));
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem() { throw new Error('revision unreadable'); },
+        setItem() { throw new Error('revision unwritable'); }
+      }
+    });
+    try {
+      expect(claimDesignerWriteRevision()).toBeGreaterThan(second);
+    } finally {
+      Reflect.deleteProperty(globalThis, 'localStorage');
+      if (descriptor) Object.defineProperty(globalThis, 'localStorage', descriptor);
+    }
+  });
+
   it('tolerates a hostile ambient localStorage (cursor persistence degrades, never throws)', async () => {
     expect.hasAssertions();
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
