@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- 2026-10-29 chore(release): bump packages with unpublished content changes (#746) - Eduardo A.
+
+## v0.5.5 - 2026-10-29
+
+- 2026-10-29 chore(release): v0.5.5 (#743) - Eduardo A.
 - 2026-10-29 [JUM-949][Release] Promote the sync revision guard and Dependabot bumps (#740) - Eduardo A.
 - 2026-10-29 [JUM-950][Fix] Revert mongoose 9 until the Mongo smoke connects (#741) - Eduardo A.
 - 2026-10-29 fix: revert mongoose 9 until the Mongo smoke connects - Eduardo A.
