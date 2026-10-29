@@ -1,6 +1,6 @@
 {
   "name": "@jumentix/frontend",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "private": true,
   "description": "Jumentix frontend workspace app — offline-first, hybrid and online frontends over Jumentix backend contracts",
   "scripts": {
