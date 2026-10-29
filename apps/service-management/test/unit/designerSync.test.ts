@@ -490,6 +490,40 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     expect(tab.sync.getLastCursor()).toBe(4);
   });
 
+  it('keeps allocating a revision when the stored counter cannot be read', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    const stored = new Map<string, string>();
+    const sync = createDesignerSync({
+      store: tab.store,
+      designerState: tab.core,
+      channel: hub.createChannel(),
+      originId: 'unreadable-revision-tab',
+      cursorStorage: {
+        getItem(key: string) {
+          if (key === DESIGNER_SYNC_REVISION_KEY) throw new Error('revision unreadable');
+          return stored.has(key) ? stored.get(key) as string : null;
+        },
+        setItem(key: string, value: string) { stored.set(key, value); },
+        removeItem(key: string) { stored.delete(key); }
+      }
+    });
+    expect((await sync.start()).started).toBe(true);
+    sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      record: JSON.stringify(makeDocument()),
+      cursor: 2
+    });
+    const mine = [...hub.channels]
+      .flatMap((channel) => channel.posted)
+      .find((message) => message.originId === 'unreadable-revision-tab');
+    expect(mine.revision).toBeGreaterThan(0);
+    sync.stop();
+  });
+
   it('a decoded older revision does not replace a newer applied document', () => {
     expect.hasAssertions();
     const backend: Backend = { records: new Map() };
