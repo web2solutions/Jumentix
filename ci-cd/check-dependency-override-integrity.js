@@ -68,6 +68,9 @@ const REQUIRED_OVERRIDES = {
   // Raised on 2026-10-28: GHSA-6pq8-jhm2-2vcw affects qs >=6.7.0 <=6.16.0.
   // Fixed in 6.16.1. The previous floor ^6.16.0 still resolved the vulnerable release.
   qs: '^6.16.1',
+  // Raised on 2026-10-28 (JUM-948 gate): GHSA-3f7j-7jwc-fxfj, fixed in
+  // systeminformation >=5.33.16. Cypress pulls ^5.31.1, which resolved 5.33.15.
+  systeminformation: '^5.33.16',
   svgo: '^4.0.2',
   'fast-xml-parser': '^5.10.1',
   'shell-quote': '^1.9.0',
