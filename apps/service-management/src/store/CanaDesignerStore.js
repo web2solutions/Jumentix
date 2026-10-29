@@ -99,6 +99,12 @@ export const CANA_DESIGNER_CLIENT_OPTIONS = Object.freeze({
 export const CANA_STATE_KEY = 'service-management.v1';
 /** Schema-diff baseline record key, pinned by Requirement 126 Contract 2. */
 export const CANA_BASELINE_KEY = 'service-management.schema-baseline.v1';
+/**
+ * Origin-wide write counter. A sibling of the state document, never a field
+ * of it (Requirement 126 Contract 2). Same key the sync engine mirrors in
+ * cursor storage.
+ */
+export const CANA_SYNC_REVISION_KEY = 'service-management.v1.sync-revision';
 
 const NO_CLIENT_REASON = 'Cana storage is selected but no Cana client is wired into this host.';
 
@@ -270,8 +276,8 @@ export class CanaDesignerStore extends IDesignerStore {
    * @param {Object} payload
    * @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreSaveResult>}
    */
-  save(payload) {
-    return this.writeKey(this.stateKey, JSON.stringify(payload));
+  save(payload, options = {}) {
+    return this.writeKey(this.stateKey, JSON.stringify(payload), options);
   }
 
   /** @param {Object} snapshot @returns {Promise<import('@jumentix/designer-core/store/IDesignerStore.js').DesignerStoreSaveResult>} */
@@ -284,22 +290,41 @@ export class CanaDesignerStore extends IDesignerStore {
    * one outcome that needs reconciling (`'unknown'`) carries the
    * `correlationId`/`attemptedAt` handles `client.resolveWrite()` requires.
    */
-  async writeKey(key, json) {
+  async writeKey(key, json, options = {}) {
     const open = await this.ensureOpen();
     if (!open.ok) {
       return { status: 'unknown', reason: `unavailable: ${open.reason}` };
     }
+    const writeRevision = options.writeRevision;
     let tx;
     try {
       tx = await this.client.transaction(
         'readwrite',
         [this.storeName],
-        (scope) => scope.table(this.storeName).put(json, key)
+        async (scope) => {
+          const table = scope.table(this.storeName);
+          if (key === this.stateKey
+            && Number.isInteger(writeRevision)
+            && typeof table.get === 'function') {
+            let current = 0;
+            const raw = await table.get(CANA_SYNC_REVISION_KEY);
+            const value = Number(raw);
+            if (Number.isInteger(value) && value > 0) current = value;
+            // A commit captured before a newer write claimed its revision
+            // must not land. The newer document stays in the store.
+            if (current > writeRevision) return { skipped: true };
+            await table.put(String(writeRevision), CANA_SYNC_REVISION_KEY);
+          }
+          return table.put(json, key);
+        }
       );
     } catch (error) {
       return { status: 'unknown', reason: writeFailureReason(error) };
     }
     if (tx && tx.outcome === 'committed') {
+      if (tx.result && tx.result.skipped === true) {
+        return { status: 'persisted', reason: 'stale-snapshot' };
+      }
       return { status: 'persisted' };
     }
     const handles = tx && tx.correlationId !== undefined

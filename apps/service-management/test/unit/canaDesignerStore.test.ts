@@ -33,6 +33,7 @@ const {
   CANA_BASELINE_KEY,
   CANA_DESIGNER_CLIENT_OPTIONS,
   CANA_STATE_KEY,
+  CANA_SYNC_REVISION_KEY,
   CanaDesignerStore
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'store', 'CanaDesignerStore.js'));
 const {
@@ -69,6 +70,7 @@ function createCanaClientDouble(initial: Record<string, string> = {}) {
     storageState?: StorageStateScript;
     opened: boolean;
     openAttempts: number;
+    omitTransactionGet?: boolean;
   } = {
     storageState: { persistent: true, nearQuota: false, evicted: false },
     opened: false,
@@ -100,6 +102,11 @@ function createCanaClientDouble(initial: Record<string, string> = {}) {
     ) {
       const scope = {
         table: () => ({
+          ...(script.omitTransactionGet === true ? {} : {
+            async get(key: string) {
+              return records.has(key) ? records.get(key) : undefined;
+            }
+          }),
           async put(value: string, key: string) {
             if (script.writeError !== undefined) throw script.writeError;
             records.set(key, value);
@@ -534,6 +541,44 @@ describe('designer store factory — Cana is the sole store (JUM-484)', () => {
     expect((await store.save(PINNED_PAYLOAD)).status).toBe('persisted');
     expect(records.get('service-management.v1')).toBe(JSON.stringify(PINNED_PAYLOAD));
     expect((await store.load()).status).toBe('ok');
+  });
+
+  it('does not replace the stored document when a newer write revision is already stored', async () => {
+    expect.hasAssertions();
+    const { client, records } = createCanaClientDouble();
+    const newer = { domains: [{ id: 'domain-9', name: 'Beta Remote', entities: [] }] };
+    records.set(CANA_STATE_KEY, JSON.stringify(newer));
+    records.set(CANA_SYNC_REVISION_KEY, '9007199254740991');
+    const store = new CanaDesignerStore({ client });
+    const saveResult = await store.save({
+      domains: [{ id: 'domain-1', name: 'Alpha Remote', entities: [] }]
+    }, { writeRevision: 1 });
+    expect(saveResult.status).toBe('persisted');
+    expect(saveResult.reason).toBe('stale-snapshot');
+    expect(JSON.parse(records.get(CANA_STATE_KEY) as string).domains[0].name).toBe('Beta Remote');
+    expect(records.get(CANA_SYNC_REVISION_KEY)).toBe('9007199254740991');
+  });
+
+  it('records a claimed write revision beside the document', async () => {
+    expect.hasAssertions();
+    const { client, records } = createCanaClientDouble();
+    const store = new CanaDesignerStore({ client });
+    const saveResult = await store.save(PINNED_PAYLOAD, { writeRevision: 4 });
+    expect(saveResult.status).toBe('persisted');
+    expect(saveResult.reason).toBeUndefined();
+    expect(records.get(CANA_STATE_KEY)).toBe(JSON.stringify(PINNED_PAYLOAD));
+    expect(records.get(CANA_SYNC_REVISION_KEY)).toBe('4');
+  });
+
+  it('still writes the document when the transaction table cannot read the revision', async () => {
+    expect.hasAssertions();
+    const { client, records, script } = createCanaClientDouble();
+    script.omitTransactionGet = true;
+    const store = new CanaDesignerStore({ client });
+    const saveResult = await store.save(PINNED_PAYLOAD, { writeRevision: 3 });
+    expect(saveResult.status).toBe('persisted');
+    expect(records.get(CANA_STATE_KEY)).toBe(JSON.stringify(PINNED_PAYLOAD));
+    expect(records.has(CANA_SYNC_REVISION_KEY)).toBe(false);
   });
 
   it('builds the Cana adapter over a bare injected client as well', async () => {

@@ -98,6 +98,13 @@
  * so a late echo cannot replace a newer model. Messages with no revision stay
  * applicable: peers from before this guard did not stamp one.
  *
+ * A local commit can still fire after memory has moved on: `saveState()`
+ * captures the document synchronously and Cana delivers the commit later, so
+ * allocating the revision at broadcast time would stamp that stale document
+ * with a newer number. A commit whose model slice no longer matches memory
+ * is not broadcast. The store also refuses the write when its claimed
+ * revision is older than the counter stored beside the document.
+ *
  * This module is DOM-free and import-safe in any runtime: the channel, the
  * cursor storage, the scheduler and the tab identity are all injected or
  * resolved defensively from `globalThis`, exactly like the store port.
@@ -122,6 +129,35 @@ export const DESIGNER_SYNC_REVISION_KEY = 'service-management.v1.sync-revision';
 
 /** Highest revision allocated in this JavaScript realm. */
 let memoryRevision = 0;
+
+/**
+ * Claim the next origin-wide write revision at the moment a payload is
+ * captured. The store compares this number with the sibling counter inside
+ * the write transaction and skips the put when a newer claim already
+ * committed. Not a field of the `service-management.v1` document.
+ */
+export function claimDesignerWriteRevision() {
+  const storage = resolveDefaultCursorStorage();
+  let stored = 0;
+  if (storage) {
+    try {
+      const value = Number(storage.getItem(DESIGNER_SYNC_REVISION_KEY));
+      if (Number.isInteger(value) && value > 0) stored = value;
+    } catch (_) {
+      stored = 0;
+    }
+  }
+  const next = Math.max(memoryRevision, stored) + 1;
+  memoryRevision = next;
+  if (storage) {
+    try {
+      storage.setItem(DESIGNER_SYNC_REVISION_KEY, String(next));
+    } catch (_) {
+      // The in-process counter still orders claims in this realm.
+    }
+  }
+  return next;
+}
 
 /** Default trailing-edge window that coalesces a remote event storm. */
 export const DESIGNER_SYNC_COALESCE_MS = 50;
@@ -326,6 +362,24 @@ export function createDesignerSync({
    * this realm. A late message carries the revision it was given at commit,
    * which is older than a commit that happened after it.
    */
+  /**
+   * True when the committed record still describes the model now in memory.
+   * A parse failure broadcasts as before: the peer resyncs rather than
+   * applying a partial document. Serialization strips `undefined` the same
+   * way `JSON.stringify` did at save time, so an unchanged model matches.
+   */
+  function committedRecordMatchesMemory(record) {
+    try {
+      const committed = canonicalJson(modelSliceOf(JSON.parse(record)));
+      const current = canonicalJson(modelSliceOf(JSON.parse(JSON.stringify(
+        modelSliceOf(designerState.state)
+      ))));
+      return committed === current;
+    } catch (_) {
+      return true;
+    }
+  }
+
   function allocateRevision() {
     const storage = cursorStorageBackend();
     let stored = 0;
@@ -371,6 +425,10 @@ export function createDesignerSync({
     // put, so it still gets a revision. Cana's cursor is per client and is
     // not an order across tabs.
     if (typeof event.record !== 'string') return;
+    // The record was captured when save() ran. Memory may already hold a
+    // newer remote apply. Broadcasting this commit would stamp it with a
+    // fresh revision and both tabs would converge on the stale document.
+    if (!committedRecordMatchesMemory(event.record)) return;
     syncChannel.postMessage({
       originId: syncOriginId,
       cursor: event.cursor,
