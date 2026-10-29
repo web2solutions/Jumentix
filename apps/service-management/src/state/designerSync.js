@@ -365,6 +365,12 @@ export function createDesignerSync({
       persistCursor(event.cursor);
     }
     if (!syncChannel) return;
+    // A delete of the whole store has no document to apply. Do not mint a
+    // revision for it: the peer ignores a non-string record, and a burned
+    // number would not order anything. A domain delete is a new document
+    // put, so it still gets a revision. Cana's cursor is per client and is
+    // not an order across tabs.
+    if (typeof event.record !== 'string') return;
     syncChannel.postMessage({
       originId: syncOriginId,
       cursor: event.cursor,
@@ -385,8 +391,13 @@ export function createDesignerSync({
     if (message.originId === syncOriginId) return;
     if (typeof message.record !== 'string') return;
     if (Number.isInteger(message.revision)) {
-      if (message.revision <= highWaterRevision) return;
-      highWaterRevision = message.revision;
+      const pendingRevision = Number.isInteger(pendingRemote?.revision)
+        ? pendingRemote.revision
+        : highWaterRevision;
+      // Keep a newer document that is already queued. The high-water moves
+      // only after that document applies, so a failed decode does not consume
+      // the revision.
+      if (message.revision <= Math.max(highWaterRevision, pendingRevision)) return;
     }
     pendingRemote = message;
     coalescedCount += 1;
@@ -440,6 +451,12 @@ export function createDesignerSync({
       );
       resync('undecodable-remote');
       return { applied: false, reason: 'undecodable-remote' };
+    }
+    if (Number.isInteger(message.revision)) {
+      if (message.revision <= highWaterRevision) {
+        return { applied: false, reason: 'stale-revision' };
+      }
+      highWaterRevision = message.revision;
     }
     const { reconciled } = applyRemoteDocument(designerState, payload);
     render();

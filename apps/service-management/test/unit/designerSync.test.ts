@@ -443,6 +443,32 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     expect(tabB.renders).toHaveLength(rendersBefore);
   });
 
+  it('a failed decode does not consume the revision', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tabA = createTab(backend, hub);
+    const tabB = createTab(backend, hub);
+    await tabB.core.loadState();
+    await tabB.sync.start();
+
+    tabB.sync.onChannelMessage({
+      originId: tabA.sync.originId,
+      revision: 4,
+      record: '{not-json'
+    });
+    tabB.flush();
+    await flushAsync();
+
+    tabB.sync.onChannelMessage({
+      originId: tabA.sync.originId,
+      revision: 4,
+      record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-9', 'Recovered')] }))
+    });
+    tabB.flush();
+    expect(tabB.core.state.domains.map((domain: any) => domain.name)).toContain('Recovered');
+  });
+
   it('attributes events by origin: a tab never applies its own echo', async () => {
     expect.hasAssertions();
     const backend: Backend = { records: new Map() };
