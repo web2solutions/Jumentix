@@ -469,6 +469,54 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     expect(tabB.core.state.domains.map((domain: any) => domain.name)).toContain('Recovered');
   });
 
+  it('a store clear with no document does not mint a revision', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    await tab.core.loadState();
+    await tab.sync.start();
+    const channel = [...hub.channels][0];
+    const postedBefore = channel.posted.length;
+
+    tab.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      cursor: 4,
+      record: null
+    });
+
+    expect(channel.posted).toHaveLength(postedBefore);
+    expect(tab.sync.getLastCursor()).toBe(4);
+  });
+
+  it('a decoded older revision does not replace a newer applied document', () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tab = createTab(backend, hub);
+    const sync = createDesignerSync({
+      store: tab.store,
+      designerState: tab.core,
+      channel: hub.createChannel(),
+      originId: 'high-water-tab',
+      cursorStorage: createFakeStorage()
+    });
+    const newer = sync.applyRemoteMessage({
+      originId: 'remote-tab',
+      revision: 2,
+      record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-8', 'Newer')] }))
+    });
+    const older = sync.applyRemoteMessage({
+      originId: 'remote-tab',
+      revision: 1,
+      record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-9', 'Older')] }))
+    });
+    expect(newer).toStrictEqual({ applied: true, reconciled: [] });
+    expect(older).toStrictEqual({ applied: false, reason: 'stale-revision' });
+    expect(tab.core.state.domains.map((domain: any) => domain.name)).toStrictEqual(['Newer']);
+  });
+
   it('attributes events by origin: a tab never applies its own echo', async () => {
     expect.hasAssertions();
     const backend: Backend = { records: new Map() };
