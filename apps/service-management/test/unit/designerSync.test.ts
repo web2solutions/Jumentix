@@ -541,6 +541,38 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
       record: '{not-json'
     });
     expect(channel.posted).toHaveLength(postedBefore + 2);
+
+    const bare = createDesignerSync({
+      store: tab.store,
+      designerState: tab.core,
+      channel: hub.createChannel(),
+      originId: 'no-revision-storage',
+      cursorStorage: null
+    });
+    await bare.start();
+    bare.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      cursor: 11,
+      record: JSON.stringify(makeDocument({
+        domains: currentDomains,
+        relationships: [],
+        deployments: []
+      }))
+    });
+    const posted = [...hub.channels].flatMap((item) => item.posted);
+    expect(posted.some((message) => message.originId === 'no-revision-storage')).toBe(true);
+    const idle = createDesignerSync({
+      store: tab.store,
+      designerState: tab.core,
+      channel: hub.createChannel(),
+      originId: 'idle-stop'
+    });
+    idle.stop();
+    applyRemoteDocument({
+      state: tab.core.state,
+      history: tab.core.history
+    }, makeDocument({ domains: currentDomains, relationships: [], deployments: [] }));
   });
 
   it('keeps allocating a revision when the stored counter cannot be read', async () => {
@@ -1405,6 +1437,9 @@ describe('designerSync — defensive guards reach the coverage threshold (Req 02
     });
     try {
       expect(claimDesignerWriteRevision()).toBeGreaterThan(second);
+      Reflect.deleteProperty(globalThis, 'localStorage');
+      const withoutStorage = claimDesignerWriteRevision();
+      expect(withoutStorage).toBeGreaterThan(second);
     } finally {
       Reflect.deleteProperty(globalThis, 'localStorage');
       if (descriptor) Object.defineProperty(globalThis, 'localStorage', descriptor);
