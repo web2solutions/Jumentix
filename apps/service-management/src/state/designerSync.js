@@ -159,6 +159,43 @@ export function claimDesignerWriteRevision() {
   return next;
 }
 
+/**
+ * Revisions claimed at `save()` time, keyed by the exact JSON the store
+ * writes. The commit event arrives later. Stamping the broadcast with a
+ * freshly allocated number at that later moment lets a stale Alpha commit
+ * leapfrog Beta. The claim made when the payload was captured cannot.
+ * Each tab has its own map; the shared localStorage counter is what orders
+ * claims across tabs.
+ */
+const claimsByRecordJson = new Map();
+
+/**
+ * Remember the revision claimed for this payload. `script.js` calls this
+ * in the same turn as `claimDesignerWriteRevision()`, before the async
+ * transaction. A later save of the same JSON replaces the claim.
+ * @param {number} revision
+ * @param {Object} payload
+ */
+export function noteDesignerWriteClaim(revision, payload) {
+  if (!Number.isInteger(revision)) return;
+  let json;
+  try {
+    json = JSON.stringify(payload);
+  } catch (_) {
+    return;
+  }
+  if (typeof json !== 'string') return;
+  claimsByRecordJson.set(json, revision);
+}
+
+/** The claim for this committed record, if `save()` recorded one. */
+function takeDesignerWriteClaim(record) {
+  if (typeof record !== 'string' || !claimsByRecordJson.has(record)) return undefined;
+  const revision = claimsByRecordJson.get(record);
+  claimsByRecordJson.delete(record);
+  return revision;
+}
+
 /** Default trailing-edge window that coalesces a remote event storm. */
 export const DESIGNER_SYNC_COALESCE_MS = 50;
 
@@ -426,15 +463,22 @@ export function createDesignerSync({
     // not an order across tabs.
     if (typeof event.record !== 'string') return;
     // The record was captured when save() ran. Memory may already hold a
-    // newer remote apply. Broadcasting this commit would stamp it with a
-    // fresh revision and both tabs would converge on the stale document.
+    // newer remote apply. Broadcasting this commit would replace Beta on
+    // both tabs. A matching commit keeps the revision claimed at capture
+    // time: allocating one now would leapfrog a newer claim from the peer.
     if (!committedRecordMatchesMemory(event.record)) return;
+    const claimed = takeDesignerWriteClaim(event.record);
+    const revision = Number.isInteger(claimed) ? claimed : allocateRevision();
+    // This tab's own broadcast is newer than any remote message it has
+    // applied. An older in-flight message must not wipe the edit we just
+    // published.
+    if (revision > highWaterRevision) highWaterRevision = revision;
     syncChannel.postMessage({
       originId: syncOriginId,
       cursor: event.cursor,
       correlationId: event.correlationId,
       at: event.at,
-      revision: allocateRevision(),
+      revision,
       record: event.record
     });
   }
