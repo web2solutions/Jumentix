@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.5.6 - 2026-10-29
+
+- 2026-10-29 chore(release): v0.5.6 (#751) - Eduardo A.
 - 2026-10-29 [JUM-951][Release] Promote the late multi-tab commit guard (#749) - Eduardo A.
 - 2026-10-29 [JUM-951][Fix] Drop a late multi-tab commit that no longer matches memory (#748) - Eduardo A.
 - 2026-10-29 test: cover the sync revision branches under the 98% floor - Eduardo A.
