@@ -46,7 +46,7 @@ import {
   parseCommaSeparated,
   parseEnumValues
 } from '@jumentix/designer-core/state/designerState.js';
-import { claimDesignerWriteRevision, createDesignerSync } from './src/state/designerSync.js';
+import { claimDesignerWriteRevision, createDesignerSync, noteDesignerWriteClaim } from './src/state/designerSync.js';
 import {
   deriveTenantScoped,
   validateRbacRule
@@ -155,9 +155,11 @@ let runtimeEnvEditableKeys = Object.keys(RUNTIME_ENV_EDITABLE_DEFAULTS);
 let designerSync = null;
 const store = createDesignerStore();
 const persistDocument = store.save.bind(store);
-store.save = (payload) => persistDocument(payload, {
-  writeRevision: claimDesignerWriteRevision()
-});
+store.save = (payload) => {
+  const writeRevision = claimDesignerWriteRevision();
+  noteDesignerWriteClaim(writeRevision, payload);
+  return persistDocument(payload, { writeRevision });
+};
 const designerState = createDesignerState({
   store,
   seed,
