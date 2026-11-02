@@ -83,7 +83,7 @@ const ACCEPTED_RISK = {
   'GHSA-rcw4-f5rp-g42v': { until: '2026-10-31', reason: 'adm-zip decompression-bomb bypass inherited via cassandra-driver; awaiting upstream consuming fixed release' },
   'GHSA-rfgv-xxqx-mfg5': { until: '2026-10-31', reason: 'undici WebSocket subprotocol DoS inherited transitively; Bun cannot override nested edges yet' },
   'GHSA-rgj7-g3m4-5g8c': { until: '2026-10-31', reason: 'sharp libheif advisories inherited through Next.js/Nextra image pipeline; awaiting upstream' },
-  'GHSA-g84c-rxfj-3j2c': { until: '2026-10-31', reason: 'webpack-dev-middleware path traversal is dev-only tooling; bump with Storybook/webpack toolchain' },
+  'GHSA-g84c-rxfj-3j2c': { until: '2027-01-31', reason: 'webpack-dev-middleware 6.1.3 path traversal is fixed in 7.4.6; bump with the Storybook/webpack toolchain' },
   'GHSA-2v37-7h3g-55p8': { until: '2026-10-31', reason: 'nanoid zero-size generator loop inherited transitively; Bun cannot override nested edges yet' },
   'GHSA-w27v-7q3p-w38r': { until: '2026-10-31', reason: 'SVGO removeScripts namespace bypass inherited through Storybook/SVG tooling; awaiting upstream' },
   'GHSA-6q6h-j7hj-3r64': { until: '2026-10-31', reason: 'happy-dom ESM compiler export-name issue is test-only; bump with frontend test toolchain' },
@@ -133,10 +133,12 @@ const ACCEPTED_RISK = {
   'GHSA-q2hr-2g5m-vwhr': { until: '2026-10-31', reason: 'brace-expansion quadratic rewrite CPU DoS inherited transitively; Bun cannot override nested edges yet' },
   'GHSA-hrr3-gc8f-f4qj': { until: '2026-10-31', reason: 'fast-uri percent-encoded host case normalization via Ajv/fastify; awaiting upstream' },
   // 2026-10-01: OSV wave blocking branch-gate on JUM-914 remaining S9383 PR.
-  'GHSA-c475-qrg2-pj4r': { until: '2026-10-31', reason: 'basic-ftp RE_LINE DoS inherited via get-uri; fixed only on 6.x which breaks get-uri^5; awaiting upstream' },
+  'GHSA-c475-qrg2-pj4r': { until: '2027-01-31', reason: 'basic-ftp RE_LINE DoS is fixed only in 6.2.1; get-uri 6.0.5 still requires basic-ftp ^5' },
   'GHSA-vfj7-8cjw-p6xm': { until: '2026-10-31', reason: 'braces@3.0.3 stack-exhaustion DoS; no patched release yet (OSV last_affected 3.0.3); transitive via micromatch/chokidar' },
   // 2026-10-06: OSV wave blocking package-content-bump ARG_MAX fix (JUM-917).
-  'GHSA-vc2v-76pw-4v95': { until: '2026-10-31', reason: 'compression memory-leak DoS; Bun override did not lift nested 1.8.1 — pin follow-up' },
+  'GHSA-vc2v-76pw-4v95': { until: '2026-10-31', reason: 'compression memory-leak DoS; JUM-953 pins compression ^1.8.2, so this acceptance stays expired on purpose' },
+  'GHSA-3g3m-2fjr-6pw4': { until: '2027-01-31', reason: 'glob AbortSignal bypass is fixed only in 14.0.2; jest, fastify static, and test-exclude still resolve glob 10 and 13' },
+  'GHSA-g3hv-75wg-m249': { until: '2027-01-31', reason: 'minimatch globparts DoS is fixed only in 11.0.1; dependents still require minimatch 3, 5, 9, and 10' },
   'GHSA-jqcg-44mw-7w3h': { until: '2026-10-31', reason: 'proxy-addr IPv4-mapped trust spoofing; Bun override did not lift nested 2.0.7 — pin follow-up' },
   'GHSA-wq5f-xc86-pv6w': { until: '2026-10-31', reason: 'sharp librsvg CVE via Next/Nextra image pipeline; awaiting clean 0.35.5 lock lift' },
   'GHSA-pqg4-j6r4-53mv': { until: '2026-10-31', reason: 'shell-quote comment-token injection; Bun override did not lift nested 1.10.0 — pin follow-up' },

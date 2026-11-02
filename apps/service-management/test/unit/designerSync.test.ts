@@ -46,6 +46,7 @@ const {
   applyRemoteDocument,
   claimDesignerWriteRevision,
   createDesignerSync,
+  noteDesignerWriteClaim,
   reconcileSelection
 } = require(path.join(repoRoot, 'apps', 'service-management', 'src', 'state', 'designerSync.js'));
 const {
@@ -444,6 +445,82 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     expect(tabB.renders).toHaveLength(rendersBefore);
   });
 
+  it('keeps the revision claimed at save time when the commit is observed late', async () => {
+    expect.hasAssertions();
+    const backend: Backend = { records: new Map() };
+    const hub = createFakeMediatorHub();
+    const tabA = createTab(backend, hub);
+    const tabB = createTab(backend, hub);
+    await tabA.core.loadState();
+    await tabB.core.loadState();
+    expect((await tabA.sync.start()).started).toBe(true);
+    expect((await tabB.sync.start()).started).toBe(true);
+
+    const alpha = makeDocument({
+      domains: [makeDomain('domain-a', 'Alpha Remote')],
+      relationships: [],
+      deployments: []
+    });
+    const beta = makeDocument({
+      domains: [
+        makeDomain('domain-a', 'Alpha Remote'),
+        makeDomain('domain-b', 'Beta Remote')
+      ],
+      relationships: [],
+      deployments: []
+    });
+    // Alpha was captured first (claim 4). Beta was captured later (claim 9).
+    // The Alpha commit is observed after Beta has already been published.
+    // Allocating a revision at that moment would leapfrog 9.
+    noteDesignerWriteClaim(4, alpha);
+    noteDesignerWriteClaim(9, beta);
+    noteDesignerWriteClaim(Number.NaN, alpha);
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+    noteDesignerWriteClaim(3, circular);
+
+    tabB.core.state.domains = beta.domains;
+    tabB.core.state.relationships = [];
+    tabB.core.state.deployments = [];
+    tabB.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      cursor: 6,
+      record: JSON.stringify(beta)
+    });
+    const betaMessage = lastItem([...hub.channels].flatMap((channel) => channel.posted)
+      .filter((message) => message.originId === tabB.sync.originId));
+    expect(betaMessage.revision).toBe(9);
+
+    tabA.flush();
+    expect(tabA.core.state.domains.map((domain: any) => domain.name)).toStrictEqual([
+      'Alpha Remote',
+      'Beta Remote'
+    ]);
+
+    tabA.core.state.domains = alpha.domains;
+    tabA.core.state.relationships = [];
+    tabA.core.state.deployments = [];
+    tabA.sync.onLocalEvent({
+      store: STORE_NAME,
+      key: STATE_KEY,
+      cursor: 7,
+      record: JSON.stringify(alpha)
+    });
+    const alphaMessage = lastItem([...hub.channels].flatMap((channel) => channel.posted)
+      .filter((message) => message.originId === tabA.sync.originId));
+    expect(alphaMessage.revision).toBe(4);
+
+    const rendersBefore = tabB.renders.length;
+    tabB.sync.onChannelMessage(alphaMessage);
+    tabB.flush();
+    expect(tabB.core.state.domains.map((domain: any) => domain.name)).toStrictEqual([
+      'Alpha Remote',
+      'Beta Remote'
+    ]);
+    expect(tabB.renders).toHaveLength(rendersBefore);
+  });
+
   it('a failed decode does not consume the revision', async () => {
     expect.hasAssertions();
     const backend: Backend = { records: new Map() };
@@ -452,10 +529,14 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
     const tabB = createTab(backend, hub);
     await tabB.core.loadState();
     await tabB.sync.start();
+    const publishedFloor = [...hub.channels]
+      .flatMap((channel) => channel.posted)
+      .reduce((max, message) => Math.max(max, Number(message.revision) || 0), 0);
+    const revision = publishedFloor + 1;
 
     tabB.sync.onChannelMessage({
       originId: tabA.sync.originId,
-      revision: 4,
+      revision,
       record: '{not-json'
     });
     tabB.flush();
@@ -463,7 +544,7 @@ describe('designerSync — two-tab convergence over a shared mediator (JUM-485)'
 
     tabB.sync.onChannelMessage({
       originId: tabA.sync.originId,
-      revision: 4,
+      revision,
       record: JSON.stringify(makeDocument({ domains: [makeDomain('domain-9', 'Recovered')] }))
     });
     tabB.flush();

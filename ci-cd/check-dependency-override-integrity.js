@@ -88,8 +88,11 @@ const REQUIRED_OVERRIDES = {
   // Raised again on 2026-10-23 (JUM-944): GHSA-cg2g-xh64-v4q7 / GHSA-mrv2-3pqr-j5jr
   // fixed in dompurify >=3.4.17.
   dompurify: '^3.4.17',
+  // Raised on 2026-11-02 (JUM-953): GHSA-vc2v-76pw-4v95, fixed in compression >=1.8.2.
+  compression: '^1.8.2',
   // Raised on 2026-10-23 (JUM-944): GHSA-8r9p-f939-6h3c / GHSA-q3jh-wrc6-jgq8.
-  'follow-redirects': '1.16.1',
+  // Raised on 2026-11-02 (JUM-953): 1.16.1 is GHSA-mrwp-f3q8-3g9p, fixed in 1.16.2.
+  'follow-redirects': '1.16.2',
   // Raised on 2026-10-23 (JUM-944): GHSA-587h-7wmj-h5pm via vite launch-editor;
   // fixed on vite >=8.3.3.
   vite: '^8.3.5',

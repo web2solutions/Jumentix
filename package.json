@@ -482,7 +482,8 @@
     "vue-eslint-parser": {
       "eslint-scope": "^9.1.2"
     },
-    "follow-redirects": "1.16.1",
+    "compression": "^1.8.2",
+    "follow-redirects": "1.16.2",
     "vite": "^8.3.5"
   },
   "repository": {
