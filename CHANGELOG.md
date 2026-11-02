@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.5.7 - 2026-11-02
+
+- 2026-11-02 chore(release): v0.5.7 (#759) - Eduardo A.
 - 2026-11-02 [JUM-952][Release] Stamp multi-tab broadcasts with the save-time revision (#756) - Eduardo A.
 - 2026-11-02 [JUM-953][Security] Raise the follow-redirects and compression pins (#757) - Eduardo A.
 - 2026-11-02 fix: pin follow-redirects 1.16.2 and compression 1.8.2 - Eduardo A.
