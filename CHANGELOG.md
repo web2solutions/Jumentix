@@ -4,6 +4,15 @@
 
 ## Unreleased
 
+- 2026-11-02 [JUM-952][Release] Stamp multi-tab broadcasts with the save-time revision (#756) - Eduardo A.
+- 2026-11-02 [JUM-953][Security] Raise the follow-redirects and compression pins (#757) - Eduardo A.
+- 2026-11-02 fix: pin follow-redirects 1.16.2 and compression 1.8.2 - Eduardo A.
+- 2026-10-29 [JUM-952][Fix] Stamp multi-tab broadcasts with the save-time revision (#755) - Eduardo A.
+- 2026-10-29 fix: stamp multi-tab broadcasts with the save-time revision - Eduardo A.
+
+## v0.5.6 - 2026-10-29
+
+- 2026-10-29 chore(release): v0.5.6 (#751) - Eduardo A.
 - 2026-10-29 [JUM-951][Release] Promote the late multi-tab commit guard (#749) - Eduardo A.
 - 2026-10-29 [JUM-951][Fix] Drop a late multi-tab commit that no longer matches memory (#748) - Eduardo A.
 - 2026-10-29 test: cover the sync revision branches under the 98% floor - Eduardo A.
