@@ -394,7 +394,7 @@
     "@types/serverless": "^3.12.22",
     "@types/supertest": "^7.2.1",
     "@typescript-eslint/eslint-plugin": "^8.67.0",
-    "@typescript-eslint/parser": "^8.67.0",
+    "@typescript-eslint/parser": "^8.72.1",
     "babel-plugin-istanbul": "^8.0.0",
     "commitizen": "^4.3.1",
     "concurrently": "^9.2.3",
