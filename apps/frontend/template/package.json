@@ -28,7 +28,7 @@
     "@coreui/vue-chartjs": "^3.0.0",
     "@popperjs/core": "^2.11.8",
     "@vue/devtools-api": "^8.2.1",
-    "chart.js": "^4.5.1",
+    "chart.js": "^4.6.1",
     "pinia": "^4.1.0",
     "simplebar-vue": "^2.4.2",
     "vue": "^3.5.43",
