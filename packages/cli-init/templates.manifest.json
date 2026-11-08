@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "7a31e69747c61ebb299983405737a9a0de66106f",
+  "sourceCommit": "1ec538d3535eea211578c77e0801a6cff076830f",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -30,9 +30,9 @@
   "packageVersions": {
     "@jumentix/adapter-runtime-bootstrap": "0.1.0",
     "@jumentix/cana": "0.1.2",
-    "@jumentix/cana-react": "0.1.1",
+    "@jumentix/cana-react": "0.1.2",
     "@jumentix/cana-vue": "0.1.0",
-    "@jumentix/cli-init": "0.0.4",
+    "@jumentix/cli-init": "0.0.7",
     "@jumentix/database-client-factory": "0.1.0",
     "@jumentix/dead-letter-queue": "0.1.0",
     "@jumentix/designer-core": "0.1.0",
@@ -156,7 +156,7 @@
       "source": "apps/backend-template/documentation/guides/CREATING-REST-API-WITH-JUMENTIX.pt-BR.md"
     },
     "backend/package.json": {
-      "sha256": "be3d0fde7baefc573bffcb75df930a824fdfd3bfa5eeb847022ba596382f2d25",
+      "sha256": "55bcbc5bb163660bc61f5251e7282b670f6786b04e982016ab205f93b0f55bab",
       "source": "apps/backend-template/package.json"
     },
     "backend/scripts/purge-tombstones.js": {
@@ -3648,7 +3648,7 @@
       "source": "apps/frontend/index.html"
     },
     "frontend/package.json": {
-      "sha256": "aa1048c98b936e9dec93688d25e7dcc899bb6a5489aa5a5f3b10a3b57929d46a",
+      "sha256": "6cf23f15b5fb894b33e9385199fc3c85d0200345fd917810eda1de94b7cff6cf",
       "source": "apps/frontend/package.json"
     },
     "frontend/public/android-icon-144x144.png": {
