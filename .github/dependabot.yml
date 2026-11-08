@@ -8,6 +8,10 @@ updates:
       interval: weekly
     target-branch: dev
     open-pull-requests-limit: 5
+    ignore:
+      # TypeScript 7 has no compiler API that typescript-eslint 8.72.1 can use.
+      - dependency-name: typescript
+        versions: ["7.x"]
 
   # Nested Vue template keeps its own npm lockfile outside the Bun workspace.
   - package-ecosystem: npm

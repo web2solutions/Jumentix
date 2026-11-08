@@ -39,15 +39,15 @@ watch(() => tasks.active, (id) => {
   const mod = findModule(id);
   const tab = mod ? firstAllowedTab(mod, permissions.roles.value) : 'dashboard';
   if (route.path.startsWith(`/m/${id}`)) return;
-  router.push(`/m/${id}/${tab}`);
+  router.push(`/m/${id}/${tab}`).catch(() => undefined);
 });
 
 onMounted(() => {
-  permissions.ensure();
+  permissions.ensure().catch(() => undefined);
   tasks.hydrate();
   expiryTimer = setInterval(() => {
     if (expireIfStaleSession(auth)) {
-      router.push('/login');
+      router.push('/login').catch(() => undefined);
     }
   }, 30000);
 });

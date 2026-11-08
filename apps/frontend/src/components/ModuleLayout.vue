@@ -51,7 +51,7 @@ watch(
     if (!tab || !tabs.value.some((item) => item.id === tab)) {
       const next = firstAllowedTab(mod.value, roles.value);
       if (route.path !== `/m/${props.moduleId}/${next}`) {
-        router.replace(`/m/${props.moduleId}/${next}`);
+        router.replace(`/m/${props.moduleId}/${next}`).catch(() => undefined);
       }
     }
   },
@@ -80,7 +80,7 @@ watch(
 );
 
 const selectTab = (tabId: string) => {
-  router.push(`/m/${props.moduleId}/${tabId}`);
+  router.push(`/m/${props.moduleId}/${tabId}`).catch(() => undefined);
 };
 </script>
 

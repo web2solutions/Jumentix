@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "e18983a3ec252483308c3b9b28c1f9e0479e21de",
+  "sourceCommit": "7a31e69747c61ebb299983405737a9a0de66106f",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -3808,15 +3808,15 @@
       "source": "apps/frontend/src/components/AppSidebar.vue"
     },
     "frontend/src/components/AppSidebarNav.vue": {
-      "sha256": "4dab8b84cae34af611effe20c540ee1b1960dbf65ebd087166086773aa80defb",
+      "sha256": "e3ad7b36d06983a3f208fc05b1f9f696498ea99b7a91b1f43c69132e30b73619",
       "source": "apps/frontend/src/components/AppSidebarNav.vue"
     },
     "frontend/src/components/AppTaskbar.vue": {
-      "sha256": "60843ecff3b337fa99caa5d76b6fdaae8363dfa68f8c4108077444f72bdd7ab4",
+      "sha256": "1d04e85f629883fdcffb208e86ec2cea746fb10a03dbb66ec23026a693289bd1",
       "source": "apps/frontend/src/components/AppTaskbar.vue"
     },
     "frontend/src/components/ModuleLayout.vue": {
-      "sha256": "5b8da05ea4d948e1391395e07826d4db3dc7562a2831b93cd3ce106299133f81",
+      "sha256": "acb97a65b10417dbef0728512604594bcf3cd0b38f3259be79dfa36e667f5dff",
       "source": "apps/frontend/src/components/ModuleLayout.vue"
     },
     "frontend/src/components/NetworkActivity.vue": {
@@ -4076,7 +4076,7 @@
       "source": "apps/frontend/src/i18n/messages.ts"
     },
     "frontend/src/layouts/DefaultLayout.vue": {
-      "sha256": "10795afe4fbbcd3f233cda15cce6bf68eee50a4ea14edd37230ac79ebddb5286",
+      "sha256": "3c31d01aa1c9389008f86c25a6e8eadd8962b2ed3619a965f11ecd10e488ffdb",
       "source": "apps/frontend/src/layouts/DefaultLayout.vue"
     },
     "frontend/src/main.ts": {
