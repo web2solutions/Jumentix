@@ -4,8 +4,175 @@
 
 ## Unreleased
 
+- 2026-11-02 chore(release): bump packages with unpublished content changes (#760) - Eduardo A.
+
+## v0.5.7 - 2026-11-02
+
+- 2026-11-02 chore(release): v0.5.7 (#759) - Eduardo A.
+- 2026-11-02 [JUM-952][Release] Stamp multi-tab broadcasts with the save-time revision (#756) - Eduardo A.
+- 2026-11-02 [JUM-953][Security] Raise the follow-redirects and compression pins (#757) - Eduardo A.
+- 2026-11-02 fix: pin follow-redirects 1.16.2 and compression 1.8.2 - Eduardo A.
+- 2026-10-29 [JUM-952][Fix] Stamp multi-tab broadcasts with the save-time revision (#755) - Eduardo A.
+- 2026-10-29 fix: stamp multi-tab broadcasts with the save-time revision - Eduardo A.
+
+## v0.5.6 - 2026-10-29
+
+- 2026-10-29 chore(release): v0.5.6 (#751) - Eduardo A.
+- 2026-10-29 [JUM-951][Release] Promote the late multi-tab commit guard (#749) - Eduardo A.
+- 2026-10-29 [JUM-951][Fix] Drop a late multi-tab commit that no longer matches memory (#748) - Eduardo A.
+- 2026-10-29 test: cover the sync revision branches under the 98% floor - Eduardo A.
+- 2026-10-29 fix: drop a late multi-tab commit that no longer matches memory - Eduardo A.
+- 2026-10-29 chore(release): bump packages with unpublished content changes (#746) - Eduardo A.
+
+## v0.5.5 - 2026-10-29
+
+- 2026-10-29 chore(release): v0.5.5 (#743) - Eduardo A.
+- 2026-10-29 [JUM-949][Release] Promote the sync revision guard and Dependabot bumps (#740) - Eduardo A.
+- 2026-10-29 [JUM-950][Fix] Revert mongoose 9 until the Mongo smoke connects (#741) - Eduardo A.
+- 2026-10-29 fix: revert mongoose 9 until the Mongo smoke connects - Eduardo A.
+- 2026-10-29 chore(deps): bump mongoose from 8.24.5 to 9.11.4 (#734) - Eduardo A.
+- 2026-10-29 Merge branch 'dev' into dependabot/bun/dev/mongoose-9.11.4 - Eduardo A.
+- 2026-10-29 chore(deps): bump mermaid from 11.17.2 to 12.2.0 (#732) - Eduardo A.
+- 2026-10-29 Merge branch 'dev' into dependabot/bun/dev/mermaid-12.2.0 - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump globals from 16.5.0 to 17.13.0 in /apps/frontend/template (#731) - Eduardo A.
+- 2026-10-29 chore(deps): bump mongoose from 8.24.5 to 9.11.4 - dependabot[bot]
+- 2026-10-29 chore(deps): bump mermaid from 11.17.2 to 12.2.0 - dependabot[bot]
+- 2026-10-29 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/globals-17.13.0 - Eduardo A.
+- 2026-10-29 chore(deps): bump hono from 4.13.13 to 4.13.14 (#737) - Eduardo A.
+- 2026-10-29 Merge branch 'dev' into dependabot/bun/dev/hono-4.13.14 - Eduardo A.
+- 2026-10-29 chore(deps): bump @fastify/static from 10.1.6 to 10.1.7 (#735) - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump globals in /apps/frontend/template - dependabot[bot]
+- 2026-10-29 Merge branch 'dev' into dependabot/bun/dev/fastify/static-10.1.7 - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump eslint from 10.12.0 to 10.13.0 in /apps/frontend/template (#733) - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump eslint in /apps/frontend/template - dependabot[bot]
+- 2026-10-29 chore(deps-dev): bump autoprefixer from 10.5.0 to 10.6.1 in /apps/frontend/template (#736) - Eduardo A.
+- 2026-10-29 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/autoprefixer-10.6.1 - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump @typescript-eslint/eslint-plugin from 8.69.0 to 8.72.0 in /apps/frontend/template (#730) - Eduardo A.
+- 2026-10-29 chore(deps-dev): bump autoprefixer in /apps/frontend/template - dependabot[bot]
+- 2026-10-29 chore(deps-dev): bump @typescript-eslint/eslint-plugin - dependabot[bot]
+- 2026-10-29 chore(deps-dev): bump @typescript-eslint/parser from 8.71.1 to 8.72.0 in /apps/frontend/template (#738) - Eduardo A.
+- 2026-10-29 chore(deps): bump hono from 4.13.13 to 4.13.14 - dependabot[bot]
+- 2026-10-29 chore(deps): bump @fastify/static from 10.1.6 to 10.1.7 - dependabot[bot]
+- 2026-10-29 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-eslint/parser-8.72.0 - Eduardo A.
+- 2026-10-29 [JUM-948][Fix] Drop stale multi-tab sync revisions (#739) - Eduardo A.
+- 2026-10-29 test: cover an unreadable sync revision counter - Eduardo A.
+- 2026-10-28 test: cover store-clear and stale decoded sync revisions - Eduardo A.
+- 2026-10-28 fix: advance the sync revision only after a successful apply - Eduardo A.
+- 2026-10-28 fix: drop stale multi-tab sync revisions - Eduardo A.
+- 2026-10-28 chore(deps-dev): bump @typescript-eslint/parser - dependabot[bot]
+
+## v0.5.4 - 2026-10-28
+
+- 2026-10-28 chore(release): v0.5.4 (#727) - Eduardo A.
+- 2026-10-28 chore(release): bump packages with unpublished content changes (#726) - Eduardo A.
+- 2026-10-28 [JUM-947][Release] Promote the security pins and template vite floor (#722) - Eduardo A.
+- 2026-10-28 [Fix] Ignore prose mentions of the agent-critique token (#723) - Eduardo A.
+- 2026-10-28 fix: ignore prose mentions of the agent-critique token - Eduardo A.
+- 2026-10-28 [Fix] Reconcile main template vite into dev (#721) - Eduardo A.
+- 2026-10-28 fix: declare pinia's required @vue/devtools-api peer - Eduardo A.
+- 2026-10-28 fix: restore vue-eslint-parser in the frontend template lock - Eduardo A.
+- 2026-10-28 chore: merge main into dev and keep the template vite floor - Eduardo A.
+- 2026-10-28 [Fix] Pin qs 6.16.1 and align React 19.3.1 (#720) - Eduardo A.
+- 2026-10-28 fix: pin qs 6.16.1 and align React 19.3.1 - Eduardo A.
+- 2026-10-26 [CI] Skip Vercel website builds for Dependabot refs (#719) - Eduardo A.
+- 2026-10-25 ci: skip Vercel website builds on Dependabot refs - Eduardo A.
+- 2026-10-25 chore(deps): bump @fastify/helmet from 13.1.2 to 13.2.0 (#706) - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/fastify/helmet-13.2.0 - Eduardo A.
+- 2026-10-25 chore(deps-dev): bump eslint-plugin-vue from 10.9.1 to 10.11.1 in /apps/frontend/template (#705) - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/fastify/helmet-13.2.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/eslint-plugin-vue-10.11.1 - Eduardo A.
+- 2026-10-25 chore(deps-dev): bump typescript from 5.9.3 to 7.0.2 in /apps/frontend/template (#703) - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/fastify/helmet-13.2.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/eslint-plugin-vue-10.11.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-7.0.2 - Eduardo A.
+- 2026-10-25 chore(deps): bump @coreui/vue from 5.8.0 to 5.10.1 in /apps/frontend/template (#702) - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/fastify/helmet-13.2.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/eslint-plugin-vue-10.11.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-7.0.2 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/coreui/vue-5.10.1 - Eduardo A.
+- 2026-10-25 chore(deps): bump react-dom from 19.3.0 to 19.3.1 (#704) - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/fastify/helmet-13.2.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/eslint-plugin-vue-10.11.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/react-dom-19.3.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-7.0.2 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/coreui/vue-5.10.1 - Eduardo A.
+- 2026-10-25 chore(deps): bump pinia from 3.0.4 to 4.1.0 in /apps/frontend/template (#700) - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/fastify/helmet-13.2.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/eslint-plugin-vue-10.11.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/react-dom-19.3.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-7.0.2 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/coreui/vue-5.10.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/pinia-4.1.0 - Eduardo A.
+- 2026-10-25 chore(deps): bump oracledb from 6.10.0 to 26.0.0 (#701) - Eduardo A.
+- 2026-10-25 chore: merge dev into the template pinia 4.1.0 bump - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/fastify/helmet-13.2.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/eslint-plugin-vue-10.11.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/react-dom-19.3.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-7.0.2 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/coreui/vue-5.10.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/oracledb-26.0.0 - Eduardo A.
+- 2026-10-25 chore(deps): bump vue-router from 5.0.7 to 5.4.0 in /apps/frontend/template (#699) - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/fastify/helmet-13.2.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/eslint-plugin-vue-10.11.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/react-dom-19.3.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-7.0.2 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/coreui/vue-5.10.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/bun/dev/oracledb-26.0.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/pinia-4.1.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/vue-router-5.4.0 - Eduardo A.
+- 2026-10-25 chore(deps): bump pinia from 3.0.4 to 4.1.0 (#708) - Eduardo A.
+- 2026-10-25 chore: merge dev into the pinia 4.1.0 bump - Eduardo A.
+- 2026-10-25 chore(deps): bump react-dom from 19.3.0 to 19.3.1 - dependabot[bot]
+- 2026-10-25 chore(deps): bump @fastify/helmet from 13.1.2 to 13.2.0 - dependabot[bot]
+- 2026-10-25 chore(deps): bump oracledb from 6.10.0 to 26.0.0 - dependabot[bot]
+- 2026-10-25 [JUM-946][Fix] Keep Domain Designer focus zoom in model+origin space (#718) - Eduardo A.
+- 2026-10-25 ci: clear fatal audit pins and refresh the pinia template - Eduardo A.
+- 2026-10-25 fix(service-management): keep focus zoom in model+origin space - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/eslint-plugin-vue-10.11.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/typescript-7.0.2 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/coreui/vue-5.10.1 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/pinia-4.1.0 - Eduardo A.
+- 2026-10-25 Merge branch 'dev' into dependabot/npm_and_yarn/apps/frontend/template/dev/vue-router-5.4.0 - Eduardo A.
+- 2026-10-25 chore(deps): bump pinia from 3.0.4 to 4.1.0 - dependabot[bot]
+- 2026-10-25 [JUM-945][CI] Require an agent critique on non-automated PRs to dev (#716) - Eduardo A.
+- 2026-10-23 ci: require an agent critique on non-automated PRs to dev - Eduardo A.
+- 2026-10-23 chore(deps-dev): bump eslint-plugin-vue in /apps/frontend/template - dependabot[bot]
+- 2026-10-23 chore(deps-dev): bump typescript in /apps/frontend/template - dependabot[bot]
+- 2026-10-23 chore(deps): bump @coreui/vue in /apps/frontend/template - dependabot[bot]
+- 2026-10-23 chore(deps): bump pinia from 3.0.4 to 4.1.0 in /apps/frontend/template - dependabot[bot]
+- 2026-10-23 chore(deps): bump vue-router in /apps/frontend/template - dependabot[bot]
+- 2026-10-23 [JUM-944][Security] Unblock deps:audit so Dependabot branch-gate can pass (#715) - Eduardo A.
+- 2026-10-23 fix(deps): raise Storybook/Next/DOMPurify pins past fatal OSV advisories (JUM-944) - Eduardo A.
+- 2026-10-21 [JUM-943][Test] Make the multi-tab remote-change wait independent of coalescing and toast timing (#714) - Eduardo A.
+- 2026-10-21 test(service-management): wait for remote-change text, not toast timing [JUM-943] - Eduardo A.
+- 2026-10-21 [JUM-942][Test] Give the cli-init generation matrix its declared timeout (#713) - Eduardo A.
+- 2026-10-21 chore: merge dev into claude/test/JUM-942-generation-matrix-timeout - Eduardo A.
+- 2026-10-21 [JUM-941][CI] Skip PR governance when CI declares a push pipeline (#712) - Eduardo A.
+- 2026-10-21 test(cli-init): give the generation matrix its declared timeout [JUM-942] - Eduardo A.
+- 2026-10-21 fix(ci): skip PR governance when CI declares a push pipeline [JUM-941] - Eduardo A.
+- 2026-10-21 [JUM-937][Docs] Document truthful CircleCI required checks (#711) - Eduardo A.
+- 2026-10-21 docs(ci): document truthful CircleCI required checks [JUM-937] - Eduardo A.
+- 2026-10-21 [JUM-939][CI] Run PR-required suites on push so dev and task tips are green and truthful (#710) - Eduardo A.
+- 2026-10-21 fix(ci): run PR-required suites on push so tips are green and truthful [JUM-939] - Eduardo A.
+- 2026-10-21 [JUM-940][Security] Bump Storybook to 10.6.2 for GHSA-f2ph-cmg5-wxc8 (#709) - Eduardo A.
+- 2026-10-21 fix(security): bump Storybook to 10.6.2 for GHSA-f2ph-cmg5-wxc8 [JUM-940] - Eduardo A.
+- 2026-10-21 [JUM-936][CI] Fail PR-required CircleCI jobs instead of halting them outside PR context (#695) - Eduardo A.
 - 2026-10-20 chore(deps-dev): bump vite from 8.3.0 to 8.3.4 in /apps/frontend/template (#697) - Eduardo A.
+- 2026-10-20 chore: merge dev into claude/ci/JUM-936-pr-required-jobs-fail-closed - Eduardo A.
 - 2026-10-20 chore(deps-dev): bump vite in /apps/frontend/template - dependabot[bot]
+- 2026-10-20 [JUM-935][Docs] Wire ai-memory routing and add Requirement 138 (#694) - Eduardo A.
+- 2026-10-20 chore: merge dev into JUM-935 ai-memory routing PR - Eduardo A.
+- 2026-10-20 chore: merge dev into claude/ci/JUM-936-pr-required-jobs-fail-closed - Eduardo A.
+- 2026-10-19 [JUM-938][Test] Scrub third-party IndexedDB brand from cana differential suite (#696) - Eduardo A.
+- 2026-10-18 test(cana): scrub third-party IndexedDB brand from differential suite (JUM-938) - Eduardo A.
+- 2026-10-18 fix(ci): fail PR-required CircleCI jobs instead of halting them outside PR context [JUM-936] - Eduardo A.
+- 2026-10-18 docs(governance): add Requirement 138 mandatory ai-memory - Eduardo A.
+- 2026-10-18 docs(agents): wire ai-memory routing for Jumentix harnesses - Eduardo A.
+- 2026-10-18 [JUM-933][Docs] Reconcile requirement text, index and NFR registry with dev gates (#693) - Eduardo A.
+- 2026-10-17 chore: merge dev into claude/docs/JUM-933-requirements-text-drift - Eduardo A.
+- 2026-10-17 docs(governance): reconcile requirement text with dev gates (JUM-933) - Eduardo A.
+- 2026-10-17 [JUM-932][Chore] Sync main tip into destin after JUM-931 promote (#692) - Eduardo A.
+- 2026-10-17 chore(release): merge main into destin after JUM-931 promote - Eduardo A.
 - 2026-10-17 chore(release): bump packages with unpublished content changes (#690) - Eduardo A.
 
 ## v0.5.3 - 2026-10-17
