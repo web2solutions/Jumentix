@@ -406,7 +406,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-jest": "^27.9.0",
+    "eslint-plugin-jest": "^29.17.0",
     "eslint-plugin-module-resolver": "^1.5.0",
     "eslint-plugin-no-async-foreach": "^0.1.1",
     "husky": "^9.1.7",
