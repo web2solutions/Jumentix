@@ -4,6 +4,16 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.5.8 - 2026-11-08
+
+- 2026-11-08 chore(release): v0.5.8 (#776) - Eduardo A.
+- 2026-11-08 [JUM-954][Release] Mark frontend navigation promises as handled (#774) - Eduardo A.
+- 2026-11-08 [JUM-954][Fix] Reconcile main so the navigation fix can promote (#775) - Eduardo A.
+- 2026-11-08 fix: reconcile main so the navigation fix can promote - Eduardo A.
+- 2026-11-08 [JUM-954][Fix] Mark frontend navigation promises as handled (#773) - Eduardo A.
+- 2026-11-08 fix: mark frontend navigation promises as handled - Eduardo A.
 - 2026-11-02 chore(release): bump packages with unpublished content changes (#760) - Eduardo A.
 
 ## v0.5.7 - 2026-11-02
