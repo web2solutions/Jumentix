@@ -105,7 +105,7 @@
     },
     "apps/backend-template": {
       "name": "@jumentix/backend-template",
-      "version": "0.5.3",
+      "version": "0.5.7",
       "dependencies": {
         "@jumentix/adapter-runtime-bootstrap": "workspace:*",
         "@jumentix/database-client-factory": "workspace:*",
@@ -122,7 +122,7 @@
     },
     "apps/frontend": {
       "name": "@jumentix/frontend",
-      "version": "0.5.3",
+      "version": "0.5.7",
       "dependencies": {
         "@coreui/chartjs": "^4.2.0",
         "@coreui/coreui": "^5.6.1",
@@ -156,7 +156,7 @@
         "fake-indexeddb": "6.2.5",
         "globals": "^17.12.0",
         "happy-dom": "21.0.4",
-        "postcss": "^8.5.8",
+        "postcss": "^8.5.32",
         "sass": "^1.98.0",
         "typescript": "^5.9.3",
         "vite": "^8.3.5",
@@ -167,7 +167,7 @@
     },
     "apps/jumentix-website": {
       "name": "@jumentix/website",
-      "version": "0.5.3",
+      "version": "0.5.7",
       "dependencies": {
         "@jumentix/cana": "workspace:*",
         "@jumentix/designer-core": "workspace:*",
@@ -215,7 +215,7 @@
         "cypress-axe": "^1.7.0",
         "jest-axe": "^11.0.0",
         "jest-environment-jsdom": "^30.4.1",
-        "postcss": "^8.5.23",
+        "postcss": "^8.5.32",
         "postcss-import": "^17.0.0",
         "postcss-preset-mantine": "1.18.0",
         "postcss-simple-vars": "^7.0.1",
@@ -226,7 +226,7 @@
     },
     "apps/service-management": {
       "name": "@jumentix/service-management",
-      "version": "0.5.3",
+      "version": "0.5.7",
       "dependencies": {
         "d3": "^7.9.0",
         "requirejs": "^2.3.8",
@@ -235,7 +235,7 @@
     },
     "apps/service-management-api": {
       "name": "@jumentix/service-management-api",
-      "version": "0.5.3",
+      "version": "0.5.7",
     },
     "packages/adapter-runtime-bootstrap": {
       "name": "@jumentix/adapter-runtime-bootstrap",
@@ -260,7 +260,7 @@
     },
     "packages/cana-react": {
       "name": "@jumentix/cana-react",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "devDependencies": {
         "@jumentix/cana": "workspace:*",
         "@types/react": "19.3.0",
@@ -291,7 +291,7 @@
     },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
-      "version": "0.0.4",
+      "version": "0.0.7",
       "bin": {
         "cli-init": "./bin/jumentix.js",
         "jumentix": "./bin/jumentix.js",
