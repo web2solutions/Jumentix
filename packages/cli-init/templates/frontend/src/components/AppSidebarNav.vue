@@ -34,7 +34,7 @@ const openModule = (to: string) => {
   const match = to.match(/^\/m\/([^/]+)/);
   if (match) {
     tasks.openModule(match[1]);
-    router.push(to);
+    router.push(to).catch(() => undefined);
   }
 }
 </script>
