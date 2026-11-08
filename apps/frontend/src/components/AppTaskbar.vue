@@ -40,7 +40,7 @@ const iconFor = (moduleId: string): string => findModule(moduleId)?.icon ?? 'cil
 
 const activate = (moduleId: string) => {
   tasks.activate(moduleId);
-  router.push(`/m/${moduleId}`);
+  router.push(`/m/${moduleId}`).catch(() => undefined);
   sheetOpen.value = false;
 };
 
@@ -49,7 +49,7 @@ const closeTask = (moduleId: string, event: Event) => {
   event.preventDefault();
   tasks.close(moduleId);
   if (tasks.active) {
-    router.push(`/m/${tasks.active}`);
+    router.push(`/m/${tasks.active}`).catch(() => undefined);
   }
 };
 
