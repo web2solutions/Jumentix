@@ -1,10 +1,10 @@
+/* eslint-disable max-classes-per-file */
 /*
  * Two classes, reported at file level: a concrete subclass of the abstract base
  * client, and a Map whose operations throw. Both exist to reach behaviour that
  * cannot be reached otherwise, and both belong next to the blocks that use
  * them rather than in a shared helper away from the reason they exist.
  */
-/* eslint-disable max-classes-per-file */
 import net from 'node:net';
 
 import type { IServiceResponse } from '../src';

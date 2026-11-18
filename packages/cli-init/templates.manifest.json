@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "1ec538d3535eea211578c77e0801a6cff076830f",
+  "sourceCommit": "e29aea32ae7cf3a2f0efb2d01cdf5d6ba29f4166",
   "exclusions": [
     "**/.agents/**",
     "**/.claude/**",
@@ -3648,7 +3648,7 @@
       "source": "apps/frontend/index.html"
     },
     "frontend/package.json": {
-      "sha256": "6cf23f15b5fb894b33e9385199fc3c85d0200345fd917810eda1de94b7cff6cf",
+      "sha256": "7038b0c63f6e2f94690f022290f467bafb9683af895f2d4eabf8c9f559d1903a",
       "source": "apps/frontend/package.json"
     },
     "frontend/public/android-icon-144x144.png": {
