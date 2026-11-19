@@ -105,7 +105,7 @@
     },
     "apps/backend-template": {
       "name": "@jumentix/backend-template",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@jumentix/adapter-runtime-bootstrap": "workspace:*",
         "@jumentix/database-client-factory": "workspace:*",
@@ -122,7 +122,7 @@
     },
     "apps/frontend": {
       "name": "@jumentix/frontend",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@coreui/chartjs": "^4.2.0",
         "@coreui/coreui": "^5.6.1",
@@ -167,7 +167,7 @@
     },
     "apps/jumentix-website": {
       "name": "@jumentix/website",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@jumentix/cana": "workspace:*",
         "@jumentix/designer-core": "workspace:*",
@@ -194,7 +194,7 @@
         "pinia": "^4.1.0",
         "react": "19.3.1",
         "react-dom": "19.3.1",
-        "react-redux": "^9.3.0",
+        "react-redux": "^9.3.1",
         "swr": "^2.4.2",
         "vue": "^3.5.41",
       },
@@ -226,7 +226,7 @@
     },
     "apps/service-management": {
       "name": "@jumentix/service-management",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "d3": "^7.9.0",
         "requirejs": "^2.3.8",
@@ -235,7 +235,7 @@
     },
     "apps/service-management-api": {
       "name": "@jumentix/service-management-api",
-      "version": "0.5.7",
+      "version": "0.5.8",
     },
     "packages/adapter-runtime-bootstrap": {
       "name": "@jumentix/adapter-runtime-bootstrap",
@@ -291,7 +291,7 @@
     },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
-      "version": "0.0.7",
+      "version": "0.0.8",
       "bin": {
         "cli-init": "./bin/jumentix.js",
         "jumentix": "./bin/jumentix.js",
@@ -4424,7 +4424,7 @@
 
     "react-number-format": ["react-number-format@5.4.5", "", { "peerDependencies": { "react": "^0.14 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^0.14 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-y8O2yHHj3w0aE9XO8d2BCcUOOdQTRSVq+WIuMlLVucAm5XNjJAy+BoOJiuQMldVYVOKTMyvVNfnbl2Oqp+YxGw=="],
 
-    "react-redux": ["react-redux@9.3.0", "", { "dependencies": { "@types/use-sync-external-store": "^0.0.6", "use-sync-external-store": "^1.4.0" }, "peerDependencies": { "@types/react": "^18.2.25 || ^19", "react": "^18.0 || ^19", "redux": "^5.0.0" }, "optionalPeers": ["@types/react", "redux"] }, "sha512-KQopgqFo/p/fgmAs5qz6p5RWaNAzq40WAu7fJIXnQpYxFPbJYtsJPWvGeF2rOBaY/kEuV77AVsX8TsQzKm+A/g=="],
+    "react-redux": ["react-redux@9.3.1", "", { "dependencies": { "@types/use-sync-external-store": "^0.0.6", "use-sync-external-store": "^1.4.0" }, "peerDependencies": { "@types/react": "^18.2.25 || ^19", "react": "^18.0 || ^19", "redux": "^5.0.0" }, "optionalPeers": ["@types/react", "redux"] }, "sha512-vxMLT0lalUjbZPkoTepWyKAZbjIIFssNx/CEL9lTfwQBU6XpkGSmCNdcCIrkOBUgB68uftZMnbXVb6DwGnhRKQ=="],
 
     "react-refresh": ["react-refresh@0.14.2", "", {}, "sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA=="],
 
