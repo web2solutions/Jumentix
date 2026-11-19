@@ -134,6 +134,8 @@ const ACCEPTED_RISK = {
   'GHSA-hrr3-gc8f-f4qj': { until: '2026-10-31', reason: 'fast-uri percent-encoded host case normalization via Ajv/fastify; awaiting upstream' },
   // 2026-10-01: OSV wave blocking branch-gate on JUM-914 remaining S9383 PR.
   'GHSA-c475-qrg2-pj4r': { until: '2027-01-31', reason: 'basic-ftp RE_LINE DoS is fixed only in 6.2.1; get-uri 6.0.5 still requires basic-ftp ^5' },
+  'GHSA-5pm8-86m8-9m6r': { until: '2027-01-31', reason: 'basic-ftp MLSD __proto__ DoS is fixed only in 6.2.4; get-uri 6.0.5 still requires basic-ftp ^5' },
+  'GHSA-r4jh-29pc-gfqr': { until: '2027-01-31', reason: 'basic-ftp CR/LF crash is fixed only in 6.2.3; get-uri 6.0.5 still requires basic-ftp ^5' },
   'GHSA-vfj7-8cjw-p6xm': { until: '2026-10-31', reason: 'braces@3.0.3 stack-exhaustion DoS; no patched release yet (OSV last_affected 3.0.3); transitive via micromatch/chokidar' },
   // 2026-10-06: OSV wave blocking package-content-bump ARG_MAX fix (JUM-917).
   'GHSA-vc2v-76pw-4v95': { until: '2026-10-31', reason: 'compression memory-leak DoS; JUM-953 pins compression ^1.8.2, so this acceptance stays expired on purpose' },
@@ -274,6 +276,10 @@ async function evaluatePackages(packages, io = {}) {
         cache.set(id, await detail(id));
       }
       const vuln = cache.get(id);
+      // A withdrawn record is not an advisory. OSV keeps it in the batch
+      // response, and picomatch GHSA-fc5q-39xc-vjpf has no release past the
+      // version it names.
+      if (vuln?.withdrawn) continue;
       const severity = severityOf(vuln);
       if (NON_BLOCKING_SEVERITIES.has(severity)) continue;
 

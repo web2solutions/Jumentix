@@ -276,6 +276,17 @@ describe('evaluating a package set', () => {
     expect(advisory.description).toBe('HIGH: GHSA-aaaa-bbbb-cccc');
   });
 
+  it('drops a withdrawn advisory', async () => {
+    expect.hasAssertions();
+
+    const advisories = await evaluatePackages([pkg('picomatch', '4.0.7')], {
+      batch: batchReturning('GHSA-fc5q-39xc-vjpf'),
+      detail: async () => vulnerability('HIGH', { withdrawn: '2026-11-18T15:38:56Z' })
+    });
+
+    expect(advisories).toStrictEqual([]);
+  });
+
   it('drops an advisory that is currently accepted risk', async () => {
     expect.hasAssertions();
 

@@ -34,6 +34,7 @@ export interface IAdvisory {
 export interface IOsvVulnerability {
   id?: string;
   summary?: string;
+  withdrawn?: string;
   database_specific?: { severity?: string };
   severity?: Array<{ type?: string; score?: string }>;
 }
