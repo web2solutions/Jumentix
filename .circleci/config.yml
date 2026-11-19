@@ -118,7 +118,12 @@ commands:
           command: |
             sudo apt-get update
             sudo apt-get install -y xvfb xauth libnss3 libnspr4 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64 libxss1 libxtst6 libgtk-3-0t64 libnotify-dev
-      - browser-tools/install-chrome
+      # Chrome 158 makes Cypress 15 abort the second spec with
+      # "* is not a valid URL" (cypress-io/cypress#35195). The fix is in
+      # Cypress 16, which removes Cypress.env(). Stay on 15 and pin the last
+      # stable Chrome before that break.
+      - browser-tools/install-chrome:
+          chrome-version: "157.0.8103.78"
       # Preinstall Firefox from Mozilla so browser-tools/install-firefox
       # hits installation_check and skips its silenced apt path (exit 100 on
       # CircleCI job 759 / pipeline 179 — Ubuntu mirror/apt flake under the orb).
@@ -576,11 +581,20 @@ jobs:
       - run:
           name: Ensure Node.js 22 on the machine image
           command: |
+            set -euo pipefail
+            # ubuntu-2404:current ships Node 24, and engines.node is >=22 <23.
+            # NodeSource's setup_22 script leaves the image binary first on
+            # PATH, so install the same 22.21.1 the docker jobs use.
             if ! node --version 2>/dev/null | grep -q '^v22\.'; then
-              curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-              sudo apt-get install -y nodejs
+              ver=22.21.1
+              curl -fsSL -o /tmp/node.tar.xz "https://nodejs.org/dist/v${ver}/node-v${ver}-linux-x64.tar.xz"
+              sudo rm -rf /opt/node
+              sudo mkdir -p /opt/node
+              sudo tar -xJf /tmp/node.tar.xz -C /opt/node --strip-components=1
+              echo 'export PATH="/opt/node/bin:$PATH"' >> "$BASH_ENV"
+              export PATH="/opt/node/bin:$PATH"
             fi
-            node --version
+            node --version | grep -q '^v22\.'
       - prepare_checkout
       - resolve_pr_metadata
       - require_ci_job:

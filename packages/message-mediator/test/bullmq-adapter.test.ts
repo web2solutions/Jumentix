@@ -1,9 +1,9 @@
+/* eslint-disable max-classes-per-file, no-useless-constructor, no-empty-function */
 /*
  * The double mirrors BullMQ's constructor surface — `new Queue(...)`,
  * `new QueueEvents(...)`, `new Worker(...)` — so three classes and their empty
  * constructors are the shape the library dictates, not a style choice.
  */
-/* eslint-disable max-classes-per-file, no-useless-constructor, no-empty-function */
 /* eslint-disable class-methods-use-this, object-curly-newline */
 import { BullMqMessageMediatorAdapter } from '../src';
 import type { IMessage } from '../src';

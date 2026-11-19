@@ -129,7 +129,27 @@ module.exports = {
         rules: {
           'jest/no-hooks': 'off',
           'jest/no-untyped-mock-factory': 'off',
-          'jest/unbound-method': 'off'
+          'jest/unbound-method': 'off',
+          /*
+           * eslint-plugin-jest 29 (Dependabot #771, JUM-955) adds these to
+           * `plugin:jest/all`. The suites were written against v27. Leaving
+           * them on is a repository-wide restyle, not a dependency update.
+           */
+          'jest/no-unnecessary-assertion': 'off',
+          'jest/padding-around-after-all-blocks': 'off',
+          'jest/padding-around-all': 'off',
+          'jest/padding-around-before-all-blocks': 'off',
+          'jest/padding-around-before-each-blocks': 'off',
+          'jest/padding-around-describe-blocks': 'off',
+          'jest/padding-around-expect-groups': 'off',
+          'jest/padding-around-test-blocks': 'off',
+          'jest/prefer-ending-with-an-expect': 'off',
+          'jest/prefer-importing-jest-globals': 'off',
+          'jest/prefer-jest-mocked': 'off',
+          'jest/prefer-mock-return-shorthand': 'off',
+          'jest/prefer-to-have-been-called': 'off',
+          'jest/valid-expect-with-promise': 'off',
+          'jest/valid-mock-module-path': 'off'
         }
       },
       {

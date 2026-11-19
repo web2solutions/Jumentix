@@ -98,7 +98,9 @@ const REQUIRED_OVERRIDES = {
   vite: '^8.3.5',
   // Raised on 2026-10-23 (JUM-944): GHSA-2464-fhr4-w9xw / GHSA-673q-mjm6-r5xr /
   // GHSA-p3m5-59mp-jv5r — Next.js 16.x fixed at >=16.4.1.
-  next: '16.4.2',
+  // Raised on 2026-11-18 (JUM-955): GHSA-mfr8-8qww-v76h / GHSA-vc7v-qv4w-wrv8
+  // are fixed in next >=16.4.5. 16.4.2 was still in the resolved store.
+  next: '16.4.5',
   // Raised on 2026-10-11: GHSA-8r5x-fm3f-whwj / GHSA-p8wg-vrv2-v86f (CRITICAL)
   // and GHSA-5x5g-h9x8-2fh9 / GHSA-8f34-f56x-9xph — patched releases exist.
   handlebars: '^4.7.10',
@@ -117,7 +119,13 @@ const REQUIRED_OVERRIDES = {
   fastify: '^5.12.5',
   // Raised on 2026-09-30: GHSA-hxh3-vqpv-xpqv (hono/jsx unescaped boundary XSS)
   // fixed on current 4.13 line; nested 4.12.32 / 4.13.2 copies were still warning.
-  hono: '^4.13.12',
+  // Raised on 2026-11-18 (JUM-955): GHSA-46wx-v44x-9hh2, GHSA-4h7h-rv7c-7m2v,
+  // GHSA-4m76-xfj5-7975 and GHSA-h7mg-cq63-vhpq are fixed in hono >=4.13.16.
+  hono: '^4.13.19',
+  // Raised on 2026-11-18 (JUM-955): GHSA-8332-j7wj-wjw4, GHSA-gg4r-jv3p-qx3c,
+  // GHSA-6972-9mcm-vhwj and GHSA-wr5m-5jph-8m96 are fixed in mongoose >=8.24.7.
+  // Stay on 8.x; mongoose 9 was reverted by JUM-950.
+  mongoose: '^8.24.7',
 };
 
 /** Resolutions that must survive alongside the overrides. */

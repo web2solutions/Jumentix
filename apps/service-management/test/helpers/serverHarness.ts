@@ -311,7 +311,9 @@ function waitForListening(server: SpawnedServer): Promise<void> {
 
 export function stopServer(server: StartedServer | undefined) {
   if (server?.proc) {
-    server.proc.kill();
+    // SIGTERM leaves this child and its stdio pipes alive. Jest then sits on
+    // the open handle after the suite has passed and the task gate never exits.
+    server.proc.kill('SIGKILL');
   }
 }
 
