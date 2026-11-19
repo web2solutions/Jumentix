@@ -105,7 +105,7 @@
     },
     "apps/backend-template": {
       "name": "@jumentix/backend-template",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@jumentix/adapter-runtime-bootstrap": "workspace:*",
         "@jumentix/database-client-factory": "workspace:*",
@@ -122,7 +122,7 @@
     },
     "apps/frontend": {
       "name": "@jumentix/frontend",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@coreui/chartjs": "^4.2.0",
         "@coreui/coreui": "^5.6.1",
@@ -167,7 +167,7 @@
     },
     "apps/jumentix-website": {
       "name": "@jumentix/website",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@jumentix/cana": "workspace:*",
         "@jumentix/designer-core": "workspace:*",
@@ -176,7 +176,7 @@
         "@jumentix/mutex-service": "workspace:*",
         "@jumentix/sdk-rest-client": "workspace:*",
         "@jumentix/sdk-websocket-client": "workspace:*",
-        "@mantine/core": "9.6.1",
+        "@mantine/core": "9.8.1",
         "@mantine/hooks": "9.6.1",
         "@mdx-js/loader": "^3.1.1",
         "@mdx-js/react": "^3.1.1",
@@ -226,7 +226,7 @@
     },
     "apps/service-management": {
       "name": "@jumentix/service-management",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "d3": "^7.9.0",
         "requirejs": "^2.3.8",
@@ -235,7 +235,7 @@
     },
     "apps/service-management-api": {
       "name": "@jumentix/service-management-api",
-      "version": "0.5.7",
+      "version": "0.5.8",
     },
     "packages/adapter-runtime-bootstrap": {
       "name": "@jumentix/adapter-runtime-bootstrap",
@@ -291,7 +291,7 @@
     },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
-      "version": "0.0.7",
+      "version": "0.0.8",
       "bin": {
         "cli-init": "./bin/jumentix.js",
         "jumentix": "./bin/jumentix.js",
@@ -1316,7 +1316,7 @@
 
     "@lukeed/ms": ["@lukeed/ms@2.0.2", "", {}, "sha512-9I2Zn6+NJLfaGoz9jN3lpwDgAYvfGeNYdbAIjJOqzs4Tpc+VU3Jqq4IofSUBKajiDS8k9fZIg18/z13mpk1bsA=="],
 
-    "@mantine/core": ["@mantine/core@9.6.1", "", { "dependencies": { "@floating-ui/react": "^0.27.20", "clsx": "^2.1.1", "react-number-format": "^5.4.5", "react-remove-scroll": "^2.7.2", "type-fest": "^5.8.0" }, "peerDependencies": { "@mantine/hooks": "9.6.1", "react": "^19.2.0", "react-dom": "^19.2.0" } }, "sha512-UkcPo8Zq0uSdodvyXV62HVmfIfHCcrjFrFrH0TggTy6Wtp8a78znGP8RJOz8zC9XSPpJmKjBQjg0M+nOvIzftA=="],
+    "@mantine/core": ["@mantine/core@9.8.1", "", { "dependencies": { "@floating-ui/react": "^0.27.20", "clsx": "^2.1.1", "react-number-format": "^5.4.5", "react-remove-scroll": "^2.7.2", "type-fest": "^5.10.0" }, "peerDependencies": { "@mantine/hooks": "9.8.1", "react": "^19.2.0", "react-dom": "^19.2.0" } }, "sha512-+ayBTxun7MslJL6x4qaylVy6TyHu3o68+PH22gt70eJSHgy0CHYR/c2q+BYxS8WvORuc4f5mr0xFbi0vzlgHug=="],
 
     "@mantine/hooks": ["@mantine/hooks@9.6.1", "", { "peerDependencies": { "react": "^19.2.0" } }, "sha512-pfxM95WozngB0ZALw6h99QV1TQ0qniOkFhzi0+dmSnKpxkVSR0xeNsvPpGDj9Teu+M69fRoE4IkzyMnu5Xld3w=="],
 
