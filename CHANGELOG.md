@@ -4,6 +4,17 @@
 
 ## Unreleased
 
+- No changes.
+
+## v0.5.9 - 2026-11-19
+
+- 2026-11-19 chore(release): v0.5.9 (#795) - Eduardo A.
+- 2026-11-19 [JUM-955][Release] Promote the nightly audit fix (#793) - Eduardo A.
+- 2026-11-19 [JUM-955][Chore] Reconcile main so the audit fix can promote (#794) - Eduardo A.
+- 2026-11-19 chore: reconcile main so the audit fix can promote - Eduardo A.
+- 2026-11-19 [JUM-955][Security] Clear the nightly dependency audit (#784) - Eduardo A.
+- 2026-11-19 fix: keep CircleCI on Node 22 and Chrome 157 - Eduardo A.
+- 2026-11-18 fix: clear the nightly dependency audit - Eduardo A.
 - 2026-11-08 chore(release): bump packages with unpublished content changes (#778) - Eduardo A.
 
 ## v0.5.8 - 2026-11-08
