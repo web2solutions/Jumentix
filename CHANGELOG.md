@@ -4,7 +4,7 @@
 
 ## Unreleased
 
-- No changes.
+- 2026-11-19 chore(release): bump packages with unpublished content changes (#797) - Eduardo A.
 
 ## v0.5.9 - 2026-11-19
 
