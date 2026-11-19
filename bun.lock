@@ -59,7 +59,7 @@
         "@jumentix/security-scanner": "workspace:*",
         "@loopback/rest": "^15.0.15",
         "@types/aws-lambda": "^8.10.145",
-        "@types/bcrypt": "^5.0.2",
+        "@types/bcrypt": "^6.0.0",
         "@types/bcryptjs": "^3.0.0",
         "@types/body-parser": "^1.19.5",
         "@types/bunyan": "^1.8.11",
@@ -105,7 +105,7 @@
     },
     "apps/backend-template": {
       "name": "@jumentix/backend-template",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@jumentix/adapter-runtime-bootstrap": "workspace:*",
         "@jumentix/database-client-factory": "workspace:*",
@@ -122,7 +122,7 @@
     },
     "apps/frontend": {
       "name": "@jumentix/frontend",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@coreui/chartjs": "^4.2.0",
         "@coreui/coreui": "^5.6.1",
@@ -167,7 +167,7 @@
     },
     "apps/jumentix-website": {
       "name": "@jumentix/website",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@jumentix/cana": "workspace:*",
         "@jumentix/designer-core": "workspace:*",
@@ -226,7 +226,7 @@
     },
     "apps/service-management": {
       "name": "@jumentix/service-management",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "d3": "^7.9.0",
         "requirejs": "^2.3.8",
@@ -235,7 +235,7 @@
     },
     "apps/service-management-api": {
       "name": "@jumentix/service-management-api",
-      "version": "0.5.7",
+      "version": "0.5.8",
     },
     "packages/adapter-runtime-bootstrap": {
       "name": "@jumentix/adapter-runtime-bootstrap",
@@ -291,7 +291,7 @@
     },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
-      "version": "0.0.7",
+      "version": "0.0.8",
       "bin": {
         "cli-init": "./bin/jumentix.js",
         "jumentix": "./bin/jumentix.js",
@@ -1738,7 +1738,7 @@
 
     "@types/babel__traverse": ["@types/babel__traverse@7.28.0", "", { "dependencies": { "@babel/types": "^7.28.2" } }, "sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q=="],
 
-    "@types/bcrypt": ["@types/bcrypt@5.0.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-6atioO8Y75fNcbmj0G7UjI9lXN2pQ/IGJ2FWT4a/btd0Lk9lQalHLKhkgKVZ3r+spnmWUKfbMi1GEe9wyHQfNQ=="],
+    "@types/bcrypt": ["@types/bcrypt@6.0.0", "", { "dependencies": { "@types/node": "*" } }, "sha512-/oJGukuH3D2+D+3H4JWLaAsJ/ji86dhRidzZ/Od7H/i8g+aCmvkeCc6Ni/f9uxGLSQVCRZkX2/lqEFG2BvWtlQ=="],
 
     "@types/bcryptjs": ["@types/bcryptjs@3.0.0", "", { "dependencies": { "bcryptjs": "*" } }, "sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg=="],
 
