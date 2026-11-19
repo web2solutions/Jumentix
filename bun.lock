@@ -105,7 +105,7 @@
     },
     "apps/backend-template": {
       "name": "@jumentix/backend-template",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@jumentix/adapter-runtime-bootstrap": "workspace:*",
         "@jumentix/database-client-factory": "workspace:*",
@@ -122,7 +122,7 @@
     },
     "apps/frontend": {
       "name": "@jumentix/frontend",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@coreui/chartjs": "^4.2.0",
         "@coreui/coreui": "^5.6.1",
@@ -167,7 +167,7 @@
     },
     "apps/jumentix-website": {
       "name": "@jumentix/website",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "@jumentix/cana": "workspace:*",
         "@jumentix/designer-core": "workspace:*",
@@ -216,7 +216,7 @@
         "jest-axe": "^11.0.0",
         "jest-environment-jsdom": "^30.4.1",
         "postcss": "^8.5.33",
-        "postcss-import": "^17.0.0",
+        "postcss-import": "^17.0.1",
         "postcss-preset-mantine": "1.18.0",
         "postcss-simple-vars": "^7.0.1",
         "storybook": "10.6.3",
@@ -226,7 +226,7 @@
     },
     "apps/service-management": {
       "name": "@jumentix/service-management",
-      "version": "0.5.7",
+      "version": "0.5.8",
       "dependencies": {
         "d3": "^7.9.0",
         "requirejs": "^2.3.8",
@@ -235,7 +235,7 @@
     },
     "apps/service-management-api": {
       "name": "@jumentix/service-management-api",
-      "version": "0.5.7",
+      "version": "0.5.8",
     },
     "packages/adapter-runtime-bootstrap": {
       "name": "@jumentix/adapter-runtime-bootstrap",
@@ -291,7 +291,7 @@
     },
     "packages/cli-init": {
       "name": "@jumentix/cli-init",
-      "version": "0.0.7",
+      "version": "0.0.8",
       "bin": {
         "cli-init": "./bin/jumentix.js",
         "jumentix": "./bin/jumentix.js",
@@ -4290,7 +4290,7 @@
 
     "postcss": ["postcss@8.5.33", "", { "dependencies": { "nanoid": "^3.3.20", "picocolors": "^1.1.1", "source-map-js": "^1.2.2" } }, "sha512-RVHEU9/Pp1Fnjr/MpAJsZoADukCKhfIi15OunEYiGktIkYLkPVvC1sioWolGDS7XByMTx9m/IGbro0Js13zhnQ=="],
 
-    "postcss-import": ["postcss-import@17.0.0", "", { "dependencies": { "postcss-value-parser": "^4.0.0", "read-cache": "^1.0.0", "resolve": "^1.1.7" }, "peerDependencies": { "postcss": "^8.0.0" } }, "sha512-qzVMJhcq39KweT7Fp0HcjE5YxL5yI854Q3CtufxDuZKO9HLQUp2rptB9+U0MIj3pT1ZEVXoqnpeC1mSkfYuz4Q=="],
+    "postcss-import": ["postcss-import@17.0.1", "", { "dependencies": { "postcss-value-parser": "^4.0.0", "read-cache": "^1.0.0", "resolve": "^1.1.7" }, "peerDependencies": { "postcss": "^8.0.0" } }, "sha512-lthLZRa+sMc/xo+lG7TMUvOviwP9ngR0VULnvfXTyOE3JIc0mFrbjcubI6Jx52X+B3IKt9yfp6wwVWE768JezA=="],
 
     "postcss-js": ["postcss-js@4.1.0", "", { "dependencies": { "camelcase-css": "^2.0.1" }, "peerDependencies": { "postcss": "^8.4.21" } }, "sha512-oIAOTqgIo7q2EOwbhb8UalYePMvYoIeRY2YKntdpFQXNosSu3vLrniGgmH9OKs/qAkfoj5oB3le/7mINW1LCfw=="],
 
