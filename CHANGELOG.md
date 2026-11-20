@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- 2026-11-20 [JUM-955][Release] Promote the Dependabot follow-up bumps (#803) - Eduardo A.
+- 2026-11-20 [JUM-955][Chore] Fold the remaining Dependabot bumps (#802) - Eduardo A.
+- 2026-11-20 chore: fold the remaining Dependabot bumps - Eduardo A.
 - 2026-11-19 chore(release): bump packages with unpublished content changes (#797) - Eduardo A.
 
 ## v0.5.9 - 2026-11-19
