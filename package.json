@@ -381,7 +381,7 @@
     "@jumentix/security-scanner": "workspace:*",
     "@loopback/rest": "^15.0.15",
     "@types/aws-lambda": "^8.10.145",
-    "@types/bcrypt": "^5.0.2",
+    "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/body-parser": "^1.19.5",
     "@types/bunyan": "^1.8.11",
