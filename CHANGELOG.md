@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- 2026-11-21 [JUM-956][Release] Promote the nightly branch-gate heartbeat (#806) - Eduardo A.
+- 2026-11-21 [JUM-956][CI] Keep the nightly branch gate alive (#805) - Eduardo A.
+- 2026-11-21 ci: keep the nightly branch gate from looking idle - Eduardo A.
 - 2026-11-20 [JUM-955][Release] Promote the Dependabot follow-up bumps (#803) - Eduardo A.
 - 2026-11-20 [JUM-955][Chore] Fold the remaining Dependabot bumps (#802) - Eduardo A.
 - 2026-11-20 chore: fold the remaining Dependabot bumps - Eduardo A.
