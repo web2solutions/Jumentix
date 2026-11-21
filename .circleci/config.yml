@@ -165,10 +165,26 @@ jobs:
             bun x cypress verify
       - run:
           name: Run canonical branch quality gate
+          # ci:gate:strict buffers test output. The 2026-11-21 nightly on
+          # main (build 10541) sat quiet and died with
+          # "Too long with no output (exceeded 30m0s)".
           no_output_timeout: 30m
           command: |
             source "$BASH_ENV"
-            bun run ci:gate:branch
+            set +e
+            bun run ci:gate:branch &
+            gate_pid=$!
+            while kill -0 "$gate_pid" 2>/dev/null; do
+              echo "[ci] branch gate still running (pid=$gate_pid)..."
+              sleep 30
+            done
+            wait "$gate_pid"
+            gate_status=$?
+            set -e
+            if [ "$gate_status" -ne 0 ]; then
+              echo "[ci] branch gate failed with exit $gate_status"
+              exit "$gate_status"
+            fi
       - store_artifacts:
           path: artifacts/ci
           destination: branch-gate
