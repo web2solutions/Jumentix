@@ -47,6 +47,16 @@ function createFakeElement(tag: string): any {
         add: (name: string) => {
           el.className = el.className ? `${el.className} ${name}` : name;
         },
+        remove: (name: string) => {
+          el.className = el.className.split(/\s+/u).filter((entry: string) => entry && entry !== name).join(' ');
+        },
+        toggle: (name: string, force?: boolean) => {
+          const on = el.className.split(/\s+/u).filter(Boolean).includes(name);
+          const next = force === undefined ? !on : force;
+          if (next && !on) el.classList.add(name);
+          if (!next && on) el.classList.remove(name);
+          return next;
+        },
         contains: (name: string) => el.className.split(/\s+/u).filter(Boolean).includes(name)
       };
     },
@@ -88,9 +98,27 @@ function createFakeElement(tag: string): any {
   return el;
 }
 
-function createFakeWindow() {
+function createFakeWindow(innerWidth = 1400) {
   const listeners = new Map<string, Array<(event: any) => void>>();
+  type TimerFn = () => void;
+  const timers = new Map<number, TimerFn>();
+  let nextTimer = 1;
   return {
+    confirm: () => true,
+    innerWidth,
+    setTimeout(handler: () => void, _ms?: number) {
+      const id = nextTimer;
+      nextTimer += 1;
+      timers.set(id, handler);
+      return id;
+    },
+    clearTimeout(id: number) {
+      timers.delete(id);
+    },
+    flushTimers() {
+      [...timers.values()].forEach((handler) => handler());
+      timers.clear();
+    },
     addEventListener(type: string, handler: (event: any) => void) {
       const list = listeners.get(type) || [];
       list.push(handler);
@@ -120,14 +148,26 @@ function fakeDataTransfer(initial: Record<string, string> = {}) {
 }
 
 const FULL_DOM_KEYS = [
-  'architectureEmptyState', 'architectureServiceNameInput', 'architectureAddServiceBtn',
-  'architectureServiceList', 'architectureDomainPalette', 'architectureInspectName',
-  'architectureInspectKind', 'architectureInspectUrl', 'architectureInspectDeploy',
-  'architectureInspectDomain', 'architectureMoveDomainBtn', 'architectureSaveServiceBtn',
-  'architectureDeleteServiceBtn', 'architectureLinkFrom', 'architectureLinkTo',
-  'architectureLinkProtocol', 'architectureAddLinkBtn', 'architectureLinkList',
-  'architectureIssueList', 'architectureCanvas', 'architectureMiniMap',
-  'architectureExportImageBtn'
+  'architectureEmptyState', 'architectureCoach', 'architectureCoachDismissBtn',
+  'architectureServiceNameInput', 'architectureServiceNameError', 'architectureAddServiceBtn',
+  'architectureServicesHint', 'architectureServiceList',
+  'architectureDomainsHint', 'architectureDomainPalette',
+  'architectureInspectEmpty', 'architectureInspectBody', 'architectureInspectName',
+  'architectureInspectNameError', 'architectureInspectKindBadge',
+  'architectureInspectUrl', 'architectureInspectUrlError',
+  'architectureInspectDeploy', 'architectureInspectDeployError',
+  'architectureOpenDomainsBtn', 'architectureMoveDomainHint',
+  'architectureInspectDomainNameInput', 'architectureInspectDomainNameError',
+  'architectureInspectAddDomainBtn',
+  'architectureDeleteServiceBtn', 'architectureLinksHint', 'architectureLinksConnectBtn',
+  'architectureLinkProtocol', 'architectureLinkList',
+  'architectureValidateHint', 'architectureIssueList', 'architectureCanvas', 'architectureMiniMap',
+  'architectureExportImageBtn', 'architectureConnectBtn', 'architectureCancelConnectBtn',
+  'architectureConnectStatus', 'architectureScopePath', 'architectureInspectHint',
+  'architectureServiceDomains', 'architectureSidebar', 'architectureToggleSidebarBtn',
+  'architectureTabServicesContext', 'architectureTabDomainsContext',
+  'architectureTabSelectedContext', 'architectureTabLinksContext',
+  'architectureTabValidateContext'
 ];
 
 function createFullDom(): Record<string, any> {
@@ -228,7 +268,9 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
 
     expect(dom.architectureEmptyState.hidden).toBe(true);
     expect(dom.architectureDomainPalette.children).toHaveLength(2);
-    expect(dom.architectureDomainPalette.children[0].textContent).toBe('Billing');
+    const firstDomain = dom.architectureDomainPalette.children[0];
+    expect(firstDomain.children[0].children[0].textContent).toBe('Billing');
+    expect(firstDomain.children[0].children[1].textContent).toBe('on Core');
     expect(dom.architectureIssueList.children.length).toBeGreaterThan(0);
     expect(dom.architectureIssueList.children[0].className).toContain('architecture-issue-warn');
   });
@@ -270,7 +312,7 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
 
     expect(dom.architectureServiceList.children).toHaveLength(2);
     const [, newButton] = dom.architectureServiceList.children.map((item: any) => item.children[0]);
-    expect(newButton.textContent).toBe('Payments API (domain)');
+    expect(newButton.dataset.summary).toBe('Payments API · Split-out · 0 domains');
     expect(dom.architectureServiceNameInput.value).toBe('');
 
     newButton.dispatch('click', {});
@@ -279,8 +321,8 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     // "active" class lands on the freshly built buttons, not the stale ones.
     const [rerenderedCore, rerenderedNew] = dom.architectureServiceList.children
       .map((item: any) => item.children[0]);
-    expect(rerenderedNew.className).toBe('active');
-    expect(rerenderedCore.className).toBe('');
+    expect(rerenderedNew.className).toContain('active');
+    expect(rerenderedCore.className).not.toContain('active');
   });
 
   it('falls back to a default service name when the name input is blank', () => {
@@ -292,8 +334,8 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     dom.architectureAddServiceBtn.dispatch('click', {});
 
     const labels = dom.architectureServiceList.children
-      .map((item: any) => item.children[0].textContent);
-    expect(labels).toContain('Service (domain)');
+      .map((item: any) => item.children[0].dataset.summary);
+    expect(labels.some((label: string) => label.startsWith('Service · Split-out'))).toBe(true);
   });
 
   it('adds a default-named service and skips clearing the input when it is absent', () => {
@@ -308,38 +350,17 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     expect(() => dom.architectureAddServiceBtn.dispatch('click', {})).not.toThrow();
 
     const labels = dom.architectureServiceList.children
-      .map((item: any) => item.children[0].textContent);
-    expect(labels).toContain('Service (domain)');
+      .map((item: any) => item.children[0].dataset.summary);
+    expect(labels.some((label: string) => label.startsWith('Service · Split-out'))).toBe(true);
   });
 
-  it('ignores a save click before any service is selected', () => {
+  it('ignores inspector autosave before any service is selected', () => {
     expect.hasAssertions();
     const { dom, state } = setup();
     dom.architectureInspectName.value = 'Should not apply';
-
-    // No render has run yet, so `state.selectedArchitectureServiceId` matches
-    // no service: the handler's own `architecture()` lookup still normalizes
-    // `state.architecture` as a side effect, but the guard must stop it short
-    // of writing the inspector's values onto any service.
-    dom.architectureSaveServiceBtn.dispatch('click', {});
+    dom.architectureInspectName.dispatch('change', {});
 
     expect(state.architecture.services.map((service: any) => service.name)).not.toContain('Should not apply');
-  });
-
-  it('falls back to the id when a fillSelect item has no name', () => {
-    expect.hasAssertions();
-    const dom = createFullDom();
-    const state: any = {
-      domains: [{ id: 'domain-unnamed' }],
-      architecture: undefined
-    };
-    const actions = { withPersist: (fn: () => void) => fn(), saveState: jest.fn() };
-
-    createArchitectureCanvas({ dom, state, actions }).renderArchitecture();
-
-    const options = dom.architectureInspectDomain.children;
-    expect(options[0].value).toBe('domain-unnamed');
-    expect(options[0].textContent).toBe('domain-unnamed');
   });
 
   it('tolerates an undefined domains list throughout render', () => {
@@ -350,7 +371,8 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
 
     const canvas = createArchitectureCanvas({ dom, state, actions });
     expect(() => canvas.renderArchitecture()).not.toThrow();
-    expect(dom.architectureDomainPalette.children).toHaveLength(0);
+    expect(dom.architectureDomainPalette.children).toHaveLength(1);
+    expect(dom.architectureDomainPalette.children[0].className).toContain('architecture-rail-empty');
   });
 
   it('skips the mini-map overlay when it is absent from the DOM', () => {
@@ -384,90 +406,117 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     expect(state.architecture.services.map((service: any) => service.name)).not.toContain('Removable');
   });
 
-  it('edits and saves the selected service through the inspector, both kind branches', () => {
+  it('autosaves the selected service name, url and deploy target from the inspector', () => {
     expect.hasAssertions();
     const { dom, state, canvas } = setup();
     canvas.renderArchitecture();
 
+    expect(dom.architectureInspectKindBadge.textContent).toBe('Core');
+    expect(dom.architectureInspectKindBadge.dataset.kind).toBe('core');
+
     dom.architectureInspectName.value = 'Renamed Core';
-    dom.architectureInspectKind.value = 'core';
+    dom.architectureInspectName.dispatch('change', {});
     dom.architectureInspectUrl.value = 'http://localhost:9000/api/1.0.0';
+    dom.architectureInspectUrl.dispatch('change', {});
     dom.architectureInspectDeploy.value = 'deploy-1';
-    dom.architectureSaveServiceBtn.dispatch('click', {});
+    dom.architectureInspectDeploy.dispatch('change', {});
 
     let selected = state.architecture.services.find(
       (service: any) => service.id === state.selectedArchitectureServiceId
     );
     expect(selected.name).toBe('Renamed Core');
     expect(selected.kind).toBe('core');
+    expect(selected.url).toBe('http://localhost:9000/api/1.0.0');
     expect(selected.deployTargetId).toBe('deploy-1');
 
-    // Blank inputs fall back to the existing value instead of erasing it,
-    // and a non-"core" kind clears back to "domain".
+    // Blank name is invalid (keeps prior); blank url keeps prior; deploy may clear.
     dom.architectureInspectName.value = '';
-    dom.architectureInspectKind.value = 'domain';
+    dom.architectureInspectName.dispatch('change', {});
+    expect(dom.architectureInspectNameError.hidden).toBe(false);
+    expect(dom.architectureInspectName.classList.contains('is-invalid')).toBe(true);
+
     dom.architectureInspectUrl.value = '';
+    dom.architectureInspectUrl.dispatch('change', {});
+    dom.architectureInspectUrl.value = 'not-a-url';
+    dom.architectureInspectUrl.dispatch('change', {});
+    expect(dom.architectureInspectUrlError.hidden).toBe(false);
+
     dom.architectureInspectDeploy.value = '';
-    dom.architectureSaveServiceBtn.dispatch('click', {});
+    dom.architectureInspectDeploy.dispatch('change', {});
 
     selected = state.architecture.services.find(
       (service: any) => service.id === state.selectedArchitectureServiceId
     );
     expect(selected.name).toBe('Renamed Core');
-    expect(selected.kind).toBe('domain');
+    expect(selected.url).toBe('http://localhost:9000/api/1.0.0');
     expect(selected.deployTargetId).toBe('');
   });
 
-  it('ignores a move-domain click with nothing selected, then moves a domain to a service', () => {
+  it('rejects a duplicate split-out name with an inline field error', () => {
     expect.hasAssertions();
     const { dom, state, canvas } = setup();
+    canvas.renderArchitecture();
+    dom.architectureServiceNameInput.value = 'Billing';
+    dom.architectureAddServiceBtn.dispatch('click', {});
+    expect(state.architecture.services.some((service: any) => service.name === 'Billing')).toBe(true);
 
-    dom.architectureMoveDomainBtn.dispatch('click', {});
-    expect(state.architecture).toBeUndefined();
+    dom.architectureServiceNameInput.value = 'Billing';
+    dom.architectureAddServiceBtn.dispatch('click', {});
+    expect(dom.architectureServiceNameError.hidden).toBe(false);
+    expect(dom.architectureServiceNameError.textContent).toContain('already exists');
+    expect(state.architecture.services.filter((service: any) => service.name === 'Billing')).toHaveLength(1);
+  });
 
+  it('moves a domain onto the selected service via Domains palette click', () => {
+    expect.hasAssertions();
+    const { dom, state, canvas } = setup();
     canvas.renderArchitecture();
     dom.architectureServiceNameInput.value = 'Billing Service';
     dom.architectureAddServiceBtn.dispatch('click', {});
     const billingButton = dom.architectureServiceList.children[1].children[0];
     billingButton.dispatch('click', {});
 
-    // Each click re-renders (fresh service objects), so the service is
-    // looked up again after every action rather than reused by reference.
-    dom.architectureInspectDomain.value = '';
-    dom.architectureMoveDomainBtn.dispatch('click', {});
     let billingService = state.architecture.services.find((service: any) => service.name === 'Billing Service');
     expect(billingService.domains).toHaveLength(0);
 
-    dom.architectureInspectDomain.value = 'domain-billing';
-    dom.architectureMoveDomainBtn.dispatch('click', {});
+    const billingChip = dom.architectureDomainPalette.children.find(
+      (item: any) => item.dataset.domainId === 'domain-billing'
+    );
+    expect(billingChip).toBeTruthy();
+    billingChip.dispatch('click', {});
+
     billingService = state.architecture.services.find((service: any) => service.name === 'Billing Service');
     expect(billingService.domains).toContain('domain-billing');
   });
 
-  it('adds a link with a valid protocol, falls back to rest for an invalid one, then removes it', () => {
+  it('adds a link via Connect on the canvas, then removes it from the Links list', () => {
     expect.hasAssertions();
     const { dom, state, canvas } = setup();
     canvas.renderArchitecture();
     dom.architectureServiceNameInput.value = 'Second Service';
     dom.architectureAddServiceBtn.dispatch('click', {});
+    canvas.renderArchitecture();
     const [core, second] = state.architecture.services;
 
-    dom.architectureLinkFrom.value = core.id;
-    dom.architectureLinkTo.value = second.id;
     dom.architectureLinkProtocol.value = 'grpc';
-    dom.architectureAddLinkBtn.dispatch('click', {});
-    expect(state.architecture.links[0].protocol).toBe('grpc');
+    dom.architectureConnectBtn.dispatch('click', {});
+    const coreBox = dom.architectureCanvas.children.find(
+      (node: any) => node.tagName === 'ARTICLE' && node.dataset.serviceId === core.id
+    );
+    const secondBox = dom.architectureCanvas.children.find(
+      (node: any) => node.tagName === 'ARTICLE' && node.dataset.serviceId === second.id
+    );
+    coreBox.dispatch('click', {});
+    secondBox.dispatch('click', {});
 
-    dom.architectureLinkProtocol.value = 'not-a-protocol';
-    dom.architectureAddLinkBtn.dispatch('click', {});
-    expect(state.architecture.links[1].protocol).toBe('rest');
-
-    expect(dom.architectureLinkList.children).toHaveLength(2);
-    expect(dom.architectureLinkList.children[0].textContent).toBe('Core —grpc→ Second Service');
-
-    const removeButton = dom.architectureLinkList.children[0].children[0];
-    removeButton.dispatch('click', {});
     expect(state.architecture.links).toHaveLength(1);
+    expect(state.architecture.links[0].protocol).toBe('grpc');
+    const linkRow = dom.architectureLinkList.children[0];
+    expect(linkRow.children[0].children[1].textContent).toBe('Core —grpc→ Second Service');
+
+    const removeButton = linkRow.children[linkRow.children.length - 1];
+    removeButton.dispatch('click', {});
+    expect(state.architecture.links).toHaveLength(0);
   });
 
   it('assigns a dropped domain to a service card and ignores a drop with no payload', () => {
@@ -539,7 +588,7 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     const targetBox = dom.architectureCanvas.children.find(
       (node: any) => node.tagName === 'ARTICLE' && node.dataset.serviceId !== 'core'
     );
-    targetBox.dispatch('click', {});
+    targetBox.dispatch('click', { stopPropagation() {} });
 
     expect(state.selectedArchitectureServiceId).toBe(targetBox.dataset.serviceId);
   });
@@ -550,5 +599,162 @@ describe('createArchitectureCanvas — full render and interaction surface', () 
     canvas.renderArchitecture();
 
     expect(() => dom.architectureExportImageBtn.dispatch('click', {})).not.toThrow();
+  });
+
+  it('creates a domain on Core via + Domain and hosts it in architecture', () => {
+    expect.hasAssertions();
+    const dom = createFullDom();
+    const state: any = { domains: [], architecture: undefined };
+    const saveState = jest.fn();
+    let nextDomain = 1;
+    const actions = {
+      withPersist: (fn: () => void) => { fn(); saveState(); },
+      saveState,
+      createDomain: (name: string) => {
+        const domain = {
+          id: `domain-${nextDomain}`,
+          name,
+          color: '#336699',
+          x: 120,
+          y: 90,
+          context: {},
+          entities: []
+        };
+        nextDomain += 1;
+        state.domains.push(domain);
+        return domain;
+      }
+    };
+    const canvas = createArchitectureCanvas({ dom, state, actions });
+    canvas.renderArchitecture();
+    // Core is auto-selected after normalize; create from the Service panel.
+    expect(state.selectedArchitectureServiceId).toBeTruthy();
+
+    dom.architectureInspectDomainNameInput.value = 'Billing';
+    dom.architectureInspectAddDomainBtn.dispatch('click', {});
+
+    expect(state.domains).toHaveLength(1);
+    expect(state.domains[0].name).toBe('Billing');
+    const core = state.architecture.services.find((service: any) => service.kind === 'core');
+    expect(core.domains).toContain(state.domains[0].id);
+    expect(saveState).toHaveBeenCalledWith();
+  });
+
+  it('creates a domain on the selected split-out service from the Service panel', () => {
+    expect.hasAssertions();
+    const dom = createFullDom();
+    const state: any = { domains: createDomains(), architecture: undefined };
+    let seq = 100;
+    const actions = {
+      withPersist: (fn: () => void) => fn(),
+      saveState: jest.fn(),
+      createDomain: (name: string) => {
+        const domain = {
+          id: `domain-new-${seq}`,
+          name,
+          color: '#112233',
+          x: 10,
+          y: 10,
+          context: {},
+          entities: []
+        };
+        seq += 1;
+        state.domains.push(domain);
+        return domain;
+      }
+    };
+    const canvas = createArchitectureCanvas({ dom, state, actions });
+    canvas.renderArchitecture();
+    dom.architectureServiceNameInput.value = 'Payments API';
+    dom.architectureAddServiceBtn.dispatch('click', {});
+    canvas.renderArchitecture();
+    const splitId = state.architecture.services.find((service: any) => service.kind === 'domain')?.id;
+    expect(splitId).toBeTruthy();
+    state.selectedArchitectureServiceId = splitId;
+
+    dom.architectureInspectDomainNameInput.value = 'Checkout';
+    dom.architectureInspectAddDomainBtn.dispatch('click', {});
+
+    const checkout = state.domains.find((domain: any) => domain.name === 'Checkout');
+    expect(checkout).toBeTruthy();
+    const split = state.architecture.services.find((service: any) => service.id === splitId);
+    expect(split.domains).toContain(checkout.id);
+  });
+
+  it('starts with the rail contracted and expands only via Panels / Hide', () => {
+    expect.hasAssertions();
+    const { dom } = setup();
+
+    expect(dom.architectureSidebar.classList.contains('open')).toBe(false);
+    expect(dom.architectureToggleSidebarBtn.textContent).toBe('Panels');
+
+    dom.architectureToggleSidebarBtn.dispatch('click', {});
+    expect(dom.architectureSidebar.classList.contains('open')).toBe(true);
+    expect(dom.architectureToggleSidebarBtn.textContent).toBe('Hide');
+
+    dom.architectureToggleSidebarBtn.dispatch('click', {});
+    expect(dom.architectureSidebar.classList.contains('open')).toBe(false);
+    expect(dom.architectureToggleSidebarBtn.textContent).toBe('Panels');
+
+    (fakeWindow as any).innerWidth = 900;
+    fakeWindow.dispatch('resize', {});
+    (fakeWindow as any).flushTimers();
+    expect(dom.architectureSidebar.classList.contains('open')).toBe(false);
+
+    dom.architectureToggleSidebarBtn.dispatch('click', {});
+    expect(dom.architectureSidebar.classList.contains('open')).toBe(true);
+  });
+});
+
+describe('createArchitectureCanvas — rail preference', () => {
+  const savedDocument = (globalThis as any).document;
+  const savedWindow = (globalThis as any).window;
+  const savedLocalStorage = (globalThis as any).localStorage;
+
+  beforeEach(() => {
+    (globalThis as any).document = {
+      createElement: (tag: string) => createFakeElement(tag),
+      createElementNS: (_ns: string, tag: string) => createFakeElement(tag)
+    };
+    (globalThis as any).window = createFakeWindow(1400);
+    (globalThis as any).localStorage = {
+      store: {} as Record<string, string>,
+      getItem(key: string) {
+        return this.store[key] ?? null;
+      },
+      setItem(key: string, value: string) {
+        this.store[key] = String(value);
+      }
+    };
+  });
+
+  afterEach(() => {
+    (globalThis as any).document = savedDocument;
+    (globalThis as any).window = savedWindow;
+    (globalThis as any).localStorage = savedLocalStorage;
+  });
+
+  it('starts closed by default and reopens only when preference is stored open', () => {
+    expect.hasAssertions();
+    const actions = { withPersist: (fn: () => void) => fn(), saveState: jest.fn() };
+
+    const closedDom = createFullDom();
+    createArchitectureCanvas({
+      dom: closedDom,
+      state: { domains: createDomains(), architecture: undefined },
+      actions
+    });
+    expect(closedDom.architectureSidebar.classList.contains('open')).toBe(false);
+    expect(closedDom.architectureToggleSidebarBtn.textContent).toBe('Panels');
+
+    (globalThis as any).localStorage.store['jumentix.architecture.railOpen'] = '1';
+    const openDom = createFullDom();
+    createArchitectureCanvas({
+      dom: openDom,
+      state: { domains: createDomains(), architecture: undefined },
+      actions
+    });
+    expect(openDom.architectureSidebar.classList.contains('open')).toBe(true);
+    expect(openDom.architectureToggleSidebarBtn.textContent).toBe('Hide');
   });
 });

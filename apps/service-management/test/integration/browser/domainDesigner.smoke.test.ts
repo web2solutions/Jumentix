@@ -1,4 +1,4 @@
-/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
+/* eslint-disable jest/prefer-expect-assertions, jest/max-expects, jest/no-conditional-in-test */
 import fs from 'fs';
 import path from 'path';
 
@@ -255,6 +255,11 @@ describe('serviceManagement domain designer smoke', () => {
     expect(canvasSource).toContain('selectionZoomAnchorPoint');
     expect(canvasSource).toContain('modelToCanvasX(zoomAnchor.x)');
     expect(canvasSource).toContain('modelToCanvasY(zoomAnchor.y)');
+    // Event targets can be Text nodes or briefly undefined after remount —
+    // drag/click/contextmenu must not call `.closest` on a non-Element.
+    expect(canvasSource).toContain('function eventElement');
+    expect(canvasSource).toContain('function eventClosest');
+    expect(canvasSource).not.toMatch(/event\.target\.closest\(/);
     expect(canvasSource).toContain('typeEl.addEventListener(\'pointerdown\'');
     expect(canvasSource).toContain('addFieldBtn.addEventListener(\'pointerdown\'');
     expect(canvasSource).toContain('event.preventDefault()');
@@ -301,9 +306,10 @@ describe('serviceManagement domain designer smoke', () => {
     expect(css).toContain('grid-template-rows: 42px minmax(0, 1fr)');
     // Domain Designer panel rail is on the right; canvas stays column 1.
     expect(css).toContain('#tab-domain-designer .app-shell:has(.sidebar.open)');
-    expect(css).toContain('grid-template-columns: minmax(0, 1fr) var(--jx-rail-width)');
-    expect(css).toContain('--jx-rail-width: clamp(300px, 26vw, 480px)');
-    expect(css).toContain('--jx-rail-width: clamp(420px, 30vw, 640px)');
+    expect(css).toContain('grid-template-columns: minmax(var(--jx-canvas-min, 360px), 1fr) minmax(0, var(--jx-rail-width))');
+    expect(css).toContain('--jx-rail-width: clamp(280px, 24vw, 420px)');
+    expect(css).toContain('--jx-rail-width: clamp(340px, 22vw, 520px)');
+    expect(css).toContain('--jx-canvas-min: 360px');
     expect(css).toContain('--jx-ink-faint:');
     expect(css).toContain('--jx-accent-soft:');
     expect(css).toContain('.field-row-primary');
@@ -500,6 +506,8 @@ describe('serviceManagement domain designer smoke', () => {
     expect(scriptSource).toContain('revealGroupFor(panelId, { scroll: false })');
     expect(scriptSource).toContain('reverseToOverview');
     expect(scriptSource).toContain('showOverview({ camera: \'fit\'');
+    expect(scriptSource).toContain('function frameDomainDesignerCanvas');
+    expect(scriptSource).toContain('scheduleDomainDesignerCanvasFrame');
     expect(scriptSource).toContain('navigateToSelection(domainId ? \'domain-inspector-panel\'');
     expect(scriptSource).toContain('remountPeers: remountCanvas');
     expect(sidebarSource).toContain('scroll = true');
@@ -566,7 +574,7 @@ describe('serviceManagement domain designer smoke', () => {
     expect(css).toContain('@media (max-width: 900px)');
   });
 
-  it('keeps the first-run sample visually spread out instead of stacked', () => {
+  it('keeps the guided sample fixture visually spread out instead of stacked', () => {
     expect.hasAssertions();
     const sampleSource = fs.readFileSync(
       path.resolve(process.cwd(), 'packages/designer-core/src/model/sampleModel.js'),
@@ -584,9 +592,25 @@ describe('serviceManagement domain designer smoke', () => {
     expect(sampleSource).toContain('y: 548');
   });
 
-  it('wires export and package features in runtime script', () => {
+  it('wires backend-template seed generation into vendor and runtime script', () => {
     expect.hasAssertions();
+    const packageJson = JSON.parse(fs.readFileSync(
+      path.resolve(process.cwd(), 'package.json'),
+      'utf-8'
+    ));
+    expect(String(packageJson.scripts['service-management:vendor'] || ''))
+      .toContain('generate-backend-template-seed.js');
+    expect(fs.existsSync(path.resolve(
+      process.cwd(),
+      'apps/service-management/generated/backend-template-seed.json'
+    ))).toBe(true);
+    expect(fs.existsSync(path.resolve(
+      process.cwd(),
+      'apps/service-management/src/model/backendTemplateSeed.js'
+    ))).toBe(true);
     const script = fs.readFileSync(scriptPath, 'utf-8');
+    expect(script).toContain('buildBackendTemplateSeedPayload');
+    expect(script).toContain('applyBackendTemplateSeedToState');
     expect(script).toContain('exportAsOas');
     expect(script).toContain('exportAsAsyncApi');
     expect(script).toContain('exportAsProto');
@@ -594,7 +618,6 @@ describe('serviceManagement domain designer smoke', () => {
     expect(script).toContain('exportAsPackage');
     expect(script).toContain('importDomainPackage');
     expect(script).toContain('repairLegacySampleDiagramLayout');
-    expect(script).toContain('isIsolatedLegacySample');
     expect(script).toContain('sample-domain-tasks');
     expect(script).toContain('renderMiniMap');
   });

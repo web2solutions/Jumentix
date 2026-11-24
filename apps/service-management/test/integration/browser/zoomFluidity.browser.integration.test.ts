@@ -16,7 +16,8 @@ import {
   startServer,
   stopServer,
   waitForServer,
-  openDesignerPanels
+  openDesignerPanels,
+  ensureBackendSeedModel
 } from '../../helpers/serverHarness';
 import type { StartedServer } from '../../helpers/serverHarness';
 
@@ -25,7 +26,7 @@ const artifactsDir = path.resolve(
   __dirname,
   '../../artifacts/zoom-fluidity-playwright'
 );
-const EXPECTED_SHELL = '0.9.148';
+const EXPECTED_SHELL = '0.9.169';
 
 type ZoomProbe = {
   zoom: number;
@@ -237,7 +238,7 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
     browser = await webkit.launch({ headless: true });
     page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     await hardReload(page, baseUrl);
-    await page.click('#domain-designer-empty-load-sample-btn');
+    await ensureBackendSeedModel(page);
     await page.waitForSelector('.canvas .entity[data-entity-id]', { timeout: 30000 });
     await page.waitForTimeout(600);
     await openDesignerPanels(page, '#domain-list');
@@ -260,7 +261,7 @@ describe('domain designer fluid zoom edge cases (JUM-918)', () => {
     return file;
   }
 
-  it('shell is 0.9.148 after hard reload', async () => {
+  it('shell is 0.9.169 after hard reload', async () => {
     expect.hasAssertions();
     const probe = await page.evaluate(readZoomProbe);
     expect(probe.shell).toBe(EXPECTED_SHELL);

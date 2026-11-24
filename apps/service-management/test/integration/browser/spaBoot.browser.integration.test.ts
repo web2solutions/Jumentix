@@ -100,7 +100,12 @@ describe('serviceManagement SPA boot and export gate (JUM-466)', () => {
     const page = await context.newPage();
     const consoleErrors: string[] = [];
     page.on('console', (message) => {
-      if (message.type() === 'error') consoleErrors.push(message.text());
+      if (message.type() !== 'error') return;
+      const text = message.text();
+      // Monitoring tab opens a PM2 websocket; headless boots may close it before
+      // handshake completes. That is noise for the SPA-boot contract.
+      if (text.includes('/api/runtime/pm2-ws')) return;
+      consoleErrors.push(text);
     });
     page.on('response', (response) => {
       if (response.status() >= 400) {

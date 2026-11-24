@@ -79,18 +79,20 @@ These fields are persisted in the designer state and exported through JSON/packa
 
 The **Architecture** tab sits beside Domain Designer. A new model starts as one **Core** service (monolith) that hosts every domain. Core must keep the **Users** domain (identity and authentication). Additional services are boxes on the canvas:
 
-- Create, rename, set kind (`core` | `domain`), URL and optional deploy-target id.
-- Drag a domain chip onto a service, or assign it from the inspector (keyboard path).
-- Draw links with protocol `rest`, `grpc`, `websocket` or `message`.
-- Validation badges: exactly one Core; Users on Core; each domain on one service; `x-relation` across a service boundary is a warning.
-- Mini-map, undo/redo (shared designer history) and **Export image**.
+- Right rail tabs are browse/act surfaces (not dense forms): **Services**, **Domains**, **Service**, **Links**, **Validate** — each row shows title + meta + action.
+- Create and rename split-outs; Core role is fixed (badge). Name / URL / deploy autosave on blur — no Save button.
+- Create a domain on the selected service (**Service** → **+ Domain**). **Pull from Domains** jumps to the Domains inventory when other hosts have domains.
+- Move domains by dragging onto a card, or **Move** in the Domains list onto the selected service.
+- Draw links with toolbar **Connect** or **Connect services** in Links (protocol beside Connect). Links panel = inventory + Remove.
+- **Validate** sorts errors first; **Jump** opens the related service/domain. Tab badges show counts (Validate highlights errors).
+- Mini-map, undo/redo (shared designer history) and **List PNG** inventory export.
 
 How to use:
 
 1. Open Architecture.
-2. Press **Add Service** to split the monolith.
-3. Drop or **Move here** a domain other than Users onto the new service.
-4. **Add Link** between Core and the domain service.
+2. Press **+ Service** to split the monolith.
+3. Select the new service → **+ Domain**, or drag/click-move a domain from **Domains** (not Users onto a non-Core host if validation requires Users on Core).
+4. **Connect** → source card → target.
 
 ## 3.2) Per-service OAS export and Swagger (JUM-817, JUM-818)
 

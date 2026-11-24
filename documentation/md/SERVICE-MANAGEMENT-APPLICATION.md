@@ -19,6 +19,9 @@ Core implementation files:
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
 
+The class-component UI model (`Component` / `TabApplication` / per-tab apps)
+is documented in
+[Service Management Class-Component Model](./SERVICE-MANAGEMENT-CLASS-COMPONENT-MODEL.md).
 Module layering, the injection pattern and the `IDesignerStore` storage port
 contract are documented in
 [Service Management Module Architecture](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.md).
@@ -45,6 +48,11 @@ documentation chain — are documented in
 ## Tabs
 
 1. **Domain Designer**
+   - First-run model: when Cana is empty, `seed()` loads the backend-template
+     seed generated from `spec/1.0.0.yml` (`generate-backend-template-seed.js`,
+     hooked from `service-management:vendor`). Persisted designer edits are
+     never wiped on refresh; **Load Backend Model** reloads the same payload
+     after confirmation when the store is non-empty.
    - Full ER modeling MVP including:
      - domain/entity lifecycle and inspector
      - relationship anchors, bend/path controls, routing style

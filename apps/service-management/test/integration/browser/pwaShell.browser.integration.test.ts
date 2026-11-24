@@ -175,8 +175,10 @@ describe('serviceManagement PWA shell (JUM-489)', () => {
 
       await page.reload({ waitUntil: 'load' });
 
-      const heading = await page.$eval('.service-management-header h1', (el) => el.textContent);
-      expect(heading).toContain('Service Management');
+      const title = await page.title();
+      expect(title).toContain('Service Management');
+      const menuVisible = await page.$eval('#main-nav-toggle', (el) => Boolean(el));
+      expect(menuVisible).toBe(true);
 
       // The shell is fully interactive offline: tab switching is pure shell JS.
       await page.click('#tab-service-config-btn');

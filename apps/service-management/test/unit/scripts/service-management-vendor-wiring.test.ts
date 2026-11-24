@@ -46,7 +46,7 @@ describe('service management vendor wiring', () => {
       .map((part) => part.trim().replace(/^bun\s+/, ''))
       .filter((part) => part.endsWith('.js'));
 
-    expect(referenced).toHaveLength(5);
+    expect(referenced).toHaveLength(6);
     referenced.forEach((script) => {
       expect(fs.existsSync(path.resolve(process.cwd(), script))).toBe(true);
     });

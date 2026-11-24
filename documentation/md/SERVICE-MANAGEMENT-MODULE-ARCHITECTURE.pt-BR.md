@@ -66,7 +66,11 @@ extração e entrega de store; a regra não.
 
 | Módulo | Camada | Papel |
 | --- | --- | --- |
-| `apps/service-management/script.js` | Vinculado ao DOM | Módulo de entrada: conexão de eventos, renderização, fluxos de importação/exportação. Detém toda interação com `document`/`window`. |
+| `apps/service-management/script.js` | Vinculado ao DOM | Módulo de entrada: sobe `ServiceManagementApp`, conexão de eventos, fluxos de importação/exportação. Ainda detém DOM residual do shell. `seed()` / Load Backend Model aplicam `src/model/backendTemplateSeed.js`. |
+| `apps/service-management/scripts/generate-backend-template-seed.js` | CLI | Mapeia `spec/1.0.0.yml` via `buildDomainsFromOas`; grava `generated/backend-template-seed.json` + embed ESM. Ligado em `service-management:vendor`. |
+| `apps/service-management/src/ui/component/*` | Vinculado ao DOM | Base do modelo em classes (`Component`, `TabApplication`). |
+| `apps/service-management/src/ui/app/*` | Vinculado ao DOM | `ServiceManagementApp`, `TabHost`, adaptador de aba legada. |
+| `apps/service-management/src/ui/tabs/*` | Vinculado ao DOM | Uma pasta por aba (Architecture migrada; demais stubs). |
 | `packages/designer-core/src/state/designerState.js` | Livre de DOM | Núcleo de estado e persistência: o objeto de estado, a cadeia de normalização `normalizeStatePayload`, snapshot/apply, histórico (undo/redo), `loadState`, `buildModelSnapshot`. |
 | `packages/designer-core/src/store/IDesignerStore.js` | Livre de DOM, sem dependências | A porta de armazenamento: contrato + classe base. Importável sob qualquer runtime JavaScript. |
 | `apps/service-management/src/store/CanaDesignerStore.js` | Livre de DOM | O único adaptador `IDesignerStore` (JUM-483), sobre o cliente Cana — injetado, nunca importado. |

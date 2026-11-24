@@ -51,7 +51,7 @@
 
 /* eslint-env serviceworker, node */
 
-const SHELL_VERSION = '0.9.148';
+const SHELL_VERSION = '0.9.169';
 
 // Prefix shared with src/pwa/pwaShell.js (the page-side reset deletes by
 // prefix). The two copies cannot import each other — a classic worker has no
@@ -73,6 +73,10 @@ const SHELL_ASSETS = [
   './vendor/jumentix-ui/tokens.css',
   './vendor/jumentix-ui/primitives.css',
   './script.js',
+  // Backend-template first-run seed (generated + ESM embed). script.js imports
+  // the embed; the JSON is also served for tooling / fetch fallbacks.
+  './src/model/backendTemplateSeed.js',
+  './generated/backend-template-seed.json',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/icon-192.png',
@@ -128,7 +132,26 @@ const SHELL_ASSETS = [
   './src/ui/renderGuard.js',
   './src/ui/sidebarGroups.js',
   './src/ui/swaggerTab.js',
-  './src/ui/tabs.js',
+  // Class-component shell (replaces src/ui/tabs.js).
+  './src/ui/component/Component.js',
+  './src/ui/component/TabApplication.js',
+  './src/ui/app/index.js',
+  './src/ui/app/ServiceManagementApp.js',
+  './src/ui/app/TabHost.js',
+  './src/ui/app/MainNav.js',
+  './src/ui/app/LegacyTabApplication.js',
+  './src/ui/app/createTabsCompat.js',
+  './src/ui/tabs/architecture/index.js',
+  './src/ui/tabs/architecture/ArchitectureTab.js',
+  './src/ui/tabs/architecture/ArchitectureEmptyState.js',
+  './src/ui/tabs/architecture/ArchitectureCoach.js',
+  './src/ui/tabs/domain-designer/DomainDesignerTab.js',
+  './src/ui/tabs/interface-designer/InterfaceDesignerTab.js',
+  './src/ui/tabs/service-config/ServiceConfigTab.js',
+  './src/ui/tabs/deploy-management/DeployManagementTab.js',
+  './src/ui/tabs/monitoring/MonitoringTab.js',
+  './src/ui/tabs/openapi/OpenApiTab.js',
+  './src/ui/tabs/code-workspace/CodeWorkspaceTab.js',
   // The vendored Cana browser bundle (JUM-484) — the designer's sole store
   // crosses the import map to this module at boot, so the offline shell is
   // incomplete without it. GENERATED (gitignored): produced by

@@ -649,10 +649,11 @@ describe('model queries (JUM-469)', () => {
       expect([domains[0].x, domains[0].y]).toStrictEqual([40, 40]);
       // Second column: the first domain's own width plus the gap.
       expect(domains[1].x).toBe(40 + domains[0].width + 72);
-      expect([domains[0].entities[0].x, domains[0].entities[0].y]).toStrictEqual([24, 74]);
-      expect(domains[0].entities[1].x).toBe(24 + model.entityWidth(domains[0].entities[0]) + 28);
-      expect(domains[0].entities[1].y).toBe(74);
-      expect(domains[0].entities[2].x).toBe(24);
+      // Entity y is body-relative (below the 50px header), padding 56.
+      expect([domains[0].entities[0].x, domains[0].entities[0].y]).toStrictEqual([56, 56]);
+      expect(domains[0].entities[1].x).toBe(56 + model.entityWidth(domains[0].entities[0]) + 120);
+      expect(domains[0].entities[1].y).toBe(56);
+      expect(domains[0].entities[2].x).toBe(56);
       expect(domains[0].entities[2].y).toBeGreaterThan(domains[0].entities[0].y);
     });
 
@@ -670,6 +671,7 @@ describe('model queries (JUM-469)', () => {
 
       model.applyAutoLayout(domains);
 
+      const header = 50;
       const boxes: LayoutBox[] = domains[0].entities.map((entity: Record<string, any>) => ({
         left: entity.x,
         top: entity.y,
@@ -677,8 +679,9 @@ describe('model queries (JUM-469)', () => {
         bottom: entity.y + model.entityHeight(entity, false, false)
       }));
       boxes.forEach((box: LayoutBox, index: number) => {
-        expect(box.right).toBeLessThanOrEqual(domains[0].width - 24);
-        expect(box.bottom).toBeLessThanOrEqual(domains[0].height - 24);
+        expect(box.right).toBeLessThanOrEqual(domains[0].width - 56);
+        // Body height = domain.height - header; cards must stay inside the body.
+        expect(box.bottom).toBeLessThanOrEqual(domains[0].height - header - 56);
         boxes.slice(index + 1).forEach((other: LayoutBox) => {
           expect(boxesOverlap(box, other)).toBe(false);
         });
@@ -707,10 +710,10 @@ describe('model queries (JUM-469)', () => {
       model.applyAutoLayout(domains);
 
       const secondRowTop = domains[0].entities[2].y;
-      expect(secondRowTop).toBeGreaterThanOrEqual(74 + model.entityHeight(tall, false, false));
-      // And the box grew to hold both rows rather than clipping the second.
+      expect(secondRowTop).toBeGreaterThanOrEqual(56 + model.entityHeight(tall, false, false));
+      // Hull includes header + body padding so the second row is not clipped.
       const shortHeight = model.entityHeight(short, false, false);
-      expect(domains[0].height).toBeGreaterThan(secondRowTop + shortHeight);
+      expect(domains[0].height).toBeGreaterThanOrEqual(50 + secondRowTop + shortHeight + 56);
     });
   });
 });

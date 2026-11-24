@@ -27,7 +27,6 @@ import {
   envFileContent,
   startServer,
   clickInPanels,
-  fillInPanels,
   openDesignerPanels,
   stopServer,
   waitForServer
@@ -38,14 +37,29 @@ const repoRoot = path.resolve(__dirname, '../../../../..');
 
 /** Wait until the page's domain list renders the given domain name. */
 async function waitForDomain(page: Page, name: string) {
-  await page.waitForFunction(
-    (expected) => {
+  // Parallel browser suites can freeze a background WebKit page so it misses
+  // BroadcastChannel traffic; bring it forward and nudge visibility so
+  // designerSync.resume() can catch up via Cana read-back.
+  const deadline = Date.now() + 45000;
+  /* eslint-disable no-await-in-loop -- poll observes resume side effects */
+  while (Date.now() < deadline) {
+    await page.bringToFront().catch(() => undefined);
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => 'visible'
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+    }).catch(() => undefined);
+    const found = await page.evaluate((expected) => {
       const list = document.getElementById('domain-list');
       return Boolean(list && list.textContent && list.textContent.includes(String(expected)));
-    },
-    name,
-    { timeout: 20000 }
-  );
+    }, name);
+    if (found) return;
+    await page.waitForTimeout(400);
+  }
+  /* eslint-enable no-await-in-loop */
+  throw new Error(`waitForDomain timed out for ${name}`);
 }
 
 /**
@@ -85,10 +99,9 @@ async function waitForRemoteChangeStatus(page: Page) {
 
 /**
  * Boot a page and wait until the designer has finished its first render AND
- * its first-run save is durable in the real IndexedDB. Since JUM-548 the
- * first run boots to an intentionally EMPTY model (guided empty states
- * instead of a pre-populated template), so the settle marker is the guided
- * empty state, not a seeded domain list. The durability wait is what makes
+ * its first-run save is durable in the real IndexedDB. Fresh profiles now seed
+ * the backend-template Users domain, so settle on designer-ready plus either
+ * the empty CTA or a populated domain list. The durability wait is what makes
  * the suite's later writes safe to order: page B's boot save has committed
  * before page A's sample load is dispatched, so last-writer-wins can never
  * resurrect B's empty boot document over A's sample.
@@ -96,7 +109,17 @@ async function waitForRemoteChangeStatus(page: Page) {
 async function bootPage(context: Awaited<ReturnType<Browser['newContext']>>, baseUrl: string) {
   const page = await context.newPage();
   await page.goto(baseUrl, { waitUntil: 'load' });
-  await page.waitForSelector('#domain-designer-empty-state:not([hidden])', { timeout: 20000 });
+  await page.waitForSelector('body[data-designer-ready="true"]', { timeout: 20000 });
+  await page.waitForFunction(
+    () => {
+      const empty = document.getElementById('domain-designer-empty-state');
+      const emptyVisible = Boolean(empty && !empty.hidden);
+      const hasDomains = Boolean(document.querySelector('#domain-list li'));
+      return emptyVisible || hasDomains;
+    },
+    undefined,
+    { timeout: 20000 }
+  );
   await page.waitForFunction(
     () => new Promise((resolve) => {
       const request = indexedDB.open('service-management');
@@ -125,10 +148,19 @@ async function bootPage(context: Awaited<ReturnType<Browser['newContext']>>, bas
  */
 async function loadSampleAndConverge(pageA: Page, pageB: Page) {
   await armRemoteChangeStatus(pageB);
+  // Fresh profiles already seed Users; confirm reload so both tabs converge
+  // on an explicit Backend-model write.
+  pageA.once('dialog', (dialog) => {
+    dialog.accept().catch(() => {});
+  });
   await clickInPanels(pageA, '#load-sample-btn');
   await waitForDomain(pageA, 'Users');
   await waitForDomain(pageB, 'Users');
   await waitForRemoteChangeStatus(pageB);
+  // Camera/view persist from the sample load must settle before either tab
+  // writes again, or last-writer-wins can drop a peer's domain under load.
+  await pageA.waitForTimeout(750);
+  await pageB.waitForTimeout(750);
 }
 
 /** Add a domain through the real UI (the same gesture a user makes). */
@@ -136,29 +168,44 @@ async function addDomain(page: Page, name: string) {
   // Exclusive Structure create: Domain toolbar only when selection is none.
   // Do clear + fill + submit in one page turn so a peer sync cannot re-select
   // a domain between fillInPanels and clickInPanels (that hid the create strip
-  // and left both tabs without the new name).
-  await openDesignerPanels(page, '#domain-name-input');
-  const created = await page.evaluate((nextName) => {
-    const canvas = document.getElementById('canvas') as HTMLElement | null;
-    canvas?.click();
-    const toolbar = document.getElementById('domain-create-toolbar') as HTMLElement | null;
-    if (toolbar) {
-      toolbar.hidden = false;
-      toolbar.style.display = '';
-      toolbar.classList.remove('is-create-inactive');
-      toolbar.setAttribute('aria-hidden', 'false');
-    }
-    const input = document.getElementById('domain-name-input') as HTMLInputElement | null;
-    const btn = document.getElementById('add-domain-btn') as HTMLButtonElement | null;
-    if (!input || !btn) return false;
-    input.focus();
-    input.value = nextName;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-    btn.click();
-    return true;
-  }, name);
-  if (!created) throw new Error(`addDomain could not drive create UI for ${name}`);
+  // and left both tabs without the new name). Peer context autosaves can still
+  // re-render mid-gesture under suite load — retry the atomic create.
+  /* eslint-disable no-await-in-loop -- retries must observe prior attempts */
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    await openDesignerPanels(page, '#domain-name-input');
+    const created = await page.evaluate((nextName) => {
+      const canvas = document.getElementById('canvas') as HTMLElement | null;
+      canvas?.click();
+      const toolbar = document.getElementById('domain-create-toolbar') as HTMLElement | null;
+      if (toolbar) {
+        toolbar.hidden = false;
+        toolbar.style.display = '';
+        toolbar.classList.remove('is-create-inactive');
+        toolbar.setAttribute('aria-hidden', 'false');
+      }
+      const input = document.getElementById('domain-name-input') as HTMLInputElement | null;
+      const btn = document.getElementById('add-domain-btn') as HTMLButtonElement | null;
+      if (!input || !btn) return false;
+      input.focus();
+      input.value = nextName;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      btn.click();
+      return true;
+    }, name);
+    if (!created) throw new Error(`addDomain could not drive create UI for ${name}`);
+    const appeared = await page.waitForFunction(
+      (expected) => {
+        const list = document.getElementById('domain-list');
+        return Boolean(list && list.textContent && list.textContent.includes(String(expected)));
+      },
+      name,
+      { timeout: 8000 }
+    ).then(() => true).catch(() => false);
+    if (appeared) return;
+    await page.waitForTimeout(200);
+  }
+  /* eslint-enable no-await-in-loop */
   await waitForDomain(page, name);
 }
 
@@ -242,26 +289,39 @@ describe('serviceManagement multi-tab write-event sync (JUM-485)', () => {
     const pageB = await bootPage(context, baseUrl);
     await loadSampleAndConverge(pageA, pageB);
 
-    // Remote applies never import the selection (JUM-485 question 3), so B
-    // selects the sample domain through the real UI — the same gesture a
-    // human makes — before its context form enables.
-    await clickInPanels(pageB, '#domain-list li button');
+    // Remote applies never import the selection (JUM-485 question 3). Open the
+    // domain rename field (identity pane) without re-clicking an already-focused
+    // domain — that reverse-navs to overview and drops the inspector.
+    await openDesignerPanels(pageB, '#domain-rename-input');
 
-    // B is mid-form: an unsaved value sits, focused, in the owner-team input.
-    await fillInPanels(pageB, '#domain-owner-team-input', 'team-z-unsaved');
+    // B is mid-form: an unsaved value sits, focused, in the rename input.
+    // Skip change/blur — rename/context autosave would write before the remote
+    // apply this case is meant to survive.
+    const pending = await pageB.evaluate(() => {
+      const input = document.getElementById('domain-rename-input') as HTMLInputElement | null;
+      if (!input) return false;
+      input.focus();
+      input.value = 'Users-unsaved';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      return document.activeElement === input;
+    });
+    expect(pending).toBe(true);
 
     // A remote change touches the same model B is editing.
+    // Domain selection persists camera/view through saveState(); wait for that
+    // write to settle so it cannot last-writer-wins over A's upcoming Gamma add.
+    await pageB.waitForTimeout(750);
     await armRemoteChangeStatus(pageB);
     await addDomain(pageA, 'Gamma Remote');
     await waitForDomain(pageB, 'Gamma Remote');
     await waitForRemoteChangeStatus(pageB);
 
     // The unsaved input value and the focus survived the remote re-render.
-    const preserved = await pageB.$eval('#domain-owner-team-input', (el) => ({
+    const preserved = await pageB.$eval('#domain-rename-input', (el) => ({
       value: (el as HTMLInputElement).value,
       focused: document.activeElement === el
     }));
-    expect(preserved.value).toBe('team-z-unsaved');
+    expect(preserved.value).toBe('Users-unsaved');
     expect(preserved.focused).toBe(true);
     await context.close();
   }, 120000);

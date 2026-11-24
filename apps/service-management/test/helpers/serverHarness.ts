@@ -34,6 +34,10 @@ const { syncServiceManagementSwaggerUi } = require(
 const { syncServiceManagementJumentixUi } = require(
   path.resolve(process.cwd(), 'apps/service-management/scripts/sync-service-management-jumentix-ui.js')
 ) as { syncServiceManagementJumentixUi: (options?: { root?: string }) => number };
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { generateBackendTemplateSeed } = require(
+  path.resolve(process.cwd(), 'apps/service-management/scripts/generate-backend-template-seed.js')
+) as { generateBackendTemplateSeed: (options?: { root?: string }) => number };
 
 export const serverPath = path.resolve(process.cwd(), 'apps/service-management/server.js');
 export const staticRoot = path.resolve(process.cwd(), 'apps/service-management');
@@ -349,6 +353,10 @@ export async function startServer(
   if (jumentixUiSyncResult !== 0) {
     throw new Error('jumentix-ui vendor sync failed; the designer shell cannot boot without it.');
   }
+  const seedResult = generateBackendTemplateSeed({ root: process.cwd() });
+  if (seedResult !== 0) {
+    throw new Error('backend-template seed generation failed; first-run model cannot boot without it.');
+  }
   return runWithPortRetry({
     pinnedPort: options.pinnedPort,
     maxAttempts: options.maxAttempts,
@@ -509,7 +517,16 @@ export function probeConnection(
 type DrawerPage = {
   click: (target: string) => Promise<void>;
   waitForSelector: (target: string, options?: Record<string, unknown>) => Promise<unknown>;
+  waitForFunction: (
+    fn: () => boolean,
+    options?: Record<string, unknown>
+  ) => Promise<unknown>;
   $: (target: string) => Promise<unknown>;
+  $eval: <T>(
+    target: string,
+    fn: (el: Element) => T
+  ) => Promise<T>;
+  setInputFiles: (target: string, files: string | string[]) => Promise<void>;
   evaluate: <T, A = string>(fn: (arg: A) => T, arg: A) => Promise<T>;
 };
 
@@ -570,6 +587,17 @@ export async function openDesignerPanels(
         || selector.includes('entity-inspector')
       )
     );
+    const needsDomainInspector = Boolean(
+      selector
+      && (
+        selector.includes('domain-owner-team')
+        || selector.includes('domain-rename')
+        || selector.includes('domain-color')
+        || selector.includes('domain-context')
+        || selector.includes('domain-inspector')
+        || selector.includes('domain-pane-tab')
+      )
+    );
     const canvas = document.getElementById('canvas');
     const domainSelected = Boolean(
       document.querySelector('#domain-list .domain-tree-domain.active')
@@ -578,7 +606,7 @@ export async function openDesignerPanels(
       canvas.click();
     } else if (needsDomainCreateBtn && domainSelected && canvas) {
       canvas.click();
-    } else if (needsEntityWorkspace || needsEntitySelected) {
+    } else if (needsEntityWorkspace || needsEntitySelected || needsDomainInspector) {
       const firstDomain = document.querySelector(
         '#domain-list .domain-tree-domain'
       ) as HTMLElement | null;
@@ -618,18 +646,29 @@ export async function openDesignerPanels(
     // The box is the only thing that decides clickability: an element can be
     // in an unhidden panel and still have no area, which is what every
     // "resolved the locator, element is not visible" timeout comes down to.
+    // File inputs stay intentionally `hidden` for setInputFiles — treat them as
+    // reachable once the Import panel/drawer is open.
+    const isHiddenFileInput = Boolean(
+      element
+      && element instanceof HTMLInputElement
+      && element.type === 'file'
+      && (element.hidden || getComputedStyle(element).display === 'none')
+    );
     const rect = (element as HTMLElement | null)?.getBoundingClientRect();
     const hasArea = Boolean(rect && rect.width > 0 && rect.height > 0);
     const chain: string[] = [];
     for (let node = element as HTMLElement | null; node; node = node.parentElement) {
-      const style = getComputedStyle(node);
-      if (style.display === 'none' || style.visibility === 'hidden') {
-        chain.push(`${node.tagName}#${node.id || ''}.${node.className || ''}:${style.display}/${style.visibility}`);
+      const skipSelfHiddenFile = node === element && isHiddenFileInput;
+      if (!skipSelfHiddenFile) {
+        const style = getComputedStyle(node);
+        if (style.display === 'none' || style.visibility === 'hidden') {
+          chain.push(`${node.tagName}#${node.id || ''}.${node.className || ''}:${style.display}/${style.visibility}`);
+        }
       }
       if (node === document.body) break;
     }
     const cellExpanded = panel?.dataset.accordionExpanded !== 'false';
-    const reachable = hasArea
+    const reachable = (isHiddenFileInput || hasArea)
       && designerActive
       && Boolean(element)
       && panel?.hidden === false
@@ -721,4 +760,46 @@ export async function fillInPanels(
     return true;
   }, { wanted: selector, next: value });
   if (!filled) throw new Error(`fillInPanels found no element for ${selector}`);
+}
+
+/**
+ * Wait for the backend-template seed (or click Load Backend Model if the
+ * empty CTA is still showing). Production first-run seeds Users+Core into
+ * Cana; this helper covers both seeded and empty profiles.
+ */
+export async function ensureBackendSeedModel(page: DrawerPage): Promise<void> {
+  await page.waitForSelector('body[data-designer-ready="true"]', { timeout: 30000 }).catch(() => undefined);
+  const emptyVisible = await page.$eval(
+    '#domain-designer-empty-state',
+    (el) => !(el as HTMLElement).hidden
+  ).catch(() => false);
+  if (emptyVisible) {
+    await page.click('#domain-designer-empty-load-sample-btn');
+  }
+  await page.waitForSelector('.canvas .entity', { timeout: 30000 });
+}
+
+/**
+ * Import the designer-core guided sample (Users+Tasks) through the real JSON
+ * import control. Harnesses that still need Tasks geometry / sample-* ids use
+ * this — production CTAs load the backend-template seed instead.
+ */
+export async function importGuidedSampleFixture(page: DrawerPage): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { buildSampleModelPayload } = require('@jumentix/designer-core/model/sampleModel.js') as {
+    buildSampleModelPayload: () => object;
+  };
+  const tmp = path.join(os.tmpdir(), `jumentix-sample-fixture-${process.pid}-${Date.now()}.json`);
+  fs.writeFileSync(tmp, `${JSON.stringify(buildSampleModelPayload(), null, 2)}\n`);
+  try {
+    // Open the Import panel via a visible control; the file input stays hidden.
+    await openDesignerPanels(page, '#import-json-btn');
+    await page.setInputFiles('#import-json-input', tmp);
+    await page.waitForFunction(
+      () => (document.querySelector('#domain-list')?.textContent || '').includes('Tasks'),
+      { timeout: 30000 }
+    );
+  } finally {
+    fs.unlinkSync(tmp);
+  }
 }

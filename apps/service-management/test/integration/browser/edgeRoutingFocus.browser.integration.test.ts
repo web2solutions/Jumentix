@@ -16,7 +16,8 @@ import {
   startServer,
   stopServer,
   waitForServer,
-  openDesignerPanels
+  openDesignerPanels,
+  importGuidedSampleFixture
 } from '../../helpers/serverHarness';
 import type { StartedServer } from '../../helpers/serverHarness';
 
@@ -331,7 +332,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
     const context = await browser!.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     await hardReloadShell(page, baseUrl);
-    await page.click('#domain-designer-empty-load-sample-btn');
+    await importGuidedSampleFixture(page);
     await page.waitForSelector('.canvas .entity', { timeout: 15000 });
     await page.waitForTimeout(600);
 
@@ -372,7 +373,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
     });
     const report = await page.evaluate(collectMidInsideReport);
 
-    expect(report.shellVersion).toBe('0.9.148');
+    expect(report.shellVersion).toBe('0.9.169');
     expect(report.totalHits).toBe(0);
     expect(report.byRelationship.some((entry) => entry.pathLen >= 2)).toBe(true);
     expect(report.fieldFocusOk).toBe(true);
@@ -403,7 +404,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
     const context = await browser!.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     await hardReloadShell(page, baseUrl);
-    await page.click('#domain-designer-empty-load-sample-btn');
+    await importGuidedSampleFixture(page);
     await page.waitForSelector('.canvas .entity', { timeout: 15000 });
     await page.waitForTimeout(500);
 
@@ -428,7 +429,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
         + `focus=${scene.focusKind} scope="${scene.scope}"`
     );
 
-    expect(scene.shellVersion).toBe('0.9.148');
+    expect(scene.shellVersion).toBe('0.9.169');
     expect(scene.focusKind).toBe('domain');
     // Unique focus: domain alone; soft peers never carry is-focus.
     expect(scene.focusDomainCount).toBe(1);
@@ -461,7 +462,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
     const context = await browser!.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     await hardReloadShell(page, baseUrl);
-    await page.click('#domain-designer-empty-load-sample-btn');
+    await importGuidedSampleFixture(page);
     await page.waitForSelector('.canvas .entity', { timeout: 15000 });
     await page.waitForTimeout(500);
 
@@ -498,7 +499,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
         + `softScale=${String(scene.softEntityScale)} hits=${String(scene.totalHits)}`
     );
 
-    expect(scene.shellVersion).toBe('0.9.148');
+    expect(scene.shellVersion).toBe('0.9.169');
     expect(scene.focusKind).toBe('entity');
     // Unique focus: entity alone; home domain may be context-active without is-focus.
     expect(scene.focusEntityCount).toBe(1);
@@ -526,7 +527,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
     const context = await browser!.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     await hardReloadShell(page, baseUrl);
-    await page.click('#domain-designer-empty-load-sample-btn');
+    await importGuidedSampleFixture(page);
     await page.waitForSelector('.canvas .domain[data-domain-id]', { timeout: 15000 });
     await page.waitForTimeout(500);
 
@@ -589,7 +590,7 @@ describe('serviceManagement edge routing + focus (JUM-918)', () => {
         + `shell=${scene.shellVersion} scope="${scene.scope}"`
     );
 
-    expect(scene.shellVersion).toBe('0.9.148');
+    expect(scene.shellVersion).toBe('0.9.169');
     expect(scene.focusKind).toBe('domain');
     expect(scene.focusDomainCount).toBe(1);
     expect(scene.isFocusTotal).toBe(1);

@@ -23,6 +23,9 @@ Arquivos principais de implementação:
 - `apps/service-management/styles.css`
 - `apps/service-management/server.js`
 
+O modelo de UI em classes (`Component` / `TabApplication` / apps por aba)
+está documentado em
+[Modelo de componentes em classes do Service Management](./SERVICE-MANAGEMENT-CLASS-COMPONENT-MODEL.pt-BR.md).
 As camadas de módulos, o padrão de injeção e o contrato da porta de
 armazenamento `IDesignerStore` estão documentados em
 [Arquitetura de módulos do Service Management](./SERVICE-MANAGEMENT-MODULE-ARCHITECTURE.pt-BR.md).
@@ -50,6 +53,12 @@ fechando a cadeia de documentação E1–E8 — estão documentados em
 ## Guias
 
 1. **Designer de Domínio**
+   - Modelo de primeiro boot: com Cana vazio, `seed()` carrega o seed do
+     backend-template gerado a partir de `spec/1.0.0.yml`
+     (`generate-backend-template-seed.js`, ligado em `service-management:vendor`).
+     Edições persistidas no designer nunca são apagadas no refresh; **Load
+     Backend Model** recarrega o mesmo payload com confirmação quando o store
+     não está vazio.
    - MVP completo de modelagem ER incluindo:
      - ciclo de vida e inspetor de domínio/entidade
      - âncoras de relacionamento, controles de dobra/caminho, estilo de roteamento
