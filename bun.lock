@@ -42,7 +42,7 @@
         "restify": "^12.0.0",
         "semver": "^7.6.3",
         "sequelize": "^6.37.7",
-        "serverless": "^4.41.0",
+        "serverless": "^4.46.0",
         "socket.io": "^4.8.1",
         "socket.io-client": "^4.8.1",
         "tedious": "^20.0.0",
@@ -4678,7 +4678,7 @@
 
     "server-only": ["server-only@0.0.1", "", {}, "sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA=="],
 
-    "serverless": ["serverless@4.43.0", "", { "dependencies": { "undici": "6.28.1" }, "bin": { "sls": "run.js", "serverless": "run.js" } }, "sha512-ukk3LARQ89Cn2phMyIrwabfy3rx3IoENWKvDY3Cyj4tGJOMv9XAkxgnx8n71jDaG+ijOxBXyPBL72jTkPPju0w=="],
+    "serverless": ["serverless@4.46.0", "", { "dependencies": { "undici": "6.29.1" }, "bin": { "sls": "run.js", "serverless": "run.js" } }, "sha512-9VYGuErqCb4nlPeJ5sGzUrLRwILdcCcy6rbOpQwHDs6LcTkCGi5YZuldrITZTpj7c8u+cdFwedMueUx8QQheAA=="],
 
     "set-blocking": ["set-blocking@2.0.0", "", {}, "sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw=="],
 
