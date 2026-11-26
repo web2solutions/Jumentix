@@ -723,8 +723,8 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
           value: blockedOpen
         });
       } catch (_) {
-        const factory = window.indexedDB as IDBFactory & { open: typeof blockedOpen };
-        factory.open = blockedOpen;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window.indexedDB as any).open = blockedOpen;
       }
     });
     await addStatusRegionRecorder(context);
