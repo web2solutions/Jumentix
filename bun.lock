@@ -39,7 +39,7 @@
         "postgres": "^3.4.7",
         "redis": "^6.3.1",
         "reflect-metadata": "^0.2.2",
-        "restify": "^12.0.0",
+        "restify": "^12.1.0",
         "semver": "^7.6.3",
         "sequelize": "^6.37.7",
         "serverless": "^4.41.0",
@@ -4560,7 +4560,7 @@
 
     "resolve-url-loader": ["resolve-url-loader@5.0.0", "", { "dependencies": { "adjust-sourcemap-loader": "^4.0.0", "convert-source-map": "^1.7.0", "loader-utils": "^2.0.0", "postcss": "^8.2.14", "source-map": "0.6.1" } }, "sha512-uZtduh8/8srhBoMx//5bwqjQ+rfYOUq8zC9NrMUGtjBiGTtFJM42s58/36+hTqeqINcnYe08Nj3LkK9lW4N8Xg=="],
 
-    "restify": ["restify@12.0.0", "", { "dependencies": { "assert-plus": "^1.0.0", "csv": "^6.2.2", "escape-regexp-component": "^1.0.2", "ewma": "^2.0.1", "find-my-way": "^9.6.0", "formidable": "^1.2.1", "http-signature": "^1.3.6", "lodash": "^4.17.11", "lru-cache": "^7.14.1", "mime": "^3.0.0", "negotiator": "^0.6.2", "once": "^1.4.0", "pidusage": "^3.0.2", "pino": "^8.7.0", "qs": "^6.15.2", "restify-errors": "^8.0.2", "semver": "^7.3.8", "send": "^1.2.1", "vasync": "^2.2.0" }, "optionalDependencies": { "dtrace-provider": "~0.8" }, "bin": { "report-latency": "bin/report-latency" } }, "sha512-phWRX0ca9sSulM6SJ2SxnPze7gmkm2ePLNd6cuo9loM1UfARu+ZhcNNCKldEal/R3virVcl6Anp1XyPNVVCptQ=="],
+    "restify": ["restify@12.1.0", "", { "dependencies": { "assert-plus": "^1.0.0", "csv": "^6.2.2", "escape-regexp-component": "^1.0.2", "ewma": "^2.0.1", "find-my-way": "^9.6.0", "formidable": "^1.2.1", "http-signature": "^1.3.6", "lodash": "^4.17.11", "lru-cache": "^7.14.1", "mime": "^3.0.0", "negotiator": "^0.6.2", "once": "^1.4.0", "pidusage": "^3.0.2", "pino": "^8.7.0", "qs": "^6.15.2", "restify-errors": "^8.0.2", "semver": "^7.3.8", "send": "^1.2.1", "vasync": "^2.2.0" }, "optionalDependencies": { "dtrace-provider": "~0.8" }, "bin": { "report-latency": "bin/report-latency" } }, "sha512-iuSkAwXtPa+HTxhQ8T1oTRMQVMvknbGtGXcP3i5aco11vGidWwLfQfLZQPehWfJojzEoTssdahcyEAcH1S4pgA=="],
 
     "restify-errors": ["restify-errors@8.1.0", "", { "dependencies": { "@netflix/nerror": "^1.1.3", "assert-plus": "^1.0.0", "lodash": "^4.17.21" }, "optionalDependencies": { "safe-json-stringify": "^1.2.0" } }, "sha512-9ZYZTL9qli2hYykL3newPLf8RLgpSz+4RpZ7KKVSAj4CgCA8PwlfATI4onV13IZ3ldzV3M/2bJom6GQEAwS9aQ=="],
 
