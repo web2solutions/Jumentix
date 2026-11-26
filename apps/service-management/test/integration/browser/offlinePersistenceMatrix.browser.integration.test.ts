@@ -705,10 +705,27 @@ describe('serviceManagement offline/online persistence matrix on Cana (JUM-486)'
         window.setTimeout(fire, 0);
         return request;
       };
-      Object.defineProperty(window.indexedDB, 'open', {
-        configurable: true,
-        value: blockedOpen
-      });
+      // WebKit 27 keeps `open` on IDBFactory.prototype; an instance defineProperty
+      // is skipped by some call sites. Patch the prototype and the instance.
+      try {
+        Object.defineProperty(IDBFactory.prototype, 'open', {
+          configurable: true,
+          writable: true,
+          value: blockedOpen
+        });
+      } catch (_) {
+        /* prototype may reject the define — fall through to instance */
+      }
+      try {
+        Object.defineProperty(window.indexedDB, 'open', {
+          configurable: true,
+          writable: true,
+          value: blockedOpen
+        });
+      } catch (_) {
+        const factory = window.indexedDB as IDBFactory & { open: typeof blockedOpen };
+        factory.open = blockedOpen;
+      }
     });
     await addStatusRegionRecorder(context);
     const page = await context.newPage();

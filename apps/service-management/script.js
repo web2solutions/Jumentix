@@ -3350,16 +3350,15 @@ function domainEntityLayoutIsCrowded(domain) {
 }
 
 /**
- * Repair a persisted backend-template seed whose entities still use the old
- * packing (overlap, clip, 3-col side-only, or tight gutters). Also upgrades
- * once when `view.backendSeedLayoutRev` lags the current packing revision.
+ * One-time upgrade for a persisted backend-template seed whose packing
+ * predates `BACKEND_SEED_LAYOUT_REV`. After the revision is stamped (and kept
+ * by normalizeStatePayload), deliberate user layouts are left alone — never
+ * re-auto-layout just because cards look "crowded".
  */
 function repairCrowdedBackendSeedLayout() {
   if (!isBackendSeedShapedModel()) return false;
   const layoutRev = Number(state.view?.backendSeedLayoutRev) || 0;
-  const staleRev = layoutRev < BACKEND_SEED_LAYOUT_REV;
-  const crowded = state.domains.some((domain) => domainEntityLayoutIsCrowded(domain));
-  if (!staleRev && !crowded) return false;
+  if (layoutRev >= BACKEND_SEED_LAYOUT_REV) return false;
   model.applyAutoLayout(state.domains);
   state.view = { ...state.view, backendSeedLayoutRev: BACKEND_SEED_LAYOUT_REV };
   return true;
@@ -4338,7 +4337,9 @@ function wireEvents() {
   // Architecture empty CTAs are owned by ArchitectureEmptyState (ArchitectureTab).
 
   dom.resetCanvasBtn.onclick = () => {
-    if (!window.confirm('Reset canvas? All domains and relationships will be cleared.')) return;
+    if (!window.confirm(
+      'Reset canvas to the backend-template Users seed? Current domains and relationships will be replaced.'
+    )) return;
     withPersist(() => {
       seed();
       render();
@@ -4649,8 +4650,15 @@ async function boot() {
   // the single region. 'unavailable' likewise stays with the probe-time
   // states above; 'ok'/'empty' announce nothing.
   const loadOutcome = await loadState();
-  if (repairLegacySampleDiagramLayout()) saveState();
-  if (repairCrowdedBackendSeedLayout()) saveState();
+  // Layout repairs mutate in-memory state. Persist only when the store can
+  // accept a write — `unavailable` sessions stay memory-only (JUM-484).
+  const canPersistRepair = loadOutcome.status !== 'unavailable';
+  if (canPersistRepair && repairLegacySampleDiagramLayout()) {
+    Promise.resolve(saveState()).catch(() => undefined);
+  }
+  if (canPersistRepair && repairCrowdedBackendSeedLayout()) {
+    Promise.resolve(saveState()).catch(() => undefined);
+  }
   if ((loadOutcome.status === 'lost' || loadOutcome.status === 'recovered') && !probeDeclaredDataLoss) {
     const announcement = describeLoadTimeDataLoss({
       reason: loadOutcome.reason,

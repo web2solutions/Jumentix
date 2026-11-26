@@ -831,6 +831,7 @@ export function normalizeStatePayload(parsed) {
   }
   const flat = selectionToFlatIds(selection);
 
+  const layoutRevRaw = Number(parsed?.view?.backendSeedLayoutRev);
   const view = {
     zoom: clampZoom(parsed?.view?.zoom || 1),
     compactEntities: Boolean(parsed?.view?.compactEntities),
@@ -846,7 +847,12 @@ export function normalizeStatePayload(parsed) {
     exportBlockCritical: parsed?.view?.exportBlockCritical !== false,
     largeCanvasMode: Boolean(parsed?.view?.largeCanvasMode),
     // Session layout emphasis: focus stages peers away; overview keeps full diagram.
-    canvasStage: parsed?.view?.canvasStage === 'focus' ? 'focus' : 'overview'
+    canvasStage: parsed?.view?.canvasStage === 'focus' ? 'focus' : 'overview',
+    // One-time backend-seed packing revision — must survive load/normalize or
+    // repairCrowdedBackendSeedLayout re-applies auto-layout on every boot.
+    backendSeedLayoutRev: Number.isFinite(layoutRevRaw) && layoutRevRaw > 0
+      ? Math.floor(layoutRevRaw)
+      : 0
   };
   return {
     modelSchemaVersion: MODEL_SCHEMA_VERSION,
@@ -883,7 +889,8 @@ export function createDefaultView() {
     modelCheckMinSeverity: 'info',
     exportBlockCritical: true,
     largeCanvasMode: false,
-    canvasStage: 'overview'
+    canvasStage: 'overview',
+    backendSeedLayoutRev: 0
   };
 }
 
