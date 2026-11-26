@@ -1,3 +1,4 @@
+/* eslint-disable jest/prefer-expect-assertions, jest/max-expects */
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -20,23 +21,49 @@ function ruleBody(selector: string): string {
 describe('architecture tab surfaces (JUM-905)', () => {
   it('paints the canvas with the Domain Designer surface, not the light token', () => {
     expect.hasAssertions();
-    const canvas = ruleBody('.architecture-shell .architecture-canvas');
+    const canvas = ruleBody('#tab-architecture .architecture-canvas');
 
-    expect(canvas).toContain('background-color: #070707;');
-    expect(canvas).not.toContain('--jtx-surface');
+    expect(canvas).toContain('background-color: var(--jx-surface-canvas, #070707);');
+    expect(canvas).not.toContain('--jtx-surface)');
   });
 
   it('keeps the sidebar dark', () => {
     expect.hasAssertions();
 
-    expect(ruleBody('.architecture-shell .sidebar')).toContain('background: rgba(18, 19, 23, 0.97);');
+    expect(ruleBody('#tab-architecture .sidebar')).toContain('background: var(--jx-surface);');
   });
 
   it('overlays the mini-map on a positioned workspace instead of stacking it below', () => {
     expect.hasAssertions();
 
     expect(ruleBody('.architecture-mini-map')).not.toContain('position: relative');
-    expect(ruleBody('.architecture-shell .canvas-workspace')).toContain('position: relative;');
+    expect(ruleBody('#tab-architecture .workspace')).toContain('position: relative;');
+  });
+
+  it('keeps a canvas floor beside an elastic right rail', () => {
+    expect.hasAssertions();
+
+    expect(styles).toContain('--jx-canvas-min: 360px');
+    expect(styles).toContain(
+      'grid-template-columns: minmax(var(--jx-canvas-min), 1fr) minmax(0, var(--jx-rail-width))'
+    );
+    expect(styles).toContain('--jx-rail-width: clamp(280px, 24vw, 420px)');
+    expect(styles).toContain('#tab-architecture .workspace-header');
+    expect(styles).toContain('grid-template-rows: 42px minmax(0, 1fr)');
+  });
+
+  it('keeps main-nav destinations visible when labels collapse', () => {
+    expect.hasAssertions();
+    const html = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf-8');
+
+    expect(html).toContain('class="tab-btn-icon"');
+    expect(html).not.toContain('id="main-nav-current"');
+    expect(styles).toContain('[data-main-nav="closed"] .tab-btn-label');
+    expect(styles).toContain('.main-nav .control-help-btn');
+    expect(styles).toContain('#tab-architecture #architecture-sidebar .control-help-btn');
+    expect(styles).not.toMatch(
+      /\[data-main-nav="closed"\][^{]*\.tab-nav\s*\{[^}]*display:\s*none/u
+    );
   });
 });
 

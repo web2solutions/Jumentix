@@ -756,22 +756,42 @@ export function computeLevelFit(bounds, viewportWidth, viewportHeight, level = '
 }
 
 /**
+ * How many entity columns a domain uses.
+ *
+ * Cap at two outside dense overview: `ceil(sqrt(n))` packs six entities into
+ * three columns and leaves only side gutters — relationship corridors need
+ * vertical air between rows as well as horizontal gaps between cards.
+ */
+function entityColumnCount(entityCount, denseOverview) {
+  if (entityCount <= 0) return 1;
+  if (denseOverview) {
+    return Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount))));
+  }
+  return Math.max(1, Math.min(2, entityCount));
+}
+
+/**
  * Pure geometry of `autoLayout`: reposition every domain (grid) and every
  * entity (two columns) in place. The DOM caller wraps this in `withPersist`
  * and re-renders, as before.
+ *
+ * Entity `x`/`y` are relative to `.domain-body` (below the header). Domain
+ * `height` adds `DOMAIN_HEADER_HEIGHT` on top of body content so cards never
+ * clip out of the hull.
  */
 export function applyAutoLayout(domains) {
   const denseOverview = domains.length >= 10;
-  const padding = denseOverview ? 18 : 24;
-  const entityGapX = denseOverview ? 18 : 28;
-  const entityGapY = denseOverview ? 18 : 26;
+  const padding = denseOverview ? 24 : 56;
+  const entityGapX = denseOverview ? 32 : 120;
+  // Vertical corridor for relationship edges + labels between tall field cards.
+  const entityGapY = denseOverview ? 40 : 140;
   const domainGapX = denseOverview ? 26 : 72;
   const domainGapY = denseOverview ? 26 : 72;
   const origin = denseOverview ? 24 : 40;
   const maxCanvasWidth = 3200 - (denseOverview ? 80 : 120);
   const plannedDomainWidths = domains.map((domain) => {
     const entityCount = Math.max(1, domain.entities.length);
-    const entityColumns = Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount))));
+    const entityColumns = entityColumnCount(entityCount, denseOverview);
     const widestEntity = Math.max(ENTITY_WIDTH, ...domain.entities.map((entity) => entityWidth(entity)));
     return padding * 2 + entityColumns * widestEntity + (entityColumns - 1) * entityGapX;
   });
@@ -783,11 +803,10 @@ export function applyAutoLayout(domains) {
     const column = index % columns;
     const row = Math.floor(index / columns);
     const entityCount = domain.entities.length;
-    const entityColumns = entityCount > 0
-      ? Math.max(1, Math.min(entityCount, Math.ceil(Math.sqrt(entityCount))))
-      : 1;
+    const entityColumns = entityColumnCount(entityCount, denseOverview);
     const rowTops = [];
-    let nextTop = DOMAIN_HEADER_HEIGHT + padding;
+    // Body-relative: `.domain-body` starts below the header strip.
+    let nextTop = padding;
     domain.entities.forEach((entity, entityIndex) => {
       const entityRow = Math.floor(entityIndex / entityColumns);
       if (rowTops[entityRow] === undefined) {
@@ -809,8 +828,11 @@ export function applyAutoLayout(domains) {
     });
 
     if (domain.entities.length > 0) nextTop -= entityGapY;
+    const bodyHeight = domain.entities.length > 0
+      ? nextTop + padding
+      : Math.max(0, DOMAIN_MIN_HEIGHT - DOMAIN_HEADER_HEIGHT);
     const domainWidth = Math.max(DOMAIN_MIN_WIDTH, plannedDomainWidths[index]);
-    const domainHeight = Math.max(DOMAIN_MIN_HEIGHT, nextTop + padding);
+    const domainHeight = Math.max(DOMAIN_MIN_HEIGHT, DOMAIN_HEADER_HEIGHT + bodyHeight);
     rowHeights[row] = Math.max(rowHeights[row] || 0, domainHeight);
     domain.x = origin + column * (widestDomain + domainGapX);
     domain.y = origin + rowHeights.slice(0, row).reduce((top, height) => top + height + domainGapY, 0);

@@ -60,7 +60,11 @@ landing; the rule has not.
 
 | Module | Layer | Role |
 | --- | --- | --- |
-| `apps/service-management/script.js` | DOM-bound | Entry module: event wiring, rendering, import/export flows. Owns every `document`/`window` interaction. |
+| `apps/service-management/script.js` | DOM-bound | Entry module: boots `ServiceManagementApp`, event wiring, import/export flows. Still owns residual shell DOM. `seed()` / Load Backend Model apply `src/model/backendTemplateSeed.js`. |
+| `apps/service-management/scripts/generate-backend-template-seed.js` | CLI | Maps `spec/1.0.0.yml` through `buildDomainsFromOas`; writes `generated/backend-template-seed.json` + ESM embed. Hooked from `service-management:vendor`. |
+| `apps/service-management/src/ui/component/*` | DOM-bound | Class-component base (`Component`, `TabApplication`). |
+| `apps/service-management/src/ui/app/*` | DOM-bound | `ServiceManagementApp`, `TabHost`, legacy tab adapter. |
+| `apps/service-management/src/ui/tabs/*` | DOM-bound | One folder per tab application (Architecture peeled; others stubs). |
 | `packages/designer-core/src/state/designerState.js` | DOM-free | State and persistence core: the state object, the `normalizeStatePayload` normalisation chain, snapshot/apply, history (undo/redo), `loadState`, `buildModelSnapshot`. |
 | `packages/designer-core/src/store/IDesignerStore.js` | DOM-free, dependency-free | The storage port: contract + base class. Importable under any JavaScript runtime. |
 | `apps/service-management/src/store/CanaDesignerStore.js` | DOM-free | The sole `IDesignerStore` adapter (JUM-483), over the Cana client — injected, never imported. |

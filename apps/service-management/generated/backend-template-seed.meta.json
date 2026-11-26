@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-11-24T21:56:06.763Z",
+  "source": "spec/1.0.0.yml",
+  "schemaCount": 28,
+  "domainCount": 1,
+  "relationshipCount": 0,
+  "backendModules": [
+    "Users"
+  ]
+}

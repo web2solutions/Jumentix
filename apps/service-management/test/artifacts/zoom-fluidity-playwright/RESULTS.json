@@ -1,52 +1,52 @@
 {
-  "shellExpected": "0.9.143",
+  "shellExpected": "0.9.169",
   "results": [
     {
       "case": "shell",
-      "zoom": 1,
-      "zoomPct": "100%",
+      "zoom": 0.61,
+      "zoomPct": "61%",
       "userZooming": false,
       "zoomDirection": null,
       "camera": null,
       "navigating": false,
-      "scrollLeft": 3200,
-      "scrollTop": 2200,
-      "shell": "0.9.143",
+      "scrollLeft": 1632,
+      "scrollTop": 1278,
+      "shell": "0.9.169",
       "entityUnder": null,
       "pass": true
     },
     {
       "case": "wheel-zoom-in",
-      "before": 1,
+      "before": 0.61,
       "midZooming": true,
-      "after": 2.21,
+      "after": 1.35,
       "pass": true
     },
     {
       "case": "wheel-zoom-out",
-      "before": 2.21,
-      "after": 0.7,
+      "before": 1.35,
+      "after": 0.42,
       "pass": true
     },
     {
       "case": "rapid-retarget",
-      "before": 0.7,
+      "before": 0.42,
       "midZooming": true,
-      "after": 1.54,
+      "after": 0.94,
       "pass": true
     },
     {
       "case": "toolbar-buttons",
-      "before": 1.54,
-      "afterIn": 1.93,
-      "afterOut": 1.72,
+      "before": 0.94,
+      "afterIn": 1.17,
+      "afterOut": 1.05,
       "pass": true
     },
     {
       "case": "keyboard-plus-minus",
-      "before": 0.52,
-      "afterPlus": 0.58,
-      "afterMinus": 0.52,
+      "before": 0.59,
+      "afterPlus": 0.66,
+      "afterMinus": 0.59,
       "pass": true
     },
     {
@@ -61,42 +61,42 @@
     },
     {
       "case": "pointer-anchor",
-      "beforeZoom": 0.78,
-      "afterZoom": 2.09,
+      "beforeZoom": 0.59,
+      "afterZoom": 1.58,
       "sameEntity": true,
-      "drift": 6.236341861662086,
+      "drift": 9.00727615621758,
       "pass": true
     },
     {
       "case": "shift-wheel-no-zoom",
-      "before": 2.09,
-      "after": 2.09,
+      "before": 1.58,
+      "after": 1.58,
       "pass": true
     },
     {
       "case": "ctrl-wheel-pinch",
-      "before": 2.09,
-      "after": 2.5,
+      "before": 1.58,
+      "after": 2.47,
       "pass": true
     },
     {
       "case": "delta-modes",
-      "before": 0.64,
-      "afterLine": 0.88,
-      "afterPage": 0.25,
+      "before": 1.25,
+      "afterLine": 1.71,
+      "afterPage": 0.42,
       "pass": true
     },
     {
       "case": "interrupt-focus",
       "focusNavigating": false,
-      "midUserZooming": false,
+      "midUserZooming": true,
       "afterZoom": 0.25,
       "pass": true
     },
     {
       "case": "fit-then-wheel",
-      "before": 0.52,
-      "after": 1,
+      "before": 0.59,
+      "after": 1.14,
       "pass": true
     }
   ]

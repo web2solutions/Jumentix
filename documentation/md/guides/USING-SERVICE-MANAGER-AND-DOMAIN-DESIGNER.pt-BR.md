@@ -203,33 +203,29 @@ pm2 restart jumentix-dev-service-management
 
 ## 5. Primeiro boot
 
-Em um perfil de navegador novo, o designer sobe com um **modelo vazio**. Cada
-aba mostra um estado vazio guiado que nomeia a primeira ação daquela aba — não
-existe template pré-carregado silenciosamente.
+Em um perfil de navegador novo (Cana vazio) o designer **semeia o modelo do
+backend-template** gerado a partir dos contratos OpenAPI vivos em
+`spec/1.0.0.yml` — hoje o domínio `Users` (`User`, `Organization`, `Email`,
+`Phone`, `Address`, `Document`) mais a arquitetura Core. Cada
+`service-management:vendor` / start da app regenera
+`apps/service-management/generated/backend-template-seed.json` e o embed ESM
+`src/model/backendTemplateSeed.js`. Regenerar o arquivo **não** sobrescreve o
+modelo salvo no Cana.
 
-![Primeiro boot: o estado vazio do Domain Designer explicando a aba e oferecendo Load Sample Model](../../images/service-manager/01-first-run-empty-state.png "Estado vazio do primeiro boot")
+![Primeiro boot: canvas do Domain Designer com o domínio Users do backend-template](../../images/service-manager/02-domain-designer-canvas.png "Canvas do Domain Designer com o modelo do backend-template")
 
-A primeira ação do Domain Designer é **Load Sample Model** (também disponível no
-painel Export). Um clique carrega um domínio de identidade realista — `Users`,
-`Organization`, `Email`, `Phone` e `ContactPoint`, os mesmos recursos que
-`spec/1.0.0.yml` declara — com relacionamentos, RBAC por entidade, um contrato
-de mensagem, invariantes e composição OpenAPI `oneOf` + discriminador.
-
-![Canvas do Domain Designer após carregar o modelo de exemplo](../../images/service-manager/02-domain-designer-canvas.png "Canvas do Domain Designer com o modelo de exemplo")
-
-O conteúdo de exemplo permanece distinguível do seu trabalho: todo id do
-exemplo carrega o prefixo `sample-` e domínios de exemplo mostram o selo
-`sample` na lista de domínios. Carregá-lo sobre um modelo existente pede
-confirmação, e o desfazer restaura o modelo anterior. Excluí-lo é uma exclusão
-de domínio comum.
+Se você limpar o canvas, os estados vazios guiados voltam. **Load Backend
+Model** (toolbar Import e CTAs vazios de Architecture / Domain Designer)
+recarrega o mesmo seed pela rota de importação de suite. Carregá-lo sobre um
+modelo existente pede confirmação; o desfazer restaura o anterior.
 
 Um primeiro ciclo completo:
 
-1. Clique em `Load Sample Model`.
+1. Abra o designer em um perfil novo (ou clique em `Load Backend Model`).
 2. Clique em `Validate Model` e leia o painel Model Check.
 3. Clique em `Export OAS 3.1` — o navegador baixa
    `domain-designer-oas-3.1.json`.
-4. Exclua o domínio de exemplo e modele o seu.
+4. Edite os domínios para o seu produto, ou exclua e modele do zero.
 
 ## 5.1 Abas Architecture e OpenAPI
 

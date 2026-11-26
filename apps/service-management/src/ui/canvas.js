@@ -1919,8 +1919,26 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
     );
   }
 
+  /**
+   * Resolve an Event's target to an Element that supports `.closest`.
+   * Pointer/mouse targets can be Text nodes (no `.closest`) or briefly
+   * undefined after a remount — both used to throw mid-gesture.
+   */
+  function eventElement(eventOrTarget) {
+    const raw = eventOrTarget && typeof eventOrTarget === 'object' && 'target' in eventOrTarget
+      ? eventOrTarget.target
+      : eventOrTarget;
+    if (!raw) return null;
+    if (typeof raw.closest === 'function') return raw;
+    return raw.parentElement || null;
+  }
+
+  function eventClosest(eventOrTarget, selector) {
+    return eventElement(eventOrTarget)?.closest(selector) || null;
+  }
+
   function isDragInteractiveTarget(target) {
-    return Boolean(target?.closest?.(
+    return Boolean(eventElement(target)?.closest(
       'button, input, select, textarea, a, .entity-anchor, .field-link-handle, .domain-resize-handle, .edge-end-handle, .edge-bend-handle, .edge-hit'
     ));
   }
@@ -1995,8 +2013,9 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       domainEl.addEventListener('contextmenu', (event) => {
         // Only when the domain itself is the target: an entity or a field row
         // inside it owns its own menu, and this would otherwise swallow both.
-        if (event.target !== domainEl && !event.target.classList.contains('domain-body')
-          && !event.target.closest('.domain-header')) return;
+        const targetEl = eventElement(event);
+        if (targetEl !== domainEl && !targetEl?.classList?.contains('domain-body')
+          && !eventClosest(targetEl, '.domain-header')) return;
         setSelectedDomain(domain.id);
         openElementMenu(event, `Domain "${domain.name}"`, domainMenuItems(domain));
       });
@@ -2104,7 +2123,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
       attachDrag(bodyEl, moveDomain, {
         ...persistMovedDomain,
         shouldStart: (event) => event.button === 0
-          && !event.target.closest('.entity')
+          && !eventClosest(event, '.entity')
           && !isDragInteractiveTarget(event.target)
       });
 
@@ -2162,7 +2181,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
             interaction.relationshipAnchorFromSide,
             interaction.relationshipAnchorFromField
           );
-          const targetRow = event.target.closest('.entity-field-row');
+          const targetRow = eventClosest(event, '.entity-field-row');
           const targetIndex = targetRow ? Number(targetRow.dataset.fieldIndex) : -1;
           const targetField = entity.fields[targetIndex];
           const side = facingSide(fromPoint ? fromPoint.x : 0, domain.x + entity.x);
@@ -2173,7 +2192,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
           stopAnchorDrag();
         });
         entityEl.addEventListener('contextmenu', (event) => {
-          if (event.target.closest('.entity-field-row')) return;
+          if (eventClosest(event, '.entity-field-row')) return;
           setSelectedEntity(entity.id);
           openElementMenu(event, `Entity "${entity.name}"`, entityMenuItems(domain, entity));
         });
@@ -2284,13 +2303,13 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
         attachDrag(entityHeader, moveEntity, {
           ...persistMovedEntity,
           shouldStart: (event) => event.button === 0
-            && !event.target.closest('button, select, textarea, a, .field-link-handle, .entity-anchor')
+            && !eventClosest(event, 'button, select, textarea, a, .field-link-handle, .entity-anchor')
         });
         attachDrag(entityDragGrip, moveEntity, persistMovedEntity);
         attachDrag(entityEl, moveEntity, {
           ...persistMovedEntity,
           shouldStart: (event) => event.button === 0
-            && !event.target.closest('.entity-header')
+            && !eventClosest(event, '.entity-header')
             && !isDragInteractiveTarget(event.target)
         });
 
@@ -2328,7 +2347,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
               return;
             }
             li.addEventListener('click', (event) => {
-              if (event.target.closest('input, select, button, details, summary, a, .field-link-handle, .entity-anchor')) {
+              if (eventClosest(event, 'input, select, button, details, summary, a, .field-link-handle, .entity-anchor')) {
                 return;
               }
               event.stopPropagation();
@@ -2759,7 +2778,7 @@ export function createCanvas({ dom, state, interaction, actions, contextMenu, si
 
       noteEl.addEventListener('mousedown', (event) => {
         if (event.button !== 0) return;
-        if (event.target.closest('textarea, button, input')) return;
+        if (eventClosest(event, 'textarea, button, input')) return;
         setSelectedNote(note.id);
       });
 

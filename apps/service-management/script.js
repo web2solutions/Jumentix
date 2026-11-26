@@ -62,6 +62,7 @@ import {
 import * as model from '@jumentix/designer-core/model/modelQueries.js';
 import { isPm2ManagedDeployTarget } from '@jumentix/designer-core/model/deployCapabilityMatrix.js';
 import { buildSampleModelPayload } from '@jumentix/designer-core/model/sampleModel.js';
+import { buildBackendTemplateSeedPayload } from './src/model/backendTemplateSeed.js';
 import { collectModelIssues } from '@jumentix/designer-core/validation/modelValidation.js';
 import { collectServiceConfigurationIssues } from '@jumentix/designer-core/validation/serviceConfigurationValidation.js';
 import { collectDeployTargetIssues } from '@jumentix/designer-core/validation/deployTargetValidation.js';
@@ -95,12 +96,19 @@ import {
   flattenBundleFiles,
   renderBundlePreview
 } from '@jumentix/designer-core/codegen/hexagonalCodegen.js';
-import { createTabs } from './src/ui/tabs.js';
+import { ServiceManagementApp } from './src/ui/app/index.js';
+import { ArchitectureTab } from './src/ui/tabs/architecture/index.js';
+import { DomainDesignerTab } from './src/ui/tabs/domain-designer/DomainDesignerTab.js';
+import { InterfaceDesignerTab } from './src/ui/tabs/interface-designer/InterfaceDesignerTab.js';
+import { ServiceConfigTab } from './src/ui/tabs/service-config/ServiceConfigTab.js';
+import { DeployManagementTab } from './src/ui/tabs/deploy-management/DeployManagementTab.js';
+import { MonitoringTab } from './src/ui/tabs/monitoring/MonitoringTab.js';
+import { OpenApiTab } from './src/ui/tabs/openapi/OpenApiTab.js';
+import { CodeWorkspaceTab } from './src/ui/tabs/code-workspace/CodeWorkspaceTab.js';
 import { createSidebarGroups } from './src/ui/sidebarGroups.js';
 import { createContextMenu } from './src/ui/contextMenu.js';
 import { drawModel } from './src/ui/canvasImage.js';
 import { createCanvas } from './src/ui/canvas.js';
-import { createArchitectureCanvas } from './src/ui/architectureCanvas.js';
 import { createSwaggerTab } from './src/ui/swaggerTab.js';
 import { createInspectors } from './src/ui/inspectors.js';
 import { createMonitoringController } from './src/ui/monitoringApp.js';
@@ -475,23 +483,50 @@ const dom = {
   pm2MonitoringCommand: document.getElementById('pm2-monitoring-command'),
   pm2ListCommand: document.getElementById('pm2-list-command'),
   architectureEmptyState: document.getElementById('architecture-empty-state'),
+  architectureEmptyLoadSampleBtn: document.getElementById('architecture-empty-load-sample-btn'),
+  architectureEmptyOpenDomainBtn: document.getElementById('architecture-empty-open-domain-btn'),
+  architectureCoach: document.getElementById('architecture-coach'),
+  architectureCoachDismissBtn: document.getElementById('architecture-coach-dismiss-btn'),
+  architectureSidebar: document.getElementById('architecture-sidebar'),
+  architectureToggleSidebarBtn: document.getElementById('architecture-toggle-sidebar-btn'),
+  architectureScopePath: document.getElementById('architecture-scope-path'),
+  architectureConnectStatus: document.getElementById('architecture-connect-status'),
+  architectureConnectBtn: document.getElementById('architecture-connect-btn'),
+  architectureCancelConnectBtn: document.getElementById('architecture-cancel-connect-btn'),
+  architectureTabServicesContext: document.getElementById('architecture-tab-services-context'),
+  architectureTabDomainsContext: document.getElementById('architecture-tab-domains-context'),
+  architectureTabSelectedContext: document.getElementById('architecture-tab-selected-context'),
+  architectureTabLinksContext: document.getElementById('architecture-tab-links-context'),
+  architectureTabValidateContext: document.getElementById('architecture-tab-validate-context'),
   architectureServiceNameInput: document.getElementById('architecture-service-name-input'),
+  architectureServiceNameError: document.getElementById('architecture-service-name-error'),
   architectureAddServiceBtn: document.getElementById('architecture-add-service-btn'),
+  architectureServicesHint: document.getElementById('architecture-services-hint'),
   architectureServiceList: document.getElementById('architecture-service-list'),
+  architectureDomainsHint: document.getElementById('architecture-domains-hint'),
   architectureDomainPalette: document.getElementById('architecture-domain-palette'),
+  architectureInspectEmpty: document.getElementById('architecture-inspect-empty'),
+  architectureInspectBody: document.getElementById('architecture-inspect-body'),
+  architectureInspectDomainNameInput: document.getElementById('architecture-inspect-domain-name-input'),
+  architectureInspectDomainNameError: document.getElementById('architecture-inspect-domain-name-error'),
+  architectureInspectAddDomainBtn: document.getElementById('architecture-inspect-add-domain-btn'),
+  architectureInspectHint: document.getElementById('architecture-inspect-hint'),
   architectureInspectName: document.getElementById('architecture-inspect-name'),
-  architectureInspectKind: document.getElementById('architecture-inspect-kind'),
+  architectureInspectNameError: document.getElementById('architecture-inspect-name-error'),
+  architectureInspectKindBadge: document.getElementById('architecture-inspect-kind-badge'),
   architectureInspectUrl: document.getElementById('architecture-inspect-url'),
+  architectureInspectUrlError: document.getElementById('architecture-inspect-url-error'),
   architectureInspectDeploy: document.getElementById('architecture-inspect-deploy'),
-  architectureInspectDomain: document.getElementById('architecture-inspect-domain'),
-  architectureMoveDomainBtn: document.getElementById('architecture-move-domain-btn'),
-  architectureSaveServiceBtn: document.getElementById('architecture-save-service-btn'),
+  architectureInspectDeployError: document.getElementById('architecture-inspect-deploy-error'),
+  architectureServiceDomains: document.getElementById('architecture-service-domains'),
+  architectureOpenDomainsBtn: document.getElementById('architecture-open-domains-btn'),
+  architectureMoveDomainHint: document.getElementById('architecture-move-domain-hint'),
   architectureDeleteServiceBtn: document.getElementById('architecture-delete-service-btn'),
-  architectureLinkFrom: document.getElementById('architecture-link-from'),
-  architectureLinkTo: document.getElementById('architecture-link-to'),
+  architectureLinksHint: document.getElementById('architecture-links-hint'),
+  architectureLinksConnectBtn: document.getElementById('architecture-links-connect-btn'),
   architectureLinkProtocol: document.getElementById('architecture-link-protocol'),
-  architectureAddLinkBtn: document.getElementById('architecture-add-link-btn'),
   architectureLinkList: document.getElementById('architecture-link-list'),
+  architectureValidateHint: document.getElementById('architecture-validate-hint'),
   architectureIssueList: document.getElementById('architecture-issue-list'),
   architectureCanvas: document.getElementById('architecture-canvas'),
   architectureMiniMap: document.getElementById('architecture-mini-map'),
@@ -534,9 +569,14 @@ const monitoringController = createMonitoringController(dom, {
   },
   persist: () => saveState()
 });
-const tabs = createTabs({
-  dom,
+
+// Class-component shell: every tab is a TabApplication; Architecture is peeled.
+const smApp = new ServiceManagementApp({
+  el: document.querySelector('.service-management-shell') || document.body,
+  mainNavToggle: document.getElementById('main-nav-toggle'),
   state,
+  dom,
+  actions: { withPersist, render, saveState, createDomain: (...args) => addDomain(...args) },
   saveState,
   beforeTabChange(previous, tab) {
     if (previous === 'code-workspace' && tab !== 'code-workspace') {
@@ -547,8 +587,12 @@ const tabs = createTabs({
     }
   },
   afterTabChange(_previous, tab) {
-    if (tab === 'architecture') architectureCanvas.renderArchitecture();
     if (tab === 'openapi') swaggerTab.renderSwagger();
+    if (tab === 'domain-designer') {
+      // Layout may still be settling after the tab panel becomes visible —
+      // frame after paint so clientWidth/Height are real.
+      scheduleDomainDesignerCanvasFrame();
+    }
     if (tab !== 'monitoring') return;
     const environment = dom.pm2MetricsEnvironmentSelect?.value || 'dev';
     if (dom.pm2MonitoringCommand) {
@@ -560,6 +604,62 @@ const tabs = createTabs({
     monitoringController.start();
   }
 });
+
+smApp.registerTab(new ArchitectureTab({
+  el: dom.tabArchitecture,
+  button: dom.tabArchitectureBtn,
+  ctx: smApp.ctx,
+  onLoadSample: () => {
+    loadSampleModel();
+    smApp.setActiveTab('architecture');
+  },
+  onOpenDomainDesigner: () => smApp.setActiveTab('domain-designer')
+}));
+smApp.registerTab(new DomainDesignerTab({
+  el: dom.tabDomainDesigner,
+  button: dom.tabDomainDesignerBtn,
+  ctx: smApp.ctx
+}));
+smApp.registerTab(new InterfaceDesignerTab({
+  el: dom.tabInterfaceDesigner,
+  button: dom.tabInterfaceDesignerBtn,
+  ctx: smApp.ctx
+}));
+smApp.registerTab(new ServiceConfigTab({
+  el: dom.tabServiceConfig,
+  button: dom.tabServiceConfigBtn,
+  ctx: smApp.ctx
+}));
+smApp.registerTab(new DeployManagementTab({
+  el: dom.tabDeployManagement,
+  button: dom.tabDeployManagementBtn,
+  ctx: smApp.ctx
+}));
+smApp.registerTab(new MonitoringTab({
+  el: dom.tabMonitoring,
+  button: dom.tabMonitoringBtn,
+  ctx: smApp.ctx
+}));
+smApp.registerTab(new OpenApiTab({
+  el: dom.tabOpenapi,
+  button: dom.tabOpenapiBtn,
+  ctx: smApp.ctx
+}));
+smApp.registerTab(new CodeWorkspaceTab({
+  el: dom.tabCodeWorkspace,
+  button: dom.tabCodeWorkspaceBtn,
+  ctx: smApp.ctx
+}));
+smApp.mount();
+smApp.mainNav?.syncCurrentLabel?.();
+
+/** @deprecated Prefer smApp — kept so remaining script.js call sites stay stable. */
+const tabs = {
+  renderTabs: () => smApp.renderTabs(),
+  setActiveTab: (tab) => smApp.setActiveTab(tab),
+  applyHashTab: (options) => smApp.applyHashTab(options)
+};
+
 const sidebarGroups = createSidebarGroups({ documentRef: document, state, saveState });
 const contextMenu = createContextMenu({ documentRef: document });
 const canvas = createCanvas({
@@ -588,11 +688,6 @@ const canvas = createCanvas({
     // reference to `window`, which is what lets it be unit-tested.
     confirmAction: (message) => window.confirm(message)
   }
-});
-const architectureCanvas = createArchitectureCanvas({
-  dom,
-  state,
-  actions: { withPersist, render, saveState }
 });
 const swaggerTab = createSwaggerTab({ dom, state });
 
@@ -1161,6 +1256,39 @@ function navigateToSelection(panelId, { remountCanvas = true, camera = true } = 
     persist: remountCanvas,
     remountPeers: remountCanvas
   });
+}
+
+/**
+ * Frame domains (or the current selection) in the Domain Designer viewport.
+ * Boot / tab activate often run while `#canvas` still reports 0×0 — retry a
+ * few animation frames so Camera3 fit uses real client metrics.
+ */
+function frameDomainDesignerCanvas({ attempts = 12 } = {}) {
+  if (typeof canvas?.fitView !== 'function') return;
+  const tabActive = state.activeTab === 'domain-designer'
+    || Boolean(dom.tabDomainDesigner?.classList?.contains('active'));
+  if (!tabActive) return;
+  if (!(state.domains || []).length) return;
+  if (!dom.canvas) return;
+
+  const width = Number(dom.canvas.clientWidth) || 0;
+  const height = Number(dom.canvas.clientHeight) || 0;
+  if ((width < 48 || height < 48) && attempts > 0) {
+    const defer = typeof requestAnimationFrame === 'function'
+      ? requestAnimationFrame
+      : (cb) => setTimeout(cb, 16);
+    defer(() => frameDomainDesignerCanvas({ attempts: attempts - 1 }));
+    return;
+  }
+
+  canvas.fitView();
+}
+
+function scheduleDomainDesignerCanvasFrame() {
+  const defer = typeof requestAnimationFrame === 'function'
+    ? requestAnimationFrame
+    : (cb) => setTimeout(cb, 0);
+  defer(() => frameDomainDesignerCanvas());
 }
 
 function syncSelectionPath(kind, extras = {}) {
@@ -2398,7 +2526,7 @@ function generateCodePreview() {
     ? renderBundlePreview(bundle)
     : '// Select an entity or create domains/entities to preview generated skeletons.';
   dom.codePreviewOutput.hidden = false;
-  const details = dom.codePreviewOutput.closest('details');
+  const details = dom.codePreviewOutput?.closest?.('details');
   if (details) details.open = true;
 }
 
@@ -3112,30 +3240,128 @@ function generateExamplesPreview() {
   revealSidebarPreview(dom.examplesPreviewOutput);
 }
 
-// JUM-548: the first-run state is intentionally EMPTY — no domains, no
-// relationships. A first-run user used to get a silently pre-populated toy
-// template; the guided per-tab empty states (renderEmptyStates) now explain
-// each tab instead, and the realistic sample model is an explicit one-action
-// load (loadSampleModel), so the user learns where a model comes from. The
-// state core calls this on first run and on recovery; the Reset button calls
-// it too — reset therefore means "back to the empty first-run state".
+// First-run / recovery / Reset: load the backend-template contract seed
+// (generated from spec/1.0.0.yml). Cana only calls this when the store is
+// empty or recovered-from-lost — persisted designer edits are never wiped
+// on refresh. Empty-state CTAs reuse the same payload via loadSampleModel.
+function applyBackendTemplateSeedToState() {
+  const result = buildStateFromSuiteExport(buildBackendTemplateSeedPayload(), state);
+  if (!result.ok) {
+    state.domains = [];
+    state.relationships = [];
+    state.architecture = { services: [], links: [] };
+    state.selectedDomainId = null;
+    state.selectedEntityId = null;
+    state.selectedRelationshipId = null;
+    state.idCounter = 1;
+    state.view = {
+      zoom: 1,
+      compactEntities: false,
+      snapToGrid: true,
+      edgeStyle: 'curved',
+      modelCheckMinSeverity: 'info',
+      exportBlockCritical: true,
+      largeCanvasMode: false,
+      canvasStage: 'overview'
+    };
+    return { ok: false, reason: result.reason };
+  }
+  const normalized = result.state;
+  state.domains = normalized.domains;
+  state.relationships = normalized.relationships;
+  state.architecture = normalized.architecture;
+  state.selectedDomainId = normalized.selectedDomainId;
+  state.selectedEntityId = normalized.selectedEntityId;
+  state.selectedRelationshipId = normalized.selectedRelationshipId;
+  state.view = normalized.view;
+  state.idCounter = normalized.idCounter;
+  // Always re-pack: OAS import spacing is too tight for multi-field entities.
+  model.applyAutoLayout(state.domains);
+  state.view = { ...state.view, backendSeedLayoutRev: BACKEND_SEED_LAYOUT_REV };
+  recomputeIdCounter();
+  return { ok: true };
+}
+
 function seed() {
-  state.domains = [];
-  state.relationships = [];
-  state.selectedDomainId = null;
-  state.selectedEntityId = null;
-  state.selectedRelationshipId = null;
-  state.idCounter = 1;
-  state.view = {
-    zoom: 1,
-    compactEntities: false,
-    snapToGrid: true,
-    edgeStyle: 'curved',
-    modelCheckMinSeverity: 'info',
-    exportBlockCritical: true,
-    largeCanvasMode: false,
-    canvasStage: 'overview'
-  };
+  applyBackendTemplateSeedToState();
+}
+
+/** Layout revision for the backend-template seed packing (body-relative, 2-col, wide gaps). */
+const BACKEND_SEED_LAYOUT_REV = 3;
+
+/** True when two entity cards' drawn boxes intersect (including equal edges). */
+function backendSeedEntityBoxesOverlap(left, right) {
+  const leftW = model.entityWidth(left);
+  const leftH = model.entityBoxHeight(left, false, false);
+  const rightW = model.entityWidth(right);
+  const rightH = model.entityBoxHeight(right, false, false);
+  return left.x < right.x + rightW
+    && left.x + leftW > right.x
+    && left.y < right.y + rightH
+    && left.y + leftH > right.y;
+}
+
+/**
+ * Models safe to auto-repack: stable `backend-domain-*` ids, OR the single
+ * Users domain that matches the OAS seed entity set (covers Cana rows saved
+ * before ids were stabilized — those keep `domain-import-*` and never matched
+ * the old prefix gate).
+ */
+function isBackendSeedShapedModel() {
+  if (!state.domains.length) return false;
+  if (state.domains.every((domain) => String(domain.id || '').startsWith('backend-domain-'))) {
+    return true;
+  }
+  if (state.domains.length !== 1) return false;
+  const domain = state.domains[0];
+  if (String(domain.name || '').trim().toLowerCase() !== 'users') return false;
+  const names = new Set((domain.entities || []).map((entity) => String(entity.name || '')));
+  const expected = ['Document', 'Email', 'Address', 'Phone', 'User', 'Organization'];
+  return expected.length === names.size && expected.every((name) => names.has(name));
+}
+
+function domainEntityLayoutIsCrowded(domain) {
+  const entities = Array.isArray(domain.entities) ? domain.entities : [];
+  if (entities.length < 2) return false;
+  const bodyPad = 56;
+  const minGap = 100;
+  const bodyBudget = Math.max(0, Number(domain.height) || 0) - DOMAIN_HEADER_HEIGHT - bodyPad;
+  const distinctX = new Set(entities.map((entity) => entity.x));
+  if (entities.length >= 4 && distinctX.size >= 3) return true;
+  for (let i = 0; i < entities.length; i += 1) {
+    const left = entities[i];
+    const leftH = model.entityBoxHeight(left, false, false);
+    const leftW = model.entityWidth(left);
+    if (left.y + leftH > bodyBudget) return true;
+    for (let j = i + 1; j < entities.length; j += 1) {
+      const right = entities[j];
+      if (backendSeedEntityBoxesOverlap(left, right)) return true;
+      const rightH = model.entityBoxHeight(right, false, false);
+      const rightW = model.entityWidth(right);
+      const gapX = Math.max(0, Math.max(left.x, right.x) - Math.min(left.x + leftW, right.x + rightW));
+      const gapY = Math.max(0, Math.max(left.y, right.y) - Math.min(left.y + leftH, right.y + rightH));
+      const separatedX = left.x + leftW <= right.x || right.x + rightW <= left.x;
+      const separatedY = left.y + leftH <= right.y || right.y + rightH <= left.y;
+      if (separatedX && !separatedY && gapX > 0 && gapX < minGap) return true;
+      if (separatedY && !separatedX && gapY > 0 && gapY < minGap) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * One-time upgrade for a persisted backend-template seed whose packing
+ * predates `BACKEND_SEED_LAYOUT_REV`. After the revision is stamped (and kept
+ * by normalizeStatePayload), deliberate user layouts are left alone — never
+ * re-auto-layout just because cards look "crowded".
+ */
+function repairCrowdedBackendSeedLayout() {
+  if (!isBackendSeedShapedModel()) return false;
+  const layoutRev = Number(state.view?.backendSeedLayoutRev) || 0;
+  if (layoutRev >= BACKEND_SEED_LAYOUT_REV) return false;
+  model.applyAutoLayout(state.domains);
+  state.view = { ...state.view, backendSeedLayoutRev: BACKEND_SEED_LAYOUT_REV };
+  return true;
 }
 
 function repairLegacySampleDiagramLayout() {
@@ -3255,46 +3481,33 @@ function repairLegacySampleDiagramLayout() {
 }
 
 /**
- * JUM-548: load the sample model (src/model/sampleModel.js) through the same
- * normalisation crossing a JSON import takes. Non-destructive by contract:
- * over existing work the load only proceeds after an explicit confirmation —
- * one of the destructive-action gates JUM-543 keeps on `window.confirm` — and
- * even then the previous work is one in-session Undo away (the load records
- * history, unlike file imports which reset it). The status region, not an
- * alert, announces the outcome and names the sample marker.
+ * Load the backend-template seed (generated from spec/1.0.0.yml) through the
+ * same suite-import normalisation a JSON import takes. Non-destructive by
+ * contract: over existing work the load only proceeds after an explicit
+ * confirmation — one of the destructive-action gates JUM-543 keeps on
+ * `window.confirm` — and even then the previous work is one in-session Undo
+ * away. The status region, not an alert, announces the outcome.
  */
 function loadSampleModel() {
   if (state.domains.length) {
     const confirmed = window.confirm(
-      'Load the sample model? This replaces the current domains and relationships (Undo restores them).'
+      'Load the backend-template model? This replaces the current domains and relationships (Undo restores them).'
     );
     if (!confirmed) return;
   }
-  // JUM-547: the sample document crosses the same suite-import mapper as a
-  // file import — one set of versioning/compatibility rules for every entry
-  // point. The sample is the model slice only; the tab sections the mapper
-  // normalises are not applied here.
-  const result = buildStateFromSuiteExport(buildSampleModelPayload(), state);
-  if (!result.ok) {
-    showStatus(suiteExportFailureMessage(result));
+  let applied = { ok: false, reason: 'invalid-document' };
+  withPersist(() => {
+    applied = applyBackendTemplateSeedToState();
+    if (applied.ok) render();
+  });
+  if (!applied.ok) {
+    showStatus(suiteExportFailureMessage(applied));
     return;
   }
-  const normalized = result.state;
-  withPersist(() => {
-    state.domains = normalized.domains;
-    state.relationships = normalized.relationships;
-    state.selectedDomainId = normalized.selectedDomainId;
-    state.selectedEntityId = normalized.selectedEntityId;
-    state.selectedRelationshipId = normalized.selectedRelationshipId;
-    state.view = normalized.view;
-    state.idCounter = normalized.idCounter;
-    recomputeIdCounter();
-    render();
-  });
+  scheduleDomainDesignerCanvasFrame();
   showStatus(
-    'Sample model loaded: the "Users" and "Tasks" domains (marked "sample" in the domain list) demonstrate '
-    + 'field-level relationships, per-entity RBAC, a message contract and OAS composition. It passes the export '
-    + 'gate — try "Validate Model", export it, then delete the sample and start your own model.',
+    'Backend-template model loaded from the live OpenAPI contracts (Users domain and Core architecture). '
+    + 'Edits persist in Cana; regenerating the seed file on app start does not overwrite this store.',
     'info'
   );
 }
@@ -3312,7 +3525,7 @@ function renderEmptyStates() {
   const modelEmpty = state.domains.length === 0;
   if (dom.domainDesignerEmptyState) dom.domainDesignerEmptyState.hidden = !modelEmpty;
   if (dom.serviceConfigEmptyState) dom.serviceConfigEmptyState.hidden = !modelEmpty;
-  if (dom.architectureEmptyState) dom.architectureEmptyState.hidden = !modelEmpty;
+  // Architecture empty state is owned by ArchitectureTab / ArchitectureEmptyState.
 }
 
 // The single render pass, in the monolith's exact order. The pre-refactor
@@ -3363,7 +3576,7 @@ function render() {
   generateCodePreview();
   renderCodeWorkspace({ skipEditorSync: isCodeWorkspaceEditorActive() });
   generateExamplesPreview();
-  architectureCanvas.renderArchitecture();
+  smApp.getTab('architecture')?.render?.();
   dom.undoBtn.disabled = history.past.length === 0;
   dom.redoBtn.disabled = history.future.length === 0;
   // Optional throughout: a returning visitor can be served a cached shell from
@@ -4121,9 +4334,12 @@ function wireEvents() {
   // and from the Domain Designer's guided empty state (the first action).
   if (dom.loadSampleBtn) dom.loadSampleBtn.onclick = () => loadSampleModel();
   if (dom.loadSampleEmptyBtn) dom.loadSampleEmptyBtn.onclick = () => loadSampleModel();
+  // Architecture empty CTAs are owned by ArchitectureEmptyState (ArchitectureTab).
 
   dom.resetCanvasBtn.onclick = () => {
-    if (!window.confirm('Reset canvas? All domains and relationships will be cleared.')) return;
+    if (!window.confirm(
+      'Reset canvas to the backend-template Users seed? Current domains and relationships will be replaced.'
+    )) return;
     withPersist(() => {
       seed();
       render();
@@ -4434,7 +4650,15 @@ async function boot() {
   // the single region. 'unavailable' likewise stays with the probe-time
   // states above; 'ok'/'empty' announce nothing.
   const loadOutcome = await loadState();
-  if (repairLegacySampleDiagramLayout()) saveState();
+  // Layout repairs mutate in-memory state. Persist only when the store can
+  // accept a write — `unavailable` sessions stay memory-only (JUM-484).
+  const canPersistRepair = loadOutcome.status !== 'unavailable';
+  if (canPersistRepair && repairLegacySampleDiagramLayout()) {
+    Promise.resolve(saveState()).catch(() => undefined);
+  }
+  if (canPersistRepair && repairCrowdedBackendSeedLayout()) {
+    Promise.resolve(saveState()).catch(() => undefined);
+  }
   if ((loadOutcome.status === 'lost' || loadOutcome.status === 'recovered') && !probeDeclaredDataLoss) {
     const announcement = describeLoadTimeDataLoss({
       reason: loadOutcome.reason,
@@ -4442,8 +4666,13 @@ async function boot() {
     });
     showStatus(announcement.message, announcement.severity);
   }
+  // URL hash wins over persisted tab so live preview can pin Architecture via `#architecture`.
+  tabs.applyHashTab({ persist: true });
   wireEvents();
   render();
+  // Domain Designer must open with domains (or the saved selection) framed —
+  // render alone leaves Camera3 at origin/zoom defaults until Fit is pressed.
+  scheduleDomainDesignerCanvasFrame();
   installControlHelp(document);
 
   // JUM-485: multi-tab sync starts only after the initial load — the boot

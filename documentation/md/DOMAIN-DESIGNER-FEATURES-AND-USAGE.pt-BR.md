@@ -83,18 +83,20 @@ Esses campos são persistidos no estado do designer e exportados por meio de flu
 
 A aba **Architecture** fica ao lado do Domain Designer. Um modelo novo começa como um serviço **Core** (monolito) que hospeda todos os domínios. O Core deve manter o domínio **Users** (identidade e autenticação). Serviços extras são caixas no canvas:
 
-- Criar, renomear, definir kind (`core` | `domain`), URL e id opcional de deploy target.
-- Arrastar um domínio para um serviço, ou atribuir pelo inspector (caminho de teclado).
-- Desenhar links com protocolo `rest`, `grpc`, `websocket` ou `message`.
-- Badges de validação: exatamente um Core; Users no Core; cada domínio em um serviço; `x-relation` cruzando fronteira de serviço gera aviso.
-- Mini-mapa, undo/redo e **Export image**.
+- Abas do rail direito são superfícies browse/act (não formulários densos): **Services**, **Domains**, **Service**, **Links**, **Validate** — cada linha com título + meta + ação.
+- Criar e renomear split-outs; papel Core é fixo (badge). Nome / URL / deploy salvam no blur — sem botão Save.
+- Criar domínio no serviço selecionado (**Service** → **+ Domain**). **Pull from Domains** abre o inventário quando há domínios noutros hosts.
+- Mover domínios arrastando para um card, ou **Move** na lista Domains para o serviço selecionado.
+- Desenhar links com **Connect** na toolbar ou **Connect services** em Links. Painel Links = inventário + Remove.
+- **Validate** ordena erros primeiro; **Jump** abre o serviço/domínio. Badges nas abas mostram contagens.
+- Mini-mapa, undo/redo e export **List PNG**.
 
 Como usar:
 
 1. Abra Architecture.
-2. **Add Service** para separar o monolito.
-3. Solte ou **Move here** um domínio que não seja Users no novo serviço.
-4. **Add Link** entre Core e o serviço de domínio.
+2. **+ Service** para separar o monolito.
+3. Selecione o novo serviço → **+ Domain**, ou arraste/clique-mova um domínio em **Domains** (Users permanece no Core pela validação).
+4. **Connect** → card origem → destino.
 
 ## 3.2) Export OAS por serviço e Swagger (JUM-817, JUM-818)
 

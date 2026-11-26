@@ -15,119 +15,284 @@
        apps/jumentix-website/components/design-system/tokens.css. -->
   <link rel="stylesheet" href="./tokens.css" />
   <link rel="stylesheet" href="./vendor/jumentix-ui/jumentix-ui.css?v=0.9.148" />
-  <link rel="stylesheet" href="./styles.css?v=0.9.148" />
+  <link rel="stylesheet" href="./styles.css?v=0.9.169" />
 </head>
 <body>
-  <div class="service-management-shell">
+  <div class="service-management-shell" data-main-nav="open">
     <!-- Skip link (JUM-488): first tab stop, jumps to the canvas workspace. -->
     <a class="skip-link" href="#workspace-main">Skip to canvas workspace</a>
-    <header class="service-management-header">
-      <h1>Service Management</h1>
-      <p>Design domains, communication interfaces, runtime settings, and deployment targets.</p>
-    </header>
 
-    <!-- Tab shell (JUM-488): WAI-ARIA tablist semantics. Roving tabindex and
-         arrow-key/Home/End navigation are managed by src/ui/tabs.js. -->
-    <nav class="tab-nav" role="tablist" aria-label="Service management tabs">
-      <button id="tab-architecture-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-architecture" tabindex="-1">Architecture</button>
-      <button id="tab-domain-designer-btn" class="tab-btn active" type="button" role="tab" aria-selected="true" aria-controls="tab-domain-designer" tabindex="0">Domain Designer</button>
-      <button id="tab-interface-designer-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-interface-designer" tabindex="-1">Communication Interface Designer</button>
-      <button id="tab-service-config-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-service-config" tabindex="-1">Service Configuration</button>
-      <button id="tab-deploy-management-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-deploy-management" tabindex="-1">Deploy Management</button>
-      <button id="tab-monitoring-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" tabindex="-1">Monitoring</button>
-      <button id="tab-openapi-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-openapi" tabindex="-1">OpenAPI</button>
-      <button id="tab-code-workspace-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-code-workspace" tabindex="-1">Code Workspace</button>
-    </nav>
+    <!-- Main nav: icon rail — hamburger expands/collapses labels (no top bar). -->
+    <aside class="main-nav" id="main-nav" aria-label="Service Management">
+      <div class="main-nav-chrome">
+        <button
+          id="main-nav-toggle"
+          class="main-nav-toggle jx-btn"
+          type="button"
+          aria-expanded="true"
+          aria-controls="main-tab-nav"
+          title="Collapse menu labels"
+        >
+          <span class="main-nav-toggle-icon" aria-hidden="true"></span>
+          <span class="main-nav-toggle-label">Menu</span>
+        </button>
+      </div>
+      <nav id="main-tab-nav" class="tab-nav tab-nav-vertical" role="tablist" aria-label="Service management tabs">
+        <button id="tab-architecture-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-architecture" tabindex="-1" title="Architecture" aria-label="Architecture">
+          <span class="tab-btn-icon" aria-hidden="true">Ar</span>
+          <span class="tab-btn-label">Architecture</span>
+        </button>
+        <button id="tab-domain-designer-btn" class="tab-btn active" type="button" role="tab" aria-selected="true" aria-controls="tab-domain-designer" tabindex="0" title="Domain Designer" aria-label="Domain Designer">
+          <span class="tab-btn-icon" aria-hidden="true">Do</span>
+          <span class="tab-btn-label">Domains</span>
+        </button>
+        <button id="tab-interface-designer-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-interface-designer" tabindex="-1" title="Communication Interface Designer" aria-label="Communication Interface Designer">
+          <span class="tab-btn-icon" aria-hidden="true">Ci</span>
+          <span class="tab-btn-label">Interfaces</span>
+        </button>
+        <button id="tab-service-config-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-service-config" tabindex="-1" title="Service Configuration" aria-label="Service Configuration">
+          <span class="tab-btn-icon" aria-hidden="true">Sc</span>
+          <span class="tab-btn-label">Service</span>
+        </button>
+        <button id="tab-deploy-management-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-deploy-management" tabindex="-1" title="Deploy Management" aria-label="Deploy Management">
+          <span class="tab-btn-icon" aria-hidden="true">Dm</span>
+          <span class="tab-btn-label">Deploy</span>
+        </button>
+        <button id="tab-monitoring-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-monitoring" tabindex="-1" title="Monitoring" aria-label="Monitoring">
+          <span class="tab-btn-icon" aria-hidden="true">Mo</span>
+          <span class="tab-btn-label">Monitor</span>
+        </button>
+        <button id="tab-openapi-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-openapi" tabindex="-1" title="OpenAPI" aria-label="OpenAPI">
+          <span class="tab-btn-icon" aria-hidden="true">Oa</span>
+          <span class="tab-btn-label">OpenAPI</span>
+        </button>
+        <button id="tab-code-workspace-btn" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="tab-code-workspace" tabindex="-1" title="Code Workspace" aria-label="Code Workspace">
+          <span class="tab-btn-icon" aria-hidden="true">Cw</span>
+          <span class="tab-btn-label">Code</span>
+        </button>
+      </nav>
+    </aside>
 
+    <div class="service-management-stage">
     <!-- Non-blocking status surface (JUM-543): validation messages and API
          results are announced here instead of blocking window.alert dialogs. -->
     <div id="status-region" class="status-region" role="status" aria-live="polite" hidden></div>
 
     <section id="tab-architecture" class="tab-section" role="tabpanel" aria-labelledby="tab-architecture-btn">
       <div class="app-shell architecture-shell">
-        <aside class="sidebar open" aria-label="Architecture panels">
-          <header class="sidebar-header">
-            <h2>Architecture</h2>
-            <p>Services, domain assignment and links</p>
-          </header>
-          <section class="panel">
-            <h2>Services</h2>
-            <div class="row">
-              <input id="architecture-service-name-input" type="text" placeholder="Service name" aria-label="Service name" />
-              <button id="architecture-add-service-btn" type="button">Add Service</button>
+        <main class="workspace canvas-workspace" aria-label="Architecture canvas">
+          <!-- Starts visible until domains exist (same first-run contract as Domain Designer). -->
+          <aside class="empty-state" id="architecture-empty-state" aria-label="Architecture first-run guidance">
+            <h2>Architecture needs a domain model</h2>
+            <p>
+              This tab places Domain Designer domains onto deployable services and draws how those
+              services talk (REST, gRPC, WebSocket, message). With no domains yet there is nothing to host.
+            </p>
+            <p><strong>First action:</strong> load the backend-template model, or open Domain Designer and create domains.</p>
+            <div class="jx-cell-toolbar" role="toolbar" aria-label="Architecture first-run actions">
+              <button id="architecture-empty-load-sample-btn" class="jx-btn jx-btn-primary" type="button">Load Backend Model</button>
+              <button id="architecture-empty-open-domain-btn" class="jx-btn" type="button">Open Domain Designer</button>
             </div>
-            <ul id="architecture-service-list" class="list"></ul>
-          </section>
-          <section class="panel">
-            <h2>Domain palette</h2>
-            <p class="hint">Drag a domain onto a service, or assign it in the inspector.</p>
-            <ul id="architecture-domain-palette" class="list architecture-palette"></ul>
-          </section>
-          <section class="panel">
-            <h2>Inspector</h2>
-            <label for="architecture-inspect-name">Name</label>
-            <input id="architecture-inspect-name" type="text" aria-label="Selected service name" />
-            <label for="architecture-inspect-kind">Kind</label>
-            <select id="architecture-inspect-kind" aria-label="Selected service kind">
-              <option value="core">core</option>
-              <option value="domain">domain</option>
-            </select>
-            <label for="architecture-inspect-url">URL</label>
-            <input id="architecture-inspect-url" type="text" aria-label="Selected service URL" />
-            <label for="architecture-inspect-deploy">Deploy target id</label>
-            <input id="architecture-inspect-deploy" type="text" aria-label="Selected service deploy target" />
-            <label for="architecture-inspect-domain">Move domain</label>
-            <div class="row">
-              <select id="architecture-inspect-domain" aria-label="Domain to move"></select>
-              <button id="architecture-move-domain-btn" type="button">Move here</button>
-            </div>
-            <button id="architecture-save-service-btn" type="button">Save Service</button>
-            <button id="architecture-delete-service-btn" type="button">Delete Service</button>
-            <h3>Link</h3>
-            <div class="row">
-              <select id="architecture-link-from" aria-label="Link from service"></select>
-              <select id="architecture-link-to" aria-label="Link to service"></select>
-            </div>
-            <div class="row">
-              <select id="architecture-link-protocol" aria-label="Link protocol">
-                <option value="rest">rest</option>
-                <option value="grpc">grpc</option>
-                <option value="websocket">websocket</option>
-                <option value="message">message</option>
-              </select>
-              <button id="architecture-add-link-btn" type="button">Add Link</button>
-            </div>
-            <ul id="architecture-link-list" class="list"></ul>
-          </section>
-          <section class="panel">
-            <h2>Validation</h2>
-            <ul id="architecture-issue-list" class="list"></ul>
-          </section>
-        </aside>
-        <main class="canvas-workspace" aria-label="Architecture canvas">
-          <aside class="empty-state" id="architecture-empty-state" hidden aria-label="Architecture first-run guidance">
-            <h3>No architecture yet</h3>
-            <p>The designer starts as one Core service (monolith) holding every domain. Split services from the palette, drop a domain onto a service, and draw links.</p>
-            <p>First action: press Add Service or load the sample model.</p>
+            <p class="hint">
+              Split with + Service, put domains on cards (+ Domain or drag), then Connect source → target.
+              Users stays on Core.
+            </p>
           </aside>
-          <div class="canvas-toolbar">
-            <button id="architecture-export-image-btn" type="button">Export image</button>
-          </div>
-          <div id="architecture-canvas" class="architecture-canvas"></div>
+          <aside class="architecture-coach" id="architecture-coach" hidden aria-label="Architecture next-step coach">
+            <p class="architecture-coach-title">Next steps</p>
+            <ol class="architecture-coach-steps">
+              <li>Add a split-out with <strong>+ Service</strong> (right rail or after selecting Core).</li>
+              <li>Select the new card → <strong>+ Domain</strong> on it, or drag a domain from <strong>Domains</strong>.</li>
+              <li><strong>Connect</strong> on the toolbar → click source card → target (protocol is beside Connect).</li>
+            </ol>
+            <button id="architecture-coach-dismiss-btn" class="jx-btn" type="button">Got it</button>
+          </aside>
+          <header class="workspace-header jx-cell-toolbar-host" aria-label="Architecture navigate">
+            <div class="jx-scope-chrome workspace-scope-chrome">
+              <button
+                id="architecture-toggle-sidebar-btn"
+                class="panel-toggle jx-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="architecture-sidebar"
+                title="Show panels (P)"
+              >Panels</button>
+              <p class="jx-scope-chrome-job">Navigate</p>
+              <p class="jx-scope-chrome-path" id="architecture-scope-path">Nothing selected</p>
+              <p id="architecture-connect-status" class="architecture-connect-status" role="status" aria-live="polite"></p>
+            </div>
+            <div class="jx-cell-toolbar workspace-toolbar-row" role="toolbar" aria-label="Architecture canvas actions">
+              <div class="workspace-toolbar-cluster" aria-label="Connect services">
+                <button id="architecture-connect-btn" class="jx-btn" type="button" aria-pressed="false" title="Click source service, then target (Esc cancels)">Connect</button>
+                <button id="architecture-cancel-connect-btn" class="jx-btn" type="button" hidden>Cancel</button>
+                <label class="jx-field jx-field-inline" for="architecture-link-protocol">Protocol</label>
+                <select id="architecture-link-protocol" class="jx-input" aria-label="Link protocol" title="Protocol for the next Connect or Add connection">
+                  <option value="rest">REST</option>
+                  <option value="grpc">gRPC</option>
+                  <option value="websocket">WebSocket</option>
+                  <option value="message">Message</option>
+                </select>
+              </div>
+              <span class="jx-cell-toolbar-spacer" aria-hidden="true"></span>
+              <div class="workspace-toolbar-cluster" aria-label="Export">
+                <button id="architecture-export-image-btn" class="jx-btn" type="button" title="Download a text inventory PNG of services and links (not a diagram screenshot)">List PNG</button>
+              </div>
+            </div>
+          </header>
+          <div id="architecture-canvas" class="architecture-canvas canvas" role="region" aria-label="Architecture service cards" tabindex="0"></div>
           <div id="architecture-mini-map" class="mini-map architecture-mini-map" aria-hidden="true"></div>
         </main>
+
+        <aside class="sidebar open" id="architecture-sidebar" aria-label="Architecture panels">
+          <div class="sidebar-panel-tabs" id="architecture-sidebar-tabs" role="tablist" aria-label="Architecture panels">
+            <button id="architecture-tab-services-btn" class="sidebar-panel-tab sidebar-accordion-toggle active" type="button" role="tab" aria-selected="true" aria-controls="architecture-group-services-body" data-architecture-tab="services" aria-label="Services panel">
+              <span class="sidebar-panel-tab-label">Services</span>
+              <span class="sidebar-panel-tab-context" id="architecture-tab-services-context">0</span>
+            </button>
+            <button id="architecture-tab-domains-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="architecture-group-domains-body" data-architecture-tab="domains" aria-label="Domains panel">
+              <span class="sidebar-panel-tab-label">Domains</span>
+              <span class="sidebar-panel-tab-context" id="architecture-tab-domains-context">0</span>
+            </button>
+            <button id="architecture-tab-selected-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="architecture-group-selected-body" data-architecture-tab="selected" aria-label="Selected service panel">
+              <span class="sidebar-panel-tab-label">Service</span>
+              <span class="sidebar-panel-tab-context" id="architecture-tab-selected-context">—</span>
+            </button>
+            <button id="architecture-tab-links-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="architecture-group-links-body" data-architecture-tab="links" aria-label="Service links panel">
+              <span class="sidebar-panel-tab-label">Links</span>
+              <span class="sidebar-panel-tab-context" id="architecture-tab-links-context">0</span>
+            </button>
+            <button id="architecture-tab-validate-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="architecture-group-validate-body" data-architecture-tab="validate" aria-label="Architecture validate panel">
+              <span class="sidebar-panel-tab-label">Validate</span>
+              <span class="sidebar-panel-tab-context" id="architecture-tab-validate-context">0</span>
+            </button>
+          </div>
+
+          <div class="sidebar-accordion-stack" id="architecture-accordion-stack">
+            <section class="sidebar-accordion-cell" data-architecture-group="services" data-accordion-expanded="true" id="architecture-group-services" role="tabpanel" aria-labelledby="architecture-tab-services-btn">
+              <div class="sidebar-accordion-body" id="architecture-group-services-body">
+                <header class="jx-scope-chrome" aria-label="Services scope">
+                  <p class="jx-scope-chrome-job">Services</p>
+                  <p class="jx-scope-chrome-path" id="architecture-services-hint">Core keeps Users · + Service splits out</p>
+                </header>
+                <div class="architecture-form architecture-create-form" aria-label="Create service">
+                  <div class="architecture-field">
+                    <label class="architecture-field-label" for="architecture-service-name-input">New split-out</label>
+                    <div class="architecture-field-row">
+                      <input id="architecture-service-name-input" class="jx-input" type="text" placeholder="e.g. Billing API" autocomplete="off" aria-describedby="architecture-service-name-error" />
+                      <button id="architecture-add-service-btn" class="jx-btn jx-btn-primary" type="button" title="Add a split-out service on the canvas">+ Service</button>
+                    </div>
+                    <p id="architecture-service-name-error" class="architecture-field-error" role="alert" hidden></p>
+                  </div>
+                </div>
+                <ul id="architecture-service-list" class="list architecture-rail-list" aria-label="Services"></ul>
+              </div>
+            </section>
+
+            <section class="sidebar-accordion-cell" data-architecture-group="domains" data-accordion-expanded="false" id="architecture-group-domains" role="tabpanel" aria-labelledby="architecture-tab-domains-btn" hidden>
+              <div class="sidebar-accordion-body" id="architecture-group-domains-body" hidden>
+                <header class="jx-scope-chrome" aria-label="Domains scope">
+                  <p class="jx-scope-chrome-job">Domains</p>
+                  <p class="jx-scope-chrome-path" id="architecture-domains-hint">Drag onto a card · Move pulls onto the selected service</p>
+                </header>
+                <ul id="architecture-domain-palette" class="list architecture-rail-list architecture-palette" aria-label="Domains and their host services"></ul>
+              </div>
+            </section>
+
+            <section class="sidebar-accordion-cell" data-architecture-group="selected" data-accordion-expanded="false" id="architecture-group-selected" role="tabpanel" aria-labelledby="architecture-tab-selected-btn" hidden>
+              <div class="sidebar-accordion-body" id="architecture-group-selected-body" hidden>
+                <header class="jx-scope-chrome" aria-label="Selected service scope">
+                  <p class="jx-scope-chrome-job">Service</p>
+                  <p class="jx-scope-chrome-path" id="architecture-inspect-hint">Select a service on the canvas</p>
+                </header>
+                <div id="architecture-inspect-empty" class="architecture-inspect-empty" hidden>
+                  <p class="architecture-rail-empty-title">Nothing selected</p>
+                  <p class="hint">Click a card on the canvas, or pick a row in Services.</p>
+                </div>
+                <div id="architecture-inspect-body" class="architecture-inspect-body architecture-form">
+                  <div class="architecture-inspect-identity">
+                    <div class="architecture-inspect-identity-head">
+                      <p id="architecture-inspect-kind-badge" class="architecture-kind-badge" aria-label="Service role">Core</p>
+                    </div>
+                    <div class="architecture-field">
+                      <label class="architecture-field-label" for="architecture-inspect-name">Name</label>
+                      <input id="architecture-inspect-name" class="jx-input" type="text" autocomplete="off" aria-describedby="architecture-inspect-name-error" />
+                      <p id="architecture-inspect-name-error" class="architecture-field-error" role="alert" hidden></p>
+                      <p class="architecture-field-hint">Saved when you leave the field or press Enter.</p>
+                    </div>
+                  </div>
+                  <details class="architecture-advanced" id="architecture-inspect-advanced">
+                    <summary>URL &amp; deploy</summary>
+                    <div class="architecture-field">
+                      <label class="architecture-field-label" for="architecture-inspect-url">Public URL</label>
+                      <input id="architecture-inspect-url" class="jx-input" type="url" inputmode="url" placeholder="https://api.example.com/v1" autocomplete="off" aria-describedby="architecture-inspect-url-error" />
+                      <p id="architecture-inspect-url-error" class="architecture-field-error" role="alert" hidden></p>
+                      <p class="architecture-field-hint">Written to OAS servers / x-services. Must be http(s).</p>
+                    </div>
+                    <div class="architecture-field">
+                      <label class="architecture-field-label" for="architecture-inspect-deploy">Deploy target id</label>
+                      <input id="architecture-inspect-deploy" class="jx-input" type="text" placeholder="Optional — from Deploy Management" autocomplete="off" aria-describedby="architecture-inspect-deploy-error" />
+                      <p id="architecture-inspect-deploy-error" class="architecture-field-error" role="alert" hidden></p>
+                    </div>
+                  </details>
+                  <div class="architecture-inspect-domains-head">
+                    <p class="jx-scope-section-label">Domains on this service</p>
+                    <button id="architecture-open-domains-btn" class="jx-btn jx-btn-ghost architecture-inline-action" type="button" hidden>Pull from Domains</button>
+                  </div>
+                  <ul id="architecture-service-domains" class="list architecture-rail-list architecture-service-domains" aria-label="Domains on selected service"></ul>
+                  <div class="architecture-form architecture-create-form" aria-label="Add domain on selected service">
+                    <div class="architecture-field">
+                      <label class="architecture-field-label" for="architecture-inspect-domain-name-input">New domain</label>
+                      <div class="architecture-field-row">
+                        <input id="architecture-inspect-domain-name-input" class="jx-input" type="text" placeholder="e.g. Billing" autocomplete="off" aria-describedby="architecture-inspect-domain-name-error" />
+                        <button id="architecture-inspect-add-domain-btn" class="jx-btn jx-btn-primary" type="button" title="Create a domain hosted on this service">+ Domain</button>
+                      </div>
+                      <p id="architecture-inspect-domain-name-error" class="architecture-field-error" role="alert" hidden></p>
+                    </div>
+                  </div>
+                  <p id="architecture-move-domain-hint" class="hint" hidden></p>
+                  <div class="architecture-inspect-actions" role="toolbar" aria-label="Service actions">
+                    <button id="architecture-delete-service-btn" class="jx-btn jx-btn-danger" type="button">Delete service</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="sidebar-accordion-cell" data-architecture-group="links" data-accordion-expanded="false" id="architecture-group-links" role="tabpanel" aria-labelledby="architecture-tab-links-btn" hidden>
+              <div class="sidebar-accordion-body" id="architecture-group-links-body" hidden>
+                <header class="jx-scope-chrome" aria-label="Links scope">
+                  <p class="jx-scope-chrome-job">Links</p>
+                  <p class="jx-scope-chrome-path" id="architecture-links-hint">Connect on the canvas · manage here</p>
+                </header>
+                <div class="jx-cell-toolbar architecture-create-bar" role="toolbar" aria-label="Start connect">
+                  <button id="architecture-links-connect-btn" class="jx-btn jx-btn-primary" type="button" title="Same as toolbar Connect: source card then target">Connect services</button>
+                </div>
+                <ul id="architecture-link-list" class="list architecture-rail-list" aria-label="Architecture links"></ul>
+              </div>
+            </section>
+
+            <section class="sidebar-accordion-cell" data-architecture-group="validate" data-accordion-expanded="false" id="architecture-group-validate" role="tabpanel" aria-labelledby="architecture-tab-validate-btn" hidden>
+              <div class="sidebar-accordion-body" id="architecture-group-validate-body" hidden>
+                <header class="jx-scope-chrome" aria-label="Validate scope">
+                  <p class="jx-scope-chrome-job">Validate</p>
+                  <p class="jx-scope-chrome-path" id="architecture-validate-hint">Errors first · click to jump</p>
+                </header>
+                <ul id="architecture-issue-list" class="list architecture-rail-list" aria-label="Architecture validation issues"></ul>
+              </div>
+            </section>
+          </div>
+        </aside>
       </div>
     </section>
 
     <section id="tab-domain-designer" class="tab-section active" role="tabpanel" aria-labelledby="tab-domain-designer-btn">
       <div class="app-shell">
-        <aside class="sidebar" id="designer-sidebar" aria-label="Domain Designer panels">
+        <aside class="sidebar open sidebar-accordion" id="designer-sidebar" aria-label="Domain Designer panels">
           <!--
             Rail natures (exclusive): Model | History | Validate | Export | Import
             Structure · Temporal · Assure · Emit · Ingest
           -->
           <div class="sidebar-panel-tabs" id="sidebar-panel-tabs" role="tablist" aria-label="Domain Designer panels">
-            <button id="sidebar-group-model-btn" class="sidebar-panel-tab sidebar-accordion-toggle" type="button" role="tab" aria-selected="false" aria-controls="sidebar-group-model-body" data-sidebar-tab="model">
+            <button id="sidebar-group-model-btn" class="sidebar-panel-tab sidebar-accordion-toggle active" type="button" role="tab" aria-selected="true" aria-controls="sidebar-group-model-body" data-sidebar-tab="model">
               <span class="sidebar-panel-tab-label">Model</span>
               <span class="sidebar-panel-tab-context sidebar-accordion-context" id="sidebar-group-model-context">0</span>
             </button>
@@ -147,8 +312,8 @@
 
           <div class="sidebar-accordion-stack" id="sidebar-accordion-stack">
 
-          <section class="sidebar-accordion-cell" data-sidebar-group="model" data-hierarchy-band="structure" data-hierarchy-depth="0" data-accordion-expanded="false" id="sidebar-group-model" role="tabpanel" aria-labelledby="sidebar-group-model-btn">
-            <div class="sidebar-accordion-body" id="sidebar-group-model-body" hidden>
+          <section class="sidebar-accordion-cell" data-sidebar-group="model" data-hierarchy-band="structure" data-hierarchy-depth="0" data-accordion-expanded="true" id="sidebar-group-model" role="tabpanel" aria-labelledby="sidebar-group-model-btn">
+            <div class="sidebar-accordion-body" id="sidebar-group-model-body">
             <div class="sidebar-shell" data-shell="model" data-shell-mode="catalog">
             <header class="jx-scope-chrome" aria-label="Model scope">
               <p class="jx-scope-chrome-job">Structure</p>
@@ -713,7 +878,7 @@
                 <button id="import-oas-btn" class="jx-btn" type="button">OAS 3.1</button>
                 <button id="import-package-btn" class="jx-btn" type="button">Package</button>
                 <span class="jx-cell-toolbar-spacer" aria-hidden="true"></span>
-                <button id="load-sample-btn" type="button" class="jx-btn jx-btn-primary">Sample</button>
+                <button id="load-sample-btn" type="button" class="jx-btn jx-btn-primary">Backend</button>
               </div>
               <input id="import-json-input" type="file" accept="application/json,.json" hidden aria-label="Import JSON" />
               <input id="import-oas-input" type="file" accept="application/json,.json" hidden aria-label="Import OAS 3.1" />
@@ -764,17 +929,18 @@
               canvas with pan, zoom, snap, mini-map and undo/redo.
             </p>
             <p>
-              First action: load the sample model — a small identity domain (Users and Organization,
-              the same resources <code>spec/1.0.0.yml</code> declares) that exercises relationships,
-              RBAC, a message contract and composition.               Or type a domain name in the Model panel
-              and press Domain to start from scratch.
+              First action: load the backend-template model — the live Users domain from
+              <code>spec/1.0.0.yml</code> (Document, Email, Address, Phone, User, Organization)
+              with Core architecture. Or type a domain name in the Model panel and press Domain
+              to start from scratch.
             </p>
-            <button id="domain-designer-empty-load-sample-btn" type="button">Load Sample Model</button>
+            <button id="domain-designer-empty-load-sample-btn" type="button">Load Backend Model</button>
             <p class="hint">
-              The sample is marked "sample" in the domain list and is safe to delete — it never mixes
-              with your work. Once you have a model, run "Validate model" in the Validate panel;
-              the export gate refuses exports while critical issues exist. Canvas controls are listed
-              under Import → Canvas legend (Space + drag to pan, Ctrl/Cmd + wheel to zoom).
+              A fresh browser profile seeds this model automatically when Cana is empty. Reloading
+              the app regenerates the seed file but does not overwrite your saved designer edits.
+              Once you have a model, run "Validate model" in the Validate panel; the export gate
+              refuses exports while critical issues exist. Canvas controls are listed under
+              Import → Canvas legend (Space + drag to pan, Ctrl/Cmd + wheel to zoom).
             </p>
           </aside>
           <header class="workspace-header jx-cell-toolbar-host" aria-label="Canvas navigate">
@@ -1404,6 +1570,7 @@
         </main>
       </div>
     </section>
+    </div><!-- .service-management-stage -->
   </div>
   <!-- Import map (JUM-484/JUM-493): Cana is the sole designer store; the bare
        `@jumentix/cana` specifier the store factory lazily imports resolves to
@@ -1421,7 +1588,7 @@
       }
     }
   </script>
-  <script type="module" src="./script.js?v=0.9.148"></script>
+  <script type="module" src="./script.js?v=0.9.169"></script>
   <!-- PWA shell registration (JUM-489). Kept out of script.js on purpose:
        the service worker owns installability and shell caching, orthogonal to
        the designer boot — this snippet never reorders load → wire → render.

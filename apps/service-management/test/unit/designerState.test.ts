@@ -141,6 +141,21 @@ describe('designer state core (JUM-468)', () => {
       expect(normalized.view.edgeStyle).toBe('curved');
       expect(normalized.view.modelCheckMinSeverity).toBe('info');
       expect(normalized.view.exportBlockCritical).toBe(true);
+      expect(normalized.view.backendSeedLayoutRev).toBe(0);
+    });
+
+    it('keeps backendSeedLayoutRev so seed packing does not re-run on every boot', () => {
+      expect.hasAssertions();
+      const normalized = normalizeStatePayload({
+        domains: [{
+          id: 'backend-domain-users',
+          name: 'Users',
+          entities: [{ id: 'entity-1', name: 'User', fields: [] }]
+        }],
+        view: { zoom: 1.2, backendSeedLayoutRev: 3 }
+      });
+      expect(normalized.view.backendSeedLayoutRev).toBe(3);
+      expect(normalized.view.zoom).toBe(1.2);
     });
 
     it('keeps focus canvas stage and non-data entity kinds (JUM-922)', () => {

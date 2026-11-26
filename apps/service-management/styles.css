@@ -22,6 +22,8 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
+  height: 100dvh;
+  overflow: hidden;
   font-family: var(--jtx-font-sans);
   font-size: 12px;
   line-height: 1.35;
@@ -30,17 +32,28 @@ body {
 }
 
 .service-management-shell {
+  --main-nav-width: 200px;
+  --main-nav-rail: 56px;
+  /* Pixel floor only — `min(100%, …)` inside grid track sizing is invalid and
+     drops the open-rail `grid-template-columns` declaration entirely. */
+  --jx-canvas-min: 360px;
   display: grid;
-  /* The last track is `minmax(0, 1fr)` so the tab sections cannot push the page
-     taller than the viewport: an `fr` track keeps an automatic minimum, and the
-     canvas's 2200px inner surface was setting that minimum all the way up the
-     chain. Everything below scrolls inside `.canvas`, which is what its
-     `overflow: auto` was always for. */
-  grid-template-rows: auto auto minmax(0, 1fr);
+  /* Col 1 = hamburger menu (current width). Col 2 = app stage fills the rest. */
+  grid-template-columns: var(--main-nav-width) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "main-nav stage";
   width: 100%;
   height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   scrollbar-color: #3a3e47 #0d0f12;
   scrollbar-width: thin;
+  transition: grid-template-columns 160ms ease;
+}
+
+.service-management-shell[data-main-nav="closed"] {
+  --main-nav-width: var(--main-nav-rail);
 }
 
 .service-management-shell * {
@@ -81,6 +94,10 @@ body {
   left: var(--jtx-space-3);
   top: -48px;
   z-index: 40;
+  /* Overlay the stage cell — never steal the menu column. */
+  grid-area: stage;
+  justify-self: start;
+  align-self: start;
   padding: var(--jtx-space-2) var(--jtx-space-3);
   border: 1px solid var(--jtx-line);
   border-radius: var(--jtx-radius-sm);
@@ -97,47 +114,197 @@ body {
   outline-offset: 2px;
 }
 
-.service-management-header {
-  padding: var(--jtx-space-3);
-  border-bottom: 1px solid var(--jtx-line);
-  background: var(--jtx-surface);
+.main-nav {
+  grid-area: main-nav;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  padding: 12px 10px;
+  border-right: 1px solid var(--jtx-line);
+  background: var(--jtx-surface-subtle);
+  overflow: hidden;
+  z-index: 20;
 }
 
-.service-management-header h1 {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.15;
-  letter-spacing: 0;
+.main-nav-chrome {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--jtx-line, #272a31) 80%, transparent);
 }
 
-.service-management-header p {
-  margin: 3px 0 0;
-  color: var(--jtx-ink-muted);
-  font-size: 11px;
-  line-height: 1.35;
+.main-nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  justify-content: flex-start;
+  border-radius: 10px;
+}
+
+.main-nav-toggle-icon {
+  display: block;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 12px;
+  background:
+    linear-gradient(currentColor, currentColor) 0 0 / 100% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 5px / 100% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 10px / 100% 2px no-repeat;
+}
+
+.main-nav-toggle-label {
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.service-management-shell[data-main-nav="closed"] .main-nav {
+  padding: 8px 6px;
+  align-items: stretch;
+}
+
+.service-management-shell[data-main-nav="closed"] .main-nav-toggle {
+  justify-content: center;
+  padding: 8px;
+}
+
+.service-management-shell[data-main-nav="closed"] .main-nav-toggle-label,
+.service-management-shell[data-main-nav="closed"] .tab-btn-label {
+  display: none;
+}
+
+/* Help "?" chips are title/aria only in the main menu — icons are noise. */
+.main-nav .control-help-btn,
+.main-nav .control-help-description {
+  display: none !important;
+}
+
+.service-management-stage {
+  grid-area: stage;
+  position: relative;
+  display: grid;
+  /* Status on row 1; every tab panel stacks on row 2 so the active one fills. */
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.service-management-stage > .status-region {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.service-management-stage > .tab-section {
+  grid-row: 2;
+  grid-column: 1;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
 .tab-nav {
   position: relative;
-  z-index: 20;
   display: flex;
-  gap: var(--jtx-space-2);
-  align-items: center;
-  padding: var(--jtx-space-2) var(--jtx-space-3);
-  border-bottom: 1px solid var(--jtx-line);
-  background: var(--jtx-surface-subtle);
-  overflow-x: auto;
+  flex-direction: column;
+  gap: 4px;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 2px 0 0;
+  border: 0;
+  background: transparent;
+  overflow-x: hidden;
+  overflow-y: auto;
   scrollbar-width: thin;
 }
 
 .tab-btn {
-  min-height: 29px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  width: 100%;
   flex: 0 0 auto;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: nowrap;
+  line-height: 1.25;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #a8b0bd;
+  box-shadow: none;
+}
+
+.tab-btn-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #c5ccd8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tab-btn-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.tab-btn:hover {
+  border-color: color-mix(in srgb, #f05a28 35%, transparent);
+  background: color-mix(in srgb, #f05a28 8%, #14161b);
+  color: #fff3ed;
 }
 
 .tab-btn.active {
-  border-color: var(--jtx-blue-500);
-  background: var(--jtx-blue-50);
+  border-color: color-mix(in srgb, #f05a28 45%, #2a2e36);
+  background: color-mix(in srgb, #f05a28 14%, #171017);
+  color: #fff3ed;
+  box-shadow: inset 3px 0 0 #f05a28;
+}
+
+.tab-btn.active .tab-btn-icon {
+  background: rgba(240, 90, 40, 0.28);
+  color: #fff3ed;
+}
+
+.service-management-shell[data-main-nav="closed"] .tab-btn {
+  justify-content: center;
+  padding: 8px;
+  gap: 0;
+  box-shadow: none;
+}
+
+.service-management-shell[data-main-nav="closed"] .tab-btn.active {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f05a28 55%, transparent);
 }
 
 .tab-section {
@@ -2943,11 +3110,24 @@ body {
   background: #08090b;
 }
 
-.service-management-shell .service-management-header,
+.service-management-shell .main-nav,
 .service-management-shell .tab-nav,
+.service-management-shell .service-management-stage,
 .service-management-shell .tab-section {
   border-color: #24262b;
   background: #08090b;
+}
+
+.service-management-shell .main-nav-toggle {
+  border-color: #30333b;
+  background: #17191e;
+  color: #d8dee8;
+}
+
+.service-management-shell .main-nav-toggle:hover {
+  border-color: #f05a28;
+  background: #211a17;
+  color: #fff3ed;
 }
 
 .service-management-shell .tab-body,
@@ -3015,24 +3195,11 @@ body {
   color: #fff3ed;
 }
 
-.service-management-shell:has(#tab-domain-designer.active) .service-management-header,
-.service-management-shell:has(#tab-domain-designer.active) .tab-nav {
+.service-management-shell:has(#tab-domain-designer.active) .main-nav {
   border-color: #24262b;
   background:
     radial-gradient(circle at 24% 0%, rgba(54, 91, 132, 0.22), transparent 34%),
-    linear-gradient(90deg, #171017 0%, #0d1117 52%, #1f1218 100%);
-}
-
-.service-management-shell:has(#tab-domain-designer.active) .service-management-header {
-  display: none;
-}
-
-.service-management-shell:has(#tab-domain-designer.active) .service-management-header h1 {
-  color: #f5f7fb;
-}
-
-.service-management-shell:has(#tab-domain-designer.active) .service-management-header p {
-  color: #98a3b3;
+    linear-gradient(180deg, #171017 0%, #0d1117 52%, #1f1218 100%);
 }
 
 .service-management-shell:has(#tab-domain-designer.active) .tab-btn {
@@ -3052,6 +3219,7 @@ body {
    Rail width is fluid (`--jx-rail-width`) so large monitors give the
    inspector room for complex domain/entity forms without starving canvas. */
 #tab-domain-designer .app-shell {
+  position: relative;
   grid-template-columns: minmax(0, 1fr) 0;
   width: 100%;
   height: 100%;
@@ -3059,7 +3227,7 @@ body {
 }
 
 #tab-domain-designer .app-shell:has(.sidebar.open) {
-  grid-template-columns: minmax(0, 1fr) var(--jx-rail-width);
+  grid-template-columns: minmax(var(--jx-canvas-min, 360px), 1fr) minmax(0, var(--jx-rail-width));
 }
 
 #tab-domain-designer .workspace {
@@ -3245,8 +3413,9 @@ body {
   --jx-radius: var(--jtx-ui-radius, 5px);
   --jx-font: var(--jtx-ui-font, var(--jtx-font-sans));
   --jx-shadow-rail: -10px 0 28px rgba(0, 0, 0, 0.35);
-  /* Rail track grows with the monitor; canvas keeps the majority. */
-  --jx-rail-width: clamp(300px, 26vw, 480px);
+  /* Canvas keeps a floor; rail grows modestly so the diagram stays evident. */
+  --jx-canvas-min: 360px;
+  --jx-rail-width: clamp(280px, 24vw, 420px);
 }
 
 #tab-domain-designer .sidebar {
@@ -3271,34 +3440,48 @@ body {
   transform: none;
 }
 
-/* Monitor-aware rail — after token defaults so clamps win the cascade. */
+/* Monitor-aware rail — conservative caps so canvas never starves beside main-nav. */
 @media (max-width: 1100px) {
   #tab-domain-designer {
-    --jx-rail-width: clamp(280px, 42vw, 400px);
+    --jx-rail-width: clamp(260px, 38vw, 360px);
+  }
+
+  /* Overlay rail: canvas stays full-bleed; inspector floats on top. */
+  #tab-domain-designer .app-shell:has(.sidebar.open) {
+    grid-template-columns: minmax(0, 1fr) 0;
+  }
+
+  #tab-domain-designer .app-shell:has(.sidebar.open) .sidebar.open {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--jx-rail-width);
+    z-index: 30;
   }
 }
 
 @media (min-width: 1440px) {
   #tab-domain-designer {
-    --jx-rail-width: clamp(340px, 28vw, 520px);
+    --jx-rail-width: clamp(300px, 24vw, 440px);
   }
 }
 
 @media (min-width: 1680px) {
   #tab-domain-designer {
-    --jx-rail-width: clamp(380px, 30vw, 580px);
+    --jx-rail-width: clamp(320px, 24vw, 480px);
   }
 }
 
 @media (min-width: 1920px) {
   #tab-domain-designer {
-    --jx-rail-width: clamp(420px, 30vw, 640px);
+    --jx-rail-width: clamp(340px, 22vw, 520px);
   }
 }
 
 @media (min-width: 2560px) {
   #tab-domain-designer {
-    --jx-rail-width: clamp(480px, 26vw, 720px);
+    --jx-rail-width: clamp(380px, 20vw, 560px);
   }
 }
 
@@ -3895,7 +4078,11 @@ body {
 
 /* Rail refinement: help "?" affordances are title/aria only — icons are noise. */
 #tab-domain-designer #designer-sidebar .control-help-btn,
-#tab-domain-designer #designer-sidebar .control-help-description {
+#tab-domain-designer #designer-sidebar .control-help-description,
+#tab-architecture #architecture-sidebar .control-help-btn,
+#tab-architecture #architecture-sidebar .control-help-description,
+#tab-architecture .architecture-form .control-help-btn,
+#tab-architecture .architecture-form .control-help-description {
   display: none !important;
 }
 
@@ -6298,14 +6485,6 @@ body {
 }
 
 @media (max-width: 900px) {
-  .service-management-header {
-    padding: var(--jtx-space-2) var(--jtx-space-3);
-  }
-
-  .service-management-header p {
-    display: none;
-  }
-
   .sidebar {
     width: min(88vw, 360px);
   }
@@ -6393,9 +6572,23 @@ body {
 }
 
 @media (max-width: 520px) {
-  .tab-nav {
-    gap: 4px;
-    padding: 6px;
+  .service-management-shell {
+    --main-nav-width: min(78vw, 260px);
+    --main-nav-rail: 44px;
+  }
+
+  .service-management-shell[data-main-nav="open"] {
+    grid-template-columns: var(--main-nav-rail) minmax(0, 1fr);
+  }
+
+  .service-management-shell[data-main-nav="open"] .main-nav {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--main-nav-width);
+    z-index: 35;
+    box-shadow: 12px 0 28px rgba(0, 0, 0, 0.45);
   }
 
   .tab-btn,
@@ -6420,31 +6613,720 @@ body {
   }
 }
 
-/* Same token gap for the sidebar and the workspace that anchors the mini-map
-   overlay (JUM-905). */
-.architecture-shell .sidebar {
-  border-color: #272a31;
-  background: rgba(18, 19, 23, 0.97);
+/* Architecture mirrors Domain Designer: canvas left-first, exclusive right rail. */
+#tab-architecture {
+  /* Same rail token as Domain Designer — without it `var(--jx-rail-width)` is
+     invalid and the open-shell rule drops, leaving the legacy left-rail grid. */
+  --jx-canvas-min: 360px;
+  --jx-rail-width: clamp(280px, 24vw, 420px);
+  --jx-line: #272a31;
+  --jx-surface: rgba(18, 19, 23, 0.97);
+  --jx-ink: #d8dee8;
+  --jx-shadow-rail: -10px 0 28px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 1100px) {
+  #tab-architecture {
+    --jx-rail-width: clamp(260px, 38vw, 360px);
+  }
+
+  #tab-architecture .architecture-shell.architecture-rail-open,
+  #tab-architecture .architecture-shell:has(.sidebar.open) {
+    grid-template-columns: minmax(0, 1fr) 0;
+  }
+
+  #tab-architecture .architecture-shell.architecture-rail-open .sidebar.open,
+  #tab-architecture .architecture-shell:has(.sidebar.open) .sidebar.open {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--jx-rail-width);
+    z-index: 30;
+  }
+}
+
+@media (min-width: 1440px) {
+  #tab-architecture {
+    --jx-rail-width: clamp(300px, 24vw, 440px);
+  }
+}
+
+@media (min-width: 1680px) {
+  #tab-architecture {
+    --jx-rail-width: clamp(320px, 24vw, 480px);
+  }
+}
+
+@media (min-width: 1920px) {
+  #tab-architecture {
+    --jx-rail-width: clamp(340px, 22vw, 520px);
+  }
+}
+
+@media (min-width: 2560px) {
+  #tab-architecture {
+    --jx-rail-width: clamp(380px, 20vw, 560px);
+  }
+}
+
+#tab-architecture .architecture-shell {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+#tab-architecture .architecture-shell.architecture-rail-open,
+#tab-architecture .architecture-shell:has(.sidebar.open) {
+  grid-template-columns: minmax(var(--jx-canvas-min), 1fr) minmax(0, var(--jx-rail-width));
+}
+
+#tab-architecture .workspace {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 42px minmax(0, 1fr);
+  background: var(--jx-surface-canvas, #070707);
+}
+
+#tab-architecture .workspace-header {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  height: 42px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--jx-line-soft, #272a31);
+  border-color: var(--jx-line-soft, #272a31);
+  background: color-mix(in srgb, var(--jx-surface-canvas, #070707) 88%, #000);
+  color: var(--jx-ink-muted, #9aa3b2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+#tab-architecture .sidebar {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border-right: 0;
+  border-left: 1px solid var(--jx-line);
+  border-color: var(--jx-line);
+  background: var(--jx-surface);
+  color: var(--jx-ink);
+  box-shadow: var(--jx-shadow-rail);
+  overflow: hidden;
+  transform: translateX(12px);
+  visibility: hidden;
+}
+
+#tab-architecture .sidebar.open {
+  overflow: auto;
+  transform: none;
+  visibility: visible;
+  transition: transform 140ms ease, visibility 0s;
+}
+
+#tab-architecture .sidebar-panel-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid #272a31;
+  background: #0e1014;
+}
+
+#tab-architecture .sidebar-panel-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #8b95a8;
+  padding: 6px 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+}
+
+#tab-architecture .sidebar-panel-tab:hover {
+  border-color: color-mix(in srgb, #f05a28 30%, transparent);
+  background: color-mix(in srgb, #f05a28 8%, #15181f);
+  color: #e8edf5;
+}
+
+#tab-architecture .sidebar-panel-tab.active,
+#tab-architecture .sidebar-panel-tab[aria-selected="true"] {
+  border-color: color-mix(in srgb, #f05a28 45%, #2a2e36);
+  background: color-mix(in srgb, #f05a28 14%, #171017);
+  color: #fff3ed;
+  box-shadow: inset 0 -2px 0 #f05a28;
+}
+
+#tab-architecture .sidebar-panel-tab-label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#tab-architecture .sidebar-panel-tab-context {
+  display: block;
+  margin: 0;
+  opacity: 0.75;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+#tab-architecture .workspace-header .jx-scope-chrome {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px 10px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+#tab-architecture .workspace-header .workspace-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+#tab-architecture .jx-scope-chrome {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: baseline;
+}
+
+#tab-architecture .jx-scope-chrome-job {
+  margin: 0;
+  color: #f05a28;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#tab-architecture .jx-scope-chrome-path {
+  margin: 0;
   color: #d8dee8;
+  font-weight: 600;
 }
 
-.architecture-shell .canvas-workspace {
+#tab-architecture .jx-field {
+  display: block;
+  margin: 10px 0 4px;
+  color: #9aa3b2;
+  font-size: 0.8rem;
+}
+
+#tab-architecture .architecture-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+#tab-architecture .architecture-create-form {
+  padding: 10px;
+  border: 1px solid #2a2e36;
+  border-radius: 8px;
+  background: #12151b;
+}
+
+#tab-architecture .architecture-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+}
+
+#tab-architecture .architecture-field-label {
+  margin: 0;
+  color: #9aa3b2;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+#tab-architecture .architecture-field-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+
+#tab-architecture .architecture-field-row > .jx-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#tab-architecture .architecture-field-row > .jx-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#tab-architecture .architecture-field-hint {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+#tab-architecture .architecture-field-error {
+  margin: 0;
+  color: #fca5a5;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+#tab-architecture .architecture-field-error[hidden] {
+  display: none;
+}
+
+#tab-architecture .architecture-advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 4px 0 12px;
+  border: 1px solid #272a31;
+  border-radius: 8px;
+  padding: 0 10px 10px;
+  background: #121317;
+}
+
+#tab-architecture .architecture-advanced > summary {
+  cursor: pointer;
+  color: #9aa3b2;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 8px 0 4px;
+  list-style: none;
+}
+
+#tab-architecture .architecture-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+#tab-architecture .architecture-advanced > summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  color: #f05a28;
+}
+
+#tab-architecture .architecture-advanced[open] > summary::before {
+  content: '▾';
+}
+
+#tab-architecture .architecture-inspect-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #272a31;
+}
+
+#tab-architecture .jx-section-title {
+  margin: 16px 0 8px;
+  font-size: 0.85rem;
+}
+
+#tab-architecture .jx-input,
+#tab-architecture .jx-btn {
+  min-height: 32px;
+  border: 1px solid var(--jx-line-strong, #3a3e47);
+  border-radius: var(--jx-radius, 6px);
+  background: var(--jx-surface-raised, #1a1d24);
+  color: var(--jx-ink, #d8dee8);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  padding: 6px 10px;
+  box-sizing: border-box;
+}
+
+#tab-architecture .jx-input::placeholder {
+  color: #6b7280;
+}
+
+#tab-architecture .jx-input:hover {
+  border-color: #4b5563;
+}
+
+#tab-architecture .jx-input:focus {
+  outline: none;
+  border-color: #f05a28;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #f05a28 28%, transparent);
+}
+
+#tab-architecture .jx-input.is-invalid,
+#tab-architecture .jx-input[aria-invalid="true"] {
+  border-color: #f87171;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #f87171 25%, transparent);
+}
+
+#tab-architecture .jx-input.is-valid {
+  border-color: color-mix(in srgb, #4ade80 55%, #3a3e47);
+}
+
+#tab-architecture .jx-btn-primary {
+  border-color: color-mix(in srgb, #f05a28 55%, #3a3e47);
+  background: color-mix(in srgb, #f05a28 22%, #1a1d24);
+  color: #fff3ed;
+}
+
+#tab-architecture .jx-btn-primary:hover {
+  background: color-mix(in srgb, #f05a28 32%, #1a1d24);
+}
+
+#tab-architecture .jx-btn-danger {
+  border-color: color-mix(in srgb, #f87171 45%, #3a3e47);
+  color: #fecaca;
+}
+
+#tab-architecture .jx-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#tab-architecture .workspace-header .architecture-connect-status {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#tab-architecture .architecture-connect-status:empty {
+  display: none;
+}
+
+#tab-architecture .architecture-connect-status:not(:empty) {
+  margin: 0;
+  color: #fbbf24;
+  font-size: 0.8rem;
+}
+
+#tab-architecture .architecture-link-form-status:empty {
+  display: none;
+}
+
+#tab-architecture .architecture-link-form-status:not(:empty) {
+  margin: 8px 0 0;
+  color: #fbbf24;
+  font-size: 0.8rem;
+}
+
+#tab-architecture .jx-field-inline {
+  display: inline;
+  margin: 0 4px 0 8px;
+  color: #9aa3b2;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+#tab-architecture .jx-scope-section-label {
+  margin: 14px 0 6px;
+  color: #9aa3b2;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#tab-architecture .architecture-coach {
+  position: absolute;
+  z-index: 20;
+  top: 56px;
+  left: 16px;
+  max-width: min(420px, calc(100% - 32px));
+  padding: 12px 14px;
+  border: 1px solid #3a3e47;
+  border-radius: 8px;
+  background: rgba(18, 19, 23, 0.96);
+  color: #d8dee8;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+#tab-architecture .architecture-coach-title {
+  margin: 0 0 8px;
+  color: #f05a28;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#tab-architecture .architecture-coach-steps {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+#tab-architecture .architecture-create-bar {
+  margin: 0 0 10px;
+}
+
+#tab-architecture .architecture-rail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#tab-architecture .architecture-rail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #2a2e36;
+  border-radius: 8px;
+  background: #15181f;
+}
+
+#tab-architecture .architecture-rail-row.is-selected,
+#tab-architecture .architecture-service-row.is-selected {
+  border-color: color-mix(in srgb, #f05a28 55%, #2a2e36);
+  background: color-mix(in srgb, #f05a28 10%, #15181f);
+}
+
+#tab-architecture .architecture-palette-item.is-elsewhere {
+  border-color: color-mix(in srgb, #4ade80 40%, #2a2e36);
+  cursor: pointer;
+}
+
+#tab-architecture .architecture-palette-item.is-on-selected {
+  border-color: color-mix(in srgb, #f05a28 45%, #2a2e36);
+}
+
+#tab-architecture .architecture-rail-row-hit {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+#tab-architecture .architecture-rail-row-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+#tab-architecture .architecture-rail-row-title {
+  color: #e8edf5;
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#tab-architecture .architecture-rail-row-meta {
+  color: #8b95a8;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#tab-architecture .architecture-rail-row-action {
+  flex: 0 0 auto;
+  min-height: 26px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+#tab-architecture .architecture-rail-empty {
+  padding: 12px 10px;
+  border: 1px dashed #2a2e36;
+  border-radius: 8px;
+  color: #94a3b8;
+}
+
+#tab-architecture .architecture-rail-empty-title {
+  margin: 0 0 4px;
+  color: #d8dee8;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+#tab-architecture .architecture-rail-empty .hint,
+#tab-architecture .architecture-inspect-empty .hint {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+#tab-architecture .architecture-inspect-domains-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#tab-architecture .architecture-inspect-domains-head .jx-scope-section-label {
+  margin: 0;
+}
+
+#tab-architecture .jx-btn-ghost,
+#tab-architecture .architecture-inline-action {
+  border-color: transparent;
+  background: transparent;
+  color: #9aa3b2;
+  min-height: 24px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+}
+
+#tab-architecture .jx-btn-ghost:hover,
+#tab-architecture .architecture-inline-action:hover {
+  color: #f05a28;
+}
+
+#tab-architecture .architecture-kind-badge {
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #334155;
+  color: #e2e8f0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#tab-architecture .architecture-kind-badge-inline {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+#tab-architecture .architecture-kind-badge[data-kind="core"],
+#tab-architecture .architecture-kind-badge-inline.is-core {
+  background: #0c4a6e;
+  color: #bae6fd;
+}
+
+#tab-architecture .architecture-protocol-badge {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+#tab-architecture .architecture-issue-badge {
+  display: inline-block;
+  width: fit-content;
+  margin: 0 0 2px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#tab-architecture .architecture-issue-badge-error {
+  background: color-mix(in srgb, #f87171 25%, #15181f);
+  color: #fca5a5;
+}
+
+#tab-architecture .architecture-issue-badge-warn {
+  background: color-mix(in srgb, #fbbf24 22%, #15181f);
+  color: #fcd34d;
+}
+
+#tab-architecture .architecture-issue-badge-info {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+#tab-architecture .sidebar-panel-tab-context[data-severity="error"] {
+  color: #f87171;
+  opacity: 1;
+}
+
+#tab-architecture .sidebar-panel-tab-context[data-severity="warn"] {
+  color: #fbbf24;
+  opacity: 1;
+}
+
+#tab-architecture .sidebar-panel-tab-context[data-severity="ok"] {
+  color: #86efac;
+}
+
+#tab-architecture .workspace {
   position: relative;
 }
 
-/* The designer is dark by its own palette and never sets :root.dark, so the
-   --jtx-surface token resolves to white here; the architecture canvas uses the
-   Domain Designer's canvas surface and grid instead (JUM-905). */
-.architecture-shell .architecture-canvas {
+/* Canvas surface matches Domain Designer (JUM-905). */
+#tab-architecture .architecture-canvas {
   position: relative;
-  min-height: 640px;
-  background-color: #070707;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  background-color: var(--jx-surface-canvas, #070707);
   background-image:
     radial-gradient(circle, rgba(255, 255, 255, 0.075) 1px, transparent 1.2px),
     linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
   background-size: 12px 12px, 96px 96px, 96px 96px;
   overflow: auto;
+}
+
+#tab-architecture .architecture-canvas.is-connecting {
+  cursor: crosshair;
 }
 
 .architecture-service {
@@ -6461,20 +7343,69 @@ body {
   border-color: #38bdf8;
 }
 
+.architecture-service.is-selected {
+  outline: 2px solid #f05a28;
+  outline-offset: 2px;
+}
+
+.architecture-service.is-connect-from {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+.architecture-service.is-drop-target {
+  border-color: #4ade80;
+  background: #163226;
+}
+
 .architecture-domain-chip {
   margin: 4px 4px 0 0;
+  border: 1px solid #475569;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+.architecture-domain-chip-empty,
+.architecture-service-domain-empty,
+.architecture-link-empty {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.architecture-palette-item.is-free {
+  color: #86efac;
+}
+
+.architecture-service-domain-row,
+.architecture-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .architecture-links {
   position: absolute;
   inset: 0;
-  pointer-events: none;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }
 
-/* Overlay the canvas like the Domain Designer mini-map; a relative position
-   dropped it below the canvas as a white strip (JUM-905). */
+.architecture-link-hit {
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.architecture-link-label {
+  fill: #94a3b8;
+  font-size: 11px;
+  pointer-events: none;
+}
+
 .architecture-mini-map {
   width: 250px;
   height: 132px;
@@ -6489,6 +7420,14 @@ body {
   width: 8px;
   height: 8px;
   background: #38bdf8;
+}
+
+.architecture-mini-mark.is-selected {
+  background: #f05a28;
+}
+
+.architecture-issue-ok {
+  color: #86efac;
 }
 
 .architecture-issue-error {

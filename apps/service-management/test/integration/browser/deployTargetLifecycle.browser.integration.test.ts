@@ -41,11 +41,16 @@ const repoRoot = path.resolve(__dirname, '../../../../..');
 async function bootDeployTab(context: Awaited<ReturnType<Browser['newContext']>>, baseUrl: string) {
   const page = await context.newPage();
   await page.goto(baseUrl, { waitUntil: 'load' });
-  // JUM-548: first run is intentionally empty — load the sample model so the
-  // designer sits in a realistic populated state before switching tabs.
-  await clickInPanels(page, '#load-sample-btn');
+  // Fresh profiles seed the backend-template model; wait for it (or reload).
+  await page.waitForSelector('#domain-list li', { state: 'attached', timeout: 20000 }).catch(async () => {
+    page.once('dialog', (dialog) => {
+      dialog.accept().catch(() => {});
+    });
+    await clickInPanels(page, '#load-sample-btn');
+    await page.waitForSelector('#domain-list li', { state: 'attached', timeout: 20000 });
+  });
   await openDesignerPanels(page, '#domain-list');
-  await page.waitForSelector('#domain-list li', { timeout: 20000 });
+  await page.waitForSelector('#domain-list li', { state: 'attached', timeout: 20000 });
   await page.click('#tab-deploy-management-btn');
   await page.waitForSelector('#add-deploy-target-btn', { timeout: 20000 });
   return page;

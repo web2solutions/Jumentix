@@ -38,28 +38,48 @@ describe('architecture designer and swagger tab (JUM-819)', () => {
     cleanupTempConfigDir(tempDir);
   });
 
-  it('shows the monolith Core, splits a service, moves a domain and draws a link', async () => {
+  it('shows first-run CTAs, then splits a service, moves a domain and draws a link', async () => {
     expect.hasAssertions();
     const context = await browser!.newContext();
     const page = await context.newPage();
-    await page.goto(baseUrl, { waitUntil: 'load' });
+    await page.goto(`${baseUrl}#architecture`, { waitUntil: 'load' });
     await page.waitForSelector('body[data-designer-ready="true"]');
-    await clickInPanels(page, '#load-sample-btn');
-    await page.click('#tab-architecture-btn');
+    // Fresh profiles seed the backend-template model (Users + Core). If the
+    // empty CTA is still showing (no domains), load the backend seed first.
+    const emptyVisible = await page.$eval(
+      '#architecture-empty-state',
+      (el) => !(el as HTMLElement).hidden
+    ).catch(() => false);
+    if (emptyVisible) {
+      await page.click('#architecture-empty-load-sample-btn');
+    }
     await page.waitForSelector('.architecture-service-core');
     const coreText = await page.$eval('.architecture-service-core', (el) => el.textContent || '');
     expect(coreText).toContain('Core');
+    // Rail defaults contracted — open Panels before Services create controls.
+    const railOpen = await page.$eval(
+      '#architecture-sidebar',
+      (el) => el.classList.contains('open')
+    );
+    if (!railOpen) {
+      await page.click('#architecture-toggle-sidebar-btn');
+    }
+    await page.click('#architecture-tab-services-btn');
     await page.fill('#architecture-service-name-input', 'Billing');
     await page.click('#architecture-add-service-btn');
     await page.waitForSelector('.architecture-service-domain');
     const serviceCount = await page.$$eval('.architecture-service', (nodes) => nodes.length);
     expect(serviceCount).toBeGreaterThan(1);
-    const domainId = await page.$eval('.architecture-domain-chip', (el) => (el as HTMLElement).dataset.domainId || '');
-    await page.selectOption('#architecture-inspect-domain', domainId);
-    await page.click('.architecture-service-domain');
-    await page.click('#architecture-move-domain-btn');
+    // Billing is selected after create — Domains palette click pulls a Core-hosted domain here.
+    await page.click('#architecture-tab-domains-btn');
+    await page.waitForSelector('.architecture-palette-item.is-elsewhere');
+    await page.click('.architecture-palette-item.is-elsewhere');
+    await page.waitForSelector('.architecture-service-domain .architecture-domain-chip');
     await page.selectOption('#architecture-link-protocol', 'rest');
-    await page.click('#architecture-add-link-btn');
+    await page.click('#architecture-connect-btn');
+    await page.click('.architecture-service-core');
+    await page.click('.architecture-service-domain');
+    await page.click('#architecture-tab-links-btn');
     const linkCount = await page.$eval('#architecture-link-list', (el) => el.children.length);
     expect(linkCount).toBeGreaterThan(0);
     await context.close();
@@ -71,6 +91,9 @@ describe('architecture designer and swagger tab (JUM-819)', () => {
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
     await page.waitForSelector('body[data-designer-ready="true"]');
+    page.once('dialog', (dialog) => {
+      dialog.accept().catch(() => {});
+    });
     await clickInPanels(page, '#load-sample-btn');
     await page.click('#tab-openapi-btn');
     await page.waitForSelector('#openapi-service-select');

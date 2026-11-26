@@ -1,21 +1,9 @@
 /* eslint-disable jest/prefer-expect-assertions, jest/no-conditional-in-test */
 /* eslint-disable no-await-in-loop, jest/max-expects */
 /*
- * JUM-548 — first-run experience assertions, run in a REAL browser
- * (Playwright WebKit, the engine this repository already pins for browser
- * runs) against the REAL server. No DOM shims, no fakes (Requirement 115).
- * Same harness and boot path as spaBoot.browser.integration.test.ts.
- *
- * Pins, each on a fresh profile (a fresh Playwright context = a first run):
- *  - The designer boots to an EMPTY model and every tab shows its guided
- *    empty state, each naming the tab's first action.
- *  - The sample loads in one action from the Domain Designer's empty state:
- *    the empty state hides, the domain list shows the Users domain with its
- *    "sample" badge, and the loaded sample passes the export quality gate
- *    (the JSON export fires with the gate at its default blocking setting).
- *  - Loading the sample over existing work is non-destructive by contract:
- *    it asks for explicit confirmation — dismissing keeps the user's model,
- *    accepting replaces it (with Undo as the in-session recourse).
+ * First-run experience: a fresh browser profile seeds the backend-template
+ * model from live OpenAPI contracts (spec/1.0.0.yml). Empty-state CTAs reload
+ * that same seed after the user clears the canvas.
  */
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
@@ -33,13 +21,6 @@ import {
 } from '../../helpers/serverHarness';
 import type { StartedServer } from '../../helpers/serverHarness';
 
-const OTHER_TABS = [
-  { key: 'architecture', emptyState: '#architecture-empty-state' },
-  { key: 'interface-designer', emptyState: '#interface-designer-empty-state' },
-  { key: 'service-config', emptyState: '#service-config-empty-state' },
-  { key: 'deploy-management', emptyState: '#deploy-management-empty-state' }
-];
-
 const repoRoot = path.resolve(__dirname, '../../../../..');
 
 async function isVisible(element: import('playwright-webkit').ElementHandle | null): Promise<boolean> {
@@ -47,17 +28,18 @@ async function isVisible(element: import('playwright-webkit').ElementHandle | nu
   return element.isVisible();
 }
 
-describe('serviceManagement first-run experience (JUM-548)', () => {
+describe('serviceManagement first-run experience (backend-template seed)', () => {
   let tempDir: string;
   let server: StartedServer | undefined;
   let browser: Browser | undefined;
   let baseUrl: string;
 
   beforeAll(async () => {
-    // The SPA resolves `@jumentix/cana` to the vendored bundle. Regenerate it
-    // here so this suite is order-independent when Jest schedules browser
-    // integration files in parallel on CI.
     execFileSync('bun', ['apps/service-management/scripts/sync-service-management-cana-bundle.js'], {
+      cwd: repoRoot,
+      stdio: 'inherit'
+    });
+    execFileSync('bun', ['apps/service-management/scripts/generate-backend-template-seed.js'], {
       cwd: repoRoot,
       stdio: 'inherit'
     });
@@ -76,7 +58,7 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     cleanupTempConfigDir(tempDir);
   });
 
-  it('boots a fresh profile to an empty model with a guided empty state per tab', async () => {
+  it('boots a fresh profile with the backend-template Users domain', async () => {
     expect.hasAssertions();
     const context = await browser!.newContext();
     const page = await context.newPage();
@@ -87,60 +69,46 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     page.on('pageerror', (error) => consoleErrors.push(String(error)));
 
     await page.goto(baseUrl, { waitUntil: 'load' });
+    await page.waitForSelector('body[data-designer-ready="true"]');
+    await openDesignerPanels(page, '#domain-list');
+    await page.waitForSelector('#domain-list li', { state: 'attached' });
 
-    // The Domain Designer's empty state names the one action that starts the flow.
     const domainEmpty = await page.$('#domain-designer-empty-state');
-    await expect(isVisible(domainEmpty)).resolves.toBe(true);
-    await expect(page.$('#domain-designer-empty-load-sample-btn')).resolves.not.toBeNull();
-    const domainGuidance = await domainEmpty!.textContent();
-    expect(domainGuidance).toContain('First action');
+    await expect(isVisible(domainEmpty)).resolves.toBe(false);
 
-    // No domains on a fresh profile — the seed no longer pre-populates.
-    const domainItems = await page.$$('#domain-list li');
-    expect(domainItems).toHaveLength(0);
+    const domainListText = await page.$eval('#domain-list', (el) => el.textContent || '');
+    expect(domainListText).toContain('Users');
+    expect(domainListText).not.toContain('Tasks');
 
-    // Every other tab shows its own guided empty state, each naming a first action.
-    for (const tab of OTHER_TABS) {
-      await page.click(`#tab-${tab.key}-btn`);
-      const emptyState = await page.$(tab.emptyState);
-      await expect(isVisible(emptyState)).resolves.toBe(true);
-      await expect(emptyState!.textContent()).resolves.toContain('First action');
-    }
+    const entityCards = await page.$$('.canvas .entity');
+    expect(entityCards.length).toBeGreaterThanOrEqual(6);
 
     expect(consoleErrors).toStrictEqual([]);
     await context.close();
   }, 60000);
 
-  it('loads the sample in one action, marks it, and exports through the quality gate', async () => {
+  it('reloads the backend model via Import → Backend and exports through the quality gate', async () => {
     expect.hasAssertions();
     const context = await browser!.newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
+    await page.waitForSelector('body[data-designer-ready="true"]');
+    await openDesignerPanels(page, '#domain-list');
+    await page.waitForSelector('#domain-list li', { state: 'attached' });
 
-    await page.click('#domain-designer-empty-load-sample-btn');
+    // Seed already populated the store — confirm replace, then assert status + export gate.
+    page.once('dialog', (dialog) => {
+      dialog.accept().catch(() => {});
+    });
+    await clickInPanels(page, '#load-sample-btn');
+    await page.waitForTimeout(300);
 
-    // The empty state gives way to the sample model...
     await expect(isVisible(await page.$('#domain-designer-empty-state'))).resolves.toBe(false);
     const domainListText = await page.$eval('#domain-list', (el) => el.textContent || '');
     expect(domainListText).toContain('Users');
-    expect(domainListText).toContain('Tasks');
-    // ...which are marked as sample in the domain list...
-    // Domain rows only — entity rows also carry sample badges under the tree.
-    const badges = await page.$$('#domain-list .domain-tree-domain .sample-badge');
-    expect(badges).toHaveLength(2);
-    await Promise.all(badges.map((badge) => (
-      expect(badge.textContent()).resolves.toBe('sample')
-    )));
-    // ...announced through the non-blocking status surface (JUM-543), never an alert.
     const statusText = await page.$eval('#status-region', (el) => el.textContent || '');
-    expect(statusText).toContain('Sample model loaded');
-    // ...and the canvas renders the sample's entities.
-    const entityCards = await page.$$('.canvas .entity');
-    expect(entityCards).toHaveLength(8);
+    expect(statusText).toContain('Backend-template model loaded');
 
-    // The sample passes the export quality gate at its default blocking
-    // setting — the export fires, proving collectModelIssues reports no
-    // error-severity issue on it.
     const [download] = await Promise.all([
       page.waitForEvent('download'),
       clickInPanels(page, '#export-json-btn')
@@ -149,21 +117,21 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     await context.close();
   }, 60000);
 
-  it('requires explicit confirmation before replacing existing work with the sample', async () => {
+  it('requires explicit confirmation before replacing existing work with the backend model', async () => {
     expect.hasAssertions();
     const context = await browser!.newContext();
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
+    await page.waitForSelector('body[data-designer-ready="true"]');
+    await openDesignerPanels(page, '#domain-list');
+    await page.waitForSelector('#domain-list li', { state: 'attached' });
 
-    // Existing work: the sample plus the user's own domain.
-    await page.click('#domain-designer-empty-load-sample-btn');
     await openDesignerPanels(page, '#domain-name-input');
     await page.fill('#domain-name-input', 'Mine');
     await clickInPanels(page, '#add-domain-btn');
     let domainListText = await page.$eval('#domain-list', (el) => el.textContent || '');
     expect(domainListText).toContain('Mine');
 
-    // Dismissing the confirmation keeps the user's model untouched.
     page.once('dialog', (dialog) => {
       dialog.dismiss().catch(() => {});
     });
@@ -173,8 +141,6 @@ describe('serviceManagement first-run experience (JUM-548)', () => {
     expect(domainListText).toContain('Mine');
     expect(domainListText).toContain('Users');
 
-    // Accepting replaces the model with the sample — the user's domain is
-    // gone (recoverable through in-session Undo, as the dialog announces).
     page.once('dialog', (dialog) => {
       dialog.accept().catch(() => {});
     });

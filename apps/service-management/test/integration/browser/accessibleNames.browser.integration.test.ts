@@ -25,6 +25,7 @@ import {
   startServer,
   clickInPanels,
   fillInPanels,
+  ensureBackendSeedModel,
   stopServer,
   waitForServer
 } from '../../helpers/serverHarness';
@@ -140,7 +141,7 @@ describe('serviceManagement accessible names (JUM-732)', () => {
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
-    await page.click('#domain-designer-empty-load-sample-btn');
+    await ensureBackendSeedModel(page);
     await page.waitForTimeout(500);
     await fillInPanels(page, '#entity-search-input', 'User');
     await clickInPanels(page, '#entity-search-btn');
@@ -161,7 +162,7 @@ describe('serviceManagement accessible names (JUM-732)', () => {
     const page = await context.newPage();
     await page.goto(baseUrl, { waitUntil: 'load' });
 
-    await page.click('#domain-designer-empty-load-sample-btn');
+    await ensureBackendSeedModel(page);
     await page.waitForTimeout(500);
     await fillInPanels(page, '#entity-search-input', 'User');
     await clickInPanels(page, '#entity-search-btn');

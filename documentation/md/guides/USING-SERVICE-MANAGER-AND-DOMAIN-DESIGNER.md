@@ -204,32 +204,29 @@ pm2 restart jumentix-dev-service-management
 
 ## 5. First run
 
-On a fresh browser profile the designer boots to an **empty model**. Every tab
-shows a guided empty state naming that tab's first action — there is no silent
-pre-populated template.
+On a fresh browser profile (empty Cana store) the designer **seeds the
+backend-template model** generated from the live OpenAPI contracts in
+`spec/1.0.0.yml` — today the `Users` domain (`User`, `Organization`, `Email`,
+`Phone`, `Address`, `Document`) plus Core architecture. Every
+`service-management:vendor` / app start regenerates
+`apps/service-management/generated/backend-template-seed.json` and the ESM
+embed `src/model/backendTemplateSeed.js`. Regenerating the file does **not**
+overwrite a saved designer model in Cana.
 
-![First run: the Domain Designer empty state explaining the tab and offering Load Sample Model](../../images/service-manager/01-first-run-empty-state.png "First-run empty state")
+![First run: Domain Designer canvas with the backend-template Users domain](../../images/service-manager/02-domain-designer-canvas.png "Domain Designer canvas with the backend-template model")
 
-The Domain Designer's first action is **Load Sample Model** (also available in
-the Export panel). One click loads a realistic identity domain — `Users`,
-`Organization`, `Email`, `Phone` and `ContactPoint`, the same resources
-`spec/1.0.0.yml` declares — with relationships, per-entity RBAC, a message
-contract, invariants and OpenAPI `oneOf` + discriminator composition.
-
-![Domain Designer canvas after loading the sample model](../../images/service-manager/02-domain-designer-canvas.png "Domain Designer canvas with the sample model")
-
-Sample content stays distinguishable from your own work: every sample id
-carries a `sample-` prefix and sample domains show a `sample` badge in the
-domain list. Loading it over an existing model asks for confirmation, and undo
-restores the previous model. Deleting it is ordinary domain deletion.
+If you clear the canvas, guided empty states return. **Load Backend Model**
+(Import toolbar and Architecture / Domain Designer empty CTAs) reloads the
+same seed through the suite-import path. Loading it over an existing model
+asks for confirmation; undo restores the previous model.
 
 A complete first round trip:
 
-1. Click `Load Sample Model`.
+1. Open the designer on a fresh profile (or click `Load Backend Model`).
 2. Click `Validate Model` and read the Model Check panel.
 3. Click `Export OAS 3.1` — the browser downloads
    `domain-designer-oas-3.1.json`.
-4. Delete the sample domain and model your own.
+4. Edit domains to match your product, or delete and remodel.
 
 ## 5.1 Architecture and OpenAPI tabs
 
