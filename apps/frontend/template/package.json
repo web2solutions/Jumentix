@@ -43,7 +43,7 @@
     "eslint-plugin-vue": "^10.11.1",
     "vue-eslint-parser": "^10.3.0",
     "globals": "^17.14.0",
-    "postcss": "^8.5.29",
+    "postcss": "^8.5.33",
     "sass": "^1.108.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
